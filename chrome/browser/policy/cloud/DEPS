@@ -87,10 +87,6 @@ specific_include_rules = {
     "+content/public/test/test_browser_thread.h",
   ],
 
-  r"device_management_service\.cc": [
-    "+chrome/browser/net/basic_http_user_agent_settings.h",
-  ],
-
   r"test_request_interceptor\.cc": [
     "+content/public/browser/browser_thread.h",
     "+content/public/test/test_utils.h",

@@ -64,7 +64,11 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   void ResetService() {
     service_.reset(new DeviceManagementService(
-        request_context_, kServiceUrl, kUserAgent, kPlatform));
+        request_context_,
+        kServiceUrl,
+        kUserAgent,
+        kUserAgent,
+        kPlatform));
   }
 
   void InitializeService() {

@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/net/basic_http_user_agent_settings.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -20,6 +19,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -138,17 +138,18 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
 // networking components.
 class DeviceManagementRequestContext : public net::URLRequestContext {
  public:
-  explicit DeviceManagementRequestContext(net::URLRequestContext* base_context);
+  DeviceManagementRequestContext(net::URLRequestContext* base_context,
+                                 const std::string& user_agent);
   virtual ~DeviceManagementRequestContext();
 
  private:
-  BasicHttpUserAgentSettings basic_http_user_agent_settings_;
+  net::StaticHttpUserAgentSettings http_user_agent_settings_;
 };
 
 DeviceManagementRequestContext::DeviceManagementRequestContext(
-    net::URLRequestContext* base_context)
-    // Use sane Accept-Language value for our purposes.
-    : basic_http_user_agent_settings_("*") {
+    net::URLRequestContext* base_context,
+    const std::string& user_agent)
+    : http_user_agent_settings_("*", user_agent) {
   // Share resolver, proxy service and ssl bits with the baseline context. This
   // is important so we don't make redundant requests (e.g. when resolving proxy
   // auto configuration).
@@ -165,7 +166,7 @@ DeviceManagementRequestContext::DeviceManagementRequestContext(
   // No cookies, please.
   set_cookie_store(new net::CookieMonster(NULL, NULL));
 
-  set_http_user_agent_settings(&basic_http_user_agent_settings_);
+  set_http_user_agent_settings(&http_user_agent_settings_);
 }
 
 DeviceManagementRequestContext::~DeviceManagementRequestContext() {
@@ -177,8 +178,10 @@ class DeviceManagementRequestContextGetter
     : public net::URLRequestContextGetter {
  public:
   DeviceManagementRequestContextGetter(
-      scoped_refptr<net::URLRequestContextGetter> base_context_getter)
-      : base_context_getter_(base_context_getter) {}
+      scoped_refptr<net::URLRequestContextGetter> base_context_getter,
+      const std::string& user_agent)
+      : base_context_getter_(base_context_getter),
+        user_agent_(user_agent) {}
 
   // Overridden from net::URLRequestContextGetter:
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
@@ -191,6 +194,7 @@ class DeviceManagementRequestContextGetter
  private:
   scoped_refptr<net::URLRequestContextGetter> base_context_getter_;
   scoped_ptr<net::URLRequestContext> context_;
+  const std::string user_agent_;
 };
 
 
@@ -199,7 +203,7 @@ DeviceManagementRequestContextGetter::GetURLRequestContext() {
   DCHECK(GetNetworkTaskRunner()->RunsTasksOnCurrentThread());
   if (!context_.get()) {
     context_.reset(new DeviceManagementRequestContext(
-        base_context_getter_->GetURLRequestContext()));
+        base_context_getter_->GetURLRequestContext(), user_agent_));
   }
 
   return context_.get();
@@ -216,8 +220,8 @@ DeviceManagementRequestContextGetter::GetNetworkTaskRunner() const {
 class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
  public:
   DeviceManagementRequestJobImpl(JobType type,
-                                 const std::string& user_agent,
-                                 const std::string& platform,
+                                 const std::string& agent_parameter,
+                                 const std::string& platform_parameter,
                                  DeviceManagementService* service);
   virtual ~DeviceManagementRequestJobImpl();
 
@@ -263,10 +267,10 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
 
 DeviceManagementRequestJobImpl::DeviceManagementRequestJobImpl(
     JobType type,
-    const std::string& user_agent,
-    const std::string& platform,
+    const std::string& agent_parameter,
+    const std::string& platform_parameter,
     DeviceManagementService* service)
-    : DeviceManagementRequestJob(type, user_agent, platform),
+    : DeviceManagementRequestJob(type, agent_parameter, platform_parameter),
       service_(service),
       bypass_proxy_(false),
       retries_count_(0) {}
@@ -445,13 +449,13 @@ em::DeviceManagementRequest* DeviceManagementRequestJob::GetRequest() {
 
 DeviceManagementRequestJob::DeviceManagementRequestJob(
     JobType type,
-    const std::string& user_agent,
-    const std::string& platform) {
+    const std::string& agent_parameter,
+    const std::string& platform_parameter) {
   AddParameter(dm_protocol::kParamRequest, JobTypeToRequestType(type));
   AddParameter(dm_protocol::kParamDeviceType, dm_protocol::kValueDeviceType);
   AddParameter(dm_protocol::kParamAppType, dm_protocol::kValueAppType);
-  AddParameter(dm_protocol::kParamAgent, user_agent);
-  AddParameter(dm_protocol::kParamPlatform, platform);
+  AddParameter(dm_protocol::kParamAgent, agent_parameter);
+  AddParameter(dm_protocol::kParamPlatform, platform_parameter);
 }
 
 void DeviceManagementRequestJob::SetRetryCallback(
@@ -480,7 +484,8 @@ DeviceManagementService::~DeviceManagementService() {
 
 DeviceManagementRequestJob* DeviceManagementService::CreateJob(
     DeviceManagementRequestJob::JobType type) {
-  return new DeviceManagementRequestJobImpl(type, user_agent_, platform_, this);
+  return new DeviceManagementRequestJobImpl(
+      type, agent_parameter_, platform_parameter_, this);
 }
 
 void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
@@ -498,7 +503,7 @@ void DeviceManagementService::Initialize() {
     return;
   DCHECK(!request_context_getter_.get());
   request_context_getter_ =
-      new DeviceManagementRequestContextGetter(request_context_);
+      new DeviceManagementRequestContextGetter(request_context_, user_agent_);
   initialized_ = true;
 
   while (!queued_jobs_.empty()) {
@@ -521,11 +526,13 @@ DeviceManagementService::DeviceManagementService(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     const std::string& server_url,
     const std::string& user_agent,
-    const std::string& platform)
+    const std::string& agent_parameter,
+    const std::string& platform_parameter)
     : request_context_(request_context),
       server_url_(server_url),
       user_agent_(user_agent),
-      platform_(platform),
+      agent_parameter_(agent_parameter),
+      platform_parameter_(platform_parameter),
       initialized_(false),
       weak_ptr_factory_(this) {
 }

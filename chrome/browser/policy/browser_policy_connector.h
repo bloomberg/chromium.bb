@@ -141,10 +141,6 @@ class BrowserPolicyConnector {
   static void SetPolicyProviderForTesting(
       ConfigurationPolicyProvider* provider);
 
-  // Gets the URL of the DM server (either the default or a URL provided via the
-  // command line).
-  static std::string GetDeviceManagementUrl();
-
   // Check whether a user is known to be non-enterprise. Domains such as
   // gmail.com and googlemail.com are known to not be managed. Also returns
   // false if the username is empty.

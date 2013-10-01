@@ -119,11 +119,13 @@ ACTION_P2(CreateAsyncMockDeviceManagementJob, service, mock_job) {
 MockDeviceManagementJob::~MockDeviceManagementJob() {}
 
 MockDeviceManagementService::MockDeviceManagementService()
-    : DeviceManagementService(new net::TestURLRequestContextGetter(
-                                  base::MessageLoopProxy::current()),
-                              std::string(),
-                              std::string(),
-                              std::string()) {}
+    : DeviceManagementService(
+          new net::TestURLRequestContextGetter(
+              base::MessageLoopProxy::current()),
+          std::string(),
+          std::string(),
+          std::string(),
+          std::string()) {}
 
 MockDeviceManagementService::~MockDeviceManagementService() {}
 

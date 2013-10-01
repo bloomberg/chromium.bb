@@ -143,7 +143,8 @@ class DeviceManagementServiceIntegrationTest
         g_browser_process->system_request_context(),
         service_url,
         "UserAgent",
-        "Platform"));
+        "UserAgentParam",
+        "PlatformParam"));
     service_->ScheduleInitialization(0);
   }
 

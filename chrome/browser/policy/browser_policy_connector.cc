@@ -37,12 +37,14 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/policy/policy_loader_win.h"
@@ -120,7 +122,15 @@ base::FilePath GetManagedPolicyPath() {
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-std::string GetUserAgent() {
+std::string GetDeviceManagementUrl() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDeviceManagementUrl))
+    return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
+  else
+    return kDefaultDeviceManagementServerUrl;
+}
+
+std::string GetUserAgentParameter() {
   chrome::VersionInfo version_info;
   return base::StringPrintf("%s %s(%s)",
                             version_info.Name().c_str(),
@@ -128,7 +138,7 @@ std::string GetUserAgent() {
                             version_info.LastChange().c_str());
 }
 
-std::string GetPlatformString() {
+std::string GetPlatformParameter() {
   std::string os_name = base::SysInfo::OperatingSystemName();
   std::string os_hardware = base::SysInfo::OperatingSystemArchitecture();
 
@@ -225,11 +235,13 @@ void BrowserPolicyConnector::Init(
   local_state_ = local_state;
   request_context_ = request_context;
 
+  std::string server_url = GetDeviceManagementUrl();
   device_management_service_.reset(
       new DeviceManagementService(request_context,
-                                  GetDeviceManagementUrl(),
-                                  GetUserAgent(),
-                                  GetPlatformString()));
+                                  server_url,
+                                  content::GetUserAgent(GURL(server_url)),
+                                  GetUserAgentParameter(),
+                                  GetPlatformParameter()));
   device_management_service_->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 
@@ -424,15 +436,6 @@ void BrowserPolicyConnector::SetPolicyProviderForTesting(
   CHECK(!g_browser_process) << "Must be invoked before the browser is created";
   DCHECK(!g_testing_provider);
   g_testing_provider = provider;
-}
-
-// static
-std::string BrowserPolicyConnector::GetDeviceManagementUrl() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDeviceManagementUrl))
-    return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
-  else
-    return kDefaultDeviceManagementServerUrl;
 }
 
 namespace {
