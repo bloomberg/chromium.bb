@@ -47,8 +47,13 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif  // defined(OS_MACOSX)
 
   chrome::ChromeContentClient chrome_content_client_;
-  scoped_ptr<base::StatsScope<base::StatsCounterTimer> > startup_timer_;
+
+  // startup_timer_ will hold a reference to stats_counter_timer_. Therefore,
+  // the declaration order of these variables matters. Changing this order will
+  // cause startup_timer_ to be freed before stats_counter_timer_, leaving a
+  // dangling reference.
   scoped_ptr<base::StatsCounterTimer> stats_counter_timer_;
+  scoped_ptr<base::StatsScope<base::StatsCounterTimer> > startup_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegate);
 };
