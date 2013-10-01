@@ -419,7 +419,6 @@ tools/nacl_gcc.mk
 tools/nacl_llvm.mk
 tools/ncval${EXE_EXT}
 tools/oshelpers.py
-tools/oshelpers.pyc
 tools/quote.py
 tools/run.py
 tools/sel_ldr.py

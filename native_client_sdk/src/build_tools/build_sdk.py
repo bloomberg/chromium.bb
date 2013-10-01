@@ -682,6 +682,10 @@ def BuildStepBuildLibraries(pepperdir, directory):
   BuildStepMakeAll(pepperdir, directory, 'Build Libraries Release',
       clean=True, config='Release')
 
+  # Cleanup .pyc file generated while building libraries.  Without
+  # this we would end up shipping the pyc in the SDK tarball.
+  buildbot_common.RemoveFile(os.path.join(pepperdir, 'tools', '*.pyc'))
+
 
 def GenerateNotice(fileroot, output_filename='NOTICE', extra_files=None):
   # Look for LICENSE files
@@ -730,13 +734,11 @@ to test.""" % (e, file_list_rel, verify_filelist_py, file_list_rel,
     buildbot_common.ErrorExit(msg)
 
 
-
 def BuildStepTarBundle(pepper_ver, tarfile):
   buildbot_common.BuildStep('Tar Pepper Bundle')
   buildbot_common.MakeDir(os.path.dirname(tarfile))
   buildbot_common.Run([sys.executable, CYGTAR, '-C', OUT_DIR, '-cjf', tarfile,
        'pepper_' + pepper_ver], cwd=NACL_DIR)
-
 
 
 def GetManifestBundle(pepper_ver, chrome_revision, nacl_revision, tarfile,
