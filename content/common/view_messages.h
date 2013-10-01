@@ -1295,10 +1295,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SelectPopupMenuItems,
 // ViewMsg_ScrollFocusedEditableNodeIntoView was called.
 IPC_MESSAGE_ROUTED0(ViewMsg_UndoScrollFocusedEditableNodeIntoView)
 
-// This message relays the beginning or end of a batch event in the IME.
-IPC_MESSAGE_ROUTED1(ViewMsg_ImeBatchStateChanged,
-    bool /* is_begin */)
-
 // Notifies the renderer whether hiding/showing the top controls is enabled
 // and whether or not to animate to the proper state.
 IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,
@@ -2309,11 +2305,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_StartContentIntent,
 // Message sent when the renderer changed the background color for the view.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeBodyBackgroundColor,
                     uint32  /* bg_color */)
-
-// This message is an ACK that the batch state change has been received by
-// the renderer and all IME related messages should be processed accordingly.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeBatchStateChanged_ACK,
-                    bool /* is_begin */)
 
 // This message runs the MediaCodec for decoding audio for webaudio.
 IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,

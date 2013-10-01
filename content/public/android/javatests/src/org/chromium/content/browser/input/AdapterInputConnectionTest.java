@@ -44,23 +44,38 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
     public void testSetComposingText() throws Throwable {
         mConnection.setComposingText("t", 1);
         assertCorrectState("t", 1, 1, 0, 1, mConnection.getImeStateForTesting());
-        mConnection.setEditableText("t", 1, 1, 0, 1);
         mWrapper.verifyUpdateSelectionCall(0, 1, 1, 0 ,1);
 
         mConnection.setComposingText("te", 1);
         assertCorrectState("te", 2, 2, 0, 2, mConnection.getImeStateForTesting());
-        mConnection.setEditableText("te", 2, 2, 0, 2);
         mWrapper.verifyUpdateSelectionCall(1, 2, 2, 0 ,2);
 
         mConnection.setComposingText("tes", 1);
         assertCorrectState("tes", 3, 3, 0, 3, mConnection.getImeStateForTesting());
-        mConnection.setEditableText("tes", 3, 3, 0, 3);
         mWrapper.verifyUpdateSelectionCall(2, 3, 3, 0, 3);
 
         mConnection.setComposingText("test", 1);
         assertCorrectState("test", 4, 4, 0, 4, mConnection.getImeStateForTesting());
-        mConnection.setEditableText("test", 4, 4, 0, 4);
         mWrapper.verifyUpdateSelectionCall(3, 4, 4, 0, 4);
+    }
+
+    @MediumTest
+    @Feature({"TextInput", "Main"})
+    public void testSelectionUpdatesDuringBatch() throws Throwable {
+        mConnection.beginBatchEdit();
+        mConnection.setComposingText("t", 1);
+        assertEquals(0, mWrapper.getUpdateSelectionCallCount());
+        mConnection.setComposingText("te", 1);
+        assertEquals(0, mWrapper.getUpdateSelectionCallCount());
+        mConnection.beginBatchEdit();
+        mConnection.setComposingText("tes", 1);
+        assertEquals(0, mWrapper.getUpdateSelectionCallCount());
+        mConnection.endBatchEdit();
+        mConnection.setComposingText("test", 1);
+        assertEquals(0, mWrapper.getUpdateSelectionCallCount());
+        mConnection.endBatchEdit();
+        assertEquals(1, mWrapper.getUpdateSelectionCallCount());
+        mWrapper.verifyUpdateSelectionCall(0, 4, 4, 0 ,4);
     }
 
     private static class TestImeAdapter extends ImeAdapter {
@@ -97,6 +112,10 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         public void updateSelection(View view, int selStart, int selEnd,
                 int candidatesStart, int candidatesEnd) {
           mUpdates.add(new ImeState("", selStart, selEnd, candidatesStart, candidatesEnd));
+        }
+
+        public int getUpdateSelectionCallCount() {
+            return mUpdates.size();
         }
 
         public void verifyUpdateSelectionCall(int index, int selectionStart, int selectionEnd,

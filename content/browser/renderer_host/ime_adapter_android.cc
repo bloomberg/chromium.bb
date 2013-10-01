@@ -158,16 +158,6 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env, jobject, jstring text,
   rwhi->ImeSetComposition(text16, underlines, new_cursor_pos, new_cursor_pos);
 }
 
-void ImeAdapterAndroid::ImeBatchStateChanged(JNIEnv* env,
-                                             jobject,
-                                             jboolean is_begin) {
-  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
-  if (!rwhi)
-    return;
-
-  rwhi->Send(new ViewMsg_ImeBatchStateChanged(rwhi->GetRoutingID(), is_begin));
-}
-
 void ImeAdapterAndroid::CommitText(JNIEnv* env, jobject, jstring text) {
   RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)

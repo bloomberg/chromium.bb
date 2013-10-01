@@ -399,7 +399,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_ImeBatchStateChanged, OnImeBatchStateChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeEventAck, OnImeEventAck)
 #endif
@@ -2039,10 +2038,6 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
 }
 
 #if defined(OS_ANDROID)
-void RenderWidget::OnImeBatchStateChanged(bool is_begin) {
-  Send(new ViewHostMsg_ImeBatchStateChanged_ACK(routing_id(), is_begin));
-}
-
 void RenderWidget::OnShowImeIfNeeded() {
   UpdateTextInputState(true, true);
 }

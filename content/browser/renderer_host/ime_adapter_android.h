@@ -41,7 +41,6 @@ class ImeAdapterAndroid {
                              int native_key_code,
                              int unicode_char);
   void SetComposingText(JNIEnv*, jobject, jstring text, int new_cursor_pos);
-  void ImeBatchStateChanged(JNIEnv*, jobject, jboolean is_begin);
   void CommitText(JNIEnv*, jobject, jstring text);
   void FinishComposingText(JNIEnv* env, jobject);
   void AttachImeAdapter(JNIEnv*, jobject java_object);

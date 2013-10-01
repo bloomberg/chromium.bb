@@ -166,8 +166,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeBatchStateChanged_ACK,
-                        OnProcessImeBatchStateAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
                         OnDidChangeBodyBackgroundColor)
@@ -440,12 +438,7 @@ void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
       static_cast<int>(params.type),
       params.value, params.selection_start, params.selection_end,
       params.composition_start, params.composition_end,
-      params.show_ime_if_needed);
-}
-
-void RenderWidgetHostViewAndroid::OnProcessImeBatchStateAck(bool is_begin) {
-  if (content_view_core_)
-    content_view_core_->ProcessImeBatchStateAck(is_begin);
+      params.show_ime_if_needed, params.require_ack);
 }
 
 void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(

@@ -212,7 +212,6 @@ class RenderWidgetHostViewAndroid
   void SendBeginFrame(const cc::BeginFrameArgs& args);
 
   void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
-  void OnProcessImeBatchStateAck(bool is_begin);
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrame(bool enabled);

@@ -246,8 +246,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                         const std::string& text,
                         int selection_start, int selection_end,
                         int composition_start, int composition_end,
-                        bool show_ime_if_needed);
-  void ProcessImeBatchStateAck(bool is_begin);
+                        bool show_ime_if_needed, bool require_ack);
   void SetTitle(const string16& title);
   void OnBackgroundColorChanged(SkColor color);
 

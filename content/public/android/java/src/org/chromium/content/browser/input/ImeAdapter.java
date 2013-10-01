@@ -412,11 +412,6 @@ public class ImeAdapter {
         return true;
     }
 
-    void batchStateChanged(boolean isBegin) {
-        if (mNativeImeAdapterAndroid == 0) return;
-        nativeImeBatchStateChanged(mNativeImeAdapterAndroid, isBegin);
-    }
-
     void commitText() {
         cancelComposition();
         if (mNativeImeAdapterAndroid != 0) {
@@ -558,8 +553,6 @@ public class ImeAdapter {
 
     private native void nativeDeleteSurroundingText(int nativeImeAdapterAndroid,
             int before, int after);
-
-    private native void nativeImeBatchStateChanged(int nativeImeAdapterAndroid, boolean isBegin);
 
     private native void nativeUnselect(int nativeImeAdapterAndroid);
     private native void nativeSelectAll(int nativeImeAdapterAndroid);

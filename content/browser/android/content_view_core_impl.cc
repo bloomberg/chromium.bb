@@ -1531,7 +1531,8 @@ void ContentViewCoreImpl::UpdateImeAdapter(int native_ime_adapter,
                                            int selection_end,
                                            int composition_start,
                                            int composition_end,
-                                           bool show_ime_if_needed) {
+                                           bool show_ime_if_needed,
+                                           bool require_ack) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -1543,15 +1544,7 @@ void ContentViewCoreImpl::UpdateImeAdapter(int native_ime_adapter,
                                         jstring_text.obj(),
                                         selection_start, selection_end,
                                         composition_start, composition_end,
-                                        show_ime_if_needed);
-}
-
-void ContentViewCoreImpl::ProcessImeBatchStateAck(bool is_begin) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ContentViewCore_processImeBatchStateAck(env, obj.obj(), is_begin);
+                                        show_ime_if_needed, require_ack);
 }
 
 void ContentViewCoreImpl::ClearSslPreferences(JNIEnv* env, jobject obj) {

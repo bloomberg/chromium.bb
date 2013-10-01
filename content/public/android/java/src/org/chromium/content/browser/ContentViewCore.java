@@ -2395,11 +2395,10 @@ import java.util.Map;
         getContentViewClient().onGeometryChanged(-1, null);
     }
 
-    @SuppressWarnings("unused")
     @CalledByNative
     private void updateImeAdapter(int nativeImeAdapterAndroid, int textInputType,
             String text, int selectionStart, int selectionEnd,
-            int compositionStart, int compositionEnd, boolean showImeIfNeeded) {
+            int compositionStart, int compositionEnd, boolean showImeIfNeeded, boolean requireAck) {
         TraceEvent.begin();
         mSelectionEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
 
@@ -2409,17 +2408,10 @@ import java.util.Map;
                 selectionStart, selectionEnd, showImeIfNeeded);
 
         if (mInputConnection != null) {
-            mInputConnection.setEditableText(text, selectionStart, selectionEnd,
-                    compositionStart, compositionEnd);
+            mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
+                    compositionEnd, requireAck);
         }
         TraceEvent.end();
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void processImeBatchStateAck(boolean isBegin) {
-        if (mInputConnection == null) return;
-        mInputConnection.setIgnoreTextInputStateUpdates(isBegin);
     }
 
     @SuppressWarnings("unused")
@@ -2926,6 +2918,7 @@ import java.util.Map;
 
             if (mAccessibilityScriptInjectionObserver == null) {
                 ContentObserver contentObserver = new ContentObserver(new Handler()) {
+                    @Override
                     public void onChange(boolean selfChange, Uri uri) {
                         setAccessibilityState(mAccessibilityManager.isEnabled());
                     }

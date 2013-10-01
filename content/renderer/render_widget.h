@@ -330,7 +330,6 @@ class CONTENT_EXPORT RenderWidget
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
 #if defined(OS_ANDROID)
-  void OnImeBatchStateChanged(bool is_begin);
   void OnShowImeIfNeeded();
 
   // Whenever an IME event that needs an acknowledgement is sent to the browser,
