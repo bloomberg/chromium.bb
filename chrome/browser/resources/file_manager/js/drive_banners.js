@@ -33,8 +33,8 @@ function FileListBannerController(
       this.onDirectoryChanged_.bind(this));
 
   this.unmountedPanel_ = this.document_.querySelector('#unmounted-panel');
-  this.volumeManager_.addEventListener('drive-status-changed',
-        this.updateDriveUnmountedPanel_.bind(this));
+  this.volumeManager_.volumeInfoList.addEventListener(
+      'splice', this.onVolumeInfoListSplice_.bind(this));
   this.volumeManager_.addEventListener('drive-connection-changed',
         this.onDriveConnectionChanged_.bind(this));
 
@@ -590,6 +590,19 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
                          str('DRIVE_LEARN_MORE'));
   learnMore.href = urlConstants.GOOGLE_DRIVE_ERROR_HELP_URL;
   learnMore.target = '_blank';
+};
+
+/**
+ * Called when volume info list is updated.
+ * @param {cr.Event} event Splice event data on volume info list.
+ * @private
+ */
+FileListBannerController.prototype.onVolumeInfoListSplice_ = function(event) {
+  var isDriveVolume = function(volumeInfo) {
+    return volumeInfo.volumeType === util.VolumeType.DRIVE;
+  };
+  if (event.removed.some(isDriveVolume) || event.added.some(isDriveVolume))
+    this.updateDriveUnmountedPanel_();
 };
 
 /**

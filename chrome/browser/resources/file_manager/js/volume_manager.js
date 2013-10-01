@@ -312,9 +312,8 @@ function VolumeManager() {
    */
   this.volumeInfoList = new VolumeInfoList();
 
-  // These status should be merged into VolumeManager.
+  // The status should be merged into VolumeManager.
   // TODO(hidehiko): Remove them after the migration.
-  this.driveStatus_ = VolumeManager.DriveStatus.UNMOUNTED;
   this.driveConnectionState_ = {
     type: util.DriveConnectionType.OFFLINE,
     reasons: [util.DriveConnectionReason.NO_SERVICE]
@@ -348,16 +347,6 @@ VolumeManager.prototype.getDriveConnectionState = function() {
  * VolumeManager extends cr.EventTarget.
  */
 VolumeManager.prototype.__proto__ = cr.EventTarget.prototype;
-
-/**
- * TODO(hidehiko): Remove this with "drive-status-changed".
- * @enum
- */
-VolumeManager.DriveStatus = {
-  UNMOUNTED: 'unmounted',
-  ERROR: 'error',
-  MOUNTED: 'mounted'
-};
 
 /**
  * Time in milliseconds that we wait a respone for. If no response on
@@ -403,17 +392,6 @@ VolumeManager.getInstance = function(callback) {
 };
 
 /**
- * @param {VolumeManager.DriveStatus} newStatus New DRIVE status.
- * @private
- */
-VolumeManager.prototype.setDriveStatus_ = function(newStatus) {
-  if (this.driveStatus_ != newStatus) {
-    this.driveStatus_ = newStatus;
-    cr.dispatchSimpleEvent(this, 'drive-status-changed');
-  }
-};
-
-/**
  * Initializes mount points.
  * @param {function()} callback Called upon the completion of the
  *     initialization.
@@ -429,13 +407,8 @@ VolumeManager.prototype.initialize_ = function(callback) {
             volumeMetadata,
             function(volumeInfo) {
               this.volumeInfoList.add(volumeInfo);
-              if (volumeMetadata.volumeType === util.VolumeType.DRIVE) {
-                // Set Drive status here.
-                this.setDriveStatus_(
-                    volumeInfo.error ? VolumeManager.DriveStatus.ERROR :
-                                       VolumeManager.DriveStatus.MOUNTED);
+              if (volumeMetadata.volumeType === util.VolumeType.DRIVE)
                 this.onDriveConnectionStatusChanged_();
-              }
               continueCallback();
             }.bind(this));
       }.bind(this, volumeMetadataList[i]));
@@ -472,11 +445,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
             this.finishRequest_(requestKey, event.status, volumeInfo.mountPath);
 
             if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
-              // Set Drive status here.
-              this.setDriveStatus_(
-                  volumeInfo.error ? VolumeManager.DriveStatus.ERROR :
-                                     VolumeManager.DriveStatus.MOUNTED);
-              // Also update the network connection status, because until the
+              // Update the network connection status, because until the
               // drive is initialized, the status is set to not ready.
               // TODO(hidehiko): The connection status should be migrated into
               // VolumeMetadata.
@@ -486,8 +455,6 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     } else {
       console.warn('No mount path.');
       this.finishRequest_(requestKey, event.status);
-      if (event.volumeMetadata.volumeType === util.VolumeType.DRIVE)
-        this.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
     }
   } else if (event.eventType === 'unmount') {
     var mountPath = event.volumeMetadata.mountPath;
@@ -508,15 +475,8 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     }
     this.finishRequest_(requestKey, status);
 
-    if (event.status === 'success') {
+    if (event.status === 'success')
       this.volumeInfoList.remove(mountPath);
-
-      if (event.volumeMetadata.volumeType === util.VolumeType.DRIVE)
-        this.setDriveStatus_(VolumeManager.DriveStatus.UNMOUNTED);
-    } else {
-      if (event.volumeMetadata.volumeType === util.VolumeType.DRIVE)
-        this.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
-    }
   }
 };
 

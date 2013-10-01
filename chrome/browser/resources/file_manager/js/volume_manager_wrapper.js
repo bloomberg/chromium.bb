@@ -64,8 +64,6 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
   this.volumeManager_.addEventListener(
       'drive-connection-changed', this.onEventBound_);
   this.volumeManager_.addEventListener(
-      'drive-status-changed', this.onEventBound_);
-  this.volumeManager_.addEventListener(
       'externally-unmounted', this.onEventBound_);
 
   // Cache volumeInfoList.
@@ -105,8 +103,6 @@ VolumeManagerWrapper.prototype.dispose = function() {
   this.volumeManager_.removeEventListener(
       'drive-connection-changed', this.onEventBound_);
   this.volumeManager_.removeEventListener(
-      'drive-status-changed', this.onEventBound_);
-  this.volumeManager_.removeEventListener(
       'externally-unmounted', this.onEventBound_);
   this.volumeManager_.volumeInfoList.removeEventListener(
       'splice', this.onVolumeInfoListUpdatedBound_);
@@ -122,7 +118,6 @@ VolumeManagerWrapper.prototype.onEvent_ = function(event) {
   if (!this.driveEnabled_) {
     // If the drive is disabled, ignore all drive related events.
     if (event.type == 'drive-connection-changed' ||
-        event.type == 'drive-status-changed' ||
         (event.type == 'externally-unmounted' &&
          event.mountPath == RootDirectory.DRIVE))
       return;

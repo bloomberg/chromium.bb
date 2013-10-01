@@ -1188,8 +1188,8 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
 
   var onDriveDirectoryResolved = function(driveRoot) {
     if (!driveRoot || driveRoot == DirectoryModel.fakeDriveEntry_) {
-      // Drive root not available or not ready. onDriveStatusChanged_() handles
-      // rescan if necessary.
+      // Drive root not available or not ready. onVolumeInfoListUpdated_()
+      // handles the rescan if necessary.
       driveRoot = null;
     }
 
