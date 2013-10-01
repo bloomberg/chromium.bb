@@ -37,34 +37,6 @@ var CWS_WIDGET_URL =
 var CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
 
 /**
- * RegExp to extract the origin (shema, host and port) from the URL.
- * TODO(yoshiki): Remove this before ShareDialog launches or M31 branch cut.
- *
- * @type {RegExp}
- * @const
- */
-var REGEXP_EXTRACT_HOST = /^https?:\/\/[\w\.\-]+(?:\:\d{1,5})?(?=\/)/;
-
-/**
- * RegExp to check if the origin is google host or not.
- * Google hosts must be on https and default port.
- * TODO(yoshiki): Remove this before ShareDialog launches or M31 branch cut.
- *
- * @type {RegExp}
- * @const
- */
-var REGEXP_GOOGLE_MATCH = /^https:\/\/[\w\.\-]+\.google\.com$/;
-
-/**
- * RegExp to check if the origin is localhost or not.
- * TODO(yoshiki): Remove this before ShareDialog launches or M31 branch cut.
- *
- * @type {RegExp}
- * @const
- */
-var REGEXP_LOCALHOST_MATCH = /^https?:\/\/localhost(?:\:\d{1,5})?$/;
-
-/**
  * Creates dialog in DOM tree.
  *
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
