@@ -608,10 +608,6 @@ void AutofillManager::RemoveAutocompleteEntry(const base::string16& name,
   autocomplete_history_manager_->OnRemoveAutocompleteEntry(name, value);
 }
 
-content::WebContents* AutofillManager::GetWebContents() const {
-  return driver_->GetWebContents();
-}
-
 const std::vector<FormStructure*>& AutofillManager::GetFormStructures() {
   return form_structures_.get();
 }

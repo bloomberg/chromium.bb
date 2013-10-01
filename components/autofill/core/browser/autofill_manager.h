@@ -102,9 +102,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void RemoveAutocompleteEntry(const base::string16& name,
                                const base::string16& value);
 
-  // Returns the present web_contents state.
-  content::WebContents* GetWebContents() const;
-
   // Returns the present form structures seen by Autofill manager.
   const std::vector<FormStructure*>& GetFormStructures();
 
