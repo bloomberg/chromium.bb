@@ -239,9 +239,6 @@ webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequi
 
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
 
-Bug(fmalita) svg/W3C-SVG-1.1/masking-path-04-b.svg [ NeedsManualRebaseline ]
-Bug(fmalita) svg/text/text-layout-crash.html [ NeedsManualRebaseline ]
-
 # -----------------------------------------------------------------
 # End SVG TESTS
 # -----------------------------------------------------------------
