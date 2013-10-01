@@ -12,7 +12,7 @@ PASS canonicalize('http://www.looĸout.net/') is 'http://www.xn--looout-5bb.net/
 PASS canonicalize('http://ᗯᗯᗯ.lookout.net/') is 'http://xn--1qeaa.lookout.net/'
 PASS canonicalize('http://www.lookout.сом/') is 'http://www.lookout.xn--l1adi/'
 PASS canonicalize('http://www.lookout.net：80/') is 'http://www.lookout.net:80/'
-PASS canonicalize('http://www‥lookout.net/') is 'http://www..lookout.net/'
+FAIL canonicalize('http://www‥lookout.net/') should be http://www..lookout.net/. Was http://www%E2%80%A5lookout.net/.
 PASS canonicalize('http://www.lookout‧net/') is 'http://www.xn--lookoutnet-406e/'
 PASS canonicalize('http://www.looĸout.net/') is 'http://www.xn--looout-5bb.net/'
 PASS canonicalize('http://www.lookout.net⩴80/') is 'http://www.lookout.net::%3D80/'

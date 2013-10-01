@@ -1280,8 +1280,6 @@ crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
-crbug.com/301189 fast/url/idna2003.html [ Failure ]
-crbug.com/301189 fast/url/idna2008.html [ Failure ]
 
 # Flaky on all platforms.
 crbug.com/299819 inspector/console/console-timeline.html [ Failure Pass Timeout ]
