@@ -317,7 +317,7 @@ function addToAppsList(data) {
     Array.prototype.forEach.call(data.guests, function(guest) {
       var guestRow = addTargetToList(guest, row, ['name', 'url']);
       guestRow.classList.add('guest');
-      addFavicon(guestRow, data);
+      addFavicon(guestRow, guest);
     });
   }
 }

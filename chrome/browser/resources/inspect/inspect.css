@@ -179,7 +179,12 @@ img {
   background-color: #ddd;
 }
 
+#apps-list > .row {
+  -webkit-flex-direction: column;
+}
+
 .guest {
+  -webkit-flex-direction: row;
   padding-left: 20px;
 }
 
