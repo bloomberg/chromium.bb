@@ -278,7 +278,7 @@ const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
-// Disables the threaded HTML parser in WebKit
+// Disables the threaded HTML parser in Blink
 const char kDisableThreadedHTMLParser[]     = "disable-threaded-html-parser";
 
 // Disable web audio API.
@@ -290,7 +290,10 @@ const char kDisableWebKitMediaSource[]      = "disable-webkit-media-source";
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
 
-// Disables WebKit's XSSAuditor. The XSSAuditor mitigates reflective XSS.
+// Disables support for XSLT.
+const char kDisableXSLT[]                   = "disable-xslt";
+
+// Disables Blink's XSSAuditor. The XSSAuditor mitigates reflective XSS.
 const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 
 // Specifies if the |DOMAutomationController| needs to be bound in the

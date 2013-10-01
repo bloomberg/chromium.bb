@@ -468,6 +468,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.remote_fonts_enabled =
       !command_line.HasSwitch(switches::kDisableRemoteFonts);
+  prefs.xslt_enabled =
+      !command_line.HasSwitch(switches::kDisableXSLT);
   prefs.xss_auditor_enabled =
       !command_line.HasSwitch(switches::kDisableXSSAuditor);
   prefs.application_cache_enabled =
