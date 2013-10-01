@@ -28,40 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CryptoResult_h
-#define CryptoResult_h
+#ifndef CryptoResultImpl_h
+#define CryptoResultImpl_h
 
 #include "bindings/v8/ScriptPromise.h"
+#include "core/platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"
 #include "wtf/Forward.h"
-#include "wtf/ThreadSafeRefCounted.h"
 
 namespace WebCore {
 
 class ScriptPromiseResolver;
 
 // Wrapper around a Promise to notify completion of the crypto operation.
-class CryptoResult : public ThreadSafeRefCounted<CryptoResult> {
+// Platform cannot know about Promises which are declared in bindings.
+class CryptoResultImpl : public CryptoResult {
 public:
-    ~CryptoResult();
+    ~CryptoResultImpl();
 
-    static PassRefPtr<CryptoResult> create();
+    static PassRefPtr<CryptoResultImpl> create();
 
-    void completeWithError();
-    void completeWithBuffer(const WebKit::WebArrayBuffer&);
-    void completeWithBoolean(bool);
-    void completeWithKey(const WebKit::WebCryptoKey&);
-    void completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey);
-
-    WebKit::WebCryptoResult result()
-    {
-        return WebKit::WebCryptoResult(this);
-    }
+    virtual void completeWithError() OVERRIDE;
+    virtual void completeWithBuffer(const WebKit::WebArrayBuffer&) OVERRIDE;
+    virtual void completeWithBoolean(bool) OVERRIDE;
+    virtual void completeWithKey(const WebKit::WebCryptoKey&) OVERRIDE;
+    virtual void completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey) OVERRIDE;
 
     ScriptPromise promise();
 
 private:
-    CryptoResult();
+    CryptoResultImpl();
     void finish();
 
     RefPtr<ScriptPromiseResolver> m_promiseResolver;

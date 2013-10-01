@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/crypto/CryptoResult.h"
+#include "modules/crypto/CryptoResultImpl.h"
 #include "modules/crypto/Key.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "public/platform/Platform.h"
@@ -77,7 +77,7 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
     const unsigned char* data = static_cast<const unsigned char*>(dataBuffer->baseAddress());
     unsigned dataSize = dataBuffer->byteLength();
 
-    RefPtr<CryptoResult> result = CryptoResult::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
 
     switch (operationType) {
     case Encrypt:
@@ -145,7 +145,7 @@ ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool ext
     if (!normalizeAlgorithm(rawAlgorithm, GenerateKey, algorithm, es))
         return ScriptPromise();
 
-    RefPtr<CryptoResult> result = CryptoResult::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
     WebKit::Platform::current()->crypto()->generateKey(algorithm, extractable, keyUsages, result->result());
     return result->promise();
 }
@@ -171,7 +171,7 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* 
 
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());
 
-    RefPtr<CryptoResult> result = CryptoResult::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
     WebKit::Platform::current()->crypto()->importKey(format, keyDataBytes, keyData->byteLength(), algorithm, extractable, keyUsages, result->result());
     return result->promise();
 }
@@ -192,7 +192,7 @@ ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, Excepti
         return ScriptPromise();
     }
 
-    RefPtr<CryptoResult> result = CryptoResult::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
     WebKit::Platform::current()->crypto()->exportKey(format, key->key(), result->result());
     return result->promise();
 }

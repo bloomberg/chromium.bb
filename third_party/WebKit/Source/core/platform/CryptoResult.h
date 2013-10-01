@@ -28,68 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef CryptoResult_h
+#define CryptoResult_h
+
 #include "public/platform/WebCrypto.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
-#include "core/platform/CryptoResult.h"
-#include "public/platform/WebArrayBuffer.h"
-#include <string.h>
+namespace WebCore {
 
-namespace WebKit {
+// Receives notification of completion of the crypto operation.
+class CryptoResult : public ThreadSafeRefCounted<CryptoResult> {
+public:
+    virtual ~CryptoResult() { }
 
-void WebCryptoResult::completeWithError()
-{
-    m_impl->completeWithError();
-    reset();
-}
+    virtual void completeWithError() = 0;
+    virtual void completeWithBuffer(const WebKit::WebArrayBuffer&) = 0;
+    virtual void completeWithBoolean(bool) = 0;
+    virtual void completeWithKey(const WebKit::WebCryptoKey&) = 0;
+    virtual void completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey) = 0;
 
-void WebCryptoResult::completeWithBuffer(const WebArrayBuffer& buffer)
-{
-    RELEASE_ASSERT(!buffer.isNull());
-    m_impl->completeWithBuffer(buffer);
-    reset();
-}
+    WebKit::WebCryptoResult result()
+    {
+        return WebKit::WebCryptoResult(this);
+    }
+};
 
-void WebCryptoResult::completeWithBuffer(const void* bytes, unsigned bytesSize)
-{
-    WebArrayBuffer buffer = WebKit::WebArrayBuffer::create(bytesSize, 1);
-    RELEASE_ASSERT(!buffer.isNull());
-    memcpy(buffer.data(), bytes, bytesSize);
-    completeWithBuffer(buffer);
-}
+} // namespace WebCore
 
-void WebCryptoResult::completeWithBoolean(bool b)
-{
-    m_impl->completeWithBoolean(b);
-    reset();
-}
-
-void WebCryptoResult::completeWithKey(const WebCryptoKey& key)
-{
-    m_impl->completeWithKey(key);
-    reset();
-}
-
-void WebCryptoResult::completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey)
-{
-    m_impl->completeWithKeyPair(publicKey, privateKey);
-    reset();
-}
-
-WebCryptoResult::WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>& impl)
-    : m_impl(impl)
-{
-    ASSERT(m_impl.get());
-}
-
-void WebCryptoResult::reset()
-{
-    m_impl.reset();
-}
-
-void WebCryptoResult::assign(const WebCryptoResult& o)
-{
-    m_impl = o.m_impl;
-}
-
-} // namespace WebKit
+#endif

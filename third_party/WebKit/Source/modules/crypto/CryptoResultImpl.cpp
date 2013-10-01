@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/crypto/CryptoResult.h"
+#include "modules/crypto/CryptoResultImpl.h"
 
 #include "V8Key.h" // Must precede ScriptPromiseResolver.h
 #include "V8KeyPair.h" // Must precede ScriptPromiseResolver.h
@@ -45,56 +45,56 @@
 
 namespace WebCore {
 
-CryptoResult::~CryptoResult()
+CryptoResultImpl::~CryptoResultImpl()
 {
     ASSERT(m_finished);
 }
 
-PassRefPtr<CryptoResult> CryptoResult::create()
+PassRefPtr<CryptoResultImpl> CryptoResultImpl::create()
 {
-    return adoptRef(new CryptoResult);
+    return adoptRef(new CryptoResultImpl);
 }
 
-void CryptoResult::completeWithError()
+void CryptoResultImpl::completeWithError()
 {
     m_promiseResolver->reject(ScriptValue::createNull());
     finish();
 }
 
-void CryptoResult::completeWithBuffer(const WebKit::WebArrayBuffer& buffer)
+void CryptoResultImpl::completeWithBuffer(const WebKit::WebArrayBuffer& buffer)
 {
     m_promiseResolver->fulfill(PassRefPtr<ArrayBuffer>(buffer));
     finish();
 }
 
-void CryptoResult::completeWithBoolean(bool b)
+void CryptoResultImpl::completeWithBoolean(bool b)
 {
     m_promiseResolver->fulfill(ScriptValue::createBoolean(b));
     finish();
 }
 
-void CryptoResult::completeWithKey(const WebKit::WebCryptoKey& key)
+void CryptoResultImpl::completeWithKey(const WebKit::WebCryptoKey& key)
 {
     m_promiseResolver->fulfill(Key::create(key));
     finish();
 }
 
-void CryptoResult::completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey)
+void CryptoResultImpl::completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey)
 {
     m_promiseResolver->fulfill(KeyPair::create(publicKey, privateKey));
     finish();
 }
 
-ScriptPromise CryptoResult::promise()
+ScriptPromise CryptoResultImpl::promise()
 {
     return m_promiseResolver->promise();
 }
 
-CryptoResult::CryptoResult()
+CryptoResultImpl::CryptoResultImpl()
     : m_promiseResolver(ScriptPromiseResolver::create())
     , m_finished(false) { }
 
-void CryptoResult::finish()
+void CryptoResultImpl::finish()
 {
     ASSERT(!m_finished);
     m_finished = true;
