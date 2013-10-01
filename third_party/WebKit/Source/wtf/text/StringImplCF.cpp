@@ -23,104 +23,104 @@
 
 #if USE(CF)
 
-#include <CoreFoundation/CoreFoundation.h>
 #include "wtf/MainThread.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RetainPtr.h"
 #include "wtf/Threading.h"
+#include <CoreFoundation/CoreFoundation.h>
 
 namespace WTF {
 
 namespace StringWrapperCFAllocator {
 
-    static StringImpl* currentString;
+static StringImpl* currentString;
 
-    static const void* retain(const void* info)
-    {
-        return info;
-    }
+static const void* retain(const void* info)
+{
+    return info;
+}
 
-    NO_RETURN_DUE_TO_ASSERT
-    static void release(const void*)
-    {
-        ASSERT_NOT_REACHED();
-    }
+NO_RETURN_DUE_TO_ASSERT
+static void release(const void*)
+{
+    ASSERT_NOT_REACHED();
+}
 
-    static CFStringRef copyDescription(const void*)
-    {
-        return CFSTR("WTF::String-based allocator");
-    }
+static CFStringRef copyDescription(const void*)
+{
+    return CFSTR("WTF::String-based allocator");
+}
 
-    static void* allocate(CFIndex size, CFOptionFlags, void*)
-    {
-        StringImpl* underlyingString = 0;
-        if (isMainThread()) {
-            underlyingString = currentString;
-            if (underlyingString) {
-                currentString = 0;
-                underlyingString->ref(); // Balanced by call to deref in deallocate below.
-            }
+static void* allocate(CFIndex size, CFOptionFlags, void*)
+{
+    StringImpl* underlyingString = 0;
+    if (isMainThread()) {
+        underlyingString = currentString;
+        if (underlyingString) {
+            currentString = 0;
+            underlyingString->ref(); // Balanced by call to deref in deallocate below.
         }
-        StringImpl** header = static_cast<StringImpl**>(fastMalloc(sizeof(StringImpl*) + size));
-        *header = underlyingString;
-        return header + 1;
     }
+    StringImpl** header = static_cast<StringImpl**>(fastMalloc(sizeof(StringImpl*) + size));
+    *header = underlyingString;
+    return header + 1;
+}
 
-    static void* reallocate(void* pointer, CFIndex newSize, CFOptionFlags, void*)
-    {
-        size_t newAllocationSize = sizeof(StringImpl*) + newSize;
-        StringImpl** header = static_cast<StringImpl**>(pointer) - 1;
-        ASSERT(!*header);
-        header = static_cast<StringImpl**>(fastRealloc(header, newAllocationSize));
-        return header + 1;
-    }
+static void* reallocate(void* pointer, CFIndex newSize, CFOptionFlags, void*)
+{
+    size_t newAllocationSize = sizeof(StringImpl*) + newSize;
+    StringImpl** header = static_cast<StringImpl**>(pointer) - 1;
+    ASSERT(!*header);
+    header = static_cast<StringImpl**>(fastRealloc(header, newAllocationSize));
+    return header + 1;
+}
 
-    static void deallocateOnMainThread(void* headerPointer)
-    {
-        StringImpl** header = static_cast<StringImpl**>(headerPointer);
-        StringImpl* underlyingString = *header;
-        ASSERT(underlyingString);
-        underlyingString->deref(); // Balanced by call to ref in allocate above.
+static void deallocateOnMainThread(void* headerPointer)
+{
+    StringImpl** header = static_cast<StringImpl**>(headerPointer);
+    StringImpl* underlyingString = *header;
+    ASSERT(underlyingString);
+    underlyingString->deref(); // Balanced by call to ref in allocate above.
+    fastFree(header);
+}
+
+static void deallocate(void* pointer, void*)
+{
+    StringImpl** header = static_cast<StringImpl**>(pointer) - 1;
+    StringImpl* underlyingString = *header;
+    if (!underlyingString) {
         fastFree(header);
-    }
-
-    static void deallocate(void* pointer, void*)
-    {
-        StringImpl** header = static_cast<StringImpl**>(pointer) - 1;
-        StringImpl* underlyingString = *header;
-        if (!underlyingString)
+    } else {
+        if (!isMainThread()) {
+            callOnMainThread(deallocateOnMainThread, header);
+        } else {
+            underlyingString->deref(); // Balanced by call to ref in allocate above.
             fastFree(header);
-        else {
-            if (!isMainThread())
-                callOnMainThread(deallocateOnMainThread, header);
-            else {
-                underlyingString->deref(); // Balanced by call to ref in allocate above.
-                fastFree(header);
-            }
         }
     }
+}
 
-    static CFIndex preferredSize(CFIndex size, CFOptionFlags, void*)
-    {
-        // FIXME: If FastMalloc provided a "good size" callback, we'd want to use it here.
-        // Note that this optimization would help performance for strings created with the
-        // allocator that are mutable, and those typically are only created by callers who
-        // make a new string using the old string's allocator, such as some of the call
-        // sites in CFURL.
-        return size;
-    }
+static CFIndex preferredSize(CFIndex size, CFOptionFlags, void*)
+{
+    // FIXME: If FastMalloc provided a "good size" callback, we'd want to use it here.
+    // Note that this optimization would help performance for strings created with the
+    // allocator that are mutable, and those typically are only created by callers who
+    // make a new string using the old string's allocator, such as some of the call
+    // sites in CFURL.
+    return size;
+}
 
-    static CFAllocatorRef create()
-    {
-        CFAllocatorContext context = { 0, 0, retain, release, copyDescription, allocate, reallocate, deallocate, preferredSize };
-        return CFAllocatorCreate(0, &context);
-    }
+static CFAllocatorRef create()
+{
+    CFAllocatorContext context = { 0, 0, retain, release, copyDescription, allocate, reallocate, deallocate, preferredSize };
+    return CFAllocatorCreate(0, &context);
+}
 
-    static CFAllocatorRef allocator()
-    {
-        static CFAllocatorRef allocator = create();
-        return allocator;
-    }
+static CFAllocatorRef allocator()
+{
+    static CFAllocatorRef allocator = create();
+    return allocator;
+}
 
 }
 

@@ -149,6 +149,7 @@
           }
         }, { # OS!="mac"
           'sources/': [
+            ['exclude', 'CF\\.cpp$'],
             ['exclude', 'Mac\\.mm$'],
             # mac is the only OS that uses WebKit's copy of TCMalloc.
             ['exclude', 'TC.*\\.(cpp|h)$'],

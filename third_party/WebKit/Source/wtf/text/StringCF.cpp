@@ -23,8 +23,9 @@
 #include "wtf/text/WTFString.h"
 
 #if USE(CF)
-#include <CoreFoundation/CoreFoundation.h>
+
 #include "wtf/RetainPtr.h"
+#include <CoreFoundation/CoreFoundation.h>
 
 namespace WTF {
 
@@ -34,9 +35,9 @@ String::String(CFStringRef str)
         return;
 
     CFIndex size = CFStringGetLength(str);
-    if (size == 0)
+    if (!size) {
         m_impl = StringImpl::empty();
-    else {
+    } else {
         Vector<LChar, 1024> lcharBuffer(size);
         CFIndex usedBufLen;
         CFIndex convertedsize = CFStringGetBytes(str, CFRangeMake(0, size), kCFStringEncodingISOLatin1, 0, false, lcharBuffer.data(), size, &usedBufLen);

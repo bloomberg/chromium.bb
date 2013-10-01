@@ -28,8 +28,8 @@
 
 #if USE(CF)
 
-#include <CoreFoundation/CoreFoundation.h>
 #include "wtf/text/CString.h"
+#include <CoreFoundation/CoreFoundation.h>
 
 namespace WTF {
 

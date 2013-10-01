@@ -21,10 +21,24 @@
 #include "config.h"
 #include "wtf/text/StringImpl.h"
 
-#include "core/platform/mac/FoundationExtras.h"
+#import <CoreFoundation/CFBase.h>
+#import <Foundation/NSObject.h>
 #include "wtf/RetainPtr.h"
 
 namespace WTF {
+
+// Use HardAutorelease to return an object made by a CoreFoundation
+// "create" or "copy" function as an autoreleased and garbage collected
+// object. CF objects need to be "made collectable" for autorelease to work
+// properly under GC.
+
+static inline id HardAutorelease(CFTypeRef object)
+{
+    if (object)
+        CFMakeCollectable(object);
+    [(id)object autorelease];
+    return (id)object;
+}
 
 StringImpl::operator NSString *()
 {
