@@ -2495,15 +2495,18 @@ import java.util.Map;
                 mEndHandlePoint.setLocalDip(x1, y1);
             }
 
-            if (!getSelectionHandleController().isShowing()) {
+            boolean wereSelectionHandlesShowing = getSelectionHandleController().isShowing();
+
+            getSelectionHandleController().onSelectionChanged(anchorDir, focusDir);
+            updateHandleScreenPositions();
+            mHasSelection = true;
+
+            if (!wereSelectionHandlesShowing && getSelectionHandleController().isShowing()) {
                 // TODO(cjhopman): Remove this when there is a better signal that long press caused
                 // a selection. See http://crbug.com/150151.
                 mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             }
 
-            getSelectionHandleController().onSelectionChanged(anchorDir, focusDir);
-            updateHandleScreenPositions();
-            mHasSelection = true;
         } else {
             mUnselectAllOnActionModeDismiss = false;
             hideSelectActionBar();
