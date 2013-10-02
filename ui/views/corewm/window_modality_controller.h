@@ -14,6 +14,7 @@
 #include "ui/views/views_export.h"
 
 namespace ui {
+class EventTarget;
 class LocatedEvent;
 }
 
@@ -34,7 +35,7 @@ class VIEWS_EXPORT WindowModalityController : public ui::EventHandler,
                                               public aura::EnvObserver,
                                               public aura::WindowObserver {
  public:
-  WindowModalityController();
+  explicit WindowModalityController(ui::EventTarget* event_target);
   virtual ~WindowModalityController();
 
   // Overridden from ui::EventHandler:
@@ -60,6 +61,8 @@ class VIEWS_EXPORT WindowModalityController : public ui::EventHandler,
                            ui::LocatedEvent* event);
 
   std::vector<aura::Window*> windows_;
+
+  ui::EventTarget* event_target_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowModalityController);
 };

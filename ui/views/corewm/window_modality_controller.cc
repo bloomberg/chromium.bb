@@ -14,6 +14,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/events/event_target.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/corewm/window_util.h"
 
@@ -95,11 +96,16 @@ aura::Window* GetModalTransient(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowModalityController, public:
 
-WindowModalityController::WindowModalityController() {
+WindowModalityController::WindowModalityController(
+    ui::EventTarget* event_target)
+    : event_target_(event_target) {
   aura::Env::GetInstance()->AddObserver(this);
+  DCHECK(event_target->IsPreTargetListEmpty());
+  event_target_->AddPreTargetHandler(this);
 }
 
 WindowModalityController::~WindowModalityController() {
+  event_target_->RemovePreTargetHandler(this);
   aura::Env::GetInstance()->RemoveObserver(this);
   for (size_t i = 0; i < windows_.size(); ++i)
     windows_[i]->RemoveObserver(this);

@@ -932,6 +932,7 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
 
   native_widget_delegate_->OnNativeWidgetCreated(true);
 
+  desktop_native_widget_aura_->InstallWindowModalityController(root_window_);
   desktop_native_widget_aura_->CreateCaptureClient(root_window_);
 
   // Ensure that the X11DesktopHandler exists so that it dispatches activation

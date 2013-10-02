@@ -185,7 +185,8 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
       restore_focus_on_activate_(false),
-      cursor_(gfx::kNullCursor) {
+      cursor_(gfx::kNullCursor),
+      widget_type_(Widget::InitParams::TYPE_WINDOW) {
   window_->SetProperty(kDesktopNativeWidgetAuraKey, this);
   aura::client::SetFocusChangeObserver(window_, this);
   aura::client::SetActivationChangeObserver(window_, this);
@@ -208,6 +209,11 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   // Don't invoke Widget::OnNativeWidgetDestroying(), its done by
   // DesktopRootWindowHost.
 
+  // The WindowModalityController is at the front of the event pretarget
+  // handler list. We destroy it first to preserve order symantics.
+  if (window_modality_controller_)
+    window_modality_controller_.reset();
+
   // Make sure we don't still have capture. Otherwise CaptureController and
   // RootWindow are left referencing a deleted Window.
   {
@@ -222,10 +228,6 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   shadow_controller_.reset();
   tooltip_manager_.reset();
   scoped_tooltip_client_.reset();
-  if (window_modality_controller_) {
-    root_window_->RemovePreTargetHandler(window_modality_controller_.get());
-    window_modality_controller_.reset();
-  }
 
   root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
 
@@ -296,12 +298,23 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   }
 }
 
+void DesktopNativeWidgetAura::InstallWindowModalityController(
+    aura::RootWindow* root) {
+  // The WindowsModalityController event filter should be at the head of the
+  // pre target handlers list. This ensures that it handles input events first
+  // when modal windows are at the top of the Zorder.
+  if (widget_type_ == Widget::InitParams::TYPE_WINDOW)
+    window_modality_controller_.reset(
+        new views::corewm::WindowModalityController(root));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
 void DesktopNativeWidgetAura::InitNativeWidget(
     const Widget::InitParams& params) {
   ownership_ = params.ownership;
+  widget_type_ = params.type;
 
   NativeWidgetAura::RegisterNativeWidgetForWindow(this, window_);
   // Animations on TYPE_WINDOW are handled by the OS. Additionally if we animate
@@ -352,12 +365,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                       visibility_controller_.get());
     views::corewm::SetChildWindowVisibilityChangesAnimated(
         GetNativeView()->GetRootWindow());
-  }
-
-  if (params.type == Widget::InitParams::TYPE_WINDOW) {
-    window_modality_controller_.reset(
-        new views::corewm::WindowModalityController);
-    root_window_->AddPreTargetHandler(window_modality_controller_.get());
   }
 
   window_->Show();

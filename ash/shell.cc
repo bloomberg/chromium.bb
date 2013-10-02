@@ -192,7 +192,6 @@ Shell::Shell(ShellDelegate* delegate)
   // messages don't have a target window.
   base::MessagePumpX11::Current()->AddObserver(output_configurator());
 #endif  // defined(OS_CHROMEOS)
-  AddPreTargetHandler(this);
 
 #if defined(OS_CHROMEOS)
   internal::PowerStatus::Initialize();
@@ -210,11 +209,12 @@ Shell::~Shell() {
   aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
+  if (window_modality_controller_)
+    window_modality_controller_.reset();
   RemovePreTargetHandler(event_rewriter_filter_.get());
   RemovePreTargetHandler(user_activity_detector_.get());
   RemovePreTargetHandler(overlay_filter_.get());
   RemovePreTargetHandler(input_method_filter_.get());
-  RemovePreTargetHandler(window_modality_controller_.get());
   if (mouse_cursor_filter_)
     RemovePreTargetHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
@@ -427,6 +427,14 @@ void Shell::Init() {
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
+  // The WindowModalityController needs to be at the front of the input event
+  // pretarget handler list to ensure that it processes input events when modal
+  // windows are active.
+  window_modality_controller_.reset(
+      new views::corewm::WindowModalityController(this));
+
+  AddPreTargetHandler(this);
+
   env_filter_.reset(new views::corewm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
@@ -505,9 +513,6 @@ void Shell::Init() {
   // RootWindowController as possible.
   visibility_controller_.reset(new AshVisibilityController);
   user_action_client_.reset(delegate_->CreateUserActionClient());
-  window_modality_controller_.reset(
-      new views::corewm::WindowModalityController);
-  AddPreTargetHandler(window_modality_controller_.get());
 
   magnification_controller_.reset(
       MagnificationController::CreateInstance());

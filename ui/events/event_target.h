@@ -70,6 +70,9 @@ class EVENTS_EXPORT EventTarget : public EventHandler {
   void AddPostTargetHandler(EventHandler* handler);
   void RemovePostTargetHandler(EventHandler* handler);
 
+  // Returns true if the event pre target list is empty.
+  bool IsPreTargetListEmpty() const;
+
  protected:
   void set_target_handler(EventHandler* handler) {
     target_handler_ = handler;

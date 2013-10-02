@@ -81,6 +81,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // we are being activated/deactivated.
   void HandleActivationChanged(bool active);
 
+  // Installs the window modality controller event filter on the |root|. This
+  // should be invoked by the DesktopRootWindowHost implementation immediately
+  // after creation of the RootWindow.
+  void InstallWindowModalityController(aura::RootWindow* root);
+
  protected:
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
@@ -285,6 +290,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Reorders child windows of |window_| associated with a view based on the
   // order of the associated views in the widget's view hierarchy.
   scoped_ptr<WindowReorderer> window_reorderer_;
+
+  // See class documentation for Widget in widget.h for a note about type.
+  Widget::InitParams::Type widget_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };

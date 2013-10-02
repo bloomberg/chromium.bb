@@ -123,6 +123,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   root_window_->Init();
   root_window_->AddChild(content_window_);
 
+  desktop_native_widget_aura_->InstallWindowModalityController(root_window_);
   desktop_native_widget_aura_->CreateCaptureClient(root_window_);
 
   corewm::FocusController* focus_controller =

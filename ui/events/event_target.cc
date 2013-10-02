@@ -48,6 +48,10 @@ void EventTarget::RemovePostTargetHandler(EventHandler* handler) {
     post_target_list_.erase(find);
 }
 
+bool EventTarget::IsPreTargetListEmpty() const {
+  return pre_target_list_.empty();
+}
+
 void EventTarget::OnEvent(Event* event) {
   CHECK_EQ(this, event->target());
   if (target_handler_)

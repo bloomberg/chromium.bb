@@ -22,6 +22,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
 #if defined(USE_AURA)
@@ -1965,6 +1966,94 @@ TEST_F(WidgetChildDestructionTest,
 TEST_F(WidgetChildDestructionTest, DestroyChildWidgetsInOrder) {
   RunDestroyChildWidgetsTest(false, false);
 }
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+// Provides functionality to create a window modal dialog.
+class ModalDialogDelegate : public DialogDelegateView {
+ public:
+  ModalDialogDelegate() {}
+  virtual ~ModalDialogDelegate() {}
+
+  // WidgetDelegate overrides.
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+    return ui::MODAL_TYPE_WINDOW;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
+};
+
+// This test verifies that whether mouse events when a modal dialog is
+// displayed are eaten or recieved by the dialog.
+TEST_F(WidgetTest, WindowMouseModalityTest) {
+  // Create a top level widget.
+  Widget top_level_widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  gfx::Rect initial_bounds(0, 0, 500, 500);
+  init_params.bounds = initial_bounds;
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&top_level_widget);
+  top_level_widget.Init(init_params);
+  top_level_widget.Show();
+  EXPECT_TRUE(top_level_widget.IsVisible());
+
+  // Create a view and validate that a mouse moves makes it to the view.
+  EventCountView* widget_view = new EventCountView();
+  widget_view->SetBounds(0, 0, 10, 10);
+  top_level_widget.GetRootView()->AddChildView(widget_view);
+
+  gfx::Point cursor_location_main(5, 5);
+  ui::MouseEvent move_main(ui::ET_MOUSE_MOVED,
+                           cursor_location_main,
+                           cursor_location_main,
+                           ui::EF_NONE);
+  top_level_widget.GetNativeView()->GetRootWindow()->
+      AsRootWindowHostDelegate()->OnHostMouseEvent(&move_main);
+
+  EXPECT_EQ(1, widget_view->GetEventCount(ui::ET_MOUSE_ENTERED));
+  widget_view->ResetCounts();
+
+  // Create a modal dialog and validate that a mouse down message makes it to
+  // the main view within the dialog.
+
+  // This instance will be destroyed when the dialog is destroyed.
+  ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate;
+
+  Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
+      dialog_delegate, NULL, top_level_widget.GetNativeWindow());
+  modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
+  EventCountView* dialog_widget_view = new EventCountView();
+  dialog_widget_view->SetBounds(0, 0, 50, 50);
+  modal_dialog_widget->GetRootView()->AddChildView(dialog_widget_view);
+  modal_dialog_widget->Show();
+  EXPECT_TRUE(modal_dialog_widget->IsVisible());
+
+  gfx::Point cursor_location_dialog(100, 100);
+  ui::MouseEvent mouse_down_dialog(ui::ET_MOUSE_PRESSED,
+                                   cursor_location_dialog,
+                                   cursor_location_dialog,
+                                   ui::EF_NONE);
+  top_level_widget.GetNativeView()->GetRootWindow()->
+      AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_down_dialog);
+  EXPECT_EQ(1, dialog_widget_view->GetEventCount(ui::ET_MOUSE_PRESSED));
+
+  // Send a mouse move message to the main window. It should not be received by
+  // the main window as the modal dialog is still active.
+  gfx::Point cursor_location_main2(6, 6);
+  ui::MouseEvent mouse_down_main(ui::ET_MOUSE_MOVED,
+                                 cursor_location_main2,
+                                 cursor_location_main2,
+                                 ui::EF_NONE);
+  top_level_widget.GetNativeView()->GetRootWindow()->
+      AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_down_main);
+  EXPECT_EQ(0, widget_view->GetEventCount(ui::ET_MOUSE_MOVED));
+
+  modal_dialog_widget->CloseNow();
+  top_level_widget.CloseNow();
+}
+#endif
 
 }  // namespace test
 }  // namespace views
