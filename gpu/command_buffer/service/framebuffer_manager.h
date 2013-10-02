@@ -181,12 +181,16 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 };
 
 struct DecoderFramebufferState {
-  DecoderFramebufferState():
-      clear_state_dirty(true) {}
+  DecoderFramebufferState();
+  ~DecoderFramebufferState();
 
   // State saved for clearing so we can clear render buffers and then
   // restore to these values.
   bool clear_state_dirty;
+
+  // The currently bound framebuffers
+  scoped_refptr<Framebuffer> bound_read_framebuffer;
+  scoped_refptr<Framebuffer> bound_draw_framebuffer;
 };
 
 // This class keeps track of the frambebuffers and their attached renderbuffers

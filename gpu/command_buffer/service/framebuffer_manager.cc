@@ -13,6 +13,15 @@
 namespace gpu {
 namespace gles2 {
 
+DecoderFramebufferState::DecoderFramebufferState()
+    : clear_state_dirty(false),
+      bound_read_framebuffer(NULL),
+      bound_draw_framebuffer(NULL) {
+}
+
+DecoderFramebufferState::~DecoderFramebufferState() {
+}
+
 Framebuffer::FramebufferComboCompleteMap*
     Framebuffer::framebuffer_combo_complete_map_;
 

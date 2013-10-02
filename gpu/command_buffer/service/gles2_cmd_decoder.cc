@@ -1421,10 +1421,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
     switch (target) {
       case GL_FRAMEBUFFER:
       case GL_DRAW_FRAMEBUFFER_EXT:
-        framebuffer = state_.bound_draw_framebuffer.get();
+        framebuffer = framebuffer_state_.bound_draw_framebuffer.get();
         break;
       case GL_READ_FRAMEBUFFER_EXT:
-        framebuffer = state_.bound_read_framebuffer.get();
+        framebuffer = framebuffer_state_.bound_read_framebuffer.get();
         break;
       default:
         NOTREACHED();
@@ -1501,13 +1501,13 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   bool ShouldDeferDraws() {
     return !offscreen_target_frame_buffer_.get() &&
-           state_.bound_draw_framebuffer.get() == NULL &&
+           framebuffer_state_.bound_draw_framebuffer.get() == NULL &&
            surface_->DeferDraws();
   }
 
   bool ShouldDeferReads() {
     return !offscreen_target_frame_buffer_.get() &&
-           state_.bound_read_framebuffer.get() == NULL &&
+           framebuffer_state_.bound_read_framebuffer.get() == NULL &&
            surface_->DeferDraws();
   }
 
@@ -1745,10 +1745,11 @@ ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
 ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
     GLES2DecoderImpl* decoder, bool enforce_internal_framebuffer, bool internal)
     : decoder_(decoder) {
-  resolve_and_bind_ = (decoder_->offscreen_target_frame_buffer_.get() &&
-                       decoder_->IsOffscreenBufferMultisampled() &&
-                       (!decoder_->state_.bound_read_framebuffer.get() ||
-                        enforce_internal_framebuffer));
+  resolve_and_bind_ = (
+      decoder_->offscreen_target_frame_buffer_.get() &&
+      decoder_->IsOffscreenBufferMultisampled() &&
+      (!decoder_->framebuffer_state_.bound_read_framebuffer.get() ||
+       enforce_internal_framebuffer));
   if (!resolve_and_bind_)
     return;
 
@@ -2636,15 +2637,15 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
     Framebuffer* framebuffer =
         GetFramebuffer(client_ids[ii]);
     if (framebuffer && !framebuffer->IsDeleted()) {
-      if (framebuffer == state_.bound_draw_framebuffer.get()) {
-        state_.bound_draw_framebuffer = NULL;
+      if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
+        framebuffer_state_.bound_draw_framebuffer = NULL;
         framebuffer_state_.clear_state_dirty = true;
         GLenum target = supports_separate_framebuffer_binds ?
             GL_DRAW_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
         glBindFramebufferEXT(target, GetBackbufferServiceId());
       }
-      if (framebuffer == state_.bound_read_framebuffer.get()) {
-        state_.bound_read_framebuffer = NULL;
+      if (framebuffer == framebuffer_state_.bound_read_framebuffer.get()) {
+        framebuffer_state_.bound_read_framebuffer = NULL;
         GLenum target = supports_separate_framebuffer_binds ?
             GL_READ_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
         glBindFramebufferEXT(target, GetBackbufferServiceId());
@@ -2668,17 +2669,17 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
       }
       // Unbind from current framebuffers.
       if (supports_separate_framebuffer_binds) {
-        if (state_.bound_read_framebuffer.get()) {
-          state_.bound_read_framebuffer
+        if (framebuffer_state_.bound_read_framebuffer.get()) {
+          framebuffer_state_.bound_read_framebuffer
               ->UnbindRenderbuffer(GL_READ_FRAMEBUFFER_EXT, renderbuffer);
         }
-        if (state_.bound_draw_framebuffer.get()) {
-          state_.bound_draw_framebuffer
+        if (framebuffer_state_.bound_draw_framebuffer.get()) {
+          framebuffer_state_.bound_draw_framebuffer
               ->UnbindRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, renderbuffer);
         }
       } else {
-        if (state_.bound_draw_framebuffer.get()) {
-          state_.bound_draw_framebuffer
+        if (framebuffer_state_.bound_draw_framebuffer.get()) {
+          framebuffer_state_.bound_draw_framebuffer
               ->UnbindRenderbuffer(GL_FRAMEBUFFER, renderbuffer);
         }
       }
@@ -2705,17 +2706,17 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
       }
       // Unbind from current framebuffers.
       if (supports_separate_framebuffer_binds) {
-        if (state_.bound_read_framebuffer.get()) {
-          state_.bound_read_framebuffer
+        if (framebuffer_state_.bound_read_framebuffer.get()) {
+          framebuffer_state_.bound_read_framebuffer
               ->UnbindTexture(GL_READ_FRAMEBUFFER_EXT, texture_ref);
         }
-        if (state_.bound_draw_framebuffer.get()) {
-          state_.bound_draw_framebuffer
+        if (framebuffer_state_.bound_draw_framebuffer.get()) {
+          framebuffer_state_.bound_draw_framebuffer
               ->UnbindTexture(GL_DRAW_FRAMEBUFFER_EXT, texture_ref);
         }
       } else {
-        if (state_.bound_draw_framebuffer.get()) {
-          state_.bound_draw_framebuffer
+        if (framebuffer_state_.bound_draw_framebuffer.get()) {
+          framebuffer_state_.bound_draw_framebuffer
               ->UnbindTexture(GL_FRAMEBUFFER, texture_ref);
         }
       }
@@ -2808,16 +2809,16 @@ void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
   if (!features().chromium_framebuffer_multisample) {
     RebindCurrentFramebuffer(
         GL_FRAMEBUFFER,
-        state_.bound_draw_framebuffer.get(),
+        framebuffer_state_.bound_draw_framebuffer.get(),
         GetBackbufferServiceId());
   } else {
     RebindCurrentFramebuffer(
         GL_READ_FRAMEBUFFER_EXT,
-        state_.bound_read_framebuffer.get(),
+        framebuffer_state_.bound_read_framebuffer.get(),
         GetBackbufferServiceId());
     RebindCurrentFramebuffer(
         GL_DRAW_FRAMEBUFFER_EXT,
-        state_.bound_draw_framebuffer.get(),
+        framebuffer_state_.bound_draw_framebuffer.get(),
         GetBackbufferServiceId());
   }
   OnFboChanged();
@@ -2902,17 +2903,18 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
 bool GLES2DecoderImpl::CheckBoundFramebuffersValid(const char* func_name) {
   if (!features().chromium_framebuffer_multisample) {
     bool valid = CheckFramebufferValid(
-        state_.bound_draw_framebuffer.get(), GL_FRAMEBUFFER_EXT, func_name);
+        framebuffer_state_.bound_draw_framebuffer.get(), GL_FRAMEBUFFER_EXT,
+        func_name);
 
     if (valid)
       OnUseFramebuffer();
 
     return valid;
   }
-  return CheckFramebufferValid(state_.bound_draw_framebuffer.get(),
+  return CheckFramebufferValid(framebuffer_state_.bound_draw_framebuffer.get(),
                                GL_DRAW_FRAMEBUFFER_EXT,
                                func_name) &&
-         CheckFramebufferValid(state_.bound_read_framebuffer.get(),
+         CheckFramebufferValid(framebuffer_state_.bound_read_framebuffer.get(),
                                GL_READ_FRAMEBUFFER_EXT,
                                func_name);
 }
@@ -3081,8 +3083,8 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.texture_units.clear();
   state_.bound_array_buffer = NULL;
   state_.current_query = NULL;
-  state_.bound_read_framebuffer = NULL;
-  state_.bound_draw_framebuffer = NULL;
+  framebuffer_state_.bound_read_framebuffer = NULL;
+  framebuffer_state_.bound_draw_framebuffer = NULL;
   state_.bound_renderbuffer = NULL;
 
   if (offscreen_saved_color_texture_info_.get()) {
@@ -3648,15 +3650,16 @@ void GLES2DecoderImpl::RestoreState() const {
 }
 
 void GLES2DecoderImpl::RestoreFramebufferBindings() const {
-  GLuint service_id = state_.bound_draw_framebuffer.get()
-                          ? state_.bound_draw_framebuffer->service_id()
-                          : GetBackbufferServiceId();
+  GLuint service_id =
+      framebuffer_state_.bound_draw_framebuffer.get()
+          ? framebuffer_state_.bound_draw_framebuffer->service_id()
+          : GetBackbufferServiceId();
   if (!features().chromium_framebuffer_multisample) {
     glBindFramebufferEXT(GL_FRAMEBUFFER, service_id);
   } else {
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, service_id);
-    service_id = state_.bound_read_framebuffer.get()
-                     ? state_.bound_read_framebuffer->service_id()
+    service_id = framebuffer_state_.bound_read_framebuffer.get()
+                     ? framebuffer_state_.bound_read_framebuffer->service_id()
                      : GetBackbufferServiceId();
     glBindFramebufferEXT(GL_READ_FRAMEBUFFER, service_id);
   }
@@ -3729,10 +3732,10 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
   LogClientServiceForInfo(framebuffer, client_id, "glBindFramebuffer");
 
   if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER_EXT) {
-    state_.bound_draw_framebuffer = framebuffer;
+    framebuffer_state_.bound_draw_framebuffer = framebuffer;
   }
   if (target == GL_FRAMEBUFFER || target == GL_READ_FRAMEBUFFER_EXT) {
-    state_.bound_read_framebuffer = framebuffer;
+    framebuffer_state_.bound_read_framebuffer = framebuffer;
   }
 
   framebuffer_state_.clear_state_dirty = true;
@@ -4714,7 +4717,7 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
   if (error == GL_NO_ERROR) {
     framebuffer->AttachRenderbuffer(attachment, renderbuffer);
   }
-  if (framebuffer == state_.bound_draw_framebuffer.get()) {
+  if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
     framebuffer_state_.clear_state_dirty = true;
   }
   OnFboChanged();
@@ -4898,7 +4901,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
     framebuffer->AttachTexture(attachment, texture_ref, textarget, level,
          samples);
   }
-  if (framebuffer == state_.bound_draw_framebuffer.get()) {
+  if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
     framebuffer_state_.clear_state_dirty = true;
   }
   OnFboChanged();

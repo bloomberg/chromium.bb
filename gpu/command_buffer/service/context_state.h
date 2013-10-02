@@ -145,10 +145,6 @@ struct GPU_EXPORT ContextState {
   // The program in use by glUseProgram
   scoped_refptr<Program> current_program;
 
-  // The currently bound framebuffers
-  scoped_refptr<Framebuffer> bound_read_framebuffer;
-  scoped_refptr<Framebuffer> bound_draw_framebuffer;
-
   // The currently bound renderbuffer
   scoped_refptr<Renderbuffer> bound_renderbuffer;
 
