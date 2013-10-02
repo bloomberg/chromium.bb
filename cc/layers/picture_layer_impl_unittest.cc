@@ -742,12 +742,12 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
   EXPECT_BOTH_EQ(num_tilings(), 2u);
 
   // Page scale animation, new high res, but not new low res because animating.
-  contents_scale = 4.f;
-  page_scale = 4.f;
+  contents_scale = 2.f;
+  page_scale = 2.f;
   animating_transform = true;
   SetContentsScaleOnBothLayers(
       contents_scale, device_scale, page_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
   EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), low_res_factor);
   EXPECT_BOTH_EQ(num_tilings(), 3u);
 
@@ -755,8 +755,8 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
   animating_transform = false;
   SetContentsScaleOnBothLayers(
       contents_scale, device_scale, page_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
-  EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), 4.f * low_res_factor);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
+  EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), 2.f * low_res_factor);
   EXPECT_BOTH_EQ(num_tilings(), 4u);
 }
 

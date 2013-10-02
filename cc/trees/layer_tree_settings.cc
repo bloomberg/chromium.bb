@@ -37,7 +37,7 @@ LayerTreeSettings::LayerTreeSettings()
       maximum_number_of_failed_draws_before_draw_is_forced_(3),
       layer_transforms_should_scale_layer_contents(false),
       minimum_contents_scale(0.0625f),
-      low_res_contents_scale_factor(0.125f),
+      low_res_contents_scale_factor(0.25f),
       top_controls_height(0.f),
       top_controls_show_threshold(0.5f),
       top_controls_hide_threshold(0.5f),

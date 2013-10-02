@@ -258,10 +258,6 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
   std::string renderer(StringToLowerASCII(gpu_info.gl_renderer));
   bool is_img =
       gpu_info.gl_vendor.find("Imagination") != std::string::npos;
-  bool is_nexus7 =
-      gpu_info.machine_model.find("Nexus 7") != std::string::npos;
-  bool is_nexus10 =
-      gpu_info.machine_model.find("Nexus 10") != std::string::npos;
 
   gfx::DeviceDisplayInfo info;
   int default_tile_size = 256;
@@ -299,14 +295,6 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
         switches::kDefaultTileWidth, size.str());
     command_line->AppendSwitchASCII(
         switches::kDefaultTileHeight, size.str());
-  }
-
-  // Increase the resolution of low resolution tiles for Nexus tablets.
-  if ((is_nexus7 || is_nexus10) &&
-      !command_line->HasSwitch(
-          cc::switches::kLowResolutionContentsScaleFactor)) {
-    command_line->AppendSwitchASCII(
-        cc::switches::kLowResolutionContentsScaleFactor, "0.25");
   }
 }
 #endif  // OS_ANDROID
