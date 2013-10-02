@@ -67,9 +67,9 @@ class Tracer(object):
           'Tracing %s done: %d, %.1fs' % (test_case, returncode,  duration))
       if retry:
         self.progress.update_item(
-            '%s - %d' % (test_case, retry), index=True, size=not valid)
+            '%s - %d' % (test_case, retry), index=1, size=int(not valid))
       else:
-        self.progress.update_item(test_case, index=True, size=not valid)
+        self.progress.update_item(test_case, index=1, size=int(not valid))
       if valid:
         break
     return out

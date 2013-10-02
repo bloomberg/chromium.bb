@@ -75,11 +75,11 @@ class Runner(object):
       step_name = '%s/%s (%3.2fs)' % (platform, test_name, duration)
       if returncode:
         self.progress.update_item(
-            'Failed to archive %s\n%s' % (step_name, stdout), index=True)
+            'Failed to archive %s\n%s' % (step_name, stdout), index=1)
       else:
         hash_value = hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
         logging.info('%s: %s', step_name, hash_value)
-        self.progress.update_item('Archived %s' % step_name, index=True)
+        self.progress.update_item('Archived %s' % step_name, index=1)
         self.add_task(0, self.trigger, test, platform, hash_value)
     finally:
       try:
@@ -111,9 +111,9 @@ class Runner(object):
     step_name = '%s/%s (%3.2fs)' % (platform, test_name, duration)
     if returncode:
       self.progress.update_item(
-          'Failed to trigger %s\n%s' % (step_name, stdout), index=True)
+          'Failed to trigger %s\n%s' % (step_name, stdout), index=1)
     else:
-      self.progress.update_item('Triggered %s' % step_name, index=True)
+      self.progress.update_item('Triggered %s' % step_name, index=1)
       self.add_task(0, self.get_result, test, platform)
     return None
 
@@ -131,9 +131,9 @@ class Runner(object):
     # Only print the output for failures, successes are unexciting.
     if returncode:
       self.progress.update_item(
-          'Failed %s:\n%s' % (step_name, stdout), index=True)
+          'Failed %s:\n%s' % (step_name, stdout), index=1)
       return (test_name, platform, stdout)
-    self.progress.update_item('Passed %s' % step_name, index=True)
+    self.progress.update_item('Passed %s' % step_name, index=1)
     return None
 
 

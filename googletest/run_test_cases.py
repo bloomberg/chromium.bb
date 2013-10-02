@@ -864,7 +864,7 @@ class GoogleTestRunner(object):
         #   detect that a test has been successfully retried).
         if i['output']:
           line += '\n' + i['output']
-      self.progress.update_item(line, index=True, size=need_to_retry)
+      self.progress.update_item(line, index=1, size=int(need_to_retry))
 
       if need_to_retry:
         priority = self._retry(priority, i['test_case'], try_count)
@@ -889,7 +889,7 @@ class GoogleTestRunner(object):
           self.progress.update_item(output, raw=True)
         for i in results:
           priority = self._retry(priority, i['test_case'], try_count)
-          self.progress.update_item('', size=True)
+          self.progress.update_item('', size=1)
 
     # Only yield once the process completed when there is only one test case as
     # a safety precaution.

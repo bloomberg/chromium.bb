@@ -57,10 +57,10 @@ class Progress(threading_utils.Progress):
     self.total = 0
 
   def increment_index(self, name):
-    self.update_item(name, index=True)
+    self.update_item(name, index=1)
 
   def increment_count(self):
-    self.update_item('', size=True)
+    self.update_item('', size=1)
 
   def gen_line(self, name):
     """Generates the line to be printed.
