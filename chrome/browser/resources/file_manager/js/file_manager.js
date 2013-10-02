@@ -2622,7 +2622,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onScanStarted_ = function() {
-    if (this.scanInProgress_ && !this.scanUpdatedAtLeastOnceOrCompleted_) {
+    if (this.scanInProgress_) {
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
     }
@@ -2663,21 +2663,23 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.hideSpinnerLater_();
     this.refreshCurrentDirectoryMetadata_();
 
+    if (this.scanUpdatedTimer_) {
+      clearTimeout(this.scanUpdatedTimer_);
+      this.scanUpdatedTimer_ = null;
+    }
+
     // To avoid flickering postpone updating the ui by a small amount of time.
     // There is a high chance, that metadata will be received within 50 ms.
     this.scanCompletedTimer_ = setTimeout(function() {
       // Check if batch updates are already finished by onScanUpdated_().
-      if (this.scanUpdatedAtLeastOnceOrCompleted_)
-        return;
-      this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-      this.scanInProgress_ = false;
-      if (this.scanUpdatedTimer_) {
-        clearTimeout(this.scanUpdatedTimer_);
-        this.scanUpdatedTimer_ = null;
+      if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
+        this.scanUpdatedAtLeastOnceOrCompleted_ = true;
+        this.updateMiddleBarVisibility_();
       }
+
+      this.scanInProgress_ = false;
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
-      this.updateMiddleBarVisibility_();
       this.scanCompletedTimer_ = null;
     }.bind(this), 50);
   };
@@ -2691,26 +2693,26 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    // We need to hide the spinner only once.
-    if (this.scanUpdatedAtLeastOnceOrCompleted_ || this.scanUpdatedTimer_)
+    if (this.scanUpdatedTimer_ || this.scanCompletedTimer_)
       return;
 
     // Show contents incrementally by finishing batch updated, but only after
     // 200ms elapsed, to avoid flickering when it is not necessary.
     this.scanUpdatedTimer_ = setTimeout(function() {
       // We need to hide the spinner only once.
-      if (this.scanUpdatedAtLeastOnceOrCompleted_)
-        return;
-      if (this.scanCompletedTimer_) {
-        clearTimeout(this.scanCompletedTimer_);
-        this.scanCompletedTimer_ = null;
+      if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
+        this.scanUpdatedAtLeastOnceOrCompleted_ = true;
+        this.hideSpinnerLater_();
+        this.updateMiddleBarVisibility_();
       }
-      this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-      this.scanInProgress_ = false;
-      this.hideSpinnerLater_();
-      this.table_.list.endBatchUpdates();
-      this.grid_.endBatchUpdates();
-      this.updateMiddleBarVisibility_();
+
+      // Update the UI.
+      if (this.scanInProgress_) {
+        this.table_.list.endBatchUpdates();
+        this.grid_.endBatchUpdates();
+        this.table_.list.startBatchUpdates();
+        this.grid_.startBatchUpdates();
+      }
       this.scanUpdatedTimer_ = null;
     }.bind(this), 200);
   };
@@ -2737,11 +2739,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Finish unfinished batch updates.
     if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
       this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-      this.scanInProgress_ = false;
-      this.table_.list.endBatchUpdates();
-      this.grid_.endBatchUpdates();
       this.updateMiddleBarVisibility_();
     }
+
+    this.scanInProgress_ = false;
+    this.table_.list.endBatchUpdates();
+    this.grid_.endBatchUpdates();
   };
 
   /**

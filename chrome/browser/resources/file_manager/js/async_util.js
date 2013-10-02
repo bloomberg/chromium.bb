@@ -53,6 +53,13 @@ AsyncUtil.Queue = function() {
 };
 
 /**
+ * @return {boolean} True when a task is running, otherwise false.
+ */
+AsyncUtil.Queue.prototype.isRunning = function() {
+  return this.running_;
+};
+
+/**
  * Enqueues a closure to be executed.
  * @param {function(function())} closure Closure with a completion callback to
  *     be executed.
@@ -77,6 +84,14 @@ AsyncUtil.Queue.prototype.continue_ = function() {
   this.running_ = true;
   var closure = this.closures_.shift();
   closure(this.continue_.bind(this));
+};
+
+/**
+ * Cancels all pending tasks. Note that this does NOT cancel the task running
+ * currently.
+ */
+AsyncUtil.Queue.prototype.cancel = function() {
+  this.closures_ = [];
 };
 
 /**

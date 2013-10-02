@@ -490,7 +490,8 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
     this.pendingScan_ = false;
 
   if (this.runningScan_) {
-    this.runningScan_.cancelScan();
+    if (this.runningScan_.isScanning())
+      this.runningScan_.cancelScan();
     this.runningScan_ = null;
   }
 
@@ -1199,15 +1200,15 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
     if (specialSearchType == RootType.DRIVE_OFFLINE) {
       dirEntry = DirectoryModel.fakeDriveOfflineEntry_;
       searchOption =
-          DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_OFFLINE;
+          DriveMetadataSearchContentScanner.SearchType.SEARCH_OFFLINE;
     } else if (specialSearchType == RootType.DRIVE_SHARED_WITH_ME) {
       dirEntry = DirectoryModel.fakeDriveSharedWithMeEntry_;
       searchOption =
-          DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_SHARED_WITH_ME;
+          DriveMetadataSearchContentScanner.SearchType.SEARCH_SHARED_WITH_ME;
     } else if (specialSearchType == RootType.DRIVE_RECENT) {
       dirEntry = DirectoryModel.fakeDriveRecentEntry_;
       searchOption =
-          DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_RECENT_FILES;
+          DriveMetadataSearchContentScanner.SearchType.SEARCH_RECENT_FILES;
 
     } else {
       // Unknown path.
