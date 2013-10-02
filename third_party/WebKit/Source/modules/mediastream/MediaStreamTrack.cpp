@@ -26,10 +26,10 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "core/events/Event.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/events/Event.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
@@ -124,9 +124,17 @@ String MediaStreamTrack::readyState() const
 void MediaStreamTrack::getSources(ScriptExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& es)
 {
     RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context, callback);
-    bool ok = MediaStreamCenter::instance().getMediaStreamTrackSources(request.release());
-    if (!ok)
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+    if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request.release()))
+        es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
+}
+
+void MediaStreamTrack::stopTrack(ExceptionState& es)
+{
+    if (ended())
+        return;
+
+    if (!MediaStreamCenter::instance().didStopMediaStreamTrack(component()))
+        es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("stop", "MediaStreamTrack", "Functionality not implemented yet"));
 }
 
 bool MediaStreamTrack::ended() const

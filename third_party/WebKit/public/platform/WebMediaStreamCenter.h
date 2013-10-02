@@ -44,12 +44,13 @@ class WebMediaStreamCenter {
 public:
     virtual ~WebMediaStreamCenter() { }
 
-    virtual bool getMediaStreamTrackSources(const WebMediaStreamTrackSourcesRequest&) { return false; }
+    virtual bool getMediaStreamTrackSources(const WebMediaStreamTrackSourcesRequest&)= 0;
     virtual void didEnableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
     virtual void didDisableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
-    virtual bool didAddMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) { return false; };
-    virtual bool didRemoveMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) { return false; };
+    virtual bool didAddMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
+    virtual bool didRemoveMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
     virtual void didStopLocalMediaStream(const WebMediaStream&) = 0;
+    virtual bool didStopMediaStreamTrack(const WebMediaStreamTrack&) { return false; }
     virtual void didCreateMediaStream(WebMediaStream&) = 0;
 };
 

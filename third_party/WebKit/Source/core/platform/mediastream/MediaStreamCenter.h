@@ -62,6 +62,7 @@ public:
     bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
     bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
     void didStopLocalMediaStream(MediaStreamDescriptor*);
+    bool didStopMediaStreamTrack(MediaStreamComponent*);
     void didCreateMediaStream(MediaStreamDescriptor*);
 
     // WebKit::WebMediaStreamCenterClient

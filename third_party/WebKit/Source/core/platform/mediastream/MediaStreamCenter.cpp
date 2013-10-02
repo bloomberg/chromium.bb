@@ -97,6 +97,11 @@ void MediaStreamCenter::didStopLocalMediaStream(MediaStreamDescriptor* stream)
     }
 }
 
+bool MediaStreamCenter::didStopMediaStreamTrack(MediaStreamComponent* track)
+{
+    return m_private && m_private->didStopMediaStreamTrack(track);
+}
+
 void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream)
 {
     if (m_private) {

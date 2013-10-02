@@ -57,14 +57,14 @@ bool MockWebMediaStreamCenter::getMediaStreamTrackSources(const WebMediaStreamTr
     return true;
 }
 
-void MockWebMediaStreamCenter::didEnableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack& component)
+void MockWebMediaStreamCenter::didEnableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack& track)
 {
-    component.source().setReadyState(WebMediaStreamSource::ReadyStateLive);
+    track.source().setReadyState(WebMediaStreamSource::ReadyStateLive);
 }
 
-void MockWebMediaStreamCenter::didDisableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack& component)
+void MockWebMediaStreamCenter::didDisableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack& track)
 {
-    component.source().setReadyState(WebMediaStreamSource::ReadyStateMuted);
+    track.source().setReadyState(WebMediaStreamSource::ReadyStateMuted);
 }
 
 bool MockWebMediaStreamCenter::didAddMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&)
@@ -79,6 +79,12 @@ bool MockWebMediaStreamCenter::didRemoveMediaStreamTrack(const WebMediaStream&, 
 
 void MockWebMediaStreamCenter::didStopLocalMediaStream(const WebMediaStream& stream)
 {
+}
+
+bool MockWebMediaStreamCenter::didStopMediaStreamTrack(const WebKit::WebMediaStreamTrack& track)
+{
+    track.source().setReadyState(WebMediaStreamSource::ReadyStateEnded);
+    return true;
 }
 
 class MockWebAudioDestinationConsumer : public WebAudioDestinationConsumer {

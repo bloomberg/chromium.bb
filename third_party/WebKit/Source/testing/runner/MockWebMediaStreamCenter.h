@@ -51,6 +51,7 @@ public:
     virtual bool didAddMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
     virtual bool didRemoveMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
     virtual void didStopLocalMediaStream(const WebKit::WebMediaStream&) OVERRIDE;
+    virtual bool didStopMediaStreamTrack(const WebKit::WebMediaStreamTrack&) OVERRIDE;
     virtual void didCreateMediaStream(WebKit::WebMediaStream&) OVERRIDE;
 
 private:

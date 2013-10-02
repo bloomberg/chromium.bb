@@ -28,14 +28,14 @@
     readonly attribute DOMString kind;
     readonly attribute DOMString id;
     readonly attribute DOMString label;
-             attribute boolean enabled;
-
+    attribute boolean enabled;
     readonly attribute DOMString readyState;
+
+    [CallWith=ScriptExecutionContext, RaisesException] static void getSources(MediaStreamTrackSourcesCallback callback);
+    [ImplementedAs=stopTrack, RaisesException] void stop();
 
     attribute EventHandler onmute;
     attribute EventHandler onunmute;
     attribute EventHandler onended;
-
-    [CallWith=ScriptExecutionContext, RaisesException] static void getSources(MediaStreamTrackSourcesCallback callback);
 };
 

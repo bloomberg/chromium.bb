@@ -14,7 +14,6 @@ description("Tests MediaStreamTrack callbacks.");
 // The underlying mock is modified to trigger the events when certain functions are called.
 // This modified behaviour allows us to test the MediaStreamTrack class properly.
 
-var stream;
 var track;
 
 function error() {
@@ -44,7 +43,7 @@ function onTrackUnmute() {
 
     shouldBeEqualToString('track.readyState', 'live');
 
-    stream.stop();
+    track.stop();
 }
 
 function onTrackMute() {
@@ -55,10 +54,9 @@ function onTrackMute() {
     track.enabled = true;
 }
 
-function gotStream(s) {
+function gotStream(stream) {
     testPassed('getUserMedia succeeded.');
 
-    stream = s;
     track = stream.getVideoTracks()[0];
 
     shouldBeEqualToString('track.readyState', 'live');
