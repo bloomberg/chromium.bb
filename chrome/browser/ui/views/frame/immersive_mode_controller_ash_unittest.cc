@@ -824,7 +824,8 @@ class ImmersiveModeControllerAshTestWithBrowserView
 
 // Test the layout and visibility of the tabstrip, toolbar and TopContainerView
 // in immersive fullscreen.
-TEST_F(ImmersiveModeControllerAshTestWithBrowserView, Layout) {
+// Flaky. See http://crbug.com/302908 .
+TEST_F(ImmersiveModeControllerAshTestWithBrowserView, DISABLED_Layout) {
   AddTab(browser(), GURL("about:blank"));
 
   TabStrip* tabstrip = browser_view()->tabstrip();
