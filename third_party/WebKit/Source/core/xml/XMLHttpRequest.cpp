@@ -415,11 +415,11 @@ void XMLHttpRequest::changeState(State newState)
 {
     if (m_state != newState) {
         m_state = newState;
-        callReadyStateChangeListener();
+        dispatchReadyStateChangeEvent();
     }
 }
 
-void XMLHttpRequest::callReadyStateChangeListener()
+void XMLHttpRequest::dispatchReadyStateChangeEvent()
 {
     if (!scriptExecutionContext())
         return;
@@ -1268,8 +1268,12 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
     if (m_state != LOADING) {
         changeState(LOADING);
     } else {
-        // Firefox calls readyStateChanged every time it receives data, 4449442
-        callReadyStateChangeListener();
+        // Firefox calls readyStateChanged every time it receives data. Do
+        // the same to align with Firefox.
+        //
+        // FIXME: Make our implementation and the spec consistent. This
+        // behavior was needed when the progress event was not available.
+        dispatchReadyStateChangeEvent();
     }
 }
 

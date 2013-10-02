@@ -175,7 +175,8 @@ private:
     // Changes m_state and dispatches a readyStateChange event if new m_state
     // value is different from last one.
     void changeState(State newState);
-    void callReadyStateChangeListener();
+    void dispatchReadyStateChangeEvent();
+
     void dropProtectionSoon();
     void dropProtection(Timer<XMLHttpRequest>* = 0);
     // Clears variables used only while the resource is being loaded.
