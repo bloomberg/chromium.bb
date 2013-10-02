@@ -127,6 +127,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
     ~Session();
 
     int id;
+    bool abort_requested;
     bool listener_is_active;
     SpeechRecognitionSessionConfig config;
     SpeechRecognitionSessionContext context;
