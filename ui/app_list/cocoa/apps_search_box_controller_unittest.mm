@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_menu.h"
+#include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -74,7 +75,8 @@
 namespace app_list {
 namespace test {
 
-class AppsSearchBoxControllerTest : public ui::CocoaTest {
+class AppsSearchBoxControllerTest : public ui::CocoaTest,
+                                    public AppListModelObserver {
  public:
   AppsSearchBoxControllerTest() {
     Init();
@@ -86,12 +88,14 @@ class AppsSearchBoxControllerTest : public ui::CocoaTest {
             NSMakeRect(0, 0, 400, 100)]);
     delegate_.reset([[TestAppsSearchBoxDelegate alloc] init]);
     [apps_search_box_controller_ setDelegate:delegate_];
+    [delegate_ appListModel]->AddObserver(this);
 
     ui::CocoaTest::SetUp();
     [[test_window() contentView] addSubview:[apps_search_box_controller_ view]];
   }
 
   virtual void TearDown() OVERRIDE {
+    [delegate_ appListModel]->RemoveObserver(this);
     [apps_search_box_controller_ setDelegate:nil];
     ui::CocoaTest::TearDown();
   }
@@ -104,6 +108,13 @@ class AppsSearchBoxControllerTest : public ui::CocoaTest {
   }
 
  protected:
+  // Overridden from app_list::AppListModelObserver:
+  virtual void OnAppListModelUsersChanged() OVERRIDE {
+    [apps_search_box_controller_ rebuildMenu];
+  }
+
+  virtual void OnAppListModelSigninStatusChanged() OVERRIDE {}
+
   base::scoped_nsobject<TestAppsSearchBoxDelegate> delegate_;
   base::scoped_nsobject<AppsSearchBoxController> apps_search_box_controller_;
 
@@ -220,6 +231,34 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxMenu) {
   EXPECT_FALSE([settings_item view]);
   EXPECT_NSEQ(base::SysUTF16ToNSString(menu_model->GetLabelAt(index)),
               [settings_item title]);
+}
+
+// Test adding another user, and changing an existing one.
+TEST_F(AppsSearchBoxControllerTest, SearchBoxMenuChangingUsers) {
+  app_list::AppListModel::Users users = [delegate_ appListModel]->users();
+  EXPECT_EQ(2u, users.size());
+  ui::MenuModel* menu_model
+      = [apps_search_box_controller_ appListMenu]->menu_model();
+  // Adding one to account for the empty item at index 0 in Cocoa popup menus.
+  int non_user_items = menu_model->GetItemCount() - users.size() + 1;
+
+  NSPopUpButton* menu_control = [apps_search_box_controller_ menuControl];
+  EXPECT_EQ(2, [[menu_control menu] numberOfItems] - non_user_items);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(users[0].name),
+              [[[menu_control menu] itemAtIndex:1] title]);
+
+  users[0].name = ASCIIToUTF16("renamed user");
+  app_list::AppListModel::User new_user;
+  new_user.name = ASCIIToUTF16("user3");
+  users.push_back(new_user);
+  [delegate_ appListModel]->SetUsers(users);
+
+  // Should now be an extra item, and it should have correct titles.
+  EXPECT_EQ(3, [[menu_control menu] numberOfItems] - non_user_items);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(users[0].name),
+              [[[menu_control menu] itemAtIndex:1] title]);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(new_user.name),
+              [[[menu_control menu] itemAtIndex:3] title]);
 }
 
 }  // namespace test

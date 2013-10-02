@@ -159,6 +159,10 @@ void SearchBoxModelObserverBridge::TextChanged() {
   if (![delegate_ appListDelegate])
     return;
 
+  [menuController_ setModel:NULL];
+  appListMenu_.reset(
+      new app_list::AppListMenu([delegate_ appListDelegate],
+                                [delegate_ appListModel]->users()));
   menuController_.reset([[AppListMenuController alloc]
       initWithSearchBoxController:self]);
   [menuButton_ setMenu:[menuController_ menu]];  // Menu will populate here.
@@ -174,12 +178,6 @@ void SearchBoxModelObserverBridge::TextChanged() {
     return;
 
   bridge_.reset(new app_list::SearchBoxModelObserverBridge(self));
-  if (![delegate_ appListDelegate])
-    return;
-
-  appListMenu_.reset(
-      new app_list::AppListMenu([delegate_ appListDelegate],
-                                [delegate_ appListModel]->users()));
   [self rebuildMenu];
 }
 

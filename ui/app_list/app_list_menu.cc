@@ -83,8 +83,6 @@ void AppListMenu::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
   switch (command_id) {
-    case CURRENT_USER:
-      break;  // Do nothing.
     case SHOW_SETTINGS:
       delegate_->OpenSettings();
       break;
