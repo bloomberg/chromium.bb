@@ -34,12 +34,15 @@ public:
     installer->set_off_store_install_allow_reason(
         extensions::CrxInstaller::OffStoreInstallAllowedInTest);
 
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::Source<extensions::CrxInstaller>(installer.get()));
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                   content::Source<extensions::CrxInstaller>(installer.get()));
 
     installer->InstallCrx(path);
-    content::RunMessageLoop();
+    observer.Wait();
 
     size_t num_after = service->extensions()->size();
     EXPECT_EQ(num_before + 1, num_after);

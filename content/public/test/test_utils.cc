@@ -184,7 +184,7 @@ WindowedNotificationObserver::WindowedNotificationObserver(
     : seen_(false),
       running_(false),
       source_(NotificationService::AllSources()) {
-  registrar_.Add(this, notification_type, source);
+  AddNotificationType(notification_type, source);
 }
 
 WindowedNotificationObserver::WindowedNotificationObserver(
@@ -204,10 +204,16 @@ WindowedNotificationObserver::WindowedNotificationObserver(
       running_(false),
       callback_(base::Bind(&IgnoreSourceAndDetails, callback)),
       source_(NotificationService::AllSources()) {
-  registrar_.Add(this, notification_type, source_);
+  AddNotificationType(notification_type, source_);
 }
 
 WindowedNotificationObserver::~WindowedNotificationObserver() {}
+
+void WindowedNotificationObserver::AddNotificationType(
+    int notification_type,
+    const NotificationSource& source) {
+  registrar_.Add(this, notification_type, source);
+}
 
 void WindowedNotificationObserver::Wait() {
   if (seen_)

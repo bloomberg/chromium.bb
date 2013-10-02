@@ -136,12 +136,6 @@ int FindInPage(content::WebContents* tab,
                int* ordinal,
                gfx::Rect* selection_rect);
 
-// Register |observer| for the given |type| and |source| and run
-// the message loop until the observer posts a quit task.
-void RegisterAndWait(content::NotificationObserver* observer,
-                     int type,
-                     const content::NotificationSource& source);
-
 // Blocks until |service| finishes loading.
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service);
 

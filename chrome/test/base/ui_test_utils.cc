@@ -344,14 +344,6 @@ int FindInPage(WebContents* tab, const string16& search_string,
   return observer.number_of_matches();
 }
 
-void RegisterAndWait(content::NotificationObserver* observer,
-                     int type,
-                     const content::NotificationSource& source) {
-  content::NotificationRegistrar registrar;
-  registrar.Add(observer, type, source);
-  content::RunMessageLoop();
-}
-
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
   if (service->loaded())
     return;

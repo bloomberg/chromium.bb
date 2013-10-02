@@ -292,15 +292,11 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       bool from_webstore,
       bool wait_for_idle);
 
+  // Wait for a notification of the specified type to be sent.
+  // |notification_type| must be a type that this class handles in Observe().
+  void WaitForNotification(int notification_type);
+
   bool WaitForExtensionViewsToLoad();
-
-  // When waiting for page action count to change, we wait until it reaches this
-  // value.
-  int target_page_action_count_;
-
-  // When waiting for visible page action count to change, we wait until it
-  // reaches this value.
-  int target_visible_page_action_count_;
 
   // Make the current channel "dev" for the duration of the test.
   extensions::ScopedCurrentChannel current_channel_;

@@ -144,6 +144,12 @@ class WindowedNotificationObserver : public NotificationObserver {
 
   virtual ~WindowedNotificationObserver();
 
+  // Adds an additional notification type to wait for. The condition will be met
+  // if any of the registered notification types from their respective sources
+  // is received.
+  void AddNotificationType(int notification_type,
+                           const NotificationSource& source);
+
   // Wait until the specified condition is met. If the condition is already met
   // (that is, the expected notification has already been received or the
   // given callback returns |true| already), Wait() returns immediately.
