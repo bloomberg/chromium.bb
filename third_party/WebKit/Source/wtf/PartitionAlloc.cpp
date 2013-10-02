@@ -32,7 +32,7 @@
 #include "wtf/PartitionAlloc.h"
 
 #include "wtf/PageAllocator.h"
-#include "wtf/Vector.h"
+#include <string.h>
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -50,6 +50,7 @@ WTF_EXPORT void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_
     ASSERT(!root->initialized);
     root->initialized = true;
     root->lock = 0;
+    root->totalSizeOfSuperPages = 0;
     root->numBuckets = numBuckets;
     root->maxAllocation = maxAllocation;
     size_t i;
@@ -80,29 +81,13 @@ WTF_EXPORT void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_
     root->seedBucket.numFullPages = 0;
 }
 
-static ALWAYS_INLINE void partitionFreeSuperPage(PartitionPageHeader* page)
-{
-    freeSuperPages(page, kSuperPageSize);
-}
-
-static void partitionCollectIfSuperPage(PartitionPageHeader* partitionPage, Vector<PartitionPageHeader*>* superPages)
-{
-    PartitionPageHeader* superPage = reinterpret_cast<PartitionPageHeader*>(reinterpret_cast<uintptr_t>(partitionPage) & kSuperPageBaseMask);
-    uintptr_t superPageOffset = reinterpret_cast<uintptr_t>(partitionPage) & kSuperPageOffsetMask;
-    // If this partition page is at the start of a super page, note it so we can
-    // free all the distinct super pages.
-    if (!superPageOffset)
-        superPages->append(superPage);
-}
-
-static bool partitionAllocShutdownBucket(PartitionBucket* bucket, Vector<PartitionPageHeader*>* superPages)
+static bool partitionAllocShutdownBucket(PartitionBucket* bucket)
 {
     // Failure here indicates a memory leak.
     bool noLeaks = !bucket->numFullPages;
     PartitionFreepagelistEntry* entry = bucket->freePages;
     while (entry) {
         PartitionFreepagelistEntry* next = entry->next;
-        partitionCollectIfSuperPage(entry->page, superPages);
         partitionFree(entry);
         entry = next;
     }
@@ -110,10 +95,7 @@ static bool partitionAllocShutdownBucket(PartitionBucket* bucket, Vector<Partiti
     do {
         if (page->numAllocatedSlots)
             noLeaks = false;
-        PartitionPageHeader* next = page->next;
-        if (page != &bucket->root->seedPage)
-            partitionCollectIfSuperPage(page, superPages);
-        page = next;
+        page = page->next;
     } while (page != bucket->currPage);
 
     return noLeaks;
@@ -124,31 +106,37 @@ bool partitionAllocShutdown(PartitionRoot* root)
     bool noLeaks = true;
     ASSERT(root->initialized);
     root->initialized = false;
-    // As we iterate through all the partition pages, we keep a list of all the
-    // distinct super pages that we have seen. This is so that we can free all
-    // the super pages correctly. A super page must be freed all at once -- it
-    // is not permissible to free a super page by freeing all its component
-    // partition pages.
-    // Note that we cannot free a super page upon discovering it, because a
-    // single super page will likely contain partition pages from multiple
-    // different buckets.
-    Vector<PartitionPageHeader*> superPages;
     size_t i;
     // First, free the non-metadata buckets. Freeing the free pages in these
     // buckets will depend on the metadata bucket.
     for (i = 0; i < root->numBuckets; ++i) {
         if (i != kInternalMetadataBucket) {
             PartitionBucket* bucket = &root->buckets()[i];
-            if (!partitionAllocShutdownBucket(bucket, &superPages))
+            if (!partitionAllocShutdownBucket(bucket))
                 noLeaks = false;
         }
     }
     // Finally, free the freepage bucket.
-    (void) partitionAllocShutdownBucket(&root->buckets()[kInternalMetadataBucket], &superPages);
+    (void) partitionAllocShutdownBucket(&root->buckets()[kInternalMetadataBucket]);
+
     // Now that we've examined all partition pages in all buckets, it's safe
-    // to free all our super pages.
-    for (Vector<PartitionPageHeader*>::iterator it = superPages.begin(); it != superPages.end(); ++it)
-        partitionFreeSuperPage(*it);
+    // to free all our super pages. We first collect the super page pointers
+    // on the stack because some of them are themselves store in super pages.
+    char* superPages[kMaxPartitionSize / kSuperPageSize];
+    size_t numSuperPages = 0;
+    PartitionSuperPageExtentEntry* entry = &root->firstExtent;
+    while (entry) {
+        char* superPage = entry->superPageBase;
+        while (superPage != entry->superPagesEnd) {
+            superPages[numSuperPages] = superPage;
+            numSuperPages++;
+            superPage += kSuperPageSize;
+        }
+        entry = entry->next;
+    }
+    ASSERT(numSuperPages == root->totalSizeOfSuperPages / kSuperPageSize);
+    for (size_t i = 0; i < numSuperPages; ++i)
+        freeSuperPages(superPages[i], kSuperPageSize);
 
     return noLeaks;
 }
@@ -169,6 +157,8 @@ static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root
     }
 
     // Need a new super page.
+    root->totalSizeOfSuperPages += kSuperPageSize;
+    RELEASE_ASSERT(root->totalSizeOfSuperPages <= kMaxPartitionSize);
     // We need to put a guard page in front if either:
     // a) This is the first super page allocation.
     // b) The super page did not end up at our suggested address.
@@ -177,18 +167,19 @@ static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root
         needsGuard = true;
         root->nextSuperPage = getRandomSuperPageBase();
     }
-    char* ret = reinterpret_cast<char*>(allocSuperPages(root->nextSuperPage, kSuperPageSize));
-    if (ret != root->nextSuperPage) {
+    char* superPage = reinterpret_cast<char*>(allocSuperPages(root->nextSuperPage, kSuperPageSize));
+    char* ret = superPage;
+    if (superPage != root->nextSuperPage) {
         needsGuard = true;
         // Re-randomize the base location for next time just in case the
         // underlying operating system picks lousy locations for mappings.
         root->nextSuperPage = 0;
     } else {
-        root->nextSuperPage = ret + kSuperPageSize;
+        root->nextSuperPage = superPage + kSuperPageSize;
     }
-    root->nextPartitionPageEnd = ret + kSuperPageSize;
+    root->nextPartitionPageEnd = superPage + kSuperPageSize;
     if (needsGuard) {
-        setSystemPagesInaccessible(ret, kPartitionPageSize);
+        setSystemPagesInaccessible(superPage, kPartitionPageSize);
         ret += kPartitionPageSize;
     }
     root->nextPartitionPage = ret + kPartitionPageSize;
@@ -210,8 +201,8 @@ static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root
             currentExtent = newEntry;
             root->currentExtent = newEntry;
         }
-        currentExtent->superPageBase = ret;
-        currentExtent->superPagesEnd = ret + kSuperPageSize;
+        currentExtent->superPageBase = superPage;
+        currentExtent->superPagesEnd = superPage + kSuperPageSize;
     } else {
         // We allocated next to an existing extent so just nudge the size up a little.
         currentExtent->superPagesEnd += kSuperPageSize;
