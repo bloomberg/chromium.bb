@@ -109,16 +109,18 @@ public:
     {
         ASSERT(m_isAnimating);
         ASSERT(m_animVal);
-        ASSERT(m_values.size() == m_wrappers.size());
+        ASSERT(contextElement());
 
         ListProperty* animVal = static_cast<ListProperty*>(m_animVal.get());
-        ASSERT(animVal->values().size() == animVal->wrappers().size());
-        ASSERT(animVal->wrappers().size() == m_animatedWrappers.size());
+        if (animVal->wrappers().size()) {
+            ASSERT(m_values.size() == m_wrappers.size());
+            ASSERT(animVal->values().size() == animVal->wrappers().size());
+            ASSERT(animVal->wrappers().size() == m_animatedWrappers.size());
 
-        animVal->setValuesAndWrappers(&m_values, &m_wrappers, false);
-        ASSERT(animVal->values().size() == animVal->wrappers().size());
-        ASSERT(animVal->wrappers().size() == m_wrappers.size());
-
+            animVal->setValuesAndWrappers(&m_values, &m_wrappers, false);
+            ASSERT(animVal->values().size() == animVal->wrappers().size());
+            ASSERT(animVal->wrappers().size() == m_wrappers.size());
+        }
         m_animatedWrappers.clear();
         m_isAnimating = false;
     }
@@ -153,6 +155,14 @@ public:
         synchronizeWrappersIfNeeded();
     }
 
+    virtual void detachWrappers() OVERRIDE
+    {
+        if (m_animVal) {
+            ListProperty* animVal = static_cast<ListProperty*>(m_animVal.get());
+            animVal->detachListWrappers(0);
+        }
+    }
+
     static PassRefPtr<SVGAnimatedListPropertyTearOff<PropertyType> > create(SVGElement* contextElement, const QualifiedName& attributeName, AnimatedPropertyType animatedPropertyType, PropertyType& values)
     {
         ASSERT(contextElement);
@@ -166,6 +176,14 @@ protected:
     {
         if (!values.isEmpty())
             m_wrappers.fill(0, values.size());
+    }
+
+    ~SVGAnimatedListPropertyTearOff()
+    {
+        if (m_baseVal)
+            static_cast<ListPropertyTearOff*>(m_baseVal.get())->clearAnimatedProperty();
+        if (m_animVal)
+            static_cast<ListPropertyTearOff*>(m_animVal.get())->clearAnimatedProperty();
     }
 
     PropertyType& m_values;
