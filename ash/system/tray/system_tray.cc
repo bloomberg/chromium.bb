@@ -156,47 +156,46 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   // the additional separator.
   for (int i = 0; i <= maximum_user_profiles; i++)
     AddTrayItem(new internal::TrayUser(this, i));
-
 #endif
+
+  tray_accessibility_ = new internal::TrayAccessibility(this);
+
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayEnterprise(this));
   AddTrayItem(new internal::TrayLocallyManagedUser(this));
-#endif
   AddTrayItem(new internal::TrayIME(this));
-  tray_accessibility_ = new internal::TrayAccessibility(this);
   AddTrayItem(tray_accessibility_);
-#if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayTracing(this));
   AddTrayItem(
       new internal::TrayPower(this, message_center::MessageCenter::Get()));
-#endif
-#if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayNetwork(this));
   AddTrayItem(new internal::TrayVPN(this));
   AddTrayItem(new internal::TraySms(this));
-#endif
-#if !defined(OS_WIN)
   AddTrayItem(new internal::TrayBluetooth(this));
-#endif
   AddTrayItem(new internal::TrayDrive(this));
-#if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayDisplay(this));
   AddTrayItem(new internal::ScreenCaptureTrayItem(this));
   AddTrayItem(new internal::ScreenShareTrayItem(this));
   AddTrayItem(new internal::TrayAudio(this));
   AddTrayItem(new internal::TrayBrightness(this));
-#endif
-#if !defined(OS_WIN)
   AddTrayItem(new internal::TrayCapsLock(this));
-#endif
-#if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TraySettings(this));
-#endif
   AddTrayItem(new internal::TrayUpdate(this));
   AddTrayItem(new internal::TrayDate(this));
+#elif defined(OS_WIN)
+  AddTrayItem(tray_accessibility_);
+  AddTrayItem(new internal::TrayDate(this));
+#elif defined(OS_LINUX)
+  AddTrayItem(new internal::TrayIME(this));
+  AddTrayItem(tray_accessibility_);
+  AddTrayItem(new internal::TrayBluetooth(this));
+  AddTrayItem(new internal::TrayDrive(this));
+  AddTrayItem(new internal::TrayCapsLock(this));
+  AddTrayItem(new internal::TrayUpdate(this));
+  AddTrayItem(new internal::TrayDate(this));
+#endif
 
 #if defined(OS_LINUX)
-  // Add memory monitor if enabled.
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(ash::switches::kAshEnableMemoryMonitor))
     AddTrayItem(new internal::TrayMonitor(this));

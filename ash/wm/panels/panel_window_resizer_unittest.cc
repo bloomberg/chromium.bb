@@ -56,7 +56,8 @@ class PanelWindowResizerTest : public test::AshTestBase {
     return location;
   }
 
-  aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
+  aura::Window* CreatePanelWindow(const gfx::Point& origin) {
+    gfx::Rect bounds(origin, gfx::Size(101, 101));
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL,
         aura::client::WINDOW_TYPE_PANEL,
@@ -151,9 +152,9 @@ class PanelWindowResizerTest : public test::AshTestBase {
   // Test dragging panel window along the shelf and verify that panel icons
   // are reordered appropriately.
   void DragAlongShelfReorder(int dx, int dy) {
-    gfx::Rect bounds(0, 0, 201, 201);
-    scoped_ptr<aura::Window> w1(CreatePanelWindow(bounds));
-    scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
+    gfx::Point origin(0, 0);
+    scoped_ptr<aura::Window> w1(CreatePanelWindow(origin));
+    scoped_ptr<aura::Window> w2(CreatePanelWindow(origin));
     std::vector<aura::Window*> window_order_original;
     std::vector<aura::Window*> window_order_swapped;
     window_order_original.push_back(w1.get());
@@ -225,7 +226,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
     return;
 
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), 0, -1);
 }
 
@@ -236,7 +237,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(SHELF_ALIGNMENT_LEFT, shell->GetPrimaryRootWindow());
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), 1, 0);
 }
 
@@ -248,7 +249,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
   shell->SetShelfAlignment(SHELF_ALIGNMENT_RIGHT,
                            shell->GetPrimaryRootWindow());
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), -1, 0);
 }
 
@@ -259,7 +260,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachTop) {
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(SHELF_ALIGNMENT_TOP, shell->GetPrimaryRootWindow());
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), 0, 1);
 }
 
@@ -270,7 +271,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(600, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(600, 0)));
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   DetachReattachTest(window.get(), 0, -1);
 }
@@ -282,7 +283,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
   DragStart(window.get());
@@ -313,7 +314,7 @@ TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
   DragStart(window.get());
@@ -334,7 +335,7 @@ TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
   UpdateDisplay("600x400,600x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
@@ -367,7 +368,7 @@ TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
   UpdateDisplay("600x400,600x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
@@ -388,7 +389,7 @@ TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
 
 TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
   scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+      CreatePanelWindow(gfx::Point(0, 0)));
   EXPECT_TRUE(wm::GetWindowState(window.get())->panel_attached());
   EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
   DragStart(window.get());
@@ -417,7 +418,7 @@ TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
 }
 
 TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
-  scoped_ptr<aura::Window> window(CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
+  scoped_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   DragStart(window.get());
   DragMove(0, -100);
   DragEnd();
