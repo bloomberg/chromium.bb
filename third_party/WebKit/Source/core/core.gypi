@@ -2605,7 +2605,6 @@
             'platform/DragData.cpp',
             'platform/DragImage.cpp',
             'platform/FileMetadata.h',
-            'platform/FloatConversion.h',
             'platform/HashTools.h',
             'platform/KillRing.h',
             'platform/KillRingNone.cpp',
