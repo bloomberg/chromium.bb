@@ -39,10 +39,14 @@ public:
 private:
     HTMLMetaElement(const QualifiedName&, Document&);
 
+    typedef void (*KeyValuePairCallback)(const String& key, const String& value, Document* document, void* data);
+    void parseContentAttribute(const String& content, KeyValuePairCallback, void* data);
+
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
     void process();
+    void processViewportContentAttribute(const String& content, ViewportArguments::Type origin);
 };
 
 inline HTMLMetaElement* toHTMLMetaElement(Node* node)

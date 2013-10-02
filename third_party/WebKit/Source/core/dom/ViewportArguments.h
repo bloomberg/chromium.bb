@@ -122,7 +122,7 @@ private:
     static float resolveViewportLength(const Length&, const FloatSize& initialViewportSize, Direction);
 };
 
-void setViewportFeature(const String& keyString, const String& valueString, Document*, void* data);
+void processViewportKeyValuePair(const String& keyString, const String& valueString, Document*, void* data);
 void reportViewportWarning(Document*, ViewportErrorCode, const String& replacement1, const String& replacement2);
 
 } // namespace WebCore

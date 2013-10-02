@@ -322,7 +322,7 @@ static float findTargetDensityDPIValue(const String& keyString, const String& va
     return value;
 }
 
-void setViewportFeature(const String& keyString, const String& valueString, Document* document, void* data)
+void processViewportKeyValuePair(const String& keyString, const String& valueString, Document* document, void* data)
 {
     ViewportArguments* arguments = static_cast<ViewportArguments*>(data);
 
