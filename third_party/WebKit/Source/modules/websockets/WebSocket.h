@@ -36,6 +36,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventNames.h"
 #include "core/events/EventTarget.h"
+#include "core/platform/Timer.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "weborigin/KURL.h"
@@ -128,6 +129,10 @@ private:
     // not.
     void closeInternal(int, const String&, ExceptionState&);
 
+    // Calls unsetPendingActivity(). Used for m_timerForDeferredDropProtection
+    // to drop the reference for protection asynchronously.
+    void dropProtection(Timer<WebSocket>*);
+
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }
     virtual EventTargetData* eventTargetData();
@@ -158,6 +163,13 @@ private:
     BinaryType m_binaryType;
     String m_subprotocol;
     String m_extensions;
+
+    // stop() needs to call some methods that may lead to invocation of handlers
+    // including a dispatchEvent() call. This flag is set at the beginning of
+    // stop() to prevent dispatchEvent() from being called in such handlers.
+    bool m_stopped;
+
+    Timer<WebSocket> m_timerForDeferredDropProtection;
 };
 
 } // namespace WebCore
