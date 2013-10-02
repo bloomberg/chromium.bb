@@ -348,6 +348,9 @@ class WebMediaPlayerAndroid
   // Whether the mediaplayer is playing.
   bool is_playing_;
 
+  // Wether the mediaplayer has already started playing.
+  bool playing_started_;
+
   // Whether media player needs to re-establish the surface texture peer.
   bool needs_establish_peer_;
 

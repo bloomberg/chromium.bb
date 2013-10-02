@@ -83,6 +83,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       texture_mailbox_sync_point_(0),
       stream_id_(0),
       is_playing_(false),
+      playing_started_(false),
       needs_establish_peer_(true),
       stream_texture_proxy_initialized_(false),
       has_size_info_(false),
@@ -300,6 +301,11 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   }
+  // Android doesn't start fetching resources until an implementation-defined
+  // event (e.g. playback request) occurs. Sets the network state to IDLE
+  // if play is not requested yet.
+  if (!playing_started_)
+    UpdateNetworkState(WebMediaPlayer::NetworkStateIdle);
 }
 
 void WebMediaPlayerAndroid::play() {
@@ -318,6 +324,8 @@ void WebMediaPlayerAndroid::play() {
   if (paused())
     proxy_->Start(player_id_);
   UpdatePlayingState(true);
+  UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
+  playing_started_ = true;
 }
 
 void WebMediaPlayerAndroid::pause() {
