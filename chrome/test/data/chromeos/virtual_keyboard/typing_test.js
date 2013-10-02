@@ -5,38 +5,6 @@
  */
 
 /**
- * Mock typing of basic keys. Each keystroke should trigger a pair of
- * API calls to send viritual key events.
- * @param {string} label The character being typed.
- * @param {number} keyCode The legacy key code for the character.
- * @param {boolean} shiftModifier Indicates if the shift key is being
- *     virtually pressed.
- * @param {number=} opt_unicode Optional unicode value for the character. Only
- *     required if it cannot be directly calculated from the label.
- */
-function mockTypeCharacter(label, keyCode, shiftModifier, opt_unicode) {
-  var key = findKey(label);
-  assertTrue(!!key, 'Unable to find key labelled "' + label + '".');
-  var unicodeValue = opt_unicode | label.charCodeAt(0);
-  var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
-  send.addExpectation({
-    type: 'keydown',
-    charValue: unicodeValue,
-    keyCode: keyCode,
-    shiftKey: shiftModifier
-  });
-  send.addExpectation({
-    type: 'keyup',
-    charValue: unicodeValue,
-    keyCode: keyCode,
-    shiftKey: shiftModifier
-  });
-  // Fake typing the key.
-  key.down();
-  key.up();
-}
-
-/**
  * Mocks using the longpress candidate window to enter an alternate character.
  * @param {string} label The label on the key.
  * @param {string} candidateLabel The alternate character being typed.

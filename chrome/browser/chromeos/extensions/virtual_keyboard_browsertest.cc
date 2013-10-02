@@ -92,5 +92,8 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, TypingTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("typing_test.js")));
 }
 
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, ControlKeysTest) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL("control_keys_test.js")));
+}
 // TODO(kevers|rsadam|bshe):  Add UI tests for remaining virtual keyboard
 // functionality.
