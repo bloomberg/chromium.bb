@@ -66,10 +66,9 @@ class TooltipManagerWin : public TooltipManager {
   // and not used.
   bool Init();
 
-  // Notification that the view hierarchy has changed in some way.
+  // TooltipManager:
+  virtual const gfx::FontList& TooltipManagerWin::GetFontList() const OVERRIDE;
   virtual void UpdateTooltip() OVERRIDE;
-
-  // Invoked when the tooltip text changes for the specified views.
   virtual void TooltipTextChanged(View* view) OVERRIDE;
 
   // Message handlers. These forward to the tooltip control.

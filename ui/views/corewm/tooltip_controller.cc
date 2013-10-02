@@ -26,6 +26,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/corewm/corewm_switches.h"
+#include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -53,9 +54,6 @@ const int kDefaultTooltipShownTimeoutMs = 10000;
 // FIXME: get cursor offset from actual cursor size.
 const int kCursorOffsetX = 10;
 const int kCursorOffsetY = 15;
-
-// Maximum number of characters we allow in a tooltip.
-const size_t kMaxTooltipLength = 1024;
 
 gfx::Font GetDefaultFont() {
   // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
@@ -374,10 +372,7 @@ void TooltipController::TrimTooltipToFit(int max_width,
   *width = 0;
   *line_count = 0;
 
-  // Clamp the tooltip length to kMaxTooltipLength so that we don't
-  // accidentally DOS the user with a mega tooltip.
-  if (text->length() > kMaxTooltipLength)
-    *text = text->substr(0, kMaxTooltipLength);
+  TooltipManager::TrimTooltipText(text);
 
   // Determine the available width for the tooltip.
   int available_width = std::min(kTooltipMaxWidthPixels, max_width);

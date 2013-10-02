@@ -56,6 +56,7 @@ class DesktopRootWindowHost;
 class InputMethod;
 class NativeWidget;
 class NonClientFrameView;
+class TooltipManager;
 class View;
 class WidgetDelegate;
 class WidgetObserver;
@@ -660,8 +661,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     auto_release_capture_ = auto_release_capture;
   }
 
-  // Invoked when the tooltip text changes for the specified views.
-  void TooltipTextChanged(View* view);
+  // Returns the font used for tooltips.
+  TooltipManager* GetTooltipManager();
+  const TooltipManager* GetTooltipManager() const;
 
   // Sets-up the focus manager with the view that should have focus when the
   // window is shown the first time.  Returns true if the initial focus has been

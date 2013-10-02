@@ -15,6 +15,10 @@ class RootWindow;
 class Window;
 }
 
+namespace gfx {
+class FontList;
+}
+
 namespace views {
 
 class Widget;
@@ -25,7 +29,11 @@ class TooltipManagerAura : public TooltipManager {
   TooltipManagerAura(aura::Window* window, Widget* widget);
   virtual ~TooltipManagerAura();
 
-  // TooltipManager.
+  // Returns the FontList used by all TooltipManagerAuras.
+  static const gfx::FontList& GetDefaultFontList();
+
+  // TooltipManager:
+  virtual const gfx::FontList& GetFontList() const OVERRIDE;
   virtual void UpdateTooltip() OVERRIDE;
   virtual void TooltipTextChanged(View* view) OVERRIDE;
 

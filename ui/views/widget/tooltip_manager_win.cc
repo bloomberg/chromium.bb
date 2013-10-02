@@ -7,17 +7,21 @@
 #include <windowsx.h>
 
 #include <limits>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/gfx/win/scoped_set_map_mode.h"
@@ -27,7 +31,50 @@
 
 namespace views {
 
+namespace {
+
 static int tooltip_height_ = 0;
+
+// Maximum number of lines we allow in the tooltip.
+const size_t kMaxLines = 6;
+
+// Trims the tooltip to fit, setting |text| to the clipped result, |max_width|
+// to the width (in pixels) of the clipped text and |line_count| to the number
+// of lines of text in the tooltip. |available_width| gives the space available
+// for the tooltip.
+void TrimTooltipToFit(const gfx::FontList& font_list,
+                      int available_width,
+                      base::string16* text,
+                      int* max_width,
+                      int* line_count) {
+  *max_width = 0;
+  *line_count = 0;
+
+  TooltipManager::TrimTooltipText(text);
+
+  // Split the string into at most kMaxLines lines.
+  std::vector<base::string16> lines;
+  base::SplitString(*text, '\n', &lines);
+  if (lines.size() > kMaxLines)
+    lines.resize(kMaxLines);
+  *line_count = static_cast<int>(lines.size());
+
+  // Format each line to fit.
+  base::string16 result;
+  for (std::vector<base::string16>::iterator i = lines.begin();
+       i != lines.end(); ++i) {
+    base::string16 elided_text =
+        gfx::ElideText(*i, font_list, available_width, gfx::ELIDE_AT_END);
+    *max_width = std::max(*max_width,
+                          gfx::GetStringWidth(elided_text, font_list));
+    if (!result.empty())
+      result.push_back('\n');
+    result.append(elided_text);
+  }
+  *text = result;
+}
+
+}  // namespace
 
 // static
 int TooltipManager::GetTooltipHeight() {
@@ -45,25 +92,6 @@ static gfx::Font DetermineDefaultFont() {
   gfx::Font font = hfont ? gfx::Font(hfont) : gfx::Font();
   DestroyWindow(window);
   return font;
-}
-
-// static
-const gfx::FontList& TooltipManager::GetDefaultFontList() {
-  static gfx::FontList* font_list = NULL;
-  if (!font_list)
-    font_list = new gfx::FontList(DetermineDefaultFont());
-  return *font_list;
-}
-
-// static
-int TooltipManager::GetMaxWidth(int x, int y, gfx::NativeView context) {
-  gfx::Rect monitor_bounds =
-      gfx::Screen::GetScreenFor(context)->GetDisplayNearestPoint(
-          gfx::Point(x, y)).bounds();
-  // Allow the tooltip to be almost as wide as the screen.
-  // Otherwise, we would truncate important text, since we're not word-wrapping
-  // the text onto multiple lines.
-  return monitor_bounds.width() == 0 ? 800 : monitor_bounds.width() - 30;
 }
 
 TooltipManagerWin::TooltipManagerWin(Widget* widget)
@@ -120,6 +148,13 @@ gfx::NativeView TooltipManagerWin::GetParent() {
   return widget_->GetNativeView();
 }
 
+const gfx::FontList& TooltipManagerWin::GetFontList() const {
+  static gfx::FontList* font_list = NULL;
+  if (!font_list)
+    font_list = new gfx::FontList(DetermineDefaultFont());
+  return *font_list;
+}
+
 void TooltipManagerWin::UpdateTooltip() {
   // Set last_view_out_of_sync_ to indicate the view is currently out of sync.
   // This doesn't update the view under the mouse immediately as it may cause
@@ -172,9 +207,11 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
           clipped_text_ = tooltip_text_;
           gfx::Point screen_loc = last_mouse_pos_;
           View::ConvertPointToScreen(widget_->GetRootView(), &screen_loc);
-          TrimTooltipToFit(&clipped_text_, &tooltip_width_, &line_count_,
-                           screen_loc.x(), screen_loc.y(),
-                           widget_->GetNativeView());
+          TrimTooltipToFit(
+              GetFontList(),
+              GetMaxWidth(screen_loc.x(), screen_loc.y(),
+                          widget_->GetNativeView()),
+              &clipped_text_, &tooltip_width_, &line_count_);
           // Adjust the clipped tooltip text for locale direction.
           base::i18n::AdjustStringForLocaleDirection(&clipped_text_);
           tooltip_info->lpszText = const_cast<WCHAR*>(clipped_text_.c_str());

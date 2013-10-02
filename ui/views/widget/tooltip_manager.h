@@ -25,39 +25,30 @@ class View;
 // the various tooltip methods on View.
 class VIEWS_EXPORT TooltipManager {
  public:
+  TooltipManager() {}
+  virtual ~TooltipManager() {}
+
   // Returns the height of tooltips. This should only be invoked from within
   // GetTooltipTextOrigin.
   static int GetTooltipHeight();
-
-  // Returns the default font used by tooltips.
-  static const gfx::FontList& GetDefaultFontList();
 
   // Returns the maximum width of the tooltip. |x| and |y| give the location
   // the tooltip is to be displayed on in screen coordinates. |context| is
   // used to determine which gfx::Screen should be used.
   static int GetMaxWidth(int x, int y, gfx::NativeView context);
 
-  TooltipManager() {}
-  virtual ~TooltipManager() {}
+  // If necessary trims the text of a tooltip to ensure we don't try to display
+  // a mega-tooltip.
+  static void TrimTooltipText(base::string16* text);
+
+  // Returns the font list used for tooltips.
+  virtual const gfx::FontList& GetFontList() const = 0;
 
   // Notification that the view hierarchy has changed in some way.
   virtual void UpdateTooltip() = 0;
 
   // Invoked when the tooltip text changes for the specified views.
   virtual void TooltipTextChanged(View* view) = 0;
-
- protected:
-  // Trims the tooltip to fit, setting |text| to the clipped result,
-  // |max_width| to the width (in pixels) of the clipped text and |line_count|
-  // to the number of lines of text in the tooltip. |x| and |y| give the
-  // location of the tooltip in screen coordinates. |context| is used to
-  // determine which gfx::Screen should be used.
-  static void TrimTooltipToFit(string16* text,
-                               int* max_width,
-                               int* line_count,
-                               int x,
-                               int y,
-                               gfx::NativeView context);
 };
 
 }  // namespace views

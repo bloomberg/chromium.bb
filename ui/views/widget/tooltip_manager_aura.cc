@@ -21,20 +21,6 @@ int TooltipManager::GetTooltipHeight() {
   return 0;
 }
 
-// static
-const gfx::FontList& TooltipManager::GetDefaultFontList() {
-  return ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::BaseFont);
-}
-
-// static
-int TooltipManager::GetMaxWidth(int x, int y, gfx::NativeView context) {
-  gfx::Rect monitor_bounds =
-      gfx::Screen::GetScreenFor(context)->GetDisplayNearestPoint(
-          gfx::Point(x, y)).bounds();
-  return (monitor_bounds.width() + 1) / 2;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipManagerAura public:
 
@@ -48,8 +34,18 @@ TooltipManagerAura::~TooltipManagerAura() {
   aura::client::SetTooltipText(window_, NULL);
 }
 
+// static
+const gfx::FontList& TooltipManagerAura::GetDefaultFontList() {
+  return ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::BaseFont);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipManagerAura, TooltipManager implementation:
+
+const gfx::FontList& TooltipManagerAura::GetFontList() const {
+  return GetDefaultFontList();
+}
 
 void TooltipManagerAura::UpdateTooltip() {
   aura::RootWindow* root_window = window_->GetRootWindow();

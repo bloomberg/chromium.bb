@@ -199,7 +199,7 @@ class BookmarkButton : public BookmarkButtonBase {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
     *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(
-        location, url_, text(), profile_, GetWidget()->GetNativeView());
+        GetWidget(), location, url_, text(), profile_);
     return !tooltip->empty();
   }
 
@@ -599,15 +599,16 @@ void BookmarkBarView::StopThrobbing(bool immediate) {
 
 // static
 string16 BookmarkBarView::CreateToolTipForURLAndTitle(
+    const views::Widget* widget,
     const gfx::Point& screen_loc,
     const GURL& url,
     const string16& title,
-    Profile* profile,
-    gfx::NativeView context) {
-  int max_width = views::TooltipManager::GetMaxWidth(screen_loc.x(),
-                                                     screen_loc.y(),
-                                                     context);
-  const gfx::FontList& tt_fonts = views::TooltipManager::GetDefaultFontList();
+    Profile* profile) {
+  int max_width = views::TooltipManager::GetMaxWidth(
+      screen_loc.x(),
+      screen_loc.y(),
+      widget->GetNativeView());
+  const gfx::FontList tt_fonts = widget->GetTooltipManager()->GetFontList();
   string16 result;
 
   // First the title.

@@ -637,7 +637,6 @@ class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
     widget->SetCapture(widget->GetRootView());
     widget->ReleaseCapture();
     widget->HasCapture();
-    widget->TooltipTextChanged(widget->GetRootView());
     widget->GetWorkAreaBoundsInScreen();
     // These three crash with NativeWidgetWin, so I'm assuming we don't need
     // them to work for the other NativeWidget impls.
