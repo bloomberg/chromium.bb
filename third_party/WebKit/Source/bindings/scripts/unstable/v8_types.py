@@ -69,11 +69,73 @@ BASIC_TYPES = set([
     # http://www.w3.org/TR/WebIDL/#es-type-mapping
     'void',
 ])
-NON_WRAPPER_TYPES = set([
-    'EventHandler',
-    'NodeFilter',
-    'SerializedScriptValue',
-])
+
+enum_types = {}  # name -> values
+callback_function_types = set()
+
+
+def array_or_sequence_type(idl_type):
+    return array_type(idl_type) or sequence_type(idl_type)
+
+
+def array_type(idl_type):
+    matched = re.match(r'([\w\s]+)\[\]', idl_type)
+    return matched and matched.group(1)
+
+
+def basic_type(idl_type):
+    return idl_type in BASIC_TYPES
+
+
+def callback_function_type(idl_type):
+    return idl_type in callback_function_types
+
+
+def set_callback_function_types(callback_functions):
+    callback_function_types.update(callback_functions.keys())
+
+
+def composite_type(idl_type):
+    return (idl_type == 'any' or
+            array_type(idl_type) or
+            sequence_type(idl_type) or
+            union_type(idl_type))
+
+
+def enum_type(idl_type):
+    return idl_type in enum_types
+
+
+def set_enum_types(enumerations):
+    enum_types.update([[enum.name, enum.values]
+                       for enum in enumerations.values()])
+
+
+def interface_type(idl_type):
+    # Anything that is not another type is an interface type.
+    # http://www.w3.org/TR/WebIDL/#idl-types
+    # http://www.w3.org/TR/WebIDL/#idl-interface
+    # In C++ these are RefPtr or PassRefPtr types.
+    return not(basic_type(idl_type) or
+               composite_type(idl_type) or
+               callback_function_type(idl_type) or
+               enum_type(idl_type) or
+               idl_type == 'object')
+
+
+def sequence_type(idl_type):
+    matched = re.match(r'sequence<([\w\s]+)>', idl_type)
+    return matched and matched.group(1)
+
+
+def union_type(idl_type):
+    return isinstance(idl_type, idl_definitions.IdlUnionType)
+
+
+################################################################################
+# V8-specific type handling
+################################################################################
+
 DOM_NODE_TYPES = set([
     'Attr',
     'CDATASection',
@@ -93,62 +155,16 @@ DOM_NODE_TYPES = set([
     'Text',
     'TestNode',
 ])
-
-callback_function_types = set()
-
-
-def array_or_sequence_type(idl_type):
-    return array_type(idl_type) or sequence_type(idl_type)
-
-
-def array_type(idl_type):
-    matched = re.match(r'([\w\s]+)\[\]', idl_type)
-    return matched and matched.group(1)
-
-
-def callback_function_type(idl_type):
-    return idl_type in callback_function_types
-
-
-def set_callback_function_types(callback_functions):
-    callback_function_types.update(callback_functions.keys())
+NON_WRAPPER_TYPES = set([
+    'NodeFilter',
+    'SerializedScriptValue',
+])
 
 
 def dom_node_type(idl_type):
     return (idl_type in DOM_NODE_TYPES or
             (idl_type.startswith(('HTML', 'SVG')) and
              idl_type.endswith('Element')))
-
-
-def basic_type(idl_type):
-    return idl_type in BASIC_TYPES
-
-
-def composite_type(idl_type):
-    return (idl_type == 'any' or
-            array_type(idl_type) or
-            sequence_type(idl_type) or
-            union_type(idl_type))
-
-
-def interface_type(idl_type):
-    # Anything that is not another type is an interface type.
-    # http://www.w3.org/TR/WebIDL/#idl-types
-    # http://www.w3.org/TR/WebIDL/#idl-interface
-    # In C++ these are RefPtr or PassRefPtr types.
-    return not(basic_type(idl_type) or
-               composite_type(idl_type) or
-               callback_function_type(idl_type) or
-               idl_type == 'object')
-
-
-def sequence_type(idl_type):
-    matched = re.match(r'sequence<([\w\s]+)>', idl_type)
-    return matched and matched.group(1)
-
-
-def union_type(idl_type):
-    return isinstance(idl_type, idl_definitions.IdlUnionType)
 
 
 def wrapper_type(idl_type):
@@ -194,7 +210,8 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         return 'unsigned'
     if idl_type in CPP_SPECIAL_CONVERSION_TYPES:
         return CPP_SPECIAL_CONVERSION_TYPES[idl_type]
-    if idl_type == 'DOMString':
+    if idl_type == 'DOMString' or enum_type(idl_type):
+        # enum is internally a string
         if used_as_argument:
             return 'V8StringResource<>'
         return 'String'
@@ -241,7 +258,8 @@ def includes_for_cpp_class(class_name, relative_dir_posix):
 
 def skip_includes(idl_type):
     return (basic_type(idl_type) or
-            callback_function_type(idl_type))
+            callback_function_type(idl_type) or
+            enum_type(idl_type))
 
 INCLUDES_FOR_TYPE = {
     'Promise': set(['ScriptPromise.h']),
@@ -297,6 +315,8 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate):
 
     if callback_function_type(idl_type):
         idl_type = 'any'
+    if enum_type(idl_type):
+        idl_type = 'DOMString'
 
     if 'EnforceRange' in extended_attributes:
         arguments = ', '.join([v8_value, 'EnforceRange', 'ok'])
@@ -354,6 +374,9 @@ def v8_value_to_cpp_value_statement(idl_type, extended_attributes, v8_value, var
 
 def preprocess_type_and_value(idl_type, cpp_value, extended_attributes):
     """Returns type and value, with preliminary type conversions applied."""
+    if enum_type(idl_type):
+        # Enumerations are internally DOMStrings
+        idl_type = 'DOMString'
     if idl_type in ['long long', 'unsigned long long']:
         # long long and unsigned long long are not representable in ECMAScript;
         # we represent them as doubles.

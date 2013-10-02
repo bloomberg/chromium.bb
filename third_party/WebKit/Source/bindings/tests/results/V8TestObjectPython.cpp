@@ -529,6 +529,20 @@ static void readonlyNullableLongAttributeAttributeGetterCallback(v8::Local<v8::S
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void readonlyTestEnumAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->readonlyTestEnumAttribute(), info.GetIsolate());
+    return;
+}
+
+static void readonlyTestEnumAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::readonlyTestEnumAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void staticReadonlyStringAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueString(info, TestObjectPython::staticReadonlyStringAttribute(), info.GetIsolate());
@@ -605,6 +619,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"readonlyFloatArrayAttribute", TestObjectPythonV8Internal::readonlyFloatArrayAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyNullableStringAttribute", TestObjectPythonV8Internal::readonlyNullableStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyNullableLongAttribute", TestObjectPythonV8Internal::readonlyNullableLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyTestEnumAttribute", TestObjectPythonV8Internal::readonlyTestEnumAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyEventHandlerAttribute", TestObjectPythonV8Internal::readonlyEventHandlerAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 

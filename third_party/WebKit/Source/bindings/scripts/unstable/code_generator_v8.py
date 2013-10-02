@@ -53,6 +53,7 @@ templates_dir = os.path.join(module_path, os.pardir, os.pardir, 'templates')
 
 import v8_callback_interface
 import v8_interface
+import v8_types
 from v8_utilities import cpp_implemented_as_name, generate_conditional_string, v8_class_name
 
 
@@ -88,6 +89,9 @@ class CodeGeneratorV8:
 
         class_name = cpp_implemented_as_name(self.interface)
         self.include_for_cpp_class = posixpath.join(relative_dir_posix, class_name + '.h')
+        enumerations = definitions.enumerations
+        if enumerations:
+            v8_types.set_enum_types(enumerations)
 
     def write_dummy_header_and_cpp(self):
         # FIXME: fix GYP so these files aren't needed and remove this method

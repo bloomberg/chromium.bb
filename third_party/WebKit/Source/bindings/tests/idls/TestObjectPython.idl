@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum TestEnum { "", "EnumValue1", "EnumValue2", "EnumValue3" };
+
 interface TestObjectPython {
     // TestInterfaceEmpty is used as a stub interface type, for testing behavior
     // that should not depend on particular type (beyond "interface or not").
@@ -67,10 +69,12 @@ interface TestObjectPython {
     readonly attribute DOMString[] readonlyStringArrayAttribute;
     readonly attribute TestInterfaceEmpty[] readonlyTestInterfaceEmptyArrayAttribute;
     readonly attribute float[] readonlyFloatArrayAttribute;
-    // nullable attributes
+    // Nullable attributes
     readonly attribute DOMString? readonlyNullableStringAttribute;
     readonly attribute long? readonlyNullableLongAttribute;
-    // static attributes (Blink extension)
+    // Enumerations
+    readonly attribute TestEnum readonlyTestEnumAttribute;
+    // Static attributes (Blink extension)
     static readonly attribute DOMString staticReadonlyStringAttribute;
     static readonly attribute long staticReadonlyLongAttribute;
     // Miscellaneous special types
