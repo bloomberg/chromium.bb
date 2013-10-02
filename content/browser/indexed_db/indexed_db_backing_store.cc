@@ -384,22 +384,22 @@ IndexedDBBackingStore::RecordIdentifier::~RecordIdentifier() {}
 IndexedDBBackingStore::Cursor::CursorOptions::CursorOptions() {}
 IndexedDBBackingStore::Cursor::CursorOptions::~CursorOptions() {}
 
-enum IndexedDBLevelDBBackingStoreOpenResult {
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_SUCCESS,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_CLEANUP_DESTROY_FAILED,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_FAILED,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_SUCCESS,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_ERR,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MEMORY_FAILED,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_DISK_FULL,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_NO_RECOVERY,
-  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
+enum IndexedDBBackingStoreOpenResult {
+  INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS,
+  INDEXED_DB_BACKING_STORE_OPEN_SUCCESS,
+  INDEXED_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY,
+  INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA,
+  INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_DESTROY_FAILED,
+  INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_FAILED,
+  INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_SUCCESS,
+  INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA,
+  INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_ERR,
+  INDEXED_DB_BACKING_STORE_OPEN_MEMORY_FAILED,
+  INDEXED_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
+  INDEXED_DB_BACKING_STORE_OPEN_DISK_FULL,
+  INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
+  INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
+  INDEXED_DB_BACKING_STORE_OPEN_MAX,
 };
 
 // TODO(dgrogan): Move to leveldb_env.
@@ -454,6 +454,42 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                                      &leveldb_factory);
 }
 
+static void HistogramOpenStatus(IndexedDBBackingStoreOpenResult result) {
+  UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.BackingStore.OpenStatus",
+                            result,
+                            INDEXED_DB_BACKING_STORE_OPEN_MAX);
+}
+
+static bool IsPathTooLong(const base::FilePath& leveldb_dir) {
+  int limit = file_util::GetMaximumPathComponentLength(leveldb_dir.DirName());
+  if (limit == -1) {
+    DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
+    // In limited testing, ChromeOS returns 143, other OSes 255.
+#if defined(OS_CHROMEOS)
+    limit = 143;
+#else
+    limit = 255;
+#endif
+  }
+  size_t component_length = leveldb_dir.BaseName().value().length();
+  if (component_length > static_cast<uint32_t>(limit)) {
+    DLOG(WARNING) << "Path component length (" << component_length
+                  << ") exceeds maximum (" << limit
+                  << ") allowed by this filesystem.";
+    const int min = 140;
+    const int max = 300;
+    const int num_buckets = 12;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength",
+        component_length,
+        min,
+        max,
+        num_buckets);
+    return true;
+  }
+  return false;
+}
+
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const std::string& origin_identifier,
     const base::FilePath& path_base,
@@ -469,66 +505,23 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   scoped_ptr<LevelDBComparator> comparator(new Comparator());
 
   if (!IsStringASCII(path_base.AsUTF8Unsafe())) {
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII);
   }
   if (!file_util::CreateDirectory(path_base)) {
     LOG(ERROR) << "Unable to create IndexedDB database path "
                << path_base.AsUTF8Unsafe();
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY);
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
-  base::FilePath identifier_path =
-      base::FilePath().AppendASCII(origin_identifier)
+  base::FilePath file_path =
+      path_base.AppendASCII(origin_identifier)
           .AddExtension(FILE_PATH_LITERAL(".indexeddb.leveldb"));
 
-  int limit = file_util::GetMaximumPathComponentLength(path_base);
-  if (limit == -1) {
-    DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
-    // In limited testing, ChromeOS returns 143, other OSes 255.
-#if defined(OS_CHROMEOS)
-    limit = 143;
-#else
-    limit = 255;
-#endif
-  }
-  if (identifier_path.value().length() > static_cast<uint32_t>(limit)) {
-    DLOG(WARNING) << "Path component length ("
-                  << identifier_path.value().length() << ") exceeds maximum ("
-                  << limit << ") allowed by this filesystem.";
-    const int min = 140;
-    const int max = 300;
-    const int num_buckets = 12;
-    // TODO(dgrogan): Remove WebCore from these histogram names.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength",
-        identifier_path.value().length(),
-        min,
-        max,
-        num_buckets);
-    // TODO(dgrogan): Translate the FactoryGet calls to
-    // UMA_HISTOGRAM_ENUMERATION. FactoryGet was the most direct translation
-    // from the WebCore code.
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG);
+  if (IsPathTooLong(file_path)) {
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG);
     return scoped_refptr<IndexedDBBackingStore>();
   }
-
-  base::FilePath file_path = path_base.Append(identifier_path);
 
   scoped_ptr<LevelDBDatabase> db;
   leveldb::Status status = leveldb_factory->OpenLevelDB(
@@ -545,53 +538,27 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     if (!ok) {
       LOG(ERROR) << "IndexedDB had IO error checking schema, treating it as "
                     "failure to open";
-      base::Histogram::FactoryGet(
-          "WebCore.IndexedDB.BackingStore.OpenStatus",
-          1,
-          INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-          INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag)
-          ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA);
+      HistogramOpenStatus(
+          INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA);
       db.reset();
     } else if (!known) {
       LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
                     "as failure to open";
-      base::Histogram::FactoryGet(
-          "WebCore.IndexedDB.BackingStore.OpenStatus",
-          1,
-          INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-          INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag)
-          ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA);
+      HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA);
       db.reset();
     }
   }
 
   if (db) {
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_SUCCESS);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_SUCCESS);
   } else if (!RecoveryCouldBeFruitful(status)) {
     LOG(ERROR) << "Unable to open backing store, not trying to recover - "
                << status.ToString();
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_NO_RECOVERY);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY);
     return scoped_refptr<IndexedDBBackingStore>();
   } else if (*is_disk_full) {
     LOG(ERROR) << "Unable to open backing store - disk is full.";
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_DISK_FULL);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_DISK_FULL);
     return scoped_refptr<IndexedDBBackingStore>();
   } else {
     LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";
@@ -599,13 +566,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     bool success = leveldb_factory->DestroyLevelDB(file_path);
     if (!success) {
       LOG(ERROR) << "IndexedDB backing store cleanup failed";
-      base::Histogram::FactoryGet(
-          "WebCore.IndexedDB.BackingStore.OpenStatus",
-          1,
-          INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-          INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag)
-          ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_CLEANUP_DESTROY_FAILED);
+      HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_DESTROY_FAILED);
       return scoped_refptr<IndexedDBBackingStore>();
     }
 
@@ -613,31 +574,15 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     leveldb_factory->OpenLevelDB(file_path, comparator.get(), &db, NULL);
     if (!db) {
       LOG(ERROR) << "IndexedDB backing store reopen after recovery failed";
-      base::Histogram::FactoryGet(
-          "WebCore.IndexedDB.BackingStore.OpenStatus",
-          1,
-          INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-          INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag)
-          ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_FAILED);
+      HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_FAILED);
       return scoped_refptr<IndexedDBBackingStore>();
     }
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_SUCCESS);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_SUCCESS);
   }
 
   if (!db) {
     NOTREACHED();
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_ERR);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_ERR);
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
@@ -660,20 +605,10 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
       LevelDBDatabase::OpenInMemory(comparator.get());
   if (!db) {
     LOG(ERROR) << "LevelDBDatabase::OpenInMemory failed.";
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MEMORY_FAILED);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_FAILED);
     return scoped_refptr<IndexedDBBackingStore>();
   }
-  base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                              1,
-                              INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                              INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                              base::HistogramBase::kUmaTargetedHistogramFlag)
-      ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS);
+  HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS);
 
   return Create(file_identifier, db.Pass(), comparator.Pass());
 }
