@@ -43,24 +43,26 @@ void DoClose(base::PlatformFile file) {
 namespace ppapi {
 namespace proxy {
 
-FileIOResource::QueryOp::QueryOp(PP_FileHandle file_handle)
+FileIOResource::QueryOp::QueryOp(scoped_refptr<FileHandleHolder> file_handle)
     : file_handle_(file_handle) {
+  DCHECK(file_handle_);
 }
 
 FileIOResource::QueryOp::~QueryOp() {
 }
 
 int32_t FileIOResource::QueryOp::DoWork() {
-  return base::GetPlatformFileInfo(file_handle_, &file_info_) ?
+  return base::GetPlatformFileInfo(file_handle_->raw_handle(), &file_info_) ?
       PP_OK : PP_ERROR_FAILED;
 }
 
-FileIOResource::ReadOp::ReadOp(PP_FileHandle file_handle,
+FileIOResource::ReadOp::ReadOp(scoped_refptr<FileHandleHolder> file_handle,
                                int64_t offset,
                                int32_t bytes_to_read)
   : file_handle_(file_handle),
     offset_(offset),
     bytes_to_read_(bytes_to_read) {
+  DCHECK(file_handle_);
 }
 
 FileIOResource::ReadOp::~ReadOp() {
@@ -70,18 +72,16 @@ int32_t FileIOResource::ReadOp::DoWork() {
   DCHECK(!buffer_.get());
   buffer_.reset(new char[bytes_to_read_]);
   return base::ReadPlatformFile(
-      file_handle_, offset_, buffer_.get(), bytes_to_read_);
+      file_handle_->raw_handle(), offset_, buffer_.get(), bytes_to_read_);
 }
 
 FileIOResource::FileIOResource(Connection connection, PP_Instance instance)
     : PluginResource(connection, instance),
-      file_handle_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID) {
   SendCreate(RENDERER, PpapiHostMsg_FileIO_Create());
 }
 
 FileIOResource::~FileIOResource() {
-  CloseFileHandle();
 }
 
 PPB_FileIO_API* FileIOResource::AsPPB_FileIO_API() {
@@ -134,7 +134,7 @@ int32_t FileIOResource::Query(PP_FileInfo* info,
     return rv;
   if (!info)
     return PP_ERROR_BADARGUMENT;
-  if (file_handle_ == base::kInvalidPlatformFileValue)
+  if (!FileHandleHolder::IsValid(file_handle_))
     return PP_ERROR_FAILED;
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
@@ -262,7 +262,9 @@ int32_t FileIOResource::Flush(scoped_refptr<TrackedCallback> callback) {
 }
 
 void FileIOResource::Close() {
-  CloseFileHandle();
+  if (file_handle_) {
+    file_handle_ = NULL;
+  }
   Post(RENDERER, PpapiHostMsg_FileIO_Close());
 }
 
@@ -291,13 +293,32 @@ int32_t FileIOResource::RequestOSFileHandle(
   return PP_OK_COMPLETIONPENDING;
 }
 
+FileIOResource::FileHandleHolder::FileHandleHolder(PP_FileHandle file_handle)
+    : raw_handle_(file_handle) {
+}
+
+// static
+bool FileIOResource::FileHandleHolder::IsValid(
+    const scoped_refptr<FileIOResource::FileHandleHolder>& handle) {
+  return handle && (handle->raw_handle() != base::kInvalidPlatformFileValue);
+}
+
+FileIOResource::FileHandleHolder::~FileHandleHolder() {
+  if (raw_handle_ != base::kInvalidPlatformFileValue) {
+    base::TaskRunner* file_task_runner =
+        PpapiGlobals::Get()->GetFileTaskRunner();
+    file_task_runner->PostTask(FROM_HERE,
+                               base::Bind(&DoClose, raw_handle_));
+  }
+}
+
 int32_t FileIOResource::ReadValidated(int64_t offset,
                                       int32_t bytes_to_read,
                                       const PP_ArrayOutput& array_output,
                                       scoped_refptr<TrackedCallback> callback) {
   if (bytes_to_read < 0)
     return PP_ERROR_FAILED;
-  if (file_handle_ == base::kInvalidPlatformFileValue)
+  if (!FileHandleHolder::IsValid(file_handle_))
     return PP_ERROR_FAILED;
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_READ);
@@ -325,18 +346,6 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
       Bind(&FileIOResource::OnReadComplete, this, read_op, array_output));
 
   return PP_OK_COMPLETIONPENDING;
-}
-
-void FileIOResource::CloseFileHandle() {
-  if (file_handle_ != base::kInvalidPlatformFileValue) {
-    // Close our local fd on the file thread.
-    base::TaskRunner* file_task_runner =
-        PpapiGlobals::Get()->GetFileTaskRunner();
-    file_task_runner->PostTask(FROM_HERE,
-                               base::Bind(&DoClose, file_handle_));
-
-    file_handle_ = base::kInvalidPlatformFileValue;
-  }
 }
 
 int32_t FileIOResource::OnQueryComplete(scoped_refptr<QueryOp> query_op,
@@ -401,8 +410,10 @@ void FileIOResource::OnPluginMsgOpenFileComplete(
 
   int32_t result = params.result();
   IPC::PlatformFileForTransit transit_file;
-  if ((result == PP_OK) && params.TakeFileHandleAtIndex(0, &transit_file))
-    file_handle_ = IPC::PlatformFileForTransitToPlatformFile(transit_file);
+  if ((result == PP_OK) && params.TakeFileHandleAtIndex(0, &transit_file)) {
+    file_handle_ = new FileHandleHolder(
+        IPC::PlatformFileForTransitToPlatformFile(transit_file));
+  }
   // End this operation now, so the user's callback can execute another FileIO
   // operation, assuming there are no other pending operations.
   state_manager_.SetOperationFinished();
