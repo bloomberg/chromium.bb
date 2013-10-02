@@ -7,11 +7,14 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     {% endif %}
     {% if attribute.is_nullable %}
     bool isNull = false;
-    {{attribute.cpp_type}} value = {{attribute.cpp_value_original}};
+    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
+    {% endif %}
+    {% if attribute.idl_type == 'EventHandler' %}
+    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {% endif %}
     {% if attribute.is_keep_alive_for_gc %}
     {{attribute.cpp_type}} result = {{attribute.cpp_value}};

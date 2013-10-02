@@ -73,4 +73,6 @@ interface TestObjectPython {
     // static attributes (Blink extension)
     static readonly attribute DOMString staticReadonlyStringAttribute;
     static readonly attribute long staticReadonlyLongAttribute;
+    // Miscellaneous special types
+    readonly attribute EventHandler readonlyEventHandlerAttribute;
 };

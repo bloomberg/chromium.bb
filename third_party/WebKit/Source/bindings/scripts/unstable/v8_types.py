@@ -70,6 +70,7 @@ BASIC_TYPES = set([
     'void',
 ])
 NON_WRAPPER_TYPES = set([
+    'EventHandler',
     'NodeFilter',
     'SerializedScriptValue',
 ])
@@ -201,6 +202,11 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         return 'ScriptValue'
     if union_type(idl_type):
         raise Exception('UnionType is not supported')
+
+    # Special cases
+    if idl_type == 'EventHandler':
+        return 'EventListener*'
+
     # FIXME: fix Perl code reading:
     # return "RefPtr<${type}>" if IsRefPtrType($type) and not $isParameter;
     if interface_type(idl_type):
@@ -238,11 +244,10 @@ def skip_includes(idl_type):
             callback_function_type(idl_type))
 
 INCLUDES_FOR_TYPE = {
-    'EventHandler': set(['core/dom/EventListener.h']),
-    'EventListener': set(['core/dom/EventListener.h']),
     'Promise': set(['ScriptPromise.h']),
     'SerializedScriptValue': set(['bindings/v8/SerializedScriptValue.h']),
 }
+
 def includes_for_type(idl_type):
     if idl_type in INCLUDES_FOR_TYPE:
         return INCLUDES_FOR_TYPE[idl_type]
@@ -392,6 +397,9 @@ def v8_conversion_type_and_includes(idl_type):
             includes = set()
         return 'array', includes
 
+    if idl_type == 'EventHandler':
+        return 'EventHandler', set(['bindings/v8/V8AbstractEventListener.h'])
+
     includes = includes_for_type(idl_type)
     if idl_type == 'SerializedScriptValue':
         return 'SerializedScriptValue', includes
@@ -415,6 +423,7 @@ V8_SET_RETURN_VALUE = {
     # and then use general v8SetReturnValue.
     'array': 'v8SetReturnValue({callback_info}, {cpp_value});',
     'Date': 'v8SetReturnValue({callback_info}, {cpp_value});',
+    'EventHandler': 'v8SetReturnValue({callback_info}, {cpp_value});',
     'ScriptValue': 'v8SetReturnValue({callback_info}, {cpp_value});',
     'SerializedScriptValue': 'v8SetReturnValue({callback_info}, {cpp_value});',
     # DOMWrapper
@@ -433,7 +442,7 @@ def v8_set_return_value(idl_type, cpp_value, callback_info, isolate, creation_co
     idl_type, cpp_value = preprocess_type_and_value(idl_type, cpp_value, extended_attributes)
     v8_conversion_type, includes = v8_conversion_type_and_includes(idl_type)
     # SetReturn-specific overrides
-    if v8_conversion_type in ['Date', 'ScriptValue', 'SerializedScriptValue', 'array']:
+    if v8_conversion_type in ['Date', 'EventHandler', 'ScriptValue', 'SerializedScriptValue', 'array']:
         # Convert value to V8 and then use general v8SetReturnValue
         cpp_value, _ = cpp_value_to_v8_value(idl_type, cpp_value, isolate, callback_info=callback_info)
     if v8_conversion_type == 'DOMWrapper':
@@ -455,6 +464,8 @@ CPP_VALUE_TO_V8_VALUE = {
     'float': 'v8::Number::New({cpp_value})',
     'double': 'v8::Number::New({cpp_value})',
     'void': 'v8Undefined()',
+    # Special cases
+    'EventHandler': '{cpp_value} ? v8::Handle<v8::Value>(V8AbstractEventListener::cast({cpp_value})->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null({isolate}))',
     # General
     'array': 'v8Array({cpp_value}, {isolate})',
     'default': 'toV8({cpp_value}, {creation_context}, {isolate})',

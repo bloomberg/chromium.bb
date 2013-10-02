@@ -68,6 +68,7 @@ def generate_attribute_and_includes(interface, attribute):
     contents = {
         'conditional_string': generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
+        'idl_type': idl_type,
         'is_keep_alive_for_gc': this_is_keep_alive_for_gc,
         'is_nullable': attribute.is_nullable,
         'is_static': attribute.is_static,
@@ -76,14 +77,18 @@ def generate_attribute_and_includes(interface, attribute):
     }
 
     cpp_value = getter_expression(interface, attribute)
+    # Normally we can inline the function call into the return statement to
+    # avoid the overhead of using a Ref<> temporary, but for some cases
+    # (nullable types, EventHandler, or if there are exceptions), we need to
+    # use a local variable.
+    # FIXME: check if compilers are smart enough to inline this, and if so,
+    # always use a local variable (for readability and CG simplicity).
     if attribute.is_nullable:
-        # Normally we can inline the function call into the return statement to
-        # avoid the overhead of using a Ref<> temporary, but for Nullable types
-        # (or if there are exceptions), we need to use a local variable.
-        # FIXME: check if compilers are smart enough to inline this, and if so,
-        # always use a local variable (for readability and CG simplicity).
         contents['cpp_value_original'] = cpp_value
         cpp_value = 'value'
+    elif idl_type == 'EventHandler':
+        contents['cpp_value_original'] = cpp_value
+        cpp_value = 'listener'
     contents['cpp_value'] = cpp_value
 
     if this_is_keep_alive_for_gc:
@@ -92,6 +97,12 @@ def generate_attribute_and_includes(interface, attribute):
     else:
         return_v8_value_statement, includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=attribute.extended_attributes, script_wrappable='imp')
         contents['return_v8_value_statement'] = return_v8_value_statement
+
+    if (idl_type == 'EventHandler' and
+        interface.name in ['Window', 'WorkerGlobalScope'] and
+        attribute.name == 'onerror'):
+            includes.add('bindings/v8/V8ErrorHandler.h')
+
     return contents, includes
 
 
@@ -100,6 +111,8 @@ def getter_expression(interface, attribute):
     arguments = []
     if attribute.is_nullable:
         arguments.append('isNull')
+    if attribute.data_type == 'EventHandler':
+        arguments.append('isolatedWorldForIsolate(info.GetIsolate())')
     return '%s(%s)' % (this_getter_name, ', '.join(arguments))
 
 
@@ -127,5 +140,5 @@ def is_keep_alive_for_gc(attribute):
              # A self-reference is unnecessary.
              attribute.name == 'self' or
              # FIXME: Remove these hard-coded hacks.
-             idl_type in ['SerializedScriptValue', 'Window'] or
+             idl_type in ['EventHandler', 'SerializedScriptValue', 'Window'] or
              idl_type.startswith('HTML'))))

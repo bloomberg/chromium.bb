@@ -425,9 +425,7 @@ sub AddIncludesForType
     return if SkipIncludeHeader($type);
 
     # Default includes
-    if ($type eq "EventListener" or $type eq "EventHandler") {
-        AddToImplIncludes("core/dom/EventListener.h");
-    } elsif ($type eq "SerializedScriptValue") {
+    if ($type eq "SerializedScriptValue") {
         AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
     } elsif ($type eq "any" || IsCallbackFunctionType($type)) {
         AddToImplIncludes("bindings/v8/ScriptValue.h");
