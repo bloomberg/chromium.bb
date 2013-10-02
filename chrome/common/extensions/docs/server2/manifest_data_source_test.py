@@ -8,9 +8,9 @@ import json
 import unittest
 
 from compiled_file_system import CompiledFileSystem
+from features_bundle import FeaturesBundle
 import manifest_data_source
 from object_store_creator import ObjectStoreCreator
-from test_file_system import TestFileSystem
 
 
 convert_and_annotate_docs = {
@@ -199,32 +199,27 @@ class ManifestDataSourceTest(unittest.TestCase):
     ]
 
     self.assertEqual(
-        expected_docs, manifest_data_source._ListifyAndSortDocs(docs, 'app'))
+        expected_docs, manifest_data_source._ListifyAndSortDocs(docs, 'apps'))
 
   def testManifestDataSource(self):
-    file_system = TestFileSystem({
-      '_manifest_features.json': json.dumps({
-        'doc1': {
-          'extension_types': 'all'
-        },
-        'doc1.sub1': {
-          'extension_types': ['platform_app']
-        },
-        'doc2': {
-          'extension_types': ['extension']
-        }
-      }),
-      'manifest.json': json.dumps({
-        'doc1': {
-          'example': {},
-          'level': 'required'
-        },
-        'doc1.sub1': {
-          'annotations': ['important!'],
-          'level': 'recommended'
-        }
-      })
-    })
+    manifest_features = {
+      'doc1': {
+        'name': 'doc1',
+        'platforms': ['apps', 'extensions'],
+        'example': {},
+        'level': 'required'
+      },
+      'doc1.sub1': {
+        'name': 'doc1.sub1',
+        'platforms': ['apps'],
+        'annotations': ['important!'],
+        'level': 'recommended'
+      },
+      'doc2': {
+        'name': 'doc2',
+        'platforms': ['extensions']
+      }
+    }
 
     expected_app = [
       {
@@ -232,7 +227,7 @@ class ManifestDataSourceTest(unittest.TestCase):
         'has_example': True,
         'level': 'required',
         'name': 'doc1',
-        'platforms': ['app', 'extension'],
+        'platforms': ['apps', 'extensions'],
         'children': [
           {
             'annotations': [
@@ -241,7 +236,7 @@ class ManifestDataSourceTest(unittest.TestCase):
             ],
             'level': 'recommended',
             'name': 'sub1',
-            'platforms': ['app'],
+            'platforms': ['apps'],
             'is_last': True
           }
         ],
@@ -249,13 +244,14 @@ class ManifestDataSourceTest(unittest.TestCase):
       }
     ]
 
+    class FakeFeaturesBundle(object):
+      def GetManifestFeatures(self):
+        return manifest_features
+
     class FakeServerInstance(object):
       def __init__(self):
-        self.host_file_system = file_system
-        self.compiled_host_fs_factory = CompiledFileSystem.Factory(
-            file_system, ObjectStoreCreator.ForTest())
-        self.manifest_json_path = 'manifest.json'
-        self.manifest_features_path = '_manifest_features.json'
+        self.features_bundle = FakeFeaturesBundle()
+        self.object_store_creator = ObjectStoreCreator.ForTest()
 
     mds = manifest_data_source.ManifestDataSource(FakeServerInstance(), None)
     self.assertEqual(expected_app, mds.get('apps'))

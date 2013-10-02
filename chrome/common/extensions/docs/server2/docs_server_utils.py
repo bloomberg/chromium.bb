@@ -27,3 +27,9 @@ def StringIdentity(string):
   '''Creates a small hash of a string.
   '''
   return b64encode(sha1(string).digest())[:8]
+
+def MarkLast(dicts):
+  '''Adds a property 'last' == True to the last element in a list of dicts.
+  '''
+  if len(dicts) > 0:
+    dicts[-1]['last'] = True

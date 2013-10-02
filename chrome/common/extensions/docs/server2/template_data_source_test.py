@@ -9,6 +9,7 @@ import sys
 import unittest
 
 from api_data_source import APIDataSource
+from features_bundle import FeaturesBundle
 from compiled_file_system import CompiledFileSystem
 from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
@@ -33,6 +34,17 @@ class _FakeFactory(object):
     return self._input_dict
 
 
+class _FakeFeaturesBundle(object):
+  def GetPermissionFeatures(self):
+    return {}
+
+
+class _FakeServerInstance(object):
+  def __init__(self):
+    self.features_bundle = _FakeFeaturesBundle()
+    self.object_store_creator = ObjectStoreCreator.ForTest()
+
+
 class TemplateDataSourceTest(unittest.TestCase):
 
   def setUp(self):
@@ -42,8 +54,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._fake_api_list_data_source_factory = _FakeFactory()
     self._fake_intro_data_source_factory = _FakeFactory()
     self._fake_samples_data_source_factory = _FakeFactory()
-    self._permissions_data_source = PermissionsDataSource(
-      _FakeFactory(), LocalFileSystem.Create(), '', '', '')
+    self._permissions_data_source = PermissionsDataSource(_FakeServerInstance())
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:

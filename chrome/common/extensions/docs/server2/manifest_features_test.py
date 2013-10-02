@@ -5,7 +5,7 @@
 
 import unittest
 
-from manifest_features import CreateManifestFeatures, ConvertDottedKeysToNested
+from manifest_features import ConvertDottedKeysToNested
 
 class ManifestFeaturesTest(unittest.TestCase):
   def testConvertDottedKeysToNested(self):
@@ -50,52 +50,6 @@ class ManifestFeaturesTest(unittest.TestCase):
     }
 
     self.assertEqual(expected_docs, ConvertDottedKeysToNested(docs))
-
-  def testCreateManifestFeatures(self):
-    features_json = {
-      'doc1': { 'extension_types': 'all' },
-      'doc2': { 'extension_types': ['extension', 'package_app'] }
-    }
-
-    manifest_json = {
-      'doc1': { 'example': {} },
-      'doc1.sub1': { 'example': [] }
-    }
-
-    expected = {
-      'doc1': {
-        'name': 'doc1',
-        'example': {},
-        'platforms': ['app', 'extension']
-      },
-      'doc1.sub1': {
-        'example': [],
-        'name': 'doc1.sub1',
-        'platforms': []
-      },
-      'doc2': {
-        'name': 'doc2',
-        'platforms': ['extension']
-      }
-    }
-
-    expected_filtered = {
-      'doc1': {
-        'example': {},
-        'name': 'doc1',
-        'platforms': ['app', 'extension']
-      }
-    }
-
-    self.assertEqual(expected, CreateManifestFeatures(
-        features_json=features_json,
-        manifest_json=manifest_json,
-        filter_platform=None))
-
-    self.assertEqual(expected_filtered, CreateManifestFeatures(
-        features_json=features_json,
-        manifest_json=manifest_json,
-        filter_platform='app'))
 
 if __name__ == '__main__':
   unittest.main()

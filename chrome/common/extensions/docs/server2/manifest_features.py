@@ -12,24 +12,6 @@ indicating how an app or extension should define a manifest property. If 'level'
 is missing, 'optional' is assumed.
 '''
 
-import features_utility
-
-def CreateManifestFeatures(features_json, manifest_json, filter_platform=None):
-  '''Create a manifest features dictionary by normalizing |features_json| and
-  merging it with |manifest_json|. If filter_platform is 'app' or 'extension'
-  then irrelevant features will be removed.
-  '''
-  assert filter_platform in ['app', 'extension', None]
-  manifest_features = features_utility.MergedWith(
-      features_utility.Parse(features_json), manifest_json)
-
-  if filter_platform:
-    manifest_features = features_utility.Filtered(
-        manifest_features, filter_platform)
-
-  return manifest_features
-
-
 def ConvertDottedKeysToNested(features):
   '''Some Manifest Features are subordinate to others, such as app.background to
   app. Subordinate Features can be moved inside the parent Feature under the key

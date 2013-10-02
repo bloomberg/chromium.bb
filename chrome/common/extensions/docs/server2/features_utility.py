@@ -7,13 +7,21 @@ Utility functions for working with the Feature abstraction. Features are grouped
 into a dictionary by name. Each Feature is guaranteed to have the following two
 keys:
   name - a string, the name of the feature
-  platform - a list containing 'app' or 'extension', both, or neither.
+  platform - a list containing 'apps' or 'extensions', both, or neither.
 
 A Feature may have other keys from a _features.json file as well. Features with
 a whitelist are ignored as they are only useful to specific apps or extensions.
 '''
 
 from copy import deepcopy
+
+def _GetPlatformsForExtensionTypes(extension_types):
+  platforms = []
+  if extension_types == 'all' or 'platform_app' in extension_types:
+    platforms.append('apps')
+  if extension_types == 'all' or 'extension' in extension_types:
+    platforms.append('extensions')
+  return platforms
 
 def Parse(features_json):
   '''Process JSON from a _features.json file, standardizing it into a dictionary
@@ -22,7 +30,7 @@ def Parse(features_json):
   features = {}
 
   for name, value in deepcopy(features_json).iteritems():
-    # Some feature names corrispond to a list; force a list down to a single
+    # Some feature names correspond to a list; force a list down to a single
     # feature by removing entries that have a 'whitelist'.
     if isinstance(value, list):
       values = [subvalue for subvalue in value if not 'whitelist' in subvalue]
@@ -36,11 +44,10 @@ def Parse(features_json):
 
     features[name] = { 'platforms': [] }
 
-    platforms = value.pop('extension_types')
-    if platforms == 'all' or 'platform_app' in platforms:
-      features[name]['platforms'].append('app')
-    if platforms == 'all' or 'extension' in platforms:
-      features[name]['platforms'].append('extension')
+    extension_types = value.pop('extension_types', None)
+    if extension_types is not None:
+      features[name]['platforms'] = _GetPlatformsForExtensionTypes(
+          extension_types)
 
     features[name]['name'] = name
     features[name].update(value)

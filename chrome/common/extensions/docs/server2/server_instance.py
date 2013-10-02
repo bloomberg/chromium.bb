@@ -9,6 +9,7 @@ from availability_finder import AvailabilityFinder
 from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from example_zipper import ExampleZipper
+from features_bundle import FeaturesBundle
 from host_file_system_creator import HostFileSystemCreator
 from host_file_system_iterator import HostFileSystemIterator
 from intro_data_source import IntroDataSource
@@ -22,7 +23,6 @@ import svn_constants
 from template_data_source import TemplateDataSource
 from test_branch_utility import TestBranchUtility
 from test_object_store import TestObjectStore
-
 
 class ServerInstance(object):
 
@@ -49,6 +49,11 @@ class ServerInstance(object):
         host_file_system,
         branch_utility)
 
+    self.features_bundle = FeaturesBundle(
+        self.host_file_system,
+        self.compiled_host_fs_factory,
+        self.object_store_creator)
+
     self.availability_finder = AvailabilityFinder(
         self.host_file_system_iterator,
         object_store_creator,
@@ -58,8 +63,9 @@ class ServerInstance(object):
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_host_fs_factory,
         self.host_file_system,
-        svn_constants.API_PATH,
-        svn_constants.PUBLIC_TEMPLATE_PATH)
+        svn_constants.PUBLIC_TEMPLATE_PATH,
+        self.features_bundle,
+        self.object_store_creator)
 
     self.api_data_source_factory = APIDataSource.Factory(
         self.compiled_host_fs_factory,
@@ -99,12 +105,7 @@ class ServerInstance(object):
         self.ref_resolver_factory,
         [svn_constants.INTRO_PATH, svn_constants.ARTICLE_PATH])
 
-    self.permissions_data_source = PermissionsDataSource(
-        self.compiled_host_fs_factory,
-        self.host_file_system,
-        '/'.join((svn_constants.API_PATH, '_api_features.json')),
-        '/'.join((svn_constants.API_PATH, '_permission_features.json')),
-        '/'.join((svn_constants.JSON_PATH, 'permissions.json')))
+    self.permissions_data_source = PermissionsDataSource(self)
 
     self.example_zipper = ExampleZipper(
         self.compiled_host_fs_factory,
@@ -118,12 +119,10 @@ class ServerInstance(object):
         self.host_file_system,
         svn_constants.PUBLIC_TEMPLATE_PATH)
 
-    self.strings_json_path = '/'.join((svn_constants.JSON_PATH, 'strings.json'))
+    self.strings_json_path = svn_constants.STRINGS_JSON_PATH
     self.sidenav_json_base_path = svn_constants.JSON_PATH
-    self.manifest_json_path = '/'.join(
-        (svn_constants.JSON_PATH, 'manifest.json'))
-    self.manifest_features_path = '/'.join(
-        (svn_constants.API_PATH, '_manifest_features.json'))
+    self.manifest_json_path = svn_constants.MANIFEST_JSON_PATH
+    self.manifest_features_path = svn_constants.MANIFEST_FEATURES_PATH
 
     self.template_data_source_factory = TemplateDataSource.Factory(
         self.api_data_source_factory,

@@ -41,18 +41,10 @@ class PermissionsDataSource(object):
   '''Load and format permissions features to be used by templates. Requries a
   template data source be set before use.
   '''
-  def __init__(self,
-               compiled_fs_factory,
-               file_system,
-               api_features_path,
-               permissions_features_path,
-               permissions_json_path):
-    self._api_features_path = api_features_path
-    self._permissions_features_path = permissions_features_path
-    self._permissions_json_path = permissions_json_path
-    self._file_system = file_system
-    self._cache = compiled_fs_factory.Create(
-        self._CreatePermissionsDataSource, PermissionsDataSource)
+  def __init__(self, server_instance):
+    self._features_bundle = server_instance.features_bundle
+    self._object_store = server_instance.object_store_creator.Create(
+        PermissionsDataSource)
 
   def SetTemplateDataSource(self, template_data_source_factory):
     '''Initialize a template data source to be used to render partial templates
@@ -61,20 +53,12 @@ class PermissionsDataSource(object):
     self._template_data_source = template_data_source_factory.Create(
         None, {})
 
-  def _CreatePermissionsDataSource(self, _, content):
-    '''Combine the contents of |_permissions_json_path| and
-    |_permissions_features_path|. Filter into lists, one for extensions and
-    one for apps.
-    '''
-    api_features = Parse(self._file_system.ReadSingle(self._api_features_path))
+  def _CreatePermissionsData(self):
+    api_features = self._features_bundle.GetAPIFeatures()
+    permission_features = self._features_bundle.GetPermissionFeatures()
 
     def filter_for_platform(permissions, platform):
       return _ListifyPermissions(features.Filtered(permissions, platform))
-
-    permissions_json = Parse(self._file_system.ReadSingle(
-        self._permissions_json_path))
-    permission_features = features.MergedWith(
-        features.Parse(Parse(content)), permissions_json)
 
     _AddDependencyDescriptions(permission_features, api_features)
     # Turn partial templates into descriptions, ensure anchors are set.
@@ -87,10 +71,17 @@ class PermissionsDataSource(object):
         del permission['partial']
 
     return {
-      'declare_apps': filter_for_platform(permission_features, 'app'),
+      'declare_apps': filter_for_platform(permission_features, 'apps'),
       'declare_extensions': filter_for_platform(
-          permission_features, 'extension')
+          permission_features, 'extensions')
     }
 
+  def _GetCachedPermissionsData(self):
+    data = self._object_store.Get('permissions_data').Get()
+    if data is None:
+      data = self._CreatePermissionsData()
+      self._object_store.Set('permissions_data', data)
+    return data
+
   def get(self, key):
-    return self._cache.GetFromFile(self._permissions_features_path)[key]
+    return self._GetCachedPermissionsData().get(key)

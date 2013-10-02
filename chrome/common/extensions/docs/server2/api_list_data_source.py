@@ -2,84 +2,114 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from operator import itemgetter
 import os
 
+from third_party.json_schema_compiler.json_parse import Parse
 import third_party.json_schema_compiler.model as model
 import docs_server_utils as utils
+
+def _GetAPICategory(api, documented_apis):
+  name = api['name']
+  if (name.endswith('Private') or
+      name not in documented_apis):
+    return 'private'
+  if name.startswith('experimental.'):
+    return 'experimental'
+  return 'chrome'
+
 
 class APIListDataSource(object):
   """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
   for extensions and apps that are used in the api_index.html and
   experimental.html pages.
-  |api_path| is the path to the API schemas.
-  |public_path| is the path to the public HTML templates.
-  An API is considered listable if it's in both |api_path| and |public_path| -
-  the API schemas may contain undocumentable APIs, and the public HTML templates
-  will contain non-API articles.
+
+  An API is considered listable if it is listed in _api_features.json,
+  it has a corresponding HTML file in the public template path, and one of
+  the following conditions is met:
+    - It has no "dependencies" or "extension_types" properties in _api_features
+    - It has an "extension_types" property in _api_features with either/both
+      "extension"/"platform_app" values present.
+    - It has a dependency in _{api,manifest,permission}_features with an
+      "extension_types" property where either/both "extension"/"platform_app"
+      values are present.
   """
   class Factory(object):
-    def __init__(self, compiled_fs_factory, file_system, api_path, public_path):
-      self._compiled_fs = compiled_fs_factory.Create(self._ListAPIs,
-                                                     APIListDataSource)
+    def __init__(self,
+                 compiled_fs_factory,
+                 file_system,
+                 public_template_path,
+                 features_bundle,
+                 object_store_creator):
       self._file_system = file_system
-      def Normalize(string):
+      def NormalizePath(string):
         return string if string.endswith('/') else (string + '/')
-      self._api_path = Normalize(api_path)
-      self._public_path = Normalize(public_path)
+      self._public_template_path = NormalizePath(public_template_path)
+      self._cache = compiled_fs_factory.Create(self._CollectDocumentedAPIs,
+                                               APIListDataSource)
+      self._features_bundle = features_bundle
+      self._object_store_creator = object_store_creator
 
-    def _GetAPIsInSubdirectory(self, api_names, doc_type):
-      public_templates = []
-      for root, _, files in self._file_system.Walk(
-          self._public_path + doc_type):
-        public_templates.extend(
-            ('%s/%s' % (root, name)).lstrip('/') for name in files)
-      template_names = set(os.path.splitext(name)[0]
-                           for name in public_templates)
-      experimental_apis = []
-      chrome_apis = []
-      private_apis = []
-      for template_name in sorted(template_names):
-        if model.UnixName(template_name) not in api_names:
-          continue
-        entry = {'name': template_name.replace('_', '.')}
-        if template_name.startswith('experimental'):
-          experimental_apis.append(entry)
-        elif template_name.endswith('Private'):
-          private_apis.append(entry)
-        else:
-          chrome_apis.append(entry)
-      if len(chrome_apis):
-        chrome_apis[-1]['last'] = True
-      if len(experimental_apis):
-        experimental_apis[-1]['last'] = True
-      if len(private_apis):
-        private_apis[-1]['last'] = True
+    def _CollectDocumentedAPIs(self, base_dir, files):
+      def GetDocumentedAPIsForPlatform(names, platform):
+        public_templates = []
+        for root, _, files in self._file_system.Walk(
+            self._public_template_path + platform):
+          public_templates.extend(
+              ('%s/%s' % (root, name)).lstrip('/') for name in files)
+        template_names = set(os.path.splitext(name)[0]
+                             for name in public_templates)
+        return [name.replace('_', '.') for name in template_names]
+      api_names = set(utils.SanitizeAPIName(name) for name in files)
       return {
-        'chrome': chrome_apis,
-        'experimental': experimental_apis,
-        'private': private_apis
+        'apps': GetDocumentedAPIsForPlatform(api_names, 'apps'),
+        'extensions': GetDocumentedAPIsForPlatform(api_names, 'extensions')
       }
 
-    def _ListAPIs(self, base_dir, apis):
-      api_names = set(utils.SanitizeAPIName(name) for name in apis)
+    def _GenerateAPIDict(self):
+      documented_apis = self._cache.GetFromFileListing(
+          self._public_template_path)
+      api_features = self._features_bundle.GetAPIFeatures()
+
+      def FilterAPIs(platform):
+        return (api for api in api_features.itervalues()
+            if platform in api['platforms'])
+
+      def MakeDictForPlatform(platform):
+        platform_dict = { 'chrome': [], 'experimental': [], 'private': [] }
+        for api in FilterAPIs(platform):
+          category = _GetAPICategory(api, documented_apis[platform])
+          platform_dict[category].append(api)
+        for category, apis in platform_dict.iteritems():
+          platform_dict[category] = sorted(apis, key=itemgetter('name'))
+          utils.MarkLast(platform_dict[category])
+        return platform_dict
+
       return {
-        'apps': self._GetAPIsInSubdirectory(api_names, 'apps'),
-        'extensions': self._GetAPIsInSubdirectory(api_names, 'extensions')
+        'apps': MakeDictForPlatform('apps'),
+        'extensions': MakeDictForPlatform('extensions')
       }
 
     def Create(self):
-      return APIListDataSource(self._compiled_fs, self._api_path)
+      return APIListDataSource(self, self._object_store_creator)
 
-  def __init__(self, compiled_fs, api_path):
-    self._compiled_fs = compiled_fs
-    self._api_path = api_path
+  def __init__(self, factory, object_store_creator):
+    self._factory = factory
+    self._object_store = object_store_creator.Create(APIListDataSource)
 
   def GetAllNames(self):
-    names = []
+    apis = []
     for platform in ['apps', 'extensions']:
       for category in ['chrome', 'experimental', 'private']:
-        names.extend(self.get(platform).get(category))
-    return [api_name['name'] for api_name in names]
+        apis.extend(self.get(platform).get(category))
+    return [api['name'] for api in apis]
+
+  def _GetCachedAPIData(self):
+    data = self._object_store.Get('api_data').Get()
+    if data is None:
+      data = self._factory._GenerateAPIDict()
+      self._object_store.Set('api_data', data)
+    return data
 
   def get(self, key):
-    return self._compiled_fs.GetFromFileListing(self._api_path)[key]
+    return self._GetCachedAPIData().get(key)

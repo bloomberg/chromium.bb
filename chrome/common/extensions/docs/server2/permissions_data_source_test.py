@@ -7,68 +7,80 @@ import json
 import unittest
 
 from compiled_file_system import CompiledFileSystem
+from features_bundle import FeaturesBundle
 from object_store_creator import ObjectStoreCreator
 from permissions_data_source import PermissionsDataSource
 from test_file_system import TestFileSystem
 
-class FakeTemplateDataSource(object):
+class _FakeTemplateDataSource(object):
   class Factory():
     def Create(self, *args):
-      return FakeTemplateDataSource()
+      return _FakeTemplateDataSource()
   def get(self, key):
     return 'partial ' + key
 
-file_system = TestFileSystem({
-  'permissions.json': json.dumps({
-    'host-permissions': {
-      'name': 'match pattern',
-      'anchor': 'custom-anchor',
-      'platforms': ['app', 'extension'],
-      'partial': 'host_permissions.html',
-      'literal_name': True
-    },
-    'activeTab': {
-      'partial': 'active_tab.html'
-    },
-    'alarms': {
-      'partial': 'alarms.html'
-    },
-    'audioCapture': {
-      'partial': 'audio_capture.html'
-    },
-    'background': {
-      'partial': 'background.html'
-    }
-  }),
-  '_permission_features.json': json.dumps({
-    'activeTab': {
-      'extension_types': ['extension', 'packaged_app'],
-    },
-    'alarms': {
-      'extension_types': ['extension', 'packaged_app', 'platform_app'],
-    },
-      'audioCapture': {
-      'extension_types': ['platform_app']
-    },
-    'background': {
-      'extension_types': ['extension', 'packaged_app', 'hosted_app']
-    },
-    'commandLinePrivate': {
-      'extension_types': 'all'
-    },
-    'cookies': {
-      'extension_types': ['platform_app']
-    }
-  }),
-  '_api_features.json': json.dumps({
-    'cookies': {
-      'dependencies': ['permission:cookies']
-    },
-    'alarms': {
-      'dependencies': ['permission:alarms']
-    }
-  })
-})
+
+_TEST_PERMISSION_FEATURES = {
+  'host-permissions': {
+    'name': 'match pattern',
+    'anchor': 'custom-anchor',
+    'platforms': ['apps', 'extensions'],
+    'partial': 'host_permissions.html',
+    'literal_name': True
+  },
+  'activeTab': {
+    'name': 'activeTab',
+    'platforms': ['extensions'],
+    'partial': 'active_tab.html'
+  },
+  'alarms': {
+    'name': 'alarms',
+    'platforms': ['apps', 'extensions'],
+    'partial': 'alarms.html'
+  },
+  'audioCapture': {
+    'name': 'audioCapture',
+    'platforms': ['apps'],
+    'partial': 'audio_capture.html'
+  },
+  'background': {
+    'name': 'background',
+    'platforms': ['extensions'],
+    'partial': 'background.html'
+  },
+  'commandLinePrivate': {
+    'name': 'commandLinePrivate',
+    'platforms': ['apps', 'extensions']
+  },
+  'cookies': {
+    'name': 'cookies',
+    'platforms': ['apps']
+  }
+}
+
+_TEST_API_FEATURES = {
+  'cookies': {
+    'dependencies': ['permission:cookies']
+  },
+  'alarms': {
+    'dependencies': ['permission:alarms']
+  }
+}
+
+
+class _FakeFeaturesBundle(object):
+  def GetAPIFeatures(self):
+    return _TEST_API_FEATURES
+
+  def GetPermissionFeatures(self):
+    return _TEST_PERMISSION_FEATURES
+
+
+class _FakeServerInstance(object):
+  def __init__(self):
+    self.features_bundle = _FakeFeaturesBundle()
+    self.object_store_creator = ObjectStoreCreator.ForTest()
+
 
 class PermissionsDataSourceTest(unittest.TestCase):
   def testCreatePermissionsDataSource(self):
@@ -76,19 +88,19 @@ class PermissionsDataSourceTest(unittest.TestCase):
       {
         'name': 'activeTab',
         'anchor': 'activeTab',
-        'platforms': ['extension'],
+        'platforms': ['extensions'],
         'description': 'partial active_tab.html'
       },
       {
         'name': 'alarms',
         'anchor': 'alarms',
-        'platforms': ['app', 'extension'],
+        'platforms': ['apps', 'extensions'],
         'description': 'partial alarms.html'
       },
       {
         'name': 'background',
         'anchor': 'background',
-        'platforms': ['extension'],
+        'platforms': ['extensions'],
         'description': 'partial background.html'
       },
       {
@@ -96,7 +108,7 @@ class PermissionsDataSourceTest(unittest.TestCase):
         'anchor': 'custom-anchor',
         'literal_name': True,
         'description': 'partial host_permissions.html',
-        'platforms': ['app', 'extension']
+        'platforms': ['apps', 'extensions']
       }
     ]
 
@@ -104,39 +116,33 @@ class PermissionsDataSourceTest(unittest.TestCase):
       {
         'name': 'alarms',
         'anchor': 'alarms',
-        'platforms': ['app', 'extension'],
+        'platforms': ['apps', 'extensions'],
         'description': 'partial alarms.html'
       },
       {
         'name': 'audioCapture',
         'anchor': 'audioCapture',
         'description': 'partial audio_capture.html',
-        'platforms': ['app']
+        'platforms': ['apps']
       },
       {
         'anchor': 'cookies',
         'name': 'cookies',
         'description': 'partial permissions/generic_description',
-        'platforms': ['app']
+        'platforms': ['apps']
       },
       {
         'name': 'match pattern',
         'anchor': 'custom-anchor',
         'literal_name': True,
         'description': 'partial host_permissions.html',
-        'platforms': ['app', 'extension']
+        'platforms': ['apps', 'extensions']
       }
     ]
 
-    permissions_data_source = PermissionsDataSource(
-        CompiledFileSystem.Factory(file_system, ObjectStoreCreator.ForTest()),
-        file_system,
-        '_api_features.json',
-        '_permission_features.json',
-        'permissions.json')
-
+    permissions_data_source = PermissionsDataSource(_FakeServerInstance())
     permissions_data_source.SetTemplateDataSource(
-        FakeTemplateDataSource.Factory())
+        _FakeTemplateDataSource.Factory())
 
     self.assertEqual(
         expected_extensions,

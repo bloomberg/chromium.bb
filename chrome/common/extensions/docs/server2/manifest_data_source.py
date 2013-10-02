@@ -6,7 +6,7 @@ import json
 
 from data_source import DataSource
 import features_utility
-from manifest_features import CreateManifestFeatures, ConvertDottedKeysToNested
+from manifest_features import ConvertDottedKeysToNested
 from third_party.json_schema_compiler.json_parse import Parse
 
 def _ListifyAndSortDocs(features, app_name):
@@ -100,36 +100,32 @@ class ManifestDataSource(DataSource):
   '''Provides access to the properties in manifest features.
   '''
   def __init__(self, server_instance, _):
-    self._manifest_path = server_instance.manifest_json_path
-    self._features_path = server_instance.manifest_features_path
-    self._file_system = server_instance.host_file_system
-    self._cache = server_instance.compiled_host_fs_factory.Create(
-        self._CreateManifestData, ManifestDataSource)
+    self._features_bundle = server_instance.features_bundle
+    self._object_store = server_instance.object_store_creator.Create(
+        ManifestDataSource)
 
-  def _CreateManifestData(self, _, content):
-    '''Combine the contents of |_manifest_path| and |_features_path| and filter
-    the results into lists specific to apps or extensions for templates. Marks
-    up features with annotations.
-    '''
+  def _CreateManifestData(self):
     def for_templates(manifest_features, platform):
       return _AddLevelAnnotations(
           _ListifyAndSortDocs(
               ConvertDottedKeysToNested(
                   features_utility.Filtered(manifest_features, platform)),
               app_name=platform.capitalize()))
-
-    manifest_json = Parse(self._file_system.ReadSingle(self._manifest_path))
-    manifest_features = CreateManifestFeatures(
-        features_json=Parse(content), manifest_json=manifest_json)
-
+    manifest_features = self._features_bundle.GetManifestFeatures()
     return {
-      'apps': for_templates(manifest_features, 'app'),
-      'extensions': for_templates(manifest_features, 'extension')
+      'apps': for_templates(manifest_features, 'apps'),
+      'extensions': for_templates(manifest_features, 'extensions')
     }
 
+  def _GetCachedManifestData(self, force_update=False):
+    data = self._object_store.Get('manifest_data').Get()
+    if data is None or force_update:
+      data = self._CreateManifestData()
+      self._object_store.Set('manifest_data', data)
+    return data
+
   def Cron(self):
-    self._cache.GetFromFile(self._features_path)
-    self._file_system.ReadSingle(self._manifest_path)
+    self._GetCachedManifestData(force_update=True)
 
   def get(self, key):
-    return self._cache.GetFromFile(self._features_path)[key]
+    return self._GetCachedManifestData().get(key)

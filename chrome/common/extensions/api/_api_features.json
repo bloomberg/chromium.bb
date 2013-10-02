@@ -153,6 +153,15 @@
     "dependencies": ["permission:developerPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "devtools.inspectedWindow": {
+    "extension_types": ["extension"]
+  },
+  "devtools.network": {
+    "extension_types": ["extension"]
+  },
+  "devtools.panels": {
+    "extension_types": ["extension"]
+  },
   "diagnostics": {
     "dependencies": ["permission:diagnostics"],
     "extension_types": ["platform_app"],

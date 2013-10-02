@@ -33,7 +33,7 @@ class FeaturesUtilityTest(unittest.TestCase):
 
     expected = {
       'doc1': {
-        'platforms': ['app', 'extension'],
+        'platforms': ['apps', 'extensions'],
         'name': 'doc1'
       },
       'doc2': {
@@ -41,15 +41,15 @@ class FeaturesUtilityTest(unittest.TestCase):
         'name': 'doc2'
       },
       'doc4': {
-        'platforms': ['app', 'extension'],
+        'platforms': ['apps', 'extensions'],
         'name': 'doc4'
       },
       'doc5': {
-        'platforms': ['extension'],
+        'platforms': ['extensions'],
         'name': 'doc5'
       },
       'doc1.sub1': {
-        'platforms': ['app'],
+        'platforms': ['apps'],
         'name': 'doc1.sub1'
       }
     }
@@ -58,9 +58,9 @@ class FeaturesUtilityTest(unittest.TestCase):
 
   def testFilter(self):
     unfiltered = {
-      'doc1': { 'platforms': ['app'] },
-      'doc2': { 'platforms': ['extension'] },
-      'doc3': { 'platforms': ['app', 'extension'] },
+      'doc1': { 'platforms': ['apps'] },
+      'doc2': { 'platforms': ['extensions'] },
+      'doc3': { 'platforms': ['apps', 'extensions'] },
       'doc4': { 'platforms': [] }
     }
 
@@ -68,14 +68,14 @@ class FeaturesUtilityTest(unittest.TestCase):
     extension_names = set(('doc2', 'doc3'))
 
     self.assertEqual(
-        apps_names, set(Filtered(unfiltered, 'app').keys()))
+        apps_names, set(Filtered(unfiltered, 'apps').keys()))
     self.assertEqual(
-        extension_names, set(Filtered(unfiltered, 'extension').keys()))
+        extension_names, set(Filtered(unfiltered, 'extensions').keys()))
 
   def testMergeFeatures(self):
     features = {
       'doc1': {
-        'platforms': ['app']
+        'platforms': ['apps']
       },
       'doc3': {
         'name': 'doc3'
@@ -85,20 +85,20 @@ class FeaturesUtilityTest(unittest.TestCase):
     other = {
       'doc1': {
         'name': 'doc1',
-        'platforms': ['extension']
+        'platforms': ['extensions']
       },
       'doc2': {
         'name': 'doc2'
       },
       'doc3': {
-        'platforms': ['extension', 'app']
+        'platforms': ['extensions', 'apps']
       }
     }
 
     expected = {
       'doc1': {
         'name': 'doc1',
-        'platforms': ['extension']
+        'platforms': ['extensions']
       },
       'doc2': {
         'name': 'doc2',
@@ -106,7 +106,7 @@ class FeaturesUtilityTest(unittest.TestCase):
       },
       'doc3': {
         'name': 'doc3',
-        'platforms': ['extension', 'app']
+        'platforms': ['extensions', 'apps']
       }
     }
 
