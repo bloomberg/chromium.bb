@@ -184,8 +184,11 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
       // Setting opacity 0 and visible false ensures that the property change
       // to SHOW_STATE_MINIMIZED will not animate the window from its original
       // bounds to the minimized position.
-      window_->layer()->SetOpacity(0);
+      // Hiding the window needs to be done before the target opacity is 0,
+      // otherwise the layer's visibility will not be updated
+      // (See VisibilityController::UpdateLayerVisibility).
       window_->Hide();
+      window_->layer()->SetOpacity(0);
       window_->SetProperty(aura::client::kShowStateKey,
                            ui::SHOW_STATE_MINIMIZED);
     }

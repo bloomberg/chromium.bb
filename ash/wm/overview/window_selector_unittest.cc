@@ -223,6 +223,31 @@ TEST_F(WindowSelectorTest, SelectingHidesAppList) {
   StopCycling();
 }
 
+// Tests that a minimized window's visibility and layer visibility is correctly
+// changed when entering overview and restored when leaving overview mode.
+TEST_F(WindowSelectorTest, MinimizedWindowVisibility) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  wm::WindowState* window_state = wm::GetWindowState(window1.get());
+  window_state->Minimize();
+  EXPECT_FALSE(window1->IsVisible());
+  EXPECT_FALSE(window1->layer()->GetTargetVisibility());
+  {
+    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    ToggleOverview();
+    EXPECT_TRUE(window1->IsVisible());
+    EXPECT_TRUE(window1->layer()->GetTargetVisibility());
+  }
+  {
+    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    ToggleOverview();
+    EXPECT_FALSE(window1->IsVisible());
+    EXPECT_FALSE(window1->layer()->GetTargetVisibility());
+  }
+}
+
 // Tests entering overview mode with three windows and cycling through them.
 TEST_F(WindowSelectorTest, BasicCycle) {
   gfx::Rect bounds(0, 0, 400, 400);
