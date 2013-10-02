@@ -28,8 +28,6 @@
         'cpp_bound_class.h',
         'cpp_variant.cc',
         'cpp_variant.h',
-        'clipboard_utils.cc',
-        'clipboard_utils.h',
         'webkit_renderer_export.h',
       ],
     },

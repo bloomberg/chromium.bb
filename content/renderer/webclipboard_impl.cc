@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/drop_data.h"
+#include "content/renderer/clipboard_utils.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/scoped_clipboard_writer_glue.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -23,7 +24,6 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "url/gurl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/renderer/clipboard_utils.h"
 
 using WebKit::WebClipboard;
 using WebKit::WebData;
@@ -175,13 +175,13 @@ void WebClipboardImpl::writeURL(const WebURL& url, const WebString& title) {
   ScopedClipboardWriterGlue scw(client_);
 
   scw.WriteBookmark(title, url.spec());
-  scw.WriteHTML(UTF8ToUTF16(webkit_clipboard::URLToMarkup(url, title)),
-                std::string());
+  scw.WriteHTML(UTF8ToUTF16(URLToMarkup(url, title)), std::string());
   scw.WriteText(UTF8ToUTF16(std::string(url.spec())));
 }
 
-void WebClipboardImpl::writeImage(
-    const WebImage& image, const WebURL& url, const WebString& title) {
+void WebClipboardImpl::writeImage(const WebImage& image,
+                                  const WebURL& url,
+                                  const WebString& title) {
   ScopedClipboardWriterGlue scw(client_);
 
   if (!image.isNull()) {
@@ -200,8 +200,7 @@ void WebClipboardImpl::writeImage(
     // We also don't want to write HTML on a Mac, since Mail.app prefers to use
     // the image markup over attaching the actual image. See
     // http://crbug.com/33016 for details.
-    scw.WriteHTML(UTF8ToUTF16(webkit_clipboard::URLToImageMarkup(url, title)),
-                  std::string());
+    scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), std::string());
 #endif
   }
 }
@@ -252,4 +251,3 @@ bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
 }
 
 }  // namespace content
-

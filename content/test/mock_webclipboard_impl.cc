@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/clipboard_utils.h"
 #include "third_party/WebKit/public/platform/WebCommon.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
@@ -18,7 +19,6 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/renderer/clipboard_utils.h"
 
 using WebKit::WebDragData;
 using WebKit::WebString;
@@ -149,22 +149,22 @@ void MockWebClipboardImpl::writePlainText(const WebKit::WebString& plain_text) {
   m_plainText = plain_text;
 }
 
-void MockWebClipboardImpl::writeURL(
-    const WebKit::WebURL& url, const WebKit::WebString& title) {
+void MockWebClipboardImpl::writeURL(const WebKit::WebURL& url,
+                                    const WebKit::WebString& title) {
   clear();
 
-  m_htmlText = WebString::fromUTF8(webkit_clipboard::URLToMarkup(url, title));
+  m_htmlText = WebString::fromUTF8(content::URLToMarkup(url, title));
   m_plainText = url.spec().utf16();
 }
 
 void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
-    const WebKit::WebURL& url, const WebKit::WebString& title) {
+                                      const WebKit::WebURL& url,
+                                      const WebKit::WebString& title) {
   if (!image.isNull()) {
     clear();
 
     m_plainText = m_htmlText;
-    m_htmlText = WebString::fromUTF8(
-        webkit_clipboard::URLToImageMarkup(url, title));
+    m_htmlText = WebString::fromUTF8(content::URLToImageMarkup(url, title));
     m_image = image;
   }
 }

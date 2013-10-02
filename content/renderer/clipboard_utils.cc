@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/clipboard_utils.h"
+#include "content/renderer/clipboard_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
-namespace webkit_clipboard {
+namespace content {
 
 std::string URLToMarkup(const WebKit::WebURL& url,
                         const WebKit::WebString& title) {
@@ -36,4 +36,4 @@ std::string URLToImageMarkup(const WebKit::WebURL& url,
   return markup;
 }
 
-}  // namespace webkit_clipboard
+}  // namespace content
