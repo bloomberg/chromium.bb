@@ -593,6 +593,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainEntry) {
   ASSERT_EQ(1u, file_entries.size());
   EXPECT_EQ(test_file, file_entries[0].path);
   EXPECT_EQ(1, file_entries[0].sequence_number);
+  EXPECT_FALSE(file_entries[0].is_directory);
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainDirectoryEntry) {

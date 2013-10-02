@@ -974,9 +974,7 @@ void FileSystemRetainEntryFunction::RetainFileEntry(
 }
 
 void FileSystemRetainEntryFunction::SetIsDirectoryOnFileThread() {
-  if (base::DirectoryExists(path_)) {
-    is_directory_ = true;
-  }
+  is_directory_ = base::DirectoryExists(path_);
 }
 
 bool FileSystemIsRestorableFunction::RunImpl() {
