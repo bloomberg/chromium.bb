@@ -2065,6 +2065,7 @@ sub GenerateOverloadedFunction
     # declaration in the IDL.
 
     my $name = $function->name;
+    my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
 
     my $conditionalString = GenerateConditionalString($function);
@@ -2089,7 +2090,7 @@ END
     }
     if ($leastNumMandatoryParams >= 1) {
         $code .= "    if (UNLIKELY(args.Length() < $leastNumMandatoryParams)) {\n";
-        $code .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$name\", \"$implClassName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, args.Length())), args.GetIsolate());\n";
+        $code .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$name\", \"$interfaceName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, args.Length())), args.GetIsolate());\n";
         $code .= "        return;\n";
         $code .= "    }\n";
     }
@@ -2229,7 +2230,7 @@ END
             AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $nativeClassName wrapper = ${v8ClassName}::toNative(args.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
-            $code .= "        setDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute(\"${name}\", \"${implClassName}\", \"The object is read-only.\"), args.GetIsolate());\n";
+            $code .= "        setDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute(\"${name}\", \"${interfaceName}\", \"The object is read-only.\"), args.GetIsolate());\n";
             $code .= "        return;\n";
             $code .= "    }\n";
             my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($interfaceName);
@@ -2324,6 +2325,7 @@ sub GenerateArgumentsCountCheck
     my $interface = shift;
 
     my $functionName = $function->name;
+    my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
 
     my $numMandatoryParams = 0;
@@ -2340,7 +2342,7 @@ sub GenerateArgumentsCountCheck
     my $argumentsCountCheckString = "";
     if ($numMandatoryParams >= 1) {
         $argumentsCountCheckString .= "    if (UNLIKELY(args.Length() < $numMandatoryParams)) {\n";
-        $argumentsCountCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$implClassName\", ExceptionMessages::notEnoughArguments($numMandatoryParams, args.Length())), args.GetIsolate());\n";
+        $argumentsCountCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", ExceptionMessages::notEnoughArguments($numMandatoryParams, args.Length())), args.GetIsolate());\n";
         $argumentsCountCheckString .= "        return;\n";
         $argumentsCountCheckString .= "    }\n";
     }
@@ -2355,6 +2357,7 @@ sub GenerateParametersCheck
     my $style = shift || "new";
 
     my $functionName = $function->name;
+    my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
 
     my $parameterCheckString = "";
@@ -2479,9 +2482,9 @@ sub GenerateParametersCheck
                 my $humanFriendlyIndex = $paramIndex + 1;
                 $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject()) {\n";
                 if ($functionName eq "Constructor") {
-                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$implClassName\", \"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\"), args.GetIsolate());\n";
+                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$interfaceName\", \"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\"), args.GetIsolate());\n";
                 } else {
-                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$implClassName\", \"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\"), args.GetIsolate());\n";
+                    $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter ${humanFriendlyIndex} ('${parameterName}') is not an object.\"), args.GetIsolate());\n";
                 }
                 $parameterCheckString .= "        return;\n";
                 $parameterCheckString .= "    }\n";
@@ -2496,6 +2499,7 @@ sub GenerateParametersCheck
 sub GenerateOverloadedConstructorCallback
 {
     my $interface = shift;
+    my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
 
     my $code = "";
@@ -2517,7 +2521,7 @@ END
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         $code .= "    if (UNLIKELY(args.Length() < $leastNumMandatoryParams)) {\n";
 
-        $code .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$implClassName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, args.Length())), args.GetIsolate());\n";
+        $code .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$interfaceName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, args.Length())), args.GetIsolate());\n";
         $code .= "        return;\n";
         $code .= "    }\n";
     }
@@ -2652,7 +2656,7 @@ sub GenerateConstructorCallback
     $code .= "    TRACE_EVENT_SCOPED_SAMPLING_STATE(\"Blink\", \"DOMConstructor\");\n";
     $code .= GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($interface->extendedAttributes->{"DeprecateAs"});
-    $code .= GenerateConstructorHeader($implClassName);
+    $code .= GenerateConstructorHeader($interface);
     if (HasCustomConstructor($interface)) {
         $code .= "    ${v8ClassName}::constructorCustom(args);\n";
     } else {
@@ -2679,6 +2683,7 @@ sub GenerateConstructor
 sub GenerateEventConstructor
 {
     my $interface = shift;
+    my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
@@ -2699,7 +2704,7 @@ sub GenerateEventConstructor
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("$implClassName", "An event name must be provided."), args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("$interfaceName", "An event name must be provided."), args.GetIsolate());
         return;
     }
 
@@ -2835,7 +2840,7 @@ static void ${v8ClassName}ConstructorCallback(const v8::FunctionCallbackInfo<v8:
 END
     $code .= $maybeObserveFeature if $maybeObserveFeature;
     $code .= $maybeDeprecateFeature if $maybeDeprecateFeature;
-    $code .= GenerateConstructorHeader($implClassName);
+    $code .= GenerateConstructorHeader($interface);
     AddToImplIncludes("V8Document.h");
     $code .= <<END;
     Document* document = currentDocument();
@@ -2924,13 +2929,14 @@ END
 
 sub GenerateConstructorHeader
 {
-    my $name = shift;
+    my $interface = shift;
+    my $interfaceName = $interface->name;
 
     AddToImplIncludes("bindings/v8/ExceptionMessages.h");
     AddToImplIncludes("bindings/v8/V8ObjectConstructor.h");
     my $content = <<END;
     if (!args.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("$name", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("$interfaceName", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
         return;
     }
 

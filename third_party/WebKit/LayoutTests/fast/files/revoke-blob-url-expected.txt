@@ -1,5 +1,5 @@
 Test calling revokeObjectURL with no argument.
-PASS: Failed to execute 'revokeObjectURL' on 'DOMURL': 1 argument required, but only 0 present.
+PASS: Failed to execute 'revokeObjectURL' on 'URL': 1 argument required, but only 0 present.
 Test calling revokeObjectURL with empty URL.
 PASS
 Test calling revokeObjectURL with invalid URL.

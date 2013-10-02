@@ -96,7 +96,7 @@ static void keyLocationAttributeGetterCallback(v8::Local<v8::String> name, const
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("Event", "An event name must be provided."), args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestExtendedEvent", "An event name must be provided."), args.GetIsolate());
         return;
     }
 
@@ -135,7 +135,7 @@ void V8TestExtendedEvent::constructorCallback(const v8::FunctionCallbackInfo<v8:
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
     if (!args.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("Event", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TestExtendedEvent", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
         return;
     }
 
