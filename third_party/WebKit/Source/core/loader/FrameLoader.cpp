@@ -1339,10 +1339,19 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     if (!m_stateMachine.startedFirstRealLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::StartedFirstRealLoad);
 
+    // The current load should replace the history item if it is the first real
+    // load of the frame. FrameLoadTypeRedirectWithLockedBackForwardList is a
+    // proxy for history()->currentItemShouldBeReplaced().
+    bool replacesCurrentHistoryItem = false;
+    if (type == FrameLoadTypeRedirectWithLockedBackForwardList
+        || !m_stateMachine.committedFirstRealDocumentLoad()) {
+        replacesCurrentHistoryItem = true;
+    }
+
     m_policyDocumentLoader = m_client->createDocumentLoader(request, substituteData.isValid() ? substituteData : defaultSubstituteDataForURL(request.url()));
     m_policyDocumentLoader->setFrame(m_frame);
     m_policyDocumentLoader->setTriggeringAction(action);
-    m_policyDocumentLoader->setReplacesCurrentHistoryItem(type == FrameLoadTypeRedirectWithLockedBackForwardList);
+    m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
     m_policyDocumentLoader->setIsClientRedirect(m_startingClientRedirect);
 
     if (Frame* parent = m_frame->tree()->parent())

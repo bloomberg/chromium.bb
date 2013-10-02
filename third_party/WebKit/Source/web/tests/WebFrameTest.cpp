@@ -4380,4 +4380,85 @@ TEST_F(WebFrameTest, PushStateStartsAndStops)
     EXPECT_EQ(client.stopLoadingCount(), 2);
 }
 
+class TestHistoryWebFrameClient : public WebFrameClient {
+public:
+    TestHistoryWebFrameClient()
+    {
+        m_replacesCurrentHistoryItem = false;
+        m_frame = 0;
+    }
+    void didStartProvisionalLoad(WebFrame* frame)
+    {
+        WebDataSource* ds = frame->provisionalDataSource();
+        m_replacesCurrentHistoryItem = ds->replacesCurrentHistoryItem();
+        m_frame = frame;
+    }
+
+    bool replacesCurrentHistoryItem() { return m_replacesCurrentHistoryItem; }
+    WebFrame* frame() { return m_frame; }
+
+private:
+    bool m_replacesCurrentHistoryItem;
+    WebFrame* m_frame;
+};
+
+// Test which ensures that the first navigation in a subframe will always
+// result in history entry being replaced and not a new one added.
+TEST_F(WebFrameTest, FirstFrameNavigationReplacesHistory)
+{
+    registerMockedHttpURLLoad("history.html");
+    registerMockedHttpURLLoad("find.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    TestHistoryWebFrameClient client;
+    webViewHelper.initializeAndLoad("about:blank", true, &client);
+    runPendingTasks();
+    EXPECT_TRUE(client.replacesCurrentHistoryItem());
+
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:document.body.appendChild(document.createElement('iframe'))");
+    // Need to call runPendingTasks in order for the JavaScript above to be
+    // evaluated and executed.
+    runPendingTasks();
+    WebFrame* iframe = frame->firstChild();
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_TRUE(client.replacesCurrentHistoryItem());
+
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:window.frames[0].location.assign('" + m_baseURL + "history.html')");
+    runPendingTasks();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_TRUE(client.replacesCurrentHistoryItem());
+
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:window.frames[0].location.assign('" + m_baseURL + "find.html')");
+    runPendingTasks();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_FALSE(client.replacesCurrentHistoryItem());
+
+    // Repeat the test, but start out the iframe with initial URL, which is not
+    // "about:blank".
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:var f = document.createElement('iframe'); "
+        "f.src = '" + m_baseURL + "history.html';"
+        "document.body.appendChild(f)");
+    runPendingTasks();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    iframe = frame->firstChild()->nextSibling();
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_TRUE(client.replacesCurrentHistoryItem());
+
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:window.frames[1].location.assign('" + m_baseURL + "find.html')");
+    runPendingTasks();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_FALSE(client.replacesCurrentHistoryItem());
+}
+
 } // namespace
