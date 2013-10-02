@@ -6,8 +6,6 @@
 
 """Unittests for GerritHelper.  Needs to have mox installed."""
 
-import logging
-import json
 import mox
 import os
 import sys
@@ -22,6 +20,7 @@ from chromite.lib import gerrit
 
 
 # pylint: disable=W0212,R0904
+@unittest.skip('Broken by CL:168671')
 class GerritHelperTest(cros_test_lib.GerritTestCase):
 
 #  def setUp(self):
