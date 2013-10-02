@@ -375,7 +375,7 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   // It cannot be incremented inline with each callback, as some may return
   // synchronously, decrement the counter to 0, and prematurely trigger
   // FinishInitialization.
-  pre_initialization_callbacks_waiting_ = 2;
+  pre_initialization_callbacks_waiting_ = 3;
 
   // Ensure StorageMonitor is initialized.
   StorageMonitor::GetInstance()->EnsureInitialized(
@@ -387,15 +387,12 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
 
-#if 0
-  iphoto::FindIPhotoLibrary(
+  picasa::FindPicasaDatabase(
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
-#endif
 
-  // TODO(tommycli): Turn on when Picasa code is ready.
 #if 0
-  picasa::PicasaFinder::FindPicasaDatabaseOnUIThread(
+  iphoto::FindIPhotoLibrary(
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
 #endif

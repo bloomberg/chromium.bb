@@ -29,6 +29,14 @@ class EnsureMediaDirectoriesExists {
 
   int num_galleries() const { return num_galleries_; }
 
+  base::FilePath GetFakeAppDataPath() const;
+#if defined(OS_WIN)
+  base::FilePath GetFakeLocalAppDataPath() const;
+#endif
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  base::FilePath GetFakePicasaFoldersRootPath() const;
+#endif
+
  private:
   void Init();
 
@@ -36,10 +44,13 @@ class EnsureMediaDirectoriesExists {
 
   int num_galleries_;
 
-  scoped_ptr<base::ScopedPathOverride> appdir_override_;
+  scoped_ptr<base::ScopedPathOverride> app_data_override_;
   scoped_ptr<base::ScopedPathOverride> music_override_;
   scoped_ptr<base::ScopedPathOverride> pictures_override_;
   scoped_ptr<base::ScopedPathOverride> video_override_;
+#if defined(OS_WIN)
+  scoped_ptr<base::ScopedPathOverride> local_app_data_override_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(EnsureMediaDirectoriesExists);
 };

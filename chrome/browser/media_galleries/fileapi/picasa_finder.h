@@ -11,8 +11,6 @@
 
 namespace picasa {
 
-namespace PicasaFinder {
-
 typedef base::Callback<void(const std::string&)> DeviceIDCallback;
 
 // Bounces to FILE thread to find Picasa database. If the platform supports
@@ -20,8 +18,6 @@ typedef base::Callback<void(const std::string&)> DeviceIDCallback;
 // calling thread with the device ID. Otherwise, |callback| will be invoked
 // with an empty string.
 void FindPicasaDatabase(const DeviceIDCallback& callback);
-
-}
 
 }  // namespace picasa
 

@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.picasa",
+  "version": "0.1",
+  "description": "test Picasa media gallery for chrome.mediaGalleries.getMediaFileSystems",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["read", "allAutoDetected"]}]
+}

@@ -20,6 +20,13 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_utils.h"
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
+#include "chrome/common/media_galleries/picasa_test_util.h"
+#include "chrome/common/media_galleries/picasa_types.h"
+#include "chrome/common/media_galleries/pmp_test_util.h"
+#endif
+
 using extensions::PlatformAppBrowserTest;
 
 namespace {
@@ -33,14 +40,12 @@ base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("C:\\qux");
 base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 #endif
 
-}  // namespace
-
 // This function is to ensure at least one (fake) media gallery exists for
 // testing platforms with no default media galleries, such as CHROMEOS.
 void MakeFakeMediaGalleryForTest(Profile* profile, const base::FilePath& path) {
-  base::RunLoop runloop;
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  base::RunLoop runloop;
   preferences->EnsureInitialized(runloop.QuitClosure());
   runloop.Run();
 
@@ -57,6 +62,8 @@ void MakeFakeMediaGalleryForTest(Profile* profile, const base::FilePath& path) {
 
   content::RunAllPendingInMessageLoop();
 }
+
+}  // namespace
 
 class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
  protected:
@@ -133,6 +140,52 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     test_jpg_size_ = base::checked_numeric_cast<int>(file_size);
   }
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  void PopulatePicasaTestData() {
+    // Create Picasa metadata database directories.
+    base::FilePath metadata_root;
+#if defined(OS_WIN)
+    metadata_root = ensure_media_directories_exist_->GetFakeLocalAppDataPath();
+#elif defined(OS_MACOSX)
+    metadata_root = ensure_media_directories_exist_->GetFakeAppDataPath();
+#endif
+
+    metadata_root = metadata_root.AppendASCII("Google").AppendASCII("Picasa2");
+    base::FilePath picasa_database_path =
+        metadata_root.AppendASCII(picasa::kPicasaDatabaseDirName);
+    base::FilePath picasa_temp_dir_path =
+        metadata_root.AppendASCII(picasa::kPicasaTempDirName);
+    ASSERT_TRUE(file_util::CreateDirectory(picasa_database_path));
+    ASSERT_TRUE(file_util::CreateDirectory(picasa_temp_dir_path));
+
+    // Create fake folder directories.
+    base::FilePath folders_root =
+        ensure_media_directories_exist_->GetFakePicasaFoldersRootPath();
+    base::FilePath fake_folder_1 = folders_root.AppendASCII("folder1");
+    base::FilePath fake_folder_2 = folders_root.AppendASCII("folder2");
+    ASSERT_TRUE(file_util::CreateDirectory(fake_folder_1));
+    ASSERT_TRUE(file_util::CreateDirectory(fake_folder_2));
+
+    // Write folder and album contents.
+    picasa::WriteTestAlbumTable(
+        picasa_database_path, fake_folder_1, fake_folder_2);
+    picasa::WriteTestAlbumsImagesIndex(fake_folder_1, fake_folder_2);
+
+    base::FilePath test_data_path =
+        test_data_dir_.AppendASCII("api_test").AppendASCII("media_galleries")
+                      .AppendASCII("common");
+    ASSERT_TRUE(base::CopyFile(
+        test_data_path.AppendASCII("test.jpg"),
+        fake_folder_1.AppendASCII("InBoth.jpg")));
+    ASSERT_TRUE(base::CopyFile(
+        test_data_path.AppendASCII("test.jpg"),
+        fake_folder_1.AppendASCII("InSecondAlbumOnly.jpg")));
+    ASSERT_TRUE(base::CopyFile(
+        test_data_path.AppendASCII("test.jpg"),
+        fake_folder_2.AppendASCII("InFirstAlbumOnly.jpg")));
+  }
+#endif
+
   int num_galleries() const {
     return ensure_media_directories_exist_->num_galleries();
   }
@@ -207,3 +260,11 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        GetFilesystemMetadata) {
   ASSERT_TRUE(RunMediaGalleriesTest("metadata")) << message_;
 }
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, Picasa) {
+  PopulatePicasaTestData();
+  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/picasa"))
+      << message_;
+}
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)

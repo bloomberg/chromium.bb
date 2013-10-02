@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/common/media_galleries/picasa_types.h"
@@ -34,8 +35,8 @@ base::FilePath FindPicasaDatabaseOnFileThread() {
   return base::FilePath();
 #endif
 
-  path = path.AppendASCII("Google").AppendASCII("Picasa2")
-             .AppendASCII(kPicasaDatabaseDirName);
+  path = path.AppendASCII("Google").AppendASCII("Picasa2").AppendASCII(
+      kPicasaDatabaseDirName);
 
   // Verify actual existence
   if (!base::DirectoryExists(path))
@@ -44,7 +45,7 @@ base::FilePath FindPicasaDatabaseOnFileThread() {
   return path;
 }
 
-void FinishOnOriginalThread(const PicasaFinder::DeviceIDCallback& callback,
+void FinishOnOriginalThread(const DeviceIDCallback& callback,
                             const base::FilePath& database_path) {
   std::string device_id;
   if (!database_path.empty()) {
@@ -56,8 +57,7 @@ void FinishOnOriginalThread(const PicasaFinder::DeviceIDCallback& callback,
 
 }  // namespace
 
-void PicasaFinder::FindPicasaDatabase(
-    const PicasaFinder::DeviceIDCallback& callback) {
+void FindPicasaDatabase(const DeviceIDCallback& callback) {
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE,
       FROM_HERE,
