@@ -12,8 +12,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display_observer.h"
@@ -27,7 +29,6 @@ class ActivationClient;
 }  // namespace aura
 
 class Browser;
-class ChromeLauncherController;
 
 // BrowserStatusMonitor monitors creation/deletion of Browser and its
 // TabStripModel to keep the launcher representation up to date as the
@@ -40,6 +41,14 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
  public:
   explicit BrowserStatusMonitor(ChromeLauncherController* launcher_controller);
   virtual ~BrowserStatusMonitor();
+
+  // A shortcut to call the ChromeLauncherController's UpdateAppState().
+  void UpdateAppItemState(content::WebContents* contents,
+                          ChromeLauncherController::AppState app_state);
+
+  // A shortcut to call the BrowserShortcutLauncherItemController's
+  // UpdateBrowserItemState().
+  void UpdateBrowserItemState();
 
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* gained_active,
@@ -62,29 +71,46 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
                                 content::WebContents* new_contents,
                                 int index,
                                 int reason) OVERRIDE;
-  virtual void TabInsertedAt(content::WebContents* contents,
-                             int index,
-                             bool foreground) OVERRIDE;
-  virtual void TabDetachedAt(content::WebContents* contents,
-                             int index) OVERRIDE;
-  virtual void TabChangedAt(
-      content::WebContents* contents,
-      int index,
-      TabStripModelObserver::TabChangeType change_type) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              content::WebContents* old_contents,
                              content::WebContents* new_contents,
                              int index) OVERRIDE;
+  virtual void TabInsertedAt(content::WebContents* contents,
+                             int index,
+                             bool foreground) OVERRIDE;
+  virtual void TabClosingAt(TabStripModel* tab_strip_mode,
+                            content::WebContents* contents,
+                            int index) OVERRIDE;
 
  private:
+  // This class monitors the WebContent of the all tab and notifies a navigation
+  // to the BrowserStatusMonitor.
+  class LocalWebContentsObserver : public content::WebContentsObserver {
+   public:
+    LocalWebContentsObserver(content::WebContents* contents,
+                             BrowserStatusMonitor* monitor);
+    virtual ~LocalWebContentsObserver();
+
+    // content::WebContentsObserver overrides:
+    virtual void DidNavigateMainFrame(
+        const content::LoadCommittedDetails& details,
+        const content::FrameNavigateParams& params) OVERRIDE;
+
+   private:
+    BrowserStatusMonitor* monitor_;
+
+    DISALLOW_COPY_AND_ASSIGN(LocalWebContentsObserver);
+  };
+
   typedef std::map<Browser*, std::string> BrowserToAppIDMap;
+  typedef std::map<content::WebContents*, LocalWebContentsObserver*>
+      WebContentsToObserverMap;
 
-  // Update app state for |contents| and browser state.
-  void UpdateAppAndBrowserState(content::WebContents* contents);
+  // Create LocalWebContentsObserver for |contents|.
+  void AddWebContentsObserver(content::WebContents* contents);
 
-  // A shortcut to call the BrowserShortcutLauncherItemController's
-  // UpdateBrowserItemState().
-  void UpdateBrowserItemState();
+  // Remove LocalWebContentsObserver for |contents|.
+  void RemoveWebContentsObserver(content::WebContents* contents);
 
   ChromeLauncherController* launcher_controller_;
 
@@ -96,6 +122,8 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   ScopedObserver<aura::Window, aura::WindowObserver> observed_root_windows_;
 
   BrowserToAppIDMap browser_to_app_id_map_;
+
+  WebContentsToObserverMap webcontents_to_observer_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStatusMonitor);
 };

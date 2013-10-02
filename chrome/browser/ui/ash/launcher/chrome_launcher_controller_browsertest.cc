@@ -1026,6 +1026,49 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, Navigation) {
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
 }
 
+// Confirm that a tab can be moved between browsers while maintaining the
+// correct running state.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, TabDragAndDrop) {
+  TabStripModel* tab_strip_model1 = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip_model1->count());
+  int browser_index = ash::GetBrowserItemIndex(*model_);
+  EXPECT_TRUE(browser_index >= 0);
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Create a shortcut for app1.
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->items()[browser_index].status);
+  EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
+
+  // Activate app1 and check its item status.
+  ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(2, tab_strip_model1->count());
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[browser_index].status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
+
+  // Create a new browser with blank tab.
+  Browser* browser2 = CreateBrowser(profile());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
+  EXPECT_EQ(1, tab_strip_model2->count());
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->items()[browser_index].status);
+  EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut_id)).status);
+
+  // Detach a tab at index 1 (app1) from |tab_strip_model1| and insert it as an
+  // active tab at index 1 to |tab_strip_model2|.
+  content::WebContents* detached_tab = tab_strip_model1->DetachWebContentsAt(1);
+  tab_strip_model2->InsertWebContentsAt(1,
+                                        detached_tab,
+                                        TabStripModel::ADD_ACTIVE);
+  EXPECT_EQ(1, tab_strip_model1->count());
+  EXPECT_EQ(2, tab_strip_model2->count());
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[browser_index].status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
+
+  tab_strip_model1->CloseAllTabs();
+  tab_strip_model2->CloseAllTabs();
+}
+
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MultipleOwnedTabs) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();

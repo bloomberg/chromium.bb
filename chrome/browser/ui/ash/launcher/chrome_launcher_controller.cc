@@ -390,9 +390,10 @@ void ChromeLauncherController::SetItemStatus(
     ash::LauncherID id,
     ash::LauncherItemStatus status) {
   int index = model_->ItemIndexByID(id);
+  ash::LauncherItemStatus old_status = model_->items()[index].status;
   // Since ordinary browser windows are not registered, we might get a negative
   // index here.
-  if (index >= 0) {
+  if (index >= 0 && old_status != status) {
     ash::LauncherItem item = model_->items()[index];
     item.status = status;
     model_->Set(index, item);
@@ -830,6 +831,11 @@ void ChromeLauncherController::RemoveTabFromRunningApp(
     WebContents* tab,
     const std::string& app_id) {
   web_contents_to_app_id_.erase(tab);
+  // BrowserShortcutLauncherItemController::UpdateBrowserItemState() will update
+  // the state when no application is associated with the tab.
+  if (app_id.empty())
+    return;
+
   AppIDToWebContentsListMap::iterator i_app_id =
       app_id_to_web_contents_list_.find(app_id);
   if (i_app_id != app_id_to_web_contents_list_.end()) {
@@ -867,7 +873,7 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
   if (app_state == APP_STATE_REMOVED) {
     // The tab has gone away.
     RemoveTabFromRunningApp(contents, app_id);
-  } else {
+  } else if (!app_id.empty()) {
     WebContentsList& tab_list(app_id_to_web_contents_list_[app_id]);
 
     if (app_state == APP_STATE_INACTIVE) {
@@ -875,6 +881,7 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
           std::find(tab_list.begin(), tab_list.end(), contents);
       if (i_tab == tab_list.end())
         tab_list.push_back(contents);
+      // TODO(simon.hong81): Does this below case exist?
       if (i_tab != tab_list.begin()) {
         // Going inactive, but wasn't the front tab, indicating that a new
         // tab has already become active.
