@@ -25,8 +25,7 @@ RtcpSender::RtcpSender(PacedPacketSender* outgoing_transport,
      : ssrc_(sending_ssrc),
        c_name_(c_name),
        transport_(outgoing_transport) {
-  DCHECK_LT(static_cast<int>(c_name_.length()),
-            kRtcpCnameSize) << "Invalid config";
+  DCHECK_LT(c_name_.length(), kRtcpCnameSize) << "Invalid config";
 }
 
 RtcpSender::~RtcpSender() {}

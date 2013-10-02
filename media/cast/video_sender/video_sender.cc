@@ -24,7 +24,7 @@ class LocalRtcpVideoSenderFeedback : public RtcpSenderFeedback {
       : video_sender_(video_sender) {
   }
 
-  virtual void OnReceivedSendReportRequest() {}
+  virtual void OnReceivedSendReportRequest() OVERRIDE {}
 
   virtual void OnReceivedReportBlock(
       const RtcpReportBlock& report_block) OVERRIDE {}

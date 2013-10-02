@@ -74,9 +74,9 @@ class RtcpReceiverTest : public ::testing::Test {
                                         kSourceSsrc)) {
   }
 
-  virtual ~RtcpReceiverTest() {}
+  ~RtcpReceiverTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  void SetUp() OVERRIDE {
     EXPECT_CALL(mock_receiver_feedback_, OnReceivedSenderReport(_)).Times(0);
     EXPECT_CALL(mock_receiver_feedback_,
                 OnReceiverReferenceTimeReport(_)).Times(0);

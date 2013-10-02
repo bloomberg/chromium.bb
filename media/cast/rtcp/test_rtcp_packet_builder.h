@@ -13,8 +13,6 @@
 namespace media {
 namespace cast {
 
-// These values are arbitrary only for the purpose of testing.
-
 // Sender report.
 static const int kNtpHigh = 0x01020304;
 static const int kNtpLow = 0x05060708;
@@ -34,7 +32,7 @@ static const int kLastRr = 0x34561234;
 static const int kDelayLastRr = 1000;
 
 // REMB.
-static const int kRembBitrate = 52428;
+static const int kRembBitrate = 524286;
 
 // RPSI.
 static const int kPayloadtype = 126;
@@ -92,3 +90,5 @@ class TestRtcpPacketBuilder {
 }  // namespace media
 
 #endif //  MEDIA_CAST_RTCP_TEST_RTCP_PACKET_BUILDER_H_
+
+

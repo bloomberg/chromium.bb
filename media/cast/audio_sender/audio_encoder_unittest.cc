@@ -45,7 +45,7 @@ class AudioEncoderTest : public ::testing::Test {
     audio_encoder_ = new AudioEncoder(cast_thread_, audio_config);
   }
 
-  virtual ~AudioEncoderTest() {}
+  ~AudioEncoderTest() {}
 
   base::SimpleTestTickClock testing_clock_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;

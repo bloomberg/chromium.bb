@@ -25,8 +25,6 @@ CastThread::CastThread(
   DCHECK(main_thread_proxy) << "Main thread required";
 }
 
-CastThread::~CastThread() {}
-
 bool CastThread::PostTask(ThreadId identifier,
                           const tracked_objects::Location& from_here,
                           const base::Closure& task) {
@@ -59,9 +57,6 @@ scoped_refptr<TaskRunner> CastThread::GetMessageTaskRunnerForThread(
       return video_encode_thread_proxy_;
     case CastThread::VIDEO_DECODER:
       return video_decode_thread_proxy_;
-    default:
-      CHECK(false) << "Invalid Thread ID.";
-      return NULL;
   }
 }
 
@@ -78,8 +73,7 @@ bool CastThread::CurrentlyOn(ThreadId identifier) {
     case CastThread::VIDEO_DECODER:
       return video_decode_thread_proxy_->RunsTasksOnCurrentThread();
     default:
-      CHECK(false) << "Wrong thread identifier";
-      return false;
+      DCHECK(false) << "Wrong thread identifier";
   }
 }
 

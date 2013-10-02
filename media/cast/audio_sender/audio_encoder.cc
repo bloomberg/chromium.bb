@@ -35,7 +35,7 @@ class WebrtEncodedDataCallback : public webrtc::AudioPacketizationCallback {
       uint32 timestamp,
       const uint8* payload_data,
       uint16 payload_size,
-      const webrtc::RTPFragmentationHeader* /*fragmentation*/) OVERRIDE {
+      const webrtc::RTPFragmentationHeader* /*fragmentation*/) {
     scoped_ptr<EncodedAudioFrame> audio_frame(new EncodedAudioFrame());
     audio_frame->codec = codec_;
     audio_frame->samples = timestamp - last_timestamp_;
@@ -110,6 +110,7 @@ AudioEncoder::AudioEncoder(scoped_refptr<CastThread> cast_thread,
 }
 
 AudioEncoder::~AudioEncoder() {
+  webrtc::AudioCodingModule::Destroy(audio_encoder_);
 }
 
 // Called from main cast thread.
@@ -131,12 +132,12 @@ void AudioEncoder::EncodeAudioFrameThread(
     const base::Closure release_callback) {
   DCHECK(cast_thread_->CurrentlyOn(CastThread::AUDIO_ENCODER));
   int samples_per_10ms = audio_frame->frequency / 100;
-  size_t number_of_10ms_blocks = audio_frame->samples.size() /
+  int number_of_10ms_blocks = audio_frame->samples.size() /
       (samples_per_10ms * audio_frame->channels);
   DCHECK(webrtc::AudioFrame::kMaxDataSizeSamples > samples_per_10ms)
       << "webrtc sanity check failed";
 
-  for (size_t i = 0; i < number_of_10ms_blocks; ++i) {
+  for (int i = 0; i < number_of_10ms_blocks; ++i) {
     webrtc::AudioFrame webrtc_audio_frame;
     webrtc_audio_frame.timestamp_ = timestamp_;
 
@@ -162,7 +163,7 @@ void AudioEncoder::EncodeAudioFrameThread(
   // Not all insert of 10 ms will generate a callback with encoded data.
   webrtc_encoder_callback_->SetEncodedCallbackInfo(recorded_time,
                                                    &frame_encoded_callback);
-  for (size_t i = 0; i < number_of_10ms_blocks; ++i) {
+  for (int i = 0; i < number_of_10ms_blocks; ++i) {
     audio_encoder_->Process();
   }
 }

@@ -71,6 +71,10 @@ class LocalRtpAudioFeedback : public RtpPayloadFeedback {
     audio_receiver_->CastFeedback(cast_message);
   }
 
+  virtual void RequestKeyFrame() OVERRIDE {
+    DCHECK(false) << "Invalid callback";
+  }
+
  private:
   AudioReceiver* audio_receiver_;
 };

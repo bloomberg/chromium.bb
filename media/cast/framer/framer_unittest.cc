@@ -20,9 +20,9 @@ class FramerTest : public ::testing::Test {
     framer_.set_clock(&testing_clock_);
   }
 
-  virtual ~FramerTest() {}
+  ~FramerTest() {}
 
-  virtual void SetUp() {
+  void SetUp() {
     // Build a default one packet frame - populate webrtc header.
     rtp_header_.is_key_frame = false;
     rtp_header_.frame_id = 0;

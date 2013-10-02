@@ -15,8 +15,6 @@
       'sources': [
         'rtp_packetizer.cc',
         'rtp_packetizer.h',
-        'rtp_packetizer_config.cc',
-        'rtp_packetizer_config.h',
       ], # source
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',

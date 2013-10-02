@@ -22,6 +22,10 @@ class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
       : audio_sender_(audio_sender) {
   }
 
+  virtual void OnReceivedSendReportRequest() OVERRIDE {
+    DCHECK(false) << "Invalid callback";
+  }
+
   virtual void OnReceivedReportBlock(
       const RtcpReportBlock& report_block) OVERRIDE {
     DCHECK(false) << "Invalid callback";

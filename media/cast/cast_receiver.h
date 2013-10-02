@@ -47,11 +47,7 @@ class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver>{
 
   virtual void ReleaseCodedAudioFrame(uint8 frame_id) = 0;
 
- protected:
   virtual ~FrameReceiver() {}
-
- private:
-  friend class base::RefCountedThreadSafe<FrameReceiver>;
 };
 
 // This Class is thread safe.

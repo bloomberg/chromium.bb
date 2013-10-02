@@ -13,8 +13,6 @@ namespace cast {
 
 class MockPacketSender : public PacketSender {
  public:
-  MockPacketSender();
-  virtual ~MockPacketSender();
   MOCK_METHOD2(SendPacket, bool(const uint8* packet, int length));
 };
 

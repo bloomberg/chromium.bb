@@ -96,9 +96,9 @@ class RtcpTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
-  virtual ~RtcpTest() {}
+  ~RtcpTest() {}
 
-  virtual void SetUp() {
+  void SetUp() {
     EXPECT_CALL(mock_sender_feedback_, OnReceivedReportBlock(_)).Times(0);
     EXPECT_CALL(mock_sender_feedback_, OnReceivedIntraFrameRequest()).Times(0);
     EXPECT_CALL(mock_sender_feedback_, OnReceivedRpsi(_, _)).Times(0);
@@ -203,7 +203,7 @@ TEST_F(RtcpTest, BasicCast) {
   rtcp.SetRemoteSSRC(kSenderSsrc);
   RtcpCastMessage cast_message(kSenderSsrc);
   cast_message.ack_frame_id_ = kAckFrameId;
-  std::set<uint16> missing_packets;
+  std::set<uint16_t> missing_packets;
   cast_message.missing_frames_and_packets_[
       kLostFrameId] = missing_packets;
 

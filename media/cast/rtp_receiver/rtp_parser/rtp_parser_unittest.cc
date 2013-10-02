@@ -27,15 +27,15 @@ class RtpDataTest : public RtpData {
     expected_header_.reset(new RtpCastHeader());
   }
 
-  virtual ~RtpDataTest() {}
+  ~RtpDataTest() {}
 
   void SetExpectedHeader(const RtpCastHeader& cast_header) {
     memcpy(expected_header_.get(), &cast_header, sizeof(RtpCastHeader));
   }
 
-  virtual void OnReceivedPayloadData(const uint8* payloadData,
-                                     int payloadSize,
-                                     const RtpCastHeader* rtpHeader) OVERRIDE {
+  void OnReceivedPayloadData(const uint8* payloadData,
+                             int payloadSize,
+                             const RtpCastHeader* rtpHeader) {
     VerifyCommonHeader(*rtpHeader);
     VerifyCastHeader(*rtpHeader);
   }
@@ -68,7 +68,7 @@ class RtpParserTest : public ::testing::Test {
     rtp_parser_.reset(new RtpParser(rtp_data_.get(), config_));
   }
 
-  virtual ~RtpParserTest() {}
+  ~RtpParserTest() {}
 
   virtual void SetUp() {
     cast_header_.InitRTPVideoHeaderCast();
