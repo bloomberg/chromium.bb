@@ -113,8 +113,10 @@ bool MDnsConnection::Init(MDnsConnection::SocketFactory* socket_factory) {
                         socket_factory));
 
   for (size_t i = 0; i < socket_handlers_.size();) {
-    if (socket_handlers_[i]->Bind() != OK) {
+    int rv = socket_handlers_[i]->Bind();
+    if (rv != OK) {
       socket_handlers_.erase(socket_handlers_.begin() + i);
+      VLOG(1) << "Bind failed, socket=" << i << ", error=" << rv;
     } else {
       ++i;
     }
@@ -124,12 +126,15 @@ bool MDnsConnection::Init(MDnsConnection::SocketFactory* socket_factory) {
   // This is done for security reasons, so that an attacker can't get an unbound
   // socket.
   for (size_t i = 0; i < socket_handlers_.size();) {
-    if (socket_handlers_[i]->Start() != OK) {
+    int rv = socket_handlers_[i]->Start();
+    if (rv != OK) {
       socket_handlers_.erase(socket_handlers_.begin() + i);
+      VLOG(1) << "Start failed, socket=" << i << ", error=" << rv;
     } else {
       ++i;
     }
   }
+  VLOG(1) << "Sockets ready:" << socket_handlers_.size();
   return !socket_handlers_.empty();
 }
 
@@ -137,7 +142,11 @@ bool MDnsConnection::Send(IOBuffer* buffer, unsigned size) {
   bool success = false;
   for (size_t i = 0; i < socket_handlers_.size(); ++i) {
     int rv = socket_handlers_[i]->Send(buffer, size);
-    success = success || (rv >= OK || rv == ERR_IO_PENDING);
+    if (rv >= OK || rv == ERR_IO_PENDING) {
+      success = true;
+    } else {
+      VLOG(1) << "Send failed, socket=" << i << ", error=" << rv;
+    }
   }
   return success;
 }
