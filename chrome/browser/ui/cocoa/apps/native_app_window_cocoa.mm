@@ -56,7 +56,8 @@ using apps::ShellWindow;
 @end
 
 enum {
-  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7
+  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
+  NSFullScreenWindowMask = 1 << 14
 };
 
 #endif  // MAC_OS_X_VERSION_10_7
@@ -83,6 +84,21 @@ enum {
 - (void)windowDidResize:(NSNotification*)notification {
   if (appWindow_)
     appWindow_->WindowDidResize();
+}
+
+- (void)windowDidEndLiveResize:(NSNotification*)notification {
+  if (appWindow_)
+    appWindow_->WindowDidFinishResize();
+}
+
+- (void)windowDidEnterFullScreen:(NSNotification*)notification {
+  if (appWindow_)
+    appWindow_->WindowDidFinishResize();
+}
+
+- (void)windowDidExitFullScreen:(NSNotification*)notification {
+  if (appWindow_)
+    appWindow_->WindowDidFinishResize();
 }
 
 - (void)windowDidMove:(NSNotification*)notification {
@@ -566,6 +582,9 @@ void NativeAppWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   cocoa_bounds.origin.y = NSHeight([screen frame]) - checked_bounds.bottom();
 
   [window() setFrame:cocoa_bounds display:YES];
+  // setFrame: without animate: does not trigger a windowDidEndLiveResize: so
+  // call it here.
+  WindowDidFinishResize();
 }
 
 void NativeAppWindowCocoa::UpdateWindowIcon() {
@@ -839,7 +858,7 @@ void NativeAppWindowCocoa::WindowDidResignKey() {
     rwhv->SetActive(false);
 }
 
-void NativeAppWindowCocoa::WindowDidResize() {
+void NativeAppWindowCocoa::WindowDidFinishResize() {
   // Update |is_maximized_| if needed:
   // - Exit maximized state if resized.
   // - Consider us maximized if resize places us back to maximized location.
@@ -851,7 +870,13 @@ void NativeAppWindowCocoa::WindowDidResize() {
   else if (NSEqualPoints(frame.origin, screen.origin))
     is_maximized_ = true;
 
+  // Update |is_fullscreen_| if needed.
+  is_fullscreen_ = ([window() styleMask] & NSFullScreenWindowMask) != 0;
+
   UpdateRestoredBounds();
+}
+
+void NativeAppWindowCocoa::WindowDidResize() {
   shell_window_->OnNativeWindowChanged();
 }
 

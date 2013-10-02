@@ -77,7 +77,12 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow {
   // Called when the window is defocused.
   void WindowDidResignKey();
 
-  // Called when the window is resized.
+  // Called when the window finishes resizing, i.e. after zoom/unzoom, after
+  // entering/leaving fullscreen, and after a user is done resizing.
+  void WindowDidFinishResize();
+
+  // Called when the window is resized. This is called repeatedly during a
+  // zoom/unzoom, and while a user is resizing.
   void WindowDidResize();
 
   // Called when the window is moved.
