@@ -492,6 +492,10 @@ setup_tty(struct weston_launch *wl, const char *tty)
 	if (wl->tty < 0)
 		error(1, errno, "failed to open tty");
 
+	if (fstat(wl->tty, &buf) == -1 ||
+	    major(buf.st_rdev) != TTY_MAJOR || minor(buf.st_rdev) == 0)
+		error(1, 0, "weston-launch must be run from a virtual terminal");
+
 	if (tty) {
 		if (fstat(wl->tty, &buf) < 0)
 			error(1, errno, "stat %s failed", tty);
