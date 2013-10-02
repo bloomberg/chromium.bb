@@ -252,9 +252,6 @@ V8 contexts living in the same process that need to share data with each other.<
 indented block will be highlighted on load.  Click on the <code>OUTDENT</code>
 button.  There are now a bunch of empty lines added in between.</p>
 
-<h3><a name="bugfix-removeApostropheMarker">bugfix/removeApostropheMarker</a> (Tianyin Zhang; D38435539)</h3>
-<p>Open <a href="repros/removeApostropheMarker.html">this link</a> in test_shell and type the word "shouldn't" in the DIV[contenteditable]. Then backspace to remove the character 't', and then hit 'space'. Note that the red squiggly is displayed under "shouldn'".  Now hit 'backspace', 't' and then 'space'.  Note that the red squiggly does not go away. This bug happens when AsynchronousSpellCheckEnabled is off. </p>
-
 <h3><a name="bugfix-removeSpellingMarker">bugfix/removeSpellingMarker</a> (Tianyin Zhang; D38695085;)</h3>
 <p>Open <a href="repros/removeSpellingMarker.html">this link</a> in chrome, place the cursor inside the contenteditable and make sure some mispelling markers show up. Then click on the button to switch the contenteditable to false. Note that the misspelling markers aren't removed. </p>
 
@@ -616,6 +613,10 @@ reproduction steps to verify the fix.</p>
 <h3><a name="bugfix-printTextTop">bugfix/printTextTop</a> (Shezan Baig; D32606285)</h3>
 <p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
 reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-removeApostropheMarker">bugfix/removeApostropheMarker</a> (Tianyin Zhang; D38435539)</h3>
+<p>Retired as of the <code>28.0.1500.95</code> snapshot because we no longer
+need the fix.</p>
 
 <h3><a name="bugfix-removeMarkersUponEditing">bugfix/removeMarkersUponEditing</a> (Edward Christie)</h3>
 <p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
