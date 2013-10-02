@@ -363,16 +363,6 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
     pref.type = SessionStartupPref::DEFAULT;
   }
 
-#if defined(OS_CHROMEOS)
-  // Kiosk/Retail mode has no profile to restore and fails to open the tabs
-  // specified in the startup_urls policy if we try to restore the non-existent
-  // session which is the default for ChromeOS in general.
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    DCHECK(pref.type == SessionStartupPref::LAST);
-    pref.type = SessionStartupPref::DEFAULT;
-  }
-#endif  // OS_CHROMEOS
-
   return pref;
 }
 
