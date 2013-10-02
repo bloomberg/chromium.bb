@@ -584,7 +584,7 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
             // This layer and all of its descendants have cached repaints rects that are relative to
             // the repaint container, so change when compositing changes; we need to update them here.
             if (layer->parent())
-                layer->computeRepaintRectsIncludingDescendants();
+                layer->repainter().computeRepaintRectsIncludingDescendants();
 
             layerChanged = true;
         }
@@ -608,7 +608,7 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
 
             // This layer and all of its descendants have cached repaints rects that are relative to
             // the repaint container, so change when compositing changes; we need to update them here.
-            layer->computeRepaintRectsIncludingDescendants();
+            layer->repainter().computeRepaintRectsIncludingDescendants();
 
             // If we need to repaint, do so now that we've removed the backing
             if (shouldRepaint == CompositingChangeRepaintNow)
@@ -663,7 +663,7 @@ void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
     if (!repaintContainer)
         repaintContainer = m_renderView;
 
-    layer->repaintIncludingNonCompositingDescendants(repaintContainer);
+    layer->repainter().repaintIncludingNonCompositingDescendants(repaintContainer);
 }
 
 // This method assumes that layout is up-to-date, unlike repaintOnCompositingChange().

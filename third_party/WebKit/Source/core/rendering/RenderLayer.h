@@ -49,6 +49,7 @@
 #include "core/rendering/CompositingReasons.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderLayerRepainter.h"
 #include "core/rendering/RenderLayerScrollableArea.h"
 
 #include "wtf/OwnPtr.h"
@@ -75,12 +76,6 @@ class Scrollbar;
 class TransformationMatrix;
 
 enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
-
-enum RepaintStatus {
-    NeedsNormalRepaint = 0,
-    NeedsFullRepaint = 1 << 0,
-    NeedsFullRepaintForPositionedMovementLayout = 1 << 1
-};
 
 class RenderLayer {
 public:
@@ -113,7 +108,6 @@ public:
     // if layer compositing is being used,
     void setBackingNeedsRepaint();
     void setBackingNeedsRepaintInRect(const LayoutRect&); // r is in the coordinate space of the layer's render object
-    void repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer);
 
     void styleChanged(StyleDifference, const RenderStyle* oldStyle);
 
@@ -436,12 +430,6 @@ public:
     // WARNING: This method returns the offset for the parent as this is what updateLayerPositions expects.
     LayoutPoint computeOffsetFromRoot(bool& hasLayerOffset) const;
 
-    // Return a cached repaint rect, computed relative to the layer renderer's containerForRepaint.
-    LayoutRect repaintRect() const { return m_repaintRect; }
-    LayoutRect repaintRectIncludingNonCompositingDescendants() const;
-
-    void setRepaintStatus(RepaintStatus status) { m_repaintStatus = status; }
-
     LayoutUnit staticInlinePosition() const { return m_staticInlinePosition; }
     LayoutUnit staticBlockPosition() const { return m_staticBlockPosition; }
 
@@ -566,6 +554,7 @@ public:
     void addLayerHitTestRects(LayerHitTestRects&) const;
 
     ScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
+    RenderLayerRepainter& repainter() { return m_repainter; }
 
 private:
     enum CollectLayersBehavior {
@@ -607,15 +596,9 @@ private:
     void dirtyNormalFlowListCanBePromotedToStackingContainer();
     void dirtySiblingStackingContextCanBePromotedToStackingContainer();
 
-    void computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* = 0);
-    void computeRepaintRectsIncludingDescendants();
-    void clearRepaintRects();
-
     void clipToRect(RenderLayer* rootLayer, GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&,
                     BorderRadiusClippingRule = IncludeSelfForBorderRadius);
     void restoreClip(GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&);
-
-    bool shouldRepaintAfterLayout() const;
 
     void updateSelfPaintingLayer();
     void updateIsNormalFlowOnly();
@@ -874,7 +857,6 @@ protected:
                                  // we ended up painting this layer or any descendants (and therefore need to
                                  // blend).
     unsigned m_paintingInsideReflection : 1; // A state bit tracking if we are painting inside a replica.
-    unsigned m_repaintStatus : 2; // RepaintStatus
 
     unsigned m_visibleContentStatusDirty : 1;
     unsigned m_hasVisibleContent : 1;
@@ -909,9 +891,6 @@ protected:
     RenderLayer* m_next;
     RenderLayer* m_first;
     RenderLayer* m_last;
-
-    LayoutRect m_repaintRect; // Cached repaint rects. Used by layout.
-    LayoutRect m_outlineBox;
 
     // Our current relative position offset.
     LayoutSize m_offsetForInFlowPosition;
@@ -975,6 +954,8 @@ private:
 
     OwnPtr<RenderLayerBacking> m_backing;
     OwnPtr<RenderLayerScrollableArea> m_scrollableArea;
+
+    RenderLayerRepainter m_repainter;
 };
 
 inline void RenderLayer::clearZOrderLists()

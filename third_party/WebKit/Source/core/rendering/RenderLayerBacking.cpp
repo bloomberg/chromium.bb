@@ -1532,7 +1532,7 @@ void RenderLayerBacking::setRequiresOwnBackingStore(bool requiresOwnBacking)
     // This affects the answer to paintsIntoCompositedAncestor(), which in turn affects
     // cached clip rects, so when it changes we have to clear clip rects on descendants.
     m_owningLayer->clearClipRectsIncludingDescendants(PaintingClipRects);
-    m_owningLayer->computeRepaintRectsIncludingDescendants();
+    m_owningLayer->repainter().computeRepaintRectsIncludingDescendants();
 
     compositor()->repaintInCompositedAncestor(m_owningLayer, compositedBounds());
 }

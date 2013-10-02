@@ -1374,7 +1374,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             return false;
         }
 
-        IntRect updateRect = pixelSnappedIntRect(layer->repaintRectIncludingNonCompositingDescendants());
+        IntRect updateRect = pixelSnappedIntRect(layer->repainter().repaintRectIncludingNonCompositingDescendants());
 
         RenderLayer* enclosingCompositingLayer = layer->enclosingCompositingLayer(false);
         if (enclosingCompositingLayer && !enclosingCompositingLayer->renderer()->isRenderView()) {

@@ -355,7 +355,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         // The caret rect needs to be invalidated after scrolling
         frame->selection().setCaretRectNeedsUpdate();
 
-        FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->m_repaintRect);
+        FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->repainter().repaintRect());
         if (repaintContainer)
             quadForFakeMouseMoveEvent = repaintContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
         frame->eventHandler()->dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
@@ -368,7 +368,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     // Just schedule a full repaint of our object.
     if (view && requiresRepaint)
-        m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->m_repaintRect));
+        m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()));
 
     // Schedule the scroll DOM event.
     if (m_box->node())

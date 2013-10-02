@@ -780,13 +780,13 @@ void RenderObject::invalidateContainerPreferredLogicalWidths()
 void RenderObject::setLayerNeedsFullRepaint()
 {
     ASSERT(hasLayer());
-    toRenderLayerModelObject(this)->layer()->setRepaintStatus(NeedsFullRepaint);
+    toRenderLayerModelObject(this)->layer()->repainter().setRepaintStatus(NeedsFullRepaint);
 }
 
 void RenderObject::setLayerNeedsFullRepaintForPositionedMovementLayout()
 {
     ASSERT(hasLayer());
-    toRenderLayerModelObject(this)->layer()->setRepaintStatus(NeedsFullRepaintForPositionedMovementLayout);
+    toRenderLayerModelObject(this)->layer()->repainter().setRepaintStatus(NeedsFullRepaintForPositionedMovementLayout);
 }
 
 RenderBlock* RenderObject::containingBlock() const

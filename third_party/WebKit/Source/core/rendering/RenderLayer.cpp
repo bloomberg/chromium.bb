@@ -122,7 +122,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_isRootLayer(renderer->isRenderView())
     , m_usedTransparency(false)
     , m_paintingInsideReflection(false)
-    , m_repaintStatus(NeedsNormalRepaint)
     , m_visibleContentStatusDirty(true)
     , m_hasVisibleContent(false)
     , m_visibleDescendantStatusDirty(false)
@@ -148,6 +147,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_reflection(0)
     , m_enclosingPaginationLayer(0)
     , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
+    , m_repainter(renderer)
 {
     m_isNormalFlowOnly = shouldBeNormalFlowOnly();
     m_isSelfPaintingLayer = shouldBeSelfPaintingLayer();
@@ -300,35 +300,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
         m_enclosingPaginationLayer = 0;
     }
 
-    if (m_hasVisibleContent) {
-        RenderView* view = renderer()->view();
-        ASSERT(view);
-        // FIXME: LayoutState does not work with RenderLayers as there is not a 1-to-1
-        // mapping between them and the RenderObjects. It would be neat to enable
-        // LayoutState outside the layout() phase and use it here.
-        ASSERT(!view->layoutStateEnabled());
-
-        RenderLayerModelObject* repaintContainer = renderer()->containerForRepaint();
-        LayoutRect oldRepaintRect = m_repaintRect;
-        LayoutRect oldOutlineBox = m_outlineBox;
-        computeRepaintRects(repaintContainer, geometryMap);
-
-        // FIXME: Should ASSERT that value calculated for m_outlineBox using the cached offset is the same
-        // as the value not using the cached offset, but we can't due to https://bugs.webkit.org/show_bug.cgi?id=37048
-        if (flags & CheckForRepaint) {
-            if (view && !view->document().printing()) {
-                if (m_repaintStatus & NeedsFullRepaint) {
-                    renderer()->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldRepaintRect));
-                    if (m_repaintRect != oldRepaintRect)
-                        renderer()->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect));
-                } else if (shouldRepaintAfterLayout())
-                    renderer()->repaintAfterLayoutIfNeeded(repaintContainer, oldRepaintRect, oldOutlineBox, &m_repaintRect, &m_outlineBox);
-            }
-        }
-    } else
-        clearRepaintRects();
-
-    m_repaintStatus = NeedsNormalRepaint;
+    repainter().repaintAfterLayout(geometryMap, flags & CheckForRepaint);
 
     // Go ahead and update the reflection's position and size.
     if (m_reflection)
@@ -361,19 +333,6 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
 
     if (geometryMap)
         geometryMap->popMappingsToAncestor(parent());
-}
-
-LayoutRect RenderLayer::repaintRectIncludingNonCompositingDescendants() const
-{
-    LayoutRect repaintRect = m_repaintRect;
-    for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
-        // Don't include repaint rects for composited child layers; they will paint themselves and have a different origin.
-        if (child->isComposited())
-            continue;
-
-        repaintRect.unite(child->repaintRectIncludingNonCompositingDescendants());
-    }
-    return repaintRect;
 }
 
 void RenderLayer::setAncestorChainHasSelfPaintingLayerDescendant()
@@ -672,35 +631,6 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
     return true;
 }
 
-void RenderLayer::computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* geometryMap)
-{
-    ASSERT(!m_visibleContentStatusDirty);
-
-    m_repaintRect = renderer()->clippedOverflowRectForRepaint(repaintContainer);
-    m_outlineBox = renderer()->outlineBoundsForRepaint(repaintContainer, geometryMap);
-}
-
-
-void RenderLayer::computeRepaintRectsIncludingDescendants()
-{
-    // FIXME: computeRepaintRects() has to walk up the parent chain for every layer to compute the rects.
-    // We should make this more efficient.
-    // FIXME: it's wrong to call this when layout is not up-to-date, which we do.
-    computeRepaintRects(renderer()->containerForRepaint());
-
-    for (RenderLayer* layer = firstChild(); layer; layer = layer->nextSibling())
-        layer->computeRepaintRectsIncludingDescendants();
-}
-
-void RenderLayer::clearRepaintRects()
-{
-    ASSERT(!m_hasVisibleContent);
-    ASSERT(!m_visibleContentStatusDirty);
-
-    m_repaintRect = IntRect();
-    m_outlineBox = IntRect();
-}
-
 void RenderLayer::updateLayerPositionsAfterDocumentScroll()
 {
     ASSERT(this == renderer()->view()->layer());
@@ -752,12 +682,12 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
     if (flags & HasSeenViewportConstrainedAncestor
         || (flags & IsOverflowScroll && flags & HasSeenAncestorWithOverflowClip && !m_canSkipRepaintRectsUpdateOnScroll)) {
         // FIXME: We could track the repaint container as we walk down the tree.
-        computeRepaintRects(renderer()->containerForRepaint(), geometryMap);
+        repainter().computeRepaintRects(renderer()->containerForRepaint(), geometryMap);
     } else {
-        // Check that our cached rects are correct.
+        // Check that RenderLayerRepainter's cached rects are correct.
         // FIXME: re-enable these assertions when the issue with table cells is resolved: https://bugs.webkit.org/show_bug.cgi?id=103432
-        // ASSERT(m_repaintRect == renderer()->clippedOverflowRectForRepaint(renderer()->containerForRepaint()));
-        // ASSERT(m_outlineBox == renderer()->outlineBoundsForRepaint(renderer()->containerForRepaint(), geometryMap));
+        // ASSERT(repainter().m_repaintRect == renderer()->clippedOverflowRectForRepaint(renderer()->containerForRepaint()));
+        // ASSERT(repainter().m_outlineBox == renderer()->outlineBoundsForRepaint(renderer()->containerForRepaint(), geometryMap));
     }
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
@@ -986,7 +916,7 @@ void RenderLayer::setHasVisibleContent()
 
     m_visibleContentStatusDirty = false;
     m_hasVisibleContent = true;
-    computeRepaintRects(renderer()->containerForRepaint());
+    repainter().computeRepaintRects(renderer()->containerForRepaint());
     if (!isNormalFlowOnly()) {
         // We don't collect invisible layers in z-order lists if we are not in compositing mode.
         // As we became visible, we need to dirty our stacking containers ancestors to be properly
@@ -1345,17 +1275,6 @@ RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 static inline const RenderLayer* compositingContainer(const RenderLayer* layer)
 {
     return layer->isNormalFlowOnly() ? layer->parent() : layer->ancestorStackingContainer();
-}
-
-inline bool RenderLayer::shouldRepaintAfterLayout() const
-{
-    if (m_repaintStatus == NeedsNormalRepaint)
-        return true;
-
-    // Composited layers that were moved during a positioned movement only
-    // layout, don't need to be repainted. They just need to be recomposited.
-    ASSERT(m_repaintStatus == NeedsFullRepaintForPositionedMovementLayout);
-    return !isComposited() || (isComposited() && backing()->paintsIntoCompositedAncestor());
 }
 
 RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
@@ -1785,7 +1704,7 @@ void RenderLayer::removeOnlyThisLayer()
         RenderLayer* next = current->nextSibling();
         removeChild(current);
         m_parent->addChild(current, nextSib);
-        current->setRepaintStatus(NeedsFullRepaint);
+        current->repainter().setRepaintStatus(NeedsFullRepaint);
         // updateLayerPositions depends on hasLayer() already being false for proper layout.
         ASSERT(!renderer()->hasLayer());
         current->updateLayerPositions(0); // FIXME: use geometry map.
@@ -4875,17 +4794,6 @@ void RenderLayer::setBackingNeedsRepaintInRect(const LayoutRect& r)
             view->repaintViewRectangle(absRect);
     } else
         backing()->setContentsNeedDisplayInRect(pixelSnappedIntRect(r));
-}
-
-// Since we're only painting non-composited layers, we know that they all share the same repaintContainer.
-void RenderLayer::repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer)
-{
-    renderer()->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(renderer()->clippedOverflowRectForRepaint(repaintContainer)));
-
-    for (RenderLayer* curr = firstChild(); curr; curr = curr->nextSibling()) {
-        if (!curr->isComposited())
-            curr->repaintIncludingNonCompositingDescendants(repaintContainer);
-    }
 }
 
 bool RenderLayer::shouldBeNormalFlowOnly() const
