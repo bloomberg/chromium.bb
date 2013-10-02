@@ -490,7 +490,7 @@ void ExternalProviderImpl::CreateExternalProviders(
             new ExternalComponentLoader(),
             profile,
             Manifest::INVALID_LOCATION,
-            Manifest::EXTERNAL_POLICY_DOWNLOAD,
+            Manifest::EXTERNAL_COMPONENT,
             Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT)));
   }
 }

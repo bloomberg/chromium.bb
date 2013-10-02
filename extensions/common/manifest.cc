@@ -34,6 +34,10 @@ int GetLocationRank(Manifest::Location location) {
   switch (location) {
     // Component extensions can not be overriden by any other type.
     case Manifest::COMPONENT:
+      rank = 9;
+      break;
+
+    case Manifest::EXTERNAL_COMPONENT:
       rank = 8;
       break;
 

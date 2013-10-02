@@ -43,6 +43,9 @@ class Manifest {
     EXTERNAL_POLICY,    // A crx file from an external directory (via admin
                         // policies), cached locally and installed from the
                         // cache.
+    EXTERNAL_COMPONENT, // Similar to COMPONENT in that it's considered an
+                        // internal implementation detail of chrome, but
+                        // installed from an update URL like the *DOWNLOAD ones.
 
     NUM_LOCATIONS
   };

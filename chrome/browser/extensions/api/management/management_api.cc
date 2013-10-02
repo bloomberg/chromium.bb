@@ -199,6 +199,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
       NOTREACHED();
     case Manifest::INVALID_LOCATION:
     case Manifest::COMPONENT:
+    case Manifest::EXTERNAL_COMPONENT:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_OTHER;
       break;
   }

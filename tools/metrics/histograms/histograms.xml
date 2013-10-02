@@ -21566,6 +21566,7 @@ other types of suffix sets.
   <int value="7" label="EXTERNAL_POLICY_DOWNLOAD"/>
   <int value="8" label="COMMAND_LINE"/>
   <int value="9" label="EXTERNAL_POLICY"/>
+  <int value="10" label="EXTERNAL_COMPONENT"/>
 </enum>
 
 <enum name="ExtensionPermission" type="int">
