@@ -25,11 +25,18 @@ bool ValidateHttpResponse(const std::string& s) {
 
 REGISTER_TEST_CASE(TCPSocket);
 
-TestTCPSocket::TestTCPSocket(TestingInstance* instance) : TestCase(instance) {
+TestTCPSocket::TestTCPSocket(TestingInstance* instance)
+    : TestCase(instance),
+      socket_interface_1_0_(NULL) {
 }
 
 bool TestTCPSocket::Init() {
   if (!pp::TCPSocket::IsAvailable())
+    return false;
+  socket_interface_1_0_ =
+      static_cast<const PPB_TCPSocket_1_0*>(
+          pp::Module::Get()->GetBrowserInterface(PPB_TCPSOCKET_INTERFACE_1_0));
+  if (!socket_interface_1_0_)
     return false;
 
   // We need something to connect to, so we connect to the HTTP server whence we
@@ -54,6 +61,7 @@ void TestTCPSocket::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestTCPSocket, SetOption, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, Listen, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, Backlog, filter);
+  RUN_CALLBACK_TEST(TestTCPSocket, Interface_1_0, filter);
 }
 
 std::string TestTCPSocket::TestConnect() {
@@ -305,6 +313,27 @@ std::string TestTCPSocket::TestBacklog() {
   PASS();
 }
 
+std::string TestTCPSocket::TestInterface_1_0() {
+  PP_Resource socket = socket_interface_1_0_->Create(instance_->pp_instance());
+  ASSERT_NE(0, socket);
+
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+  cb.WaitForResult(socket_interface_1_0_->Connect(
+      socket, addr_.pp_resource(), cb.GetCallback().pp_completion_callback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
+
+  ASSERT_SUBTEST_SUCCESS(WriteToSocket_1_0(socket, "GET / HTTP/1.0\r\n\r\n"));
+
+  // Read up to the first \n and check that it looks like valid HTTP response.
+  std::string s;
+  ASSERT_SUBTEST_SUCCESS(ReadFirstLineFromSocket_1_0(socket, &s));
+  ASSERT_TRUE(ValidateHttpResponse(s));
+
+  pp::Module::Get()->core()->ReleaseResource(socket);
+  PASS();
+}
+
 std::string TestTCPSocket::ReadFirstLineFromSocket(pp::TCPSocket* socket,
                                                    std::string* s) {
   char buffer[1000];
@@ -314,6 +343,29 @@ std::string TestTCPSocket::ReadFirstLineFromSocket(pp::TCPSocket* socket,
   while (s->size() < 10000) {
     TestCompletionCallback cb(instance_->pp_instance(), callback_type());
     cb.WaitForResult(socket->Read(buffer, sizeof(buffer), cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_GT(cb.result(), 0);
+    s->reserve(s->size() + cb.result());
+    for (int32_t i = 0; i < cb.result(); ++i) {
+      s->push_back(buffer[i]);
+      if (buffer[i] == '\n')
+        PASS();
+    }
+  }
+  PASS();
+}
+
+std::string TestTCPSocket::ReadFirstLineFromSocket_1_0(PP_Resource socket,
+                                                       std::string* s) {
+  char buffer[1000];
+
+  s->clear();
+  // Make sure we don't just hang if |Read()| spews.
+  while (s->size() < 10000) {
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+    cb.WaitForResult(socket_interface_1_0_->Read(
+        socket, buffer, sizeof(buffer),
+        cb.GetCallback().pp_completion_callback()));
     CHECK_CALLBACK_BEHAVIOR(cb);
     ASSERT_GT(cb.result(), 0);
     s->reserve(s->size() + cb.result());
@@ -350,6 +402,24 @@ std::string TestTCPSocket::WriteToSocket(pp::TCPSocket* socket,
     TestCompletionCallback cb(instance_->pp_instance(), callback_type());
     cb.WaitForResult(
         socket->Write(buffer + written, s.size() - written, cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_GT(cb.result(), 0);
+    written += cb.result();
+  }
+  ASSERT_EQ(written, s.size());
+  PASS();
+}
+
+std::string TestTCPSocket::WriteToSocket_1_0(
+    PP_Resource socket,
+    const std::string& s) {
+  const char* buffer = s.data();
+  size_t written = 0;
+  while (written < s.size()) {
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+    cb.WaitForResult(socket_interface_1_0_->Write(
+        socket, buffer + written, s.size() - written,
+        cb.GetCallback().pp_completion_callback()));
     CHECK_CALLBACK_BEHAVIOR(cb);
     ASSERT_GT(cb.result(), 0);
     written += cb.result();
