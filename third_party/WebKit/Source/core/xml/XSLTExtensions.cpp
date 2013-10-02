@@ -27,6 +27,8 @@
 #include "config.h"
 
 #include "core/xml/XSLTExtensions.h"
+#include "RuntimeEnabledFeatures.h"
+#include "wtf/Assertions.h"
 
 #include <libxml/xpathInternals.h>
 
@@ -70,6 +72,7 @@ static void exsltNodeSetFunction(xmlXPathParserContextPtr ctxt, int nargs)
 
 void registerXSLTExtensions(xsltTransformContextPtr ctxt)
 {
+    ASSERT(RuntimeEnabledFeatures::xsltEnabled());
     xsltRegisterExtFunction(ctxt, (const xmlChar*)"node-set", (const xmlChar*)"http://exslt.org/common", exsltNodeSetFunction);
 }
 

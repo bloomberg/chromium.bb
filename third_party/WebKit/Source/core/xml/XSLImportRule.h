@@ -23,6 +23,7 @@
 #ifndef XSLImportRule_h
 #define XSLImportRule_h
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "core/xml/XSLStyleSheet.h"
@@ -37,6 +38,7 @@ class XSLImportRule : private StyleSheetResourceClient {
 public:
     static PassOwnPtr<XSLImportRule> create(XSLStyleSheet* parentSheet, const String& href)
     {
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return adoptPtr(new XSLImportRule(parentSheet, href));
     }
 

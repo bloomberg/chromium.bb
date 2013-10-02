@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/fetch/ResourceFetcher.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -125,6 +126,7 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
     case Resource::Image:
         return request.forPreload() ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityLow;
     case Resource::XSLStyleSheet:
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return ResourceLoadPriorityHigh;
     case Resource::SVGDocument:
         return ResourceLoadPriorityLow;
@@ -298,6 +300,7 @@ ResourcePtr<ScriptResource> ResourceFetcher::fetchScript(FetchRequest& request)
 
 ResourcePtr<XSLStyleSheetResource> ResourceFetcher::fetchXSLStyleSheet(FetchRequest& request)
 {
+    ASSERT(RuntimeEnabledFeatures::xsltEnabled());
     return static_cast<XSLStyleSheetResource*>(requestResource(Resource::XSLStyleSheet, request).get());
 }
 
@@ -327,8 +330,9 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
 {
     if (treatment == TreatAsDefaultForType) {
         switch (type) {
-        case Resource::Script:
         case Resource::XSLStyleSheet:
+            ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        case Resource::Script:
         case Resource::SVGDocument:
         case Resource::CSSStyleSheet:
         case Resource::ImportResource:
@@ -405,8 +409,9 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
             return false;
         }
         break;
-    case Resource::SVGDocument:
     case Resource::XSLStyleSheet:
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+    case Resource::SVGDocument:
         if (!m_document->securityOrigin()->canRequest(url)) {
             printAccessDeniedMessage(url);
             return false;
@@ -416,6 +421,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
 
     switch (type) {
     case Resource::XSLStyleSheet:
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowScriptFromSource(url))
             return false;
         break;
@@ -619,8 +625,9 @@ void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Ty
         else
             targetType = ResourceRequest::TargetIsMainFrame;
         break;
-    case Resource::CSSStyleSheet:
     case Resource::XSLStyleSheet:
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+    case Resource::CSSStyleSheet:
         targetType = ResourceRequest::TargetIsStyleSheet;
         break;
     case Resource::Script:

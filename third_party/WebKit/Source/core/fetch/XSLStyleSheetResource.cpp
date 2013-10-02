@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/fetch/XSLStyleSheetResource.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "core/fetch/TextResourceDecoder.h"
@@ -39,6 +40,7 @@ XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequ
     : Resource(resourceRequest, XSLStyleSheet)
     , m_decoder(TextResourceDecoder::create("text/xsl"))
 {
+    ASSERT(RuntimeEnabledFeatures::xsltEnabled());
     DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml", AtomicString::ConstructFromLiteral));
 
     // It's XML we want.

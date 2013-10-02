@@ -23,6 +23,7 @@
 #ifndef XSLTProcessor_h
 #define XSLTProcessor_h
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/Node.h"
 #include "core/xml/XSLStyleSheet.h"
@@ -40,7 +41,11 @@ class DocumentFragment;
 
 class XSLTProcessor : public RefCounted<XSLTProcessor>, public ScriptWrappable {
 public:
-    static PassRefPtr<XSLTProcessor> create() { return adoptRef(new XSLTProcessor); }
+    static PassRefPtr<XSLTProcessor> create()
+    {
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        return adoptRef(new XSLTProcessor);
+    }
     ~XSLTProcessor();
 
     void setXSLStyleSheet(PassRefPtr<XSLStyleSheet> styleSheet) { m_stylesheet = styleSheet; }

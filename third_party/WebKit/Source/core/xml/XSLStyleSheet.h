@@ -23,11 +23,13 @@
 #ifndef XSLStyleSheet_h
 #define XSLStyleSheet_h
 
-#include <libxml/tree.h>
-#include <libxslt/transform.h>
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/StyleSheet.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "wtf/PassRefPtr.h"
+
+#include <libxml/tree.h>
+#include <libxslt/transform.h>
 
 namespace WebCore {
 
@@ -38,14 +40,17 @@ class XSLStyleSheet : public StyleSheet {
 public:
     static PassRefPtr<XSLStyleSheet> create(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL)
     {
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return adoptRef(new XSLStyleSheet(parentImport, originalURL, finalURL));
     }
     static PassRefPtr<XSLStyleSheet> create(ProcessingInstruction* parentNode, const String& originalURL, const KURL& finalURL)
     {
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return adoptRef(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
     }
     static PassRefPtr<XSLStyleSheet> createEmbedded(ProcessingInstruction* parentNode, const KURL& finalURL)
     {
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return adoptRef(new XSLStyleSheet(parentNode, finalURL.string(), finalURL, true));
     }
 
@@ -53,6 +58,7 @@ public:
     // XSLTProcessor ensures that the stylesheet doesn't outlive its parent, in part by not exposing it to JavaScript.
     static PassRefPtr<XSLStyleSheet> createForXSLTProcessor(Node* parentNode, const String& originalURL, const KURL& finalURL)
     {
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return adoptRef(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
     }
 
