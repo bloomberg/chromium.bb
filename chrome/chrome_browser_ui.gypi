@@ -2746,7 +2746,6 @@
             ['exclude', '^browser/ui/views/about_ipc_dialog.cc'],
             ['exclude', '^browser/ui/views/app_menu_button_win.cc'],
             ['exclude', '^browser/ui/views/dropdown_bar_host_win.cc'],
-            ['exclude', '^browser/ui/views/external_protocol_dialog.cc'],
             ['exclude', '^browser/ui/views/find_bar_host_win.cc'],
             ['exclude', '^browser/ui/views/frame/browser_frame_win.cc'],
             ['exclude', '^browser/ui/views/frame/browser_frame_win.h'],
@@ -2794,9 +2793,10 @@
               ],
             }, {
               'sources/': [
-                ['exclude', '^browser/ui/views/hwnd_util.h'],
+                ['exclude', '^browser/ui/views/external_protocol_dialog.cc'],
                 ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.cc'],
                 ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.h'],
+                ['exclude', '^browser/ui/views/hwnd_util.h'],
               ],
             }],
           ],

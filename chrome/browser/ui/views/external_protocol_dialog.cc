@@ -156,13 +156,10 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
 
   // Dialog is top level if we don't have a web_contents associated with us.
-  HWND root_hwnd = NULL;
-  if (web_contents_) {
-    root_hwnd = GetAncestor(web_contents_->GetView()->GetContentNativeView(),
-                            GA_ROOT);
-  }
-
-  CreateBrowserModalDialogViews(this, root_hwnd)->Show();
+  gfx::NativeWindow parent_window = NULL;
+  if (web_contents_)
+    parent_window = web_contents_->GetView()->GetTopLevelNativeWindow();
+  CreateBrowserModalDialogViews(this, parent_window)->Show();
 }
 
 // static
