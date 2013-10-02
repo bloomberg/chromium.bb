@@ -57,8 +57,7 @@ Graphics3D::Graphics3D(const HostResource& resource)
 }
 
 Graphics3D::~Graphics3D() {
-  if (gles2_impl())
-    DestroyGLES2Impl();
+  DestroyGLES2Impl();
 }
 
 bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2) {
