@@ -47,6 +47,20 @@ class BuilderStage(object):
   # TODO(mtennant): Rename this something like skip_config_name.
   config_name = None
 
+  @classmethod
+  def GetBotId(cls, bot_name, remote_trybot):
+    """Get the 'bot id' of a particular bot.
+
+    The bot id is used to specify the subdirectory where artifacts are stored
+    in Google Storage. To avoid conflicts between remote trybots and regular
+    bots, we add a 'trybot-' prefix to any remote trybot runs.
+
+    Args:
+      bot_name: The name of the bot.
+      remote_trybot: Whether this run is a remote trybot run.
+    """
+    return 'trybot-%s' % bot_name if remote_trybot else bot_name
+
   @staticmethod
   def SetManifestBranch(branch):
     BuilderStage._target_manifest_branch = branch
@@ -57,9 +71,7 @@ class BuilderStage(object):
 
   def __init__(self, options, build_config, suffix=None):
     self._options = options
-    self._bot_id = build_config['name']
-    if not self._options.archive_base and self._options.remote_trybot:
-      self._bot_id = 'trybot-' + self._bot_id
+    self._bot_id = self.GetBotId(build_config['name'], options.remote_trybot)
 
     self._build_config = copy.deepcopy(build_config)
     self.name = self.StageNamePrefix()

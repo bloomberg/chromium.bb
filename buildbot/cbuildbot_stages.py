@@ -112,8 +112,35 @@ class ArchivingStage(BoardSpecificBuilderStage):
   _TRYBOT_ARCHIVE = 'trybot_archive'
 
   @classmethod
-  def GetArchiveRoot(cls, buildroot, trybot=False):
-    """Return the location where archive images are kept."""
+  def GetBaseUploadURL(cls, config, archive_base=None, remote_trybot=False):
+    """Get the base URL where artifacts from this builder are uploaded.
+
+    Each build run stores its artifacts in a subdirectory of the base URL.
+    We also have LATEST files under the base URL which help point to the
+    latest build available for a given builder.
+
+    Args:
+      config: The build config to examine.
+      archive_base: Optional. The root URL under which objects from all
+        builders are uploaded. If not specified, we use the default archive
+        bucket.
+      remote_trybot: Whether this is a remote trybot run. This is used to
+        make sure that uploads from remote trybot runs do not conflict with
+        uploads from production builders.
+    """
+    if archive_base:
+      gs_base = archive_base
+    elif (remote_trybot or
+          config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT):
+      gs_base = constants.DEFAULT_ARCHIVE_BUCKET
+    else:
+      return config['gs_path']
+    subdir = cls.GetBotId(config['name'], remote_trybot)
+    return '%s/%s' % (gs_base, subdir)
+
+  @classmethod
+  def GetLocalArchiveRoot(cls, buildroot, trybot):
+    """Return the location on disk where archive images are kept."""
     archive_base = cls._TRYBOT_ARCHIVE if trybot else cls._BUILDBOT_ARCHIVE
     return os.path.join(buildroot, archive_base)
 
@@ -129,14 +156,14 @@ class ArchivingStage(BoardSpecificBuilderStage):
 
     self.version = archive_stage.GetVersion()
 
-    gsutil_archive = self._GetGSUtilArchiveDir()
-    self.upload_url = '%s/%s' % (gsutil_archive, self.version)
-
     trybot = not options.buildbot or options.debug
-    archive_root = ArchivingStage.GetArchiveRoot(self._build_root, trybot)
+    archive_root = self.GetLocalArchiveRoot(self._build_root, trybot)
     self.bot_archive_root = os.path.join(archive_root, self._bot_id)
     self.archive_path = os.path.join(self.bot_archive_root, self.version)
     self.acl = None if self._build_config['internal'] else 'public-read'
+    base_upload_url = self.GetBaseUploadURL(build_config, options.archive_base,
+                                            options.remote_trybot)
+    self.upload_url = '%s/%s' % (base_upload_url, self.version)
 
     if options.buildbot or options.remote_trybot:
       base_download_url = gs.PRIVATE_BASE_HTTPS_URL
@@ -197,17 +224,6 @@ class ArchivingStage(BoardSpecificBuilderStage):
       # Treat gsutil flake as a warning if it's the only problem.
       self._HandleExceptionAsWarning(e)
 
-  def _GetGSUtilArchiveDir(self):
-    if self._options.archive_base:
-      gs_base = self._options.archive_base
-    elif (self._options.remote_trybot or
-          self._build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT):
-      gs_base = constants.DEFAULT_ARCHIVE_BUCKET
-    else:
-      return self._build_config['gs_path']
-
-    return '%s/%s' % (gs_base, self._bot_id)
-
   def GetMetadata(self, stage=None, final_status=None, sync_instance=None):
     """Constructs the metadata json object.
 
@@ -230,7 +246,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
     sdk_verinfo = cros_build_lib.LoadKeyValueFile(
         os.path.join(self._build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
-    verinfo = self.archive_stage.GetVersionInfo()
+    verinfo = self.archive_stage.GetVersionInfo(self._build_root)
     metadata = {
         # Version of the metadata format.
         'metadata-version': '2',
@@ -344,7 +360,8 @@ class CleanUpStage(bs.BuilderStage):
 
   def _DeleteArchivedTrybotImages(self):
     """For trybots, clear all previus archive images to save space."""
-    archive_root = ArchivingStage.GetArchiveRoot(self._build_root, trybot=True)
+    archive_root = ArchivingStage.GetLocalArchiveRoot(
+        self._build_root, trybot=True)
     osutils.RmDir(archive_root, ignore_missing=True)
 
   def _DeleteArchivedPerfResults(self):
@@ -806,10 +823,12 @@ class ManifestVersionedSyncStage(SyncStage):
     return ManifestVersionedSyncStage.manifest_manager.BootstrapFromVersion(
         version)
 
+  def VersionIncrementType(self):
+    """Return which part of the version number should be incremented."""
+    return ('build' if self._target_manifest_branch == 'master' else 'branch')
+
   def Initialize(self):
     """Initializes a manager that manages manifests for associated stages."""
-    increment = ('build' if self._target_manifest_branch == 'master'
-                 else 'branch')
 
     dry_run = self._options.debug
 
@@ -825,7 +844,7 @@ class ManifestVersionedSyncStage(SyncStage):
             manifest_repo=self.manifest_repo,
             manifest=self._build_config['manifest'],
             build_name=self._bot_id,
-            incr_type=increment,
+            incr_type=self.VersionIncrementType(),
             force=self._force,
             branch=self._target_manifest_branch,
             dry_run=dry_run,
@@ -2550,15 +2569,18 @@ class ArchiveStage(ArchivingStage):
     # Setup the archive path. This is used by other stages.
     self._SetupArchivePath()
 
-  @cros_build_lib.MemoizedSingleCall
-  def GetVersionInfo(self):
-    """Helper for picking apart various version bits"""
-    return manifest_version.VersionInfo.from_repo(self._build_root)
+  @classmethod
+  def GetVersionInfo(cls, build_root):
+    """Helper for picking apart various version bits.
+
+    This method only exists so that tests can override it.
+    """
+    return manifest_version.VersionInfo.from_repo(build_root)
 
   @cros_build_lib.MemoizedSingleCall
   def GetVersion(self):
     """Helper for calculating self.version."""
-    verinfo = self.GetVersionInfo()
+    verinfo = self.GetVersionInfo(self._build_root)
     calc_version = self.release_tag or verinfo.VersionString()
     calc_version = 'R%s-%s' % (verinfo.chrome_branch, calc_version)
 
@@ -2877,7 +2899,7 @@ class ArchiveStage(ArchivingStage):
 
     def MarkAsLatest():
       # Update and upload LATEST file.
-      verinfo = self.GetVersionInfo()
+      verinfo = self.GetVersionInfo(self._build_root)
       calc_version = self.release_tag or verinfo.VersionString()
       filenames = ('LATEST-%s' % self._target_manifest_branch,
                    'LATEST-%s' % calc_version)
@@ -2885,7 +2907,7 @@ class ArchiveStage(ArchivingStage):
         latest_path = os.path.join(self.bot_archive_root, filename)
         osutils.WriteFile(latest_path, self.version, mode='w')
         commands.UploadArchivedFile(
-            self.bot_archive_root, self._GetGSUtilArchiveDir(), filename, debug,
+            self.bot_archive_root, upload_url, filename, debug,
             acl=self.acl)
 
     try:

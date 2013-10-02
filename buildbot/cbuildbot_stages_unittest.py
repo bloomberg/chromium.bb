@@ -957,10 +957,9 @@ class ArchiveStageMock(partial_mock.PartialMock):
   ATTRS = ('GetVersionInfo', 'WaitForBreakpadSymbols',)
   VERSION = '3333.1.0'
 
-  def GetVersionInfo(self, inst):
+  def GetVersionInfo(self, _build_root):
     return manifest_version.VersionInfo(
-        version_string=inst.release_tag if inst.release_tag else self.VERSION,
-        chrome_branch='27')
+        version_string=self.VERSION, chrome_branch='27')
 
   def WaitForBreakpadSymbols(self, _inst):
     return True
@@ -1307,6 +1306,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self.options.prebuilts = False
     self.options.clobber = False
     self.options.nosdk = False
+    self.options.remote_trybot = False
     self.options.latest_toolchain = False
     self.options.buildnumber = 1234
     self.options.chrome_rev = None
