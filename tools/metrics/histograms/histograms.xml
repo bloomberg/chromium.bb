@@ -19245,6 +19245,10 @@ other types of suffix sets.
   <int value="19" label="NTP_WEBSTORE_PLUS_ICON"/>
   <int value="20" label="APP_LIST_MAIN"/>
   <int value="21" label="APP_LIST_SEARCH"/>
+  <int value="22" label="APP_LIST_MAIN_CHROME"/>
+  <int value="23" label="APP_LIST_MAIN_WEBSTORE"/>
+  <int value="24" label="APP_LIST_SEARCH_CHROME"/>
+  <int value="25" label="APP_LIST_SEARCH_WEBSTORE"/>
 </enum>
 
 <enum name="AppLaunchContainer" type="int">
