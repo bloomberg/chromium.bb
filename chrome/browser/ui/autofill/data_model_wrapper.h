@@ -39,8 +39,13 @@ class DataModelWrapper {
   // out-param).
   void FillInputs(DetailInputs* inputs);
 
-  // Returns the data for a specific autocomplete type.
+  // Returns the data for a specific autocomplete type in a format for filling
+  // into a web form.
   virtual base::string16 GetInfo(const AutofillType& type) const = 0;
+
+  // Returns the data for a specified type in a format optimized for displaying
+  // to the user.
+  virtual base::string16 GetInfoForDisplay(const AutofillType& type) const;
 
   // Returns the icon, if any, that represents this model.
   virtual gfx::Image GetIcon();
@@ -103,6 +108,8 @@ class AutofillProfileWrapper : public DataModelWrapper {
   virtual ~AutofillProfileWrapper();
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
+      OVERRIDE;
 
  protected:
   virtual void FillFormField(AutofillField* field) const OVERRIDE;
@@ -160,6 +167,8 @@ class WalletAddressWrapper : public DataModelWrapper {
   virtual ~WalletAddressWrapper();
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
+      OVERRIDE;
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
 
@@ -177,6 +186,8 @@ class WalletInstrumentWrapper : public DataModelWrapper {
   virtual ~WalletInstrumentWrapper();
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
+      OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;

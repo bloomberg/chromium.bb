@@ -85,22 +85,87 @@ TEST(DataModelWrapperTest, GetDisplayTextEmptyWithoutPhone) {
 
   WalletInstrumentWrapper instrument_wrapper(instrument.get());
   base::string16 unused, unused2;
-  ASSERT_TRUE(instrument_wrapper.GetDisplayText(&unused, &unused2));
+  EXPECT_TRUE(instrument_wrapper.GetDisplayText(&unused, &unused2));
 
   WalletAddressWrapper address_wrapper(&instrument->address());
-  ASSERT_TRUE(address_wrapper.GetDisplayText(&unused, &unused2));
+  EXPECT_TRUE(address_wrapper.GetDisplayText(&unused, &unused2));
 
-  const_cast<wallet::Address*>(&instrument->address())->set_phone_number(
+  const_cast<wallet::Address*>(&instrument->address())->SetPhoneNumber(
       string16());
 
-  ASSERT_TRUE(
-      instrument_wrapper.GetInfo(
-          AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty());
+  EXPECT_EQ(base::string16(),
+            instrument_wrapper.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)));
   EXPECT_FALSE(instrument_wrapper.GetDisplayText(&unused, &unused2));
 
-  ASSERT_TRUE(
-      address_wrapper.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty());
+  EXPECT_EQ(base::string16(),
+            address_wrapper.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)));
   EXPECT_FALSE(address_wrapper.GetDisplayText(&unused, &unused2));
+}
+
+TEST(DataModelWrapperTest, GetDisplayPhoneNumber) {
+  const base::string16 national_unformatted = ASCIIToUTF16("3104567890");
+  const base::string16 national_formatted = ASCIIToUTF16("(310) 456-7890");
+  const base::string16 international_unformatted = ASCIIToUTF16("13104567890");
+  const base::string16 international_formatted =
+      ASCIIToUTF16("+1 310-456-7890");
+  const base::string16 user_formatted = ASCIIToUTF16("310.456 78 90");
+
+  scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument(
+      wallet::GetTestMaskedInstrument());
+  AutofillProfile profile(test::GetVerifiedProfile());
+
+  // No matter what format a wallet number is in, it gets formatted in a
+  // standard way.
+  WalletInstrumentWrapper instrument_wrapper(instrument.get());
+  const_cast<wallet::Address*>(&instrument->address())->
+      SetPhoneNumber(national_unformatted);
+  EXPECT_EQ(national_formatted,
+            instrument_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  WalletAddressWrapper address_wrapper(&instrument->address());
+  EXPECT_EQ(national_formatted,
+            address_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  AutofillProfileWrapper profile_wrapper(&profile);
+
+  const_cast<wallet::Address*>(&instrument->address())->
+      SetPhoneNumber(national_formatted);
+  EXPECT_EQ(national_formatted,
+            instrument_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  EXPECT_EQ(national_formatted,
+            address_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+
+  const_cast<wallet::Address*>(&instrument->address())->
+      SetPhoneNumber(international_unformatted);
+  EXPECT_EQ(national_formatted,
+            instrument_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  EXPECT_EQ(national_formatted,
+            address_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+
+  // Autofill numbers that are unformatted get formatted either nationally or
+  // internationally depending on the presence of a country code. Formatted
+  // numbers stay formatted.
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, international_unformatted);
+  EXPECT_EQ(international_formatted,
+            profile_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, national_unformatted);
+  EXPECT_EQ(national_formatted,
+            profile_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, national_formatted);
+  EXPECT_EQ(national_formatted,
+            profile_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, user_formatted);
+  EXPECT_EQ(user_formatted,
+            profile_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+
 }
 
 }  // namespace autofill

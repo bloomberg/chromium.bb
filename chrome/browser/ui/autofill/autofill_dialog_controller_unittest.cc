@@ -1358,6 +1358,10 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
   ui::MenuModel* shipping_model =
       controller()->MenuModelForSection(SECTION_SHIPPING);
   shipping_model->ActivatedAt(shipping_model->GetItemCount() - 2);
+
+  AutofillProfile test_profile(test::GetVerifiedProfile());
+  FillInputs(SECTION_SHIPPING, test_profile);
+
   AcceptAndLoadFakeFingerprint();
 }
 

@@ -28,7 +28,7 @@ const char kAddressMissingObjectId[] =
     "    \"locality_name\":\"locality_name\","
     "    \"administrative_area_name\":\"administrative_area_name\","
     "    \"postal_code_number\":\"postal_code_number\","
-    "    \"country_name_code\":\"country_name_code\""
+    "    \"country_name_code\":\"US\""
     "  }"
     "}";
 
@@ -64,7 +64,7 @@ const char kAddressMissingRecipientName[] =
     "    \"locality_name\":\"locality_name\","
     "    \"administrative_area_name\":\"administrative_area_name\","
     "    \"postal_code_number\":\"postal_code_number\","
-    "    \"country_name_code\":\"country_name_code\""
+    "    \"country_name_code\":\"US\""
     "  }"
     "}";
 
@@ -82,7 +82,7 @@ const char kAddressMissingPostalCodeNumber[] =
     "    ],"
     "    \"locality_name\":\"locality_name\","
     "    \"administrative_area_name\":\"administrative_area_name\","
-    "    \"country_name_code\":\"country_name_code\""
+    "    \"country_name_code\":\"US\""
     "  }"
     "}";
 
@@ -101,7 +101,7 @@ const char kValidAddress[] =
     "    ],"
     "    \"locality_name\":\"locality_name\","
     "    \"administrative_area_name\":\"administrative_area_name\","
-    "    \"country_name_code\":\"country_name_code\","
+    "    \"country_name_code\":\"US\","
     "    \"postal_code_number\":\"postal_code_number\""
     "  }"
     "}";
@@ -125,7 +125,7 @@ const char kClientAddressMissingPostalCode[] =
   "  \"city\":\"city\","
   "  \"state\":\"state\","
   "  \"phone_number\":\"phone_number\","
-  "  \"country_code\":\"country_code\""
+  "  \"country_code\":\"US\""
   "}";
 
 const char kClientAddressMissingName[] =
@@ -136,7 +136,7 @@ const char kClientAddressMissingName[] =
   "  \"state\":\"state\","
   "  \"postal_code\":\"postal_code\","
   "  \"phone_number\":\"phone_number\","
-  "  \"country_code\":\"country_code\""
+  "  \"country_code\":\"US\""
   "}";
 
 const char kClientValidAddress[] =
@@ -148,7 +148,7 @@ const char kClientValidAddress[] =
   "  \"state\":\"state\","
   "  \"postal_code\":\"postal_code\","
   "  \"phone_number\":\"phone_number\","
-  "  \"country_code\":\"country_code\","
+  "  \"country_code\":\"US\","
   "  \"type\":\"FULL\""
   "}";
 
@@ -171,7 +171,7 @@ class WalletAddressTest : public testing::Test {
 };
 
 TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
-  Address address1("country_name_code",
+  Address address1("US",
                    ASCIIToUTF16("recipient_name"),
                    ASCIIToUTF16("address_line_1"),
                    ASCIIToUTF16("address_line_2"),
@@ -181,7 +181,7 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
                    ASCIIToUTF16("phone_number"),
                    "id1");
   // Same as address1, only id is different.
-  Address address2("country_name_code",
+  Address address2("US",
                    ASCIIToUTF16("recipient_name"),
                    ASCIIToUTF16("address_line_1"),
                    ASCIIToUTF16("address_line_2"),
@@ -191,7 +191,7 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
                    ASCIIToUTF16("phone_number"),
                    "id2");
   // Has same id as address1, but name is different.
-  Address address3("country_name_code",
+  Address address3("US",
                    ASCIIToUTF16("a_different_name"),
                    ASCIIToUTF16("address_line_1"),
                    ASCIIToUTF16("address_line_2"),
@@ -201,7 +201,7 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
                    ASCIIToUTF16("phone_number"),
                    "id1");
   // Same as address1, but no id.
-  Address address4("country_name_code",
+  Address address4("US",
                    ASCIIToUTF16("recipient_name"),
                    ASCIIToUTF16("address_line_1"),
                    ASCIIToUTF16("address_line_2"),
@@ -237,7 +237,7 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
 
 TEST_F(WalletAddressTest, CreateAddressMissingObjectId) {
   SetUpDictionary(kAddressMissingObjectId);
-  Address address("country_name_code",
+  Address address("US",
                   ASCIIToUTF16("recipient_name"),
                   ASCIIToUTF16("address_line_1"),
                   ASCIIToUTF16("address_line_2"),
@@ -274,7 +274,7 @@ TEST_F(WalletAddressTest, CreateAddressMissingPostalCodeNumber) {
 
 TEST_F(WalletAddressTest, CreateAddressWithID) {
   SetUpDictionary(kValidAddress);
-  Address address("country_name_code",
+  Address address("US",
                   ASCIIToUTF16("recipient_name"),
                   ASCIIToUTF16("address_line_1"),
                   ASCIIToUTF16("address_line_2"),
@@ -305,7 +305,7 @@ TEST_F(WalletAddressTest, CreateDisplayAddressMissingPostalCode) {
 
 TEST_F(WalletAddressTest, CreateDisplayAddress) {
   SetUpDictionary(kClientValidAddress);
-  Address address("country_code",
+  Address address("US",
                   ASCIIToUTF16("name"),
                   ASCIIToUTF16("address1"),
                   ASCIIToUTF16("address2"),
@@ -320,7 +320,7 @@ TEST_F(WalletAddressTest, CreateDisplayAddress) {
 TEST_F(WalletAddressTest, ToDictionaryWithoutID) {
   base::DictionaryValue expected;
   expected.SetString("country_name_code",
-                     "country_name_code");
+                     "US");
   expected.SetString("recipient_name",
                      "recipient_name");
   expected.SetString("locality_name",
@@ -334,7 +334,7 @@ TEST_F(WalletAddressTest, ToDictionaryWithoutID) {
   address_lines->AppendString("address_line_2");
   expected.Set("address_line", address_lines);
 
-  Address address("country_name_code",
+  Address address("US",
                   ASCIIToUTF16("recipient_name"),
                   ASCIIToUTF16("address_line_1"),
                   ASCIIToUTF16("address_line_2"),
@@ -352,7 +352,7 @@ TEST_F(WalletAddressTest, ToDictionaryWithID) {
   expected.SetString("id", "id");
   expected.SetString("phone_number", "phone_number");
   expected.SetString("postal_address.country_name_code",
-                     "country_name_code");
+                     "US");
   expected.SetString("postal_address.recipient_name",
                      "recipient_name");
   expected.SetString("postal_address.locality_name",
@@ -366,7 +366,7 @@ TEST_F(WalletAddressTest, ToDictionaryWithID) {
   address_lines->AppendString("address_line_2");
   expected.Set("postal_address.address_line", address_lines);
 
-  Address address("country_name_code",
+  Address address("US",
                   ASCIIToUTF16("recipient_name"),
                   ASCIIToUTF16("address_line_1"),
                   ASCIIToUTF16("address_line_2"),

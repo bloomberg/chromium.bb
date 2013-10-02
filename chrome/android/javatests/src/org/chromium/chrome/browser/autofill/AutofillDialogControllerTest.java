@@ -25,7 +25,8 @@ import java.util.concurrent.TimeoutException;
 public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
     private static final long DIALOG_CALLBACK_DELAY_MILLISECONDS = 50;
     private static final String TEST_NAME = "Joe Doe";
-    private static final String TEST_PHONE = "(415)123-4567";
+    private static final String TEST_PHONE = "(415)413-0703";
+    private static final String TEST_PHONE_UNFORMATTED = "4154130703";
     private static final String TEST_EMAIL = "email@server.com";
     private static final String TEST_CC_NUMBER = "4111111111111111";
     private static final String TEST_CC_CSC = "123";
@@ -39,6 +40,7 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
     private static final String TEST_BILLING_COUNTRY = "US";
     private static final String TEST_SHIPPING_NAME = "Mister Receiver";
     private static final String TEST_SHIPPING_PHONE = "+46 8 713 99 99";
+    private static final String TEST_SHIPPING_PHONE_UNFORMATTED = "4687139999";
     private static final String TEST_SHIPPING1 = "19 Farstaplan";
     private static final String TEST_SHIPPING2 = "Third floor";
     private static final String TEST_SHIPPING_CITY = "Farsta";
@@ -226,7 +228,7 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
     public void testRacTypeTel() throws InterruptedException, TimeoutException {
         verifyOneField(
                 "<input id=\"id\" autocomplete=\"tel\">",
-                TEST_SHIPPING_PHONE, "id", false, true, true);
+                TEST_SHIPPING_PHONE_UNFORMATTED, "id", false, true, true);
     }
 
     @SmallTest
@@ -234,7 +236,7 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
     public void testRacTypeBillingTel() throws InterruptedException, TimeoutException {
         verifyOneField(
                 "<input id=\"id\" autocomplete=\"billing tel\">",
-                TEST_PHONE, "id", true, false, true);
+                TEST_PHONE_UNFORMATTED, "id", true, false, true);
     }
 
     @SmallTest
@@ -242,7 +244,7 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
     public void testRacTypeShippingTel() throws InterruptedException, TimeoutException {
         verifyOneField(
                 "<input id=\"id\" autocomplete=\"shipping tel\">",
-                TEST_SHIPPING_PHONE, "id", false, true, true);
+                TEST_SHIPPING_PHONE_UNFORMATTED, "id", false, true, true);
     }
 
     @SmallTest
@@ -521,7 +523,8 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
 
             if (requestPhoneNumbers) {
                 assertEquals("billing tel did not match",
-                        TEST_PHONE, DOMUtils.getNodeValue(view, viewClient, "id-cc-tel"));
+                        TEST_PHONE_UNFORMATTED,
+                        DOMUtils.getNodeValue(view, viewClient, "id-cc-tel"));
             }
         }
 
@@ -549,12 +552,14 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
 
             if (requestPhoneNumbers) {
                 assertEquals("shipping tel did not match",
-                        TEST_SHIPPING_PHONE, DOMUtils.getNodeValue(view, viewClient, "id-h-tel"));
+                        TEST_SHIPPING_PHONE_UNFORMATTED,
+                        DOMUtils.getNodeValue(view, viewClient, "id-h-tel"));
 
                 // It is currently unspecified whether autocomplete="name" gives a SHIPPING or
                 // a BILLING phone. I'm assuming here that this is a shipping phone.
                 assertEquals("tel did not match",
-                        TEST_SHIPPING_PHONE, DOMUtils.getNodeValue(view, viewClient, "id-tel"));
+                        TEST_SHIPPING_PHONE_UNFORMATTED,
+                        DOMUtils.getNodeValue(view, viewClient, "id-tel"));
             }
         }
     }

@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/state_names.h"
 
 namespace autofill {
@@ -109,6 +110,9 @@ Address::Address(const AutofillProfile& profile)
                                       NULL,
                                       &administrative_area_name_);
   StringToUpperASCII(&administrative_area_name_);
+
+  if (!country_name_code_.empty())
+    phone_object_ = i18n::PhoneObject(phone_number_, country_name_code_);
 }
 
 Address::Address(const std::string& country_name_code,
@@ -128,9 +132,9 @@ Address::Address(const std::string& country_name_code,
       administrative_area_name_(administrative_area_name),
       postal_code_number_(postal_code_number),
       phone_number_(phone_number),
+      phone_object_(phone_number, country_name_code),
       object_id_(object_id),
-      is_complete_address_(true) {
-}
+      is_complete_address_(true) {}
 
 Address::~Address() {}
 
@@ -262,6 +266,15 @@ string16 Address::DisplayNameDetail() const {
 #endif
 }
 
+string16 Address::DisplayPhoneNumber() const {
+  // Return a formatted phone number. Wallet doesn't store user formatting, so
+  // impose our own. phone_number() always includes a country code, so using
+  // PhoneObject to format it would result in an internationalized format. Since
+  // Wallet only supports the US right now, stick to national formatting.
+  return i18n::PhoneObject(phone_number(), country_name_code()).
+      GetNationallyFormattedNumber();
+}
+
 string16 Address::GetInfo(const AutofillType& type,
                           const std::string& app_locale) const {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
@@ -299,13 +312,20 @@ string16 Address::GetInfo(const AutofillType& type,
     }
 
     case PHONE_HOME_WHOLE_NUMBER:
-      return phone_number();
+      // Wallet doesn't store user phone number formatting, so just strip all
+      // formatting.
+      return phone_object_.GetWholeNumber();
 
     // TODO(estade): implement more.
     default:
       NOTREACHED();
       return string16();
   }
+}
+
+void Address::SetPhoneNumber(const base::string16& phone_number) {
+  phone_number_ = phone_number;
+  phone_object_ = i18n::PhoneObject(phone_number_, country_name_code_);
 }
 
 bool Address::EqualsIgnoreID(const Address& other) const {

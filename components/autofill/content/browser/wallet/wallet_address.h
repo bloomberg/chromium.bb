@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 
 namespace base {
 class DictionaryValue;
@@ -90,6 +91,10 @@ class Address {
   // to the user together with DisplayName().
   base::string16 DisplayNameDetail() const;
 
+  // Returns the phone number as a string that is suitable for display to the
+  // user.
+  base::string16 DisplayPhoneNumber() const;
+
   // Returns data appropriate for |type|.
   base::string16 GetInfo(const AutofillType& type,
                          const std::string& app_locale) const;
@@ -133,9 +138,7 @@ class Address {
   void set_postal_code_number(const base::string16& postal_code_number) {
     postal_code_number_ = postal_code_number;
   }
-  void set_phone_number(const base::string16& phone_number) {
-    phone_number_ = phone_number;
-  }
+  void SetPhoneNumber(const base::string16& phone_number);
   void set_object_id(const std::string& object_id) {
     object_id_ = object_id;
   }
@@ -184,6 +187,9 @@ class Address {
   // value, it should have been validated using libphonenumber by clients of
   // this class before being set; see http://code.google.com/p/libphonenumber/.
   base::string16 phone_number_;
+
+  // The parsed phone number.
+  i18n::PhoneObject phone_object_;
 
   // Externalized Online Wallet id for this address.
   std::string object_id_;
