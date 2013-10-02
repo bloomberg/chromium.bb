@@ -33,15 +33,22 @@
 #ifndef SkiaUtils_h
 #define SkiaUtils_h
 
+#include "SkMatrix.h"
 #include "SkPath.h"
 #include "SkXfermode.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/GraphicsTypes.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PassRefPtr.h"
 
 class SkCanvas;
 class SkRegion;
 
 namespace WebCore {
+
+class GraphicsContext;
 
 PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator, BlendMode = BlendModeNormal);
 
@@ -77,6 +84,8 @@ void ClipRectToCanvas(const GraphicsContext*, const SkRect& srcRect, SkRect* des
 
 // Determine if a given WebKit point is contained in a path
 bool SkPathContainsPoint(const SkPath&, const FloatPoint&, SkPath::FillType);
+
+SkMatrix affineTransformToSkMatrix(const AffineTransform&);
 
 }  // namespace WebCore
 

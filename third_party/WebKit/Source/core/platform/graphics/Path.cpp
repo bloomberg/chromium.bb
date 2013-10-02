@@ -147,7 +147,7 @@ void Path::apply(void* info, PathApplierFunction function) const
 
 void Path::transform(const AffineTransform& xform)
 {
-    m_path.transform(xform);
+    m_path.transform(affineTransformToSkMatrix(xform));
 }
 
 float Path::length() const

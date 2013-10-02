@@ -33,6 +33,7 @@
 #include "SkColorShader.h"
 #include "SkShader.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 
 namespace WebCore {
 
@@ -88,7 +89,7 @@ SkShader* Pattern::shader()
         m_externalMemoryAllocated = static_cast<int>(std::min(static_cast<size_t>(INT_MAX), bm2.getSafeSize()));
         v8::V8::AdjustAmountOfExternalAllocatedMemory(m_externalMemoryAllocated);
     }
-    m_pattern->setLocalMatrix(m_patternSpaceTransformation);
+    m_pattern->setLocalMatrix(affineTransformToSkMatrix(m_patternSpaceTransformation));
     return m_pattern.get();
 }
 
@@ -96,7 +97,7 @@ void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransf
 {
     m_patternSpaceTransformation = patternSpaceTransformation;
     if (m_pattern)
-        m_pattern->setLocalMatrix(m_patternSpaceTransformation);
+        m_pattern->setLocalMatrix(affineTransformToSkMatrix(m_patternSpaceTransformation));
 }
 
 }

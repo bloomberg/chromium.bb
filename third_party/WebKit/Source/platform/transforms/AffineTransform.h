@@ -32,8 +32,6 @@
 #include <string.h> // for memcpy
 #include "wtf/FastAllocBase.h"
 
-#include <SkMatrix.h>
-
 namespace WebCore {
 
 class FloatPoint;
@@ -153,8 +151,6 @@ public:
         result *= t;
         return result;
     }
-
-    operator SkMatrix() const;
 
     static AffineTransform translation(double x, double y)
     {

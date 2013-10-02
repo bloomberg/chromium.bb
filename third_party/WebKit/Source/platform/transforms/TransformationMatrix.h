@@ -26,7 +26,6 @@
 #ifndef TransformationMatrix_h
 #define TransformationMatrix_h
 
-#include <SkMatrix.h>
 #include <string.h> //for memcpy
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
@@ -303,8 +302,6 @@ public:
         result.multiply(t);
         return result;
     }
-
-    operator SkMatrix() const;
 
     bool isIdentityOrTranslation() const
     {

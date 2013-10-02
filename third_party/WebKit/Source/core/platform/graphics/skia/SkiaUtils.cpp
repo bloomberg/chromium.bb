@@ -33,7 +33,6 @@
 #include "core/platform/graphics/skia/SkiaUtils.h"
 
 #include "SkColorPriv.h"
-#include "SkMatrix.h"
 #include "SkRegion.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -179,6 +178,26 @@ bool SkPathContainsPoint(const SkPath& originalPath, const FloatPoint& point, Sk
     clip.setRect(x - 1, y - 1, x + 1, y + 1);
 
     return rgn.setPath(scaledPath, clip);
+}
+
+SkMatrix affineTransformToSkMatrix(const AffineTransform& source)
+{
+    SkMatrix result;
+
+    result.setScaleX(WebCoreDoubleToSkScalar(source.a()));
+    result.setSkewX(WebCoreDoubleToSkScalar(source.c()));
+    result.setTranslateX(WebCoreDoubleToSkScalar(source.e()));
+
+    result.setScaleY(WebCoreDoubleToSkScalar(source.d()));
+    result.setSkewY(WebCoreDoubleToSkScalar(source.b()));
+    result.setTranslateY(WebCoreDoubleToSkScalar(source.f()));
+
+    // FIXME: Set perspective properly.
+    result.setPerspX(0);
+    result.setPerspY(0);
+    result.set(SkMatrix::kMPersp2, SK_Scalar1);
+
+    return result;
 }
 
 }  // namespace WebCore

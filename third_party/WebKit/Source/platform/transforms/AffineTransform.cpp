@@ -347,31 +347,6 @@ TransformationMatrix AffineTransform::toTransformationMatrix() const
                                 m_transform[3], m_transform[4], m_transform[5]);
 }
 
-static inline SkScalar WebCoreDoubleToSkScalar(double d)
-{
-    return SkDoubleToScalar(std::isfinite(d) ? d : 0);
-}
-
-AffineTransform::operator SkMatrix() const
-{
-    SkMatrix result;
-
-    result.setScaleX(WebCoreDoubleToSkScalar(a()));
-    result.setSkewX(WebCoreDoubleToSkScalar(c()));
-    result.setTranslateX(WebCoreDoubleToSkScalar(e()));
-
-    result.setScaleY(WebCoreDoubleToSkScalar(d()));
-    result.setSkewY(WebCoreDoubleToSkScalar(b()));
-    result.setTranslateY(WebCoreDoubleToSkScalar(f()));
-
-    // FIXME: Set perspective properly.
-    result.setPerspX(0);
-    result.setPerspY(0);
-    result.set(SkMatrix::kMPersp2, SK_Scalar1);
-
-    return result;
-}
-
 bool AffineTransform::decompose(DecomposedType& decomp) const
 {
     AffineTransform m(*this);

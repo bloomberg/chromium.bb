@@ -1327,31 +1327,6 @@ AffineTransform TransformationMatrix::toAffineTransform() const
                            m_matrix[1][1], m_matrix[3][0], m_matrix[3][1]);
 }
 
-static inline SkScalar WebCoreDoubleToSkScalar(double d)
-{
-    return SkDoubleToScalar(std::isfinite(d) ? d : 0);
-}
-
-TransformationMatrix::operator SkMatrix() const
-{
-    SkMatrix result;
-
-    result.setScaleX(WebCoreDoubleToSkScalar(a()));
-    result.setSkewX(WebCoreDoubleToSkScalar(c()));
-    result.setTranslateX(WebCoreDoubleToSkScalar(e()));
-
-    result.setScaleY(WebCoreDoubleToSkScalar(d()));
-    result.setSkewY(WebCoreDoubleToSkScalar(b()));
-    result.setTranslateY(WebCoreDoubleToSkScalar(f()));
-
-    // FIXME: Set perspective properly.
-    result.setPerspX(0);
-    result.setPerspY(0);
-    result.set(SkMatrix::kMPersp2, SK_Scalar1);
-
-    return result;
-}
-
 static inline void blendFloat(double& from, double to, double progress)
 {
     if (from != to)

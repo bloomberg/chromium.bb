@@ -97,7 +97,7 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
                 return nullptr;
 
             SkCanvas canvas(skBitmap);
-            canvas.concat(orientation.transformFromDefault(sizeRespectingOrientation));
+            canvas.concat(affineTransformToSkMatrix(orientation.transformFromDefault(sizeRespectingOrientation)));
             canvas.drawBitmapRect(bitmap->bitmap(), 0, destRect);
 
             return adoptPtr(new DragImage(skBitmap, bitmap->resolutionScale()));

@@ -37,6 +37,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/skia/OpaqueRegionSkia.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include "platform/geometry/FloatRect.h"
 // TODO(robertphillips): replace this include with "class SkBaseDevice;"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -339,8 +340,8 @@ public:
     // ---------- Transformation methods -----------------
     enum IncludeDeviceScale { DefinitelyIncludeDeviceScale, PossiblyIncludeDeviceScale };
     AffineTransform getCTM(IncludeDeviceScale includeScale = PossiblyIncludeDeviceScale) const;
-    void concatCTM(const AffineTransform& affine) { concat(affine); }
-    void setCTM(const AffineTransform& affine) { setMatrix(affine); }
+    void concatCTM(const AffineTransform& affine) { concat(affineTransformToSkMatrix(affine)); }
+    void setCTM(const AffineTransform& affine) { setMatrix(affineTransformToSkMatrix(affine)); }
     void setMatrix(const SkMatrix&);
 
     void scale(const FloatSize&);

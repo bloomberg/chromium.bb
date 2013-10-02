@@ -35,6 +35,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/TransparencyWin.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include "platform/transforms/AffineTransform.h"
 
 #include "SkColorPriv.h"
@@ -80,7 +81,7 @@ void compositeToCopy(GraphicsContext& sourceLayers,
     // Create a temporary canvas for the compositing into the destination.
     SkBitmap* destBmp = const_cast<SkBitmap*>(&bitmapForContext(destContext));
     SkCanvas destCanvas(*destBmp);
-    destCanvas.setMatrix(matrix);
+    destCanvas.setMatrix(affineTransformToSkMatrix(matrix));
 
     for (int i = devices.size() - 1; i >= 0; i--) {
         const SkBitmap& srcBmp = devices[i].device->accessBitmap(false);
