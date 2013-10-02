@@ -1069,7 +1069,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, TabDragAndDrop) {
   tab_strip_model2->CloseAllTabs();
 }
 
-IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MultipleOwnedTabs) {
+// Flaky test. crbug.com/303231
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DISABLED_MultipleOwnedTabs) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   ash::LauncherID shortcut_id = CreateShortcut("app1");
