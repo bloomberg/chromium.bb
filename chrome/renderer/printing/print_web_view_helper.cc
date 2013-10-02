@@ -1342,8 +1342,8 @@ void PrintWebViewHelper::PrintPages() {
   }
 
 
-  if (!PrintPagesNative(prep_frame_view_->frame(), prep_frame_view_->node(),
-                        page_count, prep_frame_view_->GetPrintCanvasSize())) {
+  if (!PrintPagesNative(prep_frame_view_->frame(), page_count,
+                        prep_frame_view_->GetPrintCanvasSize())) {
     LOG(ERROR) << "Printing failed.";
     return DidFinishPrinting(FAIL_PRINT);
   }
@@ -1355,7 +1355,6 @@ void PrintWebViewHelper::FinishFramePrinting() {
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 bool PrintWebViewHelper::PrintPagesNative(WebKit::WebFrame* frame,
-                                          const WebKit::WebNode& node,
                                           int page_count,
                                           const gfx::Size& canvas_size) {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;

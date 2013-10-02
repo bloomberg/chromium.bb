@@ -228,7 +228,6 @@ class PrintWebViewHelper
   void OnFramePreparedForPrintPages();
   void PrintPages();
   bool PrintPagesNative(WebKit::WebFrame* frame,
-                        const WebKit::WebNode& node,
                         int page_count,
                         const gfx::Size& canvas_size);
   void FinishFramePrinting();

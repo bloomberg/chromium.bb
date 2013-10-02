@@ -25,7 +25,6 @@
 namespace printing {
 
 using WebKit::WebFrame;
-using WebKit::WebNode;
 
 bool PrintWebViewHelper::RenderPreviewPage(
     int page_number,
@@ -59,7 +58,6 @@ bool PrintWebViewHelper::RenderPreviewPage(
 }
 
 bool PrintWebViewHelper::PrintPagesNative(WebKit::WebFrame* frame,
-                                          const WebKit::WebNode& node,
                                           int page_count,
                                           const gfx::Size& canvas_size) {
   NativeMetafile metafile;
