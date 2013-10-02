@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>WebKit Relayout Test</title>
+
+    <style>
+	    body { margin: 0px; }
+
+        .cell
+        {
+            border: 1px solid red;
+            position: absolute;
+            width: 50px;
+            height: 20px;
+            overflow: hidden;
+            text-align: left;
+            /*white-space: pre;*/
+        }
+        
+        .cell1
+        {
+            top: 0px;
+            left: 0px;
+        }
+        
+        .cell2
+        {
+            top: 20px;
+            left: 100px;
+        }
+    </style>
+    
+    <script type='text/javascript'>
+
+        var s_NUM_ROWS = 135;
+        var s_NUM_COLS = 125;
+        var s_TOP_OFFSET = 30;
+        var s_LEFT_OFFSET = 30;
+        var s_CELL_VER_SPACING = 28;
+        var s_CELL_HOR_SPACING = 58;
+
+        var textNodes = [];
+
+        function load() {
+
+            var curTop = s_TOP_OFFSET;
+
+            for (var rowIdx = 0; rowIdx < s_NUM_ROWS; ++rowIdx) {
+
+                var curLeft = s_LEFT_OFFSET;
+
+                for (var colIdx = 0; colIdx < s_NUM_COLS; ++colIdx) {
+
+                    var cellElem = document.createElement('span');
+                    cellElem.classList.add('cell');
+                    var textNode = document.createTextNode('' + (100 * Math.random()).toFixed(2));
+                    cellElem.appendChild(textNode);
+
+                    cellElem.style.top = curTop + 'px';
+                    cellElem.style.left = curLeft + 'px';
+
+                    document.body.appendChild(cellElem);
+
+                    curLeft += s_CELL_HOR_SPACING;
+
+                    textNodes.push(textNode);
+                }
+
+                curTop += s_CELL_VER_SPACING;
+            }
+        }
+
+        function update() {
+            var norelayout = document.getElementById("norelayout");
+            for (var i = 0; i < textNodes.length; ++i) {
+                var textNode = textNodes[i];
+                if (norelayout.checked)
+                    textNode.bbSetDataNoRelayout('' + (100 * Math.random()).toFixed(2));
+                else
+                    textNode.data = '' + (100 * Math.random()).toFixed(2);
+            }
+        }
+    </script>
+
+</head>
+
+<body onload='load()'>
+    
+    <button onClick='update()'>Update</button>
+	<input type="checkbox" id="norelayout">No relayout</input>
+	<span id="status"></span>
+
+</body>
+
+</html>
+

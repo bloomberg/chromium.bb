@@ -427,6 +427,18 @@ With this patch applied, the anchor offset would be 5 positions higher than the
 focus offset.  Without the patch, the anchor offset and focus offset will be
 switched.</p>
 
+<h3><a name="feature-setDataNoRelayout">feature/setDataNoRelayout</a> (Shezan Baig; D42070031)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>There are situations where we want to update a span, and because we know the
+span is of a fixed size, we don't want the new text to trigger a relayout.  For
+this, we introduced a new method on text nodes "bbSetDataNoRelayout".</p>
+<p>Open <a href="repros/setDataNoRelayout.html">this link</a> in Chrome (may
+take a while to finish loading).  With this patch applied, there will be a
+noticable difference in the time taken to execute the button click, depending
+on whether the "norelayout" checkbox is enabled or disabled.</p>
+
+
 <h3><a name="feature-tableEditing">feature/tableEditing</a> (Shezan Baig; D37611655)</h3>
 <p>TODO</p>
 
