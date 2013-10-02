@@ -15,11 +15,6 @@ DebuggerTracker::DebuggerTracker(DevToolsClient* client) {
 
 DebuggerTracker::~DebuggerTracker() {}
 
-Status DebuggerTracker::OnConnected(DevToolsClient* client) {
-  base::DictionaryValue empty_params;
-  return client->SendCommand("Debugger.enable", empty_params);
-}
-
 Status DebuggerTracker::OnEvent(DevToolsClient* client,
                          const std::string& method,
                          const base::DictionaryValue& params) {

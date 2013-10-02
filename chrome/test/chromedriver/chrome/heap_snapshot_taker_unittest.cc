@@ -29,10 +29,13 @@ class DummyDevToolsClient : public StubDevToolsClient {
       : method_(method),
         error_after_events_(error_after_events),
         uid_(1),
-        cleared_(false) {}
+        cleared_(false),
+        disabled_(false) {}
   virtual ~DummyDevToolsClient() {}
 
   bool IsCleared() { return cleared_; }
+
+  bool IsDisabled() { return disabled_; }
 
   virtual Status SendAddProfileHeaderEvent() {
     base::DictionaryValue event_params;
@@ -64,7 +67,10 @@ class DummyDevToolsClient : public StubDevToolsClient {
   // Overridden from DevToolsClient:
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) OVERRIDE {
-    cleared_ = method == "HeapProfiler.clearProfiles";
+    if (!cleared_)
+      cleared_ = method == "HeapProfiler.clearProfiles";
+    if (!disabled_)
+      disabled_ = method == "Debugger.disable";
     if (method == method_ && !error_after_events_)
       return Status(kUnknownError);
 
@@ -91,6 +97,7 @@ class DummyDevToolsClient : public StubDevToolsClient {
   bool error_after_events_;
   int uid_;
   bool cleared_;  // True if HeapProfiler.clearProfiles was issued.
+  bool disabled_;  // True if Debugger.disable was issued.
 };
 
 }  // namespace
@@ -103,6 +110,18 @@ TEST(HeapSnapshotTaker, SuccessfulCase) {
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(GetSnapshotAsValue()->Equals(snapshot.get()));
   ASSERT_TRUE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
+}
+
+TEST(HeapSnapshotTaker, FailIfErrorOnDebuggerEnable) {
+  DummyDevToolsClient client("Debugger.enable", false);
+  HeapSnapshotTaker taker(&client);
+  scoped_ptr<base::Value> snapshot;
+  Status status = taker.TakeSnapshot(&snapshot);
+  ASSERT_TRUE(status.IsError());
+  ASSERT_FALSE(snapshot.get());
+  ASSERT_FALSE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
 }
 
 TEST(HeapSnapshotTaker, FailIfErrorOnCollectGarbage) {
@@ -113,6 +132,7 @@ TEST(HeapSnapshotTaker, FailIfErrorOnCollectGarbage) {
   ASSERT_TRUE(status.IsError());
   ASSERT_FALSE(snapshot.get());
   ASSERT_FALSE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
 }
 
 TEST(HeapSnapshotTaker, ErrorBeforeReceivingUid) {
@@ -123,6 +143,7 @@ TEST(HeapSnapshotTaker, ErrorBeforeReceivingUid) {
   ASSERT_TRUE(status.IsError());
   ASSERT_FALSE(snapshot.get());
   ASSERT_FALSE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
 }
 
 TEST(HeapSnapshotTaker, ErrorAfterReceivingUid) {
@@ -133,6 +154,7 @@ TEST(HeapSnapshotTaker, ErrorAfterReceivingUid) {
   ASSERT_TRUE(status.IsError());
   ASSERT_FALSE(snapshot.get());
   ASSERT_TRUE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
 }
 
 namespace {
@@ -164,6 +186,7 @@ TEST(HeapSnapshotTaker, MuiltipleUidEvents) {
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(GetSnapshotAsValue()->Equals(snapshot.get()));
   ASSERT_TRUE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
 }
 
 namespace {
@@ -195,6 +218,7 @@ TEST(HeapSnapshotTaker, IgnoreChunkWithDifferentUid) {
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(GetSnapshotAsValue()->Equals(snapshot.get()));
   ASSERT_TRUE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
 }
 
 namespace {
@@ -221,6 +245,7 @@ TEST(HeapSnapshotTaker, NoFinishEvent) {
   ASSERT_TRUE(status.IsError());
   ASSERT_FALSE(snapshot.get());
   ASSERT_TRUE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
 }
 
 TEST(HeapSnapshotTaker, ErrorAfterFinishEvent) {
@@ -231,4 +256,5 @@ TEST(HeapSnapshotTaker, ErrorAfterFinishEvent) {
   ASSERT_TRUE(status.IsError());
   ASSERT_FALSE(snapshot.get());
   ASSERT_TRUE(client.IsCleared());
+  ASSERT_TRUE(client.IsDisabled());
 }

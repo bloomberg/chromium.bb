@@ -19,17 +19,18 @@ HeapSnapshotTaker::~HeapSnapshotTaker() {}
 
 Status HeapSnapshotTaker::TakeSnapshot(scoped_ptr<base::Value>* snapshot) {
   Status status1 = TakeSnapshotInternal();
-  Status status2(kOk);
+  base::DictionaryValue params;
+  Status status2 = client_->SendCommand("Debugger.disable", params);
+  Status status3(kOk);
   if (snapshot_uid_ != -1) {  // Clear the snapshot cached in chrome.
-    base::DictionaryValue params;
-    status2 = client_->SendCommand("HeapProfiler.clearProfiles", params);
+    status3 = client_->SendCommand("HeapProfiler.clearProfiles", params);
   }
 
-  Status status3(kOk);
-  if (status1.IsOk() && status2.IsOk()) {
+  Status status4(kOk);
+  if (status1.IsOk() && status2.IsOk() && status3.IsOk()) {
     scoped_ptr<base::Value> value(base::JSONReader::Read(snapshot_));
     if (!value)
-      status3 = Status(kUnknownError, "heap snapshot not in JSON format");
+      status4 = Status(kUnknownError, "heap snapshot not in JSON format");
     else
       *snapshot = value.Pass();
   }
@@ -40,8 +41,10 @@ Status HeapSnapshotTaker::TakeSnapshot(scoped_ptr<base::Value>* snapshot) {
     return status1;
   else if (status2.IsError())
     return status2;
-  else
+  else if (status3.IsError())
     return status3;
+  else
+    return status4;
 }
 
 Status HeapSnapshotTaker::TakeSnapshotInternal() {
@@ -49,20 +52,24 @@ Status HeapSnapshotTaker::TakeSnapshotInternal() {
     return Status(kUnknownError, "unexpected heap snapshot was triggered");
 
   base::DictionaryValue params;
-  Status status = client_->SendCommand("HeapProfiler.collectGarbage", params);
-  if (status.IsError())
-    return status;
-
-  status = client_->SendCommand("HeapProfiler.takeHeapSnapshot", params);
-  if (status.IsError())
-    return status;
+  const char* kMethods[] = {
+      "Debugger.enable",
+      "HeapProfiler.collectGarbage",
+      "HeapProfiler.takeHeapSnapshot"
+  };
+  for (size_t i = 0; i < arraysize(kMethods); ++i) {
+    Status status = client_->SendCommand(kMethods[i], params);
+    if (status.IsError())
+      return status;
+  }
 
   if (snapshot_uid_ == -1)
     return Status(kUnknownError, "failed to receive snapshot uid");
 
   base::DictionaryValue uid_params;
   uid_params.SetInteger("uid", snapshot_uid_);
-  status = client_->SendCommand("HeapProfiler.getHeapSnapshot", uid_params);
+  Status status = client_->SendCommand(
+      "HeapProfiler.getHeapSnapshot", uid_params);
   if (status.IsError())
     return status;
 
@@ -70,11 +77,6 @@ Status HeapSnapshotTaker::TakeSnapshotInternal() {
     return Status(kUnknownError, "failed to retrieve all heap snapshot data");
 
   return Status(kOk);
-}
-
-Status HeapSnapshotTaker::OnConnected(DevToolsClient* client) {
-  base::DictionaryValue params;
-  return client_->SendCommand("Debugger.enable", params);
 }
 
 Status HeapSnapshotTaker::OnEvent(DevToolsClient* client,

@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
-#include "chrome/test/chromedriver/chrome/status.h"
 
 namespace base {
 class DictionaryValue;
@@ -26,7 +25,6 @@ class DebuggerTracker : public DevToolsEventListener {
   virtual ~DebuggerTracker();
 
   // Overridden from DevToolsEventListener:
-  virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
   virtual Status OnEvent(DevToolsClient* client,
                          const std::string& method,
                          const base::DictionaryValue& params) OVERRIDE;
