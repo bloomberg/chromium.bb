@@ -533,7 +533,6 @@ static void readonlyTestEnumAttributeAttributeGetter(v8::Local<v8::String> name,
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueString(info, imp->readonlyTestEnumAttribute(), info.GetIsolate());
-    return;
 }
 
 static void readonlyTestEnumAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -572,7 +571,6 @@ static void readonlyEventHandlerAttributeAttributeGetter(v8::Local<v8::String> n
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     EventListener* listener = imp->readonlyEventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate()));
     v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
-    return;
 }
 
 static void readonlyEventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
