@@ -30,6 +30,20 @@ using base::StringPiece;
 
 namespace content {
 
+// Forcing flushes to disk at the end of a transaction guarantees that the
+// data hit disk, but drastically impacts throughput when the filesystem is
+// busy with background compactions. Not syncing trades off reliability for
+// performance. Note that background compactions which move data from the
+// log to SSTs are still done with reliable writes.
+//
+// Sync writes are necessary on Windows for quota calculations; POSIX
+// calculates file sizes correctly even when not synced to disk.
+#if defined(OS_WIN)
+static const bool kSyncWrites = true;
+#else
+static const bool kSyncWrites = false;
+#endif
+
 static leveldb::Slice MakeSlice(const StringPiece& s) {
   return leveldb::Slice(s.begin(), s.size());
 }
@@ -328,7 +342,7 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
 
 bool LevelDBDatabase::Put(const StringPiece& key, std::string* value) {
   leveldb::WriteOptions write_options;
-  write_options.sync = true;
+  write_options.sync = kSyncWrites;
 
   const leveldb::Status s =
       db_->Put(write_options, MakeSlice(key), MakeSlice(*value));
@@ -340,7 +354,7 @@ bool LevelDBDatabase::Put(const StringPiece& key, std::string* value) {
 
 bool LevelDBDatabase::Remove(const StringPiece& key) {
   leveldb::WriteOptions write_options;
-  write_options.sync = true;
+  write_options.sync = kSyncWrites;
 
   const leveldb::Status s = db_->Delete(write_options, MakeSlice(key));
   if (s.ok())
@@ -375,7 +389,7 @@ bool LevelDBDatabase::Get(const StringPiece& key,
 
 bool LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
   leveldb::WriteOptions write_options;
-  write_options.sync = true;
+  write_options.sync = kSyncWrites;
 
   const leveldb::Status s =
       db_->Write(write_options, write_batch.write_batch_.get());
