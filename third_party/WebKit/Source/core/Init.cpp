@@ -40,8 +40,8 @@
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "core/css/MediaFeatureNames.h"
-#include "core/platform/Partitions.h"
 #include "platform/EventTracer.h"
+#include "platform/Partitions.h"
 #include "wtf/text/StringStatics.h"
 
 namespace WebCore {

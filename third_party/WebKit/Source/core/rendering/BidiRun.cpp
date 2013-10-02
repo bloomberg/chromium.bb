@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "core/rendering/BidiRun.h"
-#include "core/platform/Partitions.h"
+#include "platform/Partitions.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 

@@ -2619,8 +2619,6 @@
             'platform/MIMETypeFromURL.cpp',
             'platform/MIMETypeFromURL.h',
             'platform/ParsingUtilities.h',
-            'platform/Partitions.cpp',
-            'platform/Partitions.h',
             'platform/Pasteboard.cpp',
             'platform/Pasteboard.h',
             'platform/PlatformEvent.cpp',

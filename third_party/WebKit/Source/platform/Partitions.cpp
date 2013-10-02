@@ -28,26 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Partitions_h
-#define Partitions_h
-
-#include "wtf/PartitionAlloc.h"
+#include "config.h"
+#include "platform/Partitions.h"
 
 namespace WebCore {
 
-class Partitions {
-public:
-    static void init();
-    static void shutdown();
+PartitionAllocator<3072> Partitions::m_objectModelAllocator;
+PartitionAllocator<1024> Partitions::m_renderingAllocator;
 
-    ALWAYS_INLINE static PartitionRoot* getObjectModelPartition() { return m_objectModelAllocator.root(); }
-    ALWAYS_INLINE static PartitionRoot* getRenderingPartition() { return m_renderingAllocator.root(); }
+void Partitions::init()
+{
+    m_objectModelAllocator.init();
+    m_renderingAllocator.init();
+}
 
-private:
-    static PartitionAllocator<3072> m_objectModelAllocator;
-    static PartitionAllocator<1024> m_renderingAllocator;
-};
+void Partitions::shutdown()
+{
+    // We could ASSERT here for a memory leak within the partition, but it leads
+    // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
+    // the valgrind and heapcheck bots, which run without partitions.
+    (void) m_renderingAllocator.shutdown();
+    (void) m_objectModelAllocator.shutdown();
+}
 
 } // namespace WebCore
-
-#endif // Partitions_h

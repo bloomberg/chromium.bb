@@ -54,6 +54,8 @@
       'Logging.h',
       'NotImplemented.cpp',
       'NotImplemented.h',
+      'Partitions.cpp',
+      'Partitions.h',
       'PurgeableBuffer.cpp',
       'PurgeableBuffer.h',
       'SharedBufferChunkReader.cpp',
