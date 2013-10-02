@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
 namespace gfx {
@@ -24,6 +25,24 @@ bool BoxF::IsEmpty() const {
          (height_ == 0 && depth_ == 0);
 }
 
+void BoxF::ExpandTo(const Point3F& min, const Point3F& max) {
+  DCHECK_LE(min.x(), max.x());
+  DCHECK_LE(min.y(), max.y());
+  DCHECK_LE(min.z(), max.z());
+
+  float min_x = std::min(x(), min.x());
+  float min_y = std::min(y(), min.y());
+  float min_z = std::min(z(), min.z());
+  float max_x = std::max(right(), max.x());
+  float max_y = std::max(bottom(), max.y());
+  float max_z = std::max(front(), max.z());
+
+  origin_.SetPoint(min_x, min_y, min_z);
+  width_ = max_x - min_x;
+  height_ = max_y - min_y;
+  depth_ = max_z - min_z;
+}
+
 void BoxF::Union(const BoxF& box) {
   if (IsEmpty()) {
     *this = box;
@@ -32,17 +51,11 @@ void BoxF::Union(const BoxF& box) {
   if (box.IsEmpty())
     return;
 
-  float min_x = std::min(x(), box.x());
-  float min_y = std::min(y(), box.y());
-  float min_z = std::min(z(), box.z());
-  float max_x = std::max(right(), box.right());
-  float max_y = std::max(bottom(), box.bottom());
-  float max_z = std::max(front(), box.front());
+  ExpandTo(box.origin(), gfx::Point3F(box.right(), box.bottom(), box.front()));
+}
 
-  origin_.SetPoint(min_x, min_y, min_z);
-  width_ = max_x - min_x;
-  height_ = max_y - min_y;
-  depth_ = max_z - min_z;
+void BoxF::ExpandTo(const Point3F& point) {
+  ExpandTo(point, point);
 }
 
 BoxF UnionBoxes(const BoxF& a, const BoxF& b) {

@@ -78,6 +78,39 @@ TEST(BoxTest, Union) {
             UnionBoxes(box3, box2).ToString());
 }
 
+TEST(BoxTest, ExpandTo) {
+  BoxF box1;
+  BoxF box2(0.f, 0.f, 0.f, 1.f, 1.f, 1.f);
+  BoxF box3(1.f, 1.f, 1.f, 0.f, 0.f, 0.f);
+
+  Point3F point1(0.5f, 0.5f, 0.5f);
+  Point3F point2(-0.5f, -0.5f, -0.5f);
+
+  BoxF expected1_1(0.f, 0.f, 0.f, 0.5f, 0.5f, 0.5f);
+  BoxF expected1_2(-0.5f, -0.5f, -0.5f, 1.f, 1.f, 1.f);
+
+  BoxF expected2_1 = box2;
+  BoxF expected2_2(-0.5f, -0.5f, -0.5f, 1.5f, 1.5f, 1.5f);
+
+  BoxF expected3_1(0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f);
+  BoxF expected3_2(-0.5f, -0.5f, -0.5f, 1.5f, 1.5f, 1.5f);
+
+  box1.ExpandTo(point1);
+  EXPECT_EQ(expected1_1.ToString(), box1.ToString());
+  box1.ExpandTo(point2);
+  EXPECT_EQ(expected1_2.ToString(), box1.ToString());
+
+  box2.ExpandTo(point1);
+  EXPECT_EQ(expected2_1.ToString(), box2.ToString());
+  box2.ExpandTo(point2);
+  EXPECT_EQ(expected2_2.ToString(), box2.ToString());
+
+  box3.ExpandTo(point1);
+  EXPECT_EQ(expected3_1.ToString(), box3.ToString());
+  box3.ExpandTo(point2);
+  EXPECT_EQ(expected3_2.ToString(), box3.ToString());
+}
+
 TEST(BoxTest, Scale) {
   BoxF box1(2.f, 3.f, 4.f, 5.f, 6.f, 7.f);
 
