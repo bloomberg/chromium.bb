@@ -380,7 +380,7 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, SharedCryptoConfig) {
+TEST_F(QuicStreamFactoryTest, DISABLED_SharedCryptoConfig) {
   HostPortProxyPair host_port_proxy_pair1(HostPortPair("r1.c.youtube.com", 80),
                                           ProxyServer::Direct());
 

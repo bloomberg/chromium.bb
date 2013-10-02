@@ -484,7 +484,9 @@ QuicCryptoClientConfig* QuicStreamFactory::GetOrCreateCryptoConfig(
     crypto_config = new QuicCryptoClientConfig();
     crypto_config->SetDefaults();
     all_crypto_configs_[host_port_proxy_pair] = crypto_config;
-    PopulateFromCanonicalConfig(host_port_proxy_pair, crypto_config);
+    // TODO(rtenneti): Temporarily disabled using CanonicalConfig until we fix
+    // performance problems.
+    // PopulateFromCanonicalConfig(host_port_proxy_pair, crypto_config);
   }
   return crypto_config;
 }
