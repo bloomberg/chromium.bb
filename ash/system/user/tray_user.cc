@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
@@ -750,6 +751,8 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     } else {
       ash::SessionStateDelegate* delegate =
           ash::Shell::GetInstance()->session_state_delegate();
+      MultiProfileUMA::RecordSwitchActiveUser(
+          MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
       delegate->SwitchActiveUser(delegate->GetUserEmail(multiprofile_index_));
       // Since the user list is about to change the system menu should get
       // closed.
@@ -758,6 +761,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   } else if (add_menu_option_.get() &&
              sender == add_menu_option_->GetContentsView()) {
     // Let the user add another account to the session.
+    MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
     ash::Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
   } else {
     NOTREACHED();

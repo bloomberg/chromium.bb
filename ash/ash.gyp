@@ -167,6 +167,8 @@
         'magnifier/magnifier_constants.h',
         'magnifier/partial_magnification_controller.cc',
         'magnifier/partial_magnification_controller.h',
+        'multi_profile_uma.cc',
+        'multi_profile_uma.h',
         'popup_message.cc',
         'popup_message.h',
         'root_window_controller.cc',

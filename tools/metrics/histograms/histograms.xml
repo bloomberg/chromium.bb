@@ -6582,6 +6582,31 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MultiProfile.SigninUserUIPath"
+    enum="MultiProfileSigninUserAction">
+  <summary>
+    Count the number of times each UI path is taken for signing into a new
+    account in a ChromeOS multiprofile session. UI paths include the system tray
+    and the user account switcher on the browser frame.
+  </summary>
+</histogram>
+
+<histogram name="MultiProfile.SwitchActiveUserUIPath"
+    enum="MultiProfileSwitchActiveUserAction">
+  <summary>
+    Count the number of times each UI path is taken for switching the active
+    account in a ChromeOS multiprofile session. UI paths include the system tray
+    and the keyboard shortcut.
+  </summary>
+</histogram>
+
+<histogram name="Multiprofile.UserCount">
+  <summary>
+    The number of users simultaneously signed into a multiprofile session on
+    ChromeOS. This is recorded whenever a new user logs in.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.MainFrameScheme" enum="NavigationScheme">
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
@@ -24007,6 +24032,16 @@ other types of suffix sets.
   <int value="7" label="EAC3"/>
   <int value="8" label="MP3"/>
   <int value="9" label="OPUS"/>
+</enum>
+
+<enum name="MultiProfileSigninUserAction" type="int">
+  <int value="0" label="System tray"/>
+  <int value="1" label="Browser frame"/>
+</enum>
+
+<enum name="MultiProfileSwitchActiveUserAction" type="int">
+  <int value="0" label="System tray"/>
+  <int value="1" label="Keyboard accelerator"/>
 </enum>
 
 <enum name="NavigationScheme" type="int">

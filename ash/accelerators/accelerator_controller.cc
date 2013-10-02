@@ -24,6 +24,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation.h"
 #include "ash/screenshot_delegate.h"
@@ -197,6 +198,8 @@ bool SwitchToNextUser() {
       ash::Shell::GetInstance()->session_state_delegate();
   if (delegate->NumberOfLoggedInUsers() <= 1)
     return false;
+  MultiProfileUMA::RecordSwitchActiveUser(
+      MultiProfileUMA::SWITCH_ACTIVE_USER_BY_ACCELERATOR);
   delegate->SwitchActiveUserToNext();
   return true;
 }

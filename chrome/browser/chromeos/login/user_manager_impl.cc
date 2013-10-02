@@ -405,14 +405,20 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
   logged_in_users_.insert(logged_in_users_.begin(), active_user_);
   SetLRUUser(active_user_);
 
-  if (!primary_user_)
+  if (!primary_user_) {
     primary_user_ = active_user_;
+    if (primary_user_->GetType() == User::USER_TYPE_REGULAR)
+      SendRegularUserLoginMetrics(email);
+  }
 
   UMA_HISTOGRAM_ENUMERATION("UserManager.LoginUserType",
                             active_user_->GetType(), User::NUM_USER_TYPES);
 
-  if (active_user_->GetType() == User::USER_TYPE_REGULAR)
-    SendRegularUserLoginMetrics(email);
+  if (IsMultipleProfilesAllowed()) {
+    UMA_HISTOGRAM_COUNTS_100("MultiProfile.UserCount",
+                             GetLoggedInUsers().size());
+  }
+
   g_browser_process->local_state()->SetString(kLastLoggedInRegularUser,
     (active_user_->GetType() == User::USER_TYPE_REGULAR) ? email : "");
 
