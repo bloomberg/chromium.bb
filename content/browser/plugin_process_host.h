@@ -186,6 +186,9 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   typedef std::map<int, ResourceContext*> ResourceContextMap;
   ResourceContextMap resource_context_map_;
 
+  // Debugging http://crbug.com/302530
+  std::set<int> removed_pids_;
+
   scoped_ptr<BrowserChildProcessHostImpl> process_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginProcessHost);

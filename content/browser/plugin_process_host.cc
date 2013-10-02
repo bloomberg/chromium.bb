@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -412,12 +413,31 @@ void PluginProcessHost::OnChannelCreated(
 
 void PluginProcessHost::OnChannelDestroyed(int renderer_id) {
   resource_context_map_.erase(renderer_id);
+  removed_pids_.insert(renderer_id);
 }
 
 void PluginProcessHost::GetContexts(const ResourceHostMsg_Request& request,
                                     ResourceContext** resource_context,
                                     net::URLRequestContext** request_context) {
   *resource_context = resource_context_map_[request.origin_pid];
+  if (!*resource_context) {
+    std::string url = request.first_party_for_cookies.spec();
+    // Debugging http://crbug.com/302530
+    url += std::string("_") + base::IntToString(request.origin_pid);
+
+    for (std::map<int, ResourceContext*>::iterator i =
+            resource_context_map_.begin();
+         i != resource_context_map_.end(); ++i) {
+      url += std::string("_") + base::IntToString(i->first);
+    }
+
+    url += "_";
+    for (std::set<int>::iterator i = removed_pids_.begin();
+         i != removed_pids_.end(); ++i) {
+      url += std::string("_") + base::IntToString(*i);
+    }
+    GetContentClient()->SetActiveURL(GURL(url));
+  }
   *request_context = (*resource_context)->GetRequestContext();
 }
 
