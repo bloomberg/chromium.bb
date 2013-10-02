@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/platform/midi/MIDIAccessor.h"
+#include "modules/webmidi/MIDIAccessor.h"
 
-#include "core/platform/midi/MIDIAccessorClient.h"
+#include "modules/webmidi/MIDIAccessorClient.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMIDIAccessor.h"
 #include "wtf/text/WTFString.h"
