@@ -1037,7 +1037,12 @@ int MenuItemView::GetMaxIconViewWidth() const {
   for (int i = 0; i < submenu_->GetMenuItemCount(); ++i) {
     MenuItemView* menu_item = submenu_->GetMenuItemAt(i);
     int temp_width = 0;
-    if (menu_item->HasSubmenu()) {
+    if (menu_item->GetType() == CHECKBOX ||
+        menu_item->GetType() == RADIO) {
+      // If this item has a radio or checkbox, the icon will not affect
+      // alignment of other items.
+      continue;
+    } else if (menu_item->HasSubmenu()) {
       temp_width = menu_item->GetMaxIconViewWidth();
     } else if (menu_item->icon_view()) {
       temp_width = menu_item->icon_view()->GetPreferredSize().width();
