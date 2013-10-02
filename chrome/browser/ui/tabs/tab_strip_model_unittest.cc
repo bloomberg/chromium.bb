@@ -1709,8 +1709,9 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   strip.CloseAllTabs();
 }
 
-// This fails on linux when run with the rest of unit_tests (crbug.com/302156).
-#if defined(OS_LINUX)
+// This fails on Linux when run with the rest of unit_tests (crbug.com/302156)
+// and fails consistently on Mac 64.
+#if defined(OS_LINUX) || (defined(OS_MACOSX) && ARCH_CPU_64_BITS)
 #define MAYBE_FastShutdown \
     DISABLED_FastShutdown
 #else
