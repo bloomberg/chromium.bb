@@ -8,11 +8,11 @@ cases = [
   // 1) Deviant character tests (deviant from IDNA2008)
   // U+00DF normalizes to "ss" during IDNA2003's mapping phase
   ["fa\u00DF.de","fass.de"],
-  // The ς U+03C2 GREEK SMALL LETTER FINAL SIGMA
+  // The ς U+03C2 GREEK SMALL LETTER FINAL SIGMA is mapped to U+03C3
   ["\u03B2\u03CC\u03BB\u03BF\u03C2.com","xn--nxasmq6b.com"],
-  // The ZWJ U+200D ZERO WIDTH JOINER
+  // The ZWJ U+200D ZERO WIDTH JOINER is mapped to nothing.
   ["\u0DC1\u0DCA\u200D\u0DBB\u0DD3.com","xn--10cl1a0b.com"],
-  // The ZWNJ U+200C ZERO WIDTH NON-JOINER
+  // The ZWNJ U+200C ZERO WIDTH NON-JOINER is mapped to nothing.
   ["\u0646\u0627\u0645\u0647\u200C\u0627\u06CC.com","xn--mgba3gch31f.com"],
   // 2) Normalization tests
   ["www.loo\u0138out.net","www.xn--looout-5bb.net"],
@@ -25,7 +25,16 @@ cases = [
   ["www.loo\u0138out.net","www.xn--looout-5bb.net"],
   // \u2A74 decomposes into ::=
   ["www.lookout.net\u2A7480","www.lookout.net::%3D80"],
-  // 3) Prohibited code points 
+  // U+0341; COMBINING ACUTE TONE MARK is normalized to U+0301
+  ["lookout\u0341.net","xn--lookout-zge.net"],
+  // 3) Characters mapped away : See RFC 3454 B.1
+  //   U+2060 WORD JOINER is mapped to nothing.
+  ["look\u2060out.net","lookout.net"],
+  //   U+FEFF ZERO WIDTH NO-BREAK SPACE is mapped to nothing.
+  ["look\uFEFFout.net","lookout.net"],
+  //   U+FE00 VARIATION SELECTOR-1 is mapped to nothing.
+  ["look\uFE00out.net","lookout.net"],
+  // 4) Prohibited code points
   //   Using prohibited high-ASCII \u00A0
   ["www\u00A0.lookout.net","www%20.lookout.net"],
   //   using prohibited non-ASCII space chars 1680 (Ogham space mark)
@@ -36,10 +45,6 @@ cases = [
   ["look\u06DDout.net","look%DB%9Dout.net"],
   //   Using prohibited U+180E MONGOLIAN VOWEL SEPARATOR
   ["look\u180Eout.net","look%E1%A0%8Eout.net"],
-  //   Using prohibited U+2060 WORD JOINER
-  ["look\u2060out.net","look%E2%81%A0out.net"],
-  //   Using prohibited U+FEFF ZERO WIDTH NO-BREAK SPACE
-  ["look\uFEFFout.net","look%EF%BB%BFout.net"],
   //   Using prohibited Non-character code points 1FFFE [NONCHARACTER CODE POINTS]
   ["look\uD83F\uDFFEout.net","look%F0%9F%BF%BEout.net"],
   //   Using prohibited U+DEAD half surrogate code point
@@ -48,8 +53,6 @@ cases = [
   ["look\uFFFAout.net","look%EF%BF%BAout.net"],
   //   Using prohibited Inappropriate for canonical representation 2FF0-2FFB; [IDEOGRAPHIC DESCRIPTION CHARACTERS]
   ["look\u2FF0out.net","look%E2%BF%B0out.net"],
-  //   Using prohibited Change display properties or are deprecated 0341; COMBINING ACUTE TONE MARK
-  ["look\u0341out.net","look%CD%81out.net"],
   //   Using prohibited Change display properties or are deprecated 202E; RIGHT-TO-LEFT OVERRIDE
   ["look\u202Eout.net","look%E2%80%AEout.net"],
   //   Using prohibited Change display properties or are deprecated 206B; ACTIVATE SYMMETRIC SWAPPING
