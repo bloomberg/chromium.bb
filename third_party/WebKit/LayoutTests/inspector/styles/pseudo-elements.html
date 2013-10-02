@@ -189,12 +189,19 @@ function test()
 
     function executeAndDumpTree(pageFunction, eventName, next)
     {
-        WebInspector.domAgent.addEventListener(eventName, callback, this);
+        WebInspector.domAgent.addEventListener(eventName, domCallback, this);
         InspectorTest.evaluateInPage(pageFunction);
-        function callback()
+
+        function domCallback()
         {
+            WebInspector.domAgent.removeEventListener(eventName, domCallback, this);
+            WebInspector.panel("elements").treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
+        }
+
+        function treeCallback()
+        {
+            WebInspector.panel("elements").treeOutline.removeEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
             InspectorTest.dumpElementsTree(containerNode);
-            WebInspector.domAgent.removeEventListener(eventName, callback, this);
             next();
         }
     }
