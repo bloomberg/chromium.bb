@@ -121,6 +121,9 @@ for opt; do
     --gdbserver=*)
       GDBSERVER=$optarg
       ;;
+    --gdb=*)
+      GDB=$optarg
+      ;;
     --help|-h|-?)
       HELP=true
       ;;
@@ -302,10 +305,10 @@ Valid options:
   --annotate=<num>      Enable gdb annotation.
   --script=<file>       Specify extra GDB init script.
 
-  --gdbserver=<file>    Specify targer gdbserver binary.
-  --gdb=<program>       Specify host gdb client binary.
+  --gdbserver=<file>    Specify target gdbserver binary.
+  --gdb=<file>          Specify host gdb client binary.
   --target-arch=<name>  Specify NDK target arch.
-  --adb=<program>       Specify host ADB binary.
+  --adb=<file>          Specify host ADB binary.
 
   --su-prefix=<prefix>  Prepend <prefix> to 'adb shell' commands that are
                         run by this script. This can be useful to use
@@ -542,12 +545,14 @@ fi
 ANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN%/}
 
 # Find host GDB client binary
-GDB=$(which $ANDROID_TOOLCHAIN/*-$GDBEXEPOSTFIX 2>/dev/null | head -1)
 if [ -z "$GDB" ]; then
-  panic "Can't find Android gdb client in your path, check your \
---toolchain path."
+  GDB=$(which $ANDROID_TOOLCHAIN/*-$GDBEXEPOSTFIX 2>/dev/null | head -1)
+  if [ -z "$GDBSERVER" ]; then
+    panic "Can't find Android gdb client in your path, check your \
+--toolchain or --gdb path."
+  fi
+  log "Host gdb client: $GDB"
 fi
-log "Host gdb client: $GDB"
 
 # Find gdbserver binary, we will later push it to /data/local/tmp
 # This ensures that both gdbserver and $GDB talk the same binary protocol,
@@ -886,7 +891,7 @@ SOLIB_DIRS=$(find $PULL_LIBS_DIR -mindepth 1 -maxdepth 4 -type d | \
 #
 
 # Push gdbserver to the device
-log "Pushing gdbserver to $TARGET_GDBSERVER"
+log "Pushing gdbserver $GDBSERVER to $TARGET_GDBSERVER"
 adb push $GDBSERVER $TARGET_GDBSERVER &>/dev/null
 fail_panic "Could not copy gdbserver to the device!"
 
