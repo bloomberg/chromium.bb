@@ -847,8 +847,6 @@ component("net") {
     "socket/stream_socket.h",
     "socket/tcp_client_socket.cc",
     "socket/tcp_client_socket.h",
-    "socket/tcp_client_socket_libevent.cc",
-    "socket/tcp_client_socket_libevent.h",
     "socket/tcp_client_socket_win.cc",
     "socket/tcp_client_socket_win.h",
     "socket/tcp_listen_socket.cc",
@@ -1106,9 +1104,9 @@ component("net") {
       "ssl/client_cert_store_impl_nss.cc",
     ]
     deps += [
-      "//net/third_party/nss/ssl:crssl",
-      "//third_party/nss:nspr",
-      "//third_party/nss:nss",
+      #"//net/third_party/nss/ssl:crssl",
+      #"//third_party/nss:nspr",
+      #"//third_party/nss:nss",
     ]
   }
 

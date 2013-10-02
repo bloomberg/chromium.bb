@@ -235,6 +235,6 @@ test("crypto_unittests") {
   ]
 
   if (is_mac) {
-    deps += "//third_party/nss:nspr"
+    #deps += "//third_party/nss:nspr"
   }
 }

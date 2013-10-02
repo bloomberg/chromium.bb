@@ -26,8 +26,6 @@ config("compiler") {
       "-fvisibility-inlines-hidden",
     ]
     ldflags = [
-      "-Wl,-z,now",
-      "-Wl,-z,relro",
     ]
 
     # Optimization.
@@ -98,6 +96,8 @@ config("compiler") {
         "-fPIC",
         "-pthread",
         "-Wl,-z,noexecstack",
+        "-Wl,-z,now",
+        "-Wl,-z,relro",
 
         # TODO(brettw) gold linker flags, only target.
         # There seems to be a conflict of --icf and -pie in gold which can
