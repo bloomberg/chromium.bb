@@ -307,9 +307,6 @@ class PrintWebViewHelper
 
   bool GetPrintFrame(WebKit::WebFrame** frame);
 
-  // This reports the current time - |start_time| as the time to render a page.
-  void ReportPreviewPageRenderTime(base::TimeTicks start_time);
-
   // Script Initiated Printing ------------------------------------------------
 
   // Return true if script initiated printing is currently
