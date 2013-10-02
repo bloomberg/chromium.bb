@@ -44,6 +44,22 @@ class Document;
 class FontDescription;
 class StyleRuleFontFace;
 
+class FontLoader {
+public:
+    FontLoader(ResourceFetcher*);
+
+    bool hasFontsToLoad() const;
+
+    void addFontToBeginLoading(FontResource*);
+    void beginLoadingFonts();
+
+    void clearResourceFetcher();
+
+private:
+    Vector<ResourcePtr<FontResource> > m_fontsToBeginLoading;
+    ResourceFetcher* m_resourceFetcher;
+};
+
 class CSSFontSelector : public FontSelector {
 public:
     static PassRefPtr<CSSFontSelector> create(Document* document)
@@ -87,9 +103,9 @@ private:
     HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fonts;
     HashSet<FontSelectorClient*> m_clients;
 
-    Vector<ResourcePtr<FontResource> > m_fontsToBeginLoading;
     Timer<CSSFontSelector> m_beginLoadingTimer;
 
+    FontLoader m_fontLoader;
     unsigned m_version;
 };
 
