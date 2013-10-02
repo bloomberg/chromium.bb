@@ -45,7 +45,7 @@
 #ifndef RenderLayerRepainter_h
 #define RenderLayerRepainter_h
 
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
