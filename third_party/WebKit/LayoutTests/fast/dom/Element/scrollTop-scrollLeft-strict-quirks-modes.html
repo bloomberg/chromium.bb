@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+  <head>
+    <script src="../../js/resources/js-test-pre.js"></script>
+    <script>
+      var count = 0;
+      var iframeStrict;
+      var iframeQuirks;
+      function verifyTest() {
+        // Need to wait on both inner frames to load.
+        if (count++ < 1)
+            return;
+
+        description('Test for scrollTop/Left values of document.body and document.documentElement in documents in quirks and strict modes');
+
+        iframeStrict = document.getElementById("strict");
+        iframeQuirks = document.getElementById("quirks");
+
+        shouldBe("iframeStrict.contentDocument.documentElement.scrollTop", "5000");
+        shouldBe("iframeStrict.contentDocument.documentElement.scrollLeft", "4000");
+        shouldBe("iframeStrict.contentDocument.body.scrollTop", "0");
+        shouldBe("iframeStrict.contentDocument.body.scrollLeft", "0");
+
+        shouldBe("iframeQuirks.contentDocument.documentElement.scrollTop", "0");
+        shouldBe("iframeQuirks.contentDocument.documentElement.scrollLeft", "0");
+        shouldBe("iframeQuirks.contentDocument.body.scrollTop", "5000");
+        shouldBe("iframeQuirks.contentDocument.body.scrollLeft", "4000");
+        finishJSTest();
+      }
+      var jsTestIsAsync = true;
+    </script>
+  </head>
+  <body>
+    <iframe id="strict" src="resources/scrollable-iframe-strict.html"></iframe><br>
+    <iframe id="quirks" src="resources/scrollable-iframe-quirks.html"></iframe><br>
+    <script src="../../js/resources/js-test-post.js"></script>
+  </body>
+</html>
+

@@ -38,7 +38,7 @@ function scrolledWhileCursorNotVisible()
     shouldBeEqualToString("array[2].innerHTML", textWhenHovered);
     shouldBeEqualToString("array[3].innerHTML", textWhenNotHovered);
     shouldBeEqualToString("array[4].innerHTML", textWhenNotHovered);
-    shouldBe("document.body.scrollTop", "100");
+    shouldBe("document.documentElement.scrollTop", "100");
 
     testRunner.notifyDone();
 }
@@ -60,7 +60,7 @@ function scrolledWhileCursorVisible()
     shouldBeEqualToString("array[3].innerHTML", textWhenNotHovered);
 
     debug("Mouse is not visible, scrolling page so the mouse ends up on the fourth div.");
-    shouldBe("document.body.scrollTop", "50");
+    shouldBe("document.documentElement.scrollTop", "50");
     internals.setIsCursorVisible(document, false);
     startTime = Date.now();
     eventSender.continuousMouseScrollBy(0, -elementHeight);
@@ -116,7 +116,7 @@ function runtest()
     shouldBeEqualToString("array[2].innerHTML", textWhenNotHovered);
 
     debug("Mouse is visible, scrolling page so the mouse ends up on the third div.");
-    shouldBe("document.body.scrollTop", "0");
+    shouldBe("document.documentElement.scrollTop", "0");
     startTime = Date.now();
     eventSender.continuousMouseScrollBy(0, -elementHeight);
     scrolledWhileCursorVisible();
