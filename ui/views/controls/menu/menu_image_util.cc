@@ -105,15 +105,15 @@ gfx::ImageSkia* CreateRadioButtonImage(bool selected) {
 
 class SubmenuArrowImageSource : public gfx::CanvasImageSource {
  public:
-  SubmenuArrowImageSource()
-      : gfx::CanvasImageSource(GetSubmenuArrowSize(), false) {
-  }
+  SubmenuArrowImageSource(int image_id)
+      : gfx::CanvasImageSource(ui::ResourceBundle::GetSharedInstance().
+            GetImageNamed(image_id).ToImageSkia()->size(), false),
+        image_id_(image_id) {}
   virtual ~SubmenuArrowImageSource() {}
 
   virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* r =
-        rb.GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia();
+    const gfx::ImageSkia* r = rb.GetImageNamed(image_id_).ToImageSkia();
     canvas->Scale(-1, 1);
     canvas->DrawImageInt(*r, - r->width(), 0);
   }
@@ -124,38 +124,52 @@ class SubmenuArrowImageSource : public gfx::CanvasImageSource {
         .GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia()->size();
   }
 
+  int image_id_;
+
   DISALLOW_COPY_AND_ASSIGN(SubmenuArrowImageSource);
 };
 
-gfx::ImageSkia* GetRtlSubmenuArrowImage() {
-  static gfx::ImageSkia* kRtlArrow = NULL;
-  if (!kRtlArrow) {
-    SubmenuArrowImageSource* source = new SubmenuArrowImageSource();
-    kRtlArrow = new gfx::ImageSkia(source, source->size());
+gfx::ImageSkia GetRtlSubmenuArrowImage(bool rtl,
+                                       bool dark_background) {
+  int image_id = dark_background ? IDR_MENU_HIERARCHY_ARROW_DARK_BACKGROUND :
+                                   IDR_MENU_HIERARCHY_ARROW;
+
+  if (!rtl) {
+    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(image_id).
+        AsImageSkia();
   }
-  return kRtlArrow;
+
+  static gfx::ImageSkia* kRtlArrow = NULL;
+  static gfx::ImageSkia* kRtlArrowDarkBg = NULL;
+  gfx::ImageSkia** image = dark_background ? &kRtlArrowDarkBg : &kRtlArrow;
+
+  if (!*image) {
+    SubmenuArrowImageSource* source = new SubmenuArrowImageSource(image_id);
+    *image = new gfx::ImageSkia(source, source->size());
+  }
+
+  return **image;
 }
 
 }  // namespace
 
 namespace views {
 
-const gfx::ImageSkia* GetMenuCheckImage() {
-  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_MENU_CHECK_CHECKED).ToImageSkia();
+gfx::ImageSkia GetMenuCheckImage(bool dark_background) {
+  int image_id = dark_background ? IDR_MENU_CHECK_CHECKED_DARK_BACKGROUND :
+                                   IDR_MENU_CHECK_CHECKED;
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(image_id).
+      AsImageSkia();
 }
 
-const gfx::ImageSkia* GetRadioButtonImage(bool selected) {
+gfx::ImageSkia GetRadioButtonImage(bool selected) {
   int image_id = selected ? IDR_MENU_RADIO_SELECTED : IDR_MENU_RADIO_EMPTY;
-  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      image_id).ToImageSkia();
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(image_id).
+      AsImageSkia();
 }
 
-const gfx::ImageSkia* GetSubmenuArrowImage() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return base::i18n::IsRTL()
-      ? GetRtlSubmenuArrowImage()
-      : rb.GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia();
+gfx::ImageSkia GetSubmenuArrowImage(bool dark_background) {
+  return GetRtlSubmenuArrowImage(base::i18n::IsRTL(), dark_background);
 }
 
 }  // namespace views

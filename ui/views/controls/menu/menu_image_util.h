@@ -13,16 +13,20 @@ namespace views {
 
 // Returns the Menu Check box image (always checked).
 // The returned image is global object and should not be freed.
-const gfx::ImageSkia* GetMenuCheckImage();
+// |dark_background| should be true if the check will be displayed on a
+// dark background (such as a hovered menu item).
+gfx::ImageSkia GetMenuCheckImage(bool dark_background);
 
 // Return the RadioButton image for given state.
 // It returns the "selected" image when |selected| is
 // true, or the "unselected" image if false.
 // The returned image is global object and should not be freed.
-const gfx::ImageSkia* GetRadioButtonImage(bool selected);
+gfx::ImageSkia GetRadioButtonImage(bool selected);
 
 // Returns the image for submenu arrow for current RTL setting.
-const gfx::ImageSkia* GetSubmenuArrowImage();
+// |dark_background| should be true if the check will be displayed on a
+// dark background (such as a hovered menu item).
+gfx::ImageSkia GetSubmenuArrowImage(bool dark_background);
 
 }  // namespace views
 
