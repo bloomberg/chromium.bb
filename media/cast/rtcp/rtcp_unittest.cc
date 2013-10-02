@@ -337,9 +337,9 @@ TEST_F(RtcpTest, WrapAround) {
   old_timestamp = 1234567890;
   EXPECT_EQ(0, rtcp_peer.CheckForWrapAround(new_timestamp, old_timestamp));
   new_timestamp = 123;
-  old_timestamp = 4234567890;
+  old_timestamp = 4234567890u;
   EXPECT_EQ(1, rtcp_peer.CheckForWrapAround(new_timestamp, old_timestamp));
-  new_timestamp = 4234567890;
+  new_timestamp = 4234567890u;
   old_timestamp = 123;
   EXPECT_EQ(-1, rtcp_peer.CheckForWrapAround(new_timestamp, old_timestamp));
 }
@@ -383,7 +383,7 @@ TEST_F(RtcpTest, RtpTimestampInSenderTime) {
             rtp_timestamp_in_ticks);
 
   // Test older rtp_timestamp with wrap.
-  rtp_timestamp = 4294903296;
+  rtp_timestamp = 4294903296u;
   EXPECT_TRUE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
                                                   &rtp_timestamp_in_ticks));
   EXPECT_EQ(input_time - base::TimeDelta::FromMilliseconds(4000),
@@ -397,7 +397,7 @@ TEST_F(RtcpTest, RtpTimestampInSenderTime) {
             rtp_timestamp_in_ticks);
 
   // Test newer rtp_timestamp with wrap.
-  rtp_timestamp = 4294903296;
+  rtp_timestamp = 4294903296u;
   rtcp_peer.OnReceivedLipSyncInfo(rtp_timestamp, ntp_seconds, ntp_fractions);
   rtp_timestamp = 64000;
   EXPECT_TRUE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
