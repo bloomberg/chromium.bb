@@ -41,6 +41,11 @@ class WebString;
 
 class WebMediaStreamTrack {
 public:
+    class ExtraData {
+    public:
+        virtual ~ExtraData() { }
+    };
+
     WebMediaStreamTrack() { }
     WebMediaStreamTrack(const WebMediaStreamTrack& other) { assign(other); }
     ~WebMediaStreamTrack() { reset(); }
@@ -63,6 +68,13 @@ public:
     BLINK_EXPORT WebMediaStream stream() const;
     BLINK_EXPORT WebMediaStreamSource source() const;
     BLINK_EXPORT bool isEnabled() const;
+
+    // Extra data associated with this WebMediaStream.
+    // If non-null, the extra data pointer will be deleted when the object is destroyed.
+    // Setting the extra data pointer will cause any existing non-null
+    // extra data pointer to be deleted.
+    BLINK_EXPORT ExtraData* extraData() const;
+    BLINK_EXPORT void setExtraData(ExtraData*);
 
     // The lifetime of the WebAudioSourceProvider should outlive the
     // WebMediaStreamTrack, and clients are responsible for calling

@@ -49,6 +49,11 @@ class MediaStreamSource;
 
 class MediaStreamComponent : public RefCounted<MediaStreamComponent> {
 public:
+    class ExtraData : public RefCounted<ExtraData> {
+    public:
+        virtual ~ExtraData() { }
+    };
+
     static PassRefPtr<MediaStreamComponent> create(PassRefPtr<MediaStreamSource>);
     static PassRefPtr<MediaStreamComponent> create(const String& id, PassRefPtr<MediaStreamSource>);
     static PassRefPtr<MediaStreamComponent> create(MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
@@ -66,6 +71,9 @@ public:
     AudioSourceProvider* audioSourceProvider() { return &m_sourceProvider; }
     void setSourceProvider(WebKit::WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
 #endif // ENABLE(WEB_AUDIO)
+
+    ExtraData* extraData() const { return m_extraData.get(); }
+    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 private:
     MediaStreamComponent(const String& id, MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
@@ -101,6 +109,7 @@ private:
     RefPtr<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;
+    RefPtr<ExtraData> m_extraData;
 };
 
 typedef Vector<RefPtr<MediaStreamComponent> > MediaStreamComponentVector;
