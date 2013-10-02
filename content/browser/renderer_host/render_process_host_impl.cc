@@ -920,6 +920,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableExperimentalCanvasFeatures,
     switches::kEnableExperimentalWebPlatformFeatures,
     switches::kEnableExperimentalWebSocket,
+    switches::kEnableFastTextAutosizing,
     switches::kEnableFixedLayout,
     switches::kEnableGpuBenchmarking,
     switches::kEnableGPUClientLogging,

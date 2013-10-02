@@ -397,6 +397,9 @@ const char kEnableExperimentalWebPlatformFeatures[] =
 // Enable an experimental WebSocket implementation.
 const char kEnableExperimentalWebSocket[]   = "enable-experimental-websocket";
 
+// Enable the fast text autosizing implementation.
+const char kEnableFastTextAutosizing[]      = "enable-fast-text-autosizing";
+
 // By default, a page is laid out to fill the entire width of the window.
 // This flag fixes the layout of the page to a default of 980 CSS pixels,
 // or to a specified width and height using --enable-fixed-layout=w,h

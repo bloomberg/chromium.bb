@@ -140,6 +140,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableInputModeAttribute))
     WebRuntimeFeatures::enableInputModeAttribute(true);
+
+  if (command_line.HasSwitch(switches::kEnableFastTextAutosizing))
+    WebRuntimeFeatures::enableFastTextAutosizing(true);
 }
 
 }  // namespace content
