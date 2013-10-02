@@ -66,7 +66,6 @@ static void valueAttributeGetter(v8::Local<v8::String> name, const v8::PropertyC
 {
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     v8SetReturnValue(info, imp->value() ? imp->value()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
-    return;
 }
 
 static void valueAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -81,7 +80,6 @@ static void valueAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<SerializedScriptValue>, v, SerializedScriptValue::create(value, info.GetIsolate()));
     imp->setValue(WTF::getPtr(v));
-    return;
 }
 
 static void valueAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -95,7 +93,6 @@ static void readonlyValueAttributeGetter(v8::Local<v8::String> name, const v8::P
 {
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     v8SetReturnValue(info, imp->readonlyValue() ? imp->readonlyValue()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
-    return;
 }
 
 static void readonlyValueAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -121,7 +118,6 @@ static void dirtySerializedValueAttributeGetter(v8::Local<v8::String> name, cons
     value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
-    return;
 }
 
 static void dirtySerializedValueAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -137,7 +133,6 @@ static void dirtySerializedValueAttributeSetter(v8::Local<v8::String> name, v8::
     V8TRYCATCH_VOID(RefPtr<SerializedScriptValue>, v, SerializedScriptValue::create(value, info.GetIsolate()));
     imp->setDirtySerializedValue(WTF::getPtr(v));
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("dirtySerializedValue")); // Invalidate the cached value.
-    return;
 }
 
 static void dirtySerializedValueAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -162,7 +157,6 @@ static void dirtyScriptValueAttributeGetter(v8::Local<v8::String> name, const v8
     value = imp->dirtyScriptValue().v8Value();
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
-    return;
 }
 
 static void dirtyScriptValueAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -178,7 +172,6 @@ static void dirtyScriptValueAttributeSetter(v8::Local<v8::String> name, v8::Loca
     V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value, info.GetIsolate()));
     imp->setDirtyScriptValue(v);
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("dirtyScriptValue")); // Invalidate the cached value.
-    return;
 }
 
 static void dirtyScriptValueAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -208,7 +201,6 @@ static void cachedValueCallWithAttributeGetter(v8::Local<v8::String> name, const
     value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
-    return;
 }
 
 static void cachedValueCallWithAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -230,7 +222,6 @@ static void cachedValueCallWithAttributeSetter(v8::Local<v8::String> name, v8::L
     if (state.hadException())
         throwError(state.exception(), info.GetIsolate());
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("cachedValueCallWith")); // Invalidate the cached value.
-    return;
 }
 
 static void cachedValueCallWithAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)

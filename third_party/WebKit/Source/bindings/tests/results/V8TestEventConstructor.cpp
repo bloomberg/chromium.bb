@@ -66,7 +66,6 @@ static void attr1AttributeGetter(v8::Local<v8::String> name, const v8::PropertyC
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
     v8SetReturnValueString(info, imp->attr1(), info.GetIsolate());
-    return;
 }
 
 static void attr1AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -80,7 +79,6 @@ static void attr2AttributeGetter(v8::Local<v8::String> name, const v8::PropertyC
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
     v8SetReturnValueString(info, imp->attr2(), info.GetIsolate());
-    return;
 }
 
 static void attr2AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

@@ -28,7 +28,6 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     {% else %}
     {{attribute.return_v8_value_statement}}
     {% endif %}
-    return;
 }
 {% endmacro %}
 

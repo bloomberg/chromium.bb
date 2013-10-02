@@ -63,7 +63,6 @@ static void nameAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCa
 {
     TestException* imp = V8TestException::toNative(info.Holder());
     v8SetReturnValueString(info, imp->name(), info.GetIsolate());
-    return;
 }
 
 static void nameAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

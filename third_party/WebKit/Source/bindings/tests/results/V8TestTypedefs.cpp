@@ -72,7 +72,6 @@ static void unsignedLongLongAttrAttributeGetter(v8::Local<v8::String> name, cons
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     v8SetReturnValue(info, static_cast<double>(imp->unsignedLongLongAttr()));
-    return;
 }
 
 static void unsignedLongLongAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -87,7 +86,6 @@ static void unsignedLongLongAttrAttributeSetter(v8::Local<v8::String> name, v8::
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_VOID(unsigned long long, v, toUInt64(value));
     imp->setUnsignedLongLongAttr(v);
-    return;
 }
 
 static void unsignedLongLongAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -101,7 +99,6 @@ static void immutableSerializedScriptValueAttributeGetter(v8::Local<v8::String> 
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     v8SetReturnValue(info, imp->immutableSerializedScriptValue() ? imp->immutableSerializedScriptValue()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
-    return;
 }
 
 static void immutableSerializedScriptValueAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -116,7 +113,6 @@ static void immutableSerializedScriptValueAttributeSetter(v8::Local<v8::String> 
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<SerializedScriptValue>, v, SerializedScriptValue::create(value, info.GetIsolate()));
     imp->setImmutableSerializedScriptValue(WTF::getPtr(v));
-    return;
 }
 
 static void immutableSerializedScriptValueAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -134,7 +130,6 @@ static void attrWithGetterExceptionAttributeGetter(v8::Local<v8::String> name, c
     if (UNLIKELY(es.throwIfNeeded()))
         return;
     v8SetReturnValueInt(info, value);
-    return;
 }
 
 static void attrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -149,7 +144,6 @@ static void attrWithGetterExceptionAttributeSetter(v8::Local<v8::String> name, v
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
     imp->setAttrWithGetterException(v);
-    return;
 }
 
 static void attrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -163,7 +157,6 @@ static void attrWithSetterExceptionAttributeGetter(v8::Local<v8::String> name, c
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     v8SetReturnValueInt(info, imp->attrWithSetterException());
-    return;
 }
 
 static void attrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -180,7 +173,6 @@ static void attrWithSetterExceptionAttributeSetter(v8::Local<v8::String> name, v
     ExceptionState es(info.GetIsolate());
     imp->setAttrWithSetterException(v, es);
     es.throwIfNeeded();
-    return;
 }
 
 static void attrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -198,7 +190,6 @@ static void stringAttrWithGetterExceptionAttributeGetter(v8::Local<v8::String> n
     if (UNLIKELY(es.throwIfNeeded()))
         return;
     v8SetReturnValueString(info, value, info.GetIsolate());
-    return;
 }
 
 static void stringAttrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -213,7 +204,6 @@ static void stringAttrWithGetterExceptionAttributeSetter(v8::Local<v8::String> n
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     imp->setStringAttrWithGetterException(v);
-    return;
 }
 
 static void stringAttrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -227,7 +217,6 @@ static void stringAttrWithSetterExceptionAttributeGetter(v8::Local<v8::String> n
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     v8SetReturnValueString(info, imp->stringAttrWithSetterException(), info.GetIsolate());
-    return;
 }
 
 static void stringAttrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -244,7 +233,6 @@ static void stringAttrWithSetterExceptionAttributeSetter(v8::Local<v8::String> n
     ExceptionState es(info.GetIsolate());
     imp->setStringAttrWithSetterException(v, es);
     es.throwIfNeeded();
-    return;
 }
 
 static void stringAttrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)

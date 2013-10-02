@@ -67,7 +67,6 @@ static void aAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallb
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     v8SetReturnValueString(info, imp->a(), info.GetIsolate());
-    return;
 }
 
 static void aAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -82,7 +81,6 @@ static void aAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     imp->setA(v);
-    return;
 }
 
 static void aAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -96,7 +94,6 @@ static void bAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallb
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->b(), imp);
-    return;
 }
 
 static void bAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -111,7 +108,6 @@ static void bAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     V8TRYCATCH_VOID(RealClass*, v, V8TestInterfaceImplementedAs::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     imp->setB(WTF::getPtr(v));
-    return;
 }
 
 static void bAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)

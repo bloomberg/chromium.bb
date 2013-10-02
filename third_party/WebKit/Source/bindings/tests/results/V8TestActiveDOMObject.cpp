@@ -67,7 +67,6 @@ static void excitingAttrAttributeGetter(v8::Local<v8::String> name, const v8::Pr
 {
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(info.Holder());
     v8SetReturnValueInt(info, imp->excitingAttr());
-    return;
 }
 
 static void excitingAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

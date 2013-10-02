@@ -1410,7 +1410,6 @@ END
             my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
             $code .= "    v8SetReturnValueString(info, imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate());\n";
-            $code .= "    return;\n";
             $code .= "}\n\n";
             $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
             $implementation{nameSpaceInternal}->add($code);
@@ -1531,7 +1530,6 @@ END
         if ($arrayType) {
             AddIncludeForType("V8$arrayType.h");
             $code .= "    v8SetReturnValue(info, v8Array(${getterString}, info.GetIsolate()));\n";
-            $code .= "    return;\n";
             $code .= "}\n\n";
             $implementation{nameSpaceInternal}->add($code);
             return;
@@ -1555,7 +1553,6 @@ END
         $code .= "        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), \"${attrName}\", wrapper);\n";
         $code .= "        v8SetReturnValue(info, wrapper);\n";
         $code .= "    }\n";
-        $code .= "    return;\n";
         $code .= "}\n\n";
         $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
         $implementation{nameSpaceInternal}->add($code);
@@ -1571,7 +1568,6 @@ END
         } else {
             $code .= "    v8SetReturnValueFast(info, static_cast<$svgNativeType*>($expression), imp);\n";
         }
-        $code .= "    return;\n";
     } elsif (IsSVGTypeNeedingTearOff($attrType) and not $interfaceName =~ /List$/) {
         AddToImplIncludes("V8$attrType.h");
         AddToImplIncludes("core/svg/properties/SVGPropertyTearOff.h");
@@ -1607,7 +1603,6 @@ END
         } else {
             $code .= "    v8SetReturnValueFast(info, $wrappedValue, imp);\n";
         }
-        $code .= "    return;\n";
     } elsif ($attrCached) {
         if ($attribute->type eq "SerializedScriptValue") {
             $code .= "    RefPtr<SerializedScriptValue> serialized = $getterString;\n";
@@ -1618,7 +1613,6 @@ END
         $code .= <<END;
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
-    return;
 END
     } elsif ($attribute->type eq "EventHandler") {
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
@@ -1626,11 +1620,9 @@ END
         # FIXME: Pass the main world ID for main-world-only getters.
         $code .= "    EventListener* listener = imp->${getterFunc}(isolatedWorldForIsolate(info.GetIsolate()));\n";
         $code .= "    v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
-        $code .= "    return;\n";
     } else {
         my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", $forMainWorldSuffix, "return");
         $code .= "${nativeValue}\n";
-        $code .= "    return;\n";
     }
 
     $code .= "}\n\n";  # end of getter
@@ -1968,7 +1960,6 @@ END
 END
     }
 
-    $code .= "    return;\n";
     $code .= "}\n\n";  # end of setter
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
     $implementation{nameSpaceInternal}->add($code);

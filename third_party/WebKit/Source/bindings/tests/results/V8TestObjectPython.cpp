@@ -79,7 +79,6 @@ static void readonlyDateAttributeAttributeGetter(v8::Local<v8::String> name, con
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, v8DateOrNull(imp->readonlyDateAttribute(), info.GetIsolate()));
-    return;
 }
 
 static void readonlyDateAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -93,7 +92,6 @@ static void readonlyStringAttributeAttributeGetter(v8::Local<v8::String> name, c
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueString(info, imp->readonlyStringAttribute(), info.GetIsolate());
-    return;
 }
 
 static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -107,7 +105,6 @@ static void readonlyDOMTimeStampAttributeAttributeGetter(v8::Local<v8::String> n
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, static_cast<double>(imp->readonlyDOMTimeStampAttribute()));
-    return;
 }
 
 static void readonlyDOMTimeStampAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -121,7 +118,6 @@ static void readonlyBooleanAttributeAttributeGetter(v8::Local<v8::String> name, 
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueBool(info, imp->readonlyBooleanAttribute());
-    return;
 }
 
 static void readonlyBooleanAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -135,7 +131,6 @@ static void readonlyByteAttributeAttributeGetter(v8::Local<v8::String> name, con
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueInt(info, imp->readonlyByteAttribute());
-    return;
 }
 
 static void readonlyByteAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -149,7 +144,6 @@ static void readonlyDoubleAttributeAttributeGetter(v8::Local<v8::String> name, c
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, imp->readonlyDoubleAttribute());
-    return;
 }
 
 static void readonlyDoubleAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -163,7 +157,6 @@ static void readonlyFloatAttributeAttributeGetter(v8::Local<v8::String> name, co
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, imp->readonlyFloatAttribute());
-    return;
 }
 
 static void readonlyFloatAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -177,7 +170,6 @@ static void readonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, con
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueInt(info, imp->readonlyLongAttribute());
-    return;
 }
 
 static void readonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -191,7 +183,6 @@ static void readonlyLongLongAttributeAttributeGetter(v8::Local<v8::String> name,
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, static_cast<double>(imp->readonlyLongLongAttribute()));
-    return;
 }
 
 static void readonlyLongLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -205,7 +196,6 @@ static void readonlyOctetAttributeAttributeGetter(v8::Local<v8::String> name, co
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->readonlyOctetAttribute());
-    return;
 }
 
 static void readonlyOctetAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -219,7 +209,6 @@ static void readonlyShortAttributeAttributeGetter(v8::Local<v8::String> name, co
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueInt(info, imp->readonlyShortAttribute());
-    return;
 }
 
 static void readonlyShortAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -233,7 +222,6 @@ static void readonlyUnsignedLongAttributeAttributeGetter(v8::Local<v8::String> n
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->readonlyUnsignedLongAttribute());
-    return;
 }
 
 static void readonlyUnsignedLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -247,7 +235,6 @@ static void readonlyUnsignedLongLongAttributeAttributeGetter(v8::Local<v8::Strin
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, static_cast<double>(imp->readonlyUnsignedLongLongAttribute()));
-    return;
 }
 
 static void readonlyUnsignedLongLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -261,7 +248,6 @@ static void readonlyUnsignedShortAttributeAttributeGetter(v8::Local<v8::String> 
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->readonlyUnsignedShortAttribute());
-    return;
 }
 
 static void readonlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -275,7 +261,6 @@ static void readonlyNodeFilterAttributeAttributeGetter(v8::Local<v8::String> nam
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyNodeFilterAttribute(), imp);
-    return;
 }
 
 static void readonlyNodeFilterAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -289,7 +274,6 @@ static void readonlySerializedScriptValueAttributeAttributeGetter(v8::Local<v8::
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, imp->readonlySerializedScriptValueAttribute() ? imp->readonlySerializedScriptValueAttribute()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
-    return;
 }
 
 static void readonlySerializedScriptValueAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -303,7 +287,6 @@ static void readonlyAnyAttributeAttributeGetter(v8::Local<v8::String> name, cons
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, imp->readonlyAnyAttribute().v8Value());
-    return;
 }
 
 static void readonlyAnyAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -317,7 +300,6 @@ static void readonlyDocumentAttributeAttributeGetter(v8::Local<v8::String> name,
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyDocumentAttribute(), imp);
-    return;
 }
 
 static void readonlyDocumentAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -331,7 +313,6 @@ static void readonlyDocumentFragmentAttributeAttributeGetter(v8::Local<v8::Strin
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyDocumentFragmentAttribute(), imp);
-    return;
 }
 
 static void readonlyDocumentFragmentAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -345,7 +326,6 @@ static void readonlyDocumentTypeAttributeAttributeGetter(v8::Local<v8::String> n
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyDocumentTypeAttribute(), imp);
-    return;
 }
 
 static void readonlyDocumentTypeAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -359,7 +339,6 @@ static void readonlyElementAttributeAttributeGetter(v8::Local<v8::String> name, 
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyElementAttribute(), imp);
-    return;
 }
 
 static void readonlyElementAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -373,7 +352,6 @@ static void readonlyEntityAttributeAttributeGetter(v8::Local<v8::String> name, c
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyEntityAttribute(), imp);
-    return;
 }
 
 static void readonlyEntityAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -387,7 +365,6 @@ static void readonlyNodeAttributeAttributeGetter(v8::Local<v8::String> name, con
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyNodeAttribute(), imp);
-    return;
 }
 
 static void readonlyNodeAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -401,7 +378,6 @@ static void readonlyShadowRootAttributeAttributeGetter(v8::Local<v8::String> nam
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyShadowRootAttribute(), imp);
-    return;
 }
 
 static void readonlyShadowRootAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -415,7 +391,6 @@ static void selfAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCa
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->self(), imp);
-    return;
 }
 
 static void selfAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -429,7 +404,6 @@ static void readonlySerializedScriptValueAttributeAttributeGetter(v8::Local<v8::
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, imp->readonlySerializedScriptValueAttribute() ? imp->readonlySerializedScriptValueAttribute()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
-    return;
 }
 
 static void readonlySerializedScriptValueAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -443,7 +417,6 @@ static void readonlyWindowAttributeAttributeGetter(v8::Local<v8::String> name, c
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyWindowAttribute(), imp);
-    return;
 }
 
 static void readonlyWindowAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -457,7 +430,6 @@ static void readonlyHTMLCollectionAttributeAttributeGetter(v8::Local<v8::String>
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyHTMLCollectionAttribute(), imp);
-    return;
 }
 
 static void readonlyHTMLCollectionAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -471,7 +443,6 @@ static void readonlyHTMLElementAttributeAttributeGetter(v8::Local<v8::String> na
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->readonlyHTMLElementAttribute(), imp);
-    return;
 }
 
 static void readonlyHTMLElementAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -485,7 +456,6 @@ static void readonlyStringArrayAttributeAttributeGetter(v8::Local<v8::String> na
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, v8Array(imp->readonlyStringArrayAttribute(), info.GetIsolate()));
-    return;
 }
 
 static void readonlyStringArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -499,7 +469,6 @@ static void readonlyTestInterfaceEmptyArrayAttributeAttributeGetter(v8::Local<v8
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, v8Array(imp->readonlyTestInterfaceEmptyArrayAttribute(), info.GetIsolate()));
-    return;
 }
 
 static void readonlyTestInterfaceEmptyArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -513,7 +482,6 @@ static void readonlyFloatArrayAttributeAttributeGetter(v8::Local<v8::String> nam
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValue(info, v8Array(imp->readonlyFloatArrayAttribute(), info.GetIsolate()));
-    return;
 }
 
 static void readonlyFloatArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -533,7 +501,6 @@ static void readonlyNullableStringAttributeAttributeGetter(v8::Local<v8::String>
         return;
     }
     v8SetReturnValueString(info, value, info.GetIsolate());
-    return;
 }
 
 static void readonlyNullableStringAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -553,7 +520,6 @@ static void readonlyNullableLongAttributeAttributeGetter(v8::Local<v8::String> n
         return;
     }
     v8SetReturnValueInt(info, value);
-    return;
 }
 
 static void readonlyNullableLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -566,7 +532,6 @@ static void readonlyNullableLongAttributeAttributeGetterCallback(v8::Local<v8::S
 static void staticReadonlyStringAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueString(info, TestObjectPython::staticReadonlyStringAttribute(), info.GetIsolate());
-    return;
 }
 
 static void staticReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -579,7 +544,6 @@ static void staticReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::S
 static void staticReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueInt(info, TestObjectPython::staticReadonlyLongAttribute());
-    return;
 }
 
 static void staticReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

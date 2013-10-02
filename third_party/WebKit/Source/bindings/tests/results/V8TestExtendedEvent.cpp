@@ -70,7 +70,6 @@ static void locationAttributeGetter(v8::Local<v8::String> name, const v8::Proper
 {
     Event* imp = V8TestExtendedEvent::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->location());
-    return;
 }
 
 static void locationAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -84,7 +83,6 @@ static void keyLocationAttributeGetter(v8::Local<v8::String> name, const v8::Pro
 {
     Event* imp = V8TestExtendedEvent::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->location());
-    return;
 }
 
 static void keyLocationAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
