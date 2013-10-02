@@ -1260,14 +1260,16 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 static int
 init_egl(struct drm_compositor *ec)
 {
+	EGLint format;
+
 	ec->gbm = gbm_create_device(ec->drm.fd);
 
 	if (!ec->gbm)
 		return -1;
 
+	format = ec->format;
 	if (gl_renderer_create(&ec->base, ec->gbm,
-			       gl_renderer_opaque_attribs,
-			       &ec->format) < 0) {
+			       gl_renderer_opaque_attribs, &format) < 0) {
 		gbm_device_destroy(ec->gbm);
 		return -1;
 	}
