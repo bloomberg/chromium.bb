@@ -14,10 +14,6 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
-#include "ppapi/c/dev/ppp_widget_dev.h"
-#include "ppapi/shared_impl/ppb_input_event_shared.h"
-#include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_input_event_api.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
@@ -30,11 +26,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-using ppapi::thunk::EnterResourceNoLock;
-using ppapi::thunk::PPB_ImageData_API;
-using ppapi::thunk::PPB_InputEvent_API;
 using ppapi::thunk::PPB_Scrollbar_API;
-using ppapi::thunk::PPB_Widget_API;
 using WebKit::WebInputEvent;
 using WebKit::WebRect;
 using WebKit::WebScrollbar;
@@ -52,10 +44,8 @@ PP_Resource PPB_Scrollbar_Impl::Create(PP_Instance instance,
 }
 
 PPB_Scrollbar_Impl::PPB_Scrollbar_Impl(PP_Instance instance)
-    : Resource(ppapi::OBJECT_IS_IMPL, instance),
-      scale_(1.0f),
+    : PPB_Widget_Impl(instance),
       weak_ptr_factory_(this) {
-  memset(&location_, 0, sizeof(location_));
 }
 
 PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
@@ -73,10 +63,6 @@ void PPB_Scrollbar_Impl::Init(bool vertical) {
 }
 
 PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() {
-  return this;
-}
-
-PPB_Widget_API* PPB_Scrollbar_Impl::AsPPB_Widget_API() {
   return this;
 }
 
@@ -117,7 +103,8 @@ void PPB_Scrollbar_Impl::SetTickMarks(const PP_Rect* tick_marks,
                             tick_marks[i].size.width,
                             tick_marks[i].size.height);;
   }
-  Invalidate(location_);
+  PP_Rect rect = location();
+  Invalidate(&rect);
 }
 
 void PPB_Scrollbar_Impl::ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) {
@@ -144,21 +131,14 @@ void PPB_Scrollbar_Impl::ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) {
   scrollbar_->scroll(direction, granularity, fmultiplier);
 }
 
-PP_Bool PPB_Scrollbar_Impl::Paint(const PP_Rect* pp_rect,
-                                  PP_Resource image_id) {
-  EnterResourceNoLock<PPB_ImageData_API> enter(image_id, true);
-  if (enter.failed())
-    return PP_FALSE;
-  PPB_ImageData_Impl* image = static_cast<PPB_ImageData_Impl*>(enter.object());
-
-  gfx::Rect rect(pp_rect->point.x, pp_rect->point.y,
-                 pp_rect->size.width, pp_rect->size.height);
+PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
+                                          PPB_ImageData_Impl* image) {
   ImageDataAutoMapper mapper(image);
   skia::PlatformCanvas* canvas = image->GetPlatformCanvas();
   if (!canvas || !scrollbar_)
     return PP_FALSE;
   canvas->save();
-  canvas->scale(scale_, scale_);
+  canvas->scale(scale(), scale());
   scrollbar_->paint(canvas, rect);
   canvas->restore();
 
@@ -170,12 +150,8 @@ PP_Bool PPB_Scrollbar_Impl::Paint(const PP_Rect* pp_rect,
   return PP_TRUE;
 }
 
-PP_Bool PPB_Scrollbar_Impl::HandleEvent(
-    PP_Resource pp_input_event) {
-  EnterResourceNoLock<PPB_InputEvent_API> enter(pp_input_event, true);
-  if (enter.failed())
-    return PP_FALSE;
-  ppapi::InputEventData data = enter.object()->GetInputEventData();
+PP_Bool PPB_Scrollbar_Impl::HandleEventInternal(
+    const ppapi::InputEventData& data) {
   scoped_ptr<WebInputEvent> web_input_event(CreateWebInputEvent(data));
   if (!web_input_event.get() || !scrollbar_)
     return PP_FALSE;
@@ -183,34 +159,13 @@ PP_Bool PPB_Scrollbar_Impl::HandleEvent(
   return PP_FromBool(scrollbar_->handleInputEvent(*web_input_event.get()));
 }
 
-PP_Bool PPB_Scrollbar_Impl::GetLocation(PP_Rect* location) {
-  *location = location_;
-  return PP_TRUE;
-}
-
-void PPB_Scrollbar_Impl::SetLocation(const PP_Rect* location) {
+void PPB_Scrollbar_Impl::SetLocationInternal(const PP_Rect* location) {
   if (!scrollbar_)
     return;
   scrollbar_->setLocation(WebRect(location->point.x,
                                   location->point.y,
                                   location->size.width,
                                   location->size.height));
-}
-
-void PPB_Scrollbar_Impl::SetScale(float scale) {
-  scale_ = scale;
-}
-
-void PPB_Scrollbar_Impl::Invalidate(const PP_Rect& dirty) {
-  PepperPluginInstanceImpl* plugin_instance =
-      HostGlobals::Get()->GetInstance(pp_instance());
-  if (!plugin_instance)
-    return;
-  const PPP_Widget_Dev* widget = static_cast<const PPP_Widget_Dev*>(
-      plugin_instance->module()->GetPluginInterface(PPP_WIDGET_DEV_INTERFACE));
-  if (!widget)
-    return;
-  widget->Invalidate(pp_instance(), pp_resource(), &dirty);
 }
 
 void PPB_Scrollbar_Impl::valueChanged(WebKit::WebPluginScrollbar* scrollbar) {
@@ -290,7 +245,7 @@ void PPB_Scrollbar_Impl::NotifyInvalidate() {
   pp_rect.size.width = dirty_.width();
   pp_rect.size.height = dirty_.height();
   dirty_ = gfx::Rect();
-  Invalidate(pp_rect);
+  Invalidate(&pp_rect);
 }
 
 }  // namespace content
