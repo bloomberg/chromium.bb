@@ -97,8 +97,9 @@ public:
     bool isReadOnly() const { return m_isReadOnly; }
     bool isDisabledOrReadOnly() const { return isDisabledFormControl() || m_isReadOnly; }
 
-    bool hasAutofocused() { return m_hasAutofocused; }
+    bool hasAutofocused() const { return m_hasAutofocused; }
     void setAutofocused() { m_hasAutofocused = true; }
+    bool isAutofocusable() const;
 
     static HTMLFormControlElement* enclosingFormControlElement(Node*);
 

@@ -28,6 +28,8 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/html/HTMLFormControlElement.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -39,6 +41,25 @@ using namespace HTMLNames;
 static bool needsCenteredPositioning(const RenderStyle* style)
 {
     return style->position() == AbsolutePosition && style->hasAutoTopAndBottom();
+}
+
+static void runAutofocus(HTMLDialogElement* dialog)
+{
+    Node* next = 0;
+    for (Node* node = dialog->firstChild(); node; node = next) {
+        if (node->isElementNode() && toElement(node)->isFormControlElement()) {
+            HTMLFormControlElement* control = toHTMLFormControlElement(node);
+            if (control->isAutofocusable()) {
+                control->focus();
+                control->setAutofocused();
+                return;
+            }
+        }
+        if (node->hasTagName(dialogTag))
+            next = NodeTraversal::nextSkippingChildren(node, dialog);
+        else
+            next = NodeTraversal::next(node, dialog);
+    }
 }
 
 HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document& document)
@@ -128,6 +149,8 @@ void HTMLDialogElement::showModal(ExceptionState& es)
     }
     document().addToTopLayer(this);
     setBooleanAttribute(openAttr, true);
+
+    runAutofocus(this);
     reposition();
 }
 
