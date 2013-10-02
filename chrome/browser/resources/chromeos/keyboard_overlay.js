@@ -439,8 +439,8 @@ function update(modifiers) {
       shortcutText.style.visibility = 'hidden';
     }
 
-    if (keyData.format) {
-      var format = keyData.format;
+    var format = keyboardGlyphData.keys[layout[i][0]].format;
+    if (format) {
       if (format == 'left' || format == 'right') {
         shortcutText.style.textAlign = format;
         keyText.style.textAlign = format;
