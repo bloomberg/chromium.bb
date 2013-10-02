@@ -241,12 +241,13 @@ ServiceResolverImpl::ServiceResolverImpl(
     : service_name_(service_name), callback_(callback),
       metadata_resolved_(false), address_resolved_(false),
       mdns_client_(mdns_client) {
-  service_staging_.service_name = service_name_;
 }
 
 void ServiceResolverImpl::StartResolving() {
   address_resolved_ = false;
   metadata_resolved_ = false;
+  service_staging_ = ServiceDescription();
+  service_staging_.service_name = service_name_;
 
   if (!CreateTxtTransaction() || !CreateSrvTransaction()) {
     ServiceNotFound(ServiceResolver::STATUS_REQUEST_TIMEOUT);
@@ -340,7 +341,6 @@ void ServiceResolverImpl::AlertCallbackIfReady() {
     a_transaction_.reset();
     if (!callback_.is_null())
       callback_.Run(STATUS_SUCCESS, service_staging_);
-    service_staging_ = ServiceDescription();
   }
 }
 
