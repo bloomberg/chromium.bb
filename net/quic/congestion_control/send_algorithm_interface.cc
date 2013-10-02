@@ -11,10 +11,8 @@
 namespace net {
 
 const bool kUseReno = false;
-// TODO(ianswett): Increase the max congestion window once the RTO logic is
-// improved, particularly in cases when RTT is larger than the RTO. b/10075719
 // Maximum number of outstanding packets for tcp.
-const QuicTcpCongestionWindow kMaxTcpCongestionWindow = 100;
+const QuicTcpCongestionWindow kMaxTcpCongestionWindow = 200;
 
 // Factory for send side congestion control algorithm.
 SendAlgorithmInterface* SendAlgorithmInterface::Create(
