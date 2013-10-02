@@ -1,0 +1,42 @@
+<html> 
+<body>
+	Here's the editor!
+	<button onclick="doreplace();">Do Replace</button>
+	<div id="editor" contenteditable="true" spellcheck="true" style="height:200px; border:1px solid black; color: #F09000; background-color: black"
+	       data-marker-color-default="cyan"></div>
+	<script>
+	var txt = "\n";
+	txt = txt + "		here is some sampl text.   notce the typoz.   It won't highlight spell errors unless until you move your cursor away from\n";
+	txt = txt + "		them.	\n";
+	txt = txt + "		<p>\n";
+	txt = txt + "		please make sure that the color is honored fine when you highlight the text too!\n";
+	txt = txt + "		<p>\n";
+	txt = txt + "		if verizon we can set the color to transparent to hide it, that'd be fine\n";
+	txt = txt + "		<p>\n";
+	txt = txt + "		or maybe another property which is \"enable spell check, but disable the squiggles\"\n";
+	txt = txt + "	";
+	document.getElementById("editor").innerHTML = txt;
+	</script>
+	
+	<textarea spellcheck="true" style="height: 150px; width: 500px" data-marker-color-default="blue" >
+make sure it wrks here too, but this is lower priority for may
+(this doesn't work in our branch)
+fine
+	</textarea>
+	
+	<div id="editor2" contenteditable="true" spellcheck="true" data-marker-color-default="orange" style="height:100px; border:1px solid black;">
+		This is a contenteditable with a white background fine
+	</div>
+	
+	<div id="editor3" contenteditable="true" spellcheck="false" style="height:100px; border:1px solid black; color: #F09000; background-color: black">
+		This one should not be affected because spellcheck=false fine
+	</div>
+</body>
+<script>
+function doreplace()
+{
+    var editor = document.getElementById("editor");
+	editor.innerHTML = "if fine we can set verizon the color to transparent to hide it, that'd be fine"
+}
+</script>
+</html>
