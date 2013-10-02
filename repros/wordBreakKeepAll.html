@@ -1,0 +1,28 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="imagetoolbar" content="no" />
+	<title>Word-Break Test Page</title>
+	<style type="text/css">
+		body { background-color: black; }
+		.word-break {
+			background-color: white;
+			word-break: keep-all;
+		}
+		.word-break-if-korean {
+			background-color: white;
+			word-break: -bb-keep-all-if-korean;
+                }
+	</style>
+</head>
+<body> 
+    <h1 style="color: white;">word-break: keep-all;</h1>
+    <p lang="ko" class="word-break">가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라</p>
+    <p lang="ja" class="word-break">月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土</p>
+    <p class="word-break">Oct. 2 (Bloomberg) -- The U.S. government’s partial shutdown poses global risks that American resolve and commitment will come into question, heightening allies’ concerns and boosting opponents’ confidence.  President Barack Obama has emphasized his vision of a U.S. more focused on “nation-building at home.” Many Obama administration foreign policy decisions, including the reluctance to arm Syrian rebels, the call for former Egyptian President Hosni Mubarak’s ouster, and the tentative engagement with Iran, have unsettled long-time allies, including Saudi Arabia and Israel.</p>
+    <h1 style="color: white;">word-break: -bb-keep-all-if-korean;</h1>
+    <p lang="ko" class="word-break-if-korean">가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라 가나다라</p>
+    <p lang="ja" class="word-break-if-korean">月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土 月火水木金土</p>
+    <p class="word-break-if-korean">Oct. 2 (Bloomberg) -- The U.S. government’s partial shutdown poses global risks that American resolve and commitment will come into question, heightening allies’ concerns and boosting opponents’ confidence.  President Barack Obama has emphasized his vision of a U.S. more focused on “nation-building at home.” Many Obama administration foreign policy decisions, including the reluctance to arm Syrian rebels, the call for former Egyptian President Hosni Mubarak’s ouster, and the tentative engagement with Iran, have unsettled long-time allies, including Saudi Arabia and Israel.</p>
+</body> 
+</html>

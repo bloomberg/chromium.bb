@@ -455,6 +455,13 @@ selection extends outside the table cell.</p>
 <p>Open <a href="repros/tableEditing.html">this link</a> and compare the
 behavior with and without the patch applied.</p>
 
+<h3><a name="feature-wordBreakKeepAll">feature/wordBreakKeepAll</a> (Shezan Baig; D41784575; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=43917">43917</a>)</h3>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.  Note: we may upstream <code>word-break: keep-all</code>,
+but probably not <code>word-break: -bb-keep-all-if-korean</code>.</p>
+<p>Open <a href="repros/wordBreakKeepAll.html">this link</a> and resize the
+window, and observe the word-break between Korean, Japanese, and English
+text.</p>
 
 
 
