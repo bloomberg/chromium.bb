@@ -118,9 +118,9 @@ class LocationBarViewGtk : public OmniboxEditController,
                                     const GURL& alternate_nav_url) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
   virtual void OnSelectionBoundsChanged() OVERRIDE;
+  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
   virtual void OnKillFocus() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
-  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
   virtual gfx::Image GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
@@ -382,11 +382,6 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   // Updates the maximum size of the EV certificate label.
   void UpdateEVCertificateLabelSize();
-
-  // Sets the text that should be displayed in the info label and its associated
-  // tooltip text.  Call with an empty string if the info label should be
-  // hidden.
-  void SetInfoText();
 
   // Set the keyword text for the Search BLAH: keyword box.
   void SetKeywordLabel(const string16& keyword);

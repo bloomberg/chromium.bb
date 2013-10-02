@@ -143,25 +143,6 @@ void LocationBarViewMac::ShowFirstRunBubble() {
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LocationBarViewMac::ShowFirstRunBubbleInternal() {
-  if (!field_ || ![field_ window])
-    return;
-
-  // The first run bubble's left edge should line up with the left edge of the
-  // omnibox. This is different from other bubbles, which line up at a point
-  // set by their top arrow. Because the BaseBubbleController adjusts the
-  // window origin left to account for the arrow spacing, the first run bubble
-  // moves the window origin right by this spacing, so that the
-  // BaseBubbleController will move it back to the correct position.
-  const NSPoint kOffset = NSMakePoint(
-      info_bubble::kBubbleArrowXOffset + info_bubble::kBubbleArrowWidth/2.0,
-      kFirstRunBubbleYOffset);
-  [FirstRunBubbleController showForView:field_
-                                 offset:kOffset
-                                browser:browser_
-                                profile:profile_];
-}
-
 string16 LocationBarViewMac::GetInputString() const {
   return location_input_;
 }
@@ -232,104 +213,6 @@ void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
   omnibox_view_->SaveStateToTab(contents);
 }
 
-void LocationBarViewMac::Update(const WebContents* contents) {
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsStarEnabled());
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
-                                         IsStarEnabled());
-  UpdateStarDecorationVisibility();
-  UpdateZoomDecoration();
-  RefreshPageActionDecorations();
-  RefreshContentSettingsDecorations();
-  UpdateMicSearchDecorationVisibility();
-  if (contents)
-    omnibox_view_->OnTabChanged(contents);
-  else
-    omnibox_view_->Update();
-  OnChanged();
-  PopUpContentSettingIfNeeded();
-}
-
-void LocationBarViewMac::OnAutocompleteAccept(
-    const GURL& url,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition,
-    const GURL& alternate_nav_url) {
-  // WARNING: don't add an early return here. The calls after the if must
-  // happen.
-  if (url.is_valid()) {
-    location_input_ = UTF8ToUTF16(url.spec());
-    disposition_ = disposition;
-    transition_ = content::PageTransitionFromInt(
-        transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-
-    if (command_updater_) {
-      if (!alternate_nav_url.is_valid()) {
-        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-      } else {
-        AlternateNavURLFetcher* fetcher =
-            new AlternateNavURLFetcher(alternate_nav_url);
-        // The AlternateNavURLFetcher will listen for the pending navigation
-        // notification that will be issued as a result of the "open URL." It
-        // will automatically install itself into that navigation controller.
-        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-        if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
-          // I'm not sure this should be reachable, but I'm not also sure enough
-          // that it shouldn't to stick in a NOTREACHED().  In any case, this is
-          // harmless.
-          delete fetcher;
-        } else {
-          // The navigation controller will delete the fetcher.
-        }
-      }
-    }
-  }
-}
-
-void LocationBarViewMac::OnChanged() {
-  // Update the location-bar icon.
-  const int resource_id = omnibox_view_->GetIcon();
-  NSImage* image = OmniboxViewMac::ImageForResource(resource_id);
-  location_icon_decoration_->SetImage(image);
-  ev_bubble_decoration_->SetImage(image);
-  Layout();
-
-  if (browser_->instant_controller()) {
-    browser_->instant_controller()->SetOmniboxBounds(
-        gfx::Rect(NSRectToCGRect([field_ frame])));
-  }
-}
-
-void LocationBarViewMac::OnSelectionBoundsChanged() {
-  NOTIMPLEMENTED();
-}
-
-void LocationBarViewMac::OnInputInProgress(bool in_progress) {
-  GetToolbarModel()->set_input_in_progress(in_progress);
-  Update(NULL);
-}
-
-void LocationBarViewMac::OnSetFocus() {
-  // Update the keyword and search hint states.
-  OnChanged();
-}
-
-void LocationBarViewMac::OnKillFocus() {
-  // Do nothing.
-}
-
-gfx::Image LocationBarViewMac::GetFavicon() const {
-  return browser_->GetCurrentPageIcon();
-}
-
-string16 LocationBarViewMac::GetTitle() const {
-  return browser_->GetWindowTitleForCurrentTab();
-}
-
-InstantController* LocationBarViewMac::GetInstant() {
-  return browser_->instant_controller() ?
-      browser_->instant_controller()->instant() : NULL;
-}
-
 void LocationBarViewMac::Revert() {
   omnibox_view_->RevertAll();
 }
@@ -358,78 +241,6 @@ int LocationBarViewMac::PageActionVisibleCount() {
       ++result;
   }
   return result;
-}
-
-WebContents* LocationBarViewMac::GetWebContents() {
-  return browser_->tab_strip_model()->GetActiveWebContents();
-}
-
-ToolbarModel* LocationBarViewMac::GetToolbarModel() {
-  return browser_->toolbar_model();
-}
-
-const ToolbarModel* LocationBarViewMac::GetToolbarModel() const {
-  return browser_->toolbar_model();
-}
-
-PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
-    ExtensionAction* page_action) {
-  DCHECK(page_action);
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    if (page_action_decorations_[i]->page_action() == page_action)
-      return page_action_decorations_[i];
-  }
-  // If |page_action| is the browser action of an extension, no element in
-  // |page_action_decorations_| will match.
-  NOTREACHED();
-  return NULL;
-}
-
-void LocationBarViewMac::SetPreviewEnabledPageAction(
-    ExtensionAction* page_action, bool preview_enabled) {
-  DCHECK(page_action);
-  WebContents* contents = GetWebContents();
-  if (!contents)
-    return;
-  RefreshPageActionDecorations();
-  Layout();
-
-  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
-  DCHECK(decoration);
-  if (!decoration)
-    return;
-
-  decoration->set_preview_enabled(preview_enabled);
-  decoration->UpdateVisibility(contents, GetToolbarModel()->GetURL());
-}
-
-NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
-  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
-  if (!decoration)
-    return NSZeroRect;
-
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  NSRect frame = [cell frameForDecoration:decoration inFrame:[field_ bounds]];
-  return frame;
-}
-
-NSPoint LocationBarViewMac::GetPageActionBubblePoint(
-    ExtensionAction* page_action) {
-  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
-  if (!decoration)
-    return NSZeroPoint;
-
-  NSRect frame = GetPageActionFrame(page_action);
-  if (NSIsEmptyRect(frame)) {
-    // The bubble point positioning assumes that the page action is visible. If
-    // not, something else needs to be done otherwise the bubble will appear
-    // near the top left corner (unanchored).
-    NOTREACHED();
-    return NSZeroPoint;
-  }
-
-  NSPoint bubble_point = decoration->GetBubblePointInFrame(frame);
-  return [field_ convertPoint:bubble_point toView:nil];
 }
 
 ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
@@ -477,14 +288,6 @@ bool LocationBarViewMac::IsEditable() {
   return [field_ isEditable] ? true : false;
 }
 
-void LocationBarViewMac::OnDecorationsChanged() {
-  // TODO(shess): The field-editor frame and cursor rects should not
-  // change, here.
-  [field_ updateMouseTracking];
-  [field_ resetFieldEditorFrameIfNeeded];
-  [field_ setNeedsDisplay:YES];
-}
-
 void LocationBarViewMac::SetStarred(bool starred) {
   star_decoration_->SetStarred(starred);
   UpdateStarDecorationVisibility();
@@ -524,123 +327,29 @@ NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
   }
 }
 
-NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
-  const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
-      profile_)->GetTemplateURLForKeyword(keyword);
-  if (template_url && template_url->IsExtensionKeyword()) {
-    return extensions::OmniboxAPI::Get(profile_)->
-        GetOmniboxIcon(template_url->GetExtensionId()).AsNSImage();
-  }
-
-  return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
+void LocationBarViewMac::OnDecorationsChanged() {
+  // TODO(shess): The field-editor frame and cursor rects should not
+  // change, here.
+  [field_ updateMouseTracking];
+  [field_ resetFieldEditorFrameIfNeeded];
+  [field_ setNeedsDisplay:YES];
 }
 
-void LocationBarViewMac::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
-      WebContents* contents = GetWebContents();
-      if (content::Details<WebContents>(contents) != details)
-        return;
-
-      [field_ updateMouseTracking];
-      [field_ setNeedsDisplay:YES];
-      break;
-    }
-
-    case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
-      // Only update if the updated action box was for the active tab contents.
-      WebContents* target_tab = content::Details<WebContents>(details).ptr();
-      if (target_tab == GetWebContents())
-        UpdatePageActions();
-      break;
-    }
-
-    default:
-      NOTREACHED() << "Unexpected notification";
-      break;
-  }
-}
-
-void LocationBarViewMac::ModelChanged(const SearchModel::State& old_state,
-                                      const SearchModel::State& new_state) {
-  if (UpdateMicSearchDecorationVisibility())
-    Layout();
-}
-
-void LocationBarViewMac::OnEditBookmarksEnabledChanged() {
+void LocationBarViewMac::Update(const WebContents* contents) {
+  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsStarEnabled());
+  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
+                                         IsStarEnabled());
   UpdateStarDecorationVisibility();
+  UpdateZoomDecoration();
+  RefreshPageActionDecorations();
+  RefreshContentSettingsDecorations();
+  UpdateMicSearchDecorationVisibility();
+  if (contents)
+    omnibox_view_->OnTabChanged(contents);
+  else
+    omnibox_view_->Update();
   OnChanged();
-}
-
-void LocationBarViewMac::PostNotification(NSString* notification) {
-  [[NSNotificationCenter defaultCenter] postNotificationName:notification
-                                        object:[NSValue valueWithPointer:this]];
-}
-
-bool LocationBarViewMac::RefreshContentSettingsDecorations() {
-  const bool input_in_progress = GetToolbarModel()->input_in_progress();
-  WebContents* web_contents = input_in_progress ?
-      NULL : browser_->tab_strip_model()->GetActiveWebContents();
-  bool icons_updated = false;
-  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
-    icons_updated |=
-        content_setting_decorations_[i]->UpdateFromWebContents(web_contents);
-  }
-  return icons_updated;
-}
-
-void LocationBarViewMac::PopUpContentSettingIfNeeded() {
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  const NSRect bounds = [field_ bounds];
-  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
-    const NSRect frame =
-        [cell frameForDecoration:content_setting_decorations_[i]
-                         inFrame:bounds];
-    content_setting_decorations_[i]->PopUpIfNeeded(frame);
-  }
-}
-
-void LocationBarViewMac::DeletePageActionDecorations() {
-  // TODO(shess): Deleting these decorations could result in the cell
-  // refering to them before things are laid out again.  Meanwhile, at
-  // least fail safe.
-  [[field_ cell] clearDecorations];
-
-  page_action_decorations_.clear();
-}
-
-void LocationBarViewMac::RefreshPageActionDecorations() {
-  if (!IsEditable()) {
-    DeletePageActionDecorations();
-    return;
-  }
-
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents) {
-    DeletePageActionDecorations();  // Necessary?
-    return;
-  }
-
-  std::vector<ExtensionAction*> new_page_actions =
-      extensions::TabHelper::FromWebContents(web_contents)->
-          location_bar_controller()->GetCurrentActions();
-
-  if (new_page_actions != page_actions_) {
-    page_actions_.swap(new_page_actions);
-    DeletePageActionDecorations();
-    for (size_t i = 0; i < page_actions_.size(); ++i) {
-      page_action_decorations_.push_back(
-          new PageActionDecoration(this, browser_, page_actions_[i]));
-    }
-  }
-
-  GURL url = GetToolbarModel()->GetURL();
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    page_action_decorations_[i]->UpdateVisibility(
-        GetToolbarModel()->input_in_progress() ? NULL : web_contents, url);
-  }
+  PopUpContentSettingIfNeeded();
 }
 
 // TODO(shess): This function should over time grow to closely match
@@ -724,6 +433,297 @@ void LocationBarViewMac::RedrawDecoration(LocationBarDecoration* decoration) {
                                   inFrame:[field_ bounds]];
   if (!NSIsEmptyRect(frame))
     [field_ setNeedsDisplayInRect:frame];
+}
+
+void LocationBarViewMac::SetPreviewEnabledPageAction(
+    ExtensionAction* page_action, bool preview_enabled) {
+  DCHECK(page_action);
+  WebContents* contents = GetWebContents();
+  if (!contents)
+    return;
+  RefreshPageActionDecorations();
+  Layout();
+
+  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
+  DCHECK(decoration);
+  if (!decoration)
+    return;
+
+  decoration->set_preview_enabled(preview_enabled);
+  decoration->UpdateVisibility(contents, GetToolbarModel()->GetURL());
+}
+
+NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
+  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
+  if (!decoration)
+    return NSZeroRect;
+
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  NSRect frame = [cell frameForDecoration:decoration inFrame:[field_ bounds]];
+  return frame;
+}
+
+NSPoint LocationBarViewMac::GetPageActionBubblePoint(
+    ExtensionAction* page_action) {
+  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
+  if (!decoration)
+    return NSZeroPoint;
+
+  NSRect frame = GetPageActionFrame(page_action);
+  if (NSIsEmptyRect(frame)) {
+    // The bubble point positioning assumes that the page action is visible. If
+    // not, something else needs to be done otherwise the bubble will appear
+    // near the top left corner (unanchored).
+    NOTREACHED();
+    return NSZeroPoint;
+  }
+
+  NSPoint bubble_point = decoration->GetBubblePointInFrame(frame);
+  return [field_ convertPoint:bubble_point toView:nil];
+}
+
+void LocationBarViewMac::OnAutocompleteAccept(
+    const GURL& url,
+    WindowOpenDisposition disposition,
+    content::PageTransition transition,
+    const GURL& alternate_nav_url) {
+  // WARNING: don't add an early return here. The calls after the if must
+  // happen.
+  if (url.is_valid()) {
+    location_input_ = UTF8ToUTF16(url.spec());
+    disposition_ = disposition;
+    transition_ = content::PageTransitionFromInt(
+        transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+
+    if (command_updater_) {
+      if (!alternate_nav_url.is_valid()) {
+        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+      } else {
+        AlternateNavURLFetcher* fetcher =
+            new AlternateNavURLFetcher(alternate_nav_url);
+        // The AlternateNavURLFetcher will listen for the pending navigation
+        // notification that will be issued as a result of the "open URL." It
+        // will automatically install itself into that navigation controller.
+        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+        if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
+          // I'm not sure this should be reachable, but I'm not also sure enough
+          // that it shouldn't to stick in a NOTREACHED().  In any case, this is
+          // harmless.
+          delete fetcher;
+        } else {
+          // The navigation controller will delete the fetcher.
+        }
+      }
+    }
+  }
+}
+
+void LocationBarViewMac::OnChanged() {
+  // Update the location-bar icon.
+  const int resource_id = omnibox_view_->GetIcon();
+  NSImage* image = OmniboxViewMac::ImageForResource(resource_id);
+  location_icon_decoration_->SetImage(image);
+  ev_bubble_decoration_->SetImage(image);
+  Layout();
+
+  if (browser_->instant_controller()) {
+    browser_->instant_controller()->SetOmniboxBounds(
+        gfx::Rect(NSRectToCGRect([field_ frame])));
+  }
+}
+
+void LocationBarViewMac::OnSelectionBoundsChanged() {
+  NOTIMPLEMENTED();
+}
+
+void LocationBarViewMac::OnInputInProgress(bool in_progress) {
+  GetToolbarModel()->set_input_in_progress(in_progress);
+  Update(NULL);
+}
+
+void LocationBarViewMac::OnKillFocus() {
+  // Do nothing.
+}
+
+void LocationBarViewMac::OnSetFocus() {
+  // Update the keyword and search hint states.
+  OnChanged();
+}
+
+gfx::Image LocationBarViewMac::GetFavicon() const {
+  return browser_->GetCurrentPageIcon();
+}
+
+string16 LocationBarViewMac::GetTitle() const {
+  return browser_->GetWindowTitleForCurrentTab();
+}
+
+InstantController* LocationBarViewMac::GetInstant() {
+  return browser_->instant_controller() ?
+      browser_->instant_controller()->instant() : NULL;
+}
+
+WebContents* LocationBarViewMac::GetWebContents() {
+  return browser_->tab_strip_model()->GetActiveWebContents();
+}
+
+ToolbarModel* LocationBarViewMac::GetToolbarModel() {
+  return browser_->toolbar_model();
+}
+
+const ToolbarModel* LocationBarViewMac::GetToolbarModel() const {
+  return browser_->toolbar_model();
+}
+
+NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
+  const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
+      profile_)->GetTemplateURLForKeyword(keyword);
+  if (template_url && template_url->IsExtensionKeyword()) {
+    return extensions::OmniboxAPI::Get(profile_)->
+        GetOmniboxIcon(template_url->GetExtensionId()).AsNSImage();
+  }
+
+  return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
+}
+
+void LocationBarViewMac::Observe(int type,
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
+      WebContents* contents = GetWebContents();
+      if (content::Details<WebContents>(contents) != details)
+        return;
+
+      [field_ updateMouseTracking];
+      [field_ setNeedsDisplay:YES];
+      break;
+    }
+
+    case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
+      // Only update if the updated action box was for the active tab contents.
+      WebContents* target_tab = content::Details<WebContents>(details).ptr();
+      if (target_tab == GetWebContents())
+        UpdatePageActions();
+      break;
+    }
+
+    default:
+      NOTREACHED() << "Unexpected notification";
+      break;
+  }
+}
+
+void LocationBarViewMac::ModelChanged(const SearchModel::State& old_state,
+                                      const SearchModel::State& new_state) {
+  if (UpdateMicSearchDecorationVisibility())
+    Layout();
+}
+
+void LocationBarViewMac::PostNotification(NSString* notification) {
+  [[NSNotificationCenter defaultCenter] postNotificationName:notification
+                                        object:[NSValue valueWithPointer:this]];
+}
+
+PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
+    ExtensionAction* page_action) {
+  DCHECK(page_action);
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
+    if (page_action_decorations_[i]->page_action() == page_action)
+      return page_action_decorations_[i];
+  }
+  // If |page_action| is the browser action of an extension, no element in
+  // |page_action_decorations_| will match.
+  NOTREACHED();
+  return NULL;
+}
+
+void LocationBarViewMac::PopUpContentSettingIfNeeded() {
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect bounds = [field_ bounds];
+  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
+    const NSRect frame =
+        [cell frameForDecoration:content_setting_decorations_[i]
+                         inFrame:bounds];
+    content_setting_decorations_[i]->PopUpIfNeeded(frame);
+  }
+}
+
+void LocationBarViewMac::DeletePageActionDecorations() {
+  // TODO(shess): Deleting these decorations could result in the cell
+  // refering to them before things are laid out again.  Meanwhile, at
+  // least fail safe.
+  [[field_ cell] clearDecorations];
+
+  page_action_decorations_.clear();
+}
+
+void LocationBarViewMac::OnEditBookmarksEnabledChanged() {
+  UpdateStarDecorationVisibility();
+  OnChanged();
+}
+
+void LocationBarViewMac::RefreshPageActionDecorations() {
+  if (!IsEditable()) {
+    DeletePageActionDecorations();
+    return;
+  }
+
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents) {
+    DeletePageActionDecorations();  // Necessary?
+    return;
+  }
+
+  std::vector<ExtensionAction*> new_page_actions =
+      extensions::TabHelper::FromWebContents(web_contents)->
+          location_bar_controller()->GetCurrentActions();
+
+  if (new_page_actions != page_actions_) {
+    page_actions_.swap(new_page_actions);
+    DeletePageActionDecorations();
+    for (size_t i = 0; i < page_actions_.size(); ++i) {
+      page_action_decorations_.push_back(
+          new PageActionDecoration(this, browser_, page_actions_[i]));
+    }
+  }
+
+  GURL url = GetToolbarModel()->GetURL();
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
+    page_action_decorations_[i]->UpdateVisibility(
+        GetToolbarModel()->input_in_progress() ? NULL : web_contents, url);
+  }
+}
+
+bool LocationBarViewMac::RefreshContentSettingsDecorations() {
+  const bool input_in_progress = GetToolbarModel()->input_in_progress();
+  WebContents* web_contents = input_in_progress ?
+      NULL : browser_->tab_strip_model()->GetActiveWebContents();
+  bool icons_updated = false;
+  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
+    icons_updated |=
+        content_setting_decorations_[i]->UpdateFromWebContents(web_contents);
+  }
+  return icons_updated;
+}
+
+void LocationBarViewMac::ShowFirstRunBubbleInternal() {
+  if (!field_ || ![field_ window])
+    return;
+
+  // The first run bubble's left edge should line up with the left edge of the
+  // omnibox. This is different from other bubbles, which line up at a point
+  // set by their top arrow. Because the BaseBubbleController adjusts the
+  // window origin left to account for the arrow spacing, the first run bubble
+  // moves the window origin right by this spacing, so that the
+  // BaseBubbleController will move it back to the correct position.
+  const NSPoint kOffset = NSMakePoint(
+      info_bubble::kBubbleArrowXOffset + info_bubble::kBubbleArrowWidth/2.0,
+      kFirstRunBubbleYOffset);
+  [FirstRunBubbleController showForView:field_
+                                 offset:kOffset
+                                browser:browser_
+                                profile:profile_];
 }
 
 bool LocationBarViewMac::IsStarEnabled() {
