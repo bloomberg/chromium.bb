@@ -102,8 +102,6 @@ void RenderLayerRepainter::clearRepaintRects()
 
 void RenderLayerRepainter::computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* geometryMap)
 {
-    ASSERT(m_renderer->layer()->hasVisibleContent());
-
     m_repaintRect = m_renderer->clippedOverflowRectForRepaint(repaintContainer);
     m_outlineBox = m_renderer->outlineBoundsForRepaint(repaintContainer, geometryMap);
 }
