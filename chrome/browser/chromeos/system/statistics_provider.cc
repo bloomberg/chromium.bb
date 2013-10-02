@@ -120,15 +120,9 @@ void StatisticsProviderImpl::Init() {
 
 bool StatisticsProviderImpl::GetMachineStatistic(
     const std::string& name, std::string* result) {
-  // TODO(stevenjb): These should be fatal once fixed. crbug.com/302798.
-  if (!initialized_) {
-    LOG(ERROR) << "GetMachineStatistic called before initialized: " << name;
-    return false;
-  }
-  if (!load_statistics_started_) {
-    LOG(ERROR) << "GetMachineStatistic called before load started: " << name;
-    return false;
-  }
+  CHECK(initialized_);
+  CHECK(load_statistics_started_)
+      << "GetMachineStatistic called before load started: " << name;
 
   VLOG(1) << "Statistic is requested for " << name;
   // Block if the statistics are not loaded yet. Per LOG(WARNING) below,
@@ -142,16 +136,20 @@ bool StatisticsProviderImpl::GetMachineStatistic(
   // very early stage of the browser startup. The statistic name should be
   // helpful to identify the caller.
   if (!on_statistics_loaded_.IsSignaled()) {
-    LOG(WARNING) << "Waiting to load statistics. Requested statistic: "
-                 << name;
     // http://crbug.com/125385
+    base::Time start_time = base::Time::Now();
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
     on_statistics_loaded_.TimedWait(base::TimeDelta::FromSeconds(kTimeoutSecs));
-
+    base::TimeDelta dtime = base::Time::Now() - start_time;
     if (!on_statistics_loaded_.IsSignaled()) {
-      LOG(ERROR) << "Statistics weren't loaded after waiting! "
+      LOG(ERROR) << "Statistics weren't loaded after waiting "
+                 << dtime.InMilliseconds() << "ms. "
                  << "Requested statistic: " << name;
       return false;
+    } else {
+      LOG(ERROR) << "Statistic loaded after waiting "
+                 << dtime.InMilliseconds() << "ms. "
+                 << "Requested statistic: " << name;
     }
   }
 

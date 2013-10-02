@@ -106,7 +106,8 @@ void VersionLoader::Backend::GetVersion(VersionFormat format,
 
   std::string key = (format == VERSION_FULL) ? kFullVersionKey : kVersionKey;
   if (!base::SysInfo::GetLsbReleaseValue(key, version)) {
-    LOG(ERROR) << "No LSB version key: " << key;
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "No LSB version key: " << key;
     *version = "0.0.0.0";
   }
   if (format == VERSION_SHORT_WITH_DATE) {

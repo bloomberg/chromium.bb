@@ -9,6 +9,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -138,7 +139,8 @@ std::string DeviceCloudPolicyManagerChromeOS::GetDeviceRequisition() const {
   std::string requisition;
   const PrefService::Preference* pref = local_state_->FindPreference(
       prefs::kDeviceEnrollmentRequisition);
-  if (pref->IsDefaultValue()) {
+  if (pref->IsDefaultValue() && !chromeos::StartupUtils::IsOobeCompleted()) {
+    // OEM statistics are only loaded when OOBE is not completed.
     requisition =
         GetMachineStatistic(chromeos::system::kOemDeviceRequisitionKey);
   } else {

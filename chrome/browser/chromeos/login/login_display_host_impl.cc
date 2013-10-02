@@ -259,13 +259,6 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
                << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
                << " wait_for_pods_: " << waiting_for_user_pods_
                << " init_webui_hidden_: " << initialize_webui_hidden_;
-
-  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation()) {
-    views::FocusManager::set_arrow_key_traversal_enabled(true);
-
-    focus_ring_controller_.reset(new FocusRingController);
-    focus_ring_controller_->SetVisible(true);
-  }
 }
 
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {
@@ -290,6 +283,12 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 
 LoginDisplay* LoginDisplayHostImpl::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate) {
+  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation()) {
+    views::FocusManager::set_arrow_key_traversal_enabled(true);
+
+    focus_ring_controller_.reset(new FocusRingController);
+    focus_ring_controller_->SetVisible(true);
+  }
   webui_login_display_ = new WebUILoginDisplay(delegate);
   webui_login_display_->set_background_bounds(background_bounds());
   return webui_login_display_;
