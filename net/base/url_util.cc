@@ -4,6 +4,9 @@
 
 #include "net/base/url_util.h"
 
+#include <utility>
+
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -68,30 +71,66 @@ GURL AppendOrReplaceQueryParameter(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
+QueryIterator::QueryIterator(const GURL& url)
+    : url_(url),
+      at_end_(!url.is_valid()) {
+  if (!at_end_) {
+    query_ = url.parsed_for_possibly_invalid_spec().query;
+    Advance();
+  }
+}
+
+QueryIterator::~QueryIterator() {
+}
+
+std::string QueryIterator::GetKey() const {
+  DCHECK(!at_end_);
+  if (key_.is_nonempty())
+    return url_.spec().substr(key_.begin, key_.len);
+  return std::string();
+}
+
+std::string QueryIterator::GetValue() const {
+  DCHECK(!at_end_);
+  if (value_.is_nonempty())
+    return url_.spec().substr(value_.begin, value_.len);
+  return std::string();
+}
+
+const std::string& QueryIterator::GetUnescapedValue() {
+  DCHECK(!at_end_);
+  if (value_.is_nonempty() && unescaped_value_.empty()) {
+    unescaped_value_ = UnescapeURLComponent(
+        GetValue(),
+        UnescapeRule::SPACES |
+        UnescapeRule::URL_SPECIAL_CHARS |
+        UnescapeRule::REPLACE_PLUS_WITH_SPACE);
+  }
+  return unescaped_value_;
+}
+
+bool QueryIterator::IsAtEnd() const {
+  return at_end_;
+}
+
+void QueryIterator::Advance() {
+  DCHECK (!at_end_);
+  key_.reset();
+  value_.reset();
+  unescaped_value_.clear();
+  at_end_ = !url_parse::ExtractQueryKeyValue(url_.spec().c_str(),
+                                             &query_,
+                                             &key_,
+                                             &value_);
+}
+
 bool GetValueForKeyInQuery(const GURL& url,
                            const std::string& search_key,
                            std::string* out_value) {
-  if (!url.is_valid())
-    return false;
-
-  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
-  url_parse::Component key, value;
-  while (url_parse::ExtractQueryKeyValue(
-      url.spec().c_str(), &query, &key, &value)) {
-    if (key.is_nonempty()) {
-      std::string key_string = url.spec().substr(key.begin, key.len);
-      if (key_string == search_key) {
-        if (value.is_nonempty()) {
-          *out_value = UnescapeURLComponent(
-              url.spec().substr(value.begin, value.len),
-              UnescapeRule::SPACES |
-              UnescapeRule::URL_SPECIAL_CHARS |
-              UnescapeRule::REPLACE_PLUS_WITH_SPACE);
-        } else {
-          *out_value = "";
-        }
-        return true;
-      }
+  for (QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    if (it.GetKey() == search_key) {
+      *out_value = it.GetUnescapedValue();
+      return true;
     }
   }
   return false;

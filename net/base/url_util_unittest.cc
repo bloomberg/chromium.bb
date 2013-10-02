@@ -108,5 +108,56 @@ TEST(UrlUtilTest, GetValueForKeyInQueryInvalidURL) {
   EXPECT_FALSE(GetValueForKeyInQuery(url, "test", &value));
 }
 
+TEST(UrlUtilTest, ParseQuery) {
+  const GURL url("http://example.com/path?name=value&boolParam&"
+                 "url=http://test.com/q?n1%3Dv1%26n2&"
+                 "multikey=value1&multikey=value2&multikey");
+  QueryIterator it(url);
+
+  ASSERT_FALSE(it.IsAtEnd());
+  EXPECT_EQ("name", it.GetKey());
+  EXPECT_EQ("value", it.GetValue());
+  EXPECT_EQ("value", it.GetUnescapedValue());
+  it.Advance();
+
+  ASSERT_FALSE(it.IsAtEnd());
+  EXPECT_EQ("boolParam", it.GetKey());
+  EXPECT_EQ("", it.GetValue());
+  EXPECT_EQ("", it.GetUnescapedValue());
+  it.Advance();
+
+  ASSERT_FALSE(it.IsAtEnd());
+  EXPECT_EQ("url", it.GetKey());
+  EXPECT_EQ("http://test.com/q?n1%3Dv1%26n2", it.GetValue());
+  EXPECT_EQ("http://test.com/q?n1=v1&n2", it.GetUnescapedValue());
+  it.Advance();
+
+  ASSERT_FALSE(it.IsAtEnd());
+  EXPECT_EQ("multikey", it.GetKey());
+  EXPECT_EQ("value1", it.GetValue());
+  EXPECT_EQ("value1", it.GetUnescapedValue());
+  it.Advance();
+
+  ASSERT_FALSE(it.IsAtEnd());
+  EXPECT_EQ("multikey", it.GetKey());
+  EXPECT_EQ("value2", it.GetValue());
+  EXPECT_EQ("value2", it.GetUnescapedValue());
+  it.Advance();
+
+  ASSERT_FALSE(it.IsAtEnd());
+  EXPECT_EQ("multikey", it.GetKey());
+  EXPECT_EQ("", it.GetValue());
+  EXPECT_EQ("", it.GetUnescapedValue());
+  it.Advance();
+
+  EXPECT_TRUE(it.IsAtEnd());
+}
+
+TEST(UrlUtilTest, ParseQueryInvalidURL) {
+  const GURL url("http://%01/?test");
+  QueryIterator it(url);
+  EXPECT_TRUE(it.IsAtEnd());
+}
+
 }  // namespace
 }  // namespace net

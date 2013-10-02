@@ -407,7 +407,7 @@ UserAffiliation BrowserPolicyConnector::GetUserAffiliation(
   if (install_attributes_ &&
       (gaia::ExtractDomainName(gaia::CanonicalizeEmail(user_name)) ==
            install_attributes_->GetDomain() ||
-       policy::IsDeviceLocalAccountUser(user_name))) {
+       policy::IsDeviceLocalAccountUser(user_name, NULL))) {
     return USER_AFFILIATION_MANAGED;
   }
 #endif

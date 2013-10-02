@@ -67,6 +67,17 @@ void ScriptCallback::ResultCallback(const base::Value* result) {
   base::MessageLoop::current()->Quit();
 }
 
+// Adapter that makes a WindowedNotificationObserver::ConditionTestCallback from
+// a WindowedNotificationObserver::ConditionTestCallbackWithoutSourceAndDetails
+// by ignoring the notification source and details.
+bool IgnoreSourceAndDetails(
+    const WindowedNotificationObserver::
+        ConditionTestCallbackWithoutSourceAndDetails& callback,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  return callback.Run();
+}
+
 }  // namespace
 
 void RunMessageLoop() {
@@ -186,6 +197,16 @@ WindowedNotificationObserver::WindowedNotificationObserver(
   registrar_.Add(this, notification_type, source_);
 }
 
+WindowedNotificationObserver::WindowedNotificationObserver(
+    int notification_type,
+    const ConditionTestCallbackWithoutSourceAndDetails& callback)
+    : seen_(false),
+      running_(false),
+      callback_(base::Bind(&IgnoreSourceAndDetails, callback)),
+      source_(NotificationService::AllSources()) {
+  registrar_.Add(this, notification_type, source_);
+}
+
 WindowedNotificationObserver::~WindowedNotificationObserver() {}
 
 void WindowedNotificationObserver::Wait() {
@@ -204,7 +225,7 @@ void WindowedNotificationObserver::Observe(
     const NotificationDetails& details) {
   source_ = source;
   details_ = details;
-  if (!callback_.is_null() && !callback_.Run())
+  if (!callback_.is_null() && !callback_.Run(source, details))
     return;
 
   seen_ = true;
