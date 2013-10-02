@@ -31,6 +31,8 @@
 #ifndef EventTracer_h
 #define EventTracer_h
 
+#include "platform/PlatformExport.h"
+
 // This will mark the trace event as disabled by default. The user will need
 // to explicitly enable the event.
 #define TRACE_DISABLED_BY_DEFAULT(name) "disabled-by-default-" name
@@ -38,21 +40,21 @@
 namespace WebCore {
 
 // FIXME: Make these global variables thread-safe. Make a value update atomic.
-extern long* traceSamplingState[3];
+PLATFORM_EXPORT extern long* traceSamplingState[3];
 
-class EventTracer {
+class PLATFORM_EXPORT EventTracer {
 public:
     static void initialize();
     static const unsigned char* getTraceCategoryEnabledFlag(const char*);
     static void addTraceEvent(char phase,
-                             const unsigned char* categoryEnabledFlag,
-                             const char* name,
-                             unsigned long long id,
-                             int numArgs,
-                             const char** argNames,
-                             const unsigned char* argTypes,
-                             const unsigned long long* argValues,
-                             unsigned char flags);
+        const unsigned char* categoryEnabledFlag,
+        const char* name,
+        unsigned long long id,
+        int numArgs,
+        const char** argNames,
+        const unsigned char* argTypes,
+        const unsigned long long* argValues,
+        unsigned char flags);
 };
 
 } // namespace WebCore

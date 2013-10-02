@@ -2604,7 +2604,6 @@
             'platform/Cursor.cpp',
             'platform/DragData.cpp',
             'platform/DragImage.cpp',
-            'platform/EventTracer.cpp',
             'platform/FileMetadata.h',
             'platform/FloatConversion.h',
             'platform/HashTools.h',

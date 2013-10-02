@@ -9,6 +9,8 @@
       'DateComponents.h',
       'Decimal.cpp',
       'Decimal.h',
+      'EventTracer.cpp',
+      'EventTracer.h',
       'FileChooser.cpp',
       'FileChooser.h',
       'JSONValues.cpp',

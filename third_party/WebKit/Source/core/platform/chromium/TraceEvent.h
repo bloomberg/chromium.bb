@@ -163,7 +163,7 @@
 #ifndef TraceEvent_h
 #define TraceEvent_h
 
-#include "core/platform/EventTracer.h"
+#include "platform/EventTracer.h"
 
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/UnusedParam.h"
