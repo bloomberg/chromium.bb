@@ -103,6 +103,9 @@ const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 
+const char kSpdyFieldTrialName[] = "SPDY";
+const char kSpdyFieldTrialDisabledGroupName[] = "SpdyDisabled";
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -685,7 +688,14 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
 
   // Only handle use-spdy command line flags if "spdy.disabled" preference is
   // not disabled via policy.
-  if (!is_spdy_disabled_by_policy_) {
+  if (is_spdy_disabled_by_policy_) {
+    base::FieldTrial* trial = base::FieldTrialList::Find(kSpdyFieldTrialName);
+    if (trial)
+      trial->Disable();
+  } else {
+    std::string spdy_trial_group =
+        base::FieldTrialList::FindFullName(kSpdyFieldTrialName);
+
     if (command_line.HasSwitch(switches::kEnableIPPooling))
       globals_->enable_spdy_ip_pooling.set(true);
 
@@ -699,6 +709,7 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
       // Enable WebSocket over SPDY.
       net::WebSocketJob::set_websocket_over_spdy_enabled(true);
     }
+
     if (command_line.HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
       globals_->max_spdy_concurrent_streams_limit.set(
           GetSwitchValueAsInt(command_line,
@@ -726,8 +737,13 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
       net::HttpStreamFactory::EnableNpnHttpOnly();
     } else {
-      // Use SPDY/3.1 by default.
-      net::HttpStreamFactory::EnableNpnSpdy31();
+      if (spdy_trial_group == kSpdyFieldTrialDisabledGroupName &&
+          !command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
+         net::HttpStreamFactory::set_spdy_enabled(false);
+      } else {
+        // Use SPDY/3.1 by default.
+        net::HttpStreamFactory::EnableNpnSpdy31();
+      }
     }
   }
 
