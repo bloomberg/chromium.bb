@@ -32,6 +32,8 @@ interface TestObjectPython {
     // TestInterfaceEmpty is used as a stub interface type, for testing behavior
     // that should not depend on particular type (beyond "interface or not").
     readonly attribute Date readonlyDateAttribute;
+    readonly attribute DOMString readonlyStringAttribute;
+    readonly attribute DOMTimeStamp readonlyDOMTimeStampAttribute;
     readonly attribute boolean readonlyBooleanAttribute;
     readonly attribute byte readonlyByteAttribute;
     readonly attribute double readonlyDoubleAttribute;
@@ -44,8 +46,7 @@ interface TestObjectPython {
     readonly attribute unsigned long long readonlyUnsignedLongLongAttribute;
     readonly attribute unsigned short readonlyUnsignedShortAttribute;
     // Non-wrapper types
-    readonly attribute DOMString readonlyStringAttribute;
-    readonly attribute DOMTimeStamp readonlyDOMTimeStampAttribute;
+    readonly attribute NodeFilter readonlyNodeFilterAttribute;
     readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;
     readonly attribute any readonlyAnyAttribute;
     // DOM Node types
@@ -62,6 +63,10 @@ interface TestObjectPython {
     readonly attribute Window readonlyWindowAttribute;
     readonly attribute HTMLCollection readonlyHTMLCollectionAttribute;
     readonly attribute HTMLElement readonlyHTMLElementAttribute;
+    // arrays
+    readonly attribute DOMString[] readonlyStringArrayAttribute;
+    readonly attribute TestInterfaceEmpty[] readonlyTestInterfaceEmptyArrayAttribute;
+    readonly attribute float[] readonlyFloatArrayAttribute;
     // nullable attributes
     readonly attribute DOMString? readonlyNullableStringAttribute;
     readonly attribute long? readonlyNullableLongAttribute;
