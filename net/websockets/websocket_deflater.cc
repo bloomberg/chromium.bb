@@ -120,7 +120,7 @@ int WebSocketDeflater::Deflate(int flush) {
     stream_->avail_out = fixed_buffer_.size();
     result = deflate(stream_.get(), flush);
     size_t size = fixed_buffer_.size() - stream_->avail_out;
-    buffer_.insert(buffer_.end(), &fixed_buffer_[0], &fixed_buffer_[size]);
+    buffer_.insert(buffer_.end(), &fixed_buffer_[0], &fixed_buffer_[0] + size);
   } while (result == Z_OK);
   return result;
 }
