@@ -20,13 +20,17 @@ class AppListShelfItemDelegate : public LauncherItemDelegate {
   virtual ~AppListShelfItemDelegate();
 
   // ash::LauncherItemDelegate overrides:
-  virtual void ItemSelected(const ui::Event& event) OVERRIDE;
-  virtual base::string16 GetTitle() OVERRIDE;
+  virtual void ItemSelected(const LauncherItem& item,
+                            const ui::Event& event) OVERRIDE;
+  virtual base::string16 GetTitle(const LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
+      const LauncherItem& item,
       aura::RootWindow* root_window) OVERRIDE;
-  virtual LauncherMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE;
-  virtual bool IsDraggable() OVERRIDE;
-  virtual bool ShouldShowTooltip() OVERRIDE;
+  virtual LauncherMenuModel* CreateApplicationMenu(
+      const LauncherItem& item,
+      int event_flags) OVERRIDE;
+  virtual bool IsDraggable(const LauncherItem& item) OVERRIDE;
+  virtual bool ShouldShowTooltip(const LauncherItem& item) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListShelfItemDelegate);

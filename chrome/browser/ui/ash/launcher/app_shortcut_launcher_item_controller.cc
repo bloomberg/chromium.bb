@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 
 #include "apps/native_app_window.h"
-#include "ash/launcher/launcher_model.h"
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -14,8 +12,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
-#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -28,10 +24,6 @@
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/views/corewm/window_animations.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
-#endif
 
 using extensions::Extension;
 
@@ -62,6 +54,10 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
 }
 
 AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {
+}
+
+string16 AppShortcutLauncherItemController::GetTitle() {
+  return GetAppTitle();
 }
 
 bool AppShortcutLauncherItemController::IsCurrentlyShownInWindow(
@@ -135,6 +131,21 @@ void AppShortcutLauncherItemController::Close() {
   }
 }
 
+void AppShortcutLauncherItemController::Clicked(const ui::Event& event) {
+  // In case of a keyboard event, we were called by a hotkey. In that case we
+  // activate the next item in line if an item of our list is already active.
+  if (event.type() == ui::ET_KEY_RELEASED) {
+    if (AdvanceToNextApp())
+      return;
+  }
+  Activate(ash::LAUNCH_FROM_UNKNOWN);
+}
+
+void AppShortcutLauncherItemController::OnRemoved() {
+  // AppShortcutLauncherItemController is unowned; delete on removal.
+  delete this;
+}
+
 ChromeLauncherAppMenuItems
 AppShortcutLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items;
@@ -186,44 +197,6 @@ AppShortcutLauncherItemController::GetRunningApplications() {
     }
   }
   return items;
-}
-
-void AppShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
-#if defined(OS_CHROMEOS)
-  if (!app_id().empty())
-    chromeos::default_pinned_apps_field_trial::RecordShelfAppClick(app_id());
-#endif
-  // In case of a keyboard event, we were called by a hotkey. In that case we
-  // activate the next item in line if an item of our list is already active.
-  if (event.type() == ui::ET_KEY_RELEASED) {
-    if (AdvanceToNextApp())
-      return;
-  }
-  Activate(ash::LAUNCH_FROM_UNKNOWN);
-}
-
-base::string16 AppShortcutLauncherItemController::GetTitle() {
-  return GetAppTitle();
-}
-
-ui::MenuModel* AppShortcutLauncherItemController::CreateContextMenu(
-    aura::RootWindow* root_window) {
-  ash::LauncherItem item =
-      *(launcher_controller()->model()->ItemByID(launcher_id()));
-  return new LauncherContextMenu(launcher_controller(), &item, root_window);
-}
-
-ash::LauncherMenuModel*
-AppShortcutLauncherItemController::CreateApplicationMenu(int event_flags) {
-  return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
-}
-
-bool AppShortcutLauncherItemController::IsDraggable() {
-  return true;
-}
-
-bool AppShortcutLauncherItemController::ShouldShowTooltip() {
-  return true;
 }
 
 content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {

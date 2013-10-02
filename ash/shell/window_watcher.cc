@@ -6,11 +6,9 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell/window_watcher_launcher_item_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -110,8 +108,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   ash::LauncherItem item;
   item.type = new_window->type() == aura::client::WINDOW_TYPE_PANEL ?
       ash::TYPE_APP_PANEL : ash::TYPE_PLATFORM_APP;
-  ash::LauncherID id = model->next_id();
-  id_to_window_[id] = new_window;
+  id_to_window_[model->next_id()] = new_window;
 
   SkBitmap icon_bitmap;
   icon_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
@@ -124,12 +121,6 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   item.image = gfx::ImageSkia(gfx::ImageSkiaRep(icon_bitmap, 1.0f));
 
   model->Add(item);
-
-  ash::LauncherItemDelegateManager* manager =
-      ash::Shell::GetInstance()->launcher_item_delegate_manager();
-  scoped_ptr<LauncherItemDelegate> delegate(
-      new WindowWatcherLauncherItemDelegate(id, this));
-  manager->SetLauncherItemDelegate(id, delegate.Pass());
 }
 
 void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {

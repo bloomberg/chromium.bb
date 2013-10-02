@@ -985,8 +985,8 @@ void LauncherView::PrepareForDrag(Pointer pointer,
 
   // If the item is no longer draggable, bail out.
   LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
-      model_->items()[start_drag_index_].id);
-  if (item_delegate && !item_delegate->IsDraggable()) {
+      model_->items()[start_drag_index_].type);
+  if (!item_delegate->IsDraggable(model_->items()[start_drag_index_])) {
     CancelDrag(-1);
     return;
   }
@@ -1003,8 +1003,8 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
   DCHECK_NE(-1, current_index);
 
   LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
-      model_->items()[current_index].id);
-  if (item_delegate && !item_delegate->IsDraggable()) {
+      model_->items()[current_index].type);
+  if (!item_delegate->IsDraggable(model_->items()[current_index])) {
     CancelDrag(-1);
     return;
   }
@@ -1531,9 +1531,9 @@ void LauncherView::PointerPressedOnButton(views::View* view,
     return;
 
   LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
-      model_->items()[index].id);
+      model_->items()[index].type);
   if (view_model_->view_size() <= 1 ||
-      (item_delegate && !item_delegate->IsDraggable()))
+      !item_delegate->IsDraggable(model_->items()[index]))
     return;  // View is being deleted or not draggable, ignore request.
 
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
@@ -1603,8 +1603,8 @@ base::string16 LauncherView::GetAccessibleName(const views::View* view) {
     return base::string16();
 
   LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
-      model_->items()[view_index].id);
-  return item_delegate ? item_delegate->GetTitle() : base::string16();
+      model_->items()[view_index].type);
+  return item_delegate->GetTitle(model_->items()[view_index]);
 }
 
 void LauncherView::ButtonPressed(views::Button* sender,
@@ -1663,9 +1663,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
 
     LauncherItemDelegate* item_delegate =
         item_manager_->GetLauncherItemDelegate(
-            model_->items()[view_index].id);
-    if (item_delegate)
-      item_delegate->ItemSelected(event);
+            model_->items()[view_index].type);
+    item_delegate->ItemSelected(model_->items()[view_index], event);
 
     ShowListMenuForView(model_->items()[view_index], sender, event);
   }
@@ -1676,9 +1675,8 @@ bool LauncherView::ShowListMenuForView(const LauncherItem& item,
                                        const ui::Event& event) {
   scoped_ptr<ash::LauncherMenuModel> menu_model;
   LauncherItemDelegate* item_delegate =
-      item_manager_->GetLauncherItemDelegate(item.id);
-  if (item_delegate)
-    menu_model.reset(item_delegate->CreateApplicationMenu(event.flags()));
+      item_manager_->GetLauncherItemDelegate(item.type);
+  menu_model.reset(item_delegate->CreateApplicationMenu(item, event.flags()));
 
   // Make sure we have a menu and it has at least two items in addition to the
   // application title and the 3 spacing separators.
@@ -1711,11 +1709,10 @@ void LauncherView::ShowContextMenuForView(views::View* source,
   }
   scoped_ptr<ui::MenuModel> menu_model;
   LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
-      model_->items()[view_index].id);
-  if (item_delegate) {
-    menu_model.reset(item_delegate->CreateContextMenu(
-        source->GetWidget()->GetNativeView()->GetRootWindow()));
-  }
+      model_->items()[view_index].type);
+  menu_model.reset(item_delegate->CreateContextMenu(
+      model_->items()[view_index],
+      source->GetWidget()->GetNativeView()->GetRootWindow()));
   if (!menu_model)
     return;
 
@@ -1870,8 +1867,8 @@ bool LauncherView::ShouldShowTooltipForView(const views::View* view) const {
   if (!item)
     return true;
   LauncherItemDelegate* item_delegate =
-      item_manager_->GetLauncherItemDelegate(item->id);
-  return item_delegate ? item_delegate->ShouldShowTooltip() : false;
+      item_manager_->GetLauncherItemDelegate(item->type);
+  return item_delegate->ShouldShowTooltip(*item);
 }
 
 int LauncherView::CalculateShelfDistance(const gfx::Point& coordinate) const {

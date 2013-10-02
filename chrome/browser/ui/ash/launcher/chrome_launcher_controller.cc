@@ -43,6 +43,8 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
+#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
+#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
@@ -81,6 +83,7 @@
 #include "ui/views/corewm/window_animations.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
@@ -253,7 +256,6 @@ ChromeLauncherController::ChromeLauncherController(
     Profile* profile,
     ash::LauncherModel* model)
     : model_(model),
-      item_delegate_manager_(NULL),
       profile_(profile),
       app_sync_ui_state_(NULL),
       ignore_persist_pinned_state_change_(false) {
@@ -274,11 +276,8 @@ ChromeLauncherController::ChromeLauncherController(
   model_->AddObserver(this);
   // Right now ash::Shell isn't created for tests.
   // TODO(mukai): Allows it to observe display change and write tests.
-  if (ash::Shell::HasInstance()) {
+  if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->display_controller()->AddObserver(this);
-    item_delegate_manager_ =
-        ash::Shell::GetInstance()->launcher_item_delegate_manager();
-  }
   // TODO(stevenjb): Find a better owner for shell_window_controller_?
   shell_window_controller_.reset(new ShellWindowLauncherController(this));
 
@@ -288,6 +287,11 @@ ChromeLauncherController::ChromeLauncherController(
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_EXTENSION_UNLOADED,
                               content::Source<Profile>(profile_));
+
+  // This check is needed for win7_aura. Without this, all tests in
+  // ChromeLauncherControllerTest will fail by win7_aura.
+  if (ash::Shell::HasInstance())
+    RegisterLauncherItemDelegate();
 
 #if defined(OS_CHROMEOS)
   // On Chrome OS using multi profile we want to switch the content of the shelf
@@ -317,6 +321,7 @@ ChromeLauncherController::~ChromeLauncherController() {
     ash::Shell::GetInstance()->display_controller()->RemoveObserver(this);
   for (IDToItemControllerMap::iterator i = id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
+    i->second->OnRemoved();
     int index = model_->ItemIndexByID(i->first);
     // A "browser proxy" is not known to the model and this removal does
     // therefore not need to be propagated to the model.
@@ -401,10 +406,9 @@ void ChromeLauncherController::SetItemController(
   CHECK(controller);
   IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
   CHECK(iter != id_to_item_controller_map_.end());
-  controller->set_launcher_id(id);
+  iter->second->OnRemoved();
   iter->second = controller;
-  // Existing controller is destroyed and replaced by registering again.
-  SetLauncherItemDelegate(id, controller);
+  controller->set_launcher_id(id);
 }
 
 void ChromeLauncherController::CloseLauncherItem(ash::LauncherID id) {
@@ -415,10 +419,9 @@ void ChromeLauncherController::CloseLauncherItem(ash::LauncherID id) {
     CHECK(iter != id_to_item_controller_map_.end());
     SetItemStatus(id, ash::STATUS_CLOSED);
     std::string app_id = iter->second->app_id();
+    iter->second->OnRemoved();
     iter->second = new AppShortcutLauncherItemController(app_id, this);
     iter->second->set_launcher_id(id);
-    // Existing controller is destroyed and replaced by registering again.
-    SetLauncherItemDelegate(id, iter->second);
   } else {
     LauncherItemClosed(id);
   }
@@ -942,6 +945,37 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   }
 }
 
+void ChromeLauncherController::ItemSelected(const ash::LauncherItem& item,
+                                            const ui::Event& event) {
+  DCHECK(HasItemController(item.id));
+  LauncherItemController* item_controller = id_to_item_controller_map_[item.id];
+#if defined(OS_CHROMEOS)
+  if (!item_controller->app_id().empty()) {
+    chromeos::default_pinned_apps_field_trial::RecordShelfAppClick(
+        item_controller->app_id());
+  }
+#endif
+  item_controller->Clicked(event);
+}
+
+string16 ChromeLauncherController::GetTitle(const ash::LauncherItem& item) {
+  DCHECK(HasItemController(item.id));
+  return id_to_item_controller_map_[item.id]->GetTitle();
+}
+
+ui::MenuModel* ChromeLauncherController::CreateContextMenu(
+    const ash::LauncherItem& item,
+    aura::RootWindow* root_window) {
+  return new LauncherContextMenu(this, &item, root_window);
+}
+
+ash::LauncherMenuModel* ChromeLauncherController::CreateApplicationMenu(
+    const ash::LauncherItem& item,
+    int event_flags) {
+  return new LauncherApplicationMenuItemModel(GetApplicationList(item,
+                                                                 event_flags));
+}
+
 ash::LauncherID ChromeLauncherController::GetIDByWindow(aura::Window* window) {
   int browser_index = ash::GetBrowserItemIndex(*model_);
   DCHECK_GE(browser_index, 0);
@@ -961,6 +995,19 @@ ash::LauncherID ChromeLauncherController::GetIDByWindow(aura::Window* window) {
     return browser_id;
 
   return 0;
+}
+
+bool ChromeLauncherController::IsDraggable(const ash::LauncherItem& item) {
+  return (item.type == ash::TYPE_APP_SHORTCUT ||
+          item.type == ash::TYPE_WINDOWED_APP) ? CanPin() : true;
+}
+
+bool ChromeLauncherController::ShouldShowTooltip(
+    const ash::LauncherItem& item) {
+  if (item.type == ash::TYPE_APP_PANEL &&
+      id_to_item_controller_map_[item.id]->IsVisible())
+    return false;
+  return true;
 }
 
 void ChromeLauncherController::OnLauncherCreated(ash::Launcher* launcher) {
@@ -1242,11 +1289,6 @@ const std::string& ChromeLauncherController::GetAppIdFromLauncherIdForTest(
   return id_to_item_controller_map_[id]->app_id();
 }
 
-void ChromeLauncherController::SetLauncherItemDelegateManagerForTest(
-    ash::LauncherItemDelegateManager* manager) {
-  item_delegate_manager_ = manager;
-}
-
 ash::LauncherID ChromeLauncherController::CreateAppShortcutLauncherItemWithType(
     const std::string& app_id,
     int index,
@@ -1258,13 +1300,6 @@ ash::LauncherID ChromeLauncherController::CreateAppShortcutLauncherItemWithType(
   return launcher_id;
 }
 
-LauncherItemController* ChromeLauncherController::GetLauncherItemController(
-    const ash::LauncherID id) {
-  if (!HasItemController(id))
-    return NULL;
-  return id_to_item_controller_map_[id];
-}
-
 Profile* ChromeLauncherController::GetProfileForNewWindows() {
   return ProfileManager::GetDefaultProfileOrOffTheRecord();
 }
@@ -1274,6 +1309,7 @@ void ChromeLauncherController::LauncherItemClosed(ash::LauncherID id) {
   CHECK(iter != id_to_item_controller_map_.end());
   CHECK(iter->second);
   app_icon_loader_->ClearImage(iter->second->app_id());
+  iter->second->OnRemoved();
   id_to_item_controller_map_.erase(iter);
   int index = model_->ItemIndexByID(id);
   // A "browser proxy" is not known to the model and this removal does
@@ -1591,8 +1627,6 @@ ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
 
   app_icon_loader_->FetchImage(app_id);
 
-  SetLauncherItemDelegate(id, controller);
-
   return id;
 }
 
@@ -1635,11 +1669,10 @@ ash::LauncherID ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   ash::LauncherID id = model_->next_id();
   size_t index = GetChromeIconIndexForCreation();
   model_->AddAt(index, browser_shortcut);
-  id_to_item_controller_map_[id] =
-      new BrowserShortcutLauncherItemController(this);
+  browser_item_controller_.reset(
+      new BrowserShortcutLauncherItemController(this));
+  id_to_item_controller_map_[id] = browser_item_controller_.get();
   id_to_item_controller_map_[id]->set_launcher_id(id);
-  // LauncherItemDelegateManager owns BrowserShortcutLauncherItemController.
-  SetLauncherItemDelegate(id, id_to_item_controller_map_[id]);
   return id;
 }
 
@@ -1814,14 +1847,16 @@ void ChromeLauncherController::CloseWindowedAppsFromRemovedExtension(
   }
 }
 
-void ChromeLauncherController::SetLauncherItemDelegate(
-    ash::LauncherID id,
-    ash::LauncherItemDelegate* item_delegate) {
-  DCHECK_GT(id, 0);
-  DCHECK(item_delegate);
-  DCHECK(item_delegate_manager_);
-  item_delegate_manager_->SetLauncherItemDelegate(id,
-      scoped_ptr<ash::LauncherItemDelegate>(item_delegate).Pass());
+void ChromeLauncherController::RegisterLauncherItemDelegate() {
+  // TODO(simon.hong81): Register LauncherItemDelegate when LauncherItemDelegate
+  // is created.
+  ash::LauncherItemDelegateManager* manager =
+      ash::Shell::GetInstance()->launcher_item_delegate_manager();
+  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_PANEL, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_SHORTCUT, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_BROWSER_SHORTCUT, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_PLATFORM_APP, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_WINDOWED_APP, this);
 }
 
 void ChromeLauncherController::AttachProfile(Profile* profile) {

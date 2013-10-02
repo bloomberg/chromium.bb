@@ -33,25 +33,19 @@ class AppShortcutLauncherItemController : public LauncherItemController {
 
   virtual ~AppShortcutLauncherItemController();
 
-  std::vector<content::WebContents*> GetRunningApplications();
-
   // LauncherItemController overrides:
+  virtual string16 GetTitle() OVERRIDE;
   virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE;
   virtual bool IsOpen() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;
   virtual void Activate(ash::LaunchSource source) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void Clicked(const ui::Event& event) OVERRIDE;
+  virtual void OnRemoved() OVERRIDE;
   virtual ChromeLauncherAppMenuItems GetApplicationList(
       int event_flags) OVERRIDE;
-  virtual void ItemSelected(const ui::Event& event) OVERRIDE;
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenu(
-      aura::RootWindow* root_window) OVERRIDE;
-  virtual ash::LauncherMenuModel* CreateApplicationMenu(
-      int event_flags) OVERRIDE;
-  virtual bool IsDraggable() OVERRIDE;
-  virtual bool ShouldShowTooltip() OVERRIDE;
+  std::vector<content::WebContents*> GetRunningApplications();
 
   // Get the refocus url pattern, which can be used to identify this application
   // from a URL link.

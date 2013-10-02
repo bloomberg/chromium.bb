@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
 
-#include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -29,7 +28,7 @@ class WebContents;
 
 // LauncherItemController is used by ChromeLauncherController to track one
 // or more windows associated with a launcher item.
-class LauncherItemController : public ash::LauncherItemDelegate {
+class LauncherItemController {
  public:
   enum Type {
     TYPE_APP,
@@ -64,6 +63,9 @@ class LauncherItemController : public ash::LauncherItemDelegate {
     image_set_by_controller_ = image_set_by_controller;
   }
 
+  // Returns the title for this item.
+  virtual string16 GetTitle() = 0;
+
   // Returns true if this item controls |window|.
   // When this |window| has multiple applications/tabs, it only returns true
   // it controls the currently visible app/tab.
@@ -84,6 +86,17 @@ class LauncherItemController : public ash::LauncherItemDelegate {
 
   // Closes all windows associated with this item.
   virtual void Close() = 0;
+
+  // Called when the item is clicked. The behavior varies by the number of
+  // windows associated with the item:
+  // * One window: toggles the minimize state.
+  // * Multiple windows: cycles the active window.
+  // The |event| is dispatched by a view, therefore the type of the
+  // event's target is |views::View|.
+  virtual void Clicked(const ui::Event& event) = 0;
+
+  // Called when the controlled item is removed from the launcher.
+  virtual void OnRemoved() = 0;
 
   // Called to retrieve the list of running applications.
   virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags) = 0;

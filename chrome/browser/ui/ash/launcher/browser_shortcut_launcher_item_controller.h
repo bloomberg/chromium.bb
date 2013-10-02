@@ -30,22 +30,17 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   void UpdateBrowserItemState();
 
   // LauncherItemController overrides:
+  virtual string16 GetTitle() OVERRIDE;
   virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE;
   virtual bool IsOpen() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;
   virtual void Activate(ash::LaunchSource source) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void Clicked(const ui::Event& event) OVERRIDE;
+  virtual void OnRemoved() OVERRIDE;
   virtual ChromeLauncherAppMenuItems GetApplicationList(
       int event_flags) OVERRIDE;
-  virtual void ItemSelected(const ui::Event& event) OVERRIDE;
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenu(
-      aura::RootWindow* root_window) OVERRIDE;
-  virtual ash::LauncherMenuModel* CreateApplicationMenu(
-      int event_flags) OVERRIDE;
-  virtual bool IsDraggable() OVERRIDE;
-  virtual bool ShouldShowTooltip() OVERRIDE;
 
  private:
   // Get the favicon for the browser list entry for |web_contents|.

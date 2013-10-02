@@ -4,8 +4,10 @@
 
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -16,18 +18,23 @@ AppListShelfItemDelegate::AppListShelfItemDelegate() {
   LauncherItem app_list;
   app_list.type = TYPE_APP_LIST;
   Shell::GetInstance()->launcher_model()->Add(app_list);
+
+  ash::Shell::GetInstance()->launcher_item_delegate_manager()->
+      RegisterLauncherItemDelegate(ash::TYPE_APP_LIST, this);
 }
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {
-  // LauncherItemDelegateManager owns and destroys this class.
+  // Don't unregister this from LauncherItemDelegateManager.
+  // LauncherItemDelegateManager is already destroyed.
 }
 
-void AppListShelfItemDelegate::ItemSelected(const ui::Event& event) {
+void AppListShelfItemDelegate::ItemSelected(const LauncherItem& item,
+                                            const ui::Event& event) {
   // Pass NULL here to show the app list in the currently active RootWindow.
   Shell::GetInstance()->ToggleAppList(NULL);
 }
 
-base::string16 AppListShelfItemDelegate::GetTitle() {
+base::string16 AppListShelfItemDelegate::GetTitle(const LauncherItem& item) {
   LauncherModel* model = Shell::GetInstance()->launcher_model();
   DCHECK(model);
   return model->status() == LauncherModel::STATUS_LOADING ?
@@ -36,21 +43,23 @@ base::string16 AppListShelfItemDelegate::GetTitle() {
 }
 
 ui::MenuModel* AppListShelfItemDelegate::CreateContextMenu(
+    const LauncherItem& item,
     aura::RootWindow* root_window) {
   return NULL;
 }
 
 LauncherMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
+    const LauncherItem& item,
     int event_flags) {
   // AppList does not show an application menu.
   return NULL;
 }
 
-bool AppListShelfItemDelegate::IsDraggable() {
+bool AppListShelfItemDelegate::IsDraggable(const LauncherItem& item) {
   return false;
 }
 
-bool AppListShelfItemDelegate::ShouldShowTooltip() {
+bool AppListShelfItemDelegate::ShouldShowTooltip(const LauncherItem& item) {
   return true;
 }
 

@@ -75,7 +75,6 @@ class DisplayController;
 class HighContrastController;
 class Launcher;
 class LauncherDelegate;
-class LauncherItemDelegate;
 class LauncherItemDelegateManager;
 class LauncherModel;
 class MagnificationController;
@@ -102,6 +101,7 @@ class WindowSelectorController;
 namespace internal {
 class AcceleratorFilter;
 class AppListController;
+class AppListShelfItemDelegate;
 class CaptureController;
 class DisplayChangeObserver;
 class DisplayErrorObserver;
@@ -541,6 +541,8 @@ class ASH_EXPORT Shell
   scoped_ptr<SessionStateDelegate> session_state_delegate_;
   scoped_ptr<LauncherDelegate> launcher_delegate_;
   scoped_ptr<LauncherItemDelegateManager> launcher_item_delegate_manager_;
+  scoped_ptr<internal::AppListShelfItemDelegate>
+      app_list_shelf_item_delegate_;
 
   scoped_ptr<LauncherModel> launcher_model_;
 
