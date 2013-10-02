@@ -61,7 +61,6 @@ function extension_testSourcesSidebarSetPage(nextTest)
     extension_sidebarSetPage("sources", nextTest);
 }
 
-
 function extension_dumpSidebarContent(panelName, nextTest)
 {
     evaluateOnFrontend("InspectorTest.dumpSidebarContent(\"" + panelName + "\", reply);", nextTest);
@@ -100,6 +99,26 @@ function extension_sideBarSetObject (panelName, nextTest)
         }, null, extension_dumpSidebarContent.bind(this, panelName, nextTest));
     }
     webInspector.panels[panelName].createSidebarPane("Watch Test: Object", onSidebarCreated);
+}
+
+function extension_testSourcesSidebarSetExpressionOnShown(nextTest)
+{
+    function onSidebarCreated(sidebar)
+    {
+        function onShown(frame)
+        {
+            output("setExpression onShown frame: " + frame);
+            sidebar.onShown.removeListener(onShown);
+            nextTest();
+        }
+        sidebar.onShown.addListener(onShown);
+        function onSetExpression()
+        {
+            extension_showPanel("elements", extension_expandSidebar.bind(null, "elements"));
+        }
+        sidebar.setExpression("(window.nothing_here)", "title", onSetExpression);
+    }
+    webInspector.panels.elements.createSidebarPane("OnShown without setExpression", onSidebarCreated);
 }
 
 function extension_testElementsSidebarSetExpression(nextTest)
@@ -168,7 +187,6 @@ function extension_testSourcesSidebarSetExpression(nextTest)
 
     webInspector.panels.sources.createSidebarPane("Watch Test: Expression", onSidebarCreated);
 }
-
 
 function extension_testElementsSidebarPageReplacedWithObject(nextTest)
 {
