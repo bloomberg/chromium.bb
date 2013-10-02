@@ -90,10 +90,16 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
     return map(int, [lkgm.build_number, lkgm.branch_build_number,
                      lkgm.patch_number, lkgm.revision_number])
 
-  def IncrementVersion(self, message=None, dry_run=False):
+  def IncrementVersion(self):
     """Increments the version by incrementing the revision #."""
     self.revision_number += 1
     return self.VersionString()
+
+  def UpdateVersionFile(self, *args, **kwargs):
+    """Update the version file on disk.
+
+    For LKGMCandidateInfo there is no version file so this function is a no-op.
+    """
 
 
 class LKGMManager(manifest_version.BuildSpecsManager):

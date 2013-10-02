@@ -144,6 +144,7 @@ class VersionInfo(object):
   """
   # Pattern for matching build name format.  Includes chrome branch hack.
   VER_PATTERN = r'(\d+).(\d+).(\d+)(?:-R(\d+))*'
+  KEY_VALUE_PATTERN = r'%s=(\d+)\s*$'
   VALID_INCR_TYPES = ('chrome_branch', 'build', 'branch', 'patch')
 
   def __init__(self, version_string=None, chrome_branch=None,
@@ -208,34 +209,18 @@ class VersionInfo(object):
       key: key to look for
       line: string to search
     returns:
-       None: on a non match
-       value: for a matching key
+      None: on a non match
+      value: for a matching key
     """
-    regex = r'.*(%s)\s*=\s*(\d+)$' % key
+    match = re.search(self.KEY_VALUE_PATTERN % (key,), line)
+    return match.group(1) if match else None
 
-    match = re.match(regex, line)
-    if match:
-      return match.group(2)
-    return None
-
-  def IncrementVersion(self, message, dry_run, push_to=None):
+  def IncrementVersion(self):
     """Updates the version file by incrementing the patch component.
     Args:
       message:  Commit message to use when incrementing the version.
       dry_run: Git dry_run.
     """
-    def IncrementOldValue(line, key, new_value):
-      """Change key to new_value if found on line.  Returns True if changed."""
-      old_value = self.FindValue(key, line)
-      if old_value:
-        temp_fh.write(line.replace(old_value, new_value, 1))
-        return True
-      else:
-        return False
-
-    if not self.version_file:
-      raise VersionUpdateException('Cannot call IncrementVersion without '
-                                   'an associated version_file')
     if not self.incr_type or self.incr_type not in self.VALID_INCR_TYPES:
       raise VersionUpdateException('Need to specify the part of the version to'
                                    ' increment')
@@ -254,40 +239,40 @@ class VersionInfo(object):
     else:
       self.patch_number = str(int(self.patch_number) + 1)
 
-    temp_file = tempfile.mkstemp(suffix='mvp', prefix='tmp', dir=None,
-                                 text=True)[1]
-    with open(self.version_file, 'r') as source_version_fh:
-      with open(temp_file, 'w') as temp_fh:
-        for line in source_version_fh:
-          if IncrementOldValue(line, 'CHROMEOS_BUILD', self.build_number):
-            pass
-          elif IncrementOldValue(line, 'CHROMEOS_BRANCH',
-                                 self.branch_build_number):
-            pass
-          elif IncrementOldValue(line, 'CHROMEOS_PATCH', self.patch_number):
-            pass
-          elif IncrementOldValue(line, 'CHROME_BRANCH', self.chrome_branch):
-            pass
-          else:
-            temp_fh.write(line)
-
-        temp_fh.close()
-
-      source_version_fh.close()
-
-    repo_dir = os.path.dirname(self.version_file)
-
-    try:
-      git.CreateBranch(repo_dir, PUSH_BRANCH)
-      shutil.copyfile(temp_file, self.version_file)
-      os.unlink(temp_file)
-      _PushGitChanges(repo_dir, message, dry_run=dry_run, push_to=push_to)
-    finally:
-      # Update to the remote version that contains our changes. This is needed
-      # to ensure that we don't build a release using a local commit.
-      git.CleanAndCheckoutUpstream(repo_dir)
-
     return self.VersionString()
+
+  def UpdateVersionFile(self, message, dry_run, push_to=None):
+    """Update the version file with our current version."""
+
+    if not self.version_file:
+      raise VersionUpdateException('Cannot call UpdateVersionFile without '
+                                   'an associated version_file')
+
+    components = (('CHROMEOS_BUILD', self.build_number),
+                  ('CHROMEOS_BRANCH', self.branch_build_number),
+                  ('CHROMEOS_PATCH', self.patch_number),
+                  ('CHROME_BRANCH', self.chrome_branch))
+
+    with tempfile.NamedTemporaryFile(prefix='mvp') as temp_fh:
+      with open(self.version_file, 'r') as source_version_fh:
+        for line in source_version_fh:
+          for key, value in components:
+            line = re.sub(self.KEY_VALUE_PATTERN % (key,),
+                          '%s=%s\n' % (key, value), line)
+          temp_fh.write(line)
+
+      temp_fh.flush()
+
+      repo_dir = os.path.dirname(self.version_file)
+
+      try:
+        git.CreateBranch(repo_dir, PUSH_BRANCH)
+        shutil.copyfile(temp_fh.name, self.version_file)
+        _PushGitChanges(repo_dir, message, dry_run=dry_run, push_to=push_to)
+      finally:
+        # Update to the remote version that contains our changes. This is needed
+        # to ensure that we don't build a release using a local commit.
+        git.CleanAndCheckoutUpstream(repo_dir)
 
   def VersionString(self):
     """returns the version string"""
@@ -510,7 +495,8 @@ class BuildSpecsManager(object):
     if self.latest == version:
       message = ('Automatic: %s - Updating to a new version number from %s' % (
                  self.build_name, version))
-      version = version_info.IncrementVersion(message, dry_run=self.dry_run)
+      version = version_info.IncrementVersion()
+      version_info.UpdateVersionFile(message, dry_run=self.dry_run)
       assert version != self.latest
       cros_build_lib.Info('Incremented version number to  %s', version)
 

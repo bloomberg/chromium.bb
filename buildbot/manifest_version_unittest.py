@@ -112,7 +112,8 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type=incr_type)
-    info.IncrementVersion(message, dry_run=False)
+    info.IncrementVersion()
+    info.UpdateVersionFile(message, dry_run=False)
     self.mox.VerifyAll()
     return version_file
 
@@ -233,14 +234,13 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
 
   def testGetNextVersionIncrement(self):
     """Tests that we create a new version if a previous one exists."""
-    self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
+    self.mox.StubOutWithMock(manifest_version.VersionInfo, 'UpdateVersionFile')
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tempdir)
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type='branch')
-    info.IncrementVersion(
+    info.UpdateVersionFile(
         'Automatic: %s - Updating to a new version number from %s' % (
-            self.build_name, FAKE_VERSION_STRING),
-        dry_run=True).AndReturn(FAKE_VERSION_STRING_NEXT)
+            self.build_name, FAKE_VERSION_STRING), dry_run=True)
 
     self.manager.latest = FAKE_VERSION_STRING
     self.mox.ReplayAll()

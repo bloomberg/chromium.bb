@@ -1505,8 +1505,8 @@ class BranchUtilStage(bs.BuilderStage):
   newly created branch needs to be incremented.  Additionally, in some cases
   the Chrome major version (i.e, R29) and/or the Chrome OS version (i.e.,
   4319.0.0) of the source branch must be incremented
-  (see IncrementVersionForSourceBranch docstring).  Finally, the external and
-  internal manifests of the new branch need to be fixed up (see
+  (see IncrementVersionOnDiskForSourceBranch docstring).  Finally, the external
+  and internal manifests of the new branch need to be fixed up (see
   FixUpManifests docstring).
   """
 
@@ -1605,7 +1605,7 @@ class BranchUtilStage(bs.BuilderStage):
       git.GitPush(manifest_path, manifest_version.PUSH_BRANCH, push_to,
                   dryrun=self.dryrun, force=self.dryrun)
 
-  def IncrementVersion(self, incr_type, push_to, message):
+  def IncrementVersionOnDisk(self, incr_type, push_to, message):
     """Bumps the version found in chromeos_version.sh on a branch.
 
     Args:
@@ -1615,8 +1615,9 @@ class BranchUtilStage(bs.BuilderStage):
     """
     version_info = manifest_version.VersionInfo.from_repo(
         self._build_root, incr_type=incr_type)
-    version_info.IncrementVersion(message, dry_run=self.dryrun,
-                                  push_to=push_to)
+    version_info.IncrementVersion()
+    version_info.UpdateVersionFile(message, dry_run=self.dryrun,
+                                   push_to=push_to)
 
   @staticmethod
   def DetermineBranchIncrParams(version_info):
@@ -1640,7 +1641,7 @@ class BranchUtilStage(bs.BuilderStage):
     else:
       return 'branch', 'branch build number'
 
-  def IncrementVersionForNewBranch(self, push_remote):
+  def IncrementVersionOnDiskForNewBranch(self, push_remote):
     """Bumps the version found in chromeos_version.sh on the new branch
 
     When a new branch is created, the branch component of the new branch's
@@ -1665,10 +1666,10 @@ class BranchUtilStage(bs.BuilderStage):
         'target': incr_target,
         'branch': self.dest_ref,
     }
-    self.IncrementVersion(incr_type, push_to, message)
+    self.IncrementVersionOnDisk(incr_type, push_to, message)
 
-  def IncrementVersionForSourceBranch(self, overlay_dir, push_remote,
-                                      source_branch):
+  def IncrementVersionOnDiskForSourceBranch(self, overlay_dir, push_remote,
+                                            source_branch):
     """Bumps the version found in chromeos_version.sh on the source branch
 
     The source branch refers to the branch that the manifest used for creating
@@ -1704,7 +1705,7 @@ class BranchUtilStage(bs.BuilderStage):
           'branch': self.dest_ref,
       }
       try:
-        self.IncrementVersion(incr_type, push_to, message)
+        self.IncrementVersionOnDisk(incr_type, push_to, message)
       except cros_build_lib.RunCommandError:
         # There's a chance we are racing against the buildbots for this
         # increment.  We shouldn't quit the script because of this.  Instead, we
@@ -1745,11 +1746,11 @@ class BranchUtilStage(bs.BuilderStage):
     overlay_project = manifest.projects[overlay_name]
     overlay_dir = overlay_project['local_path']
     push_remote = overlay_project['push_remote']
-    self.IncrementVersionForNewBranch(push_remote)
+    self.IncrementVersionOnDiskForNewBranch(push_remote)
 
     source_branch = manifest.default['revision']
-    self.IncrementVersionForSourceBranch(overlay_dir, push_remote,
-                                         source_branch)
+    self.IncrementVersionOnDiskForSourceBranch(overlay_dir, push_remote,
+                                               source_branch)
 
 
 class RefreshPackageStatusStage(bs.BuilderStage):

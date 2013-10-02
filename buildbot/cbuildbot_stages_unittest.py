@@ -2000,10 +2000,10 @@ revision="special-branch2"/>
     """Non-release branch creation."""
     self.options.branch_name = 'refs/heads/test-branch'
     before = manifest_version.VersionInfo.from_repo(self.build_root)
-    # Disable the new branch increment so that IncrementVersionForSourceBranch
-    # detects we need to bump the version.
-    self.PatchObject(stages.BranchUtilStage, 'IncrementVersionForNewBranch',
-                     autospec=True)
+    # Disable the new branch increment so that
+    # IncrementVersionOnDiskForSourceBranch detects we need to bump the version.
+    self.PatchObject(stages.BranchUtilStage,
+                     'IncrementVersionOnDiskForNewBranch', autospec=True)
     self.RunStage()
     after = manifest_version.VersionInfo.from_repo(self.build_root)
     # Verify only branch number is bumped.
@@ -2066,7 +2066,7 @@ revision="special-branch2"/>
     self.rc_mock.AddCmdResult(partial_mock.In('push'), returncode=128)
     stage = self.ConstructStage()
     args = (overlay_dir, 'gerrit', 'refs/heads/master')
-    stage.IncrementVersionForSourceBranch(*args)
+    stage.IncrementVersionOnDiskForSourceBranch(*args)
 
   def testSourceIncrementWarning(self):
     """Test the warning case for incrementing failure."""
