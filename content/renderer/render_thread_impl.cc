@@ -653,18 +653,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 #endif
     if (!compositor_message_loop_proxy_.get()) {
       compositor_thread_.reset(new base::Thread("Compositor"));
-#if defined(OS_POSIX)
-      // Workaround for crbug.com/293736
-      // On Posix, MessagePumpDefault uses system time, so delayed tasks (for
-      // compositor scheduling) work incorrectly across system time changes
-      // (e.g.  tlsdate). So instead, use an IO loop, which uses libevent, that
-      // uses monotonic time (immune to these problems).
-      base::Thread::Options options;
-      options.message_loop_type = base::MessageLoop::TYPE_IO;
-      compositor_thread_->StartWithOptions(options);
-#else
       compositor_thread_->Start();
-#endif
 #if defined(OS_ANDROID)
       compositor_thread_->SetPriority(base::kThreadPriority_Display);
 #endif
@@ -1282,18 +1271,7 @@ RenderThreadImpl::GetMediaThreadMessageLoopProxy() {
   DCHECK(message_loop() == base::MessageLoop::current());
   if (!media_thread_) {
     media_thread_.reset(new base::Thread("Media"));
-#if defined(OS_POSIX)
-    // Workaround for crbug.com/293736
-    // On Posix, MessagePumpDefault uses system time, so delayed tasks (for
-    // compositor scheduling) work incorrectly across system time changes
-    // (e.g.  tlsdate). So instead, use an IO loop, which uses libevent, that
-    // uses monotonic time (immune to these problems).
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
-    media_thread_->StartWithOptions(options);
-#else
     media_thread_->Start();
-#endif
 
 #if defined(OS_ANDROID)
     renderer_demuxer_ = new RendererDemuxerAndroid();

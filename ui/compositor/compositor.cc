@@ -507,18 +507,7 @@ void Compositor::Initialize() {
 #endif
   if (use_thread) {
     g_compositor_thread = new base::Thread("Browser Compositor");
-#if defined(OS_POSIX)
-    // Workaround for crbug.com/293736
-    // On Posix, MessagePumpDefault uses system time, so delayed tasks (for
-    // compositor scheduling) work incorrectly across system time changes (e.g.
-    // tlsdate). So instead, use an IO loop, which uses libevent, that uses
-    // monotonic time (immune to these problems).
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
-    g_compositor_thread->StartWithOptions(options);
-#else
     g_compositor_thread->Start();
-#endif
   }
 
   DCHECK(!g_compositor_initialized) << "Compositor initialized twice.";
