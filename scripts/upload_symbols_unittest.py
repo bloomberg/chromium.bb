@@ -23,6 +23,7 @@ import mock
 
 
 class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for UploadSymbols()"""
 
   def setUp(self):
     for d in ('foo', 'bar', 'some/dir/here'):
@@ -75,9 +76,9 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
 
 
 class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for UploadSymbol()"""
 
   def setUp(self):
-    self.excp_result = urllib2.HTTPError('http://', 400, 'fail', {}, None)
     self.sym_file = os.path.join(self.tempdir, 'foo.sym')
     self.url = 'http://eatit'
 
@@ -97,14 +98,21 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     ret = upload_symbols.UploadSymbol(None, None, sleep=None, num_errors=errors)
     self.assertEqual(ret, 0)
 
-  def testUploadRetryErrors(self):
+  def testUploadRetryErrors(self, side_effect=None):
     """Verify that we retry errors (and eventually give up)"""
-    m = upload_symbols.SymUpload = mock.Mock(side_effect=self.excp_result)
+    if not side_effect:
+      side_effect = urllib2.HTTPError('http://', 400, 'fail', {}, None)
+    m = upload_symbols.SymUpload = mock.Mock(side_effect=side_effect)
     errors = ctypes.c_int()
     ret = upload_symbols.UploadSymbol('/dev/null', self.url, num_errors=errors)
     self.assertEqual(ret, 1)
     m.assert_called_with('/dev/null', self.url)
     self.assertTrue(m.call_count >= upload_symbols.MAX_RETRIES)
+
+  def testConnectRetryErrors(self):
+    """Verify that we retry errors (and eventually give up) w/connect errors"""
+    side_effect = urllib2.URLError('foo')
+    self.testUploadRetryErrors(side_effect=side_effect)
 
   def testTruncateTooBigFiles(self):
     """Verify we shrink big files"""
@@ -137,6 +145,7 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
 
 
 class SymUploadTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for SymUpload()"""
 
   SYM_URL = 'http://localhost/post/it/here'
   SYM_CONTENTS = """MODULE Linux arm 123-456 blkid
