@@ -661,9 +661,7 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
   for (GlobalErrorService::GlobalErrorList::const_iterator
        it = errors.begin(); it != errors.end(); ++it) {
     GlobalError* error = *it;
-    // Verify that we're not getting NULL errors. TODO(sail) Make this a DCHECK
-    // once crbug.com/278543 is fixed.
-    CHECK(error);
+    DCHECK(error);
     if (error->HasMenuItem()) {
 #if !defined(OS_CHROMEOS)
       // Don't add a signin error if it's already being displayed elsewhere.
