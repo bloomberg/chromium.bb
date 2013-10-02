@@ -11,6 +11,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_icon_observer.h"
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/launcher/launcher_types.h"
@@ -24,6 +25,7 @@
 #include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
+#include "ash/test/test_launcher_item_delegate.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -212,6 +214,10 @@ class LauncherViewTest : public AshTestBase {
     test_api_.reset(new LauncherViewTestAPI(launcher_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
 
+    item_manager_ =
+        ash::Shell::GetInstance()->launcher_item_delegate_manager();
+    DCHECK(item_manager_);
+
     // Add browser shortcut launcher item at index 0 for test.
     AddBrowserShortcut();
   }
@@ -222,12 +228,19 @@ class LauncherViewTest : public AshTestBase {
   }
 
  protected:
+  void CreateAndSetLauncherItemDelegateForID(LauncherID id) {
+    scoped_ptr<LauncherItemDelegate> delegate(
+        new ash::test::TestLauncherItemDelegate(NULL));
+    item_manager_->SetLauncherItemDelegate(id, delegate.Pass());
+  }
+
   LauncherID AddBrowserShortcut() {
     LauncherItem browser_shortcut;
     browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
 
     LauncherID id = model_->next_id();
     model_->AddAt(browser_index_, browser_shortcut);
+    CreateAndSetLauncherItemDelegateForID(id);
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
@@ -239,6 +252,7 @@ class LauncherViewTest : public AshTestBase {
 
     LauncherID id = model_->next_id();
     model_->Add(item);
+    CreateAndSetLauncherItemDelegateForID(id);
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
@@ -256,6 +270,7 @@ class LauncherViewTest : public AshTestBase {
 
     LauncherID id = model_->next_id();
     model_->Add(item);
+    CreateAndSetLauncherItemDelegateForID(id);
     return id;
   }
 
@@ -266,6 +281,7 @@ class LauncherViewTest : public AshTestBase {
 
     LauncherID id = model_->next_id();
     model_->Add(item);
+    CreateAndSetLauncherItemDelegateForID(id);
     return id;
   }
 
@@ -386,6 +402,7 @@ class LauncherViewTest : public AshTestBase {
   LauncherModel* model_;
   internal::LauncherView* launcher_view_;
   int browser_index_;
+  LauncherItemDelegateManager* item_manager_;
 
   scoped_ptr<LauncherViewTestAPI> test_api_;
 

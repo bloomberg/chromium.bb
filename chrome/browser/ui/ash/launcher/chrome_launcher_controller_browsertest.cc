@@ -34,6 +34,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -151,7 +152,8 @@ class LauncherPlatformAppBrowserTest
   int GetNumApplicationMenuItems(const ash::LauncherItem& item) {
     const int event_flags = 0;
     scoped_ptr<ash::LauncherMenuModel> menu(
-        controller_->CreateApplicationMenu(item, event_flags));
+        new LauncherApplicationMenuItemModel(
+            controller_->GetApplicationList(item, event_flags)));
     int num_items = 0;
     for (int i = 0; i < menu->GetItemCount(); ++i) {
       if (menu->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR)
@@ -658,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserNoMinimizeOnClick,
   EXPECT_EQ(LauncherItemController::TYPE_APP, item1_controller->type());
   // Clicking the item should have no effect.
   TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   // Minimize the window and confirm that the controller item is updated.
@@ -667,14 +669,14 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserNoMinimizeOnClick,
   EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   // Clicking the item should activate the window.
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Maximizing a window should preserve state after minimize + click.
   window1->GetBaseWindow()->Maximize();
   window1->GetBaseWindow()->Minimize();
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
@@ -697,20 +699,20 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserMinimizeOnClick,
   EXPECT_EQ(LauncherItemController::TYPE_APP, item1_controller->type());
   // Since it is already active, clicking it should minimize.
   TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_FALSE(window1->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMinimized());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   // Clicking the item again should activate the window again.
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Maximizing a window should preserve state after minimize + click.
   window1->GetBaseWindow()->Maximize();
   window1->GetBaseWindow()->Minimize();
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
@@ -725,13 +727,13 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserMinimizeOnClick,
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetBaseWindow()->IsActive());
   // The first click does nothing.
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_FALSE(window1a->GetBaseWindow()->IsActive());
   // The second neither.
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
@@ -760,15 +762,15 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanelClickBehavior) {
   EXPECT_EQ(LauncherItemController::TYPE_APP_PANEL, item1_controller->type());
   // Click the item and confirm that the panel is activated.
   TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Click the item again and confirm that the panel is minimized.
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(panel->GetBaseWindow()->IsMinimized());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   // Click the item again and confirm that the panel is activated.
-  item1_controller->Clicked(click_event);
+  item1_controller->ItemSelected(click_event);
   EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -1420,7 +1422,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
 
   // Click the item and confirm that the panel is activated.
   TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item_controller->Clicked(click_event);
+  item_controller->ItemSelected(click_event);
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
@@ -1526,8 +1528,9 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ActivateAfterSessionRestore) {
   EXPECT_EQ(it, ash_browser_list->end_last_active());
 
   // Now request to either activate an existing app or create a new one.
-  controller_->ItemSelected(*model_->ItemByID(shortcut_id),
-                           ui::KeyEvent(ui::ET_KEY_RELEASED,
+  LauncherItemController* item_controller =
+      controller_->GetLauncherItemController(shortcut_id);
+  item_controller->ItemSelected(ui::KeyEvent(ui::ET_KEY_RELEASED,
                                         ui::VKEY_RETURN,
                                         0,
                                         false));
