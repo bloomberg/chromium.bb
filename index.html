@@ -438,9 +438,22 @@ take a while to finish loading).  With this patch applied, there will be a
 noticable difference in the time taken to execute the button click, depending
 on whether the "norelayout" checkbox is enabled or disabled.</p>
 
-
 <h3><a name="feature-tableEditing">feature/tableEditing</a> (Shezan Baig; D37611655)</h3>
-<p>TODO</p>
+<p>This is a feature we needed in our product, so it is unlikely that we will
+send this upstream.</p>
+<p>Right now, this branch consists of changes to the way text highlighting
+works.  In upstream Chrome, the left and right side of text are highlighted
+when the selection extends to the previous and next lines.  These are the
+"selection gaps" that WebKit tries to highlight.</p>
+<p>For our product, we just want the text to be highlighted.  So we disable the
+left and right selection gaps.  However, we maintain the top and bottom
+selection gaps (fixing a few bugs along the way).  We also maintain a slight
+selection gap at the end of the lines in editable text, to indicate that the
+line-ending has been selected.</p>
+<p>However, for tables, we do highlight the left and right sides if the
+selection extends outside the table cell.</p>
+<p>Open <a href="repros/tableEditing.html">this link</a> and compare the
+behavior with and without the patch applied.</p>
 
 <h3><a name="feature-virtualAllocHooks">feature/virtualAllocHooks</a> (Lilit Darbinyan)</h3>
 <p>TODO</p>
