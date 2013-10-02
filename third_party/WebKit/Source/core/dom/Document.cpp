@@ -398,7 +398,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_wellFormed(false)
     , m_printing(false)
     , m_paginatedForScreen(false)
-    , m_ignoreAutofocus(false)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
     , m_didPostCheckFocusedElementTask(false)
