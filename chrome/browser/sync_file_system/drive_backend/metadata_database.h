@@ -187,7 +187,8 @@ class MetadataDatabase {
   // Finds the set of trackers whose parent's tracker ID is |parent_tracker_id|,
   // and who has |title| as its title in the synced_details.
   // Copies the tracker set to |trackers| if it is non-NULL.
-  size_t FindTrackersByParentAndTitle(
+  // Returns true if the trackers are found.
+  bool FindTrackersByParentAndTitle(
       int64 parent_tracker_id,
       const std::string& title,
       TrackerSet* trackers) const;
@@ -202,6 +203,13 @@ class MetadataDatabase {
   // needed.
   void UpdateByChangeList(ScopedVector<google_apis::ChangeResource> changes,
                           const SyncStatusCallback& callback);
+
+  // Updates database by |resource|.
+  // Marks each tracker for modified file as dirty and adds new trackers if
+  // needed.
+  void UpdateByFileResource(int64 change_id,
+                            const google_apis::FileResource& resource,
+                            const SyncStatusCallback& callback);
 
   // Adds |child_file_ids| to |folder_id| as its children.
   // This method affects the active tracker only.

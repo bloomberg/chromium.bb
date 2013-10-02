@@ -114,6 +114,24 @@ void PopulateFileDetailsByFileResource(
   details->set_deleted(false);
 }
 
+scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
+    int64 change_id,
+    const google_apis::FileResource& resource) {
+  scoped_ptr<FileMetadata> file(new FileMetadata);
+  file->set_file_id(resource.file_id());
+
+  FileDetails* details = file->mutable_details();
+  details->set_change_id(change_id);
+
+  if (resource.labels().is_trashed()) {
+    details->set_deleted(true);
+    return file.Pass();
+  }
+
+  PopulateFileDetailsByFileResource(resource, details);
+  return file.Pass();
+}
+
 scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
     const google_apis::ChangeResource& change) {
   scoped_ptr<FileMetadata> file(new FileMetadata);
@@ -759,6 +777,25 @@ bool MetadataDatabase::FindTrackersByFileID(const std::string& file_id,
   return true;
 }
 
+bool MetadataDatabase::FindTrackersByParentAndTitle(
+    int64 parent_tracker_id,
+    const std::string& title,
+    TrackerSet* trackers) const {
+  TrackersByParentAndTitle::const_iterator found_by_parent =
+      trackers_by_parent_and_title_.find(parent_tracker_id);
+  if (found_by_parent == trackers_by_parent_and_title_.end())
+    return false;
+
+  TrackersByTitle::const_iterator found_by_title =
+      found_by_parent->second.find(title);
+  if (found_by_title == found_by_parent->second.end())
+    return false;
+
+  if (trackers)
+    *trackers = found_by_title->second;
+  return true;
+}
+
 bool MetadataDatabase::FindTrackerByTrackerID(int64 tracker_id,
                                               FileTracker* tracker) const {
   return FindItem(tracker_by_id_, tracker_id, tracker);
@@ -808,6 +845,35 @@ void MetadataDatabase::UpdateByChangeList(
     if (FindTrackersByFileID(file_id, NULL)) {
       PutFileToBatch(*file, batch.get());
 
+      // Set |file| to |file_by_id_[file_id]| and delete old value.
+      FileMetadata* file_ptr = file.release();
+      std::swap(file_ptr, file_by_id_[file_id]);
+      delete file_ptr;
+    }
+  }
+
+  WriteToDatabase(batch.Pass(), callback);
+}
+
+void MetadataDatabase::UpdateByFileResource(
+    int64 change_id,
+    const google_apis::FileResource& resource,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+
+  scoped_ptr<FileMetadata> file(
+      CreateFileMetadataFromFileResource(change_id, resource));
+  std::string file_id = file->file_id();
+
+  // TODO(tzik): Consolidate with UpdateByChangeList.
+  MarkTrackersDirtyByFileID(file_id, batch.get());
+  if (!file->details().deleted()) {
+    MaybeAddTrackersForNewFile(*file, batch.get());
+
+    if (FindTrackersByFileID(file_id, NULL)) {
+      PutFileToBatch(*file, batch.get());
+
+      // Set |file| to |file_by_id_[file_id]| and delete old value.
       FileMetadata* file_ptr = file.release();
       std::swap(file_ptr, file_by_id_[file_id]);
       delete file_ptr;
