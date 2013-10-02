@@ -290,8 +290,6 @@ public:
     MediaController* controller() const;
     void setController(PassRefPtr<MediaController>);
 
-    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
-
 protected:
     HTMLMediaElement(const QualifiedName&, Document&, bool);
     virtual ~HTMLMediaElement();
@@ -550,7 +548,6 @@ private:
 
     bool m_closedCaptionsVisible : 1;
 
-    bool m_dispatchingCanPlayEvent : 1;
     bool m_loadInitiatedByUserGesture : 1;
     bool m_completelyLoaded : 1;
     bool m_havePreparedToPlay : 1;
