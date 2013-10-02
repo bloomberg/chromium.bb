@@ -65,7 +65,7 @@ def _RequestEachItem(title, items, request_callback):
         if response.status == 200:
           success_count += 1
         else:
-          _cronlog.error(error_message('response status %s', response.status))
+          _cronlog.error(error_message('response status %s' % response.status))
           failure_count += 1
       except Exception as e:
         _cronlog.error(error_message(traceback.format_exc()))
