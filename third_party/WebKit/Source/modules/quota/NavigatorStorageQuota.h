@@ -32,7 +32,7 @@
 #define NavigatorStorageQuota_h
 
 #include "core/page/DOMWindowProperty.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

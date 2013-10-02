@@ -33,7 +33,7 @@
 
 #include "core/page/DOMWindowProperty.h"
 #include "core/page/WorkerNavigator.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

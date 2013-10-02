@@ -28,7 +28,7 @@
 
 #include "core/events/Event.h"
 #include "core/page/DOMWindowLifecycleObserver.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

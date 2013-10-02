@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "core/page/Navigator.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

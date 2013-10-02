@@ -29,7 +29,7 @@
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

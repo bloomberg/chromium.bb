@@ -31,7 +31,7 @@
 #ifndef WorkerClients_h
 #define WorkerClients_h
 
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

@@ -30,7 +30,7 @@
 #include "core/events/Event.h"
 #include "core/dom/Node.h"
 #include "core/page/DOMWindowLifecycleObserver.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {

@@ -33,7 +33,7 @@
 #include "core/loader/PrerendererClient.h"
 
 #include "core/page/Page.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

@@ -32,8 +32,8 @@
 #define CSSSelectorWatch_h
 
 #include "core/css/StyleRule.h"
-#include "core/platform/Supplementable.h"
 #include "core/platform/Timer.h"
+#include "platform/Supplementable.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

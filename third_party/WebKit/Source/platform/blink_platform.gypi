@@ -56,6 +56,7 @@
       'NotImplemented.h',
       'Partitions.cpp',
       'Partitions.h',
+      'Supplementable.h',
       'PurgeableBuffer.cpp',
       'PurgeableBuffer.h',
       'SharedBufferChunkReader.cpp',

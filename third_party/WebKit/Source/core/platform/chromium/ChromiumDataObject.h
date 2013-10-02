@@ -31,9 +31,9 @@
 #ifndef ChromiumDataObject_h
 #define ChromiumDataObject_h
 
-#include "core/platform/Supplementable.h"
 #include "core/platform/chromium/ChromiumDataObjectItem.h"
 #include "core/platform/chromium/PasteMode.h"
+#include "platform/Supplementable.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

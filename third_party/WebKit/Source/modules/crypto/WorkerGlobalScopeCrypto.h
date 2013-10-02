@@ -31,7 +31,7 @@
 #ifndef WorkerGlobalScopeCrypto_h
 #define WorkerGlobalScopeCrypto_h
 
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

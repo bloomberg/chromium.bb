@@ -32,7 +32,7 @@
 #ifndef PrerendererClient_h
 #define PrerendererClient_h
 
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

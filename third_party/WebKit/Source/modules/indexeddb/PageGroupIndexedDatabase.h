@@ -26,7 +26,7 @@
 #ifndef PageGroupIndexedDatabase_h
 #define PageGroupIndexedDatabase_h
 
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

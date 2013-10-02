@@ -33,7 +33,7 @@
 #define Prerenderer_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

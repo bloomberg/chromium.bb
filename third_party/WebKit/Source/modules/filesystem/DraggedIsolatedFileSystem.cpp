@@ -32,8 +32,8 @@
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/platform/Supplementable.h"
 #include "modules/filesystem/DOMFileSystem.h"
+#include "platform/Supplementable.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 

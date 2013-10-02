@@ -36,7 +36,7 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"

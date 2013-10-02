@@ -33,8 +33,8 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/ColorChooser.h"
-#include "core/platform/Supplementable.h"
 #include "core/platform/text/LocaleToScriptMapping.h"
+#include "platform/Supplementable.h"
 
 #define InternalSettingsGuardForSettingsReturn(returnValue) \
     if (!settings()) { \

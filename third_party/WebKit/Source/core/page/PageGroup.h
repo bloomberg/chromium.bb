@@ -27,7 +27,7 @@
 #define PageGroup_h
 
 #include "core/page/InjectedStyleSheet.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"

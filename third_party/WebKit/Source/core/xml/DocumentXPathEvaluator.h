@@ -26,8 +26,8 @@
 #ifndef DocumentXPathEvaluator_h
 #define DocumentXPathEvaluator_h
 
-#include "core/platform/Supplementable.h"
 #include "core/xml/XPathEvaluator.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

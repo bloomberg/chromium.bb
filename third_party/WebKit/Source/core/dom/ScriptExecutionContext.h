@@ -35,7 +35,7 @@
 #include "core/page/ConsoleTypes.h"
 #include "core/page/DOMTimer.h"
 #include "core/platform/LifecycleContext.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"

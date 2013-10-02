@@ -31,7 +31,7 @@
 #include "core/events/EventTarget.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/platform/LifecycleContext.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 
 #include "wtf/Forward.h"
 

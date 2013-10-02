@@ -27,8 +27,8 @@
 #define DOMWindowSpeechSynthesis_h
 
 #include "core/page/DOMWindowProperty.h"
-#include "core/platform/Supplementable.h"
 #include "modules/speech/SpeechSynthesis.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 

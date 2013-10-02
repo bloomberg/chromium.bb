@@ -32,7 +32,7 @@
 #define NavigatorDoNotTrack_h
 
 #include "core/page/DOMWindowProperty.h"
-#include "core/platform/Supplementable.h"
+#include "platform/Supplementable.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
