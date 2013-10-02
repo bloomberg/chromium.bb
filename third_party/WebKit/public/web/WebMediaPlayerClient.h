@@ -79,6 +79,7 @@ public:
     virtual void addTextTrack(WebInbandTextTrack*) = 0;
     virtual void removeTextTrack(WebInbandTextTrack*) = 0;
     virtual void mediaSourceOpened(WebMediaSource*) = 0;
+    virtual void requestFullscreen() = 0;
     virtual void requestSeek(double) = 0;
 
 protected:

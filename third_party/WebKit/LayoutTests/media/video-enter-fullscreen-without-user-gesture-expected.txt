@@ -5,5 +5,6 @@ EVENT(canplaythrough)
 * No user gesture initiated
 EXPECTED (video.paused == 'true') OK
 RUN(video.webkitEnterFullScreen())
+EVENT(webkitfullscreenchange)
 END OF TEST
 

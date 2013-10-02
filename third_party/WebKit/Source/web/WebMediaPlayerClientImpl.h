@@ -91,6 +91,7 @@ public:
     virtual void addTextTrack(WebInbandTextTrack*);
     virtual void removeTextTrack(WebInbandTextTrack*);
     virtual void mediaSourceOpened(WebMediaSource*);
+    virtual void requestFullscreen();
     virtual void requestSeek(double);
 
     // MediaPlayer methods:

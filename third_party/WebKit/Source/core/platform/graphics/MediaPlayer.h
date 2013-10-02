@@ -66,6 +66,8 @@ public:
     // the play/pause status changed
     virtual void mediaPlayerPlaybackStateChanged() = 0;
 
+    virtual void mediaPlayerRequestFullscreen() = 0;
+
     virtual void mediaPlayerRequestSeek(double) = 0;
 
 // Presentation-related methods

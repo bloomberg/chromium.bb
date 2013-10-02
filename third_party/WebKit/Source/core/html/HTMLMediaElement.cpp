@@ -3178,6 +3178,12 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
         playInternal();
 }
 
+void HTMLMediaElement::mediaPlayerRequestFullscreen()
+{
+    LOG(Media, "HTMLMediaElement::mediaPlayerRequestFullscreen");
+    enterFullscreen();
+}
+
 void HTMLMediaElement::mediaPlayerRequestSeek(double time)
 {
     // The player is the source of this seek request.

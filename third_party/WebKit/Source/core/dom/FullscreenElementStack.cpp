@@ -184,7 +184,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         //   An algorithm is allowed to show a pop-up if, in the task in which the algorithm is running, either:
         //   - an activation behavior is currently being processed whose click event was trusted, or
         //   - the event listener for a trusted click event is being handled.
-        if (!UserGestureIndicator::processingUserGesture())
+        if (!UserGestureIndicator::processingUserGesture() && (!element->isMediaElement() || document()->page()->settings().mediaFullscreenRequiresUserGesture()))
             break;
 
         // There is a previously-established user preference, security risk, or platform limitation.

@@ -13,14 +13,12 @@
                 consoleWrite("");
                 consoleWrite("* No user gesture initiated");
                 testExpected("video.paused", true);
-                // Now video.webkitEnterFullScreen() should no longer throw any exception.
-                // However, the video element may not always enter fullscreen. For example,
-                // chromium uses fullscreen API which still requires user gesture
-                try {
-                    run("video.webkitEnterFullScreen()");
-                } catch(ex) {
-                    failTest("video.webkitEnterFullScreen() still requires user gesture.");
-                }
+                run("video.webkitEnterFullScreen()");
+                waitForEvent('webkitfullscreenchange', fullscreenchange);
+            }
+
+            function fullscreenchange()
+            {
                 endTest();
             }
 
