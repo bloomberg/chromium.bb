@@ -1,22 +1,35 @@
 <html>
-<body></body>
+<body><div id="output"></div></body>
 <script>
+    var dragOverOutput = "";
+    var dragDropOutput = "";
     document.addEventListener('dragover', function (event) {
         event.preventDefault();
 
         console.log("DragOver Length = " + event.dataTransfer.files.length);
+        dragOverOutput = "";
+        dragDropOutput = "";
         for (var i = 0; i < event.dataTransfer.files.length; ++i) {
             console.log("DragOver[" + i + "].blpPath: " + event.dataTransfer.files[i].blpPath);
+            dragOverOutput += "<div>" + event.dataTransfer.files[i].blpPath + "</div>";
         }
+        document.getElementById("output").innerText =
+            "dragOverOutput = " + dragOverOutput +
+            "dragDropOutput = " + dragDropOutput;
     }, true);
 
     document.addEventListener('drop', function (event) {
         event.preventDefault();
 
         console.log("Drop Length = " + event.dataTransfer.files.length);
+        dragDropOutput = "";
         for (var i = 0; i < event.dataTransfer.files.length; ++i) {
             console.log("Drop[" + i + "].blpPath: " + event.dataTransfer.files[i].blpPath);
+            dragDropOutput += "<div>" + event.dataTransfer.files[i].blpPath + "</div>";
         }
+        document.getElementById("output").innerText =
+            "dragOverOutput = " + dragOverOutput +
+            "dragDropOutput = " + dragDropOutput;
     }, true);
 </script>
 </html>
