@@ -223,7 +223,7 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
     if (m_link)
         m_link->ownerRemoved();
 
-    if (document().renderer())
+    if (document().isActive())
         document().removedStyleSheet(removedSheet.get());
 }
 

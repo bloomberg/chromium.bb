@@ -886,6 +886,7 @@ WebCore::IntRect WebPluginContainerImpl::windowClipRect() const
 
     // document().renderer() can be 0 when we receive messages from the
     // plugins while we are destroying a frame.
+    // FIXME: Can we just check m_element->document().isActive() ?
     if (m_element->renderer()->document().renderer()) {
         // Take our element and get the clip rect from the enclosing layer and
         // frame view.

@@ -76,7 +76,7 @@ void StyleElement::removedFromDocument(Document& document, Element* element, Con
         clearSheet();
 
     // If we're in document teardown, then we don't need to do any notification of our sheet's removal.
-    if (document.renderer())
+    if (document.isActive())
         document.removedStyleSheet(removedSheet.get());
 }
 

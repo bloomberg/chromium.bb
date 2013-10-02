@@ -485,7 +485,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
     if (event->isMouseEvent() && toMouseEvent(event)->button())
         return;
 
-    if (!inDocument() || !document().renderer())
+    if (!inDocument() || !document().isActive())
         return;
 
     if (event->type() == eventNames().mousedownEvent)
@@ -510,7 +510,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
 
 bool MediaControlTimelineElement::willRespondToMouseClickEvents()
 {
-    return inDocument() && document().renderer();
+    return inDocument() && document().isActive();
 }
 
 void MediaControlTimelineElement::setPosition(double currentTime)

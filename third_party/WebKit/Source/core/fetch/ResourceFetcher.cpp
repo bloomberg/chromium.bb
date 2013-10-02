@@ -1035,6 +1035,7 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
     bool delaySubresourceLoad = true;
     delaySubresourceLoad = false;
     if (delaySubresourceLoad) {
+        // FIXME: It seems wrong to poke body()->renderer() here.
         bool hasRendering = m_document->body() && m_document->body()->renderer();
         bool canBlockParser = type == Resource::Script || type == Resource::CSSStyleSheet;
         if (!hasRendering && !canBlockParser) {
@@ -1050,6 +1051,7 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
 
 void ResourceFetcher::checkForPendingPreloads()
 {
+    // FIXME: It seems wrong to poke body()->renderer() here.
     if (m_pendingPreloads.isEmpty() || !m_document->body() || !m_document->body()->renderer())
         return;
     while (!m_pendingPreloads.isEmpty()) {

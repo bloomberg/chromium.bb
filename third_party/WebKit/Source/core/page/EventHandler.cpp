@@ -2476,8 +2476,7 @@ bool EventHandler::handleGestureScrollEnd(const PlatformGestureEvent& gestureEve
 bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureEvent)
 {
     Document* document = m_frame->document();
-    RenderObject* documentRenderer = document->renderer();
-    if (!documentRenderer)
+    if (!document->renderView())
         return false;
 
     FrameView* view = m_frame->view();
