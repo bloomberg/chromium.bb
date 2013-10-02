@@ -437,8 +437,7 @@ void RootWindowController::CloseChildWindows() {
   workspace_controller_.reset();
   aura::client::SetTooltipClient(root_window_.get(), NULL);
 
-  // Explicitly destroy top level windows. We do this as during part of
-  // destruction such windows may query the RootWindow for state.
+  // Remove all toplevel windows first.
   std::queue<aura::Window*> non_toplevel_windows;
   non_toplevel_windows.push(root_window_.get());
   while (!non_toplevel_windows.empty()) {
@@ -447,8 +446,6 @@ void RootWindowController::CloseChildWindows() {
     aura::WindowTracker toplevel_windows;
     for (size_t i = 0; i < non_toplevel_window->children().size(); ++i) {
       aura::Window* child = non_toplevel_window->children()[i];
-      if (!child->owned_by_parent())
-        continue;
       if (child->delegate())
         toplevel_windows.Add(child);
       else
@@ -458,14 +455,8 @@ void RootWindowController::CloseChildWindows() {
       delete *toplevel_windows.windows().begin();
   }
   // And then remove the containers.
-  while (!root_window_->children().empty()) {
-    aura::Window* window = root_window_->children()[0];
-    if (window->owned_by_parent()) {
-      delete window;
-    } else {
-      root_window_->RemoveChild(window);
-    }
-  }
+  while (!root_window_->children().empty())
+    delete root_window_->children()[0];
 
   shelf_.reset(NULL);
 }

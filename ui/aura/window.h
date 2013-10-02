@@ -80,7 +80,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void set_owned_by_parent(bool owned_by_parent) {
     owned_by_parent_ = owned_by_parent;
   }
-  bool owned_by_parent() const { return owned_by_parent_; }
 
   // A type is used to identify a class of Windows and customize behavior such
   // as event handling and parenting.  This field should only be consumed by the
