@@ -63,7 +63,7 @@ void AlternateNavURLFetcher::Observe(
       registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                         content::Source<NavigationController>(controller_));
       navigated_to_entry_ = true;
-      ShowInfobarIfPossible();
+      ShowInfoBarIfPossible();
       // WARNING: |this| may be deleted!
       break;
 
@@ -84,7 +84,7 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
   DCHECK_EQ(fetcher_.get(), source);
   SetStatusFromURLFetch(
       source->GetURL(), source->GetStatus(), source->GetResponseCode());
-  ShowInfobarIfPossible();
+  ShowInfoBarIfPossible();
   // WARNING: |this| may be deleted!
 }
 
@@ -132,7 +132,7 @@ void AlternateNavURLFetcher::SetStatusFromURLFetch(
   }
 }
 
-void AlternateNavURLFetcher::ShowInfobarIfPossible() {
+void AlternateNavURLFetcher::ShowInfoBarIfPossible() {
   if (navigated_to_entry_ && (state_ == SUCCEEDED)) {
     AlternateNavInfoBarDelegate::Create(
         InfoBarService::FromWebContents(controller_->GetWebContents()),

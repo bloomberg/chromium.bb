@@ -11,7 +11,10 @@
 #include "chrome/browser/download/test_download_shelf.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/test/base/test_location_bar.h"
+#include "chrome/browser/ui/omnibox/location_bar.h"
+
+class LocationBarTesting;
+class OmniboxView;
 
 namespace extensions {
 class Extension;
@@ -150,6 +153,34 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void DestroyBrowser() OVERRIDE {}
 
  private:
+  class TestLocationBar : public LocationBar {
+   public:
+    TestLocationBar() {}
+    virtual ~TestLocationBar() {}
+
+    // LocationBar:
+    virtual void ShowFirstRunBubble() OVERRIDE {}
+    virtual string16 GetInputString() const OVERRIDE;
+    virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
+    virtual content::PageTransition GetPageTransition() const OVERRIDE;
+    virtual void AcceptInput() OVERRIDE {}
+    virtual void FocusLocation(bool select_all) OVERRIDE {}
+    virtual void FocusSearch() OVERRIDE {}
+    virtual void UpdateContentSettingsIcons() OVERRIDE {}
+    virtual void UpdatePageActions() OVERRIDE {}
+    virtual void InvalidatePageActions() OVERRIDE {}
+    virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE {}
+    virtual void UpdateGeneratedCreditCardView() OVERRIDE {}
+    virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE {}
+    virtual void Revert() OVERRIDE {}
+    virtual const OmniboxView* GetLocationEntry() const OVERRIDE;
+    virtual OmniboxView* GetLocationEntry() OVERRIDE;
+    virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TestLocationBar);
+  };
+
   TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
 

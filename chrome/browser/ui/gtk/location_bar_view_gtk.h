@@ -170,7 +170,7 @@ class LocationBarViewGtk : public OmniboxEditController,
     PageToolViewGtk();
     virtual ~PageToolViewGtk();
 
-    GtkWidget* widget();
+    GtkWidget* widget() { return alignment_.get(); }
 
     bool IsVisible();
 
@@ -188,9 +188,9 @@ class LocationBarViewGtk : public OmniboxEditController,
 
    protected:
     // Theme constants for solid background elements.
-    virtual GdkColor button_border_color() const = 0;
-    virtual GdkColor gradient_top_color() const = 0;
-    virtual GdkColor gradient_bottom_color() const = 0;
+    virtual GdkColor GetButtonBorderColor() const = 0;
+    virtual GdkColor GetGradientTopColor() const = 0;
+    virtual GdkColor GetGradientBottomColor() const = 0;
 
     // Delegate for ButtonPressed message.
     virtual void OnClick(GtkWidget* sender) = 0;

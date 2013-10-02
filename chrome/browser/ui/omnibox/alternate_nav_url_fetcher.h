@@ -54,12 +54,12 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
   State state() const { return state_; }
 
  private:
-  // content::NotificationObserver
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // net::URLFetcherDelegate
+  // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Sets |controller_| to the supplied pointer and begins fetching
@@ -76,7 +76,7 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
   // the fetch of the alternate URL succeeded).  Unless we're still waiting on
   // one of the above conditions to finish, this will also delete us, as whether
   // or not we show an infobar, there is no reason to live further.
-  void ShowInfobarIfPossible();
+  void ShowInfoBarIfPossible();
 
   GURL alternate_nav_url_;
   scoped_ptr<net::URLFetcher> fetcher_;

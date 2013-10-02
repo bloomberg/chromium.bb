@@ -247,8 +247,6 @@
         'test/base/test_browser_window.h',
         'test/base/test_launcher_utils.cc',
         'test/base/test_launcher_utils.h',
-        'test/base/test_location_bar.cc',
-        'test/base/test_location_bar.h',
         'test/base/test_switches.cc',
         'test/base/test_switches.h',
         'test/base/test_tab_strip_model_observer.cc',

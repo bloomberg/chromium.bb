@@ -187,9 +187,9 @@ class ContentSettingImageViewGtk : public LocationBarViewGtk::PageToolViewGtk,
 
  private:
   // PageToolViewGtk
-  virtual GdkColor button_border_color() const OVERRIDE;
-  virtual GdkColor gradient_top_color() const OVERRIDE;
-  virtual GdkColor gradient_bottom_color() const OVERRIDE;
+  virtual GdkColor GetButtonBorderColor() const OVERRIDE;
+  virtual GdkColor GetGradientTopColor() const OVERRIDE;
+  virtual GdkColor GetGradientBottomColor() const OVERRIDE;
   virtual void OnClick(GtkWidget* sender) OVERRIDE;
 
   // BubbleDelegateGtk
@@ -301,18 +301,15 @@ void ContentSettingImageViewGtk::AnimationEnded(
   }
 }
 
-GdkColor ContentSettingImageViewGtk::
-    button_border_color() const {
+GdkColor ContentSettingImageViewGtk::GetButtonBorderColor() const {
   return kContentSettingBorderColor;
 }
 
-GdkColor ContentSettingImageViewGtk::
-    gradient_top_color() const {
+GdkColor ContentSettingImageViewGtk::GetGradientTopColor() const {
   return kContentSettingTopColor;
 }
 
-GdkColor ContentSettingImageViewGtk::
-    gradient_bottom_color() const {
+GdkColor ContentSettingImageViewGtk::GetGradientBottomColor() const {
   return kContentSettingBottomColor;
 }
 
@@ -1778,10 +1775,6 @@ LocationBarViewGtk::PageToolViewGtk::~PageToolViewGtk() {
   alignment_.Destroy();
 }
 
-GtkWidget* LocationBarViewGtk::PageToolViewGtk::widget() {
-  return alignment_.get();
-}
-
 bool LocationBarViewGtk::PageToolViewGtk::IsVisible() {
   return gtk_widget_get_visible(widget());
 }
@@ -1807,7 +1800,7 @@ void LocationBarViewGtk::PageToolViewGtk::StartAnimating() {
     return;
 
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), TRUE);
-  GdkColor border_color = button_border_color();
+  GdkColor border_color = GetButtonBorderColor();
   gtk_util::ActAsRoundedWindow(event_box_.get(), border_color,
                                kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
@@ -1847,8 +1840,8 @@ gboolean LocationBarViewGtk::PageToolViewGtk::OnExpose(
 
   cairo_pattern_t* pattern = cairo_pattern_create_linear(0, 0, 0, height);
 
-  const GdkColor top_color = gradient_top_color();
-  const GdkColor bottom_color = gradient_bottom_color();
+  const GdkColor top_color = GetGradientTopColor();
+  const GdkColor bottom_color = GetGradientBottomColor();
   cairo_pattern_add_color_stop_rgb(
       pattern, 0.0,
       top_color.red/255.0,
