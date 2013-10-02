@@ -7,6 +7,8 @@
       'SOURCES' : [
         'main.cc',
         'socket_test.cc',
+        'echo_server.cc',
+        'echo_server.h',
       ],
       'DEPS': ['ppapi_simple', 'nacl_io'],
       # Order matters here: gtest has a "main" function that will be used if

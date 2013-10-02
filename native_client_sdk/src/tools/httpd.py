@@ -38,7 +38,7 @@ def SanityCheckDirectory(dirname):
   logging.error('For security, httpd.py should only be run from within the')
   logging.error('example directory tree.')
   logging.error('Attempting to serve from %s.' % abs_serve_dir)
-  logging.error('Run with --no_dir_check to bypass this check.')
+  logging.error('Run with --no-dir-check to bypass this check.')
   sys.exit(1)
 
 
@@ -282,17 +282,16 @@ def main(args):
   parser = optparse.OptionParser()
   parser.add_option('-C', '--serve-dir',
       help='Serve files out of this directory.',
-      dest='serve_dir', default=os.path.abspath('.'))
+      default=os.path.abspath('.'))
   parser.add_option('-p', '--port',
-      help='Run server on this port.',
-      dest='port', default=5103)
-  parser.add_option('--no_dir_check',
+      help='Run server on this port.', default=5103)
+  parser.add_option('--no-dir-check', '--no_dir_check',
       help='No check to ensure serving from safe directory.',
       dest='do_safe_check', action='store_false', default=True)
   parser.add_option('--test-mode',
       help='Listen for posts to /ok or /fail and shut down the server with '
           ' errorcodes 0 and 1 respectively.',
-      dest='test_mode', action='store_true')
+      action='store_true')
   options, args = parser.parse_args(args)
   if options.do_safe_check:
     SanityCheckDirectory(options.serve_dir)

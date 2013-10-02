@@ -14,43 +14,43 @@
 #include <map>
 #include <string>
 
+#include "echo_server.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
+#include "ppapi/cpp/message_loop.h"
+#include "ppapi_simple/ps.h"
 
 #ifdef PROVIDES_SOCKET_API
 
 using namespace nacl_io;
 using namespace sdk_util;
 
-// No error expected
-#define ENONE 0
 #define LOCAL_HOST 0x7F000001
 #define PORT1 4006
 #define PORT2 4007
 #define ANY_PORT 0
 
-
 namespace {
+
+void IP4ToSockAddr(uint32_t ip, uint16_t port, struct sockaddr_in* addr) {
+  memset(addr, 0, sizeof(*addr));
+
+  addr->sin_family = AF_INET;
+  addr->sin_port = htons(port);
+  addr->sin_addr.s_addr = htonl(ip);
+}
+
 class SocketTest : public ::testing::Test {
  public:
   SocketTest() : sock1(0), sock2(0) {}
 
-  ~SocketTest() {
+  void TearDown() {
     EXPECT_EQ(0, close(sock1));
     EXPECT_EQ(0, close(sock2));
-  }
-
-  void IP4ToSockAddr(uint32_t ip, uint16_t port, struct sockaddr_in* addr) {
-    memset(addr, 0, sizeof(*addr));
-
-    addr->sin_family = AF_INET;
-    addr->sin_port = htons(port);
-    addr->sin_addr.s_addr = htonl(ip);
   }
 
   int Bind(int fd, uint32_t ip, uint16_t port) {
@@ -65,11 +65,6 @@ class SocketTest : public ::testing::Test {
     return 0;
   }
 
-  void SetupPorts() {
-    EXPECT_EQ(Bind(sock1, LOCAL_HOST, 0), ENONE);
-    EXPECT_EQ(Bind(sock2, LOCAL_HOST, 0), ENONE);
-  }
-
  public:
   int sock1;
   int sock2;
@@ -77,24 +72,66 @@ class SocketTest : public ::testing::Test {
 
 class SocketTestUDP : public SocketTest {
  public:
-  SocketTestUDP() {
+  SocketTestUDP() {}
+
+  void SetUp() {
     sock1 = socket(AF_INET, SOCK_DGRAM, 0);
     sock2 = socket(AF_INET, SOCK_DGRAM, 0);
 
-    EXPECT_LT(-1, sock1);
-    EXPECT_LT(-1, sock2);
+    EXPECT_GT(sock1, -1);
+    EXPECT_GT(sock2, -1);
   }
 };
 
-class SocketTestTCP : public SocketTest {
+class SocketTestWithServer : public ::testing::Test {
  public:
-  SocketTestTCP() {
-    sock1 = socket(AF_INET, SOCK_STREAM, 0);
-    sock2 = socket(AF_INET, SOCK_STREAM, 0);
-
-    EXPECT_LT(-1, sock1);
-    EXPECT_LT(-1, sock2);
+  SocketTestWithServer() : instance_(PSGetInstanceId()) {
+    pthread_mutex_init(&ready_lock_, NULL);
+    pthread_cond_init(&ready_cond_, NULL);
   }
+
+  void ServerThreadMain() {
+    loop_.AttachToCurrentThread();
+    pp::Instance instance(PSGetInstanceId());
+    EchoServer server(&instance, PORT1, ServerLog, &ready_cond_, &ready_lock_);
+    loop_.Run();
+  }
+
+  static void* ServerThreadMainStatic(void* arg) {
+    SocketTestWithServer* test = (SocketTestWithServer*)arg;
+    test->ServerThreadMain();
+    return NULL;
+  }
+
+  void SetUp() {
+    loop_ = pp::MessageLoop(&instance_);
+    pthread_mutex_lock(&ready_lock_);
+
+    // Start an echo server on a background thread.
+    pthread_create(&server_thread_, NULL, ServerThreadMainStatic, this);
+
+    // Wait for thread to signal that it is ready to accept connections.
+    pthread_cond_wait(&ready_cond_, &ready_lock_);
+    pthread_mutex_unlock(&ready_lock_);
+  }
+
+  void TearDown() {
+    // Stop the echo server and the background thread it runs on
+    loop_.PostQuit(true);
+    pthread_join(server_thread_, NULL);
+  }
+
+  static void ServerLog(const char* msg) {
+    // Uncomment to see logs of echo server on stdout
+    //printf("server: %s\n", msg);
+  }
+
+ protected:
+  pp::MessageLoop loop_;
+  pp::Instance instance_;
+  pthread_cond_t ready_cond_;
+  pthread_mutex_t ready_lock_;
+  pthread_t server_thread_;
 };
 
 }  // namespace
@@ -125,19 +162,19 @@ TEST(SocketTestSimple, Socket) {
 
 TEST_F(SocketTestUDP, Bind) {
   // Bind away.
-  EXPECT_EQ(Bind(sock1, LOCAL_HOST, PORT1), ENONE);
+  EXPECT_EQ(0, Bind(sock1, LOCAL_HOST, PORT1));
 
   // Invalid to rebind a socket.
-  EXPECT_EQ(Bind(sock1, LOCAL_HOST, PORT1), EINVAL);
+  EXPECT_EQ(EINVAL, Bind(sock1, LOCAL_HOST, PORT1));
 
   // Addr in use.
-  EXPECT_EQ(Bind(sock2, LOCAL_HOST, PORT1), EADDRINUSE);
+  EXPECT_EQ(EADDRINUSE, Bind(sock2, LOCAL_HOST, PORT1));
 
   // Bind with a wildcard.
-  EXPECT_EQ(Bind(sock2, LOCAL_HOST, ANY_PORT), ENONE);
+  EXPECT_EQ(0, Bind(sock2, LOCAL_HOST, ANY_PORT));
 
   // Invalid to rebind after wildcard
-  EXPECT_EQ(Bind(sock2, LOCAL_HOST, PORT1), EINVAL);
+  EXPECT_EQ(EINVAL, Bind(sock2, LOCAL_HOST, PORT1));
 
 }
 
@@ -148,8 +185,8 @@ TEST_F(SocketTestUDP, SendRcv) {
   memset(outbuf, 1, sizeof(outbuf));
   memset(inbuf, 0, sizeof(inbuf));
 
-  EXPECT_EQ(Bind(sock1, LOCAL_HOST, PORT1), ENONE);
-  EXPECT_EQ(Bind(sock2, LOCAL_HOST, PORT2), ENONE);
+  EXPECT_EQ(0, Bind(sock1, LOCAL_HOST, PORT1));
+  EXPECT_EQ(0, Bind(sock2, LOCAL_HOST, PORT2));
 
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
@@ -174,25 +211,25 @@ TEST_F(SocketTestUDP, SendRcv) {
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 }
 
-const size_t queue_size = 65536 * 8;
+const size_t kQueueSize = 65536 * 8;
 TEST_F(SocketTestUDP, FullFifo) {
   char outbuf[16 * 1024];
 
-  EXPECT_EQ(Bind(sock1, LOCAL_HOST, PORT1), ENONE);
-  EXPECT_EQ(Bind(sock2, LOCAL_HOST, PORT2), ENONE);
+  EXPECT_EQ(0, Bind(sock1, LOCAL_HOST, PORT1));
+  EXPECT_EQ(0, Bind(sock2, LOCAL_HOST, PORT2));
 
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
   IP4ToSockAddr(LOCAL_HOST, PORT2, &addr);
 
   size_t total = 0;
-  while (total < queue_size * 8) {
+  while (total < kQueueSize * 8) {
      int len = sendto(sock1, outbuf, sizeof(outbuf), MSG_DONTWAIT,
                       (sockaddr *) &addr, addrlen);
 
      if (len <= 0) {
        EXPECT_EQ(-1, len);
-       EXPECT_EQ(errno, EWOULDBLOCK);
+       EXPECT_EQ(EWOULDBLOCK, errno);
        break;
      }
 
@@ -202,18 +239,15 @@ TEST_F(SocketTestUDP, FullFifo) {
      }
 
   }
-  EXPECT_GT(total, queue_size -1);
-  EXPECT_LT(total, queue_size * 8);
+  EXPECT_GT(total, kQueueSize - 1);
+  EXPECT_LT(total, kQueueSize * 8);
 }
 
-// TODO(noelallen) BUG=294412
-// Re-enable testing on bots when server sockets are available.
-TEST_F(SocketTestTCP, DISABLED_Connect) {
+TEST_F(SocketTestWithServer, TCPConnect) {
   char outbuf[256];
   char inbuf[512];
 
   memset(outbuf, 1, sizeof(outbuf));
-  memset(inbuf, 0, sizeof(inbuf));
 
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_GT(sock, -1);
@@ -222,15 +256,25 @@ TEST_F(SocketTestTCP, DISABLED_Connect) {
   socklen_t addrlen = sizeof(addr);
 
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
-  int err = connect(sock, (sockaddr*) &addr, addrlen);
 
-  EXPECT_EQ(ENONE, err) << "Failed with errno: " << errno << "\n";
+  EXPECT_EQ(0, connect(sock, (sockaddr*) &addr, addrlen))
+    << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
+  // Send two different messages to the echo server and verify the
+  // response matches.
+  strcpy(outbuf, "hello");
+  memset(inbuf, 0, sizeof(inbuf));
   EXPECT_EQ(sizeof(outbuf), write(sock, outbuf, sizeof(outbuf)));
   EXPECT_EQ(sizeof(outbuf), read(sock, inbuf, sizeof(inbuf)));
-
-  // Now they should be the same
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
+
+  strcpy(outbuf, "world");
+  memset(inbuf, 0, sizeof(inbuf));
+  EXPECT_EQ(sizeof(outbuf), write(sock, outbuf, sizeof(outbuf)));
+  EXPECT_EQ(sizeof(outbuf), read(sock, inbuf, sizeof(inbuf)));
+  EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
+
+  ASSERT_EQ(0, close(sock));
 }
 
 TEST_F(SocketTest, Setsockopt) {

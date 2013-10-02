@@ -3,50 +3,10 @@
 // found in the LICENSE file.
 // Called by the common.js module.
 
-function runTCPEchoServer(port) {
-  console.log("Starting server on TCP port: " + port);
-  chrome.socket.create("tcp", {}, function(createInfo) {
-    var listeningSocket = createInfo.socketId;
-    chrome.socket.listen(listeningSocket,
-                         '127.0.0.1',
-                         port,
-                         10,
-                         function(result) {
-      if (result !== 0) {
-        console.log("Listen failed: " + result);
-        return;
-      }
-
-      chrome.socket.accept(listeningSocket, function(acceptInfo) {
-        if (result !== 0) {
-          console.log("Accept failed: " + result);
-          return;
-        }
-
-        var newSock = acceptInfo.socketId;
-
-        var readCallback = function(readInfo) {
-          if (readInfo.resultCode < 0) {
-            console.log("Read failed: " + readInfo.resultCode);
-            chrome.socket.destroy(newSock);
-            return;
-          }
-
-          chrome.socket.write(newSock, readInfo.data, function(writeInfo) {})
-          chrome.socket.read(newSock, readCallback);
-        }
-
-        chrome.socket.read(newSock, readCallback);
-      })
-    })
-  })
-}
-
 function moduleDidLoad() {
   // The module is not hidden by default so we can easily see if the plugin
   // failed to load.
   common.hideModule();
-  runTCPEchoServer(4006);
 }
 
 var currentTestEl = null;
