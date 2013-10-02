@@ -854,6 +854,7 @@
             'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+            'browser/aura/image_transport_factory_browsertest.cc',
             'browser/bookmarklet_browsertest.cc',
             'browser/browser_plugin/browser_plugin_host_browsertest.cc',
             'browser/browser_plugin/test_browser_plugin_embedder.cc',
@@ -1024,6 +1025,10 @@
                 'browser/accessibility/dump_accessibility_tree_browsertest.cc',
                 'browser/plugin_browsertest.cc',
                 'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
+              ],
+            }, {
+              'sources/': [
+                ['exclude', '^browser/aura/'],
               ],
             }],
             ['OS!="android" and OS!="ios"', {

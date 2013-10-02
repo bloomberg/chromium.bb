@@ -407,16 +407,6 @@ GpuProcessTransportFactory::OffscreenCompositorContextProvider() {
       GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
       "Compositor-Offscreen");
 
-  if (!offscreen_compositor_contexts_.get())
-    return NULL;
-
-  if (!ui::Compositor::WasInitializedWithThread()) {
-    offscreen_compositor_contexts_->SetLostContextCallback(base::Bind(
-        &GpuProcessTransportFactory::
-            OnLostMainThreadSharedContextInsideCallback,
-        callback_factory_.GetWeakPtr()));
-  }
-
   return offscreen_compositor_contexts_;
 }
 
@@ -440,9 +430,14 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
             OffscreenCompositorContextProvider().get());
   }
 
-  if (shared_main_thread_contexts_ &&
-      !shared_main_thread_contexts_->BindToCurrentThread())
-    shared_main_thread_contexts_ = NULL;
+  if (shared_main_thread_contexts_) {
+    shared_main_thread_contexts_->SetLostContextCallback(
+        base::Bind(&GpuProcessTransportFactory::
+                        OnLostMainThreadSharedContextInsideCallback,
+                   callback_factory_.GetWeakPtr()));
+    if (!shared_main_thread_contexts_->BindToCurrentThread())
+      shared_main_thread_contexts_ = NULL;
+  }
   return shared_main_thread_contexts_;
 }
 
