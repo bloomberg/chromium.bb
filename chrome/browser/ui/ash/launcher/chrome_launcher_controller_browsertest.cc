@@ -1104,7 +1104,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MultipleOwnedTabs) {
   EXPECT_EQ(tab_strip->GetActiveWebContents(), first_tab);
 }
 
-IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilter) {
+// crbug.com/303231
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DISABLED_RefocusFilter) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   ash::LauncherID shortcut_id = CreateShortcut("app1");
