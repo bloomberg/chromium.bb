@@ -18,7 +18,8 @@ DeviceState::DeviceState(const std::string& path)
       support_network_scan_(false),
       scanning_(false),
       sim_lock_enabled_(false),
-      sim_present_(true) {
+      sim_present_(true),
+      eap_authentication_completed_(false) {
 }
 
 DeviceState::~DeviceState() {
@@ -115,6 +116,8 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &mdn_);
   } else if (key == shill::kSIMPresentProperty) {
     return GetBooleanValue(key, value, &sim_present_);
+  } else if (key == shill::kEapAuthenticationCompletedProperty) {
+    return GetBooleanValue(key, value, &eap_authentication_completed_);
   }
   return false;
 }

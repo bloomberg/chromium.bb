@@ -5,6 +5,7 @@
 #include "chromeos/network/policy_util.h"
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -79,29 +80,46 @@ bool IsPolicyMatching(const base::DictionaryValue& policy,
   std::string policy_type;
   policy.GetStringWithoutPathExpansion(onc::network_config::kType,
                                        &policy_type);
-  std::string network_type;
+  std::string actual_network_type;
   actual_network.GetStringWithoutPathExpansion(onc::network_config::kType,
-                                               &network_type);
-  if (policy_type != network_type)
+                                               &actual_network_type);
+  if (policy_type != actual_network_type)
     return false;
 
-  if (network_type != onc::network_type::kWiFi)
-    return false;
+  if (actual_network_type == onc::network_type::kEthernet) {
+    const base::DictionaryValue* policy_ethernet = NULL;
+    policy.GetDictionaryWithoutPathExpansion(onc::network_config::kEthernet,
+                                             &policy_ethernet);
+    const base::DictionaryValue* actual_ethernet = NULL;
+    actual_network.GetDictionaryWithoutPathExpansion(
+        onc::network_config::kEthernet, &actual_ethernet);
+    if (!policy_ethernet || !actual_ethernet)
+      return false;
 
-  const base::DictionaryValue* policy_wifi = NULL;
-  policy.GetDictionaryWithoutPathExpansion(onc::network_config::kWiFi,
-                                           &policy_wifi);
-  const base::DictionaryValue* actual_wifi = NULL;
-  actual_network.GetDictionaryWithoutPathExpansion(onc::network_config::kWiFi,
-                                                   &actual_wifi);
-  if (!policy_wifi || !actual_wifi)
-    return false;
+    std::string policy_auth;
+    policy_ethernet->GetStringWithoutPathExpansion(
+        onc::ethernet::kAuthentication, &policy_auth);
+    std::string actual_auth;
+    actual_ethernet->GetStringWithoutPathExpansion(
+        onc::ethernet::kAuthentication, &actual_auth);
+    return policy_auth == actual_auth;
+  } else if (actual_network_type == onc::network_type::kWiFi) {
+    const base::DictionaryValue* policy_wifi = NULL;
+    policy.GetDictionaryWithoutPathExpansion(onc::network_config::kWiFi,
+                                             &policy_wifi);
+    const base::DictionaryValue* actual_wifi = NULL;
+    actual_network.GetDictionaryWithoutPathExpansion(onc::network_config::kWiFi,
+                                                     &actual_wifi);
+    if (!policy_wifi || !actual_wifi)
+      return false;
 
-  std::string policy_ssid;
-  policy_wifi->GetStringWithoutPathExpansion(onc::wifi::kSSID, &policy_ssid);
-  std::string actual_ssid;
-  actual_wifi->GetStringWithoutPathExpansion(onc::wifi::kSSID, &actual_ssid);
-  return (policy_ssid == actual_ssid);
+    std::string policy_ssid;
+    policy_wifi->GetStringWithoutPathExpansion(onc::wifi::kSSID, &policy_ssid);
+    std::string actual_ssid;
+    actual_wifi->GetStringWithoutPathExpansion(onc::wifi::kSSID, &actual_ssid);
+    return (policy_ssid == actual_ssid);
+  }
+  return false;
 }
 
 }  // namespace

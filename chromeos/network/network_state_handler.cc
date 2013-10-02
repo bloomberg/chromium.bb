@@ -284,9 +284,7 @@ void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
-    if (!network->update_received())
-      continue;
-    if (network->Matches(type))
+    if (network->update_received() && network->Matches(type))
       list->push_back(network);
   }
 }
@@ -298,13 +296,17 @@ void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
        iter != device_list_.end(); ++iter) {
     const DeviceState* device = (*iter)->AsDeviceState();
     DCHECK(device);
-    if (!device->update_received())
-      continue;
-    list->push_back(device);
+    if (device->update_received())
+      list->push_back(device);
   }
 }
 
 void NetworkStateHandler::GetFavoriteList(FavoriteStateList* list) const {
+  GetFavoriteListByType(NetworkTypePattern::Default(), list);
+}
+
+void NetworkStateHandler::GetFavoriteListByType(const NetworkTypePattern& type,
+                                                FavoriteStateList* list) const {
   DCHECK(list);
   FavoriteStateList result;
   list->clear();
@@ -312,10 +314,10 @@ void NetworkStateHandler::GetFavoriteList(FavoriteStateList* list) const {
        iter != favorite_list_.end(); ++iter) {
     const FavoriteState* favorite = (*iter)->AsFavoriteState();
     DCHECK(favorite);
-    if (!favorite->update_received())
-      continue;
-    if (favorite->is_favorite())
+    if (favorite->update_received() && favorite->is_favorite() &&
+        favorite->Matches(type)) {
       list->push_back(favorite);
+    }
   }
 }
 
@@ -374,6 +376,50 @@ void NetworkStateHandler::SetCheckPortalList(
     const std::string& check_portal_list) {
   NET_LOG_EVENT("SetCheckPortalList", check_portal_list);
   shill_property_handler_->SetCheckPortalList(check_portal_list);
+}
+
+const FavoriteState* NetworkStateHandler::GetEAPForEthernet(
+    const std::string& service_path) const {
+  const NetworkState* network = GetNetworkState(service_path);
+  if (!network) {
+    NET_LOG_ERROR("GetEAPForEthernet", "Unknown service path " + service_path);
+    return NULL;
+  }
+  if (network->type() != shill::kTypeEthernet) {
+    NET_LOG_ERROR("GetEAPForEthernet", "Not of type Ethernet: " + service_path);
+    return NULL;
+  }
+  if (!network->IsConnectedState())
+    return NULL;
+
+  // The same EAP service is shared for all ethernet services/devices.
+  // However EAP is used/enabled per device and only if the connection was
+  // successfully established.
+  const DeviceState* device = GetDeviceState(network->device_path());
+  if (!device) {
+    NET_LOG_ERROR(
+        "GetEAPForEthernet",
+        base::StringPrintf("Unknown device %s of connected ethernet service %s",
+                           service_path.c_str(),
+                           network->device_path().c_str()));
+    return NULL;
+  }
+  if (!device->eap_authentication_completed())
+    return NULL;
+
+  FavoriteStateList list;
+  GetFavoriteListByType(NetworkTypePattern::Primitive(shill::kTypeEthernetEap),
+                        &list);
+  if (list.empty()) {
+    NET_LOG_ERROR("GetEAPForEthernet",
+                  base::StringPrintf(
+                      "Ethernet service %s connected using EAP, but no "
+                      "EAP service found.",
+                      service_path.c_str()));
+    return NULL;
+  }
+  DCHECK(list.size() == 1);
+  return list.front();
 }
 
 void NetworkStateHandler::GetNetworkStatePropertiesForTest(
@@ -576,6 +622,20 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
 
   if (key == shill::kScanningProperty && device->scanning() == false)
     ScanCompleted(device->type());
+  if (key == shill::kEapAuthenticationCompletedProperty) {
+    // Notify a change for each Ethernet service using this device.
+    NetworkStateList ethernet_services;
+    GetNetworkListByType(NetworkTypePattern::Ethernet(), &ethernet_services);
+    for (NetworkStateList::const_iterator it = ethernet_services.begin();
+         it != ethernet_services.end(); ++it) {
+      const NetworkState* ethernet_service = *it;
+      if (ethernet_service->update_received() ||
+          ethernet_service->device_path() != device->path()) {
+        continue;
+      }
+      RequestUpdateForNetwork(ethernet_service->path());
+    }
+  }
 }
 
 void NetworkStateHandler::CheckPortalListChanged(

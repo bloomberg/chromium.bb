@@ -209,6 +209,22 @@ void PolicyApplicator::CreateAndWriteNewShillConfiguration(
     const std::string& guid,
     const base::DictionaryValue& policy,
     const base::DictionaryValue* user_settings) {
+  // Ethernet (non EAP) settings, like GUID or UIData, cannot be stored per
+  // user. Abort in that case.
+  std::string type;
+  policy.GetStringWithoutPathExpansion(onc::network_config::kType, &type);
+  if (type == onc::network_type::kEthernet &&
+      profile_.type() == NetworkProfile::TYPE_USER) {
+    const base::DictionaryValue* ethernet = NULL;
+    policy.GetDictionaryWithoutPathExpansion(onc::network_config::kEthernet,
+                                             &ethernet);
+    std::string auth;
+    ethernet->GetStringWithoutPathExpansion(onc::ethernet::kAuthentication,
+                                            &auth);
+    if (auth == onc::ethernet::kNone)
+      return;
+  }
+
   scoped_ptr<base::DictionaryValue> shill_dictionary =
       policy_util::CreateShillConfiguration(
           profile_, guid, &policy, user_settings);

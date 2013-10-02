@@ -20,11 +20,13 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_normalizer.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/shill_property_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_server.h"
@@ -252,6 +254,8 @@ const base::DictionaryValue* GetNetworkConfigByGUID(
        it != network_configs.end(); ++it) {
     const base::DictionaryValue* network = NULL;
     (*it)->GetAsDictionary(&network);
+    DCHECK(network);
+
     std::string current_guid;
     network->GetStringWithoutPathExpansion(onc::network_config::kGUID,
                                            &current_guid);
@@ -259,6 +263,63 @@ const base::DictionaryValue* GetNetworkConfigByGUID(
       return network;
   }
   return NULL;
+}
+
+const base::DictionaryValue* GetNetworkConfigForEthernetWithoutEAP(
+    const base::ListValue& network_configs) {
+  VLOG(2) << "Search for ethernet policy without EAP.";
+  for (base::ListValue::const_iterator it = network_configs.begin();
+       it != network_configs.end(); ++it) {
+    const base::DictionaryValue* network = NULL;
+    (*it)->GetAsDictionary(&network);
+    DCHECK(network);
+
+    std::string type;
+    network->GetStringWithoutPathExpansion(onc::network_config::kType, &type);
+    if (type != onc::network_type::kEthernet)
+      continue;
+
+    const base::DictionaryValue* ethernet = NULL;
+    network->GetDictionaryWithoutPathExpansion(onc::network_config::kEthernet,
+                                               &ethernet);
+
+    std::string auth;
+    ethernet->GetStringWithoutPathExpansion(onc::ethernet::kAuthentication,
+                                            &auth);
+    if (auth == onc::ethernet::kNone)
+      return network;
+  }
+  return NULL;
+}
+
+const base::DictionaryValue* GetNetworkConfigForNetworkFromOnc(
+    const base::ListValue& network_configs,
+    const FavoriteState& favorite) {
+  // In all cases except Ethernet, we use the GUID of |network|.
+  if (!favorite.Matches(NetworkTypePattern::Ethernet()))
+    return GetNetworkConfigByGUID(network_configs, favorite.guid());
+
+  // Ethernet is always shared and thus cannot store a GUID per user. Thus we
+  // search for any Ethernet policy intead of a matching GUID.
+  // EthernetEAP service contains only the EAP parameters and stores the GUID of
+  // the respective ONC policy. The EthernetEAP service itself is however never
+  // in state "connected". An EthernetEAP policy must be applied, if an Ethernet
+  // service is connected using the EAP parameters.
+  const FavoriteState* ethernet_eap = NULL;
+  if (NetworkHandler::IsInitialized()) {
+    ethernet_eap =
+        NetworkHandler::Get()->network_state_handler()->GetEAPForEthernet(
+            favorite.path());
+  }
+
+  // The GUID associated with the EthernetEAP service refers to the ONC policy
+  // with "Authentication: 8021X".
+  if (ethernet_eap)
+    return GetNetworkConfigByGUID(network_configs, ethernet_eap->guid());
+
+  // Otherwise, EAP is not used and instead the Ethernet policy with
+  // "Authentication: None" applies.
+  return GetNetworkConfigForEthernetWithoutEAP(network_configs);
 }
 
 const base::DictionaryValue* GetPolicyForNetworkFromPref(
@@ -298,7 +359,7 @@ const base::DictionaryValue* GetPolicyForNetworkFromPref(
   onc_policy_value->GetAsList(&onc_policy);
   DCHECK(onc_policy);
 
-  return GetNetworkConfigByGUID(*onc_policy, favorite.guid());
+  return GetNetworkConfigForNetworkFromOnc(*onc_policy, favorite);
 }
 
 }  // namespace
@@ -308,7 +369,7 @@ const base::DictionaryValue* GetPolicyForFavoriteNetwork(
     const PrefService* local_state_prefs,
     const FavoriteState& favorite,
     onc::ONCSource* onc_source) {
-  VLOG(2) << "GetPolicyForFavorite: " << favorite.path();
+  VLOG(2) << "GetPolicyForFavoriteNetwork: " << favorite.path();
   *onc_source = onc::ONC_SOURCE_NONE;
 
   const base::DictionaryValue* network_policy = GetPolicyForNetworkFromPref(

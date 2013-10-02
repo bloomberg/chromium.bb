@@ -172,6 +172,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // favorite is visible and retrieve the complete properties (and vice-versa).
   void GetFavoriteList(FavoriteStateList* list) const;
 
+  // Like GetFavoriteList() but only returns favorites with matching |type|.
+  void GetFavoriteListByType(const NetworkTypePattern& type,
+                             FavoriteStateList* list) const;
+
   // Finds and returns a favorite state by |service_path| or NULL if not found.
   const FavoriteState* GetFavoriteState(const std::string& service_path) const;
 
@@ -207,6 +211,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
   const std::string& GetCheckPortalListForTest() const {
     return check_portal_list_;
   }
+
+  // Returns the FavoriteState of the EthernetEAP service, which contains the
+  // EAP parameters used by the ethernet with |service_path|. If |service_path|
+  // doesn't refer to an ethernet service or if the ethernet service is not
+  // connected using EAP, returns NULL.
+  const FavoriteState* GetEAPForEthernet(const std::string& service_path) const;
 
   // Generates a DictionaryValue of all NetworkState properties. Currently
   // provided for debugging purposes only.
@@ -309,7 +319,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Logs an event and notifies observers.
   void OnDefaultNetworkChanged();
 
-  // Notifies observers and updates connecting_network_.
+  // Notifies observers about changes to |network|.
   void NetworkPropertiesUpdated(const NetworkState* network);
 
   // Called whenever Device.Scanning state transitions to false.

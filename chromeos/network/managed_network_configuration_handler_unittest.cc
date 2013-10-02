@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
@@ -309,6 +310,47 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnconfigured) {
   message_loop_.RunUntilIdle();
 }
 
+// Ensure that EAP settings for ethernet are matched with the right profile
+// entry and written to the dedicated EthernetEAP service.
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       SetPolicyManageUnmanagedEthernetEAP) {
+  InitializeStandardProfiles();
+  scoped_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/"
+          "shill_policy_on_unmanaged_ethernet_eap.json");
+
+  SetUpEntry("policy/shill_unmanaged_ethernet_eap.json",
+             kUser1ProfilePath,
+             "eth_entry");
+
+  // Also setup an unrelated WiFi configuration to verify that the right entry
+  // is matched.
+  SetUpEntry("policy/shill_unmanaged_user_wifi1.json",
+             kUser1ProfilePath,
+             "wifi_entry");
+
+  EXPECT_CALL(mock_profile_client_,
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
+
+  EXPECT_CALL(mock_profile_client_,
+              GetEntry(dbus::ObjectPath(kUser1ProfilePath), _, _, _)).Times(2);
+
+  EXPECT_CALL(
+      mock_profile_client_,
+      DeleteEntry(dbus::ObjectPath(kUser1ProfilePath), "eth_entry", _, _));
+
+  EXPECT_CALL(
+      mock_manager_client_,
+      ConfigureServiceForProfile(dbus::ObjectPath(kUser1ProfilePath),
+                                 IsEqualTo(expected_shill_properties.get()),
+                                 _, _));
+
+  SetPolicy(
+      onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_ethernet_eap.onc");
+  message_loop_.RunUntilIdle();
+}
+
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
   InitializeStandardProfiles();
   EXPECT_CALL(mock_profile_client_, GetProperties(_, _, _));
@@ -325,10 +367,9 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
 
   EXPECT_CALL(mock_profile_client_, GetProperties(_, _, _));
 
-  EXPECT_CALL(mock_profile_client_,
-              GetEntry(dbus::ObjectPath(kUser1ProfilePath),
-                       "some_entry_path",
-                       _, _));
+  EXPECT_CALL(
+      mock_profile_client_,
+      GetEntry(dbus::ObjectPath(kUser1ProfilePath), "some_entry_path", _, _));
 
   SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();

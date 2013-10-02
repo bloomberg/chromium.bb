@@ -231,7 +231,8 @@ void PreferencesBrowserTest::VerifyKeyValue(const base::DictionaryValue& dict,
                                             const base::Value& expected) {
   const base::Value* actual = NULL;
   EXPECT_TRUE(dict.Get(key, &actual)) << "Was checking key: " << key;
-  EXPECT_EQ(expected, *actual) << "Was checking key: " << key;
+  if (actual)
+    EXPECT_EQ(expected, *actual) << "Was checking key: " << key;
 }
 
 void PreferencesBrowserTest::VerifyPref(const base::DictionaryValue* prefs,
@@ -240,20 +241,21 @@ void PreferencesBrowserTest::VerifyPref(const base::DictionaryValue* prefs,
                                         const std::string& controlledBy,
                                         bool disabled,
                                         bool uncommitted) {
-  const base::Value* pref;
-  const base::DictionaryValue* dict;
+  const base::Value* pref = NULL;
+  const base::DictionaryValue* dict = NULL;
   ASSERT_TRUE(prefs->GetWithoutPathExpansion(name, &pref));
   ASSERT_TRUE(pref->GetAsDictionary(&dict));
   VerifyKeyValue(*dict, "value", *value);
-  if (!controlledBy.empty()) {
+  if (!controlledBy.empty())
     VerifyKeyValue(*dict, "controlledBy", base::StringValue(controlledBy));
-  } else {
+  else
     EXPECT_FALSE(dict->HasKey("controlledBy"));
-  }
+
   if (disabled)
     VerifyKeyValue(*dict, "disabled", base::FundamentalValue(true));
   else if (dict->HasKey("disabled"))
     VerifyKeyValue(*dict, "disabled", base::FundamentalValue(false));
+
   if (uncommitted)
     VerifyKeyValue(*dict, "uncommitted", base::FundamentalValue(true));
   else if (dict->HasKey("uncommitted"))
@@ -841,6 +843,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
             g_browser_process->local_state(),
             *network,
             &actual_source);
+    ASSERT_TRUE(proxy_dict);
     std::string actual_proxy_server;
     EXPECT_TRUE(proxy_dict->GetProxyServer(&actual_proxy_server));
     EXPECT_EQ(expected_server, actual_proxy_server);
