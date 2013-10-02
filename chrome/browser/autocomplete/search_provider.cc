@@ -1495,6 +1495,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
       !is_keyword || providers_.default_provider().empty());
   if (!match.destination_url.is_valid())
     return;
+  match.search_terms_args->bookmark_bar_pinned =
+      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
   match.RecordAdditionalInfo(kRelevanceFromServerKey,
                              relevance_from_server ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey,

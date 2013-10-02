@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,6 +61,7 @@ const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
 // Like google:baseURL, but for the Search Suggest capability.
 const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
 const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
+const char kGoogleBookmarkBarPinnedParameter[] = "google:bookmarkBarPinned";
 const char kGoogleCursorPositionParameter[] = "google:cursorPosition";
 const char kGoogleInstantEnabledParameter[] = "google:instantEnabledParameter";
 const char kGoogleInstantExtendedEnabledParameter[] =
@@ -182,6 +184,11 @@ bool IsTemplateParameterString(const std::string& param) {
       (*(param.rbegin()) == kEndParameter);
 }
 
+bool ShowingSearchTermsOnSRP() {
+  return chrome::IsInstantExtendedAPIEnabled() &&
+      !chrome::ShouldSuppressInstantExtendedOnSRP();
+}
+
 }  // namespace
 
 
@@ -193,6 +200,7 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const string16& search_terms)
       cursor_position(string16::npos),
       omnibox_start_margin(-1),
       page_classification(AutocompleteInput::INVALID_SPEC),
+      bookmark_bar_pinned(false),
       append_extra_query_params(false) {
 }
 
@@ -210,7 +218,8 @@ TemplateURLRef::TemplateURLRef(TemplateURL* owner, Type type)
       valid_(false),
       supports_replacements_(false),
       search_term_key_location_(url_parse::Parsed::QUERY),
-      prepopulated_(false) {
+      prepopulated_(false),
+      showing_search_terms_(ShowingSearchTermsOnSRP()) {
   DCHECK(owner_);
   DCHECK_NE(INDEXED, type_);
 }
@@ -223,7 +232,8 @@ TemplateURLRef::TemplateURLRef(TemplateURL* owner, size_t index_in_owner)
       valid_(false),
       supports_replacements_(false),
       search_term_key_location_(url_parse::Parsed::QUERY),
-      prepopulated_(false) {
+      prepopulated_(false),
+      showing_search_terms_(ShowingSearchTermsOnSRP()) {
   DCHECK(owner_);
   DCHECK_LT(index_in_owner_, owner_->URLCount());
 }
@@ -536,6 +546,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_BASE_URL, start));
   } else if (parameter == kGoogleBaseSuggestURLParameter) {
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
+  } else if (parameter == kGoogleBookmarkBarPinnedParameter) {
+    replacements->push_back(Replacement(GOOGLE_BOOKMARK_BAR_PINNED, start));
   } else if (parameter == kGoogleCursorPositionParameter) {
     replacements->push_back(Replacement(GOOGLE_CURSOR_POSITION, start));
   } else if (parameter == kGoogleImageOriginalHeight) {
@@ -826,6 +838,17 @@ std::string TemplateURLRef::HandleReplacements(
         HandleReplacement(
             std::string(), search_terms_data.GoogleBaseSuggestURLValue(), *i,
             &url);
+        break;
+
+      case GOOGLE_BOOKMARK_BAR_PINNED:
+        if (showing_search_terms_) {
+          // Log whether the bookmark bar is pinned when the user is seeing
+          // InstantExtended on the SRP.
+          DCHECK(!i->is_post_param);
+          HandleReplacement(
+              "bmbp", search_terms_args.bookmark_bar_pinned ? "1" : "0", *i,
+              &url);
+        }
         break;
 
       case GOOGLE_CURSOR_POSITION:

@@ -1233,3 +1233,29 @@ TEST_F(TemplateURLTest, IsSearchResults) {
               search_provider.IsSearchURL(GURL(url_data[i].url)));
   }
 }
+
+TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
+  TemplateURLData data;
+  data.input_encodings.push_back("UTF-8");
+  data.SetURL("{google:baseURL}?{google:bookmarkBarPinned}q={searchTerms}");
+  TemplateURL url(NULL, data);
+  EXPECT_TRUE(url.url_ref().IsValid());
+  ASSERT_TRUE(url.url_ref().SupportsReplacement());
+  TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
+
+  // Do not add the param when InstantExtended is suppressed on SRPs.
+  url.url_ref_.showing_search_terms_ = false;
+  std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args);
+  EXPECT_EQ("http://www.google.com/?q=foo", result);
+
+  // Add the param when InstantExtended is not suppressed on SRPs.
+  url.url_ref_.showing_search_terms_ = true;
+  search_terms_args.bookmark_bar_pinned = false;
+  result = url.url_ref().ReplaceSearchTerms(search_terms_args);
+  EXPECT_EQ("http://www.google.com/?bmbp=0&q=foo", result);
+
+  url.url_ref_.showing_search_terms_ = true;
+  search_terms_args.bookmark_bar_pinned = true;
+  result = url.url_ref().ReplaceSearchTerms(search_terms_args);
+  EXPECT_EQ("http://www.google.com/?bmbp=1&q=foo", result);
+}

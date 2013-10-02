@@ -2647,3 +2647,23 @@ TEST_F(SearchProviderTest, PrefetchMetadataParsing) {
     }
   }
 }
+
+TEST_F(SearchProviderTest, ReflectsBookmarkBarState) {
+  profile_.GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
+  string16 term = term1_.substr(0, term1_.length() - 1);
+  QueryForInput(term, true, false);
+  ASSERT_FALSE(provider_->matches().empty());
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+            provider_->matches()[0].type);
+  ASSERT_TRUE(provider_->matches()[0].search_terms_args != NULL);
+  EXPECT_FALSE(provider_->matches()[0].search_terms_args->bookmark_bar_pinned);
+
+  profile_.GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  term = term1_.substr(0, term1_.length() - 1);
+  QueryForInput(term, true, false);
+  ASSERT_FALSE(provider_->matches().empty());
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+            provider_->matches()[0].type);
+  ASSERT_TRUE(provider_->matches()[0].search_terms_args != NULL);
+  EXPECT_TRUE(provider_->matches()[0].search_terms_args->bookmark_bar_pinned);
+}

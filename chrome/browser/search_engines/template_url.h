@@ -101,6 +101,9 @@ class TemplateURLRef {
     // Which omnibox the user used to type the prefix.
     AutocompleteInput::PageClassification page_classification;
 
+    // True for searches issued with the bookmark bar pref set to shown.
+    bool bookmark_bar_pinned;
+
     // If set, ReplaceSearchTerms() will automatically append any extra query
     // params specified via the --extra-search-query-params command-line
     // argument.  Generally, this should be set when dealing with the search or
@@ -231,6 +234,7 @@ class TemplateURLRef {
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLTwoParameters);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNestedParameter);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, URLRefTestImageURLWithPOST);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ReflectsBookmarkBarPinned);
 
   // Enumeration of the known types.
   enum ReplacementType {
@@ -238,6 +242,7 @@ class TemplateURLRef {
     GOOGLE_ASSISTED_QUERY_STATS,
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
+    GOOGLE_BOOKMARK_BAR_PINNED,
     GOOGLE_CURSOR_POSITION,
     GOOGLE_IMAGE_ORIGINAL_HEIGHT,
     GOOGLE_IMAGE_ORIGINAL_WIDTH,
@@ -383,6 +388,10 @@ class TemplateURLRef {
 
   // Whether the contained URL is a pre-populated URL.
   bool prepopulated_;
+
+  // Whether search terms are shown in the omnibox on search results pages.
+  // This is kept as a member so it can be overridden by tests.
+  bool showing_search_terms_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLRef);
 };
@@ -680,6 +689,7 @@ class TemplateURL {
 
  private:
   friend class TemplateURLService;
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ReflectsBookmarkBarPinned);
 
   void CopyFrom(const TemplateURL& other);
 
