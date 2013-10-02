@@ -360,29 +360,6 @@ allows the HTML to be nested inside style spans.</p>
 this patch, the "Insert HTML Nested" button works to preserve the font setting.
 The default "Insert HTML" button doesn't preserve it.</p>
 
-<h3><a name="feature-line-erase">feature/line-erase</a> (Imran Haider)</h3>
-<p>This bugfix addresses an issue when rendering:</p>
-<pre><code>&lt;div contenteditable="true"&gt;aaaa&lt;div&gt;bbcc&lt;/div&gt;&lt;/div&gt;</code></pre>
-<p>when the width of the browser is such that the "aaaa" takes up the whole
-line.  Selecting and copying "aaaa" inbetween "bb" and "cc" will cause the "cc"
-to disappear.</p>
-<p>The disappearance of "cc" is caused by a invalid memory access and may
-possibly lead to memory corruption.  The root cause of the problem is that the
-new-line character after the source content is assumed to take some space (4
-pixels) when it in fact doesn't take any space since it's at the end of the
-line.  This miscalculation causes the final midpoint to not be placed and so
-makes it impossible to compute the trailing whitespace string.</p>
-<p>The missing trailing whitespace string causes the midpoint to not be placed
-between the pasted content and the new-line character.  Since the new-line
-character is part of the paragraph instead of being a separate node, the
-new-line is never removed by <code>removeUnrenderedTextNodesAtEnds()</code>.
-This causes the <code>endOfParagraph()</code> to return a reference to the
-new-line character instead of the actual end of the pasted content.  At a later
-point, <code>ReplaceSelectionCommand::mergeEndIfNeeded</code> makes an
-assuption that there is a character after the end of paragraph, which is an
-invalid assumption now.  This leads to an invalid memory access and sometimes
-causes some nodes to disappear.</p>
-
 <h3><a name="feature-listMarkerEnhancements">feature/listMarkerEnhancements</a> (Shezan Baig; D37088493; D32534047; D32422051; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
 <p>This branch makes a bunch of enhancements to list markers that were needed
 in our product, so it is unlikely that many of them will be sent upstream.</p>
@@ -536,6 +513,9 @@ as intended.</p>
 <p>Retired because there are no reproduction steps to verify the feature works
 as intended.</p>
 
+<h3><a name="feature-line-erase">feature/line-erase</a> (Imran Haider)</h3>
+<p>Retired because there are no reproduction steps to verify the feature works
+as intended.</p>
 
 
 <h2><a name="retired-27.0.1453.110">Retired at 27.0.1453.110</a></h2>
