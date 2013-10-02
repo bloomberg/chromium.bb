@@ -110,9 +110,11 @@ weston_launcher_open(struct weston_launcher *launcher,
 		}
 
 		if (major(s.st_rdev) == DRM_MAJOR) {
+			drm_magic_t magic;
 			launcher->drm_fd = fd;
-			if (drm_set_master(fd) == -1) {
-				weston_log("could not set master on drm fd\n");
+			if (drmGetMagic(fd, &magic) != 0 ||
+			    drmAuthMagic(fd, magic) != 0) {
+				weston_log("drm fd not master\n");
 				close(fd);
 				return -1;
 			}
