@@ -391,7 +391,8 @@ function addWebViewDescription(row, webview) {
   subRow.className = 'subrow webview';
   if (webview.empty || !webview.attached || !webview.visible)
     subRow.className += ' invisible-view';
-  subRow.appendChild(formatValue(viewStatus, 'visibility'));
+  if (viewStatus.visibility)
+    subRow.appendChild(formatValue(viewStatus, 'visibility'));
   subRow.appendChild(formatValue(viewStatus, 'position'));
   subRow.appendChild(formatValue(viewStatus, 'size'));
   var mainSubrow = row.querySelector('.subrow.main');
