@@ -29,7 +29,7 @@ class LocalRtpVideoData : public RtpData {
         time_updated_(false),
         incoming_rtp_timestamp_(0) {
   }
-  ~LocalRtpVideoData() {}
+  virtual ~LocalRtpVideoData() {}
 
   virtual void OnReceivedPayloadData(const uint8* payload_data,
                                      int payload_size,
@@ -75,10 +75,6 @@ class LocalRtpVideoFeedback : public RtpPayloadFeedback {
   }
   virtual void CastFeedback(const RtcpCastMessage& cast_message) OVERRIDE {
     video_receiver_->CastFeedback(cast_message);
-  }
-
-  virtual void RequestKeyFrame() OVERRIDE {
-    video_receiver_->RequestKeyFrame();
   }
 
  private:

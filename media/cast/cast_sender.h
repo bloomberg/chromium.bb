@@ -56,7 +56,11 @@ class FrameInput : public base::RefCountedThreadSafe<PacketReceiver> {
                                      const base::TimeTicks& recorded_time,
                                      const base::Closure callback) = 0;
 
+ protected:
   virtual ~FrameInput() {}
+
+ private:
+  friend class base::RefCountedThreadSafe<FrameInput>;
 };
 
 // This Class is thread safe.

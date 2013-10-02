@@ -10,8 +10,8 @@
 namespace media {
 namespace cast {
 
-const int kCastRtpHeaderLength = 7;
-const int kGenericRtpHeaderLength = 12;
+const uint32 kCastRtpHeaderLength = 7;
+const uint32 kGenericRtpHeaderLength = 12;
 
 RtpPacketBuilder::RtpPacketBuilder()
     : is_key_(false),

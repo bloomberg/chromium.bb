@@ -32,12 +32,12 @@ class TestRtcpTransport : public PacedPacketSender {
   }
 
   virtual bool SendPacket(const std::vector<uint8>& packet,
-                          int num_of_packets) {
+                          int num_of_packets) OVERRIDE {
     return false;
   }
 
   virtual bool ResendPacket(const std::vector<uint8>& packet,
-                            int num_of_packets) {
+                            int num_of_packets) OVERRIDE {
     return false;
   }
 
@@ -228,7 +228,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
 
   RtcpCastMessage cast_message(kMediaSsrc);
   cast_message.ack_frame_id_ = kAckFrameId;
-  std::set<uint16_t> missing_packets;
+  std::set<uint16> missing_packets;
   cast_message.missing_frames_and_packets_[
       kLostFrameId] = missing_packets;
 

@@ -45,5 +45,9 @@ EncodedAudioFrame::~EncodedAudioFrame() {}
 PcmAudioFrame::PcmAudioFrame() {}
 PcmAudioFrame::~PcmAudioFrame() {}
 
+bool PacketSender::SendPacket(const std::vector<uint8>& packet) {
+  return SendPacket(&(packet[0]), static_cast<int>(packet.size()));
+}
+
 }  // namespace cast
 }  // namespace media

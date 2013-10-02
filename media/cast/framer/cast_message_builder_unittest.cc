@@ -90,7 +90,7 @@ class CastMessageBuilderTest : public ::testing::Test {
     cast_msg_builder_->set_clock(&testing_clock_);
   }
 
-  ~CastMessageBuilderTest() {}
+  virtual ~CastMessageBuilderTest() {}
 
   void SetFrameId(uint8 frame_id) {
     rtp_header_.frame_id = frame_id;

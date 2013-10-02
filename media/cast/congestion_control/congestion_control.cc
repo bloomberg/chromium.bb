@@ -37,6 +37,9 @@ CongestionControl::CongestionControl(float congestion_control_back_off,
   DCHECK_GE(start_bitrate, min_bitrate_configured) << "Invalid config";
 }
 
+CongestionControl::~CongestionControl() {
+}
+
 bool CongestionControl::OnAck(base::TimeDelta rtt, uint32* new_bitrate) {
   base::TimeTicks now = clock_->NowTicks();
 

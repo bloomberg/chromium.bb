@@ -54,7 +54,12 @@ class CastThread : public base::RefCountedThreadSafe<CastThread> {
 
   bool CurrentlyOn(ThreadId identifier);
 
+ protected:
+  virtual ~CastThread();
+
  private:
+  friend class base::RefCountedThreadSafe<CastThread>;
+
   scoped_refptr<base::TaskRunner> GetMessageTaskRunnerForThread(
       ThreadId identifier);
 

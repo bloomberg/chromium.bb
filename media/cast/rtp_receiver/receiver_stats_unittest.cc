@@ -30,7 +30,7 @@ class ReceiverStatsTest : public ::testing::Test {
     stats_.set_clock(&testing_clock_);
     delta_increments_ = base::TimeDelta::FromMilliseconds(kStdTimeIncrementMs);
   }
-  ~ReceiverStatsTest() {}
+  virtual ~ReceiverStatsTest() {}
 
   virtual void SetUp() {
     rtp_header_.webrtc.header.sequenceNumber = 0;

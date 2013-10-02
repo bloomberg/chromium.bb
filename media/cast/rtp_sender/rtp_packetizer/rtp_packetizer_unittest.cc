@@ -113,9 +113,9 @@ class RtpPacketizerTest : public ::testing::Test {
         new RtpPacketizer(transport_.get(), &packet_storage_, config_));
   }
 
-  ~RtpPacketizerTest() {}
+  virtual ~RtpPacketizerTest() {}
 
-  void SetUp() {
+  virtual void SetUp() {
     video_frame_.key_frame = false;
     video_frame_.last_referenced_frame_id = 255;
     video_frame_.data.assign(kFrameSize, 123);

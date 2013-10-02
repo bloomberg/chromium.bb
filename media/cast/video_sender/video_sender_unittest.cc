@@ -53,7 +53,7 @@ class VideoSenderTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
-  ~VideoSenderTest() {}
+  virtual ~VideoSenderTest() {}
 
   void InitEncoder(bool external) {
     VideoSenderConfig video_config;
