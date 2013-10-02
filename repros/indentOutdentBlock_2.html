@@ -1,0 +1,25 @@
+<div id="editBody" contenteditable="true" style="white-space: pre-wrap"><ol><li>a</li><li>b<div><table style="border: 1px solid blue"><tbody><tr><td>a</td><td><br></td></tr><tr><td><br></td><td>c</td></tr></tbody></table>
+</div></li><li>c<br><div style="font-size: small;" data-color="global-default"><br></div></li></ol></div>
+
+select all, indent, then outdent
+<button onclick="indent();">indent</button>
+<button onclick="outdent();">outdent</button>
+<br/>
+Bug: doing once removes a line, more times create new lists out of nowhere
+<script>
+    function indent() {
+		if (!document.execCommand('indentBlock', false)) {
+		    if (!document.execCommand('indentBB', false)) {
+				document.execCommand('indent', false);
+			}
+		}
+    }
+    function outdent() {
+		if (!document.execCommand('outdentBlock', false)) {
+		    if (!document.execCommand('outdentBB', false)) {
+				document.execCommand('outdent', false);
+			}
+		}
+    }
+</script>
+

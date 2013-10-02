@@ -1,0 +1,58 @@
+<button onclick="indent();">INDENT</button>
+<button onclick="outdent();">OUTDENT</button>
+
+<style>
+div {
+    border: 1px solid black;
+}
+
+td {
+	width: 40%;
+}
+
+</style>
+
+<script src="editing_implementation.js"></script>
+
+<div contenteditable>
+dude what's up
+<table border="1"><tr><td><table border="1"><tr><td>hello</td><td>nested1</td></tr><tr><td>nested2</td><td>nested3</td></tr></table>dude</td><td>computer<br/>world</td><td>hey<ol><li>first</li><li>second<br/>another line</li><li>third</li></ol></td></tr><tr><td></td><td></td><td>what<table border="1"><tr><td>nested6</td><td>nested7</td></tr><tr><td>nested8</td><td>nested9</td></tr></table></td></tr></table>
+hello world
+<div>This is a block<br/>
+This is a new line in the same block<br/>
+This is a third line in the same block</div>
+<div>This is a new block<br/>
+This is a new line in the same block<br/>
+This is a third line in the same block</div>
+<ol>
+<li>hello<br/>
+computer</li>
+dude
+<li>what's up<br/>
+with this<br/>
+it seems random</li>
+<li>
+<div>this is</div>
+<div>two separate blocks</div>
+</li>
+<li>this is<br/>
+cool<br/>
+i think
+</li>
+</ol>
+</div>
+
+<script>
+function indent()
+{
+    if (!document.execCommand('indentblock', false, true))
+	    document.execCommand('indent', false, true);
+}
+
+function outdent()
+{
+    if (!document.execCommand('outdentblock', false, true))
+	    document.execCommand('outdent', false, true);
+}
+</script>
+

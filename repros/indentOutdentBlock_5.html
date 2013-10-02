@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <script>
+        function indent() {
+            if (!document.execCommand("indentBlock", false)) {
+                document.execCommand("indent", false);
+            }
+        };
+        function outdent() {
+            if (!document.execCommand("outdentBlock", false)) {
+                document.execCommand("outdent", false);
+            }
+        };
+        </script>
+    </head>
+
+    <body>
+        <div>
+		    select the whole second &lt;li&gt;, then indent
+            <button onclick="indent()">indent</button>
+            <button onclick="outdent()">outdent</button>
+        </div>
+        <div id='editBody' contenteditable>
+            <ol>
+                <li>aaaa</li>
+                <li>bbbb<table border="1px"><tbody><tr><td>cccc</td><td><br></td><td><br></td></tr><tr><td><br></td><td ><br></td><td><br></td></tr></tbody></table></li>
+                <li><a href="#">I am a link</a></li>
+            </ol>
+        </div>
+    </body>
+</html>

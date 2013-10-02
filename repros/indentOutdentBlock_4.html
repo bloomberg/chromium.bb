@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <script>
+        function indent() {
+            if (!document.execCommand('indentBlock', false)) {
+                document.execCommand('indent', false);
+            }
+        };
+        function outdent() {
+            if (!document.execCommand('outdentBlock', false)) {
+                document.execCommand('outdent', false);
+            }
+        };
+        </script>
+    </head>
+
+    <body>
+		select all elements, then indent twice, and outdent
+        <div>
+            <button onclick="indent()">indent</button>
+            <button onclick="outdent()">outdent</button>
+        </div>
+        <div id='editBody' contenteditable>
+			<ol>
+				<li>aaaa</li>
+				<li>bbbb<table border="1px"><tbody><tr><td>cccc</td><td><br></td><td><br></td></tr><tr><td><br></td><td ><br></td><td><br></td></tr></tbody></table><br></li>
+				<li>dfsdf<br><br><br></li>
+			</ol>
+        </div>
+    </body>
+</html>
+
+

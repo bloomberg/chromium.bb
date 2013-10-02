@@ -329,6 +329,26 @@ send this upstream.</p>
 Windows Explorer into the page.  The DragOver and Drop events should print out
 the full path to the file.</p>
 
+<h3><a name="feature-indentOutdentBlock">feature/indentOutdentBlock</a> (Shezan Baig; D39558769)</h3>
+<p>This is a complete reimplementation of the "Indent" and "Outdent" algorithm,
+called "IndentBlock" and "OutdentBlock".  Instead of cloning paragraphs, and
+deleting the old paragraphs, this algorithm just moves blocks in and out of
+blockquotes.  Also, it operates on blocks of text, instead of paragraphs.  This
+is similar to how MSWord works.</p>
+<p>The following links can be used to compare the behavior when this branch is
+applied, and when it isn't (e.g. with upstream Chrome):</p>
+<ul><li>open <a href="repros/indentOutdentBlock_1.html">this link</a> and just
+    play around comparing behavior</li>
+    <li>open <a href="repros/indentOutdentBlock_2.html">this link</a> and
+    compare</li>
+    <li>open <a href="repros/indentOutdentBlock_3.html">this link</a> and
+    compare</li>
+    <li>open <a href="repros/indentOutdentBlock_4.html">this link</a> and
+    compare</li>
+    <li>open <a href="repros/indentOutdentBlock_5.html">this link</a> and
+    compare</li>
+</ul>
+
 <h3><a name="feature-insertHTMLNested">feature/insertHTMLNested</a> (Shezan Baig; D37136356)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>

@@ -1,0 +1,92 @@
+<html>
+    <head>
+        <script>
+            function onLoad() {
+                document.execCommand("styleWithCss");
+            }
+            function indent() {
+                if (!document.execCommand('indentBlock', false)) {
+                    document.execCommand('indent', false);
+                }
+            };
+            function outdent() {
+                if (!document.execCommand('outdentBlock', false)) {
+                    document.execCommand('outdent', false);
+                }
+            };
+        </script>
+        <style>
+            #editBody {
+                /*white-space: pre-wrap;*/
+                border: 1px solid blue;
+                height: 400px;
+                width: 100%;
+                overflow: auto;
+            }
+        </style>
+</head>
+<body onload="onLoad()">
+    <div id="editBody" contenteditable="true">
+        <div>
+            <blockquote style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; padding-left: 8px; -webkit-margin-start: 4px; -webkit-margin-end: 4px;">
+                <div>
+                    <div style="font-family: 'Bloomberg Fixed Unicode I';">
+                        <blockquote style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; padding-left: 8px; -webkit-margin-start: 4px; -webkit-margin-end: 4px;">
+                            <div>
+                                <div>
+                                    <blockquote style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; padding-left: 8px; -webkit-margin-start: 4px; -webkit-margin-end: 4px;">
+                                        <div>
+                                            <div><br><br>
+                                                <span>A:</span>
+                                                <br>
+                                                <div>
+                                                    <div>
+                                                        <div>
+                                                            <span>
+                                                                <div>
+                                                                    <ul style="-webkit-margin-start: 1.5em;">
+                                                                        <li><span style="color: rgb(15, 122, 228);">a1</span></li>
+                                                                        <li><span>a2</span></li>
+                                                                    </ul>
+                                                                </div>
+                                                            </span>
+                                                        </div>
+                                                        <span>
+                                                            <span style="color: rgb(255, 102, 0);">B:</span>
+                                                            <br>
+                                                        </span>
+                                                        <div>
+                                                            <span>
+                                                                <div>
+                                                                    <div>
+                                                                        <ul style="-webkit-margin-start: 1.5em;">
+                                                                            <li><span style="color: rgb(15, 122, 228);">b1</span></li>
+                                                                            <li><span style="color: rgb(15, 122, 228);">b2</span></li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </span>
+                                                        </div>
+                                                        <span>
+                                                            <span style="color: rgb(255, 102, 0);">C:</span>
+                                                            <br>
+                                                        </span>
+                                                        <div>
+                                                            <span>
+                                                                <div>
+                                                                    <div>
+                                                                        <ul style="-webkit-margin-start: 1.5em;">
+                                                                            <li><span>c1</span></li><li><span>c2</span></li>
+                                                                        </ul>
+                                                                    </div>
+        </div></span></div></div></div></div></div></blockquote></div></div></blockquote></div></div></blockquote></div>
+    </div>
+    <div>
+		select all, then outdent
+        <button onclick="outdent()">outdent</button>
+        <button onclick="indent()">indent</button>
+    </div>
+</body>
+</html>
+
+
