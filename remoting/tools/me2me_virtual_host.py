@@ -342,6 +342,12 @@ class Desktop:
     self.child_env["DISPLAY"] = ":%d" % display
     self.child_env["CHROME_REMOTE_DESKTOP_SESSION"] = "1"
 
+    # Use a separate profile for any instances of Chrome that are started in
+    # the virtual session. Chrome doesn't support sharing a profile between
+    # multiple DISPLAYs, but Chrome Sync allows for a reasonable compromise.
+    chrome_profile = os.path.join(CONFIG_DIR, "chrome-profile")
+    self.child_env["CHROME_USER_DATA_DIR"] = chrome_profile
+
     # Wait for X to be active.
     for _test in range(5):
       proc = subprocess.Popen("xdpyinfo", env=self.child_env, stdout=devnull)
