@@ -427,17 +427,6 @@ With this patch applied, the anchor offset would be 5 positions higher than the
 focus offset.  Without the patch, the anchor offset and focus offset will be
 switched.</p>
 
-<h3><a name="feature-resetCachedGDISettings">feature/resetCachedGDISettings</a> (Shezan Baig; D31921707, upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86891">86891</a>)</h3>
-<p>Skia caches GDI settings like ClearType, so when these settings change (for
-example, after remoting to a different machine, or manually changing it in the
-system settings), the app does not pick up the new setting.</p>
-<p>This branch adds a way to reset this cache.  There is also an upstream
-ticket, however, this is not so much of an issue for Chrome because Chrome just
-creates new processes for each tab, so it picks up the new setting that
-way.</p>
-<p>This branch also adds a way to set these flags externally, because our
-product has an option to bypass the system default setting.</p>
-
 <h3><a name="feature-tableEditing">feature/tableEditing</a> (Shezan Baig; D37611655)</h3>
 <p>TODO</p>
 
@@ -512,6 +501,10 @@ as intended.</p>
 
 <h3><a name="feature-printMenu">feature/printMenu</a> (Shezan Baig)</h3>
 <p>Retired because this change is not compatible with blpwtk2.</p>
+
+<h3><a name="feature-resetCachedGDISettings">feature/resetCachedGDISettings</a> (Shezan Baig; D31921707, upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86891">86891</a>)</h3>
+<p>Retired because there are no reproduction steps to verify the feature works
+as intended.</p>
 
 
 <h2><a name="retired-27.0.1453.110">Retired at 27.0.1453.110</a></h2>
