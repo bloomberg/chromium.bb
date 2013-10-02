@@ -10829,6 +10829,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="OSX.CatSixtyFour" enum="CatSixtyFour">
+  <summary>The cat's flavor and how many bits there are in it.</summary>
+</histogram>
+
 <histogram name="OutdatedUpgradeBubble.NumLaterPerReinstall">
   <summary>
     Counts the number of times the user clicked on the later button of the
@@ -19778,6 +19782,27 @@ other types of suffix sets.
   <int value="1" label="webkit-3d"/>
   <int value="2" label="experimental-webgl"/>
   <int value="3" label="webgl"/>
+</enum>
+
+<enum name="CatSixtyFour" type="int">
+  <int value="0" label="Saber-Toothed Cat (&lt;10.6), 32-bit (?)"/>
+  <int value="1" label="Saber-Toothed Cat (&lt;10.6), 64-bit (?)"/>
+  <int value="2" label="Snow Leopard (10.6), 32-bit"/>
+  <int value="3" label="Snow Leopard (10.6), 64-bit"/>
+  <int value="4" label="Lion (10.7), 32-bit (?)"/>
+  <int value="5" label="Lion (10.7), 64-bit"/>
+  <int value="6" label="Mountain Lion (10.8), 32-bit (?)"/>
+  <int value="7" label="Mountain Lion (10.8), 64-bit"/>
+  <int value="8" label="Mavericks (10.9), 32-bit (?)"/>
+  <int value="9" label="Mavericks (10.9), 64-bit"/>
+  <int value="10" label="Saber-Toothed Cat (&lt;10.6), 8-bit (?)"/>
+  <int value="11" label="Snow Leopard (10.6), 8-bit (?)"/>
+  <int value="12" label="Lion (10.7), 8-bit (?)"/>
+  <int value="13" label="Mountain Lion (10.8), 8-bit (?)"/>
+  <int value="14" label="Mavericks (10.9), 8-bit (?)"/>
+  <int value="15" label="FutureCat (&gt;10.9), 32-bit (?)"/>
+  <int value="16" label="FutureCat (&gt;10.9), 64-bit"/>
+  <int value="17" label="FutureCat (&gt;10.9), 8-bit (?)"/>
 </enum>
 
 <enum name="ChannelLayout" type="int">

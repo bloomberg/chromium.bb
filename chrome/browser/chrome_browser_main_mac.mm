@@ -57,22 +57,27 @@ enum CatSixtyFour {
   LION_64,
   MOUNTAIN_LION_32,  // Unexpected, Mountain Lion requires a 64-bit CPU.
   MOUNTAIN_LION_64,
+  MAVERICKS_32,  // Unexpected, Mavericks requires a 64-bit CPU.
+  MAVERICKS_64,
 
   // DON'T add new constants here. It's important to keep the constant values,
   // um, constant. Add new constants at the bottom.
-
-  // Newer than any known cat.
-  FUTURE_CAT_32,  // Unexpected, it's unlikely Apple will un-obsolete old CPUs.
-  FUTURE_CAT_64,
 
   // What if the bitsiness of the CPU can't be determined?
   SABER_TOOTHED_CAT_DUNNO,
   SNOW_LEOPARD_DUNNO,
   LION_DUNNO,
   MOUNTAIN_LION_DUNNO,
+  MAVERICKS_DUNNO,
+
+  // Newer than any known cat.
+  FUTURE_CAT_32,  // Unexpected, it's unlikely Apple will un-obsolete old CPUs.
+  FUTURE_CAT_64,
   FUTURE_CAT_DUNNO,
 
-  // Add new constants here.
+  // As new versions of Mac OS X are released with sillier and sillier names,
+  // rename the FUTURE_CAT enum values to match those names, and re-create
+  // FUTURE_CAT_[32|64|DUNNO] here.
 
   CAT_SIXTY_FOUR_MAX
 };
@@ -114,7 +119,11 @@ CatSixtyFour CatSixtyFourValue() {
     return cpu64_known ? (cpu64 ? MOUNTAIN_LION_64 : MOUNTAIN_LION_32) :
                          MOUNTAIN_LION_DUNNO;
   }
-  if (base::mac::IsOSLaterThanMountainLion_DontCallThis()) {
+  if (base::mac::IsOSMavericks()) {
+    return cpu64_known ? (cpu64 ? MAVERICKS_64 : MAVERICKS_32) :
+                         MAVERICKS_DUNNO;
+  }
+  if (base::mac::IsOSLaterThanMavericks_DontCallThis()) {
     return cpu64_known ? (cpu64 ? FUTURE_CAT_64 : FUTURE_CAT_32) :
                          FUTURE_CAT_DUNNO;
   }

@@ -127,7 +127,7 @@ bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  // http://openradar.appspot.com/radar?id=1156410 is fixed on OS X 10.9+.
+  // rdar://9251340 http://openradar.me/9251340
   // See http://crbug.com/31225 and http://crbug.com/152566
   // To check if this is broken:
   // 1. Enable Multi language input (simplified chinese)
@@ -140,8 +140,8 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   //    and then kill that pid to make it go away.)
   //
   // Chinese Handwriting was introduced in 10.6 and is confirmed broken on
-  // 10.6, 10.7, and 10.8. It's reportedly fixed on 10.9.
-  bool needs_ime_hack = !base::mac::IsOSLaterThanMountainLion_DontCallThis();
+  // 10.6, 10.7, and 10.8. It's fixed on 10.9.
+  bool needs_ime_hack = base::mac::IsOSMountainLionOrEarlier();
 
   if (needs_ime_hack) {
     mach_error_t err = mach_override_ptr(

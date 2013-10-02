@@ -161,26 +161,46 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       EXPECT_TRUE(IsOSLionOrEarlier());
       EXPECT_FALSE(IsOSLionOrLater());
       EXPECT_FALSE(IsOSMountainLion());
+      EXPECT_TRUE(IsOSMountainLionOrEarlier());
       EXPECT_FALSE(IsOSMountainLionOrLater());
-      EXPECT_FALSE(IsOSLaterThanMountainLion_DontCallThis());
+      EXPECT_FALSE(IsOSMavericks());
+      EXPECT_FALSE(IsOSMavericksOrLater());
+      EXPECT_FALSE(IsOSLaterThanMavericks_DontCallThis());
     } else if (minor == 7) {
       EXPECT_FALSE(IsOSSnowLeopard());
       EXPECT_TRUE(IsOSLion());
       EXPECT_TRUE(IsOSLionOrEarlier());
       EXPECT_TRUE(IsOSLionOrLater());
       EXPECT_FALSE(IsOSMountainLion());
+      EXPECT_TRUE(IsOSMountainLionOrEarlier());
       EXPECT_FALSE(IsOSMountainLionOrLater());
-      EXPECT_FALSE(IsOSLaterThanMountainLion_DontCallThis());
+      EXPECT_FALSE(IsOSMavericks());
+      EXPECT_FALSE(IsOSMavericksOrLater());
+      EXPECT_FALSE(IsOSLaterThanMavericks_DontCallThis());
     } else if (minor == 8) {
       EXPECT_FALSE(IsOSSnowLeopard());
       EXPECT_FALSE(IsOSLion());
       EXPECT_FALSE(IsOSLionOrEarlier());
       EXPECT_TRUE(IsOSLionOrLater());
       EXPECT_TRUE(IsOSMountainLion());
+      EXPECT_TRUE(IsOSMountainLionOrEarlier());
       EXPECT_TRUE(IsOSMountainLionOrLater());
-      EXPECT_FALSE(IsOSLaterThanMountainLion_DontCallThis());
+      EXPECT_FALSE(IsOSMavericks());
+      EXPECT_FALSE(IsOSMavericksOrLater());
+      EXPECT_FALSE(IsOSLaterThanMavericks_DontCallThis());
+    } else if (minor == 9) {
+      EXPECT_FALSE(IsOSSnowLeopard());
+      EXPECT_FALSE(IsOSLion());
+      EXPECT_FALSE(IsOSLionOrEarlier());
+      EXPECT_TRUE(IsOSLionOrLater());
+      EXPECT_FALSE(IsOSMountainLion());
+      EXPECT_FALSE(IsOSMountainLionOrEarlier());
+      EXPECT_TRUE(IsOSMountainLionOrLater());
+      EXPECT_TRUE(IsOSMavericks());
+      EXPECT_TRUE(IsOSMavericksOrLater());
+      EXPECT_FALSE(IsOSLaterThanMavericks_DontCallThis());
     } else {
-      // Not five, six, seven, or eight. Ah, ah, ah.
+      // Not five, six, seven, eight, or nine. Ah, ah, ah.
       EXPECT_TRUE(false);
     }
   } else {

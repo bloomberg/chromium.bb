@@ -145,12 +145,22 @@ BASE_EXPORT bool IsOSLionOrLater();
 
 // Mountain Lion is Mac OS X 10.8, Darwin 12.
 BASE_EXPORT bool IsOSMountainLion();
+BASE_EXPORT bool IsOSMountainLionOrEarlier();
 BASE_EXPORT bool IsOSMountainLionOrLater();
+
+// Mavericks is Mac OS X 10.9, Darwin 13.
+BASE_EXPORT bool IsOSMavericks();
+BASE_EXPORT bool IsOSMavericksOrLater();
 
 // This should be infrequently used. It only makes sense to use this to avoid
 // codepaths that are very likely to break on future (unreleased, untested,
 // unborn) OS releases, or to log when the OS is newer than any known version.
-BASE_EXPORT bool IsOSLaterThanMountainLion_DontCallThis();
+BASE_EXPORT bool IsOSLaterThanMavericks_DontCallThis();
+
+// Inline functions that are redundant due to version ranges being mutually-
+// exclusive.
+inline bool IsOSLionOrEarlier() { return !IsOSMountainLionOrLater(); }
+inline bool IsOSMountainLionOrEarlier() { return !IsOSMavericksOrLater(); }
 
 // When the deployment target is set, the code produced cannot run on earlier
 // OS releases. That enables some of the IsOS* family to be implemented as
@@ -168,7 +178,6 @@ inline bool IsOSLionOrLater() { return true; }
     MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_7
 #define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_7
 inline bool IsOSLion() { return false; }
-inline bool IsOSLionOrEarlier() { return false; }
 #endif
 
 #if defined(MAC_OS_X_VERSION_10_8) && \
@@ -181,9 +190,19 @@ inline bool IsOSMountainLionOrLater() { return true; }
     MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_8
 #define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_8
 inline bool IsOSMountainLion() { return false; }
-inline bool IsOSLaterThanMountainLion_DontCallThis() {
-  return true;
-}
+#endif
+
+#if defined(MAC_OS_X_VERSION_10_9) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_9
+#define BASE_MAC_MAC_UTIL_H_INLINED_GE_10_9
+inline bool IsOSMavericksOrLater() { return true; }
+#endif
+
+#if defined(MAC_OS_X_VERSION_10_9) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_9
+#define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_9
+inline bool IsOSMavericks() { return false; }
+inline bool IsOSLaterThanMavericks_DontCallThis() { return true; }
 #endif
 
 // Retrieve the system's model identifier string from the IOKit registry:
