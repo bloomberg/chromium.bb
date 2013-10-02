@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
@@ -744,6 +745,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
   }
 #endif
+
+  // After all the platform Breakpads have been initialized, store the command
+  // line for crash reporting.
+  crash_keys::SetSwitchesFromCommandLine(&command_line);
 }
 
 void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
@@ -841,6 +846,9 @@ void ChromeMainDelegate::ZygoteForked() {
   // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
   // this up for the browser process in a different manner.
   InitCrashReporter();
+
+  // Reset the command line for the newly spawned process.
+  crash_keys::SetSwitchesFromCommandLine(CommandLine::ForCurrentProcess());
 #endif
 }
 

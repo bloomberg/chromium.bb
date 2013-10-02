@@ -280,6 +280,10 @@ void SetSwitchesFromCommandLine(const CommandLine* command_line) {
     if (IsBoringSwitch(switch_str))
       continue;
 
+    // Stop if there are too many switches.
+    if (i > crash_keys::kSwitchesMaxCount)
+      break;
+
     std::string key = base::StringPrintf(kSwitch, key_i++);
     base::debug::SetCrashKeyValue(key, switch_str);
   }
