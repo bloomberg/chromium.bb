@@ -427,14 +427,6 @@ With this patch applied, the anchor offset would be 5 positions higher than the
 focus offset.  Without the patch, the anchor offset and focus offset will be
 switched.</p>
 
-<h3><a name="feature-printMenu">feature/printMenu</a> (Shezan Baig)</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This branch adds a print menu to <code>test_shell</code>, so that it can be
-used to test bugs like <code><a
-        href="#bugfix-printBkTransparent">bugfix/printBkTransparent</a></code>
-and <code><a href="#bugfix-printTextTop">bugfix/printTextTop</a></code>.</p>
-
 <h3><a name="feature-resetCachedGDISettings">feature/resetCachedGDISettings</a> (Shezan Baig; D31921707, upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86891">86891</a>)</h3>
 <p>Skia caches GDI settings like ClearType, so when these settings change (for
 example, after remoting to a different machine, or manually changing it in the
@@ -517,6 +509,9 @@ as intended.</p>
 <h3><a name="feature-opaque-bmp">feature/opaque-bmp</a> (Imran Haider)</h3>
 <p>Retired because there are no reproduction steps to verify the feature works
 as intended.</p>
+
+<h3><a name="feature-printMenu">feature/printMenu</a> (Shezan Baig)</h3>
+<p>Retired because this change is not compatible with blpwtk2.</p>
 
 
 <h2><a name="retired-27.0.1453.110">Retired at 27.0.1453.110</a></h2>
