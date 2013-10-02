@@ -212,11 +212,19 @@ class MediaSourcePlayerTest : public testing::Test {
         scheme_uuid, security_level, container, codecs);
   }
 
+  void CreateAndSetVideoSurface() {
+    surface_texture_ = new gfx::SurfaceTexture(0);
+    surface_ = gfx::ScopedJavaSurface(surface_texture_.get());
+    player_.SetVideoSurface(surface_.Pass());
+  }
+
  protected:
   base::MessageLoop message_loop_;
   MockMediaPlayerManager manager_;
   MockDemuxerAndroid* demuxer_;  // Owned by |player_|.
   MediaSourcePlayer player_;
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
+  gfx::ScopedJavaSurface surface_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayerTest);
 };
@@ -261,15 +269,12 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
   }
 
   // Test video decoder job will be created when surface is valid.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      new gfx::SurfaceTexture(0));
-  gfx::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob();
   // Video decoder job will not be created until surface is available.
   EXPECT_EQ(NULL, GetMediaDecoderJob(false));
   EXPECT_EQ(0, demuxer_->num_data_requests());
 
-  player_.SetVideoSurface(surface.Pass());
+  CreateAndSetVideoSurface();
 
   // Player should not seek the demuxer on setting initial surface.
   EXPECT_EQ(0, demuxer_->num_seek_requests());
@@ -353,9 +358,6 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
 
   // Test SetVideoSurface() will not cause an extra seek while the player is
   // waiting for demuxer to indicate seek is done.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      new gfx::SurfaceTexture(0));
-  gfx::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob();
   // Player is still waiting for SetVideoSurface(), so no request is sent.
   EXPECT_EQ(0, demuxer_->num_data_requests());
@@ -366,7 +368,7 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
   player_.SeekTo(base::TimeDelta());
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 
-  player_.SetVideoSurface(surface.Pass());
+  CreateAndSetVideoSurface();
   EXPECT_TRUE(NULL == GetMediaDecoderJob(false));
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 
@@ -380,6 +382,35 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
 
   // Reconfirm exactly 1 seek request has been made of demuxer.
   EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
+  if (!MediaCodecBridge::IsAvailable()) {
+    LOG(INFO) << "Could not run test - not supported on device.";
+    return;
+  }
+
+  // Test MediaSourcePlayer can switch multiple surfaces during decoding.
+  CreateAndSetVideoSurface();
+  StartVideoDecoderJob();
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  // Send the first input chunk.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+
+  // While the decoder is decoding, change multiple surfaces. Pass an empty
+  // surface first.
+  gfx::ScopedJavaSurface empty_surface;
+  player_.SetVideoSurface(empty_surface.Pass());
+  // Pass a new non-empty surface.
+  CreateAndSetVideoSurface();
+
+  // Wait for the decoder job to finish decoding.
+  while(GetMediaDecoderJob(false)->is_decoding())
+    message_loop_.RunUntilIdle();
+  // A seek should be initiated to request Iframe.
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
 }
 
 TEST_F(MediaSourcePlayerTest, StartAfterSeekFinish) {
@@ -477,10 +508,7 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
   Start(configs);
   EXPECT_EQ(0, demuxer_->num_data_requests());
 
-  scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      new gfx::SurfaceTexture(0));
-  gfx::ScopedJavaSurface surface(surface_texture.get());
-  player_.SetVideoSurface(surface.Pass());
+  CreateAndSetVideoSurface();
 
   // Player should not seek the demuxer on setting initial surface.
   EXPECT_EQ(0, demuxer_->num_seek_requests());
@@ -559,10 +587,7 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
 
   // Test MediaSourcePlayer will not request for new data after input EOS is
   // reached.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      new gfx::SurfaceTexture(0));
-  gfx::ScopedJavaSurface surface(surface_texture.get());
-  player_.SetVideoSurface(surface.Pass());
+  CreateAndSetVideoSurface();
   StartVideoDecoderJob();
   // Player should not seek the demuxer on setting initial surface.
   EXPECT_EQ(0, demuxer_->num_seek_requests());
@@ -588,10 +613,7 @@ TEST_F(MediaSourcePlayerTest, ReplayAfterInputEOS) {
 
   // Test MediaSourcePlayer can replay after input EOS is
   // reached.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      new gfx::SurfaceTexture(0));
-  gfx::ScopedJavaSurface surface(surface_texture.get());
-  player_.SetVideoSurface(surface.Pass());
+  CreateAndSetVideoSurface();
   StartVideoDecoderJob();
 
   // Player should not seek the demuxer on setting initial surface.

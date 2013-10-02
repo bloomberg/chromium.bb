@@ -98,6 +98,11 @@ void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   }
 
   surface_ =  surface.Pass();
+
+  // If there is a pending surface change event, just wait for it to be
+  // processed.
+  if (IsEventPending(SURFACE_CHANGE_EVENT_PENDING))
+    return;
   SetPendingEvent(SURFACE_CHANGE_EVENT_PENDING);
 
   // Setting a new surface will require a new MediaCodec to be created.
