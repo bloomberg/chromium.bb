@@ -20,22 +20,6 @@
         'cast_thread.h',
       ], # source
     },
-    {
-      'target_name': 'cast_sender',
-      'type': 'static_library',
-      'dependencies': [
-        'cast_config',
-        'cast_sender.gyp:cast_sender_impl',
-      ],
-    },
-    {
-      'target_name': 'cast_receiver',
-      'type': 'static_library',
-      'dependencies': [
-        'cast_config',
-        'cast_receiver.gyp:cast_receiver_impl',
-      ],
-    },
   ],  # targets,
   'conditions': [
     ['include_tests==1', {
@@ -44,13 +28,23 @@
           'target_name': 'cast_unittest',
           'type': '<(gtest_target_type)',
           'dependencies': [
-            'cast_sender',
-            'cast_receiver',
+            'cast_config',
+            'cast_sender.gyp:cast_sender_impl',
             'rtcp/rtcp.gyp:cast_rtcp_test',
             '<(DEPTH)/base/base.gyp:run_all_unittests',
             '<(DEPTH)/net/net.gyp:net',
             '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',
+
+            # TODO(hclam): Because cast_receiver_impl does not include
+            # any source file it is not a valid dependency.
+            # Include receiver dependencies directly now. Remove them
+            # when cast_receiver_impl is a valid target.
+           'cast_receiver.gyp:cast_audio_receiver',
+           'cast_receiver.gyp:cast_video_receiver',
+           'framer/framer.gyp:cast_framer',
+           'pacing/paced_sender.gyp:cast_paced_sender',
+           'rtp_receiver/rtp_receiver.gyp:*',
           ],
           'include_dirs': [
             '<(DEPTH)/',
