@@ -270,7 +270,7 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
     // The device (if it is an async implementation) may or may not get as far
     // as the OnFrameInfo() step; we're intentionally not going to wait for it
     // to get that far.
-    ON_CALL(*client, OnFrameInfo(_));
+    EXPECT_CALL(*client, OnFrameInfo(_)).Times(testing::AtMost(1));
     device->AllocateAndStart(requested_format,
                              client.PassAs<Client>());
     device->StopAndDeAllocate();

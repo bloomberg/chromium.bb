@@ -196,14 +196,12 @@ VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
 
 VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(const Name& device_name)
     : state_(kIdle),
-      client_(NULL),
       device_name_(device_name),
       device_fd_(-1),
       v4l2_thread_("V4L2Thread"),
       buffer_pool_(NULL),
       buffer_pool_size_(0),
-      timeout_count_(0) {
-}
+      timeout_count_(0) {}
 
 VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
   state_ = kIdle;
@@ -217,68 +215,45 @@ VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
   }
 }
 
-void VideoCaptureDeviceLinux::Allocate(
+void VideoCaptureDeviceLinux::AllocateAndStart(
     const VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::Client* client) {
+    scoped_ptr<VideoCaptureDevice::Client> client) {
   if (v4l2_thread_.IsRunning()) {
     return;  // Wrong state.
   }
   v4l2_thread_.Start();
-  v4l2_thread_.message_loop()
-      ->PostTask(FROM_HERE,
-                 base::Bind(&VideoCaptureDeviceLinux::OnAllocate,
-                            base::Unretained(this),
-                            capture_format.width,
-                            capture_format.height,
-                            capture_format.frame_rate,
-                            client));
+  v4l2_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureDeviceLinux::OnAllocateAndStart,
+                 base::Unretained(this),
+                 capture_format.width,
+                 capture_format.height,
+                 capture_format.frame_rate,
+                 base::Passed(&client)));
 }
 
-void VideoCaptureDeviceLinux::Start() {
+void VideoCaptureDeviceLinux::StopAndDeAllocate() {
   if (!v4l2_thread_.IsRunning()) {
     return;  // Wrong state.
   }
   v4l2_thread_.message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCaptureDeviceLinux::OnStart, base::Unretained(this)));
-}
-
-void VideoCaptureDeviceLinux::Stop() {
-  if (!v4l2_thread_.IsRunning()) {
-    return;  // Wrong state.
-  }
-  v4l2_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureDeviceLinux::OnStop, base::Unretained(this)));
-}
-
-void VideoCaptureDeviceLinux::DeAllocate() {
-  if (!v4l2_thread_.IsRunning()) {
-    return;  // Wrong state.
-  }
-  v4l2_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureDeviceLinux::OnDeAllocate,
+      base::Bind(&VideoCaptureDeviceLinux::OnStopAndDeAllocate,
                  base::Unretained(this)));
   v4l2_thread_.Stop();
-
   // Make sure no buffers are still allocated.
   // This can happen (theoretically) if an error occurs when trying to stop
   // the camera.
   DeAllocateVideoBuffers();
 }
 
-const VideoCaptureDevice::Name& VideoCaptureDeviceLinux::device_name() {
-  return device_name_;
-}
-
-void VideoCaptureDeviceLinux::OnAllocate(int width,
-                                         int height,
-                                         int frame_rate,
-                                         Client* client) {
+void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
+                                                 int height,
+                                                 int frame_rate,
+                                                 scoped_ptr<Client> client) {
   DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
 
-  client_ = client;
+  client_ = client.Pass();
 
   // Need to open camera with O_RDWR after Linux kernel 3.3.
   if ((device_fd_ = open(device_name_.id().c_str(), O_RDWR)) < 0) {
@@ -368,37 +343,10 @@ void VideoCaptureDeviceLinux::OnAllocate(int width,
   current_settings.expected_capture_delay = 0;
   current_settings.interlaced = false;
 
-  state_ = kAllocated;
   // Report the resulting frame size to the client.
   client_->OnFrameInfo(current_settings);
-}
 
-void VideoCaptureDeviceLinux::OnDeAllocate() {
-  DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
-
-  // If we are in error state or capturing
-  // try to stop the camera.
-  if (state_ == kCapturing) {
-    OnStop();
-  }
-  if (state_ == kAllocated) {
-    state_ = kIdle;
-  }
-
-  // We need to close and open the device if we want to change the settings
-  // Otherwise VIDIOC_S_FMT will return error
-  // Sad but true.
-  close(device_fd_);
-  device_fd_ = -1;
-}
-
-void VideoCaptureDeviceLinux::OnStart() {
-  DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
-
-  if (state_ != kAllocated) {
-    return;
-  }
-
+  // Start capturing.
   if (!AllocateVideoBuffers()) {
     // Error, We can not recover.
     SetErrorState("Allocate buffer failed");
@@ -420,10 +368,8 @@ void VideoCaptureDeviceLinux::OnStart() {
                  base::Unretained(this)));
 }
 
-void VideoCaptureDeviceLinux::OnStop() {
+void VideoCaptureDeviceLinux::OnStopAndDeAllocate() {
   DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
-
-  state_ = kAllocated;
 
   v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (ioctl(device_fd_, VIDIOC_STREAMOFF, &type) < 0) {
@@ -433,6 +379,14 @@ void VideoCaptureDeviceLinux::OnStop() {
   // We don't dare to deallocate the buffers if we can't stop
   // the capture device.
   DeAllocateVideoBuffers();
+
+  // We need to close and open the device if we want to change the settings
+  // Otherwise VIDIOC_S_FMT will return error
+  // Sad but true.
+  close(device_fd_);
+  device_fd_ = -1;
+  state_ = kIdle;
+  client_.reset();
 }
 
 void VideoCaptureDeviceLinux::OnCaptureTask() {
@@ -581,6 +535,8 @@ void VideoCaptureDeviceLinux::DeAllocateVideoBuffers() {
 }
 
 void VideoCaptureDeviceLinux::SetErrorState(const std::string& reason) {
+  DCHECK(!v4l2_thread_.IsRunning() ||
+         v4l2_thread_.message_loop() == base::MessageLoop::current());
   DVLOG(1) << reason;
   state_ = kError;
   client_->OnError();
