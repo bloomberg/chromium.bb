@@ -1048,8 +1048,12 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
                                int reason) {
   content::RecordAction(UserMetricsAction("ActiveTabChanged"));
 
-  // First let the BrowserWindow do its handling.  On e.g. views this changes
-  // the focused object, which should happen before we update the toolbar below,
+  // Update the bookmark state, since the BrowserWindow may query it during
+  // OnActiveTabChanged() below.
+  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
+
+  // Let the BrowserWindow do its handling.  On e.g. views this changes the
+  // focused object, which should happen before we update the toolbar below,
   // since the omnibox expects the correct element to already be focused when it
   // is updated.
   window_->OnActiveTabChanged(old_contents, new_contents, index, reason);
@@ -1102,8 +1106,6 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
     session_service->SetSelectedTabInWindow(session_id(),
                                             tab_strip_model_->active_index());
   }
-
-  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
 
   // This needs to be called after UpdateSearchState().
   if (instant_controller_)
