@@ -66,6 +66,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
+#include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
@@ -676,6 +677,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   power_button_observer_.reset(new PowerButtonObserver);
   user_activity_notifier_.reset(new UserActivityNotifier);
   video_activity_notifier_.reset(new VideoActivityNotifier);
+  data_promo_notification_.reset(new DataPromoNotification()),
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -703,6 +705,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
   if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
     detector->Shutdown();
+
+  // Destroy UI related classes before destroying services that they may
+  // depend on.
+  data_promo_notification_.reset();
 
   // Tell DeviceSettingsService to stop talking to session_manager. Do not
   // shutdown DeviceSettingsService yet, it might still be accessed by

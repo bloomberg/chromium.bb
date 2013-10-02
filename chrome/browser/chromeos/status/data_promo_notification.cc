@@ -4,12 +4,8 @@
 
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/system_notifier.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"

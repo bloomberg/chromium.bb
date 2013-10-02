@@ -280,7 +280,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   } else if (sender == proxy_settings_) {
     delegate->ChangeProxySettings();
   } else if (sender == other_mobile_) {
-    delegate->ShowOtherCellular();
+    delegate->ShowOtherNetworkDialog(shill::kTypeCellular);
   } else if (sender == toggle_debug_preferred_networks_) {
     list_type_ = (list_type_ == LIST_TYPE_NETWORK)
         ? LIST_TYPE_DEBUG_PREFERRED : LIST_TYPE_NETWORK;
@@ -289,9 +289,9 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
         FROM_HERE,
         base::Bind(&NetworkStateListDetailedView::Init, AsWeakPtr()));
   } else if (sender == other_wifi_) {
-    delegate->ShowOtherWifi();
+    delegate->ShowOtherNetworkDialog(shill::kTypeWifi);
   } else if (sender == other_vpn_) {
-    delegate->ShowOtherVPN();
+    delegate->ShowOtherNetworkDialog(shill::kTypeVPN);
   } else {
     NOTREACHED();
   }

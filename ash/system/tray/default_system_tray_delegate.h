@@ -65,18 +65,16 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual void CancelDriveOperation(int32 operation_id) OVERRIDE;
   virtual void GetDriveOperationStatusList(
       ash::DriveOperationStatusList*) OVERRIDE;
-  virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE;
-  virtual void EnrollOrConfigureNetwork(
-      const std::string& network_id,
-      gfx::NativeWindow parent_window) OVERRIDE;
+  virtual void ShowNetworkConfigure(const std::string& network_id,
+                                    gfx::NativeWindow parent_window) OVERRIDE;
+  virtual bool EnrollNetwork(const std::string& network_id,
+                             gfx::NativeWindow parent_window) OVERRIDE;
   virtual void ManageBluetoothDevices() OVERRIDE;
   virtual void ToggleBluetooth() OVERRIDE;
   virtual bool IsBluetoothDiscovering() OVERRIDE;
   virtual void ShowMobileSimDialog() OVERRIDE;
   virtual void ShowMobileSetupDialog(const std::string& service_path) OVERRIDE;
-  virtual void ShowOtherWifi() OVERRIDE;
-  virtual void ShowOtherVPN() OVERRIDE;
-  virtual void ShowOtherCellular() OVERRIDE;
+  virtual void ShowOtherNetworkDialog(const std::string& type) OVERRIDE;
   virtual bool GetBluetoothAvailable() OVERRIDE;
   virtual bool GetBluetoothEnabled() OVERRIDE;
   virtual void ChangeProxySettings() OVERRIDE;

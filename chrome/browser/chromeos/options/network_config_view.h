@@ -87,10 +87,10 @@ class NetworkConfigView : public views::DialogDelegateView,
   NetworkConfigView();
   virtual ~NetworkConfigView();
 
-  // Login dialog for known networks.
-  void InitWithNetworkState(const NetworkState* network);
-  // Login dialog for new/hidden networks.
-  void InitWithType(const std::string& type);
+  // Login dialog for known networks. Returns true if successfully created.
+  bool InitWithNetworkState(const NetworkState* network);
+  // Login dialog for new/hidden networks. Returns true if successfully created.
+  bool InitWithType(const std::string& type);
 
   // Creates and shows a dialog containing this view.
   void ShowDialog(gfx::NativeWindow parent);

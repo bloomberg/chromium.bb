@@ -28,10 +28,10 @@ ASH_EXPORT extern const char kNetworkActivateNotificationId[];
 ASH_EXPORT extern const char kErrorActivateFailed[];
 
 // Requests a network connection and handles any errors and notifications.
-// |owning_window| is used to parent any UI on failure (e.g. for certificate
+// |parent_window| is used to parent any UI on failure (e.g. for certificate
 // enrollment). If NULL, the default window will be used.
 ASH_EXPORT void ConnectToNetwork(const std::string& service_path,
-                                 gfx::NativeWindow owning_window);
+                                 gfx::NativeWindow parent_window);
 
 // Enables or disables a network technology. If |technology| refers to cellular
 // and the device cannot be enabled due to a SIM lock, this function will

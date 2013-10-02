@@ -17,7 +17,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
@@ -65,7 +64,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
-#include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -92,10 +90,6 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/shill_property_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -222,95 +216,13 @@ void BluetoothDeviceConnectError(
 
 void ShowNetworkSettingsPage(const std::string& service_path) {
   std::string page = chrome::kInternetOptionsSubPage;
-  const NetworkState* network = service_path.empty() ? NULL :
-      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-          service_path);
-  if (network) {
-    std::string name(network->name());
-    if (name.empty() && network->Matches(NetworkTypePattern::Ethernet()))
-      name = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-    page += base::StringPrintf(
-        "?servicePath=%s&networkType=%s&networkName=%s",
-        net::EscapeUrlEncodedData(service_path, true).c_str(),
-        net::EscapeUrlEncodedData(network->type(), true).c_str(),
-        net::EscapeUrlEncodedData(name, false).c_str());
-  }
+  page += "?servicePath=" + net::EscapeUrlEncodedData(service_path, true);
   content::RecordAction(
       content::UserMetricsAction("OpenInternetOptionsDialog"));
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::ShowSettingsSubPage(browser, page);
-}
-
-void HandleUnconfiguredNetwork(const std::string& service_path,
-                               gfx::NativeWindow parent_window) {
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  if (!network) {
-    NET_LOG_ERROR("Configuring unknown network", service_path);
-    return;
-  }
-
-  if (network->type() == shill::kTypeWifi) {
-    // Only show the config view for secure networks, otherwise do nothing.
-    if (network->security() != shill::kSecurityNone)
-      NetworkConfigView::Show(service_path, parent_window);
-    return;
-  }
-
-  if (network->type() == shill::kTypeWimax ||
-      network->type() == shill::kTypeVPN) {
-    NetworkConfigView::Show(service_path, parent_window);
-    return;
-  }
-
-  if (network->type() == shill::kTypeCellular) {
-    if (network->RequiresActivation()) {
-      ash::network_connect::ActivateCellular(service_path);
-      return;
-    }
-    if (network->cellular_out_of_credits()) {
-      ash::network_connect::ShowMobileSetup(service_path);
-      return;
-    }
-    // No special configure or setup for |network|, show the settings UI.
-    if (LoginState::Get()->IsUserLoggedIn())
-      ShowNetworkSettingsPage(service_path);
-    return;
-  }
-  NOTREACHED();
-}
-
-void EnrollmentComplete(const std::string& service_path) {
-  NET_LOG_USER("Enrollment Complete", service_path);
-}
-
-bool EnrollNetwork(const std::string& service_path,
-                   gfx::NativeWindow parent_window) {
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  if (!network) {
-    NET_LOG_ERROR("Enrolling Unknown network", service_path);
-    return false;
-  }
-  // We skip certificate patterns for device policy ONC so that an unmanaged
-  // user can't get to the place where a cert is presented for them
-  // involuntarily.
-  if (network->ui_data().onc_source() == onc::ONC_SOURCE_DEVICE_POLICY)
-    return false;
-
-  const CertificatePattern& certificate_pattern =
-      network->ui_data().certificate_pattern();
-  if (certificate_pattern.Empty())
-    return false;
-
-  NET_LOG_USER("Enrolling", service_path);
-
-  EnrollmentDelegate* enrollment = CreateEnrollmentDelegate(
-      parent_window, network->name(), ProfileManager::GetDefaultProfile());
-  return enrollment->Enroll(certificate_pattern.enrollment_uri_list(),
-                            base::Bind(&EnrollmentComplete, service_path));
 }
 
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
@@ -334,7 +246,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         screen_locked_(false),
         have_session_start_time_(false),
         have_session_length_limit_(false),
-        data_promo_notification_(new DataPromoNotification()),
         volume_control_delegate_(new VolumeController()) {
     // Register notifications on construction so that events such as
     // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -393,7 +304,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void Shutdown() OVERRIDE {
-    data_promo_notification_.reset();
   }
 
   void InitializeOnAdapterReady(
@@ -826,16 +736,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         integration_service->job_list()->GetJobInfoList());
   }
 
-  virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE {
-    HandleUnconfiguredNetwork(network_id, GetNativeWindow());
+  virtual void ShowNetworkConfigure(const std::string& network_id,
+                                    gfx::NativeWindow parent_window) OVERRIDE {
+    NetworkConfigView::Show(network_id, parent_window);
   }
 
-  virtual void EnrollOrConfigureNetwork(
-      const std::string& network_id,
-      gfx::NativeWindow parent_window) OVERRIDE {
-    if (EnrollNetwork(network_id, parent_window))
-      return;
-    HandleUnconfiguredNetwork(network_id, parent_window);
+  virtual bool EnrollNetwork(const std::string& network_id,
+                             gfx::NativeWindow parent_window) OVERRIDE {
+    return enrollment::CreateDialog(network_id, parent_window);
   }
 
   virtual void ManageBluetoothDevices() OVERRIDE {
@@ -861,16 +769,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     MobileSetupDialog::Show(service_path);
   }
 
-  virtual void ShowOtherWifi() OVERRIDE {
-    NetworkConfigView::ShowForType(shill::kTypeWifi, GetNativeWindow());
-  }
-
-  virtual void ShowOtherVPN() OVERRIDE {
-    NetworkConfigView::ShowForType(shill::kTypeVPN, GetNativeWindow());
-  }
-
-  virtual void ShowOtherCellular() OVERRIDE {
-    ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
+  virtual void ShowOtherNetworkDialog(const std::string& type) OVERRIDE {
+    if (type == shill::kTypeCellular) {
+      ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
+      return;
+    }
+    NetworkConfigView::ShowForType(type, GetNativeWindow());
   }
 
   virtual bool GetBluetoothAvailable() OVERRIDE {
@@ -1298,7 +1202,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   scoped_ptr<PrefChangeRegistrar> local_state_registrar_;
   scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
   Profile* user_profile_;
-  std::string active_network_path_;
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
   bool screen_locked_;
@@ -1309,7 +1212,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   std::string enterprise_domain_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-  scoped_ptr<DataPromoNotification> data_promo_notification_;
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);

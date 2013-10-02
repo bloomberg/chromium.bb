@@ -257,13 +257,16 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Shows UI to configure or activate the network specified by |network_id|,
   // which may include showing Payment or Portal UI when appropriate.
-  virtual void ConfigureNetwork(const std::string& network_id) = 0;
+  // |parent_window| is used to parent any configuration UI. If NULL a default
+  // window will be used.
+  virtual void ShowNetworkConfigure(const std::string& network_id,
+                                    gfx::NativeWindow parent_window) = 0;
 
-  // Shows UI to enroll the network specified by |network_id| if appropriate,
-  // otherwise behaves the same as ConfigureNetwork. |parent_window| is used
+  // Shows UI to enroll the network specified by |network_id| if appropriate
+  // and returns true, otherwise returns false. |parent_window| is used
   // to parent any configuration UI. If NULL a default window will be used.
-  virtual void EnrollOrConfigureNetwork(const std::string& network_id,
-                                        gfx::NativeWindow parent_window) = 0;
+  virtual bool EnrollNetwork(const std::string& network_id,
+                             gfx::NativeWindow parent_window) = 0;
 
   // Shows UI to manage bluetooth devices.
   virtual void ManageBluetoothDevices() = 0;
@@ -277,14 +280,9 @@ class ASH_EXPORT SystemTrayDelegate {
   // Shows UI to setup a mobile network.
   virtual void ShowMobileSetupDialog(const std::string& service_path) = 0;
 
-  // Shows UI to connect to an unlisted wifi network.
-  virtual void ShowOtherWifi() = 0;
-
-  // Shows UI to configure vpn.
-  virtual void ShowOtherVPN() = 0;
-
-  // Shows UI to search for cellular networks.
-  virtual void ShowOtherCellular() = 0;
+  // Shows UI to connect to an unlisted network of type |type|. On Chrome OS
+  // |type| corresponds to a Shill network type.
+  virtual void ShowOtherNetworkDialog(const std::string& type) = 0;
 
   // Returns whether bluetooth capability is available.
   virtual bool GetBluetoothAvailable() = 0;

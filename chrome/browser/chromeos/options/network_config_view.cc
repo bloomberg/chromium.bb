@@ -84,7 +84,7 @@ NetworkConfigView::NetworkConfigView()
   SetActiveDialog(this);
 }
 
-void NetworkConfigView::InitWithNetworkState(const NetworkState* network) {
+bool NetworkConfigView::InitWithNetworkState(const NetworkState* network) {
   DCHECK(network);
   std::string service_path = network->path();
   if (network->type() == shill::kTypeWifi)
@@ -93,11 +93,10 @@ void NetworkConfigView::InitWithNetworkState(const NetworkState* network) {
     child_config_view_ = new WimaxConfigView(this, service_path);
   else if (network->type() == shill::kTypeVPN)
     child_config_view_ = new VPNConfigView(this, service_path);
-  else
-    NOTREACHED();
+  return child_config_view_ != NULL;
 }
 
-void NetworkConfigView::InitWithType(const std::string& type) {
+bool NetworkConfigView::InitWithType(const std::string& type) {
   if (type == shill::kTypeWifi) {
     child_config_view_ = new WifiConfigView(this,
                                             "" /* service_path */,
@@ -108,9 +107,8 @@ void NetworkConfigView::InitWithType(const std::string& type) {
   } else if (type == shill::kTypeVPN) {
     child_config_view_ = new VPNConfigView(this,
                                            "" /* service_path */);
-  } else {
-    NOTREACHED();
   }
+  return child_config_view_ != NULL;
 }
 
 NetworkConfigView::~NetworkConfigView() {
@@ -130,7 +128,12 @@ void NetworkConfigView::Show(const std::string& service_path,
     LOG(ERROR) << "NetworkConfigView::Show called with invalid service_path";
     return;
   }
-  view->InitWithNetworkState(network);
+  if (!view->InitWithNetworkState(network)) {
+    LOG(ERROR) << "NetworkConfigView::Show called with invalid network type: "
+               << network->type();
+    delete view;
+    return;
+  }
   view->ShowDialog(parent);
 }
 
@@ -140,7 +143,12 @@ void NetworkConfigView::ShowForType(const std::string& type,
   if (GetActiveDialog() != NULL)
     return;
   NetworkConfigView* view = new NetworkConfigView();
-  view->InitWithType(type);
+  if (!view->InitWithType(type)) {
+    LOG(ERROR) << "NetworkConfigView::ShowForType called with invalid type: "
+               << type;
+    delete view;
+    return;
+  }
   view->ShowDialog(parent);
 }
 

@@ -18,6 +18,8 @@ CHROMEOS_EXPORT extern const char kSharedProfilePath[];
 // DBusThreadManager was initialized with the Shill*ClientStubs.
 void SetupDefaultEnvironment();
 
+std::string DevicePathForType(const std::string& type);
+
 // Returns true when stub portalled wifi is enabled and it's service
 // path equals to |path|.
 CHROMEOS_EXPORT bool IsStubPortalledWifiEnabled(const std::string& path);

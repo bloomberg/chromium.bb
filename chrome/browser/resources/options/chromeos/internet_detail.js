@@ -109,12 +109,10 @@ cr.define('options.internet', function() {
      */
     showNetworkDetails_: function(params) {
       var servicePath = params.servicePath;
-      var networkType = params.networkType;
-      if (!servicePath || !servicePath.length ||
-          !networkType || !networkType.length)
+      if (!servicePath || !servicePath.length)
         return;
-      chrome.send('networkCommand',
-          [networkType, servicePath, 'options']);
+      var networkType = '';  // ignored for 'options'
+      chrome.send('networkCommand', [networkType, servicePath, 'options']);
     },
 
 

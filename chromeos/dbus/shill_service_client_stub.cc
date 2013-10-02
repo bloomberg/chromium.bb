@@ -15,6 +15,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
+#include "chromeos/dbus/shill_stub_helper.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -350,6 +351,10 @@ void ShillServiceClientStub::AddServiceWithIPConfig(
   properties->SetWithoutPathExpansion(
       shill::kNameProperty,
       base::Value::CreateStringValue(name));
+  properties->SetWithoutPathExpansion(
+      shill::kDeviceProperty,
+      base::Value::CreateStringValue(
+          shill_stub_helper::DevicePathForType(type)));
   properties->SetWithoutPathExpansion(
       shill::kTypeProperty,
       base::Value::CreateStringValue(type));

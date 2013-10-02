@@ -71,11 +71,6 @@ void ShowErrorNotification(const std::string& notification_id,
           callback));
 }
 
-void ConfigureNetwork(const std::string& service_path) {
-  ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
-      service_path);
-}
-
 }  // namespace
 
 namespace ash {
@@ -156,7 +151,7 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
         cellular->type(),
         l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE),
         error_msg,
-        base::Bind(&ConfigureNetwork, cellular->path()));
+        base::Bind(&network_connect::ShowNetworkSettings, cellular->path()));
   }
 }
 
