@@ -106,9 +106,9 @@ MojoResult CoreImpl::WaitMany(const MojoHandle* handles,
                               const MojoWaitFlags* flags,
                               uint32_t num_handles,
                               MojoDeadline deadline) {
-  if (!VerifyUserPointer(handles, num_handles, sizeof(handles[0])))
+  if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer(flags, num_handles, sizeof(flags[0])))
+  if (!VerifyUserPointer<MojoWaitFlags>(flags, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles < 1)
     return MOJO_RESULT_INVALID_ARGUMENT;

@@ -51,9 +51,9 @@ class MockDispatcher : public Dispatcher {
     info_->IncrementWriteMessageCallCount();
     lock().AssertAcquired();
 
-    if (!VerifyUserPointer(bytes, num_bytes, 1))
+    if (!VerifyUserPointer<void>(bytes, num_bytes))
       return MOJO_RESULT_INVALID_ARGUMENT;
-    if (!VerifyUserPointer(handles, num_handles, sizeof(handles[0])))
+    if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
       return MOJO_RESULT_INVALID_ARGUMENT;
 
     return MOJO_RESULT_OK;
@@ -68,10 +68,10 @@ class MockDispatcher : public Dispatcher {
     info_->IncrementReadMessageCallCount();
     lock().AssertAcquired();
 
-    if (num_bytes && !VerifyUserPointer(bytes, *num_bytes, 1))
+    if (num_bytes && !VerifyUserPointer<void>(bytes, *num_bytes))
       return MOJO_RESULT_INVALID_ARGUMENT;
     if (num_handles &&
-        !VerifyUserPointer(handles, *num_handles, sizeof(handles[0])))
+        !VerifyUserPointer<MojoHandle>(handles, *num_handles))
       return MOJO_RESULT_INVALID_ARGUMENT;
 
     return MOJO_RESULT_OK;

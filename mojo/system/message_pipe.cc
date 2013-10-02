@@ -80,12 +80,12 @@ MojoResult MessagePipe::WriteMessage(
 
   unsigned destination_port = DestinationPortFromSourcePort(port);
 
-  if (!VerifyUserPointer(bytes, num_bytes, 1))
+  if (!VerifyUserPointer<void>(bytes, num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_bytes > kMaxMessageNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  if (!VerifyUserPointer(handles, num_handles, sizeof(handles[0])))
+  if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles > kMaxMessageNumHandles)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -129,11 +129,11 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
   DCHECK(port == 0 || port == 1);
 
   const size_t max_bytes = num_bytes ? *num_bytes : 0;
-  if (!VerifyUserPointer(bytes, max_bytes, 1))
+  if (!VerifyUserPointer<void>(bytes, max_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   const size_t max_handles = num_handles ? *num_handles : 0;
-  if (!VerifyUserPointer(handles, max_handles, sizeof(handles[0])))
+  if (!VerifyUserPointer<MojoHandle>(handles, max_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   base::AutoLock locker(lock_);

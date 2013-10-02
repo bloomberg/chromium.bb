@@ -45,6 +45,15 @@ class SystemPerftest : public test::TestBase {
     DCHECK_EQ(result, MOJO_RESULT_OK);
   }
 
+  void MessagePipe_EmptyRead() {
+    MojoResult result;
+    result = ReadMessage(h_0_,
+                         NULL, NULL,
+                         NULL, NULL,
+                         MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+    DCHECK_EQ(result, MOJO_RESULT_NOT_FOUND);
+  }
+
  protected:
   Handle h_0_;
   Handle h_1_;
@@ -91,6 +100,16 @@ TEST_F(SystemPerftest, MessagePipe_WriteAndRead) {
       base::Bind(&SystemPerftest::MessagePipe_WriteAndRead,
                  base::Unretained(this),
                  static_cast<void*>(buffer), static_cast<uint32_t>(10000)));
+  CHECK_EQ(Close(h_0_), MOJO_RESULT_OK);
+  CHECK_EQ(Close(h_1_), MOJO_RESULT_OK);
+}
+
+TEST_F(SystemPerftest, MessagePipe_EmptyRead) {
+  CHECK_EQ(CreateMessagePipe(&h_0_, &h_1_), MOJO_RESULT_OK);
+  test::IterateAndReportPerf(
+      "MessagePipe_EmptyRead",
+      base::Bind(&SystemPerftest::MessagePipe_EmptyRead,
+                 base::Unretained(this)));
   CHECK_EQ(Close(h_0_), MOJO_RESULT_OK);
   CHECK_EQ(Close(h_1_), MOJO_RESULT_OK);
 }

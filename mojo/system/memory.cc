@@ -11,9 +11,9 @@
 namespace mojo {
 namespace system {
 
-bool VerifyUserPointer(const void* pointer, size_t count, size_t size_each) {
-  DCHECK_GT(size_each, 0u);
-  if (count > std::numeric_limits<size_t>::max() / size_each)
+template <size_t size>
+bool VerifyUserPointerForSize(const void* pointer, size_t count) {
+  if (count > std::numeric_limits<size_t>::max() / size)
     return false;
 
   // TODO(vtl): If running in kernel mode, do a full verification. For now, just
@@ -21,6 +21,10 @@ bool VerifyUserPointer(const void* pointer, size_t count, size_t size_each) {
   // implementation is also possible if this check is skipped.)
   return count == 0 || !!pointer;
 }
+
+// Explicitly instantiate the sizes we need. Add instantiations as needed.
+template bool VerifyUserPointerForSize<1>(const void*, size_t);
+template bool VerifyUserPointerForSize<4>(const void*, size_t);
 
 }  // namespace system
 }  // namespace mojo

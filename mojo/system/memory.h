@@ -10,16 +10,32 @@
 namespace mojo {
 namespace system {
 
-// Verify that |count * size_each| bytes can be read from the user |pointer|
-// insofar as possible/necessary. |count| and |size_each| are specified
-// separately instead of a single size, since |count * size_each| may overflow a
-// |size_t|. |count| may be zero but |size_each| must be nonzero.
+// This is just forward-declared, with the definition and explicit
+// instantiations in the .cc file. This is used by |VerifyUserPointer<T>()|
+// below, and you should use that instead.
+template <size_t size>
+bool VerifyUserPointerForSize(const void* pointer, size_t count);
+
+// Verify that |count * sizeof(T)| bytes can be read from the user |pointer|
+// insofar as possible/necessary (note: this is done carefully since |count *
+// sizeof(T)| may overflow a |size_t|. |count| may be zero. If |T| is |void|,
+// then the size of each element is taken to be a single byte.
 //
 // For example, if running in kernel mode, this should be a full verification
 // that the given memory is owned and readable by the user process. In user
 // mode, if crashes are acceptable, this may do nothing at all (and always
 // return true).
-bool VerifyUserPointer(const void* pointer, size_t count, size_t size_each);
+template <typename T>
+bool VerifyUserPointer(const T* pointer, size_t count) {
+  return VerifyUserPointerForSize<sizeof(T)>(pointer, count);
+}
+
+// Special-case |T| equals |void| so that the size is in bytes, as indicated
+// above.
+template <>
+inline bool VerifyUserPointer<void>(const void* pointer, size_t count) {
+  return VerifyUserPointerForSize<1>(pointer, count);
+}
 
 }  // namespace system
 }  // namespace mojo
