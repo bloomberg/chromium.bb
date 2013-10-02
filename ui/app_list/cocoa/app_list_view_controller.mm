@@ -339,12 +339,11 @@ void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
       delegate_ ? delegate_->GetSigninDelegate() : NULL;
   BOOL show_signin_view =
       signinDelegate && ![appsGridController_ model]->signed_in();
-  if (!!signinViewController_ == show_signin_view)
-    return;
+
+  [[signinViewController_ view] removeFromSuperview];
+  signinViewController_.reset();
 
   if (!show_signin_view) {
-    [[signinViewController_ view] removeFromSuperview];
-    signinViewController_.reset();
     [backgroundView_ setHidden:NO];
     return;
   }
