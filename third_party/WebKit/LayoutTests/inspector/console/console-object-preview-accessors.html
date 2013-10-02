@@ -1,0 +1,55 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+var arrayLikeWithAccessors = {
+    splice: function() {},
+    length: 9,
+    get 0() { foo.bar = 1; },
+    get 1() { throw new Error("my error"); },
+    set 3() {},
+    get 5() { return "property5"; },
+    6: 6,
+    get 7() { return 77; },
+    8: "value8"
+};
+
+function test()
+{
+    InspectorTest.showConsolePanel();
+    InspectorTest.evaluateInConsole("arrayLikeWithAccessors");
+    InspectorTest.runAfterPendingDispatches(step1);
+
+    function step1()
+    {
+        InspectorTest.addResult("Before expanding accessors:");
+        InspectorTest.dumpConsoleMessages(false, true);
+
+        var buttons = document.getElementsByClassName("properties-calculate-value-button");
+        var buttonsCount = buttons.length;
+        InspectorTest.addResult("\nAccessor property buttons count: " + buttonsCount);
+        for (var i = 0; i < buttonsCount; ++i)
+            buttons[i].click();
+
+        InspectorTest.runAfterPendingDispatches(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("\nAfter expanding accessors:");
+        InspectorTest.dumpConsoleMessages(false, true);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that console produces instant previews for arrays and objects that have getters and setters.
+</p>
+
+</body>
+</html>

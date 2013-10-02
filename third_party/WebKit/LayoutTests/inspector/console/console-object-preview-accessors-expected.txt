@@ -1,0 +1,12 @@
+Tests that console produces instant previews for arrays and objects that have getters and setters.
+
+Before expanding accessors:
+arrayLikeWithAccessors console-message-text source-code
+[(...), (...), undefined × 3, (...), 6, (...), "value8"] console-message-text source-code > console-formatted-array source-code > properties-calculate-value-button > properties-calculate-value-button > console-formatted-undefined > properties-calculate-value-button > console-formatted-number source-code > properties-calculate-value-button > source-code > console-formatted-string source-code
+
+Accessor property buttons count: 4
+
+After expanding accessors:
+arrayLikeWithAccessors console-message-text source-code
+[<exception>, <exception>, undefined × 3, "property5", 6, 77, "value8"] console-message-text source-code > console-formatted-array source-code > error > error > console-formatted-undefined > source-code > console-formatted-string source-code > console-formatted-number source-code > console-formatted-number source-code > source-code > console-formatted-string source-code
+
