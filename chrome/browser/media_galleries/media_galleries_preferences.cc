@@ -377,12 +377,10 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   // FinishInitialization.
   pre_initialization_callbacks_waiting_ = 3;
 
-  // We determine the freshness of the profile here, before any of the finders
-  // return and add media galleries to it.
+  // Ensure StorageMonitor is initialized.
   StorageMonitor::GetInstance()->EnsureInitialized(
-      base::Bind(&MediaGalleriesPreferences::OnStorageMonitorInit,
-                 weak_factory_.GetWeakPtr(),
-                 APIHasBeenUsed(profile_) /* add_default_galleries */));
+      base::Bind(&MediaGalleriesPreferences::OnInitializationCallbackReturned,
+                 weak_factory_.GetWeakPtr()));
 
   // Look for optional default galleries every time.
   itunes::ITunesFinder::FindITunesLibrary(
@@ -419,6 +417,7 @@ void MediaGalleriesPreferences::FinishInitialization() {
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   DCHECK(monitor->IsInitialized());
 
+  AddDefaultGalleriesIfFreshProfile();
   InitFromPrefs();
 
   StorageMonitor::GetInstance()->AddObserver(this);
@@ -448,7 +447,12 @@ void MediaGalleriesPreferences::FinishInitialization() {
   on_initialize_callbacks_.clear();
 }
 
-void MediaGalleriesPreferences::AddDefaultGalleries() {
+void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
+  // Only add defaults the first time.
+  if (APIHasBeenUsed(profile_))
+    return;
+
+  // Fresh profile case.
   const int kDirectoryKeys[] = {
     chrome::DIR_USER_MUSIC,
     chrome::DIR_USER_PICTURES,
@@ -509,13 +513,6 @@ bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
     }
   }
   return false;
-}
-
-void MediaGalleriesPreferences::OnStorageMonitorInit(
-    bool need_to_add_default_galleries) {
-  if (need_to_add_default_galleries)
-    AddDefaultGalleries();
-  OnInitializationCallbackReturned();
 }
 
 void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
