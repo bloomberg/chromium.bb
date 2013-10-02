@@ -48,11 +48,10 @@ public:
 
     bool isClipPathOperation() const { return type() == TypeClipPathOperation; }
     bool isColor() const { return type() == TypeColor; }
-    bool isDouble() const { return type() == TypeDouble; }
     bool isImage() const { return type() == TypeImage; }
-    bool isLength() const { return type() == TypeLength; }
     bool isLengthBox() const { return type() == TypeLengthBox; }
     bool isLengthSize() const { return type() == TypeLengthSize; }
+    bool isNumber() const { return type() == TypeNumber; }
     bool isNeutral() const { return type() == TypeNeutral; }
     bool isShapeValue() const { return type() == TypeShapeValue; }
     bool isTransform() const { return type() == TypeTransform; }
@@ -63,12 +62,11 @@ protected:
     enum AnimatableType {
         TypeClipPathOperation,
         TypeColor,
-        TypeDouble,
         TypeImage,
-        TypeLength,
         TypeLengthBox,
         TypeLengthSize,
         TypeNeutral,
+        TypeNumber,
         TypeShapeValue,
         TypeTransform,
         TypeUnknown,

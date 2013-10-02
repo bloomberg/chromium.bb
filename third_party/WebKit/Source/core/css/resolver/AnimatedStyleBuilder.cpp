@@ -33,11 +33,10 @@
 
 #include "core/animation/AnimatableClipPathOperation.h"
 #include "core/animation/AnimatableColor.h"
-#include "core/animation/AnimatableDouble.h"
 #include "core/animation/AnimatableImage.h"
-#include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
+#include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
@@ -58,8 +57,8 @@ namespace {
 Length animatableValueToLength(const AnimatableValue* value, const StyleResolverState& state, NumberRange range = AllValues)
 {
     const RenderStyle* style = state.style();
-    if (value->isLength())
-        return toAnimatableLength(value)->toLength(style, state.rootElementStyle(), style->effectiveZoom(), range);
+    if (value->isNumber())
+        return toAnimatableNumber(value)->toLength(style, state.rootElementStyle(), style->effectiveZoom(), range);
     RefPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
     CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
     return cssPrimitiveValue->convertToLength<AnyConversion>(style, state.rootElementStyle(), style->effectiveZoom());
@@ -68,7 +67,7 @@ Length animatableValueToLength(const AnimatableValue* value, const StyleResolver
 template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value)
 {
     COMPILE_ASSERT(WTF::IsInteger<T>::value, ShouldUseIntegralTypeTWhenRoundingValues);
-    return clampTo<T>(round(toAnimatableDouble(value)->toDouble()));
+    return clampTo<T>(round(toAnimatableNumber(value)->toDouble()));
 }
 
 LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleResolverState& state)
@@ -167,7 +166,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setVisitedLinkColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyFillOpacity:
-        style->setFillOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
+        style->setFillOpacity(clampTo<float>(toAnimatableNumber(value)->toDouble(), 0, 1));
         return;
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state));
@@ -206,7 +205,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setMinWidth(animatableValueToLength(value, state));
         return;
     case CSSPropertyOpacity:
-        style->setOpacity(toAnimatableDouble(value)->toDouble());
+        style->setOpacity(toAnimatableNumber(value)->toDouble());
         return;
     case CSSPropertyOutlineColor:
         style->setOutlineColor(toAnimatableColor(value)->color());
@@ -234,7 +233,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setRight(animatableValueToLength(value, state));
         return;
     case CSSPropertyStrokeOpacity:
-        style->setStrokeOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
+        style->setStrokeOpacity(clampTo<float>(toAnimatableNumber(value)->toDouble(), 0, 1));
         return;
     case CSSPropertyTextDecorationColor:
         style->setTextDecorationColor(toAnimatableColor(value)->color());
@@ -269,7 +268,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setMaskImage(toAnimatableImage(value)->toStyleImage());
         return;
     case CSSPropertyWebkitPerspective:
-        style->setPerspective(clampTo<float>(toAnimatableDouble(value)->toDouble()));
+        style->setPerspective(clampTo<float>(toAnimatableNumber(value)->toDouble()));
         return;
     case CSSPropertyWebkitPerspectiveOriginX:
         style->setPerspectiveOriginX(animatableValueToLength(value, state));
@@ -302,13 +301,13 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTransformOriginY(animatableValueToLength(value, state));
         return;
     case CSSPropertyWebkitTransformOriginZ:
-        style->setTransformOriginZ(toAnimatableDouble(value)->toDouble());
+        style->setTransformOriginZ(toAnimatableNumber(value)->toDouble());
         return;
     case CSSPropertyWidth:
         style->setWidth(animatableValueToLength(value, state));
         return;
     case CSSPropertyWordSpacing:
-        style->setWordSpacing(clampTo<float>(toAnimatableDouble(value)->toDouble()));
+        style->setWordSpacing(clampTo<float>(toAnimatableNumber(value)->toDouble()));
         return;
     case CSSPropertyVisibility:
         style->setVisibility(toAnimatableVisibility(value)->visibility());

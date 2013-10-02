@@ -28,13 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimatableLength_h
-#define AnimatableLength_h
+#ifndef AnimatableNumber_h
+#define AnimatableNumber_h
 
 #include "core/animation/AnimatableValue.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/platform/Length.h"
 
 namespace WebCore {
 
@@ -43,32 +42,38 @@ enum NumberRange {
     NonNegativeValues,
 };
 
-// Handles animation of CSS length and percentage values including CSS calc.
+// Handles animation of CSSPrimitiveValues that can be represented by doubles including CSSCalcValue.
 // See primitiveUnitToNumberType() for the list of supported units (with the exception of calc).
 // If created from a CSSPrimitiveValue this class will cache it to be returned in toCSSValue().
-class AnimatableLength : public AnimatableValue {
+class AnimatableNumber : public AnimatableValue {
 public:
     enum NumberUnitType {
-        UnitTypePixels,
-        UnitTypePercentage,
+        UnitTypeNumber,
+        UnitTypeLength,
         UnitTypeFontSize,
         UnitTypeFontXSize,
         UnitTypeRootFontSize,
+        UnitTypePercentage,
         UnitTypeViewportWidth,
         UnitTypeViewportHeight,
         UnitTypeViewportMin,
         UnitTypeViewportMax,
+        UnitTypeTime,
+        UnitTypeAngle,
+        UnitTypeFrequency,
+        UnitTypeResolution,
         UnitTypeInvalid,
     };
 
-    virtual ~AnimatableLength() { }
+    virtual ~AnimatableNumber() { }
     static bool canCreateFrom(const CSSValue*);
-    static PassRefPtr<AnimatableLength> create(CSSValue*);
-    static PassRefPtr<AnimatableLength> create(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue = 0)
+    static PassRefPtr<AnimatableNumber> create(CSSValue*);
+    static PassRefPtr<AnimatableNumber> create(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {
-        return adoptRef(new AnimatableLength(number, unitType, cssPrimitiveValue));
+        return adoptRef(new AnimatableNumber(number, unitType, cssPrimitiveValue));
     }
     PassRefPtr<CSSValue> toCSSValue(NumberRange = AllValues) const;
+    double toDouble() const;
     Length toLength(const RenderStyle* currStyle, const RenderStyle* rootStyle, double zoom, NumberRange = AllValues) const;
 
 protected:
@@ -76,33 +81,33 @@ protected:
     virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableLength(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue)
-        : m_isCalc(false)
-        , m_number(number)
+    AnimatableNumber(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue)
+        : m_number(number)
         , m_unitType(unitType)
+        , m_isCalc(false)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
     {
         ASSERT(m_unitType != UnitTypeInvalid);
     }
-    AnimatableLength(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue)
+    AnimatableNumber(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue)
         : m_isCalc(true)
         , m_calcExpression(calcExpression)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
     {
         ASSERT(m_calcExpression);
     }
-    virtual AnimatableType type() const OVERRIDE { return TypeLength; }
+    virtual AnimatableType type() const OVERRIDE { return TypeNumber; }
 
-    static PassRefPtr<AnimatableLength> create(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
+    static PassRefPtr<AnimatableNumber> create(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {
-        return adoptRef(new AnimatableLength(calcExpression, cssPrimitiveValue));
+        return adoptRef(new AnimatableNumber(calcExpression, cssPrimitiveValue));
     }
-    static PassRefPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend);
+    static PassRefPtr<AnimatableNumber> create(const AnimatableNumber* leftAddend, const AnimatableNumber* rightAddend);
 
     PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(NumberRange) const;
     PassRefPtr<CSSCalcExpressionNode> toCSSCalcExpressionNode() const;
 
-    PassRefPtr<AnimatableLength> scale(double) const;
+    PassRefPtr<AnimatableNumber> scale(double) const;
     double clampedNumber(NumberRange range) const
     {
         ASSERT(!m_isCalc);
@@ -111,22 +116,21 @@ private:
     static NumberUnitType primitiveUnitToNumberType(unsigned short primitiveUnit);
     static unsigned short numberTypeToPrimitiveUnit(NumberUnitType numberType);
 
-    bool m_isCalc;
-
     double m_number;
     NumberUnitType m_unitType;
 
+    bool m_isCalc;
     RefPtr<CSSCalcExpressionNode> m_calcExpression;
 
     mutable RefPtr<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
 };
 
-inline const AnimatableLength* toAnimatableLength(const AnimatableValue* value)
+inline const AnimatableNumber* toAnimatableNumber(const AnimatableValue* value)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isLength());
-    return static_cast<const AnimatableLength*>(value);
+    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isNumber());
+    return static_cast<const AnimatableNumber*>(value);
 }
 
 } // namespace WebCore
 
-#endif // AnimatableLength_h
+#endif // AnimatableNumber_h

@@ -34,11 +34,10 @@
 #include "CSSValueKeywords.h"
 #include "core/animation/AnimatableClipPathOperation.h"
 #include "core/animation/AnimatableColor.h"
-#include "core/animation/AnimatableDouble.h"
 #include "core/animation/AnimatableImage.h"
-#include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
+#include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
@@ -55,18 +54,20 @@ namespace WebCore {
 static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const RenderStyle* style)
 {
     switch (length.type()) {
+    case Relative:
+        return AnimatableNumber::create(length.value(), AnimatableNumber::UnitTypeNumber);
     case Fixed:
-        return AnimatableLength::create(adjustFloatForAbsoluteZoom(length.value(), style), AnimatableLength::UnitTypePixels);
+        return AnimatableNumber::create(adjustFloatForAbsoluteZoom(length.value(), style), AnimatableNumber::UnitTypeLength);
     case Percent:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypePercentage);
+        return AnimatableNumber::create(length.value(), AnimatableNumber::UnitTypePercentage);
     case ViewportPercentageWidth:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportWidth);
+        return AnimatableNumber::create(length.value(), AnimatableNumber::UnitTypeViewportWidth);
     case ViewportPercentageHeight:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportHeight);
+        return AnimatableNumber::create(length.value(), AnimatableNumber::UnitTypeViewportHeight);
     case ViewportPercentageMin:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportMin);
+        return AnimatableNumber::create(length.value(), AnimatableNumber::UnitTypeViewportMin);
     case ViewportPercentageMax:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportMax);
+        return AnimatableNumber::create(length.value(), AnimatableNumber::UnitTypeViewportMax);
     case Calculated:
         // FIXME: Convert platform calcs to CSS calcs.
         ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: Convert platform CalculationValue to AnimatableValue");
@@ -82,7 +83,6 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
     case Undefined:
         return AnimatableUnknown::create(CSSPrimitiveValue::create(CSSValueNone));
     case ExtendToZoom: // Does not apply to elements.
-    case Relative: // Does not get used by interpolable properties.
         ASSERT_NOT_REACHED();
         return 0;
     }
@@ -92,7 +92,7 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
 
 inline static PassRefPtr<AnimatableValue> createFromDouble(double value)
 {
-    return AnimatableDouble::create(value);
+    return AnimatableNumber::create(value, AnimatableNumber::UnitTypeNumber);
 }
 
 inline static PassRefPtr<AnimatableValue> createFromLengthBox(const LengthBox lengthBox, const RenderStyle* style)

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/KeyframeAnimationEffect.h"
 
-#include "core/animation/AnimatableLength.h"
+#include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include <gtest/gtest.h>
@@ -47,7 +47,7 @@ AnimatableValue* unknownAnimatableValue(double n)
 
 AnimatableValue* pixelAnimatableValue(double n)
 {
-    return AnimatableLength::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_PX).get()).leakRef();
+    return AnimatableNumber::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_PX).get()).leakRef();
 }
 
 KeyframeAnimationEffect::KeyframeVector keyframesAtZeroAndOne(AnimatableValue* zeroValue, AnimatableValue* oneValue)
@@ -64,11 +64,11 @@ KeyframeAnimationEffect::KeyframeVector keyframesAtZeroAndOne(AnimatableValue* z
 
 void expectDoubleValue(double expectedValue, PassRefPtr<AnimatableValue> value)
 {
-    ASSERT_TRUE(value->isLength() || value->isUnknown());
+    ASSERT_TRUE(value->isNumber() || value->isUnknown());
 
     double actualValue;
-    if (value->isLength())
-        actualValue = toCSSPrimitiveValue(toAnimatableLength(value.get())->toCSSValue().get())->getDoubleValue();
+    if (value->isNumber())
+        actualValue = toCSSPrimitiveValue(toAnimatableNumber(value.get())->toCSSValue().get())->getDoubleValue();
     else
         actualValue = toCSSPrimitiveValue(toAnimatableUnknown(value.get())->toCSSValue().get())->getDoubleValue();
 

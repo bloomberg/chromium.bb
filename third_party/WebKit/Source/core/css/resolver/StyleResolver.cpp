@@ -33,7 +33,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "StylePropertyShorthand.h"
-#include "core/animation/AnimatableLength.h"
+#include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
@@ -1257,7 +1257,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Doc
             RELEASE_ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Not yet implemented: An interface for compositing onto the underlying value.");
             RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
             if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-                state.setLineHeightValue(toAnimatableLength(animatableValue.get())->toCSSValue().get());
+                state.setLineHeightValue(toAnimatableNumber(animatableValue.get())->toCSSValue().get());
             else
                 AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
             didApply = true;
@@ -1284,7 +1284,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Doc
                     continue;
                 RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(AnimatableValue::neutralValue());
                 if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-                    state.setLineHeightValue(toAnimatableLength(animatableValue.get())->toCSSValue().get());
+                    state.setLineHeightValue(toAnimatableNumber(animatableValue.get())->toCSSValue().get());
                 else
                     AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
                 didApply = true;
