@@ -1,0 +1,31 @@
+Tests the script formatting functionality.
+
+
+Running: testScriptFormatterWorker
+
+Running: testSourceMapping
+
+Running: testFormatInlinedStyles
+<html><body><style>
+@-webkit-keyframes {
+**from {
+****left: 0
+**}
+
+**to {
+****left: 100px;
+**}
+}
+</style><style>
+badbraces {
+}
+}
+
+@media screen {
+**a {
+****color: red;
+****text-decoration: none
+**}
+}
+</style></body></html>
+

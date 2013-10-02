@@ -1,0 +1,104 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<link rel="stylesheet" href="resources/style-formatter-obfuscated.css">
+
+<script>
+
+var test = function()
+{
+    var panel = WebInspector.panels.scripts;
+    var worker = new Worker("ScriptFormatterWorker.js");
+
+    InspectorTest.runTestSuite([
+        function testScriptFormatterWorker(next)
+        {
+            worker.onmessage = InspectorTest.safeWrap(function(event)
+            {
+                InspectorTest.assertEquals("a {\\n    /* pre-comment */\\n    color /* after name */ : /* before value */ red /* post-comment */\\n}\\n".replace(/\n/g, "\\n"), event.data.content.replace(/\n/g, "\\n"));
+                next();
+            });
+
+            worker.onerror = function(event)
+            {
+                InspectorTest.addResult("Error in worker: " + event.data);
+                next();
+            };
+
+            worker.postMessage({ method: "format", params: { mimeType: "text/css", content: "a { /* pre-comment */ color /* after name */ : /* before value */ red /* post-comment */ }" } });
+        },
+
+        function testSourceMapping(next)
+        {
+            var formatter = new WebInspector.ScriptFormatter();
+
+            InspectorTest.showScriptSource("style-formatter-obfuscated.css", didShowScriptSource);
+            function didShowScriptSource(sourceFrame)
+            {
+                formatter.formatContent("text/css", sourceFrame._textEditor.text(), didFormatContent);
+            }
+
+            function didFormatContent(content, mapping)
+            {
+                var source = WebInspector.panel("sources").visibleView._textEditor.text();
+                var formattedSource = content;
+
+                function testMapping(string)
+                {
+                    var originalPosition = source.indexOf(string);
+                    InspectorTest.assertTrue(originalPosition !== -1, "Not found '" + string + "'");
+                    var originalLocation = WebInspector.Formatter.positionToLocation(source.lineEndings(), originalPosition);
+                    var formattedLocation = mapping.originalToFormatted(originalLocation[0], originalLocation[1]);
+                    var formattedPosition = WebInspector.Formatter.locationToPosition(formattedSource.lineEndings(), formattedLocation[0], formattedLocation[1]);
+                    var expectedFormattedPosition = formattedSource.indexOf(string);
+                    InspectorTest.assertEquals(expectedFormattedPosition, formattedPosition, "wrong mapping for <" + string + ">");
+                }
+
+                testMapping("@media");
+                testMapping("screen");
+
+                testMapping("html");
+                testMapping("color");
+                testMapping("green");
+                testMapping("foo-property");
+                testMapping("bar-value");
+
+                testMapping("body");
+                testMapping("background");
+                testMapping("black");
+
+                next();
+            }
+        },
+
+        function testFormatInlinedStyles(next)
+        {
+            worker.onmessage = InspectorTest.safeWrap(function(event)
+            {
+                InspectorTest.addResult(event.data.content);
+                next();
+            });
+
+            worker.onerror = function(event)
+            {
+                InspectorTest.addResult("Error in worker: " + event.data);
+                next();
+            };
+
+            var content = "<html><body><style>@-webkit-keyframes{from{left: 0} to{left:100px;}}</style><style>badbraces { }} @media screen{a{color:red;text-decoration: none}}</style></body></html>";
+            worker.postMessage({ method: "format", params: { mimeType: "text/html", content: content, indentString: "**" } });
+        }
+    ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests the script formatting functionality.
+</p>
+
+</body>
+</html>
