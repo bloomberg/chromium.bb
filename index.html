@@ -416,16 +416,6 @@ branch just hacks it in.</p>
 patch applied, the title will occupy two columns.  The button allows toggling
 between two and three columns.</p>
 
-<h3><a name="feature-opaque-bmp">feature/opaque-bmp</a> (Imran Haider)</h3>
-<p>This bugfix addresses a misinterpretation of the 4th byte of a 32-bit
-uncompressed BMP image with a v1 header.  As per the <a
-    href="http://msdn.microsoft.com/en-us/library/dd183376%28VS.85%29.aspx">specification</a>,
-"The high byte in each DWORD is not used".  Prior to this change, this byte was
-assumed to be unused if its value remained unchanged but interprets it as the
-alpha channel if its value changes throughout the image data.  This fallback
-behavior may cause problem for some users if the BMP image was created by an
-encoder that copied uninitialize values into the 4th byte of every pixel.</p>
-
 <h3><a name="feature-preserveSelDirection">feature/preserveSelDirection</a> (Shezan Baig; D36076457)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
@@ -517,6 +507,10 @@ as intended.</p>
 as intended.</p>
 
 <h3><a name="feature-line-erase">feature/line-erase</a> (Imran Haider)</h3>
+<p>Retired because there are no reproduction steps to verify the feature works
+as intended.</p>
+
+<h3><a name="feature-opaque-bmp">feature/opaque-bmp</a> (Imran Haider)</h3>
 <p>Retired because there are no reproduction steps to verify the feature works
 as intended.</p>
 
