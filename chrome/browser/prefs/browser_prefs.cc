@@ -172,6 +172,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
 #else
+#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #endif
 
@@ -268,6 +269,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if !defined(OS_ANDROID)
+  AutomaticProfileResetterFactory::RegisterPrefs(registry);
   BackgroundModeManager::RegisterPrefs(registry);
   RegisterBrowserPrefs(registry);
 #if !defined(OS_CHROMEOS)

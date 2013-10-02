@@ -184,6 +184,19 @@ base::DictionaryValue* PrefService::GetPreferenceValues() const {
   return out;
 }
 
+base::DictionaryValue* PrefService::GetPreferenceValuesWithoutPathExpansion()
+    const {
+  DCHECK(CalledOnValidThread());
+  base::DictionaryValue* out = new base::DictionaryValue;
+  PrefRegistry::const_iterator i = pref_registry_->begin();
+  for (; i != pref_registry_->end(); ++i) {
+    const base::Value* value = GetPreferenceValue(i->first);
+    DCHECK(value);
+    out->SetWithoutPathExpansion(i->first, value->DeepCopy());
+  }
+  return out;
+}
+
 const PrefService::Preference* PrefService::FindPreference(
     const char* pref_name) const {
   DCHECK(CalledOnValidThread());

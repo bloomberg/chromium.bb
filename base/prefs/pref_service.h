@@ -231,6 +231,16 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // is passed to the caller.
   base::DictionaryValue* GetPreferenceValues() const;
 
+  // Returns a dictionary with effective preference values. Contrary to
+  // GetPreferenceValues(), the paths of registered preferences are not split on
+  // '.' characters. If a registered preference stores a dictionary, however,
+  // the hierarchical structure inside the preference will be preserved.
+  // For example, if "foo.bar" is a registered preference, the result could look
+  // like this:
+  //   {"foo.bar": {"a": {"b": true}}}.
+  // The ownership is passed to the caller.
+  base::DictionaryValue* GetPreferenceValuesWithoutPathExpansion() const;
+
   bool ReadOnly() const;
 
   PrefInitializationStatus GetInitializationStatus() const;

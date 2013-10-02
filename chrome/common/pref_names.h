@@ -417,6 +417,8 @@ extern const char kFullscreenAllowed[];
 
 extern const char kLocalDiscoveryNotificationsEnabled[];
 
+extern const char kProfileResetPromptMemento[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];

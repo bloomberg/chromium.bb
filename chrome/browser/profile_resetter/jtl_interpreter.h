@@ -19,6 +19,7 @@ class JtlInterpreter {
     OK,
     PARSE_ERROR,
     RUNTIME_ERROR,
+    RESULT_MAX,
   };
 
   // |hasher_seed| is a value used in jtl_foundation::Hasher. All node names,

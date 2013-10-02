@@ -1259,6 +1259,11 @@ extern const char kFullscreenAllowed[] = "fullscreen.allowed";
 const char kLocalDiscoveryNotificationsEnabled[] =
     "local_discovery.notifications_enabled";
 
+// String that indicates if the Profile Reset prompt has already been shown to
+// the user. Used both in user preferences and local state, in the latter, it is
+// actually a dictionary that maps profile keys to before-mentioned strings.
+const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

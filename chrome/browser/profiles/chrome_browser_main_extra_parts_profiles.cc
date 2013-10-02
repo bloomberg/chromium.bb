@@ -139,6 +139,7 @@
 #else
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -179,6 +180,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AboutSigninInternalsFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  AutomaticProfileResetterFactory::GetInstance();
+#endif
 #if defined(ENABLE_BACKGROUND)
   BackgroundContentsServiceFactory::GetInstance();
 #endif
