@@ -145,7 +145,7 @@ Step 2: From example.js
   }
 
   // In the index.html we have set up the appropriate divs:
-  <body {{attrs}}>
+  <body {attrs}>
     <!-- ... -->
     <div id="listener"></div>
     <div id="log"></div>

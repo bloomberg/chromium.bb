@@ -1,0 +1,17 @@
+toc:
+- title: "Version ${version} (${folder})"
+  path: /native-client/${folder}/version
+- title: "News & Announcements"
+  path: /native-client/${folder}/announcements
+- title: "Technical Overview"
+  path: /native-client/${folder}/overview
+- title: "Quick-start"
+  path: /native-client/${folder}/quick-start
+- include: /native-client/${folder}/sdk/_toc.yaml
+- include: /native-client/${folder}/devguide/_toc.yaml
+- include: /native-client/${folder}/_reference_toc.yaml
+- include: /native-client/${folder}/community/_toc.yaml
+- title: "FAQ"
+  path: /native-client/${folder}/faq
+- title: "Get Help with NaCl"
+  path: /native-client/${folder}/help

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Native Client Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,7 +15,9 @@ from sphinx.util.osutil import ensuredir
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.writers.html import HTMLWriter
 from sphinx.writers.html import SmartyPantsHTMLTranslator as HTMLTranslator
+from sphinx.util.console import bold
 
+PEPPER_VERSION = "31"
 
 # TODO(eliben): it may be interesting to use an actual Sphinx template here at
 # some point.
@@ -25,8 +27,8 @@ ${devsite_prefix}
   <head>
     ${nonprod_meta_head}
     <title>${doc_title}</title>
-    <meta name="project_path" value="/native-client/_project.yaml" />
-    <meta name="book_path" value="/native-client/_book.yaml" />
+    <meta name="project_path" value="/native-client${folder}/_project.yaml" />
+    <meta name="book_path" value="/native-client${folder}/_book.yaml" />
     <link href="/native-client/css/local_extensions.css" rel="stylesheet" type="text/css"/>
     ${nonprod_css}
     <style type="text/css">
@@ -44,9 +46,8 @@ ${doc_body}
 '''.lstrip())
 
 DEVSITE_PREFIX = r'''
-{% setvar pepperversion %}pepper28{% endsetvar %}
-{% include "native-client/_local_variables.html" %}
-'''.lstrip()
+{% setvar pepperversion %}pepper''' + PEPPER_VERSION + ''' {% endsetvar %}
+{% include "native-client/_local_variables.html" %}'''
 
 DEVSITE_BUTTERBAR = '{{butterbar}}'
 
@@ -142,7 +143,7 @@ class DevsiteHTMLTranslator(HTMLTranslator):
     # Paths to images in .rst sources should be absolute. This visitor does the
     # required transformation for the path to be correct in the final HTML.
     if self.builder.devsite_production_mode:
-      node['uri'] = '/native-client/' + node['uri']
+      node['uri'] = self.builder.get_prodution_url(node['uri'])
     HTMLTranslator.visit_image(self, node)
 
   def visit_reference(self, node):
@@ -245,11 +246,56 @@ class DevsiteBuilder(StandaloneHTMLBuilder):
     self.init_translator_class()
     self.init_highlighter()
 
+  def finish(self):
+    super(DevsiteBuilder, self).finish()
+
+    if self.devsite_production_mode:
+      self.info(bold('generating yaml files... '), nonl=True)
+
+      substitutions = {
+        'version': PEPPER_VERSION,
+        'folder': self.config.devsite_foldername
+      }
+
+      olddir = os.getcwd()
+      try:
+        os.chdir(self.env.srcdir)
+        for root, dirs, files in os.walk('.'):
+          root = os.path.normpath(root)
+          if root.startswith("_"):
+            continue
+          for filename in files:
+            if os.path.splitext(filename)[1] != ".yaml":
+              continue
+            filename = os.path.join(root, filename)
+            outfile = os.path.join(self.outdir, filename)
+            with open(filename) as f:
+              template = string.Template(f.read())
+
+            with open(outfile, 'w') as f:
+              f.write(template.substitute(substitutions))
+      finally:
+        os.chdir(olddir)
+
+      self.info()
+
+  def dump_inventory(self):
+    # We don't want an inventory file when building for devsite
+    if not self.devsite_production_mode:
+      super(DevsiteBuilder, self).dump_inventory()
+
+  def get_prodution_url(self, url):
+    if not self.devsite_production_mode:
+      return url
+
+    if self.config.devsite_foldername:
+      return '/native-client/%s/%s' % (self.config.devsite_foldername, url)
+
+    return '/native-client/%s' % url
+
   def get_target_uri(self, docname, typ=None):
     if self.devsite_production_mode:
-      # TODO(eliben): testrst here will have to be replaced with
-      # {{pepperversion}}
-      return '/native-client/testrst/%s' % docname
+      return self.get_prodution_url(docname)
     else:
       return docname + self.link_suffix
 
@@ -279,12 +325,18 @@ class DevsiteBuilder(StandaloneHTMLBuilder):
     """
     if not 'body' in context:
       return
+
+    folder = ''
+    if self.devsite_production_mode and self.config.devsite_foldername:
+      folder = "/" + self.config.devsite_foldername
+
     # codecs.open is the fast Python 2.x way of emulating the encoding= argument
     # in Python 3's builtin open.
     with codecs.open(filename, 'w', encoding='utf-8') as f:
       f.write(PAGE_TEMPLATE.substitute(
         doc_title=context.get('title', ''),
         doc_body=context.get('body'),
+        folder=folder,
         nonprod_css=self._conditional_nonprod(NONPROD_CSS),
         nonprod_meta_head=self._conditional_nonprod(NONPROD_META_HEAD),
         devsite_prefix=self._conditional_devsite(DEVSITE_PREFIX),
@@ -323,5 +375,5 @@ def setup(app):
 
   # "Production mode" for local testing vs. on-server documentation.
   app.add_config_value('devsite_production_mode', default='1', rebuild='html')
-
   app.add_config_value('kill_internal_links', default='0', rebuild='html')
+  app.add_config_value('devsite_foldername', default='dev', rebuild='html')

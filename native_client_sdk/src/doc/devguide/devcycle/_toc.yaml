@@ -1,0 +1,14 @@
+toc:
+  - title: "Development Cycle"
+    path: /native-client/${folder}/devguide/devcycle
+    section:
+    - title: "Building"
+      path: /native-client/${folder}/devguide/devcycle/building
+    - title: "Dynamic Linking and Loading with glibc"
+      path: /native-client/${folder}/devguide/devcycle/dynamic-loading
+    - title: "Running"
+      path: /native-client/${folder}/devguide/devcycle/running
+    - title: "Debugging"
+      path: /native-client/${folder}/devguide/devcycle/debugging
+    - title: "Debugging with Visual Studio"
+      path: /native-client/${folder}/devguide/devcycle/vs-addin

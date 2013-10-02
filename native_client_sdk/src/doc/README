@@ -21,44 +21,42 @@ How to build
 ------------
 
 To build the docs you will needs sphinx installed (and sphinx-build in your
-path), and simply run:
+path).  On debian/ubuntu this command is part of the ``python-sphinx`` package.
 
-    make
+There are many different output formats that can be generated using the targets
+in the included Makefile.  The three most commonly used ones are ``devsite``,
+``devsite-prod`` and ``devsite-staging``.
 
-To rebuild all the pages always, add 'SPHINXOPTS=-a', e.g.:
+The ``devsite`` configuration is for generating docs for local viewing and is
+also the default make target.  To build this config simply run::
 
-    make SPHINXOPTS=-a
+  make
 
-To emit local-testing mode, instead of production mode, add:
- SPHINXOPTS='-D devsite_production_mode=0'
-e.g.:
+To rebuild all the pages always, add ``SPHINXOPTS=-a``, e.g.::
 
-    make SPHINXOPTS='-D devsite_production_mode=0'
+  make SPHINXOPTS=-a
+
+To emit docs suitable for pushing to production use::
+
+  make devsite-prod
 
 Production mode contains devsite-specific templating and non-HTML constructs.
-
-The builder prints out the value of this setting - make sure it's what you
-expect it to be. For example:
-
-  $ make
-  sphinx-build -b devsite -d _build/doctrees . _build/devsite
-  Running Sphinx v1.2b1
-  loading pickled environment... done
-  ----> Devsite builder with production mode = 1
+The ``devsite-staging`` target is exactly the same except that the html pages
+are all rooted under a folder called $USER, which allows each user to stage his
+own copy of the docs.
 
 Local HTTP server to view the docs
 ----------------------------------
 
-To view the HTML locally, build the docs with production mode turned off, and 
-run:
+To view the HTML locally, build the docs with production mode turned off, and
+run::
 
-    make serve
+  make serve
 
 This will start a webserver on the local machine, and allows the pages
-to be viewed by in a browser by navigating to:
+to be viewed by in a browser by navigating to::
 
-    http://localhost:8009/
+  http://localhost:8009/
 
 Serving through a server and not just file:/// because this way the <link>
 relative paths to CSS actually work.
-

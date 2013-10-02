@@ -1,0 +1,14 @@
+toc:
+- title: "Community"
+  path: /native-client/${folder}/community
+  section:
+  - title: "Middleware & Software Support"
+    path: /native-client/${folder}/community/middleware
+  - title: "Application Gallery"
+    path: /native-client/${folder}/community/application-gallery
+  - title: "Developers Speak: Porting to Native Client"
+    path: /native-client/${folder}/community/developers
+  - title: "Talks, Demos, and Publications"
+    path: /native-client/${folder}/community/talks
+  - title: "Security Contest Archive"
+    path: /native-client/${folder}/community/security-contest/

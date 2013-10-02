@@ -183,8 +183,17 @@ pseudoxml:
 
 devsite-prod:
 	$(SPHINXBUILD) -b devsite -D devsite_production_mode=1 $(ALLSPHINXOPTS) $(BUILDDIR)/devsite-prod
+	rm -rf $(BUILDDIR)/devsite-staging/images
+	cp -r $(BUILDDIR)/devsite-prod/_images $(BUILDDIR)/devsite-prod/images
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/devsite-prod."
+
+devsite-staging:
+	$(SPHINXBUILD) -b devsite -D devsite_foldername=$(USER) -D devsite_production_mode=1 $(ALLSPHINXOPTS) $(BUILDDIR)/devsite-staging
+	rm -rf $(BUILDDIR)/devsite-staging/images
+	cp -r $(BUILDDIR)/devsite-staging/_images $(BUILDDIR)/devsite-staging/images
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/devsite-staging."
 
 devsite:
 	$(SPHINXBUILD) -b devsite -D devsite_production_mode=0 $(ALLSPHINXOPTS) $(BUILDDIR)/devsite
