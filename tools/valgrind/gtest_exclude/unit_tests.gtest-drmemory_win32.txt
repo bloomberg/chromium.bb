@@ -71,3 +71,6 @@ SyncBackendHostTest.SilentlyFailToDownloadControlTypes
 
 # DrM-i#1339: https://code.google.com/p/drmemory/issues/detail?id=1339
 ExtensionServiceTest.InstallTheme
+
+# http://crbug.com/302156
+TabStripModelTest.FastShutdown
