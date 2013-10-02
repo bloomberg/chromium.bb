@@ -18,8 +18,8 @@
 #include "chromeos/dbus/ibus/ibus_component.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
-#include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/candidate_window.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/ibus_keymap.h"
@@ -51,7 +51,7 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       preedit_text_(new IBusText()),
       preedit_cursor_(0),
       component_(new IBusComponent()),
-      table_(new IBusLookupTable()),
+      candidate_window_(new input_method::CandidateWindow()),
       window_visible_(false),
       weak_ptr_factory_(this) {
 }
@@ -226,21 +226,24 @@ InputMethodEngineIBus::GetCandidateWindowProperty() const {
 
 void InputMethodEngineIBus::SetCandidateWindowProperty(
     const CandidateWindowProperty& property) {
-  IBusLookupTable::CandidateWindowProperty ibus_property;
-  ibus_property.page_size = property.page_size;
-  ibus_property.is_cursor_visible = property.is_cursor_visible;
-  ibus_property.is_vertical = property.is_vertical;
-  ibus_property.show_window_at_composition =
+  // Type conversion from InputMethodEngine::CandidateWindowProperty to
+  // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/.
+  input_method::CandidateWindow::CandidateWindowProperty dest_property;
+  dest_property.page_size = property.page_size;
+  dest_property.is_cursor_visible = property.is_cursor_visible;
+  dest_property.is_vertical = property.is_vertical;
+  dest_property.show_window_at_composition =
       property.show_window_at_composition;
-  ibus_property.cursor_position = table_->GetProperty().cursor_position;
-  table_->SetProperty(ibus_property);
+  dest_property.cursor_position =
+      candidate_window_->GetProperty().cursor_position;
+  candidate_window_->SetProperty(dest_property);
   candidate_window_property_ = property;
 
   if (active_) {
-    IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      IBusBridge::Get()->GetCandidateWindowHandler();
-    if (candidate_window)
-      candidate_window->UpdateLookupTable(*table_, window_visible_);
+    IBusPanelCandidateWindowHandlerInterface* cw_handler =
+        IBusBridge::Get()->GetCandidateWindowHandler();
+    if (cw_handler)
+      cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   }
 }
 
@@ -252,10 +255,10 @@ bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
   }
 
   window_visible_ = visible;
-  IBusPanelCandidateWindowHandlerInterface* candidate_window =
+  IBusPanelCandidateWindowHandlerInterface* cw_handler =
     IBusBridge::Get()->GetCandidateWindowHandler();
-  if (candidate_window)
-    candidate_window->UpdateLookupTable(*table_, window_visible_);
+  if (cw_handler)
+    cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
 }
 
@@ -295,10 +298,10 @@ bool InputMethodEngineIBus::SetCandidates(
   // TODO: Nested candidates
   candidate_ids_.clear();
   candidate_indexes_.clear();
-  table_->mutable_candidates()->clear();
+  candidate_window_->mutable_candidates()->clear();
   for (std::vector<Candidate>::const_iterator ix = candidates.begin();
        ix != candidates.end(); ++ix) {
-    IBusLookupTable::Entry entry;
+    input_method::CandidateWindow::Entry entry;
     entry.value = ix->value;
     entry.label = ix->label;
     entry.annotation = ix->annotation;
@@ -309,13 +312,13 @@ bool InputMethodEngineIBus::SetCandidates(
     candidate_indexes_[ix->id] = candidate_ids_.size();
     candidate_ids_.push_back(ix->id);
 
-    table_->mutable_candidates()->push_back(entry);
+    candidate_window_->mutable_candidates()->push_back(entry);
   }
   if (active_) {
-    IBusPanelCandidateWindowHandlerInterface* candidate_window =
+    IBusPanelCandidateWindowHandlerInterface* cw_handler =
       IBusBridge::Get()->GetCandidateWindowHandler();
-    if (candidate_window)
-      candidate_window->UpdateLookupTable(*table_, window_visible_);
+    if (cw_handler)
+      cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   }
   return true;
 }
@@ -338,11 +341,11 @@ bool InputMethodEngineIBus::SetCursorPosition(int context_id, int candidate_id,
     return false;
   }
 
-  table_->set_cursor_position(position->second);
-  IBusPanelCandidateWindowHandlerInterface* candidate_window =
+  candidate_window_->set_cursor_position(position->second);
+  IBusPanelCandidateWindowHandlerInterface* cw_handler =
     IBusBridge::Get()->GetCandidateWindowHandler();
-  if (candidate_window)
-    candidate_window->UpdateLookupTable(*table_, window_visible_);
+  if (cw_handler)
+    cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
 }
 

@@ -17,11 +17,11 @@
 namespace chromeos {
 
 class IBusComponent;
-class IBusLookupTable;
 class IBusText;
 
 class IBusEngineService;
 namespace input_method {
+class CandidateWindow;
 struct KeyEventHandle;
 }  // namespace input_method
 
@@ -164,8 +164,8 @@ class InputMethodEngineIBus : public InputMethodEngine,
   // The current engine component.
   scoped_ptr<IBusComponent> component_;
 
-  // The current lookup table.
-  scoped_ptr<IBusLookupTable> table_;
+  // The current candidate window.
+  scoped_ptr<input_method::CandidateWindow> candidate_window_;
 
   // The current candidate window property.
   CandidateWindowProperty candidate_window_property_;

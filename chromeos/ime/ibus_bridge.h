@@ -14,9 +14,11 @@
 #include "chromeos/ime/input_method_property.h"
 
 namespace chromeos {
+namespace input_method {
+class CandidateWindow;
+}  // namespace input_method
 
 class IBusText;
-class IBusLookupTable;
 
 class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
  public:
@@ -120,8 +122,9 @@ class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
   virtual ~IBusPanelCandidateWindowHandlerInterface() {}
 
   // Called when the IME updates the lookup table.
-  virtual void UpdateLookupTable(const IBusLookupTable& table,
-                                 bool visible) = 0;
+  virtual void UpdateLookupTable(
+      const input_method::CandidateWindow& candidate_window,
+      bool visible) = 0;
 
   // Called when the IME hides the lookup table.
   virtual void HideLookupTable() = 0;

@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_IME_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
 #define CHROMEOS_IME_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
 
-#include "chromeos/dbus/ibus/ibus_lookup_table.h"
+#include "chromeos/ime/candidate_window.h"
 #include "chromeos/ime/ibus_bridge.h"
 
 namespace chromeos {
@@ -14,7 +14,7 @@ class MockIMECandidateWindowHandler
     : public IBusPanelCandidateWindowHandlerInterface {
  public:
   struct UpdateLookupTableArg {
-    IBusLookupTable lookup_table;
+    input_method::CandidateWindow lookup_table;
     bool is_visible;
   };
 
@@ -27,8 +27,9 @@ class MockIMECandidateWindowHandler
   virtual ~MockIMECandidateWindowHandler();
 
   // IBusPanelCandidateWindowHandlerInterface override.
-  virtual void UpdateLookupTable(const IBusLookupTable& table,
-                                 bool visible) OVERRIDE;
+  virtual void UpdateLookupTable(
+      const input_method::CandidateWindow& candidate_window,
+      bool visible) OVERRIDE;
   virtual void HideLookupTable() OVERRIDE;
   virtual void UpdateAuxiliaryText(const std::string& text,
                                    bool visible) OVERRIDE;

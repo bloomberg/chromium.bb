@@ -15,7 +15,6 @@
 
 namespace chromeos {
 
-class IBusLookupTable;
 class IBusText;
 class IBusEngineHandlerInterface;
 

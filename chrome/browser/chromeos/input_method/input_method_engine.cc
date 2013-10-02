@@ -35,7 +35,7 @@ const int kDefaultPageSize = 9;
 }  // namespace
 
 // When the default values are changed, please modify
-// IBusLookupTable::CandidateWindowProperty too.
+// CandidateWindow::CandidateWindowProperty defined in chromeos/ime/ too.
 InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty()
     : page_size(kDefaultPageSize),
       is_cursor_visible(true),

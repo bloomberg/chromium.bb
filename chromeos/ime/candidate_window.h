@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_IBUS_IBUS_LOOKUP_TABLE_H_
-#define CHROMEOS_DBUS_IBUS_IBUS_LOOKUP_TABLE_H_
+#ifndef CHROMEOS_IME_CANDIDATE_WINDOW_H_
+#define CHROMEOS_IME_CANDIDATE_WINDOW_H_
 
 #include <string>
 #include <vector>
@@ -12,58 +12,10 @@
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
+namespace input_method {
 
-// The IBusLookupTable is one of IBusObjects. IBusLookupTable contains IBusTexts
-// but all of them are used as plain string. The overview of each data
-// structure is as follows:
-//
-// DATA STRUCTURE OVERVIEW:
-//  variant  struct {
-//   string "IBusLookupTable"
-//   array [
-//     dict_entry (
-//       string "window_show_at_composition"
-//       variant  variant  boolean false
-//       ]
-//     )
-//   ]
-//   uint32 9  // Page size
-//   uint32 1  // Cursor position
-//   boolean true  // Cursor visibility.
-//   boolean true  // Round lookup table or not. Not used in Chrome.
-//   int32 1  // Orientation
-//   array [  // Array of candidate text.
-//    variant struct {
-//      string "IBusText"
-//      array []
-//      string "Candidate Text"
-//      variant struct {
-//       string "IBusAttrList"
-//       array []
-//       array []
-//       }
-//     }
-//     ... more IBusTexts
-//   ]
-//   array [  // Array of label text
-//    variant struct {
-//      string "IBusText"
-//      array []
-//      string "1"
-//      variant struct {
-//       string "IBusAttrList"
-//       array []
-//       array []
-//       }
-//     }
-//     ... more IBusTexts
-//   ]
-//  }
-//  TODO(nona): Clean up the structure.(crbug.com/129403)
-
-// An representation of IBusLookupTable object which is used in dbus
-// communication with ibus-daemon.
-class CHROMEOS_EXPORT IBusLookupTable {
+// CandidateWindow represents the structure of candidates generated from IME.
+class CHROMEOS_EXPORT CandidateWindow {
  public:
   enum Orientation {
     HORIZONTAL = 0,
@@ -80,9 +32,7 @@ class CHROMEOS_EXPORT IBusLookupTable {
     bool show_window_at_composition;
   };
 
-  // Represents a candidate entry. In dbus communication, each
-  // field is represented as IBusText, but attributes are not used in Chrome.
-  // So just simple string is sufficient in this case.
+  // Represents a candidate entry.
   struct Entry {
     Entry();
     virtual ~Entry();
@@ -93,14 +43,14 @@ class CHROMEOS_EXPORT IBusLookupTable {
     std::string description_body;
   };
 
-  IBusLookupTable();
-  virtual ~IBusLookupTable();
+  CandidateWindow();
+  virtual ~CandidateWindow();
 
-  // Returns true if the given |table| is equal to myself.
-  bool IsEqual(const IBusLookupTable& table) const;
+  // Returns true if the given |candidate_window| is equal to myself.
+  bool IsEqual(const CandidateWindow& candidate_window) const;
 
-  // Copies |table| to myself.
-  void CopyFrom(const IBusLookupTable& table);
+  // Copies |candidate_window| to myself.
+  void CopyFrom(const CandidateWindow& candidate_window);
 
   const CandidateWindowProperty& GetProperty() const {
     return *property_;
@@ -125,7 +75,7 @@ class CHROMEOS_EXPORT IBusLookupTable {
     property_->is_cursor_visible = is_cursor_visible;
   }
 
-  // Returns the orientation of lookup table.
+  // Returns the orientation of the candidate window.
   Orientation orientation() const {
     return property_->is_vertical ? VERTICAL : HORIZONTAL;
   }
@@ -147,9 +97,10 @@ class CHROMEOS_EXPORT IBusLookupTable {
   scoped_ptr<CandidateWindowProperty> property_;
   std::vector<Entry> candidates_;
 
-  DISALLOW_COPY_AND_ASSIGN(IBusLookupTable);
+  DISALLOW_COPY_AND_ASSIGN(CandidateWindow);
 };
 
+}  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_IBUS_IBUS_LOOKUP_TABLE_H_
+#endif  // CHROMEOS_IME_CANDIDATE_WINDOW_H_

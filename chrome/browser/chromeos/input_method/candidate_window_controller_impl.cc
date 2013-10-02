@@ -62,11 +62,11 @@ void CandidateWindowControllerImpl::CreateView() {
       views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
   // Create the candidate window.
-  candidate_window_ = new CandidateWindowView(frame_.get());
-  candidate_window_->Init();
-  candidate_window_->AddObserver(this);
+  candidate_window_view_ = new CandidateWindowView(frame_.get());
+  candidate_window_view_->Init();
+  candidate_window_view_->AddObserver(this);
 
-  frame_->SetContentsView(candidate_window_);
+  frame_->SetContentsView(candidate_window_view_);
 
 
   // Create the infolist window.
@@ -83,27 +83,27 @@ void CandidateWindowControllerImpl::CreateView() {
 }
 
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
-    : candidate_window_(NULL),
+    : candidate_window_view_(NULL),
       latest_infolist_focused_index_(InfolistWindowView::InvalidFocusIndex()) {
   IBusBridge::Get()->SetCandidateWindowHandler(this);
 }
 
 CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
   IBusBridge::Get()->SetCandidateWindowHandler(NULL);
-  candidate_window_->RemoveObserver(this);
+  candidate_window_view_->RemoveObserver(this);
 }
 
 void CandidateWindowControllerImpl::HideAuxiliaryText() {
-  candidate_window_->HideAuxiliaryText();
+  candidate_window_view_->HideAuxiliaryText();
 }
 
 void CandidateWindowControllerImpl::HideLookupTable() {
-  candidate_window_->HideLookupTable();
+  candidate_window_view_->HideLookupTable();
   infolist_window_->Hide();
 }
 
 void CandidateWindowControllerImpl::HidePreeditText() {
-  candidate_window_->HidePreeditText();
+  candidate_window_view_->HidePreeditText();
 }
 
 void CandidateWindowControllerImpl::SetCursorLocation(
@@ -113,7 +113,7 @@ void CandidateWindowControllerImpl::SetCursorLocation(
   // move to prevent the window from shaking up and down.
   const int kKeepPositionThreshold = 2;  // px
   const gfx::Rect& last_location =
-      candidate_window_->cursor_location();
+      candidate_window_view_->cursor_location();
   const int delta_y = abs(last_location.y() - cursor_location.y);
   if ((last_location.x() == cursor_location.x) &&
       (delta_y <= kKeepPositionThreshold)) {
@@ -122,11 +122,12 @@ void CandidateWindowControllerImpl::SetCursorLocation(
   }
 
   // Remember the cursor location.
-  candidate_window_->set_cursor_location(IBusRectToGfxRect(cursor_location));
-  candidate_window_->set_composition_head_location(
+  candidate_window_view_->set_cursor_location(
+      IBusRectToGfxRect(cursor_location));
+  candidate_window_view_->set_composition_head_location(
       IBusRectToGfxRect(composition_head));
   // Move the window per the cursor location.
-  candidate_window_->ResizeAndMoveParentFrame();
+  candidate_window_view_->ResizeAndMoveParentFrame();
   UpdateInfolistBounds();
 }
 
@@ -135,16 +136,16 @@ void CandidateWindowControllerImpl::UpdateAuxiliaryText(
     bool visible) {
   // If it's not visible, hide the auxiliary text and return.
   if (!visible) {
-    candidate_window_->HideAuxiliaryText();
+    candidate_window_view_->HideAuxiliaryText();
     return;
   }
-  candidate_window_->UpdateAuxiliaryText(utf8_text);
-  candidate_window_->ShowAuxiliaryText();
+  candidate_window_view_->UpdateAuxiliaryText(utf8_text);
+  candidate_window_view_->ShowAuxiliaryText();
 }
 
 // static
 void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-    const IBusLookupTable& lookup_table,
+    const CandidateWindow& candidate_window,
     std::vector<InfolistWindowView::Entry>* infolist_entries,
     size_t* focused_index) {
   DCHECK(focused_index);
@@ -153,11 +154,11 @@ void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
   infolist_entries->clear();
 
   const size_t cursor_index_in_page =
-      lookup_table.cursor_position() % lookup_table.page_size();
+      candidate_window.cursor_position() % candidate_window.page_size();
 
-  for (size_t i = 0; i < lookup_table.candidates().size(); ++i) {
-    const IBusLookupTable::Entry& ibus_entry =
-        lookup_table.candidates()[i];
+  for (size_t i = 0; i < candidate_window.candidates().size(); ++i) {
+    const CandidateWindow::Entry& ibus_entry =
+        candidate_window.candidates()[i];
     if (ibus_entry.description_title.empty() &&
         ibus_entry.description_body.empty())
       continue;
@@ -193,23 +194,23 @@ bool CandidateWindowControllerImpl::ShouldUpdateInfolist(
 }
 
 void CandidateWindowControllerImpl::UpdateLookupTable(
-    const IBusLookupTable& lookup_table,
+    const CandidateWindow& candidate_window,
     bool visible) {
   // If it's not visible, hide the lookup table and return.
   if (!visible) {
-    candidate_window_->HideLookupTable();
+    candidate_window_view_->HideLookupTable();
     infolist_window_->Hide();
     // TODO(nona): Introduce unittests for crbug.com/170036.
     latest_infolist_entries_.clear();
     return;
   }
 
-  candidate_window_->UpdateCandidates(lookup_table);
-  candidate_window_->ShowLookupTable();
+  candidate_window_view_->UpdateCandidates(candidate_window);
+  candidate_window_view_->ShowLookupTable();
 
   size_t focused_index = 0;
   std::vector<InfolistWindowView::Entry> infolist_entries;
-  ConvertLookupTableToInfolistEntry(lookup_table, &infolist_entries,
+  ConvertLookupTableToInfolistEntry(candidate_window, &infolist_entries,
                                     &focused_index);
 
   // If there is no infolist entry, just hide.
@@ -269,11 +270,11 @@ void CandidateWindowControllerImpl::UpdatePreeditText(
     const std::string& utf8_text, unsigned int cursor, bool visible) {
   // If it's not visible, hide the preedit text and return.
   if (!visible || utf8_text.empty()) {
-    candidate_window_->HidePreeditText();
+    candidate_window_view_->HidePreeditText();
     return;
   }
-  candidate_window_->UpdatePreeditText(utf8_text);
-  candidate_window_->ShowPreeditText();
+  candidate_window_view_->UpdatePreeditText(utf8_text);
+  candidate_window_view_->ShowPreeditText();
 }
 
 void CandidateWindowControllerImpl::OnCandidateCommitted(int index,
@@ -308,16 +309,17 @@ void CandidateWindowControllerImpl::RemoveObserver(
 
 // static
 gfx::Point CandidateWindowControllerImpl::GetInfolistWindowPosition(
-    const gfx::Rect& candidate_window_rect,
+    const gfx::Rect& candidate_window_view_rect,
     const gfx::Rect& screen_rect,
     const gfx::Size& infolist_window_size) {
-  gfx::Point result(candidate_window_rect.right(), candidate_window_rect.y());
+  gfx::Point result(candidate_window_view_rect.right(),
+                    candidate_window_view_rect.y());
 
-  if (candidate_window_rect.right() + infolist_window_size.width() >
+  if (candidate_window_view_rect.right() + infolist_window_size.width() >
       screen_rect.right())
-    result.set_x(candidate_window_rect.x() - infolist_window_size.width());
+    result.set_x(candidate_window_view_rect.x() - infolist_window_size.width());
 
-  if (candidate_window_rect.y() + infolist_window_size.height() >
+  if (candidate_window_view_rect.y() + infolist_window_size.height() >
       screen_rect.bottom())
     result.set_y(screen_rect.bottom() - infolist_window_size.height());
 

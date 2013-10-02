@@ -129,22 +129,22 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_DenseCase) {
-  IBusLookupTable table;
-  table.set_page_size(10);
+  CandidateWindow candidate_window;
+  candidate_window.set_page_size(10);
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    IBusLookupTable::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = kSampleCandidate[i];
     entry.description_title = kSampleDescriptionTitle[i];
     entry.description_body = kSampleDescriptionBody[i];
-    table.mutable_candidates()->push_back(entry);
+    candidate_window.mutable_candidates()->push_back(entry);
   }
-  table.set_cursor_position(1);
+  candidate_window.set_cursor_position(1);
 
   std::vector<InfolistWindowView::Entry> infolist_entries;
   size_t focused_index = 0;
 
   TestableCandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-      table,
+      candidate_window,
       &infolist_entries,
       &focused_index);
 
@@ -154,26 +154,26 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_SparseCase) {
-  IBusLookupTable table;
-  table.set_page_size(10);
+  CandidateWindow candidate_window;
+  candidate_window.set_page_size(10);
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    IBusLookupTable::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = kSampleCandidate[i];
-    table.mutable_candidates()->push_back(entry);
+    candidate_window.mutable_candidates()->push_back(entry);
   }
 
-  std::vector<IBusLookupTable::Entry>* candidates =
-      table.mutable_candidates();
+  std::vector<CandidateWindow::Entry>* candidates =
+      candidate_window.mutable_candidates();
   (*candidates)[2].description_title = kSampleDescriptionTitle[2];
   (*candidates)[2].description_body = kSampleDescriptionBody[2];
 
-  table.set_cursor_position(2);
+  candidate_window.set_cursor_position(2);
 
   std::vector<InfolistWindowView::Entry> infolist_entries;
   size_t focused_index = 0;
 
   TestableCandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-      table,
+      candidate_window,
       &infolist_entries,
       &focused_index);
 
@@ -185,27 +185,27 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_SparseNoSelectionCase) {
-  IBusLookupTable table;
-  table.set_page_size(10);
+  CandidateWindow candidate_window;
+  candidate_window.set_page_size(10);
 
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    IBusLookupTable::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = kSampleCandidate[i];
-    table.mutable_candidates()->push_back(entry);
+    candidate_window.mutable_candidates()->push_back(entry);
   }
 
-  std::vector<IBusLookupTable::Entry>* candidates =
-      table.mutable_candidates();
+  std::vector<CandidateWindow::Entry>* candidates =
+      candidate_window.mutable_candidates();
   (*candidates)[2].description_title = kSampleDescriptionTitle[2];
   (*candidates)[2].description_body = kSampleDescriptionBody[2];
 
-  table.set_cursor_position(0);
+  candidate_window.set_cursor_position(0);
 
   std::vector<InfolistWindowView::Entry> infolist_entries;
   size_t focused_index = 0;
 
   TestableCandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-      table,
+      candidate_window,
       &infolist_entries,
       &focused_index);
 
@@ -217,21 +217,21 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_NoInfolistCase) {
-  IBusLookupTable table;
-  table.set_page_size(10);
+  CandidateWindow candidate_window;
+  candidate_window.set_page_size(10);
 
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    IBusLookupTable::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = kSampleCandidate[i];
-    table.mutable_candidates()->push_back(entry);
+    candidate_window.mutable_candidates()->push_back(entry);
   }
-  table.set_cursor_position(1);
+  candidate_window.set_cursor_position(1);
 
   std::vector<InfolistWindowView::Entry> infolist_entries;
   size_t focused_index = 0;
 
   TestableCandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-      table,
+      candidate_window,
       &infolist_entries,
       &focused_index);
 

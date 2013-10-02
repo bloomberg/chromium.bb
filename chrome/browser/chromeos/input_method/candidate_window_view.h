@@ -7,7 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chromeos/dbus/ibus/ibus_lookup_table.h"
+#include "chromeos/ime/candidate_window.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -15,10 +15,10 @@ class Font;
 }
 
 namespace chromeos {
-class IBusLookupTable;
 namespace input_method {
 
 class CandidateView;
+class CandidateWindow;
 class HidableArea;
 class InformationTextArea;
 
@@ -97,12 +97,12 @@ class CandidateWindowView : public views::View {
   // don't have to update candidate views. This happens when the user just
   // moves the cursor in the same page in the candidate window.
   static bool ShouldUpdateCandidateViews(
-      const IBusLookupTable& old_table,
-      const IBusLookupTable& new_table);
+      const CandidateWindow& old_candidate_window,
+      const CandidateWindow& new_candidate_window);
 
-  // Updates candidates of the candidate window from |lookup_table|.
+  // Updates candidates of the candidate window from |candidate_window|.
   // Candidates are arranged per |orientation|.
-  void UpdateCandidates(const IBusLookupTable& lookup_table);
+  void UpdateCandidates(const CandidateWindow& candidate_window);
 
   // Resizes and moves the parent frame. The two actions should be
   // performed consecutively as resizing may require the candidate window
@@ -155,7 +155,7 @@ class CandidateWindowView : public views::View {
                            DoNotChangeRowHeightWithLabelSwitchTest);
 
   // Initializes the candidate views if needed.
-  void MaybeInitializeCandidateViews(const IBusLookupTable& lookup_table);
+  void MaybeInitializeCandidateViews(const CandidateWindow& candidate_window);
 
   // Returns the appropriate area (header or footer) to put auxiliary texts.
   InformationTextArea* GetAuxiliaryTextArea();
@@ -168,8 +168,8 @@ class CandidateWindowView : public views::View {
   // changed from the previous call to this function.
   void NotifyIfCandidateWindowOpenedOrClosed();
 
-  // The lookup table (candidates).
-  IBusLookupTable lookup_table_;
+  // The candidate window.
+  CandidateWindow candidate_window_;
 
   // The index in the current page of the candidate currently being selected.
   int selected_candidate_index_in_page_;

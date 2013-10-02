@@ -38,24 +38,25 @@ const char* kSampleDescriptionBody[] = {
   "Sample Description Body 3",
 };
 
-void InitIBusLookupTable(size_t page_size,
-                         IBusLookupTable* table) {
-  table->set_cursor_position(0);
-  table->set_page_size(page_size);
-  table->mutable_candidates()->clear();
-  table->set_orientation(IBusLookupTable::VERTICAL);
+void InitCandidateWindow(size_t page_size,
+                         CandidateWindow* candidate_window) {
+  candidate_window->set_cursor_position(0);
+  candidate_window->set_page_size(page_size);
+  candidate_window->mutable_candidates()->clear();
+  candidate_window->set_orientation(CandidateWindow::VERTICAL);
 }
 
-void InitIBusLookupTableWithCandidatesFilled(size_t page_size,
-                                             IBusLookupTable* table) {
-  InitIBusLookupTable(page_size, table);
+void InitCandidateWindowWithCandidatesFilled(
+    size_t page_size,
+    CandidateWindow* candidate_window) {
+  InitCandidateWindow(page_size, candidate_window);
   for (size_t i = 0; i < page_size; ++i) {
-    IBusLookupTable::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = base::StringPrintf("value %lld",
                                      static_cast<unsigned long long>(i));
     entry.label = base::StringPrintf("%lld",
                                      static_cast<unsigned long long>(i));
-    table->mutable_candidates()->push_back(entry);
+    candidate_window->mutable_candidates()->push_back(entry);
   }
 }
 
@@ -83,26 +84,27 @@ TEST_F(CandidateWindowViewTest, UpdateCandidatesTest_CursorVisibility) {
   candidate_window_view.Init();
 
   // Visible (by default) cursor.
-  IBusLookupTable table;
-  const int table_size = 9;
-  InitIBusLookupTableWithCandidatesFilled(table_size, &table);
-  candidate_window_view.UpdateCandidates(table);
+  CandidateWindow candidate_window;
+  const int candidate_window_size = 9;
+  InitCandidateWindowWithCandidatesFilled(candidate_window_size,
+                                          &candidate_window);
+  candidate_window_view.UpdateCandidates(candidate_window);
   EXPECT_EQ(0, candidate_window_view.selected_candidate_index_in_page_);
 
   // Invisible cursor.
-  table.set_is_cursor_visible(false);
-  candidate_window_view.UpdateCandidates(table);
+  candidate_window.set_is_cursor_visible(false);
+  candidate_window_view.UpdateCandidates(candidate_window);
   EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
 
   // Move the cursor to the end.
-  table.set_cursor_position(table_size - 1);
-  candidate_window_view.UpdateCandidates(table);
+  candidate_window.set_cursor_position(candidate_window_size - 1);
+  candidate_window_view.UpdateCandidates(candidate_window);
   EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
 
   // Change the cursor to visible.  The cursor must be at the end.
-  table.set_is_cursor_visible(true);
-  candidate_window_view.UpdateCandidates(table);
-  EXPECT_EQ(table_size - 1,
+  candidate_window.set_is_cursor_visible(true);
+  candidate_window_view.UpdateCandidates(candidate_window);
+  EXPECT_EQ(candidate_window_size - 1,
             candidate_window_view.selected_candidate_index_in_page_);
 }
 
@@ -116,23 +118,25 @@ TEST_F(CandidateWindowViewTest, SelectCandidateAtTest) {
   candidate_window_view.Init();
 
   // Set 9 candidates.
-  IBusLookupTable table_large;
-  const int table_large_size = 9;
-  InitIBusLookupTableWithCandidatesFilled(table_large_size, &table_large);
-  table_large.set_cursor_position(table_large_size - 1);
-  candidate_window_view.UpdateCandidates(table_large);
+  CandidateWindow candidate_window_large;
+  const int candidate_window_large_size = 9;
+  InitCandidateWindowWithCandidatesFilled(candidate_window_large_size,
+                                          &candidate_window_large);
+  candidate_window_large.set_cursor_position(candidate_window_large_size - 1);
+  candidate_window_view.UpdateCandidates(candidate_window_large);
   // Select the last candidate.
-  candidate_window_view.SelectCandidateAt(table_large_size - 1);
+  candidate_window_view.SelectCandidateAt(candidate_window_large_size - 1);
 
   // Reduce the number of candidates to 3.
-  IBusLookupTable table_small;
-  const int table_small_size = 3;
-  InitIBusLookupTableWithCandidatesFilled(table_small_size, &table_small);
-  table_small.set_cursor_position(table_small_size - 1);
-  // Make sure the test doesn't crash if the candidate table reduced its size.
-  // (crbug.com/174163)
-  candidate_window_view.UpdateCandidates(table_small);
-  candidate_window_view.SelectCandidateAt(table_small_size - 1);
+  CandidateWindow candidate_window_small;
+  const int candidate_window_small_size = 3;
+  InitCandidateWindowWithCandidatesFilled(candidate_window_small_size,
+                                          &candidate_window_small);
+  candidate_window_small.set_cursor_position(candidate_window_small_size - 1);
+  // Make sure the test doesn't crash if the candidate window reduced
+  // its size. (crbug.com/174163)
+  candidate_window_view.UpdateCandidates(candidate_window_small);
+  candidate_window_view.SelectCandidateAt(candidate_window_small_size - 1);
 }
 
 TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
@@ -152,30 +156,30 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     SCOPED_TRACE("candidate_views allocation test");
     const size_t kMaxPageSize = 16;
     for (size_t i = 1; i < kMaxPageSize; ++i) {
-      IBusLookupTable table;
-      InitIBusLookupTable(i, &table);
-      candidate_window_view.UpdateCandidates(table);
+      CandidateWindow candidate_window;
+      InitCandidateWindow(i, &candidate_window);
+      candidate_window_view.UpdateCandidates(candidate_window);
       EXPECT_EQ(i, candidate_window_view.candidate_views_.size());
     }
   }
   {
     SCOPED_TRACE("Empty string for each labels expects empty labels(vertical)");
     const size_t kPageSize = 3;
-    IBusLookupTable table;
-    InitIBusLookupTable(kPageSize, &table);
+    CandidateWindow candidate_window;
+    InitCandidateWindow(kPageSize, &candidate_window);
 
-    table.set_orientation(IBusLookupTable::VERTICAL);
+    candidate_window.set_orientation(CandidateWindow::VERTICAL);
     for (size_t i = 0; i < kPageSize; ++i) {
-      IBusLookupTable::Entry entry;
+      CandidateWindow::Entry entry;
       entry.value = kSampleCandidate[i];
       entry.annotation = kSampleAnnotation[i];
       entry.description_title = kSampleDescriptionTitle[i];
       entry.description_body = kSampleDescriptionBody[i];
       entry.label = kEmptyLabel;
-      table.mutable_candidates()->push_back(entry);
+      candidate_window.mutable_candidates()->push_back(entry);
     }
 
-    candidate_window_view.UpdateCandidates(table);
+    candidate_window_view.UpdateCandidates(candidate_window);
 
     ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
     for (size_t i = 0; i < kPageSize; ++i) {
@@ -187,21 +191,21 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     SCOPED_TRACE(
         "Empty string for each labels expect empty labels(horizontal)");
     const size_t kPageSize = 3;
-    IBusLookupTable table;
-    InitIBusLookupTable(kPageSize, &table);
+    CandidateWindow candidate_window;
+    InitCandidateWindow(kPageSize, &candidate_window);
 
-    table.set_orientation(IBusLookupTable::HORIZONTAL);
+    candidate_window.set_orientation(CandidateWindow::HORIZONTAL);
     for (size_t i = 0; i < kPageSize; ++i) {
-      IBusLookupTable::Entry entry;
+      CandidateWindow::Entry entry;
       entry.value = kSampleCandidate[i];
       entry.annotation = kSampleAnnotation[i];
       entry.description_title = kSampleDescriptionTitle[i];
       entry.description_body = kSampleDescriptionBody[i];
       entry.label = kEmptyLabel;
-      table.mutable_candidates()->push_back(entry);
+      candidate_window.mutable_candidates()->push_back(entry);
     }
 
-    candidate_window_view.UpdateCandidates(table);
+    candidate_window_view.UpdateCandidates(candidate_window);
 
     ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
     // Confirm actual labels not containing ".".
@@ -213,21 +217,21 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   {
     SCOPED_TRACE("Vertical customized label case");
     const size_t kPageSize = 3;
-    IBusLookupTable table;
-    InitIBusLookupTable(kPageSize, &table);
+    CandidateWindow candidate_window;
+    InitCandidateWindow(kPageSize, &candidate_window);
 
-    table.set_orientation(IBusLookupTable::VERTICAL);
+    candidate_window.set_orientation(CandidateWindow::VERTICAL);
     for (size_t i = 0; i < kPageSize; ++i) {
-      IBusLookupTable::Entry entry;
+      CandidateWindow::Entry entry;
       entry.value = kSampleCandidate[i];
       entry.annotation = kSampleAnnotation[i];
       entry.description_title = kSampleDescriptionTitle[i];
       entry.description_body = kSampleDescriptionBody[i];
       entry.label = kCustomizedLabel[i];
-      table.mutable_candidates()->push_back(entry);
+      candidate_window.mutable_candidates()->push_back(entry);
     }
 
-    candidate_window_view.UpdateCandidates(table);
+    candidate_window_view.UpdateCandidates(candidate_window);
 
     ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
     // Confirm actual labels not containing ".".
@@ -241,21 +245,21 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   {
     SCOPED_TRACE("Horizontal customized label case");
     const size_t kPageSize = 3;
-    IBusLookupTable table;
-    InitIBusLookupTable(kPageSize, &table);
+    CandidateWindow candidate_window;
+    InitCandidateWindow(kPageSize, &candidate_window);
 
-    table.set_orientation(IBusLookupTable::HORIZONTAL);
+    candidate_window.set_orientation(CandidateWindow::HORIZONTAL);
     for (size_t i = 0; i < kPageSize; ++i) {
-      IBusLookupTable::Entry entry;
+      CandidateWindow::Entry entry;
       entry.value = kSampleCandidate[i];
       entry.annotation = kSampleAnnotation[i];
       entry.description_title = kSampleDescriptionTitle[i];
       entry.description_body = kSampleDescriptionBody[i];
       entry.label = kCustomizedLabel[i];
-      table.mutable_candidates()->push_back(entry);
+      candidate_window.mutable_candidates()->push_back(entry);
     }
 
-    candidate_window_view.UpdateCandidates(table);
+    candidate_window_view.UpdateCandidates(candidate_window);
 
     ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
     // Confirm actual labels not containing ".".
@@ -273,8 +277,8 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
 
 TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   const size_t kPageSize = 10;
-  IBusLookupTable table;
-  IBusLookupTable no_shortcut_table;
+  CandidateWindow candidate_window;
+  CandidateWindow no_shortcut_candidate_window;
 
   const char kSampleCandidate1[] = "Sample String 1";
   const char kSampleCandidate2[] = "\xE3\x81\x82";  // multi byte string.
@@ -299,39 +303,39 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   CandidateWindowView candidate_window_view(widget);
   candidate_window_view.Init();
 
-  // Create LookupTable object.
-  InitIBusLookupTable(kPageSize, &table);
+  // Create CandidateWindow object.
+  InitCandidateWindow(kPageSize, &candidate_window);
 
-  table.set_cursor_position(0);
-  table.set_page_size(3);
-  table.mutable_candidates()->clear();
-  table.set_orientation(IBusLookupTable::VERTICAL);
-  no_shortcut_table.CopyFrom(table);
+  candidate_window.set_cursor_position(0);
+  candidate_window.set_page_size(3);
+  candidate_window.mutable_candidates()->clear();
+  candidate_window.set_orientation(CandidateWindow::VERTICAL);
+  no_shortcut_candidate_window.CopyFrom(candidate_window);
 
-  IBusLookupTable::Entry entry;
+  CandidateWindow::Entry entry;
   entry.value = kSampleCandidate1;
   entry.annotation = kSampleAnnotation1;
-  table.mutable_candidates()->push_back(entry);
+  candidate_window.mutable_candidates()->push_back(entry);
   entry.label = kSampleShortcut1;
-  no_shortcut_table.mutable_candidates()->push_back(entry);
+  no_shortcut_candidate_window.mutable_candidates()->push_back(entry);
 
   entry.value = kSampleCandidate2;
   entry.annotation = kSampleAnnotation2;
-  table.mutable_candidates()->push_back(entry);
+  candidate_window.mutable_candidates()->push_back(entry);
   entry.label = kSampleShortcut2;
-  no_shortcut_table.mutable_candidates()->push_back(entry);
+  no_shortcut_candidate_window.mutable_candidates()->push_back(entry);
 
   entry.value = kSampleCandidate3;
   entry.annotation = kSampleAnnotation3;
-  table.mutable_candidates()->push_back(entry);
+  candidate_window.mutable_candidates()->push_back(entry);
   entry.label = kSampleShortcut3;
-  no_shortcut_table.mutable_candidates()->push_back(entry);
+  no_shortcut_candidate_window.mutable_candidates()->push_back(entry);
 
   int before_height = 0;
 
   // Test for shortcut mode to no-shortcut mode.
-  // Initialize with a shortcut mode lookup table.
-  candidate_window_view.MaybeInitializeCandidateViews(table);
+  // Initialize with a shortcut mode candidate window.
+  candidate_window_view.MaybeInitializeCandidateViews(candidate_window);
   ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
   // Check the selected index is invalidated.
   EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
@@ -343,8 +347,9 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
     EXPECT_EQ(before_height, view->GetContentsBounds().height());
   }
 
-  // Initialize with a no shortcut mode lookup table.
-  candidate_window_view.MaybeInitializeCandidateViews(no_shortcut_table);
+  // Initialize with a no shortcut mode candidate window.
+  candidate_window_view.MaybeInitializeCandidateViews(
+      no_shortcut_candidate_window);
   ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
   // Check the selected index is invalidated.
   EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
@@ -358,8 +363,9 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   }
 
   // Test for no-shortcut mode to shortcut mode.
-  // Initialize with a no shortcut mode lookup table.
-  candidate_window_view.MaybeInitializeCandidateViews(no_shortcut_table);
+  // Initialize with a no shortcut mode candidate window.
+  candidate_window_view.MaybeInitializeCandidateViews(
+      no_shortcut_candidate_window);
   ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
   // Check the selected index is invalidated.
   EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
@@ -371,8 +377,8 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
     EXPECT_EQ(before_height, view->GetContentsBounds().height());
   }
 
-  // Initialize with a shortcut mode lookup table.
-  candidate_window_view.MaybeInitializeCandidateViews(table);
+  // Initialize with a shortcut mode candidate window.
+  candidate_window_view.MaybeInitializeCandidateViews(candidate_window);
   ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
   // Check the selected index is invalidated.
   EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
