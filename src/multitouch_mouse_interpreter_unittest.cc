@@ -65,7 +65,7 @@ TEST(MultitouchMouseInterpreterTest, SimpleTest) {
   EXPECT_EQ(kGestureTypeButtonsChange, gs->type);
   EXPECT_EQ(1, gs->details.buttons.down);
   EXPECT_EQ(0, gs->details.buttons.up);
-  EXPECT_EQ(210000, gs->start_time);
+  EXPECT_GE(210000, gs->start_time);
   EXPECT_EQ(220000, gs->end_time);
 
   gs = wrapper.SyncInterpret(&hwstates[3], NULL);

@@ -345,6 +345,10 @@ void HardwareStateBuffer::PushState(const HardwareState& state) {
   Get(0)->DeepCopy(state, max_finger_cnt_);
 }
 
+void HardwareStateBuffer::PopState() {
+  newest_index_ = (newest_index_ + 1) % size_;
+}
+
 ScrollManager::ScrollManager(PropRegistry* prop_reg)
     : prev_result_high_pressure_change_(false),
       did_generate_scroll_(false),

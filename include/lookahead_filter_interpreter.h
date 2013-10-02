@@ -133,6 +133,8 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
   DoubleProperty max_delay_;
   // If this much time passes between consecutive events, interpolate.
   DoubleProperty split_min_period_;
+  // If set to false, tracking IDs are not reassigned
+  BoolProperty drumroll_suppression_enable_;
   // If a contact appears to move faster than this, the drumroll detector may
   // consider it a new contact.
   DoubleProperty drumroll_speed_thresh_;

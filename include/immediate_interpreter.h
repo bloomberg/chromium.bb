@@ -121,6 +121,8 @@ class HardwareStateBuffer {
 
   // Does a deep copy of state into states_
   void PushState(const HardwareState& state);
+  // Pops most recently pushed state
+  void PopState();
 
   const HardwareState* Get(size_t idx) const {
     return &states_[(idx + newest_index_) % size_];

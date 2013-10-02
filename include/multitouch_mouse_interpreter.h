@@ -51,6 +51,9 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
 
   GestureType prev_gesture_type_;
   GestureType current_gesture_type_;
+  // Set to true when scrolls happen. Set to false when a fling happens,
+  // or when mouse starts moving.
+  bool should_fling_;
 
   Gesture prev_result_;
   Gesture result_;

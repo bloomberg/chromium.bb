@@ -30,6 +30,7 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
       min_delay_(prop_reg, "Input Queue Delay", 0.017),
       max_delay_(prop_reg, "Input Queue Max Delay", 0.017),
       split_min_period_(prop_reg, "Min Interpolate Period", 0.021),
+      drumroll_suppression_enable_(prop_reg, "Drumroll Suppression Enable", 1),
       drumroll_speed_thresh_(prop_reg, "Drumroll Speed Thresh", 400.0),
       drumroll_max_speed_ratio_(prop_reg,
                                 "Drumroll Max Speed Change Factor",
@@ -117,7 +118,7 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
   // For semi-mt devices, drumrolls and quick moves are handled in
   // SemiMtCorrectingFilterInterpreter already. We need to bypass the detection
   // and tracking id reassignment here to make fast-scroll working correctly.
-  if (hwprops_->support_semi_mt)
+  if (hwprops_->support_semi_mt || !drumroll_suppression_enable_.val_)
     return;
   if (queue_.size() < 2) {
     // Always reassign trackingID on the very first hwstate so that

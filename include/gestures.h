@@ -113,7 +113,7 @@ struct FingerState {
   short tracking_id;
   unsigned flags;
 #ifdef __cplusplus
-  bool operator==(const FingerState& that) const {
+  bool NonFlagsEquals(const FingerState& that) const {
     return touch_major == that.touch_major &&
         touch_minor == that.touch_minor &&
         width_major == that.width_major &&
@@ -122,8 +122,10 @@ struct FingerState {
         orientation == that.orientation &&
         position_x == that.position_x &&
         position_y == that.position_y &&
-        tracking_id == that.tracking_id &&
-        flags == that.flags;
+        tracking_id == that.tracking_id;
+  }
+  bool operator==(const FingerState& that) const {
+    return NonFlagsEquals(that) && flags == that.flags;
   }
   bool operator!=(const FingerState& that) const { return !(*this == that); }
   static std::string FlagsString(unsigned flags);

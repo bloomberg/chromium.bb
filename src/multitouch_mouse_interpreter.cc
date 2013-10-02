@@ -40,6 +40,7 @@ MultitouchMouseInterpreter::MultitouchMouseInterpreter(
       scroll_buffer_(15),
       prev_gesture_type_(kGestureTypeNull),
       current_gesture_type_(kGestureTypeNull),
+      should_fling_(false),
       scroll_manager_(prop_reg),
       click_buffer_depth_(prop_reg, "Click Buffer Depth", 10),
       click_max_distance_(prop_reg, "Click Max Distance", 1.0),
@@ -48,7 +49,7 @@ MultitouchMouseInterpreter::MultitouchMouseInterpreter(
       click_right_button_going_up_lead_time_(prop_reg,
           "Click Right Button Going Up Lead Time", 0.1),
       min_finger_move_distance_(prop_reg, "Minimum Mouse Finger Move Distance",
-                                1.5),
+                                1.75),
       moving_min_rel_amount_(prop_reg, "Moving Min Rel Magnitude", 0.1) {
   InitName();
 }
@@ -65,6 +66,7 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       moving_min_rel_amount_.val_ * moving_min_rel_amount_.val_) {
     start_position_.clear();
     moving_.clear();
+    should_fling_ = false;
   } else {
     RemoveMissingIdsFromMap(&start_position_, *hwstate);
     RemoveMissingIdsFromSet(&moving_, *hwstate);
@@ -118,7 +120,38 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     result = &result_;
   else
     result = &extra_result_;
-  InterpretMultitouchEvent(result);
+
+  bool should_interpret_multitouch = true;
+
+  // Some mice (Logitech) will interleave finger data and rel data, which can
+  // make finger tracking tricky. To avoid problems, if this current frame
+  // was rel data, and the previous finger data exactly matches this finger
+  // data, we remove the last hardware state from our buffer. This is okay
+  // because we already processed the rel data.
+  if (state_buffer_.Get(0) && state_buffer_.Get(1)) {
+    HardwareState* prev_hs = state_buffer_.Get(1);
+    HardwareState* cur_hs = state_buffer_.Get(0);
+    bool cur_has_rel = cur_hs->rel_x || cur_hs->rel_y ||
+        cur_hs->rel_wheel || cur_hs->rel_hwheel;
+    bool different_fingers = prev_hs->touch_cnt != cur_hs->touch_cnt ||
+        prev_hs->finger_cnt != cur_hs->finger_cnt;
+    if (!different_fingers && cur_has_rel) {
+      // Compare actual fingers themselves
+      for (size_t i = 0; i < cur_hs->finger_cnt; i++) {
+        if (!cur_hs->fingers[i].NonFlagsEquals(prev_hs->fingers[i])) {
+          different_fingers = true;
+          break;
+        }
+      }
+      if (!different_fingers) {
+        state_buffer_.PopState();
+        should_interpret_multitouch = false;
+      }
+    }
+  }
+
+  if (should_interpret_multitouch)
+    InterpretMultitouchEvent(result);
   origin_.PushGesture(*result);
 
   prev_gs_fingers_ = gs_fingers_;
@@ -143,13 +176,15 @@ void MultitouchMouseInterpreter::Initialize(
 
 void MultitouchMouseInterpreter::InterpretMultitouchEvent(Gesture* result) {
   // If a gesturing finger just left, do fling/lift
-  if (current_gesture_type_ == kGestureTypeScroll &&
-      AnyGesturingFingerLeft(*state_buffer_.Get(0),
-                             prev_gs_fingers_)) {
+  if (should_fling_ && AnyGesturingFingerLeft(*state_buffer_.Get(0),
+                                              prev_gs_fingers_)) {
     current_gesture_type_ = kGestureTypeFling;
     scroll_manager_.ComputeFling(state_buffer_, scroll_buffer_, result);
     if (result && result->type == kGestureTypeFling)
       result->details.fling.vx = 0.0;
+    if (result->details.fling.vy == 0.0)
+      result->type = kGestureTypeNull;
+    should_fling_ = false;
   } else if (gs_fingers_.size() > 0) {
     // In general, finger movements are interpreted as scroll, but as
     // clicks and scrolls on multi-touch mice are both single-finger
@@ -173,6 +208,8 @@ void MultitouchMouseInterpreter::InterpretMultitouchEvent(Gesture* result) {
                                       result,
                                       &scroll_buffer_);
     current_gesture_type_ = result->type;
+    if (current_gesture_type_ == kGestureTypeScroll)
+      should_fling_ = true;
 
     bool hold_off_scroll = false;
     const HardwareState& state = *state_buffer_.Get(0);
