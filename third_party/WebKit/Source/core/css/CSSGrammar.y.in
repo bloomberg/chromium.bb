@@ -170,6 +170,7 @@ inline static CSSParserValue makeOperatorValue(int value)
 %token MEDIA_ONLY
 %token MEDIA_NOT
 %token MEDIA_AND
+%token MEDIA_OR
 
 %token SUPPORTS_NOT
 %token SUPPORTS_AND

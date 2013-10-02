@@ -10179,6 +10179,9 @@ inline void CSSParser::detectMediaQueryToken(int length)
         CASE("only") {
             m_token = MEDIA_ONLY;
         }
+        CASE("or") {
+            m_token = MEDIA_OR;
+        }
     }
 }
 
