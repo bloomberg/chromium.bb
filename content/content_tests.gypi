@@ -797,13 +797,6 @@
             'renderer/media/rtc_video_decoder_factory_tv_unittest.cc',
           ],
         }],
-        # TODO(bryaneyler): Also enable these for OpenSSL once that
-        # implementation is ready.  Issue 267888.
-        ['use_nss!=1', {
-          'sources!': [
-            'renderer/webcrypto/webcrypto_impl_unittest.cc',
-          ],
-        }],
       ],
     },
   ],
