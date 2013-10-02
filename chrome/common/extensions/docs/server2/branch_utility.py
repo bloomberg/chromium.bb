@@ -30,6 +30,12 @@ class ChannelInfo(object):
   def __ne__(self, other):
     return not (self == other)
 
+  def __repr__(self):
+    return '%s%s' % (type(self).__name__, repr(self.__dict__))
+
+  def __str__(self):
+    return repr(self)
+
 
 class BranchUtility(object):
   '''Provides methods for working with Chrome channel, branch, and version

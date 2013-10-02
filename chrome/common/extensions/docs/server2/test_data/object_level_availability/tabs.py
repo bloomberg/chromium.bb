@@ -8,9 +8,9 @@ import json
 TABS_SCHEMA_BRANCHES = {
   'trunk': {
     'api': {
-      '_api_features.json': json.dumps({}),
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_api_features.json': "{}",
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -106,9 +106,9 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1500': {
     'api': {
-      '_api_features.json': json.dumps({}),
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_api_features.json': "{}",
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -203,9 +203,9 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1453': {
     'api': {
-      '_api_features.json': json.dumps({}),
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_api_features.json': "{}",
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -296,8 +296,8 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1410': {
     'api': {
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -374,8 +374,8 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1364': {
     'api': {
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -450,8 +450,8 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1312': {
     'api': {
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -520,8 +520,8 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1271': {
     'api': {
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -590,8 +590,8 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1229': {
     'api': {
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -660,8 +660,8 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1180': {
     'api': {
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -729,8 +729,8 @@ TABS_SCHEMA_BRANCHES = {
   },
   '1132': {
     'api': {
-      '_manifest_features.json': json.dumps({}),
-      '_permission_features.json': json.dumps({}),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -1102,7 +1102,7 @@ TABS_SCHEMA_BRANCHES = {
   },
   '782': {
     'api': {
-      'extension_api.json': json.dumps({})
+      'extension_api.json': "{}"
     }
   }
 }

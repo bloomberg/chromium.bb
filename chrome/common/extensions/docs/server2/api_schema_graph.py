@@ -4,7 +4,6 @@
 
 import json
 from collections import Iterable, Mapping
-from copy import deepcopy
 
 class LookupResult(object):
   '''Returned from APISchemaGraph.Lookup(), and relays whether or not
@@ -18,10 +17,16 @@ class LookupResult(object):
     self.annotation = annotation
 
   def __eq__(self, other):
-    return self.found == other.found and self.annotation == other.annotation
+    return self.__dict__ == other.__dict__
 
   def __ne__(self, other):
     return not (self == other)
+
+  def __repr__(self):
+    return '%s%s' % (type(self).__name__, repr(self.__dict__))
+
+  def __str__(self):
+    return repr(self)
 
 
 class _GraphNode(dict):

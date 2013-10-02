@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
+from collections import Mapping
 import os
 
 from api_schema_graph import APISchemaGraph
@@ -26,7 +26,7 @@ def _GetChannelFromFeatures(api_name, file_system, path):
 
   if feature is None:
     return None
-  if isinstance(feature, collections.Mapping):
+  if isinstance(feature, Mapping):
     # The channel information exists as a solitary dict.
     return feature.get('channel')
   # The channel information dict is nested within a list for whitelisting
@@ -55,38 +55,60 @@ def _GetChannelFromPermissionFeatures(api_name, file_system):
       '%s/_permission_features.json' % API_PATH)
 
 
-def _GetApiSchema(api_name, file_system):
-  '''Searches |file_system| for |api_name|'s API schema data, and parses and
-  returns it if found.
+def _GetApiSchemaFilename(api_name, file_system):
+  '''Gets the name of the file which contains the schema for |api_name| in
+  |file_system|, or None if the API is not found. Note that this may be the
+  single _EXTENSION_API file which all APIs share in older versions of Chrome.
   '''
-  file_names = file_system.ReadSingle('%s/' % API_PATH)
-  # API names can be represented in unix_style and camelCase formats.
-  possibilities = (api_name, UnixName(api_name))
+  def under_api_path(path):
+    return '%s/%s' % (API_PATH, path)
 
-  def get_file_data(file_name):
-    return file_system.ReadSingle('%s/%s' % (API_PATH, file_name))
+  file_names = file_system.ReadSingle(under_api_path(''))
 
   if _EXTENSION_API in file_names:
     # Prior to Chrome version 18, extension_api.json contained all API schema
     # data, which replaced the current implementation of individual API files.
+    # We're forced to parse this (very large) file to determine if the API
+    # exists in it.
     #
-    # TODO(epeterson) This file will be parsed a lot, but the data remains the
-    # same for each API. Avoid doing unnecessary work by re-parsing.
-    # (see http://crbug.com/295812)
-    extension_api_json = json_parse.Parse(get_file_data(_EXTENSION_API))
-    api = [api for api in extension_api_json if api['namespace'] == api_name]
-    return api if api else None
+    # TODO(epeterson) Avoid doing unnecessary work by re-parsing.
+    # See http://crbug.com/295812.
+    extension_api_json = json_parse.Parse(
+        file_system.ReadSingle('%s/%s'% (API_PATH, _EXTENSION_API)))
+    if any(api['namespace'] == api_name for api in extension_api_json):
+      return under_api_path(_EXTENSION_API)
+    return None
 
-  def check_file(file_name):
-    return os.path.splitext(file_name)[0] in (api_name, UnixName(api_name))
+  api_file_names = [
+      file_name for file_name in file_names
+      if os.path.splitext(file_name)[0] in (api_name, UnixName(api_name))]
+  assert len(api_file_names) < 2
+  return under_api_path(api_file_names[0]) if api_file_names else None
 
-  for file_name in file_names:
-    if check_file(file_name):
-      if file_name.endswith('idl'):
-        idl_data = idl_parser.IDLParser().ParseData(get_file_data(file_name))
-        return idl_schema.IDLSchema(idl_data).process()
-      return json_parse.Parse(get_file_data(file_name))
-  return None
+
+def _HasApiSchema(api_name, file_system):
+  return _GetApiSchemaFilename(api_name, file_system) is not None
+
+
+def _GetApiSchema(api_name, file_system):
+  '''Searches |file_system| for |api_name|'s API schema data, and parses and
+  returns it if found.
+  '''
+  api_file_name = _GetApiSchemaFilename(api_name, file_system)
+  if api_file_name is None:
+    return None
+
+  api_file_text = file_system.ReadSingle(api_file_name)
+  if api_file_name == _EXTENSION_API:
+    matching_schemas = [api for api in json_parse.Parse(api_file_text)
+                        if api['namespace'] == api_name]
+  elif api_file_name.endswith('.idl'):
+    matching_schemas = idl_parser.IDLParser().ParseData(api_file_text)
+  else:
+    matching_schemas = json_parse.Parse(api_file_text)
+  # There should only be a single matching schema per file.
+  assert len(matching_schemas) == 1
+  return matching_schemas
 
 
 class AvailabilityFinder(object):
@@ -139,7 +161,7 @@ class AvailabilityFinder(object):
       # Fall back to a check for file system existence if the API is not
       # stable in any of the _features.json files, or if the _features files
       # do not exist (version 19 and earlier).
-      return _GetApiSchema(api_name, file_system) is not None
+      return _HasApiSchema(api_name, file_system)
 
   def _CheckChannelAvailability(self, api_name, file_system, channel_name):
     '''Searches through the _features files in a given |file_system| and
@@ -154,8 +176,7 @@ class AvailabilityFinder(object):
     available_channel = (_GetChannelFromApiFeatures(api_name, features_fs)
         or _GetChannelFromPermissionFeatures(api_name, features_fs)
         or _GetChannelFromManifestFeatures(api_name, features_fs))
-    if (available_channel is None and
-        _GetApiSchema(api_name, file_system) is not None):
+    if available_channel is None and _HasApiSchema(api_name, file_system):
       # If an API is not represented in any of the _features files, but exists
       # in the filesystem, then assume it is available in this version.
       # The windows API is an example of this.
@@ -208,6 +229,7 @@ class AvailabilityFinder(object):
     if availability_graph is not None:
       return availability_graph
 
+
     availability_graph = APISchemaGraph()
     trunk_graph = APISchemaGraph(_GetApiSchema(api_name,
                                                self._host_file_system))
@@ -225,9 +247,8 @@ class AvailabilityFinder(object):
       # version and trunk.
       return trunk_graph != version_graph
 
-    self._file_system_iterator.Ascending(
-        self.GetApiAvailability(api_name),
-        update_availability_graph)
+    self._file_system_iterator.Ascending(self.GetApiAvailability(api_name),
+                                         update_availability_graph)
 
     self._node_level_object_store.Set(api_name, availability_graph)
     return availability_graph
