@@ -52,6 +52,10 @@ namespace autofill {
   // A delegate to handle display of validation messages. Not owned.
   id<AutofillValidationDisplay> validationDelegate_;
 
+  // Indicate whether the dialog should show suggestions or manual inputs when
+  // performLayout is triggered.
+  BOOL showSuggestions_;
+
   base::scoped_nsobject<MenuController> menuController_;
   autofill::DialogSection section_;
   autofill::AutofillDialogViewDelegate* delegate_;  // Not owned.

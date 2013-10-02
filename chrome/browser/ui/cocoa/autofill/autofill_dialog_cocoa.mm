@@ -80,11 +80,9 @@ void AutofillDialogCocoa::CloseNow() {
 }
 
 void AutofillDialogCocoa::UpdatesStarted() {
-  // TODO(estade): implement if it makes sense to.
 }
 
 void AutofillDialogCocoa::UpdatesFinished() {
-  // TODO(estade): implement if it makes sense to.
 }
 
 void AutofillDialogCocoa::UpdateAccountChooser() {
@@ -335,11 +333,15 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 }
 
 - (void)onContentViewFrameDidChange:(NSNotification*)notification {
-  [self performLayout];
+  [self requestRelayout];
 }
 
 - (void)requestRelayout {
-  [self performLayout];
+  SEL sel = @selector(performLayout);
+  [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                           selector:sel
+                                             object:nil];
+  [self performSelector:sel withObject:nil afterDelay:0.0];
 }
 
 - (NSSize)preferredSize {
@@ -450,6 +452,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
              name:NSWindowDidMoveNotification
            object:[self window]];
 
+  [self updateAccountChooser];
+  [self updateNotificationArea];
   [self requestRelayout];
 }
 
@@ -507,7 +511,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   [signInContainer_ loadSignInPage];
   [[mainContainer_ view] setHidden:YES];
   [[signInContainer_ view] setHidden:NO];
-  [self performLayout];
+  [self requestRelayout];
 
   return [signInContainer_ navigationController];
 }
@@ -524,7 +528,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (void)hideSignIn {
   [[signInContainer_ view] setHidden:YES];
   [[mainContainer_ view] setHidden:NO];
-  [self performLayout];
+  [self requestRelayout];
 }
 
 - (void)modelChanged {

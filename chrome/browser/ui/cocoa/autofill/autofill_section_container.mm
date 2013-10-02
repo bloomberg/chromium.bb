@@ -213,7 +213,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
   NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
   CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
-  if ([inputs_ isHidden])
+  if (showSuggestions_)
     controlHeight = [suggestContainer_ preferredSize].height;
 
   return NSMakeSize(kDetailsWidth,
@@ -228,7 +228,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   NSSize buttonSize = [suggestButton_ frame].size;  // Assume sizeToFit.
   NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
   CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
-  if ([inputs_ isHidden])
+  if (showSuggestions_)
     controlHeight = [suggestContainer_ preferredSize].height;
 
   NSRect viewFrame = NSZeroRect;
@@ -249,7 +249,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   buttonFrame = NSOffsetRect(buttonFrame, 0, 5);
   buttonFrame.size = buttonSize;
 
-  if ([inputs_ isHidden]) {
+  if (showSuggestions_) {
     [[suggestContainer_ view] setFrame:controlFrame];
     [suggestContainer_ performLayout];
   } else {
@@ -257,6 +257,8 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   }
   [label_ setFrame:labelFrame];
   [suggestButton_ setFrame:buttonFrame];
+  [inputs_ setHidden:showSuggestions_];
+  [[suggestContainer_ view] setHidden:!showSuggestions_];
   [view_ setFrameSize:viewFrame.size];
 }
 
@@ -278,10 +280,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
       delegate_->SuggestionStateForSection(section_);
   // TODO(estade): use |vertically_compact_text| when it fits.
   const base::string16& text = suggestionState.horizontally_compact_text;
-  bool showSuggestions = suggestionState.visible;
-
-  [[suggestContainer_ view] setHidden:!showSuggestions];
-  [inputs_ setHidden:showSuggestions];
+  showSuggestions_ = suggestionState.visible;
 
   base::string16 line1;
   base::string16 line2;
@@ -295,8 +294,8 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     NSImage* extraIcon = suggestionState.extra_icon.AsNSImage();
     [suggestContainer_ showInputField:extraText withIcon:extraIcon];
   }
-  [view_ setShouldHighlightOnHover:showSuggestions];
-  if (showSuggestions)
+  [view_ setShouldHighlightOnHover:showSuggestions_];
+  if (showSuggestions_)
     [view_ setClickTarget:suggestButton_];
   else
     [view_ setClickTarget:nil];
@@ -335,8 +334,6 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 }
 
 - (BOOL)validateFor:(autofill::ValidationType)validationType {
-  DCHECK(![[self view] isHidden]);
-
   NSArray* fields = nil;
   if (![inputs_ isHidden]) {
     fields = [inputs_ subviews];
