@@ -304,8 +304,7 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppWithError) {
       SYNC_STATUS_FAILED);
 }
 
-// Flaky.  http://crbug.com/237710
-TEST_F(SyncFileSystemServiceTest, DISABLED_SimpleLocalSyncFlow) {
+TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
   InitializeApp();
 
   StrictMock<MockSyncStatusObserver> status_observer;
@@ -320,12 +319,22 @@ TEST_F(SyncFileSystemServiceTest, DISABLED_SimpleLocalSyncFlow) {
 
   base::RunLoop run_loop;
 
-  // We should get called OnSyncEnabled and OnWriteEnabled on kFile.
-  // (We quit the run loop when OnWriteEnabled is called on kFile)
-  EXPECT_CALL(status_observer, OnSyncEnabled(kFile))
-      .Times(AtLeast(1));
+  // We should get called OnSyncEnabled and OnWriteEnabled on kFile as in:
+  // 1. OnWriteEnabled when PrepareForSync(SYNC_SHARED) is finished and
+  //    the target file is unlocked for writing
+  // 2. OnSyncEnabled x 3 times; 1) when CreateFile is finished, 2) when
+  //    file is unlocked after PrepareForSync, and 3) when the sync is
+  //    finished.
   EXPECT_CALL(status_observer, OnWriteEnabled(kFile))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+      .Times(AtLeast(1));
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(status_observer, OnSyncEnabled(kFile))
+        .Times(AtLeast(2));
+    EXPECT_CALL(status_observer, OnSyncEnabled(kFile))
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  }
 
   // The local_change_processor's ApplyLocalChange should be called once
   // with ADD_OR_UPDATE change for TYPE_FILE.

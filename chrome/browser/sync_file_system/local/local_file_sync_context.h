@@ -119,9 +119,19 @@ class LocalFileSyncContext
   // returns SYNC_STATUS_WRITING status code via |callback|.
   // Otherwise returns the current change sets made on |url|.
   //
-  // If |sync_mode| is SYNC_EXCLUSIVE this leaves the target file.
+  // If |sync_mode| is SYNC_EXCLUSIVE this leaves the target file locked.
   // If |sync_mode| is SYNC_SNAPSHOT this creates a snapshot (if the
   // target file is not deleted) and unlocks the file before returning.
+  //
+  // It is expected that:
+  // - SYNC_EXCLUSIVE is used for RemoteSync. ApplyRemoteChange expects
+  //   that the file is locked, and DidApplyRemoteChange will unlock the
+  //   file once the sync is done.
+  // - SYNC_SNAPSHOT is used for LocalSync. The caller must finalize the sync
+  //   by calling CommitChangeStatusForURL, which will in turn reset the
+  //   mirrored change status during the sync.
+  //
+  // TODO(kinuko): Cleanup this local/remote sync flow, it's too messy.
   //
   // This method must be called on UI thread.
   void PrepareForSync(fileapi::FileSystemContext* file_system_context,
