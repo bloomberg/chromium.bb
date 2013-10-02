@@ -48,14 +48,14 @@ class FontLoader {
 public:
     FontLoader(ResourceFetcher*);
 
-    bool hasFontsToLoad() const;
-
     void addFontToBeginLoading(FontResource*);
-    void beginLoadingFonts();
 
     void clearResourceFetcher();
 
 private:
+    void beginLoadTimerFired(Timer<FontLoader>*);
+
+    Timer<FontLoader> m_beginLoadingTimer;
     Vector<ResourcePtr<FontResource> > m_fontsToBeginLoading;
     ResourceFetcher* m_resourceFetcher;
 };
@@ -95,15 +95,11 @@ private:
 
     void dispatchInvalidationCallbacks();
 
-    void beginLoadTimerFired(Timer<CSSFontSelector>*);
-
     Document* m_document;
     HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fontFaces;
     HashMap<String, OwnPtr<Vector<RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_locallyInstalledFontFaces;
     HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fonts;
     HashSet<FontSelectorClient*> m_clients;
-
-    Timer<CSSFontSelector> m_beginLoadingTimer;
 
     FontLoader m_fontLoader;
     unsigned m_version;

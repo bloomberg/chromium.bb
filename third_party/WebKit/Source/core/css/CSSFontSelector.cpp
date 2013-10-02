@@ -50,18 +50,15 @@ using namespace std;
 namespace WebCore {
 
 FontLoader::FontLoader(ResourceFetcher* resourceFetcher)
-    : m_resourceFetcher(resourceFetcher)
+    : m_beginLoadingTimer(this, &FontLoader::beginLoadTimerFired)
+    , m_resourceFetcher(resourceFetcher)
 {
-}
-
-bool FontLoader::hasFontsToLoad() const
-{
-    return !m_fontsToBeginLoading.isEmpty();
 }
 
 void FontLoader::addFontToBeginLoading(FontResource* fontResource)
 {
-    ASSERT(m_resourceFetcher);
+    if (!m_resourceFetcher)
+        return;
 
     m_fontsToBeginLoading.append(fontResource);
     // FIXME: Use RequestCountTracker??!!
@@ -69,9 +66,10 @@ void FontLoader::addFontToBeginLoading(FontResource* fontResource)
     // after this font has been requested but before it began loading. Balanced by
     // decrementRequestCount() in beginLoadTimerFired() and in clearDocument().
     m_resourceFetcher->incrementRequestCount(fontResource);
+    m_beginLoadingTimer.startOneShot(0);
 }
 
-void FontLoader::beginLoadingFonts()
+void FontLoader::beginLoadTimerFired(Timer<WebCore::FontLoader>*)
 {
     ASSERT(m_resourceFetcher);
 
@@ -83,13 +81,16 @@ void FontLoader::beginLoadingFonts()
         // Balances incrementRequestCount() in beginLoadingFontSoon().
         m_resourceFetcher->decrementRequestCount(fontsToBeginLoading[i].get());
     }
-    // Ensure that if the request count reaches zero, the frame loader will know about it.
-    m_resourceFetcher->didLoadResource(0);
 }
 
 void FontLoader::clearResourceFetcher()
 {
-    ASSERT(m_resourceFetcher);
+    if (!m_resourceFetcher) {
+        ASSERT(m_fontsToBeginLoading.isEmpty());
+        return;
+    }
+
+    m_beginLoadingTimer.stop();
 
     for (size_t i = 0; i < m_fontsToBeginLoading.size(); ++i) {
         // Balances incrementRequestCount() in beginLoadingFontSoon().
@@ -102,7 +103,6 @@ void FontLoader::clearResourceFetcher()
 
 CSSFontSelector::CSSFontSelector(Document* document)
     : m_document(document)
-    , m_beginLoadingTimer(this, &CSSFontSelector::beginLoadTimerFired)
     , m_fontLoader(document->fetcher())
     , m_version(0)
 {
@@ -408,37 +408,13 @@ void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, co
 
 void CSSFontSelector::clearDocument()
 {
-    if (!m_document) {
-        ASSERT(!m_beginLoadingTimer.isActive());
-        ASSERT(!m_fontLoader.hasFontsToLoad());
-        return;
-    }
-
-    m_beginLoadingTimer.stop();
     m_fontLoader.clearResourceFetcher();
-
     m_document = 0;
 }
 
 void CSSFontSelector::beginLoadingFontSoon(FontResource* font)
 {
-    if (!m_document)
-        return;
-
     m_fontLoader.addFontToBeginLoading(font);
-    m_beginLoadingTimer.startOneShot(0);
-}
-
-void CSSFontSelector::beginLoadTimerFired(Timer<WebCore::CSSFontSelector>*)
-{
-    // CSSFontSelector could get deleted via beginLoadIfNeeded() or loadDone() unless protected.
-    RefPtr<CSSFontSelector> protect(this);
-
-    m_fontLoader.beginLoadingFonts();
-    // New font loads may be triggered by layout after the document load is complete but before we have dispatched
-    // didFinishLoading for the frame. Make sure the delegate is always dispatched by checking explicitly.
-    if (m_document && m_document->frame())
-        m_document->frame()->loader()->checkLoadComplete();
 }
 
 }
