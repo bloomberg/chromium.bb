@@ -95,6 +95,7 @@ SyncEngineInitializer::SyncEngineInitializer(
     : task_runner_(task_runner),
       drive_service_(drive_service),
       database_path_(database_path),
+      find_sync_root_retry_count_(0),
       largest_change_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(task_runner);
@@ -162,6 +163,11 @@ void SyncEngineInitializer::DidGetAboutResource(
 }
 
 void SyncEngineInitializer::FindSyncRoot(const SyncStatusCallback& callback) {
+  if (find_sync_root_retry_count_++ >= kMaxRetry) {
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
   cancel_callback_ = drive_service_->SearchByTitle(
       kSyncRootFolderTitle,
       std::string(), // parent_folder_id

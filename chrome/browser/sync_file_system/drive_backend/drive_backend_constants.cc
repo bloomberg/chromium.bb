@@ -11,5 +11,7 @@ const char kSyncRootFolderTitle[] = "Chrome Syncable FileSystem";
 const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("DriveMetadata");
 
+const int kMaxRetry = 5;
+
 }  // namespace drive_backend
 }  // namespace sync_file_system

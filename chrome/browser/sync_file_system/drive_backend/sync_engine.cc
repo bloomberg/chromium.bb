@@ -20,12 +20,12 @@ namespace drive_backend {
 SyncEngine::SyncEngine(
     const base::FilePath& base_dir,
     base::SequencedTaskRunner* task_runner,
-    scoped_ptr<drive::DriveAPIService> drive_api,
+    scoped_ptr<drive::DriveAPIService> drive_service,
     drive::DriveNotificationManager* notification_manager,
     ExtensionService* extension_service)
     : base_dir_(base_dir),
       task_runner_(task_runner),
-      drive_api_(drive_api.Pass()),
+      drive_service_(drive_service.Pass()),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
       weak_ptr_factory_(this),
@@ -41,7 +41,7 @@ void SyncEngine::Initialize() {
 
   SyncEngineInitializer* initializer =
       new SyncEngineInitializer(task_runner_.get(),
-                                drive_api_.get(),
+                                drive_service_.get(),
                                 base_dir_.Append(kDatabaseName));
   task_manager_.ScheduleSyncTask(
       scoped_ptr<SyncTask>(initializer),
@@ -217,7 +217,6 @@ void SyncEngine::DoUninstallApp(const std::string& app_id,
                                 const SyncStatusCallback& callback) {
   NOTIMPLEMENTED();
 }
-
 
 void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
                                SyncStatusCode status) {

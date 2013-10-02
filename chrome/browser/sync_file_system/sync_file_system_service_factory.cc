@@ -83,13 +83,14 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
 
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    scoped_ptr<drive::DriveAPIService> drive_api_service(
+    scoped_ptr<drive::DriveAPIService> drive_service(
         new drive::DriveAPIService(
             token_service,
             context->GetRequestContext(),
             worker_pool.get(),
             base_drive_url, base_download_url, wapi_base_url,
             std::string() /* custom_user_agent */));
+    drive_service->Initialize(token_service->GetPrimaryAccountId());
 
     drive::DriveNotificationManager* notification_manager =
         drive::DriveNotificationManagerFactory::GetForBrowserContext(profile);
@@ -105,7 +106,7 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
         new drive_backend::SyncEngine(
             GetSyncFileSystemDir(context->GetPath()),
             task_runner.get(),
-            drive_api_service.Pass(),
+            drive_service.Pass(),
             notification_manager,
             extension_service));
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -126,6 +127,11 @@ ScopedEnableSyncFSDirectoryOperation::ScopedEnableSyncFSDirectoryOperation() {
 ScopedEnableSyncFSDirectoryOperation::~ScopedEnableSyncFSDirectoryOperation() {
   DCHECK(IsSyncFSDirectoryOperationEnabled());
   SetEnableSyncFSDirectoryOperation(was_enabled_);
+}
+
+void RunSoon(const tracked_objects::Location& from_here,
+             const base::Closure& callback) {
+  base::MessageLoop::current()->PostTask(from_here, callback);
 }
 
 }  // namespace sync_file_system

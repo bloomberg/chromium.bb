@@ -7,12 +7,17 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
 namespace fileapi {
 class FileSystemContext;
 class FileSystemURL;
+}
+
+namespace tracked_objects {
+class Location;
 }
 
 namespace sync_file_system {
@@ -99,6 +104,10 @@ class ScopedEnableSyncFSDirectoryOperation {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedEnableSyncFSDirectoryOperation);
 };
+
+// Posts |callback| to the current thread.
+void RunSoon(const tracked_objects::Location& from_here,
+             const base::Closure& callback);
 
 }  // namespace sync_file_system
 

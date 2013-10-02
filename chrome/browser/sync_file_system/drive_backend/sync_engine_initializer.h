@@ -104,6 +104,8 @@ class SyncEngineInitializer : public SyncTask {
   google_apis::CancelCallback cancel_callback_;
   base::FilePath database_path_;
 
+  int find_sync_root_retry_count_;
+
   scoped_ptr<MetadataDatabase> metadata_database_;
   ScopedVector<google_apis::ResourceEntry> app_root_folders_;
 
