@@ -392,6 +392,10 @@ bool WebViewGuest::SetPermission(int request_id,
 void WebViewGuest::SetUserAgentOverride(
     const std::string& user_agent_override) {
   is_overriding_user_agent_ = !user_agent_override.empty();
+  if (is_overriding_user_agent_) {
+    content::RecordAction(content::UserMetricsAction(
+                              "WebView.Guest.OverrideUA"));
+  }
   guest_web_contents()->SetUserAgentOverride(user_agent_override);
 }
 
