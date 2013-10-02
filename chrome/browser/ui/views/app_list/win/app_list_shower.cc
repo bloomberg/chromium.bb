@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_shower.h"
 
 AppListShower::AppListShower(scoped_ptr<AppListViewFactory> factory,
@@ -75,6 +76,22 @@ void AppListShower::DismissAppList() {
 void AppListShower::CloseAppList() {
   view_.reset();
   profile_ = NULL;
+
+  // We may end up here as the result of the OS deleting the AppList's
+  // widget (WidgetObserver::OnWidgetDestroyed). If this happens and there
+  // are no browsers around then deleting the keep alive will result in
+  // deleting the Widget again (by way of CloseAllSecondaryWidgets). When
+  // the stack unravels we end up back in the Widget that was deleted and
+  // crash. By delaying deletion of the keep alive we ensure the Widget has
+  // correctly been destroyed before ending the keep alive so that
+  // CloseAllSecondaryWidgets() won't attempt to delete the AppList's Widget
+  // again.
+  if (base::MessageLoop::current()) {  // NULL in tests.
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&KeepAliveService::FreeKeepAlive,
+                   base::Unretained(keep_alive_service_.get())));
+    return;
+  }
   keep_alive_service_->FreeKeepAlive();
 }
 

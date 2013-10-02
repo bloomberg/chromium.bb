@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SHOWER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/views/app_list/keep_alive_service.h"
+#include "chrome/browser/ui/app_list/keep_alive_service.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_view_factory.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_view_win.h"
 #include "ui/app_list/pagination_model.h"
