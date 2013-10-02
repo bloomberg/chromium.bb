@@ -25,8 +25,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderMediaControlsChromium_h
-#define RenderMediaControlsChromium_h
+#ifndef RenderMediaControls_h
+#define RenderMediaControls_h
 
 #include "core/html/shadow/MediaControlElements.h"
 
@@ -38,7 +38,7 @@ class HTMLMediaElement;
 class IntRect;
 class RenderObject;
 
-class RenderMediaControlsChromium {
+class RenderMediaControls {
 public:
     static bool paintMediaControlsPart(MediaControlElementType, RenderObject*, const PaintInfo&, const IntRect&);
     static void adjustMediaSliderThumbSize(RenderStyle*);
@@ -48,4 +48,4 @@ public:
 
 } // namespace WebCore
 
-#endif // RenderMediaControlsChromium_h
+#endif // RenderMediaControls_h

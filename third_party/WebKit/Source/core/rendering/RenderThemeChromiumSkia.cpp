@@ -30,7 +30,7 @@
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderMediaControlsChromium.h"
+#include "core/rendering/RenderMediaControls.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
@@ -293,57 +293,57 @@ bool RenderThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* ma
 
 bool RenderThemeChromiumSkia::paintMediaSliderTrack(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumSkia::paintMediaVolumeSliderTrack(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
 }
 
 void RenderThemeChromiumSkia::adjustSliderThumbSize(RenderStyle* style, Element*) const
 {
-    RenderMediaControlsChromium::adjustMediaSliderThumbSize(style);
+    RenderMediaControls::adjustMediaSliderThumbSize(style);
 }
 
 bool RenderThemeChromiumSkia::paintMediaSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumSkia::paintMediaToggleClosedCaptionsButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
+    return RenderMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
 }
 
 bool RenderThemeChromiumSkia::paintMediaVolumeSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumSkia::paintMediaPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumSkia::paintMediaMuteButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
 }
 
 String RenderThemeChromiumSkia::formatMediaControlsTime(float time) const
 {
-    return RenderMediaControlsChromium::formatMediaControlsTime(time);
+    return RenderMediaControls::formatMediaControlsTime(time);
 }
 
 String RenderThemeChromiumSkia::formatMediaControlsCurrentTime(float currentTime, float duration) const
 {
-    return RenderMediaControlsChromium::formatMediaControlsCurrentTime(currentTime, duration);
+    return RenderMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
 bool RenderThemeChromiumSkia::paintMediaFullscreenButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
 void RenderThemeChromiumSkia::adjustMenuListStyle(RenderStyle* style, WebCore::Element*) const

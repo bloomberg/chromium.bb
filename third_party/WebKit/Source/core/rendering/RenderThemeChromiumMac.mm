@@ -52,7 +52,7 @@
 #import "core/rendering/PaintInfo.h"
 #import "core/rendering/RenderLayer.h"
 #import "core/rendering/RenderMedia.h"
-#import "core/rendering/RenderMediaControlsChromium.h"
+#import "core/rendering/RenderMediaControls.h"
 #import "core/rendering/RenderMeter.h"
 #import "core/rendering/RenderProgress.h"
 #import "core/rendering/RenderSlider.h"
@@ -1946,22 +1946,22 @@ bool RenderThemeChromiumMac::shouldShowPlaceholderWhenFocused() const
 
 void RenderThemeChromiumMac::adjustMediaSliderThumbSize(RenderStyle* style) const
 {
-    RenderMediaControlsChromium::adjustMediaSliderThumbSize(style);
+    RenderMediaControls::adjustMediaSliderThumbSize(style);
 }
 
 bool RenderThemeChromiumMac::paintMediaPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumMac::paintMediaMuteButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumMac::paintMediaSliderTrack(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
 }
 
 String RenderThemeChromiumMac::extraFullScreenStyleSheet()
@@ -1983,37 +1983,37 @@ bool RenderThemeChromiumMac::paintMediaVolumeSliderContainer(RenderObject* objec
 
 bool RenderThemeChromiumMac::paintMediaVolumeSliderTrack(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumMac::paintMediaVolumeSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumMac::paintMediaSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
 }
 
 String RenderThemeChromiumMac::formatMediaControlsTime(float time) const
 {
-    return RenderMediaControlsChromium::formatMediaControlsTime(time);
+    return RenderMediaControls::formatMediaControlsTime(time);
 }
 
 String RenderThemeChromiumMac::formatMediaControlsCurrentTime(float currentTime, float duration) const
 {
-    return RenderMediaControlsChromium::formatMediaControlsCurrentTime(currentTime, duration);
+    return RenderMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
 bool RenderThemeChromiumMac::paintMediaFullscreenButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumMac::paintMediaToggleClosedCaptionsButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControlsChromium::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
+    return RenderMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
 }
 
 bool RenderThemeChromiumMac::shouldUseFallbackTheme(RenderStyle* style) const

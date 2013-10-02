@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderMediaControlsChromium.h"
+#include "core/rendering/RenderMediaControls.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLMediaElement.h"
@@ -70,7 +70,7 @@ static bool paintMediaMuteButton(RenderObject* object, const PaintInfo& paintInf
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
-      return false;
+        return false;
 
     static Image* soundLevel3 = platformResource("mediaplayerSoundLevel3");
     static Image* soundLevel2 = platformResource("mediaplayerSoundLevel2");
@@ -341,7 +341,7 @@ static bool paintMediaToggleClosedCaptionsButton(RenderObject* object, const Pai
 }
 
 
-bool RenderMediaControlsChromium::paintMediaControlsPart(MediaControlElementType part, RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     switch (part) {
     case MediaMuteButton:
@@ -390,7 +390,7 @@ bool RenderMediaControlsChromium::paintMediaControlsPart(MediaControlElementType
 const int mediaSliderThumbHeight = 24;
 const int mediaVolumeSliderThumbHeight = 24;
 
-void RenderMediaControlsChromium::adjustMediaSliderThumbSize(RenderStyle* style)
+void RenderMediaControls::adjustMediaSliderThumbSize(RenderStyle* style)
 {
     static Image* mediaSliderThumb = platformResource("mediaplayerSliderThumb");
     static Image* mediaVolumeSliderThumb = platformResource("mediaplayerVolumeSliderThumb");
@@ -439,12 +439,12 @@ static String formatChromiumMediaControlsTime(float time, float duration)
     return String::format("%s%01d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
 }
 
-String RenderMediaControlsChromium::formatMediaControlsTime(float time)
+String RenderMediaControls::formatMediaControlsTime(float time)
 {
     return formatChromiumMediaControlsTime(time, time);
 }
 
-String RenderMediaControlsChromium::formatMediaControlsCurrentTime(float currentTime, float duration)
+String RenderMediaControls::formatMediaControlsCurrentTime(float currentTime, float duration)
 {
     return formatChromiumMediaControlsTime(currentTime, duration);
 }
