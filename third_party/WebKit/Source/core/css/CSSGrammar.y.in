@@ -398,9 +398,14 @@ internal_supports_condition:
     }
 ;
 
+space:
+    WHITESPACE
+  | space WHITESPACE
+  ;
+
 maybe_space:
     /* empty */ %prec UNIMPORTANT_TOK
-  | maybe_space WHITESPACE
+  | space
   ;
 
 maybe_sgml:
@@ -599,7 +604,7 @@ maybe_media_value:
     ;
 
 media_query_exp:
-    '(' maybe_space IDENT maybe_space maybe_media_value closing_parenthesis maybe_space {
+    '(' maybe_space IDENT maybe_space maybe_media_value closing_parenthesis {
         parser->tokenToLowerCase($3);
         $$ = parser->createFloatingMediaQueryExp($3, $5);
         if (!$$)
@@ -615,18 +620,18 @@ media_query_exp_list:
         $$ = parser->createFloatingMediaQueryExpList();
         $$->append(parser->sinkFloatingMediaQueryExp($1));
     }
-    | media_query_exp_list MEDIA_AND maybe_space media_query_exp {
+    | media_query_exp_list space MEDIA_AND space media_query_exp {
         $$ = $1;
-        $$->append(parser->sinkFloatingMediaQueryExp($4));
+        $$->append(parser->sinkFloatingMediaQueryExp($5));
     }
     ;
 
 maybe_and_media_query_exp_list:
-    /*empty*/ {
+    maybe_space {
         $$ = parser->createFloatingMediaQueryExpList();
     }
-    | MEDIA_AND maybe_space media_query_exp_list {
-        $$ = $3;
+    | space MEDIA_AND space media_query_exp_list maybe_space {
+        $$ = $4;
     }
     ;
 
@@ -634,16 +639,16 @@ maybe_media_restrictor:
     /*empty*/ {
         $$ = MediaQuery::None;
     }
-    | MEDIA_ONLY maybe_space {
+    | MEDIA_ONLY space {
         $$ = MediaQuery::Only;
     }
-    | MEDIA_NOT maybe_space {
+    | MEDIA_NOT space {
         $$ = MediaQuery::Not;
     }
     ;
 
 valid_media_query:
-    media_query_exp_list {
+    media_query_exp_list maybe_space {
         $$ = parser->createFloatingMediaQuery(parser->sinkFloatingMediaQueryExpList($1));
     }
     | maybe_media_restrictor medium maybe_and_media_query_exp_list {
@@ -733,7 +738,7 @@ media:
     ;
 
 medium:
-  IDENT maybe_space
+  IDENT
   ;
 
 supports:

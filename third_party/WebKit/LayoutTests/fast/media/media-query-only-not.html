@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Media Queries: parsing with "only" and "not"</title>
+    <link rel="help" href="http://www.w3.org/TR/css3-mediaqueries/#syntax" />
+    <link rel="help" href="http://www.w3.org/Style/2012/REC-mediaqueries-20120619-errata.html">
+    <style type="text/css">
+        div {
+            width: 100px;
+            height: 10px;
+            background-color: red;
+        }
+        #t1, #t4 { background-color: green; }
+        @media not/**/speech { #t1 { background-color: red; } }
+        @media not/**/ speech { #t2 { background-color: green; } }
+        @media not /**/speech { #t3 { background-color: green; } }
+        @media only/**/screen { #t4 { background-color: red; } }
+        @media only/**/ screen { #t5 { background-color: green; } }
+        @media only /**/screen { #t6 { background-color: green; } }
+    </style>
+</head>
+<body>
+    <p>You should see a green rectangle below.</p>
+    <div id="t1"></div>
+    <div id="t2"></div>
+    <div id="t3"></div>
+    <div id="t4"></div>
+    <div id="t5"></div>
+    <div id="t6"></div>
+</body>
+</html>
