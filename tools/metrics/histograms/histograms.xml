@@ -18457,6 +18457,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="VirtualKeyboard.KeystrokesBetweenBackspace">
+  <summary>
+    Counts the number of keys typed by the virtual keyboard between each
+    backspace. This metric provides a rough approximation of an error rate for
+    the virtual keyboard.
+  </summary>
+</histogram>
+
 <histogram name="Wallet.ApiCallDuration.AcceptLegalDocuments" units="ms">
   <summary>
     Measures the time taken by Google Online Wallet server's accept legal

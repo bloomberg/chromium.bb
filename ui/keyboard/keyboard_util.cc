@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "grit/keyboard_resources.h"
 #include "grit/keyboard_resources_map.h"
@@ -130,6 +131,21 @@ bool SendKeyEvent(const std::string type,
       SendProcessKeyEvent(ui::ET_KEY_RELEASED, root_window);
     }
   } else {
+    if (event_type == ui::ET_KEY_RELEASED) {
+      // The number of key press events seen since the last backspace.
+      static int keys_seen = 0;
+      if (code == ui::VKEY_BACK) {
+        // Log the rough lengths of characters typed between backspaces. This
+        // metric will be used to determine the error rate for the keyboard.
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "VirtualKeyboard.KeystrokesBetweenBackspaces",
+            keys_seen, 1, 1000, 50);
+        keys_seen = 0;
+      } else {
+        ++keys_seen;
+      }
+    }
+
     ui::KeyEvent event(event_type, code, flags, false);
     root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
   }
