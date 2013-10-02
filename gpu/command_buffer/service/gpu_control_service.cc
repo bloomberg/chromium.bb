@@ -65,6 +65,16 @@ void GpuControlService::DestroyGpuMemoryBuffer(int32 id) {
   gpu_memory_buffer_manager_->DestroyGpuMemoryBuffer(id);
 }
 
+uint32 GpuControlService::InsertSyncPoint() {
+  NOTREACHED();
+  return 0u;
+}
+
+void GpuControlService::SignalSyncPoint(uint32 sync_point,
+                                        const base::Closure& callback) {
+  NOTREACHED();
+}
+
 bool GpuControlService::RegisterGpuMemoryBuffer(
     int32 id,
     gfx::GpuMemoryBufferHandle buffer,

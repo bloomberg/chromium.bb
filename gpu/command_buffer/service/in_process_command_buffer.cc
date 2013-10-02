@@ -640,16 +640,6 @@ gpu::Buffer InProcessCommandBuffer::GetTransferBuffer(int32 id) {
   return gpu::Buffer();
 }
 
-uint32 InProcessCommandBuffer::InsertSyncPoint() {
-  NOTREACHED();
-  return 0;
-}
-void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
-                                             const base::Closure& callback) {
-  CheckSequencedThread();
-  QueueTask(WrapCallback(callback));
-}
-
 bool InProcessCommandBuffer::SupportsGpuMemoryBuffer() {
   return supports_gpu_memory_buffer_;
 }
@@ -681,6 +671,17 @@ bool InProcessCommandBuffer::GenerateMailboxNames(
   CheckSequencedThread();
   base::AutoLock lock(command_buffer_lock_);
   return gpu_control_->GenerateMailboxNames(num, names);
+}
+
+uint32 InProcessCommandBuffer::InsertSyncPoint() {
+  NOTREACHED();
+  return 0;
+}
+
+void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
+                                             const base::Closure& callback) {
+  CheckSequencedThread();
+  QueueTask(WrapCallback(callback));
 }
 
 gpu::error::Error InProcessCommandBuffer::GetLastError() {

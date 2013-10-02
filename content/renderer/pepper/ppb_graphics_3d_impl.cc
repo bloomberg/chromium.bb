@@ -160,7 +160,7 @@ gpu::CommandBuffer::State PPB_Graphics3D_Impl::FlushSyncFast(
 }
 
 uint32_t PPB_Graphics3D_Impl::InsertSyncPoint() {
-  return GetCommandBuffer()->InsertSyncPoint();
+  return platform_context_->GetGpuControl()->InsertSyncPoint();
 }
 
 bool PPB_Graphics3D_Impl::BindToInstance(bool bind) {

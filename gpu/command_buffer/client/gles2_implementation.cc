@@ -3660,7 +3660,8 @@ void GLES2Implementation::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
 GLuint GLES2Implementation::InsertSyncPointCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInsertSyncPointCHROMIUM");
-  return helper_->InsertSyncPointCHROMIUM();
+  helper_->CommandBufferHelper::Flush();
+  return gpu_control_->InsertSyncPoint();
 }
 
 GLuint GLES2Implementation::CreateImageCHROMIUMHelper(

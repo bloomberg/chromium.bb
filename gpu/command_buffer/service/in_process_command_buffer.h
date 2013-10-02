@@ -87,8 +87,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                   const base::Closure& context_lost_callback,
                   unsigned int share_group_id);
   void Destroy();
-  void SignalSyncPoint(unsigned sync_point,
-                       const base::Closure& callback);
 
   // CommandBuffer implementation:
   virtual bool Initialize() OVERRIDE;
@@ -106,7 +104,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual void SetParseError(gpu::error::Error error) OVERRIDE;
   virtual void SetContextLostReason(
       gpu::error::ContextLostReason reason) OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
   virtual gpu::error::Error GetLastError() OVERRIDE;
 
   // GpuControl implementation:
@@ -119,6 +116,9 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
   virtual bool GenerateMailboxNames(unsigned num,
                                     std::vector<gpu::Mailbox>* names) OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
+  virtual void SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) OVERRIDE;
 
   // The serializer interface to the GPU service (i.e. thread).
   class SchedulerClient {

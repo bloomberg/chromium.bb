@@ -39,7 +39,6 @@ class MockCommandBufferBase : public CommandBuffer {
   virtual void SetToken(int32 token) OVERRIDE;
   virtual void SetParseError(error::Error error) OVERRIDE;
   virtual void SetContextLostReason(error::ContextLostReason reason) OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
 
   // Get's the Id of the next transfer buffer that will be returned
   // by CreateTransferBuffer. This is useful for testing expected ids.
@@ -96,6 +95,9 @@ class MockClientGpuControl : public GpuControl {
   MOCK_METHOD1(DestroyGpuMemoryBuffer, void(int32 id));
   MOCK_METHOD2(GenerateMailboxNames, bool(unsigned num,
                                           std::vector<gpu::Mailbox>* names));
+  MOCK_METHOD0(InsertSyncPoint, uint32());
+  MOCK_METHOD2(SignalSyncPoint, void(uint32 id,
+                                     const base::Closure& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);

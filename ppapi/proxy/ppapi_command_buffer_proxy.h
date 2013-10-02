@@ -45,7 +45,6 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy
   virtual void SetParseError(gpu::error::Error error) OVERRIDE;
   virtual void SetContextLostReason(gpu::error::ContextLostReason reason)
       OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
 
   // gpu::GpuControl implementation:
   virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
@@ -57,6 +56,9 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy
   virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
   virtual bool GenerateMailboxNames(unsigned num,
                                     std::vector<gpu::Mailbox>* names) OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
+  virtual void SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) OVERRIDE;
 
  private:
   bool Send(IPC::Message* msg);

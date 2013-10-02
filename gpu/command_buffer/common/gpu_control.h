@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
@@ -40,6 +41,14 @@ class GPU_EXPORT GpuControl {
   // GL_texture_mailbox_CHROMIUM.
   virtual bool GenerateMailboxNames(unsigned num,
                                     std::vector<gpu::Mailbox>* names) = 0;
+
+  // Inserts a sync point, returning its ID. Sync point IDs are global and can
+  // be used for cross-context synchronization.
+  virtual uint32 InsertSyncPoint() = 0;
+
+  // Runs |callback| when a sync point is reached.
+  virtual void SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);

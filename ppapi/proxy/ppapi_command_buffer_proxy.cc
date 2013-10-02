@@ -203,6 +203,11 @@ uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
   return sync_point;
 }
 
+void PpapiCommandBufferProxy::SignalSyncPoint(uint32 sync_point,
+                                              const base::Closure& callback) {
+  NOTREACHED();
+}
+
 bool PpapiCommandBufferProxy::SupportsGpuMemoryBuffer() {
   return false;
 }

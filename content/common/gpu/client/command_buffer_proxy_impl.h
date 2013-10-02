@@ -97,7 +97,6 @@ class CommandBufferProxyImpl
   virtual void SetParseError(gpu::error::Error error) OVERRIDE;
   virtual void SetContextLostReason(
       gpu::error::ContextLostReason reason) OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
 
   // gpu::GpuControl implementation:
   virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
@@ -109,6 +108,9 @@ class CommandBufferProxyImpl
   virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
   virtual bool GenerateMailboxNames(unsigned num,
                                     std::vector<gpu::Mailbox>* names) OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
+  virtual void SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) OVERRIDE;
 
   int GetRouteID() const;
   bool Echo(const base::Closure& callback);
@@ -124,11 +126,6 @@ class CommandBufferProxyImpl
 
   bool DiscardBackbuffer();
   bool EnsureBackbuffer();
-
-  // Makes this command buffer invoke a task when a sync point is reached, or
-  // the command buffer that inserted that sync point is destroyed.
-  bool SignalSyncPoint(uint32 sync_point,
-                       const base::Closure& callback);
 
   // Makes this command buffer invoke a task when a query is completed, or
   // the command buffer that inserted that sync point is destroyed or the
