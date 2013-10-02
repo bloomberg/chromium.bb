@@ -31,8 +31,11 @@ const char kMultilineEndString[] = "---------- END ----------\n\n";
 const size_t kFeedbackMaxLength = 4 * 1024;
 const size_t kFeedbackMaxLineCount = 40;
 
-const char kTraceFilename[] = "tracing.log\n";
+const char kTraceFilename[] = "tracing.zip\n";
 const char kPerformanceCategoryTag[] = "Performance";
+
+const base::FilePath::CharType kLogsFilename[] =
+    FILE_PATH_LITERAL("system_logs.txt");
 
 // Converts the system logs into a string that we can compress and send
 // with the report. This method only converts those logs that we want in
@@ -69,7 +72,7 @@ void ZipLogs(FeedbackData::SystemLogsMap* sys_info,
   DCHECK(compressed_logs);
   std::string logs_string = LogsToString(sys_info);
   if (logs_string.empty() ||
-      !feedback_util::ZipString(logs_string, compressed_logs)) {
+      !feedback_util::ZipString(kLogsFilename, logs_string, compressed_logs)) {
     compressed_logs->clear();
   }
 }

@@ -57,9 +57,6 @@
 
 namespace {
 
-const base::FilePath::CharType kLogsFilename[] =
-    FILE_PATH_LITERAL("system_logs.txt");
-
 void DispatchFeedback(Profile* profile, std::string* post_body, int64 delay);
 
 GURL GetTargetTabUrl(int session_id, int index) {
@@ -365,7 +362,8 @@ void SendReport(scoped_refptr<FeedbackData> data) {
   DispatchFeedback(data->profile(), post_body, 0);
 }
 
-bool ZipString(const std::string& logs, std::string* compressed_logs) {
+bool ZipString(const base::FilePath::CharType filename[],
+               const std::string& logs, std::string* compressed_logs) {
   base::FilePath temp_path;
   base::FilePath zip_file;
 
@@ -373,7 +371,7 @@ bool ZipString(const std::string& logs, std::string* compressed_logs) {
   // another temporary file to receive the zip file in.
   if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &temp_path))
     return false;
-  if (file_util::WriteFile(temp_path.Append(kLogsFilename),
+  if (file_util::WriteFile(temp_path.Append(filename),
                            logs.c_str(), logs.size()) == -1)
     return false;
   if (!file_util::CreateTemporaryFile(&zip_file))
