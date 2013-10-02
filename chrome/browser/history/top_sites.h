@@ -15,8 +15,8 @@
 #include "chrome/common/thumbnail_score.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
-#include "url/gurl.h"
 
+class GURL;
 class Profile;
 
 namespace base {
@@ -71,7 +71,7 @@ class TopSites
   virtual void GetMostVisitedURLs(
       const GetMostVisitedURLsCallback& callback) = 0;
 
-  // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
+  // Gets a thumbnail for a given page. Returns true iff we have the thumbnail.
   // This may be invoked on any thread.
   // If an exact thumbnail URL match fails, |prefix_match| specifies whether or
   // not to try harder by matching the query thumbnail URL as URL prefix (as

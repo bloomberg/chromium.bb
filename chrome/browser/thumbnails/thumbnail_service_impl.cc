@@ -12,6 +12,7 @@
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "chrome/common/chrome_switches.h"
+#include "url/gurl.h"
 
 namespace {
 

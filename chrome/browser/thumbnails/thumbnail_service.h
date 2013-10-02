@@ -8,7 +8,8 @@
 #include "chrome/common/thumbnail_score.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 #include "ui/gfx/image/image.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace base {
 class RefCountedMemory;
@@ -40,7 +41,8 @@ class ThumbnailService : public RefcountedBrowserContextKeyedService {
   // Gets a thumbnail for a given page. Returns true iff we have the thumbnail.
   // This may be invoked on any thread.
   // If an exact thumbnail URL match fails, |prefix_match| specifies whether or
-  // not to try harder by matching the query thumbnail URL as URL prefix.
+  // not to try harder by matching the query thumbnail URL as URL prefix (as
+  // defined by UrlIsPrefix()).
   // As this method may be invoked on any thread the ref count needs to be
   // incremented before this method returns, so this takes a scoped_refptr*.
   virtual bool GetPageThumbnail(

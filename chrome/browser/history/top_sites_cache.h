@@ -12,6 +12,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_utils.h"
 
+class GURL;
+
 namespace history {
 
 // TopSiteCache caches thumbnails for visited pages. Retrieving thumbnails from
@@ -53,25 +55,25 @@ class TopSitesCache {
   // thumbnail for the specified url. It is possible for a URL to be in TopSites
   // but not have an thumbnail.
   bool GetPageThumbnail(const GURL& url,
-                        scoped_refptr<base::RefCountedMemory>* bytes);
+                        scoped_refptr<base::RefCountedMemory>* bytes) const;
 
   // Fetches the thumbnail score for the specified url. Returns true if
   // there is a thumbnail score for the specified url.
-  bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score);
+  bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score) const;
 
   // Returns the canonical URL for |url|.
-  const GURL& GetCanonicalURL(const GURL& url);
+  const GURL& GetCanonicalURL(const GURL& url) const;
 
   // Returns the canonical URL for |url_prefix| that matches by prefix.
-  // Multiple matches exst, returns the canonical URL for the first
+  // If multiple matches exist, returns the canonical URL for the first
   // matching entry under lexicographical order.
-  const GURL& GetCanonicalURLForPrefix(const GURL& url_prefix);
+  const GURL& GetCanonicalURLForPrefix(const GURL& url_prefix) const;
 
   // Returns true if |url| is known.
-  bool IsKnownURL(const GURL& url);
+  bool IsKnownURL(const GURL& url) const;
 
   // Returns the index into |top_sites_| for |url|.
-  size_t GetURLIndex(const GURL& url);
+  size_t GetURLIndex(const GURL& url) const;
 
  private:
   // The entries in CanonicalURLs, see CanonicalURLs for details. The second
@@ -105,12 +107,12 @@ class TopSitesCache {
   void StoreRedirectChain(const RedirectList& redirects, size_t destination);
 
   // Returns the iterator into |canonical_urls_| for the |url|.
-  CanonicalURLs::iterator GetCanonicalURLsIterator(const GURL& url);
+  CanonicalURLs::const_iterator GetCanonicalURLsIterator(const GURL& url) const;
 
   // Returns the first iterator into |canonical_urls_| for which |prefix_url|
   // is a URL prefix. Returns |canonical_urls_.end()| if no match is found.
-  CanonicalURLs::iterator GetCanonicalURLsIteratorForPrefix(
-      const GURL& prefix_url);
+  CanonicalURLs::const_iterator GetCanonicalURLsIteratorForPrefix(
+      const GURL& prefix_url) const;
 
   // The top sites.
   MostVisitedURLList top_sites_;

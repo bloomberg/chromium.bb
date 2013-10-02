@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/ntp_stats.h"
+#include "chrome/browser/ui/webui/ntp/thumbnail_list_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -77,11 +78,11 @@ MostVisitedHandler::~MostVisitedHandler() {
 void MostVisitedHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up our sources for thumbnail and favicon data.
-  ThumbnailSource* thumbnail_src_exact = new ThumbnailSource(profile, false);
-  content::URLDataSource::Add(profile, thumbnail_src_exact);
+  content::URLDataSource::Add(profile, new ThumbnailSource(profile, false));
+  content::URLDataSource::Add(profile, new ThumbnailSource(profile, true));
 
-  ThumbnailSource* thumbnail_src_prefix = new ThumbnailSource(profile, true);
-  content::URLDataSource::Add(profile, thumbnail_src_prefix);
+  // Set up our sources for top-sites data.
+  content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
 
 #if defined(OS_ANDROID)
   // Register chrome://touch-icon as a data source for touch icons or favicons.

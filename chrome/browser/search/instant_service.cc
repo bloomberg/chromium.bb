@@ -27,6 +27,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/ntp/thumbnail_list_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
@@ -105,9 +106,9 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile_, new ThemeSource(profile_));
 #endif  // defined(ENABLE_THEMES)
 
-
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, false));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, true));
+  content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
   content::URLDataSource::Add(
       profile_, new FaviconSource(profile_, FaviconSource::FAVICON));
   content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));

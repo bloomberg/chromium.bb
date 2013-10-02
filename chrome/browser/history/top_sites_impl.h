@@ -43,7 +43,6 @@ namespace history {
 class TopSitesCache;
 class TopSitesImplTest;
 
-
 // This class allows requests for most visited urls and thumbnails on any
 // thread. All other methods must be invoked on the UI thread. All mutations
 // to internal state happen on the UI thread and are scheduled to update the
