@@ -27,13 +27,13 @@
 
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/PaintInfo.h"
+#include "core/rendering/svg/RenderSVGResourceClipper.h"
 
 namespace WebCore {
 
 class AffineTransform;
 class RenderObject;
 class FloatRect;
-class RenderSVGResourceClipper;
 class RenderSVGResourceFilter;
 class RenderSVGResourceMasker;
 
@@ -115,6 +115,7 @@ private:
     IntRect m_savedPaintRect;
     RenderSVGResourceFilter* m_filter;
     RenderSVGResourceClipper* m_clipper;
+    ClipperContext m_clipperContext;
     RenderSVGResourceMasker* m_masker;
 };
 

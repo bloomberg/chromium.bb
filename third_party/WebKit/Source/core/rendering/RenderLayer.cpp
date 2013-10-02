@@ -2652,6 +2652,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool hasClipPath = false;
     RenderStyle* style = renderer()->style();
     RenderSVGResourceClipper* resourceClipper = 0;
+    ClipperContext clipperContext;
     if (renderer()->hasClipPath() && !context->paintingDisabled() && style) {
         ASSERT(style->clipPath());
         if (style->clipPath()->getOperationType() == ClipPathOperation::SHAPE) {
@@ -2677,7 +2678,8 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                 }
 
                 resourceClipper = toRenderSVGResourceClipper(element->renderer()->toRenderSVGResourceContainer());
-                if (!resourceClipper->applyClippingToContext(renderer(), rootRelativeBounds, paintingInfo.paintDirtyRect, context)) {
+                if (!resourceClipper->applyClippingToContext(renderer(), rootRelativeBounds,
+                    paintingInfo.paintDirtyRect, context, clipperContext)) {
                     // No need to post-apply the clipper if this failed.
                     resourceClipper = 0;
                 }
@@ -2813,7 +2815,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     }
 
     if (resourceClipper)
-        resourceClipper->postApplyResource(renderer(), context, ApplyToDefaultMode, 0, 0);
+        resourceClipper->postApplyStatefulResource(renderer(), context, clipperContext);
 
     if (hasClipPath)
         context->restore();

@@ -53,24 +53,28 @@ RenderSVGResourceClipper::~RenderSVGResourceClipper()
 void RenderSVGResourceClipper::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_clipBoundaries = FloatRect();
-    m_rendererToClipperMap.clear();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
 
 void RenderSVGResourceClipper::removeClientFromCache(RenderObject* client, bool markForInvalidation)
 {
     ASSERT(client);
-    m_rendererToClipperMap.remove(client);
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool RenderSVGResourceClipper::applyResource(RenderObject* object, RenderStyle*, GraphicsContext*& context, unsigned short resourceMode)
+bool RenderSVGResourceClipper::applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short)
+{
+    // Clippers are always applied using stateful methods.
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+bool RenderSVGResourceClipper::applyStatefulResource(RenderObject* object, GraphicsContext*& context, ClipperContext& clipperContext)
 {
     ASSERT(object);
     ASSERT(context);
-    ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
 
-    return applyClippingToContext(object, object->objectBoundingBox(), object->repaintRectInLocalCoordinates(), context);
+    return applyClippingToContext(object, object->objectBoundingBox(), object->repaintRectInLocalCoordinates(), context, clipperContext);
 }
 
 bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
@@ -137,30 +141,26 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
 }
 
 bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, const FloatRect& targetBoundingBox,
-                                                      const FloatRect& repaintRect, GraphicsContext* context)
+    const FloatRect& repaintRect, GraphicsContext* context, ClipperContext& clipperContext)
 {
     ASSERT(target);
     ASSERT(context);
+    ASSERT(clipperContext.state == ClipperContext::NotAppliedState);
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
     if (repaintRect.isEmpty() || m_inClipExpansion)
         return false;
     TemporaryChange<bool> inClipExpansionChange(m_inClipExpansion, true);
 
-    // add(obj, 0) idiom -> lookup & add if not found.
-    OwnPtr<ClipperData>& clipperData = m_rendererToClipperMap.add(target, nullptr).iterator->value;
-    if (!clipperData)
-        clipperData = adoptPtr(new ClipperData);
-
     // First, try to apply the clip as a clipPath.
     AffineTransform animatedLocalTransform = toSVGClipPathElement(element())->animatedLocalTransform();
     if (tryPathOnlyClipping(context, animatedLocalTransform, targetBoundingBox)) {
-        clipperData->clipMode = ClipperData::PathOnlyClipMode;
+        clipperContext.state = ClipperContext::AppliedPathState;
         return true;
     }
 
     // Fall back to masking.
-    clipperData->clipMode = ClipperData::MaskClipMode;
+    clipperContext.state = ClipperContext::AppliedMaskState;
 
     // Mask layer start
     context->beginTransparencyLayer(1, &repaintRect);
@@ -171,8 +171,9 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
         // clipPath can also be clipped by another clipPath.
         SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
         RenderSVGResourceClipper* clipPathClipper = 0;
+        ClipperContext clipPathClipperContext;
         if (resources && (clipPathClipper = resources->clipper())) {
-            if (!clipPathClipper->applyClippingToContext(this, targetBoundingBox, repaintRect, context)) {
+            if (!clipPathClipper->applyClippingToContext(this, targetBoundingBox, repaintRect, context, clipPathClipperContext)) {
                 // FIXME: Awkward state micro-management. Ideally, GraphicsContextStateSaver should
                 //   a) pop saveLayers also
                 //   b) pop multiple states if needed (similarly to SkCanvas::restoreToCount())
@@ -186,7 +187,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
         drawMaskContent(context, targetBoundingBox);
 
         if (clipPathClipper)
-            clipPathClipper->postApplyResource(this, context, ApplyToDefaultMode, 0, 0);
+            clipPathClipper->postApplyStatefulResource(this, context, clipPathClipperContext);
     }
 
     // Masked content layer start.
@@ -195,21 +196,27 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     return true;
 }
 
-void RenderSVGResourceClipper::postApplyResource(RenderObject* object, GraphicsContext*& context,
-    unsigned short resourceMode, const Path*, const RenderSVGShape*) {
-    ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
+void RenderSVGResourceClipper::postApplyResource(RenderObject*, GraphicsContext*&, unsigned short,
+    const Path*, const RenderSVGShape*) {
+    // Clippers are always applied using stateful methods.
+    ASSERT_NOT_REACHED();
+}
 
-    ClipperData* clipperData = m_rendererToClipperMap.get(object);
-    ASSERT(clipperData);
-
-    // Path-only clipping, no layers to restore.
-    if (clipperData->clipMode == ClipperData::PathOnlyClipMode)
-        return;
-
-    // Transfer content layer -> mask layer (SrcIn)
-    context->endLayer();
-    // Transfer mask layer -> bg layer (SrcOver)
-    context->endLayer();
+void RenderSVGResourceClipper::postApplyStatefulResource(RenderObject*, GraphicsContext*& context, ClipperContext& clipperContext)
+{
+    switch (clipperContext.state) {
+    case ClipperContext::AppliedPathState:
+        // Path-only clipping, no layers to restore.
+        break;
+    case ClipperContext::AppliedMaskState:
+        // Transfer content layer -> mask layer (SrcIn)
+        context->endLayer();
+        // Transfer mask layer -> bg layer (SrcOver)
+        context->endLayer();
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 void RenderSVGResourceClipper::drawMaskContent(GraphicsContext* context, const FloatRect& targetBoundingBox)
