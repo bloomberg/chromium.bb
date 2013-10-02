@@ -336,7 +336,7 @@
   "manifestTypes": {
     "internal": true,
     "channel": "stable",
-    "contexts": "all"
+    "contexts": ["blessed_extension"]
   },
   "mediaGalleries": {
     "dependencies": ["permission:mediaGalleries"],
