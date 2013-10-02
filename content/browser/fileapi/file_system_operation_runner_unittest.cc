@@ -7,10 +7,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
 #include "base/run_loop.h"
+#include "content/public/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/mock_file_system_context.h"
 
 namespace fileapi {
 

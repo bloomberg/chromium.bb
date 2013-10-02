@@ -169,8 +169,6 @@
         'browser/fileapi/sandbox_quota_observer.cc',
         'browser/fileapi/sandbox_quota_observer.h',
         'browser/fileapi/task_runner_bound_observer_list.h',
-        'browser/fileapi/test_file_system_backend.cc',
-        'browser/fileapi/test_file_system_backend.h',
         'browser/fileapi/timed_task_helper.cc',
         'browser/fileapi/timed_task_helper.h',
         'browser/fileapi/transient_file_util.cc',

@@ -13,11 +13,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "content/public/test/sandbox_file_system_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
 
 namespace fileapi {
 namespace {

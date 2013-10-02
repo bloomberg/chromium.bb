@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
-#define WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_CONTEXT_H_
+#define CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_CONTEXT_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
@@ -35,4 +35,4 @@ FileSystemContext* CreateIncognitoFileSystemContextForTesting(
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
+#endif  // CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_CONTEXT_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
@@ -121,7 +121,8 @@ TEST_F(FileSystemContextTest, NullExternalMountPoints) {
       GURL(kTestOrigin),
       kFileSystemTypeIsolated,
       kFileSystemTypeNativeLocal,
-      base::FilePath(DRIVE FPL("/test/isolated/root/file")).NormalizePathSeparators(),
+      base::FilePath(
+          DRIVE FPL("/test/isolated/root/file")).NormalizePathSeparators(),
       base::FilePath::FromUTF8Unsafe(isolated_id).Append(FPL("root/file")).
           NormalizePathSeparators(),
       isolated_id);
@@ -291,7 +292,8 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     const base::FilePath virtual_path =
-        base::FilePath::FromUTF8Unsafe(kTestCases[i].root).Append(kVirtualPathNoRoot);
+        base::FilePath::FromUTF8Unsafe(
+            kTestCases[i].root).Append(kVirtualPathNoRoot);
 
     GURL raw_url =
         CreateRawFileSystemURL(kTestCases[i].type_str, kTestCases[i].root);

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/run_loop.h"
+#include "content/public/test/sandbox_file_system_test_helper.h"
+#include "content/public/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -21,10 +23,8 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/mock_file_change_observer.h"
-#include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
-#include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
 #include "webkit/browser/fileapi/sandbox_isolated_origin_database.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/browser/fileapi/test_file_set.h"

@@ -19,13 +19,13 @@
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/async_file_util_adapter.h"
+#include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
 using fileapi::FileSystemFileUtil;

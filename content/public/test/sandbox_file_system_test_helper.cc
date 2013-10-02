@@ -1,12 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
+#include "content/public/test/sandbox_file_system_test_helper.h"
 
 #include "base/file_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "content/public/test/test_file_system_context.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
@@ -14,7 +15,6 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
-#include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/common/fileapi/file_system_util.h"

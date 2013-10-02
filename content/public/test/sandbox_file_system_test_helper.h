@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
-#define WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
+#ifndef CONTENT_PUBLIC_TEST_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
+#define CONTENT_PUBLIC_TEST_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
 
 #include <string>
 
@@ -100,4 +100,4 @@ class SandboxFileSystemTestHelper {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
+#endif  // CONTENT_PUBLIC_TEST_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_

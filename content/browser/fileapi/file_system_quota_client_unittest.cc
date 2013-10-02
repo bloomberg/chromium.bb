@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,13 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/run_loop.h"
+#include "content/public/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_quota_client.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
-#include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"

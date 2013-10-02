@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_TEST_FILE_SYSTEM_BACKEND_H_
-#define WEBKIT_BROWSER_FILEAPI_TEST_FILE_SYSTEM_BACKEND_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_
+#define CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -11,7 +11,6 @@
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -25,8 +24,7 @@ class FileSystemQuotaUtil;
 // This should be only used for testing.
 // This file system backend uses LocalFileUtil and stores data file
 // under the given directory.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TestFileSystemBackend
-    : public FileSystemBackend {
+class TestFileSystemBackend : public FileSystemBackend {
  public:
   TestFileSystemBackend(
       base::SequencedTaskRunner* task_runner,
@@ -92,4 +90,4 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TestFileSystemBackend
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_TEST_FILE_SYSTEM_BACKEND_H_
+#endif  // CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_

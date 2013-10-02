@@ -16,6 +16,7 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
@@ -23,7 +24,6 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 

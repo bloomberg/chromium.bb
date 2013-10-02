@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -22,7 +23,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/common/blob/blob_data.h"
 
 namespace webkit_blob {
@@ -305,7 +305,8 @@ TEST_F(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
-  base::FilePath large_temp_file = temp_dir_.path().AppendASCII("LargeBlob.dat");
+  base::FilePath large_temp_file =
+      temp_dir_.path().AppendASCII("LargeBlob.dat");
   std::string large_data;
   large_data.reserve(kBufferSize * 5);
   for (int i = 0; i < kBufferSize * 5; ++i)
