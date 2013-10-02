@@ -61,11 +61,10 @@ const size_t kMaxPendingBuffersCount = 2;
 }  // namespace
 
 PepperView::PepperView(ChromotingInstance* instance,
-                       ClientContext* context,
-                       FrameProducer* producer)
+                       ClientContext* context)
   : instance_(instance),
     context_(context),
-    producer_(producer),
+    producer_(NULL),
     merge_buffer_(NULL),
     dips_to_device_scale_(1.0f),
     dips_to_view_scale_(1.0f),
@@ -73,7 +72,6 @@ PepperView::PepperView(ChromotingInstance* instance,
     is_initialized_(false),
     frame_received_(false),
     callback_factory_(this) {
-  InitiateDrawing();
 }
 
 PepperView::~PepperView() {
@@ -88,6 +86,15 @@ PepperView::~PepperView() {
   merge_buffer_ = NULL;
   while (!buffers_.empty()) {
     FreeBuffer(buffers_.front());
+  }
+}
+
+void PepperView::Initialize(FrameProducer* producer) {
+  producer_ = producer;
+  webrtc::DesktopFrame* buffer = AllocateBuffer();
+  while (buffer) {
+    producer_->DrawBuffer(buffer);
+    buffer = AllocateBuffer();
   }
 }
 
@@ -150,7 +157,7 @@ void PepperView::SetView(const pp::View& view) {
 
   if (view_changed) {
     producer_->SetOutputSizeAndClip(view_size_, clip_area_);
-    InitiateDrawing();
+    Initialize(producer_);
   }
 }
 
@@ -171,7 +178,7 @@ void PepperView::ApplyBuffer(const webrtc::DesktopSize& view_size,
   // the properly scaled data.
   if (!view_size_.equals(view_size)) {
     FreeBuffer(buffer);
-    InitiateDrawing();
+    Initialize(producer_);
   } else {
     FlushBuffer(clip_area, buffer, region);
   }
@@ -187,7 +194,7 @@ void PepperView::ReturnBuffer(webrtc::DesktopFrame* buffer) {
     producer_->DrawBuffer(buffer);
   } else {
     FreeBuffer(buffer);
-    InitiateDrawing();
+    Initialize(producer_);
   }
 }
 
@@ -203,6 +210,10 @@ void PepperView::SetSourceSize(const webrtc::DesktopSize& source_size,
 
   // Notify JavaScript of the change in source size.
   instance_->SetDesktopSize(source_size, source_dpi);
+}
+
+FrameConsumer::PixelFormat PepperView::GetPixelFormat() {
+  return FORMAT_BGRA;
 }
 
 webrtc::DesktopFrame* PepperView::AllocateBuffer() {
@@ -233,14 +244,6 @@ void PepperView::FreeBuffer(webrtc::DesktopFrame* buffer) {
 
   buffers_.remove(buffer);
   delete buffer;
-}
-
-void PepperView::InitiateDrawing() {
-  webrtc::DesktopFrame* buffer = AllocateBuffer();
-  while (buffer) {
-    producer_->DrawBuffer(buffer);
-    buffer = AllocateBuffer();
-  }
 }
 
 void PepperView::FlushBuffer(const webrtc::DesktopRect& clip_area,

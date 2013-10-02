@@ -603,10 +603,16 @@ void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
+
+  view_.reset(new PepperView(this, &context_));
+  view_weak_factory_.reset(
+      new base::WeakPtrFactory<FrameConsumer>(view_.get()));
+
   // RectangleUpdateDecoder runs on a separate thread so for now we wrap
   // PepperView with a ref-counted proxy object.
   scoped_refptr<FrameConsumerProxy> consumer_proxy =
-      new FrameConsumerProxy(plugin_task_runner_);
+      new FrameConsumerProxy(plugin_task_runner_,
+                             view_weak_factory_->GetWeakPtr());
 
   host_connection_.reset(new protocol::ConnectionToHost(true));
   scoped_ptr<AudioPlayer> audio_player(new PepperAudioPlayer(this));
@@ -614,10 +620,8 @@ void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
                                      host_connection_.get(), this,
                                      consumer_proxy, audio_player.Pass()));
 
-  view_.reset(new PepperView(this, &context_, client_->GetFrameProducer()));
-  view_weak_factory_.reset(
-      new base::WeakPtrFactory<FrameConsumer>(view_.get()));
-  consumer_proxy->Attach(view_weak_factory_->GetWeakPtr());
+  view_->Initialize(client_->GetFrameProducer());
+
   if (!plugin_view_.is_null()) {
     view_->SetView(plugin_view_);
   }

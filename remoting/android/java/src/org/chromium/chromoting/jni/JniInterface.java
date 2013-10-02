@@ -142,6 +142,9 @@ public class JniInterface {
     /** Screen height of the video feed. */
     private static int sHeight = 0;
 
+    /** Bitmap holding the latest screen image. */
+    private static Bitmap sBitmap = null;
+
     /** Buffer holding the video feed. */
     private static ByteBuffer sBuffer = null;
 
@@ -310,12 +313,19 @@ public class JniInterface {
             return null;
         }
 
-        int[] frame = new int[sWidth * sHeight];
+        // This is synchronized only to silence a findbugs warning about incorrect initialization of
+        // |sBitmap|.
+        // TODO(lambroslambrou): Annotate this class as @NotThreadSafe to prevent similar warnings
+        // in future.
+        synchronized (JniInterface.class) {
+            if (sBitmap == null || sBitmap.getWidth() != sWidth || sBitmap.getHeight() != sHeight) {
+                sBitmap = Bitmap.createBitmap(sWidth, sHeight, Bitmap.Config.ARGB_8888);
+            }
+        }
 
-        sBuffer.order(ByteOrder.LITTLE_ENDIAN);
-        sBuffer.asIntBuffer().get(frame, 0, frame.length);
-
-        return Bitmap.createBitmap(frame, 0, sWidth, sWidth, sHeight, Bitmap.Config.ARGB_8888);
+        sBuffer.rewind();
+        sBitmap.copyPixelsFromBuffer(sBuffer);
+        return sBitmap;
     }
 
     /**

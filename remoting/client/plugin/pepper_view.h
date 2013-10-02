@@ -35,12 +35,14 @@ class FrameProducer;
 
 class PepperView : public FrameConsumer {
  public:
-  // Constructs a PepperView for the |instance|. The |instance|, |context|
-  // and |producer| must outlive this class.
-  PepperView(ChromotingInstance* instance,
-             ClientContext* context,
-             FrameProducer* producer);
+  // Constructs a PepperView for the |instance|. The |instance| and |context|
+  // must outlive this class.
+  PepperView(ChromotingInstance* instance, ClientContext* context);
   virtual ~PepperView();
+
+  // Allocates buffers and passes them to the FrameProducer to render into until
+  // the maximum number of buffers are in-flight.
+  void Initialize(FrameProducer* producer);
 
   // FrameConsumer implementation.
   virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
@@ -50,6 +52,7 @@ class PepperView : public FrameConsumer {
   virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
   virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
                              const webrtc::DesktopVector& dpi) OVERRIDE;
+  virtual PixelFormat GetPixelFormat() OVERRIDE;
 
   // Updates the PepperView's size & clipping area, taking into account the
   // DIP-to-device scale factor.
@@ -73,10 +76,6 @@ class PepperView : public FrameConsumer {
 
   // Frees a frame buffer previously allocated by AllocateBuffer.
   void FreeBuffer(webrtc::DesktopFrame* buffer);
-
-  // Allocates buffers and passes them to the FrameProducer to render into until
-  // the maximum number of buffers are in-flight.
-  void InitiateDrawing();
 
   // Renders the parts of |buffer| identified by |region| to the view.  If the
   // clip area of the view has changed since the buffer was generated then

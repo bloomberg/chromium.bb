@@ -37,6 +37,7 @@ class JniFrameConsumer : public FrameConsumer {
   virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
   virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
                              const webrtc::DesktopVector& dpi) OVERRIDE;
+  virtual PixelFormat GetPixelFormat() OVERRIDE;
 
  private:
   // Variables are to be used from the display thread.

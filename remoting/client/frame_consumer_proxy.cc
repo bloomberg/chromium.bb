@@ -14,8 +14,11 @@
 namespace remoting {
 
 FrameConsumerProxy::FrameConsumerProxy(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::WeakPtr<FrameConsumer>& frame_consumer)
+    : frame_consumer_(frame_consumer),
+      task_runner_(task_runner) {
+  pixel_format_ = frame_consumer_->GetPixelFormat();
 }
 
 void FrameConsumerProxy::ApplyBuffer(const webrtc::DesktopSize& view_size,
@@ -57,11 +60,8 @@ void FrameConsumerProxy::SetSourceSize(
     frame_consumer_->SetSourceSize(source_size, source_dpi);
 }
 
-void FrameConsumerProxy::Attach(
-    const base::WeakPtr<FrameConsumer>& frame_consumer) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(frame_consumer_.get() == NULL);
-  frame_consumer_ = frame_consumer;
+FrameConsumer::PixelFormat FrameConsumerProxy::GetPixelFormat() {
+  return pixel_format_;
 }
 
 FrameConsumerProxy::~FrameConsumerProxy() {

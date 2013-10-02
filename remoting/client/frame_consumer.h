@@ -19,6 +19,13 @@ namespace remoting {
 
 class FrameConsumer {
  public:
+
+  // List of supported pixel formats needed by various platforms.
+  enum PixelFormat {
+    FORMAT_BGRA,  // Used by the Pepper plugin.
+    FORMAT_RGBA,  // Used for Android's Bitmap class.
+  };
+
   // Accepts a buffer to be painted to the screen. The buffer's dimensions and
   // relative position within the frame are specified by |clip_area|. Only
   // pixels falling within |region| and the current clipping area are painted.
@@ -40,6 +47,9 @@ class FrameConsumer {
   // Set the dimension of the entire host screen.
   virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
                              const webrtc::DesktopVector& dpi) = 0;
+
+  // Returns the preferred pixel encoding for the platform.
+  virtual PixelFormat GetPixelFormat() = 0;
 
  protected:
   FrameConsumer() {}

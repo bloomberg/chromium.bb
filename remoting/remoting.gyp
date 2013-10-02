@@ -2542,6 +2542,7 @@
         'remoting_base',
         'remoting_jingle_glue',
         'remoting_protocol',
+        '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
       ],
       'sources': [

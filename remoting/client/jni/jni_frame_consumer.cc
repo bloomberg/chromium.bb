@@ -109,6 +109,10 @@ void JniFrameConsumer::SetSourceSize(const webrtc::DesktopSize& source_size,
       &JniFrameConsumer::AllocateBuffer, base::Unretained(this)));
 }
 
+FrameConsumer::PixelFormat JniFrameConsumer::GetPixelFormat() {
+  return FORMAT_RGBA;
+}
+
 void JniFrameConsumer::AllocateBuffer() {
   // Only do anything if we're not being destructed.
   if (!in_dtor_) {

@@ -228,11 +228,11 @@ void ChromotingJniInstance::SetCursorShape(
 void ChromotingJniInstance::ConnectToHostOnDisplayThread() {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
-  frame_consumer_ = new FrameConsumerProxy(jni_runtime_->display_task_runner());
   view_.reset(new JniFrameConsumer(jni_runtime_));
   view_weak_factory_.reset(new base::WeakPtrFactory<JniFrameConsumer>(
       view_.get()));
-  frame_consumer_->Attach(view_weak_factory_->GetWeakPtr());
+  frame_consumer_ = new FrameConsumerProxy(jni_runtime_->display_task_runner(),
+                                           view_weak_factory_->GetWeakPtr());
 
   jni_runtime_->network_task_runner()->PostTask(
       FROM_HERE,

@@ -16,6 +16,7 @@
 #include "remoting/codec/video_decoder_vp8.h"
 #include "remoting/client/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
+#include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using base::Passed;
@@ -23,6 +24,55 @@ using remoting::protocol::ChannelConfig;
 using remoting::protocol::SessionConfig;
 
 namespace remoting {
+
+// This class wraps a VideoDecoder and byte-swaps the pixels for compatibility
+// with the android.graphics.Bitmap class.
+// TODO(lambroslambrou): Refactor so that the VideoDecoder produces data
+// in the right byte-order, instead of swapping it here.
+class RgbToBgrVideoDecoderFilter : public VideoDecoder {
+ public:
+  RgbToBgrVideoDecoderFilter(scoped_ptr<VideoDecoder> parent)
+      : parent_(parent.Pass()) {
+  }
+
+  virtual void Initialize(const webrtc::DesktopSize& screen_size) OVERRIDE {
+    parent_->Initialize(screen_size);
+  }
+
+  virtual bool DecodePacket(const VideoPacket& packet) OVERRIDE {
+    return parent_->DecodePacket(packet);
+  }
+
+  virtual void Invalidate(const webrtc::DesktopSize& view_size,
+                          const webrtc::DesktopRegion& region) OVERRIDE {
+    return parent_->Invalidate(view_size, region);
+  }
+
+  virtual void RenderFrame(const webrtc::DesktopSize& view_size,
+                           const webrtc::DesktopRect& clip_area,
+                           uint8* image_buffer,
+                           int image_stride,
+                           webrtc::DesktopRegion* output_region) OVERRIDE {
+    parent_->RenderFrame(view_size, clip_area, image_buffer, image_stride,
+                         output_region);
+
+    for (webrtc::DesktopRegion::Iterator i(*output_region); !i.IsAtEnd();
+         i.Advance()) {
+      webrtc::DesktopRect rect = i.rect();
+      uint8* pixels = image_buffer + (rect.top() * image_stride) +
+        (rect.left() * kBytesPerPixel);
+      libyuv::ABGRToARGB(pixels, image_stride, pixels, image_stride,
+                         rect.width(), rect.height());
+    }
+  }
+
+  virtual const webrtc::DesktopRegion* GetImageShape() OVERRIDE {
+    return parent_->GetImageShape();
+  }
+
+ private:
+  scoped_ptr<VideoDecoder> parent_;
+};
 
 RectangleUpdateDecoder::RectangleUpdateDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -39,6 +89,13 @@ RectangleUpdateDecoder::~RectangleUpdateDecoder() {
 }
 
 void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
+  if (!decode_task_runner_->BelongsToCurrentThread()) {
+    decode_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::Initialize, this,
+                              config));
+    return;
+  }
+
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config.video_config().codec;
   if (codec == ChannelConfig::CODEC_VERBATIM) {
@@ -47,6 +104,12 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
     decoder_.reset(new VideoDecoderVp8());
   } else {
     NOTREACHED() << "Invalid Encoding found: " << codec;
+  }
+
+  if (consumer_->GetPixelFormat() == FrameConsumer::FORMAT_RGBA) {
+    scoped_ptr<VideoDecoder> wrapper(
+        new RgbToBgrVideoDecoderFilter(decoder_.Pass()));
+    decoder_ = wrapper.Pass();
   }
 }
 
