@@ -274,7 +274,7 @@ class PortForwardingController::Connection
   Connection(Registry* registry,
              scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
              const std::string& socket,
-             scoped_refptr<DevToolsAdbBridge> bridge,
+             scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
              PrefService* pref_service);
 
   const PortStatusMap& GetPortStatusMap();
@@ -318,7 +318,7 @@ class PortForwardingController::Connection
 
   PortForwardingController::Registry* registry_;
   scoped_refptr<DevToolsAdbBridge::AndroidDevice> device_;
-  scoped_refptr<DevToolsAdbBridge> bridge_;
+  scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
   PrefChangeRegistrar pref_change_registrar_;
   scoped_refptr<AdbWebSocket> web_socket_;
   int command_id_;
@@ -334,18 +334,18 @@ PortForwardingController::Connection::Connection(
     Registry* registry,
     scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
     const std::string& socket,
-    scoped_refptr<DevToolsAdbBridge> bridge,
+    scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
     PrefService* pref_service)
     : registry_(registry),
       device_(device),
-      bridge_(bridge),
+      adb_thread_(adb_thread),
       command_id_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pref_change_registrar_.Init(pref_service);
   (*registry_)[device_->serial()] = this;
   web_socket_ = new AdbWebSocket(
       device, socket, kDevToolsRemoteBrowserTarget,
-      bridge_->GetAdbMessageLoop(), this);
+      adb_thread_->message_loop(), this);
   AddRef();  // Balanced in OnSocketClosed();
 }
 
@@ -382,7 +382,7 @@ void PortForwardingController::Connection::OnPrefsChange() {
     }
   }
 
-  bridge_->GetAdbMessageLoop()->PostTask(
+  adb_thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&Connection::ChangeForwardingMap,
                  this, new_forwarding_map));
@@ -390,7 +390,7 @@ void PortForwardingController::Connection::OnPrefsChange() {
 
 void PortForwardingController::Connection::ChangeForwardingMap(
     ForwardingMap new_forwarding_map) {
-  DCHECK_EQ(base::MessageLoop::current(), bridge_->GetAdbMessageLoop());
+  DCHECK_EQ(base::MessageLoop::current(), adb_thread_->message_loop());
 
   SerializeChanges(kTetheringUnbind, new_forwarding_map, forwarding_map_);
   SerializeChanges(kTetheringBind, forwarding_map_, new_forwarding_map);
@@ -542,7 +542,7 @@ void PortForwardingController::Connection::OnSocketClosed(
 
 bool PortForwardingController::Connection::ProcessIncomingMessage(
     const std::string& message) {
-  DCHECK_EQ(base::MessageLoop::current(), bridge_->GetAdbMessageLoop());
+  DCHECK_EQ(base::MessageLoop::current(), adb_thread_->message_loop());
   if (ProcessResponse(message))
     return true;
 
@@ -578,10 +578,8 @@ bool PortForwardingController::Connection::ProcessIncomingMessage(
   return true;
 }
 
-PortForwardingController::PortForwardingController(
-    scoped_refptr<DevToolsAdbBridge> bridge,
-    PrefService* pref_service)
-    : bridge_(bridge),
+PortForwardingController::PortForwardingController(PrefService* pref_service)
+    : adb_thread_(DevToolsAdbBridge::RefCountedAdbThread::GetInstance()),
       pref_service_(pref_service) {
 }
 
@@ -603,7 +601,7 @@ PortForwardingController::UpdateDeviceList(
       if (!socket.empty() || device->serial().empty()) {
         // Will delete itself when disconnected.
         new Connection(
-          &registry_, device->device(), socket, bridge_, pref_service_);
+          &registry_, device->device(), socket, adb_thread_, pref_service_);
       }
     } else {
       status[device->serial()] = (*rit).second->GetPortStatusMap();
@@ -636,7 +634,5 @@ BrowserContextKeyedService*
 PortForwardingController::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new PortForwardingController(
-      DevToolsAdbBridge::Factory::GetForProfile(profile),
-      profile->GetPrefs());
+  return new PortForwardingController(profile->GetPrefs());
 }

@@ -15,9 +15,7 @@ class PrefService;
 
 class PortForwardingController : public BrowserContextKeyedService {
  public:
-  PortForwardingController(
-      scoped_refptr<DevToolsAdbBridge> bridge,
-      PrefService* pref_service);
+  explicit PortForwardingController(PrefService* pref_service);
 
   virtual ~PortForwardingController();
 
@@ -52,7 +50,7 @@ class PortForwardingController : public BrowserContextKeyedService {
   class Connection;
   typedef std::map<std::string, Connection* > Registry;
 
-  scoped_refptr<DevToolsAdbBridge> bridge_;
+  scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
   PrefService* pref_service_;
   Registry registry_;
 
