@@ -34,6 +34,7 @@ PASS context.destination.channelCount = 99 threw exception InvalidStateError: Fa
 PASS new webkitOfflineAudioContext(99, 100, context.sampleRate) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': number of channels (99) exceeds maximum (10)..
 PASS new webkitOfflineAudioContext(1, 100, 1) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': sample rate (1) must be in the range 44100-96000 Hz..
 PASS new webkitOfflineAudioContext(1, 100, 1e6) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': sample rate (1.00000e+6) must be in the range 44100-96000 Hz..
+PASS node.oversample = '9x' threw exception InvalidStateError: Failed to set the 'oversample' property on 'WaveShaperNode': invalid oversample '9x': must be 'none', '2x', or '4x'..
 PASS successfullyParsed is true
 
 TEST COMPLETE

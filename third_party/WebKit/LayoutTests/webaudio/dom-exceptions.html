@@ -100,6 +100,9 @@ function runTest() {
     shouldThrow("new webkitOfflineAudioContext(1, 100, 1)");
     shouldThrow("new webkitOfflineAudioContext(1, 100, 1e6)");
 
+    // WaveShaper types
+    node = context.createWaveShaper();
+    shouldThrow("node.oversample = '9x'");
 }
 
 runTest();

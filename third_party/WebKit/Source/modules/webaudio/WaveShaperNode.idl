@@ -22,15 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-enum OverSampleType {
-    "none",
-    "2x",
-    "4x"
-};
-
 [
     Conditional=WEB_AUDIO
 ] interface WaveShaperNode : AudioNode {
     attribute Float32Array curve;
-    [SetterRaisesException] attribute OverSampleType oversample;
+    [SetterRaisesException] attribute DOMString oversample;
 };
