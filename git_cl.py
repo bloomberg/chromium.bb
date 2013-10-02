@@ -1859,7 +1859,7 @@ def CMDpush(parser, args):
 
 @subcommand.usage('<patch url or issue id>')
 def CMDpatch(parser, args):
-  """Patchs in a code review."""
+  """Patches in a code review."""
   parser.add_option('-b', dest='newbranch',
                     help='create a new branch off trunk for the patch')
   parser.add_option('-f', action='store_true', dest='force',
