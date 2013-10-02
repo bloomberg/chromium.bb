@@ -30,7 +30,6 @@
 
 #include "bindings/v8/ScriptValue.h"
 #include "core/dom/ContainerNode.h"
-#include "core/dom/CustomElement.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentLifecycle.h"
@@ -43,6 +42,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/ViewportArguments.h"
+#include "core/dom/custom/CustomElement.h"
 #include "core/events/DocumentEventQueue.h"
 #include "core/html/CollectionType.h"
 #include "core/page/FocusDirection.h"

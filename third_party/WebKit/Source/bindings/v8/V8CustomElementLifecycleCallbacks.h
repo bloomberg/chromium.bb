@@ -34,7 +34,7 @@
 #include "bindings/v8/ActiveDOMCallback.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScopedPersistent.h"
-#include "core/dom/CustomElementLifecycleCallbacks.h"
+#include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include <v8.h>

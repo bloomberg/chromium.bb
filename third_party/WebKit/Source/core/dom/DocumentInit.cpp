@@ -29,8 +29,8 @@
 #include "core/dom/DocumentInit.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/Document.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/HTMLImportsController.h"
 #include "core/page/Frame.h"
 

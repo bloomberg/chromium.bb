@@ -44,11 +44,11 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
-#include "core/dom/CustomElementCallbackDispatcher.h"
-#include "core/dom/CustomElementDefinition.h"
-#include "core/dom/CustomElementDescriptor.h"
-#include "core/dom/CustomElementException.h"
 #include "core/dom/Document.h"
+#include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
+#include "core/dom/custom/CustomElementException.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {

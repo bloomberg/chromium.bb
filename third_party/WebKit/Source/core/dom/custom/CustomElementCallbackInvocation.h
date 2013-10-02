@@ -28,62 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementRegistrationContext_h
-#define CustomElementRegistrationContext_h
+#ifndef CustomElementCallbackInvocation_h
+#define CustomElementCallbackInvocation_h
 
-#include "core/dom/CustomElementDescriptor.h"
-#include "core/dom/CustomElementRegistry.h"
-#include "core/dom/CustomElementUpgradeCandidateMap.h"
-#include "core/dom/QualifiedName.h"
-#include "wtf/HashMap.h"
+#include "core/dom/custom/CustomElementLifecycleCallbacks.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class CustomElementConstructorBuilder;
-class CustomElementDefinition;
-class Document;
 class Element;
-class ExceptionState;
 
-class CustomElementRegistrationContext : public RefCounted<CustomElementRegistrationContext> {
+class CustomElementCallbackInvocation {
+    WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
 public:
-    static PassRefPtr<CustomElementRegistrationContext> create();
+    static PassOwnPtr<CustomElementCallbackInvocation> createInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
+    static PassOwnPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
-    ~CustomElementRegistrationContext() { }
-
-    // Definitions
-    void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, CustomElement::NameSet validNames, ExceptionState&);
-
-    // Instance creation
-    enum CreationMode {
-        CreatedByParser,
-        NotCreatedByParser
-    };
-
-    PassRefPtr<Element> createCustomTagElement(Document&, const QualifiedName&, CreationMode = NotCreatedByParser);
-    static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
-    static void setTypeExtension(Element*, const AtomicString& type, CreationMode = NotCreatedByParser);
+    virtual ~CustomElementCallbackInvocation() { }
+    virtual void dispatch(Element*) = 0;
+    virtual bool isCreated() const { return false; }
 
 protected:
-    CustomElementRegistrationContext() { }
+    CustomElementCallbackInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
+        : m_callbacks(callbacks)
+    {
+    }
 
-    // Instance creation
-    void didGiveTypeExtension(Element*, const AtomicString& type);
+    CustomElementLifecycleCallbacks* callbacks() { return m_callbacks.get(); }
 
 private:
-    void resolve(Element*, const AtomicString& typeExtension);
-    void didResolveElement(CustomElementDefinition*, Element*);
-    void didCreateUnresolvedElement(const CustomElementDescriptor&, Element*);
-
-    CustomElementRegistry m_registry;
-
-    // Element creation
-    CustomElementUpgradeCandidateMap m_candidates;
+    RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
 };
 
 }
 
-#endif // CustomElementRegistrationContext_h
-
+#endif // CustomElementCallbackInvocation_h

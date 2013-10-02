@@ -38,7 +38,7 @@
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/V8PerContextData.h"
-#include "core/dom/CustomElement.h"
+#include "core/dom/custom/CustomElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
 #include "core/svg/SVGElement.h"

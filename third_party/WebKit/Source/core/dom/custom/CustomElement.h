@@ -31,7 +31,7 @@
 #ifndef CustomElement_h
 #define CustomElement_h
 
-#include "core/dom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"

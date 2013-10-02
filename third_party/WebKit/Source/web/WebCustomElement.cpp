@@ -33,7 +33,7 @@
 
 #include "../platform/WebString.h"
 #include "RuntimeEnabledFeatures.h"
-#include "core/dom/CustomElement.h"
+#include "core/dom/custom/CustomElement.h"
 
 using namespace WebCore;
 

@@ -803,8 +803,8 @@ print F <<END
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/ContextFeatures.h"
-#include "core/dom/CustomElement.h"
-#include "core/dom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/Document.h"
 #include "core/page/Settings.h"
 

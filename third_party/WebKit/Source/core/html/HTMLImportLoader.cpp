@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/html/HTMLImportLoader.h"
 
-#include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/Document.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImportLoaderClient.h"

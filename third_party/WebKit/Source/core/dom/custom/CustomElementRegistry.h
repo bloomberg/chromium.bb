@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,47 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackQueue_h
-#define CustomElementCallbackQueue_h
+#ifndef CustomElementRegistry_h
+#define CustomElementRegistry_h
 
-#include "core/dom/CustomElementCallbackInvocation.h"
-#include "core/dom/Element.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
+#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
+#include "core/dom/custom/CustomElementDescriptorHash.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
-class CustomElementCallbackQueue {
-    WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
-public:
-    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<Element>);
+class CustomElementConstructorBuilder;
+class Document;
+class ExceptionState;
 
-    typedef int ElementQueue;
-    ElementQueue owner() { return m_owner; }
-    void setOwner(ElementQueue newOwner)
-    {
-        // ElementCallbackQueues only migrate towards the top of the
-        // processing stack.
-        ASSERT(newOwner >= m_owner);
-        m_owner = newOwner;
-    }
+class CustomElementRegistry {
+    WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
+protected:
+    friend class CustomElementRegistrationContext;
 
-    void append(PassOwnPtr<CustomElementCallbackInvocation> invocation) { m_queue.append(invocation); }
-    void processInElementQueue(ElementQueue);
-    bool inCreatedCallback() const { return m_inCreatedCallback; }
+    CustomElementRegistry() { }
+    virtual ~CustomElementRegistry() { }
+
+    CustomElementDefinition* registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, CustomElement::NameSet validNames, ExceptionState&);
+    CustomElementDefinition* find(const CustomElementDescriptor&) const;
 
 private:
-    CustomElementCallbackQueue(PassRefPtr<Element>);
-
-    RefPtr<Element> m_element;
-    Vector<OwnPtr<CustomElementCallbackInvocation> > m_queue;
-    ElementQueue m_owner;
-    size_t m_index;
-    bool m_inCreatedCallback;
+    typedef HashMap<CustomElementDescriptor, RefPtr<CustomElementDefinition> > DefinitionMap;
+    DefinitionMap m_definitions;
+    HashSet<AtomicString> m_registeredTypeNames;
 };
 
-}
+} // namespace WebCore
 
-#endif // CustomElementCallbackQueue_h
+#endif

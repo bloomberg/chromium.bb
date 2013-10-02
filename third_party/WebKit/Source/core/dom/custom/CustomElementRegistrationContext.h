@@ -28,44 +28,62 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackScheduler_h
-#define CustomElementCallbackScheduler_h
+#ifndef CustomElementRegistrationContext_h
+#define CustomElementRegistrationContext_h
 
-#include "core/dom/CustomElementCallbackQueue.h"
+#include "core/dom/QualifiedName.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
+#include "core/dom/custom/CustomElementRegistry.h"
+#include "core/dom/custom/CustomElementUpgradeCandidateMap.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class CustomElementLifecycleCallbacks;
+class CustomElementConstructorBuilder;
+class CustomElementDefinition;
+class Document;
 class Element;
+class ExceptionState;
 
-class CustomElementCallbackScheduler {
+class CustomElementRegistrationContext : public RefCounted<CustomElementRegistrationContext> {
 public:
-    static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
-    static void scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    static void scheduleEnteredViewCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    static void scheduleLeftViewCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    static PassRefPtr<CustomElementRegistrationContext> create();
+
+    ~CustomElementRegistrationContext() { }
+
+    // Definitions
+    void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, CustomElement::NameSet validNames, ExceptionState&);
+
+    // Instance creation
+    enum CreationMode {
+        CreatedByParser,
+        NotCreatedByParser
+    };
+
+    PassRefPtr<Element> createCustomTagElement(Document&, const QualifiedName&, CreationMode = NotCreatedByParser);
+    static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
+    static void setTypeExtension(Element*, const AtomicString& type, CreationMode = NotCreatedByParser);
 
 protected:
-    friend class CustomElementCallbackDispatcher;
-    static void clearElementCallbackQueueMap();
+    CustomElementRegistrationContext() { }
+
+    // Instance creation
+    void didGiveTypeExtension(Element*, const AtomicString& type);
 
 private:
-    CustomElementCallbackScheduler() { }
+    void resolve(Element*, const AtomicString& typeExtension);
+    void didResolveElement(CustomElementDefinition*, Element*);
+    void didCreateUnresolvedElement(const CustomElementDescriptor&, Element*);
 
-    static CustomElementCallbackScheduler& instance();
+    CustomElementRegistry m_registry;
 
-    CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
-    CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
-    CustomElementCallbackQueue* scheduleInCurrentElementQueue(PassRefPtr<Element>);
-
-    typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
-    ElementCallbackQueueMap m_elementCallbackQueueMap;
+    // Element creation
+    CustomElementUpgradeCandidateMap m_candidates;
 };
 
 }
 
-#endif // CustomElementCallbackScheduler_h
+#endif // CustomElementRegistrationContext_h
+

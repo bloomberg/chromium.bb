@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/dom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 
 namespace WebCore {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,39 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementDescriptorHash_h
-#define CustomElementDescriptorHash_h
+#ifndef CustomElementDefinition_h
+#define CustomElementDefinition_h
 
-#include "core/dom/CustomElementDescriptor.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashTraits.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
+#include "core/dom/custom/CustomElementLifecycleCallbacks.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-struct CustomElementDescriptorHash {
-    static unsigned hash(const CustomElementDescriptor& descriptor)
-    {
-        return WTF::pairIntHash(AtomicStringHash::hash(descriptor.type()), WTF::pairIntHash(AtomicStringHash::hash(descriptor.namespaceURI()), AtomicStringHash::hash(descriptor.localName())));
-    }
+class CustomElementDefinition : public RefCounted<CustomElementDefinition> {
+public:
+    static PassRefPtr<CustomElementDefinition> create(const CustomElementDescriptor&, PassRefPtr<CustomElementLifecycleCallbacks>);
 
-    static bool equal(const CustomElementDescriptor& a, const CustomElementDescriptor& b)
-    {
-        return a == b;
-    }
+    virtual ~CustomElementDefinition() { }
 
-    static const bool safeToCompareToEmptyOrDeleted = true;
+    const CustomElementDescriptor& descriptor() const { return m_descriptor; }
+    CustomElementLifecycleCallbacks* callbacks() const { return m_callbacks.get(); }
+
+private:
+    CustomElementDefinition(const CustomElementDescriptor&, PassRefPtr<CustomElementLifecycleCallbacks>);
+
+    CustomElementDescriptor m_descriptor;
+    RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
 };
 
-} // namespace WebCore
+}
 
-namespace WTF {
-
-template<>
-struct HashTraits<WebCore::CustomElementDescriptor> : SimpleClassHashTraits<WebCore::CustomElementDescriptor> {
-    static const bool emptyValueIsZero = HashTraits<AtomicString>::emptyValueIsZero;
-};
-
-} // namespace WTF
-
-#endif // CustomElementDescriptorHash
+#endif // CustomElementDefinition_h

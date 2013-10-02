@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "core/dom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/CustomElement.h"
-#include "core/dom/CustomElementCallbackScheduler.h"
-#include "core/dom/CustomElementDefinition.h"
 #include "core/dom/Element.h"
+#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementCallbackScheduler.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
 #include "core/svg/SVGUnknownElement.h"

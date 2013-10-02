@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/dom/CustomElementUpgradeCandidateMap.h"
+#include "core/dom/custom/CustomElementUpgradeCandidateMap.h"
 
 #include "core/dom/Element.h"
 

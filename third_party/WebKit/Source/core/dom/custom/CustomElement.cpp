@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "core/dom/CustomElement.h"
+#include "core/dom/custom/CustomElement.h"
 
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
-#include "core/dom/CustomElementCallbackScheduler.h"
-#include "core/dom/CustomElementObserver.h"
 #include "core/dom/Element.h"
+#include "core/dom/custom/CustomElementCallbackScheduler.h"
+#include "core/dom/custom/CustomElementObserver.h"
 
 namespace WebCore {
 

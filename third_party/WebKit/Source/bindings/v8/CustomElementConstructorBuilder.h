@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
-#include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/QualifiedName.h"
+#include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

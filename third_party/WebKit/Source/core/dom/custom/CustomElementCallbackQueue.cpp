@@ -28,41 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackInvocation_h
-#define CustomElementCallbackInvocation_h
-
-#include "core/dom/CustomElementLifecycleCallbacks.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
+#include "config.h"
+#include "core/dom/custom/CustomElementCallbackQueue.h"
 
 namespace WebCore {
 
-class Element;
-
-class CustomElementCallbackInvocation {
-    WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
-public:
-    static PassOwnPtr<CustomElementCallbackInvocation> createInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
-    static PassOwnPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
-
-    virtual ~CustomElementCallbackInvocation() { }
-    virtual void dispatch(Element*) = 0;
-    virtual bool isCreated() const { return false; }
-
-protected:
-    CustomElementCallbackInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
-        : m_callbacks(callbacks)
-    {
-    }
-
-    CustomElementLifecycleCallbacks* callbacks() { return m_callbacks.get(); }
-
-private:
-    RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
-};
-
+PassOwnPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtr<Element> element)
+{
+    return adoptPtr(new CustomElementCallbackQueue(element));
 }
 
-#endif // CustomElementCallbackInvocation_h
+CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<Element> element)
+    : m_element(element)
+    , m_owner(-1)
+    , m_index(0)
+    , m_inCreatedCallback(false)
+{
+}
+
+void CustomElementCallbackQueue::processInElementQueue(ElementQueue caller)
+{
+    ASSERT(!m_inCreatedCallback);
+
+    while (m_index < m_queue.size() && owner() == caller) {
+        m_inCreatedCallback = m_queue[m_index]->isCreated();
+
+        // dispatch() may cause recursion which steals this callback
+        // queue and reenters processInQueue. owner() == caller
+        // detects this recursion and cedes processing.
+        m_queue[m_index++]->dispatch(m_element.get());
+        m_inCreatedCallback = false;
+    }
+
+    if (owner() == caller && m_index == m_queue.size()) {
+        // This processInQueue exhausted the queue; shrink it.
+        m_index = 0;
+        m_queue.resize(0);
+        m_owner = -1;
+    }
+}
+
+} // namespace WebCore

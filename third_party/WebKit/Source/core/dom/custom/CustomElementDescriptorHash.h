@@ -28,48 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementUpgradeCandidateMap_h
-#define CustomElementUpgradeCandidateMap_h
+#ifndef CustomElementDescriptorHash_h
+#define CustomElementDescriptorHash_h
 
-#include "core/dom/CustomElementDescriptor.h"
-#include "core/dom/CustomElementDescriptorHash.h"
-#include "core/dom/CustomElementObserver.h"
-#include "wtf/HashMap.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Noncopyable.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
+#include "wtf/HashFunctions.h"
+#include "wtf/HashTraits.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
-class Element;
+struct CustomElementDescriptorHash {
+    static unsigned hash(const CustomElementDescriptor& descriptor)
+    {
+        return WTF::pairIntHash(AtomicStringHash::hash(descriptor.type()), WTF::pairIntHash(AtomicStringHash::hash(descriptor.namespaceURI()), AtomicStringHash::hash(descriptor.localName())));
+    }
 
-class CustomElementUpgradeCandidateMap : CustomElementObserver {
-    WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
-public:
-    CustomElementUpgradeCandidateMap() { }
-    ~CustomElementUpgradeCandidateMap();
+    static bool equal(const CustomElementDescriptor& a, const CustomElementDescriptor& b)
+    {
+        return a == b;
+    }
 
-    // API for CustomElementRegistrationContext to save and take candidates
-
-    typedef ListHashSet<Element*> ElementSet;
-
-    void add(const CustomElementDescriptor&, Element*);
-    void remove(Element*);
-    ElementSet takeUpgradeCandidatesFor(const CustomElementDescriptor&);
-
-private:
-    virtual void elementWasDestroyed(Element*) OVERRIDE;
-    void removeCommon(Element*);
-
-    virtual void elementDidFinishParsingChildren(Element*) OVERRIDE;
-    void moveToEnd(Element*);
-
-    typedef HashMap<Element*, CustomElementDescriptor> UpgradeCandidateMap;
-    UpgradeCandidateMap m_upgradeCandidates;
-
-    typedef HashMap<CustomElementDescriptor, ElementSet> UnresolvedDefinitionMap;
-    UnresolvedDefinitionMap m_unresolvedDefinitions;
+    static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
-}
+} // namespace WebCore
 
-#endif // CustomElementUpgradeCandidateMap_h
+namespace WTF {
+
+template<>
+struct HashTraits<WebCore::CustomElementDescriptor> : SimpleClassHashTraits<WebCore::CustomElementDescriptor> {
+    static const bool emptyValueIsZero = HashTraits<AtomicString>::emptyValueIsZero;
+};
+
+} // namespace WTF
+
+#endif // CustomElementDescriptorHash

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,33 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementDefinition_h
-#define CustomElementDefinition_h
+#ifndef CustomElementUpgradeCandidateMap_h
+#define CustomElementUpgradeCandidateMap_h
 
-#include "core/dom/CustomElementDescriptor.h"
-#include "core/dom/CustomElementLifecycleCallbacks.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
+#include "core/dom/custom/CustomElementDescriptorHash.h"
+#include "core/dom/custom/CustomElementObserver.h"
+#include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-class CustomElementDefinition : public RefCounted<CustomElementDefinition> {
+class Element;
+
+class CustomElementUpgradeCandidateMap : CustomElementObserver {
+    WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
 public:
-    static PassRefPtr<CustomElementDefinition> create(const CustomElementDescriptor&, PassRefPtr<CustomElementLifecycleCallbacks>);
+    CustomElementUpgradeCandidateMap() { }
+    ~CustomElementUpgradeCandidateMap();
 
-    virtual ~CustomElementDefinition() {}
+    // API for CustomElementRegistrationContext to save and take candidates
 
-    const CustomElementDescriptor& descriptor() const { return m_descriptor; }
-    CustomElementLifecycleCallbacks* callbacks() const { return m_callbacks.get(); }
+    typedef ListHashSet<Element*> ElementSet;
+
+    void add(const CustomElementDescriptor&, Element*);
+    void remove(Element*);
+    ElementSet takeUpgradeCandidatesFor(const CustomElementDescriptor&);
 
 private:
-    CustomElementDefinition(const CustomElementDescriptor&, PassRefPtr<CustomElementLifecycleCallbacks>);
+    virtual void elementWasDestroyed(Element*) OVERRIDE;
+    void removeCommon(Element*);
 
-    CustomElementDescriptor m_descriptor;
-    RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
+    virtual void elementDidFinishParsingChildren(Element*) OVERRIDE;
+    void moveToEnd(Element*);
+
+    typedef HashMap<Element*, CustomElementDescriptor> UpgradeCandidateMap;
+    UpgradeCandidateMap m_upgradeCandidates;
+
+    typedef HashMap<CustomElementDescriptor, ElementSet> UnresolvedDefinitionMap;
+    UnresolvedDefinitionMap m_unresolvedDefinitions;
 };
 
 }
 
-#endif // CustomElementDefinition_h
+#endif // CustomElementUpgradeCandidateMap_h

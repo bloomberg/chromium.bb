@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "core/dom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementCallbackDispatcher.h"
 
-#include "core/dom/CustomElementCallbackQueue.h"
-#include "core/dom/CustomElementCallbackScheduler.h"
+#include "core/dom/custom/CustomElementCallbackQueue.h"
+#include "core/dom/custom/CustomElementCallbackScheduler.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

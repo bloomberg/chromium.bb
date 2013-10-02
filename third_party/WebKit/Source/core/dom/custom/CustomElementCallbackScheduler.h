@@ -28,44 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/CustomElementCallbackQueue.h"
+#ifndef CustomElementCallbackScheduler_h
+#define CustomElementCallbackScheduler_h
+
+#include "core/dom/custom/CustomElementCallbackQueue.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtr<Element> element)
-{
-    return adoptPtr(new CustomElementCallbackQueue(element));
+class CustomElementLifecycleCallbacks;
+class Element;
+
+class CustomElementCallbackScheduler {
+public:
+    static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    static void scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    static void scheduleEnteredViewCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    static void scheduleLeftViewCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+
+protected:
+    friend class CustomElementCallbackDispatcher;
+    static void clearElementCallbackQueueMap();
+
+private:
+    CustomElementCallbackScheduler() { }
+
+    static CustomElementCallbackScheduler& instance();
+
+    CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
+    CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
+    CustomElementCallbackQueue* scheduleInCurrentElementQueue(PassRefPtr<Element>);
+
+    typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
+    ElementCallbackQueueMap m_elementCallbackQueueMap;
+};
+
 }
 
-CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<Element> element)
-    : m_element(element)
-    , m_owner(-1)
-    , m_index(0)
-    , m_inCreatedCallback(false)
-{
-}
-
-void CustomElementCallbackQueue::processInElementQueue(ElementQueue caller)
-{
-    ASSERT(!m_inCreatedCallback);
-
-    while (m_index < m_queue.size() && owner() == caller) {
-        m_inCreatedCallback = m_queue[m_index]->isCreated();
-
-        // dispatch() may cause recursion which steals this callback
-        // queue and reenters processInQueue. owner() == caller
-        // detects this recursion and cedes processing.
-        m_queue[m_index++]->dispatch(m_element.get());
-        m_inCreatedCallback = false;
-    }
-
-    if (owner() == caller && m_index == m_queue.size()) {
-        // This processInQueue exhausted the queue; shrink it.
-        m_index = 0;
-        m_queue.resize(0);
-        m_owner = -1;
-    }
-}
-
-} // namespace WebCore
+#endif // CustomElementCallbackScheduler_h

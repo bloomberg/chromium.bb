@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/dom/CustomElementObserver.h"
+#include "core/dom/custom/CustomElementObserver.h"
 
 namespace WebCore {
 

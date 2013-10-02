@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/dom/Microtask.h"
 
-#include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/MutationObserver.h"
+#include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
