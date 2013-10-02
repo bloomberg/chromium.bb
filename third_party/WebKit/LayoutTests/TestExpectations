@@ -1276,9 +1276,6 @@ crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
 
-# Flaky on all platforms.
-crbug.com/299819 inspector/console/console-timeline.html [ Failure Pass Timeout ]
-
 # Flaky.
 crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Pass ]
 

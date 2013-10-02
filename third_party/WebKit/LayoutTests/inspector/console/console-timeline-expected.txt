@@ -92,5 +92,4 @@ timestamp 1
 Timeline 'two' started.
 timestamp 2
 Timeline stopped from panel
-Timeline started from panel
 

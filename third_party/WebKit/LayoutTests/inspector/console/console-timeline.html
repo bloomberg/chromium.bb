@@ -137,7 +137,7 @@ function test()
              function timelineStopped()
              {
                  WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, timelineStopped);
-                 next();
+                 setTimeout(next);  // Fool listeners order so that timeline panel got this notification first.
              }
         },
 
@@ -155,13 +155,13 @@ function test()
              {
                  WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, timelineStarted);
                  // Fool listener order execution.
-                 setTimeout(function() { panel._toggleTimelineButtonClicked(); }, 0);
+                 setTimeout(panel._toggleTimelineButtonClicked.bind(panel));
              }
 
              function timelineStopped()
              {
                  WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, timelineStopped);
-                 next();
+                 setTimeout(next);  // Fool listeners order so that timeline panel got this notification first.
              }
         }        
     ]);
