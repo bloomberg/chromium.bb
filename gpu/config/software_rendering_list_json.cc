@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.10",
+  "version": "6.11",
   "entries": [
     {
       "id": 1,
@@ -147,6 +147,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "3d_css",
         "multisampling",
         "flash_3d",
+        "flash_stage3d",
         "force_compositing_mode"
       ]
     },
@@ -172,6 +173,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "3d_css",
         "multisampling",
         "flash_3d",
+        "flash_stage3d",
         "force_compositing_mode"
       ]
     },
@@ -197,6 +199,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "3d_css",
         "multisampling",
         "flash_3d",
+        "flash_stage3d",
         "force_compositing_mode"
       ]
     },
@@ -222,6 +225,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "3d_css",
         "multisampling",
         "flash_3d",
+        "flash_stage3d",
         "force_compositing_mode"
       ]
     },
@@ -912,6 +916,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         }
       },
       "features": [
+        "flash_3d",
+        "flash_stage3d",
         "force_compositing_mode"
       ]
     },
