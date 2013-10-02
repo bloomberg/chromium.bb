@@ -4,7 +4,11 @@
 var editable = document.getElementById('editable');
 editable.focus();
 document.execCommand('selectAll', false, true);
-//document.execCommand('indent', false, true);
+function doIndent()
+{
+    if (!document.execCommand('indentblock', false, true))
+        document.execCommand("indent", false, true);
+}
 </script>
-<button id="indentbutton" onclick="document.execCommand('indent', false, true);">INDENT</button>
+<button id="indentbutton" onclick="doIndent();">INDENT</button>
 

@@ -212,11 +212,6 @@ outside the <code>table-cell</code>.</p>
 page in and out.  The content outside the <code>iframe</code> zooms, but the
 content inside the <code>iframe</code> does not zoom.</p>
 
-<h3><a name="bugfix-indentpre">bugfix/indentpre</a> (Shezan Baig; D31922188)</h3>
-<p>Open <a href="repros/indentpre.html">this link</a> in Chrome.  The "Hello"
-text will be selected on load.  Each time you indent the text, the "Hello" will
-get duplicated.</p>
-
 <h3><a name="bugfix-inputElementLayoutFix">bugfix/inputElementLayoutFix</a> (Zhen Yin; D43432726)</h3>
 <p>Open <a href="repros/inputElementLayoutFix.html">this link</a> in
 test_shell.  Press the two buttons.  The text in the input field
@@ -358,6 +353,9 @@ applied, and when it isn't (e.g. with upstream Chrome):</p>
     cursor before the logo.  Indent the image twice, then outdent the image
     twice.  Without this patch, there will be one level of indentation still
     left</li>
+    <li>Open <a href="repros/indentpre.html">this link</a>.  The "Hello" text
+    will be selected on load.  Each time you indent the text, the "Hello" will
+    get duplicated</li>
 </ul>
 
 <h3><a name="feature-insertHTMLNested">feature/insertHTMLNested</a> (Shezan Baig; D37136356)</h3>
@@ -497,6 +495,10 @@ text.</p>
 <p>Retired because there are no reproduction steps to verify the fix.</p>
 
 <h3><a name="bugfix-doubleindent">bugfix/doubleindent</a> (Shezan Baig; D32165963)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-indentOutdentBlock">feature/indentOutdentBlock</a></code></p>
+
+<h3><a name="bugfix-indentpre">bugfix/indentpre</a> (Shezan Baig; D31922188)</h3>
 <p>Retired in favor of <code><a
         href="#feature-indentOutdentBlock">feature/indentOutdentBlock</a></code></p>
 
