@@ -89,6 +89,7 @@ Reflect=|*
 Replaceable
 SetterCallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SetterRaisesException
+SpecialWrapFor=*
 StrictTypeChecking
 TreatNullAs=*
 TreatReturnedNullStringAs=Null|Undefined

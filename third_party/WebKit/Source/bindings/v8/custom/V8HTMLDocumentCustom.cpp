@@ -38,7 +38,6 @@
 #include "V8Window.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8WindowShell.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
@@ -110,19 +109,6 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
     htmlDocument->open(activeDOMWindow()->document());
     v8SetReturnValue(args, args.Holder());
-}
-
-v8::Handle<v8::Object> wrap(HTMLDocument* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    v8::Handle<v8::Object> wrapper = V8HTMLDocument::createWrapper(impl, creationContext, isolate);
-    if (wrapper.IsEmpty())
-        return wrapper;
-    if (!isolatedWorldForEnteredContext()) {
-        if (Frame* frame = impl->frame())
-            frame->script()->windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
-    }
-    return wrapper;
 }
 
 } // namespace WebCore

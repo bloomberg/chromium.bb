@@ -33,9 +33,7 @@
 
 #include "V8CanvasRenderingContext2D.h"
 #include "V8DOMImplementation.h"
-#include "V8HTMLDocument.h"
 #include "V8Node.h"
-#include "V8SVGDocument.h"
 #include "V8Touch.h"
 #include "V8TouchList.h"
 #include "V8WebGLRenderingContext.h"
@@ -45,7 +43,6 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/custom/V8CustomXPathNSResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -85,23 +82,6 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
         return;
 
     v8SetReturnValueFast(args, result.release(), document.get());
-}
-
-v8::Handle<v8::Object> wrap(Document* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    if (impl->isHTMLDocument())
-        return wrap(toHTMLDocument(impl), creationContext, isolate);
-    if (impl->isSVGDocument())
-        return wrap(toSVGDocument(impl), creationContext, isolate);
-    v8::Handle<v8::Object> wrapper = V8Document::createWrapper(impl, creationContext, isolate);
-    if (wrapper.IsEmpty())
-        return wrapper;
-    if (!isolatedWorldForEnteredContext()) {
-        if (Frame* frame = impl->frame())
-            frame->script()->windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
-    }
-    return wrapper;
 }
 
 } // namespace WebCore

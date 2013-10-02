@@ -30,7 +30,7 @@
 
 [
     GlobalContext=Window&WorkerGlobalScope,
-    CustomToV8,
+    SpecialWrapFor=File,
     CustomConstructor,
     CustomConstructor(sequence<any> blobParts, optional BlobPropertyBag options)
 ] interface Blob {

@@ -817,7 +817,7 @@ public:
 };
 END
 
-    my $customWrap = $interface->extendedAttributes->{"CustomToV8"} || SVGTypeNeedsToHoldContextElement($interface->name);
+    my $customWrap = NeedsSpecialWrap($interface);
     if ($noToV8) {
         die "Can't suppress toV8 for subclass\n" if $interface->parent;
     } elsif ($noWrap) {
@@ -4794,6 +4794,55 @@ sub BaseInterfaceName
     return $interface->name;
 }
 
+sub GenerateSpecialWrap
+{
+    my $interface = shift;
+    my $v8ClassName = shift;
+    my $nativeType = shift;
+
+    my $specialWrap = $interface->extendedAttributes->{"SpecialWrapFor"};
+    my $isDocument = InheritsInterface($interface, "Document");
+    if (!$specialWrap && !$isDocument) {
+        return;
+    }
+
+    my $code = "";
+    $code .= <<END;
+v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+END
+    if ($specialWrap) {
+        foreach my $type (split(/\s*\|\s*/, $specialWrap)) {
+            AddToImplIncludes("V8${type}.h");
+            $code .= <<END;
+    if (impl->is${type}())
+        return wrap(to${type}(impl), creationContext, isolate);
+END
+        }
+    }
+    $code .= <<END;
+    v8::Handle<v8::Object> wrapper = ${v8ClassName}::createWrapper(impl, creationContext, isolate);
+END
+    if ($isDocument) {
+        AddToImplIncludes("bindings/v8/V8WindowShell.h");
+        $code .= <<END;
+    if (wrapper.IsEmpty())
+        return wrapper;
+    if (!isolatedWorldForEnteredContext()) {
+        if (Frame* frame = impl->frame())
+            frame->script()->windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
+    }
+END
+    }
+    $code .= <<END;
+    return wrapper;
+}
+
+END
+    $implementation{nameSpaceWebCore}->add($code);
+}
+
 sub GenerateToV8Converters
 {
     my $interface = shift;
@@ -4806,6 +4855,8 @@ sub GenerateToV8Converters
     }
 
     AddToImplIncludes("bindings/v8/ScriptController.h");
+
+    GenerateSpecialWrap($interface, $v8ClassName, $nativeType);
 
     my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
     my $baseType = BaseInterfaceName($interface);
@@ -6120,6 +6171,18 @@ sub InheritsExtendedAttribute
     }, 0);
 
     return $found;
+}
+
+sub NeedsSpecialWrap
+{
+    my $interface = shift;
+
+    return 1 if $interface->extendedAttributes->{"CustomToV8"};
+    return 1 if SVGTypeNeedsToHoldContextElement($interface->name);
+    return 1 if $interface->extendedAttributes->{"SpecialWrapFor"};
+    return 1 if InheritsInterface($interface, "Document");
+
+    return 0;
 }
 
 1;

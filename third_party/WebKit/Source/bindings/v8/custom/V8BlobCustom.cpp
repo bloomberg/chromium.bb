@@ -31,7 +31,6 @@
 #include "config.h"
 #include "V8Blob.h"
 
-#include "V8File.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
@@ -41,14 +40,6 @@
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
-
-v8::Handle<v8::Object> wrap(Blob* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    if (impl->isFile())
-        return wrap(toFile(impl), creationContext, isolate);
-    return V8Blob::createWrapper(impl, creationContext, isolate);
-}
 
 void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {

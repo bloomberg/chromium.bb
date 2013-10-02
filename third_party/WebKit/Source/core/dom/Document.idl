@@ -21,7 +21,7 @@
 callback CustomElementConstructor = Element ();
 
 [
-    CustomToV8
+    SpecialWrapFor=HTMLDocument|SVGDocument
 ] interface Document : Node {
 
     // DOM Level 1 Core
