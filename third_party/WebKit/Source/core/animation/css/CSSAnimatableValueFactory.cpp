@@ -182,6 +182,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return AnimatableImage::create(style->listStyleImage());
     case CSSPropertyLeft:
         return createFromLength(style->left(), style);
+    case CSSPropertyLetterSpacing:
+        return createFromDouble(style->letterSpacing());
     case CSSPropertyMarginBottom:
         return createFromLength(style->marginBottom(), style);
     case CSSPropertyMarginLeft:

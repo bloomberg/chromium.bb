@@ -177,6 +177,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyListStyleImage:
         style->setListStyleImage(toAnimatableImage(value)->toStyleImage());
         return;
+    case CSSPropertyLetterSpacing:
+        style->setLetterSpacing(clampTo<float>(toAnimatableNumber(value)->toDouble()));
+        return;
     case CSSPropertyMarginBottom:
         style->setMarginBottom(animatableValueToLength(value, state));
         return;
