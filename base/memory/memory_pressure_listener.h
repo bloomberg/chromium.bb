@@ -24,11 +24,8 @@ namespace base {
 // simply delete the listener object. The implementation guarantees
 // that the callback will always be called on the thread that created
 // the listener.
-// If this is the same thread as the system is broadcasting the memory pressure
-// event on, then it is guaranteed you're called synchronously within that
-// broadcast and hence you should not do long-running garbage collection work.
-// But conversely, if there's something that needs to be released before
-// control is returned to system code, this is the place to do it.
+// Note that even on the same thread, the callback is not guaranteed to be
+// called synchronously within the system memory pressure broadcast.
 // Please see notes on memory_pressure_level_list.h: some levels are absolutely
 // critical, and if not enough memory is returned to the system, it'll
 // potentially kill the app, and then later the app will have to be
