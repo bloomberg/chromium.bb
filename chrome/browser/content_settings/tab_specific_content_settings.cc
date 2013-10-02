@@ -709,6 +709,7 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
     ClearCookieSpecificContentSettings();
   ClearGeolocationContentSettings();
   ClearMIDIContentSettings();
+  ClearPendingProtocolHandler();
 }
 
 void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
