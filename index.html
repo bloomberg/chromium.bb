@@ -305,17 +305,6 @@ red, grammar errors to green.  This branch makes it possible for us to specify
 the color from the document.</p>
 <p>TODO: make this a CSS property instead of a DOM attribute.</p>
 
-<h3><a name="feature-expose-request-context">feature/expose-request-context</a> (Imran Haider)</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>We needed support for listing/reading/writing on the local filesystem.  For
-the local filesystem writer, we need a reference to the blob storage controller
-so that we can get the blob data.  A reference to the blob storage controller
-can be retrieved from the <code>TestShellRequestContext</code>.  This commit
-makes it possible for us to get a reference to the
-<code>TestShellRequestContext</code> from the
-<code>SimpleResourceLoaderBridge</code>.</p>
-
 <h3><a name="feature-fileEnhancements">feature/fileEnhancements</a> (Shezan Baig; D40335184)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
@@ -324,14 +313,6 @@ send this upstream.</p>
 Windows Explorer into the page.  The DragOver and Drop events should print out
 the full path to the file.</p>
 
-<h3><a name="feature-indentOutdentBB">feature/indentOutdentBB</a> (Shezan Baig; D36805707, D32177325)</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This branch adds <code>IndentBB</code> and <code>OutdentBB</code> commands
-that make indenting and outdenting of list items behave closer to how it works
-in MS Word.</p>
-<p>TODO: The code for this is very messy, it needs to be cleaned up.</p>
-
 <h3><a name="feature-insertHTMLNested">feature/insertHTMLNested</a> (Shezan Baig; D37136356)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
@@ -339,12 +320,6 @@ send this upstream.</p>
 The WebKit behavior is to prevent the inserted HTML from being nested inside
 style spans.  This branch adds <code>InsertHTMLNested</code> command that
 allows the HTML to be nested inside style spans.</p>
-
-<h3><a name="feature-instrumentLayout">feature/instrumentLayout</a> (Inseob Lee; D35009812)</h3>
-<p>TODO</p>
-
-<h3><a name="feature-instrumentRefCountedLeakCounter">feature/instrumentRefCountedLeakCounter</a> (Imran Haider)</h3>
-<p>TODO</p>
 
 <h3><a name="feature-line-erase">feature/line-erase</a> (Imran Haider)</h3>
 <p>This bugfix addresses an issue when rendering:</p>
@@ -422,15 +397,6 @@ should be able to use Regions to achieve this effect, then we can get rid of
 this branch.  However, we needed this one specific feature immediately, so this
 branch just hacks it in.</p>
 
-<h3><a name="feature-noV8RecursionScopeCheck">feature/noV8RecursionScopeCheck</a> (Shezan Baig; D34552506)</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This branch makes it so that we don't need to use the
-<code>MicrotaskSuppression</code> guard whenever our product invokes
-Javascript.  Our product uses V8 for non-WebKit related code.  Having to use
-the <code>MicrotaskSuppression</code> guard would introduce WebKit dependency
-on our non-WebKit related code.</p>
-
 <h3><a name="feature-opaque-bmp">feature/opaque-bmp</a> (Imran Haider)</h3>
 <p>This bugfix addresses a misinterpretation of the 4th byte of a 32-bit
 uncompressed BMP image with a v1 header.  As per the <a
@@ -470,87 +436,145 @@ product has an option to bypass the system default setting.</p>
 <h3><a name="feature-tableEditing">feature/tableEditing</a> (Shezan Baig; D37611655)</h3>
 <p>TODO</p>
 
-<h3><a name="feature-timeline-on-startup">feature/timeline-on-startup</a> (Imran Haider)</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>We needed a way to start up the inspector and the timeline before loading
-the main document.  This change allows us to get a notification when the
-<code>devtools.js</code> has completed processing a batch of messages.  The
-first notification tells us that the inspector has processed all of the
-initialization messages and so we can continue to inject JS to kick start the
-timeline and to start loading the main document.</p>
-
-<h3><a name="feature-v8dll">feature/v8dll</a> (Shezan Baig)</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This is just a small change to use V8 in a separate DLL.</p>
-
 <h3><a name="feature-virtualAllocHooks">feature/virtualAllocHooks</a> (Lilit Darbinyan)</h3>
 <p>TODO</p>
-
-<h3><a name="feature-expose-pump-window">feature/expose-pump-window</a> (Imran Haider)</h3>
-<p>This change adds a few public functions to allow an application to
-use Chromium's pump window without having to modify the existing
-main event loop of the application.</p>
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
 
+<h2><a name="retired-28.0.1500.95">Retired at 28.0.1500.95</a></h2>
+
 <h3><a name="bugfix-autocorrectcaret2">bugfix/autocorrectcaret2</a> (Calum Robinson)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because the code no
-longer matches whatever is upstream.</p>
-
-<h3><a name="bugfix-autoCorrectionRange">bugfix/autoCorrectionRange</a> (Edward Christie; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=89526">89526</a>)</h3>
-<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
-available upstream.</p>
-
-<h3><a name="bugfix-backspaceIntoTable">bugfix/backspaceIntoTable</a> (Shezan Baig; D32947240)</h3>
-<p>Retired in favor of <code><a
-        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
-
-<h3><a name="bugfix-cancelErrorNotNull">bugfix/cancelErrorNotNull</a> (Zhen Yin)</h3>
-<p>Retired as of the <code>27.0.1453.110</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-cleanWarnings">bugfix/cleanWarnings</a> (Shezan Baig)</h3>
-<p>Retired as of the <code>25.0.1364.84</code> snapshot because we no longer
-need it.</p>
-
-<h3><a name="bugfix-contractionFix">bugfix/contractionFix</a> (Edward Christie)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-dontRespondIfNoFocus"> bugfix/dontRespondIfNoFocus</a> (Shezan Baig; D32819389)</h3>
-<p>Retired because the original issue is no longer reproducable (it appears to
-be fixed upstream).</p>
-
-<h3><a name="bugfix-fix-modal-loop">bugfix/fix-modal-loop</a> (Imran Haider)</h3>
-<p>Retired as of the <code>27.0.1453.110</code> snapshot because blpwtk2
-provides a new implementation of the main message loop.</p>
-
-<h3><a name="bugfix-fixFlexRounding">bugfix/fixFlexRounding</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=92163">92163</a>)</h3>
-<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
-available upstream.</p>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
 
 <h3><a name="bugfix-fixUndoSpellCaretPos">bugfix/fixUndoSpellCaretPos</a> (Tianyin Zhang; D38913437)</h3>
 <p>Retired in favor of <code><a
         href="#bugfix-caretPosition">bugfix/caretPosition</a></code></p>
 
-<h3><a name="bugfix-flexReplaced">bugfix/flexReplaced</a> (Shezan Baig; D34372405; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=94237">94237</a>)</h3>
-<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
-available upstream.</p>
+<h3><a name="bugfix-restoreCaretPosition">bugfix/restoreCaretPosition</a> (Tianyin Zhang; D38277785)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-caretPosition">bugfix/caretPosition</a></code></p>
 
-<h3><a name="bugfix-flexboxOverrideHeight">bugfix/flexboxOverrideHeight</a> (Shezan Baig; D33177416)</h3>
-<p>Retired as of the <code>20.0.1132.47</code> snapshot because the new flexbox
-implementation no longer reproduces the issue.</p>
+<h3><a name="bugfix-contractionFix">bugfix/contractionFix</a> (Edward Christie)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-noRelayoutIfPercentSame">bugfix/noRelayoutIfPercentSame</a> (Shezan Baig; D36633185)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-pasteUsesLineBreak">bugfix/pasteUsesLineBreak</a> (Shezan Baig; D33830147)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-printBkTransparent">bugfix/printBkTransparent</a> (Shezan Baig; D32606365)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-printTextTop">bugfix/printTextTop</a> (Shezan Baig; D32606285)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-removeApostropheMarker">bugfix/removeApostropheMarker</a> (Tianyin Zhang; D38435539)</h3>
+<p>Retired because we no longer need the fix.</p>
+
+<h3><a name="bugfix-removeMarkersUponEditing">bugfix/removeMarkersUponEditing</a> (Edward Christie)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-selectionGapTransform">bugfix/selectionGapTransform</a> (Shezan Baig)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+<h3><a name="bugfix-simplifiedIteratorFix">bugfix/simplifiedIteratorFix</a> (Edward Christie)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-unifiedTextChecking">bugfix/unifiedTextChecking</a> (Edward Christie)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="feature-after_copycut">feature/after_copycut</a> (James McIlhargey)</h3>
+<p>Retired because there are no reproduction steps to verify the feature works
+as intended.</p>
+
+<h3><a name="feature-allowImageLoadCancel">feature/allowImageLoadCancel</a> (Alex Buch; D32427286)</h3>
+<p>Retired because there are no reproduction steps to verify the feature works
+as intended.</p>
+
+
+<h2><a name="retired-27.0.1453.110">Retired at 27.0.1453.110</a></h2>
+
+<h3><a name="feature-can_supply_proxy_service">feature/can_supply_proxy_service</a> (Angelos Evripiotis)</h3>
+<p>Retired because this change is not compatible with blpwtk2.</p>
+
+<h3><a name="bugfix-cancelErrorNotNull">bugfix/cancelErrorNotNull</a> (Zhen Yin)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="feature-expose-pump-window">feature/expose-pump-window</a> (Imran Haider)</h3>
+<p>Retired because this change is not compatible with blpwtk2.</p>
+
+<h3><a name="feature-expose-request-context">feature/expose-request-context</a> (Imran Haider)</h3>
+<p>Retired because this change is not compatible with blpwtk2.</p>
+
+<h3><a name="bugfix-fix-modal-loop">bugfix/fix-modal-loop</a> (Imran Haider)</h3>
+<p>Retired because this change is not compatible with blpwtk2.</p>
+
+<h3><a name="bugfix-mouseLeaveMousePosition">bugfix/mouseLeaveMousePosition</a> (Zhen Yin)</h3>
+<p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-perl_filenames">bugfix/perl_filenames</a> (Edward Christie)</h3>
+<p>Retired because the .gitattributes file automatically handles line endings
+correctly.</p>
+
+<h3><a name="feature-indentOutdentBB">feature/indentOutdentBB</a> (Shezan Baig; D36805707, D32177325)</h3>
+<p>Retired because we no longer need the feature.</p>
+
+<h3><a name="feature-instrumentLayout">feature/instrumentLayout</a> (Inseob Lee; D35009812)</h3>
+<p>Retired because this change is not compatible with blpwtk2.</p>
+
+<h3><a name="feature-instrumentRefCountedLeakCounter">feature/instrumentRefCountedLeakCounter</a> (Imran Haider)</h3>
+<p>Retired because this change is not compatible with blpwtk2.</p>
+
+<h3><a name="feature-noV8RecursionScopeCheck">feature/noV8RecursionScopeCheck</a> (Shezan Baig; D34552506)</h3>
+<p>Retired because it has been merged into <code><a
+        href="#feature-blpwtk2">feature/blpwtk2</a></code></p>
+
+<h3><a name="feature-sandboxDLL">feature/sandboxDLL</a> (Tomy Jacob)</h3>
+<p>Retired because it has been merged into <code><a
+        href="#feature-blpwtk2">feature/blpwtk2</a></code></p>
+
+<h3><a name="feature-timeline-on-startup">feature/timeline-on-startup</a> (Imran Haider)</h3>
+<p>Retired because this change is not compatible with blpwtk2.</p>
+
+<h3><a name="feature-v8dll">feature/v8dll</a> (Shezan Baig)</h3>
+<p>Retired because it has been merged into <code><a
+        href="#feature-blpwtk2">feature/blpwtk2</a></code></p>
+
+
+<h2><a name="retired-26.0.1410.33">Retired at 26.0.1410.33</a></h2>
 
 <h3><a name="bugfix-imgresample">bugfix/imgresample</a> (Shezan Baig; D32353761)</h3>
-<p>Retired as of the <code>26.0.1410.33</code> snapshot because the original
-issue is no longer reproducable (it appears to be fixed upstream).</p>
+<p>Retired because the original issue is no longer reproducable (it appears to
+be fixed upstream).</p>
 
-<h3><a name="bugfix-indentLink">bugfix/indentLink</a> (Shezan Baig; D32418391; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=87428">87428</a>)</h3>
-<p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
-available upstream.</p>
+<h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+
+<h2><a name="retired-25.0.1364.152">Retired at 25.0.1364.152</a></h2>
+
+<h3><a name="bugfix-backspaceIntoTable">bugfix/backspaceIntoTable</a> (Shezan Baig; D32947240)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
+
+<h3><a name="bugfix-nonemptycellbackspace">bugfix/nonemptycellbackspace</a> (Shezan Baig)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
+
+<h3><a name="bugfix-nonemptycelldelete">bugfix/nonemptycelldelete</a> (Shezan Baig)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
+
+
+<h2><a name="retired-25.0.1364.84">Retired at 25.0.1364.84</a></h2>
+
+<h3><a name="bugfix-cleanWarnings">bugfix/cleanWarnings</a> (Shezan Baig)</h3>
+<p>Retired because we no longer need it.</p>
+
+
+<h2><a name="retired-24.0.1312.52">Retired at 24.0.1312.52</a></h2>
 
 <h3><a name="bugfix-listMarkerAlignment">bugfix/listMarkerAlignment</a> (Shezan Baig; D37088493; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
 <p>Retired in favor of <code><a
@@ -564,116 +588,69 @@ available upstream.</p>
 <p>Retired in favor of <code><a
         href="#feature-listMarkerEnhancements">feature/listMarkerEnhancements</a></code></p>
 
-<h3><a name="bugfix-mouseLeaveMousePosition">bugfix/mouseLeaveMousePosition</a> (Zhen Yin)</h3>
-<p>Retired as of the <code>27.0.1453.110</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-nonemptycellbackspace">bugfix/nonemptycellbackspace</a> (Shezan Baig)</h3>
-<p>Retired in favor of <code><a
-        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
-
-<h3><a name="bugfix-nonemptycelldelete">bugfix/nonemptycelldelete</a> (Shezan Baig)</h3>
-<p>Retired in favor of <code><a
-        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
-
-<h3><a name="bugfix-noRelayoutIfPercentSame">bugfix/noRelayoutIfPercentSame</a> (Shezan Baig; D36633185)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-offsetleft">bugfix/offsetleft</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=34875">34875</a>)</h3>
-<p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
-available upstream.</p>
-
-<h3><a name="bugfix-pasteUsesLineBreak">bugfix/pasteUsesLineBreak</a> (Shezan Baig; D33830147)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-perl_filenames">bugfix/perl_filenames</a> (Edward Christie)</h3>
-<p>Retired as of the <code>27.0.1453.100</code> snapshot because the
-.gitattributes file automatically handles line endings correctly.</p>
-
-<h3><a name="bugfix-printBkTransparent">bugfix/printBkTransparent</a> (Shezan Baig; D32606365)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-printTextTop">bugfix/printTextTop</a> (Shezan Baig; D32606285)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-removeApostropheMarker">bugfix/removeApostropheMarker</a> (Tianyin Zhang; D38435539)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because we no longer
-need the fix.</p>
-
-<h3><a name="bugfix-removeMarkersUponEditing">bugfix/removeMarkersUponEditing</a> (Edward Christie)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-restoreCaretPosition">bugfix/restoreCaretPosition</a> (Tianyin Zhang; D38277785)</h3>
-<p>Retired in favor of <code><a
-        href="#bugfix-caretPosition">bugfix/caretPosition</a></code></p>
-
-<h3><a name="bugfix-rowOutlines">bugfix/rowOutlines</a> (Shezan Baig; D34115441; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=94007">94007</a>)</h3>
-<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
-available upstream.</p>
-
-<h3><a name="bugfix-selectionGapTransform">bugfix/selectionGapTransform</a> (Shezan Baig)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because the fix is
-available upstream.</p>
-
-<h3><a name="bugfix-simplifiedIteratorFix">bugfix/simplifiedIteratorFix</a> (Edward Christie)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="bugfix-spellCheckOnLoad">bugfix/spellCheckOnLoad</a> (Shezan Baig; D32468818)</h3>
-<p>Retired in favor of <code><a
-        href="#feature-checkSpellingCommand">feature/checkSpellingCommand</a></code></p>
-
-<h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
-<p>Retired as of the <code>26.0.1410.33</code> snapshot because the fix is
-available upstream.</p>
-
-<h3><a name="bugfix-tablecellpaste">bugfix/tablecellpaste</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=53933">53933</a>)</h3>
-<p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
-available upstream.</p>
-
-<h3><a name="bugfix-typingStyleAfterDelete">bugfix/typingStyleAfterDelete</a> (Shezan Baig; D32879084; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=82401">82401</a>)</h3>
-<p>Retired as of the <code>20.0.1132.47</code> snapshot because the fix is
-available upstream.</p>
-
-<h3><a name="bugfix-unifiedTextChecking">bugfix/unifiedTextChecking</a> (Edward Christie)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the fix.</p>
-
-<h3><a name="feature-after_copycut">feature/after_copycut</a> (James McIlhargey)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the feature works as intended.</p>
-
-<h3><a name="feature-allowImageLoadCancel">feature/allowImageLoadCancel</a> (Alex Buch; D32427286)</h3>
-<p>Retired as of the <code>28.0.1500.95</code> snapshot because there is no
-reproduction steps to verify the feature works as intended.</p>
-
-<h3><a name="feature-can_supply_proxy_service">feature/can_supply_proxy_service</a> (Angelos Evripiotis)</h3>
-<p>Retired as of the <code>27.0.1453.110</code> snapshot because this
-functionality is no longer required in our product.</p>
-
-<h3><a name="feature-betterVirtualAllocStats">feature/betterVirtualAllocStats</a> (Lilit Darbinyan)</h3>
-<p>Retired in favor of <code><a
-        href="#feature-virtualAllocHooks">feature/virtualAllocHooks</a></code></p>
-
 <h3><a name="feature-checkSpellingCommand">feature/checkSpellingCommand</a> (Tianyin Zhang)</h3>
-<p>Retired because this functionality is no longer required in our product.</p>
-
-<h3><a name="feature-disableV8SetAccessCheckCallbacks">feature/disableV8SetAccessCheckCallbacks</a> (Tianyin Zhang)</h3>
-<p>Retired in favor of <code><a
-        href="#bugfix-nonWindowContexts">bugfix/nonWindowContexts</a></code></p>
+<p>Retired because we no longer need it.</p>
 
 <h3><a name="feature-fontSmoothing">feature/fontSmoothing</a> (Calum Robinson; D36278764)</h3>
 <p>Retired in favor of <code><a
         href="#feature-resetCachedGDISettings">feature/resetCachedGDISettings</a></code></p>
 
+
+<h2><a name="retired-23.0.1271.97">Retired at 23.0.1271.97</a></h2>
+
+<h3><a name="bugfix-autoCorrectionRange">bugfix/autoCorrectionRange</a> (Edward Christie; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=89526">89526</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+<h3><a name="bugfix-dontRespondIfNoFocus"> bugfix/dontRespondIfNoFocus</a> (Shezan Baig; D32819389)</h3>
+<p>Retired because the original issue is no longer reproducable (it appears to
+be fixed upstream).</p>
+
+<h3><a name="bugfix-fixFlexRounding">bugfix/fixFlexRounding</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=92163">92163</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+<h3><a name="bugfix-flexReplaced">bugfix/flexReplaced</a> (Shezan Baig; D34372405; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=94237">94237</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+<h3><a name="bugfix-rowOutlines">bugfix/rowOutlines</a> (Shezan Baig; D34115441; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=94007">94007</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+<h3><a name="bugfix-tablecellpaste">bugfix/tablecellpaste</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=53933">53933</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+
+<h2><a name="retired-21.0.1180.60">Retired at 21.0.1180.60</a></h2>
+
+<h3><a name="bugfix-spellCheckOnLoad">bugfix/spellCheckOnLoad</a> (Shezan Baig; D32468818)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-checkSpellingCommand">feature/checkSpellingCommand</a></code></p>
+
+<h3><a name="bugfix-indentLink">bugfix/indentLink</a> (Shezan Baig; D32418391; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=87428">87428</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+<h3><a name="bugfix-offsetleft">bugfix/offsetleft</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=34875">34875</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
+
+<h3><a name="feature-betterVirtualAllocStats">feature/betterVirtualAllocStats</a> (Lilit Darbinyan)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-virtualAllocHooks">feature/virtualAllocHooks</a></code></p>
+
+<h3><a name="feature-disableV8SetAccessCheckCallbacks">feature/disableV8SetAccessCheckCallbacks</a> (Tianyin Zhang)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-nonWindowContexts">bugfix/nonWindowContexts</a></code></p>
+
 <h3><a name="feature-instrumentRandomVirtualAlloc">feature/instrumentRandomVirtualAlloc</a> (Tianyin Zhang)</h3>
 <p>Retired in favor of <code><a
         href="#feature-virtualAllocHooks">feature/virtualAllocHooks</a></code></p>
+
+
+<h2><a name="retired-20.0.1132.47">Retired at 20.0.1132.47</a></h2>
+
+<h3><a name="bugfix-flexboxOverrideHeight">bugfix/flexboxOverrideHeight</a> (Shezan Baig; D33177416)</h3>
+<p>Retired because the new flexbox implementation no longer reproduces the
+issue.</p>
+
+<h3><a name="bugfix-typingStyleAfterDelete">bugfix/typingStyleAfterDelete</a> (Shezan Baig; D32879084; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=82401">82401</a>)</h3>
+<p>Retired because the fix is available upstream.</p>
 
 </div>
 
