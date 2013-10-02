@@ -3014,15 +3014,20 @@ import java.util.Map;
      */
     public NavigationHistory getNavigationHistory() {
         NavigationHistory history = new NavigationHistory();
-        int currentIndex = nativeGetNavigationHistory(mNativeContentViewCore, history);
-        history.setCurrentEntryIndex(currentIndex);
+        if (mNativeContentViewCore != 0) {
+            int currentIndex = nativeGetNavigationHistory(mNativeContentViewCore, history);
+            history.setCurrentEntryIndex(currentIndex);
+        }
         return history;
     }
 
     @Override
     public NavigationHistory getDirectedNavigationHistory(boolean isForward, int itemLimit) {
         NavigationHistory history = new NavigationHistory();
-        nativeGetDirectedNavigationHistory(mNativeContentViewCore, history, isForward, itemLimit);
+        if (mNativeContentViewCore != 0) {
+            nativeGetDirectedNavigationHistory(
+                mNativeContentViewCore, history, isForward, itemLimit);
+        }
         return history;
     }
 
@@ -3031,7 +3036,10 @@ import java.util.Map;
      *         current entry.
      */
     public String getOriginalUrlForActiveNavigationEntry() {
-        return nativeGetOriginalUrlForActiveNavigationEntry(mNativeContentViewCore);
+        if (mNativeContentViewCore != 0) {
+            return nativeGetOriginalUrlForActiveNavigationEntry(mNativeContentViewCore);
+        }
+        return "";
     }
 
     /**
