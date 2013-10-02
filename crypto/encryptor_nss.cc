@@ -101,7 +101,7 @@ bool Encryptor::Decrypt(const base::StringPiece& ciphertext,
   if (ciphertext.size() % AES_BLOCK_SIZE != 0) {
     // Decryption will fail if the input is not a multiple of the block size.
     // PK11_CipherOp has a bug where it will do an invalid memory access before
-    // the start of the input, so avoid calling it. (Possibly NSS bug 921687).
+    // the start of the input, so avoid calling it. (NSS bug 922780).
     plaintext->clear();
     return false;
   }
