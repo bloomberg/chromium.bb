@@ -35,7 +35,7 @@
 #import "core/html/TimeRanges.h"
 #import "core/html/shadow/MediaControlElements.h"
 #import "core/page/FrameView.h"
-#import "core/platform/LayoutTestSupport.h"
+#import "platform/LayoutTestSupport.h"
 #import "platform/LocalizedStrings.h"
 #import "platform/SharedBuffer.h"
 #import "core/platform/graphics/BitmapImage.h"

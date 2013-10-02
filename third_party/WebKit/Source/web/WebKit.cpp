@@ -41,7 +41,7 @@
 #include "core/dom/Microtask.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/LayoutTestSupport.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"

@@ -28,7 +28,6 @@
 
 #include "CSSValueKeywords.h"
 #include "UserAgentStyleSheets.h"
-#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/PaintInfo.h"
@@ -36,6 +35,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderSlider.h"
+#include "platform/LayoutTestSupport.h"
 
 #include "public/platform/android/WebThemeEngine.h"
 #include "public/platform/Platform.h"

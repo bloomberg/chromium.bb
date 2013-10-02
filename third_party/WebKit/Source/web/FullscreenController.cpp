@@ -39,7 +39,7 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/page/Frame.h"
-#include "core/platform/LayoutTestSupport.h"
+#include "platform/LayoutTestSupport.h"
 
 using namespace WebCore;
 

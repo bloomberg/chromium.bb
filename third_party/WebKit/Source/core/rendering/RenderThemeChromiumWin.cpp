@@ -33,7 +33,6 @@
 #include "HTMLNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControlElements.h"
-#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -44,12 +43,12 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderSlider.h"
+#include "platform/LayoutTestSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebColor.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/win/WebThemeEngine.h"
 #include "wtf/CurrentTime.h"
-
 
 // FIXME: This dependency should eventually be removed.
 #include <skia/ext/skia_utils_win.h>

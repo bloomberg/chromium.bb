@@ -30,11 +30,11 @@
 #include <windows.h>
 #include <vsstyle.h>
 
-#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/win/SystemInfo.h"
+#include "platform/LayoutTestSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/win/WebThemeEngine.h"

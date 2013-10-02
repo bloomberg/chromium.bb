@@ -2610,8 +2610,6 @@
             'platform/HashTools.h',
             'platform/KillRing.h',
             'platform/KillRingNone.cpp',
-            'platform/LayoutTestSupport.cpp',
-            'platform/LayoutTestSupport.h',
             'platform/Length.cpp',
             'platform/LengthBox.cpp',
             'platform/LifecycleContext.cpp',

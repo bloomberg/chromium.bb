@@ -28,14 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutTestSupport_h
-#define LayoutTestSupport_h
+#include "config.h"
+#include "platform/LayoutTestSupport.h"
 
 namespace WebCore {
 
-bool isRunningLayoutTest();
-void setIsRunningLayoutTest(bool);
+static bool s_isRunningLayoutTest = false;
+
+bool isRunningLayoutTest()
+{
+    return s_isRunningLayoutTest;
+}
+
+void setIsRunningLayoutTest(bool value)
+{
+    s_isRunningLayoutTest = value;
+}
 
 } // namespace WebCore
-
-#endif // LayoutTestSupport_h

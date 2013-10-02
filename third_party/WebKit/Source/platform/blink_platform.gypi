@@ -15,6 +15,8 @@
       'JSONValues.h',
       'Language.cpp',
       'Language.h',
+      'LayoutTestSupport.cpp',
+      'LayoutTestSupport.h',
       'LayoutUnit.h',
       'LinkHash.cpp',
       'LinkHash.h',

@@ -25,7 +25,6 @@
 #include "core/rendering/RenderThemeChromiumSkia.h"
 
 #include "UserAgentStyleSheets.h"
-#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
@@ -35,6 +34,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
+#include "platform/LayoutTestSupport.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {

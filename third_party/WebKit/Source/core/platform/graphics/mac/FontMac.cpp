@@ -31,11 +31,11 @@
 #include "config.h"
 #include "core/platform/graphics/Font.h"
 
-#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "platform/LayoutTestSupport.h"
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
