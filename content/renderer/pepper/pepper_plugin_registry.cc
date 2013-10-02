@@ -16,8 +16,10 @@ PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
   static PepperPluginRegistry* registry = NULL;
   // This object leaks.  It is a temporary hack to work around a crash.
   // http://code.google.com/p/chromium/issues/detail?id=63234
-  if (!registry)
+  if (!registry) {
     registry = new PepperPluginRegistry;
+    registry->Initialize();
+  }
   return registry;
 }
 
@@ -79,6 +81,9 @@ PepperPluginRegistry::~PepperPluginRegistry() {
 }
 
 PepperPluginRegistry::PepperPluginRegistry() {
+}
+
+void PepperPluginRegistry::Initialize() {
   ComputePepperPluginList(&plugin_list_);
 
   // Note that in each case, AddLiveModule must be called before completing

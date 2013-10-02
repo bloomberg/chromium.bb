@@ -47,6 +47,7 @@ class PepperPluginRegistry {
 
  private:
   PepperPluginRegistry();
+  void Initialize();
 
   // All known pepper plugins.
   std::vector<PepperPluginInfo> plugin_list_;
