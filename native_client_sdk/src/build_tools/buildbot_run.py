@@ -35,7 +35,7 @@ def StepRunUnittests():
   Run([sys.executable, 'test_all.py'], env=env, cwd=SDK_SRC_DIR)
 
 
-def StepBuildSDK(args):
+def StepBuildSDK():
   is_win = getos.GetPlatform() == 'win'
 
   # Windows has a path length limit of 255 characters, after joining cwd with a
@@ -51,7 +51,7 @@ def StepBuildSDK(args):
     new_script_dir = SCRIPT_DIR
 
   try:
-    Run([sys.executable, 'build_sdk.py'] + args, cwd=new_script_dir)
+    Run([sys.executable, 'build_sdk.py'], cwd=new_script_dir)
   finally:
     if is_win:
       subprocess.check_call(['subst', '/D', subst_drive])
@@ -68,15 +68,17 @@ def StepTestSDK():
   Run(cmd, cwd=SCRIPT_DIR)
 
 
-def main(args):
+def main():
   StepRunUnittests()
-  StepBuildSDK(args)
-  StepTestSDK()
+  StepBuildSDK()
+  # Skip the testing phase if we are running on a build-only bots.
+  if not buildbot_common.IsBuildOnlyBot():
+    StepTestSDK()
   return 0
 
 
 if __name__ == '__main__':
   try:
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())
   except KeyboardInterrupt:
     buildbot_common.ErrorExit('buildbot_run: interrupted')
