@@ -93,19 +93,13 @@ bool RecursivelyGenerateFrameState(const WebHistoryItem& item,
   state->original_url_string = item.originalURLString();
   state->referrer = item.referrer();
   state->target = item.target();
-  state->parent = item.parent();
-  state->title = item.title();
-  state->alternate_title = item.alternateTitle();
   if (!item.stateObject().isNull())
     state->state_object = item.stateObject().toString();
   state->scroll_offset = item.scrollOffset();
   state->item_sequence_number = item.itemSequenceNumber();
   state->document_sequence_number =
       item.documentSequenceNumber();
-  state->visit_count = item.visitCount();
-  state->visited_time = item.lastVisitedTime();
   state->page_scale_factor = item.pageScaleFactor();
-  state->is_target_item = item.isTargetItem();
   ToNullableString16Vector(item.documentState(), &state->document_state);
 
   state->http_body.http_content_type = item.httpContentType();
@@ -137,19 +131,13 @@ bool RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
   item->setOriginalURLString(state.original_url_string);
   item->setReferrer(state.referrer);
   item->setTarget(state.target);
-  item->setParent(state.parent);
-  item->setTitle(state.title);
-  item->setAlternateTitle(state.alternate_title);
   if (!state.state_object.is_null()) {
     item->setStateObject(
         WebSerializedScriptValue::fromString(state.state_object));
   }
   item->setDocumentState(state.document_state);
   item->setScrollOffset(state.scroll_offset);
-  item->setVisitCount(state.visit_count);
-  item->setLastVisitedTime(state.visited_time);
   item->setPageScaleFactor(state.page_scale_factor);
-  item->setIsTargetItem(state.is_target_item);
 
   // These values are generated at WebHistoryItem construction time, and we
   // only want to override those new values with old values if the old values

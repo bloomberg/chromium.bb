@@ -195,7 +195,8 @@ struct SerializeObject {
 // 12: Adds support for contains_passwords in HTTP body
 // 13: Adds support for URL (FileSystem URL)
 // 14: Adds list of referenced files, version written only for first item.
-// 15: Switched from blob urls to blob uuids.
+// 15: Removes a bunch of values we defined but never used.
+// 16: Switched from blob urls to blob uuids.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See ReadPageState.
@@ -204,11 +205,11 @@ const int kMinVersion = 11;
 #ifdef USE_BLOB_UUIDS
 // This is not used yet, if a version bump is needed in advance of
 // this becoming used, bump both values by one and fixup the comment
-// and change the test for '15' in ReadHttpBody().
+// and change the test for '16' in ReadHttpBody().
 // -- michaeln
-const int kCurrentVersion = 15;
+const int kCurrentVersion = 16;
 #else
-const int kCurrentVersion = 14;
+const int kCurrentVersion = 15;
 #endif
 
 // A bunch of convenience functions to read/write to SerializeObjects.  The
@@ -276,6 +277,10 @@ double ReadReal(SerializeObject* obj) {
   return value;
 }
 
+void ConsumeReal(SerializeObject* obj) {
+  double unused ALLOW_UNUSED = ReadReal(obj);
+}
+
 void WriteBoolean(bool data, SerializeObject* obj) {
   obj->pickle.WriteInt(data ? 1 : 0);
 }
@@ -286,6 +291,10 @@ bool ReadBoolean(SerializeObject* obj) {
     return tmp;
   obj->parse_error = true;
   return false;
+}
+
+void ConsumeBoolean(SerializeObject* obj) {
+  bool unused ALLOW_UNUSED = ReadBoolean(obj);
 }
 
 void WriteGURL(const GURL& url, SerializeObject* obj) {
@@ -480,7 +489,7 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
                                file_modification_time);
     } else if (type == WebKit::WebHTTPBody::Element::TypeBlob) {
 #ifdef USE_BLOB_UUIDS
-      if (obj->version >= 15) {
+      if (obj->version >= 16) {
         std::string blob_uuid = ReadStdString(obj);
         AppendBlobToHttpBody(http_body, blob_uuid);
       } else {
@@ -511,14 +520,8 @@ void WriteFrameState(
   WriteString(state.url_string, obj);
   WriteString(state.original_url_string, obj);
   WriteString(state.target, obj);
-  WriteString(state.parent, obj);
-  WriteString(state.title, obj);
-  WriteString(state.alternate_title, obj);
-  WriteReal(state.visited_time, obj);
   WriteInteger(state.scroll_offset.x(), obj);
   WriteInteger(state.scroll_offset.y(), obj);
-  WriteBoolean(state.is_target_item, obj);
-  WriteInteger(state.visit_count, obj);
   WriteString(state.referrer, obj);
 
   WriteStringVector(state.document_state, obj);
@@ -554,17 +557,21 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
   state->url_string = ReadString(obj);
   state->original_url_string = ReadString(obj);
   state->target = ReadString(obj);
-  state->parent = ReadString(obj);
-  state->title = ReadString(obj);
-  state->alternate_title = ReadString(obj);
-  state->visited_time = ReadReal(obj);
+  if (obj->version < 15) {
+    ConsumeString(obj);  // Skip obsolete parent field.
+    ConsumeString(obj);  // Skip obsolete title field.
+    ConsumeString(obj);  // Skip obsolete alternate title field.
+    ConsumeReal(obj);    // Skip obsolete visited time field.
+  }
 
   int x = ReadInteger(obj);
   int y = ReadInteger(obj);
   state->scroll_offset = gfx::Point(x, y);
 
-  state->is_target_item = ReadBoolean(obj);
-  state->visit_count = ReadInteger(obj);
+  if (obj->version < 15) {
+    ConsumeBoolean(obj);  // Skip obsolete target item flag.
+    ConsumeInteger(obj);  // Skip obsolete visit count field.
+  }
   state->referrer = ReadString(obj);
 
   ReadStringVector(obj, &state->document_state);
@@ -680,10 +687,7 @@ ExplodedHttpBody::~ExplodedHttpBody() {
 ExplodedFrameState::ExplodedFrameState()
     : item_sequence_number(0),
       document_sequence_number(0),
-      visit_count(0),
-      visited_time(0.0),
-      page_scale_factor(0.0),
-      is_target_item(false) {
+      page_scale_factor(0.0) {
 }
 
 ExplodedFrameState::~ExplodedFrameState() {

@@ -49,18 +49,12 @@ struct CONTENT_EXPORT ExplodedFrameState {
   base::NullableString16 original_url_string;
   base::NullableString16 referrer;
   base::NullableString16 target;
-  base::NullableString16 parent;
-  base::NullableString16 title;
-  base::NullableString16 alternate_title;
   base::NullableString16 state_object;
   std::vector<base::NullableString16> document_state;
   gfx::Point scroll_offset;
   int64 item_sequence_number;
   int64 document_sequence_number;
-  int visit_count;
-  double visited_time;
   double page_scale_factor;
-  bool is_target_item;
   ExplodedHttpBody http_body;
   std::vector<ExplodedFrameState> children;
 
