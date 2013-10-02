@@ -498,7 +498,6 @@ void DriveFileSyncService::DoRegisterOrigin(
   OriginOperation op = pending_origin_operations_.Pop();
   DCHECK_EQ(origin, op.origin);
   DCHECK_EQ(OriginOperation::REGISTERING, op.type);
-  DCHECK(!op.aborted);
 
   DCHECK(!metadata_store_->IsOriginDisabled(origin));
   if (!metadata_store_->GetResourceIdForOrigin(origin).empty()) {
@@ -517,12 +516,6 @@ void DriveFileSyncService::DoEnableOrigin(
   OriginOperation op = pending_origin_operations_.Pop();
   DCHECK_EQ(origin, op.origin);
   DCHECK_EQ(OriginOperation::ENABLING, op.type);
-
-  // If it's aborted just return ok.
-  if (op.aborted) {
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
 
   // If origin cannot be found in disabled list, then it's not a SyncFS app
   // and should be ignored.
@@ -543,12 +536,6 @@ void DriveFileSyncService::DoDisableOrigin(
   DCHECK_EQ(origin, op.origin);
   DCHECK_EQ(OriginOperation::DISABLING, op.type);
 
-  // If it's aborted just return ok.
-  if (op.aborted) {
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
-
   pending_batch_sync_origins_.erase(origin);
   if (!metadata_store_->IsIncrementalSyncOrigin(origin)) {
     callback.Run(SYNC_STATUS_OK);
@@ -566,7 +553,6 @@ void DriveFileSyncService::DoUninstallOrigin(
   OriginOperation op = pending_origin_operations_.Pop();
   DCHECK_EQ(origin, op.origin);
   DCHECK_EQ(OriginOperation::UNINSTALLING, op.type);
-  DCHECK(!op.aborted);
 
   // Because origin management is now split between DriveFileSyncService and
   // DriveMetadataStore, resource_id must be checked for in two places.

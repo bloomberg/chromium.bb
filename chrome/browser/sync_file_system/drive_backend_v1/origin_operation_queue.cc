@@ -8,9 +8,9 @@
 
 namespace sync_file_system {
 
-OriginOperation::OriginOperation() : type(UNKNOWN), aborted(true) {}
+OriginOperation::OriginOperation() : type(UNKNOWN) {}
 OriginOperation::OriginOperation(const GURL& origin, Type type)
-    : origin(origin), type(type), aborted(false) {}
+    : origin(origin), type(type) {}
 OriginOperation::~OriginOperation() {}
 
 OriginOperationQueue::OriginOperationQueue() {}
@@ -19,22 +19,7 @@ OriginOperationQueue::~OriginOperationQueue() {}
 void OriginOperationQueue::Push(const GURL& origin,
                                 OriginOperation::Type type) {
   DCHECK_NE(OriginOperation::UNKNOWN, type);
-  OriginOperation new_operation(origin, type);
-
-  if (queue_.empty() || queue_.back().origin != origin) {
-    queue_.push_back(new_operation);
-    return;
-  }
-
-  if ((queue_.back().type == OriginOperation::DISABLING &&
-           type == OriginOperation::ENABLING) ||
-      (queue_.back().type == OriginOperation::ENABLING &&
-           type == OriginOperation::DISABLING)) {
-    queue_.back().aborted = true;
-    new_operation.aborted = true;
-  }
-
-  queue_.push_back(new_operation);
+  queue_.push_back(OriginOperation(origin, type));
 }
 
 OriginOperation OriginOperationQueue::Pop() {
@@ -50,8 +35,7 @@ bool OriginOperationQueue::HasPendingOperation(const GURL& origin) const {
 
   for (std::deque<OriginOperation>::const_iterator iter = queue_.begin();
        iter != queue_.end(); ++iter) {
-    // If we have any un-aborted operation, return true.
-    if (iter->origin == origin && !iter->aborted)
+    if (iter->origin == origin)
       return true;
   }
 

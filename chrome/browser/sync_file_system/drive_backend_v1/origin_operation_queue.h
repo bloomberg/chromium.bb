@@ -24,7 +24,6 @@ struct OriginOperation {
 
   GURL origin;
   Type type;
-  bool aborted;
 
   OriginOperation();
   OriginOperation(const GURL& origin, Type type);
