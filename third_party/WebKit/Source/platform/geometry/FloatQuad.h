@@ -38,7 +38,7 @@ namespace WebCore {
 // A FloatQuad is a collection of 4 points, often representing the result of
 // mapping a rectangle through transforms. When initialized from a rect, the
 // points are in clockwise order from top left.
-class FloatQuad {
+class PLATFORM_EXPORT FloatQuad {
 public:
     FloatQuad()
     {

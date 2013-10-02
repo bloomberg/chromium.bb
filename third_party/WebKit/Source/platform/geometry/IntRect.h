@@ -48,7 +48,7 @@ namespace WebCore {
 class FloatRect;
 class LayoutRect;
 
-class IntRect {
+class PLATFORM_EXPORT IntRect {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     IntRect() { }
@@ -181,7 +181,7 @@ inline IntRect unionRect(const IntRect& a, const IntRect& b)
     return c;
 }
 
-IntRect unionRect(const Vector<IntRect>&);
+PLATFORM_EXPORT IntRect unionRect(const Vector<IntRect>&);
 
 inline bool operator==(const IntRect& a, const IntRect& b)
 {
@@ -194,9 +194,9 @@ inline bool operator!=(const IntRect& a, const IntRect& b)
 }
 
 #if OS(MACOSX)
-IntRect enclosingIntRect(const CGRect&);
+PLATFORM_EXPORT IntRect enclosingIntRect(const CGRect&);
 #if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
-IntRect enclosingIntRect(const NSRect&);
+PLATFORM_EXPORT IntRect enclosingIntRect(const NSRect&);
 #endif
 #endif
 

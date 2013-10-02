@@ -47,7 +47,7 @@ class LayoutRect;
 class IntRect;
 class IntPoint;
 
-class FloatRect {
+class PLATFORM_EXPORT FloatRect {
 public:
     enum ContainsMode {
         InsideOrOnStroke,
@@ -228,15 +228,15 @@ inline bool operator!=(const FloatRect& a, const FloatRect& b)
     return a.location() != b.location() || a.size() != b.size();
 }
 
-IntRect enclosingIntRect(const FloatRect&);
+PLATFORM_EXPORT IntRect enclosingIntRect(const FloatRect&);
 
 // Returns a valid IntRect contained within the given FloatRect.
-IntRect enclosedIntRect(const FloatRect&);
+PLATFORM_EXPORT IntRect enclosedIntRect(const FloatRect&);
 
-IntRect roundedIntRect(const FloatRect&);
+PLATFORM_EXPORT IntRect roundedIntRect(const FloatRect&);
 
 // Map supplied rect from srcRect to an equivalent rect in destRect.
-FloatRect mapRect(const FloatRect&, const FloatRect& srcRect, const FloatRect& destRect);
+PLATFORM_EXPORT FloatRect mapRect(const FloatRect&, const FloatRect& srcRect, const FloatRect& destRect);
 
 }
 

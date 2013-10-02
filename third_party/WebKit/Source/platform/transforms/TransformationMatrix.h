@@ -46,7 +46,7 @@ class FloatQuad;
 #define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
 #endif
 
-class TransformationMatrix {
+class PLATFORM_EXPORT TransformationMatrix {
     WTF_MAKE_FAST_ALLOCATED;
 public:
 

@@ -32,12 +32,13 @@
 #define LayoutBoxExtent_h
 
 #include "platform/LayoutUnit.h"
+#include "platform/PlatformExport.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 
 namespace WebCore {
 
-class LayoutBoxExtent {
+class PLATFORM_EXPORT LayoutBoxExtent {
 public:
     LayoutBoxExtent() : m_top(0), m_right(0), m_bottom(0), m_left(0) { }
     LayoutBoxExtent(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)

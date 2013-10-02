@@ -27,6 +27,8 @@
 #ifndef IntSize_h
 #define IntSize_h
 
+#include "platform/PlatformExport.h"
+
 #if OS(MACOSX)
 typedef struct CGSize CGSize;
 

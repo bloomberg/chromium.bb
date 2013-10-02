@@ -40,7 +40,7 @@ namespace WebCore {
 
 class FloatRect;
 
-class LayoutRect {
+class PLATFORM_EXPORT LayoutRect {
 public:
     LayoutRect() { }
     LayoutRect(const LayoutPoint& location, const LayoutSize& size)
@@ -188,7 +188,7 @@ inline LayoutRect unionRect(const LayoutRect& a, const LayoutRect& b)
     return c;
 }
 
-LayoutRect unionRect(const Vector<LayoutRect>&);
+PLATFORM_EXPORT LayoutRect unionRect(const Vector<LayoutRect>&);
 
 inline bool operator==(const LayoutRect& a, const LayoutRect& b)
 {
@@ -207,8 +207,8 @@ inline IntRect pixelSnappedIntRect(const LayoutRect& rect)
         snapSizeToPixel(rect.height(), rect.y())));
 }
 
-IntRect enclosingIntRect(const LayoutRect&);
-LayoutRect enclosingLayoutRect(const FloatRect&);
+PLATFORM_EXPORT IntRect enclosingIntRect(const LayoutRect&);
+PLATFORM_EXPORT LayoutRect enclosingLayoutRect(const FloatRect&);
 
 inline IntRect pixelSnappedIntRect(LayoutUnit left, LayoutUnit top, LayoutUnit width, LayoutUnit height)
 {

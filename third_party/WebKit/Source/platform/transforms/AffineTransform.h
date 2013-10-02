@@ -43,7 +43,7 @@ class IntPoint;
 class IntRect;
 class TransformationMatrix;
 
-class AffineTransform {
+class PLATFORM_EXPORT AffineTransform {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     typedef double Transform[6];
@@ -182,7 +182,7 @@ private:
     Transform m_transform;
 };
 
-AffineTransform makeMapBetweenRects(const FloatRect& source, const FloatRect& dest);
+PLATFORM_EXPORT AffineTransform makeMapBetweenRects(const FloatRect& source, const FloatRect& dest);
 
 }
 

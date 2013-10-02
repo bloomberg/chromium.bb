@@ -27,7 +27,7 @@
 
 namespace WebCore {
 
-class FloatPoint3D {
+class PLATFORM_EXPORT FloatPoint3D {
 public:
     FloatPoint3D()
         : m_x(0)
