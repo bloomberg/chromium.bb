@@ -69,6 +69,8 @@ public:
     bool isSelectionMode() const;
     void setSelectionMode(bool);
 
+    WebKit::WebClipboard::Buffer buffer() const { return m_buffer; }
+
 private:
     Pasteboard();
 

@@ -31,17 +31,19 @@
 #ifndef ClipboardMimeTypes_h
 #define ClipboardMimeTypes_h
 
+#include "platform/PlatformExport.h"
+
 namespace WebCore {
 
-extern const char mimeTypeText[];
-extern const char mimeTypeTextPlain[];
-extern const char mimeTypeTextPlainEtc[];
-extern const char mimeTypeTextHTML[];
-extern const char mimeTypeURL[];
-extern const char mimeTypeTextURIList[];
-extern const char mimeTypeDownloadURL[];
-extern const char mimeTypeFiles[];
-extern const char mimeTypeImagePng[];
+PLATFORM_EXPORT extern const char mimeTypeText[];
+PLATFORM_EXPORT extern const char mimeTypeTextPlain[];
+PLATFORM_EXPORT extern const char mimeTypeTextPlainEtc[];
+PLATFORM_EXPORT extern const char mimeTypeTextHTML[];
+PLATFORM_EXPORT extern const char mimeTypeURL[];
+PLATFORM_EXPORT extern const char mimeTypeTextURIList[];
+PLATFORM_EXPORT extern const char mimeTypeDownloadURL[];
+PLATFORM_EXPORT extern const char mimeTypeFiles[];
+PLATFORM_EXPORT extern const char mimeTypeImagePng[];
 
 } // namespace WebCore
 

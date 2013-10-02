@@ -35,10 +35,9 @@
 #include "core/dom/StringCallback.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
+#include "core/platform/Pasteboard.h"
 #include "platform/SharedBuffer.h"
-#include "core/platform/chromium/ClipboardMimeTypes.h"
-#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
-
+#include "platform/clipboard/ClipboardMimeTypes.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 
@@ -160,18 +159,19 @@ String ChromiumDataObjectItem::internalGetAsString() const
 
     ASSERT(m_source == PasteboardSource);
 
+    WebKit::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
     String data;
     // This is ugly but there's no real alternative.
     if (m_type == mimeTypeTextPlain)
-        data = WebKit::Platform::current()->clipboard()->readPlainText(currentPasteboardBuffer());
+        data = WebKit::Platform::current()->clipboard()->readPlainText(buffer);
     else if (m_type == mimeTypeTextHTML) {
         WebKit::WebURL ignoredSourceURL;
         unsigned ignored;
-        data = WebKit::Platform::current()->clipboard()->readHTML(currentPasteboardBuffer(), &ignoredSourceURL, &ignored, &ignored);
+        data = WebKit::Platform::current()->clipboard()->readHTML(buffer, &ignoredSourceURL, &ignored, &ignored);
     } else
-        data = WebKit::Platform::current()->clipboard()->readCustomData(currentPasteboardBuffer(), m_type);
+        data = WebKit::Platform::current()->clipboard()->readCustomData(buffer, m_type);
 
-    return WebKit::Platform::current()->clipboard()->sequenceNumber(currentPasteboardBuffer()) == m_sequenceNumber ? data : String();
+    return WebKit::Platform::current()->clipboard()->sequenceNumber(buffer) == m_sequenceNumber ? data : String();
 }
 
 bool ChromiumDataObjectItem::isFilename() const

@@ -34,8 +34,8 @@
 #include "core/page/Frame.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
+#include "platform/clipboard/ClipboardMimeTypes.h"
 #include "weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 

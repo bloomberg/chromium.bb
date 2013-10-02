@@ -36,10 +36,10 @@
 #include "core/platform/DragImage.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ClipboardMimeTypes.h"
-#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/clipboard/ClipboardMimeTypes.h"
+#include "platform/clipboard/ClipboardUtilities.h"
 
 namespace WebCore {
 

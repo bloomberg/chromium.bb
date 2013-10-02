@@ -1,6 +1,12 @@
 {
   'variables': {
     'platform_files': [
+      'clipboard/ClipboardMimeTypes.cpp',
+      'clipboard/ClipboardMimeTypes.h',
+      'clipboard/ClipboardUtilitiesPosix.cpp',
+      'clipboard/ClipboardUtilitiesWin.cpp',
+      'clipboard/ClipboardUtilities.cpp',
+      'clipboard/ClipboardUtilities.h',
       'exported/Platform.cpp',
       'exported/WebData.cpp',
       'geometry/FloatPoint.cpp',
@@ -69,6 +75,7 @@
       'UUID.h',
     ],
     'platform_test_files': [
+      'clipboard/ClipboardUtilitiesTest.cpp',
       'ClockTest.cpp',
       'DecimalTest.cpp',
       'LayoutUnitTest.cpp',

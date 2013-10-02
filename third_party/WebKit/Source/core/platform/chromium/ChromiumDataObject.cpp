@@ -35,8 +35,9 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DataTransferItem.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/chromium/ClipboardMimeTypes.h"
-#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
+#include "core/platform/Pasteboard.h"
+#include "platform/clipboard/ClipboardMimeTypes.h"
+#include "platform/clipboard/ClipboardUtilities.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 
@@ -45,9 +46,10 @@ namespace WebCore {
 PassRefPtr<ChromiumDataObject> ChromiumDataObject::createFromPasteboard(PasteMode pasteMode)
 {
     RefPtr<ChromiumDataObject> dataObject = create();
-    uint64_t sequenceNumber = WebKit::Platform::current()->clipboard()->sequenceNumber(currentPasteboardBuffer());
+    WebKit::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
+    uint64_t sequenceNumber = WebKit::Platform::current()->clipboard()->sequenceNumber(buffer);
     bool ignored;
-    WebKit::WebVector<WebKit::WebString> webTypes = WebKit::Platform::current()->clipboard()->readAvailableTypes(currentPasteboardBuffer(), &ignored);
+    WebKit::WebVector<WebKit::WebString> webTypes = WebKit::Platform::current()->clipboard()->readAvailableTypes(buffer, &ignored);
     ListHashSet<String> types;
     for (size_t i = 0; i < webTypes.size(); ++i)
         types.add(webTypes[i]);

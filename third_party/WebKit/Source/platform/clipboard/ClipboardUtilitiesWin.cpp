@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
+#include "platform/clipboard/ClipboardUtilities.h"
 
 #include "wtf/text/WTFString.h"
 
@@ -40,7 +40,7 @@ static const unsigned maxFilenameLength = 255;
 // is intended for use with removeCharacters.
 static bool isInvalidFileCharacter(UChar c)
 {
-    return (PathGetCharType(c) & (GCT_LFNCHAR | GCT_SHORTCHAR)) == 0;
+    return !(PathGetCharType(c) & (GCT_LFNCHAR | GCT_SHORTCHAR));
 }
 
 void validateFilename(String& name, String& extension)

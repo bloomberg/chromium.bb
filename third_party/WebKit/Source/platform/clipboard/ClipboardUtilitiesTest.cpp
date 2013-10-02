@@ -29,8 +29,9 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
+#include "platform/clipboard/ClipboardUtilities.h"
 
+#include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
 #include <gtest/gtest.h>
@@ -51,7 +52,7 @@ const char longString[] =
     "0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711,28657,46368,"
     "75025,121393,196418,317811,514229,832040,1346269,2178309,3524578,5702887,9227465,14930352";
 
-TEST(ClipboardUtilitiesChromiumTest, Normal)
+TEST(ClipboardUtilitiesTest, Normal)
 {
     String name = "name";
     String extension = "ext";
@@ -60,16 +61,16 @@ TEST(ClipboardUtilitiesChromiumTest, Normal)
     EXPECT_EQ("ext", extension);
 }
 
-TEST(ClipboardUtilitiesChromiumTest, InvalidCharacters)
+TEST(ClipboardUtilitiesTest, InvalidCharacters)
 {
-    String name = "na" + String(invalidCharacters, arraysize(invalidCharacters)) + "me";
-    String extension = "e" + String(invalidCharacters, arraysize(invalidCharacters)) + "xt";
+    String name = "na" + String(invalidCharacters, WTF_ARRAY_LENGTH(invalidCharacters)) + "me";
+    String extension = "e" + String(invalidCharacters, WTF_ARRAY_LENGTH(invalidCharacters)) + "xt";
     validateFilename(name, extension);
     EXPECT_EQ("name", name);
     EXPECT_EQ("ext", extension);
 }
 
-TEST(ClipboardUtilitiesChromiumTest, ExtensionTooLong)
+TEST(ClipboardUtilitiesTest, ExtensionTooLong)
 {
     String name;
     String extension = String(longString) + longString;
@@ -77,7 +78,7 @@ TEST(ClipboardUtilitiesChromiumTest, ExtensionTooLong)
     EXPECT_EQ(String(), extension);
 }
 
-TEST(ClipboardUtilitiesChromiumTest, NamePlusExtensionTooLong)
+TEST(ClipboardUtilitiesTest, NamePlusExtensionTooLong)
 {
     String name = String(longString) + longString;
     String extension = longString;

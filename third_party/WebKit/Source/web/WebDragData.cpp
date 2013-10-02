@@ -32,8 +32,8 @@
 
 #include "core/dom/DataTransferItem.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
+#include "platform/clipboard/ClipboardMimeTypes.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebString.h"

@@ -74,5 +74,16 @@
     'sources': [
       '<@(platform_files)',
     ],
+    'conditions': [
+      ['OS=="win"', {
+        'sources/': [
+          ['exclude', 'Posix\\.cpp$'],
+        ],
+      }, { # OS!="win"
+        'sources/': [
+          ['exclude', 'Win\\.cpp$'],
+        ],
+      }],
+    ],
   }],
 }

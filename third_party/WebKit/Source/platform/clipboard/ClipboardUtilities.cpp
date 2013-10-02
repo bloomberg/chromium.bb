@@ -29,22 +29,14 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
+#include "platform/clipboard/ClipboardUtilities.h"
 
 #include "core/platform/Pasteboard.h"
-#include "public/platform/WebClipboard.h"
 #include "weborigin/KURL.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-WebKit::WebClipboard::Buffer currentPasteboardBuffer()
-{
-    return Pasteboard::generalPasteboard()->isSelectionMode() ?
-        WebKit::WebClipboard::BufferSelection :
-        WebKit::WebClipboard::BufferStandard;
-}
 
 #if OS(WIN)
 void replaceNewlinesWithWindowsStyleNewlines(String& str)

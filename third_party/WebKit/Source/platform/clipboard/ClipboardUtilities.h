@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Google Inc. All rights reserved.
+ * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,19 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/platform/chromium/ClipboardMimeTypes.h"
+#ifndef ClipboardUtilities_h
+#define ClipboardUtilities_h
+
+#include "platform/PlatformExport.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
-const char mimeTypeText[] = "text";
-const char mimeTypeTextPlain[] = "text/plain";
-const char mimeTypeTextPlainEtc[] = "text/plain;";
-const char mimeTypeTextHTML[] = "text/html";
-const char mimeTypeURL[] = "url";
-const char mimeTypeTextURIList[] = "text/uri-list";
-const char mimeTypeDownloadURL[] = "downloadurl";
-const char mimeTypeFiles[] = "Files";
-const char mimeTypeImagePng[] = "image/png";
+class KURL;
+
+#if OS(WIN)
+PLATFORM_EXPORT void replaceNewlinesWithWindowsStyleNewlines(String&);
+#endif
+PLATFORM_EXPORT void replaceNBSPWithSpace(String&);
+PLATFORM_EXPORT String convertURIListToURL(const String& uriList);
+// FIXME: This should probably be implemented in the embedder rather than here.
+PLATFORM_EXPORT void validateFilename(String& name, String& extension);
 
 } // namespace WebCore
+
+#endif // ClipboardUtilities_h
