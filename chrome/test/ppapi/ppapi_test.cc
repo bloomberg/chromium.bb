@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -35,10 +36,6 @@
 #include "net/base/test_data_directory.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "ui/gl/gl_switches.h"
-
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "base/win/windows_version.h"
-#endif
 
 using content::DomOperationNotificationDetails;
 using content::RenderViewHost;
@@ -249,7 +246,7 @@ std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
 void PPAPITestBase::RunTestURL(const GURL& test_url) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // PPAPITests are broken in Ash browser tests (http://crbug.com/263548).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests)) {
     LOG(WARNING) << "PPAPITests are disabled for Ash browser tests.";
     return;
   }
