@@ -122,56 +122,67 @@ base::FilePath GetManagedPolicyPath() {
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-std::string GetDeviceManagementUrl() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDeviceManagementUrl))
-    return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
-  else
-    return kDefaultDeviceManagementServerUrl;
-}
+class DeviceManagementServiceConfiguration
+    : public DeviceManagementService::Configuration {
+ public:
+  DeviceManagementServiceConfiguration() {}
+  virtual ~DeviceManagementServiceConfiguration() {}
 
-std::string GetUserAgentParameter() {
-  chrome::VersionInfo version_info;
-  return base::StringPrintf("%s %s(%s)",
-                            version_info.Name().c_str(),
-                            version_info.Version().c_str(),
-                            version_info.LastChange().c_str());
-}
+  virtual std::string GetServerUrl() OVERRIDE {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kDeviceManagementUrl))
+      return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
+    else
+      return kDefaultDeviceManagementServerUrl;
+  }
 
-std::string GetPlatformParameter() {
-  std::string os_name = base::SysInfo::OperatingSystemName();
-  std::string os_hardware = base::SysInfo::OperatingSystemArchitecture();
+  virtual std::string GetUserAgent() OVERRIDE {
+    return content::GetUserAgent(GURL(GetServerUrl()));
+  }
+
+  virtual std::string GetAgentParameter() OVERRIDE {
+    chrome::VersionInfo version_info;
+    return base::StringPrintf("%s %s(%s)",
+                              version_info.Name().c_str(),
+                              version_info.Version().c_str(),
+                              version_info.LastChange().c_str());
+  }
+
+  virtual std::string GetPlatformParameter() OVERRIDE {
+    std::string os_name = base::SysInfo::OperatingSystemName();
+    std::string os_hardware = base::SysInfo::OperatingSystemArchitecture();
 
 #if defined(OS_CHROMEOS)
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
+    chromeos::system::StatisticsProvider* provider =
+        chromeos::system::StatisticsProvider::GetInstance();
 
-  std::string hwclass;
-  if (!provider->GetMachineStatistic(chromeos::system::kHardwareClass,
-                                     &hwclass)) {
-    LOG(ERROR) << "Failed to get machine information";
-  }
-  os_name += ",CrOS," + base::SysInfo::GetLsbReleaseBoard();
-  os_hardware += "," + hwclass;
+    std::string hwclass;
+    if (!provider->GetMachineStatistic(chromeos::system::kHardwareClass,
+                                       &hwclass)) {
+      LOG(ERROR) << "Failed to get machine information";
+    }
+    os_name += ",CrOS," + base::SysInfo::GetLsbReleaseBoard();
+    os_hardware += "," + hwclass;
 #endif
 
-  std::string os_version("-");
+    std::string os_version("-");
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
-  os_version = base::StringPrintf("%d.%d.%d",
-                                  os_major_version,
-                                  os_minor_version,
-                                  os_bugfix_version);
+    int32 os_major_version = 0;
+    int32 os_minor_version = 0;
+    int32 os_bugfix_version = 0;
+    base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
+                                                 &os_minor_version,
+                                                 &os_bugfix_version);
+    os_version = base::StringPrintf("%d.%d.%d",
+                                    os_major_version,
+                                    os_minor_version,
+                                    os_bugfix_version);
 #endif
 
-  return base::StringPrintf(
-      "%s|%s|%s", os_name.c_str(), os_hardware.c_str(), os_version.c_str());
-}
+    return base::StringPrintf(
+        "%s|%s|%s", os_name.c_str(), os_hardware.c_str(), os_version.c_str());
+  }
+};
 
 }  // namespace
 
@@ -236,13 +247,10 @@ void BrowserPolicyConnector::Init(
   local_state_ = local_state;
   request_context_ = request_context;
 
-  std::string server_url = GetDeviceManagementUrl();
+  scoped_ptr<DeviceManagementService::Configuration> configuration(
+      new DeviceManagementServiceConfiguration);
   device_management_service_.reset(
-      new DeviceManagementService(request_context,
-                                  server_url,
-                                  content::GetUserAgent(GURL(server_url)),
-                                  GetUserAgentParameter(),
-                                  GetPlatformParameter()));
+      new DeviceManagementService(configuration.Pass(), request_context));
   device_management_service_->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 

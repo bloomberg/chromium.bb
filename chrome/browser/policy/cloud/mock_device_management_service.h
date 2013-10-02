@@ -23,6 +23,25 @@ class MockDeviceManagementJob {
       const enterprise_management::DeviceManagementResponse& response) = 0;
 };
 
+class MockDeviceManagementServiceConfiguration
+    : public DeviceManagementService::Configuration {
+ public:
+  MockDeviceManagementServiceConfiguration();
+  explicit MockDeviceManagementServiceConfiguration(
+      const std::string& server_url);
+  virtual ~MockDeviceManagementServiceConfiguration();
+
+  virtual std::string GetServerUrl() OVERRIDE;
+  virtual std::string GetUserAgent() OVERRIDE;
+  virtual std::string GetAgentParameter() OVERRIDE;
+  virtual std::string GetPlatformParameter() OVERRIDE;
+
+ private:
+  const std::string server_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementServiceConfiguration);
+};
+
 class MockDeviceManagementService : public DeviceManagementService {
  public:
   MockDeviceManagementService();

@@ -101,12 +101,30 @@ class DeviceManagementRequestJob {
 // requests.
 class DeviceManagementService : public net::URLFetcherDelegate {
  public:
+  // Obtains the parameters used to contact the server.
+  // This allows creating the DeviceManagementService early and getting these
+  // parameters later. Passing the parameters directly in the ctor isn't
+  // possible because some aren't ready during startup. http://crbug.com/302798
+  class Configuration {
+   public:
+    virtual ~Configuration() {}
+
+    // Server at which to contact the service.
+    virtual std::string GetServerUrl() = 0;
+
+    // Value for the User-Agent header.
+    virtual std::string GetUserAgent() = 0;
+
+    // Agent reported in the "agent" query parameter.
+    virtual std::string GetAgentParameter() = 0;
+
+    // The platform reported in the "platform" query parameter.
+    virtual std::string GetPlatformParameter() = 0;
+  };
+
   DeviceManagementService(
-      scoped_refptr<net::URLRequestContextGetter> request_context,
-      const std::string& server_url,
-      const std::string& user_agent,
-      const std::string& agent_parameter,
-      const std::string& platform_parameter);
+      scoped_ptr<Configuration> configuration,
+      scoped_refptr<net::URLRequestContextGetter> request_context);
   virtual ~DeviceManagementService();
 
   // The ID of URLFetchers created by the DeviceManagementService. This can be
@@ -151,20 +169,12 @@ class DeviceManagementService : public net::URLFetcherDelegate {
   // callback.
   void RemoveJob(DeviceManagementRequestJobImpl* job);
 
+  // A Configuration implementation that is used to obtain various parameters
+  // used to talk to the device management server.
+  scoped_ptr<Configuration> configuration_;
+
   // The request context is wrapped by the |request_context_getter_|.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-
-  // Server at which to contact the service.
-  const std::string server_url_;
-
-  // Value for the User-Agent header.
-  const std::string user_agent_;
-
-  // Agent reported in the "agent" query parameter.
-  const std::string agent_parameter_;
-
-  // The platform reported in the "platform" query parameter.
-  const std::string platform_parameter_;
 
   // The request context we use. This is a wrapper of |request_context_|.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

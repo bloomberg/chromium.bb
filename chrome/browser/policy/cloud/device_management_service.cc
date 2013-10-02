@@ -485,7 +485,10 @@ DeviceManagementService::~DeviceManagementService() {
 DeviceManagementRequestJob* DeviceManagementService::CreateJob(
     DeviceManagementRequestJob::JobType type) {
   return new DeviceManagementRequestJobImpl(
-      type, agent_parameter_, platform_parameter_, this);
+      type,
+      configuration_->GetAgentParameter(),
+      configuration_->GetPlatformParameter(),
+      this);
 }
 
 void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
@@ -502,8 +505,8 @@ void DeviceManagementService::Initialize() {
   if (initialized_)
     return;
   DCHECK(!request_context_getter_.get());
-  request_context_getter_ =
-      new DeviceManagementRequestContextGetter(request_context_, user_agent_);
+  request_context_getter_ = new DeviceManagementRequestContextGetter(
+      request_context_, configuration_->GetUserAgent());
   initialized_ = true;
 
   while (!queued_jobs_.empty()) {
@@ -523,23 +526,19 @@ void DeviceManagementService::Shutdown() {
 }
 
 DeviceManagementService::DeviceManagementService(
-    scoped_refptr<net::URLRequestContextGetter> request_context,
-    const std::string& server_url,
-    const std::string& user_agent,
-    const std::string& agent_parameter,
-    const std::string& platform_parameter)
-    : request_context_(request_context),
-      server_url_(server_url),
-      user_agent_(user_agent),
-      agent_parameter_(agent_parameter),
-      platform_parameter_(platform_parameter),
+    scoped_ptr<Configuration> configuration,
+    scoped_refptr<net::URLRequestContextGetter> request_context)
+    : configuration_(configuration.Pass()),
+      request_context_(request_context),
       initialized_(false),
       weak_ptr_factory_(this) {
+  DCHECK(configuration_);
 }
 
 void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
+  std::string server_url = configuration_->GetServerUrl();
   net::URLFetcher* fetcher = net::URLFetcher::Create(
-      kURLFetcherID, job->GetURL(server_url_), net::URLFetcher::POST, this);
+      kURLFetcherID, job->GetURL(server_url), net::URLFetcher::POST, this);
   fetcher->SetRequestContext(request_context_getter_.get());
   job->ConfigureRequest(fetcher);
   pending_jobs_[fetcher] = job;

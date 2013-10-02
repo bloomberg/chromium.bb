@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
+#include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -30,8 +31,6 @@ namespace em = enterprise_management;
 namespace policy {
 
 const char kServiceUrl[] = "https://example.com/management_service";
-const char kUserAgent[] = "Chrome 1.2.3(456)";
-const char kPlatform[] = "Test|Unit|1.2.3";
 
 // Encoded empty response messages for testing the error code paths.
 const char kResponseEmpty[] = "\x08\x00";
@@ -63,12 +62,10 @@ class DeviceManagementServiceTestBase : public testing::Test {
   }
 
   void ResetService() {
-    service_.reset(new DeviceManagementService(
-        request_context_,
-        kServiceUrl,
-        kUserAgent,
-        kUserAgent,
-        kPlatform));
+    scoped_ptr<DeviceManagementService::Configuration> configuration(
+        new MockDeviceManagementServiceConfiguration(kServiceUrl));
+    service_.reset(
+        new DeviceManagementService(configuration.Pass(), request_context_));
   }
 
   void InitializeService() {
