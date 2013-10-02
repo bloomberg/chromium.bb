@@ -4853,6 +4853,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Geolocation.NetworkLocationRequest.Event"
+    enum="NetworkLocationRequestEvent">
+  <summary>Events in NetworkLocationRequest.</summary>
+</histogram>
+
+<histogram name="Geolocation.NetworkLocationRequest.ResponseCode"
+    units="HTTP response code">
+  <summary>Http response codes in NetworkLocationRequest.</summary>
+</histogram>
+
 <histogram name="GoogleNow.Event" enum="GoogleNowEvent">
   <summary>Events in Google Now component extension.</summary>
 </histogram>
@@ -24418,6 +24428,16 @@ other types of suffix sets.
 <enum name="NetworkDisconnectType" type="int">
   <int value="0" label="System Disconnect"/>
   <int value="1" label="User Disconnect"/>
+</enum>
+
+<enum name="NetworkLocationRequestEvent" type="int">
+  <int value="0" label="REQUEST_START"/>
+  <int value="1" label="REQUEST_CANCEL"/>
+  <int value="2" label="RESPONSE_SUCCESS"/>
+  <int value="3" label="RESPONSE_NOT_OK"/>
+  <int value="4" label="RESPONSE_EMPTY"/>
+  <int value="5" label="RESPONSE_MALFORMED"/>
+  <int value="6" label="RESPONSE_INVALID_FIX"/>
 </enum>
 
 <enum name="NetworkPhyModeType" type="int">
