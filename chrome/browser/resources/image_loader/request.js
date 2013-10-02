@@ -55,10 +55,10 @@ function Request(id, cache, request, callback) {
 
   /**
    * Used to download remote images using http:// or https:// protocols.
-   * @type {XMLHttpRequest}
+   * @type {AuthorizedXHR}
    * @private
    */
-  this.xhr_ = new XMLHttpRequest();
+  this.xhr_ = new AuthorizedXHR();
 
   /**
    * Temporary canvas used to resize and compress the image.
@@ -194,34 +194,122 @@ Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
     return;
   }
 
-  // Download using an xhr request.
-  this.xhr_.responseType = 'blob';
-
-  this.xhr_.onerror = this.image_.onerror;
-  this.xhr_.onload = function() {
-    if (this.xhr_.status != 200) {
-      this.image_.onerror();
-      return;
-    }
-
-    // Process returned data, including the mime type.
-    this.contentType_ = this.xhr_.getResponseHeader('Content-Type');
+  // Fetch the image via authorized XHR and parse it.
+  var parseImage = function(contentType, blob) {
     var reader = new FileReader();
-    reader.onerror = this.image_.onerror;
+    reader.onerror = onFailure;
     reader.onload = function(e) {
       this.image_.src = e.target.result;
     }.bind(this);
 
     // Load the data to the image as a data url.
-    reader.readAsDataURL(this.xhr_.response);
+    reader.readAsDataURL(blob);
+  }.bind(this);
+
+  // Request raw data via XHR.
+  this.xhr_.load(this.request_.url, parseImage, onFailure);
+};
+
+/**
+ * Creates a XmlHttpRequest wrapper with injected OAuth2 authentication headers.
+ * @constructor
+ */
+function AuthorizedXHR() {
+  this.xhr_ = null;
+  this.aborted_ = false;
+}
+
+/**
+ * Aborts the current request (if running).
+ */
+AuthorizedXHR.prototype.abort = function() {
+  this.aborted_ = true;
+  if (this.xhr_)
+    this.xhr_.abort();
+};
+
+/**
+ * Loads an image using a OAuth2 token. If it fails, then tries to retry with
+ * a refreshed OAuth2 token.
+ *
+ * @param {string} url URL to the resource to be fetched.
+ * @param {function(string, Blob}) onSuccess Success callback with the content
+ *     type and the fetched data.
+ * @param {function()} onFailure Failure callback.
+ */
+AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
+  this.aborted_ = false;
+
+  // Do not call any callbacks when aborting.
+  var onMaybeSuccess = function(contentType, response) {
+    if (!this.aborted_)
+      onSuccess(contentType, response);
+  }.bind(this);
+  var onMaybeFailure = function(opt_code) {
+    if (!this.aborted_)
+      onFailure();
+  }.bind(this);
+
+  // Fetches the access token and makes an authorized call. If refresh is true,
+  // then forces refreshing the access token.
+  var requestTokenAndCall = function(refresh, onInnerSuccess, onInnerFailure) {
+    chrome.fileBrowserPrivate.requestAccessToken(refresh, function(token) {
+      if (this.aborted_)
+        return;
+      if (!token) {
+        onInnerFailure();
+        return;
+      }
+      this.xhr_ = AuthorizedXHR.loadWithToken_(
+          token, url, onInnerSuccess, onInnerFailure);
+    }.bind(this));
+  }.bind(this);
+
+  // Refreshes the access token and retries the request.
+  var maybeRetryCall = function(code) {
+    if (this.aborted_)
+      return;
+    requestTokenAndCall(true, onMaybeSuccess, onMaybeFailure);
+  }.bind(this);
+
+  // Make the request with reusing the current token. If it fails, then retry.
+  requestTokenAndCall(false, onMaybeSuccess, maybeRetryCall);
+};
+
+/**
+ * Fetches data using authorized XmlHttpRequest with the provided OAuth2 token.
+ * If the token is invalid, the request will fail.
+ *
+ * @param {string} token OAuth2 token to be injected to the request.
+ * @param {string} url URL to the resource to be fetched.
+ * @param {function(string, Blob}) onSuccess Success callback with the content
+ *     type and the fetched data.
+ * @param {function(number=)} onFailure Failure callback with the error code
+ *     if available.
+ * @private
+ */
+AuthorizedXHR.loadWithToken_ = function(token, url, onSuccess, onFailure) {
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = 'blob';
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState != 4)
+      return;
+    if (xhr.status != 200) {
+      onFailure(xhr.status);
+      return;
+    }
+    var contentType = xhr.getResponseHeader('Content-Type');
+    onSuccess(contentType, xhr.response);
   }.bind(this);
 
   // Perform a xhr request.
   try {
-    this.xhr_.open('GET', this.request_.url, true);
-    this.xhr_.send();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.send();
   } catch (e) {
-    this.image_.onerror();
+    onFailure();
   }
 };
 
@@ -330,7 +418,6 @@ Request.prototype.cleanup_ = function() {
   this.image_.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAA' +
       'ABAAEAAAICTAEAOw==';
 
-  this.xhr_.onerror = function() {};
   this.xhr_.onload = function() {};
   this.xhr_.abort();
 

@@ -9,10 +9,9 @@
   "permissions": [
     "fileBrowserHandler",
     "fileBrowserPrivate",
-    "https://*.googleusercontent.com",
-    "https://drive.google.com"
+    "https://www.googledrive.com"
   ],
-  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src 'self' https://drive.google.com https://*.googleusercontent.com",
+  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self'; frame-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://www.googledrive.com",
   "background": {
     "scripts": [
       "image_loader.js",
