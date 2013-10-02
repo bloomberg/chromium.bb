@@ -59,6 +59,9 @@ extern const char kInternalProcessId[];
 // Initialization parameters.
 extern const char kParameterUserAgentOverride[];
 
+// Miscellaneous.
+extern const unsigned int kMaxOutstandingPermissionRequests;
+
 }  // namespace webview
 
 #endif  // CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_CONSTANTS_H_

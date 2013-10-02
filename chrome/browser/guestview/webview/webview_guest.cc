@@ -302,6 +302,13 @@ bool WebViewGuest::RequestPermission(
     BrowserPluginPermissionType permission_type,
     const base::DictionaryValue& request_info,
     const PermissionResponseCallback& callback) {
+  // If there are too many pending permission requests then reject this request.
+  if (pending_permission_requests_.size() >=
+      webview::kMaxOutstandingPermissionRequests) {
+    callback.Run(false, std::string());
+    return true;
+  }
+
   int request_id = next_permission_request_id_++;
   pending_permission_requests_[request_id] = callback;
   scoped_ptr<base::DictionaryValue> args(request_info.DeepCopy());

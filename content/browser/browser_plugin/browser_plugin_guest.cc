@@ -248,8 +248,6 @@ class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
 };
 
 namespace {
-const size_t kNumMaxOutstandingPermissionRequests = 1024;
-
 std::string WindowOpenDispositionToString(
   WindowOpenDisposition window_open_disposition) {
   switch (window_open_disposition) {
@@ -432,8 +430,10 @@ int BrowserPluginGuest::RequestPermission(
                   request_id);
   // If BrowserPluginGuestDelegate hasn't handled the permission then we simply
   // reject it immediately.
-  if (!delegate_->RequestPermission(permission_type, request_info, callback))
+  if (!delegate_->RequestPermission(permission_type, request_info, callback)) {
     callback.Run(false, "");
+    return browser_plugin::kInvalidPermissionRequestID;
+  }
 
   return request_id;
 }
@@ -720,12 +720,6 @@ void BrowserPluginGuest::CanDownload(
     int request_id,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
-  if (permission_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
-    // Deny the download request.
-    callback.Run(false);
-    return;
-  }
-
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&RetrieveDownloadURLFromRequestId,
@@ -988,12 +982,6 @@ void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     const GeolocationCallback& callback) {
-  if (permission_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
-    // Deny the geolocation request.
-    callback.Run(false);
-    return;
-  }
-
   base::DictionaryValue request_info;
   request_info.Set(browser_plugin::kURL,
                    base::Value::CreateStringValue(requesting_frame.spec()));
@@ -1330,9 +1318,7 @@ void BrowserPluginGuest::OnHandleInputEvent(
 void BrowserPluginGuest::OnLockMouse(bool user_gesture,
                                      bool last_unlocked_by_target,
                                      bool privileged) {
-  if (pending_lock_request_ ||
-      (permission_request_map_.size() >=
-          kNumMaxOutstandingPermissionRequests)) {
+  if (pending_lock_request_) {
     // Immediately reject the lock because only one pointerLock may be active
     // at a time.
     Send(new ViewMsg_LockMouse_ACK(routing_id(), false));
@@ -1607,12 +1593,6 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
     WebContents* web_contents,
     const MediaStreamRequest& request,
     const MediaResponseCallback& callback) {
-  if (permission_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
-    // Deny the media request.
-    callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
-    return;
-  }
-
   base::DictionaryValue request_info;
   request_info.Set(
       browser_plugin::kURL,
@@ -1632,11 +1612,6 @@ void BrowserPluginGuest::RunJavaScriptDialog(
     const string16& default_prompt_text,
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
-  if (permission_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
-    // Cancel the dialog.
-    callback.Run(false, string16());
-    return;
-  }
   base::DictionaryValue request_info;
   request_info.Set(
       browser_plugin::kDefaultPromptText,

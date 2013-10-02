@@ -56,4 +56,6 @@ const char kInternalProcessId[] = "processId";
 // Initialization parameters.
 const char kParameterUserAgentOverride[] = "userAgentOverride";
 
+const unsigned int kMaxOutstandingPermissionRequests = 1024;
+
 }  // namespace webview
