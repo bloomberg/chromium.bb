@@ -39,28 +39,29 @@ const int kReadFilePermissions =
 
 const int kWriteFilePermissions =
     base::PLATFORM_FILE_OPEN |
+    base::PLATFORM_FILE_OPEN_TRUNCATED |
     base::PLATFORM_FILE_WRITE |
     base::PLATFORM_FILE_APPEND |
     base::PLATFORM_FILE_EXCLUSIVE_WRITE |
     base::PLATFORM_FILE_ASYNC |
     base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
-const int kCreateFilePermissions =
+const int kCreateNewFilePermissions =
     base::PLATFORM_FILE_CREATE;
 
 const int kEnumerateDirectoryPermissions =
     kReadFilePermissions |
     base::PLATFORM_FILE_ENUMERATE;
 
-// TODO(tommycli): These flag sets need some work to make more obvious.
-// Why for instance, does Create|Write != CreateWrite? http://crbug.com/263150
+const int kCreateOverwriteFilePermissions =
+    base::PLATFORM_FILE_OPEN_ALWAYS |
+    base::PLATFORM_FILE_CREATE_ALWAYS;
+
 const int kCreateReadWriteFilePermissions =
     kReadFilePermissions |
     kWriteFilePermissions |
-    kCreateFilePermissions |
-    base::PLATFORM_FILE_OPEN_ALWAYS |
-    base::PLATFORM_FILE_CREATE_ALWAYS |
-    base::PLATFORM_FILE_OPEN_TRUNCATED;
+    kCreateNewFilePermissions |
+    kCreateOverwriteFilePermissions;
 
 }  // namespace
 
@@ -477,7 +478,7 @@ void ChildProcessSecurityPolicyImpl::GrantWriteFileSystem(
 void ChildProcessSecurityPolicyImpl::GrantCreateFileForFileSystem(
     int child_id, const std::string& filesystem_id) {
   GrantPermissionsForFileSystem(child_id, filesystem_id,
-                                kCreateFilePermissions);
+                                kCreateNewFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantCopyIntoFileSystem(
@@ -485,7 +486,7 @@ void ChildProcessSecurityPolicyImpl::GrantCopyIntoFileSystem(
   // TODO(tommycli): These granted permissions a bit too broad, but not abused.
   // We are fixing in http://crbug.com/262142 and associated CL.
   GrantPermissionsForFileSystem(child_id, filesystem_id,
-                                kCreateFilePermissions);
+                                kCreateNewFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantSendMIDISysExMessage(int child_id) {
@@ -648,7 +649,7 @@ bool ChildProcessSecurityPolicyImpl::CanCopyIntoFileSystem(
   // We are fixing in http://crbug.com/262142 and associated CL.
   return HasPermissionsForFileSystem(child_id,
                                      filesystem_id,
-                                     kCreateFilePermissions);
+                                     kCreateNewFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
@@ -724,7 +725,8 @@ bool ChildProcessSecurityPolicyImpl::CanWriteFileSystemFile(
 bool ChildProcessSecurityPolicyImpl::CanCreateFileSystemFile(
     int child_id,
     const fileapi::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, kCreateFilePermissions);
+  return HasPermissionsForFileSystemFile(child_id, url,
+                                         kCreateNewFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFileSystemFile(

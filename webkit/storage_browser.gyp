@@ -99,7 +99,6 @@
         'browser/fileapi/external_mount_points.cc',
         'browser/fileapi/external_mount_points.h',
         'browser/fileapi/file_observers.h',
-        'browser/fileapi/file_permission_policy.cc',
         'browser/fileapi/file_permission_policy.h',
         'browser/fileapi/file_stream_writer.h',
         'browser/fileapi/file_system_backend.h',
