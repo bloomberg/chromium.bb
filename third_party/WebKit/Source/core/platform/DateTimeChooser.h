@@ -31,7 +31,7 @@
 #ifndef DateTimeChooser_h
 #define DateTimeChooser_h
 
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

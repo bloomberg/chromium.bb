@@ -22,12 +22,12 @@
 #ifndef HitTestResult_h
 #define HitTestResult_h
 
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/LayoutRect.h"
-#include "core/platform/text/TextDirection.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestRequest.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/LayoutRect.h"
+#include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"

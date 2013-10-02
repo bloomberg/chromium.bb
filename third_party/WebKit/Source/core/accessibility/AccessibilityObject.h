@@ -32,8 +32,8 @@
 
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/GeneratedImage.h"
 
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 
 
 namespace WebCore {

@@ -26,8 +26,8 @@
 #ifndef LayoutState_h
 #define LayoutState_h
 
-#include "core/platform/graphics/LayoutRect.h"
 #include "core/rendering/ColumnInfo.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 

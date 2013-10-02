@@ -26,10 +26,10 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/platform/graphics/Path.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderView.h"
+#include "platform/transforms/AffineTransform.h"
 
 using namespace std;
 

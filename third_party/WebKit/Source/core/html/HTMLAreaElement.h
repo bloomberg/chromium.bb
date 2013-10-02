@@ -24,7 +24,7 @@
 #define HTMLAreaElement_h
 
 #include "core/html/HTMLAnchorElement.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/LayoutRect.h"
 
 namespace WebCore {
 

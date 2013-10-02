@@ -27,9 +27,9 @@
 #include "core/platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "platform/EventTracer.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/transforms/AffineTransform.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
 

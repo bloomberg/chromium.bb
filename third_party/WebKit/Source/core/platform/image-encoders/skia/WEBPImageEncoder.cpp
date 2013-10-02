@@ -33,7 +33,7 @@
 
 #include "SkBitmap.h"
 #include "core/html/ImageData.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "webp/encode.h"
 
 typedef int (*WebPImporter)(WebPPicture* const, const uint8_t* const data, int rowStride);

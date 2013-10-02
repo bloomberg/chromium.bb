@@ -26,8 +26,8 @@
 #ifndef FilterOperations_h
 #define FilterOperations_h
 
-#include "core/platform/graphics/IntRectExtent.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
+#include "platform/geometry/IntRectExtent.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 

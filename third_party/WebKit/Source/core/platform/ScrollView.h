@@ -31,7 +31,7 @@
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/Widget.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 
 #include "wtf/HashSet.h"
 

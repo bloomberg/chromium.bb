@@ -32,11 +32,11 @@
 #include "core/platform/graphics/Font.h"
 
 #include "platform/NotImplemented.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
+#include "platform/geometry/FloatRect.h"
 
 #include "SkPaint.h"
 #include "SkTemplates.h"

@@ -28,7 +28,7 @@
 #ifndef FloatSize_h
 #define FloatSize_h
 
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 #include "wtf/MathExtras.h"
 
 
@@ -90,8 +90,8 @@ public:
 
     FloatSize shrunkTo(const FloatSize& other) const
     {
-       return FloatSize(m_width < other.m_width ? m_width : other.m_width,
-           m_height < other.m_height ? m_height : other.m_height);
+        return FloatSize(m_width < other.m_width ? m_width : other.m_width,
+            m_height < other.m_height ? m_height : other.m_height);
     }
 
     float diagonalLength() const;

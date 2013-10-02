@@ -25,19 +25,16 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/FloatConversion.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "wtf/MathExtras.h"
 
 #include <algorithm>
 #include <math.h>
-
-using std::max;
-using std::min;
 
 namespace WebCore {
 
@@ -88,20 +85,20 @@ bool FloatRect::contains(const FloatPoint& point, ContainsMode containsMode) con
 
 void FloatRect::intersect(const FloatRect& other)
 {
-    float l = max(x(), other.x());
-    float t = max(y(), other.y());
-    float r = min(maxX(), other.maxX());
-    float b = min(maxY(), other.maxY());
+    float left = std::max(x(), other.x());
+    float top = std::max(y(), other.y());
+    float right = std::min(maxX(), other.maxX());
+    float bottom = std::min(maxY(), other.maxY());
 
     // Return a clean empty rectangle for non-intersecting cases.
-    if (l >= r || t >= b) {
-        l = 0;
-        t = 0;
-        r = 0;
-        b = 0;
+    if (left >= right || top >= bottom) {
+        left = 0;
+        top = 0;
+        right = 0;
+        bottom = 0;
     }
 
-    setLocationAndSizeFromEdges(l, t, r, b);
+    setLocationAndSizeFromEdges(left, top, right, bottom);
 }
 
 void FloatRect::unite(const FloatRect& other)
@@ -119,10 +116,10 @@ void FloatRect::unite(const FloatRect& other)
 
 void FloatRect::uniteEvenIfEmpty(const FloatRect& other)
 {
-    float minX = min(x(), other.x());
-    float minY = min(y(), other.y());
-    float maxX = max(this->maxX(), other.maxX());
-    float maxY = max(this->maxY(), other.maxY());
+    float minX = std::min(x(), other.x());
+    float minY = std::min(y(), other.y());
+    float maxX = std::max(this->maxX(), other.maxX());
+    float maxY = std::max(this->maxY(), other.maxY());
 
     setLocationAndSizeFromEdges(minX, minY, maxX, maxY);
 }
@@ -142,10 +139,10 @@ void FloatRect::uniteIfNonZero(const FloatRect& other)
 
 void FloatRect::extend(const FloatPoint& p)
 {
-    float minX = min(x(), p.x());
-    float minY = min(y(), p.y());
-    float maxX = max(this->maxX(), p.x());
-    float maxY = max(this->maxY(), p.y());
+    float minX = std::min(x(), p.x());
+    float minY = std::min(y(), p.y());
+    float maxX = std::max(this->maxX(), p.x());
+    float maxY = std::max(this->maxY(), p.y());
 
     setLocationAndSizeFromEdges(minX, minY, maxX, maxY);
 }
@@ -171,10 +168,10 @@ FloatRect unionRect(const Vector<FloatRect>& rects)
 
 void FloatRect::fitToPoints(const FloatPoint& p0, const FloatPoint& p1)
 {
-    float left = min(p0.x(), p1.x());
-    float top = min(p0.y(), p1.y());
-    float right = max(p0.x(), p1.x());
-    float bottom = max(p0.y(), p1.y());
+    float left = std::min(p0.x(), p1.x());
+    float top = std::min(p0.y(), p1.y());
+    float right = std::max(p0.x(), p1.x());
+    float bottom = std::max(p0.y(), p1.y());
 
     setLocationAndSizeFromEdges(left, top, right, bottom);
 }
@@ -185,25 +182,25 @@ namespace {
 template <typename T>
 T min3(const T& v1, const T& v2, const T& v3)
 {
-    return min(min(v1, v2), v3);
+    return std::min(std::min(v1, v2), v3);
 }
 
 template <typename T>
 T max3(const T& v1, const T& v2, const T& v3)
 {
-    return max(max(v1, v2), v3);
+    return std::max(std::max(v1, v2), v3);
 }
 
 template <typename T>
 T min4(const T& v1, const T& v2, const T& v3, const T& v4)
 {
-    return min(min(v1, v2), min(v3, v4));
+    return std::min(std::min(v1, v2), std::min(v3, v4));
 }
 
 template <typename T>
 T max4(const T& v1, const T& v2, const T& v3, const T& v4)
 {
-    return max(max(v1, v2), max(v3, v4));
+    return std::max(std::max(v1, v2), std::max(v3, v4));
 }
 
 } // anonymous namespace
@@ -259,14 +256,14 @@ IntRect roundedIntRect(const FloatRect& rect)
 
 FloatRect mapRect(const FloatRect& r, const FloatRect& srcRect, const FloatRect& destRect)
 {
-    if (srcRect.width() == 0 || srcRect.height() == 0)
+    if (!srcRect.width() || !srcRect.height())
         return FloatRect();
 
     float widthScale = destRect.width() / srcRect.width();
     float heightScale = destRect.height() / srcRect.height();
     return FloatRect(destRect.x() + (r.x() - srcRect.x()) * widthScale,
-                     destRect.y() + (r.y() - srcRect.y()) * heightScale,
-                     r.width() * widthScale, r.height() * heightScale);
+        destRect.y() + (r.y() - srcRect.y()) * heightScale,
+        r.width() * widthScale, r.height() * heightScale);
 }
 
 }

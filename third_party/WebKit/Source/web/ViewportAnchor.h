@@ -31,10 +31,10 @@
 #ifndef ViewportAnchor_h
 #define ViewportAnchor_h
 
-#include "core/platform/graphics/FloatSize.h"
-#include "core/platform/graphics/IntPoint.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

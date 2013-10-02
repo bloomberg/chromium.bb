@@ -28,11 +28,11 @@
 #include "core/platform/graphics/BitmapImage.h"
 
 #include "core/platform/Timer.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"

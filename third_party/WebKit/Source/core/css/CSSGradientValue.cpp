@@ -33,8 +33,8 @@
 #include "core/platform/graphics/GeneratorGeneratedImage.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 

@@ -20,10 +20,10 @@
 #include "config.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Image.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/FloatSize.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

@@ -47,8 +47,8 @@
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
+#include "platform/geometry/IntRect.h"
 #include "public/platform/WebRect.h"
 #include <skia/ext/platform_canvas.h>
 

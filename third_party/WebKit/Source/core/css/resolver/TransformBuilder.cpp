@@ -37,7 +37,7 @@
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
 #include "core/platform/graphics/transforms/ScaleTransformOperation.h"
 #include "core/platform/graphics/transforms/SkewTransformOperation.h"
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "platform/transforms/TransformationMatrix.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include "core/rendering/style/RenderStyle.h"
 

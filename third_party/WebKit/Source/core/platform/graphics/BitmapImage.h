@@ -33,7 +33,7 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/ImageSource.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

@@ -24,16 +24,13 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "third_party/skia/include/core/SkRect.h"
 
 #include <algorithm>
-
-using std::max;
-using std::min;
 
 namespace WebCore {
 
@@ -65,23 +62,23 @@ bool IntRect::contains(const IntRect& other) const
 
 void IntRect::intersect(const IntRect& other)
 {
-    int l = max(x(), other.x());
-    int t = max(y(), other.y());
-    int r = min(maxX(), other.maxX());
-    int b = min(maxY(), other.maxY());
+    int left = std::max(x(), other.x());
+    int top = std::max(y(), other.y());
+    int right = std::min(maxX(), other.maxX());
+    int bottom = std::min(maxY(), other.maxY());
 
     // Return a clean empty rectangle for non-intersecting cases.
-    if (l >= r || t >= b) {
-        l = 0;
-        t = 0;
-        r = 0;
-        b = 0;
+    if (left >= right || top >= bottom) {
+        left = 0;
+        top = 0;
+        right = 0;
+        bottom = 0;
     }
 
-    m_location.setX(l);
-    m_location.setY(t);
-    m_size.setWidth(r - l);
-    m_size.setHeight(b - t);
+    m_location.setX(left);
+    m_location.setY(top);
+    m_size.setWidth(right - left);
+    m_size.setHeight(bottom - top);
 }
 
 void IntRect::unite(const IntRect& other)
@@ -94,15 +91,15 @@ void IntRect::unite(const IntRect& other)
         return;
     }
 
-    int l = min(x(), other.x());
-    int t = min(y(), other.y());
-    int r = max(maxX(), other.maxX());
-    int b = max(maxY(), other.maxY());
+    int left = std::min(x(), other.x());
+    int top = std::min(y(), other.y());
+    int right = std::max(maxX(), other.maxX());
+    int bottom = std::max(maxY(), other.maxY());
 
-    m_location.setX(l);
-    m_location.setY(t);
-    m_size.setWidth(r - l);
-    m_size.setHeight(b - t);
+    m_location.setX(left);
+    m_location.setY(top);
+    m_size.setWidth(right - left);
+    m_size.setHeight(bottom - top);
 }
 
 void IntRect::uniteIfNonZero(const IntRect& other)
@@ -115,10 +112,10 @@ void IntRect::uniteIfNonZero(const IntRect& other)
         return;
     }
 
-    int left = min(x(), other.x());
-    int top = min(y(), other.y());
-    int right = max(maxX(), other.maxX());
-    int bottom = max(maxY(), other.maxY());
+    int left = std::min(x(), other.x());
+    int top = std::min(y(), other.y());
+    int right = std::max(maxX(), other.maxX());
+    int bottom = std::max(maxY(), other.maxY());
 
     m_location.setX(left);
     m_location.setY(top);

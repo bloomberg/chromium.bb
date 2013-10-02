@@ -26,7 +26,7 @@
 #ifndef SVGPoint_h
 #define SVGPoint_h
 
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
 

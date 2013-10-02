@@ -27,7 +27,7 @@
 #define TextAutosizer_h
 
 #include "HTMLNames.h"
-#include "core/platform/text/WritingMode.h"
+#include "platform/text/WritingMode.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 

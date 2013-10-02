@@ -28,8 +28,8 @@
 
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollTypes.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebKit {

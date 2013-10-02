@@ -32,9 +32,9 @@
 
 #include "core/platform/audio/HRTFKernel.h"
 
-#include "core/platform/FloatConversion.h"
 #include "core/platform/audio/AudioChannel.h"
 #include "core/platform/audio/FFTFrame.h"
+#include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
 using namespace std;

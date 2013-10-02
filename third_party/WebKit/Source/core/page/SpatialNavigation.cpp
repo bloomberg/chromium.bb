@@ -38,8 +38,8 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/rendering/RenderLayer.h"
+#include "platform/geometry/IntRect.h"
 
 namespace WebCore {
 

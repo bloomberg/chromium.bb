@@ -30,10 +30,10 @@
 #ifndef Shape_h
 #define Shape_h
 
-#include "core/platform/graphics/LayoutRect.h"
-#include "core/platform/text/WritingMode.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/StyleImage.h"
+#include "platform/geometry/LayoutRect.h"
+#include "platform/text/WritingMode.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 

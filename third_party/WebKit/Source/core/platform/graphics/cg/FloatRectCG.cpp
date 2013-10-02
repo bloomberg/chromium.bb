@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

@@ -22,7 +22,7 @@
 #define SVGDocument_h
 
 #include "core/dom/Document.h"
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 
 namespace WebCore {
 

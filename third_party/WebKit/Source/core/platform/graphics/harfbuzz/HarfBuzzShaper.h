@@ -31,10 +31,10 @@
 #ifndef HarfBuzzShaper_h
 #define HarfBuzzShaper_h
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/TextRun.h"
 #include "hb.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/OwnPtr.h"

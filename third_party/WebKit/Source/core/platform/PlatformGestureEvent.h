@@ -27,9 +27,9 @@
 #define PlatformGestureEvent_h
 
 #include "core/platform/PlatformEvent.h"
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/IntPoint.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntSize.h"
 
 namespace WebCore {
 

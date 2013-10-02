@@ -32,7 +32,7 @@
 #include "core/platform/graphics/DrawLooper.h"
 
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"

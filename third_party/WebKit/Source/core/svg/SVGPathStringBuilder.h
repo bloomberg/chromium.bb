@@ -20,8 +20,8 @@
 #ifndef SVGPathStringBuilder_h
 #define SVGPathStringBuilder_h
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathConsumer.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

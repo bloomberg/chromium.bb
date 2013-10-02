@@ -28,10 +28,10 @@
 
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/Timer.h"
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatSize.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/platform/mac/ScrollElasticityController.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/RetainPtr.h"
 
 OBJC_CLASS WebScrollAnimationHelperDelegate;

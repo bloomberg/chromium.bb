@@ -24,7 +24,7 @@
 #include "core/dom/Node.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/FocusDirection.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/LayoutRect.h"
 
 #include <limits>
 

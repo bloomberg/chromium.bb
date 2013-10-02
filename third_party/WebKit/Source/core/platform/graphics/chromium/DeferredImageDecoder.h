@@ -28,8 +28,8 @@
 
 #include "SkBitmap.h"
 #include "core/platform/graphics/ImageSource.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/LayoutBoxExtent.h"
+#include "platform/geometry/LayoutBoxExtent.h"
 
 #include "wtf/Assertions.h"
 
@@ -185,14 +185,16 @@ LayoutUnit& LayoutBoxExtent::mutableLogicalRight(WritingMode writingMode)
 
 LayoutUnit& LayoutBoxExtent::mutableBefore(WritingMode writingMode)
 {
-    return isHorizontalWritingMode(writingMode) ? (isFlippedBlocksWritingMode(writingMode) ? m_bottom : m_top) :
-                                                  (isFlippedBlocksWritingMode(writingMode) ? m_right: m_left);
+    return isHorizontalWritingMode(writingMode) ?
+        (isFlippedBlocksWritingMode(writingMode) ? m_bottom : m_top) :
+        (isFlippedBlocksWritingMode(writingMode) ? m_right: m_left);
 }
 
 LayoutUnit& LayoutBoxExtent::mutableAfter(WritingMode writingMode)
 {
-    return isHorizontalWritingMode(writingMode) ? (isFlippedBlocksWritingMode(writingMode) ? m_top : m_bottom) :
-                                                  (isFlippedBlocksWritingMode(writingMode) ? m_left: m_right);
+    return isHorizontalWritingMode(writingMode) ?
+        (isFlippedBlocksWritingMode(writingMode) ? m_top : m_bottom) :
+        (isFlippedBlocksWritingMode(writingMode) ? m_left: m_right);
 }
 
 } // namespace WebCore

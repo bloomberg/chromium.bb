@@ -30,7 +30,7 @@
 #ifndef CustomFilterParameterList_h
 #define CustomFilterParameterList_h
 
-#include "core/platform/graphics/LayoutSize.h"
+#include "platform/geometry/LayoutSize.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

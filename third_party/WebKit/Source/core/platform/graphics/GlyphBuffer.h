@@ -30,8 +30,8 @@
 #ifndef GlyphBuffer_h
 #define GlyphBuffer_h
 
-#include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Glyph.h"
+#include "platform/geometry/FloatSize.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/Vector.h"
 

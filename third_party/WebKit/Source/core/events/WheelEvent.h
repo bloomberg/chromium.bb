@@ -27,7 +27,7 @@
 
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEvent.h"
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 
 namespace WebCore {
 

@@ -20,13 +20,13 @@
 #ifndef RenderSVGResourceMasker_h
 #define RenderSVGResourceMasker_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGMaskElement.h"
 #include "core/svg/SVGUnitTypes.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntSize.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"

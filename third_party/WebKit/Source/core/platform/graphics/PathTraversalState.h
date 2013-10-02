@@ -26,7 +26,7 @@
 #ifndef PathTraversalState_h
 #define PathTraversalState_h
 
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 
 namespace WebCore {
 

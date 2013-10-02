@@ -24,9 +24,9 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGParserUtilities.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

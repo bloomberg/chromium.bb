@@ -21,10 +21,9 @@
 
 #include "core/svg/SVGTransformDistance.h"
 
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatSize.h"
 #include "core/svg/SVGTransform.h"
-
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatSize.h"
 #include <math.h>
 
 namespace WebCore {

@@ -31,8 +31,8 @@
 #ifndef ReferenceFilter_h
 #define ReferenceFilter_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

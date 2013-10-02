@@ -41,12 +41,12 @@
 #include "core/platform/ThemeTypes.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/TextRenderingMode.h"
-#include "core/platform/text/TextDirection.h"
 #include "core/platform/text/UnicodeBidi.h"
-#include "core/platform/text/WritingMode.h"
 #include "core/rendering/style/LineClampValue.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
+#include "platform/text/TextDirection.h"
+#include "platform/text/WritingMode.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

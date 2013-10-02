@@ -27,8 +27,8 @@
 #define Caret_h
 
 #include "core/editing/VisiblePosition.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {

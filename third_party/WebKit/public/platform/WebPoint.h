@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if INSIDE_BLINK
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 #else
 #include <ui/gfx/point.h>
 #endif

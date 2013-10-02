@@ -34,9 +34,9 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/ImageSource.h"
-#include "core/platform/graphics/IntSize.h"
-#include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/geometry/IntSize.h"
+#include "platform/geometry/LayoutSize.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

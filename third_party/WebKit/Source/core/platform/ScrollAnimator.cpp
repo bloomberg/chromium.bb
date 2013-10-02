@@ -31,11 +31,11 @@
 #include "config.h"
 #include "core/platform/ScrollAnimator.h"
 
-#include <algorithm>
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollableArea.h"
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"
+#include <algorithm>
 
 using namespace std;
 

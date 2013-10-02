@@ -34,7 +34,7 @@
 #define ImageInputType_h
 
 #include "core/html/forms/BaseButtonInputType.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 
 namespace WebCore {
 

@@ -42,7 +42,7 @@
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/canvas/CanvasStyle.h"
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
 

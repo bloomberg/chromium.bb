@@ -29,15 +29,15 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/IntPoint.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntSize.h"
 
 namespace WebCore {
 

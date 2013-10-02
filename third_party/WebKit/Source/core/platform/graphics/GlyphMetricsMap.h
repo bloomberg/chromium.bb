@@ -30,6 +30,7 @@
 #define GlyphMetricsMap_h
 
 #include "core/platform/graphics/Glyph.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"

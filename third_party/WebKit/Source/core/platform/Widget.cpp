@@ -29,7 +29,7 @@
 
 #include "core/platform/HostWindow.h"
 #include "core/platform/ScrollView.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 
 #include "wtf/Assertions.h"
 

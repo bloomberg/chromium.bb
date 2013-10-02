@@ -33,7 +33,7 @@
 
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"

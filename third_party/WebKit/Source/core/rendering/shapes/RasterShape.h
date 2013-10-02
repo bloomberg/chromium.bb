@@ -30,9 +30,9 @@
 #ifndef RasterShape_h
 #define RasterShape_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/rendering/shapes/Shape.h"
 #include "core/rendering/shapes/ShapeInterval.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/Assertions.h"
 #include "wtf/Vector.h"
 

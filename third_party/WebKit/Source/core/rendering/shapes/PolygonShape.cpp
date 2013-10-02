@@ -30,8 +30,8 @@
 #include "config.h"
 #include "core/rendering/shapes/PolygonShape.h"
 
-#include "core/platform/graphics/LayoutPoint.h"
 #include "core/rendering/shapes/ShapeInterval.h"
+#include "platform/geometry/LayoutPoint.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

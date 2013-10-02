@@ -34,8 +34,8 @@
 #include "platform/Logging.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollableArea.h"
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/IntRect.h"
 #include "core/tests/TreeTestHelpers.h"
 
 using namespace std;

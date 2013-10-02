@@ -22,13 +22,13 @@
 #include "core/svg/SVGFEConvolveMatrixElement.h"
 
 #include "SVGNames.h"
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/IntPoint.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntSize.h"
 
 namespace WebCore {
 

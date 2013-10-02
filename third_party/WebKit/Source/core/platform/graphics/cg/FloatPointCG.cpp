@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

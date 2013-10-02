@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

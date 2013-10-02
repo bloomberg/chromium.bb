@@ -28,10 +28,10 @@
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/mac/ComplexTextController.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/MathExtras.h"
 
 #include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"

@@ -27,8 +27,8 @@
 #include "core/platform/graphics/filters/FilterOperations.h"
 
 #include "core/css/LengthFunctions.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/filters/FEGaussianBlur.h"
+#include "platform/geometry/IntSize.h"
 
 namespace WebCore {
 

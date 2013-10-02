@@ -29,9 +29,9 @@
 #ifndef FloatQuad_h
 #define FloatQuad_h
 
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntRect.h"
 
 namespace WebCore {
 

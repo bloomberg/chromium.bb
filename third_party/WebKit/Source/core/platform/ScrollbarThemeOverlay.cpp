@@ -29,7 +29,7 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "platform/transforms/TransformationMatrix.h"
 
 #include <algorithm>
 

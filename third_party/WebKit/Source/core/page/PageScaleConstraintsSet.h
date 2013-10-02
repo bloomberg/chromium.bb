@@ -33,7 +33,7 @@
 
 #include "PageScaleConstraints.h"
 #include "core/dom/ViewportArguments.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 
 namespace WebCore {
 

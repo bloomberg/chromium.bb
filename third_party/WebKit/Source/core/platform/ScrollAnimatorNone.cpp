@@ -34,7 +34,7 @@
 
 #include <algorithm>
 #include "core/platform/ScrollableArea.h"
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/PassOwnPtr.h"

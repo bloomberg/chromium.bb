@@ -20,8 +20,8 @@
 #ifndef TouchAdjustment_h
 #define TouchAdjustment_h
 
-#include "core/platform/graphics/IntPoint.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 

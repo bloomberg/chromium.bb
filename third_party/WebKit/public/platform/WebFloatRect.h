@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if BLINK_IMPLEMENTATION
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 #else
 #include <cmath>
 #include <ui/gfx/rect_f.h>

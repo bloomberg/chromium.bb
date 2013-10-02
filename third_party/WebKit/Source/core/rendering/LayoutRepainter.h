@@ -26,7 +26,7 @@
 #ifndef LayoutRepainter_h
 #define LayoutRepainter_h
 
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/LayoutRect.h"
 
 namespace WebCore {
 

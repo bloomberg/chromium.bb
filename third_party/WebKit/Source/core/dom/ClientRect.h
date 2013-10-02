@@ -28,7 +28,7 @@
 #define ClientRect_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

@@ -28,12 +28,12 @@
 
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/platform/animation/KeyframeValueList.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
 #include "core/platform/graphics/transforms/ScaleTransformOperation.h"
 #include "core/platform/graphics/transforms/TransformOperations.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
+#include "platform/geometry/IntSize.h"
 #include "public/platform/WebAnimation.h"
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>

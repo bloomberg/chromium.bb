@@ -29,7 +29,7 @@
 
 #include "InternalSettingsGenerated.h"
 #include "core/editing/EditingBehaviorTypes.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

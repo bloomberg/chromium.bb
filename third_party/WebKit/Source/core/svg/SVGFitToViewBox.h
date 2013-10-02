@@ -23,8 +23,8 @@
 
 #include "SVGNames.h"
 #include "core/dom/QualifiedName.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {

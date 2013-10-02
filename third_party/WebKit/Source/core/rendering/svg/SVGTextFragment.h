@@ -20,7 +20,7 @@
 #ifndef SVGTextFragment_h
 #define SVGTextFragment_h
 
-#include "core/platform/graphics/transforms/AffineTransform.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {
 

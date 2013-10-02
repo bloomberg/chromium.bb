@@ -29,7 +29,7 @@
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashMap.h"

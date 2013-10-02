@@ -22,7 +22,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {
 

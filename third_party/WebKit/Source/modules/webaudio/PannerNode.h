@@ -29,10 +29,10 @@
 #include "core/platform/audio/Cone.h"
 #include "core/platform/audio/Distance.h"
 #include "core/platform/audio/Panner.h"
-#include "core/platform/graphics/FloatPoint3D.h"
 #include "modules/webaudio/AudioListener.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
+#include "platform/geometry/FloatPoint3D.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {

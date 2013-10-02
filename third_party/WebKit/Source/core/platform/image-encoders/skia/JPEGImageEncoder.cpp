@@ -34,7 +34,7 @@
 #include "SkBitmap.h"
 #include "SkColorPriv.h"
 #include "core/html/ImageData.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 extern "C" {
 #include <setjmp.h>
 #include <stdio.h> // jpeglib.h needs stdio.h FILE

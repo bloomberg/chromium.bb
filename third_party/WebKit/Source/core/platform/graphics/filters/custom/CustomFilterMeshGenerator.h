@@ -30,9 +30,9 @@
 #ifndef CustomFilterMeshGenerator_h
 #define CustomFilterMeshGenerator_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
 

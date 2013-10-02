@@ -22,8 +22,8 @@
 
 #include "core/svg/SVGPathStringSource.h"
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGParserUtilities.h"
+#include "platform/geometry/FloatPoint.h"
 
 namespace WebCore {
 

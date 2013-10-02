@@ -30,9 +30,6 @@
 #include "core/dom/Position.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/ImageResourceClient.h"
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/LayoutRect.h"
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"
@@ -41,6 +38,9 @@
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/LayoutRect.h"
+#include "platform/transforms/TransformationMatrix.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {

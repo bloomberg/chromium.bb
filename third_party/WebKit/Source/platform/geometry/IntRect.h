@@ -26,7 +26,7 @@
 #ifndef IntRect_h
 #define IntRect_h
 
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Vector.h"
 

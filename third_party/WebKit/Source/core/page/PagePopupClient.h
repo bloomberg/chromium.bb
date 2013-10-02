@@ -32,7 +32,7 @@
 #define PagePopupClient_h
 
 #include "core/loader/DocumentWriter.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 

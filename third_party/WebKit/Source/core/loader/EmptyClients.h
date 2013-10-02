@@ -40,9 +40,9 @@
 #include "core/page/FocusDirection.h"
 #include "core/page/Page.h"
 #include "core/platform/DragImage.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/text/TextCheckerClient.h"
+#include "platform/geometry/FloatRect.h"
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/Forward.h"
 

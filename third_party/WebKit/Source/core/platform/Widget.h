@@ -28,7 +28,7 @@
 #ifndef Widget_h
 #define Widget_h
 
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 

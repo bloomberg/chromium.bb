@@ -38,9 +38,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/UseCounter.h"
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
@@ -56,6 +53,9 @@
 #include "core/svg/SVGViewElement.h"
 #include "core/svg/SVGViewSpec.h"
 #include "core/svg/animation/SMILTimeContainer.h"
+#include "platform/FloatConversion.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {

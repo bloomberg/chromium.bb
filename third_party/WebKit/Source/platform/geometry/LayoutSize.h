@@ -31,9 +31,9 @@
 #ifndef LayoutSize_h
 #define LayoutSize_h
 
-#include "core/platform/graphics/FloatSize.h"
-#include "core/platform/graphics/IntSize.h"
 #include "platform/LayoutUnit.h"
+#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntSize.h"
 
 namespace WebCore {
 

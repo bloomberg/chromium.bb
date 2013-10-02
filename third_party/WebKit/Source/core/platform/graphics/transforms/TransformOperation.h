@@ -25,8 +25,8 @@
 #ifndef TransformOperation_h
 #define TransformOperation_h
 
-#include "core/platform/graphics/FloatSize.h"
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "platform/geometry/FloatSize.h"
+#include "platform/transforms/TransformationMatrix.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

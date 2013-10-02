@@ -27,7 +27,7 @@
 #define SkiaImageFilterBuilder_h
 
 #include "core/platform/graphics/ColorSpace.h"
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 #include "wtf/HashMap.h"
 
 class SkImageFilter;

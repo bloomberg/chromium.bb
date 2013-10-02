@@ -29,7 +29,6 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
-#include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/ColumnInfo.h"
@@ -43,6 +42,7 @@
 #include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/svg/SVGElement.h"
+#include "platform/geometry/FloatQuad.h"
 
 namespace WebCore {
 

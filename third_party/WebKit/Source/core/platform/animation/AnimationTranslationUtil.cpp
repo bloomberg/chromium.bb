@@ -29,7 +29,6 @@
 #include "core/css/LengthFunctions.h"
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/platform/animation/KeyframeValueList.h"
-#include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
 #include "core/platform/graphics/transforms/InterpolatedTransformOperation.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
@@ -40,6 +39,7 @@
 #include "core/platform/graphics/transforms/SkewTransformOperation.h"
 #include "core/platform/graphics/transforms/TransformOperations.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
+#include "platform/geometry/FloatSize.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebAnimation.h"

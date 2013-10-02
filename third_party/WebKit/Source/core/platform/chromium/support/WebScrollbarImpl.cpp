@@ -27,7 +27,7 @@
 #include "core/platform/chromium/support/WebScrollbarImpl.h"
 
 #include "core/platform/Scrollbar.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 
 namespace WebKit {
 

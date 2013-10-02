@@ -49,7 +49,7 @@
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/chromium/FramelessScrollViewClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #include <limits>
 
 namespace WebCore {

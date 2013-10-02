@@ -29,8 +29,8 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/style/StyleImage.h"
+#include "platform/geometry/LayoutSize.h"
 
 namespace WebCore {
 

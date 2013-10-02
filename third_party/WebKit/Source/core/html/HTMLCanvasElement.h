@@ -29,8 +29,8 @@
 #define HTMLCanvasElement_h
 
 #include "core/html/HTMLElement.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/Forward.h"
 
 #define DefaultInterpolationQuality InterpolationMedium

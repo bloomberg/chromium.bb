@@ -31,7 +31,7 @@
 #ifndef PageScaleConstraints_h
 #define PageScaleConstraints_h
 
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 
 namespace WebCore {
 

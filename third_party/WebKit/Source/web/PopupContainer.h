@@ -34,7 +34,7 @@
 #include "PopupListBox.h"
 #include "core/platform/PopupMenuStyle.h"
 #include "core/platform/chromium/FramelessScrollView.h"
-#include "core/platform/graphics/FloatQuad.h"
+#include "platform/geometry/FloatQuad.h"
 
 namespace WebCore {
 

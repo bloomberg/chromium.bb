@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/platform/graphics/GeneratorGeneratedImage.h"
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/geometry/FloatRect.h"
 
 #define SKIA_MAX_PATTERN_SIZE 32767
 

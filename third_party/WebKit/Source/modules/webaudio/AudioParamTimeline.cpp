@@ -29,10 +29,10 @@
 
 #include "modules/webaudio/AudioParamTimeline.h"
 
-#include "core/platform/FloatConversion.h"
 #include "core/platform/audio/AudioUtilities.h"
-#include <algorithm>
+#include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
+#include <algorithm>
 
 using namespace std;
 

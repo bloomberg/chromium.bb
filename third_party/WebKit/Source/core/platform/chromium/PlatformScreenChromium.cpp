@@ -33,7 +33,7 @@
 
 #include "core/platform/HostWindow.h"
 #include "core/platform/ScrollView.h"
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"
 

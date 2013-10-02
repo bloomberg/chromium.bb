@@ -30,9 +30,9 @@
 #ifndef CustomFilterMesh_h
 #define CustomFilterMesh_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

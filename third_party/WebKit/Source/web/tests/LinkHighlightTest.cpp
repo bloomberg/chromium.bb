@@ -40,7 +40,7 @@
 #include "core/dom/Node.h"
 #include "core/page/FrameView.h"
 #include "core/page/TouchDisambiguation.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebFloatPoint.h"

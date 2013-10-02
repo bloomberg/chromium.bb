@@ -27,7 +27,7 @@
 #define DragController_h
 
 #include "core/page/DragActions.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 

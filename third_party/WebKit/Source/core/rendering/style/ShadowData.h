@@ -26,8 +26,8 @@
 #define ShadowData_h
 
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 

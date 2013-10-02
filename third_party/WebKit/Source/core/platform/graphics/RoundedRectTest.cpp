@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/RoundedRect.h"
 
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 
 #include <gtest/gtest.h>
 

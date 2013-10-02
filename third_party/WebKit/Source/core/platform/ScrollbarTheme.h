@@ -28,7 +28,7 @@
 
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 
 namespace WebCore {
 

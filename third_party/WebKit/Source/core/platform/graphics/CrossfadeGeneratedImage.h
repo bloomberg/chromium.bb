@@ -29,7 +29,7 @@
 #include "core/platform/graphics/GeneratedImage.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageObserver.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

@@ -20,9 +20,9 @@
 #ifndef PatternAttributes_h
 #define PatternAttributes_h
 
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {
 

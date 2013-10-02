@@ -28,7 +28,7 @@
 #define HistoryItem_h
 
 #include "bindings/v8/SerializedScriptValue.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 
 namespace WebCore {
 

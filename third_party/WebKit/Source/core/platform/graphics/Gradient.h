@@ -29,9 +29,9 @@
 #ifndef Gradient_h
 #define Gradient_h
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/GraphicsTypes.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

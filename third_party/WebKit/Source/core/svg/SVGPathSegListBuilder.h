@@ -24,9 +24,9 @@
 #ifndef SVGPathSegListBuilder_h
 #define SVGPathSegListBuilder_h
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSegList.h"
+#include "platform/geometry/FloatPoint.h"
 
 namespace WebCore {
 

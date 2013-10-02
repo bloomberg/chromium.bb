@@ -41,7 +41,7 @@
 #include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "platform/transforms/TransformationMatrix.h"
 
 namespace WebCore {
 

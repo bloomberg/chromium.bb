@@ -34,8 +34,8 @@
 
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarTheme.h"
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"
 
 #include "core/platform/chromium/TraceEvent.h"

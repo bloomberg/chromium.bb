@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

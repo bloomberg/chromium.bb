@@ -30,8 +30,8 @@
 #ifndef ShapeOutsideInfo_h
 #define ShapeOutsideInfo_h
 
-#include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/shapes/ShapeInfo.h"
+#include "platform/geometry/LayoutSize.h"
 
 namespace WebCore {
 

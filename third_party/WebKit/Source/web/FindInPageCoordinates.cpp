@@ -34,16 +34,16 @@
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
 #include "core/page/Frame.h"
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/IntPoint.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntPoint.h"
 
 using namespace WebCore;
 

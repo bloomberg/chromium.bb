@@ -28,8 +28,6 @@
 
 #include "core/rendering/svg/RenderSVGText.h"
 
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/SimpleFontData.h"
@@ -50,6 +48,8 @@
 #include "core/svg/SVGTextElement.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/FloatConversion.h"
+#include "platform/geometry/FloatQuad.h"
 
 namespace WebCore {
 

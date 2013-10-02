@@ -38,7 +38,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 
 namespace WebCore {
 

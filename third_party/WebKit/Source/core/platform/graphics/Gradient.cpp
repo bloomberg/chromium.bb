@@ -29,9 +29,9 @@
 #include "core/platform/graphics/Gradient.h"
 
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
+#include "platform/geometry/FloatRect.h"
 #include "third_party/skia/include/core/SkColorShader.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"

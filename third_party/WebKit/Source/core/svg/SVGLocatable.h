@@ -22,8 +22,8 @@
 #ifndef SVGLocatable_h
 #define SVGLocatable_h
 
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGRect.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {
 

@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if BLINK_IMPLEMENTATION
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 #else
 #include <cmath>
 #include <ui/gfx/size_f.h>

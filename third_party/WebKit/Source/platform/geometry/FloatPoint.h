@@ -27,8 +27,8 @@
 #ifndef FloatPoint_h
 #define FloatPoint_h
 
-#include "core/platform/graphics/FloatSize.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntPoint.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
@@ -143,6 +143,8 @@ public:
 
     operator SkPoint() const;
 
+    // FIXME: These are only used by SVGPoint and should probably move there.
+    // http://crbug.com/302829
     FloatPoint matrixTransform(const TransformationMatrix&) const;
     FloatPoint matrixTransform(const AffineTransform&) const;
 

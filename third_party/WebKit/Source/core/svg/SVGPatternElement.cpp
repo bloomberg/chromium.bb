@@ -25,11 +25,11 @@
 
 #include "SVGNames.h"
 #include "XLinkNames.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGFitToViewBox.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {
 

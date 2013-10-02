@@ -24,8 +24,8 @@
 #ifndef TextRun_h
 #define TextRun_h
 
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/text/TextDirection.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/text/TextDirection.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

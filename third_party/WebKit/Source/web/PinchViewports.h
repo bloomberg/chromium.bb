@@ -32,7 +32,7 @@
 #define PinchViewports_h
 
 #include "core/platform/graphics/GraphicsLayerClient.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebSize.h"
 #include "wtf/OwnPtr.h"

@@ -59,7 +59,6 @@
 #include "core/page/Settings.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/platform/SecureTextInput.h"
-#include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
@@ -68,6 +67,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
+#include "platform/geometry/FloatQuad.h"
 #include "wtf/text/CString.h"
 
 #define EDIT_DEBUG 0

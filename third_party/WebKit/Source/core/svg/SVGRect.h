@@ -20,8 +20,8 @@
 #ifndef SVGRect_h
 #define SVGRect_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

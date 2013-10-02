@@ -24,8 +24,8 @@
 #define FilterEffect_h
 
 #include "core/platform/graphics/ColorSpace.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntRect.h"
 
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

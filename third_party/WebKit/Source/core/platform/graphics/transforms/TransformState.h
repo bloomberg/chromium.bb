@@ -26,12 +26,12 @@
 #ifndef TransformState_h
 #define TransformState_h
 
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/IntSize.h"
-#include "core/platform/graphics/LayoutSize.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "platform/transforms/AffineTransform.h"
+#include "platform/transforms/TransformationMatrix.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/IntSize.h"
+#include "platform/geometry/LayoutSize.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {

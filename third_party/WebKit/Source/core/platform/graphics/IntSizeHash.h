@@ -20,7 +20,7 @@
 #ifndef IntSizeHash_h
 #define IntSizeHash_h
 
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 

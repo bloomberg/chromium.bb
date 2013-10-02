@@ -27,9 +27,9 @@
 #define ScrollbarThemeClient_h
 
 #include "core/platform/ScrollTypes.h"
-#include "core/platform/graphics/IntPoint.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 

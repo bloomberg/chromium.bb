@@ -26,8 +26,8 @@
 
 #include "core/css/CSSValue.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/IntSize.h"
-#include "core/platform/graphics/LayoutSize.h"
+#include "platform/geometry/IntSize.h"
+#include "platform/geometry/LayoutSize.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

@@ -20,8 +20,8 @@
 #ifndef SVGLengthContext_h
 #define SVGLengthContext_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/svg/SVGUnitTypes.h"
+#include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
 

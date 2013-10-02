@@ -36,7 +36,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/html/track/TextTrack.h"
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 

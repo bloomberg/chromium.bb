@@ -27,7 +27,7 @@
 #define AutoscrollController_h
 
 #include "core/platform/Timer.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

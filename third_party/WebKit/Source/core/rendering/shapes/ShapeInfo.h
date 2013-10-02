@@ -30,11 +30,11 @@
 #ifndef ShapeInfo_h
 #define ShapeInfo_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/rendering/shapes/Shape.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShapeValue.h"
 #include "platform/LayoutUnit.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 

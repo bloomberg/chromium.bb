@@ -33,9 +33,9 @@
 #define CustomFilterRenderer_h
 
 #include "core/platform/graphics/GraphicsTypes3D.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterParameterList.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 

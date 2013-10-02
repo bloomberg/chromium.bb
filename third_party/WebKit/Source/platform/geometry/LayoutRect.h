@@ -31,9 +31,9 @@
 #ifndef LayoutRect_h
 #define LayoutRect_h
 
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/LayoutBoxExtent.h"
-#include "core/platform/graphics/LayoutPoint.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutBoxExtent.h"
+#include "platform/geometry/LayoutPoint.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -202,13 +202,13 @@ inline bool operator!=(const LayoutRect& a, const LayoutRect& b)
 
 inline IntRect pixelSnappedIntRect(const LayoutRect& rect)
 {
-    return IntRect(roundedIntPoint(rect.location()), IntSize(snapSizeToPixel(rect.width(), rect.x()),
-                                                             snapSizeToPixel(rect.height(), rect.y())));
+    return IntRect(roundedIntPoint(rect.location()), IntSize(
+        snapSizeToPixel(rect.width(), rect.x()),
+        snapSizeToPixel(rect.height(), rect.y())));
 }
 
 IntRect enclosingIntRect(const LayoutRect&);
 LayoutRect enclosingLayoutRect(const FloatRect&);
-
 
 inline IntRect pixelSnappedIntRect(LayoutUnit left, LayoutUnit top, LayoutUnit width, LayoutUnit height)
 {

@@ -20,11 +20,10 @@
 #ifndef RenderSVGResourceMarker_h
 #define RenderSVGResourceMarker_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGMarkerElement.h"
-
+#include "platform/geometry/FloatRect.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {

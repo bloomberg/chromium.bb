@@ -25,20 +25,25 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 
-#include <math.h>
+#include "SkPoint.h"
+#include "platform/FloatConversion.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/LayoutPoint.h"
+#include "platform/geometry/LayoutSize.h"
+#include "platform/transforms/AffineTransform.h"
+#include "platform/transforms/TransformationMatrix.h"
 #include <limits>
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/IntPoint.h"
-#include "core/platform/graphics/LayoutPoint.h"
-#include "core/platform/graphics/LayoutSize.h"
-#include "core/platform/graphics/skia/SkiaUtils.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
-#include "third_party/skia/include/core/SkPoint.h"
+#include <math.h>
 
 namespace WebCore {
+
+// Skia has problems when passed infinite, etc floats, filter them to 0.
+static inline SkScalar WebCoreFloatToSkScalar(float f)
+{
+    return SkFloatToScalar(std::isfinite(f) ? f : 0);
+}
 
 FloatPoint::FloatPoint(const IntPoint& p) : m_x(p.x()), m_y(p.y())
 {

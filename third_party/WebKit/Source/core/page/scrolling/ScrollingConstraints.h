@@ -26,7 +26,7 @@
 #ifndef ScrollingConstraints_h
 #define ScrollingConstraints_h
 
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
 

@@ -31,14 +31,15 @@
 
 namespace WebCore {
 
-    template<typename T>
-    float narrowPrecisionToFloat(T);
+template<typename T>
+float narrowPrecisionToFloat(T);
 
-    template<>
-    inline float narrowPrecisionToFloat(double number)
-    {
-        return static_cast<float>(number);
-    }
+template<>
+inline float narrowPrecisionToFloat(double number)
+{
+    return static_cast<float>(number);
+}
+
 } // namespace WebCore
 
 #endif // FloatConversion_h

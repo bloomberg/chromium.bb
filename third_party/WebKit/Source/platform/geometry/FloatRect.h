@@ -27,7 +27,7 @@
 #ifndef FloatRect_h
 #define FloatRect_h
 
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/Vector.h"
 
 #if OS(MACOSX)
@@ -139,13 +139,17 @@ public:
     // Note, this doesn't match what IntRect::contains(IntPoint&) does; the int version
     // is really checking for containment of 1x1 rect, but that doesn't make sense with floats.
     bool contains(float px, float py) const
-        { return px >= x() && px <= maxX() && py >= y() && py <= maxY(); }
+    {
+        return px >= x() && px <= maxX() && py >= y() && py <= maxY();
+    }
 
-    void inflateX(float dx) {
+    void inflateX(float dx)
+    {
         m_location.setX(m_location.x() - dx);
         m_size.setWidth(m_size.width() + dx + dx);
     }
-    void inflateY(float dy) {
+    void inflateY(float dy)
+    {
         m_location.setY(m_location.y() - dy);
         m_size.setHeight(m_size.height() + dy + dy);
     }
@@ -231,8 +235,8 @@ IntRect enclosedIntRect(const FloatRect&);
 
 IntRect roundedIntRect(const FloatRect&);
 
-// Map rect r from srcRect to an equivalent rect in destRect.
-FloatRect mapRect(const FloatRect& r, const FloatRect& srcRect, const FloatRect& destRect);
+// Map supplied rect from srcRect to an equivalent rect in destRect.
+FloatRect mapRect(const FloatRect&, const FloatRect& srcRect, const FloatRect& destRect);
 
 }
 

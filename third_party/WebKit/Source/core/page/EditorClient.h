@@ -30,8 +30,8 @@
 #include "core/editing/EditorInsertAction.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/UndoStep.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/text/TextChecking.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 

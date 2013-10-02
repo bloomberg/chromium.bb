@@ -23,7 +23,6 @@
 #include "config.h"
 #include "core/platform/graphics/Font.h"
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/GlyphBuffer.h"
@@ -31,6 +30,7 @@
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/WidthIterator.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/unicode/CharacterNames.h"

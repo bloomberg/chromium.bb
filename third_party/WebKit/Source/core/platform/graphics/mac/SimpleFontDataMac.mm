@@ -33,11 +33,11 @@
 #import <unicode/uchar.h>
 #import "platform/SharedBuffer.h"
 #import "core/platform/graphics/Color.h"
-#import "core/platform/graphics/FloatRect.h"
 #import "core/platform/graphics/Font.h"
 #import "core/platform/graphics/FontCache.h"
 #import "core/platform/graphics/FontDescription.h"
 #import "core/platform/mac/BlockExceptions.h"
+#import "platform/geometry/FloatRect.h"
 #import <wtf/Assertions.h>
 #import <wtf/RetainPtr.h>
 #import <wtf/StdLibExtras.h>

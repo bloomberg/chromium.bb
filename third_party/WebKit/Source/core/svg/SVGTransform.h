@@ -21,8 +21,8 @@
 #ifndef SVGTransform_h
 #define SVGTransform_h
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGMatrix.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

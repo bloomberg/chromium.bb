@@ -36,9 +36,9 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
-#include "core/platform/graphics/FloatQuad.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
+#include "platform/geometry/FloatQuad.h"
 #include "wtf/text/CString.h"
 
 #ifndef NDEBUG

@@ -42,10 +42,10 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformTouchEvent.h"
 #include "core/platform/PlatformTouchPoint.h"
-#include "core/platform/graphics/IntPoint.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/IntSize.h"
 #include "platform/JSONValues.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/WTFString.h"
 

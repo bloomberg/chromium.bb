@@ -20,7 +20,7 @@
 #ifndef PlatformTouchPoint_h
 #define PlatformTouchPoint_h
 
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

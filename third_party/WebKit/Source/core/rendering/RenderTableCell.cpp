@@ -28,7 +28,6 @@
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/html/HTMLTableCellElement.h"
-#include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/PaintInfo.h"
@@ -36,6 +35,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/CollapsedBorderValue.h"
+#include "platform/geometry/FloatQuad.h"
 
 using namespace std;
 

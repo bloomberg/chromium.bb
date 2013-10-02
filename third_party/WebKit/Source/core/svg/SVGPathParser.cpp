@@ -24,8 +24,8 @@
 #include "config.h"
 #include "core/svg/SVGPathParser.h"
 
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGPathSource.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/MathExtras.h"
 
 static const float gOneOverThree = 1 / 3.f;

@@ -20,10 +20,10 @@
 #ifndef SVGPathSegListSource_h
 #define SVGPathSegListSource_h
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathSeg.h"
 #include "core/svg/SVGPathSegList.h"
 #include "core/svg/SVGPathSource.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 

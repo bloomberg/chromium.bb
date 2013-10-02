@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/FloatPoint3D.h"
+#include "platform/geometry/FloatPoint3D.h"
 
 #include <math.h>
 

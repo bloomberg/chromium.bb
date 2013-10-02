@@ -29,7 +29,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/TextAffinity.h"
-#include "core/platform/text/TextDirection.h"
+#include "platform/text/TextDirection.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

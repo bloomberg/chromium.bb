@@ -23,9 +23,9 @@
 
 #include "core/svg/SVGTransformable.h"
 
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGTransformList.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {
 

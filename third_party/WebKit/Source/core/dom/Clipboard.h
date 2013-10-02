@@ -28,7 +28,7 @@
 #include "core/dom/ClipboardAccessPolicy.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/DragActions.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/IntPoint.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

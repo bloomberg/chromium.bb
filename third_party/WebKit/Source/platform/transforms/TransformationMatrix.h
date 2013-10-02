@@ -28,9 +28,9 @@
 
 #include <SkMatrix.h>
 #include <string.h> //for memcpy
-#include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatPoint3D.h"
-#include "core/platform/graphics/IntPoint.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatPoint3D.h"
+#include "platform/geometry/IntPoint.h"
 #include "wtf/CPU.h"
 #include "wtf/FastAllocBase.h"
 

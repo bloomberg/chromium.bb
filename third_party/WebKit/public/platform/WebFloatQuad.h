@@ -39,7 +39,7 @@
 #include <cmath>
 
 #if BLINK_IMPLEMENTATION
-#include "core/platform/graphics/FloatQuad.h"
+#include "platform/geometry/FloatQuad.h"
 #endif
 
 namespace WebKit {

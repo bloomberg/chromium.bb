@@ -24,7 +24,6 @@
 
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -36,6 +35,7 @@
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
+#include "platform/FloatConversion.h"
 
 using namespace std;
 

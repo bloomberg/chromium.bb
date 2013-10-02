@@ -41,11 +41,11 @@
 #include "core/page/Page.h"
 #include "core/platform/PopupMenu.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/IntSize.h"
 #include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "platform/geometry/IntSize.h"
 
 using namespace std;
 

@@ -26,14 +26,12 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
+#include "platform/transforms/AffineTransform.h"
 
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/skia/SkiaUtils.h"
-
+#include "platform/FloatConversion.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {
@@ -347,6 +345,11 @@ TransformationMatrix AffineTransform::toTransformationMatrix() const
 {
     return TransformationMatrix(m_transform[0], m_transform[1], m_transform[2],
                                 m_transform[3], m_transform[4], m_transform[5]);
+}
+
+static inline SkScalar WebCoreDoubleToSkScalar(double d)
+{
+    return SkDoubleToScalar(std::isfinite(d) ? d : 0);
 }
 
 AffineTransform::operator SkMatrix() const

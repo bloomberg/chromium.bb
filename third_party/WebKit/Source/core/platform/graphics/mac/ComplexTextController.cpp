@@ -26,12 +26,12 @@
 #include "core/platform/graphics/mac/ComplexTextController.h"
 
 #include <ApplicationServices/ApplicationServices.h>
-#include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderText.h"
+#include "platform/geometry/FloatSize.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
 

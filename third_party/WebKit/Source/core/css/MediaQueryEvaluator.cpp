@@ -45,10 +45,10 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/PlatformScreen.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

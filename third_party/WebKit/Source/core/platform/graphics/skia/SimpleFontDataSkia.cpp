@@ -36,9 +36,9 @@
 #include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/chromium/VDMXParser.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/unicode/Unicode.h"
 
 #if OS(WIN)

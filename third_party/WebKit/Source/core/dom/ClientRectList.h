@@ -28,7 +28,7 @@
 #define ClientRectList_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/graphics/FloatQuad.h"
+#include "platform/geometry/FloatQuad.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"

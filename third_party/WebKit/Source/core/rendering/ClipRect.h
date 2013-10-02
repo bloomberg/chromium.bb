@@ -26,7 +26,7 @@
 #ifndef ClipRect_h
 #define ClipRect_h
 
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/LayoutRect.h"
 
 #include "wtf/Vector.h"
 

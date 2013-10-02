@@ -29,7 +29,7 @@
 #include "SkDeferredCanvas.h"
 #include "SkImage.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"

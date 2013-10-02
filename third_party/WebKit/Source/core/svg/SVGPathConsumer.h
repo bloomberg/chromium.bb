@@ -24,7 +24,7 @@
 #ifndef SVGPathConsumer_h
 #define SVGPathConsumer_h
 
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 

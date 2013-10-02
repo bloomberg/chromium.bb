@@ -27,7 +27,7 @@
 #ifndef IntPoint_h
 #define IntPoint_h
 
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "wtf/MathExtras.h"
 
 #if OS(MACOSX)

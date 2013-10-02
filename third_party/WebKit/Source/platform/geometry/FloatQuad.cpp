@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FloatQuad.h"
+#include "platform/geometry/FloatQuad.h"
 
 #include <algorithm>
 #include <limits>

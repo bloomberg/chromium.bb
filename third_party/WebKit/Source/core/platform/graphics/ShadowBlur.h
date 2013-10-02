@@ -30,7 +30,7 @@
 #define ShadowBlur_h
 
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 
 #include "wtf/Noncopyable.h"
 

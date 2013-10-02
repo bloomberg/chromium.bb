@@ -26,8 +26,8 @@
 
 #include "core/platform/PopupMenu.h"
 #include "core/platform/PopupMenuClient.h"
-#include "core/platform/graphics/LayoutRect.h"
 #include "core/rendering/RenderFlexibleBox.h"
+#include "platform/geometry/LayoutRect.h"
 
 namespace WebCore {
 

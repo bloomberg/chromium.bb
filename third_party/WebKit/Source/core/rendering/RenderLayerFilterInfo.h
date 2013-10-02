@@ -32,9 +32,9 @@
 
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
-#include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

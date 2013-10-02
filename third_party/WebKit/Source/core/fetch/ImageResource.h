@@ -25,10 +25,10 @@
 
 #include "core/fetch/Resource.h"
 #include "core/platform/graphics/ImageObserver.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/IntSizeHash.h"
-#include "core/platform/graphics/LayoutSize.h"
 #include "core/svg/graphics/SVGImageCache.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutSize.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

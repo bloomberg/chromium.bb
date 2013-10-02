@@ -30,7 +30,7 @@
 
 #include "core/page/PageScaleConstraints.h"
 #include "core/platform/Length.h"
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

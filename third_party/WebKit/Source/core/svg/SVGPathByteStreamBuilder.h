@@ -20,9 +20,9 @@
 #ifndef SVGPathByteStreamBuilder_h
 #define SVGPathByteStreamBuilder_h
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathConsumer.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 

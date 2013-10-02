@@ -26,7 +26,7 @@
 #ifndef PlatformScreen_h
 #define PlatformScreen_h
 
-#include "core/platform/graphics/FloatRect.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
 

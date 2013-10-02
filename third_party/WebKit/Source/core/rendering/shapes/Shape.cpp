@@ -32,12 +32,12 @@
 
 #include "core/css/LengthFunctions.h"
 #include "core/fetch/ImageResource.h"
-#include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/WindRule.h"
 #include "core/rendering/shapes/PolygonShape.h"
 #include "core/rendering/shapes/RasterShape.h"
 #include "core/rendering/shapes/RectangleShape.h"
+#include "platform/geometry/FloatSize.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

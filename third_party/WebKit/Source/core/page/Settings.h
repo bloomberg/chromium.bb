@@ -30,7 +30,7 @@
 #include "SettingsMacros.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "core/platform/Timer.h"
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicString.h"

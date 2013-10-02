@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if BLINK_IMPLEMENTATION
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #else
 #include <algorithm>
 #include <cmath>

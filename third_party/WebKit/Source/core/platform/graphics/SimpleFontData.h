@@ -24,7 +24,6 @@
 #ifndef SimpleFontData_h
 #define SimpleFontData_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FontBaseline.h"
 #include "core/platform/graphics/FontData.h"
 #include "core/platform/graphics/FontMetrics.h"
@@ -36,6 +35,7 @@
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #endif
 #include "core/platform/graphics/TypesettingFeatures.h"
+#include "platform/geometry/FloatRect.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringHash.h"

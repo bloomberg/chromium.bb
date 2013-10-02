@@ -8,7 +8,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

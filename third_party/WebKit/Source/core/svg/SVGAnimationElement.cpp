@@ -31,10 +31,10 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSParser.h"
 #include "core/page/UseCounter.h"
-#include "core/platform/FloatConversion.h"
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
+#include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

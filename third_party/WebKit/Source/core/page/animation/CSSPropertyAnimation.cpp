@@ -39,12 +39,12 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/fetch/ImageResource.h"
 #include "core/page/animation/AnimationBase.h"
-#include "core/platform/FloatConversion.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleFetchedImage.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
+#include "platform/FloatConversion.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {

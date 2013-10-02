@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if BLINK_IMPLEMENTATION
-#include "core/platform/graphics/IntSize.h"
+#include "platform/geometry/IntSize.h"
 #else
 #include <algorithm>
 #include <cmath>

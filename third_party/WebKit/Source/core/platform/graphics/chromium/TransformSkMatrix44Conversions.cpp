@@ -26,7 +26,7 @@
 
 #include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
 
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "platform/transforms/TransformationMatrix.h"
 
 namespace WebCore {
 

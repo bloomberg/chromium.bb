@@ -31,9 +31,9 @@
 #include "core/editing/EditingStyle.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/platform/Timer.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/LayoutRect.h"
 #include "core/rendering/ScrollBehavior.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {

@@ -26,7 +26,7 @@
 #ifndef Region_h
 #define Region_h
 
-#include "core/platform/graphics/IntRect.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

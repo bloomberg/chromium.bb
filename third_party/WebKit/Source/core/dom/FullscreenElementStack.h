@@ -32,7 +32,7 @@
 #include "core/dom/Element.h"
 #include "core/platform/Supplementable.h"
 #include "core/platform/Timer.h"
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/Deque.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

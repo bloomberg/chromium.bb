@@ -28,7 +28,7 @@
 
 #include "core/dom/Position.h"
 #include "core/editing/EditingBoundary.h"
-#include "core/platform/text/TextDirection.h"
+#include "platform/text/TextDirection.h"
 
 namespace WebCore {
 

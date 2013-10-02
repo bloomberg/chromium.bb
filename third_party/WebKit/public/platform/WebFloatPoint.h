@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if BLINK_IMPLEMENTATION
-#include "core/platform/graphics/FloatPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #else
 #include <ui/gfx/point_f.h>
 #endif

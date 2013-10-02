@@ -22,9 +22,9 @@
 #ifndef RenderSVGText_h
 #define RenderSVGText_h
 
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGBlock.h"
 #include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {
 

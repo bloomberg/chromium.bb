@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/rendering/RenderOverflow.h"
 
-#include "core/platform/graphics/LayoutRect.h"
+#include "platform/geometry/LayoutRect.h"
 
 #include <gtest/gtest.h>
 

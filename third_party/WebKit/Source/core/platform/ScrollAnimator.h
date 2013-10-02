@@ -33,7 +33,7 @@
 
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollTypes.h"
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/UnusedParam.h"

@@ -25,8 +25,8 @@
 #ifndef TransformOperations_h
 #define TransformOperations_h
 
-#include "core/platform/graphics/LayoutSize.h"
 #include "core/platform/graphics/transforms/TransformOperation.h"
+#include "platform/geometry/LayoutSize.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 

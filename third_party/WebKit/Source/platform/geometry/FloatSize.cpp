@@ -25,13 +25,13 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FloatSize.h"
+#include "platform/geometry/FloatSize.h"
 
-#include <math.h>
+#include "platform/FloatConversion.h"
+#include "platform/geometry/IntSize.h"
+#include "platform/geometry/LayoutSize.h"
 #include <limits>
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/IntSize.h"
-#include "core/platform/graphics/LayoutSize.h"
+#include <math.h>
 
 using namespace std;
 

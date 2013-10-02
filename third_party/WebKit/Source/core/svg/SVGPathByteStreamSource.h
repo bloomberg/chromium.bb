@@ -20,9 +20,9 @@
 #ifndef SVGPathByteStreamSource_h
 #define SVGPathByteStreamSource_h
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathSource.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/platform/graphics/CrossfadeGeneratedImage.h"
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "platform/geometry/FloatRect.h"
 
 using namespace std;
 

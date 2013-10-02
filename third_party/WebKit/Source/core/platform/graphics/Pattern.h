@@ -31,7 +31,7 @@
 
 #include "SkShader.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
+#include "platform/transforms/AffineTransform.h"
 
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
