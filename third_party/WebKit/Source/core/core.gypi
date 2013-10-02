@@ -2668,7 +2668,6 @@
             'platform/SecureTextInput.cpp',
             'platform/SecureTextInput.h',
             'platform/SerializedResource.h',
-            'platform/SharedBufferChunkReader.cpp',
             'platform/SharedTimer.h',
             'platform/SuddenTermination.h',
             'platform/Task.h',

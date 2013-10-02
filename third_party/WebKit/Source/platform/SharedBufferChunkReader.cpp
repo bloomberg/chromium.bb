@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/SharedBufferChunkReader.h"
+#include "platform/SharedBufferChunkReader.h"
 
 #include "platform/SharedBuffer.h"
 

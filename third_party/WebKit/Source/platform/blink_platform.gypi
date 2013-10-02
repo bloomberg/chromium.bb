@@ -30,6 +30,8 @@
       'NotImplemented.h',
       'PurgeableBuffer.cpp',
       'PurgeableBuffer.h',
+      'SharedBufferChunkReader.cpp',
+      'SharedBufferChunkReader.h',
       'SharedBuffer.cpp',
       'SharedBuffer.h',
       'URLPatternMatcher.cpp',

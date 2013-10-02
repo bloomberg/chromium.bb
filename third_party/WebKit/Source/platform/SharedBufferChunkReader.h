@@ -31,6 +31,7 @@
 #ifndef SharedBufferChunkReader_h
 #define SharedBufferChunkReader_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -38,7 +39,7 @@ namespace WebCore {
 
 class SharedBuffer;
 
-class SharedBufferChunkReader {
+class PLATFORM_EXPORT SharedBufferChunkReader {
 public:
     SharedBufferChunkReader(SharedBuffer*, const Vector<char>& separator);
     SharedBufferChunkReader(SharedBuffer*, const char* separator);
