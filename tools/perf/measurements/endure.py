@@ -141,23 +141,24 @@ class Endure(page_measurement.PageMeasurement):
     dom_stats = tab.dom_stats
     dom_node_count = dom_stats['node_count']
     event_listener_count = dom_stats['event_listener_count']
-    AddPoint('TotalDOMNodeCount', 'nodes', dom_node_count)
-    AddPoint('EventListenerCount', 'events', event_listener_count)
+    AddPoint('dom_nodes', 'count', dom_node_count)
+    AddPoint('event_listeners', 'count', event_listener_count)
 
     # Browser and renderer virtual memory stats
     memory_stats = self._browser.memory_stats
     def BrowserVMStats(statistic_name):
       """Get VM stats from the Browser object in KB."""
       return memory_stats[statistic_name].get('VM', 0) / 1024.0
-    AddPoint('BrowserVirtualMemory', 'KB', BrowserVMStats('Browser'))
-    AddPoint('RendererVirtualMemory', 'KB', BrowserVMStats('Renderer'))
+    AddPoint('browser_vm', 'KB', BrowserVMStats('Browser'))
+    AddPoint('renderer_vm', 'KB', BrowserVMStats('Renderer'))
+    AddPoint('gpu_vm', 'KB', BrowserVMStats('Gpu'))
 
     # V8 stats
     def V8StatsSum(counters):
       """Given a list of V8 counter names, get the sum of the values in KB."""
       stats = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(tab, counters)
       return sum(stats.values()) / 1024.0
-    AddPoint('V8BytesCommitted', 'KB', V8StatsSum(_V8_BYTES_COMMITTED))
-    AddPoint('V8BytesUsed', 'KB', V8StatsSum(_V8_BYTES_USED))
-    AddPoint('V8MemoryAllocated', 'KB', V8StatsSum(_V8_MEMORY_ALLOCATED))
+    AddPoint('v8_memory_committed', 'KB', V8StatsSum(_V8_BYTES_COMMITTED))
+    AddPoint('v8_memory_used', 'KB', V8StatsSum(_V8_BYTES_USED))
+    AddPoint('v8_memory_allocated', 'KB', V8StatsSum(_V8_MEMORY_ALLOCATED))
 
