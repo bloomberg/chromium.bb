@@ -41,14 +41,15 @@ class MountNodeSocket : public MountNodeStream {
                       size_t count,
                       int* out_bytes);
 
-  // Unsuported Functions
-  virtual Error Accept(const struct sockaddr* addr, socklen_t len);
-  virtual Error Listen(int backlog);
   virtual Error GetSockOpt(int lvl, int optname, void* optval, socklen_t* len);
   virtual Error SetSockOpt(int lvl,
                            int optname,
                            const void* optval,
                            socklen_t len);
+
+  // Unsupported Functions
+  virtual Error Accept(const struct sockaddr* addr, socklen_t len);
+  virtual Error Listen(int backlog);
   virtual Error Shutdown(int how);
   virtual Error MMap(void* addr,
                      size_t length,

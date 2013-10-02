@@ -216,7 +216,7 @@ TEST_F(SocketTestTCP, DISABLED_Connect) {
   memset(inbuf, 0, sizeof(inbuf));
 
   int sock = socket(AF_INET, SOCK_STREAM, 0);
-  EXPECT_NE(-1, sock);
+  EXPECT_GT(sock, -1);
 
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
@@ -231,6 +231,34 @@ TEST_F(SocketTestTCP, DISABLED_Connect) {
 
   // Now they should be the same
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
+}
+
+TEST_F(SocketTest, Setsockopt) {
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  EXPECT_GT(sock, -1);
+  int socket_error = 99;
+  socklen_t len = sizeof(socket_error);
+
+  // Test for valid option (SO_ERROR) which should be 0 when a socket
+  // is first created.
+  ASSERT_EQ(0, getsockopt(sock, SOL_SOCKET, SO_ERROR, &socket_error, &len));
+  ASSERT_EQ(0, socket_error);
+  ASSERT_EQ(sizeof(socket_error), len);
+
+  // Test for an invalid option (-1)
+  ASSERT_EQ(-1, getsockopt(sock, SOL_SOCKET, -1, &socket_error, &len));
+  ASSERT_EQ(ENOPROTOOPT, errno);
+}
+
+TEST_F(SocketTest, Getsockopt) {
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  EXPECT_GT(sock, -1);
+
+  // It should not be possible to set SO_ERROR using setsockopt.
+  int socket_error = 10;
+  socklen_t len = sizeof(socket_error);
+  ASSERT_EQ(-1, setsockopt(sock, SOL_SOCKET, SO_ERROR, &socket_error, len));
+  ASSERT_EQ(ENOPROTOOPT, errno);
 }
 
 #endif  // PROVIDES_SOCKET_API

@@ -204,14 +204,27 @@ Error MountNodeSocket::GetSockOpt(int lvl,
                                   int optname,
                                   void* optval,
                                   socklen_t* len) {
-  return EINVAL;
+  if (lvl != SOL_SOCKET)
+    return ENOPROTOOPT;
+
+  switch (optname) {
+    case SO_ERROR: {
+      int copy_bytes = std::min(sizeof(int), *len);
+      memcpy(optval, &last_errno_, copy_bytes);
+      *len = sizeof(int);
+      last_errno_ = 0;
+      return 0;
+    }
+  }
+
+  return ENOPROTOOPT;
 }
 
 Error MountNodeSocket::SetSockOpt(int lvl,
                                   int optname,
                                   const void* optval,
                                   socklen_t len) {
-  return EINVAL;
+  return ENOPROTOOPT;
 }
 
 Error MountNodeSocket::Bind(const struct sockaddr* addr, socklen_t len) {

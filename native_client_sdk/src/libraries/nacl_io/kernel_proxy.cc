@@ -1014,7 +1014,6 @@ int KernelProxy::poll(struct pollfd *fds, nfds_t nfds, int timeout) {
 }
 
 
-
 // Socket Functions
 int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
   if (NULL == addr || NULL == len) {
@@ -1111,10 +1110,10 @@ int KernelProxy::getsockname(int fd, struct sockaddr* addr, socklen_t* len) {
 }
 
 int KernelProxy::getsockopt(int fd,
-                         int lvl,
-                         int optname,
-                         void* optval,
-                         socklen_t* len) {
+                            int lvl,
+                            int optname,
+                            void* optval,
+                            socklen_t* len) {
   if (NULL == optval || NULL == len) {
     errno = EFAULT;
     return -1;
@@ -1124,8 +1123,13 @@ int KernelProxy::getsockopt(int fd,
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  Error err = handle->socket_node()->GetSockOpt(lvl, optname, optval, len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::listen(int fd, int backlog) {
@@ -1289,8 +1293,13 @@ int KernelProxy::setsockopt(int fd,
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  Error err = handle->socket_node()->SetSockOpt(lvl, optname, optval, len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::shutdown(int fd, int how) {
@@ -1329,13 +1338,14 @@ int KernelProxy::socket(int domain, int type, int protocol) {
   }
 
   ScopedMountNode node(sock);
-  if (sock->Init(S_IREAD | S_IWRITE) == 0) {
-    ScopedKernelHandle handle(new KernelHandle(stream_mount_, node));
-    return AllocateFD(handle);
+  Error rtn = sock->Init(S_IREAD | S_IWRITE);
+  if (rtn != 0) {
+    errno = rtn;
+    return -1;
   }
 
-  // If we failed to init, assume we don't have access.
-  return EACCES;
+  ScopedKernelHandle handle(new KernelHandle(stream_mount_, node));
+  return AllocateFD(handle);
 }
 
 int KernelProxy::socketpair(int domain, int type, int protocol, int* sv) {

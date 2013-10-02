@@ -221,11 +221,16 @@ TEST_F(SocketTest, Setsockopt) {
   socklen_t len = 10;
   char optval[len];
 
-  EXPECT_LT(ki_setsockopt(123, SOL_SOCKET, SO_ACCEPTCONN, NULL, len), 0);
+  // Passing a bad address as optval should generate EFAULT
+  EXPECT_EQ(-1, ki_setsockopt(123, SOL_SOCKET, SO_ACCEPTCONN, NULL, len));
   EXPECT_EQ(errno, EFAULT);
-  EXPECT_LT(ki_setsockopt(-1, SOL_SOCKET, SO_ACCEPTCONN, optval, len), 0);
+
+  // Passing a bad socket descriptor should generate EBADF
+  EXPECT_EQ(-1, ki_setsockopt(-1, SOL_SOCKET, SO_ACCEPTCONN, optval, len));
   EXPECT_EQ(errno, EBADF);
-  EXPECT_LT(ki_setsockopt(0, SOL_SOCKET, SO_ACCEPTCONN, optval, len), 0);
+
+  // Passing an FD that is valid but not a socket should generate ENOTSOCK
+  EXPECT_EQ(-1, ki_setsockopt(0, SOL_SOCKET, SO_ACCEPTCONN, optval, len));
   EXPECT_EQ(errno, ENOTSOCK);
 }
 
