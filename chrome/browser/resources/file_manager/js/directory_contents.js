@@ -54,12 +54,6 @@ DirectoryContentScanner.prototype.__proto__ = ContentScanner.prototype;
 
 /**
  * Starts to read the entries in the directory.
- * @param {function(Array.<Entry>)} entriesCallback Called when some chunk of
- *     entries are read. This can be called a couple of times until the
- *     completion.
- * @param {function()} successCallback Called when the scan is completed
- *     successfully.
- * @param {function(FileError)} errorCallback Called an error occurs.
  * @override
  */
 DirectoryContentScanner.prototype.scan = function(
@@ -130,12 +124,6 @@ DriveSearchContentScanner.MAX_RESULTS_ = 100;
 
 /**
  * Starts to search on Drive File System.
- * @param {function(Array.<Entry>)} entriesCallback Called when some chunk of
- *     entries are read. This can be called a couple of times until the
- *     completion.
- * @param {function()} successCallback Called when the scan is completed
- *     successfully.
- * @param {function(FileError)} errorCallback Called an error occurs.
  * @override
  */
 DriveSearchContentScanner.prototype.scan = function(
@@ -211,12 +199,6 @@ LocalSearchContentScanner.prototype.__proto__ = ContentScanner.prototype;
 
 /**
  * Starts the file name search.
- * @param {function(Array.<Entry>)} entriesCallback Called when some chunk of
- *     entries are read. This can be called a couple of times until the
- *     completion.
- * @param {function()} successCallback Called when the scan is completed
- *     successfully.
- * @param {function(FileError)} errorCallback Called an error occurs.
  * @override
  */
 LocalSearchContentScanner.prototype.scan = function(
@@ -307,12 +289,6 @@ DriveMetadataSearchContentScanner.SearchType = Object.freeze({
 
 /**
  * Starts to metadata-search on Drive File System.
- * @param {function(Array.<Entry>)} entriesCallback Called when some chunk of
- *     entries are read. This can be called a couple of times until the
- *     completion.
- * @param {function()} successCallback Called when the scan is completed
- *     successfully.
- * @param {function(FileError)} errorCallback Called an error occurs.
  * @override
  */
 DriveMetadataSearchContentScanner.prototype.scan = function(
@@ -455,13 +431,31 @@ function FileListContext(fileFilter, metadataCache) {
  * and filling the fileList. Different descendants handle various types of
  * directory contents shown: basic directory, drive search results, local search
  * results.
+ * TODO(hidehiko): Remove EventTarget from this.
+ *
  * @param {FileListContext} context The file list context.
+ * @param {boolean} isSearch True for search directory contents, otherwise
+ *     false.
+ * @param {DirectoryEntry} directoryEntry The entry of the current directory.
+ * @param {DirectoryEntry} lastNonSearchDirectoryEntry The entry of the last
+ *     non-search directroy.
+ * @param {function():ContentScanner} scannerFactory The factory to create
+ *     ContentScanner instance.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function DirectoryContents(context) {
+function DirectoryContents(context, isSearch, directoryEntry,
+                           lastNonSearchDirectoryEntry,
+                           scannerFactory) {
   this.context_ = context;
   this.fileList_ = context.fileList;
+
+  this.isSearch_ = isSearch;
+  this.directoryEntry_ = directoryEntry;
+  this.lastNonSearchDirectoryEntry_ = lastNonSearchDirectoryEntry;
+
+  this.scannerFactory_ = scannerFactory;
+  this.scanner_ = null;
   this.prefetchMetadataQueue_ = new AsyncUtil.Queue();
   this.scanCancelled_ = false;
   this.fileList_.prepareSort = this.prepareSort_.bind(this);
@@ -477,7 +471,9 @@ DirectoryContents.prototype.__proto__ = cr.EventTarget.prototype;
  * @return {DirectoryContents} Object copy.
  */
 DirectoryContents.prototype.clone = function() {
-  return new DirectoryContents(this.context_);
+  return new DirectoryContents(
+      this.context_, this.isSearch_, this.directoryEntry_,
+      this.lastNonSearchDirectoryEntry_, this.scannerFactory_);
 };
 
 /**
@@ -514,7 +510,7 @@ DirectoryContents.prototype.isScanning = function() {
  * @return {boolean} True if search results (drive or local).
  */
 DirectoryContents.prototype.isSearch = function() {
-  return false;
+  return this.isSearch_;
 };
 
 /**
@@ -522,14 +518,14 @@ DirectoryContents.prototype.isSearch = function() {
  *     search -- the top directory from which search is run.
  */
 DirectoryContents.prototype.getDirectoryEntry = function() {
-  throw 'Not implemented.';
+  return this.directoryEntry_;
 };
 
 /**
  * @return {DirectoryEntry} A DirectoryEntry for the last non search contents.
  */
 DirectoryContents.prototype.getLastNonSearchDirectoryEntry = function() {
-  throw 'Not implemented.';
+  return this.lastNonSearchDirectoryEntry_;
 };
 
 /**
@@ -537,7 +533,12 @@ DirectoryContents.prototype.getLastNonSearchDirectoryEntry = function() {
  * 'scan-failed' event will be fired upon completion.
  */
 DirectoryContents.prototype.scan = function() {
-  throw 'Not implemented.';
+  // TODO(hidehiko,mtomasz): this scan method must be called at most once.
+  // Remove such a limitation.
+  this.scanner_ = this.scannerFactory_();
+  this.scanner_.scan(this.onNewEntries_.bind(this),
+                     this.onScanCompleted_.bind(this),
+                     this.onScanError_.bind(this));
 };
 
 /**
@@ -556,9 +557,9 @@ DirectoryContents.prototype.cancelScan = function() {
 
 /**
  * Called when the scanning by scanner_ is done.
- * @protected
+ * @private
  */
-DirectoryContents.prototype.onScanCompleted = function() {
+DirectoryContents.prototype.onScanCompleted_ = function() {
   this.scanner_ = null;
   if (this.scanCancelled_)
     return;
@@ -574,9 +575,9 @@ DirectoryContents.prototype.onScanCompleted = function() {
 
 /**
  * Called in case scan has failed. Should send the event.
- * @protected
+ * @private
  */
-DirectoryContents.prototype.onScanError = function() {
+DirectoryContents.prototype.onScanError_ = function() {
   this.scanner_ = null;
   if (this.scanCancelled_)
     return;
@@ -590,9 +591,9 @@ DirectoryContents.prototype.onScanError = function() {
 /**
  * Called when some chunk of entries are read by scanner.
  * @param {Array.<Entry>} entries The list of the scanned entries.
- * @protected
+ * @private
  */
-DirectoryContents.prototype.onNewEntries = function(entries) {
+DirectoryContents.prototype.onNewEntries_ = function(entries) {
   if (this.scanCancelled_)
     return;
 
@@ -658,70 +659,9 @@ DirectoryContents.prototype.reloadMetadata = function(entries, callback) {
  */
 DirectoryContents.prototype.createDirectory = function(
     name, successCallback, errorCallback) {
-  throw 'Not implemented.';
-};
-
-
-/**
- * @param {FileListContext} context File list context.
- * @param {DirectoryEntry} entry DirectoryEntry for current directory.
- * @constructor
- * @extends {DirectoryContents}
- */
-function DirectoryContentsBasic(context, entry) {
-  DirectoryContents.call(this, context);
-  this.entry_ = entry;
-}
-
-/**
- * Extends DirectoryContents
- */
-DirectoryContentsBasic.prototype.__proto__ = DirectoryContents.prototype;
-
-/**
- * Create the copy of the object, but without scan started.
- * @return {DirectoryContentsBasic} Object copy.
- */
-DirectoryContentsBasic.prototype.clone = function() {
-  return new DirectoryContentsBasic(this.context_, this.entry_);
-};
-
-/**
- * @return {DirectoryEntry} DirectoryEntry of the current directory.
- */
-DirectoryContentsBasic.prototype.getDirectoryEntry = function() {
-  return this.entry_;
-};
-
-/**
- * @return {DirectoryEntry} DirectoryEntry for the currnet entry.
- */
-DirectoryContentsBasic.prototype.getLastNonSearchDirectoryEntry = function() {
-  return this.entry_;
-};
-
-/**
- * Start directory scan.
- */
-DirectoryContentsBasic.prototype.scan = function() {
-  // TODO(hidehiko,mtomasz): this scan method must be called at most once.
-  // Remove such a limitation.
-  this.scanner_ = new DirectoryContentScanner(this.entry_);
-  this.scanner_.scan(this.onNewEntries.bind(this),
-                     this.onScanCompleted.bind(this),
-                     this.onScanError.bind(this));
-};
-
-/**
- * @param {string} name Directory name.
- * @param {function(Entry)} successCallback Called on success.
- * @param {function(FileError)} errorCallback On error.
- */
-DirectoryContentsBasic.prototype.createDirectory = function(
-    name, successCallback, errorCallback) {
   // TODO(hidehiko): createDirectory should not be the part of
   // DirectoryContent.
-  if (!this.entry_) {
+  if (this.isSearch_ || !this.directoryEntry_) {
     errorCallback(util.createFileError(FileError.INVALID_MODIFICATION_ERR));
     return;
   }
@@ -732,215 +672,95 @@ DirectoryContentsBasic.prototype.createDirectory = function(
     });
   };
 
-  this.entry_.getDirectory(name, {create: true, exclusive: true},
-                           onSuccess.bind(this), errorCallback);
+  this.directoryEntry_.getDirectory(name, {create: true, exclusive: true},
+                                    onSuccess.bind(this), errorCallback);
 };
 
 /**
- * @param {FileListContext} context File list context.
- * @param {DirectoryEntry} dirEntry Current directory.
- * @param {DirectoryEntry} previousDirEntry DirectoryEntry that was current
- *     before the search.
- * @param {string} query Search query.
- * @constructor
- * @extends {DirectoryContents}
- */
-function DirectoryContentsDriveSearch(context,
-                                      dirEntry,
-                                      previousDirEntry,
-                                      query) {
-  DirectoryContents.call(this, context);
-  this.directoryEntry_ = dirEntry;
-  this.previousDirectoryEntry_ = previousDirEntry;
-  this.query_ = query;
-}
-
-/**
- * Extends DirectoryContents.
- */
-DirectoryContentsDriveSearch.prototype.__proto__ = DirectoryContents.prototype;
-
-/**
- * Create the copy of the object, but without scan started.
- * @return {DirectoryContentsBasic} Object copy.
- */
-DirectoryContentsDriveSearch.prototype.clone = function() {
-  return new DirectoryContentsDriveSearch(
-      this.context_, this.directoryEntry_,
-      this.previousDirectoryEntry_, this.query_);
-};
-
-/**
- * @return {boolean} True if this is search results (yes).
- */
-DirectoryContentsDriveSearch.prototype.isSearch = function() {
-  return true;
-};
-
-/**
- * @return {DirectoryEntry} A DirectoryEntry for the top directory from which
- *     search is run (i.e. drive root).
- */
-DirectoryContentsDriveSearch.prototype.getDirectoryEntry = function() {
-  return this.directoryEntry_;
-};
-
-/**
- * @return {DirectoryEntry} DirectoryEntry for the directory that was current
- *     before the search.
- */
-DirectoryContentsDriveSearch.prototype.getLastNonSearchDirectoryEntry =
-    function() {
-  return this.previousDirectoryEntry_;
-};
-
-/**
- * Start directory scan.
- */
-DirectoryContentsDriveSearch.prototype.scan = function() {
-  this.scanner_ = new DriveSearchContentScanner(this.query_);
-  this.scanner_.scan(this.onNewEntries.bind(this),
-                     this.onScanCompleted.bind(this),
-                     this.onScanError.bind(this));
-};
-
-/**
- * @param {FileListContext} context File list context.
- * @param {DirectoryEntry} dirEntry Current directory.
- * @param {string} query Search query.
- * @constructor
- * @extends {DirectoryContents}
- */
-function DirectoryContentsLocalSearch(context, dirEntry, query) {
-  DirectoryContents.call(this, context);
-  this.directoryEntry_ = dirEntry;
-  this.query_ = query;
-}
-
-/**
- * Extends DirectoryContents
- */
-DirectoryContentsLocalSearch.prototype.__proto__ = DirectoryContents.prototype;
-
-/**
- * Create the copy of the object, but without scan started.
- * @return {DirectoryContentsBasic} Object copy.
- */
-DirectoryContentsLocalSearch.prototype.clone = function() {
-  return new DirectoryContentsLocalSearch(
-      this.context_, this.directoryEntry_, this.query_);
-};
-
-/**
- * @return {boolean} True if search results (drive or local).
- */
-DirectoryContentsLocalSearch.prototype.isSearch = function() {
-  return true;
-};
-
-/**
- * @return {DirectoryEntry} A DirectoryEntry for the top directory from which
- *     search is run.
- */
-DirectoryContentsLocalSearch.prototype.getDirectoryEntry = function() {
-  return this.directoryEntry_;
-};
-
-/**
- * @return {DirectoryEntry} DirectoryEntry for current directory (the search is
- *     run from the directory that was current before search).
- */
-DirectoryContentsLocalSearch.prototype.getLastNonSearchDirectoryEntry =
-    function() {
-  return this.directoryEntry_;
-};
-
-/**
- * Start directory scan/search operation. Either 'scan-completed' or
- * 'scan-failed' event will be fired upon completion.
- */
-DirectoryContentsLocalSearch.prototype.scan = function() {
-  this.scanner_ =
-      new LocalSearchContentScanner(this.directoryEntry_, this.query_);
-  this.scanner_.scan(this.onNewEntries.bind(this),
-                     this.onScanCompleted.bind(this),
-                     this.onScanError.bind(this));
-};
-
-/**
- * DirectoryContents to list Drive files using searchDriveMetadata().
+ * Creates a DirectoryContents instance to show entries in a directory.
  *
  * @param {FileListContext} context File list context.
- * @param {DirectoryEntry} driveDirEntry Directory for actual Drive.
- * @param {DirectoryEntry} fakeDirEntry Fake directory representing the set of
- *     result files. This serves as a top directory for this search.
- * @param {string} query Search query to filter the files.
- * @param {DriveMetadataSearchContentScanner.SearchType} searchType
- *     Type of search. searchDriveMetadata will restricts the entries based on
- *     the given search type.
- * @constructor
- * @extends {DirectoryContents}
+ * @param {DirectoryEntry} directoryEntry The current directory entry.
+ * @return {DirectoryContents} Created DirectoryContents instance.
  */
-function DirectoryContentsDriveSearchMetadata(context,
-                                              driveDirEntry,
-                                              fakeDirEntry,
-                                              query,
-                                              searchType) {
-  DirectoryContents.call(this, context);
-  this.driveDirEntry_ = driveDirEntry;
-  this.fakeDirEntry_ = fakeDirEntry;
-  this.query_ = query;
-  this.searchType_ = searchType;
-}
-
-/**
- * Creates a copy of the object, but without scan started.
- * @return {DirectoryContents} Object copy.
- */
-DirectoryContentsDriveSearchMetadata.prototype.clone = function() {
-  return new DirectoryContentsDriveSearchMetadata(
-      this.context_, this.driveDirEntry_, this.fakeDirEntry_, this.query_,
-      this.searchType_);
+DirectoryContents.createForDirectory = function(context, directoryEntry) {
+  return new DirectoryContents(
+      context,
+      false,  // Non search.
+      directoryEntry,
+      directoryEntry,
+      function() {
+        return new DirectoryContentScanner(directoryEntry);
+      });
 };
 
 /**
- * Extends DirectoryContents.
+ * Creates a DirectoryContents instance to show the result of the search on
+ * Drive File System.
+ *
+ * @param {FileListContext} context File list context.
+ * @param {DirectoryEntry} directoryEntry The current directory entry.
+ * @param {DirectoryEntry} previousDirectoryEntry The DirectoryEntry that was
+ *     current before the search.
+ * @param {string} query Search query.
+ * @return {DirectoryContents} Created DirectoryContents instance.
  */
-DirectoryContentsDriveSearchMetadata.prototype.__proto__ =
-    DirectoryContents.prototype;
-
-/**
- * @return {boolean} True if this is search results (yes).
- */
-DirectoryContentsDriveSearchMetadata.prototype.isSearch = function() {
-  return true;
+DirectoryContents.createForDriveSearch = function(
+    context, directoryEntry, previousDirectoryEntry, query) {
+  return new DirectoryContents(
+      context,
+      true,  // Search.
+      directoryEntry,
+      previousDirectoryEntry,
+      function() {
+        return new DriveSearchContentScanner(query);
+      });
 };
 
 /**
- * @return {DirectoryEntry} An Entry representing the current contents
- *     (i.e. fake root for "Shared with me").
+ * Creates a DirectoryContents instance to show the result of the search on
+ * Local File System.
+ *
+ * @param {FileListContext} context File list context.
+ * @param {DirectoryEntry} directoryEntry The current directory entry.
+ * @param {string} query Search query.
+ * @return {DirectoryContents} Created DirectoryContents instance.
  */
-DirectoryContentsDriveSearchMetadata.prototype.getDirectoryEntry = function() {
-  return this.fakeDirEntry_;
+DirectoryContents.createForLocalSearch = function(
+    context, directoryEntry, query) {
+  return new DirectoryContents(
+      context,
+      true,  // Search.
+      directoryEntry,
+      directoryEntry,
+      function() {
+        return new LocalSearchContentScanner(directoryEntry, query);
+      });
 };
 
 /**
- * @return {DirectoryEntry} DirectoryEntry for the directory that was current
- *     before the search.
+ * Creates a DirectoryContents instance to show the result of metadata search
+ * on Drive File System.
+ *
+ * @param {FileListContext} context File list context.
+ * @param {DirectoryEntry} fakeDirectoryEntry Fake directory entry representing
+ *     the set of result entries. This serves as a top directory for the
+ *     search.
+ * @param {DirectoryEntry} driveDirectoryEntry Directory for the actual drive.
+ * @param {string} query Search query.
+ * @param {DriveMetadataSearchContentScanner.SearchType} searchType The type of
+ *     the search. The scanner will restricts the entries based on the given
+ *     type.
+ * @return {DirectoryContents} Created DirectoryContents instance.
  */
-DirectoryContentsDriveSearchMetadata.prototype.getLastNonSearchDirectoryEntry =
-    function() {
-  return this.driveDirEntry_;
-};
-
-/**
- * Start directory scan/search operation. Either 'scan-completed' or
- * 'scan-failed' event will be fired upon completion.
- */
-DirectoryContentsDriveSearchMetadata.prototype.scan = function() {
-  this.scanner_ =
-      new DriveMetadataSearchContentScanner(this.query_, this.searchType_);
-  this.scanner_.scan(this.onNewEntries.bind(this),
-                     this.onScanCompleted.bind(this),
-                     this.onScanError.bind(this));
+DirectoryContents.createForDriveMetadataSearch = function(
+    context, fakeDirectoryEntry, driveDirectoryEntry, query, searchType) {
+  return new DirectoryContents(
+      context,
+      true,  // Search
+      fakeDirectoryEntry,
+      driveDirectoryEntry,
+      function() {
+        return new DriveMetadataSearchContentScanner(query, searchType);
+      });
 };

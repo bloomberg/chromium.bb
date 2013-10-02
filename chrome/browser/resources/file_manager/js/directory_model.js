@@ -41,8 +41,8 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
 
   this.currentFileListContext_ = new FileListContext(
       fileFilter, metadataCache);
-  this.currentDirContents_ = new DirectoryContentsBasic(
-      this.currentFileListContext_, null);
+  this.currentDirContents_ =
+      DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 
   this.volumeManager_ = volumeManager;
   this.volumeManager_.volumeInfoList.addEventListener(
@@ -841,9 +841,10 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
     // is loaded at this point.
     chrome.test.sendMessage('directory-change-complete');
   };
-  this.clearAndScan_(new DirectoryContentsBasic(this.currentFileListContext_,
-                                                dirEntry),
-                     onScanComplete.bind(this));
+  this.clearAndScan_(
+      DirectoryContents.createForDirectory(this.currentFileListContext_,
+                                           dirEntry),
+      onScanComplete.bind(this));
 };
 
 /**
@@ -1139,7 +1140,7 @@ DirectoryModel.prototype.search = function(query,
 
   if (!query) {
     if (this.isSearching()) {
-      var newDirContents = new DirectoryContentsBasic(
+      var newDirContents = DirectoryContents.createForDirectory(
           this.currentFileListContext_,
           this.currentDirContents_.getLastNonSearchDirectoryEntry());
       this.clearAndScan_(newDirContents);
@@ -1160,13 +1161,13 @@ DirectoryModel.prototype.search = function(query,
       PathUtil.isDriveBasedPath(currentDirEntry.fullPath)) {
     // Drive search is performed over the whole drive, so pass  drive root as
     // |directoryEntry|.
-    newDirContents = new DirectoryContentsDriveSearch(
+    newDirContents = DirectoryContents.createForDriveSearch(
         this.currentFileListContext_,
         currentDirEntry,
         this.currentDirContents_.getLastNonSearchDirectoryEntry(),
         query);
   } else {
-    newDirContents = new DirectoryContentsLocalSearch(
+    newDirContents = DirectoryContents.createForLocalSearch(
         this.currentFileListContext_, currentDirEntry, query);
   }
   this.clearAndScan_(newDirContents);
@@ -1216,12 +1217,9 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
       return;
     }
 
-    var newDirContents = new DirectoryContentsDriveSearchMetadata(
+    var newDirContents = DirectoryContents.createForDriveMetadataSearch(
         this.currentFileListContext_,
-        driveRoot,
-        dirEntry,
-        query,
-        searchOption);
+        dirEntry, driveRoot, query, searchOption);
     var previous = this.currentDirContents_.getDirectoryEntry();
     this.clearAndScan_(newDirContents);
 
