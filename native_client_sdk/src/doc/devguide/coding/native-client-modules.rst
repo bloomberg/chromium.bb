@@ -4,10 +4,10 @@
 Native Client Modules
 #####################
 
-This document describes the classes and functions that you need to
-implement in a Native Client module in order for Chrome to load,
-initialize, and run a Native Client module. The requirements depend on
-whether the module is written in C or C++.
+This document describes the classes and functions that you need to implement in
+a Native Client module in order for Chrome to load, initialize, and run it.  The
+requirements are the same regardless of whether or not the module uses PNaCl,
+but depend on whether the module is written in C or C++.
 
 .. contents::
   :local:
@@ -129,17 +129,15 @@ When you implement a Native Client module in C++ you must include these componen
 * Code that defines your own Instance class (derived from the ``pp:Instance``
   class)
 
-TODO: this example no longer exists. Update this paragraph and the the hello
-world reference in the paragraph below.
-In the interactive "Hello, World" example (examples/hello_world_interactive),
-these three components are specified in the file ``hello_world.cc``. Here is
-the factory function:
+In the "Hello tutorial" example (in the ``getting_started/part1`` directory of
+the NaCl SDK), these three components are specified in the file
+``hello_tutorial.cc``. Here is the factory function:
 
 .. naclcode::
 
   namespace pp {
   Module* CreateModule() {
-    return new hello_world::HelloWorldModule();
+    return new HelloTutorialModule();
   }
   }
 
@@ -149,18 +147,35 @@ browser calls ``CreateModule()`` when a module is first loaded; this function
 returns a Module object derived from the ``pp::Module`` class. The browser keeps
 a singleton of the Module object.
 
-Below is the Module class from the "Hello, World" example:
+Below is the Module class from the "Hello tutorial" example:
 
 .. naclcode::
 
-  class HelloWorldModule : public pp::Module {
+  class HelloTutorialModule : public pp::Module {
    public:
-    HelloWorldModule() : pp::Module() {}
-    virtual ~HelloWorldModule() {}
+    HelloTutorialModule() : pp::Module() {}
+    virtual ~HelloTutorialModule() {}
 
     virtual pp::Instance* CreateInstance(PP_Instance instance) {
-      return new HelloWorldInstance(instance);
+      return new HelloTutorialInstance(instance);
     }
+  };
+
+The Module class must include a ``CreateInstance()`` method. The browser calls
+the ``CreateInstance()`` method every time it encounters an ``<embed>`` element
+on a web page that references the same module. The ``CreateInstance()`` function
+creates and returns an Instance object derived from the ``pp::Instance`` class.
+
+Below is the Instance class from the "Hello tutorial" example:
+
+.. naclcode::
+
+  class HelloTutorialInstance : public pp::Instance {
+   public:
+    explicit HelloTutorialInstance(PP_Instance instance) : pp::Instance(instance) {}
+    virtual ~HelloTutorialInstance() {}
+
+    virtual void HandleMessage(const pp::Var& var_message) {}
   };
 
 
@@ -171,30 +186,8 @@ application calls ``postMessage()`` to send a message to the instance. See the
 :doc:`Native Client messaging system<message-system>` for more information about
 how to send messages between JavaScript code and Native Client modules.
 
-The module in the "Hello, World" example is created from two files:
-``hello_world.cc`` and ``helper_functions.cc``. The first file,
-``hello_world.cc``, contains the ``CreateModule()`` factory function and the
-Module and Instance classes described above. The second file,
-``helper_functions.cc``, contains plain C++ functions that do not use the Pepper
-API. This is a typical design pattern in Native Client, where plain C++
-non-Pepper functions (functions that use standard types like ``string``) are
-specified in a separate file from Pepper functions (functions that use ``Var``,
-for example). This design pattern allows the plain C++ functions to be
-unit-tested with a command-line test (e.g., ``test_helper_functions.cc``); this
-is easier than running tests inside Chrome.
-
-While the ``CreateModule`` factory function, the ``Module`` class, and the
+While the ``CreateModule()`` factory function, the ``Module`` class, and the
 ``Instance`` class are required for a Native Client application, the code
 samples shown above don't actually do anything. Subsequent documents in the
 Developer's Guide build on these code samples and add more interesting
 functionality.
-
-
-Threading
-=========
-
-TODO: Update/remove this.
-Currently, calls from the browser to a Native Client module always execute on
-the main thread of the module. Similarly, all Pepper API calls, both C and C++,
-must be made on the main thread of the module, with the exception of
-pp::Core::CallOnMainThread() and PPB_Core::CallOnMainThread().

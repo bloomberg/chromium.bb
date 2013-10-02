@@ -183,13 +183,14 @@ A Native Client module must include three components:
 * a Module class (derived from the ``pp::Module`` class)
 * an Instance class (derived from the ``pp:Instance`` class)
 
-In the "Hello, World" example, these three components are specified in the file
-``hello_world.cc``. Here is the factory function:
+In the "Hello tutorial" example (in the ``getting_started/part1`` directory of
+the NaCl SDK), these three components are specified in the file
+``hello_tutorial.cc``. Here is the factory function:
 
 .. naclcode::
 
   Module* CreateModule() {
-    return new hello_world::HelloWorldModule();
+    return new HelloTutorialModule();
   }
 
 Native Client modules do not have a ``main()`` function. The ``CreateModule()``
@@ -199,38 +200,37 @@ when a module is first loaded; this function returns a Module object derived
 from the ``pp::Module`` class. The browser keeps a singleton of the Module
 object.
 
-Below is the Module class from the "Hello, World" example:
+Below is the Module class from the "Hello tutorial" example:
 
 .. naclcode::
 
-  class HelloWorldModule : public pp::Module {
+  class HelloTutorialModule : public pp::Module {
    public:
-    HelloWorldModule() : pp::Module() {}
-    virtual ~HelloWorldModule() {}
+    HelloTutorialModule() : pp::Module() {}
+    virtual ~HelloTutorialModule() {}
 
     virtual pp::Instance* CreateInstance(PP_Instance instance) {
-      return new HelloWorldInstance(instance);
+      return new HelloTutorialInstance(instance);
     }
   };
 
+The Module class must include a ``CreateInstance()`` method. The browser calls
+the ``CreateInstance()`` method every time it encounters an ``<embed>`` element
+on a web page that references the same module. The ``CreateInstance()`` function
+creates and returns an Instance object derived from the ``pp::Instance`` class.
 
-The Module class must include a ``CreateInstance()`` function. The browser calls
-the ``CreateInstance()`` function of the Module object returned by
-``CreateModule()`` every time it encounters an ``<embed>`` element on a web page
-that references the same module. The ``CreateInstance()`` function creates and
-returns an Instance object derived from the ``pp::Instance`` class.
-
-Below is the Instance class from the "Hello, World" example:
+Below is the Instance class from the "Hello tutorial" example:
 
 .. naclcode::
 
-  class HelloWorldInstance : public pp::Instance {
+  class HelloTutorialInstance : public pp::Instance {
    public:
-    explicit HelloWorldInstance(PP_Instance instance) : pp::Instance(instance) {}
-    virtual ~HelloWorldInstance() {}
+    explicit HelloTutorialInstance(PP_Instance instance) : pp::Instance(instance) {}
+    virtual ~HelloTutorialInstance() {}
 
-    virtual void HandleMessage(const pp::Var& var_message);
+    virtual void HandleMessage(const pp::Var& var_message) {}
   };
+
 
 As in the example above, the Instance class for your module will likely include
 an implementation of the ``HandleMessage()`` funtion. The browser calls an
@@ -238,18 +238,6 @@ instance's ``HandleMessage()`` function every time the JavaScript code in an
 application calls ``postMessage()`` to send a message to the instance. See the
 :doc:`Native Client messaging system<message-system>` for more information about
 how to send messages between JavaScript code and Native Client modules.
-
-The module in the "Hello, World" example is created from two files:
-``hello_world.cc`` and ``helper_functions.cc``. The first file,
-``hello_world.cc``, contains the ``CreateModule()`` factory function and the
-Module and Instance classes described above. The second file,
-``helper_functions.cc``, contains plain C++ functions that do not use the Pepper
-API. This is a typical design pattern in Native Client, where plain C++
-non-Pepper functions (functions that use standard types like ``string``) are
-specified in a separate file from Pepper functions (functions that use ``Var``,
-for example). This design pattern allows the plain C++ functions to be
-unit-tested with a command-line test (e.g., ``test_helper_functions.cc``); this
-is easier than running tests inside Chrome.
 
 While the ``CreateModule()`` factory function, the ``Module`` class, and the
 ``Instance`` class are required for a Native Client application, the code
