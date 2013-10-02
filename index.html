@@ -249,11 +249,6 @@ send this upstream.</p>
 associated with it.  This is necessary for our product because we have multiple
 V8 contexts living in the same process that need to share data with each other.</p>
 
-<h3><a name="bugfix-outdentWithBR">bugfix/outdentWithBR</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=92130">92130</a>)</h3>
-<p>Open <a href="repros/outdentWithBR.html">this link</a> in Chrome.  The
-indented block will be highlighted on load.  Click on the <code>OUTDENT</code>
-button.  There are now a bunch of empty lines added in between.</p>
-
 <h3><a name="bugfix-removeSpellingMarker">bugfix/removeSpellingMarker</a> (Tianyin Zhang; D38695085;)</h3>
 <p>Open <a href="repros/removeSpellingMarker.html">this link</a> in chrome, place the cursor inside the contenteditable and make sure some mispelling markers show up. Then click on the button to switch the contenteditable to false. Note that the misspelling markers aren't removed. </p>
 
@@ -356,6 +351,11 @@ applied, and when it isn't (e.g. with upstream Chrome):</p>
     <li>Open <a href="repros/indentpre.html">this link</a>.  The "Hello" text
     will be selected on load.  Each time you indent the text, the "Hello" will
     get duplicated</li>
+    <li>Open <a href="repros/outdentWithBR.html">this link</a>.  The indented
+    block will be highlighted on load.  Click on the <code>OUTDENT</code>
+    button.  There are now a bunch of empty lines added in between.  There is
+    an upstream <a href="https://bugs.webkit.org/show_bug.cgi?id=92130">bug 92130</a>
+    for this.</li>
 </ul>
 
 <h3><a name="feature-insertHTMLNested">feature/insertHTMLNested</a> (Shezan Baig; D37136356)</h3>
@@ -504,6 +504,10 @@ text.</p>
 
 <h3><a name="bugfix-noRelayoutIfPercentSame">bugfix/noRelayoutIfPercentSame</a> (Shezan Baig; D36633185)</h3>
 <p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-outdentWithBR">bugfix/outdentWithBR</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=92130">92130</a>)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-indentOutdentBlock">feature/indentOutdentBlock</a></code></p>
 
 <h3><a name="bugfix-pasteUsesLineBreak">bugfix/pasteUsesLineBreak</a> (Shezan Baig; D33830147)</h3>
 <p>Retired because there are no reproduction steps to verify the fix.</p>
