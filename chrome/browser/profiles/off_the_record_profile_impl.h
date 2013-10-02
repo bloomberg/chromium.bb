@@ -137,7 +137,7 @@ class OffTheRecordProfileImpl : public Profile {
 
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
-  content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
+  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

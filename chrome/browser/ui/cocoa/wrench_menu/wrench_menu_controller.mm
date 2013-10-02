@@ -66,16 +66,14 @@ class ZoomLevelObserver {
  public:
   ZoomLevelObserver(WrenchMenuController* controller,
                     content::HostZoomMap* map)
-      : callback_(base::Bind(&ZoomLevelObserver::OnZoomLevelChanged,
-                             base::Unretained(this))),
-        controller_(controller),
+      : controller_(controller),
         map_(map) {
-    map_->AddZoomLevelChangedCallback(callback_);
+    subscription_ = map_->AddZoomLevelChangedCallback(
+        base::Bind(&ZoomLevelObserver::OnZoomLevelChanged,
+                   base::Unretained(this)));
   }
 
-  ~ZoomLevelObserver() {
-    map_->RemoveZoomLevelChangedCallback(callback_);
-  }
+  ~ZoomLevelObserver() {}
 
  private:
   void OnZoomLevelChanged(const HostZoomMap::ZoomLevelChange& change) {
@@ -86,7 +84,7 @@ class ZoomLevelObserver {
     [[controller_ zoomDisplay] setTitle:SysUTF16ToNSString(level)];
   }
 
-  content::HostZoomMap::ZoomLevelChangedCallback callback_;
+  scoped_ptr<content::HostZoomMap::Subscription> subscription_;
 
   WrenchMenuController* controller_;  // Weak; owns this.
   content::HostZoomMap* map_;  // Weak.

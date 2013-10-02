@@ -528,15 +528,15 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
            int fullscreen_index)
       : WrenchMenuView(menu, menu_model),
         fullscreen_index_(fullscreen_index),
-        zoom_callback_(base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
-                                  base::Unretained(this))),
         increment_button_(NULL),
         zoom_label_(NULL),
         decrement_button_(NULL),
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
-    HostZoomMap::GetForBrowserContext(
-        menu->browser_->profile())->AddZoomLevelChangedCallback(zoom_callback_);
+    zoom_subscription_ = HostZoomMap::GetForBrowserContext(
+        menu->browser_->profile())->AddZoomLevelChangedCallback(
+            base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
+                       base::Unretained(this)));
 
     decrement_button_ = CreateButtonWithAccName(
         IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON, decrement_index,
@@ -614,9 +614,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     UpdateZoomControls();
   }
 
-  virtual ~ZoomView() {
-    Shutdown();
-  }
+  virtual ~ZoomView() {}
 
   // Overridden from View.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
@@ -672,21 +670,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
 
   // Overridden from WrenchMenuObserver.
   virtual void WrenchMenuDestroyed() OVERRIDE {
-    Shutdown();
     WrenchMenuView::WrenchMenuDestroyed();
   }
 
  private:
-  // Invoked from the destructor or when the WrenchMenu is destroyed.
-  void Shutdown() {
-    if (!menu())
-      return;
-
-    HostZoomMap::GetForBrowserContext(
-        menu()->browser_->profile())->RemoveZoomLevelChangedCallback(
-            zoom_callback_);
-  }
-
   void OnZoomLevelChanged(const HostZoomMap::ZoomLevelChange& change) {
     UpdateZoomControls();
   }
@@ -738,7 +725,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   // Index of the fullscreen menu item in the model.
   const int fullscreen_index_;
 
-  content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
+  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
   content::NotificationRegistrar registrar_;
 
   // Button for incrementing the zoom.

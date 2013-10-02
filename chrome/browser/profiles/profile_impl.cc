@@ -373,9 +373,7 @@ ProfileImpl::ProfileImpl(
     Delegate* delegate,
     CreateMode create_mode,
     base::SequencedTaskRunner* sequenced_task_runner)
-    : zoom_callback_(base::Bind(&ProfileImpl::OnZoomLevelChanged,
-                                base::Unretained(this))),
-      path_(path),
+    : path_(path),
       pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(this),
       host_content_settings_map_(NULL),
@@ -631,7 +629,8 @@ void ProfileImpl::InitHostZoomMap() {
     }
   }
 
-  host_zoom_map->AddZoomLevelChangedCallback(zoom_callback_);
+  zoom_subscription_ = host_zoom_map->AddZoomLevelChangedCallback(
+      base::Bind(&ProfileImpl::OnZoomLevelChanged, base::Unretained(this)));
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -644,9 +643,6 @@ void ProfileImpl::set_last_selected_directory(const base::FilePath& path) {
 
 ProfileImpl::~ProfileImpl() {
   MaybeSendDestroyedNotification();
-
-  HostZoomMap::GetForBrowserContext(this)->RemoveZoomLevelChangedCallback(
-      zoom_callback_);
 
   bool prefs_loaded = prefs_->GetInitializationStatus() !=
       PrefService::INITIALIZATION_STATUS_WAITING;

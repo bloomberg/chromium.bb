@@ -233,14 +233,14 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
     : ui::SimpleMenuModel(this),
       provider_(provider),
       browser_(browser),
-      tab_strip_model_(browser_->tab_strip_model()),
-      zoom_callback_(base::Bind(&WrenchMenuModel::OnZoomLevelChanged,
-                                base::Unretained(this))) {
+      tab_strip_model_(browser_->tab_strip_model()) {
   Build(is_new_menu);
   UpdateZoomControls();
 
-  HostZoomMap::GetForBrowserContext(
-      browser->profile())->AddZoomLevelChangedCallback(zoom_callback_);
+  zoom_subscription_ = HostZoomMap::GetForBrowserContext(
+      browser->profile())->AddZoomLevelChangedCallback(
+          base::Bind(&WrenchMenuModel::OnZoomLevelChanged,
+                     base::Unretained(this)));
 
   tab_strip_model_->AddObserver(this);
 
@@ -251,11 +251,6 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
 WrenchMenuModel::~WrenchMenuModel() {
   if (tab_strip_model_)
     tab_strip_model_->RemoveObserver(this);
-
-  if (browser()) {
-    HostZoomMap::GetForBrowserContext(
-        browser()->profile())->RemoveZoomLevelChangedCallback(zoom_callback_);
-  }
 }
 
 bool WrenchMenuModel::DoesCommandIdDismissMenu(int command_id) const {

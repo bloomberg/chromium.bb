@@ -63,7 +63,7 @@ class ZoomController : public content::WebContentsObserver,
 
   content::BrowserContext* browser_context_;
 
-  content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
+  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomController);
 };

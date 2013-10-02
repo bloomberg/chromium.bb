@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -91,11 +92,10 @@ class HostZoomMap {
   virtual void SetDefaultZoomLevel(double level) = 0;;
 
   typedef base::Callback<void(const ZoomLevelChange&)> ZoomLevelChangedCallback;
-
+  typedef base::CallbackList<void(const ZoomLevelChange&)>::Subscription
+      Subscription;
   // Add and remove zoom level changed callbacks.
-  virtual void AddZoomLevelChangedCallback(
-      const ZoomLevelChangedCallback& callback) = 0;
-  virtual void RemoveZoomLevelChangedCallback(
+  virtual scoped_ptr<Subscription> AddZoomLevelChangedCallback(
       const ZoomLevelChangedCallback& callback) = 0;
 
  protected:

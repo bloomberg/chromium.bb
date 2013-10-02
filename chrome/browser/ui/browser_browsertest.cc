@@ -1618,12 +1618,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
         new content::MessageLoopRunner);
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->AddZoomLevelChangedCallback(callback);
+    scoped_ptr<content::HostZoomMap::Subscription> sub =
+        content::HostZoomMap::GetForBrowserContext(
+            browser()->profile())->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_IN);
     loop_runner->Run();
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->RemoveZoomLevelChangedCallback(callback);
+    sub.reset();
     EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 110);
     EXPECT_TRUE(enable_plus);
     EXPECT_TRUE(enable_minus);
@@ -1634,12 +1634,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
         new content::MessageLoopRunner);
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->AddZoomLevelChangedCallback(callback);
+    scoped_ptr<content::HostZoomMap::Subscription> sub =
+        content::HostZoomMap::GetForBrowserContext(
+            browser()->profile())->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
     loop_runner->Run();
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->RemoveZoomLevelChangedCallback(callback);
+    sub.reset();
     EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 100);
     EXPECT_TRUE(enable_plus);
     EXPECT_TRUE(enable_minus);
@@ -1650,12 +1650,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
         new content::MessageLoopRunner);
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->AddZoomLevelChangedCallback(callback);
+    scoped_ptr<content::HostZoomMap::Subscription> sub =
+        content::HostZoomMap::GetForBrowserContext(
+            browser()->profile())->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_OUT);
     loop_runner->Run();
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->RemoveZoomLevelChangedCallback(callback);
+    sub.reset();
     EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 90);
     EXPECT_TRUE(enable_plus);
     EXPECT_TRUE(enable_minus);

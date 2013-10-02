@@ -25,9 +25,7 @@ ZoomController::ZoomController(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       zoom_percent_(100),
       observer_(NULL),
-      browser_context_(web_contents->GetBrowserContext()),
-      zoom_callback_(base::Bind(&ZoomController::OnZoomLevelChanged,
-                                base::Unretained(this))) {
+      browser_context_(web_contents->GetBrowserContext()) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   default_zoom_level_.Init(prefs::kDefaultZoomLevel, profile->GetPrefs(),
@@ -35,18 +33,15 @@ ZoomController::ZoomController(content::WebContents* web_contents)
                                       base::Unretained(this),
                                       std::string()));
 
-  content::HostZoomMap::GetForBrowserContext(
+  zoom_subscription_ = content::HostZoomMap::GetForBrowserContext(
       browser_context_)->AddZoomLevelChangedCallback(
-          zoom_callback_);
+          base::Bind(&ZoomController::OnZoomLevelChanged,
+                     base::Unretained(this)));
 
   UpdateState(std::string());
 }
 
-ZoomController::~ZoomController() {
-  content::HostZoomMap::GetForBrowserContext(
-      browser_context_)->RemoveZoomLevelChangedCallback(
-          zoom_callback_);
-}
+ZoomController::~ZoomController() {}
 
 bool ZoomController::IsAtDefaultZoom() const {
   return content::ZoomValuesEqual(web_contents()->GetZoomLevel(),

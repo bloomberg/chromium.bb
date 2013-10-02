@@ -112,12 +112,11 @@ class LocationBarViewGtkZoomTest : public InProcessBrowserTest {
         new content::MessageLoopRunner);
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->AddZoomLevelChangedCallback(callback);
+    scoped_ptr<content::HostZoomMap::Subscription> sub =
+        content::HostZoomMap::GetForBrowserContext(
+            browser()->profile())->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), zoom_action);
     loop_runner->Run();
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->RemoveZoomLevelChangedCallback(callback);
   }
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtkZoomTest);

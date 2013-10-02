@@ -26,18 +26,14 @@ namespace {
 
 class TestingProfileWithHostZoomMap : public TestingProfile {
  public:
-  TestingProfileWithHostZoomMap()
-      : zoom_callback_(
-          base::Bind(&TestingProfileWithHostZoomMap::OnZoomLevelChanged,
-                     base::Unretained(this))) {
-    HostZoomMap::GetForBrowserContext(this)->AddZoomLevelChangedCallback(
-        zoom_callback_);
+  TestingProfileWithHostZoomMap() {
+    zoom_subscription_ =
+        HostZoomMap::GetForBrowserContext(this)->AddZoomLevelChangedCallback(
+            base::Bind(&TestingProfileWithHostZoomMap::OnZoomLevelChanged,
+                        base::Unretained(this)));
   }
 
-  virtual ~TestingProfileWithHostZoomMap() {
-    HostZoomMap::GetForBrowserContext(this)->RemoveZoomLevelChangedCallback(
-        zoom_callback_);
-  }
+  virtual ~TestingProfileWithHostZoomMap() {}
 
   virtual Profile* GetOffTheRecordProfile() OVERRIDE {
     if (!off_the_record_profile_)
@@ -71,7 +67,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
   scoped_ptr<Profile> off_the_record_profile_;
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
-  HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
+  scoped_ptr<HostZoomMap::Subscription> zoom_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingProfileWithHostZoomMap);
 };

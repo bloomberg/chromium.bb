@@ -90,9 +90,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile),
       prefs_(PrefServiceSyncable::IncognitoFromProfile(real_profile)),
       io_data_(this),
-      start_time_(Time::Now()),
-      zoom_callback_(base::Bind(&OffTheRecordProfileImpl::OnZoomLevelChanged,
-                                base::Unretained(this))) {
+      start_time_(Time::Now()) {
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_);
 }
@@ -137,9 +135,6 @@ void OffTheRecordProfileImpl::Init() {
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   MaybeSendDestroyedNotification();
 
-  HostZoomMap::GetForBrowserContext(profile_)->RemoveZoomLevelChangedCallback(
-      zoom_callback_);
-
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
     io_data_.GetResourceContextNoInit());
@@ -170,7 +165,9 @@ void OffTheRecordProfileImpl::InitHostZoomMap() {
   host_zoom_map->CopyFrom(parent_host_zoom_map);
   // Observe parent's HZM change for propagating change of parent's
   // change to this HZM.
-  parent_host_zoom_map->AddZoomLevelChangedCallback(zoom_callback_);
+  zoom_subscription_ = parent_host_zoom_map->AddZoomLevelChangedCallback(
+      base::Bind(&OffTheRecordProfileImpl::OnZoomLevelChanged,
+                 base::Unretained(this)));
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

@@ -21,19 +21,18 @@ class ZoomDecorationTest : public InProcessBrowserTest {
  protected:
   ZoomDecorationTest()
       : InProcessBrowserTest(),
-        should_quit_on_zoom_(false),
-        zoom_callback_(base::Bind(&ZoomDecorationTest::OnZoomChanged,
-                                  base::Unretained(this))) {
+        should_quit_on_zoom_(false) {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->AddZoomLevelChangedCallback(zoom_callback_);
+    zoom_subscription_ = content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->AddZoomLevelChangedCallback(
+            base::Bind(&ZoomDecorationTest::OnZoomChanged,
+                       base::Unretained(this)));
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
-    content::HostZoomMap::GetForBrowserContext(
-        browser()->profile())->RemoveZoomLevelChangedCallback(zoom_callback_);
+    zoom_subscription_.reset();
   }
 
   LocationBarViewMac* GetLocationBar() const {
@@ -73,7 +72,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
 
  private:
   bool should_quit_on_zoom_;
-  content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
+  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomDecorationTest);
 };
