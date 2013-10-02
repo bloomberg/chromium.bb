@@ -128,9 +128,6 @@ extern const char kSendAction[];
 extern const char kZombie[];
 extern const char kZombieTrace[];
 
-// Backtrace of a Thread's dtor for <http://crbug.com/274705>.
-extern const char kPasswordThreadDtorTrace[];
-
 }  // namespace mac
 #endif
 

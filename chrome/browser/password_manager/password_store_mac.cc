@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
@@ -23,7 +21,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "chrome/common/crash_keys.h"
 #include "content/public/browser/notification_service.h"
 #include "crypto/apple_keychain.h"
 
@@ -468,15 +465,6 @@ std::vector<PasswordForm*> GetPasswordsForForms(
   return merged_forms;
 }
 
-class Thread : public base::Thread {
- public:
-  Thread(const char* name) : base::Thread(name) {}
-  virtual ~Thread() {
-    base::debug::SetCrashKeyToStackTrace(
-        crash_keys::mac::kPasswordThreadDtorTrace, base::debug::StackTrace());
-  }
-};
-
 }  // namespace internal_keychain_helpers
 
 #pragma mark -
@@ -762,8 +750,7 @@ PasswordStoreMac::~PasswordStoreMac() {
 }
 
 bool PasswordStoreMac::Init() {
-  thread_.reset(
-      new internal_keychain_helpers::Thread("Chrome_PasswordStore_Thread"));
+  thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
 
   if (!thread_->Start()) {
     thread_.reset(NULL);
