@@ -174,6 +174,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Filters) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   const Extension* extension = LoadExtensionAndWait("filters");
   ASSERT_TRUE(extension);
 
