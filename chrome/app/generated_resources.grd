@@ -14001,7 +14001,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <!-- Proteced media identifier permission infobar -->
     <if expr="is_android">
       <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION" desc="Question asked on the infobar whenever URL wants to access protected media identifier. It shows the origin of the URL.">
-        @<ph name="URL">$1<ex>https://www.youtube.com</ex></ph> needs to uniquely identify your device to play premium content.
+        <ph name="URL">$1<ex>https://www.youtube.com</ex></ph> needs to uniquely identify your device to play premium content.
       </message>
       <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_ALLOW_BUTTON" desc="A button in the protected media identifier infobar for allowing access to a protected media identifier for a given origin.">
         Allow
