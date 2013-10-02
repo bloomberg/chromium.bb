@@ -12,7 +12,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_service_win.h"
+#include "chrome/browser/ui/app_list/app_list_icon_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -67,7 +67,7 @@ AppMetroInfoBarDelegateWin::AppMetroInfoBarDelegateWin(
 AppMetroInfoBarDelegateWin::~AppMetroInfoBarDelegateWin() {}
 
 int AppMetroInfoBarDelegateWin::GetIconID() const {
-  return chrome::GetAppListIconResourceId();
+  return GetAppListIconResourceId();
 }
 
 string16 AppMetroInfoBarDelegateWin::GetMessageText() const {

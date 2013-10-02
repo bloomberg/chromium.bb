@@ -1,6 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
 
 #include <dwmapi.h>
 #include <sstream>
@@ -8,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -22,31 +23,25 @@
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
-#include "chrome/browser/ui/app_list/app_list_service_win.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
 #include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker.h"
+#include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_shower.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_view_factory.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_view_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_view_win_impl.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -57,7 +52,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
-#include "net/base/url_util.h"
+#include "grit/theme_resources.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -75,6 +70,33 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/app_list/app_list_service_ash.h"
+#include "chrome/browser/ui/host_desktop.h"
+#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/installer/util/install_util.h"
+#endif
+
+// static
+AppListService* AppListService::Get() {
+#if defined(USE_ASH)
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return chrome::GetAppListServiceAsh();
+#endif
+
+  return chrome::GetAppListServiceWin();
+}
+
+// static
+void AppListService::InitAll(Profile* initial_profile) {
+#if defined(USE_ASH)
+  chrome::GetAppListServiceAsh()->Init(initial_profile);
+#endif
+  chrome::GetAppListServiceWin()->Init(initial_profile);
+}
 
 namespace {
 
@@ -260,38 +282,6 @@ void CreateAppListShortcuts(
   }
 }
 
-class AppListControllerDelegateWin : public AppListControllerDelegate {
- public:
-  AppListControllerDelegateWin();
-  virtual ~AppListControllerDelegateWin();
-
- private:
-  // AppListController overrides:
-  virtual void DismissView() OVERRIDE;
-  virtual void ViewClosing() OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual bool CanPin() OVERRIDE;
-  virtual void OnShowExtensionPrompt() OVERRIDE;
-  virtual void OnCloseExtensionPrompt() OVERRIDE;
-  virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;
-  virtual void DoCreateShortcutsFlow(Profile* profile,
-                                     const std::string& extension_id) OVERRIDE;
-  virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
-  virtual void ActivateApp(Profile* profile,
-                           const extensions::Extension* extension,
-                           AppListSource source,
-                           int event_flags) OVERRIDE;
-  virtual void LaunchApp(Profile* profile,
-                         const extensions::Extension* extension,
-                         AppListSource source,
-                         int event_flags) OVERRIDE;
-  virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);
-};
-
 // Customizes the app list |hwnd| for Windows (eg: disable aero peek, set up
 // restart params).
 void SetWindowAttributes(HWND hwnd) {
@@ -327,7 +317,9 @@ void SetWindowAttributes(HWND hwnd) {
 
 class AppListViewFactoryImpl : public AppListViewFactory {
  public:
-  AppListViewFactoryImpl() {}
+  explicit AppListViewFactoryImpl(
+      scoped_ptr<AppListControllerDelegate> delegate)
+      : delegate_(delegate.Pass()) {}
   virtual ~AppListViewFactoryImpl() {}
 
   virtual AppListViewWin* CreateAppListView(
@@ -338,7 +330,7 @@ class AppListViewFactoryImpl : public AppListViewFactory {
     // owned by the app list view. The app list view manages it's own lifetime.
     // TODO(koz): Make AppListViewDelegate take a scoped_ptr.
     AppListViewDelegate* view_delegate = new AppListViewDelegate(
-        new AppListControllerDelegateWin, profile);
+        delegate_.get(), profile);
     app_list::AppListView* view = new app_list::AppListView(view_delegate);
     gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
     view->InitAsBubbleAtFixedLocation(NULL,
@@ -351,197 +343,47 @@ class AppListViewFactoryImpl : public AppListViewFactory {
   }
 
  private:
+  scoped_ptr<AppListControllerDelegate> delegate_;
   DISALLOW_COPY_AND_ASSIGN(AppListViewFactoryImpl);
 };
 
-// The AppListController class manages global resources needed for the app
-// list to operate, and controls when the app list is opened and closed.
-// TODO(tapted): Rename this class to AppListServiceWin and move entire file to
-// chrome/browser/ui/app_list/app_list_service_win.cc after removing
-// chrome/browser/ui/views dependency.
-class AppListController : public AppListServiceWin {
- public:
-  virtual ~AppListController();
+}  // namespace
 
-  static AppListController* GetInstance() {
-    return Singleton<AppListController,
-                     LeakySingletonTraits<AppListController> >::get();
-  }
-
-  void set_can_close(bool can_close) {
-    shower_->set_can_close(can_close);
-  }
-
-  void OnAppListClosing();
-
-  // AppListService overrides:
-  virtual void SetAppListNextPaintCallback(
-      const base::Closure& callback) OVERRIDE;
-  virtual void HandleFirstRun() OVERRIDE;
-  virtual void Init(Profile* initial_profile) OVERRIDE;
-  virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void DismissAppList() OVERRIDE;
-  virtual bool IsAppListVisible() const OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
-
-  // AppListServiceImpl overrides:
-  virtual void CreateShortcut() OVERRIDE;
-
-  // AppListServiceWin overrides:
-  virtual app_list::AppListModel* GetAppListModelForTesting() OVERRIDE;
-
- private:
-  friend struct DefaultSingletonTraits<AppListController>;
-
-  AppListController();
-
-  bool IsWarmupNeeded();
-  void ScheduleWarmup();
-
-  // Loads the profile last used with the app list and populates the view from
-  // it without showing it so that the next show is faster. Does nothing if the
-  // view already exists, or another profile is in the middle of being loaded to
-  // be shown.
-  void LoadProfileForWarmup();
-  void OnLoadProfileForWarmup(Profile* initial_profile);
-
-  // Responsible for putting views on the screen.
-  scoped_ptr<AppListShower> shower_;
-
-  bool enable_app_list_on_next_init_;
-
-  base::WeakPtrFactory<AppListController> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListController);
-};
-
-AppListControllerDelegateWin::AppListControllerDelegateWin() {}
-
-AppListControllerDelegateWin::~AppListControllerDelegateWin() {}
-
-void AppListControllerDelegateWin::DismissView() {
-  AppListController::GetInstance()->DismissAppList();
+// static
+AppListServiceWin* AppListServiceWin::GetInstance() {
+  return Singleton<AppListServiceWin,
+                   LeakySingletonTraits<AppListServiceWin> >::get();
 }
 
-void AppListControllerDelegateWin::ViewClosing() {
-  AppListController::GetInstance()->OnAppListClosing();
-}
-
-gfx::NativeWindow AppListControllerDelegateWin::GetAppListWindow() {
-  return AppListController::GetInstance()->GetAppListWindow();
-}
-
-gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
-  gfx::ImageSkia* resource = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(chrome::GetAppListIconResourceId());
-  return *resource;
-}
-
-bool AppListControllerDelegateWin::CanPin() {
-  return false;
-}
-
-void AppListControllerDelegateWin::ShowForProfileByPath(
-    const base::FilePath& profile_path) {
-  AppListService* service = AppListController::GetInstance();
-  service->SetProfilePath(profile_path);
-  service->Show();
-}
-
-void AppListControllerDelegateWin::OnShowExtensionPrompt() {
-  AppListController::GetInstance()->set_can_close(false);
-}
-
-void AppListControllerDelegateWin::OnCloseExtensionPrompt() {
-  AppListController::GetInstance()->set_can_close(true);
-}
-
-bool AppListControllerDelegateWin::CanDoCreateShortcutsFlow(
-    bool is_platform_app) {
-  return true;
-}
-
-void AppListControllerDelegateWin::DoCreateShortcutsFlow(
-    Profile* profile,
-    const std::string& extension_id) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  DCHECK(service);
-  const extensions::Extension* extension = service->GetInstalledExtension(
-      extension_id);
-  DCHECK(extension);
-
-  gfx::NativeWindow parent_hwnd = GetAppListWindow();
-  if (!parent_hwnd)
-    return;
-  OnShowExtensionPrompt();
-  chrome::ShowCreateChromeAppShortcutsDialog(
-      parent_hwnd, profile, extension,
-      base::Bind(&AppListControllerDelegateWin::OnCloseExtensionPrompt,
-                 base::Unretained(this)));
-}
-
-void AppListControllerDelegateWin::CreateNewWindow(Profile* profile,
-                                                   bool incognito) {
-  Profile* window_profile = incognito ?
-      profile->GetOffTheRecordProfile() : profile;
-  chrome::NewEmptyWindow(window_profile, chrome::GetActiveDesktop());
-}
-
-void AppListControllerDelegateWin::ActivateApp(
-    Profile* profile,
-    const extensions::Extension* extension,
-    AppListSource source,
-    int event_flags) {
-  LaunchApp(profile, extension, source, event_flags);
-}
-
-void AppListControllerDelegateWin::LaunchApp(
-    Profile* profile,
-    const extensions::Extension* extension,
-    AppListSource source,
-    int event_flags) {
-  AppListServiceImpl::RecordAppListAppLaunch();
-
-  AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB);
-
-  if (source != LAUNCH_FROM_UNKNOWN &&
-      extension->id() == extension_misc::kWebStoreAppId) {
-    // Set an override URL to include the source.
-    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
-    params.override_url = net::AppendQueryParameter(
-        extension_url,
-        extension_urls::kWebstoreSourceField,
-        AppListSourceToString(source));
-  }
-
-  OpenApplication(params);
-}
-
-AppListController::AppListController()
+AppListServiceWin::AppListServiceWin()
     : enable_app_list_on_next_init_(false),
-      shower_(new AppListShower(make_scoped_ptr(new AppListViewFactoryImpl),
+      shower_(new AppListShower(make_scoped_ptr(new AppListViewFactoryImpl(
+          scoped_ptr<AppListControllerDelegate>(
+              new AppListControllerDelegateWin(this)))),
                                 make_scoped_ptr(new KeepAliveServiceImpl))),
-      weak_factory_(this) {}
-
-AppListController::~AppListController() {
+      weak_factory_(this) {
 }
 
-gfx::NativeWindow AppListController::GetAppListWindow() {
+AppListServiceWin::~AppListServiceWin() {
+}
+
+void AppListServiceWin::set_can_close(bool can_close) {
+  shower_->set_can_close(can_close);
+}
+
+gfx::NativeWindow AppListServiceWin::GetAppListWindow() {
   return shower_->GetWindow();
 }
 
-AppListControllerDelegate* AppListController::CreateControllerDelegate() {
-  return new AppListControllerDelegateWin();
+AppListControllerDelegate* AppListServiceWin::CreateControllerDelegate() {
+  return new AppListControllerDelegateWin(this);
 }
 
-app_list::AppListModel* AppListController::GetAppListModelForTesting() {
+app_list::AppListModel* AppListServiceWin::GetAppListModelForTesting() {
   return static_cast<AppListViewWinImpl*>(shower_->view())->model();
 }
 
-void AppListController::ShowForProfile(Profile* requested_profile) {
+void AppListServiceWin::ShowForProfile(Profile* requested_profile) {
   DCHECK(requested_profile);
   if (requested_profile->IsManaged())
     return;
@@ -568,16 +410,16 @@ void AppListController::ShowForProfile(Profile* requested_profile) {
   RecordAppListLaunch();
 }
 
-void AppListController::DismissAppList() {
+void AppListServiceWin::DismissAppList() {
   shower_->DismissAppList();
 }
 
-void AppListController::OnAppListClosing() {
+void AppListServiceWin::OnAppListClosing() {
   shower_->CloseAppList();
   SetProfile(NULL);
 }
 
-void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {
+void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
   if (!IsWarmupNeeded())
     return;
 
@@ -587,12 +429,12 @@ void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {
                       base::Time::Now() - before_warmup);
 }
 
-void AppListController::SetAppListNextPaintCallback(
+void AppListServiceWin::SetAppListNextPaintCallback(
     const base::Closure& callback) {
   app_list::AppListView::SetNextPaintCallback(callback);
 }
 
-void AppListController::HandleFirstRun() {
+void AppListServiceWin::HandleFirstRun() {
   PrefService* local_state = g_browser_process->local_state();
   // If the app list is already enabled during first run, then the user had
   // opted in to the app launcher before uninstalling, so we re-enable to
@@ -603,7 +445,7 @@ void AppListController::HandleFirstRun() {
       prefs::kAppLauncherHasBeenEnabled);
 }
 
-void AppListController::Init(Profile* initial_profile) {
+void AppListServiceWin::Init(Profile* initial_profile) {
   // In non-Ash metro mode, we can not show the app list for this process, so do
   // not bother performing Init tasks.
   if (win8::IsSingleWindowMetroMode())
@@ -647,9 +489,6 @@ void AppListController::Init(Profile* initial_profile) {
   }
 #endif
 
-  // Instantiate AppListController so it listens for profile deletions.
-  AppListController::GetInstance();
-
   ScheduleWarmup();
 
   MigrateAppLauncherEnabledPref();
@@ -657,15 +496,15 @@ void AppListController::Init(Profile* initial_profile) {
   SendUsageStats();
 }
 
-void AppListController::CreateForProfile(Profile* profile) {
+void AppListServiceWin::CreateForProfile(Profile* profile) {
   shower_->CreateViewForProfile(profile);
 }
 
-bool AppListController::IsAppListVisible() const {
+bool AppListServiceWin::IsAppListVisible() const {
   return shower_->IsAppListVisible();
 }
 
-void AppListController::CreateShortcut() {
+void AppListServiceWin::CreateShortcut() {
   // Check if the app launcher shortcuts have ever been created before.
   // Shortcuts should only be created once. If the user unpins the taskbar
   // shortcut, they can restore it by pinning the start menu or desktop
@@ -688,18 +527,18 @@ void AppListController::CreateShortcut() {
                  user_data_dir, GetAppModelId(), shortcut_locations));
 }
 
-void AppListController::ScheduleWarmup() {
+void AppListServiceWin::ScheduleWarmup() {
   // Post a task to create the app list. This is posted to not impact startup
   // time.
   const int kInitWindowDelay = 30;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&AppListController::LoadProfileForWarmup,
+      base::Bind(&AppListServiceWin::LoadProfileForWarmup,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
 }
 
-bool AppListController::IsWarmupNeeded() {
+bool AppListServiceWin::IsWarmupNeeded() {
   if (!g_browser_process || g_browser_process->IsShuttingDown())
     return false;
 
@@ -708,7 +547,7 @@ bool AppListController::IsWarmupNeeded() {
   return !shower_->HasView() && !profile_loader().IsAnyProfileLoading();
 }
 
-void AppListController::LoadProfileForWarmup() {
+void AppListServiceWin::LoadProfileForWarmup() {
   if (!IsWarmupNeeded())
     return;
 
@@ -717,16 +556,14 @@ void AppListController::LoadProfileForWarmup() {
 
   profile_loader().LoadProfileInvalidatingOtherLoads(
       profile_path,
-      base::Bind(&AppListController::OnLoadProfileForWarmup,
+      base::Bind(&AppListServiceWin::OnLoadProfileForWarmup,
                  weak_factory_.GetWeakPtr()));
 }
-
-}  // namespace
 
 namespace chrome {
 
 AppListService* GetAppListServiceWin() {
-  return AppListController::GetInstance();
+  return AppListServiceWin::GetInstance();
 }
 
 }  // namespace chrome

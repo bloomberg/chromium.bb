@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/app_list_service_win.h"
 #include "chrome/browser/ui/app_list/test/app_list_service_test_api.h"
 #include "chrome/browser/ui/app_list/test/app_list_service_test_api_ash.h"
+#include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
 
 namespace test {
 namespace {
