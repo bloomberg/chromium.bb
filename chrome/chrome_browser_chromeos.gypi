@@ -403,6 +403,8 @@
         'browser/chromeos/input_method/component_extension_ime_manager_impl.h',
         'browser/chromeos/input_method/mock_ibus_controller.cc',
         'browser/chromeos/input_method/mock_ibus_controller.h',
+        'browser/chromeos/input_method/mode_indicator_controller.cc',
+        'browser/chromeos/input_method/mode_indicator_controller.h',
         'browser/chromeos/input_method/mode_indicator_view.cc',
         'browser/chromeos/input_method/mode_indicator_view.h',
         'browser/chromeos/input_method/mode_indicator_widget.cc',
