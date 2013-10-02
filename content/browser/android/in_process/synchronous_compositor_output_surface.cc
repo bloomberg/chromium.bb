@@ -115,6 +115,9 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
   capabilities_.adjust_deadline_for_parent = false;
   // Cannot call out to GetDelegate() here as the output surface is not
   // constructed on the correct thread.
+
+  memory_policy_.priority_cutoff_when_visible =
+      cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE;
 }
 
 SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
