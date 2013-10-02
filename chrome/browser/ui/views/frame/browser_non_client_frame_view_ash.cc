@@ -372,9 +372,10 @@ int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight() const {
   if (!ShouldPaint() || browser_view()->IsTabStripVisible())
     return 0;
 
-  // For windows without a tab strip (popups, etc.) ensure we have enough space
-  // to see the window caption buttons.
-  return caption_button_container_->bounds().bottom() - kContentShadowHeight;
+  int caption_buttons_bottom = caption_button_container_->bounds().bottom();
+  if (browser_view()->IsToolbarVisible())
+    return caption_buttons_bottom - kContentShadowHeight;
+  return caption_buttons_bottom + kClientEdgeThickness;
 }
 
 bool BrowserNonClientFrameViewAsh::UseShortHeader() const {

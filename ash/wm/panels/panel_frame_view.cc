@@ -57,6 +57,14 @@ void PanelFrameView::InitFramePainter() {
   frame_painter_->Init(frame_, window_icon_, caption_button_container_);
 }
 
+int PanelFrameView::NonClientTopBorderHeight() const {
+  if (!frame_painter_)
+    return 0;
+  // Reserve enough space to see the buttons and the separator line.
+  return caption_button_container_->bounds().bottom() +
+      frame_painter_->HeaderContentSeparatorSize();
+}
+
 gfx::Size PanelFrameView::GetMinimumSize() {
   if (!frame_painter_)
     return gfx::Size();
@@ -124,8 +132,7 @@ gfx::Rect PanelFrameView::GetBoundsForClientView() const {
   if (!frame_painter_)
     return bounds();
   return frame_painter_->GetBoundsForClientView(
-      caption_button_container_->bounds().bottom(),
-      bounds());
+      NonClientTopBorderHeight(), bounds());
 }
 
 gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
@@ -133,7 +140,7 @@ gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
   if (!frame_painter_)
     return client_bounds;
   return frame_painter_->GetWindowBoundsForClientBounds(
-      caption_button_container_->bounds().bottom(), client_bounds);
+      NonClientTopBorderHeight(), client_bounds);
 }
 
 }  // namespace ash

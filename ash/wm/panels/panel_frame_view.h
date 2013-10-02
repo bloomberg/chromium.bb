@@ -41,6 +41,9 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
  private:
   void InitFramePainter();
 
+  // Height from top of window to top of client area.
+  int NonClientTopBorderHeight() const;
+
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
