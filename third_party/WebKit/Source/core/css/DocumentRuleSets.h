@@ -43,11 +43,14 @@ class StyleEngine;
 class ShadowDistributedRules {
 public:
     void addRule(StyleRule*, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags);
-    void collectMatchRequests(bool includeEmptyRules, Vector<MatchRequest>&);
     void clear() { m_shadowDistributedRuleSetMap.clear(); }
     void reset(const ContainerNode* scopingNode);
     bool isEmpty() const { return m_shadowDistributedRuleSetMap.isEmpty(); }
     void collectFeaturesTo(RuleFeatureSet&);
+
+    typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> >::iterator iterator;
+    iterator begin() { return m_shadowDistributedRuleSetMap.begin(); }
+    iterator end() { return m_shadowDistributedRuleSetMap.end(); }
 
 private:
     typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> > ShadowDistributedRuleSetMap;

@@ -78,8 +78,6 @@ class ElementRuleCollector {
 public:
     ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle*);
 
-    void setBehaviorAtBoundary(SelectorChecker::BehaviorAtBoundary boundary) { m_behaviorAtBoundary = boundary; }
-    SelectorChecker::BehaviorAtBoundary behaviorAtBoundary() const { return m_behaviorAtBoundary; }
     void setCanUseFastReject(bool canUseFastReject) { m_canUseFastReject = canUseFastReject; }
     bool canUseFastReject() const { return m_canUseFastReject; }
 
@@ -94,8 +92,8 @@ public:
     MatchResult& matchedResult();
     PassRefPtr<CSSRuleList> matchedRuleList();
 
-    void collectMatchingRules(const MatchRequest&, RuleRange&, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
-    void collectMatchingRulesForRegion(const MatchRequest&, RuleRange&, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
+    void collectMatchingRules(const MatchRequest&, RuleRange&, SelectorChecker::BehaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
+    void collectMatchingRulesForRegion(const MatchRequest&, RuleRange&, SelectorChecker::BehaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
@@ -107,10 +105,10 @@ public:
 private:
     Document& document() { return m_context.document(); }
 
-    void collectRuleIfMatches(const RuleData&, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
-    void collectMatchingRulesForList(const Vector<RuleData>*, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
-    void collectMatchingRulesForList(const RuleData*, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
-    bool ruleMatches(const RuleData&, const ContainerNode* scope, PseudoId&);
+    void collectRuleIfMatches(const RuleData&, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
+    void collectMatchingRulesForList(const Vector<RuleData>*, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
+    void collectMatchingRulesForList(const RuleData*, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
+    bool ruleMatches(const RuleData&, const ContainerNode* scope, PseudoId&, SelectorChecker::BehaviorAtBoundary);
 
     void sortMatchedRules();
     void addMatchedRule(const RuleData*, CascadeScope, CascadeOrder);
@@ -125,7 +123,6 @@ private:
     const RenderRegion* m_regionForStyling;
     PseudoStyleRequest m_pseudoStyleRequest;
     SelectorChecker::Mode m_mode;
-    SelectorChecker::BehaviorAtBoundary m_behaviorAtBoundary;
     bool m_canUseFastReject;
     bool m_sameOriginOnly;
     bool m_matchingUARules;

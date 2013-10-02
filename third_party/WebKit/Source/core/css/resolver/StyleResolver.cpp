@@ -378,21 +378,23 @@ inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& col
         return;
 
     bool previousCanUseFastReject = collector.canUseFastReject();
-    SelectorChecker::BehaviorAtBoundary previousBoundary = collector.behaviorAtBoundary();
-    collector.setBehaviorAtBoundary(static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
     collector.setCanUseFastReject(false);
 
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
 
-    Vector<MatchRequest> matchRequests;
-    m_ruleSets.shadowDistributedRules().collectMatchRequests(includeEmptyRules, matchRequests);
-    for (size_t i = 0; i < matchRequests.size(); ++i)
-        collector.collectMatchingRules(matchRequests[i], ruleRange, cascadeScope);
-    collector.sortAndTransferMatchedRules();
+    for (ShadowDistributedRules::iterator it = m_ruleSets.shadowDistributedRules().begin(); it != m_ruleSets.shadowDistributedRules().end(); ++it) {
+        unsigned boundaryBehavior = SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement;
+        const ContainerNode* scopingNode = it->key;
 
-    collector.setBehaviorAtBoundary(previousBoundary);
+        if (scopingNode && scopingNode->isShadowRoot()) {
+            boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
+            scopingNode = toShadowRoot(scopingNode)->host();
+        }
+        collector.collectMatchingRules(MatchRequest(it->value.get(), includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), cascadeScope);
+    }
+    collector.sortAndTransferMatchedRules();
     collector.setCanUseFastReject(previousCanUseFastReject);
 }
 

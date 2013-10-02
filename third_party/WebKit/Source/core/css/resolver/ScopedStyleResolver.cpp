@@ -379,10 +379,10 @@ void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool i
         shadowRoot = shadow->oldestShadowRoot();
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-    collector.setBehaviorAtBoundary(static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
+    SelectorChecker::BehaviorAtBoundary boundary = static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement);
     for (; shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
         if (RuleSet* ruleSet = atHostRuleSetFor(shadowRoot))
-            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, &m_scopingNode), ruleRange, cascadeScope);
+            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, &m_scopingNode), ruleRange, boundary, cascadeScope);
     }
 
     collector.sortAndTransferMatchedRules();
@@ -414,9 +414,8 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
 
     MatchRequest matchRequest(m_authorStyle.get(), includeEmptyRules, scopingNode, applyAuthorStyles);
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-    collector.setBehaviorAtBoundary(static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary));
-    collector.collectMatchingRules(matchRequest, ruleRange, cascadeScope, cascadeOrder);
-    collector.collectMatchingRulesForRegion(matchRequest, ruleRange, cascadeScope, cascadeOrder);
+    collector.collectMatchingRules(matchRequest, ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
+    collector.collectMatchingRulesForRegion(matchRequest, ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
 }
 
 void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
