@@ -152,8 +152,19 @@ std::string DetermineTextLanguage(const base::string16& text,
 #endif
 #if !defined(CLD_VERSION) || CLD_VERSION==2
       case 2:
+        // (1) CLD2's LanguageCode returns general Chinese 'zh' for
+        // CLD2::CHINESE, but Translate server doesn't accept it. This is
+        // converted to 'zh-CN' in the same way as CLD1's
+        // LanguageCodeWithDialects.
+        //
+        // (2) CLD2's LanguageCode returns zh-Hant instead of zh-TW for
+        // CLD2::CHINESE_T. This is technically more precise for the language
+        // code of traditional Chinese, while Translate server hasn't accepted
+        // zh-Hant yet.
         if (cld_language == CLD2::CHINESE) {
           language = "zh-CN";
+        } else if (cld_language == CLD2::CHINESE_T) {
+          language = "zh-TW";
         } else {
           language =
               CLD2::LanguageCode(static_cast<CLD2::Language>(cld_language));
