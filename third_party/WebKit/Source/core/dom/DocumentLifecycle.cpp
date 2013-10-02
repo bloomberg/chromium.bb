@@ -46,7 +46,9 @@ DocumentLifecycle::~DocumentLifecycle()
 
 void DocumentLifecycle::advanceTo(State state)
 {
-    ASSERT(state > m_state);
+    // FIXME: We can dispose a document multiple times. This seems wrong.
+    // See https://code.google.com/p/chromium/issues/detail?id=301668.
+    ASSERT(state > m_state || (state == Disposed && m_state == Disposed));
     m_state = state;
 }
 
