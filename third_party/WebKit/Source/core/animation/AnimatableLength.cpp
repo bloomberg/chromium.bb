@@ -29,16 +29,14 @@
  */
 
 #include "config.h"
-#include "core/animation/AnimatableNumber.h"
+#include "core/animation/AnimatableLength.h"
 
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/platform/CalculationValue.h"
-#include "core/platform/Length.h"
-#include "wtf/MathExtras.h"
 
 namespace WebCore {
 
-PassRefPtr<AnimatableNumber> AnimatableNumber::create(CSSValue* value)
+PassRefPtr<AnimatableLength> AnimatableLength::create(CSSValue* value)
 {
     ASSERT(canCreateFrom(value));
     if (value->isPrimitiveValue()) {
@@ -59,7 +57,7 @@ PassRefPtr<AnimatableNumber> AnimatableNumber::create(CSSValue* value)
     return 0;
 }
 
-PassRefPtr<AnimatableNumber> AnimatableNumber::create(const AnimatableNumber* leftAddend, const AnimatableNumber* rightAddend)
+PassRefPtr<AnimatableLength> AnimatableLength::create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
 {
     ASSERT(leftAddend);
     ASSERT(rightAddend);
@@ -69,7 +67,7 @@ PassRefPtr<AnimatableNumber> AnimatableNumber::create(const AnimatableNumber* le
     return create(CSSCalcValue::createExpressionNode(leftAddend->toCSSCalcExpressionNode(), rightAddend->toCSSCalcExpressionNode(), CalcAdd));
 }
 
-bool AnimatableNumber::canCreateFrom(const CSSValue* value)
+bool AnimatableLength::canCreateFrom(const CSSValue* value)
 {
     ASSERT(value);
     if (value->isPrimitiveValue()) {
@@ -81,22 +79,16 @@ bool AnimatableNumber::canCreateFrom(const CSSValue* value)
     return value->isCalcValue();
 }
 
-PassRefPtr<CSSValue> AnimatableNumber::toCSSValue(NumberRange range) const
+PassRefPtr<CSSValue> AnimatableLength::toCSSValue(NumberRange range) const
 {
     return toCSSPrimitiveValue(range);
 }
 
-double AnimatableNumber::toDouble() const
-{
-    ASSERT(m_unitType == UnitTypeNumber);
-    return m_number;
-}
-
-Length AnimatableNumber::toLength(const RenderStyle* style, const RenderStyle* rootStyle, double zoom, NumberRange range) const
+Length AnimatableLength::toLength(const RenderStyle* style, const RenderStyle* rootStyle, double zoom, NumberRange range) const
 {
     if (!m_isCalc) {
         // Avoid creating a CSSValue in the common cases
-        if (m_unitType == UnitTypeLength)
+        if (m_unitType == UnitTypePixels)
             return Length(clampedNumber(range) * zoom, Fixed);
         if (m_unitType == UnitTypePercentage)
             return Length(clampedNumber(range), Percent);
@@ -104,25 +96,25 @@ Length AnimatableNumber::toLength(const RenderStyle* style, const RenderStyle* r
     return toCSSPrimitiveValue(range)->convertToLength<AnyConversion>(style, rootStyle, zoom);
 }
 
-PassRefPtr<AnimatableValue> AnimatableNumber::interpolateTo(const AnimatableValue* value, double fraction) const
+PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    const AnimatableNumber* number = toAnimatableNumber(value);
-    return AnimatableNumber::create(scale(1 - fraction).get(), number->scale(fraction).get());
+    const AnimatableLength* number = toAnimatableLength(value);
+    return AnimatableLength::create(scale(1 - fraction).get(), number->scale(fraction).get());
 }
 
-PassRefPtr<AnimatableValue> AnimatableNumber::addWith(const AnimatableValue* value) const
+PassRefPtr<AnimatableValue> AnimatableLength::addWith(const AnimatableValue* value) const
 {
     // Optimization for adding with 0.
     if (!m_isCalc && !m_number)
         return takeConstRef(value);
-    const AnimatableNumber* number = toAnimatableNumber(value);
+    const AnimatableLength* number = toAnimatableLength(value);
     if (!number->m_isCalc && !number->m_number)
         return takeConstRef(this);
 
-    return AnimatableNumber::create(this, number);
+    return AnimatableLength::create(this, number);
 }
 
-PassRefPtr<CSSCalcExpressionNode> AnimatableNumber::toCSSCalcExpressionNode() const
+PassRefPtr<CSSCalcExpressionNode> AnimatableLength::toCSSCalcExpressionNode() const
 {
     if (m_isCalc)
         return m_calcExpression;
@@ -139,7 +131,7 @@ static bool isCompatibleWithRange(const CSSPrimitiveValue* primitiveValue, Numbe
     return primitiveValue->getDoubleValue() >= 0;
 }
 
-PassRefPtr<CSSPrimitiveValue> AnimatableNumber::toCSSPrimitiveValue(NumberRange range) const
+PassRefPtr<CSSPrimitiveValue> AnimatableLength::toCSSPrimitiveValue(NumberRange range) const
 {
     ASSERT(m_unitType != UnitTypeInvalid);
     if (!m_cachedCSSPrimitiveValue || !isCompatibleWithRange(m_cachedCSSPrimitiveValue.get(), range)) {
@@ -151,40 +143,33 @@ PassRefPtr<CSSPrimitiveValue> AnimatableNumber::toCSSPrimitiveValue(NumberRange 
     return m_cachedCSSPrimitiveValue;
 }
 
-PassRefPtr<AnimatableNumber> AnimatableNumber::scale(double factor) const
+PassRefPtr<AnimatableLength> AnimatableLength::scale(double factor) const
 {
     if (m_isCalc) {
-        return AnimatableNumber::create(CSSCalcValue::createExpressionNode(
+        return AnimatableLength::create(CSSCalcValue::createExpressionNode(
             m_calcExpression,
             CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(factor, CSSPrimitiveValue::CSS_NUMBER)),
             CalcMultiply));
     }
-    return AnimatableNumber::create(m_number * factor, m_unitType);
+    return AnimatableLength::create(m_number * factor, m_unitType);
 }
 
-AnimatableNumber::NumberUnitType AnimatableNumber::primitiveUnitToNumberType(unsigned short primitiveUnit)
+AnimatableLength::NumberUnitType AnimatableLength::primitiveUnitToNumberType(unsigned short primitiveUnit)
 {
     switch (primitiveUnit) {
-    case CSSPrimitiveValue::CSS_NUMBER:
-        return UnitTypeNumber;
     case CSSPrimitiveValue::CSS_PX:
     case CSSPrimitiveValue::CSS_CM:
     case CSSPrimitiveValue::CSS_MM:
     case CSSPrimitiveValue::CSS_IN:
     case CSSPrimitiveValue::CSS_PT:
     case CSSPrimitiveValue::CSS_PC:
-        return UnitTypeLength;
+        return UnitTypePixels;
     case CSSPrimitiveValue::CSS_EMS:
         return UnitTypeFontSize;
     case CSSPrimitiveValue::CSS_EXS:
         return UnitTypeFontXSize;
     case CSSPrimitiveValue::CSS_REMS:
         return UnitTypeRootFontSize;
-    case CSSPrimitiveValue::CSS_DEG:
-    case CSSPrimitiveValue::CSS_RAD:
-    case CSSPrimitiveValue::CSS_GRAD:
-    case CSSPrimitiveValue::CSS_TURN:
-        return UnitTypeAngle;
     case CSSPrimitiveValue::CSS_PERCENTAGE:
         return UnitTypePercentage;
     case CSSPrimitiveValue::CSS_VW:
@@ -195,27 +180,15 @@ AnimatableNumber::NumberUnitType AnimatableNumber::primitiveUnitToNumberType(uns
         return UnitTypeViewportMin;
     case CSSPrimitiveValue::CSS_VMAX:
         return UnitTypeViewportMax;
-    case CSSPrimitiveValue::CSS_MS:
-    case CSSPrimitiveValue::CSS_S:
-        return UnitTypeTime;
-    case CSSPrimitiveValue::CSS_HZ:
-    case CSSPrimitiveValue::CSS_KHZ:
-        return UnitTypeFrequency;
-    case CSSPrimitiveValue::CSS_DPPX:
-    case CSSPrimitiveValue::CSS_DPI:
-    case CSSPrimitiveValue::CSS_DPCM:
-        return UnitTypeResolution;
     default:
         return UnitTypeInvalid;
     }
 }
 
-unsigned short AnimatableNumber::numberTypeToPrimitiveUnit(NumberUnitType numberType)
+unsigned short AnimatableLength::numberTypeToPrimitiveUnit(NumberUnitType numberType)
 {
     switch (numberType) {
-    case UnitTypeNumber:
-        return CSSPrimitiveValue::CSS_NUMBER;
-    case UnitTypeLength:
+    case UnitTypePixels:
         return CSSPrimitiveValue::CSS_PX;
     case UnitTypeFontSize:
         return CSSPrimitiveValue::CSS_EMS;
@@ -233,14 +206,6 @@ unsigned short AnimatableNumber::numberTypeToPrimitiveUnit(NumberUnitType number
         return CSSPrimitiveValue::CSS_VMIN;
     case UnitTypeViewportMax:
         return CSSPrimitiveValue::CSS_VMAX;
-    case UnitTypeTime:
-        return CSSPrimitiveValue::CSS_MS;
-    case UnitTypeAngle:
-        return CSSPrimitiveValue::CSS_DEG;
-    case UnitTypeFrequency:
-        return CSSPrimitiveValue::CSS_HZ;
-    case UnitTypeResolution:
-        return CSSPrimitiveValue::CSS_DPPX;
     case UnitTypeInvalid:
         return CSSPrimitiveValue::CSS_UNKNOWN;
     }
