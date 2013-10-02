@@ -74,6 +74,7 @@
           'sys_exception.c',
           'sys_fdio.c',
           'sys_filename.c',
+          'sys_futex.c',
           'sys_imc.c',
           'sys_list_mappings.c',
           'sys_memory.c',

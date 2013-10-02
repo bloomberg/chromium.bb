@@ -227,6 +227,11 @@ typedef int (*TYPE_nacl_test_infoleak) (void);
 
 typedef int (*TYPE_nacl_test_crash) (int crash_type);
 
+typedef int (*TYPE_nacl_futex_wait_abs) (volatile int *addr, int value,
+                                         const struct timespec *abstime);
+
+typedef int (*TYPE_nacl_futex_wake) (volatile int *addr, int nwake);
+
 #if defined(__cplusplus)
 }
 #endif

@@ -205,8 +205,14 @@ struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
   natp->fault_signal = 0;
 
   natp->dynamic_delete_generation = 0;
+
+  if (!NaClCondVarCtor(&natp->futex_condvar)) {
+    goto cleanup_suspend_mu;
+  }
   return natp;
 
+ cleanup_suspend_mu:
+  NaClMutexDtor(&natp->suspend_mu);
  cleanup_mu:
   NaClMutexDtor(&natp->mu);
   if (NULL != natp->signal_stack) {
@@ -261,6 +267,7 @@ void NaClAppThreadDelete(struct NaClAppThread *natp) {
   NaClMutexDtor(&natp->suspend_mu);
   NaClSignalStackFree(natp->signal_stack);
   natp->signal_stack = NULL;
+  NaClCondVarDtor(&natp->futex_condvar);
   NaClTlsFree(natp);
   NaClMutexDtor(&natp->mu);
   NaClAlignedFree(natp);

@@ -210,6 +210,10 @@ SYSCALL_LIST = [
     ('NACL_sys_exception_clear_flag', 'NaClSysExceptionClearFlag', []),
     ('NACL_sys_test_infoleak', 'NaClSysTestInfoLeak', []),
     ('NACL_sys_test_crash', 'NaClSysTestCrash', ['int crash_type']),
+    ('NACL_sys_futex_wait_abs', 'NaClSysFutexWaitAbs',
+     ['uint32_t addr', 'uint32_t value', 'uint32_t abstime_ptr']),
+    ('NACL_sys_futex_wake', 'NaClSysFutexWake',
+     ['uint32_t addr', 'uint32_t nwake']),
     ]
 
 

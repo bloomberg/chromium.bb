@@ -18,6 +18,7 @@
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
+#include "native_client/src/trusted/service_runtime/sys_futex.h"
 
 
 EXTERN_C_BEGIN
@@ -148,6 +149,18 @@ struct NaClAppThread {
    * Protected by mu
    */
   int                       dynamic_delete_generation;
+
+  /*
+   * If this thread is waiting on a futex, futex_wait_list_node is
+   * linked into the doubly linked list NaClApp::futex_wait_list_head.
+   */
+  struct NaClListNode       futex_wait_list_node;
+  /*
+   * If this thread is waiting on a futex, futex_wait_addr contains
+   * the untrusted address that the thread is waiting on.
+   */
+  uint32_t                  futex_wait_addr;
+  struct NaClCondVar        futex_condvar;
 };
 
 void WINAPI NaClAppThreadLauncher(void *state);

@@ -46,15 +46,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
-
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
-
+#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
-
-#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
+#include "native_client/src/trusted/service_runtime/sel_util.h"
+#include "native_client/src/trusted/service_runtime/sys_futex.h"
 
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
@@ -437,6 +435,20 @@ struct NaClApp {
   int sc_nprocessors_onln;
 
   const struct NaClValidatorInterface *validator;
+
+  /*
+   * Mutex for protecting futex_wait_list_head.  Lock ordering:
+   * NaClApp::mu may be claimed after futex_wait_list_mu but never
+   * before it.
+   */
+  struct NaClMutex          futex_wait_list_mu;
+  /*
+   * This is the sentinel node for a doubly linked list of
+   * NaClAppThreads.  This lists the threads that are waiting to be
+   * woken up by futex_wake().  This list must only be accessed while
+   * holding the mutex futex_wait_list_mu.
+   */
+  struct NaClListNode       futex_wait_list_head;
 };
 
 

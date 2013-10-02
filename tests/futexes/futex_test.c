@@ -36,6 +36,10 @@
  * test to disregard them and retry.
  */
 
+#if TEST_IRT_FUTEX && TEST_FUTEX_SYSCALLS
+# error Only one of TEST_IRT_FUTEX and TEST_FUTEX_SYSCALLS should be set
+#endif
+
 #if TEST_IRT_FUTEX
 static struct nacl_irt_futex irt_futex;
 #endif
@@ -50,6 +54,23 @@ static int futex_wait(volatile int *addr, int val,
 
 static int futex_wake(volatile int *addr, int nwake, int *count) {
   return irt_futex.futex_wake(addr, nwake, count);
+}
+
+#elif TEST_FUTEX_SYSCALLS
+
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+
+static int futex_wait(volatile int *addr, int val,
+                      const struct timespec *abstime) {
+  return -NACL_SYSCALL(futex_wait_abs)(addr, val, abstime);
+}
+
+static int futex_wake(volatile int *addr, int nwake, int *count) {
+  int result = NACL_SYSCALL(futex_wake)(addr, nwake);
+  if (result < 0)
+    return -result;
+  *count = result;
+  return 0;
 }
 
 #elif defined(__GLIBC__)
@@ -102,7 +123,7 @@ void test_futex_wait_value_mismatch(void) {
    * This should return EWOULDBLOCK, but the implementation in
    * futex_emulation.c in nacl-glibc has a bug.
    */
-#if !TEST_IRT_FUTEX && defined(__GLIBC__)
+#if !TEST_IRT_FUTEX && !TEST_FUTEX_SYSCALLS && defined(__GLIBC__)
   ASSERT_EQ(rc, 0);
 #else
   ASSERT_EQ(rc, EWOULDBLOCK);
@@ -123,6 +144,28 @@ void test_futex_wait_timeout(void) {
   rc = futex_wake(&futex_value, INT_MAX, &count);
   ASSERT_EQ(rc, 0);
   ASSERT_EQ(count, 0);
+}
+
+void test_futex_wait_efault(void) {
+  /* Check that the timeout address is checked for validity. */
+  void *bad_address = (void *) ~(uintptr_t) 0;
+  int futex_value = 123;
+  int rc = futex_wait(&futex_value, futex_value, bad_address);
+#if !TEST_IRT_FUTEX && !TEST_FUTEX_SYSCALLS && defined(__GLIBC__)
+  ASSERT_EQ(rc, EINTR);
+#else
+  ASSERT_EQ(rc, EFAULT);
+#endif
+
+  /*
+   * Check that the wait address is checked for validity.  The syscall
+   * implementation needs to do this, but the untrusted
+   * implementations don't.
+   */
+  if (TEST_FUTEX_SYSCALLS) {
+    int rc = futex_wait(bad_address, futex_value, NULL);
+    ASSERT_EQ(rc, EFAULT);
+  }
 }
 
 
@@ -299,6 +342,7 @@ int main(void) {
 
   RUN_TEST(test_futex_wait_value_mismatch);
   RUN_TEST(test_futex_wait_timeout);
+  RUN_TEST(test_futex_wait_efault);
   RUN_TEST(test_futex_wakeup);
   RUN_TEST(test_futex_wakeup_limit);
   RUN_TEST(test_futex_wakeup_address);
