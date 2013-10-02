@@ -12,6 +12,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/debugger.h"
+#include "content/public/browser/worker_service.h"
 
 using extensions::api::debugger::Debuggee;
 
@@ -100,9 +101,12 @@ class DebuggerGetTargetsFunction : public DebuggerFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void CollectWorkerInfo(base::ListValue* list);
+  typedef std::vector<content::WorkerService::WorkerInfo> WorkerInfoList;
 
-  void SendTargetList(base::ListValue* list);
+  WorkerInfoList CollectWorkerInfo();
+
+  void SendTargetList(base::ListValue* list,
+                      const WorkerInfoList& worker_info);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_

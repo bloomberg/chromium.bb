@@ -526,16 +526,15 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
       target_list->Append(SerializePageInfo(i->first, host));
 
     AddRef();  // Balanced in SendTargetList.
-    BrowserThread::PostTaskAndReply(
+    BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(&DevToolsHttpHandlerImpl::CollectWorkerInfo,
-                   base::Unretained(this),
-                   target_list,
-                   host),
+                   base::Unretained(this)),
         base::Bind(&DevToolsHttpHandlerImpl::SendTargetList,
                    base::Unretained(this),
                    connection_id,
+                   host,
                    target_list));
     return;
   }
@@ -585,18 +584,18 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   return;
 }
 
-void DevToolsHttpHandlerImpl::CollectWorkerInfo(base::ListValue* target_list,
-                                                std::string host) {
-
-  std::vector<WorkerService::WorkerInfo> worker_info =
-      WorkerService::GetInstance()->GetWorkers();
-
-  for (size_t i = 0; i < worker_info.size(); ++i)
-    target_list->Append(SerializeWorkerInfo(worker_info[i], host));
+DevToolsHttpHandlerImpl::WorkerInfoList
+DevToolsHttpHandlerImpl::CollectWorkerInfo() {
+  return WorkerService::GetInstance()->GetWorkers();
 }
 
-void DevToolsHttpHandlerImpl::SendTargetList(int connection_id,
-                                             base::ListValue* target_list) {
+void DevToolsHttpHandlerImpl::SendTargetList(
+    int connection_id,
+    const std::string& host,
+    base::ListValue* target_list,
+    const WorkerInfoList& worker_info) {
+  for (size_t i = 0; i < worker_info.size(); ++i)
+    target_list->Append(SerializeWorkerInfo(worker_info[i], host));
   SendJson(connection_id, net::HTTP_OK, target_list, std::string());
   delete target_list;
   Release();  // Balanced OnJsonRequestUI.

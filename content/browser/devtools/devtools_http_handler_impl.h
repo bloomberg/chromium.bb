@@ -80,8 +80,13 @@ class DevToolsHttpHandlerImpl
   void ResetHandlerThread();
   void ResetHandlerThreadAndRelease();
 
-  void CollectWorkerInfo(base::ListValue* target_list, std::string host);
-  void SendTargetList(int connection_id, base::ListValue* target_list);
+  typedef std::vector<WorkerService::WorkerInfo> WorkerInfoList;
+
+  WorkerInfoList CollectWorkerInfo();
+  void SendTargetList(int connection_id,
+                      const std::string& host,
+                      base::ListValue* target_list,
+                      const WorkerInfoList& worker_info_list);
 
   void Init();
   void Teardown();

@@ -761,24 +761,25 @@ bool DebuggerGetTargetsFunction::RunImpl() {
       results_list->Append(value);
   }
 
-  content::BrowserThread::PostTaskAndReply(
+  content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&DebuggerGetTargetsFunction::CollectWorkerInfo, this,
-                 results_list),
+      base::Bind(&DebuggerGetTargetsFunction::CollectWorkerInfo, this),
       base::Bind(&DebuggerGetTargetsFunction::SendTargetList, this,
                  results_list));
   return true;
 }
 
-void DebuggerGetTargetsFunction::CollectWorkerInfo(base::ListValue* list) {
-  std::vector<WorkerService::WorkerInfo> worker_info =
-      WorkerService::GetInstance()->GetWorkers();
-  for (size_t i = 0; i < worker_info.size(); ++i)
-    list->Append(SerializeWorkerInfo(worker_info[i]));
+DebuggerGetTargetsFunction::WorkerInfoList
+DebuggerGetTargetsFunction::CollectWorkerInfo() {
+  return WorkerService::GetInstance()->GetWorkers();
 }
 
-void DebuggerGetTargetsFunction::SendTargetList(base::ListValue* list) {
+void DebuggerGetTargetsFunction::SendTargetList(
+    base::ListValue* list,
+    const WorkerInfoList& worker_info) {
+  for (size_t i = 0; i < worker_info.size(); ++i)
+    list->Append(SerializeWorkerInfo(worker_info[i]));
   SetResult(list);
   SendResponse(true);
 }

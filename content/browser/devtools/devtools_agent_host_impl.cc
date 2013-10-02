@@ -10,6 +10,7 @@
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -21,10 +22,12 @@ base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
 DevToolsAgentHostImpl::DevToolsAgentHostImpl()
     : close_listener_(NULL),
       id_(base::GenerateGUID()) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   g_instances.Get()[id_] = this;
 }
 
 DevToolsAgentHostImpl::~DevToolsAgentHostImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   g_instances.Get().erase(g_instances.Get().find(id_));
 }
 
