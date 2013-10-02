@@ -240,8 +240,8 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   void OnInitializationCallbackReturned();
   void FinishInitialization();
 
-  // Populates the default galleries if this is a fresh profile.
-  void AddDefaultGalleriesIfFreshProfile();
+  // Populates the default galleries. Call only on fresh profiles.
+  void AddDefaultGalleries();
 
   // This is a hack - Some devices (iTunes, Picasa) are singletons in that only
   // one instance of that type is supported at a time. As such, the device id
@@ -253,6 +253,8 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   // method searches for a gallery of the type passed in and updates its
   // device id.  It returns true if the device id is up to date.
   bool UpdateDeviceIDForSingletonType(const std::string& device_id);
+
+  void OnStorageMonitorInit(bool add_default_galleries);
 
   // Handle an iPhoto, iTunes, or Picasa finder returning a device ID to us.
   void OnFinderDeviceID(const std::string& device_id);
