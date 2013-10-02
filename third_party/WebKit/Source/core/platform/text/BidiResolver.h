@@ -574,7 +574,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         m_direction = override == VisualLeftToRightOverride ? LeftToRight : RightToLeft;
         appendRun();
         m_runs.setLogicallyLastRun(m_runs.lastRun());
-        if (override == VisualRightToLeftOverride)
+        if (override == VisualRightToLeftOverride && m_runs.runCount())
             m_runs.reverseRuns(0, m_runs.runCount() - 1);
         return;
     }
