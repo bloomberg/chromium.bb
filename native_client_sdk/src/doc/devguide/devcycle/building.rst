@@ -68,6 +68,21 @@ The Native Client SDK comes with two C libraries: `newlib
 glibc <dynamic-loading>` for information about these libraries, including
 factors to help you decide which to use.
 
+C++ libraries
+-------------
+
+Native Client can only use GCC's `libstdc++
+<http://gcc.gnu.org/libstdc++>`_, whereas Portable Native Client can use
+either `libstdc++ <http://gcc.gnu.org/libstdc++>`_ (the current default)
+and also has preliminary support for LLVM's `libc++
+<http://libcxx.llvm.org/>`_. The ``-stdlib=[libstdc++|libc++]`` command
+line argument can be used to choose which standard library to use.
+
+C++11 library support is only complete in libc++ but other non-library
+language features should work regardless of which standard library is
+used. The ``-std=[c++98|c++11]`` command line argument can be used to
+indicate which C++ language standard to use.
+
 SDK toolchains
 --------------
 
