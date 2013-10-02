@@ -1289,3 +1289,5 @@ crbug.com/301668 [ Mac Linux ] http/tests/misc/acid3.html [ Crash Pass ]
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
+
+crbug.com/303279 [ Debug ] http/tests/history/back-to-javascript-url-iframe.html [ Crash Pass ]
