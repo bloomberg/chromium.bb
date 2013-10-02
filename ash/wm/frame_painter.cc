@@ -177,8 +177,6 @@ bool IsSoloWindowHeaderCandidate(aura::Window* window) {
 // a transparent solo-window header.
 std::vector<Window*> GetWindowsForSoloHeaderUpdate(RootWindow* root_window) {
   std::vector<Window*> windows;
-  // During shutdown there may not be a workspace controller. In that case
-  // we don't care about updating any windows.
   // Avoid memory allocations for typical window counts.
   windows.reserve(16);
   // Collect windows from the desktop.
