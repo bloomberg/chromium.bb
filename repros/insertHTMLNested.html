@@ -1,0 +1,27 @@
+<html>
+<head>
+	<script>
+		function insertHTML() {
+			document.execCommand("insertHTML", false, '<a href="www.pandora.com">Pandora</a><div style="display: inline;font-size: large"></div>');
+			document.getElementById("theFrame").focus();
+		};
+		
+		function insertHTMLNested() {
+			document.execCommand("insertHTMLNested", false, '<a href="www.pandora.com">Pandora</a><div style="display: inline;font-size: large"></div>');
+			document.getElementById("theFrame").focus();
+		};
+		
+		function onLoad()
+		{
+			document.getElementById("theFrame").focus();
+			document.execCommand("fontName", false, "Arial");
+			document.execCommand("fontSize", false, 3);
+			document.execCommand("foreColor", false, "green");
+		}
+		
+	</script>
+</head>
+<body onload="onLoad();">
+Type into the box below.  The font will be green.  Then press "Insert HTML" then continue typing.  The green font setting will be lost.  However, with "Insert HTML Nested", the green setting is preserved.
+<div id="theFrame" style="height:200px;border: 2px solid black;" contenteditable="true"></div><div><button onclick="insertHTML()">Insert HTML</button></div><div><button onclick="insertHTMLNested()">Insert HTML Nested</button></div></body>
+</html>
