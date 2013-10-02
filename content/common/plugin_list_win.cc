@@ -392,10 +392,13 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
   if (info.type != WebPluginInfo::PLUGIN_TYPE_NPAPI)
     return true;
 
-  // If the plugin is in our internal list we should load it.
-  for (size_t i = 0; i < internal_plugins_.size(); ++i) {
-    if (info.path == internal_plugins_[i].path)
-      return true;
+  {
+    base::AutoLock lock(lock_);
+    // If the plugin is in our internal list we should load it.
+    for (size_t i = 0; i < internal_plugins_.size(); ++i) {
+      if (info.path == internal_plugins_[i].path)
+        return true;
+    }
   }
 
   // Troublemakers.
