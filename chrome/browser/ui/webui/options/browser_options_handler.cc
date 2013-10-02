@@ -142,6 +142,7 @@ bool ShouldShowMultiProfilesUserList(chrome::HostDesktopType desktop_type) {
 BrowserOptionsHandler::BrowserOptionsHandler()
     : page_initialized_(false),
       template_url_service_(NULL),
+      cloud_print_mdns_ui_enabled_(false),
       weak_ptr_factory_(this) {
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
@@ -161,6 +162,11 @@ BrowserOptionsHandler::BrowserOptionsHandler()
   cloud_print_connector_ui_enabled_ = true;
 #endif
 #endif  // defined(ENABLE_FULL_PRINTING)
+
+#if defined(ENABLE_MDNS)
+  cloud_print_mdns_ui_enabled_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableDeviceDiscovery);
+#endif  // defined(ENABLE_MDNS)
 }
 
 BrowserOptionsHandler::~BrowserOptionsHandler() {
@@ -502,17 +508,12 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #endif
 
 #if defined(ENABLE_MDNS)
-bool cloud_print_mdns_options_shown =
-    !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableDeviceDiscovery);
 values->SetBoolean("cloudPrintHideNotificationsCheckbox",
                    !local_discovery::PrivetNotificationService::IsEnabled());
-#else
-bool cloud_print_mdns_options_shown = false;
 #endif
 
 values->SetBoolean("cloudPrintShowMDnsOptions",
-                   cloud_print_mdns_options_shown);
+                   cloud_print_mdns_ui_enabled_);
 
 values->SetString("cloudPrintLearnMoreURL", chrome::kCloudPrintLearnMoreURL);
 
@@ -639,8 +640,7 @@ void BrowserOptionsHandler::RegisterMessages() {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_MDNS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDeviceDiscovery)) {
+  if (cloud_print_mdns_ui_enabled_) {
     web_ui()->RegisterMessageCallback(
         "showCloudPrintDevicesPage",
         base::Bind(&BrowserOptionsHandler::ShowCloudPrintDevicesPage,
@@ -758,11 +758,13 @@ void BrowserOptionsHandler::InitializePage() {
   SetupProxySettingsSection();
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
-  if (cloud_print_connector_ui_enabled_) {
-    SetupCloudPrintConnectorSection();
-    RefreshCloudPrintStatusFromService();
-  } else {
-    RemoveCloudPrintConnectorSection();
+  if (!cloud_print_mdns_ui_enabled_) {
+    if (cloud_print_connector_ui_enabled_) {
+      SetupCloudPrintConnectorSection();
+      RefreshCloudPrintStatusFromService();
+    } else {
+      RemoveCloudPrintConnectorSection();
+    }
   }
 #endif
 
