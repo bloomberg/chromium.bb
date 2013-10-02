@@ -33,18 +33,19 @@ Authenticator.prototype = {
 
   GAIA_URL: 'https://accounts.google.com/',
   GAIA_PAGE_PATH: 'ServiceLogin?service=chromeoslogin' +
-      '&skipvpage=true&sarp=1&rm=hide' +
-      '&continue=chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/' +
-      'success.html',
+      '&skipvpage=true&sarp=1&rm=hide',
   THIS_EXTENSION_ORIGIN: 'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik',
   PARENT_PAGE: 'chrome://oobe/',
+  CONTINUE_URL: Authenticator.THIS_EXTENSION_ORIGIN + '/success.html',
 
   initialize: function() {
     var params = getUrlSearchParams(location.search);
-    this.parentPage_ = params['parentPage'] || this.PARENT_PAGE;
-    this.gaiaUrl_ = params['gaiaUrl'] || this.GAIA_URL;
-    this.inputLang_ = params['hl'];
-    this.inputEmail_ = params['email'];
+    this.parentPage_ = params.parentPage || this.PARENT_PAGE;
+    this.gaiaUrl_ = params.gaiaUrl || this.GAIA_URL;
+    this.inputLang_ = params.hl;
+    this.inputEmail_ = params.email;
+    this.continueUrl_ = params.continueUrl || this.CONTINUE_URL;
+    this.inlineMode_ = params.inlineMode;
 
     document.addEventListener('DOMContentLoaded', this.onPageLoad.bind(this));
     document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
@@ -67,7 +68,8 @@ Authenticator.prototype = {
   getFrameUrl_: function() {
     var url = this.gaiaUrl_;
 
-    url += this.GAIA_PAGE_PATH;
+    url += this.GAIA_PAGE_PATH + '&continue=' +
+        encodeURIComponent(this.continueUrl_);
 
     if (this.inputLang_)
       url += '&hl=' + encodeURIComponent(this.inputLang_);
@@ -76,8 +78,33 @@ Authenticator.prototype = {
     return url;
   },
 
+  /** Callback when all loads in the gaia webview is complete. */
+  onWebviewLoadstop_: function(gaiaFrame) {
+    if (gaiaFrame.src.lastIndexOf(
+        this.gaiaUrl_ + this.GAIA_PAGE_PATH, 0) == 0) {
+      gaiaFrame.executeScript({file: 'inline_injected.js'}, function() {
+        // Send an initial message to gaia so that it has an JavaScript
+        // reference to the embedder.
+        gaiaFrame.contentWindow.postMessage('', gaiaFrame.src);
+      });
+      this.onLoginUILoaded();
+    } else if (gaiaFrame.src.lastIndexOf(this.continueUrl_, 0) == 0) {
+      // Detect when login is finished by the load stop event of the continue
+      // URL. Cannot reuse the login complete flow in success.html, because
+      // webview does not support extension pages yet.
+      gaiaFrame.hidden = true;
+      var msg = {'method': 'completeLogin'};
+      window.parent.postMessage(msg, this.parentPage_);
+    }
+  },
+
   loadFrame_: function() {
-    $('gaia-frame').src = this.getFrameUrl_();
+    var gaiaFrame = $('gaia-frame');
+    gaiaFrame.src = this.getFrameUrl_();
+    if (this.inlineMode_) {
+      gaiaFrame.addEventListener(
+          'loadstop', this.onWebviewLoadstop_.bind(this, gaiaFrame));
+    }
   },
 
   completeLogin: function(username, password) {

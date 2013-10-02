@@ -35,6 +35,18 @@ cr.define('cr.login', function() {
   var OFFLINE_AUTH_URL = AUTH_URL_BASE + '/offline.html';
 
   /**
+   * Auth URL to use for inline flow.
+   * @const
+   */
+  var INLINE_AUTH_URL = AUTH_URL_BASE + '/inline_main.html';
+
+  /**
+   * Origin of the gaia sign in page.
+   * @const
+   */
+  var GAIA_ORIGIN = 'https://accounts.google.com';
+
+  /**
    * Supported params of auth extension. For a complete list, check out the
    * auth extension's main.js.
    * @type {!Array.<string>}
@@ -43,7 +55,8 @@ cr.define('cr.login', function() {
   var SUPPORTED_PARAMS = [
     'gaiaUrl',       // Gaia url to use;
     'hl',            // Language code for the user interface;
-    'email'          // Pre-fill the email field in Gaia UI;
+    'email',         // Pre-fill the email field in Gaia UI;
+    'continueUrl'    // Continue url to use;
   ];
 
   /**
@@ -60,6 +73,17 @@ cr.define('cr.login', function() {
       'stringEmptyPassword',
       'stringError'
   ];
+
+  /**
+   * Enum for the authorization mode, must match AuthMode defined in
+   * chrome/browser/ui/webui/inline_login_ui.cc.
+   * @enum {number}
+   */
+  var AuthMode = {
+    DEFAULT: 0,
+    OFFLINE: 1,
+    INLINE: 2
+  };
 
   /**
    * Creates a new gaia auth extension host.
@@ -94,7 +118,7 @@ cr.define('cr.login', function() {
      *   email: 'xx@gmail.com',
      *   password: 'xxxx',  // May not present
      *   authCode: 'x/xx',  // May not present
-     *   useOffline: false  // Whether the authentication uses the offline flow.
+     *   authMode: 'x',     // Authorization mode, default/inline/offline.
      * }
      * }
      * </pre>
@@ -165,14 +189,14 @@ cr.define('cr.login', function() {
 
     /**
      * Loads the auth extension.
-     * @param {boolean} useOffline Whether to use offline url or not.
+     * @param {AuthMode} authMode Authorization mode.
      * @param {Object} data Parameters for the auth extension. See the auth
      *     extension's main.js for all supported params and their defaults.
      * @param {function(Object)} successCallback A function to be called when
      *     the authentication is completed successfully. The callback is
      *     invoked with a credential object.
      */
-    load: function(useOffline, data, successCallback) {
+    load: function(authMode, data, successCallback) {
       var params = [];
 
       var populateParams = function(nameList, values) {
@@ -190,7 +214,18 @@ cr.define('cr.login', function() {
       populateParams(LOCALIZED_STRING_PARAMS, data.localizedStrings);
       params.push('parentPage=' + encodeURIComponent(window.location.origin));
 
-      var url = useOffline ? OFFLINE_AUTH_URL : AUTH_URL;
+      var url;
+      switch (authMode) {
+        case AuthMode.OFFLINE:
+          url = OFFLINE_AUTH_URL;
+          break;
+        case AuthMode.INLINE:
+          url = INLINE_AUTH_URL;
+          params.push('inlineMode=true');
+          break;
+        default:
+          url = AUTH_URL;
+      }
       url += '?' + params.join('&');
 
       this.frame_.src = url;
@@ -246,10 +281,20 @@ cr.define('cr.login', function() {
      * @param {object} e Payload of the received HTML5 message.
      */
     onMessage_: function(e) {
+      var msg = e.data;
+
+      // In the inline sign in flow, the embedded gaia webview posts credential
+      // directly to the inline sign in page, because its parent JavaScript
+      // reference points to the top frame of the embedder instead of the sub
+      // frame of the gaia auth extension.
+      if (e.origin == GAIA_ORIGIN && msg.method == 'attemptLogin') {
+        this.email_ = msg.email;
+        this.password_ = msg.password;
+        return;
+      }
+
       if (!this.isAuthExtMessage_(e))
         return;
-
-      var msg = e.data;
 
       if (msg.method == 'loginUILoaded') {
         cr.dispatchSimpleEvent(this, 'ready');
@@ -257,8 +302,8 @@ cr.define('cr.login', function() {
       }
 
       if (/^complete(Login|Authentication)$|^offlineLogin$/.test(msg.method)) {
-        this.onAuthSuccess_({email: msg.email,
-                             password: msg.password,
+        this.onAuthSuccess_({email: msg.email || this.email_,
+                             password: msg.password || this.password_,
                              authCode: msg.authCode,
                              useOffline: msg.method == 'offlineLogin'});
         return;
@@ -292,6 +337,7 @@ cr.define('cr.login', function() {
 
   GaiaAuthHost.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
   GaiaAuthHost.LOCALIZED_STRING_PARAMS = LOCALIZED_STRING_PARAMS;
+  GaiaAuthHost.AuthMode = AuthMode;
 
   return {
     GaiaAuthHost: GaiaAuthHost

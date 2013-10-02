@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -22,6 +24,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/browser_resources.h"
+#include "net/base/escape.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/oauth2_token_fetcher.h"
@@ -90,12 +93,41 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
   }
 
  private:
+  // Enum for gaia auth mode, must match AuthMode defined in
+  // chrome/browser/resources/gaia_auth_host/gaia_auth_host.js.
+  enum AuthMode {
+    kDefaultAuthMode = 0,
+    kOfflineAuthMode = 1,
+    kInlineAuthMode = 2
+  };
+
   void LoadAuthExtension() {
     base::DictionaryValue params;
 
     const std::string& app_locale = g_browser_process->GetApplicationLocale();
     params.SetString("hl", app_locale);
-    params.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
+
+    GaiaUrls* gaiaUrls = GaiaUrls::GetInstance();
+    params.SetString("gaiaUrl", gaiaUrls->gaia_url().spec());
+
+    bool enable_inline = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableInlineSignin);
+    params.SetInteger("authMode",
+        enable_inline ? kInlineAuthMode : kDefaultAuthMode);
+    // Set continueUrl param for the inline sign in flow. It should point to
+    // the oauth2 auth code URL so that later we can grab the auth code from
+    // the cookie jar of the embedded webview.
+    if (enable_inline) {
+      std::string scope = net::EscapeUrlEncodedData(
+          gaiaUrls->oauth1_login_scope(), true);
+      std::string client_id = net::EscapeUrlEncodedData(
+          gaiaUrls->oauth2_chrome_client_id(), true);
+      std::string encoded_continue_params = base::StringPrintf(
+          "?scope=%s&client_id=%s", scope.c_str(), client_id.c_str());
+      params.SetString("continueUrl",
+          gaiaUrls->client_login_to_oauth2_url().Resolve(
+              encoded_continue_params).spec());
+    }
 
     web_ui()->CallJavascriptFunction("inline.login.loadAuthExtension", params);
   }

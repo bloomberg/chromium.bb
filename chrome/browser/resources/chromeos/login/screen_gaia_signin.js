@@ -241,7 +241,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (data.forceReload ||
           JSON.stringify(this.gaiaAuthParams_) != JSON.stringify(params)) {
         this.error_ = 0;
-        this.gaiaAuthHost_.load(data.useOffline,
+        this.gaiaAuthHost_.load(data.useOffline ?
+                                    cr.login.GaiaAuthHost.AuthMode.OFFLINE :
+                                    cr.login.GaiaAuthHost.AuthMode.DEFAULT,
                                 params,
                                 this.onAuthCompleted_.bind(this));
         this.gaiaAuthParams_ = params;

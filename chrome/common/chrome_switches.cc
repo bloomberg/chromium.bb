@@ -624,6 +624,9 @@ const char kEnableGoogleNowIntegration[]    = "enable-google-now-integration";
 // Enable HTTP/2 draft 04. This is a temporary testing flag.
 const char kEnableHttp2Draft04[]            = "enable-http2-draft-04";
 
+// Enables the inline sign in flow on Chrome desktop.
+const char kEnableInlineSignin[]            = "enable-inline-signin";
+
 // Enable Instant extended API. On mobile, this merely enables query extraction,
 // not the rest of the instant-extended functionality.
 const char kEnableInstantExtendedAPI[]      = "enable-instant-extended-api";

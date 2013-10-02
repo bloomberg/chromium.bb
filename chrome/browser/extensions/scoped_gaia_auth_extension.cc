@@ -45,7 +45,10 @@ void LoadGaiaAuthExtension(Profile* profile) {
     manifest_resource_id = IDR_GAIA_AUTH_KEYBOARD_MANIFEST;
   else if (command_line->HasSwitch(chromeos::switches::kEnableSamlSignin))
     manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
-#endif  // OS_CHROMEOS
+#elif !defined(OS_ANDROID)
+  if (command_line->HasSwitch(switches::kEnableInlineSignin))
+    manifest_resource_id = IDR_GAIA_AUTH_INLINE_MANIFEST;
+#endif
 
   component_loader->Add(manifest_resource_id,
                         base::FilePath(FILE_PATH_LITERAL("gaia_auth")));

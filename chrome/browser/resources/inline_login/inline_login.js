@@ -48,8 +48,7 @@ cr.define('inline.login', function() {
    * @param {Object} data Parameters for auth extension.
    */
   function loadAuthExtension(data) {
-    authExtHost.load(
-        false /* useOffline */, data, onAuthCompleted);
+    authExtHost.load(data.authMode, data, onAuthCompleted);
     $('contents').classList.toggle('loading', true);
   }
 
