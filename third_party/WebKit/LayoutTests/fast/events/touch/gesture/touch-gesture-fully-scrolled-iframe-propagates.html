@@ -53,7 +53,6 @@ var movedbox;
 var touchtarget;
 var iframe;
 var iframeBody;
-var iframeDocumentElement;
 var expectedGesturesTotal = 1;
 var gesturesOccurred = 0;
 var scrollAmountX = ['0'];
@@ -69,14 +68,13 @@ function firstGestureScroll()
 {
     iframe = touchtarget;
     iframeBody = iframe.contentDocument.body;
-    iframeDocumentElement = touchtarget.contentDocument.documentElement;
     
     var amountToScroll = iframeBody.scrollHeight - iframe.clientHeight;
 
-    iframeBody.scrollTop = amountToScroll;
+    touchtarget.contentDocument.body.scrollTop = amountToScroll;
 
     // Sanity - make sure the iframe is actually fully scrolled scrolled
-    shouldBe('iframeBody.scrollHeight - iframeDocumentElement.scrollTop', 'iframe.clientHeight');
+    shouldBe('iframeBody.scrollHeight - iframeBody.scrollTop', 'iframe.clientHeight');
 
     eventSender.gestureScrollBegin(10, 72);
     eventSender.gestureScrollUpdateWithoutPropagation(0, -20);
@@ -101,7 +99,7 @@ function runTest()
     touchtarget = document.getElementById("touchtargetiframe");
 
     touchtarget.contentDocument.addEventListener("scroll", recordScroll);
-    touchtarget.contentDocument.documentElement.addEventListener("mousewheel", recordWheel);
+    touchtarget.contentDocument.body.addEventListener("mousewheel", recordWheel);
 
     if (window.eventSender) {
         description('This tests that a fling gesture sent to an iframe with no remaining scroll offset ' +

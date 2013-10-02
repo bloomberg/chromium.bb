@@ -253,12 +253,6 @@ static int adjustForZoom(int value, Document* document)
 
 int HTMLBodyElement::scrollLeft()
 {
-    // FIXME: The specification is not clear about what is the expected behavior here:
-    // http://dev.w3.org/csswg/cssom-view/#dom-element-scrollleft
-    // Blink bails out in order to match other engines' behavior (WebKit, IE, Firefox and Opera12).
-    if (!document().inQuirksMode())
-        return 0;
-
     // Update the document's layout.
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
@@ -281,12 +275,6 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
 
 int HTMLBodyElement::scrollTop()
 {
-    // FIXME: The specification is not clear about what is the expected behavior here:
-    // http://dev.w3.org/csswg/cssom-view/#dom-element-scrolltop .
-    // Blink bails out in order to match other engines' behavior (WebKit, IE, Firefox and Opera12).
-    if (!document().inQuirksMode())
-        return 0;
-
     // Update the document's layout.
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();

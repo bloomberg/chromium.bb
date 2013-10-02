@@ -25,16 +25,16 @@
         <span class="spacer"></span>
         
         <script>
-            var scrollTopBeforeClick = document.documentElement.scrollTop;
+            var scrollTopBeforeClick = document.body.scrollTop;
             document.getElementById('goto-1').click();
-            if (document.documentElement.scrollTop > scrollTopBeforeClick)
+            if (document.body.scrollTop > scrollTopBeforeClick)
                 testPassed('Clicking link 1 scrolled to block 1.');
             else
                 testFailed('Clicking link 1 didn\'t scroll as expected.');
                 
-            var scrollTopBeforeClick = document.documentElement.scrollTop;
+            var scrollTopBeforeClick = document.body.scrollTop;
             document.getElementById('goto-2').click();
-            if (document.documentElement.scrollTop > scrollTopBeforeClick)
+            if (document.body.scrollTop > scrollTopBeforeClick)
                 testPassed('Clicking link 2 scrolled to block 2.');
             else
                 testFailed('Clicking link 2 didn\'t scroll as expected.');

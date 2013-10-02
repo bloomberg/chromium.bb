@@ -21,7 +21,7 @@
         // The momentum scroll above should have resulted in overflow above the page.
         // Ensure that it has (via scrollTop) and register an onscroll listener to
         // ensure that the timer restores the position.
-        if (document.documentElement.scrollTop == 0) {
+        if (document.body.scrollTop == 0) {
             // FAIL: Above didn't result in overscroll.
             document.getElementById('box').style.background = 'blue';
             return;
@@ -32,7 +32,7 @@
         testRunner.waitUntilDone();
         var startedScrolling = false;
         window.onscroll = function() {
-            if (document.documentElement.scrollTop == 0) {
+            if (document.body.scrollTop == 0) {
                 testRunner.notifyDone();
             }
         };

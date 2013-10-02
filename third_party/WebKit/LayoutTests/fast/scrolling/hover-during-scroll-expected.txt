@@ -39,17 +39,17 @@ PASS array[0].innerHTML is "was hovered"
 PASS array[1].innerHTML is "currently hovered"
 PASS array[2].innerHTML is "hover over me"
 Mouse is visible, scrolling page so the mouse ends up on the third div.
-PASS document.documentElement.scrollTop is 0
+PASS document.body.scrollTop is 0
 PASS array[0].innerHTML is "was hovered"
 PASS array[1].innerHTML is "was hovered"
 PASS array[2].innerHTML is "currently hovered"
 PASS array[3].innerHTML is "hover over me"
 Mouse is not visible, scrolling page so the mouse ends up on the fourth div.
-PASS document.documentElement.scrollTop is 50
+PASS document.body.scrollTop is 50
 PASS array[0].innerHTML is "was hovered"
 PASS array[1].innerHTML is "was hovered"
 PASS array[2].innerHTML is "currently hovered"
 PASS array[3].innerHTML is "hover over me"
 PASS array[4].innerHTML is "hover over me"
-PASS document.documentElement.scrollTop is 100
+PASS document.body.scrollTop is 100
 
