@@ -273,6 +273,8 @@ class COMPOSITOR_EXPORT Layer
   void TakeUnusedResourcesForChildCompositor(
       cc::ReturnedResourceArray* array);
 
+  void SetShowPaintedContent();
+
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
 

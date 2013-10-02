@@ -1066,15 +1066,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accelerated painting ------------------------------------------------------
 
-  // This creates a layer for the view, if one does not exist. It then
-  // passes the texture to a layer associated with the view. While an external
-  // texture is set, the view will not update the layer contents.
-  //
-  // |texture| cannot be NULL.
-  //
-  // Returns false if it cannot create a layer to which to assign the texture.
-  bool SetExternalTexture(ui::Texture* texture);
-
   // Returns the offset from this view to the nearest ancestor with a layer. If
   // |layer_parent| is non-NULL it is set to the nearest ancestor with a layer.
   virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(

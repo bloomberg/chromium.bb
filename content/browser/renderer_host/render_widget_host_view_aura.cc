@@ -1299,7 +1299,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
                                            mailbox.shared_memory_size());
     CheckResizeLock();
   } else {
-    window_->layer()->SetExternalTexture(NULL);
+    window_->layer()->SetShowPaintedContent();
     resize_lock_.reset();
     host_->WasResized();
     framebuffer_holder_ = NULL;
@@ -1430,7 +1430,8 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   gfx::Rect damage_rect;
   gfx::Rect damage_rect_in_dip;
 
-  if (!frame_data->render_pass_list.empty()) {
+  bool has_content = !frame_data->render_pass_list.empty();
+  if (has_content) {
     cc::RenderPass* root_pass = frame_data->render_pass_list.back();
 
     frame_size = root_pass->output_rect.size();
@@ -1472,12 +1473,15 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     // indicates the renderer's output surface may have been recreated, in which
     // case we should recreate the DelegatedRendererLayer, to avoid matching
     // resources from the old one with resources from the new one which would
-    // have the same id.
-    window_->layer()->SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData>(),
-                                        frame_size_in_dip);
+    // have the same id. Changing the layer to showing painted content destroys
+    // the DelegatedRendererLayer.
+    window_->layer()->SetShowPaintedContent();
     last_output_surface_id_ = output_surface_id;
   }
-  window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
+  if (has_content)
+    window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
+  else
+    window_->layer()->SetShowPaintedContent();
   released_front_lock_ = NULL;
   current_frame_size_ = frame_size_in_dip;
   CheckResizeLock();
@@ -2592,8 +2596,11 @@ void RenderWidgetHostViewAura::DidRecreateLayer(ui::Layer *old_layer,
           current_surface_->device_scale_factor(), texture_id);
       }
     }
-    old_layer->SetExternalTexture(new_texture);
-    new_layer->SetExternalTexture(old_texture);
+    if (new_texture.get())
+      old_layer->SetExternalTexture(new_texture.get());
+    else
+      old_layer->SetShowPaintedContent();
+    new_layer->SetExternalTexture(old_texture.get());
   } else if (old_mailbox.IsSharedMemory()) {
     base::SharedMemory* old_buffer = old_mailbox.shared_memory();
     const size_t size = old_mailbox.shared_memory_size_in_bytes();
@@ -3348,9 +3355,10 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   ui::Compositor* compositor = GetCompositor();
   // We can't get notification for commits after this point, which would
   // guarantee that the compositor isn't using an old texture any more, so
-  // instead we force the texture to NULL which synchronizes with the compositor
-  // thread, and makes it safe to run the callback.
-  window_->layer()->SetExternalTexture(NULL);
+  // instead we force the layer to stop using any external resources which
+  // synchronizes with the compositor thread, and makes it safe to run the
+  // callback.
+  window_->layer()->SetShowPaintedContent();
   RunOnCommitCallbacks();
   resize_lock_.reset();
   host_->WasResized();

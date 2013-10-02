@@ -98,7 +98,7 @@ void ReflectorImpl::OnMirroringCompositorResized() {
 
 void ReflectorImpl::OnLostResources() {
   shared_texture_ = NULL;
-  mirroring_layer_->SetExternalTexture(NULL);
+  mirroring_layer_->SetShowPaintedContent();
 }
 
 void ReflectorImpl::OnReshape(gfx::Size size) {

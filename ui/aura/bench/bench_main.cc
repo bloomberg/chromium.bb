@@ -227,7 +227,7 @@ class WebGLBench : public BenchCompositorObserver {
   virtual ~WebGLBench() {
     context_provider_->Context3d()->makeContextCurrent();
     context_provider_->Context3d()->deleteFramebuffer(fbo_);
-    webgl_.SetExternalTexture(NULL);
+    webgl_.SetShowPaintedContent();
     texture_ = NULL;
     compositor_->RemoveObserver(this);
   }

@@ -1344,6 +1344,33 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
             gfx::Size(20, 20).ToString());
 }
 
+TEST_F(LayerWithDelegateTest, ExternalContent) {
+  scoped_ptr<Layer> root(CreateNoTextureLayer(gfx::Rect(0, 0, 1000, 1000)));
+  scoped_ptr<Layer> child(CreateLayer(LAYER_TEXTURED));
+
+  child->SetBounds(gfx::Rect(0, 0, 10, 10));
+  child->SetVisible(true);
+  root->Add(child.get());
+
+  // The layer is already showing painted content, so the cc layer won't change.
+  scoped_refptr<cc::Layer> before = child->cc_layer();
+  child->SetShowPaintedContent();
+  EXPECT_TRUE(child->cc_layer());
+  EXPECT_EQ(before, child->cc_layer());
+
+  // Showing delegated content changes the underlying cc layer.
+  before = child->cc_layer();
+  child->SetDelegatedFrame(MakeFrameData(gfx::Size(10, 10)), gfx::Size(10, 10));
+  EXPECT_TRUE(child->cc_layer());
+  EXPECT_NE(before, child->cc_layer());
+
+  // Changing to painted content should change the underlying cc layer.
+  before = child->cc_layer();
+  child->SetShowPaintedContent();
+  EXPECT_TRUE(child->cc_layer());
+  EXPECT_NE(before, child->cc_layer());
+}
+
 // Tests Layer::AddThreadedAnimation and Layer::RemoveThreadedAnimation.
 TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));

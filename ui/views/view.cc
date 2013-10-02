@@ -1341,21 +1341,6 @@ void View::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
     layer()->SetFillsBoundsOpaquely(fills_bounds_opaquely);
 }
 
-bool View::SetExternalTexture(ui::Texture* texture) {
-  DCHECK(texture);
-  SetPaintToLayer(true);
-
-  layer()->SetExternalTexture(texture);
-
-  // Child views must not paint into the external texture. So make sure each
-  // child view has its own layer to paint into.
-  for (Views::iterator i = children_.begin(); i != children_.end(); ++i)
-    (*i)->SetPaintToLayer(true);
-
-  SchedulePaintInRect(GetLocalBounds());
-  return true;
-}
-
 gfx::Vector2d View::CalculateOffsetToAncestorWithLayer(
     ui::Layer** layer_parent) {
   if (layer()) {
