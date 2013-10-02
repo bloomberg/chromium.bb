@@ -479,7 +479,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   gfx::Transform transform;
   transform.Translate(10.0, 20.0);
   transform.Rotate(10.0);
-  transform.Scale(0.3, 0.5);
+  transform.Scale(0.3f, 0.5f);
   root->SetTransform(root_transform);
   w1->SetTransform(transform);
   w11->SetTransform(transform);
