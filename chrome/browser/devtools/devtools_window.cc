@@ -853,6 +853,11 @@ void DevToolsWindow::CloseWindow() {
   Hide();
 }
 
+void DevToolsWindow::SetWindowBounds(int x, int y, int width, int height) {
+  if (!IsDocked())
+    browser_->window()->SetBounds(gfx::Rect(x, y, width, height));
+}
+
 void DevToolsWindow::MoveWindow(int x, int y) {
   if (!IsDocked()) {
     gfx::Rect bounds = browser_->window()->GetBounds();

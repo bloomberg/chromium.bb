@@ -189,6 +189,7 @@ class DevToolsWindow : private content::NotificationObserver,
   // DevToolsEmbedderMessageDispatcher::Delegate overrides:
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
+  virtual void SetWindowBounds(int x, int y, int width, int height) OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void SetDockSide(const std::string& side) OVERRIDE;
   virtual void OpenInNewTab(const std::string& url) OVERRIDE;
