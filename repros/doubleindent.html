@@ -17,13 +17,15 @@
             function outdent() {
                 var theFrame = document.getElementById("theFrame");
                 var doc = theFrame.contentDocument;
-                doc.execCommand("outdent", false, true);
+                if (!doc.execCommand('outdentblock', false, true))
+                    doc.execCommand("outdent", false, true);
             };
 
             function indent() {
                 var theFrame = document.getElementById("theFrame");
                 var doc = theFrame.contentDocument;
-                doc.execCommand("indent", false, true);
+                if (!doc.execCommand('indentblock', false, true))
+                    doc.execCommand("indent", false, true);
             };
 </script>
 </head>
