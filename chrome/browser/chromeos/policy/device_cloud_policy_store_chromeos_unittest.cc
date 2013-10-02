@@ -35,10 +35,9 @@ class DeviceCloudPolicyStoreChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
   DeviceCloudPolicyStoreChromeOSTest()
-      : cryptohome_library_(chromeos::CryptohomeLibrary::GetTestImpl()),
-        fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
+      : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
         install_attributes_(new EnterpriseInstallAttributes(
-            cryptohome_library_.get(), fake_cryptohome_client_.get())),
+            fake_cryptohome_client_.get())),
         store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                   install_attributes_.get())) {
     fake_cryptohome_client_->Init(NULL /* no dbus::Bus */);
@@ -96,15 +95,14 @@ class DeviceCloudPolicyStoreChromeOSTest
 
   void ResetToNonEnterprise() {
     store_.reset();
-    cryptohome_library_->InstallAttributesSet("enterprise.owned",
-                                              std::string());
+    chromeos::cryptohome_util::InstallAttributesSet("enterprise.owned",
+                                                    std::string());
     install_attributes_.reset(new EnterpriseInstallAttributes(
-        cryptohome_library_.get(), fake_cryptohome_client_.get()));
+        fake_cryptohome_client_.get()));
     store_.reset(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                     install_attributes_.get()));
   }
 
-  scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_library_;
   scoped_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
 

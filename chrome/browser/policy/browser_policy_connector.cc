@@ -188,14 +188,15 @@ BrowserPolicyConnector::BrowserPolicyConnector()
 
 #if defined(OS_CHROMEOS)
   // CryptohomeLibrary or DBusThreadManager may be uninitialized on unit tests.
+
+  // TODO(satorux): Remove CryptohomeLibrary::IsInitialized() when it's ready
+  // (removing it now breaks tests). crbug.com/141016.
   if (chromeos::CryptohomeLibrary::IsInitialized() &&
       chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::CryptohomeLibrary* cryptohome =
-        chromeos::CryptohomeLibrary::Get();
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
     install_attributes_.reset(
-        new EnterpriseInstallAttributes(cryptohome, cryptohome_client));
+        new EnterpriseInstallAttributes(cryptohome_client));
     base::FilePath install_attrs_file;
     CHECK(PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES,
                            &install_attrs_file));

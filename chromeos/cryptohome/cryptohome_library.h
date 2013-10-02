@@ -33,25 +33,6 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   // Public so that result of GetTestImpl can be destroyed.
   virtual ~CryptohomeLibrary();
 
-  // Wrappers of the functions for working with Tpm.
-
-  // Returns whether Tpm is presented and enabled.
-  virtual bool TpmIsEnabled() = 0;
-
-  // Returns whether device has already been owned.
-  virtual bool TpmIsOwned() = 0;
-
-  // Returns whether device is being owned (Tpm password is generating).
-  virtual bool TpmIsBeingOwned() = 0;
-
-  virtual bool InstallAttributesGet(const std::string& name,
-                                    std::string* value) = 0;
-  virtual bool InstallAttributesSet(const std::string& name,
-                                    const std::string& value) = 0;
-  virtual bool InstallAttributesFinalize() = 0;
-  virtual bool InstallAttributesIsInvalid() = 0;
-  virtual bool InstallAttributesIsFirstInstall() = 0;
-
   // Returns system hash in hex encoded ascii format. Note: this may return
   // an empty string (e.g. if cryptohome is not running). It is up to the
   // calling function to try again after a delay if desired.
@@ -74,6 +55,27 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   DISALLOW_COPY_AND_ASSIGN(CryptohomeLibrary);
 };
 
+// Wrappers of the D-Bus method calls for working with Tpm.
+namespace cryptohome_util {
+
+// Returns whether Tpm is presented and enabled.
+CHROMEOS_EXPORT bool TpmIsEnabled();
+
+// Returns whether device has already been owned.
+CHROMEOS_EXPORT bool TpmIsOwned();
+
+// Returns whether device is being owned (Tpm password is generating).
+CHROMEOS_EXPORT bool TpmIsBeingOwned();
+
+CHROMEOS_EXPORT bool InstallAttributesGet(const std::string& name,
+                                          std::string* value);
+CHROMEOS_EXPORT bool InstallAttributesSet(const std::string& name,
+                                          const std::string& value);
+CHROMEOS_EXPORT bool InstallAttributesFinalize();
+CHROMEOS_EXPORT bool InstallAttributesIsInvalid();
+CHROMEOS_EXPORT bool InstallAttributesIsFirstInstall();
+
+}  // namespace cryptohome_util
 }  // namespace chromeos
 
 #endif  // CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_

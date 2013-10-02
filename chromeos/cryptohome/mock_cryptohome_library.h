@@ -23,19 +23,6 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   virtual ~MockCryptohomeLibrary();
   MOCK_METHOD0(GetSystemSalt, std::string(void));
 
-  MOCK_METHOD0(TpmIsReady, bool(void));
-  MOCK_METHOD0(TpmIsEnabled, bool(void));
-  MOCK_METHOD0(TpmIsOwned, bool(void));
-  MOCK_METHOD0(TpmIsBeingOwned, bool(void));
-
-  MOCK_METHOD2(InstallAttributesGet, bool(const std::string&, std::string*));
-  MOCK_METHOD2(InstallAttributesSet, bool(const std::string&,
-                                          const std::string&));
-  MOCK_METHOD0(InstallAttributesFinalize, bool(void));
-  MOCK_METHOD0(InstallAttributesIsReady, bool(void));
-  MOCK_METHOD0(InstallAttributesIsInvalid, bool(void));
-  MOCK_METHOD0(InstallAttributesIsFirstInstall, bool(void));
-
   MOCK_METHOD1(EncryptWithSystemSalt, std::string(const std::string&));
   MOCK_METHOD1(DecryptWithSystemSalt, std::string(const std::string&));
 

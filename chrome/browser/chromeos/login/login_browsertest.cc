@@ -44,8 +44,6 @@ class LoginTestBase : public InProcessBrowserTest {
     mock_cryptohome_library_.reset(new chromeos::MockCryptohomeLibrary());
     EXPECT_CALL(*(mock_cryptohome_library_.get()), GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
-    EXPECT_CALL(*(mock_cryptohome_library_.get()), InstallAttributesIsReady())
-        .WillRepeatedly(Return(false));
   }
 
   scoped_ptr<chromeos::MockCryptohomeLibrary> mock_cryptohome_library_;

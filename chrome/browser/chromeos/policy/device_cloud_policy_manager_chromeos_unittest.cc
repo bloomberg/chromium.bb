@@ -60,8 +60,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   DeviceCloudPolicyManagerChromeOSTest()
       : cryptohome_library_(chromeos::CryptohomeLibrary::GetTestImpl()),
         fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
-        install_attributes_(cryptohome_library_.get(),
-                            fake_cryptohome_client_.get()),
+        install_attributes_(fake_cryptohome_client_.get()),
         store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                   &install_attributes_)),
         manager_(make_scoped_ptr(store_),
@@ -84,6 +83,8 @@ class DeviceCloudPolicyManagerChromeOSTest
         request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
+    // TODO(satorux): Remove CryptohomeLibrary::SetForTest() when it's ready.
+    // (removing it now breaks the unit test). crbug.com/141016.
     chromeos::CryptohomeLibrary::SetForTest(cryptohome_library_.get());
     url_fetcher_response_code_ = 200;
     url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","

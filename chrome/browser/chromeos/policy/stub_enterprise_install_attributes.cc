@@ -11,7 +11,7 @@
 namespace policy {
 
 StubEnterpriseInstallAttributes::StubEnterpriseInstallAttributes()
-    : EnterpriseInstallAttributes(NULL, NULL) {
+    : EnterpriseInstallAttributes(NULL) {
   device_locked_ = true;
 }
 

@@ -37,72 +37,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   virtual ~CryptohomeLibraryImpl() {
   }
 
-  virtual bool TpmIsEnabled() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsEnabledAndBlock(
-        &result);
-    return result;
-  }
-
-  virtual bool TpmIsOwned() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsOwnedAndBlock(
-        &result);
-    return result;
-  }
-
-  virtual bool TpmIsBeingOwned() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        CallTpmIsBeingOwnedAndBlock(&result);
-    return result;
-  }
-
-  virtual bool InstallAttributesGet(
-      const std::string& name, std::string* value) OVERRIDE {
-    std::vector<uint8> buf;
-    bool success = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        InstallAttributesGet(name, &buf, &success);
-    if (success) {
-      // Cryptohome returns 'buf' with a terminating '\0' character.
-      DCHECK(!buf.empty());
-      DCHECK_EQ(buf.back(), 0);
-      value->assign(reinterpret_cast<char*>(buf.data()), buf.size() - 1);
-    }
-    return success;
-  }
-
-  virtual bool InstallAttributesSet(
-      const std::string& name, const std::string& value) OVERRIDE {
-    std::vector<uint8> buf(value.c_str(), value.c_str() + value.size() + 1);
-    bool success = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        InstallAttributesSet(name, buf, &success);
-    return success;
-  }
-
-  virtual bool InstallAttributesFinalize() OVERRIDE {
-    bool success = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        InstallAttributesFinalize(&success);
-    return success;
-  }
-
-  virtual bool InstallAttributesIsInvalid() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        InstallAttributesIsInvalid(&result);
-    return result;
-  }
-
-  virtual bool InstallAttributesIsFirstInstall() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        InstallAttributesIsFirstInstall(&result);
-    return result;
-  }
-
   virtual std::string GetSystemSalt() OVERRIDE {
     LoadSystemSalt();  // no-op if it's already loaded.
     return system_salt_;
@@ -233,46 +167,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     : locked_(false) {}
   virtual ~CryptohomeLibraryStubImpl() {}
 
-  virtual bool TpmIsEnabled() OVERRIDE {
-    return true;
-  }
-
-  virtual bool TpmIsOwned() OVERRIDE {
-    return true;
-  }
-
-  virtual bool TpmIsBeingOwned() OVERRIDE {
-    return true;
-  }
-
-  virtual bool InstallAttributesGet(
-      const std::string& name, std::string* value) OVERRIDE {
-    if (install_attrs_.find(name) != install_attrs_.end()) {
-      *value = install_attrs_[name];
-      return true;
-    }
-    return false;
-  }
-
-  virtual bool InstallAttributesSet(
-      const std::string& name, const std::string& value) OVERRIDE {
-    install_attrs_[name] = value;
-    return true;
-  }
-
-  virtual bool InstallAttributesFinalize() OVERRIDE {
-    locked_ = true;
-    return true;
-  }
-
-  virtual bool InstallAttributesIsInvalid() OVERRIDE {
-    return false;
-  }
-
-  virtual bool InstallAttributesIsFirstInstall() OVERRIDE {
-    return !locked_;
-  }
-
   virtual std::string GetSystemSalt() OVERRIDE {
     return kStubSystemSalt;
   }
@@ -339,4 +233,73 @@ CryptohomeLibrary* CryptohomeLibrary::GetTestImpl() {
   return new CryptohomeLibraryStubImpl();
 }
 
-} // namespace chromeos
+namespace cryptohome_util {
+
+bool TpmIsEnabled() {
+  bool result = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsEnabledAndBlock(
+      &result);
+  return result;
+}
+
+bool TpmIsOwned() {
+  bool result = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsOwnedAndBlock(
+      &result);
+  return result;
+}
+
+bool TpmIsBeingOwned() {
+  bool result = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->
+      CallTpmIsBeingOwnedAndBlock(&result);
+  return result;
+}
+
+bool InstallAttributesGet(
+    const std::string& name, std::string* value) {
+  std::vector<uint8> buf;
+  bool success = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->
+      InstallAttributesGet(name, &buf, &success);
+  if (success) {
+    // Cryptohome returns 'buf' with a terminating '\0' character.
+    DCHECK(!buf.empty());
+    DCHECK_EQ(buf.back(), 0);
+    value->assign(reinterpret_cast<char*>(buf.data()), buf.size() - 1);
+  }
+  return success;
+}
+
+bool InstallAttributesSet(
+    const std::string& name, const std::string& value) {
+  std::vector<uint8> buf(value.c_str(), value.c_str() + value.size() + 1);
+  bool success = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->
+      InstallAttributesSet(name, buf, &success);
+  return success;
+}
+
+bool InstallAttributesFinalize() {
+  bool success = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->
+      InstallAttributesFinalize(&success);
+  return success;
+}
+
+bool InstallAttributesIsInvalid() {
+  bool result = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->
+      InstallAttributesIsInvalid(&result);
+  return result;
+}
+
+bool InstallAttributesIsFirstInstall() {
+  bool result = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->
+      InstallAttributesIsFirstInstall(&result);
+  return result;
+}
+
+}  // namespace cryptohome_util
+}  // namespace chromeos

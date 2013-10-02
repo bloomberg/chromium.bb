@@ -507,11 +507,10 @@ void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
   BootTimesLoader* btl = BootTimesLoader::Get();
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
-  CryptohomeLibrary* cryptohome = CryptohomeLibrary::Get();
   CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
   btl->AddLoginTimeMarker("TPMOwn-Start", false);
-  if (cryptohome->TpmIsEnabled() && !cryptohome->TpmIsBeingOwned()) {
-    if (cryptohome->TpmIsOwned()) {
+  if (cryptohome_util::TpmIsEnabled() && !cryptohome_util::TpmIsBeingOwned()) {
+    if (cryptohome_util::TpmIsOwned()) {
       client->CallTpmClearStoredPasswordAndBlock();
     } else {
       client->TpmCanAttemptOwnership(EmptyVoidDBusMethodCallback());

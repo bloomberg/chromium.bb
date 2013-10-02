@@ -226,46 +226,6 @@ class LoginUtilsTest : public testing::Test,
         mock_async_method_caller_);
 
     cryptohome_.reset(new MockCryptohomeLibrary());
-    EXPECT_CALL(*cryptohome_, InstallAttributesIsInvalid())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*cryptohome_, InstallAttributesIsFirstInstall())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*cryptohome_, TpmIsEnabled())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttributeOwned, kTrue))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttributeOwner,
-                                                   kUsername))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttrEnterpriseDomain,
-                                                   kDomain))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttrEnterpriseMode,
-                                                   kMode))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttrEnterpriseDeviceId,
-                                                   kDeviceId))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*cryptohome_, InstallAttributesFinalize())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttributeOwned, _))
-        .WillRepeatedly(DoAll(SetArgPointee<1>(kTrue),
-                              Return(true)));
-    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttributeConsumerKiosk, _))
-        .WillRepeatedly(DoAll(SetArgPointee<1>(kFalse),
-                              Return(true)));
-    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttributeOwner, _))
-        .WillRepeatedly(DoAll(SetArgPointee<1>(kUsername),
-                              Return(true)));
-    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttrEnterpriseDomain, _))
-        .WillRepeatedly(DoAll(SetArgPointee<1>(kDomain),
-                              Return(true)));
-    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttrEnterpriseMode, _))
-        .WillRepeatedly(DoAll(SetArgPointee<1>(kMode),
-                              Return(true)));
-    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttrEnterpriseDeviceId, _))
-        .WillRepeatedly(DoAll(SetArgPointee<1>(kDeviceId),
-                              Return(true)));
     CryptohomeLibrary::SetForTest(cryptohome_.get());
 
     test_device_settings_service_.reset(new ScopedTestDeviceSettingsService);
@@ -401,10 +361,6 @@ class LoginUtilsTest : public testing::Test,
   }
 
   void EnrollDevice(const std::string& username) {
-    EXPECT_CALL(*cryptohome_, InstallAttributesIsFirstInstall())
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-
     base::RunLoop loop;
     policy::EnterpriseInstallAttributes::LockResult result;
     connector_->GetInstallAttributes()->LockDevice(

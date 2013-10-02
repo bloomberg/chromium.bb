@@ -17,10 +17,6 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
-namespace chromeos {
-class CryptohomeLibrary;
-}
-
 namespace policy {
 
 // Brokers access to the enterprise-related installation-time attributes on
@@ -54,8 +50,7 @@ class EnterpriseInstallAttributes {
   static const char kAttrEnterpriseUser[];
   static const char kAttrConsumerKioskEnabled[];
 
-  EnterpriseInstallAttributes(
-      chromeos::CryptohomeLibrary* cryptohome,
+  explicit EnterpriseInstallAttributes(
       chromeos::CryptohomeClient* cryptohome_client);
   ~EnterpriseInstallAttributes();
 
@@ -134,7 +129,6 @@ class EnterpriseInstallAttributes {
   void OnReadImmutableAttributes(const std::string& user,
                                  const LockResultCallback& callback);
 
-  chromeos::CryptohomeLibrary* cryptohome_;
   chromeos::CryptohomeClient* cryptohome_client_;
 
   base::WeakPtrFactory<EnterpriseInstallAttributes> weak_ptr_factory_;
