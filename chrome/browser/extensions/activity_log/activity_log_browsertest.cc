@@ -61,17 +61,9 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
   }
 };
 
-#if defined(USE_AURA)
-  // This tests fails in Aura, but it is the only one in this set so
-  // we disable it for now. Tracking bug: 292299.
-#define MAYBE_TestScriptInjected DISABLED_TestScriptInjected
-#else
-#define MAYBE_TestScriptInjected TestScriptInjected
-#endif
-
-IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, MAYBE_TestScriptInjected) {
+IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  StartEmbeddedTestServer();
+  ASSERT_TRUE(StartEmbeddedTestServer());
   int port = embedded_test_server()->port();
 
   // Get the extension (chrome/test/data/extensions/activity_log)
@@ -87,9 +79,13 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, MAYBE_TestScriptInjected) {
       prerender::PrerenderManagerFactory::GetForProfile(profile());
   ASSERT_TRUE(prerender_manager);
   prerender_manager->mutable_config().rate_limit_enabled = false;
-  // Increase maximum size of prerenderer, otherwise this test fails
+  // Increase prerenderer limits, otherwise this test fails
   // on Windows XP.
   prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
+  prerender_manager->mutable_config().time_to_live =
+      base::TimeDelta::FromMinutes(10);
+  prerender_manager->mutable_config().abandon_time_to_live =
+      base::TimeDelta::FromMinutes(10);
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();;
@@ -118,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, MAYBE_TestScriptInjected) {
       "",
       "",
       "",
-      0,
+      -1,
       base::Bind(
           ActivityLogPrerenderTest::Prerender_Arguments, ext->id(), port));
 
