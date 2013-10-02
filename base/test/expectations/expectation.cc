@@ -49,7 +49,8 @@ static bool IsValidPlatform(const Platform* platform) {
     if (variant != "" &&
         variant != "10.6" &&
         variant != "10.7" &&
-        variant != "10.8") {
+        variant != "10.8" &&
+        variant != "10.9") {
       return false;
     }
   } else if (name == "Linux") {
