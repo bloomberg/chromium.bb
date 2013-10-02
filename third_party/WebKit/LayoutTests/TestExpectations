@@ -1155,8 +1155,6 @@ crbug.com/282496 [ Linux Release ] css3/filters/custom/composited/custom-filter-
 
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
 
-crbug.com/302846 fast/css/font-face-synthetic-bold-italic.html [ NeedsManualRebaseline ]
-
 # Pre-landing "binary" file (actually UTF-16) - enable with http://crrev.com/23532016
 Bug(jsbell) fast/encoding/utf-16-odd-byte.html [ Skip ]
 
