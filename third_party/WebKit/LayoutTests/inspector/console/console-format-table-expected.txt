@@ -71,25 +71,49 @@ Missing column name console-format-table.html:42
  console-format-table.html:43
  console-format-table.html:10
 Array of arrays console-format-table.html:12
-(index)01201231456 console-format-table.html:13
+HEADER (index) | 0 | 1 | 2 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
 Large array of arrays console-format-table.html:15
-(index)01201231456212334564123545661237456 console-format-table.html:16
+HEADER (index) | 0 | 1 | 2 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
 Array or array and object console-format-table.html:18
-(index)012abc0123undefinedundefinedundefined1undefinedundefinedundefined123 console-format-table.html:19
+HEADER (index) | 0 | 1 | 2 | a | b | c | 
+ROW 1 | 2 | 3 | 
+ROW 1 | 2 | 3 | 
 Object table console-format-table.html:21
-(index)abfoo12bar34 console-format-table.html:22
+HEADER (index) | a | b | 
+ROW 1 | 2 | 
+ROW 3 | 4 | 
 Null as columns console-format-table.html:24
-(index)01201231456 console-format-table.html:25
+HEADER (index) | 0 | 1 | 2 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
 Digit as columns console-format-table.html:27
-(index)01201231456 console-format-table.html:28
+HEADER (index) | 0 | 1 | 2 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
 String as columns console-format-table.html:30
-(index)00114 console-format-table.html:31
+HEADER (index) | 0 | 
+ROW 1 | 
+ROW 4 | 
 Random string as columns console-format-table.html:33
-(index)01 console-format-table.html:34
+HEADER (index) | 
 Array of strings as columns console-format-table.html:36
-(index)ab0121"foo""bar" console-format-table.html:37
+HEADER (index) | a | b | 
+ROW 1 | 2 | 
+ROW "foo" | "bar" | 
 Good and bad column names console-format-table.html:39
-(index)ab0121"foo"undefined console-format-table.html:40
+HEADER (index) | a | b | 
+ROW 1 | 2 | 
+ROW "foo" | 
 Missing column name console-format-table.html:42
-(index)01 console-format-table.html:43
+HEADER (index) | 
 

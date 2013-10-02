@@ -34,14 +34,48 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             }
         }
 
-        var messageText = InspectorTest.prepareConsoleMessageText(element)
-        InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
+        if (InspectorTest.dumpConsoleTableMessage(message)) {
+            if (dumpClassNames)
+                InspectorTest.addResult(classNames.join(" > "));
+        } else {
+            var messageText = InspectorTest.prepareConsoleMessageText(element)
+            InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
+        }
+
         if (printOriginatingCommand && message.originatingCommand) {
             var originatingElement = message.originatingCommand.toMessageElement();
             InspectorTest.addResult("Originating from: " + originatingElement.textContent.replace(/\u200b/g, ""));
         }
     }
     return result;
+}
+
+InspectorTest.dumpConsoleTableMessage = function(message)
+{
+    var table = message.toMessageElement();
+    var headers = table.querySelectorAll("th div");
+    if (!headers.length)
+        return false;
+
+    var headerLine = "";
+    for (var i = 0; i < headers.length; i++)
+        headerLine += headers[i].textContent + " | ";
+
+    InspectorTest.addResult("HEADER " + headerLine);
+
+    var rows = table.querySelectorAll(".data-container tr");
+
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var rowLine = "";
+        var items = row.querySelectorAll("td > div > span");
+        for (var j = 0; j < items.length; j++)
+            rowLine += items[j].textContent + " | ";
+
+        if (rowLine.trim())
+            InspectorTest.addResult("ROW " + rowLine);
+    }
+    return true;
 }
 
 InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)

@@ -26,37 +26,11 @@ function test()
 {
     InspectorTest.addConsoleSniffer(messageAdded, true);
 
-    function dumpTableMessage(message)
-    {
-        var table = message.toMessageElement();
-        var headers = table.querySelectorAll("th div");
-
-        var headerLine = "";
-        for (var i = 0; i < headers.length; i++)
-            headerLine += headers[i].textContent + " | ";
-
-        InspectorTest.addResult("HEADER " + headerLine);
-
-        var rows = table.querySelectorAll(".data-container tr");
-
-        for (var i = 0; i < rows.length; i++) {
-            var row = rows[i];
-            var rowLine = "";
-            var items = row.querySelectorAll("td div span");
-            for (var j = 0; j < items.length; j++)
-                rowLine += items[j].textContent + " | ";
-
-            if (rowLine.trim())
-                InspectorTest.addResult("ROW " + rowLine);
-        }
-    }
-
     var count = 4;
-
     function messageAdded(message)
     {
         if (count === 2 || count === 3)
-            dumpTableMessage(message);
+            InspectorTest.dumpConsoleTableMessage(message);
 
         if (--count === 0)
             InspectorTest.completeTest();
