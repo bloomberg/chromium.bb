@@ -192,6 +192,16 @@ void ObjectProxy::SetNameOwnerChangedCallback(
   name_owner_changed_callback_ = callback;
 }
 
+void ObjectProxy::WaitForServiceToBeAvailable(
+    WaitForServiceToBeAvailableCallback callback) {
+  bus_->AssertOnOriginThread();
+
+  wait_for_service_to_be_available_callbacks_.push_back(callback);
+  bus_->GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ObjectProxy::WaitForServiceToBeAvailableInternal, this));
+}
+
 void ObjectProxy::Detach() {
   bus_->AssertOnDBusThread();
 
@@ -364,13 +374,8 @@ void ObjectProxy::OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
   delete data;
 }
 
-bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
-                                          const std::string& signal_name,
-                                          SignalCallback signal_callback) {
+bool ObjectProxy::ConnectToNameOwnerChangedSignal() {
   bus_->AssertOnDBusThread();
-
-  const std::string absolute_signal_name =
-      GetAbsoluteSignalName(interface_name, signal_name);
 
   if (!bus_->Connect() || !bus_->SetUpAsyncOperations())
     return false;
@@ -384,11 +389,6 @@ bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
       LOG(ERROR) << "Failed to add filter function";
     }
   }
-  // Add a match rule so the signal goes through HandleMessage().
-  const std::string match_rule =
-      base::StringPrintf("type='signal', interface='%s', path='%s'",
-                         interface_name.c_str(),
-                         object_path_.value().c_str());
   // Add a match_rule listening NameOwnerChanged for the well-known name
   // |service_name_|.
   const std::string name_owner_changed_match_rule =
@@ -399,9 +399,6 @@ bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
           service_name_.c_str());
 
   const bool success =
-      AddMatchRuleWithCallback(match_rule,
-                               absolute_signal_name,
-                               signal_callback) &&
       AddMatchRuleWithoutCallback(name_owner_changed_match_rule,
                                   "org.freedesktop.DBus.NameOwnerChanged");
 
@@ -412,6 +409,49 @@ bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
   UpdateNameOwnerAndBlock();
 
   return success;
+}
+
+bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
+                                          const std::string& signal_name,
+                                          SignalCallback signal_callback) {
+  bus_->AssertOnDBusThread();
+
+  if (!ConnectToNameOwnerChangedSignal())
+    return false;
+
+  const std::string absolute_signal_name =
+      GetAbsoluteSignalName(interface_name, signal_name);
+
+  // Add a match rule so the signal goes through HandleMessage().
+  const std::string match_rule =
+      base::StringPrintf("type='signal', interface='%s', path='%s'",
+                         interface_name.c_str(),
+                         object_path_.value().c_str());
+  return AddMatchRuleWithCallback(match_rule,
+                                  absolute_signal_name,
+                                  signal_callback);
+}
+
+void ObjectProxy::WaitForServiceToBeAvailableInternal() {
+  bus_->AssertOnDBusThread();
+
+  if (!ConnectToNameOwnerChangedSignal()) {  // Failed to connect to the signal.
+    const bool service_is_ready = false;
+    bus_->GetOriginTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ObjectProxy::RunWaitForServiceToBeAvailableCallbacks,
+                   this, service_is_ready));
+    return;
+  }
+
+  const bool service_is_available = !service_name_owner_.empty();
+  if (service_is_available) {  // Service is already available.
+    bus_->GetOriginTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ObjectProxy::RunWaitForServiceToBeAvailableCallbacks,
+                   this, service_is_available));
+    return;
+  }
 }
 
 DBusHandlerResult ObjectProxy::HandleMessage(
@@ -625,6 +665,14 @@ DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
           FROM_HERE,
           base::Bind(&ObjectProxy::RunNameOwnerChangedCallback,
                      this, old_owner, new_owner));
+
+      const bool service_is_available = !service_name_owner_.empty();
+      if (service_is_available) {
+        bus_->GetOriginTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(&ObjectProxy::RunWaitForServiceToBeAvailableCallbacks,
+                       this, service_is_available));
+      }
     }
   }
 
@@ -638,6 +686,16 @@ void ObjectProxy::RunNameOwnerChangedCallback(const std::string& old_owner,
   bus_->AssertOnOriginThread();
   if (!name_owner_changed_callback_.is_null())
     name_owner_changed_callback_.Run(old_owner, new_owner);
+}
+
+void ObjectProxy::RunWaitForServiceToBeAvailableCallbacks(
+    bool service_is_available) {
+  bus_->AssertOnOriginThread();
+
+  std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+  callbacks.swap(wait_for_service_to_be_available_callbacks_);
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i].Run(service_is_available);
 }
 
 }  // namespace dbus

@@ -77,6 +77,10 @@ class CHROME_DBUS_EXPORT ObjectProxy
       const std::string& old_owner,
       const std::string& new_owner)> NameOwnerChangedCallback;
 
+  // Called when the service becomes available.
+  typedef base::Callback<void(
+      bool service_is_available)> WaitForServiceToBeAvailableCallback;
+
   // Called when the object proxy is connected to the signal.
   // Parameters:
   // - the interface name.
@@ -152,6 +156,10 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // represented by |service_name_|.
   virtual void SetNameOwnerChangedCallback(NameOwnerChangedCallback callback);
 
+  // Runs the callback as soon as the service becomes available.
+  virtual void WaitForServiceToBeAvailable(
+      WaitForServiceToBeAvailableCallback callback);
+
   // Detaches from the remote object. The Bus object will take care of
   // detaching so you don't have to do this manually.
   //
@@ -208,10 +216,16 @@ class CHROME_DBUS_EXPORT ObjectProxy
   static void OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
                                            void* user_data);
 
+  // Connects to NameOwnerChanged signal.
+  bool ConnectToNameOwnerChangedSignal();
+
   // Helper function for ConnectToSignal().
   bool ConnectToSignalInternal(const std::string& interface_name,
                                const std::string& signal_name,
                                SignalCallback signal_callback);
+
+  // Helper function for WaitForServiceToBeAvailable().
+  void WaitForServiceToBeAvailableInternal();
 
   // Handles the incoming request messages and dispatches to the signal
   // callbacks.
@@ -262,6 +276,9 @@ class CHROME_DBUS_EXPORT ObjectProxy
   void RunNameOwnerChangedCallback(const std::string& old_owner,
                                    const std::string& new_owner);
 
+  // Runs |wait_for_service_to_be_available_callbacks_|.
+  void RunWaitForServiceToBeAvailableCallbacks(bool service_is_available);
+
   scoped_refptr<Bus> bus_;
   std::string service_name_;
   ObjectPath object_path_;
@@ -276,6 +293,10 @@ class CHROME_DBUS_EXPORT ObjectProxy
 
   // The callback called when NameOwnerChanged signal is received.
   NameOwnerChangedCallback name_owner_changed_callback_;
+
+  // Called when the service becomes available.
+  std::vector<WaitForServiceToBeAvailableCallback>
+      wait_for_service_to_be_available_callbacks_;
 
   std::set<std::string> match_rules_;
 

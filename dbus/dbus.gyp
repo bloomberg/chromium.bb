@@ -103,6 +103,7 @@
         'message_unittest.cc',
         'mock_unittest.cc',
         'object_manager_unittest.cc',
+        'object_proxy_unittest.cc',
         'property_unittest.cc',
         'signal_sender_verification_unittest.cc',
         'string_util_unittest.cc',
