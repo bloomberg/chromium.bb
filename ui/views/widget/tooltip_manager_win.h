@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -73,12 +72,6 @@ class TooltipManagerWin : public TooltipManager {
   // Invoked when the tooltip text changes for the specified views.
   virtual void TooltipTextChanged(View* view) OVERRIDE;
 
-  // Invoked when toolbar icon gets focus.
-  virtual void ShowKeyboardTooltip(View* view) OVERRIDE;
-
-  // Invoked when toolbar loses focus.
-  virtual void HideKeyboardTooltip() OVERRIDE;
-
   // Message handlers. These forward to the tooltip control.
   virtual void OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param);
   LRESULT OnNotify(int w_param, NMHDR* l_param, bool* handled);
@@ -111,9 +104,6 @@ class TooltipManagerWin : public TooltipManager {
   // positive value.
   int CalcTooltipHeight();
 
-  // Invoked when the timer elapses and tooltip has to be destroyed.
-  void DestroyKeyboardTooltipWindow(HWND window_to_destroy);
-
   // Hosting Widget.
   Widget* widget_;
 
@@ -137,13 +127,6 @@ class TooltipManagerWin : public TooltipManager {
 
   // Width of the last tooltip.
   int tooltip_width_;
-
-  // control window for tooltip displayed using keyboard.
-  HWND keyboard_tooltip_hwnd_;
-
-  // Used to register DestroyTooltipWindow function with PostDelayedTask
-  // function.
-  base::WeakPtrFactory<TooltipManagerWin> keyboard_tooltip_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerWin);
 };

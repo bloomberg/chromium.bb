@@ -73,14 +73,6 @@ void TooltipManagerAura::TooltipTextChanged(View* view)  {
   }
 }
 
-void TooltipManagerAura::ShowKeyboardTooltip(View* view) {
-  NOTREACHED();
-}
-
-void TooltipManagerAura::HideKeyboardTooltip()  {
-  NOTREACHED();
-}
-
 View* TooltipManagerAura::GetViewUnderPoint(const gfx::Point& point) {
   View* root_view = widget_->GetRootView();
   if (root_view)

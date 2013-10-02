@@ -52,7 +52,6 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
     }
     if (last_mouse_pos_ != mouse_pos) {
       last_mouse_pos_ = mouse_pos;
-      HideKeyboardTooltip();
       UpdateTooltip(mouse_pos);
     }
 

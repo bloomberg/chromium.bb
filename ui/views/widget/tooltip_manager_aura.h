@@ -28,8 +28,6 @@ class TooltipManagerAura : public TooltipManager {
   // TooltipManager.
   virtual void UpdateTooltip() OVERRIDE;
   virtual void TooltipTextChanged(View* view) OVERRIDE;
-  virtual void ShowKeyboardTooltip(View* view) OVERRIDE;
-  virtual void HideKeyboardTooltip() OVERRIDE;
 
  private:
   View* GetViewUnderPoint(const gfx::Point& point);

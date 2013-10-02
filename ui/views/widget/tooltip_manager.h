@@ -46,12 +46,6 @@ class VIEWS_EXPORT TooltipManager {
   // Invoked when the tooltip text changes for the specified views.
   virtual void TooltipTextChanged(View* view) = 0;
 
-  // Invoked when toolbar icon gets focus.
-  virtual void ShowKeyboardTooltip(View* view) = 0;
-
-  // Invoked when toolbar loses focus.
-  virtual void HideKeyboardTooltip() = 0;
-
  protected:
   // Trims the tooltip to fit, setting |text| to the clipped result,
   // |max_width| to the width (in pixels) of the clipped text and |line_count|

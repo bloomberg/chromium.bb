@@ -29,10 +29,6 @@ namespace views {
 
 static int tooltip_height_ = 0;
 
-// Default timeout for the tooltip displayed using keyboard.
-// Timeout is measured in milliseconds.
-static const int kDefaultTimeout = 4000;
-
 // static
 int TooltipManager::GetTooltipHeight() {
   DCHECK_GT(tooltip_height_, 0);
@@ -77,9 +73,7 @@ TooltipManagerWin::TooltipManagerWin(Widget* widget)
       tooltip_showing_(false),
       last_tooltip_view_(NULL),
       last_view_out_of_sync_(false),
-      tooltip_width_(0),
-      keyboard_tooltip_hwnd_(NULL),
-      keyboard_tooltip_factory_(this) {
+      tooltip_width_(0) {
   DCHECK(widget);
   DCHECK(widget->GetNativeView());
 }
@@ -87,8 +81,6 @@ TooltipManagerWin::TooltipManagerWin(Widget* widget)
 TooltipManagerWin::~TooltipManagerWin() {
   if (tooltip_hwnd_)
     DestroyWindow(tooltip_hwnd_);
-  if (keyboard_tooltip_hwnd_)
-    DestroyWindow(keyboard_tooltip_hwnd_);
 }
 
 bool TooltipManagerWin::Init() {
@@ -147,75 +139,76 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
                                     NMHDR* l_param,
                                     bool* handled) {
   *handled = false;
-  if (l_param->hwndFrom == tooltip_hwnd_ && keyboard_tooltip_hwnd_ == NULL) {
-    switch (l_param->code) {
-      case TTN_GETDISPINFO: {
-        if (last_view_out_of_sync_) {
-          // View under the mouse is out of sync, determine it now.
-          View* root_view = widget_->GetRootView();
-          last_tooltip_view_ =
-              root_view->GetTooltipHandlerForPoint(last_mouse_pos_);
-          last_view_out_of_sync_ = false;
-        }
-        // Tooltip control is asking for the tooltip to display.
-        NMTTDISPINFOW* tooltip_info =
-            reinterpret_cast<NMTTDISPINFOW*>(l_param);
-        // Initialize the string, if we have a valid tooltip the string will
-        // get reset below.
-        tooltip_info->szText[0] = TEXT('\0');
-        tooltip_text_.clear();
-        tooltip_info->lpszText = NULL;
-        clipped_text_.clear();
-        if (last_tooltip_view_ != NULL) {
-          tooltip_text_.clear();
-          // Mouse is over a View, ask the View for its tooltip.
-          gfx::Point view_loc = last_mouse_pos_;
-          View::ConvertPointToTarget(widget_->GetRootView(),
-                                     last_tooltip_view_, &view_loc);
-          if (last_tooltip_view_->GetTooltipText(view_loc, &tooltip_text_) &&
-              !tooltip_text_.empty()) {
-            // View has a valid tip, copy it into TOOLTIPINFO.
-            clipped_text_ = tooltip_text_;
-            gfx::Point screen_loc = last_mouse_pos_;
-            View::ConvertPointToScreen(widget_->GetRootView(), &screen_loc);
-            TrimTooltipToFit(&clipped_text_, &tooltip_width_, &line_count_,
-                             screen_loc.x(), screen_loc.y(),
-                             widget_->GetNativeView());
-            // Adjust the clipped tooltip text for locale direction.
-            base::i18n::AdjustStringForLocaleDirection(&clipped_text_);
-            tooltip_info->lpszText = const_cast<WCHAR*>(clipped_text_.c_str());
-          } else {
-            tooltip_text_.clear();
-          }
-        }
-        *handled = true;
-        return 0;
+  if (l_param->hwndFrom != tooltip_hwnd_)
+    return 0;
+
+  switch (l_param->code) {
+    case TTN_GETDISPINFO: {
+      if (last_view_out_of_sync_) {
+        // View under the mouse is out of sync, determine it now.
+        View* root_view = widget_->GetRootView();
+        last_tooltip_view_ =
+            root_view->GetTooltipHandlerForPoint(last_mouse_pos_);
+        last_view_out_of_sync_ = false;
       }
-      case TTN_POP:
-        tooltip_showing_ = false;
-        *handled = true;
-        return 0;
-      case TTN_SHOW: {
-        *handled = true;
-        tooltip_showing_ = true;
-        // The tooltip is about to show, allow the view to position it
-        gfx::Point text_origin;
-        if (tooltip_height_ == 0)
-          tooltip_height_ = CalcTooltipHeight();
+      // Tooltip control is asking for the tooltip to display.
+      NMTTDISPINFOW* tooltip_info =
+          reinterpret_cast<NMTTDISPINFOW*>(l_param);
+      // Initialize the string, if we have a valid tooltip the string will
+      // get reset below.
+      tooltip_info->szText[0] = TEXT('\0');
+      tooltip_text_.clear();
+      tooltip_info->lpszText = NULL;
+      clipped_text_.clear();
+      if (last_tooltip_view_ != NULL) {
+        tooltip_text_.clear();
+        // Mouse is over a View, ask the View for its tooltip.
         gfx::Point view_loc = last_mouse_pos_;
         View::ConvertPointToTarget(widget_->GetRootView(),
                                    last_tooltip_view_, &view_loc);
-        if (last_tooltip_view_->GetTooltipTextOrigin(view_loc, &text_origin) &&
-            SetTooltipPosition(text_origin.x(), text_origin.y())) {
-          // Return true, otherwise the rectangle we specified is ignored.
-          return TRUE;
+        if (last_tooltip_view_->GetTooltipText(view_loc, &tooltip_text_) &&
+            !tooltip_text_.empty()) {
+          // View has a valid tip, copy it into TOOLTIPINFO.
+          clipped_text_ = tooltip_text_;
+          gfx::Point screen_loc = last_mouse_pos_;
+          View::ConvertPointToScreen(widget_->GetRootView(), &screen_loc);
+          TrimTooltipToFit(&clipped_text_, &tooltip_width_, &line_count_,
+                           screen_loc.x(), screen_loc.y(),
+                           widget_->GetNativeView());
+          // Adjust the clipped tooltip text for locale direction.
+          base::i18n::AdjustStringForLocaleDirection(&clipped_text_);
+          tooltip_info->lpszText = const_cast<WCHAR*>(clipped_text_.c_str());
+        } else {
+          tooltip_text_.clear();
         }
-        return 0;
       }
-      default:
-        // Fall through.
-        break;
+      *handled = true;
+      return 0;
     }
+    case TTN_POP:
+      tooltip_showing_ = false;
+      *handled = true;
+      return 0;
+    case TTN_SHOW: {
+      *handled = true;
+      tooltip_showing_ = true;
+      // The tooltip is about to show, allow the view to position it
+      gfx::Point text_origin;
+      if (tooltip_height_ == 0)
+        tooltip_height_ = CalcTooltipHeight();
+      gfx::Point view_loc = last_mouse_pos_;
+      View::ConvertPointToTarget(widget_->GetRootView(),
+                                 last_tooltip_view_, &view_loc);
+      if (last_tooltip_view_->GetTooltipTextOrigin(view_loc, &text_origin) &&
+          SetTooltipPosition(text_origin.x(), text_origin.y())) {
+        // Return true, otherwise the rectangle we specified is ignored.
+        return TRUE;
+      }
+      return 0;
+    }
+    default:
+      // Fall through.
+      break;
   }
   return 0;
 }
@@ -313,7 +306,6 @@ void TooltipManagerWin::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
 
   if (u_msg != WM_MOUSEMOVE || last_mouse_pos_ != mouse_pos) {
     last_mouse_pos_ = mouse_pos;
-    HideKeyboardTooltip();
     UpdateTooltip(mouse_pos);
   }
   // Forward the message onto the tooltip.
@@ -323,77 +315,6 @@ void TooltipManagerWin::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
   msg.wParam = w_param;
   msg.lParam = l_param;
   SendMessage(tooltip_hwnd_, TTM_RELAYEVENT, 0, (LPARAM)&msg);
-}
-
-void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
-  if (tooltip_showing_) {
-    SendMessage(tooltip_hwnd_, TTM_POP, 0, 0);
-    tooltip_text_.clear();
-  }
-  HideKeyboardTooltip();
-  string16 tooltip_text;
-  if (!focused_view->GetTooltipText(gfx::Point(), &tooltip_text))
-    return;
-  gfx::Rect focused_bounds = focused_view->bounds();
-  gfx::Point screen_point;
-  focused_view->ConvertPointToScreen(focused_view, &screen_point);
-  keyboard_tooltip_hwnd_ = CreateWindowEx(
-      WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
-      TOOLTIPS_CLASS, NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
-  if (!keyboard_tooltip_hwnd_)
-    return;
-
-  SendMessage(keyboard_tooltip_hwnd_, TTM_SETMAXTIPWIDTH, 0,
-              std::numeric_limits<int16>::max());
-  int tooltip_width;
-  int line_count;
-  TrimTooltipToFit(&tooltip_text, &tooltip_width, &line_count,
-                   screen_point.x(), screen_point.y(),
-                   widget_->GetNativeView());
-  ReplaceSubstringsAfterOffset(&tooltip_text, 0, L"\n", L"\r\n");
-  TOOLINFO keyboard_toolinfo;
-  memset(&keyboard_toolinfo, 0, sizeof(keyboard_toolinfo));
-  keyboard_toolinfo.cbSize = sizeof(keyboard_toolinfo);
-  keyboard_toolinfo.hwnd = GetParent();
-  keyboard_toolinfo.uFlags = TTF_TRACK | TTF_TRANSPARENT | TTF_IDISHWND;
-  keyboard_toolinfo.lpszText = const_cast<WCHAR*>(tooltip_text.c_str());
-  SendMessage(keyboard_tooltip_hwnd_, TTM_ADDTOOL, 0,
-              reinterpret_cast<LPARAM>(&keyboard_toolinfo));
-  SendMessage(keyboard_tooltip_hwnd_, TTM_TRACKACTIVATE,  TRUE,
-              reinterpret_cast<LPARAM>(&keyboard_toolinfo));
-  if (!tooltip_height_)
-    tooltip_height_ = CalcTooltipHeight();
-  RECT rect_bounds = {screen_point.x(),
-                      screen_point.y() + focused_bounds.height(),
-                      screen_point.x() + tooltip_width,
-                      screen_point.y() + focused_bounds.height() +
-                      line_count * tooltip_height_ };
-  gfx::Rect monitor_bounds =
-      views::GetMonitorBoundsForRect(gfx::Rect(rect_bounds));
-  gfx::Rect fitted_bounds = gfx::Rect(rect_bounds);
-  fitted_bounds.AdjustToFit(monitor_bounds);
-  rect_bounds = fitted_bounds.ToRECT();
-  ::SetWindowPos(keyboard_tooltip_hwnd_, NULL, rect_bounds.left,
-                 rect_bounds.top, 0, 0,
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TooltipManagerWin::DestroyKeyboardTooltipWindow,
-                 keyboard_tooltip_factory_.GetWeakPtr(),
-                 keyboard_tooltip_hwnd_),
-      base::TimeDelta::FromMilliseconds(kDefaultTimeout));
-}
-
-void TooltipManagerWin::HideKeyboardTooltip() {
-  if (keyboard_tooltip_hwnd_ != NULL) {
-    SendMessage(keyboard_tooltip_hwnd_, WM_CLOSE, 0, 0);
-    keyboard_tooltip_hwnd_ = NULL;
-  }
-}
-
-void TooltipManagerWin::DestroyKeyboardTooltipWindow(HWND window_to_destroy) {
-  if (keyboard_tooltip_hwnd_ == window_to_destroy)
-    HideKeyboardTooltip();
 }
 
 }  // namespace views
