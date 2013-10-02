@@ -7771,6 +7771,62 @@ TEST_P(HttpNetworkTransactionTest, UnreadableUploadFileAfterAuthRestart) {
   base::DeleteFile(temp_file, false);
 }
 
+TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
+  class FakeUploadElementReader : public UploadElementReader {
+   public:
+    FakeUploadElementReader() {}
+    virtual ~FakeUploadElementReader() {}
+
+    const CompletionCallback& callback() const { return callback_; }
+
+    // UploadElementReader overrides:
+    virtual int Init(const CompletionCallback& callback) OVERRIDE {
+      callback_ = callback;
+      return ERR_IO_PENDING;
+    }
+    virtual uint64 GetContentLength() const OVERRIDE { return 0; }
+    virtual uint64 BytesRemaining() const OVERRIDE { return 0; }
+    virtual int Read(IOBuffer* buf,
+                     int buf_length,
+                     const CompletionCallback& callback) OVERRIDE {
+      return ERR_FAILED;
+    }
+
+   private:
+    CompletionCallback callback_;
+  };
+
+  FakeUploadElementReader* fake_reader = new FakeUploadElementReader;
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(fake_reader);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/upload");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY,
+                                 CreateSession(&session_deps_)));
+
+  StaticSocketDataProvider data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Transaction is pending on request body initialization.
+  ASSERT_FALSE(fake_reader->callback().is_null());
+
+  // Return Init()'s result after the transaction gets destroyed.
+  trans.reset();
+  fake_reader->callback().Run(OK);  // Should not crash.
+}
+
 // Tests that changes to Auth realms are treated like auth rejections.
 TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
 

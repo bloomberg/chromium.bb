@@ -163,6 +163,9 @@ HttpNetworkTransaction::~HttpNetworkTransaction() {
       }
     }
   }
+
+  if (request_ && request_->upload_data_stream)
+    request_->upload_data_stream->Reset();  // Invalidate pending callbacks.
 }
 
 int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
