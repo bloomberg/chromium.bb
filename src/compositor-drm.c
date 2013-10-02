@@ -2564,7 +2564,7 @@ drm_compositor_create(struct wl_display *display,
 	}
 
 	/* Check if we run drm-backend using weston-launch */
-	ec->base.launcher = weston_launcher_connect(&ec->base);
+	ec->base.launcher = weston_launcher_connect(&ec->base, tty);
 	if (ec->base.launcher == NULL) {
 		weston_log("fatal: drm backend should be run "
 			   "using weston-launch binary or as root\n");

@@ -247,22 +247,50 @@ vt_handler(int signal_number, void *data)
 }
 
 static int
-setup_tty(struct weston_launcher *launcher)
+setup_tty(struct weston_launcher *launcher, int tty)
 {
 	struct wl_event_loop *loop;
 	struct vt_mode mode = { 0 };
 	struct stat buf;
-	int ret;
+	char tty_device[32] ="<stdin>";
+	int ret, kd_mode;
 
-	if (fstat(STDIN_FILENO, &buf) == -1 ||
+	if (tty == 0) {
+		launcher->tty = tty;
+	} else {
+		snprintf(tty_device, sizeof tty_device, "/dev/tty%d", tty);
+		launcher->tty = open(tty_device, O_RDWR | O_CLOEXEC);
+		if (launcher->tty == -1) {
+			weston_log("couldn't open tty %s: %m\n", tty_device);
+			return -1;
+		}
+	}
+
+	if (fstat(launcher->tty, &buf) == -1 ||
 	    major(buf.st_rdev) != TTY_MAJOR || minor(buf.st_rdev) == 0) {
-		weston_log("stdin not a vt\n");
+		weston_log("%s not a vt\n", tty_device);
 		weston_log("if running weston from ssh, "
 			   "use --tty to specify a tty\n");
 		return -1;
 	}
 
-	launcher->tty = STDIN_FILENO;
+	ret = ioctl(launcher->tty, KDGETMODE, &kd_mode);
+	if (ret) {
+		weston_log("failed to get VT mode: %m\n");
+		return -1;
+	}
+	if (kd_mode != KD_TEXT) {
+		weston_log("%s is already in graphics mode, "
+			   "is another display server running?\n", tty_device);
+		return -1;
+	}
+
+	ret = ioctl(launcher->tty, VT_ACTIVATE, minor(buf.st_rdev));
+	weston_log("VT_ACTIVATE ret=%d, %m vt\n", ret);
+
+	ret = ioctl(launcher->tty, VT_WAITACTIVE, minor(buf.st_rdev));
+	weston_log("VT_WAITACTIVE ret=%d, %m vt\n", ret);
+
 	if (ioctl(launcher->tty, KDGKBMODE, &launcher->kb_mode)) {
 		weston_log("failed to read keyboard mode: %m\n");
 		return -1;
@@ -304,7 +332,7 @@ weston_launcher_activate_vt(struct weston_launcher *launcher, int vt)
 }
 
 struct weston_launcher *
-weston_launcher_connect(struct weston_compositor *compositor)
+weston_launcher_connect(struct weston_compositor *compositor, int tty)
 {
 	struct weston_launcher *launcher;
 	struct wl_event_loop *loop;
@@ -328,7 +356,7 @@ weston_launcher_connect(struct weston_compositor *compositor)
 			return NULL;
 		}
 	} else if (geteuid() == 0) {
-		if (setup_tty(launcher) == -1) {
+		if (setup_tty(launcher, tty) == -1) {
 			free(launcher);
 			return NULL;
 		}
