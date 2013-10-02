@@ -1623,23 +1623,6 @@ TEST_F(AutofillDialogControllerTest, ErrorDuringSubmit) {
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 }
 
-// TODO(dbeam): disallow changing accounts instead and remove this test.
-TEST_F(AutofillDialogControllerTest, ChangeAccountDuringSubmit) {
-  EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              GetFullWallet(_)).Times(1);
-
-  SubmitWithWalletItems(CompleteAndValidWalletItems());
-
-  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
-
-  SwitchToWallet();
-  SwitchToAutofill();
-
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
-}
-
 TEST_F(AutofillDialogControllerTest, ErrorDuringVerifyCvv) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
@@ -1651,24 +1634,6 @@ TEST_F(AutofillDialogControllerTest, ErrorDuringVerifyCvv) {
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 
   controller()->OnWalletError(wallet::WalletClient::UNKNOWN_ERROR);
-
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
-}
-
-// TODO(dbeam): disallow changing accounts instead and remove this test.
-TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
-  EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              GetFullWallet(_)).Times(1);
-
-  SubmitWithWalletItems(CompleteAndValidWalletItems());
-  controller()->OnDidGetFullWallet(CreateFullWallet("verify_cvv"));
-
-  ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
-
-  SwitchToWallet();
-  SwitchToAutofill();
 
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));

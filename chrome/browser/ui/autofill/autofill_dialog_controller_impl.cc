@@ -1612,8 +1612,7 @@ bool AutofillDialogControllerImpl::FieldControlsIcons(
   return type == CREDIT_CARD_NUMBER;
 }
 
-// TODO(estade): Replace all the error messages here with more helpful and
-// translateable ones. TODO(groby): Also add tests.
+// TODO(groby): Add more tests.
 string16 AutofillDialogControllerImpl::InputValidityMessage(
     DialogSection section,
     ServerFieldType type,
@@ -2204,7 +2203,7 @@ void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
 void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
-  // TODO(dbeam): use the returned full wallet. b/8332329
+  // TODO(dbeam): use the returned full wallet. http://crbug.com/224992
   if (success) {
     GetFullWallet();
   } else {
@@ -3159,7 +3158,7 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
     const std::vector<wallet::RequiredAction>& required_actions) {
   DCHECK(!required_actions.empty());
 
-  // TODO(ahutter): Invesitigate if we need to support more generic actions on
+  // TODO(ahutter): Investigate if we need to support more generic actions on
   // this call such as GAIA_AUTH. See crbug.com/243457.
   for (std::vector<wallet::RequiredAction>::const_iterator iter =
            required_actions.begin();

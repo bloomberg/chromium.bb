@@ -138,8 +138,6 @@ void AccountChooserModel::ReconstructMenuItems() {
   } else if (checked_item_ == kActiveWalletItemId) {
     // A selected active Wallet account with an empty account name means
     // that the sign-in attempt is in progress.
-    // TODO(aruslan): http://crbug.com/230932
-    // A throbber should be shown until the Wallet account name is set.
     AddCheckItem(kActiveWalletItemId,
                  l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_GOOGLE_WALLET));
   }
