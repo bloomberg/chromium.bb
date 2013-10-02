@@ -30,8 +30,8 @@
         
 @// Include standard headers
 
-#include "dl/api/armCOMM_s.h"
-#include "dl/api/omxtypes_s.h"
+#include "dl/api/arm/armCOMM_s.h"
+#include "dl/api/arm/omxtypes_s.h"
         
         
 @// Import symbols required from other files

@@ -25,8 +25,8 @@
 @ Compute a forward FFT for a real signal, using 16 bit complex FFT routines.
 @
 
-#include "dl/api/armCOMM_s.h"
-#include "dl/api/omxtypes_s.h"
+#include "dl/api/arm/armCOMM_s.h"
+#include "dl/api/arm/omxtypes_s.h"
 
 .extern  armSP_FFTFwd_CToC_SC16_Sfs_Radix2_fs_OutOfPlace_unsafe
 .extern  armSP_FFTFwd_CToC_SC16_Radix2_fs_OutOfPlace_unsafe

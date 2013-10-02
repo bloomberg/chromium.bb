@@ -32,10 +32,10 @@
         ],
       },
       'sources': [
-        'api/armCOMM_s.h',
-        'api/armOMX.h',
+        'api/arm/armCOMM_s.h',
+        'api/arm/armOMX.h',
+        'api/arm/omxtypes_s.h',
         'api/omxtypes.h',
-        'api/omxtypes_s.h',
         'sp/api/armSP.h',
         'sp/api/omxSP.h',
         # Common C code that can be shared between different

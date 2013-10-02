@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "dl/api/armOMX.h"
+#include "dl/api/arm/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"
 #include "dl/sp/api/omxSP.h"
