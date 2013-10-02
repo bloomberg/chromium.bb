@@ -14,8 +14,10 @@ namespace switches {
 const char kPolicySwitchesBegin[] = "policy-switches-begin";
 const char kPolicySwitchesEnd[] = "policy-switches-end";
 
+// Switch for path that breakpad can read an optional termination message from.
+const char kTerminationMessageFile[] = "termination-message-file";
+
 }  // namespace switches
 }  // namespace chromeos
 
 #endif  // SWITCHES_CHROME_SWITCHES_H_
-
