@@ -71,9 +71,6 @@ namespace autofill {
 // Validates form input data.
 - (BOOL)validate;
 
-// Updates status of "save in Chrome" checkbox.
-- (void)updateSaveInChrome;
-
 @end
 
 

@@ -500,13 +500,11 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (void)updateSection:(autofill::DialogSection)section {
   [[mainContainer_ sectionForId:section] update];
-  [mainContainer_ updateSaveInChrome];
 }
 
 - (void)fillSection:(autofill::DialogSection)section
            forInput:(const autofill::DetailInput&)input {
   [[mainContainer_ sectionForId:section] fillForInput:input];
-  [mainContainer_ updateSaveInChrome];
 }
 
 - (content::NavigationController*)showSignIn {

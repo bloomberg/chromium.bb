@@ -55,8 +55,7 @@
   [saveInChromeCheckbox_ setButtonType:NSSwitchButton];
   [saveInChromeCheckbox_ setTitle:
       base::SysUTF16ToNSString(delegate_->SaveLocallyText())];
-  [saveInChromeCheckbox_ setState:
-      (delegate_->ShouldSaveInChrome() ? NSOnState : NSOffState)];
+  [saveInChromeCheckbox_ setState:NSOnState];
   [saveInChromeCheckbox_ sizeToFit];
   [[self view] addSubview:saveInChromeCheckbox_];
 
@@ -232,7 +231,7 @@
 }
 
 - (void)modelChanged {
-  [self updateSaveInChrome];
+  [saveInChromeCheckbox_ setHidden:!delegate_->ShouldOfferToSaveInChrome()];
   [detailsContainer_ modelChanged];
 }
 
@@ -280,10 +279,6 @@
 
 - (BOOL)validate {
   return [detailsContainer_ validate];
-}
-
-- (void)updateSaveInChrome {
-  [saveInChromeCheckbox_ setHidden:!delegate_->ShouldOfferToSaveInChrome()];
 }
 
 @end
