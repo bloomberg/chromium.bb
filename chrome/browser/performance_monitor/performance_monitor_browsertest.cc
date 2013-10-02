@@ -161,25 +161,24 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
         chrome::NOTIFICATION_PERFORMANCE_MONITOR_INITIALIZED,
         content::NotificationService::AllSources());
 
+    // We stop the timer in charge of doing timed collections so that we can
+    // enforce when, and how many times, we do these collections.
+    performance_monitor_->disable_timer_autostart_for_testing_ = true;
+    // Force metrics to be stored, regardless of switches used.
+    performance_monitor_->database_logging_enabled_ = true;
     performance_monitor_->Start();
 
     windowed_observer.Wait();
-
-    // We stop the timer in charge of doing timed collections so that we can
-    // enforce when, and how many times, we do these collections.
-    performance_monitor_->timer_.Stop();
   }
 
   // A handle for gathering statistics from the database, which must be done on
   // the background thread. Since we are testing, we can mock synchronicity with
   // FlushForTesting().
   void GatherStatistics() {
-    content::BrowserThread::PostBlockingPoolSequencedTask(
-        Database::kDatabaseSequenceToken,
-        FROM_HERE,
-        base::Bind(&PerformanceMonitor::GatherStatisticsOnBackgroundThread,
-                   base::Unretained(performance_monitor())));
+    performance_monitor_->next_collection_time_ = base::Time::Now();
+    performance_monitor_->GatherMetricsMapOnUIThread();
 
+    RunAllPendingInMessageLoop(content::BrowserThread::IO);
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
@@ -772,11 +771,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NetworkBytesRead) {
       browser(),
       test_server()->GetURL(std::string("files/").append("title1.html")));
 
-  performance_monitor()->DoTimedCollections();
-
-  // Since network bytes are read and set on the IO thread, we must flush this
-  // additional thread to be sure that all messages are run.
-  RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  GatherStatistics();
 
   Database::MetricVector metrics = GetStats(METRIC_NETWORK_BYTES_READ);
   ASSERT_EQ(1u, metrics.size());
@@ -789,7 +784,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NetworkBytesRead) {
       browser(),
       test_server()->GetURL(std::string("files/").append("title2.html")));
 
-  performance_monitor()->DoTimedCollections();
+  GatherStatistics();
 
   metrics = GetStats(METRIC_NETWORK_BYTES_READ);
   ASSERT_EQ(2u, metrics.size());

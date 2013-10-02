@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/process/process_iterator.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,9 +30,10 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/test/base/chrome_process_util.h"
 #include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -52,8 +54,6 @@ const uint32 kAccessFlags = base::kProcessAccessDuplicateHandle |
                             base::kProcessAccessQueryInformation |
                             base::kProcessAccessTerminate |
                             base::kProcessAccessWaitForTermination;
-
-bool g_started_initialization = false;
 
 std::string TimeToString(base::Time time) {
   int64 time_int64 = time.ToInternalValue();
@@ -99,7 +99,15 @@ PerformanceMonitor::PerformanceDataForIOThread::PerformanceDataForIOThread()
     : network_bytes_read(0) {
 }
 
-PerformanceMonitor::PerformanceMonitor() : metrics_map_(new MetricsMap) {}
+PerformanceMonitor::PerformanceMonitor()
+    : gather_interval_in_seconds_(kDefaultGatherIntervalInSeconds),
+      database_logging_enabled_(false),
+      timer_(FROM_HERE,
+             base::TimeDelta::FromSeconds(kSampleIntervalInSeconds),
+             this,
+             &PerformanceMonitor::DoTimedCollections),
+      disable_timer_autostart_for_testing_(false) {
+}
 
 PerformanceMonitor::~PerformanceMonitor() {
   BrowserThread::PostBlockingPoolSequencedTask(
@@ -126,11 +134,39 @@ PerformanceMonitor* PerformanceMonitor::GetInstance() {
 void PerformanceMonitor::Start() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Avoid responding to multiple calls to Start().
-  if (g_started_initialization)
+  static bool has_initialized = false;
+  if (has_initialized) {
+    NOTREACHED();
     return;
+  }
+  has_initialized = true;
 
-  g_started_initialization = true;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPerformanceMonitorGathering)) {
+    database_logging_enabled_ = true;
+
+    std::string switch_value = CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kPerformanceMonitorGathering);
+
+    if (!switch_value.empty()) {
+      int specified_interval = 0;
+      if (!base::StringToInt(switch_value, &specified_interval) ||
+          specified_interval <= 0) {
+        LOG(ERROR) << "Invalid value for switch: '"
+                   << switches::kPerformanceMonitorGathering
+                   << "'; please use an integer greater than 0.";
+      } else {
+        gather_interval_in_seconds_ = std::max(specified_interval,
+                                               kSampleIntervalInSeconds);
+      }
+    }
+  }
+
+  DCHECK(gather_interval_in_seconds_ >= kSampleIntervalInSeconds);
+
+  next_collection_time_ = base::Time::Now() +
+      base::TimeDelta::FromSeconds(gather_interval_in_seconds_);
+
   util::PostTaskToDatabaseThreadAndReply(
       FROM_HERE,
       base::Bind(&PerformanceMonitor::InitOnBackgroundThread,
@@ -141,59 +177,42 @@ void PerformanceMonitor::Start() {
 
 void PerformanceMonitor::InitOnBackgroundThread() {
   CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  database_ = Database::Create(database_path_);
-  if (!database_) {
-    LOG(ERROR) << "Could not initialize database; aborting initialization.";
-    return;
-  }
 
-  // Initialize the io thread's performance data to the value in the database;
-  // if there isn't a recording in the database, the value stays at 0.
-  Metric metric;
-  if (database_->GetRecentStatsForActivityAndMetric(METRIC_NETWORK_BYTES_READ,
-                                                    &metric)) {
-    performance_data_for_io_thread_.network_bytes_read = metric.value;
+  if (database_logging_enabled_) {
+    database_ = Database::Create(database_path_);
+    if (!database_) {
+      LOG(ERROR) << "Could not initialize database; aborting initialization.";
+      database_logging_enabled_ = false;
+      return;
+    }
+
+    // Initialize the io thread's performance data to the value in the database;
+    // if there isn't a recording in the database, the value stays at 0.
+    Metric metric;
+    if (database_->GetRecentStatsForActivityAndMetric(METRIC_NETWORK_BYTES_READ,
+                                                      &metric)) {
+      performance_data_for_io_thread_.network_bytes_read = metric.value;
+    }
   }
 }
 
 void PerformanceMonitor::FinishInit() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Short-circuit the initialization process if the database wasn't properly
-  // created. This will prevent PerformanceMonitor from performing any actions,
-  // including observing events.
-  if (!database_)
-    return;
 
-  RegisterForNotifications();
-  CheckForUncleanExits();
-  BrowserThread::PostBlockingPoolSequencedTask(
-      Database::kDatabaseSequenceToken,
-      FROM_HERE,
-      base::Bind(&PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread,
-                 base::Unretained(this)));
-
-  int gather_interval_in_seconds = kDefaultGatherIntervalInSeconds;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPerformanceMonitorGathering) &&
-      !CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kPerformanceMonitorGathering).empty()) {
-    int specified_interval = 0;
-    if (!base::StringToInt(
-            CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kPerformanceMonitorGathering),
-            &specified_interval) || specified_interval <= 0) {
-      LOG(ERROR) << "Invalid value for switch: '"
-                 << switches::kPerformanceMonitorGathering
-                 << "'; please use an integer greater than 0.";
-    } else {
-      gather_interval_in_seconds = specified_interval;
-    }
+  // Events and notifications are only useful if we're logging to the database.
+  if (database_logging_enabled_) {
+    RegisterForNotifications();
+    CheckForUncleanExits();
+    BrowserThread::PostBlockingPoolSequencedTask(
+        Database::kDatabaseSequenceToken,
+        FROM_HERE,
+        base::Bind(&PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread,
+                   base::Unretained(this)));
   }
 
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(gather_interval_in_seconds),
-               this,
-               &PerformanceMonitor::DoTimedCollections);
+  // Start our periodic gathering of metrics.
+  if (!disable_timer_autostart_for_testing_)
+    timer_.Reset();
 
   // Post a task to the background thread to a function which does nothing.
   // This will force any tasks the database is performing to finish prior to
@@ -210,6 +229,8 @@ void PerformanceMonitor::FinishInit() {
 }
 
 void PerformanceMonitor::RegisterForNotifications() {
+  DCHECK(database_logging_enabled_);
+
   // Extensions
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::NotificationService::AllSources());
@@ -241,6 +262,8 @@ void PerformanceMonitor::RegisterForNotifications() {
 // loaded prior to PerformanceMonitor's initialization. Later profiles will be
 // checked through the PROFILE_ADDED notification.
 void PerformanceMonitor::CheckForUncleanExits() {
+  DCHECK(database_logging_enabled_);
+
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
 
@@ -258,7 +281,8 @@ void PerformanceMonitor::CheckForUncleanExits() {
 }
 
 void PerformanceMonitor::AddUncleanExitEventOnBackgroundThread(
-  const std::string& profile_name) {
+    const std::string& profile_name) {
+  DCHECK(database_logging_enabled_);
   std::string database_key = kStateProfilePrefix + profile_name;
   std::string last_active_string = database_->GetStateValue(database_key);
 
@@ -279,6 +303,7 @@ void PerformanceMonitor::AddUncleanExitEventOnBackgroundThread(
 
 void PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread() {
   CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(database_logging_enabled_);
 
   chrome::VersionInfo version;
   DCHECK(version.is_valid());
@@ -305,6 +330,8 @@ void PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread() {
 }
 
 void PerformanceMonitor::AddEvent(scoped_ptr<Event> event) {
+  DCHECK(database_logging_enabled_);
+
   BrowserThread::PostBlockingPoolSequencedTask(
       Database::kDatabaseSequenceToken,
       FROM_HERE,
@@ -319,6 +346,8 @@ void PerformanceMonitor::AddEventOnBackgroundThread(scoped_ptr<Event> event) {
 
 void PerformanceMonitor::AddMetricOnBackgroundThread(const Metric& metric) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(database_logging_enabled_);
+
   database_->AddMetric(metric);
 }
 
@@ -331,88 +360,62 @@ void PerformanceMonitor::NotifyInitialized() {
   initialized_ = true;
 }
 
-void PerformanceMonitor::GatherStatisticsOnBackgroundThread() {
-  CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Because the CPU usage is gathered as an average since the last time the
-  // function was called, while the memory usage is gathered as an instantaneous
-  // usage, the CPU usage is gathered before the metrics map is wiped.
-  GatherCPUUsageOnBackgroundThread();
-  UpdateMetricsMapOnBackgroundThread();
-  GatherMemoryUsageOnBackgroundThread();
-}
-
-void PerformanceMonitor::GatherCPUUsageOnBackgroundThread() {
-  if (metrics_map_->size()) {
-    double cpu_usage = 0;
-    for (MetricsMap::const_iterator iter = metrics_map_->begin();
-         iter != metrics_map_->end(); ++iter) {
-      cpu_usage += iter->second->GetCPUUsage();
-    }
-
-    database_->AddMetric(Metric(METRIC_CPU_USAGE,
-                                base::Time::Now(),
-                                cpu_usage));
-  }
-}
-
-void PerformanceMonitor::GatherMemoryUsageOnBackgroundThread() {
-  size_t private_memory_sum = 0;
-  size_t shared_memory_sum = 0;
-  for (MetricsMap::const_iterator iter = metrics_map_->begin();
-       iter != metrics_map_->end(); ++iter) {
-    size_t private_memory = 0;
-    size_t shared_memory = 0;
-    if (iter->second->GetMemoryBytes(&private_memory, &shared_memory)) {
-      private_memory_sum += private_memory;
-      shared_memory_sum += shared_memory;
-    } else {
-      LOG(WARNING) << "GetMemoryBytes returned NULL (platform-specific error)";
-    }
-  }
-
-  database_->AddMetric(Metric(METRIC_PRIVATE_MEMORY_USAGE,
-                              base::Time::Now(),
-                              static_cast<double>(private_memory_sum)));
-  database_->AddMetric(Metric(METRIC_SHARED_MEMORY_USAGE,
-                              base::Time::Now(),
-                              static_cast<double>(shared_memory_sum)));
-}
-
-void PerformanceMonitor::UpdateMetricsMapOnBackgroundThread() {
-  MetricsMap* new_map = new MetricsMap;
-
-  base::ProcessId browser_pid = base::GetCurrentProcId();
-  ChromeProcessList chrome_processes(GetRunningChromeProcesses(browser_pid));
-  for (ChromeProcessList::const_iterator pid_iter = chrome_processes.begin();
-       pid_iter != chrome_processes.end(); ++pid_iter) {
-    base::ProcessHandle handle;
-    if (base::OpenProcessHandleWithAccess(*pid_iter, kAccessFlags, &handle)) {
-      // If we were already watching this process, transfer it to the new map.
-      if (ContainsKey(*metrics_map_, handle)) {
-        (*new_map)[handle] = (*metrics_map_)[handle];
-        continue;
-      }
-
-      // Otherwise, gather information and prime the CPU usage to be gathered.
-#if defined (OS_MACOSX)
-      linked_ptr<base::ProcessMetrics> process_metrics(
-          base::ProcessMetrics::CreateProcessMetrics(
-              handle, content::BrowserChildProcessHost::GetPortProvider()));
-#else
-      linked_ptr<base::ProcessMetrics> process_metrics(
-          base::ProcessMetrics::CreateProcessMetrics(handle));
+void PerformanceMonitor::DoTimedCollections() {
+#if !defined(OS_ANDROID)
+  // The profile list is only useful for the logged events.
+  if (database_logging_enabled_)
+    UpdateLiveProfiles();
 #endif
 
-      process_metrics->GetCPUUsage();
-
-      (*new_map)[handle] = process_metrics;
-    }
-  }
-
-  metrics_map_.reset(new_map);
+  GatherMetricsMapOnUIThread();
 }
 
+void PerformanceMonitor::GatherMetricsMapOnUIThread() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  static int current_update_sequence = 0;
+  // Even in the "somewhat" unlikely event this wraps around,
+  // it doesn't matter. We just check it for inequality.
+  current_update_sequence++;
+
+  // Find all render child processes; has to be done on the UI thread.
+  for (content::RenderProcessHost::iterator rph_iter =
+           content::RenderProcessHost::AllHostsIterator();
+       !rph_iter.IsAtEnd(); rph_iter.Advance()) {
+    base::ProcessHandle handle = rph_iter.GetCurrentValue()->GetHandle();
+    MarkProcessAsAlive(handle, content::PROCESS_TYPE_RENDERER,
+                       current_update_sequence);
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PerformanceMonitor::GatherMetricsMapOnIOThread,
+                 base::Unretained(this),
+                 current_update_sequence));
+}
+
+void PerformanceMonitor::MarkProcessAsAlive(const base::ProcessHandle& handle,
+                                        int process_type,
+                                        int current_update_sequence) {
+
+  if (handle == 0) {
+    // Process may not be valid yet.
+    return;
+  }
+
+  MetricsMap::iterator process_metrics_iter = metrics_map_.find(handle);
+  if (process_metrics_iter == metrics_map_.end()) {
+    // If we're not already watching the process, let's initialize it.
+    metrics_map_[handle]
+        .Initialize(handle, process_type, current_update_sequence);
+  } else {
+    // If we are watching the process, touch it to keep it alive.
+    ProcessMetricsHistory& process_metrics = process_metrics_iter->second;
+    process_metrics.set_last_update_sequence(current_update_sequence);
+  }
+}
+
+#if !defined(OS_ANDROID)
 void PerformanceMonitor::UpdateLiveProfiles() {
   std::string time = TimeToString(base::Time::Now());
   scoped_ptr<std::set<std::string> > active_profiles(
@@ -434,48 +437,119 @@ void PerformanceMonitor::UpdateLiveProfilesHelper(
     scoped_ptr<std::set<std::string> > active_profiles,
     std::string time) {
   CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(database_logging_enabled_);
 
   for (std::set<std::string>::const_iterator iter = active_profiles->begin();
        iter != active_profiles->end(); ++iter) {
     database_->AddStateValue(kStateProfilePrefix + *iter, time);
   }
 }
+#endif
 
-void PerformanceMonitor::DoTimedCollections() {
-  UpdateLiveProfiles();
-
-  BrowserThread::PostBlockingPoolSequencedTask(
-      Database::kDatabaseSequenceToken,
-      FROM_HERE,
-      base::Bind(&PerformanceMonitor::GatherStatisticsOnBackgroundThread,
-                 base::Unretained(this)));
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PerformanceMonitor::CallInsertIOData,
-                 base::Unretained(this)));
-}
-
-void PerformanceMonitor::CallInsertIOData() {
+void PerformanceMonitor::GatherMetricsMapOnIOThread(
+    int current_update_sequence) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  // Find all child processes (does not include renderers), which has to be
+  // done on the IO thread.
+  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+    const content::ChildProcessData& child_process_data = iter.GetData();
+    base::ProcessHandle handle = child_process_data.handle;
+    MarkProcessAsAlive(handle, child_process_data.process_type,
+                       current_update_sequence);
+  }
+
+  // Add the current (browser) process.
+  MarkProcessAsAlive(base::GetCurrentProcessHandle(),
+                     content::PROCESS_TYPE_BROWSER, current_update_sequence);
+
   BrowserThread::PostBlockingPoolSequencedTask(
       Database::kDatabaseSequenceToken,
       FROM_HERE,
-      base::Bind(&PerformanceMonitor::InsertIOData,
-                 base::Unretained(this),
+      base::Bind(&PerformanceMonitor::StoreMetricsOnBackgroundThread,
+                 base::Unretained(this), current_update_sequence,
                  performance_data_for_io_thread_));
 }
 
-void PerformanceMonitor::InsertIOData(
+void PerformanceMonitor::StoreMetricsOnBackgroundThread(
+    int current_update_sequence,
     const PerformanceDataForIOThread& performance_data_for_io_thread) {
   CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  database_->AddMetric(
-      Metric(METRIC_NETWORK_BYTES_READ,
-             base::Time::Now(),
-             static_cast<double>(
-                 performance_data_for_io_thread.network_bytes_read)));
+
+  base::Time time_now = base::Time::Now();
+
+  // The timing can be off by kSampleIntervalInSeconds during any one particular
+  // run, but will be correct over time.
+  bool end_of_cycle = time_now >= next_collection_time_;
+  if (end_of_cycle) {
+    next_collection_time_ +=
+        base::TimeDelta::FromSeconds(gather_interval_in_seconds_);
+  }
+
+  double cpu_usage = 0.0;
+  size_t private_memory_sum = 0;
+  size_t shared_memory_sum = 0;
+
+  // Update metrics for all watched processes; remove dead entries from the map.
+  MetricsMap::iterator iter = metrics_map_.begin();
+  while (iter != metrics_map_.end()) {
+    ProcessMetricsHistory& process_metrics = iter->second;
+    if (process_metrics.last_update_sequence() != current_update_sequence) {
+      // Not touched this iteration; let's get rid of it.
+      metrics_map_.erase(iter++);
+    } else {
+      process_metrics.SampleMetrics();
+
+      if (end_of_cycle) {
+        // Gather averages of previously sampled metrics.
+        cpu_usage += process_metrics.GetAverageCPUUsage();
+
+        size_t private_memory = 0;
+        size_t shared_memory = 0;
+        process_metrics.GetAverageMemoryBytes(&private_memory, &shared_memory);
+        private_memory_sum += private_memory;
+        shared_memory_sum += shared_memory;
+
+        process_metrics.EndOfCycle();
+      }
+
+      ++iter;
+    }
+  }
+
+  // Store previously-sampled metrics.
+  if (end_of_cycle && database_logging_enabled_) {
+    if (!metrics_map_.empty()) {
+      database_->AddMetric(Metric(METRIC_CPU_USAGE, time_now, cpu_usage));
+      database_->AddMetric(Metric(METRIC_PRIVATE_MEMORY_USAGE,
+                                  time_now,
+                                  static_cast<double>(private_memory_sum)));
+      database_->AddMetric(Metric(METRIC_SHARED_MEMORY_USAGE,
+                                  time_now,
+                                  static_cast<double>(shared_memory_sum)));
+    }
+
+    database_->AddMetric(
+        Metric(METRIC_NETWORK_BYTES_READ,
+               time_now,
+               static_cast<double>(
+                   performance_data_for_io_thread.network_bytes_read)));
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&PerformanceMonitor::ResetMetricsTimerOnUIThread,
+                 base::Unretained(this)));
+}
+
+void PerformanceMonitor::ResetMetricsTimerOnUIThread() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Start up the timer again; we avoid the use of a repeating timer
+  // to not have concurrent metrics gathering running.
+  if (!disable_timer_autostart_for_testing_)
+    timer_.Reset();
 }
 
 void PerformanceMonitor::BytesReadOnIOThread(const net::URLRequest& request,
@@ -489,6 +563,8 @@ void PerformanceMonitor::BytesReadOnIOThread(const net::URLRequest& request,
 void PerformanceMonitor::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
+  DCHECK(database_logging_enabled_);
+
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       AddExtensionEvent(

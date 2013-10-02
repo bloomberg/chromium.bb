@@ -6,22 +6,22 @@
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
 
 #include <map>
+#include <set>
 #include <string>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
-#include "base/process/process_metrics.h"
+#include "base/process/process_handle.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/performance_monitor/database.h"
-#include "chrome/browser/performance_monitor/event.h"
-#include "content/public/browser/notification_details.h"
+#include "chrome/browser/performance_monitor/event_type.h"
+#include "chrome/browser/performance_monitor/process_metrics_history.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
+
+template <typename Type>
+struct DefaultSingletonTraits;
 
 namespace extensions {
 class Extension;
@@ -33,6 +33,8 @@ class URLRequest;
 
 namespace performance_monitor {
 class Database;
+class Event;
+struct Metric;
 
 // PerformanceMonitor is a tool which will allow the user to view information
 // about Chrome's performance over a period of time. It will gather statistics
@@ -56,8 +58,7 @@ class PerformanceMonitor : public content::NotificationObserver {
     uint64 network_bytes_read;
   };
 
-  typedef std::map<base::ProcessHandle,
-                   linked_ptr<base::ProcessMetrics> > MetricsMap;
+  typedef std::map<base::ProcessHandle, ProcessMetricsHistory> MetricsMap;
 
   // Set the path which the PerformanceMonitor should use for the database files
   // constructed. This must be done prior to the initialization of the
@@ -65,6 +66,8 @@ class PerformanceMonitor : public content::NotificationObserver {
   // likely indicates that PerformanceMonitor has already been started at the
   // time of the call).
   bool SetDatabasePath(const base::FilePath& path);
+
+  bool database_logging_enabled() const { return database_logging_enabled_; }
 
   // Returns the current PerformanceMonitor instance if one exists; otherwise
   // constructs a new PerformanceMonitor.
@@ -141,22 +144,32 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   // Update the database record of the last time the active profiles were
   // running; this is used in determining when an unclean exit occurred.
+#if !defined(OS_ANDROID)
   void UpdateLiveProfiles();
   void UpdateLiveProfilesHelper(
       scoped_ptr<std::set<std::string> > active_profiles, std::string time);
+#endif
 
-  // Gathers CPU usage and memory usage of all Chrome processes in order to.
-  void GatherStatisticsOnBackgroundThread();
+  // Stores CPU/memory usage metrics to the database.
+  void StoreMetricsOnBackgroundThread(
+      int current_update_sequence,
+      const PerformanceDataForIOThread& performance_data_for_io_thread);
 
-  // Gathers the CPU usage of every Chrome process that has been running since
-  // the last call to GatherStatistics().
-  void GatherCPUUsageOnBackgroundThread();
+  // Mark the given process as alive in the current update iteration.
+  // This means adding an entry to the map of watched processes if it's not
+  // already present.
+  void MarkProcessAsAlive(const base::ProcessHandle& handle,
+                          int process_type,
+                          int current_update_sequence);
 
-  // Gathers the memory usage of every process in the current list of processes.
-  void GatherMemoryUsageOnBackgroundThread();
+  // Updates the ProcessMetrics map with the current list of processes and
+  // gathers metrics from each entry.
+  void GatherMetricsMapOnUIThread();
+  void GatherMetricsMapOnIOThread(int current_update_sequence);
 
-  // Updates the ProcessMetrics map with the current list of processes.
-  void UpdateMetricsMapOnBackgroundThread();
+  // Called at the end of the metrics gathering process, to start
+  // our timer for the next run.
+  void ResetMetricsTimerOnUIThread();
 
   // Generate an appropriate ExtensionEvent for an extension-related occurrance
   // and insert it in the database.
@@ -169,15 +182,6 @@ class PerformanceMonitor : public content::NotificationObserver {
       content::RenderProcessHost* host,
       const content::RenderProcessHost::RendererClosedDetails& details);
 
-  // Called on the IO thread, this will call InsertIOData on the background
-  // thread with a copy of the PerformanceDataForIOThread object to prevent
-  // any possible race conditions.
-  void CallInsertIOData();
-
-  // Insert the collected IO data into the database.
-  void InsertIOData(
-      const PerformanceDataForIOThread& performance_data_for_io_thread);
-
   // The store for all performance data that must be gathered from the IO
   // thread.
   PerformanceDataForIOThread performance_data_for_io_thread_;
@@ -189,10 +193,20 @@ class PerformanceMonitor : public content::NotificationObserver {
   scoped_ptr<Database> database_;
 
   // A map of currently running ProcessHandles to ProcessMetrics.
-  scoped_ptr<MetricsMap> metrics_map_;
+  MetricsMap metrics_map_;
+
+  // The next time we should collect averages from the performance metrics
+  // and act on them.
+  base::Time next_collection_time_;
+
+  // How long to wait between collections.
+  int gather_interval_in_seconds_;
+
+  // Enable persistent logging of performance metrics to a database.
+  bool database_logging_enabled_;
 
   // The timer to signal PerformanceMonitor to perform its timed collections.
-  base::RepeatingTimer<PerformanceMonitor> timer_;
+  base::DelayTimer<PerformanceMonitor> timer_;
 
   content::NotificationRegistrar registrar_;
 
@@ -201,6 +215,9 @@ class PerformanceMonitor : public content::NotificationObserver {
   // the PERFORMANCE_MONITOR_INITIALIZED notification or should check this
   // flag.
   static bool initialized_;
+
+  // Disable auto-starting the collection timer; used for tests.
+  bool disable_timer_autostart_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceMonitor);
 };

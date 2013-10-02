@@ -90,10 +90,13 @@ void StartupTimer::Observe(int type,
                            const content::NotificationDetails& details) {
   CHECK(type == chrome::NOTIFICATION_PERFORMANCE_MONITOR_INITIALIZED);
   performance_monitor_initialized_ = true;
-  if (elapsed_startup_time_ != base::TimeDelta())
-    InsertElapsedStartupTime();
-  if (elapsed_session_restore_times_.size())
-    InsertElapsedSessionRestoreTime();
+
+  if (PerformanceMonitor::GetInstance()->database_logging_enabled()) {
+    if (elapsed_startup_time_ != base::TimeDelta())
+      InsertElapsedStartupTime();
+    if (elapsed_session_restore_times_.size())
+      InsertElapsedSessionRestoreTime();
+  }
 }
 
 // static

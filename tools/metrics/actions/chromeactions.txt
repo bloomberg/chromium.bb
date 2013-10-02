@@ -1440,6 +1440,7 @@
 0xa7613e3a71f2d755	PasswordManager_RemoveSavedPassword
 0x36bb6559696dc912	Paste
 0x5d0e6942f354a06c	PasteAndMatchStyle
+0xb0c1b1bb1cef8c89	PerformanceMonitor.HighCPU.Browser
 0x01c52e891f36d4fe	PlatformVerificationAccepted
 0x1929087478be7017	PlatformVerificationRejected
 0xca471265efb33961	PluginContextMenu_RotateClockwise
@@ -1537,6 +1538,7 @@
 0x2d9491c68a4ec635	SelectTab5
 0x8fa9d8e88271c82d	SelectTab6
 0xdaa611aa645914e5	SelectTab7
+0x7eb3241cff786567	SettingsResetBubble.Show
 0xbc7eb334ae9f29d0	ShowAccessibilitySettings
 0x1da022468e27685c	ShowAppLauncherPage
 0x0d1d6961dd313b79	ShowAppMenu
