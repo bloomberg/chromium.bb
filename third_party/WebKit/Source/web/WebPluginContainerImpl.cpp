@@ -193,7 +193,7 @@ void WebPluginContainerImpl::handleEvent(Event* event)
         handleWheelEvent(static_cast<WheelEvent*>(event));
     else if (event->isKeyboardEvent())
         handleKeyboardEvent(toKeyboardEvent(event));
-    else if (eventNames().isTouchEventType(event->type()))
+    else if (event->isTouchEvent())
         handleTouchEvent(toTouchEvent(event));
     else if (eventNames().isGestureEventType(event->type()))
         handleGestureEvent(static_cast<GestureEvent*>(event));
