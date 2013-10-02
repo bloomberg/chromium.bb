@@ -34,7 +34,6 @@
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
 
-#include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/size.h"
 
 namespace content {
@@ -53,6 +52,27 @@ static bool MakeDecoderContextCurrent(
 
   return true;
 }
+
+// A helper class that works like AutoLock but only acquires the lock when
+// DCHECK is on.
+class DebugAutoLock {
+ public:
+  explicit DebugAutoLock(base::Lock& lock) : lock_(lock) {
+    if (DCHECK_IS_ON())
+      lock_.Acquire();
+  }
+
+  ~DebugAutoLock() {
+    if (DCHECK_IS_ON()) {
+      lock_.AssertAcquired();
+      lock_.Release();
+    }
+  }
+
+ private:
+  base::Lock& lock_;
+  DISALLOW_COPY_AND_ASSIGN(DebugAutoLock);
+};
 
 class GpuVideoDecodeAccelerator::MessageFilter
     : public IPC::ChannelProxy::MessageFilter {
@@ -176,10 +196,25 @@ void GpuVideoDecodeAccelerator::DismissPictureBuffer(
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer) "
                 << "failed";
   }
+  DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
+  uncleared_textures_.erase(picture_buffer_id);
 }
 
 void GpuVideoDecodeAccelerator::PictureReady(
     const media::Picture& picture) {
+  // VDA may call PictureReady on IO thread. SetTextureCleared should run on
+  // the child thread. VDA is responsible to call PictureReady on the child
+  // thread when a picture buffer is delivered the first time.
+  if (child_message_loop_->BelongsToCurrentThread()) {
+    SetTextureCleared(picture);
+  } else {
+    DCHECK(io_message_loop_->BelongsToCurrentThread());
+    if (DCHECK_IS_ON()) {
+      DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
+      DCHECK_EQ(0u, uncleared_textures_.count(picture.picture_buffer_id()));
+    }
+  }
+
   if (!Send(new AcceleratedVideoDecoderHostMsg_PictureReady(
           host_route_id_,
           picture.picture_buffer_id(),
@@ -305,6 +340,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       command_decoder->GetContextGroup()->texture_manager();
 
   std::vector<media::PictureBuffer> buffers;
+  std::vector<scoped_refptr<gpu::gles2::TextureRef> > textures;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {
     if (buffer_ids[i] < 0) {
       DLOG(ERROR) << "Buffer id " << buffer_ids[i] << " out of range";
@@ -327,9 +363,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     }
     if (texture_target_ == GL_TEXTURE_EXTERNAL_OES) {
       // GL_TEXTURE_EXTERNAL_OES textures have their dimensions defined by the
-      // underlying EGLImage.  Use |texture_dimensions_| for this size.  The
-      // textures cannot be rendered to or cleared, so we set |cleared| true to
-      // skip clearing.
+      // underlying EGLImage.  Use |texture_dimensions_| for this size.
       texture_manager->SetLevelInfo(texture_ref,
                                     GL_TEXTURE_EXTERNAL_OES,
                                     0,
@@ -340,7 +374,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
                                     0,
                                     0,
                                     0,
-                                    true);
+                                    false);
     } else {
       // For other targets, texture dimensions should already be defined.
       GLsizei width = 0, height = 0;
@@ -352,11 +386,6 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
         return;
       }
     }
-    if (!texture_manager->ClearRenderableLevels(command_decoder, texture_ref)) {
-      DLOG(ERROR) << "Failed to Clear texture id " << texture_ids[i];
-      NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
-      return;
-    }
     uint32 service_texture_id;
     if (!command_decoder->GetServiceTextureId(
             texture_ids[i], &service_texture_id)) {
@@ -366,8 +395,12 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     }
     buffers.push_back(media::PictureBuffer(
         buffer_ids[i], texture_dimensions_, service_texture_id));
+    textures.push_back(texture_ref);
   }
   video_decode_accelerator_->AssignPictureBuffers(buffers);
+  DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
+  for (uint32 i = 0; i < buffer_ids.size(); ++i)
+    uncleared_textures_[buffer_ids[i]] = textures[i];
 }
 
 void GpuVideoDecodeAccelerator::OnReusePictureBuffer(
@@ -444,6 +477,24 @@ bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
     return filter_->SendOnIOThread(message);
   DCHECK(child_message_loop_->BelongsToCurrentThread());
   return stub_->channel()->Send(message);
+}
+
+void GpuVideoDecodeAccelerator::SetTextureCleared(
+    const media::Picture& picture) {
+  DCHECK(child_message_loop_->BelongsToCurrentThread());
+  DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
+  std::map<int32, scoped_refptr<gpu::gles2::TextureRef> >::iterator it;
+  it = uncleared_textures_.find(picture.picture_buffer_id());
+  if (it == uncleared_textures_.end())
+    return;  // the texture has been cleared
+
+  scoped_refptr<gpu::gles2::TextureRef> texture_ref = it->second;
+  GLenum target = texture_ref->texture()->target();
+  gpu::gles2::TextureManager* texture_manager =
+      stub_->decoder()->GetContextGroup()->texture_manager();
+  DCHECK(!texture_ref->texture()->IsLevelCleared(target, 0));
+  texture_manager->SetLevelCleared(texture_ref, target, 0, true);
+  uncleared_textures_.erase(it);
 }
 
 }  // namespace content

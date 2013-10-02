@@ -104,6 +104,13 @@ struct ExynosVideoDecodeAccelerator::EGLSyncKHRRef {
   EGLSyncKHR egl_sync;
 };
 
+struct ExynosVideoDecodeAccelerator::PictureRecord {
+  PictureRecord(bool cleared, const media::Picture& picture);
+  ~PictureRecord();
+  bool cleared;  // Whether the texture is cleared and safe to render from.
+  media::Picture picture;  // The decoded picture.
+};
+
 ExynosVideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<Client>& client,
     scoped_refptr<base::MessageLoopProxy>& client_message_loop_proxy,
@@ -195,11 +202,18 @@ ExynosVideoDecodeAccelerator::GscOutputRecord::GscOutputRecord()
       fd(-1),
       egl_image(EGL_NO_IMAGE_KHR),
       egl_sync(EGL_NO_SYNC_KHR),
-      picture_id(-1) {
-}
+      picture_id(-1),
+      cleared(false) {}
 
 ExynosVideoDecodeAccelerator::GscOutputRecord::~GscOutputRecord() {
 }
+
+ExynosVideoDecodeAccelerator::PictureRecord::PictureRecord(
+    bool cleared,
+    const media::Picture& picture)
+    : cleared(cleared), picture(picture) {}
+
+ExynosVideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
 
 ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
     EGLDisplay egl_display,
@@ -236,6 +250,7 @@ ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
       gsc_input_buffer_queued_count_(0),
       gsc_output_streamon_(false),
       gsc_output_buffer_queued_count_(0),
+      picture_clearing_count_(0),
       device_poll_thread_("ExynosDevicePollThread"),
       device_poll_interrupt_fd_(-1),
       make_context_current_(make_context_current),
@@ -1052,6 +1067,7 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffersTask(
     DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
     DCHECK_EQ(output_record.picture_id, -1);
+    DCHECK_EQ(output_record.cleared, false);
     PictureBufferArrayRef::PictureBufferRef& buffer =
         pic_buffers->picture_buffers[i];
     output_record.fd = buffer.egl_image_fd;
@@ -1415,9 +1431,11 @@ void ExynosVideoDecodeAccelerator::DequeueGsc() {
     gsc_output_buffer_queued_count_--;
     DVLOG(3) << "DequeueGsc(): returning input_id=" << dqbuf.timestamp.tv_sec
              << " as picture_id=" << output_record.picture_id;
-    io_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &Client::PictureReady, io_client_, media::Picture(
-            output_record.picture_id, dqbuf.timestamp.tv_sec)));
+    const media::Picture& picture =
+        media::Picture(output_record.picture_id, dqbuf.timestamp.tv_sec);
+    pending_picture_ready_.push(PictureRecord(output_record.cleared, picture));
+    SendPictureReady();
+    output_record.cleared = true;
     decoder_frames_at_client_++;
   }
 
@@ -1629,6 +1647,7 @@ void ExynosVideoDecodeAccelerator::FlushTask() {
       new BitstreamBufferRef(io_client_, io_message_loop_proxy_, NULL, 0,
                              kFlushBufferId)));
   decoder_flushing_ = true;
+  SendPictureReady();  // Send all pending PictureReady.
 
   ScheduleDecodeBufferTaskIfNeeded();
 }
@@ -1722,6 +1741,7 @@ void ExynosVideoDecodeAccelerator::ResetTask() {
   // Mark that we're resetting, then enqueue a ResetDoneTask().  All intervening
   // jobs will early-out in the kResetting state.
   decoder_state_ = kResetting;
+  SendPictureReady();  // Send all pending PictureReady.
   decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
       &ExynosVideoDecodeAccelerator::ResetDoneTask, base::Unretained(this)));
 }
@@ -2448,6 +2468,55 @@ void ExynosVideoDecodeAccelerator::ResolutionChangeDestroyBuffers() {
   decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
       &ExynosVideoDecodeAccelerator::FinishResolutionChange,
       base::Unretained(this)));
+}
+
+void ExynosVideoDecodeAccelerator::SendPictureReady() {
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
+  bool resetting_or_flushing =
+      (decoder_state_ == kResetting || decoder_flushing_);
+  while (pending_picture_ready_.size() > 0) {
+    bool cleared = pending_picture_ready_.front().cleared;
+    const media::Picture& picture = pending_picture_ready_.front().picture;
+    if (cleared && picture_clearing_count_ == 0) {
+      // This picture is cleared. Post it to IO thread to reduce latency. This
+      // should be the case after all pictures are cleared at the beginning.
+      io_message_loop_proxy_->PostTask(
+          FROM_HERE, base::Bind(&Client::PictureReady, io_client_, picture));
+      pending_picture_ready_.pop();
+    } else if (!cleared || resetting_or_flushing) {
+      DVLOG(3) << "SendPictureReady()"
+               << ". cleared=" << pending_picture_ready_.front().cleared
+               << ", decoder_state_=" << decoder_state_
+               << ", decoder_flushing_=" << decoder_flushing_
+               << ", picture_clearing_count_=" << picture_clearing_count_;
+      // If the picture is not cleared, post it to the child thread because it
+      // has to be cleared in the child thread. A picture only needs to be
+      // cleared once. If the decoder is resetting or flushing, send all
+      // pictures to ensure PictureReady arrive before reset or flush done.
+      child_message_loop_proxy_->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&Client::PictureReady, client_, picture),
+          // Unretained is safe. If Client::PictureReady gets to run, |this| is
+          // alive. Destroy() will wait the decode thread to finish.
+          base::Bind(&ExynosVideoDecodeAccelerator::PictureCleared,
+                     base::Unretained(this)));
+      picture_clearing_count_++;
+      pending_picture_ready_.pop();
+    } else {
+      // This picture is cleared. But some pictures are about to be cleared on
+      // the child thread. To preserve the order, do not send this until those
+      // pictures are cleared.
+      break;
+    }
+  }
+}
+
+void ExynosVideoDecodeAccelerator::PictureCleared() {
+  DVLOG(3) << "PictureCleared(). clearing count=" << picture_clearing_count_;
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK_GT(picture_clearing_count_, 0);
+  picture_clearing_count_--;
+  SendPictureReady();
 }
 
 }  // namespace content

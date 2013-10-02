@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_GPU_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_GPU_VIDEO_DECODE_ACCELERATOR_H_
 
+#include <map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -12,6 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/media/video_decode_accelerator_impl.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
@@ -81,6 +83,9 @@ class GpuVideoDecodeAccelerator
   // Called on IO thread when |filter_| has been removed.
   void OnFilterRemoved();
 
+  // Sets the texture to cleared.
+  void SetTextureCleared(const media::Picture& picture);
+
   // Message to Send() when initialization is done.  Is only non-NULL during
   // initialization and is owned by the IPC channel underlying the
   // GpuCommandBufferStub.
@@ -116,6 +121,14 @@ class GpuVideoDecodeAccelerator
 
   // Weak pointers will be invalidated on IO thread.
   base::WeakPtrFactory<Client> weak_factory_for_io_;
+
+  // Protects |uncleared_textures_| when DCHECK is on. This is for debugging
+  // only. We don't want to hold a lock on IO thread. When DCHECK is off,
+  // |uncleared_textures_| is only accessed from the child thread.
+  base::Lock debug_uncleared_textures_lock_;
+
+  // A map from picture buffer ID to TextureRef that have not been cleared.
+  std::map<int32, scoped_refptr<gpu::gles2::TextureRef> > uncleared_textures_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };

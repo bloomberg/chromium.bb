@@ -19,6 +19,7 @@
 #include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
+#include "media/video/picture.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -136,6 +137,9 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   // Auto-destruction reference for EGLSync (for message-passing).
   struct EGLSyncKHRRef;
 
+  // Record for decoded pictures that can be sent to PictureReady.
+  struct PictureRecord;
+
   // Record for MFC input buffers.
   struct MfcInputRecord {
     MfcInputRecord();
@@ -177,6 +181,8 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
     EGLImageKHR egl_image; // backing EGLImage.
     EGLSyncKHR egl_sync;   // sync the compositor's use of the EGLImage.
     int32 picture_id;      // picture buffer id as returned to PictureReady().
+    bool cleared;          // Whether the texture is cleared and safe to render
+                           // from. See TextureManager for details.
   };
 
   //
@@ -316,6 +322,12 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   void DestroyGscOutputBuffers();
   void ResolutionChangeDestroyBuffers();
 
+  // Send decoded pictures to PictureReady.
+  void SendPictureReady();
+
+  // Callback that indicates a picture has been cleared.
+  void PictureCleared();
+
   // Our original calling message loop for the child thread.
   scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
 
@@ -436,6 +448,12 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   std::list<int> gsc_free_output_buffers_;
   // Mapping of int index to GSC output buffer record.
   std::vector<GscOutputRecord> gsc_output_buffer_map_;
+
+  // Pictures that are ready but not sent to PictureReady yet.
+  std::queue<PictureRecord> pending_picture_ready_;
+
+  // The number of pictures that are sent to PictureReady and will be cleared.
+  int picture_clearing_count_;
 
   // Output picture size.
   gfx::Size frame_buffer_size_;
