@@ -449,9 +449,9 @@ def ExtractCalledByNatives(contents):
 class JNIFromJavaP(object):
   """Uses 'javap' to parse a .class file and generate the JNI header file."""
 
-  def __init__(self, contents, namespace):
+  def __init__(self, contents, options):
     self.contents = contents
-    self.namespace = namespace
+    self.namespace = options.namespace
     self.fully_qualified_class = re.match(
         '.*?(class|interface) (?P<class_name>.*?)( |{)',
         contents[1]).group('class_name')
@@ -496,27 +496,28 @@ class JNIFromJavaP(object):
           is_constructor=True)]
     self.called_by_natives = MangleCalledByNatives(self.called_by_natives)
     self.inl_header_file_generator = InlHeaderFileGenerator(
-        self.namespace, self.fully_qualified_class, [], self.called_by_natives)
+        self.namespace, self.fully_qualified_class, [],
+        self.called_by_natives, options)
 
   def GetContent(self):
     return self.inl_header_file_generator.GetContent()
 
   @staticmethod
-  def CreateFromClass(class_file, namespace):
+  def CreateFromClass(class_file, options):
     class_name = os.path.splitext(os.path.basename(class_file))[0]
     p = subprocess.Popen(args=['javap', class_name],
                          cwd=os.path.dirname(class_file),
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
     stdout, _ = p.communicate()
-    jni_from_javap = JNIFromJavaP(stdout.split('\n'), namespace)
+    jni_from_javap = JNIFromJavaP(stdout.split('\n'), options)
     return jni_from_javap
 
 
 class JNIFromJavaSource(object):
   """Uses the given java source file to generate the JNI header file."""
 
-  def __init__(self, contents, fully_qualified_class):
+  def __init__(self, contents, fully_qualified_class, options):
     contents = self._RemoveComments(contents)
     JniParams.SetFullyQualifiedClass(fully_qualified_class)
     JniParams.ExtractImportsAndInnerClasses(contents)
@@ -527,7 +528,8 @@ class JNIFromJavaSource(object):
       raise SyntaxError('Unable to find any JNI methods for %s.' %
                         fully_qualified_class)
     inl_header_file_generator = InlHeaderFileGenerator(
-        jni_namespace, fully_qualified_class, natives, called_by_natives)
+        jni_namespace, fully_qualified_class, natives, called_by_natives,
+        options)
     self.content = inl_header_file_generator.GetContent()
 
   def _RemoveComments(self, contents):
@@ -552,24 +554,25 @@ class JNIFromJavaSource(object):
     return self.content
 
   @staticmethod
-  def CreateFromFile(java_file_name):
+  def CreateFromFile(java_file_name, options):
     contents = file(java_file_name).read()
     fully_qualified_class = ExtractFullyQualifiedJavaClassName(java_file_name,
                                                                contents)
-    return JNIFromJavaSource(contents, fully_qualified_class)
+    return JNIFromJavaSource(contents, fully_qualified_class, options)
 
 
 class InlHeaderFileGenerator(object):
   """Generates an inline header file for JNI integration."""
 
   def __init__(self, namespace, fully_qualified_class, natives,
-               called_by_natives):
+               called_by_natives, options):
     self.namespace = namespace
     self.fully_qualified_class = fully_qualified_class
     self.class_name = self.fully_qualified_class.split('/')[-1]
     self.natives = natives
     self.called_by_natives = called_by_natives
     self.header_guard = fully_qualified_class.replace('/', '_') + '_JNI'
+    self.script_name = options.script_name
 
   def GetContent(self):
     """Returns the content of the JNI binding file."""
@@ -616,11 +619,8 @@ $REGISTER_NATIVES_IMPL
 $CLOSE_NAMESPACE
 #endif  // ${HEADER_GUARD}
 """)
-    script_components = os.path.abspath(sys.argv[0]).split(os.path.sep)
-    base_index = script_components.index('base')
-    script_name = os.sep.join(script_components[base_index:])
     values = {
-        'SCRIPT_NAME': script_name,
+        'SCRIPT_NAME': self.script_name,
         'FULLY_QUALIFIED_CLASS': self.fully_qualified_class,
         'CLASS_PATH_DEFINITIONS': self.GetClassPathDefinitionsString(),
         'FORWARD_DECLARATIONS': self.GetForwardDeclarationsString(),
@@ -993,13 +993,14 @@ def ExtractJarInputFile(jar_file, input_file, out_dir):
   return extracted_file_name
 
 
-def GenerateJNIHeader(input_file, output_file, namespace, skip_if_same):
+def GenerateJNIHeader(input_file, output_file, options):
   try:
     if os.path.splitext(input_file)[1] == '.class':
-      jni_from_javap = JNIFromJavaP.CreateFromClass(input_file, namespace)
+      jni_from_javap = JNIFromJavaP.CreateFromClass(input_file, options)
       content = jni_from_javap.GetContent()
     else:
-      jni_from_java_source = JNIFromJavaSource.CreateFromFile(input_file)
+      jni_from_java_source = JNIFromJavaSource.CreateFromFile(
+          input_file, options)
       content = jni_from_java_source.GetContent()
   except ParseError, e:
     print e
@@ -1007,7 +1008,7 @@ def GenerateJNIHeader(input_file, output_file, namespace, skip_if_same):
   if output_file:
     if not os.path.exists(os.path.dirname(os.path.abspath(output_file))):
       os.makedirs(os.path.dirname(os.path.abspath(output_file)))
-    if skip_if_same and os.path.exists(output_file):
+    if options.optimize_generation and os.path.exists(output_file):
       with file(output_file, 'r') as f:
         existing_content = f.read()
         if existing_content == content:
@@ -1016,6 +1017,16 @@ def GenerateJNIHeader(input_file, output_file, namespace, skip_if_same):
       f.write(content)
   else:
     print output
+
+
+def GetScriptName():
+  script_components = os.path.abspath(sys.argv[0]).split(os.path.sep)
+  base_index = 0
+  for idx, value in enumerate(script_components):
+    if value == 'base' or value == 'third_party':
+      base_index = idx
+      break
+  return os.sep.join(script_components[base_index:])
 
 
 def main(argv):
@@ -1047,12 +1058,19 @@ See SampleForTests.java for more details.
                            'not changed.')
   option_parser.add_option('--jarjar',
                            help='Path to optional jarjar rules file.')
+  option_parser.add_option('--script_name', default=GetScriptName(),
+                           help='The name of this script in the generated '
+                           'header.')
   options, args = option_parser.parse_args(argv)
   if options.jar_file:
     input_file = ExtractJarInputFile(options.jar_file, options.input_file,
                                      options.output_dir)
-  else:
+  elif options.input_file:
     input_file = options.input_file
+  else:
+    option_parser.print_help()
+    print '\nError: Must specify --jar_file or --input_file.'
+    return 1
   output_file = None
   if options.output_dir:
     root_name = os.path.splitext(os.path.basename(input_file))[0]
@@ -1060,8 +1078,7 @@ See SampleForTests.java for more details.
   if options.jarjar:
     with open(options.jarjar) as f:
       JniParams.SetJarJarMappings(f.read())
-  GenerateJNIHeader(input_file, output_file, options.namespace,
-                    options.optimize_generation)
+  GenerateJNIHeader(input_file, output_file, options)
 
 
 if __name__ == '__main__':
