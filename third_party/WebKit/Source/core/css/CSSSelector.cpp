@@ -840,18 +840,6 @@ bool CSSSelector::isCompound() const
     return true;
 }
 
-bool CSSSelector::hasHostPseudoClass() const
-{
-    if (!isCompound())
-        return false;
-
-    for (const CSSSelector* subSelector = this; subSelector; subSelector = subSelector->tagHistory()) {
-        if (subSelector->isHostPseudoClass())
-            return true;
-    }
-    return false;
-}
-
 bool CSSSelector::parseNth() const
 {
     if (!m_hasRareData)

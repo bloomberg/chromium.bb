@@ -388,20 +388,21 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
     const CSSSelector* const & selector = context.selector;
     ASSERT(element);
     ASSERT(selector);
+    bool elementIsHostInItsShadowTree = isHostInItsShadowTree(element, context.behaviorAtBoundary, context.scope);
 
     if (selector->m_match == CSSSelector::Tag)
-        return SelectorChecker::tagMatches(element, selector->tagQName());
+        return SelectorChecker::tagMatches(element, selector->tagQName(), elementIsHostInItsShadowTree ? MatchingHostInItsShadowTree : MatchingElement);
 
     if (selector->m_match == CSSSelector::Class)
-        return element->hasClass() && element->classNames().contains(selector->value());
+        return element->hasClass() && element->classNames().contains(selector->value()) && !elementIsHostInItsShadowTree;
 
     if (selector->m_match == CSSSelector::Id)
-        return element->hasID() && element->idForStyleResolution() == selector->value();
+        return element->hasID() && element->idForStyleResolution() == selector->value() && !elementIsHostInItsShadowTree;
 
     if (selector->isAttributeSelector()) {
         const QualifiedName& attr = selector->attribute();
 
-        if (!element->hasAttributes())
+        if (!element->hasAttributes() || elementIsHostInItsShadowTree)
             return false;
 
         bool caseSensitive = !m_documentIsHTML || HTMLDocument::isCaseSensitiveAttribute(attr);

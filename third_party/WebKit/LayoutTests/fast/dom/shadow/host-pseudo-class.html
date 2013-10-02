@@ -43,6 +43,76 @@ backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
+debug(':host with * should not match any shadow hosts.');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('*:host { background-color: green; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+debug(':host with tag selector should not match any shadow hosts.');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div:host { background-color: green; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
+
+cleanUp();
+
+debug(':host with class selector should not match any shadow hosts.');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host', 'class': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('.host:host { background-color: green; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
+
+cleanUp();
+
+debug(':host with id selector should not match any shadow hosts.');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('#host:host { background-color: green; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
+
+cleanUp();
+
+debug(':host with attribute selector should not match any shadow hosts.');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host', 'foo': 'bar'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('[foo=bar]:host { background-color: green; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
+
+cleanUp();
+
 debug(':host in a shadow tree should match its shadow host.');
 
 sandbox.appendChild(

@@ -201,7 +201,9 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
 
 inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const ContainerNode* scope, PseudoId& dynamicPseudo)
 {
-    if (ruleData.hasFastCheckableSelector()) {
+    // They can't match because the fast path uses a pool of tag/class/ids, collected from
+    // elements in that tree and those will never match the host, since it's in a different pool.
+    if (ruleData.hasFastCheckableSelector() && SelectorChecker::isHostInItsShadowTree(m_context.element(), m_behaviorAtBoundary, scope)) {
         // We know this selector does not include any pseudo elements.
         if (m_pseudoStyleRequest.pseudoId != NOPSEUDO)
             return false;
@@ -233,8 +235,6 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
     if (match != SelectorChecker::SelectorMatches)
         return false;
     if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != dynamicPseudo)
-        return false;
-    if (m_behaviorAtBoundary == SelectorChecker::ScopeIsShadowHost && scope == m_context.element() && !ruleData.selector()->hasHostPseudoClass())
         return false;
     return true;
 }

@@ -234,8 +234,6 @@ namespace WebCore {
         // http://dev.w3.org/csswg/selectors4/#compound
         bool isCompound() const;
 
-        bool hasHostPseudoClass() const;
-
         bool isForPage() const { return m_isForPage; }
         void setForPage() { m_isForPage = true; }
 
