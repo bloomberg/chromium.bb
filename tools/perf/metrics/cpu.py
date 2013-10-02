@@ -22,8 +22,7 @@ class CpuMetric(Metric):
 
   def Stop(self, page, tab):
     assert self._start_cpu, 'Must call Start() first'
-    self._results = CpuMetric.SubtractCpuStats(self._browser.cpu_stats,
-                                         self.start_cpu)
+    self._results = _SubtractCpuStats(self._browser.cpu_stats, self._start_cpu)
 
   # Optional argument trace_name is not in base class Metric.
   # pylint: disable=W0221
