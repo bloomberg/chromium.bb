@@ -394,7 +394,7 @@ class ChromeTests(object):
     # so parse it out of build_dir.  run_webkit_tests.py can only handle
     # the two values "Release" and "Debug".
     # TODO(Hercules): unify how all our scripts pass around build mode
-    # (--mode / --target / --build_dir / --debug)
+    # (--mode / --target / --build-dir / --debug)
     if self._options.build_dir.endswith("Debug"):
       script_cmd.append("--debug");
     if (chunk_size > 0):
@@ -471,7 +471,9 @@ def main():
   parser = optparse.OptionParser("usage: %prog -b <dir> -t <test> "
                                  "[-t <test> ...]")
   parser.disable_interspersed_args()
-  parser.add_option("-b", "--build_dir",
+  parser.add_option("-b", "--build-dir",
+                    # TODO(thakis): Remove --build_dir once bots don't pass it.
+                    "--build_dir",
                     help="the location of the output of the compiler output")
   parser.add_option("-t", "--test", action="append",
                     help="which test to run")

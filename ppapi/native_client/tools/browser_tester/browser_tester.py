@@ -161,7 +161,7 @@ def ProcessToolLogs(options, logs_dir):
     analyzer = memcheck_analyze.MemcheckAnalyzer('', use_gdb=True)
     logs_wildcard = 'xml.*'
   elif options.tool == 'tsan':
-    analyzer = tsan_analyze.TsanAnalyzer('', use_gdb=True)
+    analyzer = tsan_analyze.TsanAnalyzer(use_gdb=True)
     logs_wildcard = 'log.*'
   files = glob.glob(os.path.join(logs_dir, logs_wildcard))
   retcode = analyzer.Report(files, options.url)

@@ -57,7 +57,7 @@ class ChromeTests:
     # an absolute Unix-style path
     self._source_dir = os.path.abspath(self._source_dir).replace('\\', '/')
     valgrind_test_script = os.path.join(script_dir, "valgrind_test.py")
-    self._command_preamble = ["--source_dir=%s" % (self._source_dir)]
+    self._command_preamble = ["--source-dir=%s" % (self._source_dir)]
 
     if not self._options.build_dir:
       dirs = [
@@ -69,7 +69,7 @@ class ChromeTests:
       if len(build_dir) > 1:
         raise BuildDirAmbiguous("Found more than one suitable build dir:\n"
                                 "%s\nPlease specify just one "
-                                "using --build_dir" % ", ".join(build_dir))
+                                "using --build-dir" % ", ".join(build_dir))
       elif build_dir:
         self._options.build_dir = build_dir[0]
       else:
@@ -77,12 +77,12 @@ class ChromeTests:
 
     if self._options.build_dir:
       build_dir = os.path.abspath(self._options.build_dir)
-      self._command_preamble += ["--build_dir=%s" % (self._options.build_dir)]
+      self._command_preamble += ["--build-dir=%s" % (self._options.build_dir)]
 
   def _EnsureBuildDirFound(self):
     if not self._options.build_dir:
       raise BuildDirNotFound("Oops, couldn't find a build dir, please "
-                             "specify it manually using --build_dir")
+                             "specify it manually using --build-dir")
 
   def _DefaultCommand(self, tool, exe=None, valgrind_test_args=None):
     '''Generates the default command array that most tests will use.'''
@@ -443,7 +443,7 @@ class ChromeTests:
     # so parse it out of build_dir.  run_webkit_tests.py can only handle
     # the two values "Release" and "Debug".
     # TODO(Hercules): unify how all our scripts pass around build mode
-    # (--mode / --target / --build_dir / --debug)
+    # (--mode / --target / --build-dir / --debug)
     if self._options.build_dir:
       build_root, mode = os.path.split(self._options.build_dir)
       script_cmd.extend(["--build-directory", build_root, "--target", mode])
@@ -570,7 +570,9 @@ def _main():
 
   parser.add_option("", "--help-tests", dest="help_tests", action="store_true",
                     default=False, help="List all available tests")
-  parser.add_option("-b", "--build_dir",
+  parser.add_option("-b", "--build-dir",
+                    # TODO(thakis): Remove --build_dir once bots don't pass it.
+                    "--build_dir",
                     help="the location of the compiler output")
   parser.add_option("-t", "--test", action="append", default=[],
                     help="which test to run, supports test:gtest_filter format "

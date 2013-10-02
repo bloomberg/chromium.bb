@@ -59,12 +59,8 @@ class TsanAnalyzer(object):
   RACE_VERIFIER_LINE = "Confirmed a race|unexpected race"
   TSAN_ASSERTION = "Assertion failed: "
 
-  def __init__(self, source_dir, use_gdb=False):
-    '''Reads in a set of files.
-
-    Args:
-      source_dir: Path to top of source tree for this build
-    '''
+  def __init__(self, use_gdb=False):
+    '''Reads in a set of files.'''
 
     self._use_gdb = use_gdb
     self._cur_testcase = None
@@ -259,10 +255,7 @@ class TsanAnalyzer(object):
 
 def main():
   '''For testing only. The TsanAnalyzer class should be imported instead.'''
-  parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
-  parser.add_option("", "--source_dir",
-                    help="path to top of source tree for this build"
-                    "(used to normalize source paths in baseline)")
+  parser = optparse.OptionParser("usage: %prog <files to analyze>")
 
   (options, args) = parser.parse_args()
   if not args:
@@ -270,7 +263,7 @@ def main():
   filenames = args
 
   logging.getLogger().setLevel(logging.INFO)
-  analyzer = TsanAnalyzer(options.source_dir, use_gdb=True)
+  analyzer = TsanAnalyzer(use_gdb=True)
   return analyzer.Report(filenames, None)
 
 

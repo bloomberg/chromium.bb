@@ -178,10 +178,7 @@ class DrMemoryAnalyzer:
 
 def main():
   '''For testing only. The DrMemoryAnalyze class should be imported instead.'''
-  parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
-  parser.add_option("", "--source_dir",
-                    help="path to top of source tree for this build"
-                    "(used to normalize source paths in baseline)")
+  parser = optparse.OptionParser("usage: %prog <files to analyze>")
 
   (options, args) = parser.parse_args()
   if len(args) == 0:

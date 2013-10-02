@@ -617,7 +617,7 @@ class MemcheckAnalyzer:
 def _main():
   '''For testing only. The MemcheckAnalyzer class should be imported instead.'''
   parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
-  parser.add_option("", "--source_dir",
+  parser.add_option("", "--source-dir",
                     help="path to top of source tree for this build"
                     "(used to normalize source paths in baseline)")
 
