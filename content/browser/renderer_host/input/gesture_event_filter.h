@@ -54,7 +54,7 @@ class GestureEventFilter {
   // Indicates that the caller has received an acknowledgement from the renderer
   // with state |processed| and event |type|. May send events if the queue is
   // not empty.
-  void ProcessGestureAck(bool processed, int type);
+  void ProcessGestureAck(bool processed, WebKit::WebInputEvent::Type type);
 
   // Sets the state of the |fling_in_progress_| field to indicate that a fling
   // is definitely not in progress.
@@ -76,6 +76,8 @@ class GestureEventFilter {
   // Tries forwarding the event, skipping the tap deferral sub-filter.
   void ForwardGestureEventSkipDeferral(
       const GestureEventWithLatencyInfo& gesture_event);
+
+  static bool IsGestureEventTypeAsync(WebKit::WebInputEvent::Type type);
 
  private:
   friend class MockRenderWidgetHost;
@@ -146,6 +148,10 @@ class GestureEventFilter {
   gfx::Transform GetTransformForEvent(
       const GestureEventWithLatencyInfo& gesture_event) const;
 
+  // Pops and sends async events from the head of |coalesced_gesture_events_|
+  // until the queue is empty or the event at the head is synchronous.
+  void SendAsyncEvents();
+
   // The receiver of all forwarded gesture events.
   InputRouter* input_router_;
 
@@ -183,7 +189,12 @@ class GestureEventFilter {
 
   typedef std::deque<GestureEventWithLatencyInfo> GestureEventQueue;
 
-  // Queue of coalesced gesture events not yet sent to the renderer.
+  // Queue of coalesced gesture events not yet sent to the renderer. If
+  // |ignore_next_ack_| is false, then the event at the front of the queue has
+  // been sent and is awaiting an ACK, and all other events have yet to be sent.
+  // If |ignore_next_ack_| is true, then the two events at the front of the
+  // queue have been sent, and the second is awaiting an ACK. All other events
+  // have yet to be sent.
   GestureEventQueue coalesced_gesture_events_;
 
   // Tap gesture event currently subject to deferral.

@@ -485,7 +485,7 @@ void ImmediateInputRouter::ProcessInputEventAck(
   } else if (WebInputEvent::isTouchEventType(type)) {
     ProcessTouchAck(ack_result, latency_info);
   } else if (WebInputEvent::isGestureEventType(type)) {
-    ProcessGestureAck(type, ack_result);
+    ProcessGestureAck(event_type, ack_result);
   }
 
   // WARNING: |this| may be deleted at this point.
@@ -541,9 +541,13 @@ void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result) {
   }
 }
 
-void ImmediateInputRouter::ProcessGestureAck(int type,
+void ImmediateInputRouter::ProcessGestureAck(WebInputEvent::Type type,
                                              InputEventAckState ack_result) {
+  if (GestureEventFilter::IsGestureEventTypeAsync(type))
+    return;
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
+  // Note: the order the ack is passed to |ack_handler_| and
+  // |gesture_event_filter_| matters. See crbug.com/302592.
   ack_handler_->OnGestureEventAck(
       gesture_event_filter_->GetGestureEventAwaitingAck(), ack_result);
   gesture_event_filter_->ProcessGestureAck(processed, type);

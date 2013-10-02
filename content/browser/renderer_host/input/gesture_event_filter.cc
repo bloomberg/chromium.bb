@@ -239,10 +239,18 @@ bool GestureEventFilter::ShouldForwardForCoalescing(
       break;
   }
   coalesced_gesture_events_.push_back(gesture_event);
+
+  // Ensure that if the added event is asynchonous, it is fired and
+  // removed from |coalesced_gesture_events_|.
+  SendAsyncEvents();
   return ShouldHandleEventNow();
 }
 
-void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
+void GestureEventFilter::ProcessGestureAck(bool processed,
+                                           WebInputEvent::Type type) {
+  if (IsGestureEventTypeAsync(type))
+    return;
+
   if (coalesced_gesture_events_.empty()) {
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
     return;
@@ -256,6 +264,9 @@ void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
       touchpad_tap_suppression_controller_->GestureFlingCancelAck(processed);
   }
   coalesced_gesture_events_.pop_front();
+  // If the event which was just ACKed was blocking asynchronous
+  // events, fire those asynchronous events now.
+  SendAsyncEvents();
   if (ignore_next_ack_) {
     ignore_next_ack_ = false;
   } else if (!coalesced_gesture_events_.empty()) {
@@ -436,4 +447,20 @@ gfx::Transform GestureEventFilter::GetTransformForEvent(
   }
   return gesture_transform;
 }
+
+void GestureEventFilter::SendAsyncEvents() {
+  GestureEventWithLatencyInfo gesture_event;
+  while (!coalesced_gesture_events_.empty()) {
+    gesture_event = coalesced_gesture_events_.front();
+    if (!GestureEventFilter::IsGestureEventTypeAsync(gesture_event.event.type))
+      return;
+    coalesced_gesture_events_.pop_front();
+    input_router_->SendGestureEventImmediately(gesture_event);
+  }
+}
+
+bool GestureEventFilter::IsGestureEventTypeAsync(WebInputEvent::Type type) {
+  return type == WebInputEvent::GestureTapDown;
+}
+
 }  // namespace content

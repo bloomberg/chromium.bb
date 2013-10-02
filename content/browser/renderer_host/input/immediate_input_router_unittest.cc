@@ -357,6 +357,8 @@ TEST_F(ImmediateInputRouterTest, IgnoreKeyEventsWeDidntSend) {
   ack_handler_->ExpectAckCalled(0);
 }
 
+// GestureEventFilter tests should be factored out of
+// ImmediateInputRouterTest. See crbug.com/301807.
 TEST_F(ImmediateInputRouterTest, CoalescesWheelEvents) {
   // Simulate wheel events.
   SimulateWheelEvent(0, -5, 0, false);  // sent directly
@@ -881,9 +883,8 @@ TEST_F(ImmediateInputRouterTest, DeferredGestureTapDown) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
-  EXPECT_EQ(WebInputEvent::GestureTapDown,
-            GestureEventLastQueueEvent().type);
+  // The tap down event will have escaped the queue, since they're async.
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
 }
 
 // Test that GestureTapDown events are sent immediately on GestureTap.
@@ -898,8 +899,9 @@ TEST_F(ImmediateInputRouterTest, DeferredGestureTapDownSentOnTap) {
 
   SimulateGestureEvent(WebInputEvent::GestureTap,
                        WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
   EXPECT_EQ(WebInputEvent::GestureTap,
             GestureEventLastQueueEvent().type);
 
@@ -913,7 +915,7 @@ TEST_F(ImmediateInputRouterTest, DeferredGestureTapDownSentOnTap) {
             client_->immediately_sent_gesture_event().event.type);
 
   // If the deferral timer incorrectly fired, it sent an extra message.
-  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(2U, process_->sink().message_count());
 }
 
 // Test that only a single GestureTapDown event is sent when tap occurs after
@@ -935,17 +937,118 @@ TEST_F(ImmediateInputRouterTest, DeferredGestureTapDownOnlyOnce) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
-  EXPECT_EQ(WebInputEvent::GestureTapDown,
-            GestureEventLastQueueEvent().type);
+  // The tap down events will have escaped the queue, since they're async.
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
 
   // Now send the tap gesture and verify we didn't get an extra TapDown.
   SimulateGestureEvent(WebInputEvent::GestureTap,
                        WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
   EXPECT_EQ(WebInputEvent::GestureTap,
             GestureEventLastQueueEvent().type);
+}
+
+// Test that GestureTapDown events don't wait for ACKs.
+TEST_F(ImmediateInputRouterTest, GestureTapDownIsAsync) {
+  // Set some sort of short deferral timeout
+  set_maximum_tap_gap_time_ms(5);
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+
+  // Wait for tap deferral to end.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+
+  // Wait for tap deferral to end.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+
+  // Wait for tap deferral to end.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(3U, process_->sink().message_count());
+  // The tap down events will have escaped the queue, since they're async.
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+}
+
+// Test that GestureTapDown events don't get out of order due to asynchronicity.
+TEST_F(ImmediateInputRouterTest, GestureTapDownIsInOrder) {
+  // Set some sort of short deferral timeout
+  set_maximum_tap_gap_time_ms(5);
+
+  SimulateGestureEvent(WebInputEvent::GestureTap,
+                       WebGestureEvent::Touchscreen);
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  // TapDown is deferred, hasn't entered the queue yet.
+  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
+
+  // Wait long enough for the first timeout and verify it fired.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(1U, process_->sink().message_count());
+  // The TapDown, though asynchronous, is still stuck in the queue
+  // behind the synchronous Tap.
+  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  // TapDown is deferred, hasn't entered the queue yet.
+  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+
+  // Wait long enough for the second timeout and verify it fired.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(1U, process_->sink().message_count());
+  // TapDown has entered the queue.
+  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+
+  SendInputEventACK(WebInputEvent::GestureTap,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // Now that the Tap has been ACKed, the TapDowns should fire immediately.
+  EXPECT_EQ(3U, process_->sink().message_count());
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
 }
 
 // Test that scroll events during the deferral interval drop the GestureTapDown.
@@ -1019,12 +1122,12 @@ TEST_F(ImmediateInputRouterTest, DeferredGestureTapDownTapCancel) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
 
   SimulateGestureEvent(WebInputEvent::GestureTapCancel,
                        WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
 }
 
 // Test that a GestureScrollEnd | GestureFlingStart are deferred during the

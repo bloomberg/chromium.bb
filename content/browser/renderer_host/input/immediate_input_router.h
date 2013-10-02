@@ -123,7 +123,8 @@ private:
   // Called by ProcessInputEventAck() to process a gesture event ack message.
   // This validates the gesture for suppression of touchpad taps and sends one
   // previously queued coalesced gesture if it exists.
-  void ProcessGestureAck(int type, InputEventAckState ack_result);
+  void ProcessGestureAck(WebKit::WebInputEvent::Type,
+                         InputEventAckState ack_result);
 
   // Called on ProcessInputEventAck() to process a touch event ack message.
   // This can result in a gesture event being generated and sent back to the

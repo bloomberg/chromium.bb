@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/overscroll_controller.h"
 
+#include "content/browser/renderer_host/input/gesture_event_filter.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/overscroll_configuration.h"
@@ -104,6 +105,7 @@ bool OverscrollController::WillDispatchEvent(
 
 void OverscrollController::ReceivedEventACK(const WebKit::WebInputEvent& event,
                                             bool processed) {
+  DCHECK(!GestureEventFilter::IsGestureEventTypeAsync(event.type));
   if (processed) {
     // If a scroll event is consumed by the page, i.e. some content on the page
     // has been scrolled, then there is not going to be an overscroll gesture,

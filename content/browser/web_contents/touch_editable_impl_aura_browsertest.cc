@@ -351,8 +351,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     generator.GestureTapAt(gfx::Point(bounds.x() + 50, bounds.y() + 40));
     LOG(INFO) << "Wait for selection to change.";
     touch_editable->WaitForSelectionChangeCallback();
-    LOG(INFO) << "Wait for tap-down ACK.";
-    touch_editable->WaitForGestureAck();  // Wait for Tap Down Ack
+    // No Tap Down Ack is coming, it's async.
     touch_editable->Reset();
     LOG(INFO) << "Wait for tap ACK.";
     touch_editable->WaitForGestureAck();  // Wait for Tap Ack.
