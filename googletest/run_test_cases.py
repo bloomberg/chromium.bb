@@ -1182,10 +1182,10 @@ def run_test_cases(
 
   if gtest_output:
     gtest_output = gen_gtest_output_dir(cwd, gtest_output)
-  progress = threading_utils.Progress(len(test_cases))
+  columns = [('index', 0), ('size', len(test_cases))]
+  progress = threading_utils.Progress(columns)
   progress.use_cr_only = not no_cr
-  serial_tasks = threading_utils.QueueWithProgress(0)
-  serial_tasks.set_progress(progress)
+  serial_tasks = threading_utils.QueueWithProgress(progress)
 
   def add_serial_task(priority, func, *args, **kwargs):
     """Adds a serial task, to be executed later."""

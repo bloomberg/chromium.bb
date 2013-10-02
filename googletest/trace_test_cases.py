@@ -100,7 +100,8 @@ def trace_test_cases(cmd, cwd_dir, test_cases, jobs, logname):
       jobs = min(options.jobs, jobs)
       break
 
-  progress = threading_utils.Progress(len(test_cases))
+  columns = [('index', 0), ('size', len(test_cases))]
+  progress = threading_utils.Progress(columns)
   with threading_utils.ThreadPoolWithProgress(
       progress, jobs, jobs, len(test_cases)) as pool:
     with api.get_tracer(logname) as tracer:

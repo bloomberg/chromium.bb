@@ -52,40 +52,15 @@ class Randomness(object):
 
 
 class Progress(threading_utils.Progress):
-  def __init__(self, *args, **kwargs):
-    super(Progress, self).__init__(*args, **kwargs)
-    self.total = 0
-
-  def increment_index(self, name):
-    self.update_item(name, index=1)
-
-  def increment_count(self):
-    self.update_item('', size=1)
-
-  def gen_line(self, name):
-    """Generates the line to be printed.
-
-    |name| is actually the item size.
-    """
-    if name:
-      self.total += name
-      name = graph.to_units(name)
-
-    next_line = ('[%*d/%d] %6.2fs %8s %8s') % (
-        len(str(self.size)), self.index,
-        self.size,
-        time.time() - self.start,
-        name,
-        graph.to_units(self.total))
-    # Fill it with whitespace only if self.use_cr_only is set.
-    prefix = ''
-    if self.use_cr_only and self.last_printed_line:
-      prefix = '\r'
-    if self.use_cr_only:
-      suffix = ' ' * max(0, len(self.last_printed_line) - len(next_line))
-    else:
-      suffix = '\n'
-    return '%s%s%s' % (prefix, next_line, suffix), next_line
+  def _render_columns(self):
+    """Prints the size data as 'units'."""
+    columns_as_str = [
+        str(self._columns[0]),
+        graph.to_units(self._columns[1]).rjust(6),
+        str(self._columns[2]),
+    ]
+    max_len = max((len(columns_as_str[0]), len(columns_as_str[2])))
+    return '/'.join(i.rjust(max_len) for i in columns_as_str)
 
 
 def print_results(results, columns, buckets):
@@ -154,7 +129,10 @@ def send_and_receive(random_pool, dry_run, api, progress, size):
     duration = max(0, time.time() - start)
   except isolateserver.MappingError as e:
     duration = str(e)
-  progress.increment_index(size if isinstance(duration, float) else 0)
+  if isinstance(duration, float):
+    progress.update_item('', index=1, data=size)
+  else:
+    progress.update_item('', index=1)
   return (duration, size)
 
 
@@ -219,7 +197,8 @@ def main():
   random_pool = Randomness()
   print(' - Generated pool after %.1fs' % (time.time() - start))
 
-  progress = Progress(options.items)
+  columns = [('index', 0), ('data', 0), ('size', options.items)]
+  progress = Progress(columns)
   api = isolateserver.get_storage_api(options.isolate_server, options.namespace)
   do_item = functools.partial(
       send_and_receive,
@@ -238,12 +217,13 @@ def main():
     if options.items:
       for _ in xrange(options.items):
         pool.add_task(0, do_item, gen_size(options.mid_size))
+        progress.print_update()
     elif options.max_size:
       # This one is approximate.
       total = 0
       while True:
         size = gen_size(options.mid_size)
-        progress.increment_count()
+        progress.update_item('', size=1)
         progress.print_update()
         pool.add_task(0, do_item, size)
         total += size

@@ -140,7 +140,8 @@ class Runner(object):
 def run_swarm_tests_on_swarm(oses, tests, logs, isolate_server, swarm_server):
   runs = len(tests) * len(oses)
   total = 3 * runs
-  progress = threading_utils.Progress(total)
+  columns = [('index', 0), ('size', total)]
+  progress = threading_utils.Progress(columns)
   progress.use_cr_only = False
   tempdir = tempfile.mkdtemp(prefix='swarm_client_tests')
   try:
