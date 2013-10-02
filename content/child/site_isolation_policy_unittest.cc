@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/site_isolation_policy.h"
 #include "content/public/common/context_menu_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "ui/gfx/range/range.h"
+
+using base::StringPiece;
 
 namespace content {
 
@@ -67,71 +70,65 @@ TEST(SiteIsolationPolicyTest, IsValidCorsHeaderSet) {
 }
 
 TEST(SiteIsolationPolicyTest, SniffForHTML) {
-  const char html_data[] = "  \t\r\n    <HtMladfokadfkado";
-  const char comment_html_data[] = " <!-- this is comment --> <html><body>";
-  const char two_comments_html_data[] =
-      "<!-- this is comment -->\n<!-- this is comment --><html><body>";
-  const char mixed_comments_html_data[] =
-      "<!-- this is comment <!-- --> <script></script>";
-  const char non_html_data[] = "        var name=window.location;\nadfadf";
-  const char comment_js_data[] = " <!-- this is comment -> document.write(1); ";
+  StringPiece html_data("  \t\r\n    <HtMladfokadfkado");
+  StringPiece comment_html_data(" <!-- this is comment --> <html><body>");
+  StringPiece two_comments_html_data(
+      "<!-- this is comment -->\n<!-- this is comment --><html><body>");
+  StringPiece mixed_comments_html_data(
+      "<!-- this is comment <!-- --> <script></script>");
+  StringPiece non_html_data("        var name=window.location;\nadfadf");
+  StringPiece comment_js_data(" <!-- this is comment -> document.write(1); ");
+  StringPiece empty_data("");
 
-  EXPECT_TRUE(
-      SiteIsolationPolicy::SniffForHTML(html_data, arraysize(html_data)));
-  EXPECT_TRUE(SiteIsolationPolicy::SniffForHTML(comment_html_data,
-                                                arraysize(comment_html_data)));
-  EXPECT_TRUE(SiteIsolationPolicy::SniffForHTML(
-      two_comments_html_data, arraysize(two_comments_html_data)));
-  EXPECT_TRUE(SiteIsolationPolicy::SniffForHTML(
-      mixed_comments_html_data, arraysize(mixed_comments_html_data)));
-  EXPECT_FALSE(SiteIsolationPolicy::SniffForHTML(non_html_data,
-                                                 arraysize(non_html_data)));
-  EXPECT_FALSE(SiteIsolationPolicy::SniffForHTML(comment_js_data,
-                                                 arraysize(comment_js_data)));
+  EXPECT_TRUE(SiteIsolationPolicy::SniffForHTML(html_data));
+  EXPECT_TRUE(SiteIsolationPolicy::SniffForHTML(comment_html_data));
+  EXPECT_TRUE(SiteIsolationPolicy::SniffForHTML(two_comments_html_data));
+  EXPECT_TRUE(SiteIsolationPolicy::SniffForHTML(mixed_comments_html_data));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForHTML(non_html_data));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForHTML(comment_js_data));
 
   // Basic bounds check.
-  EXPECT_FALSE(SiteIsolationPolicy::SniffForHTML(html_data, 0));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForHTML(empty_data));
 }
 
 TEST(SiteIsolationPolicyTest, SniffForXML) {
-  const char xml_data[] = "   \t \r \n     <?xml version=\"1.0\"?>\n <catalog";
-  const char non_xml_data[] = "        var name=window.location;\nadfadf";
+  StringPiece xml_data("   \t \r \n     <?xml version=\"1.0\"?>\n <catalog");
+  StringPiece non_xml_data("        var name=window.location;\nadfadf");
+  StringPiece empty_data("");
 
-  EXPECT_TRUE(SiteIsolationPolicy::SniffForXML(xml_data, arraysize(xml_data)));
-  EXPECT_FALSE(
-      SiteIsolationPolicy::SniffForXML(non_xml_data, arraysize(non_xml_data)));
+  EXPECT_TRUE(SiteIsolationPolicy::SniffForXML(xml_data));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForXML(non_xml_data));
 
   // Basic bounds check.
-  EXPECT_FALSE(SiteIsolationPolicy::SniffForXML(xml_data, 0));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForXML(empty_data));
 }
 
 TEST(SiteIsolationPolicyTest, SniffForJSON) {
-  const char json_data[] = "\t\t\r\n   { \"name\" : \"chrome\", ";
-  const char non_json_data0[] = "\t\t\r\n   { name : \"chrome\", ";
-  const char non_json_data1[] = "\t\t\r\n   foo({ \"name\" : \"chrome\", ";
+  StringPiece json_data("\t\t\r\n   { \"name\" : \"chrome\", ");
+  StringPiece non_json_data0("\t\t\r\n   { name : \"chrome\", ");
+  StringPiece non_json_data1("\t\t\r\n   foo({ \"name\" : \"chrome\", ");
+  StringPiece empty_data("");
 
   EXPECT_TRUE(
-      SiteIsolationPolicy::SniffForJSON(json_data, arraysize(json_data)));
-  EXPECT_FALSE(SiteIsolationPolicy::SniffForJSON(non_json_data0,
-                                                 arraysize(non_json_data0)));
-  EXPECT_FALSE(SiteIsolationPolicy::SniffForJSON(non_json_data1,
-                                                 arraysize(non_json_data1)));
+              SiteIsolationPolicy::SniffForJSON(json_data));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForJSON(non_json_data0));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForJSON(non_json_data1));
 
   // Basic bounds check.
-  EXPECT_FALSE(SiteIsolationPolicy::SniffForJSON(json_data, 0));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForJSON(empty_data));
 }
 
 TEST(SiteIsolationPolicyTest, SniffForJS) {
-  const char basic_js_data[] = "var a = 4";
-  const char js_data[] = "\t\t\r\n var a = 4";
-  const char json_data[] = "\t\t\r\n   { \"name\" : \"chrome\", ";
+  StringPiece basic_js_data("var a = 4");
+  StringPiece js_data("\t\t\r\n var a = 4");
+  StringPiece json_data("\t\t\r\n   { \"name\" : \"chrome\", ");
+  StringPiece empty_data("");
 
-  EXPECT_TRUE(SiteIsolationPolicy::SniffForJS(js_data, arraysize(js_data)));
-  EXPECT_FALSE(
-      SiteIsolationPolicy::SniffForJS(json_data, arraysize(json_data)));
+  EXPECT_TRUE(SiteIsolationPolicy::SniffForJS(js_data));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForJS(json_data));
 
   // Basic bounds check.
-  EXPECT_FALSE(SiteIsolationPolicy::SniffForJS(basic_js_data, 0));
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForJS(empty_data));
 }
 
 }  // namespace content

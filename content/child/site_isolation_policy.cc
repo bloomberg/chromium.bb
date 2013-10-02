@@ -6,10 +6,12 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "content/child/child_thread.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
@@ -23,6 +25,7 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
+using base::StringPiece;
 using WebKit::WebDocument;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -32,6 +35,22 @@ using WebKit::WebURLRequest;
 namespace content {
 
 namespace {
+
+// Maintain the bookkeeping data between OnReceivedResponse and
+// OnReceivedData. The key is a request id maintained by ResourceDispatcher.
+static base::LazyInstance<SiteIsolationPolicy::RequestIdToMetaDataMap>
+    g_metadata_map = LAZY_INSTANCE_INITIALIZER;
+
+// Maintain the bookkeeping data for OnReceivedData. Blocking decision is made
+// when OnReceivedData is called for the first time for a request, and the
+// decision will remain the same for following data. This map maintains the
+// decision. The key is a request id maintained by ResourceDispatcher.
+static base::LazyInstance<SiteIsolationPolicy::RequestIdToResultMap>
+    g_result_map = LAZY_INSTANCE_INITIALIZER;
+
+// The cross-site document blocking/UMA data collection is deactivated by
+// default, and only activated in renderer processes.
+static bool g_policy_enabled = false;
 
 // MIME types
 const char kTextHtml[] = "text/html";
@@ -43,13 +62,120 @@ const char kTextJson[] = "text/json";
 const char kTextXjson[] = "text/x-json";
 const char kTextPlain[] = "text/plain";
 
-}  // anonymous namespace
+// TODO(dsjang): this is only needed for collecting UMA stat. Will be deleted
+// when this class is used for actual blocking.
+bool IsRenderableStatusCode(int status_code) {
+  // Chrome only uses the content of a response with one of these status codes
+  // for CSS/JavaScript. For images, Chrome just ignores status code.
+  const int renderable_status_code[] = {200, 201, 202, 203, 206, 300,
+                                        301, 302, 303, 305, 306, 307};
+  for (size_t i = 0; i < arraysize(renderable_status_code); ++i) {
+    if (renderable_status_code[i] == status_code)
+      return true;
+  }
+  return false;
+}
+
+bool MatchesSignature(StringPiece data,
+                      const StringPiece signatures[],
+                      size_t arr_size) {
+
+  size_t offset = data.find_first_not_of(" \t\r\n");
+  // There is no not-whitespace character in this document.
+  if (offset == base::StringPiece::npos)
+    return false;
+
+  data.remove_prefix(offset);
+  size_t length = data.length();
+
+  for (size_t sig_index = 0; sig_index < arr_size; ++sig_index) {
+    const StringPiece& signature = signatures[sig_index];
+    size_t signature_length = signature.length();
+    if (length < signature_length)
+      continue;
+
+    if (LowerCaseEqualsASCII(
+            data.begin(), data.begin() + signature_length, signature.data()))
+      return true;
+  }
+  return false;
+}
+
+void IncrementHistogramCount(const std::string& name) {
+  // The default value of min, max, bucket_count are copied from histogram.h.
+  base::HistogramBase* histogram_pointer = base::Histogram::FactoryGet(
+      name, 1, 100000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->Add(1);
+}
+
+void IncrementHistogramEnum(const std::string& name,
+                          uint32 sample,
+                          uint32 boundary_value) {
+  // The default value of min, max, bucket_count are copied from histogram.h.
+  base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
+      name,
+      1,
+      boundary_value,
+      boundary_value + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->Add(sample);
+}
+
+void HistogramCountBlockedResponse(
+    const std::string& bucket_prefix,
+    const SiteIsolationPolicy::ResponseMetaData& resp_data,
+    bool nosniff_block) {
+  std::string block_label(nosniff_block ? ".NoSniffBlocked" : ".Blocked");
+  IncrementHistogramCount(bucket_prefix + block_label);
+
+  // The content is blocked if it is sniffed as HTML/JSON/XML. When
+  // the blocked response is with an error status code, it is not
+  // disruptive for the following reasons : 1) the blocked content is
+  // not a binary object (such as an image) since it is sniffed as
+  // text; 2) then, this blocking only breaks the renderer behavior
+  // only if it is either JavaScript or CSS. However, the renderer
+  // doesn't use the contents of JS/CSS with unaffected status code
+  // (e.g, 404). 3) the renderer is expected not to use the cross-site
+  // document content for purposes other than JS/CSS (e.g, XHR).
+  bool renderable_status_code =
+      IsRenderableStatusCode(resp_data.http_status_code);
+
+  if (renderable_status_code) {
+    IncrementHistogramEnum(
+        bucket_prefix + block_label + ".RenderableStatusCode",
+        resp_data.resource_type,
+        ResourceType::LAST_TYPE);
+  } else {
+    IncrementHistogramCount(bucket_prefix + block_label +
+                            ".NonRenderableStatusCode");
+  }
+}
+
+void HistogramCountNotBlockedResponse(const std::string& bucket_prefix,
+                                      bool sniffed_as_js) {
+  IncrementHistogramCount(bucket_prefix + ".NotBlocked");
+  if (sniffed_as_js)
+    IncrementHistogramCount(bucket_prefix + ".NotBlocked.MaybeJS");
+}
+
+void HistogramCountPolicyDecision(
+    const std::string& bucket_prefix,
+    bool sniffed_as_document,
+    bool sniffed_as_js,
+    const SiteIsolationPolicy::ResponseMetaData& resp_data) {
+  if (sniffed_as_document) {
+    HistogramCountBlockedResponse(bucket_prefix, resp_data, false);
+  } else {
+    if (resp_data.no_sniff)
+      HistogramCountBlockedResponse(bucket_prefix, resp_data, true);
+    else
+      HistogramCountNotBlockedResponse(bucket_prefix, sniffed_as_js);
+  }
+}
+
+}  // namespace
 
 SiteIsolationPolicy::ResponseMetaData::ResponseMetaData() {}
-
-// The cross-site document blocking/UMA data collection is deactivated by
-// default, and only activated in renderer processes.
-bool SiteIsolationPolicy::g_policy_enabled = false;
 
 void SiteIsolationPolicy::SetPolicyEnabled(bool enabled) {
   g_policy_enabled = enabled;
@@ -57,8 +183,8 @@ void SiteIsolationPolicy::SetPolicyEnabled(bool enabled) {
 
 void SiteIsolationPolicy::OnReceivedResponse(
     int request_id,
-    GURL& frame_origin,
-    GURL& response_url,
+    const GURL& frame_origin,
+    const GURL& response_url,
     ResourceType::Type resource_type,
     int origin_pid,
     const webkit_glue::ResourceResponseInfo& info) {
@@ -116,76 +242,24 @@ void SiteIsolationPolicy::OnReceivedResponse(
   resp_data.http_status_code = info.headers->response_code();
   resp_data.no_sniff = LowerCaseEqualsASCII(no_sniff, "nosniff");
 
-  RequestIdToMetaDataMap* metadata_map = GetRequestIdToMetaDataMap();
-  (*metadata_map)[request_id] = resp_data;
+  (g_metadata_map.Get())[request_id] = resp_data;
 }
-
-// These macros are defined here so that we prevent code size bloat-up due to
-// the UMA_HISTOGRAM_* macros. Similar logic is used for recording UMA stats for
-// different MIME types, but we cannot create a helper function for this since
-// UMA_HISTOGRAM_* macros do not accept variables as their bucket names. As a
-// solution, macros are used instead to capture the repeated pattern for
-// recording UMA stats.  TODO(dsjang): this is only needed for collecting UMA
-// stat. Will be deleted when this class is used for actual blocking.
-
-#define SITE_ISOLATION_POLICY_COUNT_BLOCK(BUCKET_PREFIX) \
-    UMA_HISTOGRAM_COUNTS( BUCKET_PREFIX ".Blocked", 1); \
-    result = true;                                      \
-    if (renderable_status_code) { \
-      UMA_HISTOGRAM_ENUMERATION( \
-          BUCKET_PREFIX ".Blocked.RenderableStatusCode", \
-        resp_data.resource_type, \
-        WebURLRequest::TargetIsUnspecified + 1); \
-    } else { \
-      UMA_HISTOGRAM_COUNTS(BUCKET_PREFIX ".Blocked.NonRenderableStatusCode",1);\
-    }
-
-#define SITE_ISOLATION_POLICY_COUNT_NO_SNIFF_BLOCK(BUCKET_PREFIX) \
-    UMA_HISTOGRAM_COUNTS( BUCKET_PREFIX ".NoSniffBlocked", 1); \
-    result = true;  \
-    if (renderable_status_code) { \
-      UMA_HISTOGRAM_ENUMERATION( \
-          BUCKET_PREFIX ".NoSniffBlocked.RenderableStatusCode", \
-        resp_data.resource_type, \
-        WebURLRequest::TargetIsUnspecified + 1); \
-    } else { \
-      UMA_HISTOGRAM_ENUMERATION( \
-          BUCKET_PREFIX ".NoSniffBlocked.NonRenderableStatusCode", \
-        resp_data.resource_type, \
-        WebURLRequest::TargetIsUnspecified + 1); \
-    }
-
-#define SITE_ISOLATION_POLICY_COUNT_NOTBLOCK(BUCKET_PREFIX) \
-    UMA_HISTOGRAM_COUNTS(BUCKET_PREFIX ".NotBlocked", 1); \
-    if (is_sniffed_for_js) \
-      UMA_HISTOGRAM_COUNTS(BUCKET_PREFIX ".NotBlocked.MaybeJS", 1); \
-
-#define SITE_ISOLATION_POLICY_SNIFF_AND_COUNT(SNIFF_EXPR,BUCKET_PREFIX) \
-  if (SNIFF_EXPR) { \
-    SITE_ISOLATION_POLICY_COUNT_BLOCK(BUCKET_PREFIX) \
-  } else { \
-    if (resp_data.no_sniff) { \
-      SITE_ISOLATION_POLICY_COUNT_NO_SNIFF_BLOCK(BUCKET_PREFIX) \
-    } else { \
-      SITE_ISOLATION_POLICY_COUNT_NOTBLOCK(BUCKET_PREFIX) \
-    } \
-  }
 
 bool SiteIsolationPolicy::ShouldBlockResponse(
     int request_id,
-    const char* data,
-    int length,
+    const char* raw_data,
+    int raw_length,
     std::string* alternative_data) {
   if (!g_policy_enabled)
     return false;
 
-  RequestIdToMetaDataMap* metadata_map = GetRequestIdToMetaDataMap();
-  RequestIdToResultMap* result_map = GetRequestIdToResultMap();
+  RequestIdToMetaDataMap& metadata_map = g_metadata_map.Get();
+  RequestIdToResultMap& result_map = g_result_map.Get();
 
   // If there's an entry for |request_id| in blocked_map, this request's first
   // data packet has already been examined. We can return the result here.
-  if (result_map->count(request_id) != 0) {
-    if ((*result_map)[request_id]) {
+  if (result_map.count(request_id) != 0) {
+    if (result_map[request_id]) {
       // Here, the blocking result has been set for the previous run of
       // ShouldBlockResponse(), so we set alternative data to an empty string so
       // that ResourceDispatcher doesn't call its peer's onReceivedData() with
@@ -199,19 +273,21 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
   // If result_map doesn't have an entry for |request_id|, we're receiving the
   // first data packet for request_id. If request_id is not registered, this
   // request is identified as a non-target of our policy. So we return true.
-  if (metadata_map->count(request_id) == 0) {
+  if (metadata_map.count(request_id) == 0) {
     // We set request_id to true so that we always return true for this request.
-    (*result_map)[request_id] = false;
+    result_map[request_id] = false;
     return false;
   }
 
+  StringPiece data(raw_data, raw_length);
+
   // We now look at the first data packet received for request_id.
-  ResponseMetaData resp_data = (*metadata_map)[request_id];
-  metadata_map->erase(request_id);
+  ResponseMetaData resp_data = metadata_map[request_id];
+  metadata_map.erase(request_id);
 
   // Record the length of the first received network packet to see if it's
   // enough for sniffing.
-  UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.DataLength", length);
+  UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.DataLength", raw_length);
 
   // Record the number of cross-site document responses with a specific mime
   // type (text/html, text/xml, etc).
@@ -220,94 +296,90 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
       resp_data.canonical_mime_type,
       SiteIsolationPolicy::ResponseMetaData::MaxCanonicalMimeType);
 
-  // Store the result of cross-site document blocking analysis. True means we
-  // can return this document to the renderer, false means that we have to block
-  // the response data.
-  bool result = false;
-
-  // The content is blocked if it is sniffed for HTML/JSON/XML. When the blocked
-  // response is with an error status code, it is not disruptive by the
-  // following reasons : 1) the blocked content is not a binary object (such as
-  // an image) since it is sniffed for text; 2) then, this blocking only breaks
-  // the renderer behavior only if it is either JavaScript or CSS. However, the
-  // renderer doesn't use the contents of JS/CSS with unaffected status code
-  // (e.g, 404). 3) the renderer is expected not to use the cross-site document
-  // content for purposes other than JS/CSS (e.g, XHR).
-  bool renderable_status_code = IsRenderableStatusCodeForDocument(
-      resp_data.http_status_code);
-
-  // This is only used for false-negative analysis for non-blocked resources.
-  bool is_sniffed_for_js = SniffForJS(data, length);
+  // Store the result of cross-site document blocking analysis.
+  bool is_blocked = false;
+  bool sniffed_as_js = SniffForJS(data);
 
   // Record the number of responses whose content is sniffed for what its mime
   // type claims it to be. For example, we apply a HTML sniffer for a document
   // tagged with text/html here. Whenever this check becomes true, we'll block
   // the response.
-  switch (resp_data.canonical_mime_type) {
-    case SiteIsolationPolicy::ResponseMetaData::HTML:
-      SITE_ISOLATION_POLICY_SNIFF_AND_COUNT(SniffForHTML(data, length),
-                                            "SiteIsolation.XSD.HTML");
-      break;
-    case SiteIsolationPolicy::ResponseMetaData::XML:
-      SITE_ISOLATION_POLICY_SNIFF_AND_COUNT(SniffForXML(data, length),
-                                            "SiteIsolation.XSD.XML");
-      break;
-    case SiteIsolationPolicy::ResponseMetaData::JSON:
-      SITE_ISOLATION_POLICY_SNIFF_AND_COUNT(SniffForJSON(data, length),
-                                            "SiteIsolation.XSD.JSON");
-      break;
-    case SiteIsolationPolicy::ResponseMetaData::Plain:
-      if (SniffForHTML(data, length)) {
-        SITE_ISOLATION_POLICY_COUNT_BLOCK(
-            "SiteIsolation.XSD.Plain.HTML");
-      } else if (SniffForXML(data, length)) {
-        SITE_ISOLATION_POLICY_COUNT_BLOCK(
-            "SiteIsolation.XSD.Plain.XML");
-      } else if (SniffForJSON(data, length)) {
-        SITE_ISOLATION_POLICY_COUNT_BLOCK(
-            "SiteIsolation.XSD.Plain.JSON");
-      } else if (is_sniffed_for_js) {
-        if (resp_data.no_sniff) {
-          SITE_ISOLATION_POLICY_COUNT_NO_SNIFF_BLOCK(
-              "SiteIsolation.XSD.Plain");
-        } else {
-          SITE_ISOLATION_POLICY_COUNT_NOTBLOCK(
-              "SiteIsolation.XSD.Plain");
-        }
+  if (resp_data.canonical_mime_type !=
+          SiteIsolationPolicy::ResponseMetaData::Plain) {
+    std::string bucket_prefix;
+    bool sniffed_as_target_document = false;
+    if (resp_data.canonical_mime_type ==
+            SiteIsolationPolicy::ResponseMetaData::HTML) {
+      bucket_prefix = "SiteIsolation.XSD.HTML";
+      sniffed_as_target_document = SniffForHTML(data);
+    } else if (resp_data.canonical_mime_type ==
+                   SiteIsolationPolicy::ResponseMetaData::XML) {
+      bucket_prefix = "SiteIsolation.XSD.XML";
+      sniffed_as_target_document = SniffForXML(data);
+    } else if (resp_data.canonical_mime_type ==
+                   SiteIsolationPolicy::ResponseMetaData::JSON) {
+      bucket_prefix = "SiteIsolation.XSD.JSON";
+      sniffed_as_target_document = SniffForJSON(data);
+    } else {
+      NOTREACHED() << "Not a blockable mime type: "
+                   << resp_data.canonical_mime_type;
+    }
+
+    if (sniffed_as_target_document) {
+      is_blocked = true;
+      HistogramCountBlockedResponse(bucket_prefix, resp_data, false);
+    } else {
+      if (resp_data.no_sniff) {
+        is_blocked = true;
+        HistogramCountBlockedResponse(bucket_prefix, resp_data, true);
+      } else {
+        HistogramCountNotBlockedResponse(bucket_prefix, sniffed_as_js);
       }
-      break;
-    default :
-      NOTREACHED() <<
-          "Not a blockable mime type. This mime type shouldn't reach here.";
-      break;
+    }
+  } else {
+    // This block is for plain text documents. We apply our HTML, XML,
+    // and JSON sniffer to a text document in the order, and block it
+    // if any of them succeeds in sniffing.
+    std::string bucket_prefix;
+    if (SniffForHTML(data))
+      bucket_prefix = "SiteIsolation.XSD.Plain.HTML";
+    else if (SniffForXML(data))
+      bucket_prefix = "SiteIsolation.XSD.Plain.XML";
+    else if (SniffForJSON(data))
+      bucket_prefix = "SiteIsolation.XSD.Plain.JSON";
+
+    if (bucket_prefix.size() > 0) {
+      is_blocked = true;
+      HistogramCountBlockedResponse(bucket_prefix, resp_data, false);
+    } else if (resp_data.no_sniff) {
+      is_blocked = true;
+      HistogramCountBlockedResponse("SiteIsolation.XSD.Plain", resp_data, true);
+    } else {
+      HistogramCountNotBlockedResponse("SiteIsolation.XSD.Plain",
+                                       sniffed_as_js);
+    }
   }
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kBlockCrossSiteDocuments))
-    result = false;
-  (*result_map)[request_id] = result;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kBlockCrossSiteDocuments))
+    is_blocked = false;
+  result_map[request_id] = is_blocked;
 
-  if (result) {
+  if (is_blocked) {
     alternative_data->erase();
     alternative_data->insert(0, " ");
     LOG(ERROR) << resp_data.response_url
                << " is blocked as an illegal cross-site document from "
                << resp_data.frame_origin;
   }
-  return result;
+  return is_blocked;
 }
-
-#undef SITE_ISOLATION_POLICY_COUNT_NOTBLOCK
-#undef SITE_ISOLATION_POLICY_SNIFF_AND_COUNT
-#undef SITE_ISOLATION_POLICY_COUNT_BLOCK
 
 void SiteIsolationPolicy::OnRequestComplete(int request_id) {
   if (!g_policy_enabled)
     return;
-  RequestIdToMetaDataMap* metadata_map = GetRequestIdToMetaDataMap();
-  RequestIdToResultMap* result_map = GetRequestIdToResultMap();
-  metadata_map->erase(request_id);
-  result_map->erase(request_id);
+  g_metadata_map.Get().erase(request_id);
+  g_result_map.Get().erase(request_id);
 }
 
 SiteIsolationPolicy::ResponseMetaData::CanonicalMimeType
@@ -333,7 +405,6 @@ SiteIsolationPolicy::GetCanonicalMimeType(const std::string& mime_type) {
   }
 
  return SiteIsolationPolicy::ResponseMetaData::Others;
-
 }
 
 bool SiteIsolationPolicy::IsBlockableScheme(const GURL& url) {
@@ -362,25 +433,14 @@ bool SiteIsolationPolicy::IsSameSite(const GURL& frame_origin,
       net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
-bool SiteIsolationPolicy::IsFrameNavigating(WebKit::WebFrame* frame) {
-  // When a navigation starts, frame->provisionalDataSource() is set
-  // to a not-null value which stands for the request made for the
-  // navigation. As soon as the network request is committed to the
-  // frame, frame->provisionalDataSource() is converted to null, and
-  // the committed data source is moved to frame->dataSource(). This
-  // is the most reliable way to detect whether the frame is in
-  // navigation or not.
-  return frame->provisionalDataSource() != NULL;
-}
-
 // We don't use Webkit's existing CORS policy implementation since
 // their policy works in terms of origins, not sites. For example,
 // when frame is sub.a.com and it is not allowed to access a document
 // with sub1.a.com. But under Site Isolation, it's allowed.
 bool SiteIsolationPolicy::IsValidCorsHeaderSet(
-    GURL& frame_origin,
-    GURL& website_origin,
-    std::string access_control_origin) {
+    const GURL& frame_origin,
+    const GURL& website_origin,
+    const std::string& access_control_origin) {
   // Many websites are sending back "\"*\"" instead of "*". This is
   // non-standard practice, and not supported by Chrome. Refer to
   // CrossOriginAccessControl::passesAccessControlCheck().
@@ -405,7 +465,7 @@ bool SiteIsolationPolicy::IsValidCorsHeaderSet(
 }
 
 // This function is a slight modification of |net::SniffForHTML|.
-bool SiteIsolationPolicy::SniffForHTML(const char* data, size_t length) {
+bool SiteIsolationPolicy::SniffForHTML(StringPiece data) {
   // The content sniffer used by Chrome and Firefox are using "<!--"
   // as one of the HTML signatures, but it also appears in valid
   // JavaScript, considered as well-formed JS by the browser.  Since
@@ -415,99 +475,104 @@ bool SiteIsolationPolicy::SniffForHTML(const char* data, size_t length) {
   // TODO(dsjang): parameterize |net::SniffForHTML| with an option
   // that decides whether to include <!-- or not, so that we can
   // remove this function.
-  const char* html_signatures[] = {"<!DOCTYPE html",  // HTML5 spec
-                                   "<script",         // HTML5 spec, Mozilla
-                                   "<html",           // HTML5 spec, Mozilla
-                                   "<head",           // HTML5 spec, Mozilla
-                                   "<iframe",         // Mozilla
-                                   "<h1",             // Mozilla
-                                   "<div",            // Mozilla
-                                   "<font",           // Mozilla
-                                   "<table",          // Mozilla
-                                   "<a",              // Mozilla
-                                   "<style",          // Mozilla
-                                   "<title",          // Mozilla
-                                   "<b",              // Mozilla
-                                   "<body",           // Mozilla
-                                   "<br", "<p",       // Mozilla
-                                   "<?xml"            // Mozilla
+  // TODO(dsjang): Once SiteIsolationPolicy is moved into the browser
+  // process, we should do single-thread checking here for the static
+  // initializer.
+  static const StringPiece kHtmlSignatures[] = {
+    StringPiece("<!DOCTYPE html"),  // HTML5 spec
+    StringPiece("<script"),  // HTML5 spec, Mozilla
+    StringPiece("<html"),    // HTML5 spec, Mozilla
+    StringPiece("<head"),    // HTML5 spec, Mozilla
+    StringPiece("<iframe"),  // Mozilla
+    StringPiece("<h1"),      // Mozilla
+    StringPiece("<div"),     // Mozilla
+    StringPiece("<font"),    // Mozilla
+    StringPiece("<table"),   // Mozilla
+    StringPiece("<a"),       // Mozilla
+    StringPiece("<style"),   // Mozilla
+    StringPiece("<title"),   // Mozilla
+    StringPiece("<b"),       // Mozilla
+    StringPiece("<body"),    // Mozilla
+    StringPiece("<br"),      // Mozilla
+    StringPiece("<p"),       // Mozilla
+    StringPiece("<?xml")     // Mozilla
   };
 
-  if (MatchesSignature(
-          data, length, html_signatures, arraysize(html_signatures)))
-    return true;
+  while (data.length() > 0) {
+    if (MatchesSignature(
+          data, kHtmlSignatures, arraysize(kHtmlSignatures)))
+      return true;
 
-  // "<!--" is specially treated since web JS can use "<!--" "-->" pair for
-  // comments.
-  static const char* comment_begins[] = {"<!--"};
+    // If we cannot find "<!--", we fail sniffing this as HTML.
+    static const StringPiece kCommentBegins[] = { StringPiece("<!--") };
+    if (!MatchesSignature(data, kCommentBegins, arraysize(kCommentBegins)))
+      break;
 
-  if (MatchesSignature(
-          data, length, comment_begins, arraysize(comment_begins))) {
     // Search for --> and do SniffForHTML after that. If we can find the
     // comment's end, we start HTML sniffing from there again.
-    static const char end_comment[] = "-->";
-    base::StringPiece data_as_stringpiece(data, length);
+    static const char kEndComment[] = "-->";
+    size_t offset = data.find(kEndComment);
+    if (offset == base::StringPiece::npos)
+      break;
 
-    size_t offset = data_as_stringpiece.find(end_comment);
-    if (offset != base::StringPiece::npos) {
-      size_t new_start_offset = offset + strlen(end_comment);
-      if (new_start_offset < length) {
-        return SniffForHTML(data + new_start_offset,
-                            length - new_start_offset);
-      }
-    }
+    // Proceed to the index next to the ending comment (-->).
+    data.remove_prefix(offset + strlen(kEndComment));
   }
 
   return false;
 }
 
-bool SiteIsolationPolicy::SniffForXML(const char* data, size_t length) {
+bool SiteIsolationPolicy::SniffForXML(base::StringPiece data) {
   // TODO(dsjang): Chrome's mime_sniffer is using strncasecmp() for
   // this signature. However, XML is case-sensitive. Don't we have to
   // be more lenient only to block documents starting with the exact
   // string <?xml rather than <?XML ?
-  const char* xml_signatures[] = {"<?xml"  // Mozilla
-  };
-  return MatchesSignature(
-      data, length, xml_signatures, arraysize(xml_signatures));
+  // TODO(dsjang): Once SiteIsolationPolicy is moved into the browser
+  // process, we should do single-thread checking here for the static
+  // initializer.
+  static const StringPiece kXmlSignatures[] = { StringPiece("<?xml") };
+  return MatchesSignature(data, kXmlSignatures, arraysize(kXmlSignatures));
 }
 
-bool SiteIsolationPolicy::SniffForJSON(const char* data, size_t length) {
+bool SiteIsolationPolicy::SniffForJSON(base::StringPiece data) {
   // TODO(dsjang): We have to come up with a better way to sniff
   // JSON. However, even RE cannot help us that much due to the fact
   // that we don't do full parsing.  This DFA starts with state 0, and
   // finds {, "/' and : in that order. We're avoiding adding a
   // dependency on a regular expression library.
-  const int kInitState = 0;
-  const int kLeftBraceState = 1;
-  const int kLeftQuoteState = 2;
-  const int kColonState = 3;
-  const int kDeadState = 4;
+  enum {
+    kStartState,
+    kLeftBraceState,
+    kLeftQuoteState,
+    kColonState,
+    kTerminalState,
+  } state = kStartState;
 
-  int state = kInitState;
+  size_t length = data.length();
   for (size_t i = 0; i < length && state < kColonState; ++i) {
     const char c = data[i];
     if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
       continue;
 
     switch (state) {
-      case kInitState:
+      case kStartState:
         if (c == '{')
           state = kLeftBraceState;
         else
-          state = kDeadState;
+          state = kTerminalState;
         break;
       case kLeftBraceState:
         if (c == '\"' || c == '\'')
           state = kLeftQuoteState;
         else
-          state = kDeadState;
+          state = kTerminalState;
         break;
       case kLeftQuoteState:
         if (c == ':')
           state = kColonState;
         break;
-      default:
+      case kColonState:
+      case kTerminalState:
         NOTREACHED();
         break;
     }
@@ -515,71 +580,14 @@ bool SiteIsolationPolicy::SniffForJSON(const char* data, size_t length) {
   return state == kColonState;
 }
 
-bool SiteIsolationPolicy::MatchesSignature(const char* raw_data,
-                                           size_t raw_length,
-                                           const char* signatures[],
-                                           size_t arr_size) {
-  size_t start = 0;
-  // Skip white characters at the beginning of the document.
-  for (start = 0; start < raw_length; ++start) {
-    char c = raw_data[start];
-    if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n'))
-      break;
-  }
-
-  // There is no not-whitespace character in this document.
-  if (!(start < raw_length))
-    return false;
-
-  const char* data = raw_data + start;
-  size_t length = raw_length - start;
-
-  for (size_t sig_index = 0; sig_index < arr_size; ++sig_index) {
-    const char* signature = signatures[sig_index];
-    size_t signature_length = strlen(signature);
-
-    if (length < signature_length)
-      continue;
-
-    if (!base::strncasecmp(signature, data, signature_length))
-      return true;
-  }
-  return false;
-}
-
-bool SiteIsolationPolicy::IsRenderableStatusCodeForDocument(int status_code) {
-  // Chrome only uses the content of a response with one of these status codes
-  // for CSS/JavaScript. For images, Chrome just ignores status code.
-  const int renderable_status_code[] = {200, 201, 202, 203, 206, 300, 301, 302,
-                                        303, 305, 306, 307};
-  for (size_t i = 0; i < arraysize(renderable_status_code); ++i) {
-    if (renderable_status_code[i] == status_code)
-      return true;
-  }
-  return false;
-}
-
-bool SiteIsolationPolicy::SniffForJS(const char* data, size_t length) {
+bool SiteIsolationPolicy::SniffForJS(StringPiece data) {
   // TODO(dsjang): This is a real hack. The only purpose of this function is to
   // try to see if there's any possibility that this data can be JavaScript
   // (superset of JS). This function will be removed once UMA stats are
   // gathered.
 
   // Search for "var " for JS detection.
-  return base::StringPiece(data, length).find("var ") !=
-    base::StringPiece::npos;
-}
-
-SiteIsolationPolicy::RequestIdToMetaDataMap*
-SiteIsolationPolicy::GetRequestIdToMetaDataMap() {
-  CR_DEFINE_STATIC_LOCAL(RequestIdToMetaDataMap, metadata_map_, ());
-  return &metadata_map_;
-}
-
-SiteIsolationPolicy::RequestIdToResultMap*
-SiteIsolationPolicy::GetRequestIdToResultMap() {
-  CR_DEFINE_STATIC_LOCAL(RequestIdToResultMap, result_map_, ());
-  return &result_map_;
+  return data.find("var ") != base::StringPiece::npos;
 }
 
 }  // namespace content

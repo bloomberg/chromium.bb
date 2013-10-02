@@ -62,8 +62,8 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // ShouldBlockResponse. We have to make sure to call OnRequestComplete to free
   // the bookkeeping data.
   static void OnReceivedResponse(int request_id,
-                                 GURL& frame_origin,
-                                 GURL& response_url,
+                                 const GURL& frame_origin,
+                                 const GURL& response_url,
                                  ResourceType::Type resource_type,
                                  int origin_pid,
                                  const webkit_glue::ResourceResponseInfo& info);
@@ -135,44 +135,17 @@ private:
   // not allowed by actual CORS rules by ignoring 1) credentials and 2)
   // methods. Preflight requests don't matter here since they are not used to
   // decide whether to block a document or not on the client side.
-  static bool IsValidCorsHeaderSet(GURL& frame_origin,
-                                   GURL& website_origin,
-                                   std::string access_control_origin);
+  static bool IsValidCorsHeaderSet(const GURL& frame_origin,
+                                   const GURL& website_origin,
+                                   const std::string& access_control_origin);
 
-  // Returns whether the given frame is navigating. When this is true, the frame
-  // is requesting is a web page to be loaded.
-  static bool IsFrameNavigating(WebKit::WebFrame* frame);
-
-  static bool SniffForHTML(const char* data, size_t length);
-  static bool SniffForXML(const char* data, size_t length);
-  static bool SniffForJSON(const char* data, size_t length);
-
-  static bool MatchesSignature(const char* data,
-                               size_t length,
-                               const char* signatures[],
-                               size_t arr_size);
+  static bool SniffForHTML(base::StringPiece data);
+  static bool SniffForXML(base::StringPiece data);
+  static bool SniffForJSON(base::StringPiece data);
 
   // TODO(dsjang): this is only needed for collecting UMA stat. Will be deleted
   // when this class is used for actual blocking.
-  static bool SniffForJS(const char* data, size_t length);
-
-  // TODO(dsjang): this is only needed for collecting UMA stat. Will be deleted
-  // when this class is used for actual blocking.
-  static bool IsRenderableStatusCodeForDocument(int status_code);
-
-  // Maintain the bookkeeping data between OnReceivedResponse and
-  // OnReceivedData. The key is a request id maintained by ResourceDispatcher.
-  static RequestIdToMetaDataMap* GetRequestIdToMetaDataMap();
-
-  // Maintain the bookkeeping data for OnReceivedData. Blocking decision is made
-  // when OnReceivedData is called for the first time for a request, and the
-  // decision will remain the same for following data. This map maintains the
-  // decision. The key is a request id maintained by ResourceDispatcher.
-  static RequestIdToResultMap* GetRequestIdToResultMap();
-
-  // This is false by default, but enables UMA logging and cross-site document
-  // blocking.
-  static bool g_policy_enabled;
+  static bool SniffForJS(base::StringPiece data);
 
   // Never needs to be constructed/destructed.
   SiteIsolationPolicy() {}
