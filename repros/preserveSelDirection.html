@@ -1,0 +1,23 @@
+<div id="editable" style='height:200px;' contenteditable>hello this is a test</div>
+<div id="output"></div>
+<div>Note: Anchor offset should remain 5 positions greater than focus offset!!</div>
+<script>
+function doLog(str)
+{
+    var d = document.createElement("div");
+    d.innerText = str;
+    document.getElementById("output").appendChild(d);
+}
+
+var editable = document.getElementById("editable");
+var sel = window.getSelection();
+sel.collapse(editable.firstChild, 10);
+sel.extend(editable.firstChild, 5);
+doLog("Before:");
+doLog("  anchorOffset = " + sel.anchorOffset);
+doLog("  focusOffset = " + sel.focusOffset);
+document.execCommand('foreColor', false, 'green');
+doLog("After:");
+doLog("  anchorOffset = " + sel.anchorOffset);
+doLog("  focusOffset = " + sel.focusOffset);
+</script>

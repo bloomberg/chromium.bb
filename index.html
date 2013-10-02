@@ -422,6 +422,10 @@ send this upstream.</p>
 <p>This branch makes it so that when text is selected inside a contenteditable,
 and then a style is applied on that text, the original selection direction
 would be preserved.</p>
+<p>Open <a href="repros/preserveSelDirection.html">this link</a> in Chrome.
+With this patch applied, the anchor offset would be 5 positions higher than the
+focus offset.  Without the patch, the anchor offset and focus offset will be
+switched.</p>
 
 <h3><a name="feature-printMenu">feature/printMenu</a> (Shezan Baig)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
