@@ -23,20 +23,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UserStyleSheetTypes_h
-#define UserStyleSheetTypes_h
+#ifndef InjectedStyleSheet_h
+#define InjectedStyleSheet_h
 
 #include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-enum UserStyleInjectionTime { InjectInExistingDocuments, InjectInSubsequentDocuments };
-enum UserStyleLevel { UserStyleUserLevel, UserStyleAuthorLevel };
+enum StyleInjectionTarget { InjectStyleInAllFrames, InjectStyleInTopFrameOnly };
 
-class UserStyleSheet;
+class InjectedStyleSheet {
+    WTF_MAKE_FAST_ALLOCATED;
+public:
+    InjectedStyleSheet(const String& source, const Vector<String>& whitelist, StyleInjectionTarget injectedFrames)
+        : m_source(source)
+        , m_whitelist(whitelist)
+        , m_injectedFrames(injectedFrames)
+    {
+    }
 
-typedef Vector<OwnPtr<UserStyleSheet> > UserStyleSheetVector;
+    const String& source() const { return m_source; }
+    const Vector<String>& whitelist() const { return m_whitelist; }
+    StyleInjectionTarget injectedFrames() const { return m_injectedFrames; }
+
+private:
+    String m_source;
+    Vector<String> m_whitelist;
+    StyleInjectionTarget m_injectedFrames;
+};
+
+typedef Vector<OwnPtr<InjectedStyleSheet> > InjectedStyleSheetVector;
 
 } // namespace WebCore
 
-#endif // UserStyleSheetTypes_h
+#endif // InjectedStyleSheet_h

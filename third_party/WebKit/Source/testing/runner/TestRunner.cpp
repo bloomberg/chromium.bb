@@ -1289,12 +1289,9 @@ void TestRunner::addUserStyleSheet(const CppArgumentList& arguments, CppVariant*
     result->setNull();
     if (arguments.size() < 2 || !arguments[0].isString() || !arguments[1].isBool())
         return;
-    WebView::addUserStyleSheet(
+    WebView::injectStyleSheet(
         cppVariantToWebString(arguments[0]), WebVector<WebString>(),
-        arguments[1].toBoolean() ? WebView::UserContentInjectInAllFrames : WebView::UserContentInjectInTopFrameOnly,
-        // Chromium defaults to InjectInSubsequentDocuments, but for compatibility
-        // with the other ports' DRTs, we use UserStyleInjectInExistingDocuments.
-        WebView::UserStyleInjectInExistingDocuments);
+        arguments[1].toBoolean() ? WebView::InjectStyleInAllFrames : WebView::InjectStyleInTopFrameOnly);
 }
 
 void TestRunner::startSpeechInput(const CppArgumentList& arguments, CppVariant* result)

@@ -23,13 +23,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UserContentTypes_h
-#define UserContentTypes_h
+#ifndef URLPatternMatcher_h
+#define URLPatternMatcher_h
+
+#include "platform/PlatformExport.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-enum UserContentInjectedFrames { InjectInAllFrames, InjectInTopFrameOnly };
+class KURL;
+
+class PLATFORM_EXPORT URLPatternMatcher {
+public:
+    static bool matchesPatterns(const KURL&, const Vector<String>& whitelist);
+
+private:
+    URLPatternMatcher(const String& pattern)
+        : m_matchSubdomains(false)
+    {
+        m_invalid = !parse(pattern);
+    }
+
+    bool parse(const String& pattern);
+
+    bool matches(const KURL&) const;
+
+    bool matchesHost(const KURL&) const;
+    bool matchesPath(const KURL&) const;
+
+    bool m_invalid;
+
+    String m_scheme;
+    String m_host;
+    String m_path;
+
+    bool m_matchSubdomains;
+};
+
 
 } // namespace WebCore
 
-#endif // UserContentTypes_h
+#endif // URLPatternMatcher_h

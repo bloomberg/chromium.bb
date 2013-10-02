@@ -32,6 +32,8 @@
       'PurgeableBuffer.h',
       'SharedBuffer.cpp',
       'SharedBuffer.h',
+      'URLPatternMatcher.cpp',
+      'URLPatternMatcher.h',
       'UUID.cpp',
       'UUID.h',
     ],

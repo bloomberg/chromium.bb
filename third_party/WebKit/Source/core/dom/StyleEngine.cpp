@@ -45,8 +45,8 @@
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
-#include "core/page/UserContentURLPattern.h"
 #include "core/svg/SVGStyleElement.h"
+#include "platform/URLPatternMatcher.h"
 
 namespace WebCore {
 
@@ -71,8 +71,6 @@ StyleEngine::~StyleEngine()
 {
     if (m_pageUserSheet)
         m_pageUserSheet->clearOwnerNode();
-    for (unsigned i = 0; i < m_injectedUserStyleSheets.size(); ++i)
-        m_injectedUserStyleSheets[i]->clearOwnerNode();
     for (unsigned i = 0; i < m_injectedAuthorStyleSheets.size(); ++i)
         m_injectedAuthorStyleSheets[i]->clearOwnerNode();
     for (unsigned i = 0; i < m_userStyleSheets.size(); ++i)
@@ -206,12 +204,6 @@ void StyleEngine::updatePageUserSheet()
         m_document.addedStyleSheet(addedSheet, RecalcStyleImmediately);
 }
 
-const Vector<RefPtr<CSSStyleSheet> >& StyleEngine::injectedUserStyleSheets() const
-{
-    updateInjectedStyleSheetCache();
-    return m_injectedUserStyleSheets;
-}
-
 const Vector<RefPtr<CSSStyleSheet> >& StyleEngine::injectedAuthorStyleSheets() const
 {
     updateInjectedStyleSheetCache();
@@ -223,7 +215,6 @@ void StyleEngine::updateInjectedStyleSheetCache() const
     if (m_injectedStyleSheetCacheValid)
         return;
     m_injectedStyleSheetCacheValid = true;
-    m_injectedUserStyleSheets.clear();
     m_injectedAuthorStyleSheets.clear();
 
     Page* owningPage = m_document.page();
@@ -231,20 +222,16 @@ void StyleEngine::updateInjectedStyleSheetCache() const
         return;
 
     const PageGroup& pageGroup = owningPage->group();
-    const UserStyleSheetVector& sheets = pageGroup.userStyleSheets();
+    const InjectedStyleSheetVector& sheets = pageGroup.injectedStyleSheets();
     for (unsigned i = 0; i < sheets.size(); ++i) {
-        const UserStyleSheet* sheet = sheets[i].get();
-        if (sheet->injectedFrames() == InjectInTopFrameOnly && m_document.ownerElement())
+        const InjectedStyleSheet* sheet = sheets[i].get();
+        if (sheet->injectedFrames() == InjectStyleInTopFrameOnly && m_document.ownerElement())
             continue;
-        if (!UserContentURLPattern::matchesPatterns(m_document.url(), sheet->whitelist(), sheet->blacklist()))
+        if (!URLPatternMatcher::matchesPatterns(m_document.url(), sheet->whitelist()))
             continue;
-        RefPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(const_cast<Document*>(&m_document), sheet->url());
-        bool isUserStyleSheet = sheet->level() == UserStyleUserLevel;
-        if (isUserStyleSheet)
-            m_injectedUserStyleSheets.append(groupSheet);
-        else
-            m_injectedAuthorStyleSheets.append(groupSheet);
-        groupSheet->contents()->setIsUserStyleSheet(isUserStyleSheet);
+        RefPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(const_cast<Document*>(&m_document), KURL());
+        m_injectedAuthorStyleSheets.append(groupSheet);
+        groupSheet->contents()->setIsUserStyleSheet(false);
         groupSheet->contents()->parseString(sheet->source());
     }
 }

@@ -1282,7 +1282,6 @@
             'page/TouchDisambiguation.cpp',
             'page/TouchDisambiguation.h',
             'page/UseCounter.cpp',
-            'page/UserContentURLPattern.cpp',
             'page/WindowFeatures.cpp',
             'page/WindowFocusAllowedIndicator.cpp',
             'page/WorkerNavigator.cpp',

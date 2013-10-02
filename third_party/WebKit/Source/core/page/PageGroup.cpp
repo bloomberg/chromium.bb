@@ -39,7 +39,7 @@ PageGroup::PageGroup()
 
 PageGroup::~PageGroup()
 {
-    removeAllUserContent();
+    removeInjectedStyleSheets();
 }
 
 PageGroup* PageGroup::sharedGroup()
@@ -68,21 +68,15 @@ void PageGroup::removePage(Page* page)
     m_pages.remove(page);
 }
 
-void PageGroup::addUserStyleSheet(const String& source, const KURL& url,
-                                  const Vector<String>& whitelist, const Vector<String>& blacklist,
-                                  UserContentInjectedFrames injectedFrames,
-                                  UserStyleLevel level,
-                                  UserStyleInjectionTime injectionTime)
+void PageGroup::injectStyleSheet(const String& source, const Vector<String>& whitelist, StyleInjectionTarget injectIn)
 {
-    m_userStyleSheets.append(adoptPtr(new UserStyleSheet(source, url, whitelist, blacklist, injectedFrames, level)));
-
-    if (injectionTime == InjectInExistingDocuments)
-        invalidatedInjectedStyleSheetCacheInAllFrames();
+    m_injectedStyleSheets.append(adoptPtr(new InjectedStyleSheet(source, whitelist, injectIn)));
+    invalidatedInjectedStyleSheetCacheInAllFrames();
 }
 
-void PageGroup::removeAllUserContent()
+void PageGroup::removeInjectedStyleSheets()
 {
-    m_userStyleSheets.clear();
+    m_injectedStyleSheets.clear();
     invalidatedInjectedStyleSheetCacheInAllFrames();
 }
 

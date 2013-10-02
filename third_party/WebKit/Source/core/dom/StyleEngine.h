@@ -61,7 +61,6 @@ public:
     CSSStyleSheet* pageUserSheet();
     const Vector<RefPtr<CSSStyleSheet> >& documentUserStyleSheets() const { return m_userStyleSheets; }
     const Vector<RefPtr<CSSStyleSheet> >& documentAuthorStyleSheets() const { return m_authorStyleSheets; }
-    const Vector<RefPtr<CSSStyleSheet> >& injectedUserStyleSheets() const;
     const Vector<RefPtr<CSSStyleSheet> >& injectedAuthorStyleSheets() const;
 
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
@@ -132,7 +131,6 @@ private:
 
     RefPtr<CSSStyleSheet> m_pageUserSheet;
 
-    mutable Vector<RefPtr<CSSStyleSheet> > m_injectedUserStyleSheets;
     mutable Vector<RefPtr<CSSStyleSheet> > m_injectedAuthorStyleSheets;
     mutable bool m_injectedStyleSheetCacheValid;
 

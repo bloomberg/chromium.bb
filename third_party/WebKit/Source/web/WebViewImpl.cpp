@@ -3661,30 +3661,29 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
 #endif
 }
 
-void WebView::addUserStyleSheet(const WebString& sourceCode,
-                                const WebVector<WebString>& patternsIn,
-                                WebView::UserContentInjectIn injectIn,
-                                WebView::UserStyleInjectionTime injectionTime)
+void WebView::injectStyleSheet(const WebString& sourceCode, const WebVector<WebString>& patternsIn, WebView::StyleInjectionTarget injectIn)
 {
     Vector<String> patterns;
     for (size_t i = 0; i < patternsIn.size(); ++i)
         patterns.append(patternsIn[i]);
 
     PageGroup* pageGroup = PageGroup::sharedGroup();
+    pageGroup->injectStyleSheet(sourceCode, patterns, static_cast<WebCore::StyleInjectionTarget>(injectIn));
+}
 
-    // FIXME: Current callers always want the level to be "author". It probably makes sense to let
-    // callers specify this though, since in other cases the caller will probably want "user" level.
-    //
-    // FIXME: It would be nice to populate the URL correctly, instead of passing an empty URL.
-    pageGroup->addUserStyleSheet(sourceCode, WebURL(), patterns, Vector<String>(),
-                                 static_cast<UserContentInjectedFrames>(injectIn),
-                                 UserStyleAuthorLevel,
-                                 static_cast<WebCore::UserStyleInjectionTime>(injectionTime));
+void WebView::removeInjectedStyleSheets()
+{
+    PageGroup::sharedGroup()->removeInjectedStyleSheets();
+}
+
+void WebView::addUserStyleSheet(const WebString& sourceCode, const WebVector<WebString>& patternsIn, WebView::UserContentInjectIn injectIn, WebView::UserStyleInjectionTime)
+{
+    injectStyleSheet(sourceCode, patternsIn, injectIn == UserContentInjectInAllFrames ? InjectStyleInAllFrames : InjectStyleInTopFrameOnly);
 }
 
 void WebView::removeAllUserContent()
 {
-    PageGroup::sharedGroup()->removeAllUserContent();
+    removeInjectedStyleSheets();
 }
 
 void WebViewImpl::didCommitLoad(bool* isNewNavigation, bool isNavigationWithinPage)

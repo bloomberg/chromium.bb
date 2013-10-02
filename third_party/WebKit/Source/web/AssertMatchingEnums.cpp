@@ -74,10 +74,9 @@
 #include "core/loader/NavigationPolicy.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/ContentSecurityPolicy.h"
+#include "core/page/InjectedStyleSheet.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/page/Settings.h"
-#include "core/page/UserContentTypes.h"
-#include "core/page/UserStyleSheetTypes.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/FileMetadata.h"
 #include "core/platform/graphics/ContentDecryptionModuleSession.h"
@@ -506,10 +505,8 @@ COMPILE_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorAndroid, EditingAndroid
 COMPILE_ASSERT_MATCHING_ENUM(WebTextAffinityUpstream, UPSTREAM);
 COMPILE_ASSERT_MATCHING_ENUM(WebTextAffinityDownstream, DOWNSTREAM);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebView::UserContentInjectInAllFrames, InjectInAllFrames);
-COMPILE_ASSERT_MATCHING_ENUM(WebView::UserContentInjectInTopFrameOnly, InjectInTopFrameOnly);
-COMPILE_ASSERT_MATCHING_ENUM(WebView::UserStyleInjectInExistingDocuments, InjectInExistingDocuments);
-COMPILE_ASSERT_MATCHING_ENUM(WebView::UserStyleInjectInSubsequentDocuments, InjectInSubsequentDocuments);
+COMPILE_ASSERT_MATCHING_ENUM(WebView::InjectStyleInAllFrames, InjectStyleInAllFrames);
+COMPILE_ASSERT_MATCHING_ENUM(WebView::InjectStyleInTopFrameOnly, InjectStyleInTopFrameOnly);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionUnknownError, UnknownError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionConstraintError, ConstraintError);

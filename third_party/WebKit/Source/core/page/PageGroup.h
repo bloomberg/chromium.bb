@@ -26,7 +26,7 @@
 #ifndef PageGroup_h
 #define PageGroup_h
 
-#include "core/page/UserStyleSheet.h"
+#include "core/page/InjectedStyleSheet.h"
 #include "core/platform/Supplementable.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -53,15 +53,10 @@ namespace WebCore {
         void addPage(Page*);
         void removePage(Page*);
 
-        void addUserStyleSheet(const String& source, const KURL&,
-                               const Vector<String>& whitelist, const Vector<String>& blacklist,
-                               UserContentInjectedFrames,
-                               UserStyleLevel level = UserStyleUserLevel,
-                               UserStyleInjectionTime injectionTime = InjectInExistingDocuments);
+        void injectStyleSheet(const String& source, const Vector<String>& whitelist, StyleInjectionTarget);
+        void removeInjectedStyleSheets();
 
-        void removeAllUserContent();
-
-        const UserStyleSheetVector& userStyleSheets() const { return m_userStyleSheets; }
+        const InjectedStyleSheetVector& injectedStyleSheets() const { return m_injectedStyleSheets; }
 
     private:
         PageGroup();
@@ -69,7 +64,7 @@ namespace WebCore {
         void invalidatedInjectedStyleSheetCacheInAllFrames();
 
         HashSet<Page*> m_pages;
-        UserStyleSheetVector m_userStyleSheets;
+        InjectedStyleSheetVector m_injectedStyleSheets;
     };
 
 } // namespace WebCore
