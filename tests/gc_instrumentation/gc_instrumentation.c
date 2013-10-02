@@ -174,7 +174,7 @@ void test_syscall_wrappers(void) {
   int woken_count;
   CHECK_SYSCALL_PRE();
   CHECK(irt_futex.futex_wake(&futex_value, 1, &woken_count) == 0);
-  CHECK_SYSCALL_WRAPPED();
+  CHECK_SYSCALL_NOT_WRAPPED();
   CHECK(woken_count == 0);
 
   /* Check the IRT's mutex interface */

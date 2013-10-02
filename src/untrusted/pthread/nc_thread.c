@@ -18,7 +18,6 @@
 
 #include "native_client/src/include/nacl_base.h"
 
-#include "native_client/src/untrusted/irt/irt_futex.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/tls.h"
@@ -314,8 +313,6 @@ void __pthread_initialize(void) {
   __nc_initial_thread_id = &tdb->basic_data;
 
   __nc_initialize_globals();
-
-  __nc_futex_init();
 }
 
 #endif
@@ -515,8 +512,6 @@ void pthread_exit(void *retval) {
   __nc_tsd_exit();
 
   __newlib_thread_exit();
-
-  __nc_futex_thread_exit();
 
   if (__nc_initial_thread_id != basic_data) {
     pthread_mutex_lock(&__nc_thread_management_lock);

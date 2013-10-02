@@ -17,10 +17,6 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
-#if !TEST_IRT_FUTEX && !defined(__GLIBC__)
-# include "native_client/src/untrusted/irt/irt_futex.h"
-#endif
-
 
 /*
  * This tests the futex implementations used in nacl-glibc and
