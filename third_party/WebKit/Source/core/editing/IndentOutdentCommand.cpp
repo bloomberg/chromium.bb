@@ -53,31 +53,31 @@ IndentOutdentCommand::IndentOutdentCommand(Document& document, EIndentType typeO
 bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const Position& end)
 {
     // If our selection is not inside a list, bail out.
-    Node* lastNodeInSelectedParagraph = start.deprecatedNode();
-    RefPtr<Element> listNode = enclosingList(lastNodeInSelectedParagraph);
+    RefPtr<Node> lastNodeInSelectedParagraph = start.deprecatedNode();
+    RefPtr<Element> listNode = enclosingList(lastNodeInSelectedParagraph.get());
     if (!listNode)
         return false;
 
     // Find the block that we want to indent.  If it's not a list item (e.g., a div inside a list item), we bail out.
-    Element* selectedListItem = enclosingBlock(lastNodeInSelectedParagraph);
+    RefPtr<Element> selectedListItem = enclosingBlock(lastNodeInSelectedParagraph.get());
 
     // FIXME: we need to deal with the case where there is no li (malformed HTML)
     if (!selectedListItem->hasTagName(liTag))
         return false;
 
     // FIXME: previousElementSibling does not ignore non-rendered content like <span></span>.  Should we?
-    Element* previousList = selectedListItem->previousElementSibling();
-    Element* nextList = selectedListItem->nextElementSibling();
+    RefPtr<Element> previousList = selectedListItem->previousElementSibling();
+    RefPtr<Element> nextList = selectedListItem->nextElementSibling();
 
     RefPtr<Element> newList = document().createElement(listNode->tagQName(), false);
-    insertNodeBefore(newList, selectedListItem);
+    insertNodeBefore(newList, selectedListItem.get());
 
-    moveParagraphWithClones(start, end, newList.get(), selectedListItem);
+    moveParagraphWithClones(start, end, newList.get(), selectedListItem.get());
 
-    if (canMergeLists(previousList, newList.get()))
-        mergeIdenticalElements(previousList, newList);
-    if (canMergeLists(newList.get(), nextList))
-        mergeIdenticalElements(newList, nextList);
+    if (canMergeLists(previousList.get(), newList.get()))
+        mergeIdenticalElements(previousList.get(), newList.get());
+    if (canMergeLists(newList.get(), nextList.get()))
+        mergeIdenticalElements(newList.get(), nextList.get());
 
     return true;
 }
