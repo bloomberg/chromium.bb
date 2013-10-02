@@ -1709,8 +1709,16 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   strip.CloseAllTabs();
 }
 
+// This fails on linux when run with the rest of unit_tests (crbug.com/302156).
+#if defined(OS_LINUX)
+#define MAYBE_FastShutdown \
+    DISABLED_FastShutdown
+#else
+#define MAYBE_FastShutdown \
+    FastShutdown
+#endif
 // Tests that fast shutdown is attempted appropriately.
-TEST_F(TabStripModelTest, FastShutdown) {
+TEST_F(TabStripModelTest, MAYBE_FastShutdown) {
   TabStripDummyDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
   MockTabStripModelObserver observer(&tabstrip);
