@@ -29,9 +29,10 @@
  */
 
 #include "config.h"
-#include "platform/geometry/RoundedRect.h"
+#include "core/platform/graphics/RoundedRect.h"
 
 #include "platform/geometry/IntRect.h"
+
 #include <gtest/gtest.h>
 
 using namespace WebCore;

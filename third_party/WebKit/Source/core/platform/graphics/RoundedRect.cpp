@@ -26,9 +26,9 @@
  */
 
 #include "config.h"
-#include "platform/geometry/RoundedRect.h"
-
+#include "core/platform/graphics/RoundedRect.h"
 #include "wtf/Assertions.h"
+
 #include <algorithm>
 
 using namespace std;

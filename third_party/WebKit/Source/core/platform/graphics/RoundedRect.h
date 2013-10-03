@@ -32,11 +32,12 @@
 
 namespace WebCore {
 
-class PLATFORM_EXPORT RoundedRect {
+
+class RoundedRect {
 public:
     class Radii {
     public:
-        Radii() { }
+        Radii() {}
         Radii(const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight)
             : m_topLeft(topLeft)
             , m_topRight(topRight)
