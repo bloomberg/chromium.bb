@@ -324,11 +324,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitMarginEnd: return 272;
     case CSSPropertyWebkitMarginStart: return 273;
     // CSSPropertyWebkitMarquee was 274.
-    case CSSPropertyInternalMarqueeDirection: return 275;
-    case CSSPropertyInternalMarqueeIncrement: return 276;
-    case CSSPropertyInternalMarqueeRepetition: return 277;
-    case CSSPropertyInternalMarqueeSpeed: return 278;
-    case CSSPropertyInternalMarqueeStyle: return 279;
+    // CSSPropertyInternalMarquee* were 275-279.
     case CSSPropertyWebkitMask: return 280;
     case CSSPropertyWebkitMaskBoxImage: return 281;
     case CSSPropertyWebkitMaskBoxImageOutset: return 282;
@@ -502,6 +498,12 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
 
+    // Internal properties should not be counted.
+    case CSSPropertyInternalMarqueeDirection:
+    case CSSPropertyInternalMarqueeIncrement:
+    case CSSPropertyInternalMarqueeRepetition:
+    case CSSPropertyInternalMarqueeSpeed:
+    case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyInvalid:
     case CSSPropertyVariable:
         ASSERT_NOT_REACHED();
