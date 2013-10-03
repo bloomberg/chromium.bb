@@ -79,16 +79,6 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
                         public TabStripModelObserver,
                         public content::NotificationObserver {
  public:
-  // Range of command ID's to use for the items representing bookmarks in the
-  // bookmark menu, must not overlap with that for recent tabs submenu.
-  static const int kMinBookmarkCommandId;
-  static const int kMaxBookmarkCommandId;
-
-  // Range of command ID's to use for the items in the recent tabs submenu, must
-  // not overlap with that for bookmarks.
-  static const int kMinRecentTabsCommandId;
-  static const int kMaxRecentTabsCommandId;
-
   // TODO: remove |is_new_menu|.
   WrenchMenuModel(ui::AcceleratorProvider* provider,
                   Browser* browser,
