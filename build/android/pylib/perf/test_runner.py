@@ -29,13 +29,6 @@ The JSON steps file contains a dictionary in the format:
 
 This preserves the order in which the steps are executed.
 
-TODO(bulach): remove the old format.
-DEPRECATED:
-{
-  "step_name_foo": "script_to_execute foo",
-  "step_name_bar": "script_to_execute bar"
-}
-
 The JSON flaky steps file contains a list with step names which results should
 be ignored:
 [

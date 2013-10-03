@@ -67,16 +67,11 @@ def Setup(test_options):
   with file(test_options.steps, 'r') as f:
     tests = json.load(f)
 
-  # TODO(bulach): remove this once the new format rolls.
-  if type(tests) is list:
-    # The list is necessary to keep the steps order, but internally
-    # the format is squashed from a list of lists into a single dict:
-    # [["A", "cmd"], ["B", "cmd"]] into {"A": "cmd", "B": "cmd"}
-    sorted_test_names = [i[0] for i in tests]
-    tests_dict = dict(tests)
-  else:
-    sorted_test_names = sorted(tests.keys())
-    tests_dict = tests
+  # The list is necessary to keep the steps order, but internally
+  # the format is squashed from a list of lists into a single dict:
+  # [["A", "cmd"], ["B", "cmd"]] into {"A": "cmd", "B": "cmd"}
+  sorted_test_names = [i[0] for i in tests]
+  tests_dict = dict(tests)
 
   if test_options.test_filter:
     sorted_test_names = fnmatch.filter(sorted_test_names,
