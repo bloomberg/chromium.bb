@@ -79,9 +79,9 @@ void HttpBridgeFactory::Init(const std::string& user_agent) {
   base::AutoLock lock(context_getter_lock_);
 
   if (!baseline_request_context_getter_.get()) {
-    // Uh oh.  We've been aborted before we finsihed initializing.
-    // There's no point in initializating further; let's just return
-    // right away.
+    // Uh oh.  We've been aborted before we finished initializing.  There's no
+    // point in initializating further; let's just return right away.
+    return;
   }
 
   request_context_getter_ =

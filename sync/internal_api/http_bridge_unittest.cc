@@ -488,4 +488,33 @@ TEST_F(SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
   sync_thread.Stop();
 }
 
+// Attempt to release the URLRequestContextGetter before the HttpBridgeFactory
+// is initialized.
+TEST_F(SyncHttpBridgeTest, EarlyAbortFactory) {
+  // In a real scenario, the following would happen on many threads.  For
+  // simplicity, this test uses only one thread.
+
+  scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
+      new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
+  CancelationSignal release_request_context_signal;
+
+  // UI Thread: Initialize the HttpBridgeFactory.  The next step would be to
+  // post a task to SBH::Core to have it initialized.
+  scoped_ptr<syncer::HttpBridgeFactory> factory(new HttpBridgeFactory(
+      baseline_context_getter,
+      NetworkTimeUpdateCallback(),
+      &release_request_context_signal));
+
+  // UI Thread: A very early shutdown request arrives and executes on the UI
+  // thread before the posted sync thread task is run.
+  release_request_context_signal.Signal();
+
+  // Sync thread: Finally run the posted task, only to find that our
+  // HttpBridgeFactory has been neutered.  Should not crash.
+  factory->Init("TestUserAgent");
+
+  // At this point, attempting to use the factory would trigger a crash.  Both
+  // this test and the real world code should make sure this never happens.
+};
+
 }  // namespace syncer
