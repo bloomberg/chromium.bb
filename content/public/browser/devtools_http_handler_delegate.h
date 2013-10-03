@@ -16,15 +16,10 @@ class GURL;
 
 namespace content {
 
-class RenderViewHost;
+class DevToolsTarget;
 
 class DevToolsHttpHandlerDelegate {
  public:
-  enum TargetType {
-    kTargetTypeTab = 0,
-    kTargetTypeOther,
-  };
-
   virtual ~DevToolsHttpHandlerDelegate() {}
 
   // Should return discovery page HTML that should list available tabs
@@ -41,14 +36,15 @@ class DevToolsHttpHandlerDelegate {
   // thumbnail.
   virtual std::string GetPageThumbnailData(const GURL& url) = 0;
 
-  // Creates new inspectable target and returns its render view host.
-  virtual RenderViewHost* CreateNewTarget() = 0;
+  // Creates new inspectable target.
+  virtual scoped_ptr<DevToolsTarget> CreateNewTarget() = 0;
 
-  // Returns the type of the target.
-  virtual TargetType GetTargetType(RenderViewHost*) = 0;
+  typedef std::vector<DevToolsTarget*> TargetList;
+  typedef base::Callback<void(const TargetList&)> TargetCallback;
 
-  // Provides the delegate with an ability to supply a description for views.
-  virtual std::string GetViewDescription(content::RenderViewHost*) = 0;
+  // Requests the list of all inspectable targets.
+  // The caller gets the ownership of the returned targets.
+  virtual void EnumerateTargets(TargetCallback callback) = 0;
 
   // Creates named socket for reversed tethering implementation (used with
   // remote debugging, primarily for mobile).

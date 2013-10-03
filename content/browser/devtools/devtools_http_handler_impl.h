@@ -15,7 +15,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
-#include "content/public/browser/worker_service.h"
 #include "net/http/http_status_code.h"
 #include "net/server/http_server.h"
 
@@ -53,9 +52,7 @@ class DevToolsHttpHandlerImpl
 
   // DevToolsHttpHandler implementation.
   virtual void Stop() OVERRIDE;
-  virtual void SetDevToolsAgentHostBinding(
-      DevToolsAgentHostBinding* binding) OVERRIDE;
-  virtual GURL GetFrontendURL(DevToolsAgentHost* agent_host) OVERRIDE;
+  virtual GURL GetFrontendURL() OVERRIDE;
 
   // net::HttpServer::Delegate implementation.
   virtual void OnHttpRequest(int connection_id,
@@ -80,13 +77,12 @@ class DevToolsHttpHandlerImpl
   void ResetHandlerThread();
   void ResetHandlerThreadAndRelease();
 
-  typedef std::vector<WorkerService::WorkerInfo> WorkerInfoList;
+  void OnTargetListReceived(
+      int connection_id,
+      const std::string& host,
+      const DevToolsHttpHandlerDelegate::TargetList& targets);
 
-  WorkerInfoList CollectWorkerInfo();
-  void SendTargetList(int connection_id,
-                      const std::string& host,
-                      base::ListValue* target_list,
-                      const WorkerInfoList& worker_info_list);
+  DevToolsTarget* GetTarget(const std::string& id);
 
   void Init();
   void Teardown();
@@ -108,19 +104,11 @@ class DevToolsHttpHandlerImpl
                        const net::HttpServerRequestInfo& request);
 
   // Returns the front end url without the host at the beginning.
-  std::string GetFrontendURLInternal(const std::string rvh_id,
+  std::string GetFrontendURLInternal(const std::string target_id,
                                      const std::string& host);
 
-  base::DictionaryValue* SerializePageInfo(RenderViewHost* rvh,
-                                           const std::string& host);
-
-  base::DictionaryValue* SerializeWorkerInfo(
-      const WorkerService::WorkerInfo& worker,
-      const std::string& host);
-
-  void SerializeDebuggerURLs(base::DictionaryValue* dictionary,
-                             const std::string& id,
-                             const std::string& host);
+  base::DictionaryValue* SerializeTarget(const DevToolsTarget& target,
+                                         const std::string& host);
 
   // The thread used by the devtools handler to run server socket.
   scoped_ptr<base::Thread> thread_;
@@ -131,8 +119,8 @@ class DevToolsHttpHandlerImpl
   typedef std::map<int, DevToolsClientHost*> ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
-  DevToolsAgentHostBinding* binding_;
-  scoped_ptr<DevToolsAgentHostBinding> default_binding_;
+  typedef std::map<std::string, DevToolsTarget*> TargetMap;
+  TargetMap target_map_;
   scoped_refptr<DevToolsBrowserTarget> browser_target_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };

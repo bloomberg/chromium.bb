@@ -11,12 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_browser_target.h"
@@ -25,28 +22,20 @@
 #include "content/browser/devtools/devtools_system_info_handler.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/devtools/tethering_handler.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/devtools_target.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "grit/devtools_resources_map.h"
-#include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
-#include "ui/base/layout.h"
-#include "url/gurl.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
@@ -70,24 +59,6 @@ const char kTargetThumbnailUrlField[] = "thumbnailUrl";
 const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
 const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
-
-const char kTargetTypePage[] = "page";
-const char kTargetTypeOther[] = "other";
-
-class DevToolsDefaultBindingHandler
-    : public DevToolsHttpHandler::DevToolsAgentHostBinding {
- public:
-  DevToolsDefaultBindingHandler() {
-  }
-
-  virtual std::string GetIdentifier(DevToolsAgentHost* agent_host) OVERRIDE {
-    return agent_host->GetId();
-  }
-
-  virtual DevToolsAgentHost* ForIdentifier(const std::string& id) OVERRIDE {
-    return DevToolsAgentHost::GetForId(id).get();
-  }
-};
 
 // An internal implementation of DevToolsClientHost that delegates
 // messages sent for DevToolsClient to a DebuggerShell instance.
@@ -149,18 +120,9 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   std::string detach_reason_;
 };
 
-static base::TimeTicks GetLastSelectedTime(RenderViewHost* rvh) {
-  WebContents* web_contents = rvh->GetDelegate()->GetAsWebContents();
-  if (!web_contents)
-    return base::TimeTicks();
-
-  return web_contents->GetLastSelectedTime();
-}
-
-typedef std::pair<RenderViewHost*, base::TimeTicks> PageInfo;
-
-static bool TimeComparator(const PageInfo& info1, const PageInfo& info2) {
-  return info1.second > info2.second;
+static bool TimeComparator(const DevToolsTarget* target1,
+                           const DevToolsTarget* target2) {
+  return target1->GetLastActivityTime() > target2->GetLastActivityTime();
 }
 
 }  // namespace
@@ -198,6 +160,7 @@ DevToolsHttpHandlerImpl::~DevToolsHttpHandlerImpl() {
   // Stop() must be called prior to destruction.
   DCHECK(server_.get() == NULL);
   DCHECK(thread_.get() == NULL);
+  STLDeleteValues(&target_map_);
 }
 
 void DevToolsHttpHandlerImpl::Start() {
@@ -243,27 +206,12 @@ void DevToolsHttpHandlerImpl::Stop() {
       base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease, this));
 }
 
-void DevToolsHttpHandlerImpl::SetDevToolsAgentHostBinding(
-    DevToolsAgentHostBinding* binding) {
-  if (binding)
-    binding_ = binding;
-  else
-    binding_ = default_binding_.get();
-}
-
-GURL DevToolsHttpHandlerImpl::GetFrontendURL(DevToolsAgentHost* agent_host) {
+GURL DevToolsHttpHandlerImpl::GetFrontendURL() {
   net::IPEndPoint ip_address;
   if (server_->GetLocalAddress(&ip_address))
     return GURL();
-  if (!agent_host) {
-    return GURL(std::string("http://") + ip_address.ToString() +
-        overridden_frontend_url_);
-  }
-  std::string host = ip_address.ToString();
-  std::string id = binding_->GetIdentifier(agent_host);
-  return GURL(std::string("http://") +
-              ip_address.ToString() +
-              GetFrontendURLInternal(id, host));
+  return GURL(std::string("http://") + ip_address.ToString() +
+      overridden_frontend_url_);
 }
 
 static std::string PathWithoutParams(const std::string& path) {
@@ -306,13 +254,10 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
   if (info.path.find(kThumbUrlPrefix) == 0) {
     // Thumbnail request.
     const std::string target_id = info.path.substr(strlen(kThumbUrlPrefix));
-    DevToolsAgentHost* agent_host = binding_->ForIdentifier(target_id);
+    DevToolsTarget* target = GetTarget(target_id);
     GURL page_url;
-    if (agent_host) {
-      RenderViewHost* rvh = agent_host->GetRenderViewHost();
-      if (rvh)
-        page_url = rvh->GetDelegate()->GetURL();
-    }
+    if (target)
+      page_url = target->GetUrl();
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -509,39 +454,17 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   }
 
   if (command == "list") {
-    typedef std::vector<PageInfo> PageList;
-    PageList page_list;
-
-    std::vector<RenderViewHost*> rvh_list =
-        DevToolsAgentHost::GetValidRenderViewHosts();
-    for (std::vector<RenderViewHost*>::iterator it = rvh_list.begin();
-         it != rvh_list.end(); ++it)
-      page_list.push_back(PageInfo(*it, GetLastSelectedTime(*it)));
-
-    std::sort(page_list.begin(), page_list.end(), TimeComparator);
-
-    base::ListValue* target_list = new base::ListValue();
     std::string host = info.headers["host"];
-    for (PageList::iterator i = page_list.begin(); i != page_list.end(); ++i)
-      target_list->Append(SerializePageInfo(i->first, host));
-
-    AddRef();  // Balanced in SendTargetList.
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::CollectWorkerInfo,
-                   base::Unretained(this)),
-        base::Bind(&DevToolsHttpHandlerImpl::SendTargetList,
-                   base::Unretained(this),
-                   connection_id,
-                   host,
-                   target_list));
+    AddRef();  // Balanced in OnTargetListReceived.
+    delegate_->EnumerateTargets(
+        base::Bind(&DevToolsHttpHandlerImpl::OnTargetListReceived,
+                   this, connection_id, host));
     return;
   }
 
   if (command == "new") {
-    RenderViewHost* rvh = delegate_->CreateNewTarget();
-    if (!rvh) {
+    scoped_ptr<DevToolsTarget> target(delegate_->CreateNewTarget());
+    if (!target) {
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,
                NULL,
@@ -549,15 +472,17 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
       return;
     }
     std::string host = info.headers["host"];
-    scoped_ptr<base::DictionaryValue> dictionary(SerializePageInfo(rvh, host));
+    scoped_ptr<base::DictionaryValue> dictionary(
+        SerializeTarget(*target.get(), host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());
+    const std::string target_id = target->GetId();
+    target_map_[target_id] = target.release();
     return;
   }
 
   if (command == "activate" || command == "close") {
-    DevToolsAgentHost* agent_host = binding_->ForIdentifier(target_id);
-    RenderViewHost* rvh = agent_host ? agent_host->GetRenderViewHost() : NULL;
-    if (!rvh) {
+    DevToolsTarget* target = GetTarget(target_id);
+    if (!target) {
       SendJson(connection_id,
                net::HTTP_NOT_FOUND,
                NULL,
@@ -566,14 +491,26 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     }
 
     if (command == "activate") {
-      rvh->GetDelegate()->Activate();
-      SendJson(connection_id, net::HTTP_OK, NULL, "Target activated");
+      if (target->Activate()) {
+        SendJson(connection_id, net::HTTP_OK, NULL, "Target activated");
+      } else {
+        SendJson(connection_id,
+                 net::HTTP_INTERNAL_SERVER_ERROR,
+                 NULL,
+                 "Could not activate target id: " + target_id);
+      }
       return;
     }
 
     if (command == "close") {
-      rvh->ClosePage();
-      SendJson(connection_id, net::HTTP_OK, NULL, "Target is closing");
+      if (target->Close()) {
+        SendJson(connection_id, net::HTTP_OK, NULL, "Target is closing");
+      } else {
+        SendJson(connection_id,
+                 net::HTTP_INTERNAL_SERVER_ERROR,
+                 NULL,
+                 "Could not close target id: " + target_id);
+      }
       return;
     }
   }
@@ -584,21 +521,30 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   return;
 }
 
-DevToolsHttpHandlerImpl::WorkerInfoList
-DevToolsHttpHandlerImpl::CollectWorkerInfo() {
-  return WorkerService::GetInstance()->GetWorkers();
-}
-
-void DevToolsHttpHandlerImpl::SendTargetList(
+void DevToolsHttpHandlerImpl::OnTargetListReceived(
     int connection_id,
     const std::string& host,
-    base::ListValue* target_list,
-    const WorkerInfoList& worker_info) {
-  for (size_t i = 0; i < worker_info.size(); ++i)
-    target_list->Append(SerializeWorkerInfo(worker_info[i], host));
-  SendJson(connection_id, net::HTTP_OK, target_list, std::string());
-  delete target_list;
-  Release();  // Balanced OnJsonRequestUI.
+    const DevToolsHttpHandlerDelegate::TargetList& targets) {
+  DevToolsHttpHandlerDelegate::TargetList sorted_targets = targets;
+  std::sort(sorted_targets.begin(), sorted_targets.end(), TimeComparator);
+
+  STLDeleteValues(&target_map_);
+  base::ListValue list_value;
+  for (DevToolsHttpHandlerDelegate::TargetList::const_iterator it =
+      sorted_targets.begin(); it != sorted_targets.end(); ++it) {
+    DevToolsTarget* target = *it;
+    target_map_[target->GetId()] = target;
+    list_value.Append(SerializeTarget(*target, host));
+  }
+  SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
+  Release();  // Balanced in OnJsonRequestUI.
+}
+
+DevToolsTarget* DevToolsHttpHandlerImpl::GetTarget(const std::string& id) {
+  TargetMap::const_iterator it = target_map_.find(id);
+  if (it == target_map_.end())
+    return NULL;
+  return it->second;
 }
 
 void DevToolsHttpHandlerImpl::OnThumbnailRequestUI(
@@ -628,7 +574,9 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   }
 
   std::string page_id = request.path.substr(strlen(kPageUrlPrefix));
-  DevToolsAgentHost* agent = binding_->ForIdentifier(page_id);
+  DevToolsTarget* target = GetTarget(page_id);
+  scoped_refptr<DevToolsAgentHost> agent =
+      target ? target->GetAgentHost() : NULL;
   if (!agent) {
     Send500(connection_id, "No such target id: " + page_id);
     return;
@@ -683,9 +631,6 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
       delegate_(delegate) {
   if (overridden_frontend_url_.empty())
       overridden_frontend_url_ = "/devtools/devtools.html";
-
-  default_binding_.reset(new DevToolsDefaultBindingHandler);
-  binding_ = default_binding_.get();
 
   // Balanced in ResetHandlerThreadAndRelease().
   AddRef();
@@ -785,84 +730,43 @@ void DevToolsHttpHandlerImpl::AcceptWebSocket(
                  connection_id, request));
 }
 
-base::DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
-    RenderViewHost* rvh,
+base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeTarget(
+    const DevToolsTarget& target,
     const std::string& host) {
   base::DictionaryValue* dictionary = new base::DictionaryValue;
 
-  scoped_refptr<DevToolsAgentHost> agent(
-      DevToolsAgentHost::GetOrCreateFor(rvh));
-
-  std::string id = binding_->GetIdentifier(agent.get());
+  std::string id = target.GetId();
   dictionary->SetString(kTargetIdField, id);
+  dictionary->SetString(kTargetTypeField, target.GetType());
+  dictionary->SetString(kTargetTitleField, target.GetTitle());
+  dictionary->SetString(kTargetDescriptionField, target.GetDescription());
 
-  switch (delegate_->GetTargetType(rvh)) {
-    case DevToolsHttpHandlerDelegate::kTargetTypeTab:
-      dictionary->SetString(kTargetTypeField, kTargetTypePage);
-      break;
-    default:
-      dictionary->SetString(kTargetTypeField, kTargetTypeOther);
-  }
+  GURL url = target.GetUrl();
+  dictionary->SetString(kTargetUrlField, url.spec());
 
-  WebContents* web_contents = rvh->GetDelegate()->GetAsWebContents();
-  if (web_contents) {
-    dictionary->SetString(kTargetTitleField, UTF16ToUTF8(
-        net::EscapeForHTML(web_contents->GetTitle())));
-    dictionary->SetString(kTargetUrlField, web_contents->GetURL().spec());
+  GURL favicon_url = target.GetFaviconUrl();
+  if (favicon_url.is_valid())
+    dictionary->SetString(kTargetFaviconUrlField, favicon_url.spec());
+
+  if (!delegate_->GetPageThumbnailData(url).empty()) {
     dictionary->SetString(kTargetThumbnailUrlField,
-        std::string(kThumbUrlPrefix) + id);
-
-    NavigationController& controller = web_contents->GetController();
-    NavigationEntry* entry = controller.GetActiveEntry();
-    if (entry != NULL && entry->GetURL().is_valid()) {
-      dictionary->SetString(kTargetFaviconUrlField,
-          entry->GetFavicon().url.spec());
-    }
+                          std::string(kThumbUrlPrefix) + id);
   }
-  dictionary->SetString(kTargetDescriptionField,
-      delegate_->GetViewDescription(rvh));
 
-  if (!agent->IsAttached())
-    SerializeDebuggerURLs(dictionary, id, host);
+  if (!target.IsAttached()) {
+    dictionary->SetString(kTargetWebSocketDebuggerUrlField,
+                          base::StringPrintf("ws://%s%s%s",
+                                             host.c_str(),
+                                             kPageUrlPrefix,
+                                             id.c_str()));
+    std::string devtools_frontend_url = GetFrontendURLInternal(
+        id.c_str(),
+        host);
+    dictionary->SetString(
+        kTargetDevtoolsFrontendUrlField, devtools_frontend_url);
+  }
+
   return dictionary;
-}
-
-base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeWorkerInfo(
-    const WorkerService::WorkerInfo& worker,
-    const std::string& host) {
-  base::DictionaryValue* dictionary = new base::DictionaryValue;
-
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetForWorker(
-      worker.process_id, worker.route_id));
-
-  std::string id = binding_->GetIdentifier(agent.get());
-
-  dictionary->SetString(kTargetIdField, id);
-  dictionary->SetString(kTargetTypeField, kTargetTypeOther);
-  dictionary->SetString(kTargetTitleField,
-      UTF16ToUTF8(net::EscapeForHTML(worker.name)));
-  dictionary->SetString(kTargetUrlField, worker.url.spec());
-  dictionary->SetString(kTargetDescriptionField,
-      base::StringPrintf("Worker pid:%d", base::GetProcId(worker.handle)));
-
-  if (!agent->IsAttached())
-    SerializeDebuggerURLs(dictionary, id, host);
-  return dictionary;
-}
-
-void DevToolsHttpHandlerImpl::SerializeDebuggerURLs(
-    base::DictionaryValue* dictionary,
-    const std::string& id,
-    const std::string& host) {
-  dictionary->SetString(kTargetWebSocketDebuggerUrlField,
-                        base::StringPrintf("ws://%s%s%s",
-                                           host.c_str(),
-                                           kPageUrlPrefix,
-                                           id.c_str()));
-  std::string devtools_frontend_url = GetFrontendURLInternal(
-      id.c_str(),
-      host);
-  dictionary->SetString(kTargetDevtoolsFrontendUrlField, devtools_frontend_url);
 }
 
 }  // namespace content

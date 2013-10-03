@@ -61,7 +61,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     shell->LoadURL(GetDevToolsPathAsURL());
   else
-    shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL(NULL));
+    shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL());
 
   return devtools_frontend;
 }

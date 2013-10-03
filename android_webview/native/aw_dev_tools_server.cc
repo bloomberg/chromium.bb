@@ -8,20 +8,73 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/browser/android/devtools_auth.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/devtools_target.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AwDevToolsServer_jni.h"
+#include "net/base/escape.h"
 #include "net/socket/unix_domain_socket_posix.h"
 #include "webkit/common/user_agent/user_agent_util.h"
+
+using content::DevToolsAgentHost;
+using content::RenderViewHost;
+using content::WebContents;
 
 namespace {
 
 const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
 const char kSocketNameFormat[] = "webview_devtools_remote_%d";
+
+const char kTargetTypePage[] = "page";
+
+std::string GetViewDescription(WebContents* web_contents);
+
+class Target : public content::DevToolsTarget {
+ public:
+  explicit Target(WebContents* web_contents);
+
+  virtual std::string GetId() const OVERRIDE { return id_; }
+  virtual std::string GetType() const OVERRIDE { return kTargetTypePage; }
+  virtual std::string GetTitle() const OVERRIDE { return title_; }
+  virtual std::string GetDescription() const OVERRIDE { return description_; }
+  virtual GURL GetUrl() const OVERRIDE { return url_; }
+  virtual GURL GetFaviconUrl() const OVERRIDE { return GURL(); }
+  virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
+    return last_activity_time_;
+  }
+  virtual bool IsAttached() const OVERRIDE {
+    return agent_host_->IsAttached();
+  }
+  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE {
+    return agent_host_;
+  }
+  virtual bool Activate() const OVERRIDE { return false; }
+  virtual bool Close() const OVERRIDE { return false; }
+
+ private:
+  scoped_refptr<DevToolsAgentHost> agent_host_;
+  std::string id_;
+  std::string title_;
+  std::string description_;
+  GURL url_;
+  base::TimeTicks last_activity_time_;
+};
+
+Target::Target(WebContents* web_contents) {
+  agent_host_ =
+      DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
+  id_ = agent_host_->GetId();
+  description_ = GetViewDescription(web_contents);
+  title_ = UTF16ToUTF8(net::EscapeForHTML(web_contents->GetTitle()));
+  url_ = web_contents->GetURL();
+  last_activity_time_ = web_contents->GetLastSelectedTime();
+}
 
 // Delegate implementation for the devtools http handler for WebView. A new
 // instance of this gets created each time web debugging is enabled.
@@ -45,15 +98,22 @@ class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return "";
   }
 
-  virtual content::RenderViewHost* CreateNewTarget() OVERRIDE {
-    return NULL;
+  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget() OVERRIDE {
+    return scoped_ptr<content::DevToolsTarget>();
   }
 
-  virtual TargetType GetTargetType(content::RenderViewHost*) OVERRIDE {
-    return kTargetTypeTab;
+  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
+    TargetList targets;
+    std::vector<RenderViewHost*> rvh_list =
+        DevToolsAgentHost::GetValidRenderViewHosts();
+    for (std::vector<RenderViewHost*>::iterator it = rvh_list.begin();
+         it != rvh_list.end(); ++it) {
+      WebContents* web_contents = WebContents::FromRenderViewHost(*it);
+      if (web_contents)
+        targets.push_back(new Target(web_contents));
+    }
+    callback.Run(targets);
   }
-
-  virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE;
 
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
@@ -76,12 +136,7 @@ std::string AwDevToolsServerDelegate::GetDiscoveryPageHTML() {
   return html;
 }
 
-std::string AwDevToolsServerDelegate::GetViewDescription(
-    content::RenderViewHost* rvh) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(rvh);
-  if (!web_contents) return "";
-
+std::string GetViewDescription(WebContents* web_contents) {
   android_webview::BrowserViewRenderer* bvr
       = android_webview::InProcessViewRenderer::FromWebContents(web_contents);
   if (!bvr) return "";

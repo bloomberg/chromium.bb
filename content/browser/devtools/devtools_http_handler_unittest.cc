@@ -7,6 +7,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/devtools_target.h"
 #include "net/socket/stream_listen_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,12 +65,11 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE {
     return std::string();
   }
-  virtual RenderViewHost* CreateNewTarget() OVERRIDE { return NULL; }
-  virtual TargetType GetTargetType(RenderViewHost*) OVERRIDE {
-    return kTargetTypeTab;
+  virtual scoped_ptr<DevToolsTarget> CreateNewTarget() OVERRIDE {
+    return scoped_ptr<DevToolsTarget>();
   }
-  virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE {
-    return std::string();
+  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
+    callback.Run(TargetList());
   }
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
     net::StreamListenSocket::Delegate* delegate,

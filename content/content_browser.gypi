@@ -80,6 +80,7 @@
     'public/browser/devtools_http_handler.h',
     'public/browser/devtools_http_handler_delegate.h',
     'public/browser/devtools_manager.h',
+    'public/browser/devtools_target.h',
     'public/browser/dom_operation_notification_details.h',
     'public/browser/dom_storage_context.h',
     'public/browser/download_destination_observer.h',
