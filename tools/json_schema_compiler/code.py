@@ -133,7 +133,6 @@ class Code(object):
     """
     return '\n'.join([l.value for l in self._code])
 
-
 class Line(object):
   """A line of code.
   """

@@ -181,23 +181,5 @@
         }],
       ],
     },
-    {
-      'target_name': 'features',
-      'type': 'static_library',
-      'sources': [
-        '<@(schema_files)',
-      ],
-      'includes': [
-        '../../../../build/features_compile.gypi',
-      ],
-      'variables': {
-        'chromium_code': 1,
-        'schema_files': [
-          '_permission_features.json',
-        ],
-        'cc_dir': 'chrome/common/extensions/api',
-        'root_namespace': 'extensions::features',
-      },
-    },
   ],
 }
