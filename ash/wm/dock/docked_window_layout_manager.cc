@@ -873,6 +873,7 @@ void DockedWindowLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& keyboard_bounds) {
   // This bounds change will have caused a change to the Shelf which does not
   // propagate automatically to this class, so manually recalculate bounds.
+  Relayout();
   UpdateDockBounds();
 }
 

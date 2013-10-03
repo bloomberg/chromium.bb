@@ -539,6 +539,7 @@ void RootWindowController::InitKeyboard() {
 
     keyboard_controller_->AddObserver(shelf()->shelf_layout_manager());
     keyboard_controller_->AddObserver(panel_layout_manager_);
+    keyboard_controller_->AddObserver(docked_layout_manager_);
 
     // Deletes the old container since |keyboard_controller_| creates a
     // new container window in GetContainerWindow().
