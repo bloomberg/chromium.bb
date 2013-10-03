@@ -405,39 +405,29 @@ void PluginProcessHost::OnChannelCreated(
   Client* client = sent_requests_.front();
 
   if (client) {
-    resource_context_map_[client->ID()] = client->GetResourceContext();
+    if (!resource_context_map_.count(client->ID())) {
+      ResourceContextEntry entry;
+      entry.ref_count = 0;
+      entry.resource_context = client->GetResourceContext();
+      resource_context_map_[client->ID()] = entry;
+    }
+    resource_context_map_[client->ID()].ref_count++;
     client->OnChannelOpened(channel_handle);
   }
   sent_requests_.pop_front();
 }
 
 void PluginProcessHost::OnChannelDestroyed(int renderer_id) {
-  resource_context_map_.erase(renderer_id);
-  removed_pids_.insert(renderer_id);
+  resource_context_map_[renderer_id].ref_count--;
+  if (!resource_context_map_[renderer_id].ref_count)
+    resource_context_map_.erase(renderer_id);
 }
 
 void PluginProcessHost::GetContexts(const ResourceHostMsg_Request& request,
                                     ResourceContext** resource_context,
                                     net::URLRequestContext** request_context) {
-  *resource_context = resource_context_map_[request.origin_pid];
-  if (!*resource_context) {
-    std::string url = request.first_party_for_cookies.spec();
-    // Debugging http://crbug.com/302530
-    url += std::string("_") + base::IntToString(request.origin_pid);
-
-    for (std::map<int, ResourceContext*>::iterator i =
-            resource_context_map_.begin();
-         i != resource_context_map_.end(); ++i) {
-      url += std::string("_") + base::IntToString(i->first);
-    }
-
-    url += "_";
-    for (std::set<int>::iterator i = removed_pids_.begin();
-         i != removed_pids_.end(); ++i) {
-      url += std::string("_") + base::IntToString(*i);
-    }
-    GetContentClient()->SetActiveURL(GURL(url));
-  }
+  *resource_context =
+      resource_context_map_[request.origin_pid].resource_context;
   *request_context = (*resource_context)->GetRequestContext();
 }
 

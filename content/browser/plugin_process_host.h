@@ -182,12 +182,16 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   bool plugin_cursor_visible_;
 #endif
 
-  // Map from render_process_id to its ResourceContext
-  typedef std::map<int, ResourceContext*> ResourceContextMap;
+  // Map from render_process_id to its ResourceContext. Instead of storing the
+  // raw pointer, we store the struct below. This is needed because a renderer
+  // process can actually have multiple IPC channels to the same plugin process,
+  // depending on timing conditions with plugin instance creation and shutdown.
+  struct ResourceContextEntry {
+    ResourceContext* resource_context;
+    int ref_count;
+  };
+  typedef std::map<int, ResourceContextEntry> ResourceContextMap;
   ResourceContextMap resource_context_map_;
-
-  // Debugging http://crbug.com/302530
-  std::set<int> removed_pids_;
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
 
