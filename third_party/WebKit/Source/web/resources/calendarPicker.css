@@ -294,3 +294,26 @@ body {
     border-left-width: 0;
     border-right: 1px solid #bfbfbf;
 }
+
+.year-month-button {
+    width: 24px;
+    height: 24px;
+    min-width: 0;
+    padding: 0;
+}
+
+.month-popup-button:focus,
+.year-list-view:focus,
+.calendar-table-view:focus {
+    transition: border-color 200ms;
+    /* We use border color because it follows the border radius (unlike outline).
+    * This is particularly noticeable on mac. */
+    border-color: rgb(77, 144, 254) !important;
+    outline: none;
+}
+
+.preparing button:focus,
+.preparing .year-list-view:focus,
+.preparing .calendar-table-view:focus {
+    transition: none;
+}

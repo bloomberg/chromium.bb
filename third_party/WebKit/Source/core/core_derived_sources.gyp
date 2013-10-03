@@ -503,65 +503,6 @@
           'msvs_cygwin_shell': 1,
         },
         {
-          'action_name': 'PickerCommon',
-          'inputs': [
-            'Resources/pagepopups/pickerCommon.css',
-            'Resources/pagepopups/pickerCommon.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
-          ],
-          'action': [
-            'python',
-            'scripts/make-file-arrays.py',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
-            '<@(_inputs)',
-          ],
-        },
-        {
-          'action_name': 'CalendarPicker',
-          'inputs': [
-            'Resources/pagepopups/calendarPicker.css',
-            'Resources/pagepopups/calendarPicker.js',
-            'Resources/pagepopups/chromium/calendarPickerChromium.css',
-            'Resources/pagepopups/chromium/pickerCommonChromium.css',
-            'Resources/pagepopups/suggestionPicker.css',
-            'Resources/pagepopups/suggestionPicker.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
-          ],
-          'action': [
-            'python',
-            'scripts/make-file-arrays.py',
-            '--condition=ENABLE(CALENDAR_PICKER)',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
-            '<@(_inputs)',
-          ],
-        },
-        {
-          'action_name': 'ColorSuggestionPicker',
-          'inputs': [
-            'Resources/pagepopups/colorSuggestionPicker.css',
-            'Resources/pagepopups/colorSuggestionPicker.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
-          ],
-          'action': [
-            'python',
-            'scripts/make-file-arrays.py',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
-            '<@(_inputs)',
-          ],
-        },
-        {
           'action_name': 'XLinkNames',
           'inputs': [
             'scripts/Hasher.pm',

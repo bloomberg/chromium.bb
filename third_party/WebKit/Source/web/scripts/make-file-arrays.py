@@ -95,14 +95,14 @@ def main():
     header_file = open(options.out_header, "w")
     if options.flag:
         header_file.write("#if " + options.flag + "\n")
-    header_file.write("namespace WebCore {\n")
+    header_file.write("namespace WebKit {\n")
 
     cpp_file = open(options.out_cpp, "w")
     cpp_file.write("#include \"config.h\"\n")
     cpp_file.write("#include \"" + os.path.basename(options.out_header) + "\"\n")
     if options.flag:
         cpp_file.write("#if " + options.flag + "\n")
-    cpp_file.write("namespace WebCore {\n")
+    cpp_file.write("namespace WebKit {\n")
 
     for file_name in args:
         (variable_name, content) = make_variable_name_and_read(file_name)

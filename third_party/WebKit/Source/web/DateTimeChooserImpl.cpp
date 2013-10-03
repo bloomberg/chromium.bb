@@ -119,11 +119,10 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
     }
 
     addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", writer);
-    writer.addData(WebCore::pickerCommonCss, sizeof(WebCore::pickerCommonCss));
-    writer.addData(WebCore::pickerCommonChromiumCss, sizeof(WebCore::pickerCommonChromiumCss));
-    writer.addData(WebCore::suggestionPickerCss, sizeof(WebCore::suggestionPickerCss));
-    writer.addData(WebCore::calendarPickerCss, sizeof(WebCore::calendarPickerCss));
-    writer.addData(WebCore::calendarPickerChromiumCss, sizeof(WebCore::calendarPickerChromiumCss));
+    writer.addData(pickerCommonCss, sizeof(pickerCommonCss));
+    writer.addData(pickerButtonCss, sizeof(pickerButtonCss));
+    writer.addData(suggestionPickerCss, sizeof(suggestionPickerCss));
+    writer.addData(calendarPickerCss, sizeof(calendarPickerCss));
     addString("</style></head><body><div id=main>Loading...</div><script>\n"
                "window.dialogArguments = {\n", writer);
     addProperty("anchorRectInScreen", anchorRectInScreen, writer);
@@ -155,9 +154,9 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
     }
     addString("}\n", writer);
 
-    writer.addData(WebCore::pickerCommonJs, sizeof(WebCore::pickerCommonJs));
-    writer.addData(WebCore::suggestionPickerJs, sizeof(WebCore::suggestionPickerJs));
-    writer.addData(WebCore::calendarPickerJs, sizeof(WebCore::calendarPickerJs));
+    writer.addData(pickerCommonJs, sizeof(pickerCommonJs));
+    writer.addData(suggestionPickerJs, sizeof(suggestionPickerJs));
+    writer.addData(calendarPickerJs, sizeof(calendarPickerJs));
     addString("</script></body>\n", writer);
 }
 
