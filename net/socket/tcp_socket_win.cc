@@ -742,6 +742,14 @@ void TCPSocketWin::OnObjectSignaled(HANDLE object) {
       accept_address_ = NULL;
       base::ResetAndReturn(&accept_callback_).Run(result);
     }
+  } else {
+    // This happens when a client opens a connection and closes it before we
+    // have a chance to accept it.
+    DCHECK(ev.lNetworkEvents == 0);
+
+    // Start watching the next FD_ACCEPT event.
+    WSAEventSelect(socket_, accept_event_, FD_ACCEPT);
+    accept_watcher_.StartWatching(accept_event_, this);
   }
 }
 
