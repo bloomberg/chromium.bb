@@ -284,7 +284,9 @@ class SvnBaseTest(BaseTest):
       self.FAKE_REPOS.svn_dirty = True
 
     self.assertEquals(root, co.project_path)
-    self.assertEquals(self.previous_log['revision'], co.prepare(None))
+    svn_rev = co.prepare(None)
+    self.assertEquals(int, type(svn_rev))
+    self.assertEquals(self.previous_log['revision'], svn_rev)
     self.assertEquals('pouet', co.get_settings('bar'))
     self.assertTree(self.get_trunk(False), root)
     patches = self.get_patches()
@@ -377,7 +379,9 @@ class GitBaseTest(BaseTest):
       self.FAKE_REPOS.git_dirty = True
 
     self.assertEquals(root, co.project_path)
-    self.assertEquals(self.previous_log['revision'], co.prepare(None))
+    git_rev = co.prepare(None)
+    self.assertEquals(unicode, type(git_rev))
+    self.assertEquals(self.previous_log['revision'], git_rev)
     self.assertEquals('pouet', co.get_settings('bar'))
     self.assertTree(self.get_trunk(False), root)
     patches = self.get_patches()

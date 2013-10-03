@@ -622,8 +622,8 @@ class GitCheckout(CheckoutBase):
          '--quiet'])
 
   def _get_head_commit_hash(self):
-    """Gets the current revision from the local branch."""
-    return self._check_output_git(['rev-parse', 'HEAD']).strip()
+    """Gets the current revision (in unicode) from the local branch."""
+    return unicode(self._check_output_git(['rev-parse', 'HEAD']).strip())
 
   def apply_patch(self, patches, post_processors=None, verbose=False):
     """Applies a patch on 'working_branch' and switches to it.
