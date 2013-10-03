@@ -3166,7 +3166,6 @@
             'platform/network/SocketStreamHandle.h',
             'platform/network/SocketStreamHandleClient.h',
             'platform/network/SocketStreamHandleInternal.h',
-            'platform/text/BidiContext.cpp',
             'platform/text/LineEnding.cpp',
             'platform/text/LocaleICU.cpp',
             'platform/text/LocaleICU.h',

@@ -22,6 +22,7 @@
 #ifndef BidiContext_h
 #define BidiContext_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -36,7 +37,7 @@ enum BidiEmbeddingSource {
 };
 
 // Used to keep track of explicit embeddings.
-class BidiContext : public RefCounted<BidiContext> {
+class PLATFORM_EXPORT BidiContext : public RefCounted<BidiContext> {
 public:
     static PassRefPtr<BidiContext> create(unsigned char level, WTF::Unicode::Direction, bool override = false, BidiEmbeddingSource = FromStyleOrDOM, BidiContext* parent = 0);
 
@@ -76,7 +77,7 @@ inline unsigned char nextGreaterEvenLevel(unsigned char level)
     return (level + 2) & ~1;
 }
 
-bool operator==(const BidiContext&, const BidiContext&);
+PLATFORM_EXPORT bool operator==(const BidiContext&, const BidiContext&);
 
 } // namespace WebCore
 

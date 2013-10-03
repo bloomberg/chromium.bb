@@ -22,8 +22,8 @@
 #ifndef BidiResolver_h
 #define BidiResolver_h
 
-#include "core/platform/text/BidiContext.h"
 #include "core/platform/text/BidiRunList.h"
+#include "platform/text/BidiContext.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"

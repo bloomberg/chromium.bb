@@ -36,6 +36,8 @@
       'transforms/AffineTransform.h',
       'transforms/TransformationMatrix.cpp',
       'transforms/TransformationMatrix.h',
+      'text/BidiContext.cpp',
+      'text/BidiContext.h',
       'Clock.cpp',
       'Clock.h',
       'DateComponents.cpp',
