@@ -21,7 +21,7 @@ class FrameBuffer {
   FrameBuffer();
   ~FrameBuffer();
   void InsertPacket(const uint8* payload_data,
-                    int payload_size,
+                    size_t payload_size,
                     const RtpCastHeader& rtp_header);
   bool Complete() const;
 
@@ -40,7 +40,7 @@ class FrameBuffer {
   uint16 max_packet_id_;
   uint16 num_packets_received_;
   bool is_key_frame_;
-  int total_data_size_;
+  size_t total_data_size_;
   uint8 last_referenced_frame_id_;
   uint32 rtp_timestamp_;
   PacketMap packets_;

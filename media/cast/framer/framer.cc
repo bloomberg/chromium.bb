@@ -26,7 +26,7 @@ Framer::Framer(RtpPayloadFeedback* incoming_payload_feedback,
 Framer::~Framer() {}
 
 void Framer::InsertPacket(const uint8* payload_data,
-                          int payload_size,
+                          size_t payload_size,
                           const RtpCastHeader& rtp_header) {
   bool complete = false;
   if (!frame_id_map_.InsertPacket(rtp_header, &complete)) return;

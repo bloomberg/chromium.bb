@@ -19,7 +19,7 @@ FrameBuffer::FrameBuffer()
 FrameBuffer::~FrameBuffer() {}
 
 void FrameBuffer::InsertPacket(const uint8* payload_data,
-                               int payload_size,
+                               size_t payload_size,
                                const RtpCastHeader& rtp_header) {
   // Is this the first packet in the frame?
   if (packets_.empty()) {

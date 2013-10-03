@@ -33,7 +33,7 @@ class Framer {
   ~Framer();
 
   void InsertPacket(const uint8* payload_data,
-                    int payload_size,
+                    size_t payload_size,
                     const RtpCastHeader& rtp_header);
 
   // Extracts a complete encoded frame - will only return a complete continuous
