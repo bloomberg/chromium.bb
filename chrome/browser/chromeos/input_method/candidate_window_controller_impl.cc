@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
 #include "chrome/browser/chromeos/input_method/delayable_widget.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
+#include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
+#include "chrome/browser/chromeos/input_method/mode_indicator_widget.h"
 #include "ui/views/widget/widget.h"
 
 
@@ -68,7 +70,6 @@ void CandidateWindowControllerImpl::CreateView() {
 
   frame_->SetContentsView(candidate_window_view_);
 
-
   // Create the infolist window.
   infolist_window_.reset(new DelayableWidget);
   infolist_window_->Init(params);
@@ -80,6 +81,10 @@ void CandidateWindowControllerImpl::CreateView() {
   InfolistWindowView* infolist_view = new InfolistWindowView;
   infolist_view->Init();
   infolist_window_->SetContentsView(infolist_view);
+
+  // Create the mode indicator controller.
+  mode_indicator_controller_.reset(
+      new ModeIndicatorController(new ModeIndicatorWidget));
 }
 
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
@@ -121,14 +126,17 @@ void CandidateWindowControllerImpl::SetCursorLocation(
     return;
   }
 
+  const gfx::Rect gfx_cursor_location = IBusRectToGfxRect(cursor_location);
   // Remember the cursor location.
-  candidate_window_view_->set_cursor_location(
-      IBusRectToGfxRect(cursor_location));
+  candidate_window_view_->set_cursor_location(gfx_cursor_location);
   candidate_window_view_->set_composition_head_location(
       IBusRectToGfxRect(composition_head));
   // Move the window per the cursor location.
   candidate_window_view_->ResizeAndMoveParentFrame();
   UpdateInfolistBounds();
+
+  // Mode indicator controller also needs the cursor location.
+  mode_indicator_controller_->SetCursorLocation(gfx_cursor_location);
 }
 
 void CandidateWindowControllerImpl::UpdateAuxiliaryText(

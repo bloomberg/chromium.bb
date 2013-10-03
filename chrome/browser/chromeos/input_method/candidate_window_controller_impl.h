@@ -23,6 +23,7 @@ namespace input_method {
 
 class CandidateWindow;
 class DelayableWidget;
+class ModeIndicatorController;
 
 // The implementation of CandidateWindowController.
 // CandidateWindowController controls the CandidateWindow.
@@ -106,6 +107,9 @@ class CandidateWindowControllerImpl
   // This is the outer frame of the infolist window view. The frame will
   // own |infolist_window_|.
   scoped_ptr<DelayableWidget> infolist_window_;
+
+  // This is the controller of the IME mode indicator.
+  scoped_ptr<ModeIndicatorController> mode_indicator_controller_;
 
   // The infolist entries and its focused index which currently shown in
   // Infolist window.
