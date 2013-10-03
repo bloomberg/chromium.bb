@@ -1,5 +1,5 @@
 # Remove icons from the system icons
-XDG_ICON_RESOURCE="`which xdg-icon-resource 2> /dev/null`"
+XDG_ICON_RESOURCE="`which xdg-icon-resource 2> /dev/null || true`"
 if [ ! -x "$XDG_ICON_RESOURCE" ]; then
   echo "Error: Could not find xdg-icon-resource" >&2
   exit 1
@@ -10,8 +10,8 @@ for icon in "@@INSTALLDIR@@/product_logo_"*.png; do
 done
 
 # Remove the entry from the system menu
-XDG_DESKTOP_MENU="`which xdg-desktop-menu 2> /dev/null`"
-UPDATE_MENUS="`which update-menus 2> /dev/null`"
+XDG_DESKTOP_MENU="`which xdg-desktop-menu 2> /dev/null || true`"
+UPDATE_MENUS="`which update-menus 2> /dev/null || true`"
 if [ ! -x "$XDG_DESKTOP_MENU" ]; then
   echo "Error: Could not find xdg-desktop-menu" >&2
   exit 1
