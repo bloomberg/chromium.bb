@@ -155,13 +155,7 @@ TEST_F(SessionBackendTest, BigData) {
   STLDeleteElements(&commands);
 }
 
-// Bug 132037: This test causes an assertion error on Windows.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_EmptyCommand DISABLED_EmptyCommand
-#else
-#define MAYBE_EmptyCommand EmptyCommand
-#endif
-TEST_F(SessionBackendTest, MAYBE_EmptyCommand) {
+TEST_F(SessionBackendTest, EmptyCommand) {
   TestData empty_command;
   empty_command.command_id = 1;
   scoped_refptr<SessionBackend> backend(
