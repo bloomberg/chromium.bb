@@ -54,6 +54,10 @@ class InternalExtensionProvider : public ObservableProvider,
  private:
   void SetContentSettingForExtension(const extensions::Extension* extension,
                                      ContentSetting setting);
+  void SetContentSettingForExtensionAndResource(
+      const extensions::Extension* extension,
+      const ResourceIdentifier& resource,
+      ContentSetting setting);
 
   OriginIdentifierValueMap value_map_;
 

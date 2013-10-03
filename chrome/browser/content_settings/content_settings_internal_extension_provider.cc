@@ -8,11 +8,13 @@
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/features/simple_feature.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -71,8 +73,30 @@ void InternalExtensionProvider::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_HOST_CREATED: {
       const extensions::ExtensionHost* host =
           content::Details<extensions::ExtensionHost>(details).ptr();
-      if (host->extension()->is_platform_app())
+      if (host->extension()->is_platform_app()) {
         SetContentSettingForExtension(host->extension(), CONTENT_SETTING_BLOCK);
+
+        // White-list CRD's v2 app, until crbug.com/134216 is complete.
+        const char* kAppWhitelist[] = {
+          "2775E568AC98F9578791F1EAB65A1BF5F8CEF414",
+          "4AA3C5D69A4AECBD236CAD7884502209F0F5C169",
+          "97B23E01B2AA064E8332EE43A7A85C628AADC3F2",
+          "9E930B2B5EABA6243AE6C710F126E54688E8FAF6",
+          "C449A798C495E6CF7D6AF10162113D564E67AD12",
+          "E410CDAB2C6E6DD408D731016CECF2444000A912",
+          "EBA908206905323CECE6DC4B276A58A0F4AC573F"
+        };
+        if (extensions::SimpleFeature::IsIdInWhitelist(
+                host->extension()->id(),
+                std::set<std::string>(
+                    kAppWhitelist, kAppWhitelist + arraysize(kAppWhitelist)))) {
+          SetContentSettingForExtensionAndResource(
+              host->extension(),
+              chrome::ChromeContentClient::kRemotingViewerPluginPath,
+              CONTENT_SETTING_ALLOW);
+        }
+      }
+
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
@@ -103,6 +127,14 @@ void InternalExtensionProvider::ShutdownOnUIThread() {
 void InternalExtensionProvider::SetContentSettingForExtension(
     const extensions::Extension* extension,
     ContentSetting setting) {
+  SetContentSettingForExtensionAndResource(
+      extension, ResourceIdentifier(), setting);
+}
+
+void InternalExtensionProvider::SetContentSettingForExtensionAndResource(
+    const extensions::Extension* extension,
+    const ResourceIdentifier& resource,
+    ContentSetting setting) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(
       ContentSettingsPattern::CreateBuilder(false));
   pattern_builder->WithScheme(extensions::kExtensionScheme);
@@ -117,19 +149,19 @@ void InternalExtensionProvider::SetContentSettingForExtension(
       value_map_.DeleteValue(primary_pattern,
                              secondary_pattern,
                              CONTENT_SETTINGS_TYPE_PLUGINS,
-                             ResourceIdentifier());
+                             resource);
     } else {
       value_map_.SetValue(primary_pattern,
                           secondary_pattern,
                           CONTENT_SETTINGS_TYPE_PLUGINS,
-                          ResourceIdentifier(),
+                          resource,
                           Value::CreateIntegerValue(setting));
     }
   }
   NotifyObservers(primary_pattern,
                   secondary_pattern,
                   CONTENT_SETTINGS_TYPE_PLUGINS,
-                  ResourceIdentifier());
+                  resource);
 }
 
 }  // namespace content_settings

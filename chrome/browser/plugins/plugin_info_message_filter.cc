@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,32 +56,6 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
     return true;
   }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
-
-  return false;
-}
-
-// Helper for whitelisting Chrome Remote Desktop's Apps v2 builds to load the
-// Remoting Viewer plugin even though it is a trusted Pepper plugin.
-bool IsRemotingAppAndPlugin(const WebPluginInfo& plugin,
-                            const GURL& policy_url) {
-  const char* kAppWhitelist[] = {
-    "2775E568AC98F9578791F1EAB65A1BF5F8CEF414",
-    "4AA3C5D69A4AECBD236CAD7884502209F0F5C169",
-    "97B23E01B2AA064E8332EE43A7A85C628AADC3F2",
-    "9E930B2B5EABA6243AE6C710F126E54688E8FAF6",
-    "C449A798C495E6CF7D6AF10162113D564E67AD12",
-    "E410CDAB2C6E6DD408D731016CECF2444000A912",
-    "EBA908206905323CECE6DC4B276A58A0F4AC573F"
-  };
-  base::FilePath remoting_path(ChromeContentClient::kRemotingViewerPluginPath);
-  if (plugin.path == remoting_path &&
-      policy_url.SchemeIs("chrome-extension") &&
-      extensions::SimpleFeature::IsIdInWhitelist(
-          policy_url.host(),
-          std::set<std::string>(kAppWhitelist,
-                                kAppWhitelist + arraysize(kAppWhitelist)))) {
-    return true;
-  }
 
   return false;
 }
@@ -396,13 +369,6 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
       !uses_plugin_specific_setting &&
       info.primary_pattern == ContentSettingsPattern::Wildcard() &&
       info.secondary_pattern == ContentSettingsPattern::Wildcard();
-
-  // Temporary white-list of CRD's v2 app until crbug.com/134216 is complete.
-  if (IsRemotingAppAndPlugin(plugin, policy_url) &&
-      info.source == content_settings::SETTING_SOURCE_EXTENSION &&
-      *setting == CONTENT_SETTING_BLOCK) {
-    *setting = CONTENT_SETTING_ALLOW;
-  }
 }
 
 void PluginInfoMessageFilter::Context::MaybeGrantAccess(
