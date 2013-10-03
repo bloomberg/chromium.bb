@@ -908,10 +908,10 @@ chrome_info_no_pdf = chrome_info.derive(
 chrome_perf = chrome_info.derive(
   vm_tests=None,
   upload_hw_test_artifacts=True,
-#  To remain disabled until crbug.com/294923 is fixed.
-#  hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
-#                         timeout=90 * 60, critical=True, num=1,
-#                         copy_perf_results=True)],
+
+  hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
+                         timeout=90 * 60, critical=True, num=1,
+                         copy_perf_results=True)],
   use_chrome_lkgm=True,
   use_lkgm=False,
   useflags=official['useflags'] + ['-cros-debug'],
