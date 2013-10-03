@@ -11,7 +11,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_failed_job.h"
@@ -114,6 +117,32 @@ class ErrorPageTest : public InProcessBrowserTest {
   }
 };
 
+
+class TestFailProvisionalLoadObserver : public content::WebContentsObserver {
+ public:
+  explicit TestFailProvisionalLoadObserver(content::WebContents* contents)
+      : content::WebContentsObserver(contents) {}
+  virtual ~TestFailProvisionalLoadObserver() {}
+
+  // This method is invoked when the provisional load failed.
+  virtual void DidFailProvisionalLoad(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      int error_code,
+      const string16& error_description,
+      content::RenderViewHost* render_view_host) OVERRIDE {
+    fail_url_ = validated_url;
+  }
+
+  const GURL& fail_url() const { return fail_url_; }
+
+ private:
+  GURL fail_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFailProvisionalLoadObserver);
+};
+
 // See crbug.com/109669
 #if defined(USE_AURA) || defined(OS_WIN)
 #define MAYBE_DNSError_Basic DISABLED_DNSError_Basic
@@ -208,6 +237,11 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
           base::FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))),
       "Blah",
       1);
+  // We expect to have two history entries, since we started off with navigation
+  // to "about:blank" and then navigated to "iframe_dns_error.html".
+  EXPECT_EQ(2,
+      browser()->tab_strip_model()->GetActiveWebContents()->
+          GetController().GetEntryCount());
 }
 
 // This test fails regularly on win_rel trybots. See crbug.com/121540
@@ -237,6 +271,73 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBackAndForward) {
   NavigateToFileURL(FILE_PATH_LITERAL("iframe_dns_error.html"));
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
   GoForwardAndWaitForTitle("Blah", 1);
+}
+
+// Test that a DNS error occuring in an iframe, once the main document is
+// completed loading, does not result in an additional session history entry.
+// To ensure that the main document has completed loading, JavaScript is used to
+// inject an iframe after loading is done.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
+  content::WebContents* wc =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL fail_url =
+      URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
+
+  // Load a regular web page, in which we will inject an iframe.
+  NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
+
+  // We expect to have two history entries, since we started off with navigation
+  // to "about:blank" and then navigated to "title2.html".
+  EXPECT_EQ(2, wc->GetController().GetEntryCount());
+
+  std::string script = "var frame = document.createElement('iframe');"
+                       "frame.src = '" + fail_url.spec() + "';"
+                       "document.body.appendChild(frame);";
+  {
+    TestFailProvisionalLoadObserver fail_observer(wc);
+    content::WindowedNotificationObserver load_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(&wc->GetController()));
+    wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+        string16(), ASCIIToUTF16(script));
+    load_observer.Wait();
+
+    // Ensure we saw the expected failure.
+    EXPECT_EQ(fail_url, fail_observer.fail_url());
+
+    // Failed initial navigation of an iframe shouldn't be adding any history
+    // entries.
+    EXPECT_EQ(2, wc->GetController().GetEntryCount());
+  }
+
+  // Do the same test, but with an iframe that doesn't have initial URL
+  // assigned.
+  script = "var frame = document.createElement('iframe');"
+           "frame.id = 'target_frame';"
+           "document.body.appendChild(frame);";
+  {
+    content::WindowedNotificationObserver load_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(&wc->GetController()));
+    wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+        string16(), ASCIIToUTF16(script));
+    load_observer.Wait();
+  }
+
+  script = "var f = document.getElementById('target_frame');"
+           "f.src = '" + fail_url.spec() + "';";
+  {
+    TestFailProvisionalLoadObserver fail_observer(wc);
+    content::WindowedNotificationObserver load_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(&wc->GetController()));
+    wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+        string16(), ASCIIToUTF16(script));
+    load_observer.Wait();
+
+    EXPECT_EQ(fail_url, fail_observer.fail_url());
+    EXPECT_EQ(2, wc->GetController().GetEntryCount());
+  }
 }
 
 // Checks that the Link Doctor is not loaded when we receive an actual 404 page.

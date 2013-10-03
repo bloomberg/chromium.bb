@@ -3566,9 +3566,10 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
   if (is_top_most) {
     navigation_gesture_ = WebUserGestureIndicator::isProcessingUserGesture() ?
         NavigationGestureUser : NavigationGestureAuto;
-  } else if (frame->parent()->isLoading()) {
-    // Take note of AUTO_SUBFRAME loads here, so that we can know how to
-    // load an error page.  See didFailProvisionalLoad.
+  } else if (ds->replacesCurrentHistoryItem()) {
+    // Subframe navigations that don't add session history items must be
+    // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
+    // handle loading of error pages.
     document_state->navigation_state()->set_transition_type(
         PAGE_TRANSITION_AUTO_SUBFRAME);
   }
