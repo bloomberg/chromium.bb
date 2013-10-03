@@ -55,10 +55,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
       "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
       "\n"
       "var rule0 = {\n"
-      "  conditions: [new PageStateMatcher({pageUrl: {hostPrefix: "
-      "\"test1\"}}),\n"
-      "               new PageStateMatcher({css: "
-      "[\"input[type='password']\"]})],\n"
+      "  conditions: [new PageStateMatcher({\n"
+      "                   pageUrl: {hostPrefix: \"test1\"}}),\n"
+      "               new PageStateMatcher({\n"
+      "                   css: [\"input[type='password']\"]})],\n"
       "  actions: [new ShowPageAction()]\n"
       "}\n"
       "\n"
@@ -99,7 +99,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   // Give the mutation observer a chance to run and send back the
   // matching-selector update.
   ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
-  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id))
+      << "Adding a matching element should show the page action.";
 
   // Remove it again to make sure that reverts the action.
   ASSERT_TRUE(content::ExecuteScript(
@@ -107,6 +108,67 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   // Give the mutation observer a chance to run and send back the
   // matching-selector update.
   ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id))
+      << "Removing the matching element should hide the page action again.";
+}
+
+// This tests against a renderer crash that was present during development.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       AddExtensionMatchingExistingTabWithDeadFrames) {
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
+      "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
+      "var onPageChanged = chrome.declarativeContent.onPageChanged;\n"
+      "\n"
+      "function setRules(rules, responseString) {\n"
+      "  onPageChanged.removeRules(undefined, function() {\n"
+      "    onPageChanged.addRules(rules, function() {\n"
+      "      window.domAutomationController.send(responseString);\n"
+      "    });\n"
+      "  });\n"
+      "};\n");
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  ASSERT_TRUE(content::ExecuteScript(
+      tab, "document.body.innerHTML = '<iframe src=\"http://test2\">';"));
+  // Replace the iframe to destroy its WebFrame.
+  ASSERT_TRUE(content::ExecuteScript(
+      tab, "document.body.innerHTML = '<span class=\"foo\">';"));
+
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+  const ExtensionAction* page_action = ExtensionActionManager::Get(
+      browser()->profile())->GetPageAction(*extension);
+  ASSERT_TRUE(page_action);
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+
+  EXPECT_EQ("rule0",
+            ExecuteScriptInBackgroundPage(
+                extension->id(),
+                "setRules([{\n"
+                "  conditions: [new PageStateMatcher({\n"
+                "                   css: [\"span[class=foo]\"]})],\n"
+                "  actions: [new ShowPageAction()]\n"
+                "}], 'rule0');\n"));
+  // Give the renderer a chance to apply the rules change and notify the
+  // browser.
+  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
+
+  EXPECT_FALSE(tab->IsCrashed());
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id))
+      << "Loading an extension when an open page matches its rules "
+      << "should show the page action.";
+
+  EXPECT_EQ("removed",
+            ExecuteScriptInBackgroundPage(
+                extension->id(),
+                "onPageChanged.removeRules(undefined, function() {\n"
+                "  window.domAutomationController.send('removed');\n"
+                "});\n"));
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 

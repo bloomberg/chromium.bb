@@ -59,39 +59,32 @@ void ContentWatcher::OnWatchPages(
   if (new_css_selectors == css_selectors_)
     return;
 
+  matching_selectors_.clear();
   css_selectors_ = new_css_selectors;
-
-  for (std::map<WebKit::WebFrame*,
-                std::vector<base::StringPiece> >::iterator
-           it = matching_selectors_.begin();
-       it != matching_selectors_.end(); ++it) {
-    WebKit::WebFrame* frame = it->first;
-    if (!css_selectors_.empty())
-      EnsureWatchingMutations(frame);
-
-    // Make sure to replace the contents of it->second because it contains
-    // dangling StringPieces that referred into the old css_selectors_ content.
-    it->second = FindMatchingSelectors(frame);
-  }
 
   // For each top-level frame, inform the browser about its new matching set of
   // selectors.
-  struct NotifyVisitor : public content::RenderViewVisitor {
-    explicit NotifyVisitor(ContentWatcher* watcher) : watcher_(watcher) {}
+  struct WatchSelectors : public content::RenderViewVisitor {
+    explicit WatchSelectors(ContentWatcher* watcher) : watcher_(watcher) {}
     virtual bool Visit(content::RenderView* view) OVERRIDE {
+      for (WebKit::WebFrame* frame = view->GetWebView()->mainFrame(); frame;
+           frame = frame->traverseNext(/*wrap=*/false)) {
+        if (!watcher_->css_selectors_.empty())
+          watcher_->EnsureWatchingMutations(frame);
+
+        watcher_->matching_selectors_[frame] =
+            watcher_->FindMatchingSelectors(frame);
+      }
       watcher_->NotifyBrowserOfChange(view->GetWebView()->mainFrame());
       return true;  // Continue visiting.
     }
     ContentWatcher* watcher_;
   };
-  NotifyVisitor visitor(this);
+  WatchSelectors visitor(this);
   content::RenderView::ForEach(&visitor);
 }
 
 void ContentWatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
-  // Make sure the frame is represented in the matching_selectors_ map.
-  matching_selectors_[frame];
-
   if (!css_selectors_.empty()) {
     EnsureWatchingMutations(frame);
   }

@@ -222,8 +222,18 @@ std::string ContentRulesRegistry::RemoveRulesImpl(
     for (std::map<int, std::set<ContentRule*> >::iterator
              it = active_rules_.begin();
          it != active_rules_.end(); ++it) {
-      // Has no effect if the rule wasn't present.
-      it->second.erase(rule);
+      if (ContainsKey(it->second, rule)) {
+        content::WebContents* tab;
+        if (!ExtensionTabUtil::GetTabById(
+                 it->first, profile_, true, NULL, NULL, &tab, NULL)) {
+          LOG(DFATAL) << "Tab id " << it->first
+                      << " still in active_rules_, but tab has been destroyed";
+          continue;
+        }
+        ContentAction::ApplyInfo apply_info = {profile_, tab};
+        rule->actions().Revert(rule->extension_id(), base::Time(), &apply_info);
+        it->second.erase(rule);
+      }
     }
 
     // Remove reference to actual rule.
