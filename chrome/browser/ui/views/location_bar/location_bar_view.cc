@@ -1015,7 +1015,7 @@ void LocationBarView::OnAutocompleteAccept(
   // WARNING: don't add an early return here. The calls after the if must
   // happen.
   if (url.is_valid()) {
-    location_input_ = UTF8ToUTF16(url.spec());
+    destination_url_ = url;
     disposition_ = disposition;
     transition_ = content::PageTransitionFromInt(
         transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
@@ -1217,8 +1217,8 @@ void LocationBarView::ShowFirstRunBubble() {
   ShowFirstRunBubbleInternal();
 }
 
-string16 LocationBarView::GetInputString() const {
-  return location_input_;
+GURL LocationBarView::GetDestinationURL() const {
+  return destination_url_;
 }
 
 WindowOpenDisposition LocationBarView::GetWindowOpenDisposition() const {

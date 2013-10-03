@@ -160,7 +160,7 @@ class TestBrowserWindow : public BrowserWindow {
 
     // LocationBar:
     virtual void ShowFirstRunBubble() OVERRIDE {}
-    virtual string16 GetInputString() const OVERRIDE;
+    virtual GURL GetDestinationURL() const OVERRIDE;
     virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
     virtual content::PageTransition GetPageTransition() const OVERRIDE;
     virtual void AcceptInput() OVERRIDE {}

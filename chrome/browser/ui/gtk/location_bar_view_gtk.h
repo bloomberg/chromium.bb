@@ -130,7 +130,7 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
-  virtual string16 GetInputString() const OVERRIDE;
+  virtual GURL GetDestinationURL() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual content::PageTransition GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE;
@@ -487,15 +487,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   CommandUpdater* command_updater_;
   Browser* browser_;
 
-  // When we get an OnAutocompleteAccept notification from the autocomplete
-  // edit, we save the input string so we can give it back to the browser on
-  // the LocationBar interface via GetInputString().
-  string16 location_input_;
-
-  // The user's desired disposition for how their input should be opened.
+  // The details necessary to open the user's desired omnibox match.
+  GURL destination_url_;
   WindowOpenDisposition disposition_;
-
-  // The transition type to use for the navigation.
   content::PageTransition transition_;
 
   // Used to schedule a task for the first run bubble.

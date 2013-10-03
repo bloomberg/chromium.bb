@@ -87,6 +87,9 @@ LocationBarViewMac::LocationBarViewMac(
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),
+      transition_(content::PageTransitionFromInt(
+          content::PAGE_TRANSITION_TYPED |
+          content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       location_icon_decoration_(new LocationIconDecoration(this)),
       selected_keyword_decoration_(new SelectedKeywordDecoration()),
       ev_bubble_decoration_(
@@ -97,9 +100,6 @@ LocationBarViewMac::LocationBarViewMac(
       mic_search_decoration_(new MicSearchDecoration(command_updater)),
       profile_(profile),
       browser_(browser),
-      transition_(content::PageTransitionFromInt(
-          content::PAGE_TRANSITION_TYPED |
-          content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       weak_ptr_factory_(this) {
 
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
@@ -143,8 +143,8 @@ void LocationBarViewMac::ShowFirstRunBubble() {
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-string16 LocationBarViewMac::GetInputString() const {
-  return location_input_;
+GURL LocationBarViewMac::GetDestinationURL() const {
+  return destination_url_;
 }
 
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
@@ -490,7 +490,7 @@ void LocationBarViewMac::OnAutocompleteAccept(
   // WARNING: don't add an early return here. The calls after the if must
   // happen.
   if (url.is_valid()) {
-    location_input_ = UTF8ToUTF16(url.spec());
+    destination_url_ = url;
     disposition_ = disposition;
     transition_ = content::PageTransitionFromInt(
         transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);

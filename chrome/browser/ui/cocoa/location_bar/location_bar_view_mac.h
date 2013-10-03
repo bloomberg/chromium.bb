@@ -53,7 +53,7 @@ class LocationBarViewMac : public LocationBar,
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
-  virtual string16 GetInputString() const OVERRIDE;
+  virtual GURL GetDestinationURL() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual content::PageTransition GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE;
@@ -213,13 +213,10 @@ class LocationBarViewMac : public LocationBar,
 
   AutocompleteTextField* field_;  // owned by tab controller
 
-  // When we get an OnAutocompleteAccept notification from the autocomplete
-  // edit, we save the input string so we can give it back to the browser on
-  // the LocationBar interface via GetInputString().
-  string16 location_input_;
-
-  // The user's desired disposition for how their input should be opened.
+  // The details necessary to open the user's desired omnibox match.
+  GURL destination_url_;
   WindowOpenDisposition disposition_;
+  content::PageTransition transition_;
 
   // A decoration that shows an icon to the left of the address.
   scoped_ptr<LocationIconDecoration> location_icon_decoration_;
@@ -256,9 +253,6 @@ class LocationBarViewMac : public LocationBar,
   Profile* profile_;
 
   Browser* browser_;
-
-  // The transition type to use for the navigation.
-  content::PageTransition transition_;
 
   // Used to register for notifications received by NotificationObserver.
   content::NotificationRegistrar registrar_;

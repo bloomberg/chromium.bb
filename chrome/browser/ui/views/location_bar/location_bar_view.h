@@ -297,7 +297,7 @@ class LocationBarView : public LocationBar,
 
   // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
-  virtual string16 GetInputString() const OVERRIDE;
+  virtual GURL GetDestinationURL() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual content::PageTransition GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE;
@@ -451,14 +451,9 @@ class LocationBarView : public LocationBar,
   // Our delegate.
   Delegate* delegate_;
 
-  // This is the string of text from the autocompletion session that the user
-  // entered or selected.
-  string16 location_input_;
-
-  // The user's desired disposition for how their input should be opened
+  // The details necessary to open the user's desired omnibox match.
+  GURL destination_url_;
   WindowOpenDisposition disposition_;
-
-  // The transition type to use for the navigation
   content::PageTransition transition_;
 
   // An object used to paint the normal-mode background.

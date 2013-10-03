@@ -670,7 +670,7 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
     content::PageTransition transition,
     const GURL& alternate_nav_url) {
   if (url.is_valid()) {
-    location_input_ = UTF8ToUTF16(url.spec());
+    destination_url_ = url;
     disposition_ = disposition;
     transition_ = content::PageTransitionFromInt(
         transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
@@ -782,8 +782,8 @@ void LocationBarViewGtk::ShowFirstRunBubble() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-string16 LocationBarViewGtk::GetInputString() const {
-  return location_input_;
+GURL LocationBarViewGtk::GetDestinationURL() const {
+  return destination_url_;
 }
 
 WindowOpenDisposition LocationBarViewGtk::GetWindowOpenDisposition() const {

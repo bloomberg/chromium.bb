@@ -408,7 +408,7 @@ void OpenCurrentURL(Browser* browser) {
   if (!location_bar)
     return;
 
-  GURL url(location_bar->GetInputString());
+  GURL url(location_bar->GetDestinationURL());
 
   content::PageTransition page_transition = location_bar->GetPageTransition();
   content::PageTransition page_transition_without_qualifier(

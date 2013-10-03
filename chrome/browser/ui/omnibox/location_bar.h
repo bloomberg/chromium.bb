@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 class ExtensionAction;
 class LocationBarTesting;
@@ -31,7 +32,7 @@ class LocationBar {
   virtual void ShowFirstRunBubble() = 0;
 
   // Returns the string of text entered in the location bar.
-  virtual string16 GetInputString() const = 0;
+  virtual GURL GetDestinationURL() const = 0;
 
   // Returns the WindowOpenDisposition that should be used to determine where
   // to open a URL entered in the location bar.

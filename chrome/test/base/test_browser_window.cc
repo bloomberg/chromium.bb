@@ -52,8 +52,8 @@ Browser* CreateBrowserWithTestWindowForParams(Browser::CreateParams* params) {
 
 // TestBrowserWindow::TestLocationBar -----------------------------------------
 
-string16 TestBrowserWindow::TestLocationBar::GetInputString() const {
-  return string16();
+GURL TestBrowserWindow::TestLocationBar::GetDestinationURL() const {
+  return GURL();
 }
 
 WindowOpenDisposition
