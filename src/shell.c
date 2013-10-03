@@ -3124,15 +3124,12 @@ is_black_surface (struct weston_surface *es, struct weston_surface **fs_surface)
 }
 
 static void
-click_to_activate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
-			  void *data)
+activate_binding(struct weston_seat *seat,
+		 struct desktop_shell *shell,
+		 struct weston_surface *focus)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct desktop_shell *shell = data;
-	struct weston_surface *focus;
 	struct weston_surface *main_surface;
 
-	focus = (struct weston_surface *) seat->pointer->focus;
 	if (!focus)
 		return;
 
@@ -3143,8 +3140,28 @@ click_to_activate_binding(struct weston_seat *seat, uint32_t time, uint32_t butt
 	if (get_shell_surface_type(main_surface) == SHELL_SURFACE_NONE)
 		return;
 
-	if (seat->pointer->grab == &seat->pointer->default_grab)
-		activate(shell, focus, ws);
+	activate(shell, focus, seat);
+}
+
+static void
+click_to_activate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
+			  void *data)
+{
+	if (seat->pointer->grab != &seat->pointer->default_grab)
+		return;
+
+	activate_binding(seat, data,
+			 (struct weston_surface *) seat->pointer->focus);
+}
+
+static void
+touch_to_activate_binding(struct weston_seat *seat, uint32_t time, void *data)
+{
+	if (seat->touch->grab != &seat->touch->default_grab)
+		return;
+
+	activate_binding(seat, data,
+			 (struct weston_surface *) seat->touch->focus);
 }
 
 static void
@@ -4496,6 +4513,9 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	weston_compositor_add_button_binding(ec, BTN_LEFT, 0,
 					     click_to_activate_binding,
 					     shell);
+	weston_compositor_add_touch_binding(ec, 0,
+					    touch_to_activate_binding,
+					    shell);
 	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
 				           MODIFIER_SUPER | MODIFIER_ALT,
 				           surface_opacity_binding, NULL);

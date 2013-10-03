@@ -1144,6 +1144,8 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			weston_touch_set_focus(seat, NULL);
 		break;
 	}
+
+	weston_compositor_run_touch_binding(ec, seat, time, touch_type);
 }
 
 static void

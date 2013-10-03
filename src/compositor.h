@@ -574,6 +574,7 @@ struct weston_compositor {
 	struct wl_list plane_list;
 	struct wl_list key_binding_list;
 	struct wl_list button_binding_list;
+	struct wl_list touch_binding_list;
 	struct wl_list axis_binding_list;
 	struct wl_list debug_binding_list;
 
@@ -983,6 +984,15 @@ weston_compositor_add_button_binding(struct weston_compositor *compositor,
 				     weston_button_binding_handler_t binding,
 				     void *data);
 
+typedef void (*weston_touch_binding_handler_t)(struct weston_seat *seat,
+					       uint32_t time,
+					       void *data);
+struct weston_binding *
+weston_compositor_add_touch_binding(struct weston_compositor *compositor,
+				    enum weston_keyboard_modifier modifier,
+				    weston_touch_binding_handler_t binding,
+				    void *data);
+
 typedef void (*weston_axis_binding_handler_t)(struct weston_seat *seat,
 					      uint32_t time, uint32_t axis,
 					      wl_fixed_t value, void *data);
@@ -1013,6 +1023,10 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 				     struct weston_seat *seat, uint32_t time,
 				     uint32_t button,
 				     enum wl_pointer_button_state value);
+void
+weston_compositor_run_touch_binding(struct weston_compositor *compositor,
+				    struct weston_seat *seat, uint32_t time,
+				    int touch_type);
 int
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_seat *seat, uint32_t time,

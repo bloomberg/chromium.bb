@@ -94,6 +94,24 @@ weston_compositor_add_button_binding(struct weston_compositor *compositor,
 }
 
 WL_EXPORT struct weston_binding *
+weston_compositor_add_touch_binding(struct weston_compositor *compositor,
+				    uint32_t modifier,
+				    weston_touch_binding_handler_t handler,
+				    void *data)
+{
+	struct weston_binding *binding;
+
+	binding = weston_compositor_add_binding(compositor, 0, 0, 0,
+						modifier, handler, data);
+	if (binding == NULL)
+		return NULL;
+
+	wl_list_insert(compositor->touch_binding_list.prev, &binding->link);
+
+	return binding;
+}
+
+WL_EXPORT struct weston_binding *
 weston_compositor_add_axis_binding(struct weston_compositor *compositor,
 				   uint32_t axis, uint32_t modifier,
 				   weston_axis_binding_handler_t handler,
@@ -249,6 +267,24 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 		if (b->button == button && b->modifier == seat->modifier_state) {
 			weston_button_binding_handler_t handler = b->handler;
 			handler(seat, time, button, b->data);
+		}
+	}
+}
+
+WL_EXPORT void
+weston_compositor_run_touch_binding(struct weston_compositor *compositor,
+				    struct weston_seat *seat, uint32_t time,
+				    int touch_type)
+{
+	struct weston_binding *b;
+
+	if (seat->num_tp != 1 || touch_type != WL_TOUCH_DOWN)
+		return;
+
+	wl_list_for_each(b, &compositor->touch_binding_list, link) {
+		if (b->modifier == seat->modifier_state) {
+			weston_touch_binding_handler_t handler = b->handler;
+			handler(seat, time, b->data);
 		}
 	}
 }

@@ -3012,6 +3012,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->key_binding_list);
 	wl_list_init(&ec->button_binding_list);
+	wl_list_init(&ec->touch_binding_list);
 	wl_list_init(&ec->axis_binding_list);
 	wl_list_init(&ec->debug_binding_list);
 
@@ -3072,6 +3073,7 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 
 	weston_binding_list_destroy_all(&ec->key_binding_list);
 	weston_binding_list_destroy_all(&ec->button_binding_list);
+	weston_binding_list_destroy_all(&ec->touch_binding_list);
 	weston_binding_list_destroy_all(&ec->axis_binding_list);
 	weston_binding_list_destroy_all(&ec->debug_binding_list);
 
