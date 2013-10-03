@@ -33,10 +33,15 @@ bool PollingWaitUntil(const std::string& javascript,
 
 class PeerConnectionServerRunner {
  public:
+  static const char kDefaultPort[];
+
   PeerConnectionServerRunner(): server_pid_(0) {}
   ~PeerConnectionServerRunner() {}
 
+  // Starts the peerconnection server on localhost on |kDefaultPort|.
   bool Start();
+
+  // Stops the peerconnection server.
   bool Stop();
 
   static void KillAllPeerConnectionServersOnCurrentSystem();

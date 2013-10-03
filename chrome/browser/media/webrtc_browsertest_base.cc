@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -114,4 +115,26 @@ void WebRtcTestBase::CloseInfoBarInTab(content::WebContents* tab_contents,
   infobar_service->RemoveInfoBar(infobar);
 
   infobar_removed.Wait();
+}
+
+// Convenience method which executes the provided javascript in the context
+// of the provided web contents and returns what it evaluated to.
+std::string WebRtcTestBase::ExecuteJavascript(
+    const std::string& javascript,
+    content::WebContents* tab_contents) const {
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab_contents, javascript, &result));
+  return result;
+}
+
+// The peer connection server lets our two tabs find each other and talk to
+// each other (e.g. it is the application-specific "signaling solution").
+void WebRtcTestBase::ConnectToPeerConnectionServer(
+    const std::string& peer_name,
+    content::WebContents* tab_contents) const {
+  std::string javascript = base::StringPrintf(
+      "connect('http://localhost:%s', '%s');",
+      PeerConnectionServerRunner::kDefaultPort, peer_name.c_str());
+  EXPECT_EQ("ok-connected", ExecuteJavascript(javascript, tab_contents));
 }

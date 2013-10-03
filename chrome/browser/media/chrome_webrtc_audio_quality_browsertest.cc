@@ -93,9 +93,6 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // TODO(phoglund): check that user actually has the requisite devices and
-    // print a nice message if not; otherwise the test just times out which can
-    // be confusing.
     // This test expects real device handling and requires a real webcam / audio
     // device; it will not work with fake devices.
     EXPECT_FALSE(command_line->HasSwitch(
@@ -125,16 +122,6 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
     EXPECT_EQ("ok-playing", ExecuteJavascript("playAudioFile()", tab_contents));
   }
 
-  // Convenience method which executes the provided javascript in the context
-  // of the provided web contents and returns what it evaluated to.
-  std::string ExecuteJavascript(const std::string& javascript,
-                                content::WebContents* tab_contents) {
-    std::string result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents, javascript, &result));
-    return result;
-  }
-
   // Ensures we didn't get any errors asynchronously (e.g. while no javascript
   // call from this test was outstanding).
   // TODO(phoglund): this becomes obsolete when we switch to communicating with
@@ -142,15 +129,6 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
   void AssertNoAsynchronousErrors(content::WebContents* tab_contents) {
     EXPECT_EQ("ok-no-errors",
               ExecuteJavascript("getAnyTestFailures()", tab_contents));
-  }
-
-  // The peer connection server lets our two tabs find each other and talk to
-  // each other (e.g. it is the application-specific "signaling solution").
-  void ConnectToPeerConnectionServer(const std::string peer_name,
-                                     content::WebContents* tab_contents) {
-    std::string javascript = base::StringPrintf(
-        "connect('http://localhost:8888', '%s');", peer_name.c_str());
-    EXPECT_EQ("ok-connected", ExecuteJavascript(javascript, tab_contents));
   }
 
   void EstablishCall(content::WebContents* from_tab,

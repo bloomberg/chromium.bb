@@ -42,6 +42,11 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void GetUserMedia(content::WebContents* tab_contents,
                     const std::string& constraints);
 
+  void ConnectToPeerConnectionServer(const std::string& peer_name,
+                                     content::WebContents* tab_contents) const;
+  std::string ExecuteJavascript(const std::string& javascript,
+                                content::WebContents* tab_contents) const;
+
  private:
   MediaStreamInfoBarDelegate* GetUserMediaAndWaitForInfoBar(
       content::WebContents* tab_contents,

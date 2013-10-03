@@ -3,38 +3,28 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
-#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/python_utils.h"
 #include "testing/perf/perf_test.h"
 
 static const char kMainWebrtcTestHtmlPage[] =
@@ -52,9 +42,6 @@ class WebrtcBrowserTest : public WebRtcTestBase {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // TODO(phoglund): check that user actually has the requisite devices and
-    // print a nice message if not; otherwise the test just times out which can
-    // be confusing.
     // This test expects real device handling and requires a real webcam / audio
     // device; it will not work with fake devices.
     EXPECT_FALSE(command_line->HasSwitch(
@@ -66,32 +53,11 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
-  // Convenience method which executes the provided javascript in the context
-  // of the provided web contents and returns what it evaluated to.
-  std::string ExecuteJavascript(const std::string& javascript,
-                                content::WebContents* tab_contents) {
-    std::string result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents, javascript, &result));
-    return result;
-  }
-
   // Ensures we didn't get any errors asynchronously (e.g. while no javascript
   // call from this test was outstanding).
-  // TODO(phoglund): this becomes obsolete when we switch to communicating with
-  // the DOM message queue.
   void AssertNoAsynchronousErrors(content::WebContents* tab_contents) {
     EXPECT_EQ("ok-no-errors",
               ExecuteJavascript("getAnyTestFailures()", tab_contents));
-  }
-
-  // The peer connection server lets our two tabs find each other and talk to
-  // each other (e.g. it is the application-specific "signaling solution").
-  void ConnectToPeerConnectionServer(const std::string peer_name,
-                                     content::WebContents* tab_contents) {
-    std::string javascript = base::StringPrintf(
-        "connect('http://localhost:8888', '%s');", peer_name.c_str());
-    EXPECT_EQ("ok-connected", ExecuteJavascript(javascript, tab_contents));
   }
 
   void EstablishCall(content::WebContents* from_tab,

@@ -75,6 +75,8 @@ static base::FilePath::CharType kServerExecutable[] =
     FILE_PATH_LITERAL("peerconnection_server");
 #endif
 
+const char PeerConnectionServerRunner::kDefaultPort[] = "7778";
+
 bool PeerConnectionServerRunner::Start() {
   base::FilePath peerconnection_server;
   if (!PathService::Get(base::DIR_MODULE, &peerconnection_server)) {
@@ -89,8 +91,10 @@ bool PeerConnectionServerRunner::Start() {
     return false;
   }
 
-  LOG(INFO) << "Running " << peerconnection_server.value();
-  return base::LaunchProcess(CommandLine(peerconnection_server),
+  CommandLine command_line(peerconnection_server);
+  command_line.AppendSwitchASCII("port", kDefaultPort);
+  LOG(INFO) << "Running " << command_line.GetCommandLineString();
+  return base::LaunchProcess(command_line,
                              base::LaunchOptions(),
                              &server_pid_);
 }
