@@ -332,24 +332,6 @@ class BASE_EXPORT FilePath {
   // Similar to AsUTF8Unsafe, but returns UTF-16 instead.
   string16 AsUTF16Unsafe() const;
 
-  // Older Chromium code assumes that paths are always wstrings.
-  // This function converts wstrings to FilePaths, and is
-  // useful to smooth porting that old code to the FilePath API.
-  // It has "Hack" its name so people feel bad about using it.
-  // http://code.google.com/p/chromium/issues/detail?id=24672
-  //
-  // If you are trying to be a good citizen and remove these, ask yourself:
-  // - Am I interacting with other Chrome code that deals with files?  Then
-  //   try to convert the API into using FilePath.
-  // - Am I interacting with OS-native calls?  Then use value() to get at an
-  //   OS-native string format.
-  // - Am I using well-known file names, like "config.ini"?  Then use the
-  //   ASCII functions (we require paths to always be supersets of ASCII).
-  // - Am I displaying a string to the user in some UI?  Then use the
-  //   LossyDisplayName() function, but keep in mind that you can't
-  //   ever use the result of that again as a path.
-  static FilePath FromWStringHack(const std::wstring& wstring);
-
   // Returns a FilePath object from a path name in UTF-8. This function
   // should only be used for cases where you are sure that the input
   // string is UTF-8.

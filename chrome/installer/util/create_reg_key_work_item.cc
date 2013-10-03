@@ -17,7 +17,7 @@ namespace {
 
 // TODO: refactor this because it is only used once.
 void UpOneDirectoryOrEmpty(std::wstring* dir) {
-  base::FilePath path = base::FilePath::FromWStringHack(*dir);
+  base::FilePath path = base::FilePath(*dir);
   base::FilePath directory = path.DirName();
   // If there is no separator, we will get back kCurrentDirectory.
   // In this case, clear dir.
