@@ -1090,8 +1090,10 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 	wl_fixed_t sx, sy;
 
 	/* Update grab's global coordinates. */
-	touch->grab_x = x;
-	touch->grab_y = y;
+	if (touch_id == touch->grab_touch_id && touch_type != WL_TOUCH_UP) {
+		touch->grab_x = x;
+		touch->grab_y = y;
+	}
 
 	switch (touch_type) {
 	case WL_TOUCH_DOWN:
@@ -1121,6 +1123,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		if (seat->num_tp == 1) {
 			touch->grab_serial =
 				wl_display_get_serial(ec->wl_display);
+			touch->grab_touch_id = touch_id;
 			touch->grab_time = time;
 			touch->grab_x = x;
 			touch->grab_y = y;
