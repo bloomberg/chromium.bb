@@ -49,7 +49,6 @@ static const char kNameId[] = "name";
 static const char kReadOnlyId[] = "readonly";
 static const char kUntrustedId[] = "untrusted";
 static const char kExtractableId[] = "extractable";
-static const char kSecurityDeviceId[] = "device";
 static const char kErrorId[] = "error";
 static const char kPolicyTrustedId[] = "policy";
 

@@ -64,10 +64,6 @@ const int kButtonPadding = 4;
 // and chevron if they are both showing).
 const int kButtonChevronPadding = 2;
 
-// The padding to the left, top and bottom of the browser actions toolbar
-// separator.
-const int kSeparatorPadding = 2;
-
 // Width of the invisible gripper for resizing the toolbar.
 const int kResizeGripperWidth = 4;
 

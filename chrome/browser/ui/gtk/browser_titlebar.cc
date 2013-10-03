@@ -78,11 +78,6 @@ const int kAvatarBottomSpacing = 1;
 // it on the left, and between it and the tabstrip on the right).
 const int kAvatarSideSpacing = 2;
 
-// The thickness of the custom frame border; we need it here to enlarge the
-// close button whent the custom frame border isn't showing but the custom
-// titlebar is showing.
-const int kFrameBorderThickness = 4;
-
 // There is a 4px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
 

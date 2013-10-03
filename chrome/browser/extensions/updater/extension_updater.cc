@@ -52,7 +52,9 @@ namespace {
 const int kStartupWaitSeconds = 60 * 5;
 
 // For sanity checking on update frequency - enforced in release mode only.
+#ifdef NDEBUG
 const int kMinUpdateFrequencySeconds = 30;
+#endif
 const int kMaxUpdateFrequencySeconds = 60 * 60 * 24 * 7;  // 7 days
 
 // Require at least 5 seconds between consecutive non-succesful extension update

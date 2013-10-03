@@ -30,7 +30,6 @@ const char kPartialLargeFrame[] =
     "chromiunum ad pasco per loca insanis pullum manducat frumenti";
 const size_t kPartialLargeFrameSize = arraysize(kPartialLargeFrame) - 1;
 const size_t kLargeFrameHeaderSize = 10;
-const size_t kLargeFrameDeclaredPayloadSize = 0x7FFFFFFF;
 const char kMultipleFrames[] = "\x81\x01X\x81\x01Y\x81\x01Z";
 const size_t kMultipleFramesSize = arraysize(kMultipleFrames) - 1;
 // This frame encodes a payload length of 7 in two bytes, which is always

@@ -516,7 +516,9 @@ void DumpProcess() {
     g_breakpad->WriteMinidump();
 }
 
+#if defined(OS_ANDROID)
 const char kGoogleBreakpad[] = "google-breakpad";
+#endif
 
 size_t WriteLog(const char* buf, size_t nbytes) {
 #if defined(OS_ANDROID)

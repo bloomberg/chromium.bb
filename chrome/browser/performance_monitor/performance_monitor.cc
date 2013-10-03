@@ -50,11 +50,6 @@ namespace performance_monitor {
 
 namespace {
 
-const uint32 kAccessFlags = base::kProcessAccessDuplicateHandle |
-                            base::kProcessAccessQueryInformation |
-                            base::kProcessAccessTerminate |
-                            base::kProcessAccessWaitForTermination;
-
 std::string TimeToString(base::Time time) {
   int64 time_int64 = time.ToInternalValue();
   return base::Int64ToString(time_int64);

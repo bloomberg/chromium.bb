@@ -33,9 +33,6 @@ const int kElementPadding = 5;
 const int kLeftPadding = 5;
 const int kRightPadding = 5;
 
-// Spacing between buttons.
-const int kButtonButtonSpacing = 3;
-
 }  // namespace
 
 

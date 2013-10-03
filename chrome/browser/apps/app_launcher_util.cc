@@ -13,6 +13,7 @@
 
 namespace {
 
+#if defined(ENABLE_APP_LIST)
 // The field trial group name that enables showing the promo.
 const char kShowLauncherPromoOnceGroupName[] = "ShowPromoUntilDismissed";
 
@@ -22,6 +23,7 @@ const char kResetShowLauncherPromoPrefGroupName[] = "ResetShowPromoPref";
 
 // The name of the field trial that controls showing the app launcher promo.
 const char kLauncherPromoTrialName[] = "ShowAppLauncherPromo";
+#endif  // defined(ENABLE_APP_LIST)
 
 }  // namespace
 

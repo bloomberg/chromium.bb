@@ -154,11 +154,6 @@ const GdkColor kContentSettingBorderColor = GDK_COLOR_RGB(0xe9, 0xb9, 0x66);
 const GdkColor kContentSettingTopColor = GDK_COLOR_RGB(0xff, 0xf8, 0xd4);
 const GdkColor kContentSettingBottomColor = GDK_COLOR_RGB(0xff, 0xe6, 0xaf);
 
-// Styling for gray button.
-const GdkColor kGrayBorderColor = GDK_COLOR_RGB(0xa0, 0xa0, 0xa0);
-const GdkColor kTopColorGray = GDK_COLOR_RGB(0xe5, 0xe5, 0xe5);
-const GdkColor kBottomColorGray = GDK_COLOR_RGB(0xd0, 0xd0, 0xd0);
-
 inline int InnerPadding() {
   return extensions::FeatureSwitch::script_badges()->IsEnabled() ?
       kScriptBadgeInnerPadding : kInnerPadding;

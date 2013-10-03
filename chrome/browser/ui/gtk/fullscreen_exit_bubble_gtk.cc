@@ -23,7 +23,6 @@ namespace {
 
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
-const int kMiddlePaddingPx = 30;
 
 }  // namespace
 

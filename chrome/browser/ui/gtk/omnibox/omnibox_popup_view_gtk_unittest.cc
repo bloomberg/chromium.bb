@@ -19,8 +19,6 @@
 
 namespace {
 
-const float kLargeWidth = 10000;
-
 const GdkColor kContentTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 const GdkColor kDimContentTextColor = GDK_COLOR_RGB(0x80, 0x80, 0x80);
 const GdkColor kURLTextColor = GDK_COLOR_RGB(0x00, 0x88, 0x00);

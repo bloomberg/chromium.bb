@@ -136,8 +136,6 @@ const unsigned char kAddress1[] = { 10, 0, 0, 1 };
 const unsigned char kAddress2[] = { 192, 168, 0, 1 };
 const unsigned char kAddress3[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                     0, 0, 0, 1 };
-const unsigned char kAddress4[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255,
-                                    169, 254, 0, 1 };
 
 TEST_F(AddressTrackerLinuxTest, NewAddress) {
   const IPAddressNumber kEmpty;

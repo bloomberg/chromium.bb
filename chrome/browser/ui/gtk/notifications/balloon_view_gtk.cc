@@ -54,10 +54,6 @@ const int kBottomMargin = 1;
 const int kLeftMargin = 1;
 const int kRightMargin = 1;
 
-// How many pixels of overlap there is between the shelf top and the
-// balloon bottom.
-const int kShelfBorderTopOverlap = 0;
-
 // Properties of the origin label.
 const int kLeftLabelMargin = 8;
 

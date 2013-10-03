@@ -22,9 +22,6 @@
 
 namespace {
 
-// Left or right margin.
-const int kPanelHorizMargin = 13;
-
 // GTK implementation of the uninstall dialog.
 class ExtensionUninstallDialogGtk : public ExtensionUninstallDialog {
  public:

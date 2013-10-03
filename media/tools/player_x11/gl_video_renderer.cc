@@ -67,14 +67,6 @@ static const float kVertices[8] = {
   1.f, -1.f,
 };
 
-// Texture Coordinates mapping the entire texture.
-static const float kTextureCoords[8] = {
-  0, 0,
-  0, 1,
-  1, 0,
-  1, 1,
-};
-
 // Pass-through vertex shader.
 static const char kVertexShader[] =
     "varying vec2 interp_tc;\n"

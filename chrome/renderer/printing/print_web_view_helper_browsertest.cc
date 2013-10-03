@@ -347,6 +347,7 @@ struct TestPageData {
   const wchar_t* file;
 };
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
 const TestPageData kTestPages[] = {
   {"<html>"
   "<head>"
@@ -369,6 +370,7 @@ const TestPageData kTestPages[] = {
   NULL,
   },
 };
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }  // namespace
 
 // TODO(estade): need to port MockPrinter to get this on Linux. This involves

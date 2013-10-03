@@ -38,7 +38,6 @@ const char kSwitchNoGyp[] = "no-gyp";
 
 // Where to have GYP write its outputs.
 const char kDirOut[] = "out.gn";
-const char kSourceDirOut[] = "//out.gn/";
 
 // We'll do the GN build to here.
 const char kBuildSourceDir[] = "//out.gn/Debug/";

@@ -20,8 +20,6 @@ namespace local_discovery {
 namespace {
 
 const char kSampleServiceName[] = "myService._privet._tcp.local";
-const char kSampleDeviceID[] = "MyFakeID";
-const char kSampleDeviceHost[] = "myservice.local";
 
 class TestMessageLoopCondition {
  public:

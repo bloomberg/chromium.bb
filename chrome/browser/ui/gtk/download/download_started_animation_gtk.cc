@@ -32,11 +32,6 @@ const int kMoveTimeMs = 600;
 // The animation framerate.
 const int kFrameRateHz = 60;
 
-// What fraction of the frame height to move downward from the frame center.
-// Note that setting this greater than 0.5 will mean moving past the bottom of
-// the frame.
-const double kMoveFraction = 1.0 / 3.0;
-
 class DownloadStartedAnimationGtk : public gfx::LinearAnimation,
                                     public content::NotificationObserver {
  public:

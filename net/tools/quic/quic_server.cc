@@ -28,7 +28,6 @@
 #endif
 
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
-const int kNumPacketsPerReadCall = 5;  // Arbitrary
 static const char kSourceAddressTokenSecret[] = "secret";
 
 namespace net {

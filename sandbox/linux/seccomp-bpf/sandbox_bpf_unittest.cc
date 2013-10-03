@@ -1110,7 +1110,6 @@ class EqualityStressTest {
   // Don't increase these values. We are pushing the limits of the maximum
   // BPF program that the kernel will allow us to load. If the values are
   // increased too much, the test will start failing.
-  static const int kNumIterations = 3;
   static const int kNumTestCases = 40;
   static const int kMaxFanOut = 3;
   static const int kMaxArgs = 6;

@@ -48,8 +48,10 @@ const int kMaxIOMessageDelayMs = 400;
 // considering it delayed.
 const int kMaxMessageProcessingMs = 100;
 
+#if defined(OS_WIN)
 // TODO(brettw) Consider making this a pref.
 const bool kPlaySounds = false;
+#endif
 
 //------------------------------------------------------------------------------
 // Provide a special watchdog to make it easy to set the breakpoint on this

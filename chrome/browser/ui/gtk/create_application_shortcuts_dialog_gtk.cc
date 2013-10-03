@@ -47,9 +47,6 @@ const int kIconPreviewSizePixels = 32;
 // Minimum width (in pixels) of the shortcut description label.
 const int kDescriptionLabelMinimumWidthPixels = 200;
 
-// Height (in lines) of the shortcut description label.
-const int kDescriptionLabelHeightLines = 3;
-
 }  // namespace
 
 namespace chrome {

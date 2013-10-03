@@ -58,7 +58,6 @@ namespace {
 const int kDefaultAnimationDurationMs = 100;
 const int kResizeLayoutAnimationDurationMs = 166;
 const int kReorderAnimationDurationMs = 166;
-const int kAnimateToBoundsDurationMs = 150;
 const int kMiniTabAnimationDurationMs = 150;
 
 const int kNewTabButtonHOffset = -5;
@@ -75,8 +74,6 @@ const int kLayoutAfterSizeAllocateMs = 10;
 // The range outside of the tabstrip where the pointer must enter/leave to
 // start/stop the resize animation.
 const int kTabStripAnimationVSlop = 40;
-
-const int kHorizontalMoveThreshold = 16;  // pixels
 
 // The horizontal offset from one tab to the next, which results in overlapping
 // tabs.

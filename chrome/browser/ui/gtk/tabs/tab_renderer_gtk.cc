@@ -52,7 +52,6 @@ const int kLeftPadding = 16;
 const int kTopPadding = 6;
 const int kRightPadding = 15;
 const int kBottomPadding = 5;
-const int kDropShadowHeight = 2;
 const int kFaviconTitleSpacing = 4;
 const int kTitleCloseButtonSpacing = 5;
 const int kStandardTitleWidth = 175;

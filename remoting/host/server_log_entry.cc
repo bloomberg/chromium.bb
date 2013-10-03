@@ -44,7 +44,9 @@ const char kExitCodeName[] = "exit-code";
 
 const char kKeyOsName[] = "os-name";
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const char kKeyOsVersion[] = "os-version";
+#endif
 
 const char kKeyHostVersion[] = "host-version";
 
