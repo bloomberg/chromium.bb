@@ -84,7 +84,6 @@ class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
   virtual void setUseParentBackfaceVisibility(bool visible);
   virtual void setBackgroundColor(WebKit::WebColor color);
   virtual WebKit::WebColor backgroundColor() const;
-  virtual void setFilter(SkImageFilter* filter);
   virtual void setFilters(const WebKit::WebFilterOperations& filters);
   virtual void setBackgroundFilters(const WebKit::WebFilterOperations& filters);
   virtual void setCompositingReasons(WebKit::WebCompositingReasons);

@@ -178,16 +178,6 @@ void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
   layer_->SetBackgroundFilters(filters_impl.AsFilterOperations());
 }
 
-// TODO(ajuma): Remove this once the Blink CL that stops calling this lands.
-void WebLayerImpl::setFilter(SkImageFilter* filter) {
-  cc::FilterOperations filters;
-  if (filter) {
-    filters.Append(
-        cc::FilterOperation::CreateReferenceFilter(skia::SharePtr(filter)));
-  }
-  layer_->SetFilters(filters);
-}
-
 void WebLayerImpl::setCompositingReasons(
     WebKit::WebCompositingReasons reasons) {
   layer_->SetCompositingReasons(reasons);
