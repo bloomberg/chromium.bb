@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/media_galleries/fileapi/iphoto_finder_mac.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
@@ -37,6 +36,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/media_galleries/fileapi/iphoto_finder_mac.h"
+#endif
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -385,7 +388,7 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
                  !APIHasBeenUsed(profile_) /* add_default_galleries */));
 
   // Look for optional default galleries every time.
-  itunes::ITunesFinder::FindITunesLibrary(
+  itunes::FindITunesLibrary(
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
 
@@ -394,7 +397,7 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
                  weak_factory_.GetWeakPtr()));
 
 #if 0
-  iphoto::FindIPhotoLibrary(
+  new iphoto::IPhotoFinder(
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
 #endif

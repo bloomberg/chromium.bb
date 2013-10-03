@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "chrome/browser/media_galleries/fileapi/iapp_finder.h"
 
 namespace iphoto {
 
@@ -18,8 +19,17 @@ typedef base::Callback<void(const std::string&)> IPhotoFinderCallback;
 // the result. If an iPhoto library exists, the IPhotoFinderCallback gets the
 // device id for the library. If an iPhoto library does not exist, or the OS
 // does not support iPhoto, then the callback result is an empty string.
-// |callback| runs on the UI thread.
-void FindIPhotoLibrary(const IPhotoFinderCallback& callback);
+// |callback| runs on the UI thread. This class deletes itself.
+class IPhotoFinder : public iapps::IAppFinder {
+ public:
+  explicit IPhotoFinder(const IPhotoFinderCallback& callback);
+  virtual ~IPhotoFinder();
+
+ private:
+  virtual void FindIAppOnFileThread() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(IPhotoFinder);
+};
 
 }  // namespace iphoto
 

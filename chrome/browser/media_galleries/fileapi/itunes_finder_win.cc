@@ -37,12 +37,12 @@ std::string GetPrefFileData() {
 }  // namespace
 
 ITunesFinderWin::ITunesFinderWin(const ITunesFinderCallback& callback)
-    : ITunesFinder(callback) {
+    : IAppFinder(StorageInfo::ITUNES, callback) {
 }
 
 ITunesFinderWin::~ITunesFinderWin() {}
 
-void ITunesFinderWin::FindITunesLibraryOnFileThread() {
+void ITunesFinderWin::FindIAppOnFileThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   std::string xml_pref_data = GetPrefFileData();

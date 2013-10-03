@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_FINDER_WIN_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_FINDER_WIN_H_
 
+#include "chrome/browser/media_galleries/fileapi/iapp_finder.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
 
 namespace base {
@@ -16,13 +17,13 @@ namespace itunes {
 // This Windows-specific ITunesFinder uses a utility process to parse the
 // iTunes preferences XML file if it exists. If not or if the parsing fails,
 // ITunesFinderWin will try a default location as well.
-class ITunesFinderWin : public ITunesFinder {
+class ITunesFinderWin : public iapps::IAppFinder {
  public:
   explicit ITunesFinderWin(const ITunesFinderCallback& callback);
   virtual ~ITunesFinderWin();
 
  private:
-  virtual void FindITunesLibraryOnFileThread() OVERRIDE;
+  virtual void FindIAppOnFileThread() OVERRIDE;
 
   // Check the default location for the iTunes library XML file.
   // Runs on the FILE thread.

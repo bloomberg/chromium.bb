@@ -18,17 +18,13 @@ using base::mac::CFToNSCast;
 
 namespace iphoto {
 
-void FinishOnUIThread(const IPhotoFinderCallback& callback,
-                      const std::string& unique_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  std::string device_id;
-  if (!unique_id.empty())
-    device_id = StorageInfo::MakeDeviceId(StorageInfo::IPHOTO, unique_id);
-  callback.Run(device_id);
+IPhotoFinder::IPhotoFinder(const IPhotoFinderCallback& callback)
+    : IAppFinder(StorageInfo::IPHOTO, callback) {
 }
 
-std::string FindIPhotoLibraryOnFileThread() {
+IPhotoFinder::~IPhotoFinder() {}
+
+void IPhotoFinder::FindIAppOnFileThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   CFStringRef iapp_id = CFSTR("com.apple.iApps");
@@ -36,7 +32,8 @@ std::string FindIPhotoLibraryOnFileThread() {
   base::scoped_nsobject<NSArray> plist(CFToNSCast(
       CFCast<CFArrayRef>(CFPreferencesCopyAppValue(iphoto_db_key, iapp_id))));
   if (!plist) {
-    return std::string();
+    PostResultToUIThread(std::string());
+    return;
   }
 
   // Find the most recently used iPhoto XML database from the list of database
@@ -63,20 +60,7 @@ std::string FindIPhotoLibraryOnFileThread() {
     most_recent_db_time = file_info.last_modified;
     most_recent_db_path = db_path;
   }
-
-  return most_recent_db_path.value();
-}
-
-// static
-void FindIPhotoLibrary(const IPhotoFinderCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&FindIPhotoLibraryOnFileThread),
-      base::Bind(&FinishOnUIThread, callback));
+  PostResultToUIThread(most_recent_db_path.value());
 }
 
 }  // namespace iphoto

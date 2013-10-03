@@ -18,12 +18,12 @@ using base::mac::CFToNSCast;
 namespace itunes {
 
 ITunesFinderMac::ITunesFinderMac(const ITunesFinderCallback& callback)
-    : ITunesFinder(callback) {
+    : IAppFinder(StorageInfo::ITUNES, callback) {
 }
 
 ITunesFinderMac::~ITunesFinderMac() {}
 
-void ITunesFinderMac::FindITunesLibraryOnFileThread() {
+void ITunesFinderMac::FindIAppOnFileThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   CFStringRef iapp_id = CFSTR("com.apple.iApps");

@@ -77,10 +77,8 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
     test_finder_callback_called_ = false;
     result_.clear();
     base::RunLoop loop;
-    ITunesFinder::FindITunesLibrary(
-        base::Bind(&ITunesFinderWinTest::TestFinderCallback,
-                   base::Unretained(this),
-                   loop.QuitClosure()));
+    FindITunesLibrary(base::Bind(&ITunesFinderWinTest::TestFinderCallback,
+                                 base::Unretained(this), loop.QuitClosure()));
     loop.Run();
   }
 
