@@ -77,6 +77,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void SetMaxRestoredPageID(int32 max_id) OVERRIDE;
   virtual int32 GetMaxRestoredPageID() const OVERRIDE;
   virtual bool NeedsReload() const OVERRIDE;
+  virtual void SetNeedsReload() OVERRIDE;
   virtual void CancelPendingReload() OVERRIDE;
   virtual void ContinuePendingReload() OVERRIDE;
   virtual bool IsInitialNavigation() const OVERRIDE;

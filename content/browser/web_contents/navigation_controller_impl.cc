@@ -1416,6 +1416,10 @@ bool NavigationControllerImpl::NeedsReload() const {
   return needs_reload_;
 }
 
+void NavigationControllerImpl::SetNeedsReload() {
+  needs_reload_ = true;
+}
+
 void NavigationControllerImpl::RemoveEntryAtIndexInternal(int index) {
   DCHECK(index < GetEntryCount());
   DCHECK(index != last_committed_entry_index_);

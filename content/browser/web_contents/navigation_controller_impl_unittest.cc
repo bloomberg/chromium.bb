@@ -2913,6 +2913,23 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
 }
 
+// Test requesting and triggering a lazy reload.
+TEST_F(NavigationControllerTest, LazyReload) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url("http://foo");
+  NavigateAndCommit(url);
+  ASSERT_FALSE(controller.NeedsReload());
+
+  // Request a reload to happen when the controller becomes active (e.g. after
+  // the renderer gets killed in background on Android).
+  controller.SetNeedsReload();
+  ASSERT_TRUE(controller.NeedsReload());
+
+  // Set the controller as active, triggering the requested reload.
+  controller.SetActive(true);
+  ASSERT_FALSE(controller.NeedsReload());
+}
+
 // Tests a subframe navigation while a toplevel navigation is pending.
 // http://crbug.com/43967
 TEST_F(NavigationControllerTest, SubframeWhilePending) {
