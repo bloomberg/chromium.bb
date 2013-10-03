@@ -26,18 +26,17 @@ ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
   resource_list.GetNextFeedURL(&next_url_);
 
   entries_.resize(resource_list.entries().size());
+  parent_resource_ids_.resize(resource_list.entries().size());
   size_t entries_index = 0;
   std::string parent_resource_id;
   for (size_t i = 0; i < resource_list.entries().size(); ++i) {
     if (ConvertToResourceEntry(*resource_list.entries()[i],
                                &entries_[entries_index],
-                               &parent_resource_id)) {
-      // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-      entries_[entries_index].set_parent_local_id(parent_resource_id);
+                               &parent_resource_ids_[entries_index]))
       ++entries_index;
-    }
   }
   entries_.resize(entries_index);
+  parent_resource_ids_.resize(entries_index);
 }
 
 ChangeList::~ChangeList() {}
@@ -322,6 +321,9 @@ void ChangeListProcessor::ConvertToMap(
         if (entry->shared_with_me())
           uma_stats->IncrementNumSharedWithMeEntries();
       }
+
+      // TODO(hashimoto): Stop using resource ID as local ID. crbug.com/260514
+      entry->set_parent_local_id(change_list->parent_resource_ids()[i]);
 
       (*entry_map)[entry->resource_id()].Swap(entry);
       LOG_IF(WARNING, !entry->resource_id().empty())

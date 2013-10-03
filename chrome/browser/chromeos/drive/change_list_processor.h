@@ -65,11 +65,18 @@ class ChangeList {
 
   const std::vector<ResourceEntry>& entries() const { return entries_; }
   std::vector<ResourceEntry>* mutable_entries() { return &entries_; }
+  const std::vector<std::string>& parent_resource_ids() const {
+    return parent_resource_ids_;
+  }
+  std::vector<std::string>* mutable_parent_resource_ids() {
+    return &parent_resource_ids_;
+  }
   const GURL& next_url() const { return next_url_; }
   int64 largest_changestamp() const { return largest_changestamp_; }
 
  private:
   std::vector<ResourceEntry> entries_;
+  std::vector<std::string> parent_resource_ids_;
   GURL next_url_;
   int64 largest_changestamp_;
 
