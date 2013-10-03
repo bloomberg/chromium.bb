@@ -562,25 +562,51 @@ struct TokenWithPrivileges {
   CSid user_;
 };
 
-HRESULT SetOrDeleteMimeHandlerKey(bool set, HKEY root_key) {
-  std::wstring key_name = kInternetSettings;
+const wchar_t* const kMimeHandlerKeyValues[] = {
+  L"ChromeTab.ChromeActiveDocument",
+  L"ChromeTab.ChromeActiveDocument.1",
+};
+
+// Returns true if the values are present or absent in |root_key|'s Secure Mime
+// Handlers key based on |for_installed|. Returns false if the values are not as
+// expected or if an error occurred.
+bool MimeHandlerKeyIsConfigured(bool for_install, HKEY root_key) {
+  string16 key_name(kInternetSettings);
   key_name.append(L"\\Secure Mime Handlers");
-  RegKey key(root_key, key_name.c_str(), KEY_READ | KEY_WRITE);
+  RegKey key(root_key, key_name.c_str(), KEY_QUERY_VALUE);
   if (!key.Valid())
     return false;
 
-  LONG result1 = ERROR_SUCCESS;
-  LONG result2 = ERROR_SUCCESS;
-  if (set) {
-    result1 = key.WriteValue(L"ChromeTab.ChromeActiveDocument", 1);
-    result2 = key.WriteValue(L"ChromeTab.ChromeActiveDocument.1", 1);
-  } else {
-    result1 = key.DeleteValue(L"ChromeTab.ChromeActiveDocument");
-    result2 = key.DeleteValue(L"ChromeTab.ChromeActiveDocument.1");
+  for (size_t i = 0; i < arraysize(kMimeHandlerKeyValues); ++i) {
+    DWORD value = 0;
+    LONG result = key.ReadValueDW(kMimeHandlerKeyValues[i], &value);
+    if (for_install) {
+      if (result != ERROR_SUCCESS || value != 1)
+        return false;
+    } else {
+      if (result != ERROR_FILE_NOT_FOUND)
+        return false;
+    }
   }
+  return true;
+}
 
-  return result1 != ERROR_SUCCESS ? HRESULT_FROM_WIN32(result1) :
-                                    HRESULT_FROM_WIN32(result2);
+HRESULT SetOrDeleteMimeHandlerKey(bool set, HKEY root_key) {
+  string16 key_name(kInternetSettings);
+  key_name.append(L"\\Secure Mime Handlers");
+  RegKey key(root_key, key_name.c_str(), KEY_SET_VALUE);
+  if (!key.Valid())
+    return false;
+
+  HRESULT result = S_OK;
+  for (size_t i = 0; i < arraysize(kMimeHandlerKeyValues); ++i) {
+    LONG intermediate = set ?
+        key.WriteValue(kMimeHandlerKeyValues[i], 1) :
+        key.DeleteValue(kMimeHandlerKeyValues[i]);
+    if (intermediate != ERROR_SUCCESS && result == S_OK)
+      result = HRESULT_FROM_WIN32(intermediate);
+  }
+  return result;
 }
 
 void OnPinModule() {
@@ -591,11 +617,12 @@ void OnPinModule() {
 // Chrome Frame registration functions.
 //-----------------------------------------------------------------------------
 HRESULT RegisterSecuredMimeHandler(bool enable, bool is_system) {
-  if (!is_system) {
+  if (MimeHandlerKeyIsConfigured(enable, HKEY_LOCAL_MACHINE))
+    return S_OK;
+  if (!is_system)
     return SetOrDeleteMimeHandlerKey(enable, HKEY_CURRENT_USER);
-  } else if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return SetOrDeleteMimeHandlerKey(enable, HKEY_LOCAL_MACHINE);
-  }
 
   std::wstring mime_key = kInternetSettings;
   mime_key.append(L"\\Secure Mime Handlers");
