@@ -121,16 +121,6 @@ PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize)
     return createScriptCallStack(stackSize);
 }
 
-PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(ScriptState*)
-{
-    return createScriptCallStackForConsole();
-}
-
-PassRefPtr<ScriptCallStack> createScriptCallStack(ScriptState*, size_t maxStackSize)
-{
-    return createScriptCallStackForConsole(maxStackSize);
-}
-
 PassRefPtr<ScriptArguments> createScriptArguments(const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
 {
     v8::Isolate* isolate = v8arguments.GetIsolate();

@@ -53,10 +53,6 @@ PassRefPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool empt
 PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize = ScriptCallStack::maxCallStackSizeToCapture);
 PassRefPtr<ScriptArguments> createScriptArguments(const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount);
 
-// This is just an alias to 'createScriptCallStackForConsole();' for compat with JSC.
-PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(ScriptState*);
-PassRefPtr<ScriptCallStack> createScriptCallStack(ScriptState*, size_t maxStackSize = ScriptCallStack::maxCallStackSizeToCapture);
-
 } // namespace WebCore
 
 #endif // ScriptCallStackFactory_h

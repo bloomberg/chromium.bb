@@ -147,7 +147,7 @@ void ConsoleBase::profileEnd(ScriptState* state, const String& title)
     if (!profile)
         return;
 
-    RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, 1));
+    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(1));
     InspectorInstrumentation::addProfile(context, profile, callStack);
 }
 
@@ -203,7 +203,7 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
         return;
 
     size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
-    RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, stackSize));
+    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(stackSize));
     const ScriptCallFrame& lastCaller = callStack->at(0);
 
     String message;
