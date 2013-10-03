@@ -21,6 +21,7 @@ from pylib.base import test_dispatcher
 from pylib.gtest import gtest_config
 from pylib.gtest import setup as gtest_setup
 from pylib.gtest import test_options as gtest_test_options
+from pylib.linker import setup as linker_setup
 from pylib.host_driven import setup as host_driven_setup
 from pylib.instrumentation import setup as instrumentation_setup
 from pylib.instrumentation import test_options as instrumentation_test_options
@@ -112,6 +113,14 @@ def AddGTestOptions(option_parser):
                            default=60)
   # TODO(gkanwar): Move these to Common Options once we have the plumbing
   # in our other test types to handle these commands
+  AddCommonOptions(option_parser)
+
+
+def AddLinkerTestOptions(option_parser):
+  option_parser.usage = '%prog linker'
+  option_parser.commands_dict = {}
+  option_parser.example = '%prog linker'
+
   AddCommonOptions(option_parser)
 
 
@@ -499,6 +508,22 @@ def _RunGTests(options, error_func, devices):
   return exit_code
 
 
+def _RunLinkerTests(options, error_func, devices):
+  """Subcommand of RunTestsCommands which runs linker tests."""
+  runner_factory, tests = linker_setup.Setup(options, devices)
+
+  results, exit_code = test_dispatcher.RunTests(
+      tests, runner_factory, devices, shard=True, test_timeout=60,
+      num_retries=options.num_retries)
+
+  report_results.LogFull(
+      results=results,
+      test_type='Linker test',
+      test_package='ContentLinkerTest')
+
+  return exit_code
+
+
 def _RunInstrumentationTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs instrumentation tests."""
   instrumentation_options = ProcessInstrumentationOptions(options, error_func)
@@ -657,6 +682,8 @@ def RunTestsCommand(command, options, args, option_parser):
 
   if command == 'gtest':
     return _RunGTests(options, option_parser.error, devices)
+  elif command == 'linker':
+    return _RunLinkerTests(options, option_parser.error, devices)
   elif command == 'instrumentation':
     return _RunInstrumentationTests(options, option_parser.error, devices)
   elif command == 'uiautomator':
@@ -725,6 +752,8 @@ VALID_COMMANDS = {
         AddMonkeyTestOptions, RunTestsCommand),
     'perf': CommandFunctionTuple(
         AddPerfTestOptions, RunTestsCommand),
+    'linker': CommandFunctionTuple(
+        AddLinkerTestOptions, RunTestsCommand),
     'help': CommandFunctionTuple(lambda option_parser: None, HelpCommand)
     }
 

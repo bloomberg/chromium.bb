@@ -1258,9 +1258,23 @@ class AndroidCommands(object):
       self._adb.SendCommand('logcat -c')
     logcat_command = 'adb %s logcat -v threadtime %s' % (self._adb._target_arg,
                                                          ' '.join(filters))
-    self._logcat_tmpoutfile = tempfile.TemporaryFile(bufsize=0)
+    self._logcat_tmpoutfile = tempfile.NamedTemporaryFile(bufsize=0)
     self.logcat_process = subprocess.Popen(logcat_command, shell=True,
                                            stdout=self._logcat_tmpoutfile)
+
+  def GetCurrentRecordedLogcat(self):
+    """Return the current content of the logcat being recorded.
+       Call this after StartRecordingLogcat() and before StopRecordingLogcat().
+       This can be useful to perform timed polling/parsing.
+    Returns:
+       Current logcat output as a single string, or None if
+       StopRecordingLogcat() was already called.
+    """
+    if not self._logcat_tmpoutfile:
+      return None
+
+    with open(self._logcat_tmpoutfile.name) as f:
+      return f.read()
 
   def StopRecordingLogcat(self):
     """Stops an existing logcat recording subprocess and returns output.
@@ -1281,6 +1295,7 @@ class AndroidCommands(object):
     self._logcat_tmpoutfile.seek(0)
     output = self._logcat_tmpoutfile.read()
     self._logcat_tmpoutfile.close()
+    self._logcat_tmpoutfile = None
     return output
 
   def SearchLogcatRecord(self, record, message, thread_id=None, proc_id=None,
