@@ -53,6 +53,14 @@ namespace printing {
 
 namespace {
 
+enum PrintPreviewHelperEvents {
+  PREVIEW_EVENT_REQUESTED,
+  PREVIEW_EVENT_CACHE_HIT,
+  PREVIEW_EVENT_CREATE_DOCUMENT,
+  PREVIEW_EVENT_NEW_SETTINGS,
+  PREVIEW_EVENT_MAX,
+};
+
 const double kMinDpi = 1.0;
 
 const char kPageLoadScriptFormat[] =
@@ -962,6 +970,9 @@ void PrintWebViewHelper::OnPrintPreview(const base::DictionaryValue& settings) {
   DCHECK(is_preview_enabled_);
   print_preview_context_.OnPrintPreview();
 
+  UMA_HISTOGRAM_ENUMERATION("PrintPreview.PreviewEvent",
+                            PREVIEW_EVENT_REQUESTED, PREVIEW_EVENT_MAX);
+
   if (!UpdatePrintSettings(print_preview_context_.source_frame(),
                            print_preview_context_.source_node(), settings)) {
     if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
@@ -977,6 +988,8 @@ void PrintWebViewHelper::OnPrintPreview(const base::DictionaryValue& settings) {
       old_print_pages_params_.get() &&
       PrintMsg_Print_Params_IsEqual(*old_print_pages_params_,
                                     *print_pages_params_)) {
+    UMA_HISTOGRAM_ENUMERATION("PrintPreview.PreviewEvent",
+                              PREVIEW_EVENT_CACHE_HIT, PREVIEW_EVENT_MAX);
     PrintHostMsg_DidPreviewDocument_Params preview_params;
     preview_params.reuse_existing_data = true;
     preview_params.data_size = 0;
@@ -1058,6 +1071,9 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   if (!print_pages_params_ || CheckForCancel())
     return false;
 
+  UMA_HISTOGRAM_ENUMERATION("PrintPreview.PreviewEvent",
+                            PREVIEW_EVENT_CREATE_DOCUMENT, PREVIEW_EVENT_MAX);
+
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
   const std::vector<int>& pages = print_pages_params_->pages;
 
@@ -1073,6 +1089,8 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
 
   if (!old_print_pages_params_.get() ||
       !PageLayoutIsEqual(*old_print_pages_params_, *print_pages_params_)) {
+     UMA_HISTOGRAM_ENUMERATION("PrintPreview.PreviewEvent",
+                               PREVIEW_EVENT_NEW_SETTINGS, PREVIEW_EVENT_MAX);
     bool has_page_size_style = PrintingFrameHasPageSizeStyle(
         print_preview_context_.prepared_frame(),
         print_preview_context_.total_page_count());
