@@ -270,6 +270,29 @@ void RemoteDesktopBrowserTest::StartMe2Me() {
       "remoting.hostList.localHost_.status == 'ONLINE'"));
 }
 
+void RemoteDesktopBrowserTest::DisconnectMe2Me() {
+  // The chromoting extension should be installed.
+  ASSERT_FALSE(ChromotingID().empty());
+
+  // The active tab should have the chromoting app loaded.
+  ASSERT_EQ(Chromoting_Main_URL(), GetCurrentURL());
+  ASSERT_TRUE(RemoteDesktopBrowserTest::IsSessionConnected());
+
+  ClickOnControl("toolbar-stub");
+
+  EXPECT_TRUE(HtmlElementVisible("session-toolbar"));
+
+  ClickOnControl("toolbar-disconnect");
+
+  EXPECT_TRUE(HtmlElementVisible("client-dialog"));
+  EXPECT_TRUE(HtmlElementVisible("client-reconnect-button"));
+  EXPECT_TRUE(HtmlElementVisible("client-finished-me2me-button"));
+
+  ClickOnControl("client-finished-me2me-button");
+
+  EXPECT_FALSE(HtmlElementVisible("client-dialog"));
+}
+
 void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
     ui::KeyboardCode keyCode,
     const char* code) {
@@ -516,7 +539,6 @@ void RemoteDesktopBrowserTest::NavigateToURLAndWaitForPageLoad(
 }
 
 void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {
-  ASSERT_TRUE(HtmlElementExists(name));
   ASSERT_TRUE(HtmlElementVisible(name));
 
   ExecuteScript("document.getElementById(\"" + name + "\").click();");

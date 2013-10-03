@@ -79,6 +79,9 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Click on "Get Started" in the Me2Me section and show the host list.
   void StartMe2Me();
 
+  // Disconnect the active Me2Me session.
+  void DisconnectMe2Me();
+
   // Simulate a key event.
   void SimulateKeyPressWithCode(ui::KeyboardCode keyCode, const char* code);
 

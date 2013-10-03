@@ -34,6 +34,8 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
 
   TestMouseInput();
 
+  DisconnectMe2Me();
+
   Cleanup();
 }
 
