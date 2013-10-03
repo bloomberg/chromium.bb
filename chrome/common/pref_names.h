@@ -921,6 +921,8 @@ extern const char kAppLauncherShortcutVersion[];
 extern const char kShowAppLauncherPromo[];
 #endif
 
+extern const char kAppLaunchForMetroRestart[];
+extern const char kAppLaunchForMetroRestartProfile[];
 extern const char kAppShortcutsHaveBeenCreated[];
 
 extern const char kModuleConflictBubbleShown[];

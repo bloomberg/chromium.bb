@@ -103,8 +103,8 @@
 #endif
 
 #if defined(OS_WIN)
-#include "apps/app_launch_for_metro_restart_win.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #endif
 
 using content::ChildProcessSecurityPolicy;
@@ -585,7 +585,7 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     // See if there are apps for this profile that should be launched on startup
     // due to a switch from Metro mode.
-    apps::HandleAppLaunchForMetroRestart(profile_);
+    app_metro_launch::HandleAppLaunchForMetroRestart(profile_);
   }
 #endif
 

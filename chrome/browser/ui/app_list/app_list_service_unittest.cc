@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/pref_names.h"
-#include "apps/prefs.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -86,7 +84,6 @@ class AppListServiceUnitTest : public testing::Test {
     PrefRegistrySimple* pref_registry = new PrefRegistrySimple;
 
     AppListService::RegisterPrefs(pref_registry);
-    apps::RegisterPrefs(pref_registry);
     profiles::RegisterPrefs(pref_registry);
 
     PrefServiceBuilder builder;

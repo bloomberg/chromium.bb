@@ -23,8 +23,6 @@
         '<(grit_out_dir)',
       ],
       'sources': [
-        'app_launch_for_metro_restart_win.cc',
-        'app_launch_for_metro_restart_win.h',
         'app_lifetime_monitor.cc',
         'app_lifetime_monitor.h',
         'app_lifetime_monitor_factory.cc',

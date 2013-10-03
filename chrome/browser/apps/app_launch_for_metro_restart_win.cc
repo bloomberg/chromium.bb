@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_launch_for_metro_restart_win.h"
+#include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 
 #include "apps/launcher.h"
 #include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -17,12 +18,13 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "win8/util/win8_util.h"
 
 using extensions::Extension;
 using extensions::ExtensionSystem;
 
-namespace apps {
+namespace app_metro_launch {
 
 namespace {
 
@@ -90,4 +92,9 @@ void SetAppLaunchForMetroRestart(Profile* profile,
   prefs->SetString(prefs::kAppLaunchForMetroRestart, extension_id);
 }
 
-}  // namespace apps
+void RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kAppLaunchForMetroRestart, "");
+  registry->RegisterStringPref(prefs::kAppLaunchForMetroRestartProfile, "");
+}
+
+}  // namespace app_metro_launch

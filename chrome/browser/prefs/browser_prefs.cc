@@ -180,6 +180,10 @@
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
+#endif
+
 namespace {
 
 enum MigratedPreferences {
@@ -215,7 +219,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
   // Please keep this list alphabetized.
   AppListService::RegisterPrefs(registry);
-  apps::RegisterPrefs(registry);
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
   RegisterScreenshotPrefs(registry);
@@ -305,6 +308,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_MACOSX)
   confirm_quit::RegisterLocalState(registry);
+#endif
+
+#if defined(OS_WIN)
+  app_metro_launch::RegisterPrefs(registry);
 #endif
 }
 

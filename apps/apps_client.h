@@ -11,6 +11,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace extensions {
+class Extension;
+}
+
 namespace apps {
 
 // Sets up global state for the apps system. Should be Set() once in each
@@ -19,6 +23,11 @@ class AppsClient {
  public:
   // Get all loaded browser contexts.
   virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts() = 0;
+
+  // Do any pre app launch checks. Returns true if the app launch should proceed
+  // or false if the launch should be prevented.
+  virtual bool CheckAppLaunch(content::BrowserContext* context,
+                              const extensions::Extension* extension) = 0;
 
   // Return the apps client.
   static AppsClient* Get();

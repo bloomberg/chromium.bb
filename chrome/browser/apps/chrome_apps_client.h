@@ -27,6 +27,11 @@ class ChromeAppsClient : public apps::AppsClient {
   virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
       OVERRIDE;
 
+  // Do any pre app launch checks. Returns true if the app launch should proceed
+  // or false if the launch should be prevented.
+  virtual bool CheckAppLaunch(content::BrowserContext* context,
+                              const extensions::Extension* extension) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeAppsClient);
 };
 

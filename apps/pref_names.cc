@@ -12,15 +12,6 @@ namespace prefs {
 extern const char kAppFullscreenAllowed[] =
     "apps.fullscreen.allowed";
 
-// If set, the user requested to launch the app with this extension id while
-// in Metro mode, and then relaunched to Desktop mode to start it.
-const char kAppLaunchForMetroRestart[] = "apps.app_launch_for_metro_restart";
-
-// Set with |kAppLaunchForMetroRestart|, the profile whose loading triggers
-// launch of the specified app when restarting Chrome in desktop mode.
-const char kAppLaunchForMetroRestartProfile[] =
-    "apps.app_launch_for_metro_restart_profile";
-
 }  // namespace prefs
 
 }  // namespace apps

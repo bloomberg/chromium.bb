@@ -13,9 +13,6 @@ class PrefRegistrySyncable;
 
 namespace apps {
 
-// Register preferences for the apps system.
-void RegisterPrefs(PrefRegistrySimple* registry);
-
 // Register per-profile preferences for the apps system.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
 
-#include "apps/app_launch_for_metro_restart_win.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
@@ -88,7 +88,7 @@ bool AppMetroInfoBarDelegateWin::Accept() {
   if (mode_ == SHOW_APP_LIST) {
     prefs->SetBoolean(prefs::kRestartWithAppList, true);
   } else {
-    apps::SetAppLaunchForMetroRestart(
+    app_metro_launch::SetAppLaunchForMetroRestart(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
         extension_id_);
   }

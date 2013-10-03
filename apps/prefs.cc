@@ -10,13 +10,6 @@
 
 namespace apps {
 
-void RegisterPrefs(PrefRegistrySimple* registry) {
-#if defined(OS_WIN)
-  registry->RegisterStringPref(prefs::kAppLaunchForMetroRestart, "");
-  registry->RegisterStringPref(prefs::kAppLaunchForMetroRestartProfile, "");
-#endif
-}
-
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if !defined(OS_MACOSX)
   registry->RegisterBooleanPref(

@@ -2528,6 +2528,15 @@ const char kAppLauncherShortcutVersion[] = "apps.app_launcher.shortcut_version";
 const char kShowAppLauncherPromo[] = "app_launcher.show_promo";
 #endif
 
+// If set, the user requested to launch the app with this extension id while
+// in Metro mode, and then relaunched to Desktop mode to start it.
+const char kAppLaunchForMetroRestart[] = "apps.app_launch_for_metro_restart";
+
+// Set with |kAppLaunchForMetroRestart|, the profile whose loading triggers
+// launch of the specified app when restarting Chrome in desktop mode.
+const char kAppLaunchForMetroRestartProfile[] =
+    "apps.app_launch_for_metro_restart_profile";
+
 // A boolean that indicates whether app shortcuts have been created.
 // On a transition from false to true, shortcuts are created for all apps.
 const char kAppShortcutsHaveBeenCreated[] = "apps.shortcuts_have_been_created";
