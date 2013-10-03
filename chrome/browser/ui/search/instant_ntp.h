@@ -47,8 +47,6 @@ class InstantNTP : public InstantPage,
                            NTPReactsToNetworkChanges);
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderProcessGone(
       base::TerminationStatus status) OVERRIDE;
 

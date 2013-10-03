@@ -49,10 +49,6 @@ void InstantNTP::LoadCompletedMainFrame() {
   ntp_prerenderer_->LoadCompletedMainFrame();
 }
 
-void InstantNTP::RenderViewCreated(content::RenderViewHost* render_view_host) {
-  InitializePromos();
-}
-
 void InstantNTP::RenderProcessGone(base::TerminationStatus /* status */) {
   ntp_prerenderer_->RenderProcessGone();
 }

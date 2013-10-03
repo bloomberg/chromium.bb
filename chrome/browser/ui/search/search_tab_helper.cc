@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/history/most_visited_tiles_experiment.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
@@ -241,6 +242,11 @@ void SearchTabHelper::Observe(
   model_.SetVoiceSearchSupported(false);
   chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
                                                   entry);
+}
+
+void SearchTabHelper::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  ipc_router_.SetPromoInformation(IsAppLauncherEnabled());
 }
 
 void SearchTabHelper::DidNavigateMainFrame(

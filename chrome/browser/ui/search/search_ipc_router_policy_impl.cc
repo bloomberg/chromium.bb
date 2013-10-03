@@ -45,6 +45,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessSetVoiceSearchSupport() {
   return true;
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldSendSetPromoInformation() {
+  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldSendSetDisplayInstantResults() {
   return !is_incognito_;
 }

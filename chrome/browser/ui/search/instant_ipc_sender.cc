@@ -24,11 +24,6 @@ class InstantIPCSenderImpl : public InstantIPCSender {
         routing_id(), bounds.x(), bounds.width()));
   }
 
-  virtual void SetPromoInformation(bool is_app_launcher_enabled) OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxPromoInformation(
-        routing_id(), is_app_launcher_enabled));
-  }
-
   virtual void FocusChanged(OmniboxFocusState state,
                     OmniboxFocusChangeReason reason) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxFocusChanged(routing_id(), state, reason));

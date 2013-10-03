@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/search/instant_page.h"
 
-#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/instant_tab.h"
@@ -40,10 +39,6 @@ const std::string& InstantPage::instant_url() const {
 bool InstantPage::IsLocal() const {
   return contents() &&
       contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
-}
-
-void InstantPage::InitializePromos() {
-  sender()->SetPromoInformation(IsAppLauncherEnabled());
 }
 
 InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,

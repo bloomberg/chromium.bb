@@ -40,6 +40,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   virtual ~MockSearchIPCRouterPolicy() {}
 
   MOCK_METHOD0(ShouldProcessSetVoiceSearchSupport, bool());
+  MOCK_METHOD0(ShouldSendSetPromoInformation, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
   MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
@@ -130,6 +131,34 @@ TEST_F(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg) {
           web_contents()->GetController().GetVisibleEntry()->GetPageID(),
           true));
   GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, SendSetPromoInformationMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSendSetPromoInformation()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  GetSearchTabHelper(web_contents())->ipc_router().SetPromoInformation(true);
+  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxPromoInformation::ID));
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendSetPromoInformationMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSendSetPromoInformation()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  GetSearchTabHelper(web_contents())->ipc_router().SetPromoInformation(false);
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxPromoInformation::ID));
 }
 
 TEST_F(SearchIPCRouterTest, SendSetDisplayInstantResultsMsg) {

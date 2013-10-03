@@ -112,8 +112,6 @@ class InstantPage : public content::WebContentsObserver,
   // chrome::kChromeSearchLocalNTPURL).
   virtual bool IsLocal() const;
 
-  void InitializePromos();
-
  protected:
   InstantPage(Delegate* delegate, const std::string& instant_url,
               Profile* profile, bool is_incognito);

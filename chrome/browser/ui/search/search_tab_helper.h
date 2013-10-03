@@ -81,6 +81,9 @@ class SearchTabHelper : public content::NotificationObserver,
                            PageURLDoesntBelongToInstantRenderer);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            ProcessVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendSetPromoInformation);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendSetPromoInformation);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            SendSetDisplayInstantResults);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
@@ -99,6 +102,9 @@ class SearchTabHelper : public content::NotificationObserver,
                            DoNotSendThemeBackgroundInfoForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSetPromoInformationMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           DoNotSendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            SendSetDisplayInstantResultsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
@@ -124,6 +130,8 @@ class SearchTabHelper : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from contents::WebContentsObserver:
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;

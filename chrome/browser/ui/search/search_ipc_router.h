@@ -44,6 +44,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // SearchIPCRouter calls these functions before sending/receiving messages
     // to/from the page.
     virtual bool ShouldProcessSetVoiceSearchSupport() = 0;
+    virtual bool ShouldSendSetPromoInformation() = 0;
     virtual bool ShouldSendSetDisplayInstantResults() = 0;
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
@@ -58,6 +59,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // results in a call to OnInstantSupportDetermined() when the reply is
   // received.
   void DetermineIfPageSupportsInstant();
+
+  // Tells the renderer information it needs to display promos.
+  void SetPromoInformation(bool is_app_launcher_enabled);
 
   // Tells the renderer whether to display the Instant results.
   void SetDisplayInstantResults();
@@ -97,8 +101,14 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            DoNotSendThemeBackgroundInfo);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendThemeBackgroundInfoForIncognitoPage);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendSetPromoInformation);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendSetPromoInformation);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSetPromoInformationMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           DoNotSendSetPromoInformationMsg);
 
   // Overridden from contents::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

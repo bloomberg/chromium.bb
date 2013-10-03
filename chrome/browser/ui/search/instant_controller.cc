@@ -374,7 +374,6 @@ void InstantController::UpdateInfoForInstantTab() {
       instant_service->UpdateMostVisitedItemsInfo();
     }
 
-    instant_tab_->InitializePromos();
     instant_tab_->sender()->FocusChanged(omnibox_focus_state_,
                                          omnibox_focus_change_reason_);
     instant_tab_->sender()->SetInputInProgress(IsInputInProgress());
