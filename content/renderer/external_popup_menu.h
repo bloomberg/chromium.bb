@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/web/WebExternalPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
+#include "ui/gfx/point.h"
 
 namespace WebKit {
 class WebExternalPopupMenuClient;
@@ -25,6 +26,8 @@ class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
                     WebKit::WebExternalPopupMenuClient* popup_menu_client);
 
   virtual ~ExternalPopupMenu() {}
+
+  void SetOriginScaleForEmulation(float scale);
 
 #if defined(OS_MACOSX)
   // Called when the user has selected an item. |selected_item| is -1 if the
@@ -45,6 +48,10 @@ class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
   RenderViewImpl* render_view_;
   WebKit::WebPopupMenuInfo popup_menu_info_;
   WebKit::WebExternalPopupMenuClient* popup_menu_client_;
+
+  // Popups may be displaced when screen metrics emulation is enabled.
+  // This scale is used to properly adjust popup position.
+  float origin_scale_for_emulation_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPopupMenu);
 };

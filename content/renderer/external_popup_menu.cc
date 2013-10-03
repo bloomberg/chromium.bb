@@ -18,12 +18,23 @@ ExternalPopupMenu::ExternalPopupMenu(
     WebKit::WebExternalPopupMenuClient* popup_menu_client)
     : render_view_(render_view),
       popup_menu_info_(popup_menu_info),
-      popup_menu_client_(popup_menu_client) {
+      popup_menu_client_(popup_menu_client),
+      origin_scale_for_emulation_(0) {
+}
+
+void ExternalPopupMenu::SetOriginScaleForEmulation(float scale) {
+  origin_scale_for_emulation_ = scale;
 }
 
 void ExternalPopupMenu::show(const WebKit::WebRect& bounds) {
+  WebKit::WebRect rect = bounds;
+  if (origin_scale_for_emulation_) {
+    rect.x *= origin_scale_for_emulation_;
+    rect.y *= origin_scale_for_emulation_;
+  }
+
   ViewHostMsg_ShowPopup_Params popup_params;
-  popup_params.bounds = bounds;
+  popup_params.bounds = rect;
   popup_params.item_height = popup_menu_info_.itemHeight;
   popup_params.item_font_size = popup_menu_info_.itemFontSize;
   popup_params.selected_item = popup_menu_info_.selectedIndex;

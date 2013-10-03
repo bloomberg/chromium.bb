@@ -2339,6 +2339,10 @@ WebView* RenderViewImpl::createView(
 WebWidget* RenderViewImpl::createPopupMenu(WebKit::WebPopupType popup_type) {
   RenderWidget* widget =
       RenderWidget::Create(routing_id_, popup_type, screen_info_);
+  if (screen_metrics_emulator_) {
+    widget->SetPopupOriginAdjustmentsForEmulation(
+        screen_metrics_emulator_.get());
+  }
   return widget->webwidget();
 }
 
@@ -2355,6 +2359,10 @@ WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
     return NULL;
   external_popup_menu_.reset(
       new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
+  if (screen_metrics_emulator_) {
+    SetExternalPopupOriginAdjustmentsForEmulation(
+        external_popup_menu_.get(), screen_metrics_emulator_.get());
+  }
   return external_popup_menu_.get();
 }
 
@@ -2633,6 +2641,7 @@ void RenderViewImpl::showContextMenu(
     params.x = touch_editing_context_menu_location_.x();
     params.y = touch_editing_context_menu_location_.y();
   }
+  OnShowHostContextMenu(&params);
 
   // Plugins, e.g. PDF, don't currently update the render view when their
   // selected text changes, but the context menu params do contain the updated
@@ -6082,6 +6091,14 @@ void RenderViewImpl::InstrumentWillComposite() {
 
 bool RenderViewImpl::AllowPartialSwap() const {
   return allow_partial_swap_;
+}
+
+void RenderViewImpl::SetScreenMetricsEmulationParameters(
+    float device_scale_factor, float root_layer_scale) {
+  if (webview()) {
+    webview()->setCompositorDeviceScaleFactorOverride(device_scale_factor);
+    webview()->setRootLayerScaleTransform(root_layer_scale);
+  }
 }
 
 bool RenderViewImpl::ScheduleFileChooser(

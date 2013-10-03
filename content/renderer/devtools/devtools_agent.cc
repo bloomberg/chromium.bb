@@ -22,6 +22,7 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 #if defined(USE_TCMALLOC)
@@ -142,6 +143,22 @@ void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
   } else {
     trace_log->SetDisabled();
   }
+}
+
+void DevToolsAgent::enableDeviceEmulation(
+    const WebKit::WebSize& device_size,
+    const WebKit::WebRect& view_rect,
+    float device_scale_factor,
+    bool fit_to_view) {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
+  impl->webview()->settings()->setForceCompositingMode(true);
+  impl->EnableScreenMetricsEmulation(gfx::Size(device_size),
+      gfx::Rect(view_rect), device_scale_factor, fit_to_view);
+}
+
+void DevToolsAgent::disableDeviceEmulation() {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
+  impl->DisableScreenMetricsEmulation();
 }
 
 #if defined(USE_TCMALLOC) && !defined(OS_WIN)

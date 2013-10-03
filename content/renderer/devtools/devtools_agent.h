@@ -53,6 +53,11 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void clearBrowserCookies();
   virtual void visitAllocatedObjects(AllocatedObjectVisitor* visitor);
   virtual void setTraceEventCallback(TraceEventCallback cb);
+  virtual void enableDeviceEmulation(
+      const WebKit::WebSize& device_size,
+      const WebKit::WebRect& view_rect, float device_scale_factor,
+      bool fit_to_view);
+  virtual void disableDeviceEmulation();
 
   void OnAttach();
   void OnReattach(const std::string& agent_state);
