@@ -8,18 +8,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
-
-namespace {
-// Used as callback.
-static void CloseFD(int fd) {
-  if (HANDLE_EINTR(close(fd)) < 0)
-    PLOG(ERROR) << "close";
-}
-}  // namespace
 
 FileDescriptorSet::FileDescriptorSet()
     : consumed_descriptor_highwater_(0) {
@@ -128,26 +118,9 @@ bool FileDescriptorSet::ContainsDirectoryDescriptor() const {
 void FileDescriptorSet::CommitAll() {
   for (std::vector<base::FileDescriptor>::iterator
        i = descriptors_.begin(); i != descriptors_.end(); ++i) {
-    if (i->auto_close) {
-#if defined(OS_MACOSX)
-      // On mac, a sent file descriptor will sometimes get closed
-      // by a kernel garbage collector. By delaying the close by
-      // a few seconds, we can solve this once and for all.
-      // - but...
-      // - ONCE AND FOR ALL
-      // https://code.google.com/p/chromium/issues/detail?id=298276
-      if (base::MessageLoop::current()) {
-        base::MessageLoop::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&CloseFD, i->fd),
-            base::TimeDelta::FromSeconds(5));
-      } else {
-        CloseFD(i->fd);
-      }
-#else  // OS_MACOSX
-      CloseFD(i->fd);
-#endif  // OS_MACOSX
-    }
+    if (i->auto_close)
+      if (HANDLE_EINTR(close(i->fd)) < 0)
+        PLOG(ERROR) << "close";
   }
   descriptors_.clear();
   consumed_descriptor_highwater_ = 0;
