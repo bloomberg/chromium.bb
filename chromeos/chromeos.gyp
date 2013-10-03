@@ -59,6 +59,8 @@
         'cryptohome/async_method_caller.h',
         'cryptohome/cryptohome_library.cc',
         'cryptohome/cryptohome_library.h',
+        'cryptohome/cryptohome_util.cc',
+        'cryptohome/cryptohome_util.h',
         'dbus/audio_node.cc',
         'dbus/audio_node.h',
         'dbus/blocking_method_caller.cc',

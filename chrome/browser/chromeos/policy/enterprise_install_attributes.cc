@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/policy/proto/chromeos/install_attributes.pb.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 

@@ -55,27 +55,6 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   DISALLOW_COPY_AND_ASSIGN(CryptohomeLibrary);
 };
 
-// Wrappers of the D-Bus method calls for working with Tpm.
-namespace cryptohome_util {
-
-// Returns whether Tpm is presented and enabled.
-CHROMEOS_EXPORT bool TpmIsEnabled();
-
-// Returns whether device has already been owned.
-CHROMEOS_EXPORT bool TpmIsOwned();
-
-// Returns whether device is being owned (Tpm password is generating).
-CHROMEOS_EXPORT bool TpmIsBeingOwned();
-
-CHROMEOS_EXPORT bool InstallAttributesGet(const std::string& name,
-                                          std::string* value);
-CHROMEOS_EXPORT bool InstallAttributesSet(const std::string& name,
-                                          const std::string& value);
-CHROMEOS_EXPORT bool InstallAttributesFinalize();
-CHROMEOS_EXPORT bool InstallAttributesIsInvalid();
-CHROMEOS_EXPORT bool InstallAttributesIsFirstInstall();
-
-}  // namespace cryptohome_util
 }  // namespace chromeos
 
 #endif  // CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_
