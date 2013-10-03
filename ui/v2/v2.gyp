@@ -42,6 +42,8 @@
         'src/paint_processor.cc',
         'src/view.cc',
         'src/view_observer.cc',
+        'src/view_private.cc',
+        'src/view_private.h',
         'src/window.cc',
       ],
     },
@@ -51,6 +53,7 @@
       'dependencies': [
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
+        '../gfx/gfx.gyp:gfx',
         'v2',
       ],
       'sources': [

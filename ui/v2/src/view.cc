@@ -7,23 +7,9 @@
 #include <algorithm>
 
 #include "ui/v2/public/view_observer.h"
+#include "ui/v2/src/view_private.h"
 
 namespace v2 {
-
-// Friend of View. Provides a way to get at a View's observer list for
-// notification methods.
-class ViewObserversAccessor {
- public:
-  explicit ViewObserversAccessor(View* view) : view_(view) {}
-  ~ViewObserversAccessor() {}
-
-  ObserverList<ViewObserver>* get() { return &view_->observers_; }
-
- private:
-  View* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewObserversAccessor);
-};
 
 enum StackDirection {
   STACK_ABOVE,
@@ -41,9 +27,8 @@ void StackChildRelativeTo(View* parent,
   DCHECK_EQ(parent, child->parent());
   DCHECK_EQ(parent, other->parent());
 
-  // Notify stacking changing.
-
-  // TODO(beng): This is simpler than aura::Window's for now.
+  // TODO(beng): Notify stacking changing.
+  // TODO(beng): consult layout manager
   const size_t child_i =
       std::find(children->begin(), children->end(), child) - children->begin();
   const size_t other_i =
@@ -55,9 +40,8 @@ void StackChildRelativeTo(View* parent,
   children->erase(children->begin() + child_i);
   children->insert(children->begin() + destination_i, child);
 
-  // TODO(beng): restack layers.
-
-  // Notify stacking changed.
+  // TODO(beng): update layer.
+  // TODO(beng): Notify stacking changed.
 }
 
 void NotifyViewTreeChangeAtReceiver(
@@ -66,7 +50,7 @@ void NotifyViewTreeChangeAtReceiver(
   ViewObserver::TreeChangeParams local_params = params;
   local_params.receiver = receiver;
   FOR_EACH_OBSERVER(ViewObserver,
-                    *ViewObserversAccessor(receiver).get(),
+                    *ViewPrivate(receiver).observers(),
                     OnViewTreeChange(local_params));
 }
 
@@ -120,16 +104,26 @@ class ScopedTreeNotifier {
   DISALLOW_COPY_AND_ASSIGN(ScopedTreeNotifier);
 };
 
+void RemoveChildImpl(View* child, View::Children* children) {
+  std::vector<View*>::iterator it =
+      std::find(children->begin(), children->end(), child);
+  if (it != children->end()) {
+    children->erase(it);
+    ViewPrivate(child).ClearParent();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
 
 // Creation, configuration -----------------------------------------------------
 
-View::View() : visible_(false), owned_by_parent_(true), parent_(NULL) {
+View::View() : visible_(true), owned_by_parent_(true), parent_(NULL) {
 }
 
 View::~View() {
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroying());
+  FOR_EACH_OBSERVER(ViewObserver, observers_,
+                    OnViewDestroy(this, ViewObserver::DISPOSITION_CHANGING));
 
   while (!children_.empty()) {
     View* child = children_.front();
@@ -146,7 +140,8 @@ View::~View() {
   if (parent_)
     parent_->RemoveChild(this);
 
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroyed());
+  FOR_EACH_OBSERVER(ViewObserver, observers_,
+                    OnViewDestroy(this, ViewObserver::DISPOSITION_CHANGED));
 }
 
 void View::AddObserver(ViewObserver* observer) {
@@ -168,30 +163,50 @@ void View::SetLayout(Layout* layout) {
 // Disposition -----------------------------------------------------------------
 
 void View::SetBounds(const gfx::Rect& bounds) {
-  if (parent_ && parent_->layout_.get())
-    parent_->layout_->SetChildBounds(this, bounds);
-  else
-    SetBoundsInternal(bounds);
+  gfx::Rect old_bounds = bounds_;
+  // TODO(beng): consult layout manager
+  bounds_ = bounds;
+  // TODO(beng): update layer
+
+  // TODO(beng): write tests for this where layoutmanager prevents a change
+  //             and no changed notification is sent.
+  if (bounds_ != old_bounds) {
+    FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewBoundsChanged(this,
+        old_bounds, bounds_));
+  }
 }
 
-void View::SetVisible(bool visible) {}
+void View::SetVisible(bool visible) {
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChange(this,
+      ViewObserver::DISPOSITION_CHANGING));
+
+  bool old_visible = visible_;
+  // TODO(beng): consult layout manager
+  visible_ = visible;
+  // TODO(beng): update layer
+
+  // TODO(beng): write tests for this where layoutmanager prevents a change
+  //             and no changed notification is sent.
+  if (old_visible != visible_) {
+    FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChange(this,
+        ViewObserver::DISPOSITION_CHANGED));
+  }
+}
 
 // Tree ------------------------------------------------------------------------
 
 void View::AddChild(View* child) {
   ScopedTreeNotifier notifier(child, child->parent(), this);
+  if (child->parent())
+    RemoveChildImpl(child, &child->parent_->children_);
   children_.push_back(child);
   child->parent_ = this;
 }
 
 void View::RemoveChild(View* child) {
+  DCHECK_EQ(this, child->parent());
   ScopedTreeNotifier(child, this, NULL);
-  std::vector<View*>::iterator it =
-      std::find(children_.begin(), children_.end(), child);
-  if (it != children_.end()) {
-    children_.erase(it);
-    child->parent_ = NULL;
-  }
+  RemoveChildImpl(child, &children_);
 }
 
 bool View::Contains(View* child) const {
@@ -220,16 +235,6 @@ void View::StackChildAbove(View* child, View* other) {
 
 void View::StackChildBelow(View* child, View* other) {
   StackChildRelativeTo(this, &children_, child, other, STACK_BELOW);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// View, private:
-
-void View::SetBoundsInternal(const gfx::Rect& bounds) {
-  bounds_ = bounds;
-
-  // TODO(beng): Update layer.
-  // TODO(beng): Notify changed.
 }
 
 }  // namespace v2

@@ -36,6 +36,8 @@ class V2_EXPORT View /* : public EventTarget */ {
   // View takes ownership.
   void SetPainter(Painter* painter);
 
+  // See documentation in layout.h. A layout manager's rules apply to this
+  // View's children.
   // View takes ownership.
   void SetLayout(Layout* layout);
 
@@ -70,9 +72,7 @@ class V2_EXPORT View /* : public EventTarget */ {
 
  private:
   friend class Layout;
-  friend class ViewObserversAccessor;
-
-  void SetBoundsInternal(const gfx::Rect& bounds);
+  friend class ViewPrivate;
 
   // Disposition attributes.
   gfx::Rect bounds_;

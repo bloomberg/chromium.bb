@@ -52,14 +52,14 @@ class V2_EXPORT ViewObserver {
 
   // Disposition.
 
-  virtual void OnViewDestroying() {}
-  virtual void OnViewDestroyed() {}
+  virtual void OnViewDestroy(View* view, DispositionChangePhase phase) {}
 
-  virtual void OnViewBoundsChanged(const gfx::Rect& old_bounds,
+  virtual void OnViewBoundsChanged(View* view,
+                                   const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) {}
 
-  virtual void OnViewVisibilityChanging() {}
-  virtual void OnViewVisibilityChanged() {}
+  virtual void OnViewVisibilityChange(View* view,
+                                      DispositionChangePhase phase) {}
 
  protected:
   virtual ~ViewObserver() {}

@@ -5,6 +5,7 @@
 #include "ui/v2/public/layout.h"
 
 #include "ui/v2/public/view.h"
+#include "ui/v2/src/view_private.h"
 
 namespace v2 {
 
@@ -22,7 +23,7 @@ void Layout::SetChildBounds(View* child,
 // Layout, protected:
 
 void Layout::SetChildBoundsDirect(View* child, const gfx::Rect& bounds) {
-  child->SetBoundsInternal(bounds);
+  ViewPrivate(child).set_bounds(bounds);
 }
 
 }  // namespace v2
