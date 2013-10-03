@@ -350,8 +350,7 @@ TEST_P(EndToEndTest, PostMissingBytes) {
   EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
 }
 
-// TODO(rtenneti): Enable once issue http://crbug.com/297040 is fixed.
-TEST_P(EndToEndTest, DISABLED_LargePostNoPacketLoss) {
+TEST_P(EndToEndTest, LargePostNoPacketLoss) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
