@@ -27,6 +27,14 @@
 
 namespace WebCore {
 
+enum ViewportErrorCode {
+    UnrecognizedViewportArgumentKeyError,
+    UnrecognizedViewportArgumentValueError,
+    TruncatedViewportArgumentValueError,
+    MaximumScaleTooLargeError,
+    TargetDensityDpiUnsupported
+};
+
 class HTMLMetaElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLMetaElement> create(Document&);
@@ -39,11 +47,21 @@ public:
 private:
     HTMLMetaElement(const QualifiedName&, Document&);
 
-    typedef void (*KeyValuePairCallback)(const String& key, const String& value, Document* document, void* data);
+    typedef void (HTMLMetaElement::*KeyValuePairCallback)(const String& key, const String& value, void* data);
+    void processViewportKeyValuePair(const String& key, const String& value, void* data);
     void parseContentAttribute(const String& content, KeyValuePairCallback, void* data);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+
+    float parsePositiveNumber(const String& key, const String& value, bool* ok = 0);
+
+    Length parseViewportValueAsLength(const String& key, const String& value);
+    float parseViewportValueAsZoom(const String& key, const String& value);
+    float parseViewportValueAsUserZoom(const String& key, const String& value);
+    float parseViewportValueAsDPI(const String& key, const String& value);
+
+    void reportViewportWarning(ViewportErrorCode, const String& replacement1, const String& replacement2);
 
     void process();
     void processViewportContentAttribute(const String& content, ViewportDescription::Type origin);

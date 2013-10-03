@@ -37,14 +37,6 @@ namespace WebCore {
 
 class Document;
 
-enum ViewportErrorCode {
-    UnrecognizedViewportArgumentKeyError,
-    UnrecognizedViewportArgumentValueError,
-    TruncatedViewportArgumentValueError,
-    MaximumScaleTooLargeError,
-    TargetDensityDpiUnsupported
-};
-
 struct ViewportDescription {
 
     enum Type {
@@ -121,9 +113,6 @@ private:
     enum Direction { Horizontal, Vertical };
     static float resolveViewportLength(const Length&, const FloatSize& initialViewportSize, Direction);
 };
-
-void processViewportKeyValuePair(const String& keyString, const String& valueString, Document*, void* data);
-void reportViewportWarning(Document*, ViewportErrorCode, const String& replacement1, const String& replacement2);
 
 } // namespace WebCore
 
