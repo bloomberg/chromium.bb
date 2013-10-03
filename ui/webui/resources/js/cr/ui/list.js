@@ -1126,6 +1126,10 @@ cr.define('cr.ui', function() {
 
       this.afterFiller_.style.height = afterFillerHeight + 'px';
 
+      // Restores the number of pixels scrolled, since it might be changed while
+      // DOM operations.
+      this.scrollTop = scrollTop;
+
       // We don't set the lead or selected properties until after adding all
       // items, in case they force relayout in response to these events.
       var listItem = null;
