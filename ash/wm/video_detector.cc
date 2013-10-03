@@ -6,11 +6,11 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 
@@ -122,7 +122,7 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
   if (!window->GetBoundsInRootWindow().Intersects(root_bounds))
     return;
 
-  aura::Window* toplevel_window = wm::GetActivatableWindow(window);
+  aura::Window* toplevel_window = views::corewm::GetToplevelWindow(window);
   bool is_fullscreen = toplevel_window ?
       wm::GetWindowState(toplevel_window)->IsFullscreen() : false;
 
