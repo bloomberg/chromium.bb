@@ -197,6 +197,14 @@ void SyncEngine::OnPushNotificationEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
+drive::DriveServiceInterface* SyncEngine::GetDriveService() {
+  return drive_service_.get();
+}
+
+MetadataDatabase* SyncEngine::GetMetadataDatabase() {
+  return metadata_database_.get();
+}
+
 void SyncEngine::DoRegisterApp(const std::string& app_id,
                                const SyncStatusCallback& callback) {
   NOTIMPLEMENTED();

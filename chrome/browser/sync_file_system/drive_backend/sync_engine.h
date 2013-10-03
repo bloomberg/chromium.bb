@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_task_manager.h"
@@ -35,7 +36,8 @@ class SyncEngineInitializer;
 class SyncEngine : public RemoteFileSyncService,
                    public LocalChangeProcessor,
                    public SyncTaskManager::Client,
-                   public drive::DriveNotificationObserver {
+                   public drive::DriveNotificationObserver,
+                   public SyncEngineContext {
  public:
   typedef Observer SyncServiceObserver;
 
@@ -96,9 +98,13 @@ class SyncEngine : public RemoteFileSyncService,
   virtual void MaybeScheduleNextTask() OVERRIDE;
   virtual void NotifyLastOperationStatus(SyncStatusCode sync_status) OVERRIDE;
 
-  // drive::DriveNotificationObserver implementation.
+  // drive::DriveNotificationObserver overrides.
   virtual void OnNotificationReceived() OVERRIDE;
   virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
+
+  // SyncEngineContext overrides.
+  virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE;
+  virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
 
  private:
   void DoRegisterApp(const std::string& app_id,

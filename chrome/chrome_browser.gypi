@@ -2300,6 +2300,7 @@
         'browser/sync_file_system/drive_backend/remote_to_local_syncer.h',
         'browser/sync_file_system/drive_backend/sync_engine.cc',
         'browser/sync_file_system/drive_backend/sync_engine.h',
+        'browser/sync_file_system/drive_backend/sync_engine_context.h',
         'browser/sync_file_system/drive_backend/sync_engine_initializer.cc',
         'browser/sync_file_system/drive_backend/sync_engine_initializer.h',
         'browser/sync_file_system/drive_backend/tracker_set.cc',
