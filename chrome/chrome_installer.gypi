@@ -531,7 +531,6 @@
           'installer/linux/common/rpm.include',
           'installer/linux/common/rpmrepo.cron',
           'installer/linux/common/symlinks.include',
-          'installer/linux/common/updater',
           'installer/linux/common/variables.include',
           'installer/linux/common/wrapper',
         ],
