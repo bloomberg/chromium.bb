@@ -11,7 +11,8 @@
     }
   ],
   'DATA': [
-    'example.js'
+    'example.js',
+    'README',
   ],
   'DEST': 'getting_started',
   'NAME': 'part2',

@@ -168,6 +168,7 @@ TEXT_FILES = [
   'COPYING',
   'LICENSE',
   'README.Makefiles',
+  'getting_started/README',
 ]
 
 def BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision,
@@ -921,12 +922,13 @@ def main(args):
     BuildStepDownloadToolchains()
     BuildStepUntarToolchains(pepperdir, toolchains)
 
-  BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision, nacl_revision)
   BuildStepBuildToolchains(pepperdir, toolchains)
 
   BuildStepUpdateHelpers(pepperdir, True)
   BuildStepUpdateUserProjects(pepperdir, toolchains,
                               options.build_experimental, True)
+
+  BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision, nacl_revision)
 
   # Ship with libraries prebuilt, so run that first.
   BuildStepBuildLibraries(pepperdir, 'src')
