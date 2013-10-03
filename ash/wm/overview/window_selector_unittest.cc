@@ -21,6 +21,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -35,6 +36,18 @@
 
 namespace ash {
 namespace internal {
+
+namespace {
+
+class NonActivatableActivationDelegate
+    : public aura::client::ActivationDelegate {
+ public:
+  virtual bool ShouldActivate() const OVERRIDE {
+    return false;
+  }
+};
+
+}  // namespace
 
 class WindowSelectorTest : public test::AshTestBase {
  public:
@@ -51,7 +64,15 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
-    return CreateTestWindowInShellWithDelegate(&wd, -1, bounds);
+    return CreateTestWindowInShellWithDelegate(&delegate_, -1, bounds);
+  }
+
+  aura::Window* CreateNonActivatableWindow(const gfx::Rect& bounds) {
+    aura::Window* window = CreateWindow(bounds);
+    aura::client::SetActivationDelegate(window,
+                                        &non_activatable_activation_delegate_);
+    EXPECT_FALSE(ash::wm::CanActivateWindow(window));
+    return window;
   }
 
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
@@ -139,7 +160,8 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
  private:
-  aura::test::TestWindowDelegate wd;
+  aura::test::TestWindowDelegate delegate_;
+  NonActivatableActivationDelegate non_activatable_activation_delegate_;
   scoped_ptr<test::LauncherViewTestAPI> launcher_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
@@ -287,7 +309,6 @@ TEST_F(WindowSelectorTest, OverviewTransitionToCycle) {
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_EQ(window2.get(), GetFocusedWindow());
 }
-
 
 // Tests cycles between panel and normal windows.
 TEST_F(WindowSelectorTest, CyclePanels) {
@@ -465,6 +486,20 @@ TEST_F(WindowSelectorTest, QuickReentryRestoresInitialTransform) {
   EXPECT_FALSE(IsSelecting());
   EXPECT_EQ(initial_bounds, ToEnclosingRect(
       GetTransformedTargetBounds(window.get())));
+}
+
+// Tests that non-activatable windows are hidden when entering overview mode.
+TEST_F(WindowSelectorTest, NonActivatableWindowsHidden) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> non_activatable_window(
+      CreateNonActivatableWindow(bounds));
+  EXPECT_EQ(1.0f, non_activatable_window->layer()->GetTargetOpacity());
+  ToggleOverview();
+  EXPECT_EQ(0.0f, non_activatable_window->layer()->GetTargetOpacity());
+  ToggleOverview();
+  EXPECT_EQ(1.0f, non_activatable_window->layer()->GetTargetOpacity());
 }
 
 // Tests that windows remain on the display they are currently on in overview

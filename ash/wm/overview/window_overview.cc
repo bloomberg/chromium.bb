@@ -10,6 +10,8 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "base/metrics/histogram.h"
@@ -120,9 +122,11 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
   Shell* shell = Shell::GetInstance();
   shell->delegate()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
+  SetOpacityOfNonOverviewWindows(0);
 }
 
 WindowOverview::~WindowOverview() {
+  SetOpacityOfNonOverviewWindows(1);
   if (cursor_client_)
     cursor_client_->UnlockCursor();
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
@@ -263,13 +267,47 @@ aura::Window* WindowOverview::GetEventTarget(ui::LocatedEvent* event) {
   if (!target->HitTest(event->location()))
     return NULL;
 
+  return GetTargetedWindow(target);
+}
+
+aura::Window* WindowOverview::GetTargetedWindow(aura::Window* window) {
   for (WindowSelectorItemList::iterator iter = windows_->begin();
        iter != windows_->end(); ++iter) {
-    aura::Window* selected = (*iter)->TargetedWindow(target);
+    aura::Window* selected = (*iter)->TargetedWindow(window);
     if (selected)
       return selected;
   }
   return NULL;
+}
+
+void WindowOverview::SetOpacityOfNonOverviewWindows(float opacity) {
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::const_iterator root_iter = root_windows.begin();
+       root_iter != root_windows.end(); ++root_iter) {
+    for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
+      aura::Window* container = Shell::GetContainer(*root_iter,
+          kSwitchableWindowContainerIds[i]);
+      for (aura::Window::Windows::const_iterator iter =
+           container->children().begin(); iter != container->children().end();
+           ++iter) {
+        // Skip windows in overview and those which are not visible. A layer
+        // opacity of 0 is still considered visible.
+        if (GetTargetedWindow(*iter) || !(*iter)->IsVisible())
+          continue;
+        ui::ScopedLayerAnimationSettings settings(
+            (*iter)->layer()->GetAnimator());
+        settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+            ScopedTransformOverviewWindow::kTransitionMilliseconds));
+        settings.SetPreemptionStrategy(
+            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+        // Changing the visibility (i.e. calling Window::Hide) would also hide
+        // modal child windows, however the modal child window being activatable
+        // is in the overview and should be visible. Instead, use opacity to
+        // fade out non-activatable windows during overview.
+        (*iter)->layer()->SetOpacity(opacity);
+      }
+    }
+  }
 }
 
 void WindowOverview::PositionWindows() {

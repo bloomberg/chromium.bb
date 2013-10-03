@@ -72,6 +72,13 @@ class WindowOverview : public ui::EventHandler {
   // any of the windows in the selector.
   aura::Window* GetEventTarget(ui::LocatedEvent* event);
 
+  // Returns the top-level window selected by targeting |window| or NULL if
+  // no overview window was found for |window|.
+  aura::Window* GetTargetedWindow(aura::Window* window);
+
+  // Sets the opacity of all windows not in the overview to |opacity|.
+  void SetOpacityOfNonOverviewWindows(float opacity);
+
   // Position all of the windows based on the current selection mode.
   void PositionWindows();
   // Position all of the windows from |root_window| on |root_window|.
