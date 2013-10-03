@@ -10,7 +10,7 @@
             font-family: ArialRoundedMTBold, sans-serif;
             font-size: 200%;
         }
-  
+
         #container div {
             position: absolute;
             background-color: #933;
@@ -54,11 +54,13 @@
         function cancelTransition()
         {
             document.getElementById("container").className = "";
+            document.body.offsetHeight;
         }
 
         function restartTransition()
         {
             document.getElementById("container").className = "run";
+            document.body.offsetHeight;
             // The transition should restart at the beginning here. After 250 it should be halfway done.
             setTimeout("check()", 250);
         }
@@ -71,9 +73,9 @@
                 result += "<span style='color:red'>FAIL(was:" + left + ", s/b:150)</span>";
             else
                 result += "<span style='color:green'>PASS</span>";
-            
+
             result += ", webkitTransform:";
-            
+
             var transform = window.getComputedStyle(document.getElementById('b')).webkitTransform;
             transform = transform.split("(");
             transform = transform[1].split(",");
@@ -81,7 +83,7 @@
                 result += "<span style='color:red'>FAIL(was:" + transform[4] + ", s/b:50)</span>";
             else
                 result += "<span style='color:green'>PASS</span>";
-            
+
             document.getElementById('result').innerHTML = result;
             if (window.testRunner)
                 testRunner.notifyDone();
@@ -90,6 +92,7 @@
         function start()
         {
             document.getElementById("container").className = "run";
+            document.body.offsetHeight;
             setTimeout("cancelTransition()", 100);
             setTimeout("restartTransition()", 200);
         }

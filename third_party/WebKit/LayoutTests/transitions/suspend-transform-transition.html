@@ -12,7 +12,7 @@
         -webkit-transition: -webkit-transform 0.5s linear;
         -webkit-transform: translateX(0) scale(1);
     }
-    
+
     #box.move {
         -webkit-transform: translateX(400px) scale(1);
     }
@@ -30,7 +30,7 @@
   <script>
     if (window.testRunner)
         testRunner.waitUntilDone();
-    
+
     function suspendAndWaitForCompletion()
     {
         if (window.internals)
@@ -39,16 +39,15 @@
         window.setTimeout(function() {
             if (window.testRunner)
                 testRunner.notifyDone();
-        }, 250);
+        }, 300);
     }
-    
+
     function doTest()
     {
+        document.body.offsetHeight;
         document.getElementById('box').className = 'move';
-        window.setTimeout(function() {
-            // Wait for the box to animate into the safe zone (to test that it doesn't snap back to the start).
-            window.setTimeout(suspendAndWaitForCompletion, 250);
-        }, 0); // give the accelerated transition a chance to kick off.
+        // Wait for the box to animate into the safe zone (to test that it doesn't snap back to the start).
+        window.setTimeout(suspendAndWaitForCompletion, 200);
     }
 
     window.addEventListener('load', doTest, false);
