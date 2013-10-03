@@ -4,7 +4,10 @@
 
 #include "components/autofill/core/common/password_generation_util.h"
 
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "components/autofill/core/common/autofill_switches.h"
 
 namespace autofill {
 namespace password_generation {
@@ -36,6 +39,23 @@ void LogUserActions(PasswordGenerationActions actions) {
 void LogPasswordGenerationEvent(PasswordGenerationEvent event) {
   UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.Event",
                             event, EVENT_ENUM_COUNT);
+}
+
+bool IsPasswordGenerationEnabled() {
+  // Always fetch the field trial group to ensure it is reported correctly.
+  // The command line flags will be associated with a group that is reported
+  // so long as trial is actually queried.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PasswordGeneration");
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisablePasswordGeneration))
+    return false;
+
+  if (command_line->HasSwitch(switches::kEnablePasswordGeneration))
+    return true;
+
+  return group_name == "Enabled";
 }
 
 }  // namespace password_generation

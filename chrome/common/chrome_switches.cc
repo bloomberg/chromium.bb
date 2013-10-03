@@ -688,10 +688,6 @@ const char kEnableOmniboxAutoCompletionForIme[] =
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
 
-// Enables password generation when we detect that the user is going through
-// account creation.
-const char kEnablePasswordGeneration[]      = "enable-password-generation";
-
 // Enables searching for people from the apps list search box.
 const char kEnablePeopleSearch[]            = "enable-people-search";
 

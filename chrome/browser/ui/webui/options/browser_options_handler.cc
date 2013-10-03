@@ -68,6 +68,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1442,8 +1443,7 @@ void BrowserOptionsHandler::SetupMetricsReportingSettingVisibility() {
 
 void BrowserOptionsHandler::SetupPasswordGenerationSettingVisibility() {
   base::FundamentalValue visible(
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePasswordGeneration));
+      autofill::password_generation::IsPasswordGenerationEnabled());
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setPasswordGenerationSettingVisibility", visible);
 }

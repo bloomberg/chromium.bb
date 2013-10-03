@@ -1283,7 +1283,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_PASSWORD_GENERATION_NAME,
     IDS_FLAGS_ENABLE_PASSWORD_GENERATION_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnablePasswordGeneration)
+    ENABLE_DISABLE_VALUE_TYPE(autofill::switches::kEnablePasswordGeneration,
+                              autofill::switches::kDisablePasswordGeneration)
   },
   {
     "enable-people-search",
