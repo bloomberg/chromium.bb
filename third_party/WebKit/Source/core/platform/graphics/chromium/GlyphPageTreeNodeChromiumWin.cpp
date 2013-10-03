@@ -169,6 +169,8 @@ static bool fillBMPGlyphs(unsigned offset,
                 // If initSpaceGlyph fails, spaceGlyph stays 0 (= glyph is not present).
                 initSpaceGlyph(fontData->platformData().hfont(), dc, &spaceGlyph);
                 spaceGlyphInitialized = true;
+                if (spaceGlyph)
+                    haveGlyphs = true;
             }
             glyph = spaceGlyph;
         } else if (glyph == invalidGlyph) {
