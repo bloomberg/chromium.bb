@@ -186,7 +186,7 @@ class Planet : public pp::Instance {
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   // Catch events.
   virtual bool HandleInputEvent(const pp::InputEvent& event);
@@ -294,6 +294,7 @@ class Planet : public pp::Instance {
   ThreadPool* workers_;
   int width_;
   int height_;
+  bool hidden_;
   uint32_t stride_in_pixels_;
   uint32_t* pixel_buffer_;
   int benchmark_frame_counter_;
@@ -386,6 +387,7 @@ Planet::Planet(PP_Instance instance) : pp::Instance(instance),
                                        num_regions_(256) {
   width_ = 0;
   height_ = 0;
+  hidden_ = false;
   stride_in_pixels_ = 0;
   pixel_buffer_ = NULL;
   benchmark_frame_counter_ = 0;
@@ -674,7 +676,10 @@ void Planet::UpdateSim() {
   SetPlanetSpin(x, y);
 }
 
-void Planet::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
+void Planet::DidChangeView(const pp::View& view) {
+  pp::Rect position = view.GetRect();
+  // Update hidden_ state
+  hidden_ = !view.IsVisible();
   if (position.size().width() == width_ &&
       position.size().height() == height_)
     return;  // Size didn't change, no need to update anything.
@@ -821,6 +826,13 @@ void Planet::FlushPixelBuffer() {
 }
 
 void Planet::Update() {
+  // If view is hidden, don't render, but periodically (every 33ms) chain w/
+  // CallOnMainThread().
+  if (hidden_) {
+    pp::Module::Get()->core()->CallOnMainThread(33,
+        pp::CompletionCallback(&FlushCallback, this));
+    return;
+  }
   // Don't call FlushPixelBuffer() when benchmarking - vsync is enabled by
   // default, and will throttle the benchmark results.
   do {
