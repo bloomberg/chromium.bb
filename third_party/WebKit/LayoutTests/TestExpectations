@@ -1284,12 +1284,3 @@ crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/time
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
 
 crbug.com/303279 [ Debug ] http/tests/history/back-to-javascript-url-iframe.html [ Crash Pass ]
-
-Bug(morrita) virtual/softwarecompositing/3d-corners.html [ NeedsRebaseline ]
-Bug(morrita) virtual/softwarecompositing/geometry/fixed-position-transform-composited-page-scale.html [ NeedsRebaseline ]
-Bug(morrita) virtual/softwarecompositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
-Bug(morrita) virtual/softwarecompositing/huge-layer-rotated.html [ NeedsRebaseline ]
-Bug(morrita) virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ NeedsRebaseline ]
-Bug(morrita) virtual/softwarecompositing/lots-of-img-layers.html [ NeedsRebaseline ]
-Bug(morrita) virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ NeedsRebaseline ]
-Bug(morrita) virtual/softwarecompositing/tiny-layer-rotated.html [ NeedsRebaseline ]
