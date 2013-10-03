@@ -322,9 +322,9 @@ void MediaSourcePlayer::OnDemuxerConfigsAvailable(
 void MediaSourcePlayer::OnDemuxerDataAvailable(const DemuxerData& data) {
   DVLOG(1) << __FUNCTION__ << "(" << data.type << ")";
   DCHECK_LT(0u, data.access_units.size());
-  if (data.type == DemuxerStream::AUDIO)
+  if (data.type == DemuxerStream::AUDIO && audio_decoder_job_)
     audio_decoder_job_->OnDataReceived(data);
-  else
+  else if (data.type == DemuxerStream::VIDEO && video_decoder_job_)
     video_decoder_job_->OnDataReceived(data);
 }
 

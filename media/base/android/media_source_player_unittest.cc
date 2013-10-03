@@ -667,6 +667,27 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterAbort) {
   EXPECT_EQ(1, demuxer_->num_data_requests());
 }
 
+TEST_F(MediaSourcePlayerTest, DemuxerDataArrivesAfterRelease) {
+  if (!MediaCodecBridge::IsAvailable()) {
+    LOG(INFO) << "Could not run test - not supported on device.";
+    return;
+  }
+
+  // Test that the decoder should not crash if demuxer data arrives after
+  // Release().
+  StartAudioDecoderJob();
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
+
+  player_.Release();
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+
+  // The decoder job should have been released.
+  EXPECT_FALSE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+}
+
 // TODO(xhwang): Enable this test when the test devices are updated.
 TEST_F(MediaSourcePlayerTest, DISABLED_IsTypeSupported_Widevine) {
   if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {
