@@ -27,7 +27,6 @@
 #include "core/platform/win/SystemInfo.h"
 
 #include <windows.h>
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -74,93 +73,6 @@ WindowsVersion windowsVersion(int* major, int* minor)
     if (minor)
         *minor = minorVersion;
     return version;
-}
-
-static String osVersionForUAString()
-{
-    int major, minor;
-    WindowsVersion version = windowsVersion(&major, &minor);
-    switch (version) {
-    case WindowsCE1:
-    case WindowsCE2:
-    case WindowsCE3:
-        return "Windows CE";
-    case WindowsCE4:
-        return "Windows CE .NET";
-    case Windows3_1:
-        return "Windows 3.1";
-    case Windows95:
-        return "Windows 95";
-    case Windows98:
-        return "Windows 98";
-    case WindowsME:
-        return "Windows 98; Win 9x 4.90";
-    case WindowsNT4:
-        return "WinNT4.0";
-    }
-
-    const char* familyName = (version >= WindowsNT3) ? "Windows NT " : "Windows CE ";
-    return familyName + String::number(major) + '.' + String::number(minor);
-}
-
-static bool isWOW64()
-{
-    static bool initialized = false;
-    static bool wow64 = false;
-
-    if (!initialized) {
-        initialized = true;
-        HMODULE kernel32Module = GetModuleHandleA("kernel32.dll");
-        if (!kernel32Module)
-            return wow64;
-        typedef BOOL (WINAPI* IsWow64ProcessFunc)(HANDLE, PBOOL);
-        IsWow64ProcessFunc isWOW64Process = reinterpret_cast<IsWow64ProcessFunc>(GetProcAddress(kernel32Module, "IsWow64Process"));
-        if (isWOW64Process) {
-            BOOL result = FALSE;
-            wow64 = isWOW64Process(GetCurrentProcess(), &result) && result;
-        }
-    }
-
-    return wow64;
-}
-
-static WORD processorArchitecture()
-{
-    static bool initialized = false;
-    static WORD architecture = PROCESSOR_ARCHITECTURE_INTEL;
-
-    if (!initialized) {
-        initialized = true;
-        HMODULE kernel32Module = GetModuleHandleA("kernel32.dll");
-        if (!kernel32Module)
-            return architecture;
-        typedef VOID (WINAPI* GetNativeSystemInfoFunc)(LPSYSTEM_INFO);
-        GetNativeSystemInfoFunc getNativeSystemInfo = reinterpret_cast<GetNativeSystemInfoFunc>(GetProcAddress(kernel32Module, "GetNativeSystemInfo"));
-        if (getNativeSystemInfo) {
-            SYSTEM_INFO systemInfo;
-            ZeroMemory(&systemInfo, sizeof(systemInfo));
-            getNativeSystemInfo(&systemInfo);
-            architecture = systemInfo.wProcessorArchitecture;
-        }
-    }
-
-    return architecture;
-}
-
-static String architectureTokenForUAString()
-{
-    if (isWOW64())
-        return "; WOW64";
-    if (processorArchitecture() == PROCESSOR_ARCHITECTURE_AMD64)
-        return "; Win64; x64";
-    if (processorArchitecture() == PROCESSOR_ARCHITECTURE_IA64)
-        return "; Win64; IA64";
-    return String();
-}
-
-String windowsVersionForUAString()
-{
-    return osVersionForUAString() + architectureTokenForUAString();
 }
 
 } // namespace WebCore
