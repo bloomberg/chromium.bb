@@ -55,7 +55,7 @@ AnimatableColorImpl::AnimatableColorImpl(Color color)
 Color AnimatableColorImpl::toColor() const
 {
     if (!m_alpha)
-        return Color();
+        return Color::transparent;
     return Color(m_red / m_alpha, m_green / m_alpha, m_blue / m_alpha, m_alpha);
 }
 
