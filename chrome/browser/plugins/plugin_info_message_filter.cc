@@ -15,6 +15,7 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/content_settings.h"
@@ -92,7 +93,8 @@ PluginInfoMessageFilter::Context::Context(int render_process_id,
                                           Profile* profile)
     : render_process_id_(render_process_id),
       resource_context_(profile->GetResourceContext()),
-      host_content_settings_map_(profile->GetHostContentSettingsMap()) {
+      host_content_settings_map_(profile->GetHostContentSettingsMap()),
+      plugin_prefs_(PluginPrefs::GetForProfile(profile)) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile->GetPrefs());
   allow_outdated_plugins_.MoveToThread(
@@ -264,6 +266,11 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     return;
   }
 #endif
+  // Check if the plug-in or its group is enabled by policy.
+  PluginPrefs::PolicyStatus plugin_policy =
+      plugin_prefs_->PolicyStatusForPlugin(plugin.name);
+  PluginPrefs::PolicyStatus group_policy =
+      plugin_prefs_->PolicyStatusForPlugin(plugin_metadata->name());
 
   // Check if the plug-in requires authorization.
   if (plugin_status ==
@@ -272,7 +279,9 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
       plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS &&
       !always_authorize_plugins_.GetValue() &&
       plugin_setting != CONTENT_SETTING_BLOCK &&
-      uses_default_content_setting) {
+      uses_default_content_setting &&
+      plugin_policy != PluginPrefs::POLICY_ENABLED &&
+      group_policy != PluginPrefs::POLICY_ENABLED) {
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
     return;
   }

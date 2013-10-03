@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -67,6 +68,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
     int render_process_id_;
     content::ResourceContext* resource_context_;
     const HostContentSettingsMap* host_content_settings_map_;
+    scoped_refptr<PluginPrefs> plugin_prefs_;
 
     BooleanPrefMember allow_outdated_plugins_;
     BooleanPrefMember always_authorize_plugins_;
