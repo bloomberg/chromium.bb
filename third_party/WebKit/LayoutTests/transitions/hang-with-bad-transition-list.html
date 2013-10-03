@@ -5,7 +5,7 @@
         background: blue;
         color: white;
         opacity: .666;
-        -webkit-transition: opacity, .25s, .15s ease-out;
+        -webkit-transition: opacity, .1s, .1s ease-out;
     }
   </style>
   <script>
@@ -29,9 +29,11 @@
         testRunner.waitUntilDone();
     }
     onload = function() {
+        document.getElementById("doomSpan").style.opacity=1;
+        // Force a layout so that the animation is running when checkRunning is first called.
+        document.body.offsetHeight;
         if (window.testRunner)
             checkRunning();
-        document.getElementById("doomSpan").style.opacity=1;
     }
   </script>
 </head>
