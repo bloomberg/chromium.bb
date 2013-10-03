@@ -74,6 +74,11 @@
             '../ios/ios.gyp:*',
           ],
         }],
+        ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            '../chrome/tools/profile_reset/jtl_compiler.gyp:*',
+          ],
+        }],
         ['os_posix==1 and OS!="android" and OS!="ios"', {
           'dependencies': [
             '../third_party/yasm/yasm.gyp:*#host',

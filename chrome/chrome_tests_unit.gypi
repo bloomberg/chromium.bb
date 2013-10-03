@@ -1872,6 +1872,8 @@
         'test/data/unit/framework_unittest.gtestjs',
         'test/logging/win/mof_data_parser_unittest.cc',
         'tools/convert_dict/convert_dict_unittest.cc',
+        'tools/profile_reset/jtl_compiler_unittest.cc',
+        'tools/profile_reset/jtl_parser_unittest.cc',
         'utility/extensions/unpacker_unittest.cc',
         'utility/importer/bookmark_html_reader_unittest.cc',
         'utility/importer/bookmarks_file_importer_unittest.cc',
@@ -2482,6 +2484,9 @@
           ],
         }],
         ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
+          ],
           'sources!': [
             'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
           ],
@@ -2606,6 +2611,7 @@
             ['exclude', '^browser/ui/webui/signin/'],
             ['exclude', '^browser/ui/webui/suggestions_internals'],
             ['exclude', '^browser/ui/webui/sync_promo'],
+            ['exclude', '^tools/profile_reset/'],
             ['exclude', '^utility/importer/'],
           ],
           'conditions': [
