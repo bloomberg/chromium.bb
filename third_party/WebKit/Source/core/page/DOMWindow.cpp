@@ -88,13 +88,13 @@
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/PlatformScreen.h"
-#include "core/platform/SuddenTermination.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "platform/geometry/FloatRect.h"
+#include "public/platform/Platform.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
@@ -140,6 +140,16 @@ private:
     RefPtr<SecurityOrigin> m_targetOrigin;
     RefPtr<ScriptCallStack> m_stackTrace;
 };
+
+static void disableSuddenTermination()
+{
+    WebKit::Platform::current()->suddenTerminationChanged(false);
+}
+
+static void enableSuddenTermination()
+{
+    WebKit::Platform::current()->suddenTerminationChanged(true);
+}
 
 typedef HashCountedSet<DOMWindow*> DOMWindowSet;
 

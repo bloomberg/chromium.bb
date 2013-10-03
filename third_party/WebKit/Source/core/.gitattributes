@@ -1,3 +1,2 @@
 inspector/Inspector.json -crlf
-platform/chromium/SuddenTerminationChromium.cpp -crlf
 rendering/RenderThemeChromiumWin.h -crlf
