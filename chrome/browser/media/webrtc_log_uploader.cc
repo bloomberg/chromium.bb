@@ -58,6 +58,23 @@ void WebRtcLogUploader::OnURLFetchComplete(
   std::string report_id;
   if (response_code == 200 && source->GetResponseAsString(&report_id))
     AddUploadedLogInfoToUploadListFile(report_id);
+  DCHECK(upload_done_data_.find(source) != upload_done_data_.end());
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&WebRtcLoggingHandlerHost::UploadLogDone,
+                 upload_done_data_[source].host));
+  if (!upload_done_data_[source].callback.is_null()) {
+    bool success = response_code == 200;
+    std::string error_message;
+    if (!success) {
+      error_message = "Uploading failed, response code: " +
+                      base::IntToString(response_code);
+    }
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(upload_done_data_[source].callback, success, report_id,
+                   error_message));
+  }
+  upload_done_data_.erase(source);
 }
 
 void WebRtcLogUploader::OnURLFetchUploadProgress(
@@ -73,18 +90,24 @@ bool WebRtcLogUploader::ApplyForStartLogging() {
   return false;
 }
 
-void WebRtcLogUploader::UploadLog(net::URLRequestContextGetter* request_context,
-                                  scoped_ptr<base::SharedMemory> shared_memory,
-                                  uint32 length,
-                                  const std::string& app_session_id,
-                                  const std::string& app_url) {
+void WebRtcLogUploader::LoggingStoppedDontUpload() {
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebRtcLogUploader::DecreaseLogCount, base::Unretained(this)));
+}
+
+void WebRtcLogUploader::LoggingStoppedDoUpload(
+    net::URLRequestContextGetter* request_context,
+    scoped_ptr<base::SharedMemory> shared_memory,
+    uint32 length,
+    const std::map<std::string, std::string>& meta_data,
+    const WebRtcLogUploadDoneData& upload_done_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   DCHECK(shared_memory);
   DCHECK(shared_memory->memory());
 
   std::string post_data;
   SetupMultipart(&post_data, reinterpret_cast<uint8*>(shared_memory->memory()),
-                 length, app_session_id, app_url);
+                 length, meta_data);
 
   // If a test has set the test string pointer, write to it and skip uploading.
   // This will be removed when the browser test for this feature is fully done
@@ -103,16 +126,15 @@ void WebRtcLogUploader::UploadLog(net::URLRequestContextGetter* request_context,
   url_fetcher->SetRequestContext(request_context);
   url_fetcher->SetUploadData(content_type, post_data);
   url_fetcher->Start();
+  upload_done_data_[url_fetcher] = upload_done_data;
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&WebRtcLogUploader::DecreaseLogCount, base::Unretained(this)));
 }
 
-void WebRtcLogUploader::SetupMultipart(std::string* post_data,
-                                       uint8* log_buffer,
-                                       uint32 log_buffer_length,
-                                       const std::string& app_session_id,
-                                       const std::string& app_url) {
+void WebRtcLogUploader::SetupMultipart(
+    std::string* post_data, uint8* log_buffer, uint32 log_buffer_length,
+    const std::map<std::string, std::string>& meta_data) {
 #if defined(OS_WIN)
   const char product[] = "Chrome";
 #elif defined(OS_MACOSX)
@@ -140,10 +162,14 @@ void WebRtcLogUploader::SetupMultipart(std::string* post_data,
                                   "", post_data);
   net::AddMultipartValueForUpload("type", "webrtc_log", kMultipartBoundary,
                                   "", post_data);
-  net::AddMultipartValueForUpload("app_session_id", app_session_id,
-                                  kMultipartBoundary, "", post_data);
-  net::AddMultipartValueForUpload("url", app_url, kMultipartBoundary,
-                                  "", post_data);
+
+  // Add custom meta data.
+  std::map<std::string, std::string>::const_iterator it = meta_data.begin();
+  for (; it != meta_data.end(); ++it) {
+    net::AddMultipartValueForUpload(it->first, it->second, kMultipartBoundary,
+                                    "", post_data);
+  }
+
   AddLogData(post_data, log_buffer, log_buffer_length);
   net::AddMultipartFinalDelimiterForUpload(kMultipartBoundary, post_data);
 }

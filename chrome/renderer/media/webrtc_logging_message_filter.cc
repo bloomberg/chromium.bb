@@ -32,8 +32,8 @@ bool WebRtcLoggingMessageFilter::OnMessageReceived(
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebRtcLoggingMessageFilter, message)
-    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_LogOpened, OnLogOpened)
-    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_OpenLogFailed, OnOpenLogFailed)
+    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_StartLogging, OnStartLogging)
+    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_StopLogging, OnStopLogging)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -56,11 +56,9 @@ void WebRtcLoggingMessageFilter::OnChannelClosing() {
   log_message_delegate_->OnFilterRemoved();
 }
 
-void WebRtcLoggingMessageFilter::InitLogging(
-    const std::string& app_session_id,
-    const std::string& app_url) {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
-  Send(new WebRtcLoggingMsg_OpenLog(app_session_id, app_url));
+void WebRtcLoggingMessageFilter::LoggingStopped() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  Send(new WebRtcLoggingMsg_LoggingStopped());
 }
 
 void WebRtcLoggingMessageFilter::CreateLoggingHandler() {
@@ -69,16 +67,16 @@ void WebRtcLoggingMessageFilter::CreateLoggingHandler() {
       new ChromeWebRtcLogMessageDelegate(io_message_loop_, this);
 }
 
-void WebRtcLoggingMessageFilter::OnLogOpened(
+void WebRtcLoggingMessageFilter::OnStartLogging(
     base::SharedMemoryHandle handle,
     uint32 length) {
   DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
-  log_message_delegate_->OnLogOpened(handle, length);
+  log_message_delegate_->OnStartLogging(handle, length);
 }
 
-void WebRtcLoggingMessageFilter::OnOpenLogFailed() {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
-  log_message_delegate_->OnOpenLogFailed();
+void WebRtcLoggingMessageFilter::OnStopLogging() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  log_message_delegate_->OnStopLogging();
 }
 
 void WebRtcLoggingMessageFilter::Send(IPC::Message* message) {

@@ -23,8 +23,7 @@ class WebRtcLoggingMessageFilter
   explicit WebRtcLoggingMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
 
-  virtual void InitLogging(const std::string& app_session_id,
-                           const std::string& app_url);
+  void LoggingStopped();
 
   const scoped_refptr<base::MessageLoopProxy>& io_message_loop() {
     return io_message_loop_;
@@ -42,9 +41,8 @@ class WebRtcLoggingMessageFilter
 
   void CreateLoggingHandler();
 
-  void OnLogOpened(base::SharedMemoryHandle handle, uint32 length);
-  void OnOpenLogFailed();
-
+  void OnStartLogging(base::SharedMemoryHandle handle, uint32 length);
+  void OnStopLogging();
   void Send(IPC::Message* message);
 
   // Owned by this class. The only other pointer to it is in libjingle's logging

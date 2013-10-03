@@ -9,6 +9,7 @@
 #include "base/id_map.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
+#include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
@@ -35,7 +36,8 @@ typedef base::Thread* (*RendererMainThreadFactoryFunction)(
 // communication channel. There will generally be one RenderProcessHost per
 // renderer process.
 class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
-                                         public IPC::Listener {
+                                         public IPC::Listener,
+                                         public base::SupportsUserData {
  public:
   typedef IDMap<RenderProcessHost>::iterator iterator;
 

@@ -33,14 +33,12 @@ class ChromeWebRtcLogMessageDelegate
   virtual ~ChromeWebRtcLogMessageDelegate();
 
   // content::WebRtcLogMessageDelegate implementation.
-  virtual void InitLogging(const std::string& app_session_id,
-                           const std::string& app_url) OVERRIDE;
   virtual void LogMessage(const std::string& message) OVERRIDE;
 
   void OnFilterRemoved();
 
-  void OnLogOpened(base::SharedMemoryHandle handle, uint32 length);
-  void OnOpenLogFailed();
+  void OnStartLogging(base::SharedMemoryHandle handle, uint32 length);
+  void OnStopLogging();
 
  private:
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
@@ -48,7 +46,6 @@ class ChromeWebRtcLogMessageDelegate
   scoped_ptr<PartialCircularBuffer> circular_buffer_;
 
   WebRtcLoggingMessageFilter* message_filter_;
-  bool log_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebRtcLogMessageDelegate);
 };

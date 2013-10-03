@@ -50,6 +50,9 @@ const size_t kWebRtcLogSize = 6 * 1024 * 1024;  // 6 MB
 
 namespace {
 
+const char kLogNotStoppedOrNoLogOpen[] =
+    "Logging not stopped or no log open.";
+
 // For privacy reasons when logging IP addresses. The returned "sensitive
 // string" is for release builds a string with the end stripped away. Last
 // octet for IPv4 and last 80 bits (5 groups) for IPv6. String will be
@@ -89,12 +92,106 @@ std::string IPAddressToSensitiveString(const net::IPAddressNumber& address) {
 
 }  // namespace
 
-WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost() {}
+WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost()
+    : logging_state_(CLOSED),
+      upload_log_on_render_close_(false) {
+}
 
 WebRtcLoggingHandlerHost::~WebRtcLoggingHandlerHost() {}
 
+void WebRtcLoggingHandlerHost::SetMetaData(
+    const std::map<std::string, std::string>& meta_data,
+    const GenericDoneCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
+  bool success = false;
+  std::string error_message;
+  if (logging_state_ == CLOSED) {
+    meta_data_ = meta_data;
+    success = true;
+  } else {
+    error_message = "Meta data must be set before starting";
+  }
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(callback, success,
+                                              error_message));
+}
+
+void WebRtcLoggingHandlerHost::StartLogging(
+    const GenericDoneCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
+  start_callback_ = callback;
+  if (logging_state_ != CLOSED) {
+    FireGenericDoneCallback(&start_callback_, false, "A log is already open");
+    return;
+  }
+  logging_state_ = STARTING;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+      &WebRtcLoggingHandlerHost::StartLoggingIfAllowed, this));
+}
+
+void WebRtcLoggingHandlerHost::StopLogging(
+    const GenericDoneCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
+  stop_callback_ = callback;
+  if (logging_state_ != STARTED) {
+    FireGenericDoneCallback(&stop_callback_, false, "Logging not started");
+    return;
+  }
+  logging_state_ = STOPPING;
+  Send(new WebRtcLoggingMsg_StopLogging());
+}
+
+void WebRtcLoggingHandlerHost::UploadLog(const UploadDoneCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
+  if (logging_state_ != STOPPED) {
+    if (!callback.is_null()) {
+      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+          base::Bind(callback, false, "", kLogNotStoppedOrNoLogOpen));
+    }
+    return;
+  }
+  upload_callback_ = callback;
+  TriggerUploadLog();
+}
+
+void WebRtcLoggingHandlerHost::UploadLogDone() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  logging_state_ = CLOSED;
+}
+
+void WebRtcLoggingHandlerHost::DiscardLog(const GenericDoneCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
+  GenericDoneCallback discard_callback = callback;
+  if (logging_state_ != STOPPED) {
+    FireGenericDoneCallback(&discard_callback, false,
+                            kLogNotStoppedOrNoLogOpen);
+    return;
+  }
+  g_browser_process->webrtc_log_uploader()->LoggingStoppedDontUpload();
+  shared_memory_.reset(NULL);
+  logging_state_ = CLOSED;
+  FireGenericDoneCallback(&discard_callback, true, "");
+}
+
 void WebRtcLoggingHandlerHost::OnChannelClosing() {
-  UploadLog();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (logging_state_ == STARTED || logging_state_ == STOPPED) {
+    if (upload_log_on_render_close_) {
+      TriggerUploadLog();
+    } else {
+      g_browser_process->webrtc_log_uploader()->LoggingStoppedDontUpload();
+    }
+  }
   content::BrowserMessageFilter::OnChannelClosing();
 }
 
@@ -107,71 +204,55 @@ bool WebRtcLoggingHandlerHost::OnMessageReceived(const IPC::Message& message,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebRtcLoggingHandlerHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_OpenLog, OnOpenLog)
+    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_LoggingStopped,
+                        OnLoggingStoppedInRenderer)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;
 }
 
-void WebRtcLoggingHandlerHost::OnOpenLog(const std::string& app_session_id,
-                                         const std::string& app_url) {
+void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  app_session_id_ = app_session_id;
-  app_url_ = app_url;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::OpenLogIfAllowed, this));
+  logging_state_ = STOPPED;
+  FireGenericDoneCallback(&stop_callback_, true, "");
 }
 
-void WebRtcLoggingHandlerHost::OpenLogIfAllowed() {
+void WebRtcLoggingHandlerHost::StartLoggingIfAllowed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // If the user permits metrics reporting / crash uploading with the checkbox
-  // in the prefs, we allow uploading automatically. We disable uploading
-  // completely for non-official builds. Allowing can be forced with a flag.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnableMetricsReportingForTesting)) {
-    bool enabled = false;
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-    chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                              &enabled);
-#elif defined(OS_ANDROID)
-    // Android has its own settings for metrics / crash uploading.
-    enabled = g_browser_process->local_state()->GetBoolean(
-        prefs::kCrashReportingEnabled);
-#else
-    enabled = g_browser_process->local_state()->GetBoolean(
-        prefs::kMetricsReportingEnabled);
-#endif  // #if defined(OS_CHROMEOS)
-#endif  // defined(GOOGLE_CHROME_BUILD)
-    if (!enabled)
-      return;
-  }
-
-  if (!g_browser_process->webrtc_log_uploader()->ApplyForStartLogging())
+  if (!g_browser_process->webrtc_log_uploader()->ApplyForStartLogging()) {
+    logging_state_ = CLOSED;
+      FireGenericDoneCallback(
+          &start_callback_, false, "Cannot start, maybe the maximum number of "
+          "simultaneuos logs has been reached.");
     return;
-
+  }
   system_request_context_ = g_browser_process->system_request_context();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::DoOpenLog, this));
+      &WebRtcLoggingHandlerHost::DoStartLogging, this));
 }
 
-void WebRtcLoggingHandlerHost::DoOpenLog() {
+void WebRtcLoggingHandlerHost::DoStartLogging() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!shared_memory_);
 
   shared_memory_.reset(new base::SharedMemory());
 
   if (!shared_memory_->CreateAndMapAnonymous(kWebRtcLogSize)) {
-    DLOG(ERROR) << "Failed to create shared memory.";
-    Send(new WebRtcLoggingMsg_OpenLogFailed());
+    const std::string error_message = "Failed to create shared memory";
+    DLOG(ERROR) << error_message;
+    logging_state_ = CLOSED;
+    FireGenericDoneCallback(&start_callback_, false, error_message);
     return;
   }
 
   if (!shared_memory_->ShareToProcess(PeerHandle(),
                                      &foreign_memory_handle_)) {
-    Send(new WebRtcLoggingMsg_OpenLogFailed());
+    const std::string error_message =
+        "Failed to share memory to render process";
+    DLOG(ERROR) << error_message;
+    logging_state_ = CLOSED;
+    FireGenericDoneCallback(&start_callback_, false, error_message);
     return;
   }
 
@@ -186,9 +267,13 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
                             kWebRtcLogSize / 2,
                             false);
 
-  // App session ID
-  std::string info = "App session ID: " + app_session_id_ + '\n';
-  pcb.Write(info.c_str(), info.length());
+  // Meta data
+  std::string info;
+  std::map<std::string, std::string>::iterator it = meta_data_.begin();
+  for (; it != meta_data_.end(); ++it) {
+    info = it->first + ": " + it->second + '\n';
+    pcb.Write(info.c_str(), info.length());
+  }
 
   // OS
   info = base::SysInfo::OperatingSystemName() + " " +
@@ -247,24 +332,46 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::NotifyLogOpened, this));
+      &WebRtcLoggingHandlerHost::NotifyLoggingStarted, this));
 }
 
-void WebRtcLoggingHandlerHost::NotifyLogOpened() {
+void WebRtcLoggingHandlerHost::NotifyLoggingStarted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  Send(new WebRtcLoggingMsg_LogOpened(foreign_memory_handle_, kWebRtcLogSize));
+  Send(new WebRtcLoggingMsg_StartLogging(foreign_memory_handle_,
+                                         kWebRtcLogSize));
+  logging_state_ = STARTED;
+  FireGenericDoneCallback(&start_callback_, true, "");
 }
 
-void WebRtcLoggingHandlerHost::UploadLog() {
-  if (!shared_memory_)
-    return;
+void WebRtcLoggingHandlerHost::TriggerUploadLog() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(logging_state_ == STOPPED);
+
+  logging_state_ = UPLOADING;
+  WebRtcLogUploadDoneData upload_done_data;
+  upload_done_data.callback = upload_callback_;
+  upload_done_data.host = this;
+  upload_callback_.Reset();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &WebRtcLogUploader::UploadLog,
+      &WebRtcLogUploader::LoggingStoppedDoUpload,
       base::Unretained(g_browser_process->webrtc_log_uploader()),
       system_request_context_,
       Passed(&shared_memory_),
       kWebRtcLogSize,
-      app_session_id_,
-      app_url_));
+      meta_data_,
+      upload_done_data));
+
+  meta_data_.clear();
+}
+
+void WebRtcLoggingHandlerHost::FireGenericDoneCallback(
+    GenericDoneCallback* callback, bool success,
+    const std::string& error_message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!(*callback).is_null());
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(*callback, success,
+                                              error_message));
+  (*callback).Reset();
 }

@@ -23,7 +23,7 @@ class WebrtcLoggingPrivateSetMetaDataFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   // Must be called on UI thread.
-  void SetMetaDataCallback(bool success);
+  void SetMetaDataCallback(bool success, const std::string& error_message);
 };
 
 class WebrtcLoggingPrivateStartFunction : public AsyncExtensionFunction {
@@ -39,7 +39,7 @@ class WebrtcLoggingPrivateStartFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   // Must be called on UI thread.
-  void StartCallback(bool success);
+  void StartCallback(bool success, const std::string& error_message);
 };
 
 class WebrtcLoggingPrivateSetUploadOnRenderCloseFunction
@@ -69,7 +69,7 @@ class WebrtcLoggingPrivateStopFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   // Must be called on UI thread.
-  void StopCallback(bool success);
+  void StopCallback(bool success, const std::string& error_message);
 };
 
 class WebrtcLoggingPrivateUploadFunction : public AsyncExtensionFunction {
@@ -85,7 +85,8 @@ class WebrtcLoggingPrivateUploadFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   // Must be called on UI thread.
-  void UploadCallback(bool success, std::string report_id);
+  void UploadCallback(bool success, const std::string& report_id,
+                      const std::string& error_message);
 };
 
 class WebrtcLoggingPrivateDiscardFunction : public AsyncExtensionFunction {
@@ -101,7 +102,7 @@ class WebrtcLoggingPrivateDiscardFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   // Must be called on UI thread.
-  void DiscardCallback(bool success);
+  void DiscardCallback(bool success, const std::string& error_message);
 };
 
 }  // namespace extensions

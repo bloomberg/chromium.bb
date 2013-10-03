@@ -5,6 +5,14 @@
 // Use the <code>chrome.webrtcLoggingPrivate</code> API to control diagnostic
 // WebRTC logging.
 [nodoc] namespace webrtcLoggingPrivate {
+  dictionary MetaDataEntry {
+    // The meta data entry key.
+    DOMString key;
+
+    // The meta data entry value.
+    DOMString value;
+  };
+
   dictionary UploadResult {
     // The report ID for the uploaded log. Will be empty if not successful.
     DOMString reportId;
@@ -16,7 +24,8 @@
   interface Functions {
     // Sets additional custom meta data that will be uploaded along with the
     // log. |metaData| is a dictionary of the metadata (key, value).
-    static void setMetaData(object metaData, GenericDoneCallback callback);
+    static void setMetaData(MetaDataEntry[] metaData,
+                            GenericDoneCallback callback);
 
     // Starts logging. If logging has already been started for this render
     // process, the call will be ignored. |appSessionId| is the unique session

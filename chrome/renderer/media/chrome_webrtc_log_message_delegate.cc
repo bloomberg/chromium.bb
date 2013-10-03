@@ -13,24 +13,12 @@ ChromeWebRtcLogMessageDelegate::ChromeWebRtcLogMessageDelegate(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
     WebRtcLoggingMessageFilter* message_filter)
     : io_message_loop_(io_message_loop),
-      message_filter_(message_filter),
-      log_initialized_(false) {
+      message_filter_(message_filter) {
   content::InitWebRtcLoggingDelegate(this);
 }
 
 ChromeWebRtcLogMessageDelegate::~ChromeWebRtcLogMessageDelegate() {
   DCHECK(CalledOnValidThread());
-}
-
-void ChromeWebRtcLogMessageDelegate::InitLogging(
-    const std::string& app_session_id,
-    const std::string& app_url) {
-  DCHECK(CalledOnValidThread());
-
-  if (!log_initialized_) {
-    log_initialized_ = true;
-    message_filter_->InitLogging(app_session_id, app_url);
-  }
 }
 
 void ChromeWebRtcLogMessageDelegate::LogMessage(const std::string& message) {
@@ -55,10 +43,11 @@ void ChromeWebRtcLogMessageDelegate::OnFilterRemoved() {
   message_filter_ = NULL;
 }
 
-void ChromeWebRtcLogMessageDelegate::OnLogOpened(
+void ChromeWebRtcLogMessageDelegate::OnStartLogging(
     base::SharedMemoryHandle handle,
     uint32 length) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!shared_memory_ && !circular_buffer_);
 
   shared_memory_.reset(new base::SharedMemory(handle, false));
   CHECK(shared_memory_->Map(length));
@@ -67,11 +56,16 @@ void ChromeWebRtcLogMessageDelegate::OnLogOpened(
                                 length,
                                 length / 2,
                                 true));
+
+  content::InitWebRtcLogging();
 }
 
-void ChromeWebRtcLogMessageDelegate::OnOpenLogFailed() {
+void ChromeWebRtcLogMessageDelegate::OnStopLogging() {
   DCHECK(CalledOnValidThread());
-  DLOG(ERROR) << "Could not open log.";
-  // TODO(grunell): Implement.
-  NOTIMPLEMENTED();
+  DCHECK(shared_memory_ && circular_buffer_);
+
+  circular_buffer_.reset(NULL);
+  shared_memory_.reset(NULL);
+  if (message_filter_)
+    message_filter_->LoggingStopped();
 }

@@ -17,11 +17,6 @@ namespace content {
 // the ordinary logging stream) that will be used for diagnostic purposes.
 class WebRtcLogMessageDelegate {
  public:
-  // Tells the handler to initialize WebRTC logging. |app_session_id| is set
-  // by the Javascript application. |app_url| is the Javascript application URL.
-  virtual void InitLogging(const std::string& app_session_id,
-                           const std::string& app_url) = 0;
-
   // Pass a diagnostic WebRTC log message.
   virtual void LogMessage(const std::string& message) = 0;
 
@@ -32,6 +27,9 @@ class WebRtcLogMessageDelegate {
 // Must be called on IO thread.
 CONTENT_EXPORT void InitWebRtcLoggingDelegate(
     WebRtcLogMessageDelegate* delegate);
+
+// Must be called on IO thread.
+CONTENT_EXPORT void InitWebRtcLogging();
 
 }  // namespace content
 

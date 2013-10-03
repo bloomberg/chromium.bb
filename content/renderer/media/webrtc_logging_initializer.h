@@ -11,10 +11,6 @@ namespace content {
 
 class WebRtcLogMessageDelegate;
 
-// Must be called on IO thread.
-void InitWebRtcLogging(const std::string& app_session_id,
-                       const std::string& app_url);
-
 // May be called on any thread.
 void WebRtcLogMessage(const std::string& message);
 

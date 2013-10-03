@@ -21,7 +21,6 @@
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
-#include "content/renderer/media/webrtc_logging_initializer.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
@@ -49,10 +48,6 @@
 #endif
 
 namespace content {
-
-// The constraint key for the PeerConnection constructor for enabling diagnostic
-// WebRTC logging. It's a Google specific key, hence the "goog" prefix.
-const char kWebRtcLoggingConstraint[] = "googLog";
 
 // Constant constraint keys which enables default audio constraints on
 // mediastreams with audio.
@@ -571,19 +566,6 @@ MediaStreamDependencyFactory::CreatePeerConnection(
     webrtc::PeerConnectionObserver* observer) {
   CHECK(web_frame);
   CHECK(observer);
-
-  webrtc::MediaConstraintsInterface::Constraints optional_constraints =
-      constraints->GetOptional();
-  std::string constraint_value;
-  if (optional_constraints.FindFirst(kWebRtcLoggingConstraint,
-                                     &constraint_value)) {
-    std::string url = web_frame->document().url().spec();
-    RenderThreadImpl::current()->GetIOMessageLoopProxy()->PostTask(
-        FROM_HERE, base::Bind(
-            &InitWebRtcLogging,
-            constraint_value,
-            url));
-  }
 
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
         new talk_base::RefCountedObject<P2PPortAllocatorFactory>(

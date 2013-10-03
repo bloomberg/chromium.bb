@@ -856,7 +856,11 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->AddFilter(new ValidationMessageMessageFilter(id));
   host->AddFilter(new TtsMessageFilter(id, profile));
 #if defined(ENABLE_WEBRTC)
-  host->AddFilter(new WebRtcLoggingHandlerHost());
+  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
+      new WebRtcLoggingHandlerHost();
+  host->AddFilter(webrtc_logging_handler_host);
+  host->SetUserData(host, new base::UserDataAdapter<WebRtcLoggingHandlerHost>(
+      webrtc_logging_handler_host));
 #endif
 #if !defined(DISABLE_NACL)
   ExtensionInfoMap* extension_info_map =

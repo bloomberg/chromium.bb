@@ -766,7 +766,7 @@
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "webrtcLoggingPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": ["80B9DC58E5210749F052F5B4DB239C50CF72AEB6"]
   },

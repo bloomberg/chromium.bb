@@ -21,12 +21,8 @@ void InitWebRtcLoggingDelegate(WebRtcLogMessageDelegate* delegate) {
   g_webrtc_logging_delegate = delegate;
 }
 
-void InitWebRtcLogging(const std::string& app_session_id,
-                       const std::string& app_url) {
-  if (g_webrtc_logging_delegate) {
-    g_webrtc_logging_delegate->InitLogging(app_session_id, app_url);
-    talk_base::InitDiagnosticLoggingDelegateFunction(WebRtcLogMessage);
-  }
+void InitWebRtcLogging() {
+  talk_base::InitDiagnosticLoggingDelegateFunction(WebRtcLogMessage);
 }
 
 void WebRtcLogMessage(const std::string& message) {

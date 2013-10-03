@@ -12,17 +12,15 @@
 
 // Messages sent from the renderer to the browser.
 
-// Request to open a log.
-IPC_MESSAGE_CONTROL2(WebRtcLoggingMsg_OpenLog,
-                     std::string /* app_session_id */,
-                     std::string /* app_url */)
+// Notification that the log has been closed.
+IPC_MESSAGE_CONTROL0(WebRtcLoggingMsg_LoggingStopped)
 
 // Messages sent from the browser to the renderer.
 
-// Notification that a log could not be opened.
-IPC_MESSAGE_CONTROL0(WebRtcLoggingMsg_OpenLogFailed)
-
-// Notification that a log has been opened.
-IPC_MESSAGE_CONTROL2(WebRtcLoggingMsg_LogOpened,
+// Tells the renderer to open the log.
+IPC_MESSAGE_CONTROL2(WebRtcLoggingMsg_StartLogging,
                      base::SharedMemoryHandle /* handle */,
                      uint32 /* length */)
+
+// Tells the renderer to close the log.
+IPC_MESSAGE_CONTROL0(WebRtcLoggingMsg_StopLogging)

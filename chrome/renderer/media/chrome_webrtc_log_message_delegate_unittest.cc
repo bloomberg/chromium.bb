@@ -24,21 +24,29 @@ TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
   base::SharedMemoryHandle new_handle;
   ASSERT_TRUE(shared_memory.ShareToProcess(base::GetCurrentProcessHandle(),
                                            &new_handle));
-  log_message_delegate->OnLogOpened(new_handle, kTestLogSize);
+  log_message_delegate->OnStartLogging(new_handle, kTestLogSize);
 
+  // These log messages should be added to the log buffer.
   log_message_delegate->LogMessage(kTestString);
+  log_message_delegate->LogMessage(kTestString);
+
+  log_message_delegate->OnStopLogging();
+
+  // This log message should not be added to the log buffer.
   log_message_delegate->LogMessage(kTestString);
 
   PartialCircularBuffer read_pcb(
       reinterpret_cast<uint8*>(shared_memory.memory()), kTestLogSize);
 
   // Size is calculated as (sizeof(kTestString) - 1 for terminating null
-  // + 1 for eol added for each log message in LogMessage) * 2 + 1 for
-  // terminating null.
-  char read_buffer[sizeof(kTestString) * 2 + 1] = {0};
+  // + 1 for eol added for each log message in LogMessage) * 2.
+  // Use a larger buffer to read the log into be able to ensure log content is
+  // not larger than expected.
+  const uint32 kExpectedSize = sizeof(kTestString) * 2;
+  char read_buffer[kExpectedSize * 2] = {0};
 
-  uint32 read = read_pcb.Read(read_buffer, sizeof(read_buffer));
-  EXPECT_EQ(sizeof(read_buffer) - 1, read);
+  uint32 read = read_pcb.Read(read_buffer, kExpectedSize * 2);
+  EXPECT_EQ(kExpectedSize, read);
   std::string ref_output = kTestString;
   ref_output.append("\n");
   ref_output.append(kTestString);
