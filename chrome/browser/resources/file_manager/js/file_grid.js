@@ -121,10 +121,8 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache) {
 
   var bottom = li.ownerDocument.createElement('div');
   bottom.className = 'thumbnail-bottom';
+  bottom.appendChild(filelist.renderFileNameLabel(li.ownerDocument, entry));
   frame.appendChild(bottom);
-
-  bottom.appendChild(filelist.renderFileNameLabel(
-      li.ownerDocument, entry ? entry.name : ''));
 };
 
 /**
