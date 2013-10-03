@@ -10,6 +10,7 @@ ready for the commit queue to try.
 
 import contextlib
 import cPickle
+import functools
 import logging
 import os
 import sys
@@ -75,6 +76,10 @@ class InternalCQError(cros_patch.PatchException):
 
 class NoMatchingChangeFoundException(Exception):
   """Raised if we try to apply a non-existent change."""
+
+
+class ChangeNotInManifestException(Exception):
+  """Raised if we try to apply a not-in-manifest change."""
 
 
 class DependencyNotReadyForCommit(cros_patch.PatchException):
@@ -278,17 +283,26 @@ class PatchSeries(object):
     return f
 
   @_ManifestDecorator
-  def GetGitRepoForChange(self, change):
+  def GetGitRepoForChange(self, change, strict=False):
     """Get the project path associated with the specified change.
 
     Args:
       change: The change to operate on.
+      strict: If True, throw a ChangeNotInManifestException rather than
+              returning None. Default: False.
 
     Returns:
-      The project path if found in the manifest. Otherwise returns None.
+      The project path if found in the manifest. Otherwise returns
+      None (if strict=False).
     """
+    project_dir = None
     if self.manifest and self.manifest.ProjectExists(change.project):
-      return self.manifest.GetProjectPath(change.project, True)
+      project_dir = self.manifest.GetProjectPath(change.project, True)
+
+    if strict and project_dir is None:
+      raise ChangeNotInManifestException(change)
+
+    return project_dir
 
   @_ManifestDecorator
   def _IsContentMerging(self, change):
@@ -742,7 +756,8 @@ class PatchSeries(object):
     # what was checked out for each involved repo, and if it was a branch,
     # the sha1 of the branch; that information is enough to rewind us back
     # to the original repo state.
-    project_state = set(map(self.GetGitRepoForChange, commits))
+    project_state = set(
+        map(functools.partial(self.GetGitRepoForChange, strict=True), commits))
     resets, checkouts = [], []
     for project_dir in project_state:
       current_sha1 = git.RunGit(
