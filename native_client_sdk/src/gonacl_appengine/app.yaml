@@ -5,6 +5,18 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /static/pnacl-demo-(.*)/
+  static_files: static/pnacl-demo-\1/index.html
+  upload: static/pnacl-demo-.*/index\.html
+
+- url: /static/pnacl-demo/
+  static_files: static/pnacl-demo-earth/index.html
+  upload: static/pnacl-demo-earth/index\.html
+
+- url: /static/pnacl-demo/(.*)
+  static_files: static/pnacl-demo-earth/\1
+  upload: static/pnacl-demo-earth/.*
+
 - url: /static
   static_dir: static
 

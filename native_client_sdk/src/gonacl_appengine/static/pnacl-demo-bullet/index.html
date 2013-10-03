@@ -1,0 +1,26 @@
+<html>
+<!--
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+  <title>NaCl AM Bullet</title>
+  <script type="text/javascript" src="NaClAM.js"></script>
+  <script type="text/javascript" src="NaClAMBullet.js"></script>
+  <script type="text/javascript" src="http://commondatastorage.googleapis.com/gonacl/pnacl-demo-bullet/three.min.js"></script>
+  <script type="text/javascript" src="scene.js"></script>
+  <script type="text/javascript" src="world.js"></script>
+  <script type="text/javascript" src="scenes.js"></script>
+</head>
+<body>
+  <div id="progress_div">
+    Load Progress:
+    <progress id="progress"></progress>
+  </div>
+  <embed name="nacl_module" id="NaClAM" width=1 height=1
+      src="http://commondatastorage.googleapis.com/gonacl/pnacl-demo-bullet/NaClAMBullet.portable.nmf"
+      type="application/x-pnacl" />
+</body>
+<script type="text/javascript" src="main.js"></script>
+</html>
