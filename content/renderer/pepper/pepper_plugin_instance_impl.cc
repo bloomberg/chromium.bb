@@ -1149,13 +1149,6 @@ void PepperPluginInstanceImpl::PageVisibilityChanged(bool is_visible) {
     SendDidChangeView();
 }
 
-void PepperPluginInstanceImpl::ViewWillInitiatePaint() {
-  if (bound_graphics_2d_platform_)
-    bound_graphics_2d_platform_->ViewWillInitiatePaint();
-  else if (bound_graphics_3d_.get())
-    bound_graphics_3d_->ViewWillInitiatePaint();
-}
-
 void PepperPluginInstanceImpl::ViewInitiatedPaint() {
   if (bound_graphics_2d_platform_)
     bound_graphics_2d_platform_->ViewInitiatedPaint();

@@ -69,7 +69,6 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   // Notifications about the view's progress painting.  See PluginInstance.
   // These messages are used to send Flush callbacks to the plugin.
-  void ViewWillInitiatePaint();
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 

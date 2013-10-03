@@ -378,13 +378,11 @@ class CONTENT_EXPORT RenderWidget
   virtual void SetDeviceScaleFactor(float device_scale_factor);
 
   // Override points to notify derived classes that a paint has happened.
-  // WillInitiatePaint happens when we're about to generate a new bitmap and
-  // send it to the browser. DidInitiatePaint happens when that has completed,
-  // and subsequent rendering won't affect the painted content. DidFlushPaint
-  // happens once we've received the ACK that the screen has been updated.
-  // For a given paint operation, these overrides will always be called in the
-  // order WillInitiatePaint, DidInitiatePaint, DidFlushPaint.
-  virtual void WillInitiatePaint() {}
+  // DidInitiatePaint happens when that has completed, and subsequent rendering
+  // won't affect the painted content. DidFlushPaint happens once we've received
+  // the ACK that the screen has been updated. For a given paint operation,
+  // these overrides will always be called in the order DidInitiatePaint,
+  // DidFlushPaint.
   virtual void DidInitiatePaint() {}
   virtual void DidFlushPaint() {}
 

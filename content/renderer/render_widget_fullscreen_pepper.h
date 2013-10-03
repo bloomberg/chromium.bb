@@ -58,7 +58,6 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   virtual ~RenderWidgetFullscreenPepper();
 
   // RenderWidget API.
-  virtual void WillInitiatePaint() OVERRIDE;
   virtual void DidInitiatePaint() OVERRIDE;
   virtual void DidFlushPaint() OVERRIDE;
   virtual void Close() OVERRIDE;

@@ -208,10 +208,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Notification about page visibility. The default is "visible".
   void PageVisibilityChanged(bool is_visible);
 
-  // Notifications that the view is about to paint, has started painting, and
-  // has flushed the painted content to the screen. These messages are used to
-  // send Flush callbacks to the plugin for DeviceContext2D/3D.
-  void ViewWillInitiatePaint();
+  // Notifications that the view has started painting, and has flushed the
+  // painted content to the screen. These messages are used to send Flush
+  // callbacks to the plugin for DeviceContext2D/3D.
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 

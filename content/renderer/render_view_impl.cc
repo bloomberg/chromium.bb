@@ -5464,17 +5464,6 @@ void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
   RenderWidget::OnResize(params);
 }
 
-void RenderViewImpl::WillInitiatePaint() {
-#if defined(ENABLE_PLUGINS)
-  // Notify all of our instances that we started painting. This is used for
-  // internal bookkeeping only, so we know that the set can not change under
-  // us.
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->ViewWillInitiatePaint();
-#endif
-}
-
 void RenderViewImpl::DidInitiatePaint() {
 #if defined(ENABLE_PLUGINS)
   // Notify all instances that we painted.  The same caveats apply as for
@@ -5510,8 +5499,8 @@ void RenderViewImpl::DidFlushPaint() {
     // What about the case where a new one is created in a callback at a new
     // address and we don't issue the callback? We're still OK since this
     // callback is used for flush callbacks and we could not have possibly
-    // started a new paint (ViewWillInitiatePaint) for the new plugin while
-    // processing a previous paint for an existing one.
+    // started a new paint for the new plugin while processing a previous paint
+    // for an existing one.
     if (active_pepper_instances_.find(*i) != active_pepper_instances_.end())
       (*i)->ViewFlushedPaint();
   }

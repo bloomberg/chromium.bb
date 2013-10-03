@@ -1500,9 +1500,6 @@ void RenderWidget::DoDeferredUpdate() {
   gfx::Rect scroll_damage = update.GetScrollDamage();
   gfx::Rect bounds = gfx::UnionRects(update.GetPaintBounds(), scroll_damage);
 
-  // Notify derived classes that we're about to initiate a paint.
-  WillInitiatePaint();
-
   // A plugin may be able to do an optimized paint. First check this, in which
   // case we can skip all of the bitmap generation and regular paint code.
   // This optimization allows PPAPI plugins that declare themselves on top of
@@ -1835,8 +1832,6 @@ void RenderWidget::willBeginCompositorFrame() {
   UpdateTextInputState(false, true);
 #endif
   UpdateSelectionBounds();
-
-  WillInitiatePaint();
 }
 
 void RenderWidget::didBecomeReadyForAdditionalInput() {

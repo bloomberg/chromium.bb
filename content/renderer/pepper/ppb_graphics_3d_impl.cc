@@ -172,9 +172,6 @@ bool PPB_Graphics3D_Impl::IsOpaque() {
   return platform_context_->IsOpaque();
 }
 
-void PPB_Graphics3D_Impl::ViewWillInitiatePaint() {
-}
-
 void PPB_Graphics3D_Impl::ViewInitiatedPaint() {
   commit_pending_ = false;
 

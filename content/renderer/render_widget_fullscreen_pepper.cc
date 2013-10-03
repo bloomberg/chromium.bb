@@ -437,11 +437,6 @@ bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
   return RenderWidgetFullscreen::OnMessageReceived(msg);
 }
 
-void RenderWidgetFullscreenPepper::WillInitiatePaint() {
-  if (plugin_)
-    plugin_->ViewWillInitiatePaint();
-}
-
 void RenderWidgetFullscreenPepper::DidInitiatePaint() {
   if (plugin_)
     plugin_->ViewInitiatedPaint();
