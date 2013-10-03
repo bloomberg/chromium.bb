@@ -255,6 +255,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitClipPath:
         style->setClipPath(toAnimatableClipPathOperation(value)->clipPathOperation());
         return;
+    case CSSPropertyWebkitColumnGap:
+        style->setColumnGap(clampTo(toAnimatableDouble(value)->toDouble(), 0));
+        return;
     case CSSPropertyWebkitColumnRuleColor:
         style->setColumnRuleColor(toAnimatableColor(value)->color());
         style->setVisitedLinkColumnRuleColor(toAnimatableColor(value)->visitedLinkColor());
