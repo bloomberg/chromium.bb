@@ -158,7 +158,7 @@ bool Vp8Encoder::Encode(const I420VideoFrame& input_image,
   // Get encoded frame.
   const vpx_codec_cx_pkt_t *pkt = NULL;
   vpx_codec_iter_t iter = NULL;
-  int total_size = 0;
+  size_t total_size = 0;
   while ((pkt = vpx_codec_get_cx_data(encoder_, &iter)) != NULL) {
     if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
       total_size += pkt->data.frame.sz;

@@ -13,7 +13,9 @@ namespace media {
 namespace cast {
 
 static const int kRtcpRpsiDataSize = 30;
-static const int kRtcpCnameSize = 256;  // RFC 3550 page 44, including end null.
+
+// RFC 3550 page 44, including end null.
+static const size_t kRtcpCnameSize = 256;
 static const int kRtcpMaxNumberOfRembFeedbackSsrcs = 255;
 
 static const uint32 kRemb = ('R' << 24) + ('E' << 16) + ('M' << 8) + 'B';

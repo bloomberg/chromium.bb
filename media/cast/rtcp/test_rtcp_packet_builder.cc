@@ -45,7 +45,10 @@ void TestRtcpPacketBuilder::AddSdesCname(uint32 sender_ssrc,
   AddRtcpHeader(202, 1);
   big_endian_writer_.WriteU32(sender_ssrc);
   big_endian_writer_.WriteU8(1);  // c_name.
-  big_endian_writer_.WriteU8(c_name.size());  // c_name length in bytes.
+
+  DCHECK_LE(c_name.size(), 255u);
+  big_endian_writer_.WriteU8(
+      static_cast<uint8>(c_name.size()));  // c_name length in bytes.
   for (size_t i = 0; i < c_name.size(); ++i) {
     big_endian_writer_.WriteU8(c_name.c_str()[i]);
   }
