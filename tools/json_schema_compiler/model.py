@@ -236,6 +236,7 @@ class Function(object):
     self.actions = options.get('actions', [])
     self.supports_listeners = options.get('supportsListeners', True)
     self.supports_rules = options.get('supportsRules', False)
+    self.supports_dom = options.get('supportsDom', False)
 
     def GeneratePropertyFromParam(p):
       return Property(self, p['name'], p, namespace, origin)

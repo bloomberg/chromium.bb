@@ -182,6 +182,7 @@ class _JSCModel(object):
       'types': self._GenerateTypes(self._namespace.types.values()),
       'functions': self._GenerateFunctions(self._namespace.functions),
       'events': self._GenerateEvents(self._namespace.events),
+      'domEvents': self._GenerateDomEvents(self._namespace.events),
       'properties': self._GenerateProperties(self._namespace.properties),
       'introList': self._GetIntroTableList(),
       'channelWarning': self._GetChannelWarning(),
@@ -256,7 +257,12 @@ class _JSCModel(object):
     return function_dict
 
   def _GenerateEvents(self, events):
-    return [self._GenerateEvent(e) for e in events.values()]
+    return [self._GenerateEvent(e) for e in events.values()
+            if not e.supports_dom]
+
+  def _GenerateDomEvents(self, events):
+    return [self._GenerateEvent(e) for e in events.values()
+            if e.supports_dom]
 
   def _GenerateEvent(self, event):
     event_dict = {
@@ -268,6 +274,7 @@ class _JSCModel(object):
       'actions': [self._GetLink(action) for action in event.actions],
       'supportsRules': event.supports_rules,
       'supportsListeners': event.supports_listeners,
+      'properties': [],
       'id': _CreateId(event, 'event')
     }
     if (event.parent is not None and
@@ -295,6 +302,11 @@ class _JSCModel(object):
         'callback': self._GenerateFunction(callback_object),
         'parameters': [callback_parameters]
       }
+    if event.supports_dom:
+      # Treat params as properties of the custom Event object associated with
+      # this DOM Event.
+      event_dict['properties'] += [self._GenerateProperty(param)
+                                   for param in event.params]
     return event_dict
 
   def _GenerateCallback(self, callback):

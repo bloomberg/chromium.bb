@@ -24,6 +24,17 @@
       {{+partials.event api:api}}
     {{/}}
   {{/api.events}}
+  {{?api.domEvents}}
+    <h2 id="dom_events">DOM Events</h2>
+    <dd>
+      Listeners can be added for these events using the standard HTML
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget.addEventListener">addEventListener</a>
+      API. Listeners receive a custom <code>Event</code> object which can have
+      additional properties as listed with each event.</dd>
+    {{#api.domEvents}}
+      {{+partials.dom_event display_name:name @:@ api:api}}
+    {{/api.domEvents}}
+  {{/api.domEvents}}
 </div>
 {{?samples_list}}
   <h2 id="samples">Sample {{title}} that use chrome.{{api.name}}</h2>
