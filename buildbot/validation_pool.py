@@ -1091,6 +1091,10 @@ class ValidationPool(object):
       List of changes that match our query.
     """
     for change in changes:
+      # Because the gerrit cache sometimes gets stale, double-check that the
+      # change hasn't already been merged.
+      if change.status != 'NEW':
+        continue
       # Check that the user (or chrome-bot) uploaded a new change under our
       # feet while Gerrit was in the middle of answering our query.
       for field, value in constants.DEFAULT_CQ_READY_FIELDS.iteritems():

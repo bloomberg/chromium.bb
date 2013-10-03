@@ -498,6 +498,10 @@ class GerritOnBorgHelper(GerritHelper):
     if remove:
       gob_util.RemoveReviewers(self.host, change, remove)
 
+  def GetChangeDetail(self, change_num):
+    return gob_util.GetChangeDetail(
+        self.host, change_num, o_params=('CURRENT_REVISION', 'CURRENT_COMMIT'))
+
   def GrabPatchFromGerrit(self, project, change, commit, must_match=True):
     query = { 'project': project, 'commit': commit, 'must_match': must_match }
     return self.QuerySingleRecord(change, **query)
@@ -550,10 +554,10 @@ class GerritOnBorgHelper(GerritHelper):
 
     if change and change.isdigit() and not query_kwds:
       if dryrun:
-        logging.info('Would have run gob_util.GetChangeDetail(%s, %s, %s)',
-                     self.host, change, o_params)
+        logging.info('Would have run gob_util.GetChangeDetail(%s, %s)',
+                     self.host, change)
         return []
-      change = gob_util.GetChangeDetail(self.host, change, o_params=o_params)
+      change = self.GetChangeDetail(change)
       if change is None:
         return []
       patch_dict = cros_patch.GerritPatch.ConvertQueryResults(change, self.host)
@@ -585,6 +589,12 @@ class GerritOnBorgHelper(GerritHelper):
           limit=self._GERRIT_MAX_QUERY_RETURN, o_params=o_params)
       result.extend(moar)
 
+    # NOTE: Query results are served from the gerrit cache, which may be stale.
+    # To make sure the patch information is accurate, re-request each query
+    # result directly, circumventing the cache.  For reference:
+    #   https://code.google.com/p/chromium/issues/detail?id=302072
+    result = [self.GetChangeDetail(x['_number']) for x in result]
+
     result = [cros_patch.GerritPatch.ConvertQueryResults(
         x, self.host) for x in result]
     if sort:
@@ -597,37 +607,13 @@ class GerritOnBorgHelper(GerritHelper):
     if not changes:
       return
     url_prefix = gob_util.GetGerritFetchUrl(self.host)
-    o_params = [
-        'CURRENT_COMMIT',
-        'CURRENT_REVISION',
-        'DETAILED_ACCOUNTS',
-        'DETAILED_LABELS',
-    ]
-    moar = gob_util.MultiQueryChanges(self.host, {}, changes,
-                                      limit=self._GERRIT_MAX_QUERY_RETURN,
-                                      o_params=o_params)
-    results = list(moar)
-    while moar and self.MORE_CHANGES in moar[-1]:
-      if self.SORTKEY not in moar[-1]:
-        raise GerritException(
-            'Gerrit query has more results, but is missing _sortkey field.')
-      sortkey = moar[-1][self.SORTKEY]
-      moar = gob_util.MultiQueryChanges(self.host, {}, changes,
-                                        limit=self._GERRIT_MAX_QUERY_RETURN,
-                                        sortkey=sortkey, o_params=o_params)
-      results.extend(moar)
     for change in changes:
-      change_results = [x for x in results if (
-          str(x.get('_number')) == change or x.get('change_id') == change)]
-      if not change_results:
+      change_detail = self.GetChangeDetail(change)
+      if not change_detail:
         raise GerritException('Change %s not found on server %s.'
                               % (change, self.host))
-      elif len(change_results) > 1:
-        logging.warning(json.dumps(change_results, indent=2))
-        raise GerritException(
-            'Query for change %s returned multiple results.' % change)
-      patch_dict = cros_patch.GerritPatch.ConvertQueryResults(change_results[0],
-                                                              self.host)
+      patch_dict = cros_patch.GerritPatch.ConvertQueryResults(
+          change_detail, self.host)
       yield change, cros_patch.GerritPatch(patch_dict, self.remote, url_prefix)
 
   @staticmethod

@@ -211,34 +211,36 @@ def GetChange(host, change):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def GetChangeDetail(host, change, o_params=None):
-  """Query a gerrit server for extended information about a single change."""
-  path = 'changes/%s/detail' % change
-  if o_params:
-    path += '?%s' % '&'.join(['o=%s' % p for p in o_params])
+def GetChangeReview(host, change, revision='current'):
+  """Get the current review information for a change."""
+  path = 'changes/%s/revisions/%s/review' % (change, revision)
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+
+
+def GetChangeCommit(host, change, revision='current'):
+  """Get the current review information for a change."""
+  path = 'changes/%s/revisions/%s/commit' % (change, revision)
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def GetChangeCurrentRevision(host, change):
   """Get information about the latest revision for a given change."""
-  return QueryChanges(host, {}, change, o_params=('CURRENT_REVISION',))
+  jmsg = GetChangeReview(host, change)
+  if jmsg:
+    return jmsg.get('current_revision')
 
 
-def GetChangeRevisions(host, change):
-  """Get information about all revisions associated with a change."""
-  return QueryChanges(host, {}, change, o_params=('ALL_REVISIONS',))
+def GetChangeDetail(host, change, o_params=None):
+  """Query a gerrit server for extended information about a single change."""
+  path = 'changes/%s/detail' % change
+  if o_params:
+    path = '%s?%s' % (path, '&'.join(['o=%s' % p for p in o_params]))
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def GetChangeReview(host, change, revision=None):
-  """Get the current review information for a change."""
-  if not revision:
-    jmsg = GetChangeRevisions(host, change)
-    if not jmsg:
-      return None
-    elif len(jmsg) > 1:
-      raise GOBError(200, 'Multiple changes found for ChangeId %s.' % change)
-    revision = jmsg[0]['current_revision']
-  path = 'changes/%s/revisions/%s/review'
+def GetChangeReviewers(host, change):
+  """Get information about all reviewers attached to a change."""
+  path = 'changes/%s/reviewers' % change
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
@@ -264,18 +266,6 @@ def SubmitChange(host, change, wait_for_merge=True):
   body = {'wait_for_merge': wait_for_merge}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   return ReadHttpJsonResponse(conn, ignore_404=False)
-
-
-def GetReviewers(host, change):
-  """Get information about all reviewers attached to a change."""
-  path = 'changes/%s/reviewers' % change
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
-
-
-def GetReview(host, change, revision):
-  """Get review information about a specific revision of a change."""
-  path = 'changes/%s/revisions/%s/review' % (change, revision)
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def AddReviewers(host, change, add=None):
@@ -313,16 +303,12 @@ def RemoveReviewers(host, change, remove=None):
           ' from change %s' % (r, change))
 
 
-def SetReview(host, change, msg=None, labels=None, notify=None):
+def SetReview(host, change, revision='current', msg=None, labels=None,
+              notify=None):
   """Set labels and/or add a message to a code review."""
   if not msg and not labels:
     return
-  jmsg = GetChangeDetail(host, change, o_params=('CURRENT_REVISION',))
-  if not jmsg:
-    raise GOBError(404, 'Change %s not found' % change)
-  elif 'current_revision' not in jmsg:
-    raise GOBError(200, 'Could not get current revision for change %s' % change)
-  path = 'changes/%s/revisions/%s/review' % (change, jmsg['current_revision'])
+  path = 'changes/%s/revisions/%s/review' % (change, revision)
   body = {}
   if msg:
     body['message'] = msg
@@ -340,27 +326,25 @@ def SetReview(host, change, msg=None, labels=None, notify=None):
             key, change))
 
 
-def ResetReviewLabels(host, change, label, value='0', message=None,
-                      notify=None):
+def ResetReviewLabels(host, change, label, value='0', revision='current',
+                      message=None, notify=None):
   """Reset the value of a given label for all reviewers on a change."""
-  # This is tricky, because we want to work on the "current revision", but
-  # there's always the risk that "current revision" will change in between
-  # API calls.  So, we check "current revision" at the beginning and end; if
-  # it has changed, raise an exception.
-  jmsg = GetChangeCurrentRevision(host, change)
-  if not jmsg:
-    raise GOBError(
-        200, 'Could not get review information for change "%s"' % change)
+  # This is tricky when working on the "current" revision, because there's
+  # always the risk that the "current" revision will change in between API
+  # calls.  So, the code dereferences the "current" revision down to a literal
+  # sha1 at the beginning and uses it for all subsequent calls.  As a sanity
+  # check, the "current" revision is dereferenced again at the end, and if it
+  # differs from the previous "current" revision, an exception is raised.
+  current = (revision == 'current')
+  jmsg = GetChangeDetail(
+      host, change, o_params=['CURRENT_REVISION', 'CURRENT_COMMIT'])
+  if current:
+    revision = jmsg['current_revision']
   value = str(value)
-  revision = jmsg[0]['current_revision']
   path = 'changes/%s/revisions/%s/review' % (change, revision)
   message = message or (
       '%s label set to %s programmatically by chromite.' % (label, value))
-  jmsg = GetReview(host, change, revision)
-  if not jmsg:
-    raise GOBError(200, 'Could not get review information for revison %s '
-                   'of change %s' % (revision, change))
-  for review in jmsg.get('labels', {}).get('Commit-Queue', {}).get('all', []):
+  for review in jmsg.get('labels', {}).get(label, {}).get('all', []):
     if str(review.get('value', value)) != value:
       body = {
           'message': message,
@@ -369,17 +353,17 @@ def ResetReviewLabels(host, change, label, value='0', message=None,
       }
       if notify:
         body['notify'] = notify
-      conn = CreateHttpConn(
-          host, path, reqtype='POST', body=body)
+      conn = CreateHttpConn(host, path, reqtype='POST', body=body)
       response = ReadHttpJsonResponse(conn)
       if str(response['labels'][label]) != value:
         username = review.get('email', jmsg.get('name', ''))
         raise GOBError(200, 'Unable to set %s label for user "%s"'
                        ' on change %s.' % (label, username, change))
-  jmsg = GetChangeCurrentRevision(host, change)
-  if not jmsg:
-    raise GOBError(
-        200, 'Could not get review information for change "%s"' % change)
-  elif jmsg[0]['current_revision'] != revision:
-    raise GOBError(200, 'While resetting labels on change "%s", '
-                   'a new patchset was uploaded.' % change)
+  if current:
+    new_revision = GetChangeCurrentRevision(host, change)
+    if not new_revision:
+      raise GOBError(
+          200, 'Could not get review information for change "%s"' % change)
+    elif new_revision != revision:
+      raise GOBError(200, 'While resetting labels on change "%s", '
+                     'a new patchset was uploaded.' % change)
