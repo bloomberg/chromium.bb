@@ -77,6 +77,9 @@ void SetupProgressiveScanFieldTrial() {
   group_to_char[trial->AppendGroup("50Percent_4MinMax", 0)] = "2";
   group_to_char[trial->AppendGroup("50Percent_8MinMax", 0)] = "3";
   group_to_char[trial->AppendGroup("100Percent_8MinMax", 0)] = "4";
+  group_to_char[trial->AppendGroup("100Percent_1MinSeen_A", 0)] = "5";
+  group_to_char[trial->AppendGroup("100Percent_1MinSeen_B", 0)] = "6";
+  group_to_char[trial->AppendGroup("100Percent_1Min_4Max", 0)] = "7";
 
   // Announce the experiment to any listeners (especially important is the UMA
   // software, which will append the group names to UMA statistics).

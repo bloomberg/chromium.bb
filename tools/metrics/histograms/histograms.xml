@@ -29147,7 +29147,16 @@ other types of suffix sets.
       label="Progressive scan @ 50%, 8 frequency bins."/>
   <group name="100Percent_8MinMax"
       label="Progressive scan @ 100%, 8 frequency bins."/>
+  <group name="100Percent_1MinSeen_A"
+      label="Progressive scan @ all previously seen frequencies (A)."/>
+  <group name="100Percent_1MinSeen_B"
+      label="Progressive scan @ all previously seen frequencies (B)."/>
+  <group name="100Percent_1Min_4Max"
+      label="Progressive scan @ 100%, minimum 1/maximum 4 frequencies."/>
+  <affected-histogram name="Network.Shill.TimeToDrop"/>
   <affected-histogram name="Network.Shill.WiFi.ScanResult"/>
+  <affected-histogram name="Network.Shill.Wifi.TimeToConnect"/>
+  <affected-histogram name="Network.Shill.Wifi.TimeToJoin"/>
   <affected-histogram name="Network.Shill.Wifi.TimeToScan"/>
   <affected-histogram name="Network.Shill.Wifi.TimeToScanAndConnect"/>
 </fieldtrial>
