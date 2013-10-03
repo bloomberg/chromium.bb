@@ -108,6 +108,9 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
 
     controller_->Init(delegate_.get(), widget_, top_container_);
     SetAnimationsDisabled(true);
+
+    // The mouse is moved so that it is not over |top_container_| by
+    // AshTestBase.
   }
 
   // Enable or disable the immersive mode controller's animations. When the
@@ -806,6 +809,13 @@ class ImmersiveModeControllerAshTestWithBrowserView
     controller_ = static_cast<ImmersiveModeControllerAsh*>(
         browser_view()->immersive_mode_controller());
     controller_->DisableAnimationsForTest();
+
+    // Move the mouse so that it is not over the top-of-window views. The mouse
+    // position matters because entering immersive fullscreen causes synthesized
+    // mouse moves. (If the mouse is at the very top of the screen when entering
+    // immersive fullscreen, the top-of-window views will hide, then reveal as
+    // a result of the synthesized mouse moves).
+    controller()->SetMouseHoveredForTest(false);
   }
 
   // Returns the bounds of |view| in widget coordinates.
@@ -824,8 +834,7 @@ class ImmersiveModeControllerAshTestWithBrowserView
 
 // Test the layout and visibility of the tabstrip, toolbar and TopContainerView
 // in immersive fullscreen.
-// Flaky. See http://crbug.com/302908 .
-TEST_F(ImmersiveModeControllerAshTestWithBrowserView, DISABLED_Layout) {
+TEST_F(ImmersiveModeControllerAshTestWithBrowserView, Layout) {
   AddTab(browser(), GURL("about:blank"));
 
   TabStrip* tabstrip = browser_view()->tabstrip();
