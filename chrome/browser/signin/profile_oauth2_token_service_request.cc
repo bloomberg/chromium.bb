@@ -137,7 +137,10 @@ void ProfileOAuth2TokenServiceRequest::Core::StartOnUIThread(
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   DCHECK(service);
-  request_.reset(service->StartRequest(account_id, scopes, this).release());
+  std::string account_id_to_use =
+      account_id.empty() ? service->GetPrimaryAccountId() : account_id;
+  request_.reset(
+      service->StartRequest(account_id_to_use, scopes, this).release());
 }
 
 void ProfileOAuth2TokenServiceRequest::Core::OnGetTokenSuccess(

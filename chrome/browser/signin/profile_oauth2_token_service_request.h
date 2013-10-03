@@ -24,6 +24,8 @@ class Profile;
 class ProfileOAuth2TokenServiceRequest : public OAuth2TokenService::Request,
                                          public base::NonThreadSafe {
  public:
+  // Creates and starts a request for |account_id| and |scopes|.
+  // Uses the primary account id if |account_id| is the empty string.
   static ProfileOAuth2TokenServiceRequest* CreateAndStart(
       Profile* profile,
       const std::string& account_id,
