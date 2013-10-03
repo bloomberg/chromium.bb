@@ -34,6 +34,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/dom/WhitespaceChildList.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRootRareData.h"
@@ -182,24 +183,20 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
         change = Force;
 
     // FIXME: This doesn't handle :hover + div properly like Element::recalcStyle does.
-    bool forceReattachOfAnyWhitespaceSibling = false;
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        bool didReattach = false;
-
-        if (child->renderer())
-            forceReattachOfAnyWhitespaceSibling = false;
-
+    WhitespaceChildList whitespaceChildList(change);
+    for (Node* child = lastChild(); child; child = child->previousSibling()) {
         if (child->isTextNode()) {
-            if (forceReattachOfAnyWhitespaceSibling && toText(child)->containsOnlyWhitespace())
-                child->reattach();
+            Text* textChild = toText(child);
+            if (textChild->containsOnlyWhitespace())
+                whitespaceChildList.append(textChild);
             else
-                didReattach = toText(child)->recalcTextStyle(change);
+                textChild->recalcTextStyle(change);
         } else if (child->isElementNode() && shouldRecalcStyle(change, child)) {
-            didReattach = toElement(child)->recalcStyle(change);
+            toElement(child)->recalcStyle(change);
         }
-
-        forceReattachOfAnyWhitespaceSibling = didReattach || forceReattachOfAnyWhitespaceSibling;
     }
+
+    whitespaceChildList.recalcStyle();
 
     styleResolver->popParentShadowRoot(*this);
     clearNeedsStyleRecalc();

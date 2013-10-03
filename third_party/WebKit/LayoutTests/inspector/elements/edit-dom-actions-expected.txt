@@ -1,6 +1,6 @@
 Tests that user can mutate DOM by means of elements panel.
 
- 
+
 Edited Text
 Span contents
 A#nbsp;B#ensp;C#emsp;D#thinsp;E#zwnj;F#zwj;G#rlm;H#lrm;I

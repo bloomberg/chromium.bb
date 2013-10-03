@@ -63,6 +63,7 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/SelectorQuery.h"
 #include "core/dom/Text.h"
+#include "core/dom/WhitespaceChildList.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -1560,39 +1561,46 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
     bool forceCheckOfNextElementSibling = false;
     bool forceCheckOfAnyElementSibling = false;
-    bool forceReattachOfAnyWhitespaceSibling = false;
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        bool didReattach = false;
-
-        if (child->renderer())
-            forceReattachOfAnyWhitespaceSibling = false;
-
-        if (child->isTextNode()) {
-            if (forceReattachOfAnyWhitespaceSibling && toText(child)->containsOnlyWhitespace())
-                child->reattach();
-            else
-                didReattach = toText(child)->recalcTextStyle(change);
-        } else if (child->isElementNode()) {
+    if (hasDirectAdjacentRules || hasIndirectAdjacentRules) {
+        for (Node* child = firstChild(); child; child = child->nextSibling()) {
+            if (!child->isElementNode())
+                continue;
             Element* element = toElement(child);
-
             bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
-
             if (forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling)
                 element->setNeedsStyleRecalc();
-
             forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
             forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
-
+        }
+    }
+    // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid
+    // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
+    // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
+    // Reversing this loop can lead to non-deterministic results in our code to optimize out empty whitespace
+    // RenderTexts. We try to put off recalcing their style until the end to avoid this issue.
+    // See crbug.com/288225
+    WhitespaceChildList whitespaceChildList(change);
+    for (Node* child = lastChild(); child; child = child->previousSibling()) {
+        if (child->isTextNode()) {
+            Text* textChild = toText(child);
+            // FIXME: This check is expensive and may negate the performance gained by the optimization of
+            // avoiding whitespace renderers.
+            if (textChild->containsOnlyWhitespace())
+                whitespaceChildList.append(textChild);
+            else
+                textChild->recalcTextStyle(change);
+        } else if (child->isElementNode()) {
+            Element* element = toElement(child);
             if (shouldRecalcStyle(change, element)) {
                 parentPusher.push();
-                didReattach = element->recalcStyle(change);
+                element->recalcStyle(change);
             } else if (document().styleResolver()->supportsStyleSharing(element)) {
                 document().styleResolver()->addToStyleSharingList(element);
             }
         }
-
-        forceReattachOfAnyWhitespaceSibling = didReattach || forceReattachOfAnyWhitespaceSibling;
     }
+
+    whitespaceChildList.recalcStyle();
 
     if (shouldRecalcStyle(change, this)) {
         updatePseudoElement(AFTER, change);
@@ -1763,7 +1771,7 @@ static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool fin
     // The + selector.  We need to invalidate the first element following the insertion point.  It is the only possible element
     // that could be affected by this DOM change.
     if (e->childrenAffectedByDirectAdjacentRules() && afterChange) {
-        if (Node* firstElementAfterInsertion = afterChange->nextElementSibling())
+        if (Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : afterChange->nextElementSibling())
             firstElementAfterInsertion->setNeedsStyleRecalc();
     }
 }
