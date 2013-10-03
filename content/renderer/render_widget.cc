@@ -1124,7 +1124,7 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
   bool event_type_gets_rate_limited =
       input_event->type == WebInputEvent::MouseMove ||
       input_event->type == WebInputEvent::MouseWheel ||
-      WebInputEvent::isTouchEventType(input_event->type);
+      input_event->type == WebInputEvent::TouchMove;
 
   bool frame_pending = paint_aggregator_.HasPendingUpdate();
   if (is_accelerated_compositing_active_) {
