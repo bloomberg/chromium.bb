@@ -18,7 +18,7 @@ class ScopedAppGLStateRestore {
  public:
   enum CallMode {
     MODE_DRAW,
-    MODE_DETACH_FROM_WINDOW
+    MODE_RESOURCE_MANAGEMENT,
   };
 
   ScopedAppGLStateRestore(CallMode mode);

@@ -898,4 +898,8 @@ void AwContents::SetJsOnlineProperty(JNIEnv* env,
   render_view_host_ext_->SetJsOnlineProperty(network_up);
 }
 
+void AwContents::TrimMemory(JNIEnv* env, jobject obj, jint level) {
+  browser_view_renderer_->TrimMemory(level);
+}
+
 }  // namespace android_webview

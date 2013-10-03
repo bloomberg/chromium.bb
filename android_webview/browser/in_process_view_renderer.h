@@ -10,6 +10,7 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "base/cancelable_callback.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -71,6 +72,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual bool IsAttachedToWindow() OVERRIDE;
   virtual bool IsVisible() OVERRIDE;
   virtual gfx::Rect GetScreenRect() OVERRIDE;
+  virtual void TrimMemory(int level) OVERRIDE;
 
   // SynchronousCompositorClient overrides
   virtual void DidInitializeCompositor(
@@ -108,12 +110,15 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // If we call up view invalidate and OnDraw is not called before a deadline,
   // then we keep ticking the SynchronousCompositor so it can make progress.
   void FallbackTickFired();
+  void ForceFakeCompositeSW();
 
   void NoLongerExpectsDrawGL();
 
   bool InitializeHwDraw();
 
   gfx::Vector2d max_scroll_offset() const;
+
+  void SetMemoryPolicy(content::SynchronousCompositorMemoryPolicy& new_policy);
 
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state and the |draw_info| if provided.
@@ -175,6 +180,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   gfx::Vector2dF overscroll_rounding_error_;
 
   GLViewRendererManager::Key manager_key_;
+
+  content::SynchronousCompositorMemoryPolicy memory_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessViewRenderer);
 };

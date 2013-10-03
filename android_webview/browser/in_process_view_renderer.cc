@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -316,6 +315,65 @@ bool InProcessViewRenderer::RequestProcessGL() {
   return client_->RequestDrawGL(NULL);
 }
 
+void InProcessViewRenderer::TrimMemory(int level) {
+  // Constants from Android ComponentCallbacks2.
+  enum {
+    TRIM_MEMORY_RUNNING_LOW = 10,
+    TRIM_MEMORY_UI_HIDDEN = 20,
+    TRIM_MEMORY_BACKGROUND = 40,
+  };
+
+  // Not urgent enough. TRIM_MEMORY_UI_HIDDEN is treated specially because
+  // it does not indicate memory pressure, but merely that the app is
+  // backgrounded.
+  if (level < TRIM_MEMORY_RUNNING_LOW || level == TRIM_MEMORY_UI_HIDDEN)
+    return;
+
+  // Nothing to drop.
+  if (!attached_to_window_ || !hardware_initialized_ || !compositor_)
+    return;
+
+  // Do not release resources on view we expect to get DrawGL soon.
+  if (level < TRIM_MEMORY_BACKGROUND) {
+    client_->UpdateGlobalVisibleRect();
+    if (view_visible_ && window_visible_ &&
+        !cached_global_visible_rect_.IsEmpty()) {
+      return;
+    }
+  }
+
+  if (!eglGetCurrentContext()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Just set the memory limit to 0 and drop all tiles. This will be reset to
+  // normal levels in the next DrawGL call.
+  content::SynchronousCompositorMemoryPolicy policy;
+  policy.bytes_limit = 0;
+  policy.num_resources_limit = 0;
+  if (memory_policy_ == policy)
+    return;
+
+  TRACE_EVENT0("android_webview", "InProcessViewRenderer::TrimMemory");
+  ScopedAppGLStateRestore state_restore(
+      ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
+  gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
+  ScopedAllowGL allow_gl;
+
+  SetMemoryPolicy(policy);
+  ForceFakeCompositeSW();
+}
+
+void InProcessViewRenderer::SetMemoryPolicy(
+    content::SynchronousCompositorMemoryPolicy& new_policy) {
+  if (memory_policy_ == new_policy)
+    return;
+
+  memory_policy_ = new_policy;
+  compositor_->SetMemoryPolicy(memory_policy_);
+}
+
 void InProcessViewRenderer::UpdateCachedGlobalVisibleRect() {
   client_->UpdateGlobalVisibleRect();
 }
@@ -423,7 +481,7 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   policy.bytes_limit =
       (policy.bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
   policy.num_resources_limit = kMaxNumTilesToFillDisplay * g_memory_multiplier;
-  compositor_->SetMemoryPolicy(policy);
+  SetMemoryPolicy(policy);
 
   DCHECK(gl_surface_);
   gl_surface_->SetBackingFrameBufferObject(
@@ -638,7 +696,7 @@ void InProcessViewRenderer::OnDetachedFromWindow() {
     DCHECK(compositor_);
 
     ScopedAppGLStateRestore state_restore(
-        ScopedAppGLStateRestore::MODE_DETACH_FROM_WINDOW);
+        ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
     gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
     ScopedAllowGL allow_gl;
     compositor_->ReleaseHwDraw();
@@ -869,11 +927,15 @@ void InProcessViewRenderer::FallbackTickFired() {
   // This should only be called if OnDraw or DrawGL did not come in time, which
   // means block_invalidates_ must still be true.
   DCHECK(block_invalidates_);
-  if (compositor_needs_continuous_invalidate_ && compositor_) {
-    SkBitmapDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
-    SkCanvas canvas(&device);
-    CompositeSW(&canvas);
-  }
+  if (compositor_needs_continuous_invalidate_ && compositor_)
+    ForceFakeCompositeSW();
+}
+
+void InProcessViewRenderer::ForceFakeCompositeSW() {
+  DCHECK(compositor_);
+  SkBitmapDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
+  SkCanvas canvas(&device);
+  CompositeSW(&canvas);
 }
 
 bool InProcessViewRenderer::CompositeSW(SkCanvas* canvas) {

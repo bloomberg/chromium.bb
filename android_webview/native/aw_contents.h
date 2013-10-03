@@ -179,6 +179,7 @@ class AwContents : public FindHelper::Listener,
   void SetAwAutofillManagerDelegate(jobject delegate);
 
   void SetJsOnlineProperty(JNIEnv* env, jobject obj, jboolean network_up);
+  void TrimMemory(JNIEnv* env, jobject obj, jint level);
 
  private:
   void InitAutofillIfNecessary(bool enabled);

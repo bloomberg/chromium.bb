@@ -31,6 +31,9 @@ struct CONTENT_EXPORT SynchronousCompositorMemoryPolicy {
   size_t num_resources_limit;
 
   SynchronousCompositorMemoryPolicy();
+
+  bool operator==(const SynchronousCompositorMemoryPolicy& other) const;
+  bool operator!=(const SynchronousCompositorMemoryPolicy& other) const;
 };
 
 // Interface for embedders that wish to direct compositing operations

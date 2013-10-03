@@ -140,6 +140,9 @@ class BrowserViewRenderer {
   virtual bool IsVisible() = 0;
   virtual gfx::Rect GetScreenRect() = 0;
 
+  // ComponentCallbacks2.onTrimMemory callback.
+  virtual void TrimMemory(int level) = 0;
+
   virtual ~BrowserViewRenderer() {}
 };
 

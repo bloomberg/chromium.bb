@@ -9,4 +9,15 @@ namespace content {
 SynchronousCompositorMemoryPolicy::SynchronousCompositorMemoryPolicy()
     : bytes_limit(0), num_resources_limit(0) {}
 
+bool SynchronousCompositorMemoryPolicy::operator==(
+    const SynchronousCompositorMemoryPolicy& other) const {
+  return bytes_limit == other.bytes_limit &&
+      num_resources_limit == other.num_resources_limit;
+}
+
+bool SynchronousCompositorMemoryPolicy::operator!=(
+    const SynchronousCompositorMemoryPolicy& other) const {
+  return !(*this == other);
+}
+
 }  // namespace content
