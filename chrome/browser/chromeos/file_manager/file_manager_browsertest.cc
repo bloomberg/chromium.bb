@@ -525,6 +525,11 @@ void FileManagerBrowserTest::SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
     command_line->AppendSwitch(switches::kIncognito);
   }
+  // TODO(yoshiki): Remove the flag when the feature is launched.
+  if (std::tr1::get<1>(GetParam()) == std::string("suggestAppDialog")) {
+    command_line->AppendSwitch(
+        chromeos::switches::kFileManagerEnableWebstoreIntegration);
+  }
   ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
