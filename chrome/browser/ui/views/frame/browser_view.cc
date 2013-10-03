@@ -1475,7 +1475,8 @@ bool BrowserView::CanMaximize() const {
 }
 
 bool BrowserView::CanActivate() const {
-  if (!AppModalDialogQueue::GetInstance()->active_dialog())
+  if (!AppModalDialogQueue::GetInstance()->active_dialog() ||
+      !AppModalDialogQueue::GetInstance()->active_dialog()->native_dialog())
     return true;
 
 #if defined(USE_AURA) && defined(OS_CHROMEOS)
