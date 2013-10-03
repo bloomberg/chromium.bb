@@ -10,7 +10,6 @@ layer at (0,0) size 800x600
           text run at (705,0) width 63: "paragraph"
           text run at (768,0) width 4: " "
           text run at (0,18) width 162: "below should be selected:"
-        RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,36) size 784x18
         RenderText {#text} at (0,0) size 21x18
           text run at (0,0) width 21: "foo"
