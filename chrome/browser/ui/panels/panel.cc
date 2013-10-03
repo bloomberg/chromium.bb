@@ -150,7 +150,7 @@ bool PanelExtensionWindowController::IsVisibleToExtension(
   return extension->id() == panel_->extension_id();
 }
 
-}  // namespace internal
+}  // namespace panel_internal
 
 Panel::~Panel() {
   DCHECK(!collection_);
@@ -431,7 +431,7 @@ void Panel::Observe(int type,
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_WEB_CONTENTS_SWAPPED:
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED:
       ConfigureAutoResize(content::Source<content::WebContents>(source).ptr());
       break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
@@ -582,7 +582,7 @@ void Panel::SetAutoResizable(bool resizable) {
       EnableWebContentsAutoResize(web_contents);
   } else {
     if (web_contents) {
-      registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+      registrar_.Remove(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                         content::Source<content::WebContents>(web_contents));
 
       // NULL might be returned if the tab has not been added.
@@ -600,11 +600,11 @@ void Panel::EnableWebContentsAutoResize(content::WebContents* web_contents) {
   // We also need to know when the render view host changes in order
   // to turn on auto-resize notifications in the new render view host.
   if (!registrar_.IsRegistered(
-          this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+          this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
           content::Source<content::WebContents>(web_contents))) {
     registrar_.Add(
         this,
-        content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+        content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
         content::Source<content::WebContents>(web_contents));
   }
 }

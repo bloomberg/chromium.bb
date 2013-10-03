@@ -2559,17 +2559,13 @@ import java.util.Map;
         // renderers for ContentViews loading in background do not retain the high priority.
         ChildProcessLauncher.getBindingManager().removeInitialBinding(newPid);
         mPid = newPid;
-    }
 
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onWebContentsConnected() {
         attachImeAdapter();
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onWebContentsSwapped() {
+    private void onWebContentsConnected() {
         attachImeAdapter();
     }
 

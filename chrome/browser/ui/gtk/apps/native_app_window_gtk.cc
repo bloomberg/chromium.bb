@@ -51,6 +51,8 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
       frame_cursor_(NULL),
       atom_cache_(base::MessagePumpGtk::GetDefaultXDisplay(), kAtomsToCache),
       is_x_event_listened_(false) {
+  Observe(web_contents());
+
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
   gfx::NativeView native_view =
@@ -340,7 +342,9 @@ bool NativeAppWindowGtk::IsAlwaysOnTop() const {
   return false;
 }
 
-void NativeAppWindowGtk::RenderViewHostChanged() {
+void NativeAppWindowGtk::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
   web_contents()->GetView()->Focus();
 }
 

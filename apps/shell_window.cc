@@ -183,9 +183,6 @@ void ShellWindow::Init(const GURL& url,
   // about it in case it has any setup to do to make the renderer appear
   // properly. In particular, on Windows, the view's clickthrough region needs
   // to be set.
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                 content::Source<content::NavigationController>(
-                    &web_contents->GetController()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
   // Close when the browser process is exiting.
@@ -543,13 +540,6 @@ void ShellWindow::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED: {
-      // TODO(jianli): once http://crbug.com/123007 is fixed, we'll no longer
-      // need to make the native window (ShellWindowViews specially) update
-      // the clickthrough region for the new RVH.
-      native_app_window_->RenderViewHostChanged();
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const extensions::Extension* unloaded_extension =
           content::Details<extensions::UnloadedExtensionInfo>(

@@ -786,6 +786,8 @@ void NativeAppWindowViews::HandleKeyboardEvent(
                                                         GetFocusManager());
 }
 
-void NativeAppWindowViews::RenderViewHostChanged() {
+void NativeAppWindowViews::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
   OnViewWasResized();
 }

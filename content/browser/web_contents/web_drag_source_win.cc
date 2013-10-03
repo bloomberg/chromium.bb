@@ -39,7 +39,7 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       effect_(DROPEFFECT_NONE),
       data_(NULL) {
-  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_SWAPPED,
+  registrar_.Add(this, NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                  Source<WebContents>(web_contents));
   registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                  Source<WebContents>(web_contents));
@@ -114,7 +114,7 @@ void WebDragSource::OnDragSourceMove() {
 void WebDragSource::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  if (type == NOTIFICATION_WEB_CONTENTS_SWAPPED) {
+  if (type == NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
     // When the WebContents get swapped, our render view host goes away.
     // That's OK, we can continue the drag, we just can't send messages back to
     // our drag source.

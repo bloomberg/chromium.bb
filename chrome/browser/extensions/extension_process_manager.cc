@@ -163,7 +163,7 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
@@ -350,7 +350,7 @@ std::set<RenderViewHost*>
 }
 
 const Extension* ExtensionProcessManager::GetExtensionForRenderViewHost(
-    content::RenderViewHost* render_view_host) {
+    RenderViewHost* render_view_host) {
   if (!render_view_host->GetSiteInstance())
     return NULL;
 
@@ -640,28 +640,26 @@ void ExtensionProcessManager::Observe(
       break;
     }
 
-    case content::NOTIFICATION_WEB_CONTENTS_SWAPPED: {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED: {
       // We get this notification both for new WebContents and when one
       // has its RenderViewHost replaced (e.g. when a user does a cross-site
       // navigation away from an extension URL). For the replaced case, we must
       // unregister the old RVH so it doesn't count as an active view that would
       // keep the event page alive.
-      content::WebContents* contents =
-          content::Source<content::WebContents>(source).ptr();
+      WebContents* contents = content::Source<WebContents>(source).ptr();
       if (contents->GetBrowserContext() != GetProfile())
         break;
 
-      content::RenderViewHost* old_render_view_host =
-          content::Details<content::RenderViewHost>(details).ptr();
-      if (old_render_view_host)
-        UnregisterRenderViewHost(old_render_view_host);
-      RegisterRenderViewHost(contents->GetRenderViewHost());
+      typedef std::pair<RenderViewHost*, RenderViewHost*> RVHPair;
+      RVHPair* switched_details = content::Details<RVHPair>(details).ptr();
+      if (switched_details->first)
+        UnregisterRenderViewHost(switched_details->first);
+      RegisterRenderViewHost(switched_details->second);
       break;
     }
 
     case content::NOTIFICATION_WEB_CONTENTS_CONNECTED: {
-      content::WebContents* contents =
-          content::Source<content::WebContents>(source).ptr();
+      WebContents* contents = content::Source<WebContents>(source).ptr();
       if (contents->GetBrowserContext() != GetProfile())
         break;
       const Extension* extension = GetExtensionForRenderViewHost(
@@ -693,7 +691,7 @@ void ExtensionProcessManager::Observe(
 
 void ExtensionProcessManager::OnDevToolsStateChanged(
     content::DevToolsAgentHost* agent_host, bool attached) {
-  content::RenderViewHost* rvh = agent_host->GetRenderViewHost();
+  RenderViewHost* rvh = agent_host->GetRenderViewHost();
   // Ignore unrelated notifications.
   if (!rvh ||
       rvh->GetSiteInstance()->GetProcess()->GetBrowserContext() != GetProfile())

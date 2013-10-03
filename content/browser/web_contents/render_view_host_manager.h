@@ -66,7 +66,7 @@ class CONTENT_EXPORT RenderViewHostManager
     virtual void UpdateRenderViewSizeForRenderManager() = 0;
     virtual void CancelModalDialogsForRenderManager() = 0;
     virtual void NotifySwappedFromRenderManager(
-        RenderViewHost* old_render_view_host) = 0;
+        RenderViewHost* old_host, RenderViewHost* new_host) = 0;
     virtual NavigationControllerImpl&
         GetControllerForRenderManager() = 0;
 

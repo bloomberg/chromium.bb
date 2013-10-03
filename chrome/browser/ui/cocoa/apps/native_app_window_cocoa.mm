@@ -16,8 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -257,13 +255,15 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       is_fullscreen_(false),
       attention_request_id_(0),
       use_system_drag_(true) {
+  Observe(web_contents());
+
   // Flip coordinates based on the primary screen.
   NSRect main_screen_rect = [[[NSScreen screens] objectAtIndex:0] frame];
   NSRect cocoa_bounds = NSMakeRect(params.bounds.x(),
       NSHeight(main_screen_rect) - params.bounds.y() - params.bounds.height(),
       params.bounds.width(), params.bounds.height());
 
-  // If coordinates are < 0, center window on primary screen
+  // If coordinates are < 0, center window on primary screen.
   if (params.bounds.x() == INT_MIN) {
     cocoa_bounds.origin.x =
         floor((NSWidth(main_screen_rect) - NSWidth(cocoa_bounds)) / 2);
@@ -782,7 +782,9 @@ bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
   return false;
 }
 
-void NativeAppWindowCocoa::RenderViewHostChanged() {
+void NativeAppWindowCocoa::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
   web_contents()->GetView()->Focus();
 }
 

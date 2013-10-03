@@ -118,6 +118,9 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   // WebContentsObserver implementation.
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewHostChanged(
+      content::RenderViewHost* old_host,
+      content::RenderViewHost* new_host) OVERRIDE;
 
   // views::View implementation.
   virtual void Layout() OVERRIDE;
@@ -140,7 +143,6 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;

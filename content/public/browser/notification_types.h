@@ -119,12 +119,10 @@ enum NotificationType {
 
   // This notification is sent when a WebContents swaps its render view host
   // with another one, possibly changing processes. The source is a
-  // Source<WebContents> with a pointer to the WebContents.  A
-  // NOTIFICATION_WEB_CONTENTS_DISCONNECTED notification is guaranteed before
-  // the source pointer becomes junk.  Details are the RenderViewHost that
-  // has been replaced, or NULL if the old RVH was shut down.
-  // DEPRECATED: Use WebContentsObserver::RenderViewHostSwapped()
-  NOTIFICATION_WEB_CONTENTS_SWAPPED,
+  // Source<WebContents> with a pointer to the WebContents, details is a
+  // std::pair::<old RenderViewHost, new RenderViewHost>.
+  // DEPRECATED: Use WebContentsObserver::RenderViewHostChanged()
+  NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
 
   // This message is sent after a WebContents is disconnected from the
   // renderer process.  The source is a Source<WebContents> with a pointer to
@@ -182,12 +180,6 @@ enum NotificationType {
   // time. The source will be the RenderWidgetHost that corresponds to the
   // hung view, and no details are expected.
   NOTIFICATION_RENDERER_PROCESS_HANG,
-
-  // This is sent to notify that the RenderViewHost displayed in a WebContents
-  // has changed.  Source is the NavigationController for which the change
-  // happened, details is a
-  // std::pair::<old RenderViewHost, new RenderViewHost>).
-  NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
 
   // This is sent when a RenderWidgetHost is being destroyed. The source is
   // the RenderWidgetHost, the details are not used.

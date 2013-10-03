@@ -262,8 +262,7 @@ void WebView::AttachWebContents() {
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<content::NavigationController>(
-          &web_contents_->GetController()));
+      content::Source<content::WebContents>(web_contents_));
   registrar_.Add(
       this,
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,

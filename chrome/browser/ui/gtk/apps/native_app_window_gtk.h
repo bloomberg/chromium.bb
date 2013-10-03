@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x_observer.h"
@@ -27,7 +28,8 @@ class Extension;
 
 class NativeAppWindowGtk : public apps::NativeAppWindow,
                            public ExtensionViewGtk::Container,
-                           public ui::ActiveWindowWatcherXObserver {
+                           public ui::ActiveWindowWatcherXObserver,
+                           public content::WebContentsObserver {
  public:
   NativeAppWindowGtk(apps::ShellWindow* shell_window,
                      const apps::ShellWindow::CreateParams& params);
@@ -58,6 +60,11 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   // ActiveWindowWatcherXObserver implementation.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
+  // WebContentsObserver implementation.
+  virtual void RenderViewHostChanged(
+      content::RenderViewHost* old_host,
+      content::RenderViewHost* new_host) OVERRIDE;
+
  private:
   // NativeAppWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
@@ -69,7 +76,6 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) OVERRIDE;
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
-  virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;

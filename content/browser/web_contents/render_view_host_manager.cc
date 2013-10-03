@@ -165,15 +165,7 @@ RenderViewHostImpl* RenderViewHostManager::Navigate(
     } else {
       // This is our primary renderer, notify here as we won't be calling
       // CommitPending (which does the notify).
-      RenderViewHost* null_rvh = NULL;
-      std::pair<RenderViewHost*, RenderViewHost*> details =
-          std::make_pair(null_rvh, render_view_host_);
-      NotificationService::current()->Notify(
-          NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-          Source<NavigationController>(
-              &delegate_->GetControllerForRenderManager()),
-          Details<std::pair<RenderViewHost*, RenderViewHost*> >(
-              &details));
+      delegate_->NotifySwappedFromRenderManager(NULL, render_view_host_);
     }
   }
 
@@ -778,22 +770,14 @@ void RenderViewHostManager::CommitPending() {
   else if (focus_render_view && render_view_host_->GetView())
     RenderWidgetHostViewPort::FromRWHV(render_view_host_->GetView())->Focus();
 
-  std::pair<RenderViewHost*, RenderViewHost*> details =
-      std::make_pair(old_render_view_host, render_view_host_);
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      Source<NavigationController>(
-          &delegate_->GetControllerForRenderManager()),
-      Details<std::pair<RenderViewHost*, RenderViewHost*> >(&details));
+  // Notify that we've swapped RenderViewHosts. We do this
+  // before shutting down the RVH so that we can clean up
+  // RendererResources related to the RVH first.
+  delegate_->NotifySwappedFromRenderManager(old_render_view_host,
+                                            render_view_host_);
 
   // If the pending view was on the swapped out list, we can remove it.
   swapped_out_hosts_.erase(render_view_host_->GetSiteInstance()->GetId());
-
-  // Let the task manager know that we've swapped RenderViewHosts,
-  // since it might need to update its process groupings. We do this
-  // before shutting down the RVH so that we can clean up
-  // RendererResources related to the RVH first.
-  delegate_->NotifySwappedFromRenderManager(old_render_view_host);
 
   // If there are no active RVHs in this SiteInstance, it means that
   // this RVH was the last active one in the SiteInstance. Now that we

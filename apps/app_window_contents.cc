@@ -60,16 +60,15 @@ void AppWindowContents::LoadContents(int32 creator_process_id) {
   }
 
   // TODO(jeremya): there's a bug where navigating a web contents to an
-  // extension URL causes it to create a new RVH and discard the old
-  // (perfectly usable) one. To work around this, we watch for a RVH_CHANGED
-  // message from the web contents (which will be sent during LoadURL) and
-  // suspend resource requests on the new RVH to ensure that we block the new
-  // RVH from loading anything. It should be okay to remove the
-  // NOTIFICATION_RVH_CHANGED registration once http://crbug.com/123007 is
-  // fixed.
+  // extension URL causes it to create a new RVH and discard the old (perfectly
+  // usable) one. To work around this, we watch for a
+  // NOTIFICATION_RENDER_VIEW_HOST_CHANGED message from the web contents (which
+  // will be sent during LoadURL) and suspend resource requests on the new RVH
+  // to ensure that we block the new RVH from loading anything. It should be
+  // okay to remove the NOTIFICATION_RENDER_VIEW_HOST_CHANGED registration once
+  // http://crbug.com/123007 is fixed.
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                 content::Source<content::NavigationController>(
-                     &web_contents()->GetController()));
+                 content::Source<content::WebContents>(web_contents()));
   web_contents_->GetController().LoadURL(
       url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());

@@ -13,7 +13,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/draggable_region.h"
 #include "ui/gfx/rect.h"
 
@@ -41,7 +41,8 @@ class SkRegion;
 @end
 
 // Cocoa bridge to AppWindow.
-class NativeAppWindowCocoa : public apps::NativeAppWindow {
+class NativeAppWindowCocoa : public apps::NativeAppWindow,
+                             public content::WebContentsObserver {
  public:
   NativeAppWindowCocoa(apps::ShellWindow* shell_window,
                        const apps::ShellWindow::CreateParams& params);
@@ -122,8 +123,12 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow {
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
+
+  // WebContentsObserver implementation.
+  virtual void RenderViewHostChanged(
+      content::RenderViewHost* old_host,
+      content::RenderViewHost* new_host) OVERRIDE;
 
   // These are used to simulate Mac-style hide/show. Since windows can be hidden
   // and shown using the app.window API, this sets is_hidden_with_app_ to

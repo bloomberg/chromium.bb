@@ -584,9 +584,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
-  notifications.ListenFor(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      Source<NavigationController>(&web_contents->GetController()));
+  notifications.ListenFor(NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+                          Source<WebContents>(web_contents.get()));
 
   // Create.
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
@@ -662,8 +661,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   EXPECT_FALSE(manager.pending_render_view_host());
 
   // We should observe a notification.
-  EXPECT_TRUE(notifications.Check1AndReset(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+  EXPECT_TRUE(
+      notifications.Check1AndReset(NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
 }
 
 // Tests the Navigate function. In this unit test we verify that the Navigate
@@ -677,9 +676,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
-  notifications.ListenFor(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      Source<NavigationController>(&web_contents->GetController()));
+  notifications.ListenFor(NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+                          Source<WebContents>(web_contents.get()));
 
   // Create.
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
@@ -700,8 +698,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   EXPECT_FALSE(manager.pending_render_view_host());
 
   // We should observe a notification.
-  EXPECT_TRUE(notifications.Check1AndReset(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+  EXPECT_TRUE(
+      notifications.Check1AndReset(NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
   notifications.Reset();
 
   // Commit.
@@ -814,8 +812,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   EXPECT_FALSE(manager.pending_render_view_host());
 
   // We should observe a notification.
-  EXPECT_TRUE(notifications.Check1AndReset(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+  EXPECT_TRUE(
+      notifications.Check1AndReset(NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
 }
 
 // Tests WebUI creation.
@@ -1242,9 +1240,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyClose) {
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
   web_contents->SetDelegate(&delegate);
-  notifications.ListenFor(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      Source<NavigationController>(&web_contents->GetController()));
+  notifications.ListenFor(NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+                          Source<WebContents>(web_contents.get()));
 
   // Create.
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
@@ -1265,8 +1262,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyClose) {
   EXPECT_FALSE(manager.pending_render_view_host());
 
   // We should observe a notification.
-  EXPECT_TRUE(notifications.Check1AndReset(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+  EXPECT_TRUE(
+      notifications.Check1AndReset(NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
   notifications.Reset();
 
   // Commit.

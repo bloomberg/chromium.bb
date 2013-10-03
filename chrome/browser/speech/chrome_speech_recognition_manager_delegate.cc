@@ -160,7 +160,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
       registrar_.reset(new content::NotificationRegistrar());
 
     registrar_->Add(this,
-                    content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+                    content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                     content::Source<WebContents>(web_contents));
     registrar_->Add(this,
                     content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
@@ -173,7 +173,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
                        const content::NotificationDetails& details) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED ||
-           type == content::NOTIFICATION_WEB_CONTENTS_SWAPPED);
+           type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED);
 
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
     std::vector<WebContentsInfo>::iterator iter = FindWebContents(web_contents);
@@ -183,7 +183,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
     registered_web_contents_.erase(iter);
 
     registrar_->Remove(this,
-                       content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+                       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                        content::Source<WebContents>(web_contents));
     registrar_->Remove(this,
                        content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,

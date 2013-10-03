@@ -431,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderChangedAfterSwap) {
   GURL test_https_url(https_server.GetURL(
       "files/browser_plugin_title_change.html"));
   content::WindowedNotificationObserver swap_observer(
-      content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<WebContents>(test_embedder()->web_contents()));
   NavigateToURL(shell(), test_https_url);
   swap_observer.Wait();

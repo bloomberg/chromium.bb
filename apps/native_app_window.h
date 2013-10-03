@@ -43,10 +43,6 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
 
-  // TODO(jianli): once http://crbug.com/123007 is fixed, we'll no longer need
-  // this.
-  virtual void RenderViewHostChanged() = 0;
-
   // Returns the difference between the window bounds (including titlebar and
   // borders) and the content bounds, if any.
   virtual gfx::Insets GetFrameInsets() const = 0;

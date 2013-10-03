@@ -2866,19 +2866,22 @@ bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
   return true;
 }
 
-void WebContentsImpl::NotifySwapped(RenderViewHost* old_render_view_host) {
+void WebContentsImpl::NotifySwapped(RenderViewHost* old_host,
+                                    RenderViewHost* new_host) {
   // After sending out a swap notification, we need to send a disconnect
   // notification so that clients that pick up a pointer to |this| can NULL the
   // pointer.  See Bug 1230284.
   notify_disconnection_ = true;
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    RenderViewHostSwapped(old_render_view_host));
+                    RenderViewHostChanged(old_host, new_host));
 
   // TODO(avi): Remove. http://crbug.com/170921
+  std::pair<RenderViewHost*, RenderViewHost*> details =
+      std::make_pair(old_host, new_host);
   NotificationService::current()->Notify(
-      NOTIFICATION_WEB_CONTENTS_SWAPPED,
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       Source<WebContents>(this),
-      Details<RenderViewHost>(old_render_view_host));
+      Details<std::pair<RenderViewHost*, RenderViewHost*> >(&details));
 
   // Ensure that the associated embedder gets cleared after a RenderViewHost
   // gets swapped, so we don't reuse the same embedder next time a
@@ -3680,18 +3683,18 @@ void WebContentsImpl::CancelModalDialogsForRenderManager() {
     dialog_manager_->CancelActiveAndPendingDialogs(this);
 }
 
-void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* rvh) {
-  NotifySwapped(rvh);
+void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* old_host,
+                                                     RenderViewHost* new_host) {
+  NotifySwapped(old_host, new_host);
 
   // Make sure the visible RVH reflects the new delegate's preferences.
   if (delegate_)
     view_->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
 
-  view_->RenderViewSwappedIn(render_manager_.current_host());
+  view_->RenderViewSwappedIn(new_host);
 
   FrameTreeNode* root = NULL;
-  RenderViewHostImpl* new_rvh = static_cast<RenderViewHostImpl*>(
-      render_manager_.current_host());
+  RenderViewHostImpl* new_rvh = static_cast<RenderViewHostImpl*>(new_host);
 
   // We are doing a cross-site navigation and swapping processes. Since frame
   // ids are unique to a process, we need to recreate the frame tree with the

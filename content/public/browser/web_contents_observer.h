@@ -70,7 +70,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // another one, possibly changing processes. The RenderViewHost that has
   // been replaced is in |old_render_view_host|, which is NULL if the old RVH
   // was shut down.
-  virtual void RenderViewHostSwapped(RenderViewHost* old_render_view_host) {}
+  virtual void RenderViewHostChanged(RenderViewHost* old_host,
+                                     RenderViewHost* new_host) {}
 
   // This method is invoked after the WebContents decided which RenderViewHost
   // to use for the next navigation, but before the navigation starts.
