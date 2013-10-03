@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BasicRenderFrameHost) {
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       shell()->web_contents()->GetRenderViewHost());
-  EXPECT_TRUE(rvh->main_render_frame_host_.get());
+  EXPECT_TRUE(rvh->main_render_frame_host());
 
   ShellAddedObserver new_shell_observer;
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "window.open();"));
@@ -110,9 +110,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BasicRenderFrameHost) {
   RenderViewHostImpl* new_rvh = static_cast<RenderViewHostImpl*>(
       new_shell->web_contents()->GetRenderViewHost());
 
-  EXPECT_TRUE(new_rvh->main_render_frame_host_.get());
-  EXPECT_NE(rvh->main_render_frame_host_->routing_id(),
-            new_rvh->main_render_frame_host_->routing_id());
+  EXPECT_TRUE(new_rvh->main_render_frame_host());
+  EXPECT_NE(rvh->main_render_frame_host()->routing_id(),
+            new_rvh->main_render_frame_host()->routing_id());
 }
 
 }  // namespace content

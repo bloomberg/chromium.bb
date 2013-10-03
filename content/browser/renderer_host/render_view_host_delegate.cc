@@ -50,4 +50,8 @@ SessionStorageNamespace* RenderViewHostDelegate::GetSessionStorageNamespace(
   return NULL;
 }
 
+FrameTree* RenderViewHostDelegate::GetFrameTree() {
+  return NULL;
+}
+
 }  // namespace content

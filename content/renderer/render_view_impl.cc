@@ -833,9 +833,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 }
 
 void RenderViewImpl::Initialize(RenderViewImplParams* params) {
-  RenderFrameImpl* main_frame = RenderFrameImpl::Create(
-      this, params->main_frame_routing_id);
-  main_render_frame_.reset(main_frame);
   routing_id_ = params->routing_id;
   surface_id_ = params->surface_id;
   if (params->opener_id != MSG_ROUTING_NONE && params->is_renderer_created)
@@ -900,7 +897,12 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
 
   ApplyWebPreferences(webkit_preferences_, webview());
-  webview()->initializeMainFrame(main_render_frame_.get());
+
+  main_render_frame_.reset(
+      RenderFrameImpl::Create(this, params->main_frame_routing_id));
+  // The main frame WebFrame object is closed by
+  // RenderViewImpl::frameDetached().
+  webview()->setMainFrame(WebFrame::create(main_render_frame_.get()));
 
   if (switches::IsTouchDragDropEnabled())
     webview()->settings()->setTouchDragDropEnabled(true);

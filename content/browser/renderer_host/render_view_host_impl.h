@@ -456,6 +456,13 @@ class CONTENT_EXPORT RenderViewHostImpl
                         bool empty_allowed,
                         GURL* url);
 
+  // Update the FrameTree to use this RenderViewHost's main frame
+  // RenderFrameHost. Called when the RenderViewHost is committed.
+  //
+  // TODO(ajwong): Remove once RenderViewHost no longer owns the main frame
+  // RenderFrameHost.
+  void AttachToFrameTree();
+
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
   // the caller places are in different platforms, in which case it's better
@@ -581,14 +588,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
 
+  // TODO(nasko): Remove this accessor once RenderFrameHost moves into the frame
+  // tree.
+  RenderFrameHostImpl* main_render_frame_host() const {
+    return main_render_frame_host_.get();
+  }
+
  private:
   friend class TestRenderViewHost;
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
-
-  // TODO(nasko): Remove this accessor once RenderFrameHost moves into the frame
-  // tree.
-  RenderFrameHostImpl* main_render_frame_host() const;
 
   // Sets whether this RenderViewHost is swapped out in favor of another,
   // and clears any waiting state that is no longer relevant.
@@ -596,10 +605,14 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   bool CanAccessFilesOfPageState(const PageState& state) const;
 
-  // This is an RenderFrameHost object associated with the top-level frame in
-  // the page rendered by this RenderViewHost.
-  // TODO(nasko): Remove this pointer once we have enough infrastructure to
-  // move this to the top-level FrameTreeNode.
+  // All RenderViewHosts must have a RenderFrameHost for its main frame.
+  // Currently the RenderFrameHost is created in lock step on construction
+  // and a pointer to the main frame is given to the FrameTreeNode
+  // when the RenderViewHost commits (see AttachToFrameTree()).
+  //
+  // TODO(ajwong): Make this reference non-owning. The root FrameTreeNode of
+  // the FrameTree should be responsible for owning the main frame's
+  // RenderFrameHost.
   scoped_ptr<RenderFrameHostImpl> main_render_frame_host_;
 
   // Our delegate, which wants to know about changes in the RenderView.

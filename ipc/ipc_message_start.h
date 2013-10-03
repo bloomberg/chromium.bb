@@ -10,6 +10,7 @@
 // code to figure out the message class from its ID.
 enum IPCMessageStart {
   AutomationMsgStart = 0,
+  FrameMsgStart,
   ViewMsgStart,
   InputMsgStart,
   PluginMsgStart,

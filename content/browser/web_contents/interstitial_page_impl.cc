@@ -16,6 +16,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
@@ -219,6 +220,7 @@ void InterstitialPageImpl::Show() {
 
   DCHECK(!render_view_host_);
   render_view_host_ = static_cast<RenderViewHostImpl*>(CreateRenderViewHost());
+  render_view_host_->AttachToFrameTree();
   CreateWebContentsView();
 
   std::string data_url = "data:text/html;charset=utf-8," +
@@ -270,6 +272,7 @@ void InterstitialPageImpl::Hide() {
                  weak_ptr_factory_.GetWeakPtr(),
                  render_view_host_));
   render_view_host_ = NULL;
+  frame_tree_.SwapMainFrame(NULL);
   web_contents_->DetachInterstitialPage();
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
@@ -497,14 +500,14 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   session_storage_namespace_ =
       new SessionStorageNamespaceImpl(dom_storage_context);
 
-  RenderViewHostImpl* render_view_host =
-      new RenderViewHostImpl(site_instance.get(),
-                             this,
-                             this,
-                             MSG_ROUTING_NONE,
-                             MSG_ROUTING_NONE,
-                             false,
-                             false);
+  RenderViewHost* render_view_host =
+      RenderViewHostFactory::Create(site_instance.get(),
+                                    this,
+                                    this,
+                                    MSG_ROUTING_NONE,
+                                    MSG_ROUTING_NONE,
+                                    false,
+                                    false);
   web_contents_->RenderViewForInterstitialPageCreated(render_view_host);
   return render_view_host;
 }
@@ -708,6 +711,10 @@ void InterstitialPageImpl::ShowCreatedFullscreenWidget(int route_id) {
 SessionStorageNamespace* InterstitialPageImpl::GetSessionStorageNamespace(
     SiteInstance* instance) {
   return session_storage_namespace_.get();
+}
+
+FrameTree* InterstitialPageImpl::GetFrameTree() {
+  return &frame_tree_;
 }
 
 void InterstitialPageImpl::Disable() {

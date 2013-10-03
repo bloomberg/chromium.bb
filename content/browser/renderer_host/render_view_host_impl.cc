@@ -28,6 +28,7 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/accessibility_messages.h"
@@ -184,7 +185,8 @@ RenderViewHostImpl::RenderViewHostImpl(
     main_frame_routing_id = GetProcess()->GetNextRoutingID();
 
   main_render_frame_host_.reset(
-      new RenderFrameHostImpl(this, main_frame_routing_id, is_swapped_out_));
+      new RenderFrameHostImpl(this, delegate_->GetFrameTree(),
+                              main_frame_routing_id, is_swapped_out_));
 
   GetProcess()->EnableSendQueue();
 
@@ -255,7 +257,7 @@ bool RenderViewHostImpl::CreateRenderView(
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
   params.web_preferences = delegate_->GetWebkitPrefs();
   params.view_id = GetRoutingID();
-  params.main_frame_routing_id = main_render_frame_host_->routing_id();
+  params.main_frame_routing_id = main_render_frame_host()->routing_id();
   params.surface_id = surface_id();
   params.session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_)->id();
@@ -2031,11 +2033,6 @@ void RenderViewHostImpl::OnShowPopup(
 }
 #endif
 
-RenderFrameHostImpl* RenderViewHostImpl::main_render_frame_host() const {
-  DCHECK_EQ(GetProcess(), main_render_frame_host_->GetProcess());
-  return main_render_frame_host_.get();
-}
-
 void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
   // We update the number of RenderViews in a SiteInstance when the
   // swapped out status of this RenderView gets flipped.
@@ -2066,6 +2063,15 @@ bool RenderViewHostImpl::CanAccessFilesOfPageState(
       return false;
   }
   return true;
+}
+
+void RenderViewHostImpl::AttachToFrameTree() {
+  FrameTree* frame_tree = delegate_->GetFrameTree();
+
+  frame_tree->SwapMainFrame(main_render_frame_host_.get());
+  if (main_frame_id() != FrameTreeNode::kInvalidFrameId) {
+    frame_tree->OnFirstNavigationAfterSwap(main_frame_id());
+  }
 }
 
 }  // namespace content

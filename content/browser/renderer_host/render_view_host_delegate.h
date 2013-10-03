@@ -46,6 +46,7 @@ class Size;
 namespace content {
 
 class BrowserContext;
+class FrameTree;
 class PageState;
 class RenderViewHost;
 class RenderViewHostDelegateView;
@@ -435,6 +436,13 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // create the SessionStorageNamespace on the fly.
   virtual SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance);
+
+  // Returns the FrameTree the render view should use. Guaranteed to be constant
+  // for the lifetime of the render view.
+  //
+  // TODO(ajwong): Remove once the main frame RenderFrameHost is no longer
+  // created by the RenderViewHost.
+  virtual FrameTree* GetFrameTree();
 
  protected:
   virtual ~RenderViewHostDelegate() {}

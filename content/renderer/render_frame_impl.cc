@@ -11,6 +11,7 @@
 #include "content/child/plugin_messages.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
+#include "content/common/frame_messages.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -74,6 +75,13 @@ using webkit_glue::WebURLResponseExtraDataImpl;
 
 namespace content {
 
+namespace {
+
+typedef std::map<WebKit::WebFrame*, RenderFrameImpl*> FrameMap;
+base::LazyInstance<FrameMap> g_child_frame_map = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 static RenderFrameImpl* (*g_create_render_frame_impl)(RenderViewImpl*, int32) =
     NULL;
 
@@ -82,13 +90,10 @@ RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
                                          int32 routing_id) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
 
-  RenderFrameImpl* render_frame = NULL;
   if (g_create_render_frame_impl)
-    render_frame = g_create_render_frame_impl(render_view, routing_id);
+    return g_create_render_frame_impl(render_view, routing_id);
   else
-    render_frame = new RenderFrameImpl(render_view, routing_id);
-
-  return render_frame;
+    return new RenderFrameImpl(render_view, routing_id);
 }
 
 // static
@@ -219,11 +224,32 @@ void RenderFrameImpl::didAccessInitialDocument(WebKit::WebFrame* frame) {
   render_view_->didAccessInitialDocument(frame);
 }
 
-void RenderFrameImpl::didCreateFrame(WebKit::WebFrame* parent,
-                                     WebKit::WebFrame* child) {
-  render_view_->Send(new ViewHostMsg_FrameAttached(
-      render_view_->GetRoutingID(), parent->identifier(), child->identifier(),
-      UTF16ToUTF8(child->assignedName())));
+WebKit::WebFrame* RenderFrameImpl::createChildFrame(
+    WebKit::WebFrame* parent,
+    const WebKit::WebString& name) {
+  RenderFrameImpl* child_render_frame = this;
+  long long child_frame_identifier = WebFrame::generateEmbedderIdentifier();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    // Synchronously notify the browser of a child frame creation to get the
+    // routing_id for the RenderFrame.
+    int routing_id;
+    Send(new FrameHostMsg_CreateChildFrame(GetRoutingID(),
+                                           parent->identifier(),
+                                           child_frame_identifier,
+                                           UTF16ToUTF8(name),
+                                           &routing_id));
+    child_render_frame = RenderFrameImpl::Create(render_view_, routing_id);
+  }
+
+  WebKit::WebFrame* web_frame = WebFrame::create(child_render_frame,
+                                                 child_frame_identifier);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    g_child_frame_map.Get().insert(
+        std::make_pair(web_frame, child_render_frame));
+  }
+
+  return web_frame;
 }
 
 void RenderFrameImpl::didDisownOpener(WebKit::WebFrame* frame) {
@@ -247,13 +273,22 @@ void RenderFrameImpl::frameDetached(WebKit::WebFrame* frame) {
   if (frame->parent())
     parent_frame_id = frame->parent()->identifier();
 
-  render_view_->Send(new ViewHostMsg_FrameDetached(render_view_->GetRoutingID(),
-                                                   parent_frame_id,
-                                                   frame->identifier()));
+  render_view_->Send(new FrameHostMsg_Detach(GetRoutingID(), parent_frame_id,
+                                             frame->identifier()));
 
   // Call back to RenderViewImpl for observers to be notified.
   // TODO(nasko): Remove once we have RenderFrameObserver.
   render_view_->frameDetached(frame);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    FrameMap::iterator it = g_child_frame_map.Get().find(frame);
+    DCHECK(it != g_child_frame_map.Get().end());
+    DCHECK_EQ(it->second, this);
+    delete it->second;
+    g_child_frame_map.Get().erase(it);
+  }
+
+  frame->close();
 }
 
 void RenderFrameImpl::willClose(WebKit::WebFrame* frame) {

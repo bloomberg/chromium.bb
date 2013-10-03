@@ -277,6 +277,14 @@ void NotifyCacheOnIO(
       GetCache()->OnExternalCacheHit(url, http_method);
 }
 
+// Helper function for retrieving all the sites in a frame tree.
+bool CollectSites(BrowserContext* context,
+                  std::set<GURL>* sites,
+                  FrameTreeNode* node) {
+  sites->insert(SiteInstance::GetSiteForURL(context, node->current_url()));
+  return true;
+}
+
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
@@ -375,6 +383,9 @@ WebContentsImpl::WebContentsImpl(
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
+  frame_tree_.SetFrameRemoveListener(
+      base::Bind(&WebContentsImpl::OnFrameRemoved,
+                 base::Unretained(this)));
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -723,8 +734,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
                         OnOpenDateTimeDialog)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FrameAttached, OnFrameAttached)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FrameDetached, OnFrameDetached)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -1026,27 +1035,10 @@ uint64 WebContentsImpl::GetUploadPosition() const {
 }
 
 std::set<GURL> WebContentsImpl::GetSitesInTab() const {
-  BrowserContext* browser_context = GetBrowserContext();
   std::set<GURL> sites;
-  if (!frame_tree_root_.get())
-    return sites;
-
-  // Iterates over the FrameTreeNodes to find each unique site URL that is
-  // currently committed.
-  FrameTreeNode* node = NULL;
-  std::queue<FrameTreeNode*> queue;
-  queue.push(frame_tree_root_.get());
-
-  while (!queue.empty()) {
-    node = queue.front();
-    queue.pop();
-    sites.insert(SiteInstance::GetSiteForURL(browser_context,
-                                             node->current_url()));
-
-    for (size_t i = 0; i < node->child_count(); ++i)
-      queue.push(node->child_at(i));
-  }
-
+  frame_tree_.ForEach(Bind(&CollectSites,
+                           base::Unretained(GetBrowserContext()),
+                           base::Unretained(&sites)));
   return sites;
 }
 
@@ -1738,6 +1730,10 @@ void WebContentsImpl::RequestMediaAccessPermission(
 SessionStorageNamespace* WebContentsImpl::GetSessionStorageNamespace(
     SiteInstance* instance) {
   return controller_.GetSessionStorageNamespace(instance);
+}
+
+FrameTree* WebContentsImpl::GetFrameTree() {
+  return &frame_tree_;
 }
 
 void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
@@ -2639,52 +2635,6 @@ void WebContentsImpl::OnUpdateFaviconURL(
                     DidUpdateFaviconURL(page_id, candidates));
 }
 
-FrameTreeNode* WebContentsImpl::FindFrameTreeNodeByID(int64 frame_id) {
-  // TODO(nasko): Remove this check once we move to creating the root node
-  // through RenderFrameHost creation.
-  if (!frame_tree_root_.get())
-    return NULL;
-
-  FrameTreeNode* node = NULL;
-  std::queue<FrameTreeNode*> queue;
-  queue.push(frame_tree_root_.get());
-
-  while (!queue.empty()) {
-    node = queue.front();
-    queue.pop();
-    if (node->frame_id() == frame_id)
-      return node;
-
-    for (size_t i = 0; i < node->child_count(); ++i)
-      queue.push(node->child_at(i));
-  }
-
-  return NULL;
-}
-
-void WebContentsImpl::OnFrameAttached(
-    int64 parent_frame_id,
-    int64 frame_id,
-    const std::string& frame_name) {
-  FrameTreeNode* parent = FindFrameTreeNodeByID(parent_frame_id);
-  if (!parent)
-    return;
-
-  FrameTreeNode* node = new FrameTreeNode(frame_id, frame_name);
-  parent->AddChild(node);
-}
-
-void WebContentsImpl::OnFrameDetached(int64 parent_frame_id, int64 frame_id) {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    FrameDetached(message_source_, frame_id));
-
-  FrameTreeNode* parent = FindFrameTreeNodeByID(parent_frame_id);
-  if (!parent)
-    return;
-
-  parent->RemoveChild(frame_id);
-}
-
 void WebContentsImpl::OnMediaNotification(int64 player_cookie,
                                           bool has_video,
                                           bool has_audio,
@@ -3062,12 +3012,10 @@ void WebContentsImpl::DidGetRedirectForResourceRequest(
 void WebContentsImpl::DidNavigate(
     RenderViewHost* rvh,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  // If we don't have a frame tree root yet, this is the first navigation in
-  // using the current RenderViewHost, so we need to create it with the proper
-  // frame id.
-  if (!frame_tree_root_.get()) {
+  if (frame_tree_.IsFirstNavigationAfterSwap()) {
+    // First navigation should be a main frame navigation.
     DCHECK(PageTransitionIsMainFrame(params.transition));
-    frame_tree_root_.reset(new FrameTreeNode(params.frame_id, std::string()));
+    frame_tree_.OnFirstNavigationAfterSwap(params.frame_id);
   }
 
   if (PageTransitionIsMainFrame(params.transition)) {
@@ -3082,10 +3030,6 @@ void WebContentsImpl::DidNavigate(
 
     render_manager_.DidNavigateMainFrame(rvh);
   }
-
-  // We expect to have a valid frame tree root node at all times when
-  // navigating.
-  DCHECK(frame_tree_root_.get());
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless
   // assigning a site is not necessary for this URL.  In that case, the
@@ -3113,9 +3057,7 @@ void WebContentsImpl::DidNavigate(
   // For now, keep track of each frame's URL in its FrameTreeNode.  This lets
   // us estimate our process count for implementing OOP iframes.
   // TODO(creis): Remove this when we track which pages commit in each frame.
-  FrameTreeNode* node = FindFrameTreeNodeByID(params.frame_id);
-  if (node)
-    node->set_current_url(params.url);
+  frame_tree_.SetFrameUrl(params.frame_id, params.url);
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
@@ -3701,23 +3643,6 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* old_host,
     view_->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
 
   view_->RenderViewSwappedIn(new_host);
-
-  FrameTreeNode* root = NULL;
-  RenderViewHostImpl* new_rvh = static_cast<RenderViewHostImpl*>(new_host);
-
-  // We are doing a cross-site navigation and swapping processes. Since frame
-  // ids are unique to a process, we need to recreate the frame tree with the
-  // proper main frame id.
-  // Note that it is possible for this method to be called before the new RVH
-  // has committed a navigation (if RenderViewHostManager short-circuits the
-  // CommitPending call because the current RVH is dead). In that case, we
-  // haven't heard a valid frame id to use to initialize the root node, so clear
-  // out the root node and the first subsequent navigation message will set it
-  // correctly.
-  if (new_rvh->main_frame_id() != -1)
-    root = new FrameTreeNode(new_rvh->main_frame_id(), std::string());
-
-  frame_tree_root_.reset(root);
 }
 
 int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(
@@ -3889,6 +3814,13 @@ gfx::Size WebContentsImpl::GetSizeForNewRenderView() const {
   if (size.IsEmpty())
     size = view_->GetContainerSize();
   return size;
+}
+
+void WebContentsImpl::OnFrameRemoved(
+    RenderViewHostImpl* render_view_host,
+    int64 frame_id) {
+   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                     FrameDetached(render_view_host, frame_id));
 }
 
 }  // namespace content

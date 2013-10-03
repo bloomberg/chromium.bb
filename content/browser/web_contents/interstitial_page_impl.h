@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/public/browser/interstitial_page.h"
@@ -131,6 +132,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) OVERRIDE;
 
+  virtual FrameTree* GetFrameTree() OVERRIDE;
+
   // RenderWidgetHostDelegate implementation:
   virtual void RenderWidgetDeleted(
       RenderWidgetHostImpl* render_widget_host) OVERRIDE;
@@ -210,6 +213,9 @@ class CONTENT_EXPORT InterstitialPageImpl
   // until Hide is called, at which point it will be set to NULL, signifying
   // that shutdown has started.
   RenderViewHostImpl* render_view_host_;
+
+  // The frame tree structure of the current page.
+  FrameTree frame_tree_;
 
   // The IDs for the Render[View|Process]Host hidden by this interstitial.
   int original_child_id_;

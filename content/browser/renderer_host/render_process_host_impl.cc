@@ -85,6 +85,7 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
+#include "content/browser/renderer_host/render_frame_message_filter.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -559,6 +560,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           media_internals,
           storage_partition_impl_->GetDOMStorageContext()));
   AddFilter(render_message_filter.get());
+  AddFilter(
+      new RenderFrameMessageFilter(GetID(), widget_helper_.get()));
   BrowserContext* browser_context = GetBrowserContext();
   ResourceContext* resource_context = browser_context->GetResourceContext();
 

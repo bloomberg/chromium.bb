@@ -22,6 +22,7 @@
 #include "content/common/file_utilities_messages.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/common/gamepad_messages.h"
 #include "content/common/geolocation_messages.h"
 #include "content/common/gpu/gpu_messages.h"

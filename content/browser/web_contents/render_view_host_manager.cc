@@ -93,7 +93,9 @@ void RenderViewHostManager::Init(BrowserContext* browser_context,
   render_view_host_ = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
-          routing_id, main_frame_routing_id, false, delegate_->IsHidden()));
+          routing_id, main_frame_routing_id, false,
+          delegate_->IsHidden()));
+  render_view_host_->AttachToFrameTree();
 
   // Keep track of renderer processes as they start to shut down or are
   // crashed/killed.
@@ -776,10 +778,12 @@ void RenderViewHostManager::CommitPending() {
   bool focus_render_view = !will_focus_location_bar &&
       render_view_host_->GetView() && render_view_host_->GetView()->HasFocus();
 
-  // Swap in the pending view and make it active.
+  // Swap in the pending view and make it active. Also ensure the FrameTree
+  // stays in sync.
   RenderViewHostImpl* old_render_view_host = render_view_host_;
   render_view_host_ = pending_render_view_host_;
   pending_render_view_host_ = NULL;
+  render_view_host_->AttachToFrameTree();
 
   // The process will no longer try to exit, so we can decrement the count.
   render_view_host_->GetProcess()->RemovePendingView();

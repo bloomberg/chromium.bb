@@ -5,6 +5,8 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/renderer_host/frame_tree.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -16,6 +18,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 
 namespace content {
 
@@ -139,9 +142,7 @@ void RedirectNotificationObserver::Observe(
 }
 
 class SitePerProcessBrowserTest : public ContentBrowserTest {
- public:
-  SitePerProcessBrowserTest() {}
-
+ protected:
   bool NavigateIframeToURL(Shell* window,
                            const GURL& url,
                            std::string iframe_id) {
@@ -399,4 +400,81 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+// Ensures FrameTree correctly reflects page structure during navigations.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FrameTreeShape) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL base_url = test_server()->GetURL("files/site_isolation/");
+  GURL::Replacements replace_host;
+  std::string host_str("A.com");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
+
+  // Load doc without iframes. Verify FrameTree just has root.
+  // Frame tree:
+  //   Site-A Root
+  NavigateToURL(shell(), base_url.Resolve("blank.html"));
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+      GetFrameTree()->GetRootForTesting();
+  EXPECT_EQ(0U, root->child_count());
+
+  // Add 2 same-site frames. Verify 3 nodes in tree with proper names.
+  // Frame tree:
+  //   Site-A Root -- Site-A frame1
+  //              \-- Site-A frame2
+  WindowedNotificationObserver observer1(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(
+          &shell()->web_contents()->GetController()));
+  NavigateToURL(shell(), base_url.Resolve("frames-X-X.html"));
+  observer1.Wait();
+  ASSERT_EQ(2U, root->child_count());
+  EXPECT_EQ(0U, root->child_at(0)->child_count());
+  EXPECT_EQ(0U, root->child_at(1)->child_count());
 }
+
+// TODO(ajwong): Talk with nasko and merge this functionality with
+// FrameTreeShape.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FrameTreeShape2) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  NavigateToURL(shell(),
+                test_server()->GetURL("files/frame_tree/top.html"));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      wc->GetRenderViewHost());
+  FrameTreeNode* root = wc->GetFrameTree()->GetRootForTesting();
+
+  // Check that the root node is properly created with the frame id of the
+  // initial navigation.
+  ASSERT_EQ(3UL, root->child_count());
+  EXPECT_EQ(std::string(), root->frame_name());
+  EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
+
+  ASSERT_EQ(2UL, root->child_at(0)->child_count());
+  EXPECT_STREQ("1-1-name", root->child_at(0)->frame_name().c_str());
+
+  // Verify the deepest node exists and has the right name.
+  ASSERT_EQ(2UL, root->child_at(2)->child_count());
+  EXPECT_EQ(1UL, root->child_at(2)->child_at(1)->child_count());
+  EXPECT_EQ(0UL, root->child_at(2)->child_at(1)->child_at(0)->child_count());
+  EXPECT_STREQ("3-1-id",
+      root->child_at(2)->child_at(1)->child_at(0)->frame_name().c_str());
+
+  // Navigate to about:blank, which should leave only the root node of the frame
+  // tree in the browser process.
+  NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));
+
+  root = wc->GetFrameTree()->GetRootForTesting();
+  EXPECT_EQ(0UL, root->child_count());
+  EXPECT_EQ(std::string(), root->frame_name());
+  EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
+}
+
+}  // namespace content

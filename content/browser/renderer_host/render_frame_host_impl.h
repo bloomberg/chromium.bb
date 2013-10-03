@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_FRAME_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_FRAME_HOST_IMPL_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "content/public/browser/render_frame_host.h"
 
 namespace content {
 
+class FrameTree;
 class RenderProcessHost;
 class RenderViewHostImpl;
 
@@ -17,7 +20,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
  public:
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
 
+  // TODO(nasko): Remove dependency on RenderViewHost here. RenderProcessHost
+  // should be the abstraction needed here, but we need RenderViewHost to pass
+  // into WebContentsObserver::FrameDetached for now.
   RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
+                      FrameTree* frame_tree,
                       int routing_id,
                       bool is_swapped_out);
   virtual ~RenderFrameHostImpl();
@@ -31,11 +38,28 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   void Init();
   RenderProcessHost* GetProcess() const;
   int routing_id() const { return routing_id_; }
+  void OnCreateChildFrame(int new_frame_routing_id,
+                          int64 parent_frame_id,
+                          int64 frame_id,
+                          const std::string& frame_name);
+
+  RenderViewHostImpl* render_view_host() {
+    return render_view_host_;
+  }
 
  private:
   bool is_swapped_out() { return is_swapped_out_; }
 
-  RenderViewHostImpl* render_view_host_;  // Not owned. Outlives this object.
+  // IPC message handlers.
+  void OnDetach(int64 parent_frame_id, int64 frame_id);
+
+  // TODO(nasko): This should be removed and replaced by RenderProcessHost.
+  RenderViewHostImpl* render_view_host_;  // Not owned.
+
+  // Reference to the whole frame tree that this RenderFrameHost belongs too.
+  // Allows this RenderFrameHost to add and remove nodes in response to
+  // requests DOM manipulation messages from the renderer.
+  FrameTree* frame_tree_;
   int routing_id_;
   bool is_swapped_out_;
 

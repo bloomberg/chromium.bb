@@ -8,11 +8,14 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
 namespace content {
+
+class RenderFrameHostImpl;
 
 // Any page that contains iframes has a tree structure of the frames in the
 // renderer process. We are mirroring this tree in the browser process. This
@@ -20,12 +23,29 @@ namespace content {
 // are frame-specific (as opposed to page-specific).
 class CONTENT_EXPORT FrameTreeNode {
  public:
-  FrameTreeNode(int64 frame_id, const std::string& name);
+  static const int64 kInvalidFrameId;
+
+  FrameTreeNode(int64 frame_id, const std::string& name,
+                scoped_ptr<RenderFrameHostImpl> render_frame_host);
   ~FrameTreeNode();
 
-  // This method takes ownership of the child pointer.
-  void AddChild(FrameTreeNode* child);
+  void AddChild(scoped_ptr<FrameTreeNode> child);
   void RemoveChild(int64 child_id);
+
+  // Transitional API allowing the RenderFrameHost of a FrameTreeNode
+  // representing the main frame to be provided by someone else. After
+  // this is called, the FrameTreeNode no longer owns its RenderFrameHost.
+  //
+  // This should only be used for the main frame (aka root) in a frame tree.
+  //
+  // TODO(ajwong): Remove this method once the main frame RenderFrameHostImpl is
+  // no longer owned by the RenderViewHostImpl.
+  void ResetForMainFrame(RenderFrameHostImpl* new_render_frame_host);
+
+  void set_frame_id(int64 frame_id) {
+    DCHECK_EQ(frame_id_, kInvalidFrameId);
+    frame_id_ = frame_id;
+  }
 
   int64 frame_id() const {
     return frame_id_;
@@ -51,6 +71,10 @@ class CONTENT_EXPORT FrameTreeNode {
     current_url_ = url;
   }
 
+  RenderFrameHostImpl* render_frame_host() const {
+    return render_frame_host_;
+  }
+
  private:
   // The unique identifier for the frame in the page.
   int64 frame_id_;
@@ -61,6 +85,22 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // The immediate children of this specific frame.
   ScopedVector<FrameTreeNode> children_;
+
+  // When ResetForMainFrame() is called, this is set to false and the
+  // |render_frame_host_| below is not deleted on destruction.
+  //
+  // For the mainframe, the FrameTree does not own the |render_frame_host_|.
+  // This is a transitional wart because RenderViewHostManager does not yet
+  // have the bookeeping logic to handle creating a pending RenderFrameHost
+  // along with a pending RenderViewHost. Thus, for the main frame, the
+  // RenderViewHost currently retains ownership and the FrameTreeNode should
+  // not delete it on destruction.
+  bool owns_render_frame_host_;
+
+  // The active RenderFrameHost for this frame. The FrameTreeNode does not
+  // always own this pointer.  See comments above |owns_render_frame_host_|.
+  // TODO(ajwong): Replace with RenderFrameHostManager.
+  RenderFrameHostImpl* render_frame_host_;
 
   // Track the current frame's last committed URL, so we can estimate the
   // process impact of out-of-process iframes.
