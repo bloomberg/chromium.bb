@@ -51,9 +51,9 @@ PageScaleConstraints PageScaleConstraintsSet::defaultConstraints() const
     return PageScaleConstraints(-1, defaultMinimumScale, defaultMaximumScale);
 }
 
-void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportArguments& arguments, IntSize viewSize)
+void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportDescription& description, IntSize viewSize)
 {
-    m_pageDefinedConstraints = arguments.resolve(viewSize);
+    m_pageDefinedConstraints = description.resolve(viewSize);
 
     m_constraintsDirty = true;
 }
@@ -99,20 +99,20 @@ void PageScaleConstraintsSet::didChangeContentsSize(IntSize contentsSize, float 
     m_lastContentsWidth = contentsSize.width();
 }
 
-static float computeDeprecatedTargetDensityDPIFactor(const ViewportArguments& arguments, float deviceScaleFactor)
+static float computeDeprecatedTargetDensityDPIFactor(const ViewportDescription& description, float deviceScaleFactor)
 {
-    if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueDeviceDPI)
+    if (description.deprecatedTargetDensityDPI == ViewportDescription::ValueDeviceDPI)
         return 1.0f / deviceScaleFactor;
 
     float targetDPI = -1.0f;
-    if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueLowDPI)
+    if (description.deprecatedTargetDensityDPI == ViewportDescription::ValueLowDPI)
         targetDPI = 120.0f;
-    else if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueMediumDPI)
+    else if (description.deprecatedTargetDensityDPI == ViewportDescription::ValueMediumDPI)
         targetDPI = 160.0f;
-    else if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueHighDPI)
+    else if (description.deprecatedTargetDensityDPI == ViewportDescription::ValueHighDPI)
         targetDPI = 240.0f;
-    else if (arguments.deprecatedTargetDensityDPI != ViewportArguments::ValueAuto)
-        targetDPI = arguments.deprecatedTargetDensityDPI;
+    else if (description.deprecatedTargetDensityDPI != ViewportDescription::ValueAuto)
+        targetDPI = description.deprecatedTargetDensityDPI;
     return targetDPI > 0 ? 160.0f / targetDPI : 1.0f;
 }
 
@@ -121,7 +121,7 @@ static float getLayoutWidthForNonWideViewport(const FloatSize& deviceSize, float
     return initialScale == -1 ? deviceSize.width() : deviceSize.width() / initialScale;
 }
 
-void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportArguments& arguments, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode)
+void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescription& description, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode)
 {
     if (!supportTargetDensityDPI && !wideViewportQuirkEnabled && loadWithOverviewMode)
         return;
@@ -129,10 +129,10 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportArgume
     float initialScale = m_pageDefinedConstraints.initialScale;
     if (!loadWithOverviewMode) {
         bool resetInitialScale = false;
-        if (arguments.zoom == -1) {
-            if (arguments.maxWidth.isAuto())
+        if (description.zoom == -1) {
+            if (description.maxWidth.isAuto())
                 resetInitialScale = true;
-            if (useWideViewport || !arguments.maxWidth.isFixed())
+            if (useWideViewport || !description.maxWidth.isFixed())
                 resetInitialScale = true;
         }
         if (resetInitialScale)
@@ -143,7 +143,7 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportArgume
     float targetDensityDPIFactor = 1.0f;
 
     if (supportTargetDensityDPI) {
-        targetDensityDPIFactor = computeDeprecatedTargetDensityDPIFactor(arguments, deviceScaleFactor);
+        targetDensityDPIFactor = computeDeprecatedTargetDensityDPIFactor(description, deviceScaleFactor);
         if (m_pageDefinedConstraints.initialScale != -1)
             m_pageDefinedConstraints.initialScale *= targetDensityDPIFactor;
         m_pageDefinedConstraints.minimumScale *= targetDensityDPIFactor;
@@ -152,7 +152,7 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportArgume
     }
 
     if (wideViewportQuirkEnabled) {
-        if (useWideViewport && (arguments.maxWidth.isAuto() || arguments.maxWidth.type() == ExtendToZoom) && arguments.zoom != 1.0f)
+        if (useWideViewport && (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom != 1.0f)
             adjustedLayoutSizeWidth = layoutFallbackWidth;
         else if (!useWideViewport)
             adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(viewSize, initialScale) / targetDensityDPIFactor;

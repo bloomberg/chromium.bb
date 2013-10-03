@@ -243,7 +243,7 @@ void Settings::setUseWideViewport(bool useWideViewport)
 
     m_useWideViewport = useWideViewport;
     if (m_page->mainFrame())
-        m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportArguments());
+        m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportDescription());
 }
 
 void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
@@ -253,7 +253,7 @@ void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
 
     m_loadWithOverviewMode = loadWithOverviewMode;
     if (m_page->mainFrame())
-        m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportArguments());
+        m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportDescription());
 }
 
 void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)
@@ -376,7 +376,7 @@ void Settings::setViewportEnabled(bool enabled)
 
     m_viewportEnabled = enabled;
     if (m_page->mainFrame())
-        m_page->mainFrame()->document()->updateViewportArguments();
+        m_page->mainFrame()->document()->updateViewportDescription();
 }
 
 } // namespace WebCore

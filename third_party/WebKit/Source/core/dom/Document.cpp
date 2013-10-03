@@ -2943,35 +2943,35 @@ void Document::processHttpEquivXFrameOptions(const String& content)
     }
 }
 
-void Document::setViewportArguments(const ViewportArguments& viewportArguments)
+void Document::setViewportDescription(const ViewportDescription& viewportDescription)
 {
-    if (viewportArguments.isLegacyViewportType()) {
-        m_legacyViewportArguments = viewportArguments;
+    if (viewportDescription.isLegacyViewportType()) {
+        m_legacyViewportDescription = viewportDescription;
 
         // When no author style for @viewport is present, and a meta tag for defining
         // the viewport is, apply the meta tag viewport instead of the UA styles.
-        if (m_viewportArguments.type == ViewportArguments::AuthorStyleSheet)
+        if (m_viewportDescription.type == ViewportDescription::AuthorStyleSheet)
             return;
-        m_viewportArguments = viewportArguments;
+        m_viewportDescription = viewportDescription;
     } else {
         // If the legacy viewport tag has higher priority than the cascaded @viewport
         // descriptors, use the values from the legacy tag.
-        if (!shouldOverrideLegacyViewport(viewportArguments.type))
-            m_viewportArguments = m_legacyViewportArguments;
+        if (!shouldOverrideLegacyViewport(viewportDescription.type))
+            m_viewportDescription = m_legacyViewportDescription;
         else
-            m_viewportArguments = viewportArguments;
+            m_viewportDescription = viewportDescription;
     }
 
-    updateViewportArguments();
+    updateViewportDescription();
 }
 
-void Document::updateViewportArguments()
+void Document::updateViewportDescription()
 {
     if (page() && page()->mainFrame() == frame()) {
 #ifndef NDEBUG
         m_didDispatchViewportPropertiesChanged = true;
 #endif
-        page()->chrome().dispatchViewportPropertiesDidChange(m_viewportArguments);
+        page()->chrome().dispatchViewportPropertiesDidChange(m_viewportDescription);
     }
 }
 

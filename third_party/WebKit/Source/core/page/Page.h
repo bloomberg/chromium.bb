@@ -21,7 +21,7 @@
 #ifndef Page_h
 #define Page_h
 
-#include "core/dom/ViewportArguments.h"
+#include "core/dom/ViewportDescription.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/LifecycleContext.h"
@@ -105,7 +105,7 @@ public:
 
     void setNeedsRecalcStyleInAllFrames();
 
-    ViewportArguments viewportArguments() const;
+    ViewportDescription viewportDescription() const;
 
     static void refreshPlugins(bool reload);
     PluginData* pluginData() const;

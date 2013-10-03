@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef ViewportArguments_h
-#define ViewportArguments_h
+#ifndef ViewportDescription_h
+#define ViewportDescription_h
 
 #include "core/page/PageScaleConstraints.h"
 #include "core/platform/Length.h"
@@ -45,7 +45,7 @@ enum ViewportErrorCode {
     TargetDensityDpiUnsupported
 };
 
-struct ViewportArguments {
+struct ViewportDescription {
 
     enum Type {
         // These are ordered in increasing importance.
@@ -69,7 +69,7 @@ struct ViewportArguments {
         ValueExtendToZoom = -10
     };
 
-    ViewportArguments(Type type = UserAgentStyleSheet)
+    ViewportDescription(Type type = UserAgentStyleSheet)
         : type(type)
         , zoom(ValueAuto)
         , minZoom(ValueAuto)
@@ -94,7 +94,7 @@ struct ViewportArguments {
     float orientation;
     float deprecatedTargetDensityDPI; // Only used for Android WebView
 
-    bool operator==(const ViewportArguments& other) const
+    bool operator==(const ViewportDescription& other) const
     {
         // Used for figuring out whether to reset the viewport or not,
         // thus we are not taking type into account.
@@ -110,7 +110,7 @@ struct ViewportArguments {
             && deprecatedTargetDensityDPI == other.deprecatedTargetDensityDPI;
     }
 
-    bool operator!=(const ViewportArguments& other) const
+    bool operator!=(const ViewportDescription& other) const
     {
         return !(*this == other);
     }
@@ -127,4 +127,4 @@ void reportViewportWarning(Document*, ViewportErrorCode, const String& replaceme
 
 } // namespace WebCore
 
-#endif // ViewportArguments_h
+#endif // ViewportDescription_h

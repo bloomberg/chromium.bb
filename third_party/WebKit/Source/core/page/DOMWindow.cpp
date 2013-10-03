@@ -362,7 +362,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
         return;
 
     m_frame->script()->updateDocument();
-    m_document->updateViewportArguments();
+    m_document->updateViewportDescription();
 
     if (m_frame->page() && m_frame->view()) {
         if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator()) {

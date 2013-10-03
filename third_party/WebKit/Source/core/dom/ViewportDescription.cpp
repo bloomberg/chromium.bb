@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/dom/ViewportArguments.h"
+#include "core/dom/ViewportDescription.h"
 
 #include "core/dom/Document.h"
 #include "core/page/Page.h"
@@ -39,10 +39,10 @@ namespace WebCore {
 
 static const float& compareIgnoringAuto(const float& value1, const float& value2, const float& (*compare) (const float&, const float&))
 {
-    if (value1 == ViewportArguments::ValueAuto)
+    if (value1 == ViewportDescription::ValueAuto)
         return value2;
 
-    if (value2 == ViewportArguments::ValueAuto)
+    if (value2 == ViewportDescription::ValueAuto)
         return value1;
 
     return compare(value1, value2);
@@ -51,7 +51,7 @@ static const float& compareIgnoringAuto(const float& value1, const float& value2
 static inline float clampLengthValue(float value)
 {
     // Limits as defined in the css-device-adapt spec.
-    if (value != ViewportArguments::ValueAuto)
+    if (value != ViewportDescription::ValueAuto)
         return min(float(10000), max(value, float(1)));
     return value;
 }
@@ -59,21 +59,21 @@ static inline float clampLengthValue(float value)
 static inline float clampScaleValue(float value)
 {
     // Limits as defined in the css-device-adapt spec.
-    if (value != ViewportArguments::ValueAuto)
+    if (value != ViewportDescription::ValueAuto)
         return min(float(10), max(value, float(0.1)));
     return value;
 }
 
-float ViewportArguments::resolveViewportLength(const Length& length, const FloatSize& initialViewportSize, Direction direction)
+float ViewportDescription::resolveViewportLength(const Length& length, const FloatSize& initialViewportSize, Direction direction)
 {
     if (length.isAuto())
-        return ViewportArguments::ValueAuto;
+        return ViewportDescription::ValueAuto;
 
     if (length.isFixed())
         return length.getFloatValue();
 
     if (length.type() == ExtendToZoom)
-        return ViewportArguments::ValueExtendToZoom;
+        return ViewportDescription::ValueExtendToZoom;
 
     if ((length.type() == Percent && direction == Horizontal) || length.type() == ViewportPercentageWidth)
         return initialViewportSize.width() * length.getFloatValue() / 100.0f;
@@ -88,10 +88,10 @@ float ViewportArguments::resolveViewportLength(const Length& length, const Float
         return max(initialViewportSize.width(), initialViewportSize.height()) * length.viewportPercentageLength() / 100.0f;
 
     ASSERT_NOT_REACHED();
-    return ViewportArguments::ValueAuto;
+    return ViewportDescription::ValueAuto;
 }
 
-PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewportSize) const
+PageScaleConstraints ViewportDescription::resolve(const FloatSize& initialViewportSize) const
 {
     float resultWidth = ValueAuto;
     float resultMaxWidth = resolveViewportLength(maxWidth, initialViewportSize, Horizontal);
@@ -106,63 +106,63 @@ PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewport
     float resultUserZoom = userZoom;
 
     // 1. Resolve min-zoom and max-zoom values.
-    if (resultMinZoom != ViewportArguments::ValueAuto && resultMaxZoom != ViewportArguments::ValueAuto)
+    if (resultMinZoom != ViewportDescription::ValueAuto && resultMaxZoom != ViewportDescription::ValueAuto)
         resultMaxZoom = max(resultMinZoom, resultMaxZoom);
 
     // 2. Constrain zoom value to the [min-zoom, max-zoom] range.
-    if (resultZoom != ViewportArguments::ValueAuto)
+    if (resultZoom != ViewportDescription::ValueAuto)
         resultZoom = compareIgnoringAuto(resultMinZoom, compareIgnoringAuto(resultMaxZoom, resultZoom, min), max);
 
     float extendZoom = compareIgnoringAuto(resultZoom, resultMaxZoom, min);
 
     // 3. Resolve non-"auto" lengths to pixel lengths.
-    if (extendZoom == ViewportArguments::ValueAuto) {
-        if (resultMaxWidth == ViewportArguments::ValueExtendToZoom)
-            resultMaxWidth = ViewportArguments::ValueAuto;
+    if (extendZoom == ViewportDescription::ValueAuto) {
+        if (resultMaxWidth == ViewportDescription::ValueExtendToZoom)
+            resultMaxWidth = ViewportDescription::ValueAuto;
 
-        if (resultMaxHeight == ViewportArguments::ValueExtendToZoom)
-            resultMaxHeight = ViewportArguments::ValueAuto;
+        if (resultMaxHeight == ViewportDescription::ValueExtendToZoom)
+            resultMaxHeight = ViewportDescription::ValueAuto;
 
-        if (resultMinWidth == ViewportArguments::ValueExtendToZoom)
+        if (resultMinWidth == ViewportDescription::ValueExtendToZoom)
             resultMinWidth = resultMaxWidth;
 
-        if (resultMinHeight == ViewportArguments::ValueExtendToZoom)
+        if (resultMinHeight == ViewportDescription::ValueExtendToZoom)
             resultMinHeight = resultMaxHeight;
     } else {
         float extendWidth = initialViewportSize.width() / extendZoom;
         float extendHeight = initialViewportSize.height() / extendZoom;
 
-        if (resultMaxWidth == ViewportArguments::ValueExtendToZoom)
+        if (resultMaxWidth == ViewportDescription::ValueExtendToZoom)
             resultMaxWidth = extendWidth;
 
-        if (resultMaxHeight == ViewportArguments::ValueExtendToZoom)
+        if (resultMaxHeight == ViewportDescription::ValueExtendToZoom)
             resultMaxHeight = extendHeight;
 
-        if (resultMinWidth == ViewportArguments::ValueExtendToZoom)
+        if (resultMinWidth == ViewportDescription::ValueExtendToZoom)
             resultMinWidth = compareIgnoringAuto(extendWidth, resultMaxWidth, max);
 
-        if (resultMinHeight == ViewportArguments::ValueExtendToZoom)
+        if (resultMinHeight == ViewportDescription::ValueExtendToZoom)
             resultMinHeight = compareIgnoringAuto(extendHeight, resultMaxHeight, max);
     }
 
     // 4. Resolve initial width from min/max descriptors.
-    if (resultMinWidth != ViewportArguments::ValueAuto || resultMaxWidth != ViewportArguments::ValueAuto)
+    if (resultMinWidth != ViewportDescription::ValueAuto || resultMaxWidth != ViewportDescription::ValueAuto)
         resultWidth = compareIgnoringAuto(resultMinWidth, compareIgnoringAuto(resultMaxWidth, initialViewportSize.width(), min), max);
 
     // 5. Resolve initial height from min/max descriptors.
-    if (resultMinHeight != ViewportArguments::ValueAuto || resultMaxHeight != ViewportArguments::ValueAuto)
+    if (resultMinHeight != ViewportDescription::ValueAuto || resultMaxHeight != ViewportDescription::ValueAuto)
         resultHeight = compareIgnoringAuto(resultMinHeight, compareIgnoringAuto(resultMaxHeight, initialViewportSize.height(), min), max);
 
     // 6-7. Resolve width value.
-    if (resultWidth == ViewportArguments::ValueAuto) {
-        if (resultHeight == ViewportArguments::ValueAuto || !initialViewportSize.height())
+    if (resultWidth == ViewportDescription::ValueAuto) {
+        if (resultHeight == ViewportDescription::ValueAuto || !initialViewportSize.height())
             resultWidth = initialViewportSize.width();
         else
             resultWidth = resultHeight * (initialViewportSize.width() / initialViewportSize.height());
     }
 
     // 8. Resolve height value.
-    if (resultHeight == ViewportArguments::ValueAuto) {
+    if (resultHeight == ViewportDescription::ValueAuto) {
         if (!initialViewportSize.width())
             resultHeight = initialViewportSize.height();
         else
@@ -170,10 +170,10 @@ PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewport
     }
 
     // Resolve initial-scale value.
-    if (resultZoom == ViewportArguments::ValueAuto) {
-        if (resultWidth != ViewportArguments::ValueAuto && resultWidth > 0)
+    if (resultZoom == ViewportDescription::ValueAuto) {
+        if (resultWidth != ViewportDescription::ValueAuto && resultWidth > 0)
             resultZoom = initialViewportSize.width() / resultWidth;
-        if (resultHeight != ViewportArguments::ValueAuto && resultHeight > 0) {
+        if (resultHeight != ViewportDescription::ValueAuto && resultHeight > 0) {
             // if 'auto', the initial-scale will be negative here and thus ignored.
             resultZoom = max<float>(resultZoom, initialViewportSize.height() / resultHeight);
         }
@@ -185,8 +185,8 @@ PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewport
         resultMinZoom = resultMaxZoom = resultZoom;
 
     // Only set initialScale to a value if it was explicitly set.
-    if (zoom == ViewportArguments::ValueAuto)
-        resultZoom = ViewportArguments::ValueAuto;
+    if (zoom == ViewportDescription::ValueAuto)
+        resultZoom = ViewportDescription::ValueAuto;
 
     PageScaleConstraints result;
     result.minimumScale = resultMinZoom;
@@ -265,14 +265,14 @@ static float findScaleValue(const String& keyString, const String& valueString, 
     float value = numericPrefix(keyString, valueString, document);
 
     if (value < 0)
-        return ViewportArguments::ValueAuto;
+        return ViewportDescription::ValueAuto;
 
     if (value > 10.0)
         reportViewportWarning(document, MaximumScaleTooLargeError, String(), String());
 
     if (!value && document->page() && document->page()->settings().viewportMetaZeroValuesQuirk()) {
         if (keyString == "minimum-scale" || keyString == "maximum-scale")
-            return ViewportArguments::ValueAuto;
+            return ViewportDescription::ValueAuto;
         if (keyString == "initial-scale")
             return value;
     }
@@ -306,48 +306,48 @@ static float findUserScalableValue(const String& keyString, const String& valueS
 static float findTargetDensityDPIValue(const String& keyString, const String& valueString, Document* document)
 {
     if (equalIgnoringCase(valueString, "device-dpi"))
-        return ViewportArguments::ValueDeviceDPI;
+        return ViewportDescription::ValueDeviceDPI;
     if (equalIgnoringCase(valueString, "low-dpi"))
-        return ViewportArguments::ValueLowDPI;
+        return ViewportDescription::ValueLowDPI;
     if (equalIgnoringCase(valueString, "medium-dpi"))
-        return ViewportArguments::ValueMediumDPI;
+        return ViewportDescription::ValueMediumDPI;
     if (equalIgnoringCase(valueString, "high-dpi"))
-        return ViewportArguments::ValueHighDPI;
+        return ViewportDescription::ValueHighDPI;
 
     bool ok;
     float value = numericPrefix(keyString, valueString, document, &ok);
     if (!ok || value < 70 || value > 400)
-        return ViewportArguments::ValueAuto;
+        return ViewportDescription::ValueAuto;
 
     return value;
 }
 
 void processViewportKeyValuePair(const String& keyString, const String& valueString, Document* document, void* data)
 {
-    ViewportArguments* arguments = static_cast<ViewportArguments*>(data);
+    ViewportDescription* description = static_cast<ViewportDescription*>(data);
 
     if (keyString == "width") {
         const Length& width = findSizeValue(keyString, valueString, document);
         if (!width.isAuto()) {
-            arguments->minWidth = Length(ExtendToZoom);
-            arguments->maxWidth = width;
+            description->minWidth = Length(ExtendToZoom);
+            description->maxWidth = width;
         }
     } else if (keyString == "height") {
         const Length& height = findSizeValue(keyString, valueString, document);
         if (!height.isAuto()) {
-            arguments->minHeight = Length(ExtendToZoom);
-            arguments->maxHeight = height;
+            description->minHeight = Length(ExtendToZoom);
+            description->maxHeight = height;
         }
     } else if (keyString == "initial-scale") {
-        arguments->zoom = findScaleValue(keyString, valueString, document);
+        description->zoom = findScaleValue(keyString, valueString, document);
     } else if (keyString == "minimum-scale") {
-        arguments->minZoom = findScaleValue(keyString, valueString, document);
+        description->minZoom = findScaleValue(keyString, valueString, document);
     } else if (keyString == "maximum-scale") {
-        arguments->maxZoom = findScaleValue(keyString, valueString, document);
+        description->maxZoom = findScaleValue(keyString, valueString, document);
     } else if (keyString == "user-scalable") {
-        arguments->userZoom = findUserScalableValue(keyString, valueString, document);
+        description->userZoom = findUserScalableValue(keyString, valueString, document);
     } else if (keyString == "target-densitydpi") {
-        arguments->deprecatedTargetDensityDPI = findTargetDensityDPIValue(keyString, valueString, document);
+        description->deprecatedTargetDensityDPI = findTargetDensityDPIValue(keyString, valueString, document);
         reportViewportWarning(document, TargetDensityDpiUnsupported, String(), String());
     } else {
         reportViewportWarning(document, UnrecognizedViewportArgumentKeyError, keyString, String());

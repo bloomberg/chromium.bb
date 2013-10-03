@@ -41,7 +41,7 @@
 #include "core/dom/TextLinkColors.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
-#include "core/dom/ViewportArguments.h"
+#include "core/dom/ViewportDescription.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/events/DocumentEventQueue.h"
 #include "core/html/CollectionType.h"
@@ -287,13 +287,13 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitvisibilitychange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
 
-    bool shouldOverrideLegacyViewport(ViewportArguments::Type);
-    void setViewportArguments(const ViewportArguments&);
-    const ViewportArguments& viewportArguments() const { return m_viewportArguments; }
+    bool shouldOverrideLegacyViewport(ViewportDescription::Type);
+    void setViewportDescription(const ViewportDescription&);
+    const ViewportDescription& viewportDescription() const { return m_viewportDescription; }
 #ifndef NDEBUG
     bool didDispatchViewportPropertiesChanged() const { return m_didDispatchViewportPropertiesChanged; }
 #endif
-    bool hasLegacyViewportTag() const { return m_legacyViewportArguments.isLegacyViewportType(); }
+    bool hasLegacyViewportTag() const { return m_legacyViewportDescription.isLegacyViewportType(); }
 
     void setReferrerPolicy(ReferrerPolicy referrerPolicy) { m_referrerPolicy = referrerPolicy; }
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
@@ -750,8 +750,8 @@ public:
      * @param content The header value (value of the meta tag's "content" attribute)
      */
     void processHttpEquiv(const String& equiv, const String& content);
-    void processViewport(const String& features, ViewportArguments::Type origin);
-    void updateViewportArguments();
+    void processViewport(const String& features, ViewportDescription::Type origin);
+    void updateViewportDescription();
     void processReferrerPolicy(const String& policy);
 
     // Returns the owning element in the parent document.
@@ -1324,8 +1324,8 @@ private:
     int m_loadEventDelayCount;
     Timer<Document> m_loadEventDelayTimer;
 
-    ViewportArguments m_viewportArguments;
-    ViewportArguments m_legacyViewportArguments;
+    ViewportDescription m_viewportDescription;
+    ViewportDescription m_legacyViewportDescription;
 
     ReferrerPolicy m_referrerPolicy;
 
@@ -1396,12 +1396,12 @@ inline const Document* Document::templateDocument() const
     return m_templateDocument.get();
 }
 
-inline bool Document::shouldOverrideLegacyViewport(ViewportArguments::Type origin)
+inline bool Document::shouldOverrideLegacyViewport(ViewportDescription::Type origin)
 {
     // The different (legacy) meta tags have different priorities based on the type
     // regardless of which order they appear in the DOM. The priority is given by the
-    // ViewportArguments::Type enum.
-    return origin >= m_legacyViewportArguments.type;
+    // ViewportDescription::Type enum.
+    return origin >= m_legacyViewportDescription.type;
 }
 
 inline Document* toDocument(ScriptExecutionContext* scriptExecutionContext)

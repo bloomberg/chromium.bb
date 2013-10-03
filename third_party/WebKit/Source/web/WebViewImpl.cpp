@@ -1719,7 +1719,7 @@ void WebViewImpl::resize(const WebSize& newSize)
     }
 
     // Set the fixed layout size from the viewport constraints before resizing.
-    updatePageDefinedPageScaleConstraints(mainFrameImpl()->frame()->document()->viewportArguments());
+    updatePageDefinedPageScaleConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
 
     WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
     if (agentPrivate)
@@ -3021,7 +3021,7 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
         return;
     FrameView* view = page()->mainFrame()->view();
 
-    updatePageDefinedPageScaleConstraints(mainFrameImpl()->frame()->document()->viewportArguments());
+    updatePageDefinedPageScaleConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     m_pageScaleConstraintsSet.computeFinalConstraints();
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
@@ -3046,20 +3046,20 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
         view->layout();
 }
 
-void WebViewImpl::updatePageDefinedPageScaleConstraints(const ViewportArguments& arguments)
+void WebViewImpl::updatePageDefinedPageScaleConstraints(const ViewportDescription& description)
 {
     if (!settings()->viewportEnabled() || !isFixedLayoutModeEnabled() || !page() || !m_size.width || !m_size.height)
         return;
 
-    ViewportArguments adjustedArguments = arguments;
-    if (settingsImpl()->viewportMetaLayoutSizeQuirk() && adjustedArguments.type == ViewportArguments::ViewportMeta) {
-        if (adjustedArguments.maxWidth.type() == ExtendToZoom)
-            adjustedArguments.maxWidth = Length(); // auto
-        adjustedArguments.minWidth = adjustedArguments.maxWidth;
-        adjustedArguments.minHeight = adjustedArguments.maxHeight;
+    ViewportDescription adjustedDescription = description;
+    if (settingsImpl()->viewportMetaLayoutSizeQuirk() && adjustedDescription.type == ViewportDescription::ViewportMeta) {
+        if (adjustedDescription.maxWidth.type() == ExtendToZoom)
+            adjustedDescription.maxWidth = Length(); // auto
+        adjustedDescription.minWidth = adjustedDescription.maxWidth;
+        adjustedDescription.minHeight = adjustedDescription.maxHeight;
     }
-    m_pageScaleConstraintsSet.updatePageDefinedConstraints(adjustedArguments, m_size);
-    m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedArguments, m_size, page()->settings().layoutFallbackWidth(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode());
+    m_pageScaleConstraintsSet.updatePageDefinedConstraints(adjustedDescription, m_size);
+    m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedDescription, m_size, page()->settings().layoutFallbackWidth(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode());
 
     WebSize layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
 

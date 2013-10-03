@@ -78,7 +78,7 @@ class Widget;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct GraphicsDeviceAdapter;
-struct ViewportArguments;
+struct ViewportDescription;
 struct WindowFeatures;
 
 class ChromeClient {
@@ -153,7 +153,7 @@ public:
     virtual void scheduleAnimation() = 0;
     // End methods used by HostWindow.
 
-    virtual void dispatchViewportPropertiesDidChange(const ViewportArguments&) const { }
+    virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const { }
 
     virtual void contentsSizeChanged(Frame*, const IntSize&) const = 0;
     virtual void deviceOrPageScaleFactorChanged() const { }

@@ -159,9 +159,9 @@ Page::~Page()
 #endif
 }
 
-ViewportArguments Page::viewportArguments() const
+ViewportDescription Page::viewportDescription() const
 {
-    return mainFrame() && mainFrame()->document() ? mainFrame()->document()->viewportArguments() : ViewportArguments();
+    return mainFrame() && mainFrame()->document() ? mainFrame()->document()->viewportDescription() : ViewportDescription();
 }
 
 bool Page::autoscrollInProgress() const

@@ -46,7 +46,7 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
     void process();
-    void processViewportContentAttribute(const String& content, ViewportArguments::Type origin);
+    void processViewportContentAttribute(const String& content, ViewportDescription::Type origin);
 };
 
 inline HTMLMetaElement* toHTMLMetaElement(Node* node)

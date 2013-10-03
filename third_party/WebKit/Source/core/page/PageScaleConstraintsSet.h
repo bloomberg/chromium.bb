@@ -32,7 +32,7 @@
 #define PageScaleConstraintsSet_h
 
 #include "PageScaleConstraints.h"
-#include "core/dom/ViewportArguments.h"
+#include "core/dom/ViewportDescription.h"
 #include "platform/geometry/IntSize.h"
 
 namespace WebCore {
@@ -48,8 +48,8 @@ public:
     // Settings defined in the website's viewport tag, if viewport tag support
     // is enabled.
     const PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
-    void updatePageDefinedConstraints(const ViewportArguments&, IntSize viewSize);
-    void adjustForAndroidWebViewQuirks(const ViewportArguments&, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode);
+    void updatePageDefinedConstraints(const ViewportDescription&, IntSize viewSize);
+    void adjustForAndroidWebViewQuirks(const ViewportDescription&, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode);
 
     // Constraints may also be set from Chromium -- this overrides any
     // page-defined values.

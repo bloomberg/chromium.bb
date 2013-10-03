@@ -122,44 +122,44 @@ void HTMLMetaElement::parseContentAttribute(const String& content, KeyValuePairC
     }
 }
 
-void HTMLMetaElement::processViewportContentAttribute(const String& content, ViewportArguments::Type origin)
+void HTMLMetaElement::processViewportContentAttribute(const String& content, ViewportDescription::Type origin)
 {
     ASSERT(!content.isNull());
 
     if (!document().page() || !document().shouldOverrideLegacyViewport(origin))
         return;
 
-    ViewportArguments newArgumentsFromLegacyTag(origin);
-    parseContentAttribute(content, &processViewportKeyValuePair, (void*)&newArgumentsFromLegacyTag);
+    ViewportDescription newDescriptionFromLegacyTag(origin);
+    parseContentAttribute(content, &processViewportKeyValuePair, (void*)&newDescriptionFromLegacyTag);
 
-    if (newArgumentsFromLegacyTag.minZoom == ViewportArguments::ValueAuto)
-        newArgumentsFromLegacyTag.minZoom = 0.25;
+    if (newDescriptionFromLegacyTag.minZoom == ViewportDescription::ValueAuto)
+        newDescriptionFromLegacyTag.minZoom = 0.25;
 
-    if (newArgumentsFromLegacyTag.maxZoom == ViewportArguments::ValueAuto) {
-        newArgumentsFromLegacyTag.maxZoom = 5;
-        newArgumentsFromLegacyTag.minZoom = std::min(newArgumentsFromLegacyTag.minZoom, float(5));
+    if (newDescriptionFromLegacyTag.maxZoom == ViewportDescription::ValueAuto) {
+        newDescriptionFromLegacyTag.maxZoom = 5;
+        newDescriptionFromLegacyTag.minZoom = std::min(newDescriptionFromLegacyTag.minZoom, float(5));
     }
 
     const Settings& settings = document().page()->settings();
 
-    if (newArgumentsFromLegacyTag.maxWidth.isAuto()) {
-        if (newArgumentsFromLegacyTag.zoom == ViewportArguments::ValueAuto) {
-            newArgumentsFromLegacyTag.minWidth = Length(ExtendToZoom);
-            newArgumentsFromLegacyTag.maxWidth = Length(settings.layoutFallbackWidth(), Fixed);
-        } else if (newArgumentsFromLegacyTag.maxHeight.isAuto()) {
-            newArgumentsFromLegacyTag.minWidth = Length(ExtendToZoom);
-            newArgumentsFromLegacyTag.maxWidth = Length(ExtendToZoom);
+    if (newDescriptionFromLegacyTag.maxWidth.isAuto()) {
+        if (newDescriptionFromLegacyTag.zoom == ViewportDescription::ValueAuto) {
+            newDescriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
+            newDescriptionFromLegacyTag.maxWidth = Length(settings.layoutFallbackWidth(), Fixed);
+        } else if (newDescriptionFromLegacyTag.maxHeight.isAuto()) {
+            newDescriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
+            newDescriptionFromLegacyTag.maxWidth = Length(ExtendToZoom);
         }
     }
 
     if (settings.viewportMetaZeroValuesQuirk()
-        && newArgumentsFromLegacyTag.type == ViewportArguments::ViewportMeta
-        && newArgumentsFromLegacyTag.maxWidth.type() == ViewportPercentageWidth
-        && !newArgumentsFromLegacyTag.zoom) {
-        newArgumentsFromLegacyTag.zoom = 1.0;
+        && newDescriptionFromLegacyTag.type == ViewportDescription::ViewportMeta
+        && newDescriptionFromLegacyTag.maxWidth.type() == ViewportPercentageWidth
+        && !newDescriptionFromLegacyTag.zoom) {
+        newDescriptionFromLegacyTag.zoom = 1.0;
     }
 
-    document().setViewportArguments(newArgumentsFromLegacyTag);
+    document().setViewportDescription(newDescriptionFromLegacyTag);
 }
 
 
@@ -193,13 +193,13 @@ void HTMLMetaElement::process()
         return;
 
     if (equalIgnoringCase(name(), "viewport"))
-        processViewportContentAttribute(contentValue, ViewportArguments::ViewportMeta);
+        processViewportContentAttribute(contentValue, ViewportDescription::ViewportMeta);
     else if (equalIgnoringCase(name(), "referrer"))
         document().processReferrerPolicy(contentValue);
     else if (equalIgnoringCase(name(), "handheldfriendly") && equalIgnoringCase(contentValue, "true"))
-        processViewportContentAttribute("width=device-width", ViewportArguments::HandheldFriendlyMeta);
+        processViewportContentAttribute("width=device-width", ViewportDescription::HandheldFriendlyMeta);
     else if (equalIgnoringCase(name(), "mobileoptimized"))
-        processViewportContentAttribute("width=device-width, initial-scale=1", ViewportArguments::MobileOptimizedMeta);
+        processViewportContentAttribute("width=device-width, initial-scale=1", ViewportDescription::MobileOptimizedMeta);
 
     // Get the document to process the tag, but only if we're actually part of DOM tree (changing a meta tag while
     // it's not in the tree shouldn't have any effect on the document)

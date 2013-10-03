@@ -58,7 +58,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TreeScope.h"
-#include "core/dom/ViewportArguments.h"
+#include "core/dom/ViewportDescription.h"
 #include "core/dom/WheelController.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -976,8 +976,8 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
     IntSize initialViewportSize(availableWidth, availableHeight);
     document->page()->mainFrame()->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
 
-    ViewportArguments arguments = page->viewportArguments();
-    PageScaleConstraints constraints = arguments.resolve(initialViewportSize);
+    ViewportDescription description = page->viewportDescription();
+    PageScaleConstraints constraints = description.resolve(initialViewportSize);
 
     constraints.fitToContentsWidth(constraints.layoutSize.width(), availableWidth);
 
@@ -996,7 +996,7 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
     builder.append(String::number(constraints.maximumScale));
 
     builder.appendLiteral("] and userScalable ");
-    builder.append(arguments.userZoom ? "true" : "false");
+    builder.append(description.userZoom ? "true" : "false");
 
     return builder.toString();
 }

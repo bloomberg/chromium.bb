@@ -371,9 +371,9 @@ void Chrome::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileChooser)
     m_client->runOpenPanel(frame, fileChooser);
 }
 
-void Chrome::dispatchViewportPropertiesDidChange(const ViewportArguments& arguments) const
+void Chrome::dispatchViewportPropertiesDidChange(const ViewportDescription& description) const
 {
-    m_client->dispatchViewportPropertiesDidChange(arguments);
+    m_client->dispatchViewportPropertiesDidChange(description);
 }
 
 void Chrome::setCursor(const Cursor& cursor)

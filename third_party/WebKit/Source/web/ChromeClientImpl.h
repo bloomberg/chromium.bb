@@ -127,7 +127,7 @@ public:
     virtual void mouseDidMoveOverElement(
         const WebCore::HitTestResult& result, unsigned modifierFlags);
     virtual void setToolTip(const WTF::String& tooltipText, WebCore::TextDirection);
-    virtual void dispatchViewportPropertiesDidChange(const WebCore::ViewportArguments&) const;
+    virtual void dispatchViewportPropertiesDidChange(const WebCore::ViewportDescription&) const;
     virtual void print(WebCore::Frame*);
     virtual void annotatedRegionsChanged();
     virtual bool paintCustomOverhangArea(WebCore::GraphicsContext*, const WebCore::IntRect&, const WebCore::IntRect&, const WebCore::IntRect&);

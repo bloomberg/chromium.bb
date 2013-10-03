@@ -645,11 +645,11 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
     }
     EXPECT_TRUE(multiplierSetAtLeastOnce);
 
-    WebCore::ViewportArguments arguments = document->viewportArguments();
+    WebCore::ViewportDescription description = document->viewportDescription();
     // Choose a width that's not going match the viewport width of the loaded document.
-    arguments.minWidth = WebCore::Length(100, WebCore::Fixed);
-    arguments.maxWidth = WebCore::Length(100, WebCore::Fixed);
-    webViewHelper.webViewImpl()->updatePageDefinedPageScaleConstraints(arguments);
+    description.minWidth = WebCore::Length(100, WebCore::Fixed);
+    description.maxWidth = WebCore::Length(100, WebCore::Fixed);
+    webViewHelper.webViewImpl()->updatePageDefinedPageScaleConstraints(description);
 
     bool multiplierCheckedAtLeastOnce = false;
     renderer = document->renderer();

@@ -447,7 +447,7 @@ public:
         return m_maxAutoSize;
     }
 
-    void updatePageDefinedPageScaleConstraints(const WebCore::ViewportArguments&);
+    void updatePageDefinedPageScaleConstraints(const WebCore::ViewportDescription&);
 
     // Start a system drag and drop operation.
     void startDragging(
