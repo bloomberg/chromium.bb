@@ -170,6 +170,7 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 
   CheckUserLoggedIn();
 
+  notification_registrar_.RemoveAll();
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                               content::Source<Profile>(profile));
