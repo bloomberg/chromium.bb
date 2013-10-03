@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 
-#include "core/platform/Pasteboard.h"
 #include "weborigin/KURL.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
