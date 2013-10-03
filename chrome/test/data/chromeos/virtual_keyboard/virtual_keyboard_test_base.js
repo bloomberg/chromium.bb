@@ -73,6 +73,9 @@ function setUp() {
   mockController.createFunctionMock(chrome.virtualKeyboardPrivate,
                                     'sendKeyEvent');
 
+  mockController.createFunctionMock(chrome.virtualKeyboardPrivate,
+                                    'hideKeyboard');
+
   var validateSendCall = function(index, expected, observed) {
     // Only consider the first argument (VirtualKeyEvent) for the validation of
     // sendKeyEvent calls.
@@ -92,6 +95,11 @@ function setUp() {
                  'Mismatched states for shift modifier.');
   };
   chrome.virtualKeyboardPrivate.sendKeyEvent.validateCall = validateSendCall;
+
+  chrome.virtualKeyboardPrivate.hideKeyboard.validateCall = function() {
+    // hideKeyboard has one optional argument for error logging that does not
+    // matter for the purpose of validating the call.
+  };
 
   // TODO(kevers): Mock additional extension API calls as required.
 }

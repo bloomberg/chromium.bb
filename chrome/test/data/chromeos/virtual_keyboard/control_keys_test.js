@@ -248,3 +248,21 @@ function testShiftChordingAsync(testDoneCallback) {
    }
   onKeyboardReady('testShiftChordingAsync', runTest, testDoneCallback);
 }
+
+/**
+ * Tests that pressing the hide keyboard key calls the appropriate hide keyboard
+ * API. The test is run asynchronously since the keyboard loads keysets
+ * dynamically.
+ */
+function testHideKeyboard(testDoneCallback) {
+  var runTest = function() {
+    var hideKey = keyboard.querySelector('kb-hide-keyboard-key');
+    assertTrue(!!hideKey, 'Unable to find key');
+
+    chrome.virtualKeyboardPrivate.hideKeyboard.addExpectation();
+
+    hideKey.down();
+    hideKey.up();
+  };
+  onKeyboardReady('testHideKeyboard', runTest, testDoneCallback);
+}
