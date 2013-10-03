@@ -393,7 +393,9 @@ OptionsWebUINavigationTest.prototype = {
 OptionsWebUINavigationTest.verifyHistoryCallback = null;
 
 // Show the search page with no query string, to fall back to the settings page.
-TEST_F('OptionsWebUINavigationTest', 'ShowSearchPageNoQuery', function() {
+// Test disabled because it's flaky. crbug.com/303841
+TEST_F('OptionsWebUINavigationTest', 'DISABLED_ShowSearchPageNoQuery',
+       function() {
   OptionsPage.showPageByName('search');
   this.verifyOpenPages_(['settings']);
   this.verifyHistory_(['settings'], testDone);
