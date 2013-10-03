@@ -16,8 +16,8 @@ class SmallProfileCreator(profile_creator.ProfileCreator):
 
   def __init__(self):
     super(SmallProfileCreator, self).__init__()
-    top_25 = os.path.join(util.GetBaseDir(), 'page_sets', 'top_25.json')
-    self._page_set = page_set.PageSet.FromFile(top_25)
+    typical_25 = os.path.join(util.GetBaseDir(), 'page_sets', 'typical_25.json')
+    self._page_set = page_set.PageSet.FromFile(typical_25)
 
     # Open all links in the same tab save for the last N_NUM_TABS links which
     # are each opened in a new tab.
