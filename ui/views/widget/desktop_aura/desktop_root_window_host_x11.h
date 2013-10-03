@@ -182,6 +182,9 @@ private:
   // and dispatch it to that host instead.
   void DispatchMouseEvent(ui::MouseEvent* event);
 
+  // Resets the window region for the current widget bounds if necessary.
+  void ResetWindowRegion();
+
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();
 

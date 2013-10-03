@@ -26,6 +26,7 @@
 #include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
@@ -1036,6 +1037,27 @@ void DesktopRootWindowHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   }
 }
 
+void DesktopRootWindowHostX11::ResetWindowRegion() {
+  if (!IsMaximized()) {
+    gfx::Path window_mask;
+    views::Widget* widget = native_widget_delegate_->AsWidget();
+    if (widget->non_client_view()) {
+      widget->non_client_view()->GetWindowMask(bounds_.size(), &window_mask);
+      Region region = gfx::CreateRegionFromSkPath(window_mask);
+      XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding,
+                          0, 0, region, false);
+      XDestroyRegion(region);
+      return;
+    }
+  }
+
+  // If we didn't set the shape for any reason, reset the shaping information
+  // by ShapeSet-ing with our bounds rect.
+  XRectangle r = { 0, 0, bounds_.width(), bounds_.height() };
+  XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding,
+                          0, 0, &r, 1, ShapeSet, YXBanded);
+}
+
 std::list<XID>& DesktopRootWindowHostX11::open_windows() {
   if (!open_windows_)
     open_windows_ = new std::list<XID>();
@@ -1123,6 +1145,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
         root_window_host_delegate_->OnHostResized(bounds.size());
       if (origin_changed)
         root_window_host_delegate_->OnHostMoved(bounds_.origin());
+      ResetWindowRegion();
       break;
     }
     case GenericEvent: {
