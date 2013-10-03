@@ -281,7 +281,8 @@ void Shell::OnURLEntryActivate(GtkWidget* entry) {
   GURL url(str);
   if (!url.has_scheme())
     url = GURL(std::string("http://") + std::string(str));
-  LoadURL(GURL(url));
+  if (url.is_valid())
+    LoadURL(url);
 }
 
 // Callback for when the main window is destroyed.
