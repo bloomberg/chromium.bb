@@ -57,3 +57,6 @@ SyntheticGestureControllerTest.Tick
 # http://crbug.com/280583
 DesktopCaptureDeviceTest.ScreenResolutionChangeVariableResolution
 DesktopCaptureDeviceTest.Capture
+
+# http://crbug.com/303709
+GamepadProviderTest.PollingAccess
