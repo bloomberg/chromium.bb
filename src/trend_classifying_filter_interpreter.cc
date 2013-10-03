@@ -30,7 +30,7 @@ TrendClassifyingFilterInterpreter::TrendClassifyingFilterInterpreter(
       trend_classifying_filter_enable_(
           prop_reg, "Trend Classifying Filter Enabled", true),
       second_order_enable_(
-          prop_reg, "Trend Classifying 2nd-order Motion Enabled", true),
+          prop_reg, "Trend Classifying 2nd-order Motion Enabled", false),
       min_num_of_samples_(
           prop_reg, "Trend Classifying Min Num of Samples", 6),
       num_of_samples_(

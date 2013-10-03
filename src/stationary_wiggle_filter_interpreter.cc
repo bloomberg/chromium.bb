@@ -127,6 +127,8 @@ void StationaryWiggleFilterInterpreter::UpdateStationaryFlags(
       float threshold = feh.moving() ? hysteresis_.val_ : threshold_.val_;
       if (!feh.IsFingerMoving(threshold))
         fs->flags |= (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
+      else
+        fs->flags |= GESTURES_FINGER_INSTANTANEOUS_MOVING;
     }
   }
 }

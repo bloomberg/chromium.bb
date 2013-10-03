@@ -946,6 +946,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                        "Two Finger Pressure Diff Factor",
                                        1.65),
       thumb_movement_factor_(prop_reg, "Thumb Movement Factor", 0.5),
+      thumb_speed_factor_(prop_reg, "Thumb Speed Factor", 0.5),
       thumb_eval_timeout_(prop_reg, "Thumb Evaluation Timeout", 0.06),
       two_finger_scroll_distance_thresh_(prop_reg,
                                          "Two Finger Scroll Distance Thresh",
@@ -1143,6 +1144,7 @@ float ImmediateInterpreter::TwoFingerDistanceSq(
 void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
   // Remove old ids from thumb_
   RemoveMissingIdsFromMap(&thumb_, hwstate);
+  RemoveMissingIdsFromMap(&thumb_eval_timer_, hwstate);
   float min_pressure = INFINITY;
   const FingerState* min_fs = NULL;
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
@@ -1158,27 +1160,74 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     // Only palms on the touchpad
     return;
   }
-  float thumb_dist_sq_thresh = DistanceTravelledSq(*min_fs, true) *
+  bool min_warp_move = (min_fs->flags & GESTURES_FINGER_WARP_X_MOVE) ||
+                       (min_fs->flags & GESTURES_FINGER_WARP_Y_MOVE);
+  float min_dist_sq = DistanceTravelledSq(*min_fs, true);
+  float min_dt = hwstate.timestamp -
+      origin_timestamps_[min_fs->tracking_id];
+  float thumb_dist_sq_thresh = min_dist_sq *
       thumb_movement_factor_.val_ * thumb_movement_factor_.val_;
-  // Make all large-pressure contacts located below the min-pressure
-  // contact as thumbs.
+  float thumb_speed_sq_thresh = min_dist_sq *
+      thumb_speed_factor_.val_ * thumb_speed_factor_.val_;
+  // Make all large-pressure, less moving contacts located below the
+  // min-pressure contact as thumbs.
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     if (fs.flags & GESTURES_FINGER_PALM)
       continue;
-    if (fs.pressure > min_pressure + two_finger_pressure_diff_thresh_.val_ &&
-        fs.pressure > min_pressure * two_finger_pressure_diff_factor_.val_ &&
-        fs.position_y > min_fs->position_y &&
-        DistanceTravelledSq(fs, true) <= thumb_dist_sq_thresh) {
-      if (!MapContainsKey(thumb_, fs.tracking_id))
-        thumb_[fs.tracking_id] = hwstate.timestamp;
-    } else if ((MapContainsKey(thumb_, fs.tracking_id) &&
-                hwstate.timestamp <
-                max(started_moving_time_,
-                    thumb_[fs.tracking_id]) + thumb_eval_timeout_.val_) ||
-               (DistanceTravelledSq(fs, true) > thumb_dist_sq_thresh &&
-                fs.tracking_id != min_fs->tracking_id)) {
-      thumb_.erase(fs.tracking_id);
+    float dist_sq = DistanceTravelledSq(fs, true);
+    float dt = hwstate.timestamp - origin_timestamps_[fs.tracking_id];
+    bool closer_to_origin = dist_sq <= thumb_dist_sq_thresh;
+    bool slower_moved = (dist_sq * min_dt &&
+                         dist_sq * min_dt * min_dt <
+                         thumb_speed_sq_thresh * dt * dt);
+    bool relatively_motionless = closer_to_origin || slower_moved;
+    bool likely_thumb =
+        (fs.pressure > min_pressure + two_finger_pressure_diff_thresh_.val_ &&
+         fs.pressure > min_pressure * two_finger_pressure_diff_factor_.val_ &&
+         fs.position_y > min_fs->position_y);
+    // We sometimes can't decide the thumb state if some fingers are undergoing
+    // warp moves as the decision could be off (DistanceTravelledSq may
+    // under-estimate the real distance). The cases that we need to re-evaluate
+    // the thumb in the next frame are:
+    // 1. Both fingers warp.
+    // 2. Min-pressure finger warps and relatively_motionless is false.
+    // 3. Thumb warps and relatively_motionless is true.
+    bool warp_move = (fs.flags & GESTURES_FINGER_WARP_X_MOVE) ||
+                     (fs.flags & GESTURES_FINGER_WARP_Y_MOVE);
+    if (likely_thumb &&
+        ((warp_move && min_warp_move) ||
+         (!warp_move && min_warp_move && !relatively_motionless) ||
+         (warp_move && !min_warp_move && relatively_motionless))) {
+      continue;
+    }
+    likely_thumb &= relatively_motionless;
+
+    if (MapContainsKey(thumb_, fs.tracking_id)) {
+      // Beyond the evaluation period. Stick to being thumbs.
+      if (thumb_eval_timer_[fs.tracking_id] <= 0.0)
+        continue;
+
+      // Finger is still under evaluation.
+      if (likely_thumb) {
+        // Decrease the timer as the finger is thumb-like in the previous
+        // frame.
+        const FingerState* prev =
+            state_buffer_.Get(1)->GetFingerState(fs.tracking_id);
+        if (!prev)
+          continue;
+        thumb_eval_timer_[fs.tracking_id] -=
+            hwstate.timestamp - state_buffer_.Get(1)->timestamp;
+      } else {
+        // The finger wasn't thumb-like in the frame. Remove it from the thumb
+        // list.
+        thumb_.erase(fs.tracking_id);
+        thumb_eval_timer_.erase(fs.tracking_id);
+      }
+    } else if (likely_thumb) {
+      // Finger is thumb-like, so we add it to the list.
+      thumb_[fs.tracking_id] = hwstate.timestamp;
+      thumb_eval_timer_[fs.tracking_id] = thumb_eval_timeout_.val_;
     }
   }
   for (map<short, stime_t, kMaxFingers>::const_iterator it = thumb_.begin();
@@ -1705,26 +1754,35 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
   float damp_dy = INFINITY;
   float non_damp_dx = 0.0;
   float non_damp_dy = 0.0;
-  short damp_dx_id = -1;
-  short damp_dy_id = -1;
+  bool damp_instaneous_moving_x = false;
+  bool damp_instaneous_moving_y = false;
   if (FingerInDampenedZone(finger1) ||
-      (finger1.flags & GESTURES_FINGER_POSSIBLE_PALM)) {
+      (finger1.flags & GESTURES_FINGER_POSSIBLE_PALM) ||
+      SetContainsValue(thumb_, finger1.tracking_id)) {
     dampened_zone_occupied = true;
     damp_dx = dx1;
     damp_dy = dy1;
     non_damp_dx = dx2;
     non_damp_dy = dy2;
-    damp_dx_id = damp_dy_id = finger1.tracking_id;
+    damp_instaneous_moving_x = damp_instaneous_moving_y =
+        finger1.flags & GESTURES_FINGER_INSTANTANEOUS_MOVING;
   }
   if (FingerInDampenedZone(finger2) ||
-      (finger2.flags & GESTURES_FINGER_POSSIBLE_PALM)) {
+      (finger2.flags & GESTURES_FINGER_POSSIBLE_PALM) ||
+      SetContainsValue(thumb_, finger2.tracking_id)) {
     dampened_zone_occupied = true;
     damp_dx = MinMag(damp_dx, dx2);
     damp_dy = MinMag(damp_dy, dy2);
     non_damp_dx = MaxMag(non_damp_dx, dx1);
     non_damp_dy = MaxMag(non_damp_dy, dy1);
-    damp_dx_id = damp_dx == dx1 ? finger1.tracking_id : finger2.tracking_id;
-    damp_dy_id = damp_dy == dy1 ? finger1.tracking_id : finger2.tracking_id;
+    damp_instaneous_moving_x =
+        damp_dx == dx1
+            ? !!(finger1.flags & GESTURES_FINGER_INSTANTANEOUS_MOVING)
+            : !!(finger2.flags & GESTURES_FINGER_INSTANTANEOUS_MOVING);
+    damp_instaneous_moving_y =
+        damp_dy == dy1
+            ? !!(finger1.flags & GESTURES_FINGER_INSTANTANEOUS_MOVING)
+            : !!(finger2.flags & GESTURES_FINGER_INSTANTANEOUS_MOVING);
   }
 
   // Trending in the same direction?
@@ -1741,12 +1799,14 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
   bool large_dy_moving =
       fabsf(large_dy) >= two_finger_scroll_distance_thresh_.val_ ||
       SetContainsValue(moving_, large_dy_id);
+  // We use a tighter moving criteria for damped finger here: it needs to be
+  // moving in the past a few frames rather than just being moving before.
   bool small_dx_moving = fabsf(damp_dx) >=
       damp_scroll_min_movement_factor_.val_ * fabsf(non_damp_dx) ||
-      SetContainsValue(moving_, damp_dx_id);
+      damp_instaneous_moving_x;
   bool small_dy_moving = fabsf(damp_dy) >=
       damp_scroll_min_movement_factor_.val_ * fabsf(non_damp_dy) ||
-      SetContainsValue(moving_, damp_dy_id);
+      damp_instaneous_moving_y;
   // If not in damp zone, we allow one-finger scrolling
   bool small_dx_scrolling = !dampened_zone_occupied || small_dx_moving;
   bool small_dy_scrolling = !dampened_zone_occupied || small_dy_moving;
@@ -2328,6 +2388,12 @@ void ImmediateInterpreter::UpdateStartedMovingTime(
   for (auto it = gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it) {
     if (SetContainsValue(newly_moving_fingers, *it)) {
       started_moving_time_ = now;
+      // Extend the thumb evaluation period for any finger that is still under
+      // evaluation as there is a new moving finger.
+      for (map<short, stime_t, kMaxFingers>::iterator it = thumb_.begin();
+           it != thumb_.end(); ++it)
+        if ((*it).second < thumb_eval_timeout_.val_ && (*it).second > 0.0)
+          (*it).second = thumb_eval_timeout_.val_;
       return;
     }
   }

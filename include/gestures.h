@@ -97,6 +97,13 @@ struct HardwareProperties {
 #define GESTURES_FINGER_TREND_DEC_PRESSURE (1 << 15)
 #define GESTURES_FINGER_TREND_INC_TOUCH_MAJOR (1 << 16)
 #define GESTURES_FINGER_TREND_DEC_TOUCH_MAJOR (1 << 17)
+// If a finger is non-stationary recently (see the StationaryWiggleFilter).
+// Compared to the trend flags, this one takes the magnitude of movements
+// into account so it might be more useful in some cases. However, it is also
+// more prone to abrupt noisy jumps than the trend flags. It also looks at
+// a shorter period of time than the trend ones so it may provide faster
+// response and lower latency.
+#define GESTURES_FINGER_INSTANTANEOUS_MOVING (1 << 18)
 
 #define GESTURES_FINGER_WARP_X    (GESTURES_FINGER_WARP_X_NON_MOVE | \
                                    GESTURES_FINGER_WARP_X_MOVE)

@@ -581,6 +581,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   set<short, kMaxFingers> fingers_;
   // contacts believed to be thumbs, and when they were inserted into the map
   map<short, stime_t, kMaxFingers> thumb_;
+  // Timer of the evaluation period for contacts believed to be thumbs.
+  map<short, stime_t, kMaxFingers> thumb_eval_timer_;
 
   // once a moving finger is determined lock onto this one for cursor movement.
   short moving_finger_id_;
@@ -692,6 +694,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // If a large contact moves more than this much times the lowest-pressure
   // contact, consider it not to be a thumb.
   DoubleProperty thumb_movement_factor_;
+  // If a large contact moves faster than this much times the lowest-pressure
+  // contact, consider it not to be a thumb.
+  DoubleProperty thumb_speed_factor_;
   // This much time after fingers change, stop allowing contacts classified
   // as thumb to be classified as non-thumb.
   DoubleProperty thumb_eval_timeout_;
