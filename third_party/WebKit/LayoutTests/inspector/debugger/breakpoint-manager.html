@@ -19,11 +19,6 @@ function test()
             if (!uiSourceCodes[uiSourceCode.url])
                 return null;
             return new WebInspector.DebuggerModel.Location(uiSourceCode.url, lineNumber, 0);
-        },
-
-        isIdentity: function()
-        {
-            return true;
         }
     };
 
@@ -38,13 +33,27 @@ function test()
         uiLocationToRawLocation: function(uiSourceCode, lineNumber)
         {
             return new WebInspector.DebuggerModel.Location(uiSourceCode.url, lineNumber - 10, 0);
-        },
-
-        isIdentity: function()
-        {
-            return false;
         }
     };
+
+    function createSourceMapping(uiSourceCodeA, uiSourceCodeB)
+    {
+        var mapping = {
+            rawLocationToUILocation: function(rawLocation)
+            {
+                if (this._disabled)
+                    return null;
+                return new WebInspector.UILocation(uiSourceCodeB, rawLocation.lineNumber + 10, 0);
+            },
+
+            uiLocationToRawLocation: function(uiSourceCode, lineNumber)
+            {
+                return new WebInspector.DebuggerModel.Location(uiSourceCodeA.url, lineNumber - 10, 0);
+            }
+        };
+        
+        return mapping;
+    }
 
     function DebuggerModelMock(sourceMapping)
     {
@@ -205,14 +214,15 @@ function test()
         InspectorTest.addResult("    Location disposed: " + this._rawLocation.scriptId + ":" + this._rawLocation.lineNumber);
     }, true);
 
-    function addUISourceCode(breakpointManager, url)
+    function addUISourceCode(breakpointManager, url, doNotSetSourceMapping)
     {
         breakpointManager._debuggerModel._addScript(url, url);
         InspectorTest.addResult("  Adding UISourceCode: " + url);
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
         var uiSourceCode = breakpointManager._networkWorkspaceProvider.addFileForURL(url, contentProvider, true);
         uiSourceCodes[url] = uiSourceCode;
-        uiSourceCode.setSourceMapping(defaultMapping);
+        if (!doNotSetSourceMapping)
+            uiSourceCode.setSourceMapping(defaultMapping);
         return uiSourceCode;
     }
 
@@ -512,7 +522,46 @@ function test()
                 InspectorTest.assertEquals(breakpoints.length, 1, "Exactly one provisional breakpoint should be registered in breakpoint manager.");
                 resetBreakpointManager(breakpointManager, next);
             }
-        }
+        },
+
+        function testSourceMappingReload(next)
+        {
+            // Source mapping will shift everthing 10 lines ahead.
+            var serializedBreakpoints = [createBreakpoint("b.js", 20, "foo == bar", true)];
+            var breakpointManager = createBreakpointManager(serializedBreakpoints);
+            InspectorTest.addResult("\n  Adding files:");
+            var uiSourceCodeA = addUISourceCode(breakpointManager, "a.js");
+            var uiSourceCodeB = addUISourceCode(breakpointManager, "b.js", true);
+            InspectorTest.addResult("\n  Toggling source mapping.");
+            var sourceMapping = createSourceMapping(uiSourceCodeA, uiSourceCodeB);
+            breakpointManager._debuggerModel.pushSourceMapping(sourceMapping);
+            window.setBreakpointCallback = step2.bind(this);
+            uiSourceCodeB.setSourceMapping(sourceMapping);
+
+            function step2()
+            {
+                InspectorTest.addResult("\n  Reloading:");
+                breakpointManager._debuggerModel.reset();
+                resetWorkspace(breakpointManager);
+
+                InspectorTest.addResult("\n  Adding files:");
+                addTemporaryUISourceCode(breakpointManager, "a.js");
+                var eventData = { breakpointId: "a.js:10", location: { scriptId: "a.js", lineNumber: 10, columnNumber: 5 }};
+                breakpointManager._debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, eventData);
+                uiSourceCodeA = addUISourceCode(breakpointManager, "a.js");
+                uiSourceCodeB = addUISourceCode(breakpointManager, "b.js", true);
+                InspectorTest.addResult("\n  Toggling source mapping.");
+                var sourceMapping = createSourceMapping(uiSourceCodeA, uiSourceCodeB);
+                breakpointManager._debuggerModel.pushSourceMapping(sourceMapping);
+                window.setBreakpointCallback = step3.bind(this);
+                uiSourceCodeB.setSourceMapping(sourceMapping);
+            }
+
+            function step3()
+            {
+                resetBreakpointManager(breakpointManager, next);
+            }
+        },
     ]);
 };
 
