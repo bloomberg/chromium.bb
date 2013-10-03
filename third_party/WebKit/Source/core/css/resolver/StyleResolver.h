@@ -172,7 +172,7 @@ struct CSSPropertyValue {
 };
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.
-class StyleResolver {
+class StyleResolver : public FontSelectorClient {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED;
 public:
     StyleResolver(Document&, bool matchAuthorAndUserStyles);
@@ -280,6 +280,11 @@ public:
 #ifdef STYLE_STATS
     ALWAYS_INLINE static StyleSharingStats& styleSharingStats() { return m_styleSharingStats; }
 #endif
+
+private:
+    // FontSelectorClient implementation.
+    virtual void fontsNeedUpdate(FontSelector*);
+
 private:
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);

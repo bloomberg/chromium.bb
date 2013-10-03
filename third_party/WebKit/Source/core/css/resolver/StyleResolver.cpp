@@ -141,6 +141,8 @@ StyleResolver::StyleResolver(Document& document, bool matchAuthorAndUserStyles)
 {
     Element* root = document.documentElement();
 
+    m_fontSelector->registerForInvalidationCallbacks(this);
+
     CSSDefaultStyleSheets::initDefaultStyle(root);
 
     // construct document root element default style. this is needed
@@ -322,6 +324,12 @@ void StyleResolver::clearStyleSharingList()
     m_styleSharingList.clear();
 }
 
+void StyleResolver::fontsNeedUpdate(FontSelector* fontSelector)
+{
+    invalidateMatchedPropertiesCache();
+    m_document.setNeedsStyleRecalc();
+}
+
 void StyleResolver::pushParentElement(Element* parent)
 {
     ASSERT(parent);
@@ -365,6 +373,7 @@ void StyleResolver::popParentShadowRoot(const ShadowRoot& shadowRoot)
 
 StyleResolver::~StyleResolver()
 {
+    m_fontSelector->unregisterForInvalidationCallbacks(this);
     m_fontSelector->clearDocument();
     m_viewportStyleResolver->clearDocument();
 }

@@ -189,15 +189,6 @@ void CSSFontSelector::dispatchInvalidationCallbacks()
     copyToVector(m_clients, clients);
     for (size_t i = 0; i < clients.size(); ++i)
         clients[i]->fontsNeedUpdate(this);
-
-    // FIXME: Make Document a FontSelectorClient so that it can simply register for invalidation callbacks.
-    if (!m_document)
-        return;
-    if (StyleResolver* styleResolver = m_document->styleResolverIfExists())
-        styleResolver->invalidateMatchedPropertiesCache();
-    if (!m_document->renderer())
-        return;
-    m_document->setNeedsStyleRecalc();
 }
 
 void CSSFontSelector::fontLoaded()
