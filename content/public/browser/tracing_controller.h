@@ -59,7 +59,7 @@ class TracingController {
   //
   // |options| controls what kind of tracing is enabled.
   typedef base::Callback<void()> EnableRecordingDoneCallback;
-  virtual void EnableRecording(
+  virtual bool EnableRecording(
       const base::debug::CategoryFilter& filter,
       TracingController::Options options,
       const EnableRecordingDoneCallback& callback) = 0;
@@ -77,7 +77,7 @@ class TracingController {
   // the traced data.
   typedef base::Callback<void(scoped_ptr<base::FilePath>)>
       TracingFileResultCallback;
-  virtual void DisableRecording(const TracingFileResultCallback& callback) = 0;
+  virtual bool DisableRecording(const TracingFileResultCallback& callback) = 0;
 
   // Start monitoring on all processes.
   //
@@ -91,7 +91,7 @@ class TracingController {
   //
   // |options| controls what kind of tracing is enabled.
   typedef base::Callback<void()> EnableMonitoringDoneCallback;
-  virtual void EnableMonitoring(const base::debug::CategoryFilter& filter,
+  virtual bool EnableMonitoring(const base::debug::CategoryFilter& filter,
       TracingController::Options options,
       const EnableMonitoringDoneCallback& callback) = 0;
 
@@ -100,7 +100,7 @@ class TracingController {
   // Once all child processes have acked to the DisableMonitoring request,
   // DisableMonitoringDoneCallback is called back.
   typedef base::Callback<void()> DisableMonitoringDoneCallback;
-  virtual void DisableMonitoring(
+  virtual bool DisableMonitoring(
       const DisableMonitoringDoneCallback& callback) = 0;
 
   // Get the current monitoring configuration.
@@ -116,10 +116,10 @@ class TracingController {
   // to avoid much runtime overhead of tracing. So, to end tracing, we must
   // asynchronously ask all child processes to flush any pending trace data.
   //
-  // Once all child processes have acked to the CaptureCurrentMonitoringSnapshot
+  // Once all child processes have acked to the CaptureMonitoringSnapshot
   // request, TracingFileResultCallback will be called back with a file that
   // contains the traced data.
-  virtual void CaptureCurrentMonitoringSnapshot(
+  virtual void CaptureMonitoringSnapshot(
       const TracingFileResultCallback& callback) = 0;
 
  protected:
