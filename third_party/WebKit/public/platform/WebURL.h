@@ -43,7 +43,7 @@ namespace WebCore { class KURL; }
 
 namespace WebKit {
 
-class BLINK_PLATFORM_EXPORT WebURL {
+class WebURL {
 public:
     ~WebURL()
     {
@@ -102,9 +102,9 @@ public:
     }
 
 #if INSIDE_BLINK
-    WebURL(const WebCore::KURL&);
-    WebURL& operator=(const WebCore::KURL&);
-    operator WebCore::KURL() const;
+    BLINK_PLATFORM_EXPORT WebURL(const WebCore::KURL&);
+    BLINK_PLATFORM_EXPORT WebURL& operator=(const WebCore::KURL&);
+    BLINK_PLATFORM_EXPORT operator WebCore::KURL() const;
 #else
     WebURL(const GURL& url)
         : m_string(WebString::fromUTF8(url.possibly_invalid_spec()))
