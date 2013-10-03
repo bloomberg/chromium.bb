@@ -2588,6 +2588,7 @@
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
             'browser_extensions',
             'common/extensions/api/api.gyp:api',
+            'common/extensions/api/api.gyp:features',
             'debugger',
             'installer_util',
             'sync_file_system_drive_proto',

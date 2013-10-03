@@ -24,6 +24,10 @@ GENERATED_BUNDLE_FILE_MESSAGE = """// GENERATED FROM THE API DEFINITIONS IN
 //   %s
 // DO NOT EDIT.
 """
+GENERATED_FEATURE_MESSAGE = """// GENERATED FROM THE FEATURE DEFINITIONS IN
+//   %s
+// DO NOT EDIT.
+"""
 
 def Classname(s):
   """Translates a namespace name or function name into something more
@@ -118,3 +122,18 @@ def CloseNamespace(namespace):
   for component in reversed(namespace.split('::')):
     c.Append('}  // namespace %s' % component)
   return c
+
+
+def ConstantName(feature_name):
+  """Returns a kName for a feature's name.
+  """
+  return ('k' + ''.join(word[0].upper() + word[1:]
+      for word in feature_name.replace('.', ' ').split()))
+
+
+def CamelCase(unix_name):
+  return ''.join(word.capitalize() for word in unix_name.split('_'))
+
+
+def ClassName(filepath):
+  return CamelCase(os.path.split(filepath)[1])
