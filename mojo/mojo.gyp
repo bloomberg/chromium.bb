@@ -78,6 +78,8 @@
         'system/limits.h',
         'system/memory.cc',
         'system/memory.h',
+        'system/message_in_transit.cc',
+        'system/message_in_transit.h',
         'system/message_pipe.cc',
         'system/message_pipe.h',
         'system/message_pipe_dispatcher.cc',

@@ -6,7 +6,6 @@
 #define MOJO_SYSTEM_MESSAGE_PIPE_H_
 
 #include <list>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +17,7 @@
 namespace mojo {
 namespace system {
 
+class MessageInTransit;
 class Waiter;
 
 // |MessagePipe| is the secondary object implementing a message pipe (see the
@@ -46,14 +46,6 @@ class MessagePipe : public base::RefCountedThreadSafe<MessagePipe> {
   void RemoveWaiter(unsigned port, Waiter* waiter);
 
  private:
-  struct MessageInTransit {
-    MessageInTransit(const void* bytes, uint32_t num_bytes)
-        : data(static_cast<const char*>(bytes), num_bytes) {}
-
-    // TODO(vtl): Replace with something more efficient.
-    std::string data;
-  };
-
   friend class base::RefCountedThreadSafe<MessagePipe>;
   virtual ~MessagePipe();
 

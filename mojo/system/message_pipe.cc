@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "mojo/system/limits.h"
 #include "mojo/system/memory.h"
+#include "mojo/system/message_in_transit.h"
 
 namespace mojo {
 namespace system {
@@ -108,7 +109,7 @@ MojoResult MessagePipe::WriteMessage(
 
   // TODO(vtl): Eventually (with C++11), this should be an |emplace_back()|.
   message_queues_[destination_port].push_back(
-      new MessageInTransit(bytes, num_bytes));
+      MessageInTransit::Create(bytes, num_bytes));
   // TODO(vtl): Support sending handles.
 
   // The other (destination) port was empty and now isn't, so it should now be
@@ -128,11 +129,11 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
                                     MojoReadMessageFlags flags) {
   DCHECK(port == 0 || port == 1);
 
-  const size_t max_bytes = num_bytes ? *num_bytes : 0;
+  const uint32_t max_bytes = num_bytes ? *num_bytes : 0;
   if (!VerifyUserPointer<void>(bytes, max_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  const size_t max_handles = num_handles ? *num_handles : 0;
+  const uint32_t max_handles = num_handles ? *num_handles : 0;
   if (!VerifyUserPointer<MojoHandle>(handles, max_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -146,11 +147,10 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
   // and release the lock immediately.
   bool not_enough_space = false;
   MessageInTransit* const message = message_queues_[port].front();
-  const size_t message_size = message->data.size();
   if (num_bytes)
-    *num_bytes = static_cast<uint32_t>(message_size);
-  if (message_size <= max_bytes)
-    memcpy(bytes, message->data.data(), message_size);
+    *num_bytes = message->size();
+  if (message->size() <= max_bytes)
+    memcpy(bytes, message->data(), message->size());
   else
     not_enough_space = true;
 
@@ -160,7 +160,7 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
 
   if (!not_enough_space || (flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)) {
     message_queues_[port].pop_front();
-    delete message;
+    message->Destroy();
 
     // Now it's empty, thus no longer readable.
     if (message_queues_[port].empty()) {
