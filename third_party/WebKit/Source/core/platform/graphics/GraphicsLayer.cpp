@@ -1135,36 +1135,20 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
 
 bool GraphicsLayer::setFilters(const FilterOperations& filters)
 {
-    // FIXME: For now, we only use SkImageFilters if there is a reference
-    // filter in the chain. Once all issues have been ironed out, we should
-    // switch all filtering over to this path, and remove setFilters() and
-    // WebFilterOperations altogether.
-    if (filters.hasReferenceFilter()) {
-        if (filters.hasCustomFilter()) {
-            // Make sure the filters are removed from the platform layer, as they are
-            // going to fallback to software mode.
-            m_layer->layer()->setFilter(0);
-            m_filters = FilterOperations();
-            return false;
-        }
-        SkiaImageFilterBuilder builder;
-        FilterOutsets outsets = filters.outsets();
-        builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
-        RefPtr<SkImageFilter> imageFilter = builder.build(filters);
-        m_layer->layer()->setFilter(imageFilter.get());
-    } else {
-        OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-        if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, *webFilters)) {
-            // Make sure the filters are removed from the platform layer, as they are
-            // going to fallback to software mode.
-            webFilters->clear();
-            m_layer->layer()->setFilters(*webFilters);
-            m_filters = FilterOperations();
-            return false;
-        }
+    SkiaImageFilterBuilder builder;
+    OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+    FilterOutsets outsets = filters.outsets();
+    builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
+    if (!builder.buildFilterOperations(filters, webFilters.get())) {
+        // Make sure the filters are removed from the platform layer, as they are
+        // going to fallback to software mode.
+        webFilters->clear();
         m_layer->layer()->setFilters(*webFilters);
+        m_filters = FilterOperations();
+        return false;
     }
 
+    m_layer->layer()->setFilters(*webFilters);
     m_filters = filters;
     return true;
 }

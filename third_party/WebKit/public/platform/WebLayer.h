@@ -120,12 +120,6 @@ public:
     // WebFilterOperations object.
     virtual void setFilters(const WebFilterOperations&) = 0;
 
-    // Set the root of the image filter graph for this layer. The
-    // implementation should grab a ref on the passed-in filter in order
-    // to retain ownership. The passed-in graph will be unref'ed by the
-    // caller after this call.
-    virtual void setFilter(SkImageFilter*) = 0;
-
     // Apply filters to pixels that show through the background of this layer.
     // Note: These filters are only possible on layers that are drawn directly
     // to a root render surface with an opaque background. This means if an
