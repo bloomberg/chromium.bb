@@ -419,6 +419,17 @@ ScopedVector<browser_sync::DeviceInfo>
   return devices.Pass();
 }
 
+std::string ProfileSyncService::GetLocalDeviceGUID() const {
+  if (backend_) {
+    browser_sync::SyncedDeviceTracker* device_tracker =
+        backend_->GetSyncedDeviceTracker();
+    if (device_tracker) {
+      return device_tracker->cache_guid();
+    }
+  }
+  return std::string();
+}
+
 // Notifies the observer of any device info changes.
 void ProfileSyncService::AddObserverForDeviceInfoChange(
     browser_sync::SyncedDeviceTracker::Observer* observer) {

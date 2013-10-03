@@ -299,6 +299,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // with this profile.
   virtual ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices() const;
 
+  // Gets the partnership guid for the local device. Can be used by other
+  // layers to distinguish sync data that belongs to the local device vs
+  // data that belong to remote devices. Returns null if sync is not
+  // initialized.
+  virtual std::string GetLocalDeviceGUID() const;
+
   // Notifies the observer of any device info changes.
   virtual void AddObserverForDeviceInfoChange(
       browser_sync::SyncedDeviceTracker::Observer* observer);

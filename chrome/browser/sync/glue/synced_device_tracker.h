@@ -53,6 +53,8 @@ class SyncedDeviceTracker : public ChangeProcessor {
   virtual void GetAllSyncedDeviceInfo(
       ScopedVector<DeviceInfo>* device_info) const;
 
+  virtual std::string cache_guid() const;
+
   // Can be called on any thread. Will be notified back on the same thread
   // they were called on. Observer will be called on every device info
   // change.

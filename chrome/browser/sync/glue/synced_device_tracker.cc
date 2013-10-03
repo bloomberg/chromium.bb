@@ -133,6 +133,10 @@ void SyncedDeviceTracker::GetAllSyncedDeviceInfo(
   }
 }
 
+std::string SyncedDeviceTracker::cache_guid() const {
+  return cache_guid_;
+}
+
 void SyncedDeviceTracker::AddObserver(Observer* observer) {
   observers_->AddObserver(observer);
 }
