@@ -726,6 +726,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
         this.getScreenElement('image-grid').redraw();
         this.updateNextButtonForUser_();
         this.getScreenElement('name').focus();
+      } else {
+        this.getScreenElement('image-grid').stopCamera();
       }
     },
 
