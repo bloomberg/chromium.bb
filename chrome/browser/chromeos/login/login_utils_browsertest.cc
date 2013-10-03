@@ -42,8 +42,8 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
-#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -225,9 +225,6 @@ class LoginUtilsTest : public testing::Test,
     cryptohome::AsyncMethodCaller::InitializeForTesting(
         mock_async_method_caller_);
 
-    cryptohome_.reset(new MockCryptohomeLibrary());
-    CryptohomeLibrary::SetForTest(cryptohome_.get());
-
     test_device_settings_service_.reset(new ScopedTestDeviceSettingsService);
     test_cros_settings_.reset(new ScopedTestCrosSettings);
     test_user_manager_.reset(new ScopedTestUserManager);
@@ -284,8 +281,6 @@ class LoginUtilsTest : public testing::Test,
     browser_process_->SetBrowserPolicyConnector(NULL);
     QuitIOLoop();
     RunUntilIdle();
-
-    CryptohomeLibrary::SetForTest(NULL);
   }
 
   void TearDownOnIO() {
@@ -382,8 +377,6 @@ class LoginUtilsTest : public testing::Test,
     DeviceSettingsService::Get()->SetSessionManager(
         &device_settings_test_helper, new MockOwnerKeyUtil());
 
-    EXPECT_CALL(*cryptohome_, GetSystemSalt())
-        .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*mock_async_method_caller_, AsyncMount(_, _, _, _))
         .WillRepeatedly(Return());
     EXPECT_CALL(*mock_async_method_caller_, AsyncGetSanitizedUsername(_, _))
@@ -486,9 +479,8 @@ class LoginUtilsTest : public testing::Test,
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
 
   policy::BrowserPolicyConnector* connector_;
-  scoped_ptr<MockCryptohomeLibrary> cryptohome_;
 
-  // Initialized after |mock_dbus_thread_manager_| and |cryptohome_| are set up.
+  // Initialized after |mock_dbus_thread_manager_| is set up.
   scoped_ptr<ScopedTestDeviceSettingsService> test_device_settings_service_;
   scoped_ptr<ScopedTestCrosSettings> test_cros_settings_;
   scoped_ptr<ScopedTestUserManager> test_user_manager_;

@@ -19,7 +19,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -33,31 +32,8 @@ using ::testing::Return;
 
 namespace {
 
-class LoginTestBase : public InProcessBrowserTest {
- public:
-  LoginTestBase() {}
-
+class LoginUserTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    mock_cryptohome_library_.reset(new chromeos::MockCryptohomeLibrary());
-    EXPECT_CALL(*(mock_cryptohome_library_.get()), GetSystemSalt())
-        .WillRepeatedly(Return(std::string("stub_system_salt")));
-  }
-
-  scoped_ptr<chromeos::MockCryptohomeLibrary> mock_cryptohome_library_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginTestBase);
-};
-
-class LoginUserTest : public LoginTestBase {
- protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    LoginTestBase::SetUpInProcessBrowserTestFixture();
-  }
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(
         chromeos::switches::kLoginUser, "TestUser@gmail.com");
@@ -65,7 +41,7 @@ class LoginUserTest : public LoginTestBase {
   }
 };
 
-class LoginGuestTest : public LoginTestBase {
+class LoginGuestTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
@@ -74,7 +50,7 @@ class LoginGuestTest : public LoginTestBase {
   }
 };
 
-class LoginCursorTest : public LoginTestBase {
+class LoginCursorTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
