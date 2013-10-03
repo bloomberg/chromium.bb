@@ -152,7 +152,7 @@ bool CSSAnimations::needsUpdate(const Element* element, const RenderStyle* style
     return (display != NONE && animations && animations->size()) || (cssAnimations && !cssAnimations->isEmpty());
 }
 
-PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* element, const RenderStyle* style, const CSSAnimations* cssAnimations, const CSSAnimationDataList* animationDataList, StyleResolver* resolver)
+PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const RenderStyle* style, const CSSAnimations* cssAnimations, const CSSAnimationDataList* animationDataList, StyleResolver* resolver)
 {
     OwnPtr<CSSAnimationUpdate> update;
     HashSet<AtomicString> inactive;

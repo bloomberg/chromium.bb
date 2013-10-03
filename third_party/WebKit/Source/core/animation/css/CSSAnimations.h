@@ -95,7 +95,7 @@ class CSSAnimations FINAL {
 public:
     static bool isAnimatableProperty(CSSPropertyID);
     static bool needsUpdate(const Element*, const RenderStyle*);
-    static PassOwnPtr<CSSAnimationUpdate> calculateUpdate(const Element*, const RenderStyle*, const CSSAnimations*, const CSSAnimationDataList*, StyleResolver*);
+    static PassOwnPtr<CSSAnimationUpdate> calculateUpdate(Element*, const RenderStyle*, const CSSAnimations*, const CSSAnimationDataList*, StyleResolver*);
     void setPendingUpdate(PassOwnPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }
     void maybeApplyPendingUpdate(Element*);
     bool isEmpty() const { return m_animations.isEmpty() && !m_pendingUpdate; }

@@ -871,7 +871,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
     }
 }
 
-void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* style, const AtomicString& name, TimingFunction* defaultTimingFunction, Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
+void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style, const AtomicString& name, TimingFunction* defaultTimingFunction, Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     const StyleRuleKeyframes* keyframesRule = matchScopedKeyframesRule(element, name.impl());
@@ -887,7 +887,7 @@ void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* 
     HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
-        RefPtr<RenderStyle> keyframeStyle = styleForKeyframe(0, style, styleKeyframe);
+        RefPtr<RenderStyle> keyframeStyle = styleForKeyframe(element, style, styleKeyframe);
         RefPtr<Keyframe> keyframe = Keyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
         ASSERT(!offsets.isEmpty());
@@ -1468,7 +1468,7 @@ void StyleResolver::calculateCSSAnimationUpdate(StyleResolverState& state)
     if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return;
 
-    const Element* element = state.element();
+    Element* element = state.element();
     ASSERT(element);
 
     if (!CSSAnimations::needsUpdate(element, state.style()))
