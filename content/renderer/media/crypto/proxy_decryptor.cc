@@ -83,8 +83,12 @@ bool ProxyDecryptor::InitializeCDM(const std::string& key_system,
 
   DCHECK(!media_keys_);
   media_keys_ = CreateMediaKeys(key_system, frame_url);
+  if (!media_keys_)
+    return false;
 
-  return media_keys_ != NULL;
+  if (!decryptor_ready_cb_.is_null())
+    base::ResetAndReturn(&decryptor_ready_cb_).Run(media_keys_->GetDecryptor());
+  return true;
 }
 
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
@@ -94,9 +98,6 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
     media_keys_.reset();
     return false;
   }
-
-  if (!decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&decryptor_ready_cb_).Run(media_keys_->GetDecryptor());
 
   return true;
 }
