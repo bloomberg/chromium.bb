@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.accounts.Account;
 import android.app.Activity;
 import android.util.Log;
-import android.util.SparseArray;
+import android.util.Pair;
 
 import org.chromium.chrome.R;
 
@@ -23,14 +23,13 @@ public class AutoLoginDelegate {
     private final Activity mActivity;
     private final AutoLoginProcessor mAutoLoginProcessor;
 
-    // indexed by nativeInfoBar, think of it as an efficient
-    // HashMap<nativeInfoBar, AutoLoginAccountDelegate>.
-    private final SparseArray<AutoLoginAccountDelegate> mAccountHelpers;
+    // nativeInfoBar -> AutoLoginAccountDelegate
+    private Pair<Integer, AutoLoginAccountDelegate> mAccountHelper;
 
     public AutoLoginDelegate(AutoLoginProcessor autoLoginProcessor, Activity activity) {
         mActivity = activity;
         mAutoLoginProcessor = autoLoginProcessor;
-        mAccountHelpers = new SparseArray<AutoLoginAccountDelegate>();
+        mAccountHelper = null;
     }
 
     /**
@@ -45,7 +44,7 @@ public class AutoLoginDelegate {
             return "";
         }
 
-        mAccountHelpers.put(nativeInfoBar, accountHelper);
+        mAccountHelper = new Pair<Integer, AutoLoginAccountDelegate>(nativeInfoBar, accountHelper);
         return accountHelper.getAccountName();
     }
 
@@ -54,7 +53,9 @@ public class AutoLoginDelegate {
      */
     @CalledByNative
     boolean logIn(int nativeInfoBar) {
-        AutoLoginAccountDelegate account = mAccountHelpers.get(nativeInfoBar);
+        AutoLoginAccountDelegate account =
+                mAccountHelper != null && mAccountHelper.first == nativeInfoBar ?
+                        mAccountHelper.second : null;
 
         if (account == null || !account.logIn()) {
             nativeLoginFailed(nativeInfoBar);
@@ -68,7 +69,7 @@ public class AutoLoginDelegate {
      */
     @CalledByNative
     boolean cancelLogIn(int nativeInfoBar) {
-        mAccountHelpers.remove(nativeInfoBar);
+        mAccountHelper = null;
         return true;
     }
 
@@ -77,12 +78,10 @@ public class AutoLoginDelegate {
      */
     public void dismissAutoLogins(String accountName, String authToken, boolean success,
             String result) {
-        // Use a copy of the current active accounts so we can delete the
-        // original in the for loop.
-        SparseArray<AutoLoginAccountDelegate> accountInfo = mAccountHelpers.clone();
-        for (int i = 0; i < accountInfo.size(); i++) {
-            int infoBar = accountInfo.keyAt(i);
-            AutoLoginAccountDelegate delegate = accountInfo.get(infoBar);
+
+        if (mAccountHelper != null) {
+            int infoBar = mAccountHelper.first;
+            AutoLoginAccountDelegate delegate = mAccountHelper.second;
             if (!delegate.loginRequested()) {
                 nativeLoginDismiss(infoBar);
             } else {
@@ -96,7 +95,7 @@ public class AutoLoginDelegate {
                     }
                 }
             }
-            mAccountHelpers.remove(infoBar);
+            mAccountHelper = null;
         }
     }
 
