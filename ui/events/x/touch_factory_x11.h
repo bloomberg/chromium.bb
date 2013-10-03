@@ -57,7 +57,6 @@ class EVENTS_EXPORT TouchFactory {
   // below for more explanation.)
   bool IsMultiTouchDevice(unsigned int deviceid) const;
 
-#if defined(USE_XI2_MT)
   // Tries to find an existing slot ID mapping to tracking ID. Returns true
   // if the slot is found and it is saved in |slot|, false if no such slot
   // can be found.
@@ -69,13 +68,6 @@ class EVENTS_EXPORT TouchFactory {
 
   // Releases the slot ID mapping to tracking ID.
   void ReleaseSlotForTrackingID(uint32 tracking_id);
-#endif
-
-  // Is the slot ID currently used?
-  bool IsSlotUsed(int slot) const;
-
-  // Marks a slot as being used/unused.
-  void SetSlotUsed(int slot, bool used);
 
   // Whether any touch device is currently present and enabled.
   bool IsTouchDevicePresent();
@@ -121,12 +113,7 @@ class EVENTS_EXPORT TouchFactory {
   // Maximum simultaneous touch points.
   static const int kMaxTouchPoints = 32;
 
-#if defined(USE_XI2_MT)
   SequentialIDGenerator id_generator_;
-#endif
-
-  // A lookup table for slots in use for a touch event.
-  std::bitset<kMaxTouchPoints> slots_used_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchFactory);
 };

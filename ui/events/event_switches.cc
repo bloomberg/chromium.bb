@@ -20,7 +20,7 @@ const char kTouchEventsEnabled[] = "enabled";
 //   disabled: touch events are disabled.
 const char kTouchEventsDisabled[] = "disabled";
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#if defined(OS_LINUX)
 // Tells chrome to interpret events from these devices as touch events. Only
 // available with XInput 2 (i.e. X server 1.8 or above). The id's of the
 // devices can be retrieved from 'xinput list'.

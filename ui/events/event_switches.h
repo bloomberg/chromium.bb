@@ -16,7 +16,7 @@ EVENTS_EXPORT extern const char kTouchEventsAuto[];
 EVENTS_EXPORT extern const char kTouchEventsEnabled[];
 EVENTS_EXPORT extern const char kTouchEventsDisabled[];
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#if defined(OS_LINUX)
 EVENTS_EXPORT extern const char kTouchDevices[];
 #endif
 

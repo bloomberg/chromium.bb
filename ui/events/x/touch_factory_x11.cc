@@ -28,10 +28,7 @@ TouchFactory::TouchFactory()
       touch_device_available_(false),
       touch_events_disabled_(false),
       touch_device_list_(),
-#if defined(USE_XI2_MT)
-      id_generator_(0),
-#endif
-      slots_used_() {
+      id_generator_(0) {
 #if defined(USE_AURA)
   if (!base::MessagePumpForUI::HasXInput2())
     return;
@@ -56,7 +53,6 @@ TouchFactory* TouchFactory::GetInstance() {
 
 // static
 void TouchFactory::SetTouchDeviceListFromCommandLine() {
-#if defined(TOOLKIT_VIEWS)
   // Get a list of pointer-devices that should be treated as touch-devices.
   // This is primarily used for testing/debugging touch-event processing when a
   // touch-device isn't available.
@@ -78,7 +74,6 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
     }
     ui::TouchFactory::GetInstance()->SetTouchDeviceList(device_ids);
   }
-#endif
 }
 
 void TouchFactory::UpdateDeviceList(Display* display) {
@@ -223,7 +218,6 @@ bool TouchFactory::IsMultiTouchDevice(unsigned int deviceid) const {
           false;
 }
 
-#if defined(USE_XI2_MT)
 bool TouchFactory::QuerySlotForTrackingID(uint32 tracking_id, int* slot) {
   if (!id_generator_.HasGeneratedIDFor(tracking_id))
     return false;
@@ -237,17 +231,6 @@ int TouchFactory::GetSlotForTrackingID(uint32 tracking_id) {
 
 void TouchFactory::ReleaseSlotForTrackingID(uint32 tracking_id) {
   id_generator_.ReleaseNumber(tracking_id);
-}
-#endif
-
-bool TouchFactory::IsSlotUsed(int slot) const {
-  CHECK_LT(slot, kMaxTouchPoints);
-  return slots_used_[slot];
-}
-
-void TouchFactory::SetSlotUsed(int slot, bool used) {
-  CHECK_LT(slot, kMaxTouchPoints);
-  slots_used_[slot] = used;
 }
 
 bool TouchFactory::IsTouchDevicePresent() {
