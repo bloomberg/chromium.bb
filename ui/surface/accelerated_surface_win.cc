@@ -14,6 +14,7 @@
 #include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/scoped_native_library.h"
@@ -863,6 +864,9 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     LOG(ERROR) << "Failed to get raster status";
     return;
   }
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.AcceleratedSurfaceRefreshRate",
+                              display_mode.RefreshRate, 0, 121, 122);
 
   // I can't figure out how to determine how many scanlines are in the
   // vertical blank so clamp it such that scanline / height <= 1.

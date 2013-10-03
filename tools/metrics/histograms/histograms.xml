@@ -4874,6 +4874,13 @@ other types of suffix sets.
   <summary>Events in Google Now component extension.</summary>
 </histogram>
 
+<histogram name="GPU.AcceleratedSurfaceRefreshRate" units="hz">
+  <summary>
+    Refresh rate of the display in Hz.  This is recorded every time we present a
+    frame.
+  </summary>
+</histogram>
+
 <histogram name="History.DeleteFTSIndexDatabases">
   <summary>
     Count of &quot;History Index *&quot; databases deleted.  These databases
