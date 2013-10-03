@@ -135,10 +135,6 @@ void InspectorFrontendHost::disconnectClient()
     m_frontendPage = 0;
 }
 
-void InspectorFrontendHost::loaded()
-{
-}
-
 void InspectorFrontendHost::closeWindow()
 {
     if (m_client) {
@@ -160,32 +156,14 @@ void InspectorFrontendHost::inspectedURLChanged(const String& newURL)
         m_client->inspectedURLChanged(newURL);
 }
 
-void InspectorFrontendHost::setAttachedWindowHeight(unsigned height)
-{
-}
-
 void InspectorFrontendHost::setInjectedScriptForOrigin(const String& origin, const String& script)
 {
     m_frontendPage->inspectorController().setInjectedScriptForOrigin(origin, script);
 }
 
-String InspectorFrontendHost::localizedStringsURL()
-{
-    return "";
-}
-
 void InspectorFrontendHost::copyText(const String& text)
 {
     Pasteboard::generalPasteboard()->writePlainText(text, Pasteboard::CannotSmartReplace);
-}
-
-bool InspectorFrontendHost::canSave()
-{
-    return true;
-}
-
-void InspectorFrontendHost::close(const String&)
-{
 }
 
 void InspectorFrontendHost::sendMessageToBackend(const String& message)
@@ -217,23 +195,6 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
     m_menuProvider = menuProvider.get();
 }
 
-String InspectorFrontendHost::loadResourceSynchronously(const String& url)
-{
-    FetchRequest request(url, FetchInitiatorInfo());
-    ResourcePtr<Resource> resource = m_frontendPage->mainFrame()->document()->fetcher()->fetchSynchronously(request);
-    if (!resource)
-        return emptyString();
-    WTF::TextEncoding textEncoding(resource->response().textEncodingName());
-    bool useDetector = false;
-    if (!textEncoding.isValid()) {
-        textEncoding = UTF8Encoding();
-        useDetector = true;
-    }
-    RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("text/plain", textEncoding, useDetector);
-    SharedBuffer* data = resource->resourceBuffer();
-    return decoder->decode(data->data(), data->size()) + decoder->flush();
-}
-
 String InspectorFrontendHost::getSelectionBackgroundColor()
 {
     Color color = RenderTheme::theme().activeSelectionBackgroundColor();
@@ -246,11 +207,6 @@ String InspectorFrontendHost::getSelectionForegroundColor()
     return color.isValid() ? color.serialized() : "";
 }
 
-bool InspectorFrontendHost::supportsFileSystems()
-{
-    return true;
-}
-
 PassRefPtr<DOMFileSystem> InspectorFrontendHost::isolatedFileSystem(const String& fileSystemName, const String& rootURL)
 {
     ScriptExecutionContext* context = m_frontendPage->mainFrame()->document();
@@ -260,21 +216,6 @@ PassRefPtr<DOMFileSystem> InspectorFrontendHost::isolatedFileSystem(const String
 bool InspectorFrontendHost::isUnderTest()
 {
     return m_client && m_client->isUnderTest();
-}
-
-bool InspectorFrontendHost::canSaveAs()
-{
-    return false;
-}
-
-bool InspectorFrontendHost::canInspectWorkers()
-{
-    return false;
-}
-
-String InspectorFrontendHost::hiddenPanels()
-{
-    return "";
 }
 
 } // namespace WebCore

@@ -58,33 +58,21 @@ public:
     void setZoomFactor(float);
     void inspectedURLChanged(const String&);
 
-    void setAttachedWindowHeight(unsigned);
     void setInjectedScriptForOrigin(const String& origin, const String& script);
 
     void copyText(const String& text);
-    void close(const String& url);
 
     // Called from [Custom] implementations.
     void showContextMenu(Event*, const Vector<ContextMenuItem>& items);
     void sendMessageToBackend(const String& message);
     void sendMessageToEmbedder(const String& message);
 
-    String loadResourceSynchronously(const String& url);
     String getSelectionBackgroundColor();
     String getSelectionForegroundColor();
 
     PassRefPtr<DOMFileSystem> isolatedFileSystem(const String& fileSystemName, const String& rootURL);
 
     bool isUnderTest();
-
-    // Deprecated but should stay around for a while as old front-ends may use them.
-    bool canInspectWorkers();
-    bool canSaveAs();
-    bool canSave();
-    bool supportsFileSystems();
-    void loaded();
-    String hiddenPanels();
-    String localizedStringsURL();
 
 private:
     friend class FrontendMenuProvider;
