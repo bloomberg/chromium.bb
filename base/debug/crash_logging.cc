@@ -51,9 +51,8 @@ void SetCrashKeyValue(const base::StringPiece& key,
 
   const CrashKey* crash_key = LookupCrashKey(key);
 
-  // TODO(rsesek): Do this:
-  //DCHECK(crash_key) << "All crash keys must be registered before use "
-  //                  << "(key = " << key << ")";
+  DCHECK(crash_key) << "All crash keys must be registered before use "
+                    << "(key = " << key << ")";
 
   // Handle the un-chunked case.
   if (!crash_key || crash_key->max_length <= g_chunk_max_length_) {
