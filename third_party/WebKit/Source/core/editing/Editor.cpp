@@ -59,6 +59,7 @@
 #include "core/events/ClipboardEvent.h"
 #include "core/events/EventNames.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/events/TextEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLImageElement.h"
@@ -758,15 +759,16 @@ static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, 
 
 void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
 {
+    EventQueueScope scope;
     m_frame->document()->updateLayout();
 
     EditCommandComposition* composition = cmd->composition();
     ASSERT(composition);
+    dispatchEditableContentChangedEvents(composition->startingRootEditableElement(), composition->endingRootEditableElement());
     VisibleSelection newSelection(cmd->endingSelection());
 
     // Don't clear the typing style with this selection change.  We do those things elsewhere if necessary.
     changeSelectionAfterCommand(newSelection, 0);
-    dispatchEditableContentChangedEvents(composition->startingRootEditableElement(), composition->endingRootEditableElement());
 
     if (!cmd->preservesTypingStyle())
         m_frame->selection().clearTypingStyle();
@@ -786,11 +788,13 @@ void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
 
 void Editor::unappliedEditing(PassRefPtr<EditCommandComposition> cmd)
 {
+    EventQueueScope scope;
     m_frame->document()->updateLayout();
+
+    dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
 
     VisibleSelection newSelection(cmd->startingSelection());
     changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
-    dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
 
     m_lastEditCommand = 0;
     client().registerRedoStep(cmd);
@@ -799,11 +803,13 @@ void Editor::unappliedEditing(PassRefPtr<EditCommandComposition> cmd)
 
 void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
 {
+    EventQueueScope scope;
     m_frame->document()->updateLayout();
+
+    dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
 
     VisibleSelection newSelection(cmd->endingSelection());
     changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
-    dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
 
     m_lastEditCommand = 0;
     client().registerUndoStep(cmd);
