@@ -12,7 +12,11 @@
  */
 var ProgressCenterPanel = function(element) {
   this.element_ = element;
+  this.openView_ = this.element_.querySelector('#progress-center-open-view');
   Object.freeze(this);
+
+  // Register event handlers.
+  element.addEventListener('click', this.onClick_.bind(this));
 };
 
 /**
@@ -31,7 +35,9 @@ ProgressCenterPanel.prototype.setItems = function(items) {
  * @param {ProgressCenterItem} item Item to be added.
  */
 ProgressCenterPanel.prototype.addItem = function(item) {
-  this.element_.appendChild(this.createItemElement_(item));
+  this.openView_.insertBefore(
+      this.createItemElement_(item),
+      this.openView_.firstChild);
 };
 
 /**
@@ -39,12 +45,14 @@ ProgressCenterPanel.prototype.addItem = function(item) {
  * @param {ProgressCenterItem} item Item including new contents.
  */
 ProgressCenterPanel.prototype.updateItem = function(item) {
-  var oldItemElement = this.getItemElement_(item.id);
-  if (!oldItemElement) {
+  var itemElement = this.getItemElement_(item.id);
+  if (!itemElement) {
     console.error('Invalid progress ID.');
     return;
   }
-  this.element_.replaceChild(this.createItemElement_(item), oldItemElement);
+  itemElement.querySelector('label').textContent = item.message;
+  itemElement.querySelector('.progress-track').style.width =
+      item.progressRateByPercent + '%';
 };
 
 /**
@@ -57,7 +65,7 @@ ProgressCenterPanel.prototype.removeItem = function(id) {
     console.error('Invalid progress ID.');
     return;
   }
-  this.element_.removeChild(itemElement);
+  this.openView_.removeChild(itemElement);
 };
 
 /**
@@ -67,8 +75,7 @@ ProgressCenterPanel.prototype.removeItem = function(id) {
  * @private
  */
 ProgressCenterPanel.prototype.getItemElement_ = function(id) {
-  var query =
-      '.progress-center-item[data-progress-id="$ID"]'.replace('$ID', id);
+  var query = '.item[data-progress-id="$ID"]'.replace('$ID', id);
   return this.element_.querySelector(query);
 };
 
@@ -79,24 +86,43 @@ ProgressCenterPanel.prototype.getItemElement_ = function(id) {
  * @private
  */
 ProgressCenterPanel.prototype.createItemElement_ = function(item) {
-  var itemLabel = this.element_.ownerDocument.createElement('label');
-  itemLabel.className = 'progress-center-item-label';
-  itemLabel.textContent = item.message;
+  var label = this.element_.ownerDocument.createElement('label');
+  label.className = 'label';
+  label.textContent = item.message;
 
-  var itemProgressBar = this.element_.ownerDocument.createElement('div');
-  itemProgressBar.className = 'progress-center-item-progress-bar';
-  itemProgressBar.style.width =
-      ~~(100 * item.progressValue / item.progressMax) + '%';
+  var progressBarIndicator = this.element_.ownerDocument.createElement('div');
+  progressBarIndicator.className = 'progress-track';
+  progressBarIndicator.style.width = item.progressRateByPercent + '%';
 
-  var itemProgressFrame = this.element_.ownerDocument.createElement('div');
-  itemProgressFrame.className = 'progress-center-item-progress-frame';
-  itemProgressFrame.appendChild(itemProgressBar);
+  var progressBar = this.element_.ownerDocument.createElement('div');
+  progressBar.className = 'progress-bar';
+  progressBar.appendChild(progressBarIndicator);
 
-  var itemElement = this.element_.ownerDocument.createElement('div');
-  itemElement.className = 'progress-center-item';
+  var cancelButton = this.element_.ownerDocument.createElement('button');
+  cancelButton.className = 'cancel';
+  cancelButton.setAttribute('tabindex', '-1');
+
+  var progressFrame = this.element_.ownerDocument.createElement('div');
+  progressFrame.className = 'progress-frame';
+  progressFrame.appendChild(progressBar);
+  progressFrame.appendChild(cancelButton);
+
+  var itemElement = this.element_.ownerDocument.createElement('li');
+  itemElement.className = 'item';
   itemElement.setAttribute('data-progress-id', item.id);
-  itemElement.appendChild(itemLabel);
-  itemElement.appendChild(itemProgressFrame);
+  itemElement.appendChild(label);
+  itemElement.appendChild(progressFrame);
 
   return itemElement;
+};
+
+/**
+ * Handles the click event.
+ * @param {Event} event Click event.
+ * @private
+ */
+ProgressCenterPanel.prototype.onClick_ = function(event) {
+  if (event.target.classList.contains('toggle')) {
+    this.element_.classList.toggle('opened');
+  }
 };
