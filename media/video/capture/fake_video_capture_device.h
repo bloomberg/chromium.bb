@@ -16,7 +16,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice1 {
+class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
  public:
   static VideoCaptureDevice* Create(const Name& device_name);
   virtual ~FakeVideoCaptureDevice();
@@ -27,22 +27,19 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice1 {
   static void GetDeviceNames(Names* device_names);
 
   // VideoCaptureDevice implementation.
-  virtual void Allocate(const VideoCaptureCapability& capture_format,
-                        VideoCaptureDevice::Client* client) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void DeAllocate() OVERRIDE;
-  virtual const Name& device_name() OVERRIDE;
+  virtual void AllocateAndStart(
+      const VideoCaptureCapability& capture_format,
+      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
+  virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
   // Flag indicating the internal state.
   enum InternalState {
     kIdle,
-    kAllocated,
     kCapturing,
     kError
   };
-  explicit FakeVideoCaptureDevice(const Name& device_name);
+  FakeVideoCaptureDevice();
 
   // Called on the capture_thread_.
   void OnCaptureTask();
@@ -52,8 +49,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice1 {
   void Reallocate();
   void PopulateCapabilitiesRoster();
 
-  Name device_name_;
-  VideoCaptureDevice::Client* client_;
+  scoped_ptr<VideoCaptureDevice::Client> client_;
   InternalState state_;
   base::Thread capture_thread_;
   scoped_ptr<uint8[]> fake_frame_;
@@ -67,7 +63,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice1 {
 
   static bool fail_next_create_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(FakeVideoCaptureDevice);
+  DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureDevice);
 };
 
 }  // namespace media

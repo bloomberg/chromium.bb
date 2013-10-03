@@ -22,18 +22,16 @@ namespace media {
 
 // Called by VideoCaptureManager to open, close and start, stop video capture
 // devices.
-class VideoCaptureDeviceMac : public VideoCaptureDevice1 {
+class VideoCaptureDeviceMac : public VideoCaptureDevice {
  public:
   explicit VideoCaptureDeviceMac(const Name& device_name);
   virtual ~VideoCaptureDeviceMac();
 
   // VideoCaptureDevice implementation.
-  virtual void Allocate(const VideoCaptureCapability& capture_format,
-                        VideoCaptureDevice::Client* client) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void DeAllocate() OVERRIDE;
-  virtual const Name& device_name() OVERRIDE;
+  virtual void AllocateAndStart(
+      const VideoCaptureCapability& capture_format,
+      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
+  virtual void StopAndDeAllocate() OVERRIDE;
 
   bool Init();
 
@@ -54,13 +52,12 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice1 {
   enum InternalState {
     kNotInitialized,
     kIdle,
-    kAllocated,
     kCapturing,
     kError
   };
 
   Name device_name_;
-  VideoCaptureDevice::Client* client_;
+  scoped_ptr<VideoCaptureDevice::Client> client_;
 
   VideoCaptureCapability current_settings_;
   bool sent_frame_info_;

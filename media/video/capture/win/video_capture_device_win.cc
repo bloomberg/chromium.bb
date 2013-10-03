@@ -257,8 +257,7 @@ void VideoCaptureDeviceWin::GetDeviceNames(Names* device_names) {
 
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(const Name& device_name)
     : device_name_(device_name),
-      state_(kIdle),
-      client_(NULL) {
+      state_(kIdle) {
   DetachFromThread();
 }
 
@@ -333,14 +332,14 @@ bool VideoCaptureDeviceWin::Init() {
   return CreateCapabilityMap();
 }
 
-void VideoCaptureDeviceWin::Allocate(
+void VideoCaptureDeviceWin::AllocateAndStart(
     const VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::Client* client) {
+    scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(CalledOnValidThread());
   if (state_ != kIdle)
     return;
 
-  client_ = client;
+  client_ = client.Pass();
 
   // Get the camera capability that best match the requested resolution.
   const VideoCaptureCapabilityWin& found_capability =
@@ -432,15 +431,8 @@ void VideoCaptureDeviceWin::Allocate(
       = sink_filter_->ResultingCapability();
   client_->OnFrameInfo(used_capability);
 
-  state_ = kAllocated;
-}
-
-void VideoCaptureDeviceWin::Start() {
-  DCHECK(CalledOnValidThread());
-  if (state_ != kAllocated)
-    return;
-
-  HRESULT hr = media_control_->Run();
+  // Start capturing.
+  hr = media_control_->Run();
   if (FAILED(hr)) {
     SetErrorState("Failed to start the Capture device.");
     return;
@@ -449,7 +441,7 @@ void VideoCaptureDeviceWin::Start() {
   state_ = kCapturing;
 }
 
-void VideoCaptureDeviceWin::Stop() {
+void VideoCaptureDeviceWin::StopAndDeAllocate() {
   DCHECK(CalledOnValidThread());
   if (state_ != kCapturing)
     return;
@@ -460,15 +452,6 @@ void VideoCaptureDeviceWin::Stop() {
     return;
   }
 
-  state_ = kAllocated;
-}
-
-void VideoCaptureDeviceWin::DeAllocate() {
-  DCHECK(CalledOnValidThread());
-  if (state_ == kIdle)
-    return;
-
-  HRESULT hr = media_control_->Stop();
   graph_builder_->Disconnect(output_capture_pin_);
   graph_builder_->Disconnect(input_sink_pin_);
 
@@ -482,13 +465,8 @@ void VideoCaptureDeviceWin::DeAllocate() {
     SetErrorState("Failed to Stop the Capture device");
     return;
   }
-
+  client_.reset();
   state_ = kIdle;
-}
-
-const VideoCaptureDevice::Name& VideoCaptureDeviceWin::device_name() {
-  DCHECK(CalledOnValidThread());
-  return device_name_;
 }
 
 // Implements SinkFilterObserver::SinkFilterObserver.

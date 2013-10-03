@@ -30,7 +30,7 @@ namespace media {
 // All the methods in the class can only be run on a COM initialized thread.
 class VideoCaptureDeviceWin
     : public base::NonThreadSafe,
-      public VideoCaptureDevice1,
+      public VideoCaptureDevice,
       public SinkFilterObserver {
  public:
   explicit VideoCaptureDeviceWin(const Name& device_name);
@@ -40,19 +40,16 @@ class VideoCaptureDeviceWin
   bool Init();
 
   // VideoCaptureDevice implementation.
-  virtual void Allocate(const VideoCaptureCapability& capture_format,
-                         VideoCaptureDevice::Client* client) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void DeAllocate() OVERRIDE;
-  virtual const Name& device_name() OVERRIDE;
+  virtual void AllocateAndStart(
+      const VideoCaptureCapability& capture_format,
+      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
+  virtual void StopAndDeAllocate() OVERRIDE;
 
   static void GetDeviceNames(Names* device_names);
 
  private:
   enum InternalState {
     kIdle,  // The device driver is opened but camera is not in use.
-    kAllocated,  // The camera has been allocated and can be started.
     kCapturing,  // Video is being captured.
     kError  // Error accessing HW functions.
             // User needs to recover by destroying the object.
@@ -66,7 +63,7 @@ class VideoCaptureDeviceWin
 
   Name device_name_;
   InternalState state_;
-  VideoCaptureDevice::Client* client_;
+  scoped_ptr<VideoCaptureDevice::Client> client_;
 
   base::win::ScopedComPtr<IBaseFilter> capture_filter_;
   base::win::ScopedComPtr<IGraphBuilder> graph_builder_;

@@ -21,7 +21,7 @@ namespace media {
 // by VideoCaptureManager on its own thread, while OnFrameAvailable is called
 // on JAVA thread (i.e., UI thread). Both will access |state_| and |client_|,
 // but only VideoCaptureManager would change their value.
-class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
+class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
  public:
   virtual ~VideoCaptureDeviceAndroid();
 
@@ -29,12 +29,10 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
   static bool RegisterVideoCaptureDevice(JNIEnv* env);
 
   // VideoCaptureDevice implementation.
-  virtual void Allocate(const VideoCaptureCapability& capture_format,
-                        Client* client) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void DeAllocate() OVERRIDE;
-  virtual const Name& device_name() OVERRIDE;
+  virtual void AllocateAndStart(
+      const VideoCaptureCapability& capture_format,
+      scoped_ptr<Client> client) OVERRIDE;
+  virtual void StopAndDeAllocate() OVERRIDE;
 
   // Implement org.chromium.media.VideoCapture.nativeOnFrameAvailable.
   void OnFrameAvailable(
@@ -49,7 +47,6 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
  private:
   enum InternalState {
     kIdle,  // The device is opened but not in use.
-    kAllocated,  // All resouces have been allocated and camera can be started.
     kCapturing,  // Video is being captured.
     kError  // Hit error. User needs to recover by destroying the object.
   };
@@ -73,7 +70,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
   bool got_first_frame_;
   base::TimeTicks expected_next_frame_time_;
   base::TimeDelta frame_interval_;
-  VideoCaptureDevice::Client* client_;
+  scoped_ptr<VideoCaptureDevice::Client> client_;
 
   Name device_name_;
   VideoCaptureCapability current_settings_;

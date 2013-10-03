@@ -312,7 +312,7 @@ const std::string VideoCaptureDevice::Name::GetModel() const {
 }
 
 VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(const Name& device_name)
-    : name_(device_name), client_(NULL), capture_(0) {
+    : name_(device_name), capture_(0) {
   DetachFromThread();
 }
 
@@ -339,19 +339,14 @@ bool VideoCaptureDeviceMFWin::Init() {
                                                        reader_.Receive()));
 }
 
-void VideoCaptureDeviceMFWin::Allocate(
+void VideoCaptureDeviceMFWin::AllocateAndStart(
     const VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::Client* client) {
+    scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(CalledOnValidThread());
 
   base::AutoLock lock(lock_);
 
-  if (client_) {
-    DCHECK_EQ(client, client_);
-    return;
-  }
-
-  client_ = client;
+  client_ = client.Pass();
   DCHECK_EQ(capture_, false);
 
   CapabilityList capabilities;
@@ -381,24 +376,16 @@ void VideoCaptureDeviceMFWin::Allocate(
   }
 
   client_->OnFrameInfo(found_capability);
-}
 
-void VideoCaptureDeviceMFWin::Start() {
-  DCHECK(CalledOnValidThread());
-
-  base::AutoLock lock(lock_);
-  if (!capture_) {
-    capture_ = true;
-    HRESULT hr;
-    if (FAILED(hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0,
-                                        NULL, NULL, NULL, NULL))) {
-      OnError(hr);
-      capture_ = false;
-    }
+  if (FAILED(hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0,
+                                      NULL, NULL, NULL, NULL))) {
+    OnError(hr);
+    return;
   }
+  capture_ = true;
 }
 
-void VideoCaptureDeviceMFWin::Stop() {
+void VideoCaptureDeviceMFWin::StopAndDeAllocate() {
   DCHECK(CalledOnValidThread());
   base::WaitableEvent flushed(false, false);
   const int kFlushTimeOutInMs = 1000;
@@ -412,9 +399,9 @@ void VideoCaptureDeviceMFWin::Stop() {
       wait = SUCCEEDED(hr);
       if (!wait) {
         callback_->SetSignalOnFlush(NULL);
-        OnError(hr);
       }
     }
+    client_.reset();
   }
 
   // If the device has been unplugged, the Flush() won't trigger the event
@@ -426,20 +413,6 @@ void VideoCaptureDeviceMFWin::Stop() {
     flushed.TimedWait(base::TimeDelta::FromMilliseconds(kFlushTimeOutInMs));
 }
 
-void VideoCaptureDeviceMFWin::DeAllocate() {
-  DCHECK(CalledOnValidThread());
-
-  Stop();
-
-  base::AutoLock lock(lock_);
-  client_ = NULL;
-}
-
-const VideoCaptureDevice::Name& VideoCaptureDeviceMFWin::device_name() {
-  DCHECK(CalledOnValidThread());
-  return name_;
-}
-
 void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
     const uint8* data,
     int length,
@@ -448,7 +421,7 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
     bool flip_vert,
     bool flip_horiz) {
   base::AutoLock lock(lock_);
-  if (data && client_)
+  if (data && client_.get())
     client_->OnIncomingCapturedFrame(data, length, time_stamp,
                                      rotation, flip_vert, flip_horiz);
 
@@ -468,7 +441,7 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
 
 void VideoCaptureDeviceMFWin::OnError(HRESULT hr) {
   DLOG(ERROR) << "VideoCaptureDeviceMFWin: " << std::hex << hr;
-  if (client_)
+  if (client_.get())
     client_->OnError();
 }
 

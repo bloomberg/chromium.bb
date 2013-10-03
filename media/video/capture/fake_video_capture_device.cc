@@ -42,7 +42,7 @@ VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
   for (int n = 0; n < kNumberOfFakeDevices; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_name.id().compare(possible_id) == 0) {
-      return new FakeVideoCaptureDevice(device_name);
+      return new FakeVideoCaptureDevice();
     }
   }
   return NULL;
@@ -52,10 +52,8 @@ void FakeVideoCaptureDevice::SetFailNextCreate() {
   fail_next_create_ = true;
 }
 
-FakeVideoCaptureDevice::FakeVideoCaptureDevice(const Name& device_name)
-    : device_name_(device_name),
-      client_(NULL),
-      state_(kIdle),
+FakeVideoCaptureDevice::FakeVideoCaptureDevice()
+    : state_(kIdle),
       capture_thread_("CaptureThread"),
       frame_count_(0),
       capabilities_roster_index_(0) {
@@ -67,9 +65,9 @@ FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
   DCHECK(!capture_thread_.IsRunning());
 }
 
-void FakeVideoCaptureDevice::Allocate(
+void FakeVideoCaptureDevice::AllocateAndStart(
     const VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::Client* client) {
+    scoped_ptr<VideoCaptureDevice::Client> client) {
   capture_format_.frame_size_type = capture_format.frame_size_type;
   if (capture_format.frame_size_type == VariableResolutionVideoCaptureDevice)
     PopulateCapabilitiesRoster();
@@ -78,7 +76,7 @@ void FakeVideoCaptureDevice::Allocate(
     return;  // Wrong state.
   }
 
-  client_ = client;
+  client_ = client.Pass();
   capture_format_.color = PIXEL_FORMAT_I420;
   capture_format_.expected_capture_delay = 0;
   capture_format_.interlaced = false;
@@ -97,8 +95,14 @@ void FakeVideoCaptureDevice::Allocate(
       gfx::Size(capture_format_.width, capture_format_.height));
   fake_frame_.reset(new uint8[fake_frame_size]);
 
-  state_ = kAllocated;
   client_->OnFrameInfo(capture_format_);
+
+  state_ = kCapturing;
+  capture_thread_.Start();
+  capture_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeVideoCaptureDevice::OnCaptureTask,
+                 base::Unretained(this)));
 }
 
 void FakeVideoCaptureDevice::Reallocate() {
@@ -117,36 +121,12 @@ void FakeVideoCaptureDevice::Reallocate() {
   client_->OnFrameInfoChanged(capture_format_);
 }
 
-void FakeVideoCaptureDevice::Start() {
-  if (state_ != kAllocated) {
-      return;  // Wrong state.
-  }
-  state_ = kCapturing;
-  capture_thread_.Start();
-  capture_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoCaptureDevice::OnCaptureTask,
-                 base::Unretained(this)));
-}
-
-void FakeVideoCaptureDevice::Stop() {
+void FakeVideoCaptureDevice::StopAndDeAllocate() {
   if (state_ != kCapturing) {
-      return;  // Wrong state.
-  }
-  capture_thread_.Stop();
-  state_ = kAllocated;
-}
-
-void FakeVideoCaptureDevice::DeAllocate() {
-  if (state_ != kAllocated && state_ != kCapturing) {
-      return;  // Wrong state.
+    return;  // Wrong state.
   }
   capture_thread_.Stop();
   state_ = kIdle;
-}
-
-const VideoCaptureDevice::Name& FakeVideoCaptureDevice::device_name() {
-  return device_name_;
 }
 
 void FakeVideoCaptureDevice::OnCaptureTask() {

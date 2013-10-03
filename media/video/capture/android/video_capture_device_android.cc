@@ -82,13 +82,12 @@ bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
 VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(const Name& device_name)
     : state_(kIdle),
       got_first_frame_(false),
-      client_(NULL),
       device_name_(device_name),
       current_settings_() {
 }
 
 VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
-  DeAllocate();
+  StopAndDeAllocate();
 }
 
 bool VideoCaptureDeviceAndroid::Init() {
@@ -105,19 +104,16 @@ bool VideoCaptureDeviceAndroid::Init() {
   return true;
 }
 
-const VideoCaptureDevice::Name& VideoCaptureDeviceAndroid::device_name() {
-  return device_name_;
-}
-
-void VideoCaptureDeviceAndroid::Allocate(
+void VideoCaptureDeviceAndroid::AllocateAndStart(
     const VideoCaptureCapability& capture_format,
-    Client* client) {
+    scoped_ptr<Client> client) {
+  DVLOG(1) << "VideoCaptureDeviceAndroid::AllocateAndStart";
   {
     base::AutoLock lock(lock_);
     if (state_ != kIdle)
       return;
-    client_ = client;
-    state_ = kAllocated;
+    client_ = client.Pass();
+    got_first_frame_ = false;
   }
 
   JNIEnv* env = AttachCurrentThread();
@@ -158,20 +154,9 @@ void VideoCaptureDeviceAndroid::Allocate(
            << current_settings_.frame_rate;
   // Report the frame size to the client.
   client_->OnFrameInfo(current_settings_);
-}
 
-void VideoCaptureDeviceAndroid::Start() {
-  DVLOG(1) << "VideoCaptureDeviceAndroid::Start";
-  {
-    base::AutoLock lock(lock_);
-    got_first_frame_ = false;
-    DCHECK_EQ(state_, kAllocated);
-  }
-
-  JNIEnv* env = AttachCurrentThread();
-
-  jint ret = Java_VideoCapture_startCapture(env, j_capture_.obj());
-  if (ret < 0) {
+  jint result = Java_VideoCapture_startCapture(env, j_capture_.obj());
+  if (result < 0) {
     SetErrorState("failed to start capture");
     return;
   }
@@ -182,14 +167,12 @@ void VideoCaptureDeviceAndroid::Start() {
   }
 }
 
-void VideoCaptureDeviceAndroid::Stop() {
-  DVLOG(1) << "VideoCaptureDeviceAndroid::Stop";
+void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
+  DVLOG(1) << "VideoCaptureDeviceAndroid::StopAndDeAllocate";
   {
     base::AutoLock lock(lock_);
     if (state_ != kCapturing && state_ != kError)
       return;
-    if (state_ == kCapturing)
-      state_ = kAllocated;
   }
 
   JNIEnv* env = AttachCurrentThread();
@@ -199,27 +182,12 @@ void VideoCaptureDeviceAndroid::Stop() {
     SetErrorState("failed to stop capture");
     return;
   }
-}
 
-void VideoCaptureDeviceAndroid::DeAllocate() {
-  DVLOG(1) << "VideoCaptureDeviceAndroid::DeAllocate";
   {
     base::AutoLock lock(lock_);
-    if (state_ == kIdle)
-      return;
-
-    if (state_ == kCapturing) {
-      base::AutoUnlock unlock(lock_);
-      Stop();
-    }
-
-    if (state_ == kAllocated)
-      state_ = kIdle;
-
-    client_ = NULL;
+    state_ = kIdle;
+    client_.reset();
   }
-
-  JNIEnv* env = AttachCurrentThread();
 
   Java_VideoCapture_deallocate(env, j_capture_.obj());
 }
@@ -235,7 +203,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
   DVLOG(3) << "VideoCaptureDeviceAndroid::OnFrameAvailable: length =" << length;
 
   base::AutoLock lock(lock_);
-  if (state_ != kCapturing || !client_)
+  if (state_ != kCapturing || !client_.get())
     return;
 
   jbyte* buffer = env->GetByteArrayElements(data, NULL);

@@ -99,7 +99,6 @@ VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
 
 VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
     : device_name_(device_name),
-      client_(NULL),
       sent_frame_info_(false),
       loop_proxy_(base::MessageLoopProxy::current()),
       state_(kNotInitialized),
@@ -113,9 +112,9 @@ VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
   [capture_device_ release];
 }
 
-void VideoCaptureDeviceMac::Allocate(
+void VideoCaptureDeviceMac::AllocateAndStart(
     const VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::Client* client) {
+    scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   if (state_ != kIdle) {
     return;
@@ -130,7 +129,7 @@ void VideoCaptureDeviceMac::Allocate(
   GetBestMatchSupportedResolution(&width,
                                   &height);
 
-  client_ = client;
+  client_ = client.Pass();
   NSString* deviceId =
       [NSString stringWithUTF8String:device_name_.id().c_str()];
 
@@ -174,42 +173,17 @@ void VideoCaptureDeviceMac::Allocate(
     return;
   }
 
-  state_ = kAllocated;
-}
-
-void VideoCaptureDeviceMac::Start() {
-  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
-  DCHECK_EQ(state_, kAllocated);
   state_ = kCapturing;
-
-  // This method no longer has any effect.  Capturing is triggered by
-  // the call to Allocate.
-  // TODO(bemasc, ncarter): Remove this method.
 }
 
-void VideoCaptureDeviceMac::Stop() {
+void VideoCaptureDeviceMac::StopAndDeAllocate() {
   DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   DCHECK(state_ == kCapturing || state_ == kError) << state_;
   [capture_device_ stopCapture];
-  state_ = kAllocated;
-}
-
-void VideoCaptureDeviceMac::DeAllocate() {
-  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
-  if (state_ != kAllocated && state_ != kCapturing) {
-    return;
-  }
-  if (state_ == kCapturing) {
-    [capture_device_ stopCapture];
-  }
   [capture_device_ setCaptureDevice:nil];
   [capture_device_ setFrameReceiver:nil];
-
+  client_.reset();
   state_ = kIdle;
-}
-
-const VideoCaptureDevice::Name& VideoCaptureDeviceMac::device_name() {
-  return device_name_;
 }
 
 bool VideoCaptureDeviceMac::Init() {
