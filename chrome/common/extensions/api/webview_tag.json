@@ -1,0 +1,504 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "webviewTag",
+    "description": "Use the <code>webview</code> tag to actively load live content from the web over the network and embed it in your packaged app. Your app can control the appearance of the <code>webview</code> and interact with the web content, initiate navigations in an embedded web page, react to error events that happen within it, and more (see <a href=\"#usage\">Usage</a>).",
+    "documentation_options": {
+      "title": "<webview> Tag",
+      "namespace": "<webview>."
+    },
+    "types": [
+      {
+        "id": "InjectDetails",
+        "type": "object",
+        "description": "Details of the script or CSS to inject. Either the code or the file property must be set, but both may not be set at the same time.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "optional": true,
+            "description": "JavaScript or CSS code to inject."
+          },
+          "file": {
+            "type": "string",
+            "optional": true,
+            "description": "JavaScript or CSS file to inject."
+          }
+        }
+      },
+      {
+        "id": "ContentWindow",
+        "type": "object",
+        "description": "Messaging handle to a guest window.",
+        "functions": [
+          {
+            "name": "postMessage",
+            "description": "<p>Posts a message to the embedded web content as long as the embedded content is displaying a page from the target origin. This method is available once the page has completed loading. Listen for the <a href=\"#event-contentload\">contentload</a> event and then call the method.</p><p>The guest will be able to send replies to the embedder by posting message to <code>event.source</code> on the message event it receives.</p><p>This API is identical to the <a href=\"https://developer.mozilla.org/en-US/docs/DOM/window.postMessage\">HTML5 postMessage API</a> for communication between web pages. The embedder may listen for replies by adding a <code>message</code> event listener to its own frame.</p>",
+            "parameters": [
+              {
+                "type": "any",
+                "name": "message",
+                "description": "Message object to send to the guest."
+              },
+              {
+                "type": "string",
+                "name": "targetOrigin",
+                "description": "Specifies what the origin of the guest window must be for the event to be dispatched."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "NewWindow",
+        "type": "object",
+        "description": "Interface attached to <code>newwindow</code> DOM events.",
+        "functions": [
+          {
+            "name": "attach",
+            "description": "Attach the requested target page to an existing <code>webview</code> element.",
+            "parameters": [
+              {
+                "type": "object",
+                "name": "webview",
+                "description": "The <code>webview</code> element to which the target page should be attached.",
+                "properties": {}
+              }
+            ]
+          },
+          {
+            "name": "discard",
+            "description": "Cancel the new window request."
+          }
+        ]
+      },
+      {
+        "id": "MediaPermissionRequest",
+        "type": "object",
+        "description": "The type of <code>request</code> object which accompanies a <code>media</code> <a href=\"#event-permissionrequest\">permissionrequest</a></code> DOM event.",
+        "properties": {
+          "url": {
+            "description": "The URL of the frame requesting access to user media.",
+            "type": "string"
+          }
+        },
+        "functions": [
+          { "name": "allow", "description": "Allow the permission request." },
+          { "name": "deny", "description": "Deny the permission request." }
+        ]
+      },
+      {
+        "id": "GeolocationPermissionRequest",
+        "type": "object",
+        "description": "The type of <code>request</code> object which accompanies a <code>geolocation</code> <a href=\"#event-permissionrequest\">permissionrequest</a></code> DOM event.",
+        "properties": {
+          "url": {
+            "description": "The URL of the frame requesting access to geolocation data.",
+            "type": "string"
+          }
+        },
+        "functions": [
+          { "name": "allow", "description": "Allow the permission request." },
+          { "name": "deny", "description": "Deny the permission request." }
+        ]
+      },
+      {
+        "id": "PointerLockPermissionRequest",
+        "type": "object",
+        "description": "The type of <code>request</code> object which accompanies a <code>pointerLock</code> <a href=\"#event-permissionrequest\">permissionrequest</a></code> DOM event.",
+        "properties": {
+          "userGesture": {
+            "description": "Whether or not pointer lock was requested as a result of a user input gesture.",
+            "type": "boolean"
+          },
+          "lastUnlockedBySelf": {
+            "description": "Whether or not the requesting frame was the most recent client to hold pointer lock.",
+            "type": "boolean"
+          },
+          "url": {
+            "description": "The URL of the frame requesting pointer lock.",
+            "type": "string"
+          }
+        },
+        "functions": [
+          { "name": "allow", "description": "Allow the permission request." },
+          { "name": "deny", "description": "Deny the permission request." }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "name": "back",
+        "type": "function",
+        "description": "Navigates backward one history entry if possible. Equivalent to <code>go(-1)</code>."
+      },
+      {
+        "name": "canGoBack",
+        "type": "function",
+        "returns": { "type": "boolean" },
+        "description": "Indicates whether or not it is possible to navigate backward through history."
+      },
+      {
+        "name": "canGoForward",
+        "type": "function",
+        "returns": { "type": "boolean" },
+        "description": "Indicates whether or not it is possible to navigate forward through history."
+      },
+      {
+        "name": "executeScript",
+        "type": "function",
+        "description": "<p>Injects JavaScript code into the guest page.</p><p>The following sample code uses script injection to set the guest page's background color to red:</p><pre>webview.executeScript({ code: \"document.body.bgColor = 'red'\" });</pre>",
+        "parameters": [
+          {
+            "$ref": "InjectDetails",
+            "name": "details",
+            "description": "Details of the script to run."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called after all the JavaScript has been executed.",
+            "parameters": [
+              {
+                "name": "result",
+                "optional": true,
+                "type": "array",
+                "items": {"type": "any", "minimum": 0},
+                "description": "The result of the script in every injected frame."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "forward",
+        "type": "function",
+        "description": "Navigates forward one history entry if possible. Equivalent to <code>go(1)</code>.",
+        "parameters": []
+      },
+      {
+        "name": "getProcessId",
+        "type": "function",
+        "returns": { "type": "integer" },
+        "description": "Returns Chrome's internal process ID for the guest web page's current process, allowing embedders to know how many guests would be affected by terminating the process. Two guests will share a process only if they belong to the same app and have the same <a href=\"#partition\">storage partition ID</a>. The call is synchronous and returns the embedder's cached notion of the current process ID. The process ID isn't the same as the operating system's process ID.",
+        "parameters": []
+      },
+      {
+        "name": "go",
+        "type": "function",
+        "description": "Navigates to a history entry using a history index relative to the current navigation. If the requested navigation is impossible, this method has no effect.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "relativeIndex",
+            "description": "Relative history index to which the webview should be navigated. For example, a value of <code>2</code> will navigate forward 2 history entries if possible; a value of <code>-3</code> will navigate backward 3 entries."
+          }
+        ]
+      },
+      {
+        "name": "insertCSS",
+        "type": "function",
+        "description": "Injects CSS into the guest page.",
+        "parameters": [
+          {
+            "$ref": "InjectDetails",
+            "name": "details",
+            "description": "Details of the CSS to insert."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called after the CSS has been inserted.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "reload",
+        "type": "function",
+        "description": "Reloads the current top-level page.",
+        "parameters": []
+      },
+      {
+        "name": "stop",
+        "type": "function",
+        "description": "Stops loading the current &lt;webview> navigation if in progress.",
+        "parameters": []
+      },
+      {
+        "name": "terminate",
+        "type": "function",
+        "description": "Forcibly kills the guest web page's renderer process. This may affect multiple <code>webview</code> tags in the current app if they share the same process, but it will not affect <code>webview</code> tags in other apps.",
+        "parameters": []
+      }
+    ],
+    "events": [
+      {
+        "name": "close",
+        "options": { "supportsDom": true },
+        "description": "Fired when the guest window attempts to close itself.<p>The following example code navigates the webview to <code>about:blank</code> when the guest attempts to close itself.</p><pre>webview.addEventListener('close', function() {\r  webview.src = 'about:blank';\r});</pre>",
+        "parameters": []
+      },
+      {
+        "name": "consolemessage",
+        "options": { "supportsDom": true },
+        "description": "Fired when the guest window logs a console message.<p>The following example code forwards all log messages to the embedder's console without regard for log level or other properties.</p><pre>webview.addEventListener('consolemessage', function(e) {\r  console.log('Guest page logged a message: ', e.message);\r});</pre>",
+        "parameters": [
+          {
+            "name": "level",
+            "description": "The severity level of the log message. Ranges from 0 to 4.",
+            "type": "integer"
+          },
+          {
+            "name": "message",
+            "description": "The logged message contents.",
+            "type": "string"
+          },
+          {
+            "name": "line",
+            "description": "The line number of the message source.",
+            "type": "integer"
+          },
+          {
+            "name": "sourceId",
+            "description": "A string identifying the resource which logged the message.",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "contentload",
+        "options": { "supportsDom": true },
+        "description": "Fired when the guest window fires a <code>load</code> event.<p>The following example code modifies the default font size of the guest's <code>body</code> element after the page loads:</p><pre>webview.addEventListener('contentload', function() {\r  webview.executeScript({ code: 'document.body.style.fontSize = \"42px\"' });\r});</pre>",
+        "parameters": []
+      },
+      {
+        "name": "exit",
+        "options": { "supportsDom": true },
+        "description": "Fired when the process rendering the guest web content has exited.<p>The following example code will show a farewell message whenever the guest page crashes:</p><pre>webview.addEventListener('exit', function(e) {\r  if (e.reason === 'crash') {\r    webview.src = 'data:text/plain,Goodbye, world!';\r  }\r});</pre>",
+        "parameters": [
+          {
+            "name": "processID",
+            "description": "Chrome's interal ID of the process that exited.",
+            "type": "integer"
+          },
+          {
+            "name": "reason",
+            "description": "String indicating the reason for the exit.",
+            "type": "string",
+            "enum": ["normal", "abnormal", "crash", "kill"]
+          }
+        ]
+      },
+      {
+        "name": "loadabort",
+        "options": { "supportsDom": true },
+        "description": "Fired when a top-level load has aborted without committing.",
+        "parameters": [
+          {
+            "name": "url",
+            "description": "Requested URL.",
+            "type": "string"
+          },
+          {
+            "name": "isTopLevel",
+            "description": "Whether the load was top-level or in a subframe.",
+            "type": "boolean"
+          },
+          {
+            "name": "reason",
+            "description": "String indicating what type of abort occurred.",
+            "type": "string",
+            "enum": ["networkError", "download", "canceled", "sslError", "safeBrowsingError"]
+          }
+        ]
+      },
+      {
+        "name": "loadcommit",
+        "options": { "supportsDom": true },
+        "description": "Fired when a load has committed.",
+        "parameters": [
+          {
+            "name": "url",
+            "description": "The URL that committed.",
+            "type": "string"
+          },
+          {
+            "name": "isTopLevel",
+            "description": "Whether the load is top-level or in a subframe.",
+            "type": "boolean"
+          }
+        ]
+      },
+      {
+        "name": "loadredirect",
+        "options": { "supportsDom": true },
+        "description": "Fired when a top-level load request has redirected to a different URL.",
+        "parameters": [
+          {
+            "name": "oldUrl",
+            "description": "The requested URL before the redirect.",
+            "type": "string"
+          },
+          {
+            "name": "newUrl",
+            "description": "The new URL after the redirect.",
+            "type": "string"
+          },
+          {
+            "name": "isTopLevel",
+            "description": "Whether or not the redirect happened at top-level or in a subframe.",
+            "type": "boolean"
+          }
+        ]
+      },
+      {
+        "name": "loadstart",
+        "options": { "supportsDom": true },
+        "description": "Fired when a load has begun.",
+        "parameters": [
+          {
+            "name": "url",
+            "description": "Requested URL.",
+            "type": "string"
+          },
+          {
+            "name": "isTopLevel",
+            "description": "Whether the load is top-level or in a subframe.",
+            "type": "boolean"
+          }
+        ]
+      },
+      {
+        "name": "loadstop",
+        "options": { "supportsDom": true },
+        "description": "Fired when all loads in the guest page (including all subframes) have completed. Fires in addition to any related <code>loadcommit</code> or <code>loadabort</code> events, which occur per-frame.",
+        "parameters": []
+      },
+      {
+        "name": "newwindow",
+        "options": { "supportsDom": true },
+        "description": "Fired when the guest page attempts to open a new browser window.<p>The following example code will create and navigate a new <code>webview</code> in the embedder for each requested new window:</p><pre>webview.addEventListener('newwindow', function(e) {\r  var newWebview = document.createElement('webview');\r  document.body.appendChild(newWebview);\r  e.window.attach(newWebview);\r});</pre>",
+        "parameters": [
+          {
+            "name": "window",
+            "description": "An interface that can be used to either attach the requested target page to an existing <code>webview</code> element or explicitly discard the request.",
+            "$ref": "NewWindow"
+          },
+          {
+            "name": "targetUrl",
+            "description": "The target URL requested for the new window.",
+            "type": "string"
+          },
+          {
+            "name": "initialWidth",
+            "description": "The initial width requested for the new window.",
+            "type": "number"
+          },
+          {
+            "name": "initialHeight",
+            "description": "The initial height requested for the new window.",
+            "type": "number"
+          },
+          {
+            "name": "name",
+            "description": "The requested name of the new window.",
+            "type": "string"
+          },
+          {
+            "name": "windowOpenDisposition",
+            "description": "The requested disposition of the new window.",
+            "type": "string",
+            "enum": ["ignore", "save_to_disk", "current_tab", "new_background_tab", "new_foreground_tab", "new_window", "new_popup"]
+          }
+        ]
+      },
+      {
+        "name": "permissionrequest",
+        "options": { "supportsDom": true },
+        "description": "Fired when the guest page needs to request special permission from the embedder.<p>The following example code will grant the guest page access to the <code>webkitGetUserMedia</code> API. Note that an app using this example code must itself specify <code>audioCapture</code> and/or <code>videoCapture</code> manifest permissions:</p><pre>webview.addEventListener('permissionrequest', function(e) {\r  if (e.permission === 'media') {\r    e.request.allow();\r  }\r});</pre>",
+        "parameters": [
+          {
+            "name": "permission",
+            "description": "The type of permission being requested.",
+            "type": "string",
+            "enum": ["media", "geolocation", "pointerLock"]
+          },
+          {
+            "name": "requestId",
+            "description": "An number which uniquely identifies this request from the guest.",
+            "type": "integer"
+          },
+          {
+            "name": "request",
+            "type": "object",
+            "properties": {},
+            "description": "An object which holds details of the requested permission. Depending on the type of permission requested, this may be a $ref:MediaPermissionRequest, $ref:GeolocationPermissionRequest, or a $ref:PointerLockPermissionRequest."
+          }
+        ]
+      },
+      {
+        "name": "responsive",
+        "options": { "supportsDom": true },
+        "description": "Fired when the process rendering the guest web content has become responsive again after being unresponsive.<p>The following example code will fade the <code>webview</code> element in or out as it becomes responsive or unresponsive:</p><pre>webview.style.webkitTransition = 'opacity 250ms';\rwebview.addEventListener('unresponsive', function() {\r  webview.style.opacity = '0.5';\r});\rwebview.addEventListener('responsive', function() {\r  webview.style.opacity = '1';\r});</pre>",
+        "parameters": [
+          {
+            "name": "processID",
+            "description": "Chrome's internal ID of the process that became responsive.",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "sizechanged",
+        "options": { "supportsDom": true },
+        "description": "Fired when the embedded web content has been resized. Only fires if <code>autosize</code> is enabled.",
+        "parameters": [
+          {
+            "name": "oldWidth",
+            "description": "Old width of embedded web content.",
+            "type": "number"
+          },
+          {
+            "name": "oldHeight",
+            "description": "Old height of embedded web content.",
+            "type": "number"
+          },
+          {
+            "name": "newWidth",
+            "description": "New width of embedded web content.",
+            "type": "number"
+          },
+          {
+            "name": "newHeight",
+            "description": "New height of embedded web content.",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "unresponsive",
+        "options": { "supportsDom": true },
+        "description": "Fired when the process rendering the guest web content has become unresponsive. This event will be generated once with a matching responsive event if the guest begins to respond again.",
+        "parameters": [
+          {
+            "name": "processID",
+            "description": "Chrome's internal ID of the process that has become unresponsive.",
+            "type": "integer"
+          }
+        ]
+      }
+    ],
+    "properties": {
+      "contentWindow": {
+        "$ref": "ContentWindow",
+        "description": "Object reference which can be used to post messages into the guest page."
+      }
+    }
+  }
+]
+

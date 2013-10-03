@@ -628,6 +628,10 @@
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension", "unblessed_extension"]
   },
+  "webviewTag": {
+    "dependencies": ["permission:webview"],
+    "contexts": ["blessed_extension"]
+  },
   "windows": {
     "dependencies": ["api:tabs"],
     "contexts": ["blessed_extension"]

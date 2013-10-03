@@ -39,5 +39,9 @@
     // Only 'webstorePrivate' is present before version 19.
     "channel": "stable",
     "version": 15
+  },
+  "webviewTag": {
+    "channel": "stable",
+    "version": 25
   }
 }
