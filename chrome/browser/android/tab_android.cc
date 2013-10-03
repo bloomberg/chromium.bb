@@ -23,6 +23,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
+#include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
@@ -82,6 +83,7 @@ void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
   FindTabHelper::CreateForWebContents(contents);
   HistoryTabHelper::CreateForWebContents(contents);
   InfoBarService::CreateForWebContents(contents);
+  NavigationMetricsRecorder::CreateForWebContents(contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(contents);
   PasswordManagerDelegateImpl::CreateForWebContents(contents);
   PasswordManager::CreateForWebContentsAndDelegate(

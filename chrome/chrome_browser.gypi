@@ -3273,7 +3273,6 @@
             'browser/sync/profile_sync_service_base.cc',
             'browser/sync/profile_sync_service_harness.cc',
             'browser/sync/retry_verifier.cc',
-            'browser/tab_contents/navigation_metrics_recorder.cc',
             'browser/undo/bookmark_undo_service.cc',
             'browser/undo/bookmark_undo_service_factory.cc',
             'browser/undo/undo_manager.cc',
