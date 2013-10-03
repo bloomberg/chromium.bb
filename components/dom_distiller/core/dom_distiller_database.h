@@ -14,11 +14,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "components/dom_distiller/core/article_entry.h"
 
 namespace base {
 class SequencedTaskRunner;
+class MessageLoop;
 }
 
 namespace leveldb {
@@ -38,6 +38,8 @@ class DomDistillerDatabaseInterface {
   typedef base::Callback<void(bool success, scoped_ptr<EntryVector>)>
       LoadCallback;
 
+  virtual ~DomDistillerDatabaseInterface() {}
+
   // Asynchronously destroys the object after all in-progress file operations
   // have completed. The callbacks for in-progress operations will still be
   // called.
@@ -56,9 +58,6 @@ class DomDistillerDatabaseInterface {
   // Asynchronously loads all entries from the database and invokes |callback|
   // when complete.
   virtual void LoadEntries(LoadCallback callback) = 0;
-
- protected:
-  virtual ~DomDistillerDatabaseInterface() {}
 };
 
 class DomDistillerDatabase
@@ -88,6 +87,8 @@ class DomDistillerDatabase
 
   DomDistillerDatabase(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
+  virtual ~DomDistillerDatabase();
+
   // DomDistillerDatabaseInterface implementation.
   virtual void Destroy() OVERRIDE;
   virtual void Init(const base::FilePath& database_dir,
@@ -100,9 +101,6 @@ class DomDistillerDatabase
   void InitWithDatabase(scoped_ptr<Database> database,
                         const base::FilePath& database_dir,
                         InitCallback callback);
-
- protected:
-  virtual ~DomDistillerDatabase();
 
  private:
   // Whether currently being run by |task_runner_|.

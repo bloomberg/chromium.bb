@@ -63,6 +63,8 @@
             'dom_distiller/core/dom_distiller_constants.h',
             'dom_distiller/core/dom_distiller_database.cc',
             'dom_distiller/core/dom_distiller_database.h',
+            'dom_distiller/core/dom_distiller_store.cc',
+            'dom_distiller/core/dom_distiller_store.h',
           ],
         },
       ],
