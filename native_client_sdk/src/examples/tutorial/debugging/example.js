@@ -22,14 +22,14 @@ function findAddress(addr, map) {
   if (map.length < 1) {
     return 'MAP Unavailable';
   }
-  if (addr < map[0].offs)  {
+  if (addr < map[0].offs) {
     return 'Invalid Address';
   }
 
-  for (var i=1; i < map.length; i++) {
+  for (var i = 1; i < map.length; i++) {
     if (addr < map[i].offs) {
-      var offs = addr - map[i-1].offs;
-      var filename = map[i-1].file;
+      var offs = addr - map[i - 1].offs;
+      var filename = map[i - 1].file;
 
       // Force filename to 50 chars
       if (filename) {
@@ -40,41 +40,71 @@ function findAddress(addr, map) {
         filename = 'Unknown';
       }
       while (filename.length < 50) {
-        filename = ' ' + filename
+        filename = ' ' + filename;
       }
-      return filename + ' '  + map[i-1].name + ' + 0x' + offs.toString(16);
+      return filename + ' ' + map[i - 1].name + ' + 0x' + offs.toString(16);
     }
   }
 
   var last = map.length - 1;
-  return filename + ' '  + map[last].name + ' + 0x' + offs.toString(16);
+  return filename + ' ' + map[last].name + ' + 0x' + offs.toString(16);
 }
 
 function buildTextMap(map) {
-  map = map.split('\n');
+  // The expected format of the map file is this:
+  // ...
+  // .text     0x00000000000201e0     0x10e0 newlib/Debug/debugging_x86_64.o
+  //           0x0000000000020280                layer5
+  //           0x00000000000202e0                layer4
+  //           0x0000000000020320                layer3
+  //           0x0000000000020380                layer2
+  //           0x00000000000203e0                layer1
+  //           0x0000000000020460                NexeMain
+  // ...
+  var lines = map.split('\n');
   var orderedMap = [];
-  for (var i=0; i < map.length; i++) {
-    var line = map[i].replace('\t', ' ');
-    var vals = line.split(' ');
-    var obj = {
-      offs: parseInt(vals[0], 16),
-      name: vals[2],
-      file: vals[3]
-    }
-    if (vals[1] && vals[1].toUpperCase() == 'T') {
+  var inTextSection = false;
+  var fileName = '';
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+
+    if (inTextSection) {
+      //   <hex address>   <symbol name>
+      var vals = line.trim().split(/\s+/);
+      if (vals.length != 2) {
+        inTextSection = false;
+        continue;
+      }
+
+      var obj = {
+        offs: parseInt(vals[0], 16),
+        name: vals[1],
+        file: fileName
+      };
+
       orderedMap.push(obj);
+    } else {
+      // If line starts with .text:
+      if (line.lastIndexOf(' .text', 0) === 0) {
+        inTextSection = true;
+        // .text    <hex address>   <size>  <filename>
+        var vals = line.trim().split(/\s+/);
+        fileName = vals[3];
+      }
     }
   }
-  orderedMap.sort(function(a,b) { return a.offs - b.offs; });
+
+  orderedMap.sort(function(a, b) { return a.offs - b.offs; });
   return orderedMap;
 }
 
 function updateStack(traceinfo, map) {
   map = buildTextMap(map);
   var text = 'Stack Trace\n';
-  for (var i=0; i < traceinfo.frames.length; i++) {
+  for (var i = 0; i < traceinfo.frames.length; i++) {
     var frame = traceinfo.frames[i];
-    var addr =  findAddress(frame.prog_ctr, map)
+    var addr = findAddress(frame.prog_ctr, map);
     text += '[' + i.toString(10) + '] ' + addr + '\n';
   }
   document.getElementById('trace').value = text;
@@ -85,7 +115,7 @@ function fetchMap(url, traceinfo) {
   xmlhttp.open('GET', url, true);
   xmlhttp.onload = function() {
     updateStack(traceinfo, this.responseText);
-  }
+  };
   xmlhttp.traceinfo = traceinfo;
   xmlhttp.send();
 }
@@ -98,9 +128,6 @@ function handleMessage(message_event) {
     document.getElementById('log').value += msg_data + '\n';
     return;
   }
-  if (msg_type == 'STS:') {
-    updateStatus(msg_data);
-  }
   if (msg_type == 'TRC:') {
     crashed = true;
     document.getElementById('json').value = msg_data;
@@ -112,15 +139,11 @@ function handleMessage(message_event) {
   }
 }
 
-function handleCrash(message) {
-  updateStatus(message);
-}
-
 function updateStatus(message) {
   common.updateStatus(message);
 
   if (message)
-    document.getElementById('log').value += message + '\n'
+    document.getElementById('log').value += message + '\n';
 }
 
 function boom() {

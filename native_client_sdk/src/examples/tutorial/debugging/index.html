@@ -17,9 +17,14 @@
   <p> This example illustrates techniques for tracking the state of a NaCl
   module via PostMessage and status of the module's lastError attribute.
   Messages from the modules are in the form of
-  <li>"LOG: <data>" which adds the message to the log.</li>
-  <li>"STS: <data>" which updates the status string.</li>
-  <li>"TRC: <data>" which provides a JSON string defining an exception.</li>
+  <ul>
+    <li>
+      "LOG: &lt;data&gt;" which adds the message to the log.
+    </li>
+    <li>
+      "TRC: &lt;data&gt;" which provides a JSON string defining an exception.
+    </li>
+  </ul>
   <h2> Exception API </h2>
   <p> As of Chrome 28, NativeClient exception handling is possible without
   requiring special command-line flags.  This feature is not always available
@@ -34,7 +39,7 @@
   both a handler and an exception stack.  We use a separate stack since we
   do not know the state of stack for the thread handling the exception.
   Next, we create a worker thread which will take the exception.  It is
-  recommended that modules do as much work as possible off the main thread. 
+  recommended that modules do as much work as possible off the main thread.
   Failure to do so can block the browser, making the page unresponsive and/or
   preventing communication with JavaScript.  In addition blocking calls,
   which can greatly simplify code, are only allowed off the main thread.</p>
