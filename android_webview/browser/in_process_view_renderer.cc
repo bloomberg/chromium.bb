@@ -29,7 +29,6 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/utils/SkCanvasStateUtils.h"
-#include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -296,15 +295,7 @@ void InProcessViewRenderer::CalculateTileMemoryPolicy() {
     return;
   }
 
-  // TODO(boliu): Should use view context to get the display dimensions, and
-  // pass tile size in a per WebContents setting instead of through command
-  // line switch.
-  gfx::DeviceDisplayInfo info;
-  int default_tile_size = 256;
-
-  if (info.GetDisplayWidth() >= 1080)
-    default_tile_size = 512;
-
+  const int default_tile_size = 512;
   std::stringstream size;
   size << default_tile_size;
   cl->AppendSwitchASCII(switches::kDefaultTileWidth, size.str());
