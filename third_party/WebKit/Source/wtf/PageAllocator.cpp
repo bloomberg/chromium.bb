@@ -31,8 +31,6 @@
 #include "config.h"
 #include "wtf/PageAllocator.h"
 
-#include "wtf/Assertions.h"
-#include "wtf/CPU.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 
 #if OS(POSIX)
@@ -97,6 +95,8 @@ void* allocSuperPages(void* addr, size_t len)
         ret = VirtualAlloc(0, len, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     RELEASE_ASSERT(ret);
 #endif // OS(POSIX)
+
+    SuperPageBitmap::registerSuperPage(ret);
     return ret;
 }
 
@@ -111,6 +111,8 @@ void freeSuperPages(void* addr, size_t len)
     BOOL ret = VirtualFree(addr, 0, MEM_RELEASE);
     ASSERT(ret);
 #endif
+
+    SuperPageBitmap::unregisterSuperPage(addr);
 }
 
 void setSystemPagesInaccessible(void* addr, size_t len)
@@ -162,6 +164,32 @@ char* getRandomSuperPageBase()
 #endif // CPU(X86_64)
     return reinterpret_cast<char*>(random);
 }
+
+#if CPU(32BIT)
+unsigned char SuperPageBitmap::s_bitmap[1 << (32 - kSuperPageShift - 3)];
+
+void SuperPageBitmap::registerSuperPage(void* ptr)
+{
+    ASSERT(!isPointerInSuperPage(ptr));
+    uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
+    raw >>= kSuperPageShift;
+    size_t byteIndex = raw >> 3;
+    size_t bit = raw & 7;
+    ASSERT(byteIndex < sizeof(s_bitmap));
+    s_bitmap[byteIndex] |= (1 << bit);
+}
+
+void SuperPageBitmap::unregisterSuperPage(void* ptr)
+{
+    ASSERT(isPointerInSuperPage(ptr));
+    uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
+    raw >>= kSuperPageShift;
+    size_t byteIndex = raw >> 3;
+    size_t bit = raw & 7;
+    ASSERT(byteIndex < sizeof(s_bitmap));
+    s_bitmap[byteIndex] &= ~(1 << bit);
+}
+#endif
 
 } // namespace WTF
 

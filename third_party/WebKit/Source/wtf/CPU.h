@@ -36,7 +36,8 @@
 
 /* ==== CPU() - the target CPU architecture ==== */
 
-/* This also defines CPU(BIG_ENDIAN) or CPU(MIDDLE_ENDIAN) or neither, as appropriate. */
+/* This defines CPU(BIG_ENDIAN) or nothing, as appropriate. */
+/* This defines CPU(32BIT) or CPU(64BIT), as appropriate. */
 
 /* CPU(X86) - i386 / x86 32-bit */
 #if   defined(__i386__) \
@@ -51,6 +52,7 @@
 #if   defined(__x86_64__) \
     || defined(_M_X64)
 #define WTF_CPU_X86_64 1
+#define WTF_CPU_64BIT 1
 #endif
 
 /* CPU(ARM) - ARM, any version*/
@@ -170,6 +172,10 @@
 
 #if defined(__ARM_ARCH_7S__)
 #define WTF_CPU_APPLE_ARMV7S 1
+#endif
+
+#if !defined(WTF_CPU_64BIT)
+#define WTF_CPU_32BIT 1
 #endif
 
 #endif /* ARM */

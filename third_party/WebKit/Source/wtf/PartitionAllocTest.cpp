@@ -32,7 +32,6 @@
 #include "wtf/PartitionAlloc.h"
 
 #include "wtf/OwnArrayPtr.h"
-#include "wtf/PageAllocator.h"
 #include <gtest/gtest.h>
 #include <stdlib.h>
 #include <string.h>

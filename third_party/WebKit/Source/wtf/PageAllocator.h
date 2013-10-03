@@ -31,6 +31,10 @@
 #ifndef WTF_PageAllocator_h
 #define WTF_PageAllocator_h
 
+#include "wtf/Assertions.h"
+#include "wtf/CPU.h"
+#include <stdint.h>
+
 namespace WTF {
 
 // Our granulatity of page allocation is 64KB. This is a Windows limitation,
@@ -38,7 +42,8 @@ namespace WTF {
 // things simple and consistent.
 // We term these 64KB allocations "super pages". They're just a clump of
 // underlying 4KB system pages.
-static const size_t kSuperPageSize = 1 << 16; // 64KB
+static const size_t kSuperPageShift = 16; // 64KB
+static const size_t kSuperPageSize = 1 << kSuperPageShift;
 static const size_t kSuperPageOffsetMask = kSuperPageSize - 1;
 static const size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
 
@@ -72,7 +77,8 @@ void setSystemPagesInaccessible(void* addr, size_t len);
 // System pages are re-committed by writing to them.
 // Clients should not make any assumptions about the contents of decommitted
 // system pages, before or after they write to the page. The only guarantee
-// provided is that the contents of the system page will be deterministic again // after writing to it. In particlar note that system pages are not guaranteed
+// provided is that the contents of the system page will be deterministic again
+// after writing to it. In particlar note that system pages are not guaranteed
 // to be zero-filled upon re-commit.
 // len must be a multiple of kSystemPageSize bytes.
 void decommitSystemPages(void* addr, size_t len);
@@ -82,6 +88,52 @@ void decommitSystemPages(void* addr, size_t len);
 // that has a good chance of being unused. The pointer is also randomized to
 // provide reasonable ASLR.
 char* getRandomSuperPageBase();
+
+#if CPU(32BIT)
+class SuperPageBitmap {
+public:
+    ALWAYS_INLINE static bool isAvailable()
+    {
+        return true;
+    }
+
+    ALWAYS_INLINE static bool isPointerInSuperPage(void* ptr)
+    {
+        uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
+        raw >>= kSuperPageShift;
+        size_t byteIndex = raw >> 3;
+        size_t bit = raw & 7;
+        ASSERT(byteIndex < sizeof(s_bitmap));
+        return s_bitmap[byteIndex] & (1 << bit);
+    }
+
+    static void registerSuperPage(void* ptr);
+    static void unregisterSuperPage(void* ptr);
+
+private:
+    static unsigned char s_bitmap[1 << (32 - kSuperPageShift - 3)];
+};
+
+#else // CPU(32BIT)
+
+class SuperPageBitmap {
+public:
+    ALWAYS_INLINE static bool isAvailable()
+    {
+        return false;
+    }
+
+    ALWAYS_INLINE static bool isPointerInSuperPage(void* ptr)
+    {
+        ASSERT(false);
+        return false;
+    }
+
+    static void registerSuperPage(void* ptr) { }
+    static void unregisterSuperPage(void* ptr) { }
+};
+
+#endif // CPU(32BIT)
 
 } // namespace WTF
 

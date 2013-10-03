@@ -88,7 +88,9 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/FastMalloc.h"
+#include "wtf/PageAllocator.h"
 #include "wtf/SpinLock.h"
+#include "wtf/UnusedParam.h"
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 #include <stdlib.h>
@@ -272,6 +274,15 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPageHeader* page)
 
 ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
 {
+    // On 32-bit systems, we have an optimization where we have a bitmap that
+    // can instantly tell us if a pointer is in a super page or not.
+    // It is a global bitmap instead of a per-partition bitmap but this is a
+    // reasonable space vs. accuracy trade off.
+    if (SuperPageBitmap::isAvailable())
+        return SuperPageBitmap::isPointerInSuperPage(ptr);
+
+    // On 64-bit systems, we check the list of super page extents. Due to the
+    // massive address space, we typically have a single extent.
     // Dominant case: the pointer is in the first extent, which grew without any collision.
     if (LIKELY(ptr >= root->firstExtent.superPageBase) && LIKELY(ptr < root->firstExtent.superPagesEnd))
         return true;
