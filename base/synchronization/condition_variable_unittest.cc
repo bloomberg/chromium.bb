@@ -171,7 +171,13 @@ TEST_F(ConditionVariableTest, StartupShutdownTest) {
   lock.Release();
 }  // Call for cv destruction.
 
-TEST_F(ConditionVariableTest, TimeoutTest) {
+#if defined(THREAD_SANITIZER)
+// Fails under ThreadSanitizer, see http://crbug.com/303007.
+#define MAYBE_TimeoutTest DISABLED_TimeoutTest
+#else
+#define MAYBE_TimeoutTest TimeoutTest
+#endif
+TEST_F(ConditionVariableTest, MAYBE_TimeoutTest) {
   Lock lock;
   ConditionVariable cv(&lock);
   lock.Acquire();
@@ -243,8 +249,8 @@ TEST_F(ConditionVariableTest, DISABLED_TimeoutAcrossSetTimeOfDay) {
 
 
 // Suddenly got flaky on Win, see http://crbug.com/10607 (starting at
-// comment #15)
-#if defined(OS_WIN)
+// comment #15). Failing under ThreadSanitizer, see http://crbug.com/303007.
+#if defined(OS_WIN) || defined(THREAD_SANITIZER)
 #define MAYBE_MultiThreadConsumerTest DISABLED_MultiThreadConsumerTest
 #else
 #define MAYBE_MultiThreadConsumerTest MultiThreadConsumerTest
@@ -394,7 +400,13 @@ TEST_F(ConditionVariableTest, MAYBE_MultiThreadConsumerTest) {
                                    queue.ThreadSafeCheckShutdown(kThreadCount));
 }
 
-TEST_F(ConditionVariableTest, LargeFastTaskTest) {
+#if defined(THREAD_SANITIZER)
+// Fails under ThreadSanitizer, see http://crbug.com/303007.
+#define MAYBE_LargeFastTaskTest DISABLED_LargeFastTaskTest
+#else
+#define MAYBE_LargeFastTaskTest LargeFastTaskTest
+#endif
+TEST_F(ConditionVariableTest, MAYBE_LargeFastTaskTest) {
   const int kThreadCount = 200;
   WorkQueue queue(kThreadCount);  // Start the threads.
 
