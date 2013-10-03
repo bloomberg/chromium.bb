@@ -17,9 +17,13 @@ class AutofillMainContainerTest : public ui::CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
+    RebuildView();
+  }
+
+  void RebuildView() {
     container_.reset([[AutofillMainContainer alloc] initWithDelegate:
                          &delegate_]);
-    [[test_window() contentView] addSubview:[container_ view]];
+    [[test_window() contentView] setSubviews:@[ [container_ view] ]];
   }
 
  protected:
@@ -69,7 +73,20 @@ TEST_F(AutofillMainContainerTest, SubViews) {
   EXPECT_TRUE(hasCheckbox);
 }
 
-TEST_F(AutofillMainContainerTest, SaveDetailsLocallyDefaultsToTrue) {
+// Ensure the default state of the "Save in Chrome" checkbox is controlled by
+// the delegate.
+TEST_F(AutofillMainContainerTest, SaveDetailsDefaultsFromDelegate) {
+  using namespace testing;
+  EXPECT_CALL(delegate_, ShouldOfferToSaveInChrome()).Times(2)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(delegate_,ShouldSaveInChrome()).Times(2)
+      .WillOnce(Return(false))
+      .WillOnce(Return(true));
+
+  RebuildView();
+  EXPECT_FALSE([container_ saveDetailsLocally]);
+
+  RebuildView();
   EXPECT_TRUE([container_ saveDetailsLocally]);
 }
 
@@ -81,11 +98,10 @@ TEST_F(AutofillMainContainerTest, SaveInChromeCheckboxVisibility) {
       .WillOnce(Return(false))
       .WillOnce(Return(true));
 
+  RebuildView();
   NSButton* checkbox = [container_ saveInChromeCheckboxForTesting];
   ASSERT_TRUE(checkbox);
 
-  EXPECT_FALSE([checkbox isHidden]);
-  [container_ modelChanged];
   EXPECT_TRUE([checkbox isHidden]);
   [container_ modelChanged];
   EXPECT_FALSE([checkbox isHidden]);
