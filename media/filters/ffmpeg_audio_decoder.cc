@@ -15,6 +15,7 @@
 #include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer.h"
+#include "media/base/limits.h"
 #include "media/base/pipeline.h"
 #include "media/base/sample_format.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -169,6 +170,12 @@ int FFmpegAudioDecoder::GetAudioBuffer(AVCodecContext* codec,
   AVSampleFormat format = static_cast<AVSampleFormat>(frame->format);
   SampleFormat sample_format = AVSampleFormatToSampleFormat(format);
   int channels = DetermineChannels(frame);
+  if ((channels <= 0) || (channels >= limits::kMaxChannels)) {
+    DLOG(ERROR) << "Requested number of channels (" << channels
+                << ") exceeds limit.";
+    return AVERROR(EINVAL);
+  }
+
   int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format);
   if (frame->nb_samples <= 0)
     return AVERROR(EINVAL);
