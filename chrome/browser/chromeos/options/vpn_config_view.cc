@@ -267,6 +267,7 @@ VPNConfigView::VPNConfigView(NetworkConfigView* parent,
 }
 
 VPNConfigView::~VPNConfigView() {
+  RemoveAllChildViews(true);  // Destroy children before models
   CertLibrary::Get()->RemoveObserver(this);
 }
 

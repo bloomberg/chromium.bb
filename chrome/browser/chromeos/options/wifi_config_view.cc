@@ -370,6 +370,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent,
 }
 
 WifiConfigView::~WifiConfigView() {
+  RemoveAllChildViews(true);  // Destroy children before models
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(
         this, FROM_HERE);

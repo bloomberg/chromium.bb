@@ -65,6 +65,7 @@ WimaxConfigView::WimaxConfigView(NetworkConfigView* parent,
 }
 
 WimaxConfigView::~WimaxConfigView() {
+  RemoveAllChildViews(true);  // Destroy children before models
 }
 
 string16 WimaxConfigView::GetTitle() const {
