@@ -145,7 +145,8 @@ SimpleWebViewDialog::~SimpleWebViewDialog() {
 }
 
 void SimpleWebViewDialog::StartLoad(const GURL& url) {
-  web_view_container_.reset(new views::WebView(profile_));
+  if (!web_view_container_.get())
+    web_view_container_.reset(new views::WebView(profile_));
   web_view_ = web_view_container_.get();
   web_view_->GetWebContents()->SetDelegate(this);
   web_view_->LoadInitialURL(url);
