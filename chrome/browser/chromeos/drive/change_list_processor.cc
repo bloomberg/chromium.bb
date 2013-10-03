@@ -21,6 +21,8 @@ std::string DirectoryFetchInfo::ToString() const {
           ", changestamp: " + base::Int64ToString(changestamp_));
 }
 
+ChangeList::ChangeList() {}
+
 ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
     : largest_changestamp_(resource_list.largest_changestamp()) {
   resource_list.GetNextFeedURL(&next_url_);
@@ -28,7 +30,6 @@ ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
   entries_.resize(resource_list.entries().size());
   parent_resource_ids_.resize(resource_list.entries().size());
   size_t entries_index = 0;
-  std::string parent_resource_id;
   for (size_t i = 0; i < resource_list.entries().size(); ++i) {
     if (ConvertToResourceEntry(*resource_list.entries()[i],
                                &entries_[entries_index],
@@ -336,47 +337,61 @@ void ChangeListProcessor::ConvertToMap(
 FileError ChangeListProcessor::RefreshDirectory(
     ResourceMetadata* resource_metadata,
     const DirectoryFetchInfo& directory_fetch_info,
-    const ResourceEntryMap& entry_map,
+    ScopedVector<ChangeList> change_lists,
     base::FilePath* out_file_path) {
   DCHECK(!directory_fetch_info.empty());
 
+  std::string directory_local_id;
+  FileError error = resource_metadata->GetIdByResourceId(
+      directory_fetch_info.resource_id(), &directory_local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   ResourceEntry directory;
-  FileError error = resource_metadata->GetResourceEntryById(
-      directory_fetch_info.resource_id(), &directory);
+  error = resource_metadata->GetResourceEntryById(directory_local_id,
+                                                  &directory);
   if (error != FILE_ERROR_OK)
     return error;
 
   if (!directory.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  // Go through the entry map. Handle existing entries and new entries.
-  for (ResourceEntryMap::const_iterator it = entry_map.begin();
-       it != entry_map.end(); ++it) {
-    const ResourceEntry& entry = it->second;
-    // Skip if the parent resource ID does not match. This is needed to
-    // handle entries with multiple parents. For such entries, the first
-    // parent is picked and other parents are ignored, hence some entries may
-    // have a parent resource ID which does not match the target directory's.
-    if (entry.parent_local_id() != directory_fetch_info.resource_id()) {
-      DVLOG(1) << "Wrong-parent entry rejected: " << entry.resource_id();
-      continue;
-    }
+  for (size_t i = 0; i < change_lists.size(); ++i) {
+    ChangeList* change_list = change_lists[i];
+    std::vector<ResourceEntry>* entries = change_list->mutable_entries();
+    for (size_t i = 0; i < entries->size(); ++i) {
+      ResourceEntry* entry = &(*entries)[i];
+      const std::string& parent_resource_id =
+          change_list->parent_resource_ids()[i];
 
-    std::string local_id;
-    error = resource_metadata->GetIdByResourceId(it->first, &local_id);
-    if (error == FILE_ERROR_OK) {
-      ResourceEntry new_entry(entry);
-      new_entry.set_local_id(local_id);
-      error = resource_metadata->RefreshEntry(new_entry);
-    }
+      // Skip if the parent resource ID does not match. This is needed to
+      // handle entries with multiple parents. For such entries, the first
+      // parent is picked and other parents are ignored, hence some entries may
+      // have a parent resource ID which does not match the target directory's.
+      if (parent_resource_id != directory_fetch_info.resource_id()) {
+        DVLOG(1) << "Wrong-parent entry rejected: " << entry->resource_id();
+        continue;
+      }
 
-    if (error == FILE_ERROR_NOT_FOUND) {  // If refreshing fails, try adding.
+      entry->set_parent_local_id(directory_local_id);
+
       std::string local_id;
-      error = resource_metadata->AddEntry(entry, &local_id);
-    }
+      error = resource_metadata->GetIdByResourceId(entry->resource_id(),
+                                                   &local_id);
+      if (error == FILE_ERROR_OK) {
+        entry->set_local_id(local_id);
+        error = resource_metadata->RefreshEntry(*entry);
+      }
 
-    if (error != FILE_ERROR_OK)
-      return error;
+      if (error == FILE_ERROR_NOT_FOUND) {  // If refreshing fails, try adding.
+        std::string local_id;
+        entry->clear_local_id();
+        error = resource_metadata->AddEntry(*entry, &local_id);
+      }
+
+      if (error != FILE_ERROR_OK)
+        return error;
+    }
   }
 
   directory.mutable_directory_specific_info()->set_changestamp(
@@ -385,7 +400,7 @@ FileError ChangeListProcessor::RefreshDirectory(
   if (error != FILE_ERROR_OK)
     return error;
 
-  *out_file_path = resource_metadata->GetFilePath(directory.resource_id());
+  *out_file_path = resource_metadata->GetFilePath(directory_local_id);
   return FILE_ERROR_OK;
 }
 

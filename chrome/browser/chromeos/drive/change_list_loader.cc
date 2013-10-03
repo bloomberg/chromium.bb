@@ -882,8 +882,6 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
     return;
   }
 
-  ChangeListProcessor::ResourceEntryMap entry_map;
-  ChangeListProcessor::ConvertToMap(change_lists.Pass(), &entry_map, NULL);
   base::FilePath* directory_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
@@ -891,7 +889,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
       base::Bind(&ChangeListProcessor::RefreshDirectory,
                  resource_metadata_,
                  directory_fetch_info,
-                 entry_map,
+                 base::Passed(&change_lists),
                  directory_path),
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),

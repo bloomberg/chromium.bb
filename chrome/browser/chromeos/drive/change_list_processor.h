@@ -60,6 +60,7 @@ class DirectoryFetchInfo {
 // Class to represent a change list.
 class ChangeList {
  public:
+  ChangeList();  // For tests.
   explicit ChangeList(const google_apis::ResourceList& resource_list);
   ~ChangeList();
 
@@ -117,11 +118,11 @@ class ChangeListProcessor {
   const std::set<base::FilePath>& changed_dirs() const { return changed_dirs_; }
 
   // Updates the changestamp of a directory according to |directory_fetch_info|
-  // and adds or refreshes the child entries from |entry_map|.
+  // and adds or refreshes the child entries from |change_lists|.
   static FileError RefreshDirectory(
       ResourceMetadata* resource_metadata,
       const DirectoryFetchInfo& directory_fetch_info,
-      const ResourceEntryMap& entry_map,
+      ScopedVector<ChangeList> change_lists,
       base::FilePath* out_file_path);
 
  private:
