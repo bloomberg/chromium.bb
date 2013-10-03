@@ -9,7 +9,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_search_provider.h"
-#include "chrome/browser/ui/app_list/search/webstore/webstore_cache.h"
 
 class AppListControllerDelegate;
 
@@ -56,10 +55,6 @@ class WebstoreProvider : public WebserviceSearchProvider{
   AppListControllerDelegate* controller_;
   scoped_ptr<JSONResponseFetcher> webstore_search_;
   base::Closure webstore_search_fetched_callback_;
-
-  // The cache of the search result which will be valid only in a single
-  // input session.
-  WebstoreCache cache_;
 
   // The current query.
   std::string query_;

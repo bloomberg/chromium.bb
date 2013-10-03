@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_CACHE_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_CACHE_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_WEBSERVICE_CACHE_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_WEBSERVICE_CACHE_H_
 
 #include <utility>
 
@@ -18,13 +18,14 @@ class DictionaryValue;
 
 namespace app_list {
 
-// WebstoreCache manages the cache of webstore search results which should
-// be valid during an input session. This will reduce unnecessary queries
-// for typing backspace or so on.
-class WebstoreCache {
+// WebserviceCache manages a cache of search results which should be valid
+// during an input session. This will reduce unnecessary queries for typing
+// backspace or so on. This is not meant to hold cache entries across multiple
+// search sessions.
+class WebserviceCache {
  public:
-  WebstoreCache();
-  ~WebstoreCache();
+  WebserviceCache();
+  ~WebserviceCache();
 
   // Checks the current cache and returns the value for the |query| if it's
   // valid. Otherwise returns NULL.
@@ -43,9 +44,9 @@ class WebstoreCache {
 
   Cache cache_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebstoreCache);
+  DISALLOW_COPY_AND_ASSIGN(WebserviceCache);
 };
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_CACHE_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_WEBSERVICE_CACHE_H_

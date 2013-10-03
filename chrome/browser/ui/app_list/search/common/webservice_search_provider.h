@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/app_list/search/common/webservice_cache.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 class Profile;
@@ -31,6 +32,10 @@ class WebserviceSearchProvider : public SearchProvider {
 
  protected:
   Profile* profile_;
+
+  // The cache of the search result which will be valid only in a single
+  // input session.
+  WebserviceCache cache_;
 
  private:
   bool IsSensitiveInput(const string16& query);

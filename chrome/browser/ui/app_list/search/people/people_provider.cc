@@ -83,6 +83,14 @@ void PeopleProvider::Start(const base::string16& query) {
   }
 
   query_ = UTF16ToUTF8(query);
+  const base::DictionaryValue* cached_result = cache_.Get(query_);
+  if (cached_result) {
+    ProcessPeopleSearchResults(cached_result);
+    if (!people_search_fetched_callback_.is_null())
+      people_search_fetched_callback_.Run();
+    return;
+  }
+
   if (!people_search_) {
     people_search_.reset(new JSONResponseFetcher(
         base::Bind(&PeopleProvider::OnPeopleSearchFetched,
@@ -160,6 +168,7 @@ void PeopleProvider::StartQuery() {
 void PeopleProvider::OnPeopleSearchFetched(
     scoped_ptr<base::DictionaryValue> json) {
   ProcessPeopleSearchResults(json.get());
+  cache_.Put(query_, json.Pass());
 
   if (!people_search_fetched_callback_.is_null())
     people_search_fetched_callback_.Run();
