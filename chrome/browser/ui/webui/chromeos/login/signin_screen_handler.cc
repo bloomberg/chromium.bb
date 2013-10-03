@@ -1582,6 +1582,10 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
   if (!KioskAppManager::Get()->GetAutoLaunchApp().empty() &&
       KioskAppManager::Get()->IsAutoLaunchRequested()) {
     LOG(INFO) << "Showing auto-launch warning";
+    // On slow devices, the wallpaper animation is not shown initially, so we
+    // must explicitly load the wallpaper. This is also the case for the
+    // account-picker and gaia-signin UI states.
+    delegate_->LoadSigninWallpaper();
     HandleToggleKioskAutolaunchScreen();
     return;
   }
