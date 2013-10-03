@@ -31,6 +31,8 @@
 
 class GIFImageReader;
 
+typedef Vector<unsigned char> GIFRow;
+
 namespace WebCore {
 
     // This class decodes the GIF image format.
@@ -57,7 +59,7 @@ namespace WebCore {
         virtual bool setFailed() OVERRIDE;
 
         // Callbacks from the GIF reader.
-        bool haveDecodedRow(size_t frameIndex, const Vector<unsigned char>& rowBuffer, size_t width, size_t rowNumber, unsigned repeatCount, bool writeTransparentPixels);
+        bool haveDecodedRow(size_t frameIndex, GIFRow::const_iterator rowBegin, size_t width, size_t rowNumber, unsigned repeatCount, bool writeTransparentPixels);
         bool frameComplete(size_t frameIndex);
 
         // For testing.
