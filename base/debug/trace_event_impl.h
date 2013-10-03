@@ -171,7 +171,6 @@ class BASE_EXPORT TraceBuffer {
   virtual size_t Size() const = 0;
   virtual size_t Capacity() const = 0;
   virtual const TraceEvent& GetEventAt(size_t index) const = 0;
-  virtual TraceBuffer* Clone() const = 0;
 };
 
 // TraceResultBuffer collects and converts trace fragments returned by TraceLog
@@ -309,14 +308,11 @@ class BASE_EXPORT TraceLog {
     // and we use it as a ring buffer during recording.
     RECORD_CONTINUOUSLY = 1 << 1,
 
-    // Enable the sampling profiler in the recording mode.
+    // Enable the sampling profiler.
     ENABLE_SAMPLING = 1 << 2,
 
-    // Enable the sampling profiler in the monitoring mode.
-    MONITOR_SAMPLING = 1 << 3,
-
     // Echo to console. Events are discarded.
-    ECHO_TO_CONSOLE = 1 << 4,
+    ECHO_TO_CONSOLE = 1 << 3,
   };
 
   static TraceLog* GetInstance();
@@ -340,7 +336,7 @@ class BASE_EXPORT TraceLog {
   // on how to control what categories will be traced.
   void SetEnabled(const CategoryFilter& category_filter, Options options);
 
-  // Disables tracing for all categories.
+  // Disable tracing for all categories.
   void SetDisabled();
   bool IsEnabled() { return !!enable_count_; }
 
@@ -411,7 +407,6 @@ class BASE_EXPORT TraceLog {
   typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&,
                               bool has_more_events)> OutputCallback;
   void Flush(const OutputCallback& cb);
-  void FlushButLeaveBufferIntact(const OutputCallback& flush_output_callback);
 
   // Called by TRACE_EVENT* macros, don't call this directly.
   // The name parameter is a category group for example:
@@ -585,8 +580,6 @@ class BASE_EXPORT TraceLog {
   // |flush_count| is used in the following callbacks to check if the callback
   // is called for the current flush.
   void FlushCurrentThread(int flush_count);
-  void ConvertTraceEventsToTraceFormat(scoped_ptr<TraceBuffer> logged_events,
-      const TraceLog::OutputCallback& flush_output_callback);
   void FinishFlush(int flush_count);
   void OnFlushTimeout(int flush_count);
 

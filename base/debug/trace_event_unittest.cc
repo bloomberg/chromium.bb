@@ -99,19 +99,6 @@ class TraceEventTestFixture : public testing::Test {
                    base::Unretained(flush_complete_event)));
   }
 
-  void FlushMonitoring() {
-    WaitableEvent flush_complete_event(false, false);
-    FlushMonitoring(&flush_complete_event);
-    flush_complete_event.Wait();
-  }
-
-  void FlushMonitoring(WaitableEvent* flush_complete_event) {
-    TraceLog::GetInstance()->FlushButLeaveBufferIntact(
-        base::Bind(&TraceEventTestFixture::OnTraceDataCollected,
-                   base::Unretained(static_cast<TraceEventTestFixture*>(this)),
-                   base::Unretained(flush_complete_event)));
-  }
-
   virtual void SetUp() OVERRIDE {
     const char* name = PlatformThread::GetName();
     old_thread_name_ = name ? strdup(name) : NULL;
@@ -1776,56 +1763,6 @@ TEST_F(TraceEventTestFixture, TraceSamplingScope) {
   EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "DDD");
 
   EndTraceAndFlush();
-}
-
-TEST_F(TraceEventTestFixture, TraceContinuousSampling) {
-  event_watch_notification_ = 0;
-  TraceLog::GetInstance()->SetEnabled(
-      CategoryFilter("*"),
-      TraceLog::Options(TraceLog::MONITOR_SAMPLING));
-
-  WaitableEvent* sampled = new WaitableEvent(false, false);
-  TraceLog::GetInstance()->InstallWaitableEventForSamplingTesting(
-      sampled);
-
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "AAA");
-  sampled->Wait();
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "BBB");
-  sampled->Wait();
-
-  FlushMonitoring();
-
-  // Make sure we can get the profiled data.
-  EXPECT_TRUE(FindNamePhase("AAA", "P"));
-  EXPECT_TRUE(FindNamePhase("BBB", "P"));
-
-  Clear();
-
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "CCC");
-  sampled->Wait();
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "DDD");
-  sampled->Wait();
-
-  FlushMonitoring();
-
-  // Make sure the profiled data is accumulated.
-  EXPECT_TRUE(FindNamePhase("AAA", "P"));
-  EXPECT_TRUE(FindNamePhase("BBB", "P"));
-  EXPECT_TRUE(FindNamePhase("CCC", "P"));
-  EXPECT_TRUE(FindNamePhase("DDD", "P"));
-
-  Clear();
-
-  TraceLog::GetInstance()->SetDisabled();
-
-  // Make sure disabling the continuous sampling thread clears
-  // the profiled data.
-  EXPECT_FALSE(FindNamePhase("AAA", "P"));
-  EXPECT_FALSE(FindNamePhase("BBB", "P"));
-  EXPECT_FALSE(FindNamePhase("CCC", "P"));
-  EXPECT_FALSE(FindNamePhase("DDD", "P"));
-
-  Clear();
 }
 
 class MyData : public base::debug::ConvertableToTraceFormat {
