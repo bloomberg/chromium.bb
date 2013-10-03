@@ -427,6 +427,8 @@ void InspectorOverlay::update()
         return;
     IntRect viewRect = view->visibleContentRect();
     FrameView* overlayView = overlayPage()->mainFrame()->view();
+
+    // Include scrollbars to avoid masking them by the gutter.
     IntSize frameViewFullSize = view->visibleContentRect(ScrollableArea::IncludeScrollbars).size();
     IntSize size = m_size.isEmpty() ? frameViewFullSize : m_size;
     size.scale(m_page->pageScaleFactor());
@@ -435,7 +437,6 @@ void InspectorOverlay::update()
     // Clear canvas and paint things.
     reset(size, m_size.isEmpty() ? IntSize() : frameViewFullSize, viewRect.x(), viewRect.y());
 
-    // Include scrollbars to avoid masking them by the gutter.
     drawGutter();
     drawNodeHighlight();
     drawQuadHighlight();
@@ -602,8 +603,9 @@ void InspectorOverlay::drawViewSize()
 void InspectorOverlay::drawOverridesMessage()
 {
     RefPtr<JSONObject> data = JSONObject::create();
-    if (!m_drawViewSize)
-        data->setNumber("overrides", m_overrides);
+    if (m_drawViewSize || m_highlightNode || m_highlightQuad)
+        data->setBoolean("hidden", true);
+    data->setNumber("overrides", m_overrides);
     data->setNumber("topOffset", m_overridesTopOffset);
     evaluateInOverlay("drawOverridesMessage", data.release());
 }

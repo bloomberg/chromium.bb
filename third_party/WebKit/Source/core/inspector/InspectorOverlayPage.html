@@ -447,11 +447,13 @@ function drawViewSize(drawViewSizeWithGrid)
 function drawOverridesMessage(data)
 {
     overridesContainer.style.top = data.topOffset + "px";
-    var overrides = data.overrides;
     overridesMessageElement.textContent = "";
-    if (!overrides) {
-        overridesContainer.classList.add("hidden");
+
+    var overrides = data.overrides;
+    if (!overrides)
         document.body.classList.remove("touch");
+    if (!overrides || data.hidden) {
+        overridesContainer.classList.add("hidden");
         return;
     }
 
