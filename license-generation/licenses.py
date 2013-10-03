@@ -24,9 +24,18 @@ Recommended build:
   export board=x86-alex
   sudo rm -rf /build/$board
   cd ~/trunk/src/scripts
+  # TODO: setup_board should generate static list of packages that can be used
+  # by this script.
   ./setup_board --board=$board
-  ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev
-  cd ~/trunk/chromite/scripts/license-generation
+  # If you wonder why we need to build
+  # chromeos just to run emerge -p -v chromeos-base/chromeos on it, we don't.
+  # However, later we run ebuild unpack, and this will apply patches and run
+  # configure. Configure will fail due to aclocal macros missing in
+  # /build/x86-alex/usr/share/aclocal (those are generated during build).
+  # This will take about 10mn on a Z620.
+  ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev \
+                   --nowithfactory
+  cd ~/trunk/chromite/license-generation
   %(prog)s [--debug] $board out.html 2>&1 | tee output.sav
 
 For debugging during development, you can get a faster run of just one package
@@ -67,6 +76,7 @@ import cgi
 import codecs
 import logging
 import os
+import re
 import sys
 
 from chromite.lib import commandline
@@ -75,8 +85,6 @@ import portage
 
 
 debug = False
-
-EQUERY_BASE = '/usr/local/bin/equery-%s'
 
 STOCK_LICENSE_DIRS = [
     os.path.expanduser('~/trunk/src/third_party/portage/licenses'),
@@ -228,7 +236,7 @@ LICENSE_FILENAMES = [
     'ipa_font_license_agreement_v1.0.txt',  # used by ja-ipafonts
     'licence',        # used by openssh
     'license',
-    'license.txt',    # used by hdparm, used by NumPy, glew
+    'license.txt',    # used by hdparm, NumPy, glew
     'licensing.txt',  # used by libatomic_ops
 ]
 
@@ -448,6 +456,7 @@ class PackageInfo(object):
     # >>> Unpacking source...
     # >>> Unpacking gc-7.2d.tar.gz to /build/x86-alex/tmp/po/[...]tops-7.2d/work
     # >>> Source unpacked in /build/x86-alex/tmp/portage/[...]ops-7.2d/work
+    # So we only keep the last 2 lines, the others we don't care about.
     output = [line for line in output if line[0:3] == ">>>" and
               line != ">>> Unpacking source..."]
     for line in output:
@@ -912,16 +921,48 @@ class Licensing(object):
 
 def ListInstalledPackages(board):
   """Return a list of all packages installed for a particular board."""
-  # TODO(merlin): davidjames pointed out that this is not the right way to
-  # get the package list as it does not apply filters. This should change to
-  # ~/trunk/src/scripts/get_package_list which lists fewer packages, but it's
-  # not a drop in since equery list gives version numbers while get_package_list
-  # does not.
-  # get_package_list gives a shorter list, and it'll have to be reviewed to make
-  # sure it does not mistakenly remove anything it shouldn't have.
-  args = [EQUERY_BASE % board, 'list', '*']
-  return cros_build_lib.RunCommand(args, print_cmd=debug,
-                                   redirect_stdout=True).output.splitlines()
+
+  # Please leave the following as documentation of what options are available
+  # and why we chose the current one.
+
+  # The following returns all packages that were part of the build tree
+  # (many get built or used during the build, but do not get shipped).
+  # Note that it also contains packages that are in the build as
+  # defined by build_packages but not part of the image we ship.
+  # args = "/usr/local/bin/equery-%s list '*'" % board
+
+  # This is better because it only lists packages that are in the
+  # chromeos-base/chromeos dependency chain and ignores packages that
+  # just happen to be available in your build tree.
+  # args = "emerge-%s --with-bdeps=y --usepkgonly --emptytree \
+  #       --pretend chromeos-base/chromeos | \
+  #       sed -n -E -e 's/^\[[^]]*\] ([^ ]*) .*$/\\1/p'" % board
+
+  # Another option which we've decided not to use, is bdeps=n. This
+  # outputs just the packages we ship, but does not list packages
+  # that were used to build them, including a package like flex which
+  # generates a .a that is included and shipped in ChromeOS.
+  # We've decided to credit build packages, even if we're not legally
+  # required to (it's always nice to do), and that way we get corner
+  # case packages like flex.
+  #
+  # return cros_build_lib.RunCommand(args, print_cmd=debug, shell=True,
+  #                                 redirect_stdout=True).output.splitlines()
+
+  args = ["emerge-%s" % board, "--with-bdeps=y", "--usepkgonly", "--emptytree",
+          "--pretend", "chromeos-base/chromeos"]
+  emerge = cros_build_lib.RunCommand(args, print_cmd=debug,
+                                     redirect_stdout=True).output.splitlines()
+
+  packages = []
+  # [binary   R    ] x11-libs/libva-1.1.1 to /build/x86-alex/
+  pkg_rgx = re.compile(r'\[[^]]+\] (.+) to /build/.*')
+  for line in emerge:
+    match = pkg_rgx.search(line)
+    if match:
+      packages.append(match.group(1))
+
+  return packages
 
 
 def ReadUnknownEncodedFile(file_path, logging_text):
