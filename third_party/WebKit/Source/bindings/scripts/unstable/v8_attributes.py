@@ -37,7 +37,7 @@ For details, see bug http://crbug.com/239771
 
 import v8_types
 import v8_utilities
-from v8_utilities import generate_conditional_string, uncapitalize
+from v8_utilities import uncapitalize
 
 
 def generate_attributes(interface):
@@ -66,7 +66,7 @@ def generate_attribute_and_includes(interface, attribute):
     idl_type = attribute.data_type
     this_is_keep_alive_for_gc = is_keep_alive_for_gc(attribute)
     contents = {
-        'conditional_string': generate_conditional_string(attribute),
+        'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
         'idl_type': idl_type,
         'is_keep_alive_for_gc': this_is_keep_alive_for_gc,
@@ -102,6 +102,9 @@ def generate_attribute_and_includes(interface, attribute):
         interface.name in ['Window', 'WorkerGlobalScope'] and
         attribute.name == 'onerror'):
             includes.add('bindings/v8/V8ErrorHandler.h')
+
+    # ActivityLog
+    contents['is_activity_logging_getter'] = v8_utilities.has_activity_logging(attribute, includes, 'Getter')
 
     return contents, includes
 

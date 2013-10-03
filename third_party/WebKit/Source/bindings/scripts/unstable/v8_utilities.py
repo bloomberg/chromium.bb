@@ -48,32 +48,8 @@ def cpp_implemented_as_name(definition_or_member):
     return definition_or_member.extended_attributes.get('ImplementedAs', definition_or_member.name)
 
 
-def generate_conditional_string(definition_or_member):
-    if 'Conditional' not in definition_or_member.extended_attributes:
-        return ''
-    conditional = definition_or_member.extended_attributes['Conditional']
-    for operator in ['&', '|']:
-        if operator in conditional:
-            conditions = set(conditional.split(operator))
-            operator_separator = ' %s%s ' % (operator, operator)
-            return operator_separator.join(['ENABLE(%s)' % expression for expression in sorted(conditions)])
-    return 'ENABLE(%s)' % conditional
-
-
-def runtime_enable_function_name(definition_or_member):
-    """Return the name of the RuntimeEnabledFeatures function.
-
-    The returned function checks if a method/attribute is enabled.
-    Given extended attribute EnabledAtRuntime=FeatureName, return:
-        RuntimeEnabledFeatures::{featureName}Enabled
-    Note that the initial character or acronym is uncapitalized.
-    """
-    feature_name = definition_or_member.extended_attributes['EnabledAtRuntime']
-    return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)
-
-
 def uncapitalize(name):
-    """Uncapitalize first letter or initial acronym (* with some exceptions).
+    """Uncapitalizes first letter or initial acronym (* with some exceptions).
 
     E.g., 'SetURL' becomes 'setURL', but 'URLFoo' becomes 'urlFoo'.
     Used in method names; exceptions differ from capitalize().
@@ -100,3 +76,48 @@ def extended_attribute_values(extended_attributes, key):
     if not values_string:
         return []
     return extended_attribute_value_separator_re.split(values_string)
+
+
+# ActivityLog
+def has_activity_logging(member, includes, access_type=None):
+    """Returns whether a definition member has activity logging of specified access type.
+
+    access_type can be 'Getter' or 'Setter' if only checking getting or setting.
+    """
+    if 'ActivityLog' not in member.extended_attributes:
+        return False
+    activity_log = member.extended_attributes['ActivityLog']
+    # ActivityLog=Access means log for all access, otherwise check that value
+    # agrees with specified access_type.
+    has_logging = activity_log in ['Access', access_type]
+    if has_logging:
+        includes.update(['bindings/v8/V8Binding.h',
+                         'bindings/v8/V8DOMActivityLogger.h',
+                         'wtf/Vector.h'])
+    return has_logging
+
+
+# Conditional
+def generate_conditional_string(definition_or_member):
+    if 'Conditional' not in definition_or_member.extended_attributes:
+        return ''
+    conditional = definition_or_member.extended_attributes['Conditional']
+    for operator in ['&', '|']:
+        if operator in conditional:
+            conditions = set(conditional.split(operator))
+            operator_separator = ' %s%s ' % (operator, operator)
+            return operator_separator.join(['ENABLE(%s)' % expression for expression in sorted(conditions)])
+    return 'ENABLE(%s)' % conditional
+
+
+# EnabledAtRuntime
+def runtime_enabled_features_function_name(definition_or_member):
+    """Returns the name of the RuntimeEnabledFeatures function.
+
+    The returned function checks if a method/attribute is enabled.
+    Given extended attribute EnabledAtRuntime=FeatureName, return:
+        RuntimeEnabledFeatures::{featureName}Enabled
+    Note that the initial character or acronym is uncapitalized.
+    """
+    feature_name = definition_or_member.extended_attributes['EnabledAtRuntime']
+    return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)

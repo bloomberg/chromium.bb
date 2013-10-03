@@ -60,7 +60,7 @@ static const V8DOMConfiguration::ConstantConfiguration {{v8_class_name}}Constant
 V8DOMConfiguration::installConstants(desc, proto, {{v8_class_name}}Constants, WTF_ARRAY_LENGTH({{v8_class_name}}Constants), isolate);
 {# Runtime-enabled constants #}
 {% for constant in constants if constant.enabled_at_runtime %}
-if ({{constant.runtime_enable_function_name}}()) {
+if ({{constant.runtime_enabled_features_function_name}}()) {
     static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"{{constant.name}}", static_cast<signed int>({{constant.value}})};
     V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
 }

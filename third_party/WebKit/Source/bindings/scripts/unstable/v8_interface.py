@@ -36,7 +36,7 @@ For details, see bug http://crbug.com/239771
 """
 
 import v8_attributes
-from v8_utilities import cpp_implemented_as_name, runtime_enable_function_name, v8_class_name
+from v8_utilities import cpp_implemented_as_name, runtime_enabled_features_function_name, v8_class_name
 
 
 INTERFACE_H_INCLUDES = set([
@@ -94,6 +94,6 @@ def generate_constant(constant):
         'reflected_name': reflected_name,
         'value': value,
         'enabled_at_runtime': enabled_at_runtime,
-        'runtime_enable_function_name': runtime_enable_function_name(constant) if enabled_at_runtime else None,
+        'runtime_enabled_features_function_name': runtime_enabled_features_function_name(constant) if enabled_at_runtime else None,
     }
     return constant_parameter

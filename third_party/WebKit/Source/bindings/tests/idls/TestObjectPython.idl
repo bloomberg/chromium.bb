@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-enum TestEnum { "", "EnumValue1", "EnumValue2", "EnumValue3" };
+enum TestEnum {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 
 interface TestObjectPython {
     // TestInterfaceEmpty is used as a stub interface type, for testing behavior
@@ -80,4 +80,8 @@ interface TestObjectPython {
     // Miscellaneous special types
     readonly attribute EventHandler readonlyEventHandlerAttribute;
     readonly attribute Promise readonlyPromiseAttribute;
+
+    // Extended attributes
+    [ActivityLog=Access] readonly attribute long activityLogAccessReadonlyLongAttribute;
+    [ActivityLog=Getter] readonly attribute long activityLogGetterReadonlyLongAttribute;
 };
