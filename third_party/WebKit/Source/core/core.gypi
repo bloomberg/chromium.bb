@@ -2794,8 +2794,6 @@
             'platform/chromium/SharedTimerChromium.cpp',
             'platform/chromium/StatsCounterChromium.cpp',
             'platform/chromium/TraceEvent.h',
-            'platform/cocoa/KeyEventCocoa.h',
-            'platform/cocoa/KeyEventCocoa.mm',
             'platform/graphics/ANGLEWebKitBridge.cpp',
             'platform/graphics/ANGLEWebKitBridge.h',
             'platform/graphics/BitmapImage.cpp',
