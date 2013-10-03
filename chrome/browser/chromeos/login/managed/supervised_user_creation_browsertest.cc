@@ -129,13 +129,14 @@ class SupervisedUserCreationTest : public chromeos::LoginManagerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-    PRE_PRE_CreateSupervisedUser) {
+    PRE_PRE_PRE_CreateAndRemoveSupervisedUser) {
   RegisterUser(kTestManager);
   RegisterUser(kTestOtherUser);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest, PRE_CreateSupervisedUser) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+    PRE_PRE_CreateAndRemoveSupervisedUser) {
   // Create supervised user.
 
   // Navigate to supervised user creation screen.
@@ -234,13 +235,42 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest, PRE_CreateSupervisedUser) {
   JSEval("$('managed-user-creation-gotit-button').click()");
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest, CreateSupervisedUser) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+    PRE_CreateAndRemoveSupervisedUser) {
   // Log in as supervised user, make sure that everything works.
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
   // Created supervised user have to be first in a list.
   const User* user = UserManager::Get()->GetUsers().at(0);
   ASSERT_EQ(UTF8ToUTF16(kSupervisedUserDisplayName), user->display_name());
   LoginUser(user->email());
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+    CreateAndRemoveSupervisedUser) {
+  // Remove supervised user.
+
+  ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
+  // Created supervised user have to be first in a list.
+  const User* user = UserManager::Get()->GetUsers().at(0);
+  ASSERT_EQ(UTF8ToUTF16(kSupervisedUserDisplayName), user->display_name());
+
+  // Open pod menu.
+  JSExpect("!$('pod-row').pods[0].isActionBoxMenuActive");
+  JSEval("$('pod-row').pods[0].querySelector('.action-box-button').click()");
+  JSExpect("$('pod-row').pods[0].isActionBoxMenuActive");
+
+  // Select "Remove user" element.
+  JSExpect("$('pod-row').pods[0].actionBoxRemoveUserWarningElement.hidden");
+  JSEval(std::string("$('pod-row').pods[0].")
+      .append("querySelector('.action-box-menu-remove').click()"));
+  JSExpect("!$('pod-row').pods[0].actionBoxRemoveUserWarningElement.hidden");
+
+  // Confirm deletion.
+  JSEval(std::string("$('pod-row').pods[0].")
+      .append("querySelector('.remove-warning-button').click()"));
+
+  // Make sure there is no supervised user in list.
+  ASSERT_EQ(2UL, UserManager::Get()->GetUsers().size());
 }
 
 }  // namespace chromeos
