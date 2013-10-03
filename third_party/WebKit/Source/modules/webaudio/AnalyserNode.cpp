@@ -89,6 +89,53 @@ void AnalyserNode::setFftSize(unsigned size, ExceptionState& es)
     }
 }
 
+void AnalyserNode::setMinDecibels(float k, ExceptionState& es)
+{
+    if (k <= maxDecibels()) {
+        m_analyser.setMinDecibels(k);
+    } else {
+        es.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::failedToSet(
+                "minDecibels",
+                "AnalyserNode",
+                "minDecibels (" + String::number(k)
+                + ") must be less than or equal maxDecibels (" + String::number(maxDecibels())
+                + ")."));
+    }
+}
+
+void AnalyserNode::setMaxDecibels(float k, ExceptionState& es)
+{
+    if (k >= minDecibels()) {
+        m_analyser.setMaxDecibels(k);
+    } else {
+        es.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::failedToSet(
+                "maxDecibels",
+                "AnalyserNode",
+                "maxDecibels (" + String::number(k)
+                + ") must be greater than or equal minDecibels (" + String::number(minDecibels())
+                + ")."));
+    }
+}
+
+void AnalyserNode::setSmoothingTimeConstant(float k, ExceptionState& es)
+{
+    if (k >= 0 && k <= 1) {
+        m_analyser.setSmoothingTimeConstant(k);
+    } else {
+        es.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::failedToSet(
+                "smoothingTimeConstant",
+                "AnalyserNode",
+                "smoothing value (" + String::number(k)
+                + ") must be between 0 and 1, inclusive."));
+    }
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

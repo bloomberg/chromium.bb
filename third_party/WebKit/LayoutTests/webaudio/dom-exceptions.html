@@ -63,6 +63,11 @@ function runTest() {
     // Invalid fftSize
     shouldThrow("node.fftSize = 42");
 
+    shouldThrow("node.minDecibels = -10");
+    shouldThrow("node.maxDecibels = -150");
+    shouldThrow("node.smoothingTimeConstant = -0.1");
+    shouldThrow("node.smoothingTimeConstant = 1.5");
+
     // AudioBuffers
     node = context.createBuffer(1,1, context.sampleRate);
     // Invalid channel index
