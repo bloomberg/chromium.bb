@@ -45,11 +45,11 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
 #include "platform/LocalizedStrings.h"
+#include "platform/text/DateTimeFormat.h"
 #include "wtf/DateMath.h"
 
 namespace WebCore {

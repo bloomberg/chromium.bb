@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/DateTimeFormat.h"
+#include "platform/text/DateTimeFormat.h"
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "wtf/text/CString.h"

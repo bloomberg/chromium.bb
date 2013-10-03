@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/DateTimeFormat.h"
+#include "platform/text/DateTimeFormat.h"
 
 #include "wtf/ASCIICType.h"
 #include "wtf/text/StringBuilder.h"
@@ -114,7 +114,7 @@ bool DateTimeFormat::parse(const String& source, TokenHandler& tokenHandler)
     StringBuilder literalBuffer;
     int fieldCounter = 0;
 
-    for (unsigned int index = 0; index < source.length(); ++index) {
+    for (unsigned index = 0; index < source.length(); ++index) {
         const UChar ch = source[index];
         switch (state) {
         case StateInQuote:
@@ -198,9 +198,9 @@ bool DateTimeFormat::parse(const String& source, TokenHandler& tokenHandler)
             tokenHandler.visitField(fieldType, fieldCounter);
 
             if (fieldType2 == FieldTypeLiteral) {
-                if (ch == '\'')
+                if (ch == '\'') {
                     state = StateQuote;
-                else {
+                } else {
                     literalBuffer.append(ch);
                     state = StateLiteral;
                 }
@@ -263,9 +263,9 @@ void DateTimeFormat::quoteAndAppendLiteral(const String& literal, StringBuilder&
     }
 
     for (unsigned i = 0; i < literal.length(); ++i) {
-        if (literal[i] == '\'')
+        if (literal[i] == '\'') {
             buffer.append("''");
-        else {
+        } else {
             String escaped = literal.substring(i);
             escaped.replace("'", "''");
             buffer.append("'");

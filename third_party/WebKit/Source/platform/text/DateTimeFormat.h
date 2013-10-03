@@ -26,6 +26,7 @@
 #ifndef DateTimeFormat_h
 #define DateTimeFormat_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -33,7 +34,7 @@ namespace WebCore {
 // DateTimeFormat parses date time format defined in Unicode Technical
 // standard 35, Locale Data Markup Language (LDML)[1].
 // [1] LDML http://unicode.org/reports/tr35/tr35-6.html#Date_Format_Patterns
-class DateTimeFormat {
+class PLATFORM_EXPORT DateTimeFormat {
 public:
     enum FieldType {
         FieldTypeInvalid,

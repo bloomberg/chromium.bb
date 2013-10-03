@@ -36,10 +36,10 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "platform/DateComponents.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "platform/text/DateTimeFormat.h"
 #include "wtf/DateMath.h"
 
 namespace WebCore {
