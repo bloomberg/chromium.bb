@@ -88,7 +88,8 @@ class TestImageLoader {
                       int size) {
     image_loaded_ = false;
 
-    image_loader_.LoadImageAsync(
+    image_loader_.reset(new extensions::ImageLoader(NULL));
+    image_loader_->LoadImageAsync(
         extension_, extension_->GetResource(path), gfx::Size(size, size),
         base::Bind(&TestImageLoader::OnImageLoaded,
                    base::Unretained(this)));
@@ -111,7 +112,7 @@ class TestImageLoader {
   bool waiting_;
   bool image_loaded_;
   gfx::Image image_;
-  extensions::ImageLoader image_loader_;
+  scoped_ptr<extensions::ImageLoader> image_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImageLoader);
 };

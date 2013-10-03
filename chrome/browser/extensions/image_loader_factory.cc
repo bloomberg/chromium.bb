@@ -32,7 +32,7 @@ ImageLoaderFactory::~ImageLoaderFactory() {
 
 BrowserContextKeyedService* ImageLoaderFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new ImageLoader;
+  return new ImageLoader(static_cast<Profile*>(profile));
 }
 
 bool ImageLoaderFactory::ServiceIsCreatedWithBrowserContext() const {

@@ -84,44 +84,14 @@ class ExtensionIconSource : public content::URLDataSource,
 
   virtual ~ExtensionIconSource();
 
-  // Returns the bitmap for the default app image.
-  const SkBitmap* GetDefaultAppImage();
-
-  // Returns the bitmap for the default extension.
-  const SkBitmap* GetDefaultExtensionImage();
-
-  // Performs any remaining transformations (like desaturating the |image|),
-  // then returns the |image| to the client and clears up any temporary data
-  // associated with the |request_id|.
-  void FinalizeImage(const SkBitmap* image, int request_id);
-
-  // Loads the default image for |request_id| and returns to the client.
-  void LoadDefaultImage(int request_id);
-
-  // Loads the extension's |icon| for the given |request_id| and returns the
+  // Loads the extension's icon for the given |request_id| and returns the
   // image to the client.
-  void LoadExtensionImage(const ExtensionResource& icon,
-                          int request_id);
+  void LoadExtensionImage(int request_id);
 
-  // Loads the favicon image for the app associated with the |request_id|. If
-  // the image does not exist, we fall back to the default image.
-  void LoadFaviconImage(int request_id);
-
-  // FaviconService callback
-  void OnFaviconDataAvailable(
-      int request_id,
-      const chrome::FaviconBitmapResult& bitmap_result);
-
-  // ImageLoader callback
-  void OnImageLoaded(int request_id, const gfx::Image& image);
-
-  // Called when the extension doesn't have an icon. We fall back to multiple
-  // sources, using the following order:
-  //  1) The icons as listed in the extension / app manifests.
-  //  2) If a 16px icon and the extension has a launch URL, see if Chrome
-  //     has a corresponding favicon.
-  //  3) If still no matches, load the default extension / application icon.
-  void LoadIconFailed(int request_id);
+  // LoadExtensionImage() will load the icon using
+  // ImageLoader::LoadExtensionIconAsync(). OnIconLoaded will be called when
+  // the icon has been loaded.
+  void OnIconLoaded(int request_id, const gfx::Image& image);
 
   // Parses and savse an ExtensionIconRequest for the URL |path| for the
   // specified |request_id|.
@@ -146,17 +116,8 @@ class ExtensionIconSource : public content::URLDataSource,
 
   Profile* profile_;
 
-  // Maps tracker ids to request ids.
-  std::map<int, int> tracker_map_;
-
   // Maps request_ids to ExtensionIconRequests.
   std::map<int, ExtensionIconRequest*> request_map_;
-
-  scoped_ptr<SkBitmap> default_app_data_;
-
-  scoped_ptr<SkBitmap> default_extension_data_;
-
-  CancelableTaskTracker cancelable_task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconSource);
 };
