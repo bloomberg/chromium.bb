@@ -161,6 +161,11 @@ class DevToolsProtocol {
       const std::string& json,
       std::string* error_response);
 
+  CONTENT_EXPORT static scoped_refptr<Command> CreateCommand(
+      int id,
+      const std::string& method,
+      base::DictionaryValue* params);
+
   static scoped_refptr<Notification> ParseNotification(
       const std::string& json);
 

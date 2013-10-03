@@ -3,43 +3,48 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/json/json_string_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/devtools/renderer_overrides_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 
 namespace content {
 
 class RendererOverridesHandlerTest : public ContentBrowserTest {
- public:
-  scoped_ptr<base::DictionaryValue> last_message_;
+ protected:
+  scoped_refptr<DevToolsProtocol::Response> SendCommand(
+      const std::string& method,
+      DictionaryValue* params) {
+    scoped_ptr<RendererOverridesHandler> handler(CreateHandler());
+    scoped_refptr<DevToolsProtocol::Command> command(
+        DevToolsProtocol::CreateCommand(1, method, params));
+    return handler->HandleCommand(command);
+  }
 
-  void OnMessageSent(const std::string& message) {
-    JSONStringValueSerializer serializer(message);
-    int error_code;
-    std::string error_message;
-    base::Value* root =
-        serializer.Deserialize(&error_code, &error_message);
-    base::DictionaryValue* root_dictionary;
-    root->GetAsDictionary(&root_dictionary);
-    base::DictionaryValue* result;
-    root_dictionary->GetDictionary("result", &result);
-    last_message_.reset(result);
-    base::MessageLoop::current()->QuitNow();
+  void SendAsyncCommand(const std::string& method, DictionaryValue* params) {
+    scoped_ptr<RendererOverridesHandler> handler(CreateHandler());
+    scoped_refptr<DevToolsProtocol::Command> command(
+        DevToolsProtocol::CreateCommand(1, method, params));
+    scoped_refptr<DevToolsProtocol::Response> response =
+        handler->HandleCommand(command);
+    EXPECT_TRUE(response->is_async_promise());
+    base::MessageLoop::current()->Run();
   }
 
   bool HasValue(const std::string& path) {
     base::Value* value = 0;
-    return last_message_->Get(path, &value);
+    return result_->Get(path, &value);
   }
 
-  bool HasUsageItem(const std::string& path_to_list,
-                    const std::string& usage_item_id) {
+  bool HasListItem(const std::string& path_to_list,
+                   const std::string& name,
+                   const std::string& value) {
     base::ListValue* list;
-    if (!last_message_->GetList(path_to_list, &list))
+    if (!result_->GetList(path_to_list, &list))
       return false;
 
     for (size_t i = 0; i != list->GetSize(); i++) {
@@ -47,49 +52,49 @@ class RendererOverridesHandlerTest : public ContentBrowserTest {
       if (!list->GetDictionary(i, &item))
         return false;
       std::string id;
-      if (!item->GetString("id", &id))
+      if (!item->GetString(name, &id))
         return false;
-      if (id == usage_item_id)
+      if (id == value)
         return true;
     }
     return false;
   }
+
+  scoped_ptr<base::DictionaryValue> result_;
+
+ private:
+  RendererOverridesHandler* CreateHandler() {
+    RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
+    DevToolsAgentHost* agent = DevToolsAgentHost::GetOrCreateFor(rvh).get();
+    scoped_ptr<RendererOverridesHandler> handler(
+        new RendererOverridesHandler(agent));
+    handler->SetNotifier(base::Bind(
+        &RendererOverridesHandlerTest::OnMessageSent, base::Unretained(this)));
+    return handler.release();
+  }
+
+  void OnMessageSent(const std::string& message) {
+    base::DictionaryValue* root =
+        static_cast<base::DictionaryValue*>(base::JSONReader::Read(message));
+    base::DictionaryValue* result;
+    root->GetDictionary("result", &result);
+    result_.reset(result);
+    base::MessageLoop::current()->QuitNow();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(RendererOverridesHandlerTest, QueryUsageAndQuota) {
-
-  RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
-  DevToolsAgentHost* agent_raw = DevToolsAgentHost::GetOrCreateFor(rvh).get();
-  scoped_ptr<RendererOverridesHandler> handler(
-      new RendererOverridesHandler(agent_raw));
-
-  handler->SetNotifier(base::Bind(
-      &RendererOverridesHandlerTest::OnMessageSent, base::Unretained(this)));
-
-  std::string error_response;
-  scoped_refptr<DevToolsProtocol::Command> command =
-      DevToolsProtocol::ParseCommand("{"
-              "\"id\": 1,"
-              "\"method\": \"Page.queryUsageAndQuota\","
-              "\"params\": {"
-                  "\"securityOrigin\": \"http://example.com\""
-              "}"
-          "}", &error_response);
-  ASSERT_TRUE(command.get());
-
-  scoped_refptr<DevToolsProtocol::Response> response =
-      handler->HandleCommand(command);
-
-  base::MessageLoop::current()->Run();
+  DictionaryValue* params = new DictionaryValue();
+  params->SetString("securityOrigin", "http://example.com");
+  SendAsyncCommand("Page.queryUsageAndQuota", params);
 
   EXPECT_TRUE(HasValue("quota.persistent"));
   EXPECT_TRUE(HasValue("quota.temporary"));
-  EXPECT_TRUE(HasUsageItem("usage.temporary", "appcache"));
-  EXPECT_TRUE(HasUsageItem("usage.temporary", "database"));
-  EXPECT_TRUE(HasUsageItem("usage.temporary", "indexeddatabase"));
-  EXPECT_TRUE(HasUsageItem("usage.temporary", "filesystem"));
-  EXPECT_TRUE(HasUsageItem("usage.persistent", "filesystem"));
+  EXPECT_TRUE(HasListItem("usage.temporary", "id", "appcache"));
+  EXPECT_TRUE(HasListItem("usage.temporary", "id", "database"));
+  EXPECT_TRUE(HasListItem("usage.temporary", "id", "indexeddatabase"));
+  EXPECT_TRUE(HasListItem("usage.temporary", "id", "filesystem"));
+  EXPECT_TRUE(HasListItem("usage.persistent", "id", "filesystem"));
 }
 
 }  // namespace content
-

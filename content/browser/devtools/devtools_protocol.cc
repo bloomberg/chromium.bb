@@ -236,6 +236,15 @@ scoped_refptr<DevToolsProtocol::Command> DevToolsProtocol::ParseCommand(
 }
 
 // static
+scoped_refptr<DevToolsProtocol::Command>
+DevToolsProtocol::CreateCommand(
+    int id,
+    const std::string& method,
+    base::DictionaryValue* params) {
+  return new Command(id, method, params);
+}
+
+// static
 scoped_refptr<DevToolsProtocol::Notification>
 DevToolsProtocol::ParseNotification(const std::string& json) {
   scoped_ptr<base::DictionaryValue> dict(ParseMessage(json, NULL));
