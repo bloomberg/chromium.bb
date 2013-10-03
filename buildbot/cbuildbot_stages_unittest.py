@@ -1634,6 +1634,7 @@ class MockPatch(mock.MagicMock):
   gerrit_number = '1234'
   patch_number = '1'
   project = 'chromiumos/chromite'
+  status = 'NEW'
   internal = False
 
 
