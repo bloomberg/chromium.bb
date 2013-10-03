@@ -50,6 +50,7 @@ import pickle
 import os
 import sys
 
+from pylib import android_commands
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
@@ -152,6 +153,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
         'cmd': cmd,
     }
     self._SaveResult(persisted_result)
+
+    try:
+      self.adb.KillAdbdDevice()
+    except Exception as e:
+      logging.error('Exception when killing adbd %s', e)
 
     return (output, result_type)
 
