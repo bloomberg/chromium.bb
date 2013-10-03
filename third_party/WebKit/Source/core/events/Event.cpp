@@ -138,6 +138,11 @@ bool Event::isTouchEvent() const
     return false;
 }
 
+bool Event::isGestureEvent() const
+{
+    return false;
+}
+
 bool Event::isDragEvent() const
 {
     return false;

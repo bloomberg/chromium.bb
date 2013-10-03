@@ -90,6 +90,11 @@ const AtomicString& GestureEvent::interfaceName() const
     return UIEvent::interfaceName();
 }
 
+bool GestureEvent::isGestureEvent() const
+{
+    return true;
+}
+
 GestureEvent::GestureEvent()
     : m_deltaX(0)
     , m_deltaY(0)
@@ -110,7 +115,7 @@ GestureEventDispatchMediator::GestureEventDispatchMediator(PassRefPtr<GestureEve
 
 GestureEvent* GestureEventDispatchMediator::event() const
 {
-    return static_cast<GestureEvent*>(EventDispatchMediator::event());
+    return toGestureEvent(EventDispatchMediator::event());
 }
 
 bool GestureEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const

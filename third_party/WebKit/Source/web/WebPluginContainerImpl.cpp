@@ -195,8 +195,8 @@ void WebPluginContainerImpl::handleEvent(Event* event)
         handleKeyboardEvent(toKeyboardEvent(event));
     else if (event->isTouchEvent())
         handleTouchEvent(toTouchEvent(event));
-    else if (eventNames().isGestureEventType(event->type()))
-        handleGestureEvent(static_cast<GestureEvent*>(event));
+    else if (event->isGestureEvent())
+        handleGestureEvent(toGestureEvent(event));
 
     // FIXME: it would be cleaner if Widget::handleEvent returned true/false and
     // HTMLPluginElement called setDefaultHandled or defaultEventHandler.

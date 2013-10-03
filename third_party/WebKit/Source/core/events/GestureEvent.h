@@ -41,6 +41,8 @@ public:
 
     void initGestureEvent(const AtomicString& type, PassRefPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY);
 
+    virtual bool isGestureEvent() const OVERRIDE;
+
     virtual const AtomicString& interfaceName() const;
 
     float deltaX() const { return m_deltaX; }
@@ -68,6 +70,12 @@ private:
 
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
+
+inline GestureEvent* toGestureEvent(Event* event)
+{
+    ASSERT(event && event->isGestureEvent());
+    return static_cast<GestureEvent*>(event);
+}
 
 } // namespace WebCore
 
