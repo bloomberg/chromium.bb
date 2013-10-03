@@ -354,7 +354,7 @@
         '../config.gyp:config',
         '../platform/blink_platform.gyp:blink_platform',
         '../weborigin/weborigin.gyp:weborigin',
-        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
@@ -374,7 +374,7 @@
       'export_dependent_settings': [
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
-        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
