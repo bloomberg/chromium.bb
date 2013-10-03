@@ -19,23 +19,44 @@ def GetTreePackages(html_file):
     html_file: which html license file to scan for packages.
 
   Returns:
-    dictionary of packages and version numbers.
+    tuple of dictionary of packages and version numbers and set of licenses.
+
+  Raises:
+    AssertionError: if regex failed.
   """
 
   packages = {}
+  licenses = set()
 
-  # Grep and turn
-  # <span class="title">ath6k-34</span>
-  # into
-  # ath6k 34
-  exp = re.compile(r'<span class="title">(.+)-(.+)</span>')
+  pkg_rgx = re.compile(r'<span class="title">(.+)-(.+)</span>')
+  license_rgx = re.compile(
+      r'(?:Gentoo Package (Stock License .+)</a>|Scanned (Source license .+):)')
   with open(html_file, 'r') as f:
     for line in f:
-      match = exp.search(line)
+      # Grep and turn
+      # <span class="title">ath6k-34</span>
+      # into
+      # ath6k 34
+      match = pkg_rgx.search(line)
       if match:
         packages[match.group(1)] = match.group(2)
 
-  return packages
+      match = license_rgx.search(line)
+      if match:
+        lic = None
+        if match.group(1):
+          lic = match.group(1)
+        else:
+          # Turn Source license simplejson-2.5.0/LICENSE.txt
+          # into Source license simplejson/LICENSE.txt
+          # (we don't want to create diffs based on version numbers)
+          lic = re.sub(r'(.+)-([^/]+)/(.+)', r'\1/\3', match.group(2))
+
+        licenses.add(lic)
+        if not lic:
+          raise AssertionError('License for %s came up empty')
+
+  return (packages, licenses)
 
 
 def ComparePkgLists(pkg_list1, pkg_list2):
@@ -66,6 +87,25 @@ def ComparePkgLists(pkg_list1, pkg_list2):
       print 'Package updated: %s from %s to %s' % (changed_package, ver1, ver2)
 
 
+def CompareLicenseSets(set1, set2):
+  """Compare the license list in 2 sets and output the differences.
+
+  Args:
+    set1: set from GetTreePackages.
+    set2: set from GetTreePackages.
+
+  Returns:
+    N/A (outputs result on stdout).
+  """
+
+  for removed_license in sorted(set1 - set2):
+    print 'License removed: %s' % (removed_license)
+
+  print
+  for added_license in sorted(set2 - set1):
+    print 'License added: %s' % (added_license)
+
+
 def main(args):
   parser = commandline.ArgumentParser(usage=__doc__)
   parser.add_argument('html1', metavar='license1.html', type='path',
@@ -76,4 +116,6 @@ def main(args):
 
   pkg_list1 = GetTreePackages(opts.html1)
   pkg_list2 = GetTreePackages(opts.html2)
-  ComparePkgLists(pkg_list1, pkg_list2)
+  ComparePkgLists(pkg_list1[0], pkg_list2[0])
+  print
+  CompareLicenseSets(pkg_list1[1], pkg_list2[1])
