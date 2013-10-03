@@ -77,18 +77,11 @@ namespace thumbnailing_utils {
 class ThumbnailContentAnalysisTest : public testing::Test {
 };
 
-// http://crbug.com/299284
-#if defined(OS_MACOSX)
-#define MAYBE_ApplyGradientMagnitudeOnImpulse \
-    DISABLED_ApplyGradientMagnitudeOnImpulse
-#else
-#define MAYBE_ApplyGradientMagnitudeOnImpulse ApplyGradientMagnitudeOnImpulse
-#endif
-TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnImpulse) {
+TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnImpulse) {
   gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
 
-  // The image consists of vertical non-overlapping stripes 100 pixels wide.
-  canvas.FillRect(gfx::Rect(0, 0, 800, 600), SkColorSetARGB(0, 10, 10, 10));
+  // The image consists of a point spike on uniform (non-zero) background.
+  canvas.FillRect(gfx::Rect(0, 0, 800, 600), SkColorSetRGB(10, 10, 10));
   canvas.FillRect(gfx::Rect(400, 300, 1, 1), SkColorSetRGB(255, 255, 255));
 
   SkBitmap source =
@@ -128,19 +121,12 @@ TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnImpulse) {
   EXPECT_EQ(data_sum, all_sum);
 }
 
-// http://crbug.com/234336
-#if defined(OS_MACOSX)
-#define MAYBE_ApplyGradientMagnitudeOnFrame \
-    DISABLED_ApplyGradientMagnitudeOnFrame
-#else
-#define MAYBE_ApplyGradientMagnitudeOnFrame ApplyGradientMagnitudeOnFrame
-#endif
-TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnFrame) {
+TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnFrame) {
   gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
 
   // The image consists of a single white block in the centre.
   gfx::Rect draw_rect(300, 200, 200, 200);
-  canvas.FillRect(gfx::Rect(0, 0, 800, 600), SkColorSetARGB(0, 0, 0, 0));
+  canvas.FillRect(gfx::Rect(0, 0, 800, 600), SkColorSetRGB(0, 0, 0));
   canvas.DrawRect(draw_rect, SkColorSetRGB(255, 255, 255));
 
   SkBitmap source =
@@ -174,20 +160,13 @@ TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnFrame) {
   EXPECT_EQ(ImagePixelSum(reduced_color, inner_rect), 0U);
 }
 
-// http://crbug.com/299284
-#if defined(OS_MACOSX)
-#define MAYBE_ExtractImageProfileInformation \
-    DISABLED_ExtractImageProfileInformation
-#else
-#define MAYBE_ExtractImageProfileInformation ExtractImageProfileInformation
-#endif
-TEST_F(ThumbnailContentAnalysisTest, MAYBE_ExtractImageProfileInformation) {
+TEST_F(ThumbnailContentAnalysisTest, ExtractImageProfileInformation) {
   gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
 
   // The image consists of a white frame drawn in the centre.
   gfx::Rect draw_rect(100, 100, 200, 100);
   gfx::Rect image_rect(0, 0, 800, 600);
-  canvas.FillRect(image_rect, SkColorSetARGB(0, 0, 0, 0));
+  canvas.FillRect(image_rect, SkColorSetRGB(0, 0, 0));
   canvas.DrawRect(draw_rect, SkColorSetRGB(255, 255, 255));
 
   SkBitmap source =
@@ -244,22 +223,14 @@ TEST_F(ThumbnailContentAnalysisTest, MAYBE_ExtractImageProfileInformation) {
             std::accumulate(column_profile.begin(), column_profile.end(), 0));
 }
 
-// http://crbug.com/234336
-#if defined(OS_MACOSX)
-#define MAYBE_ExtractImageProfileInformationWithClosing \
-    DISABLED_ExtractImageProfileInformationWithClosing
-#else
-#define MAYBE_ExtractImageProfileInformationWithClosing \
-    ExtractImageProfileInformationWithClosing
-#endif
 TEST_F(ThumbnailContentAnalysisTest,
-       MAYBE_ExtractImageProfileInformationWithClosing) {
+       ExtractImageProfileInformationWithClosing) {
   gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
 
   // The image consists of a two white frames drawn side by side, with a
   // single-pixel vertical gap in between.
   gfx::Rect image_rect(0, 0, 800, 600);
-  canvas.FillRect(image_rect, SkColorSetARGB(0, 0, 0, 0));
+  canvas.FillRect(image_rect, SkColorSetRGB(0, 0, 0));
   canvas.DrawRect(gfx::Rect(300, 250, 99, 100), SkColorSetRGB(255, 255, 255));
   canvas.DrawRect(gfx::Rect(401, 250, 99, 100), SkColorSetRGB(255, 255, 255));
 
@@ -592,11 +563,10 @@ TEST_F(ThumbnailContentAnalysisTest, ComputeDecimatedImage) {
   gfx::Canvas canvas(image_size, 1.0f, true);
 
   // Make some content we will later want to keep.
-  canvas.FillRect(gfx::Rect(100, 200, 100, 100), SkColorSetARGB(0, 125, 0, 0));
-  canvas.FillRect(gfx::Rect(300, 200, 100, 100), SkColorSetARGB(0, 0, 200, 0));
-  canvas.FillRect(gfx::Rect(500, 200, 100, 100), SkColorSetARGB(0, 0, 0, 225));
-  canvas.FillRect(gfx::Rect(100, 400, 600, 100),
-                  SkColorSetARGB(0, 125, 200, 225));
+  canvas.FillRect(gfx::Rect(100, 200, 100, 100), SkColorSetRGB(125, 0, 0));
+  canvas.FillRect(gfx::Rect(300, 200, 100, 100), SkColorSetRGB(0, 200, 0));
+  canvas.FillRect(gfx::Rect(500, 200, 100, 100), SkColorSetRGB(0, 0, 225));
+  canvas.FillRect(gfx::Rect(100, 400, 600, 100), SkColorSetRGB(125, 200, 225));
 
   std::vector<bool> rows(image_size.height(), false);
   std::fill_n(rows.begin() + 200, 100, true);
@@ -634,7 +604,7 @@ TEST_F(ThumbnailContentAnalysisTest, ComputeDecimatedImage) {
                                     result,
                                     gfx::Size(100, 100),
                                     gfx::Point(100, 400),
-                                    gfx::Point(0, 0)));
+                                    gfx::Point(0, 100)));
 }
 
 TEST_F(ThumbnailContentAnalysisTest, CreateRetargetedThumbnailImage) {
