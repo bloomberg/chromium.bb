@@ -62,11 +62,13 @@ FileTasks.WEB_STORE_HANDLER_BASE_URL =
  * @return {string} URL
  */
 FileTasks.createWebStoreLink = function(extension, mimeType) {
-  if (extension == '' || mimeType == '')
+  if (!extension)
     return FileTasks.CHROME_WEB_STORE_URL;
 
   var url = FileTasks.WEB_STORE_HANDLER_BASE_URL;
   url += '?_fe=' + extension.toLowerCase().replace(/[^\w]/g, '');
+
+  // If a mime is given, add it into the URL.
   if (mimeType)
     url += '&_fmt=' + mimeType.replace(/[^-\w\/]/g, '');
   return url;
