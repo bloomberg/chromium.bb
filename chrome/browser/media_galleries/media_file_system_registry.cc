@@ -553,6 +553,10 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     CHECK(path.IsAbsolute());
     CHECK(!path.ReferencesParent());
 
+    // TODO(gbillock): refactor ImportedMediaGalleryRegistry to delegate this
+    // call tree, probably by having it figure out by device id what
+    // registration is needed, or having per-device-type handlers at the
+    // next higher level.
     std::string fsid;
     if (StorageInfo::IsITunesDevice(device_id)) {
       ImportedMediaGalleryRegistry* imported_registry =
@@ -562,6 +566,11 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
       ImportedMediaGalleryRegistry* imported_registry =
           ImportedMediaGalleryRegistry::GetInstance();
       fsid = imported_registry->RegisterPicasaFilesystemOnUIThread(
+          path);
+    } else if (StorageInfo::IsIPhotoDevice(device_id)) {
+      ImportedMediaGalleryRegistry* imported_registry =
+          ImportedMediaGalleryRegistry::GetInstance();
+      fsid = imported_registry->RegisterIPhotoFilesystemOnUIThread(
           path);
     } else {
       std::string fs_name(extension_misc::kMediaFileSystemPathPart);

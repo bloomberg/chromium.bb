@@ -2653,6 +2653,8 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
+            'browser/media_galleries/fileapi/iapps_data_provider.cc',
+            'browser/media_galleries/fileapi/iapps_data_provider.h',
             'browser/media_galleries/fileapi/file_path_watcher_util.cc',
             'browser/media_galleries/fileapi/file_path_watcher_util.h',
             'browser/media_galleries/fileapi/itunes_data_provider.cc',
@@ -2671,6 +2673,12 @@
             'browser/media_galleries/fileapi/safe_picasa_album_table_reader.h',
             'browser/media_galleries/fileapi/safe_picasa_albums_indexer.cc',
             'browser/media_galleries/fileapi/safe_picasa_albums_indexer.h',
+          ],
+        }],
+        ['OS=="mac"', {
+          'sources': [
+            'browser/media_galleries/fileapi/iphoto_data_provider.cc',
+            'browser/media_galleries/fileapi/iphoto_data_provider.h',
           ],
         }],
         ['enable_extensions==1', {
