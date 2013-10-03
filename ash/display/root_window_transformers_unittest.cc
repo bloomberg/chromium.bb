@@ -298,11 +298,11 @@ TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
                            base::TimeDelta::FromMilliseconds(100),
                            10.0, 1.0, 5, 1);
 
-  // With device scale factor = 2, ordinal_offset * 2 = offset.
+  // ordinal_offset is invariant to the device scale factor.
   EXPECT_FLOAT_EQ(event_handler.scroll_x_offset(),
-                  event_handler.scroll_x_offset_ordinal() * 2 * 2.5f);
+                  event_handler.scroll_x_offset_ordinal());
   EXPECT_FLOAT_EQ(event_handler.scroll_y_offset(),
-                  event_handler.scroll_y_offset_ordinal() * 2 * 2.5f);
+                  event_handler.scroll_y_offset_ordinal());
   magnifier->SetEnabled(false);
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
