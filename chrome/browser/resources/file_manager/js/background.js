@@ -5,7 +5,14 @@
 'use strict';
 
 /**
+ * Number of runtime errors catched in the background page.
+ * @type {number}
+ */
+var JSErrorCount = 0;
+
+/**
  * Map of all currently open app window. The key is an app id.
+ * @type {Object.<string, AppWindow>}
  */
 var appWindows = {};
 
@@ -591,6 +598,11 @@ function initApp() {
       chrome.storage.local.set({strings: strings}, callback);
     });
   });
+
+  // Count runtime JavaScript errors.
+  window.onerror = function() {
+    JSErrorCount++;
+  };
 }
 
 // Initialize Files.app.

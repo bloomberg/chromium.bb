@@ -132,7 +132,7 @@ test.util.sync.getDocument_ = function(contentWindow, opt_iframeQuery) {
  * @return {number} Error count.
  */
 test.util.sync.getErrorCount = function() {
-  var totalCount = 0;
+  var totalCount = JSErrorCount;
   for (var appId in appWindows) {
     var contentWindow = appWindows[appId].contentWindow;
     if (contentWindow.JSErrorCount)
