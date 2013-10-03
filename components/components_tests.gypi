@@ -4,7 +4,7 @@
 
 {
   'conditions': [
-    ['OS != "ios" and android_webview_build == 0', {
+    ['android_webview_build == 0', {
       'targets': [
         {
           'target_name': 'components_unittests',
@@ -84,6 +84,21 @@
             'web_modal',
           ],
           'conditions': [
+            ['OS == "ios"', {
+              'sources/': [
+                ['exclude', '\\.cc$'],
+                ['include', '^test/run_all_unittests\\.cc$'],
+                # TODO(ios): Include files here as they are made to work, see
+                # http://crbug.com/303011.
+                # TODO(asvitkine): Bring up varations/ unittests on iOS.
+                ['include', '^dom_distiller'],
+              ],
+              'dependencies!': [
+                'autofill_core_common',
+                'navigation_interception',
+                'visitedlink_renderer',
+              ],
+            }],
             ['OS == "android"', {
               'sources!': [
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',
@@ -119,6 +134,10 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
         },
+      ],
+    }],
+    ['OS != "ios" and android_webview_build == 0', {
+      'targets': [
         {
           'target_name': 'components_perftests',
           'type': '<(gtest_target_type)',

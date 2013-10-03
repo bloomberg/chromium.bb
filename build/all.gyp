@@ -12,6 +12,7 @@
         'some.gyp:*',
         '../base/base.gyp:*',
         '../chrome/chrome.gyp:*',
+        '../components/components.gyp:*',
         '../content/content.gyp:*',
         '../crypto/crypto.gyp:*',
         '../mojo/mojo.gyp:*',
@@ -33,7 +34,6 @@
         ['OS!="ios"', {
           'dependencies': [
             '../cc/cc_tests.gyp:*',
-            '../components/components.gyp:*',
             '../device/bluetooth/bluetooth.gyp:*',
             '../device/device_tests.gyp:*',
             '../device/usb/usb.gyp:*',
@@ -212,6 +212,7 @@
       'dependencies': [
         '../base/base.gyp:base_unittests',
         '../chrome/chrome.gyp:unit_tests',
+        '../components/components.gyp:components_unittests',
         '../crypto/crypto.gyp:crypto_unittests',
         '../net/net.gyp:net_unittests',
         '../sql/sql.gyp:sql_unittests',
@@ -231,7 +232,6 @@
             '../chrome/chrome.gyp:interactive_ui_tests',
             '../chrome/chrome.gyp:sync_integration_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
-            '../components/components.gyp:components_unittests',
             '../content/content.gyp:content_browsertests',
             '../content/content.gyp:content_shell',
             '../content/content.gyp:content_unittests',
