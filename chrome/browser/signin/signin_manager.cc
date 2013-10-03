@@ -132,6 +132,8 @@ std::string SigninManager::SigninTypeToString(
       return "No Signin";
     case SIGNIN_TYPE_WITH_CREDENTIALS:
       return "Signin with credentials";
+    case SIGNIN_TYPE_WITH_OAUTH_CODE:
+      return "Signin with oauth code";
   }
 
   NOTREACHED();
@@ -204,6 +206,23 @@ void SigninManager::StartSignInWithCredentials(
     // client_login_->StartClientLogin() had completed successfully.
     client_login_->StartCookieForOAuthLoginTokenExchange(session_index);
   }
+}
+
+void SigninManager::StartSignInWithOAuthCode(
+    const std::string& username,
+    const std::string& password,
+    const std::string& oauth_code,
+    const OAuthTokenFetchedCallback& callback) {
+  DCHECK(GetAuthenticatedUsername().empty() ||
+         gaia::AreEmailsSame(username, GetAuthenticatedUsername()));
+
+  if (!PrepareForSignin(SIGNIN_TYPE_WITH_OAUTH_CODE, username, password))
+    return;
+
+  DCHECK(oauth_token_fetched_callback_.is_null());
+  oauth_token_fetched_callback_ = callback;
+
+  client_login_->StartAuthCodeForOAuth2TokenExchange(oauth_code);
 }
 
 void SigninManager::VerifyGaiaCookiesBeforeSignIn(
@@ -489,6 +508,7 @@ void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 
   switch (type_) {
     case SIGNIN_TYPE_WITH_CREDENTIALS:
+    case SIGNIN_TYPE_WITH_OAUTH_CODE:
       temp_oauth_login_tokens_ = result;
       client_login_->StartOAuthLogin(result.access_token,
                                      GaiaConstants::kGaiaService);
@@ -584,6 +604,35 @@ void SigninManager::OnSignedIn(const std::string& username) {
 
   password_.clear();  // Don't need it anymore.
   DisableOneClickSignIn(profile_);  // Don't ever offer again.
+
+  if (type_ == SIGNIN_TYPE_WITH_OAUTH_CODE &&
+      !temp_oauth_login_tokens_.access_token.empty())
+    // Cookie jar may not be set up properly, need to first get an uber token
+    // and then merge sessions with the token.
+    client_login_->StartTokenFetchForUberAuthExchange(
+        temp_oauth_login_tokens_.access_token);
+}
+
+void SigninManager::OnUberAuthTokenSuccess(const std::string& token) {
+  DVLOG(1) << "SigninManager::OnUberAuthTokenSuccess";
+  NotifyDiagnosticsObservers(UBER_TOKEN_STATUS, "Successful");
+  client_login_->StartMergeSession(token);
+}
+
+void SigninManager::OnMergeSessionSuccess(const std::string& data) {
+  DVLOG(1) << "SigninManager::OnMergeSessionSuccess";
+  NotifyDiagnosticsObservers(MERGE_SESSION_STATUS, "Successful");
+}
+
+void SigninManager::OnMergeSessionFailure(const GoogleServiceAuthError& error) {
+  LOG(ERROR) << "Unable to mereg sessions. Login failed.";
+  NotifyDiagnosticsObservers(MERGE_SESSION_STATUS, error.ToString());
+}
+
+void SigninManager::OnUberAuthTokenFailure(
+    const GoogleServiceAuthError& error) {
+  LOG(ERROR) << "Unable to retreive the uber token. Login failed.";
+  NotifyDiagnosticsObservers(UBER_TOKEN_STATUS, error.ToString());
 }
 
 void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {

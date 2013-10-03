@@ -163,6 +163,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     new OneClickSigninSyncStarter(
         profile_, NULL, "0" /* session_index 0 for the default user */,
         UTF16ToASCII(email), UTF16ToASCII(password),
+        "" /* auth_code */,
         OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
         web_ui()->GetWebContents(),
         OneClickSigninSyncStarter::NO_CONFIRMATION,

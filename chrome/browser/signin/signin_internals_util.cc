@@ -97,6 +97,8 @@ std::string SigninStatusFieldToString(TimedSigninStatusField field) {
     ENUM_CASE(CLIENT_LOGIN_STATUS);
     ENUM_CASE(OAUTH_LOGIN_STATUS);
     ENUM_CASE(GET_USER_INFO_STATUS);
+    ENUM_CASE(UBER_TOKEN_STATUS);
+    ENUM_CASE(MERGE_SESSION_STATUS);
     case TIMED_FIELDS_END:
       NOTREACHED();
       return std::string();
@@ -210,6 +212,12 @@ TimedSigninStatusValue SigninStatusFieldToLabel(
     case GET_USER_INFO_STATUS:
       return TimedSigninStatusValue("Last OnGetUserInfo Status",
                                     "Last OnGetUserInfo Time");
+    case UBER_TOKEN_STATUS:
+      return TimedSigninStatusValue("Last OnUberToken Status",
+                                    "Last OnUberToken Time");
+    case MERGE_SESSION_STATUS:
+      return TimedSigninStatusValue("Last OnMergeSession Status",
+                                    "Last OnMergeSession Time");
     case TIMED_FIELDS_END:
       NOTREACHED();
       return TimedSigninStatusValue("Error", std::string());

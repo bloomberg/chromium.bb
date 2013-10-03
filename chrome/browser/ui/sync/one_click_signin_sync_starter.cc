@@ -47,6 +47,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const std::string& session_index,
     const std::string& email,
     const std::string& password,
+    const std::string& oauth_code,
     StartSyncMode start_mode,
     content::WebContents* web_contents,
     ConfirmationRequired confirmation_required,
@@ -64,14 +65,21 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
 
   Initialize(profile, browser);
 
-  // Start the signin process using the cookies in the cookie jar.
+  // If oauth_code is supplied, then start the sign in process using the
+  // oauth_code; otherwise start the signin process using the cookies in the
+  // cookie jar.
   SigninManager* manager = SigninManagerFactory::GetForProfile(profile_);
   SigninManager::OAuthTokenFetchedCallback callback;
   // Policy is enabled, so pass in a callback to do extra policy-related UI
   // before signin completes.
   callback = base::Bind(&OneClickSigninSyncStarter::ConfirmSignin,
                         weak_pointer_factory_.GetWeakPtr());
-  manager->StartSignInWithCredentials(session_index, email, password, callback);
+  if (oauth_code.empty()) {
+    manager->StartSignInWithCredentials(
+        session_index, email, password, callback);
+  } else {
+    manager->StartSignInWithOAuthCode(email, password, oauth_code, callback);
+  }
 }
 
 void OneClickSigninSyncStarter::OnBrowserRemoved(Browser* browser) {

@@ -349,7 +349,8 @@ void StartSync(const StartSyncArgs& args,
 
   // The starter deletes itself once its done.
   new OneClickSigninSyncStarter(args.profile, args.browser, args.session_index,
-                                args.email, args.password, start_mode,
+                                args.email, args.password,
+                                "" /* oauth_code */, start_mode,
                                 args.web_contents,
                                 args.confirmation_required,
                                 args.source,

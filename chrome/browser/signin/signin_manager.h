@@ -91,6 +91,15 @@ class SigninManager : public SigninManagerBase,
       const std::string& password,
       const OAuthTokenFetchedCallback& oauth_fetched_callback);
 
+  // Attempt to sign in this user with the given oauth code. The cookie jar
+  // may not be set up properly for the same user, thus will call the
+  // mergeSession endpoint to populate the cookie jar.
+  virtual void StartSignInWithOAuthCode(
+      const std::string& username,
+      const std::string& password,
+      const std::string& oauth_code,
+      const OAuthTokenFetchedCallback& callback);
+
   // Copies auth credentials from one SigninManager to this one. This is used
   // when creating a new profile during the signin process to transfer the
   // in-progress credentials to the new profile.
@@ -145,6 +154,12 @@ class SigninManager : public SigninManagerBase,
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
   virtual void OnGetUserInfoFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnUberAuthTokenSuccess(const std::string& token) OVERRIDE;
+  virtual void OnUberAuthTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE;
+  virtual void OnMergeSessionFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -183,11 +198,10 @@ class SigninManager : public SigninManagerBase,
   bool prohibit_signout_;
 
  private:
-  // TODO(guohui): Leaving the sign in type here because a follow up CL by
-  // Hui will add a new type.  Hui: please remove this comment in your CL.
   enum SigninType {
     SIGNIN_TYPE_NONE,
     SIGNIN_TYPE_WITH_CREDENTIALS,
+    SIGNIN_TYPE_WITH_OAUTH_CODE
   };
 
   std::string SigninTypeToString(SigninType type);

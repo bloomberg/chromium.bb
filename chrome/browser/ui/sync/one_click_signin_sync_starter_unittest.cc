@@ -60,6 +60,7 @@ class OneClickSigninSyncStarterTest : public testing::Test {
       std::string(),
       kTestingUsername,
       std::string(),
+      std::string(),
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
       NULL,
       OneClickSigninSyncStarter::NO_CONFIRMATION,
@@ -90,7 +91,7 @@ class OneClickSigninSyncStarterTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarterTest);
 };
 
-// Verifies that the callback is invoked when syn setup fails.
+// Verifies that the callback is invoked when sync setup fails.
 TEST_F(OneClickSigninSyncStarterTest, CallbackSigninFailed) {
   CreateSyncStarter(base::Bind(&OneClickSigninSyncStarterTest::Callback,
                                base::Unretained(this)));
