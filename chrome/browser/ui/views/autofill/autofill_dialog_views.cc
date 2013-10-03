@@ -2419,8 +2419,10 @@ void AutofillDialogViews::SetIconsForSection(DialogSection section) {
     ServerFieldType field_type = textfield_it->first->type;
     FieldIconMap::const_iterator field_icon_it = field_icons.find(field_type);
     DecoratedTextfield* textfield = textfield_it->second;
-    textfield->SetIcon(field_icon_it == field_icons.end() ?
-                           gfx::Image() : field_icon_it->second);
+    if (field_icon_it != field_icons.end())
+      textfield->SetIcon(field_icon_it->second);
+    else
+      textfield->SetTooltipIcon(delegate_->TooltipForField(field_type));
   }
 }
 

@@ -1612,6 +1612,14 @@ bool AutofillDialogControllerImpl::FieldControlsIcons(
   return type == CREDIT_CARD_NUMBER;
 }
 
+string16 AutofillDialogControllerImpl::TooltipForField(ServerFieldType type)
+    const {
+  if (type == PHONE_HOME_WHOLE_NUMBER || type == PHONE_BILLING_WHOLE_NUMBER)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TOOLTIP_PHONE_NUMBER);
+
+  return string16();
+}
+
 // TODO(groby): Add more tests.
 string16 AutofillDialogControllerImpl::InputValidityMessage(
     DialogSection section,

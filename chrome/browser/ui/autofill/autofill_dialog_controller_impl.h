@@ -138,6 +138,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual FieldIconMap IconsForFields(const FieldValueMap& user_inputs)
       const OVERRIDE;
   virtual bool FieldControlsIcons(ServerFieldType type) const OVERRIDE;
+  virtual string16 TooltipForField(ServerFieldType type) const OVERRIDE;
   virtual string16 InputValidityMessage(DialogSection section,
                                         ServerFieldType type,
                                         const string16& value) OVERRIDE;

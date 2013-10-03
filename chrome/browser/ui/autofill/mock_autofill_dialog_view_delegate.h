@@ -55,6 +55,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
                      gfx::Image(ServerFieldType, const string16&));
   MOCK_CONST_METHOD1(IconsForFields, FieldIconMap(const FieldValueMap&));
   MOCK_CONST_METHOD1(FieldControlsIcons, bool(ServerFieldType));
+  MOCK_CONST_METHOD1(TooltipForField, base::string16(ServerFieldType));
   MOCK_METHOD3(InputValidityMessage,
       string16(DialogSection, ServerFieldType, const string16&));
   MOCK_METHOD2(InputsAreValid, ValidityMessages(DialogSection,

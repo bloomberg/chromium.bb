@@ -133,6 +133,9 @@ class AutofillDialogViewDelegate {
   // rest of the fields in a section.
   virtual bool FieldControlsIcons(ServerFieldType type) const = 0;
 
+  // Returns a tooltip for the given field, or an empty string if none exists.
+  virtual string16 TooltipForField(ServerFieldType type) const = 0;
+
   // Decides whether input of |value| is valid for a field of type |type|. If
   // valid, the returned string will be empty. Otherwise it will contain an
   // error message.

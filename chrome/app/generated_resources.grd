@@ -10138,6 +10138,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER" desc="The placeholder/label text for phone number in the requestAutocomplete dialog.">
         Phone number
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_TOOLTIP_PHONE_NUMBER" desc="A tooltip explaining why the user must enter a phone number.">
+        Merchants often need this in case there are problems shipping your order.
+      </message>
 
       <!-- Autofill dialog: title bar -->
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for autofill dialog which asks user to input address + payment info.">

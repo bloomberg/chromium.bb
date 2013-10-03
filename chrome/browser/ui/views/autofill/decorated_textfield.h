@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_DECORATED_TEXTFIELD_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_DECORATED_TEXTFIELD_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace views {
@@ -35,14 +37,23 @@ class DecoratedTextfield : public views::Textfield {
   // text.
   void SetIcon(const gfx::Image& icon);
 
+  // Sets a tooltip for this field. This will override the icon set with
+  // SetIcon(), if any, and will be overridden by future calls to SetIcon().
+  void SetTooltipIcon(const base::string16& text);
+
   // views::View implementation.
   virtual const char* GetClassName() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DecoratedTextfieldTest, HeightMatchesButton);
+
+  // Called to update the layout after SetIcon or SetTooltipIcon has been
+  // called.
+  void IconChanged();
 
   // This number corresponds to the number of pixels in the images that
   // are used to draw a views button which are above or below the actual border.
@@ -53,8 +64,8 @@ class DecoratedTextfield : public views::Textfield {
   // We draw the border.
   views::FocusableBorder* border_;  // Weak.
 
-  // The icon that goes at the right side of the textfield.
-  gfx::Image icon_;
+  // The view that holds the icon at the end of the textfield.
+  scoped_ptr<views::ImageView> icon_view_;
 
   // Whether the text contents are "invalid" (i.e. should special markers be
   // shown to indicate invalidness).
