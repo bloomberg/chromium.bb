@@ -150,7 +150,7 @@ void Rtcp::SetRemoteSSRC(uint32 ssrc) {
   rtcp_receiver_->SetRemoteSSRC(ssrc);
 }
 
-void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, int length) {
+void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
   RtcpParser rtcp_parser(rtcp_buffer, length);
   if (!rtcp_parser.IsValid()) {
     // Silently ignore packet.

@@ -64,7 +64,7 @@ class RtpPacketizer {
   uint16 packet_id_;
 
   int send_packets_count_;
-  int send_octet_count_;
+  size_t send_octet_count_;
 };
 
 }  // namespace cast

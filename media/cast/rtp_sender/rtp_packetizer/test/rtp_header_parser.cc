@@ -13,12 +13,12 @@ namespace cast {
 
 static const uint8 kCastKeyFrameBitMask = 0x80;
 static const uint8 kCastReferenceFrameIdBitMask = 0x40;
-static const int kRtpCommonHeaderLength = 12;
-static const int kRtpCastHeaderLength = 12;
+static const size_t kRtpCommonHeaderLength = 12;
+static const size_t kRtpCastHeaderLength = 12;
 
 
 RtpHeaderParser::RtpHeaderParser(const uint8* rtp_data,
-                                 const uint32 rtp_data_length)
+                                 size_t rtp_data_length)
   : rtp_data_begin_(rtp_data),
     length_(rtp_data_length) {}
 

@@ -85,8 +85,10 @@ void RtpPacketizer::Cast(bool is_key,
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
   // Split the payload evenly (round number up).
-  uint32 num_packets = (data.size() + max_length) / max_length;
-  uint32 payload_length = (data.size() + num_packets) / num_packets;
+  // TODO(hclam): Fix the use of static_cast here.
+  uint32 num_packets =
+      static_cast<uint32>((data.size() + max_length) / max_length);
+  size_t payload_length = (data.size() + num_packets) / num_packets;
   DCHECK_LE(payload_length, max_length) << "Invalid argument";
 
   std::vector<uint8> packet;
@@ -104,7 +106,7 @@ void RtpPacketizer::Cast(bool is_key,
     packet.push_back(
         (is_key ? kCastKeyFrameBitMask : 0) | kCastReferenceFrameIdBitMask);
     packet.push_back(frame_id_);
-    int start_size = packet.size();
+    size_t start_size = packet.size();
     packet.resize(start_size + 4);
     net::BigEndianWriter big_endian_writer(&((packet)[start_size]), 4);
     big_endian_writer.WriteU16(packet_id_);
@@ -134,7 +136,7 @@ void RtpPacketizer::BuildCommonRTPheader(
   packet->push_back(0x80);
   packet->push_back(static_cast<uint8>(config_.payload_type) |
                     (marker_bit ? kRtpMarkerBitMask : 0));
-  int start_size = packet->size();
+  size_t start_size = packet->size();
   packet->resize(start_size + 10);
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 10);
   big_endian_writer.WriteU16(sequence_number_);

@@ -88,7 +88,7 @@ class Rtcp {
   void SendRtcpCast(const RtcpCastMessage& cast_message);
   void SetRemoteSSRC(uint32 ssrc);
 
-  void IncomingRtcpPacket(const uint8* rtcp_buffer, int length);
+  void IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length);
   bool Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
            base::TimeDelta* min_rtt,  base::TimeDelta* max_rtt) const;
   bool RtpTimestampInSenderTime(int frequency,

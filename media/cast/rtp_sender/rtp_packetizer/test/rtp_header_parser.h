@@ -13,8 +13,7 @@ namespace cast {
 
 class RtpHeaderParser {
  public:
-  RtpHeaderParser(const uint8* rtpData,
-                  const uint32 rtpDataLength);
+  RtpHeaderParser(const uint8* rtpData, size_t rtpDataLength);
   ~RtpHeaderParser();
 
   bool Parse(RtpCastHeader* parsed_packet) const;
@@ -22,7 +21,7 @@ class RtpHeaderParser {
   bool ParseCommon(RtpCastHeader* parsed_packet) const;
   bool ParseCast(RtpCastHeader* parsed_packet) const;
   const uint8* const rtp_data_begin_;
-  int length_;
+  size_t length_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpHeaderParser);
 };
