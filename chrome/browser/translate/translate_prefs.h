@@ -23,9 +23,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// The wrapper of PrefService object for Translate.
-//
-// It is assumed that |prefs_| is alive while this instance is alive.
 class TranslatePrefs {
  public:
   static const char kPrefTranslateLanguageBlacklist[];

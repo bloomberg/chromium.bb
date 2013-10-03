@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/browser/translate/translate_ui_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/translate/translate_errors.h"
 
@@ -70,41 +69,45 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                      const ShortcutConfiguration& shortcut_config);
 
   // Returns the number of languages supported.
-  size_t num_languages() const { return ui_delegate_.GetNumberOfLanguages(); }
+  size_t num_languages() const { return languages_.size(); }
 
   // Returns the ISO code for the language at |index|.
   std::string language_code_at(size_t index) const {
-    return ui_delegate_.GetLanguageCodeAt(index);
+    DCHECK_LT(index, num_languages());
+    return languages_[index].first;
   }
 
   // Returns the displayable name for the language at |index|.
   string16 language_name_at(size_t index) const {
-    return ui_delegate_.GetLanguageNameAt(index);
+    if (index == kNoIndex)
+      return string16();
+    DCHECK_LT(index, num_languages());
+    return languages_[index].second;
   }
 
   Type infobar_type() const { return infobar_type_; }
 
   TranslateErrors::Type error_type() const { return error_type_; }
 
-  size_t original_language_index() const {
-    return ui_delegate_.GetOriginalLanguageIndex();
-  }
+  size_t original_language_index() const { return original_language_index_; }
   void set_original_language_index(size_t language_index) {
-    ui_delegate_.SetOriginalLanguageIndex(language_index);
+    DCHECK_LT(language_index, num_languages());
+    original_language_index_ = language_index;
   }
-  size_t target_language_index() const {
-    return ui_delegate_.GetTargetLanguageIndex();
-  }
+  size_t target_language_index() const { return target_language_index_; }
   void set_target_language_index(size_t language_index) {
-    ui_delegate_.SetTargetLanguageIndex(language_index);
+    DCHECK_LT(language_index, num_languages());
+    target_language_index_ = language_index;
   }
 
   // Convenience methods.
   std::string original_language_code() const {
-    return ui_delegate_.GetOriginalLanguageCode();
+    return (original_language_index() == kNoIndex) ?
+        chrome::kUnknownLanguageCode :
+        language_code_at(original_language_index());
   }
   std::string target_language_code() const {
-    return ui_delegate_.GetTargetLanguageCode();
+    return language_code_at(target_language_index());
   }
 
   // Returns true if the current infobar indicates an error (in which case it
@@ -196,13 +199,34 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
        const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
 
+  // Gets the host of the page being translated, or an empty string if no URL is
+  // associated with the current page.
+  std::string GetPageHost();
+
   Type infobar_type_;
 
   // The type of fading animation if any that should be used when showing this
   // infobar.
   BackgroundAnimationType background_animation_;
 
-  TranslateUIDelegate ui_delegate_;
+  // The list supported languages for translation.
+  // The pair first string is the language ISO code (ex: en, fr...), the second
+  // string is the displayable name on the current locale.
+  // The languages are sorted alphabetically based on the displayable name.
+  std::vector<LanguageNamePair> languages_;
+
+  // The index for language the page is originally in.
+  size_t original_language_index_;
+
+  // The index for language the page is originally in that was originally
+  // reported (original_language_index_ changes if the user selects a new
+  // original language, but this one does not).  This is necessary to report
+  // language detection errors with the right original language even if the user
+  // changed the original language.
+  size_t initial_original_language_index_;
+
+  // The index for language the page should be translated to.
+  size_t target_language_index_;
 
   // The error that occurred when trying to translate (NONE if no error).
   TranslateErrors::Type error_type_;
