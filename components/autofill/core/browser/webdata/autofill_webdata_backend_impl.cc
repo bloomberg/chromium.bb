@@ -4,8 +4,10 @@
 
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -19,26 +21,31 @@
 
 using base::Bind;
 using base::Time;
-using content::BrowserThread;
 
 namespace autofill {
 
 AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDataServiceBackend> web_database_backend,
+    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::MessageLoopProxy> db_thread,
     const base::Closure& on_changed_callback)
-    : web_database_backend_(web_database_backend),
+    : base::RefCountedDeleteOnMessageLoop<AutofillWebDataBackendImpl>(
+          db_thread),
+      ui_thread_(ui_thread),
+      db_thread_(db_thread),
+      web_database_backend_(web_database_backend),
       on_changed_callback_(on_changed_callback) {
 }
 
 void AutofillWebDataBackendImpl::AddObserver(
     AutofillWebDataServiceObserverOnDBThread* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   db_observer_list_.AddObserver(observer);
 }
 
 void AutofillWebDataBackendImpl::RemoveObserver(
     AutofillWebDataServiceObserverOnDBThread* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   db_observer_list_.RemoveObserver(observer);
 }
 
@@ -47,7 +54,7 @@ AutofillWebDataBackendImpl::~AutofillWebDataBackendImpl() {
 }
 
 WebDatabase* AutofillWebDataBackendImpl::GetDatabase() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   return web_database_backend_->database();
 }
 
@@ -58,14 +65,12 @@ void AutofillWebDataBackendImpl::RemoveExpiredFormElements() {
 }
 
 void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          on_changed_callback_);
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  ui_thread_->PostTask(FROM_HERE, on_changed_callback_);
 }
 
 base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   if (!user_data_)
     user_data_.reset(new SupportsUserDataAggregatable());
   return user_data_.get();
@@ -77,7 +82,7 @@ void AutofillWebDataBackendImpl::ResetUserData() {
 
 WebDatabase::State AutofillWebDataBackendImpl::AddFormElements(
     const std::vector<FormFieldData>& fields, WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   AutofillChangeList changes;
   if (!AutofillTable::FromWebDatabase(db)->AddFormFieldValues(
         fields, &changes)) {
@@ -99,7 +104,7 @@ scoped_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::GetFormValuesForElementName(
     const base::string16& name, const base::string16& prefix, int limit,
     WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<base::string16> values;
   AutofillTable::FromWebDatabase(db)->GetFormValuesForElementName(
       name, prefix, &values, limit);
@@ -110,7 +115,7 @@ AutofillWebDataBackendImpl::GetFormValuesForElementName(
 
 scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::HasFormElements(
     WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   bool value = AutofillTable::FromWebDatabase(db)->HasFormElements();
   return scoped_ptr<WDTypedResult>(
       new WDResult<bool>(AUTOFILL_VALUE_RESULT, value));
@@ -120,7 +125,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   AutofillChangeList changes;
 
   if (AutofillTable::FromWebDatabase(db)->RemoveFormElementsAddedBetween(
@@ -140,7 +145,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveFormValueForElementName(
     const base::string16& name, const base::string16& value, WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
 
   if (AutofillTable::FromWebDatabase(db)->RemoveFormElement(name, value)) {
     AutofillChangeList changes;
@@ -159,7 +164,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveFormValueForElementName(
 
 WebDatabase::State AutofillWebDataBackendImpl::AddAutofillProfile(
     const AutofillProfile& profile, WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   if (!AutofillTable::FromWebDatabase(db)->AddAutofillProfile(profile)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
@@ -177,7 +182,7 @@ WebDatabase::State AutofillWebDataBackendImpl::AddAutofillProfile(
 
 WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
     const AutofillProfile& profile, WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   // Only perform the update if the profile exists.  It is currently
   // valid to try to update a missing profile.  We simply drop the write and
   // the caller will detect this on the next refresh.
@@ -205,7 +210,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
     const std::string& guid, WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   AutofillProfile* profile = NULL;
   if (!AutofillTable::FromWebDatabase(db)->GetAutofillProfile(guid, &profile)) {
     NOTREACHED();
@@ -229,7 +234,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
 
 scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
     WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<AutofillProfile*> profiles;
   AutofillTable::FromWebDatabase(db)->GetAutofillProfiles(&profiles);
   return scoped_ptr<WDTypedResult>(
@@ -242,7 +247,7 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
 
 WebDatabase::State AutofillWebDataBackendImpl::AddCreditCard(
     const CreditCard& credit_card, WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   if (!AutofillTable::FromWebDatabase(db)->AddCreditCard(credit_card)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
@@ -253,7 +258,7 @@ WebDatabase::State AutofillWebDataBackendImpl::AddCreditCard(
 
 WebDatabase::State AutofillWebDataBackendImpl::UpdateCreditCard(
     const CreditCard& credit_card, WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   // It is currently valid to try to update a missing profile.  We simply drop
   // the write and the caller will detect this on the next refresh.
   CreditCard* original_credit_card = NULL;
@@ -272,7 +277,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateCreditCard(
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
     const std::string& guid, WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   if (!AutofillTable::FromWebDatabase(db)->RemoveCreditCard(guid)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
@@ -282,7 +287,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
 
 scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetCreditCards(
     WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<CreditCard*> credit_cards;
   AutofillTable::FromWebDatabase(db)->GetCreditCards(&credit_cards);
   return scoped_ptr<WDTypedResult>(
@@ -298,7 +303,7 @@ WebDatabase::State
         const base::Time& delete_begin,
         const base::Time& delete_end,
         WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   std::vector<std::string> profile_guids;
   std::vector<std::string> credit_card_guids;
   if (AutofillTable::FromWebDatabase(db)->RemoveAutofillDataModifiedBetween(
@@ -324,7 +329,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   ScopedVector<AutofillProfile> profiles;
   if (AutofillTable::FromWebDatabase(db)->RemoveOriginURLsModifiedBetween(
           delete_begin, delete_end, &profiles)) {
@@ -345,7 +350,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveExpiredFormElementsImpl(
     WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   AutofillChangeList changes;
 
   if (AutofillTable::FromWebDatabase(db)->RemoveExpiredFormElements(&changes)) {

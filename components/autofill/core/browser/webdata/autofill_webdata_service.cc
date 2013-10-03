@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -17,6 +18,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/webdata/common/web_data_service_backend.h"
 #include "components/webdata/common/web_database_service.h"
+#include "content/public/browser/browser_thread.h"
 
 using base::Bind;
 using base::Time;
@@ -38,6 +40,8 @@ AutofillWebDataService::AutofillWebDataService(
 
   autofill_backend_ = new AutofillWebDataBackendImpl(
       wdbs_->GetBackend(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
       on_changed_callback);
 }
 
@@ -45,7 +49,10 @@ AutofillWebDataService::AutofillWebDataService()
     : WebDataServiceBase(NULL, WebDataServiceBase::ProfileErrorCallback(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       weak_ptr_factory_(this),
-      autofill_backend_(new AutofillWebDataBackendImpl(NULL, base::Closure())) {
+      autofill_backend_(new AutofillWebDataBackendImpl(NULL,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          base::Closure())) {
 }
 
 void AutofillWebDataService::ShutdownOnUIThread() {
