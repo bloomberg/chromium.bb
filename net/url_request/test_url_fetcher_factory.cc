@@ -186,11 +186,6 @@ const ResponseCookies& TestURLFetcher::GetCookies() const {
   return fake_cookies_;
 }
 
-bool TestURLFetcher::FileErrorOccurred(int* out_error_code) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void TestURLFetcher::ReceivedContentWasMalformed() {
 }
 

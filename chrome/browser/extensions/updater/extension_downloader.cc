@@ -8,12 +8,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -75,16 +75,6 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
 const char kDefaultInstallSource[] = "";
 
-// TODO(skerner): It would be nice to know if the file system failure
-// happens when creating a temp file or when writing to it. Knowing this
-// will require changes to URLFetcher.
-enum FileWriteResult {
-  SUCCESS = 0,
-  CANT_CREATE_OR_WRITE_TEMP_CRX,
-  CANT_READ_CRX_FILE,
-  NUM_FILE_WRITE_RESULTS,
-};
-
 #define RETRY_HISTOGRAM(name, retry_count, url) \
     if ((url).DomainIs("google.com")) \
       UMA_HISTOGRAM_CUSTOM_COUNTS( \
@@ -95,54 +85,11 @@ enum FileWriteResult {
           "Extensions." name "RetryCountOtherUrl", retry_count, 1, \
           kMaxRetries, kMaxRetries+1)
 
-void RecordFileUpdateHistogram(FileWriteResult file_write_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("Extensions.UpdaterWriteCrxAsFile",
-                            file_write_result,
-                            NUM_FILE_WRITE_RESULTS);
-}
-
-void CheckThatCRXIsReadable(const base::FilePath& crx_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  FileWriteResult file_write_result = SUCCESS;
-
-  // Open the file in the same way
-  // SandboxExtensionUnpacker::ValidateSigniture() will.
-  ScopedStdioHandle file(file_util::OpenFile(crx_path, "rb"));
-  if (!file.get()) {
-    LOG(ERROR) << "Can't read CRX file written for update at path "
-               << crx_path.value().c_str();
-    file_write_result = CANT_READ_CRX_FILE;
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RecordFileUpdateHistogram, file_write_result));
-}
-
-// Record the result of writing a CRX file. Will be used to understand
-// high failure rates of CRX installs in the field.  If |success| is
-// true, |crx_path| should be set to the path to the CRX file.
-void RecordCRXWriteHistogram(bool success, const base::FilePath& crx_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!success) {
-    // We know there was an error writing the file.
-    RecordFileUpdateHistogram(CANT_CREATE_OR_WRITE_TEMP_CRX);
-  } else {
-    // Test that the file can be read. Based on histograms in
-    // SandboxExtensionUnpacker, we know that many CRX files
-    // can not be read. Try reading.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&CheckThatCRXIsReadable, crx_path));
-  }
-}
-
 bool ShouldRetryRequest(const net::URLRequestStatus& status,
                         int response_code) {
-  return response_code >= 500 ||
+  // Retry if the response code is a server error, or the request failed because
+  // of network errors as opposed to file errors.
+  return (response_code >= 500 && status.is_success()) ||
          status.status() == net::URLRequestStatus::FAILED;
 }
 
@@ -708,21 +655,13 @@ void ExtensionDownloader::OnCRXFetchComplete(
       extensions_queue_.active_request()->request_ids;
   const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[id];
 
-  int error_code = net::OK;
-  if (source->FileErrorOccurred(&error_code)) {
-    LOG(ERROR) << "Failed to write update CRX with id " << id << ". "
-               << "Error is "<< net::ErrorToString(error_code);
-    RecordCRXWriteHistogram(false, base::FilePath());
-    delegate_->OnExtensionDownloadFailed(
-        id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);
-  } else if (status.status() == net::URLRequestStatus::SUCCESS &&
+  if (status.status() == net::URLRequestStatus::SUCCESS &&
       (response_code == 200 || url.SchemeIsFile())) {
     RETRY_HISTOGRAM("CrxFetchSuccess",
                     extensions_queue_.active_request_failure_count(), url);
     base::FilePath crx_path;
     // Take ownership of the file at |crx_path|.
     CHECK(source->GetResponseAsFilePath(true, &crx_path));
-    RecordCRXWriteHistogram(true, crx_path);
     delegate_->OnExtensionDownloadFinished(
         id, crx_path, url, extensions_queue_.active_request()->version,
         ping, request_ids);
@@ -735,6 +674,8 @@ void ExtensionDownloader::OnCRXFetchComplete(
     } else {
       RETRY_HISTOGRAM("CrxFetchFailure",
                       extensions_queue_.active_request_failure_count(), url);
+      // status.error() is 0 (net::OK) or negative. (See net/base/net_errors.h)
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.CrxFetchError", -status.error());
       delegate_->OnExtensionDownloadFailed(
           id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);
     }

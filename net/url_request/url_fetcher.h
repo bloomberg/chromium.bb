@@ -273,11 +273,6 @@ class NET_EXPORT URLFetcher {
   // Cookies recieved.
   virtual const ResponseCookies& GetCookies() const = 0;
 
-  // Return true if any file system operation failed.  If so, set |error_code|
-  // to the net error code. File system errors are only possible if user called
-  // SaveResponseToTemporaryFile().
-  virtual bool FileErrorOccurred(int* out_error_code) const = 0;
-
   // Reports that the received content was malformed.
   virtual void ReceivedContentWasMalformed() = 0;
 

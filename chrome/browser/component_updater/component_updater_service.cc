@@ -850,13 +850,12 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<CRXContext> crx_context(context);
-  int error_code = net::OK;
 
   CrxUpdateItem* crx = FindUpdateItemById(crx_context->id);
   DCHECK(crx->status == CrxUpdateItem::kDownloadingDiff ||
          crx->status == CrxUpdateItem::kDownloading);
 
-  if (source->FileErrorOccurred(&error_code) || !FetchSuccess(*source)) {
+  if (!FetchSuccess(*source)) {
     if (crx->status == CrxUpdateItem::kDownloadingDiff) {
       crx->diff_error_category = kNetworkError;
       crx->diff_error_code = GetFetchError(*source);

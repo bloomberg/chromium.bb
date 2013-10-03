@@ -165,10 +165,6 @@ const ResponseCookies& URLFetcherImpl::GetCookies() const {
   return core_->GetCookies();
 }
 
-bool URLFetcherImpl::FileErrorOccurred(int* out_error_code) const {
-  return core_->FileErrorOccurred(out_error_code);
-}
-
 void URLFetcherImpl::ReceivedContentWasMalformed() {
   core_->ReceivedContentWasMalformed();
 }

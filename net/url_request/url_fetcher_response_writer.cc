@@ -40,8 +40,7 @@ int URLFetcherStringWriter::Finish(const CompletionCallback& callback) {
 
 URLFetcherFileWriter::URLFetcherFileWriter(
     scoped_refptr<base::TaskRunner> file_task_runner)
-    : error_code_(OK),
-      weak_factory_(this),
+    : weak_factory_(this),
       file_task_runner_(file_task_runner),
       owns_file_(false),
       total_bytes_written_(0) {
@@ -78,8 +77,6 @@ int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
                    weak_factory_.GetWeakPtr(),
                    callback));
     DCHECK_NE(OK, result);
-    if (result != ERR_IO_PENDING)
-      error_code_ = result;
   }
   return result;
 }
@@ -94,10 +91,9 @@ int URLFetcherFileWriter::Write(IOBuffer* buffer,
                                    base::Bind(&URLFetcherFileWriter::DidWrite,
                                               weak_factory_.GetWeakPtr(),
                                               callback));
-  if (result < 0 && result != ERR_IO_PENDING) {
-    error_code_ = result;
+  if (result < 0 && result != ERR_IO_PENDING)
     CloseAndDeleteFile();
-  }
+
   return result;
 }
 
@@ -119,10 +115,9 @@ void URLFetcherFileWriter::CloseComplete(const CompletionCallback& callback,
 
 void URLFetcherFileWriter::DidWrite(const CompletionCallback& callback,
                                     int result) {
-  if (result < 0) {
-    error_code_ = result;
+  if (result < 0)
     CloseAndDeleteFile();
-  }
+
   callback.Run(result);
 }
 
@@ -150,8 +145,7 @@ void URLFetcherFileWriter::DidCreateTempFile(const CompletionCallback& callback,
                                              base::FilePath* temp_file_path,
                                              bool success) {
   if (!success) {
-    error_code_ = ERR_FILE_NOT_FOUND;
-    callback.Run(error_code_);
+    callback.Run(ERR_FILE_NOT_FOUND);
     return;
   }
   file_path_ = *temp_file_path;
@@ -173,7 +167,6 @@ void URLFetcherFileWriter::DidOpenFile(const CompletionCallback& callback,
     total_bytes_written_ = 0;
     owns_file_ = true;
   } else {
-    error_code_ = result;
     CloseAndDeleteFile();
   }
   callback.Run(result);

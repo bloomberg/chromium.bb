@@ -3938,6 +3938,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.CrxFetchError" enum="NetErrorCodes">
+  <summary>Net error results from URLFetcher.</summary>
+</histogram>
+
 <histogram name="Extensions.CrxFetchFailureRetryCountGoogleUrl">
   <summary>
     Number of times chrome retried to download an extension with a url on a
@@ -4608,6 +4612,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Extensions.UpdaterWriteCrx" enum="ExtensionFileWriteResult">
+  <obsolete>
+    Deprecated 10/2013.
+  </obsolete>
   <summary>
     What happened when the extension updater tried to write a file?
   </summary>
@@ -21002,6 +21009,9 @@ other types of suffix sets.
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
+  <obsolete>
+    Deprecated 10/2013.
+  </obsolete>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="CANT_CREATE_TEMP_CRX"/>
   <int value="2" label="CANT_WRITE_CRX_DATA"/>

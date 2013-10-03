@@ -139,7 +139,6 @@ class TestURLFetcher : public URLFetcher {
   virtual const URLRequestStatus& GetStatus() const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
   virtual const ResponseCookies& GetCookies() const OVERRIDE;
-  virtual bool FileErrorOccurred(int* out_error_code) const OVERRIDE;
   virtual void ReceivedContentWasMalformed() OVERRIDE;
   // Override response access functions to return fake data.
   virtual bool GetResponseAsString(

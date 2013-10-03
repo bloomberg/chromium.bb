@@ -109,7 +109,6 @@ class URLFetcherCore
   const URLRequestStatus& GetStatus() const;
   int GetResponseCode() const;
   const ResponseCookies& GetCookies() const;
-  bool FileErrorOccurred(int* out_error_code) const;
   // Reports that the received content was malformed (i.e. failed parsing
   // or validation).  This makes the throttling logic that does exponential
   // back-off when servers are having problems treat the current request as
@@ -176,7 +175,7 @@ class URLFetcherCore
   void StartURLRequest();
   void DidInitializeWriter(int result);
   void StartURLRequestWhenAppropriate();
-  void CancelURLRequest();
+  void CancelURLRequest(int error);
   void OnCompletedURLRequest(base::TimeDelta backoff_delay);
   void InformDelegateFetchIsComplete();
   void NotifyMalformedContent();

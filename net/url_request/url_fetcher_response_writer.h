@@ -100,7 +100,6 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
 
   const base::FilePath& file_path() const { return file_path_; }
   int64 total_bytes_written() { return total_bytes_written_; }
-  int error_code() const { return error_code_; }
 
  private:
   // Callback which gets the result of a temporary file creation.
@@ -114,9 +113,6 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
 
   // Callback which gets the result of closing a file.
   void CloseComplete(const CompletionCallback& callback, int result);
-
-  // The last error encountered on a file operation.  OK if no error occurred.
-  int error_code_;
 
   // Callbacks are created for use with base::FileUtilProxy.
   base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_;

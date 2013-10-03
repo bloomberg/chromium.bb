@@ -868,19 +868,16 @@ void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
 void URLFetcherFileTest::OnURLFetchComplete(const URLFetcher* source) {
   if (expected_file_error_ == OK) {
     EXPECT_TRUE(source->GetStatus().is_success());
-    EXPECT_EQ(source->GetResponseCode(), 200);
-
-    int error_code = OK;
-    EXPECT_FALSE(fetcher_->FileErrorOccurred(&error_code));
+    EXPECT_EQ(OK, source->GetStatus().error());
+    EXPECT_EQ(200, source->GetResponseCode());
 
     EXPECT_TRUE(source->GetResponseAsFilePath(
         take_ownership_of_file_, &file_path_));
 
     EXPECT_TRUE(base::ContentsEqual(expected_file_, file_path_));
   } else {
-    int error_code = OK;
-    EXPECT_TRUE(fetcher_->FileErrorOccurred(&error_code));
-    EXPECT_EQ(expected_file_error_, error_code);
+    EXPECT_FALSE(source->GetStatus().is_success());
+    EXPECT_EQ(expected_file_error_, source->GetStatus().error());
   }
   CleanupAfterFetchComplete();
 }
