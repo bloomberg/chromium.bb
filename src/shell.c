@@ -2774,6 +2774,26 @@ move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *dat
 }
 
 static void
+touch_move_binding(struct weston_seat *seat, uint32_t time, void *data)
+{
+	struct weston_surface *focus =
+		(struct weston_surface *) seat->touch->focus;
+	struct weston_surface *surface;
+	struct shell_surface *shsurf;
+
+	surface = weston_surface_get_main_surface(focus);
+	if (surface == NULL)
+		return;
+
+	shsurf = get_shell_surface(surface);
+	if (shsurf == NULL || shsurf->type == SHELL_SURFACE_FULLSCREEN ||
+	    shsurf->type == SHELL_SURFACE_MAXIMIZED)
+		return;
+
+	surface_touch_move(shsurf, (struct weston_seat *) seat);
+}
+
+static void
 resize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
 	struct weston_surface *focus =
@@ -4531,6 +4551,7 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 					  zoom_key_binding, NULL);
 	weston_compositor_add_button_binding(ec, BTN_LEFT, mod, move_binding,
 					     shell);
+	weston_compositor_add_touch_binding(ec, mod, touch_move_binding, shell);
 	weston_compositor_add_button_binding(ec, BTN_MIDDLE, mod,
 					     resize_binding, shell);
 
