@@ -562,17 +562,8 @@ void ImmediateInputRouter::ProcessTouchAck(
 
 void ImmediateInputRouter::HandleGestureScroll(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (!enable_no_touch_to_renderer_while_scrolling_)
-    return;
-
-  // Once scrolling is started stop forwarding touch move events to renderer.
-  if (gesture_event.event.type == WebInputEvent::GestureScrollBegin)
-    touch_event_queue_->set_no_touch_move_to_renderer(true);
-
-  if (gesture_event.event.type == WebInputEvent::GestureScrollEnd ||
-      gesture_event.event.type == WebInputEvent::GestureFlingStart) {
-    touch_event_queue_->set_no_touch_move_to_renderer(false);
-  }
+  if (enable_no_touch_to_renderer_while_scrolling_)
+    touch_event_queue_->OnGestureScrollEvent(gesture_event);
 }
 
 }  // namespace content

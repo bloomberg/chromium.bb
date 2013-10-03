@@ -118,12 +118,12 @@ class TouchEventQueueTest : public testing::Test,
     return last_acked_event_state_;
   }
 
-  void set_no_touch_move_to_renderer(bool no_touch_move) {
-    queue_->set_no_touch_move_to_renderer(no_touch_move);
+  void set_no_touch_to_renderer(bool no_touch) {
+    queue_->no_touch_to_renderer_ = no_touch;
   }
 
-  bool no_touch_move_to_renderer() const {
-    return queue_->no_touch_move_to_renderer_;
+  bool no_touch_to_renderer() const {
+    return queue_->no_touch_to_renderer_;
   }
 
  private:
@@ -641,7 +641,7 @@ TEST_F(TouchEventQueueTest, NoTouchMove) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Touch move should not be sent to renderer (e.g., when scrolling starts).
-  set_no_touch_move_to_renderer(true);
+  set_no_touch_to_renderer(true);
   MoveTouchPoint(0, 30, 5);
   SendTouchEvent();
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -653,16 +653,14 @@ TEST_F(TouchEventQueueTest, NoTouchMove) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Touch end should still be sent to renderer.
+  // Touch end should not be sent to renderer.
   ReleaseTouchPoint(0);
   SendTouchEvent();
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Resume sending touch moves to renderer (e.g., when scrolling ends).
-  set_no_touch_move_to_renderer(false);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  set_no_touch_to_renderer(false);
 
   // Now touch events should come through to renderer.
   PressTouchPoint(80, 10);

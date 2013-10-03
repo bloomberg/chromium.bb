@@ -141,8 +141,8 @@ class ImmediateInputRouterTest : public InputRouterTest {
     input_router()->enable_no_touch_to_renderer_while_scrolling_ = true;
   }
 
-  bool no_touch_move_to_renderer() {
-    return input_router()->touch_event_queue()->no_touch_move_to_renderer();
+  bool no_touch_to_renderer() {
+    return input_router()->touch_event_queue()->no_touch_to_renderer();
   }
 
   bool TouchEventQueueEmpty() const {
@@ -1417,8 +1417,8 @@ TEST_F(ImmediateInputRouterTest, UnhandledWheelEvent) {
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -5);
 }
 
-// Tests that no touch move events are sent to renderer during scrolling.
-TEST_F(ImmediateInputRouterTest, NoTouchMoveWhileScroll) {
+// Tests that no touch events are sent to renderer during scrolling.
+TEST_F(ImmediateInputRouterTest, NoTouchWhileScroll) {
   EnableNoTouchToRendererWhileScrolling();
   set_debounce_interval_time_ms(0);
   input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
@@ -1431,22 +1431,64 @@ TEST_F(ImmediateInputRouterTest, NoTouchMoveWhileScroll) {
   process_->sink().ClearMessages();
   SendInputEventACK(WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ack_handler_->ExpectAckCalled(1);
 
   // Touch move will trigger scroll.
   MoveTouchPoint(0, 20, 5);
   SendTouchEvent();
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
+
+  // A second touch press.
+  PressTouchPoint(20, 20);
+  SendTouchEvent();
+  // This TouchStart is queued.
+  EXPECT_EQ(0U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  WebGestureEvent followup_scroll;
+  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  ack_handler_->set_followup_touch_event(make_scoped_ptr(
+      new GestureEventWithLatencyInfo(followup_scroll, ui::LatencyInfo())));
+
   SendInputEventACK(WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_TRUE(no_touch_move_to_renderer());
+  ack_handler_->ExpectAckCalled(1);
+  // GestureScroll inserts touch cancel into the queue before the touch start.
+  // ScrollBegin is sent first, then the TouchCancel.
+  EXPECT_EQ(2U, process_->sink().message_count());
+  const WebInputEvent* input_event =
+      GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+  EXPECT_EQ(WebInputEvent::GestureScrollBegin, input_event->type);
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(1));
+  EXPECT_EQ(WebInputEvent::TouchCancel, input_event->type);
+  EXPECT_TRUE(no_touch_to_renderer());
   process_->sink().ClearMessages();
+
+  // Clear the followup events since now the touch events are directly
+  // sent to client, instead of being sent to renderer and waiting for
+  // ack. So we should use SimulateGestureScrollUpdateEvent() instead of
+  // followup gesture events.
+  ack_handler_->set_followup_touch_event(make_scoped_ptr(
+      static_cast<GestureEventWithLatencyInfo*>(NULL)));
+
+  // Ack the TouchCancel will result in the next TouchStart to be dispatched
+  // to client.
+  SendInputEventACK(WebInputEvent::TouchCancel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // The touch cancel does not reach client, only the touch start.
+  ack_handler_->ExpectAckCalled(1);
+  EXPECT_EQ(WebInputEvent::TouchStart,
+            ack_handler_->acked_touch_event().event.type);
+  // No touch to renderer.
+  EXPECT_EQ(0U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ack_handler_->ExpectAckCalled(1);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  process_->sink().ClearMessages();
 
   // Touch move should not be sent to renderer.
   MoveTouchPoint(0, 30, 5);
@@ -1456,30 +1498,21 @@ TEST_F(ImmediateInputRouterTest, NoTouchMoveWhileScroll) {
 
   // Touch moves become ScrollUpdate.
   SimulateGestureScrollUpdateEvent(20, 4, 0);
-  EXPECT_TRUE(no_touch_move_to_renderer());
   process_->sink().ClearMessages();
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
-  // Touch move should not be sent to renderer.
-  MoveTouchPoint(0, 65, 10);
+  // Touch end should not be sent to renderer.
+  ReleaseTouchPoint(0);
   SendTouchEvent();
   EXPECT_EQ(0U, process_->sink().message_count());
   process_->sink().ClearMessages();
-
-  // Touch end should still be sent to renderer.
-  ReleaseTouchPoint(0);
-  SendTouchEvent();
-  EXPECT_EQ(1U, process_->sink().message_count());
-  process_->sink().ClearMessages();
-  SendInputEventACK(WebInputEvent::TouchEnd,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   // On GestureScrollEnd, resume sending touch moves to renderer.
   SimulateGestureEvent(WebKit::WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_FALSE(no_touch_move_to_renderer());
+  EXPECT_FALSE(no_touch_to_renderer());
   process_->sink().ClearMessages();
   SendInputEventACK(WebInputEvent::GestureScrollEnd,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
