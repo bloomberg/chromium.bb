@@ -90,6 +90,40 @@ int AddAnimatedTransform(Target* target,
   return id;
 }
 
+template <class Target>
+int AddAnimatedFilter(Target* target,
+                      double duration,
+                      float start_brightness,
+                      float end_brightness) {
+  scoped_ptr<KeyframedFilterAnimationCurve>
+      curve(KeyframedFilterAnimationCurve::Create());
+
+  if (duration > 0.0) {
+    FilterOperations start_filters;
+    start_filters.Append(
+        FilterOperation::CreateBrightnessFilter(start_brightness));
+    curve->AddKeyframe(FilterKeyframe::Create(
+        0.0, start_filters, scoped_ptr<cc::TimingFunction>()));
+  }
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBrightnessFilter(end_brightness));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      duration, filters, scoped_ptr<cc::TimingFunction>()));
+
+  int id = AnimationIdProvider::NextAnimationId();
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(),
+      id,
+      AnimationIdProvider::NextGroupId(),
+      Animation::Filter));
+  animation->set_needs_synchronized_start_time(true);
+
+  target->AddAnimation(animation.Pass());
+  return id;
+}
+
 FakeFloatAnimationCurve::FakeFloatAnimationCurve()
     : duration_(1.0) {}
 
@@ -156,6 +190,11 @@ FakeLayerAnimationValueObserver::FakeLayerAnimationValueObserver()
 
 FakeLayerAnimationValueObserver::~FakeLayerAnimationValueObserver() {}
 
+void FakeLayerAnimationValueObserver::OnFilterAnimated(
+    const FilterOperations& filters) {
+  filters_ = filters;
+}
+
 void FakeLayerAnimationValueObserver::OnOpacityAnimated(float opacity) {
   opacity_ = opacity;
 }
@@ -200,6 +239,14 @@ int AddAnimatedTransformToController(cc::LayerAnimationController* controller,
                               delta_y);
 }
 
+int AddAnimatedFilterToController(cc::LayerAnimationController* controller,
+                                  double duration,
+                                  float start_brightness,
+                                  float end_brightness) {
+  return AddAnimatedFilter(
+      controller, duration, start_brightness, end_brightness);
+}
+
 int AddOpacityTransitionToLayer(cc::Layer* layer,
                                 double duration,
                                 float start_opacity,
@@ -239,6 +286,23 @@ int AddAnimatedTransformToLayer(cc::LayerImpl* layer,
                               duration,
                               delta_x,
                               delta_y);
+}
+
+int AddAnimatedFilterToLayer(cc::Layer* layer,
+                             double duration,
+                             float start_brightness,
+                             float end_brightness) {
+  return AddAnimatedFilter(layer, duration, start_brightness, end_brightness);
+}
+
+int AddAnimatedFilterToLayer(cc::LayerImpl* layer,
+                             double duration,
+                             float start_brightness,
+                             float end_brightness) {
+  return AddAnimatedFilter(layer->layer_animation_controller(),
+                           duration,
+                           start_brightness,
+                           end_brightness);
 }
 
 }  // namespace cc

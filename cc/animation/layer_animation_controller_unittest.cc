@@ -376,6 +376,104 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   EXPECT_TRUE(end_transform_event->is_impl_only);
 }
 
+TEST(LayerAnimationControllerTest, FilterTransition) {
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  scoped_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
+
+  FilterOperations start_filters;
+  start_filters.Append(FilterOperation::CreateBrightnessFilter(1.f));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      0, start_filters, scoped_ptr<cc::TimingFunction>()));
+  FilterOperations end_filters;
+  end_filters.Append(FilterOperation::CreateBrightnessFilter(2.f));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      1, end_filters, scoped_ptr<cc::TimingFunction>()));
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::Filter));
+  controller->AddAnimation(animation.Pass());
+
+  controller->Animate(0.0);
+  controller->UpdateState(true, events.get());
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_EQ(start_filters, dummy.filters());
+  // A non-impl-only animation should not generate property updates.
+  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller->Animate(0.5);
+  controller->UpdateState(true, events.get());
+  EXPECT_EQ(1u, dummy.filters().size());
+  EXPECT_EQ(FilterOperation::CreateBrightnessFilter(1.5f),
+            dummy.filters().at(0));
+  event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller->Animate(1.0);
+  controller->UpdateState(true, events.get());
+  EXPECT_EQ(end_filters, dummy.filters());
+  EXPECT_FALSE(controller->HasActiveAnimation());
+  event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+}
+
+TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+  FakeLayerAnimationValueObserver dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+
+  scoped_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
+
+  // Create simple Filter animation.
+  FilterOperations start_filters;
+  start_filters.Append(FilterOperation::CreateBrightnessFilter(1.f));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      0, start_filters, scoped_ptr<cc::TimingFunction>()));
+  FilterOperations end_filters;
+  end_filters.Append(FilterOperation::CreateBrightnessFilter(2.f));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      1, end_filters, scoped_ptr<cc::TimingFunction>()));
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::Filter));
+  animation->set_is_impl_only(true);
+  controller_impl->AddAnimation(animation.Pass());
+
+  // Run animation.
+  controller_impl->Animate(0.0);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_TRUE(controller_impl->HasActiveAnimation());
+  EXPECT_EQ(start_filters, dummy_impl.filters());
+  EXPECT_EQ(2u, events->size());
+  const AnimationEvent* start_filter_event =
+      GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_TRUE(start_filter_event);
+  EXPECT_EQ(start_filters, start_filter_event->filters);
+  EXPECT_TRUE(start_filter_event->is_impl_only);
+
+  controller_impl->Animate(1.0);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_EQ(end_filters, dummy_impl.filters());
+  EXPECT_FALSE(controller_impl->HasActiveAnimation());
+  EXPECT_EQ(4u, events->size());
+  const AnimationEvent* end_filter_event =
+      GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_TRUE(end_filter_event);
+  EXPECT_EQ(end_filters, end_filter_event->filters);
+  EXPECT_TRUE(end_filter_event->is_impl_only);
+}
+
 class FakeAnimationDelegate : public AnimationDelegate {
  public:
   FakeAnimationDelegate()

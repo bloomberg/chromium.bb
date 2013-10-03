@@ -32,7 +32,8 @@ COMPILE_ASSERT(static_cast<int>(cc::Animation::RunStateEnumSize) ==
 // This should match the TargetProperty enum.
 static const char* const s_targetPropertyNames[] = {
   "Transform",
-  "Opacity"
+  "Opacity",
+  "Filter"
 };
 
 COMPILE_ASSERT(static_cast<int>(cc::Animation::TargetPropertyEnumSize) ==

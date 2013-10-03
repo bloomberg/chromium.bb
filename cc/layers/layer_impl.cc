@@ -682,6 +682,10 @@ bool LayerImpl::LayerIsAlwaysDamaged() const {
   return false;
 }
 
+void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
+  SetFilters(filters);
+}
+
 void LayerImpl::OnOpacityAnimated(float opacity) {
   SetOpacity(opacity);
 }
@@ -819,6 +823,16 @@ void LayerImpl::SetFilters(const FilterOperations& filters) {
 
   filters_ = filters;
   NoteLayerPropertyChangedForSubtree();
+}
+
+bool LayerImpl::FilterIsAnimating() const {
+  return layer_animation_controller_->IsAnimatingProperty(Animation::Filter);
+}
+
+bool LayerImpl::FilterIsAnimatingOnImplOnly() const {
+  Animation* filter_animation =
+      layer_animation_controller_->GetAnimation(Animation::Filter);
+  return filter_animation && filter_animation->is_impl_only();
 }
 
 void LayerImpl::SetBackgroundFilters(

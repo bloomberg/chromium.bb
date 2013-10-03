@@ -27,6 +27,7 @@ namespace cc {
 class Animation;
 class AnimationDelegate;
 class AnimationRegistrar;
+class FilterOperations;
 class KeyframeValueList;
 class LayerAnimationValueObserver;
 
@@ -144,6 +145,7 @@ class CC_EXPORT LayerAnimationController
 
   void NotifyObserversOpacityAnimated(float opacity);
   void NotifyObserversTransformAnimated(const gfx::Transform& transform);
+  void NotifyObserversFilterAnimated(const FilterOperations& filter);
 
   bool HasValueObserver();
   bool HasActiveValueObserver();

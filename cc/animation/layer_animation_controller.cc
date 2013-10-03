@@ -12,6 +12,7 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/base/scoped_ptr_algorithm.h"
+#include "cc/output/filter_operations.h"
 #include "ui/gfx/box_f.h"
 #include "ui/gfx/transform.h"
 
@@ -154,27 +155,49 @@ void LayerAnimationController::AccumulatePropertyUpdates(
     if (!animation->is_impl_only())
       continue;
 
-    if (animation->target_property() == Animation::Opacity) {
-      AnimationEvent event(AnimationEvent::PropertyUpdate,
-                           id_,
-                           animation->group(),
-                           Animation::Opacity,
-                           monotonic_time);
-      event.opacity = animation->curve()->ToFloatAnimationCurve()->GetValue(
-          monotonic_time);
-      event.is_impl_only = true;
-      events->push_back(event);
-    } else if (animation->target_property() == Animation::Transform) {
-      AnimationEvent event(AnimationEvent::PropertyUpdate,
-                           id_,
-                           animation->group(),
-                           Animation::Transform,
-                           monotonic_time);
-      event.transform =
-          animation->curve()->ToTransformAnimationCurve()->GetValue(
-              monotonic_time);
-      event.is_impl_only = true;
-      events->push_back(event);
+    switch (animation->target_property()) {
+      case Animation::Opacity: {
+        AnimationEvent event(AnimationEvent::PropertyUpdate,
+                             id_,
+                             animation->group(),
+                             Animation::Opacity,
+                             monotonic_time);
+        event.opacity = animation->curve()->ToFloatAnimationCurve()->GetValue(
+            monotonic_time);
+        event.is_impl_only = true;
+        events->push_back(event);
+        break;
+      }
+
+      case Animation::Transform: {
+        AnimationEvent event(AnimationEvent::PropertyUpdate,
+                             id_,
+                             animation->group(),
+                             Animation::Transform,
+                             monotonic_time);
+        event.transform =
+            animation->curve()->ToTransformAnimationCurve()->GetValue(
+                monotonic_time);
+        event.is_impl_only = true;
+        events->push_back(event);
+        break;
+      }
+
+      case Animation::Filter: {
+        AnimationEvent event(AnimationEvent::PropertyUpdate,
+                             id_,
+                             animation->group(),
+                             Animation::Filter,
+                             monotonic_time);
+        event.filters = animation->curve()->ToFilterAnimationCurve()->GetValue(
+            monotonic_time);
+        event.is_impl_only = true;
+        events->push_back(event);
+        break;
+      }
+
+      case Animation::TargetPropertyEnumSize:
+        NOTREACHED();
     }
   }
 }
@@ -689,7 +712,16 @@ void LayerAnimationController::TickAnimations(double monotonic_time) {
           break;
         }
 
-          // Do nothing for sentinel value.
+        case Animation::Filter: {
+          const FilterAnimationCurve* filter_animation_curve =
+              active_animations_[i]->curve()->ToFilterAnimationCurve();
+          const FilterOperations filter =
+              filter_animation_curve->GetValue(trimmed);
+          NotifyObserversFilterAnimated(filter);
+          break;
+        }
+
+        // Do nothing for sentinel value.
         case Animation::TargetPropertyEnumSize:
           NOTREACHED();
       }
@@ -719,6 +751,13 @@ void LayerAnimationController::NotifyObserversTransformAnimated(
   FOR_EACH_OBSERVER(LayerAnimationValueObserver,
                     value_observers_,
                     OnTransformAnimated(transform));
+}
+
+void LayerAnimationController::NotifyObserversFilterAnimated(
+    const FilterOperations& filters) {
+  FOR_EACH_OBSERVER(LayerAnimationValueObserver,
+                    value_observers_,
+                    OnFilterAnimated(filters));
 }
 
 bool LayerAnimationController::HasValueObserver() {

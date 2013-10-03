@@ -9,6 +9,7 @@
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/layer_animation_value_observer.h"
+#include "cc/output/filter_operations.h"
 
 namespace cc {
 class LayerImpl;
@@ -69,14 +70,17 @@ class FakeLayerAnimationValueObserver : public LayerAnimationValueObserver {
   virtual ~FakeLayerAnimationValueObserver();
 
   // LayerAnimationValueObserver implementation
+  virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 
+  const FilterOperations& filters() const { return filters_; }
   float opacity() const  { return opacity_; }
   const gfx::Transform& transform() const { return transform_; }
 
  private:
+  FilterOperations filters_;
   float opacity_;
   gfx::Transform transform_;
 };
@@ -97,6 +101,11 @@ int AddAnimatedTransformToController(LayerAnimationController* controller,
                                      double duration,
                                      int delta_x,
                                      int delta_y);
+
+int AddAnimatedFilterToController(LayerAnimationController* controller,
+                                  double duration,
+                                  float start_brightness,
+                                  float end_brightness);
 
 int AddOpacityTransitionToLayer(Layer* layer,
                                 double duration,
@@ -119,6 +128,16 @@ int AddAnimatedTransformToLayer(LayerImpl* layer,
                                 double duration,
                                 int delta_x,
                                 int delta_y);
+
+int AddAnimatedFilterToLayer(Layer* layer,
+                             double duration,
+                             float start_brightness,
+                             float end_brightness);
+
+int AddAnimatedFilterToLayer(LayerImpl* layer,
+                             double duration,
+                             float start_brightness,
+                             float end_brightness);
 
 }  // namespace cc
 

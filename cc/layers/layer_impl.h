@@ -68,6 +68,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   int id() const { return layer_id_; }
 
   // LayerAnimationValueObserver implementation.
+  virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
@@ -187,6 +188,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return filters_; }
+  bool FilterIsAnimating() const;
+  bool FilterIsAnimatingOnImplOnly() const;
 
   void SetBackgroundFilters(const FilterOperations& filters);
   const FilterOperations& background_filters() const {

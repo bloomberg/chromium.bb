@@ -9,6 +9,7 @@
 
 #include "cc/animation/animation.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/filter_operations.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -30,6 +31,7 @@ struct CC_EXPORT AnimationEvent {
   bool is_impl_only;
   float opacity;
   gfx::Transform transform;
+  FilterOperations filters;
 };
 
 typedef std::vector<AnimationEvent> AnimationEventsVector;

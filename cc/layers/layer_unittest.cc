@@ -724,6 +724,42 @@ TEST_F(LayerTest,
   EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
 }
 
+TEST_F(LayerTest,
+       PushPropsDoesntCauseLayerPropertyChangedDuringImplOnlyFilterAnim) {
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  scoped_ptr<LayerImpl> impl_layer =
+      LayerImpl::Create(host_impl_.active_tree(), 1);
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
+                                  layer_tree_host_->SetRootLayer(test_layer));
+
+  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
+  impl_layer->layer_animation_controller()->SetAnimationRegistrar(
+      registrar.get());
+
+  AddAnimatedFilterToController(
+      impl_layer->layer_animation_controller(), 1.0, 1.f, 2.f);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(2.f));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetFilters(filters));
+
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
+  test_layer->PushPropertiesTo(impl_layer.get());
+  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
+
+  impl_layer->ResetAllChangeTrackingForSubtree();
+  AddAnimatedFilterToController(
+      impl_layer->layer_animation_controller(), 1.0, 1.f, 2.f);
+  impl_layer->layer_animation_controller()->GetAnimation(Animation::Filter)->
+      set_is_impl_only(true);
+  filters.Append(FilterOperation::CreateSepiaFilter(0.5f));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetFilters(filters));
+
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
+  test_layer->PushPropertiesTo(impl_layer.get());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
+}
 
 TEST_F(LayerTest, MaskAndReplicaHasParent) {
   scoped_refptr<Layer> parent = Layer::Create();

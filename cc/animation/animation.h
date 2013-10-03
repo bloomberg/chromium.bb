@@ -46,6 +46,7 @@ class CC_EXPORT Animation {
   enum TargetProperty {
     Transform = 0,
     Opacity,
+    Filter,
     // This sentinel must be last.
     TargetPropertyEnumSize
   };
