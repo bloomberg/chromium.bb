@@ -197,6 +197,7 @@
   "events": {
     "internal": true,
     "channel": "stable",
+    "extension_types": ["platform_app", "extension"],
     "contexts": [
       "blessed_extension", "unblessed_extension", "content_script", "web_page"
     ],
@@ -205,6 +206,14 @@
   "experimental.accessibility": {
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
+  },
+  "experimental.devtools.audits": {
+    "dependencies": ["permission:experimental"],
+    "extension_types": ["platform_app"]
+  },
+  "experimental.devtools.console": {
+    "dependencies": ["permission:experimental"],
+    "extension_types": ["platform_app"]
   },
   "experimental.discovery": {
     "dependencies": ["permission:experimental"],
