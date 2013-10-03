@@ -2025,10 +2025,7 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   height: 17px;
   margin-bottom: 4px;
   opacity: 1;
-}
-
-#progress-center.opened li.closed-item label {
-  opacity: 0;
+  white-space: nowrap;
 }
 
 #progress-center .progress-frame {
@@ -2053,7 +2050,7 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 #progress-center .progress-track {
   background: #787878;
   height: 100%;
-  transition: width 1s linear;
+  transition: width 300ms linear;
 }
 
 #progress-center button {

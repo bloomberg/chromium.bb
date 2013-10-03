@@ -13,6 +13,14 @@
 var ProgressCenterPanel = function(element) {
   this.element_ = element;
   this.openView_ = this.element_.querySelector('#progress-center-open-view');
+  this.closeView_ = this.element_.querySelector('#progress-center-close-view');
+
+  /**
+   * Only progress item in the close view.
+   * @type {!HTMLElement}
+   * @private
+   */
+  this.closeViewItem_ = this.closeView_.querySelector('li');
 
   /**
    * Timeout callback to remove items.
@@ -76,9 +84,10 @@ ProgressCenterPanel.TimeoutManager.prototype.request = function(milliseconds) {
  * @param {ProgressCenterItem} item Item to be added.
  */
 ProgressCenterPanel.prototype.addItem = function(item) {
-  this.openView_.insertBefore(
-      this.createItemElement_(item),
-      this.openView_.firstChild);
+  var element = this.createNewItemElement_();
+  this.updateItemElement_(element, item);
+  this.openView_.insertBefore(element, this.openView_.firstNode);
+  this.updateCloseView_();
   if (ProgressCenterPanel.ENABLED_)
     this.element_.hidden = false;
 };
@@ -93,9 +102,8 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
     console.error('Invalid progress ID.');
     return;
   }
-  itemElement.querySelector('label').textContent = item.message;
-  itemElement.querySelector('.progress-track').style.width =
-      item.progressRateByPercent + '%';
+  this.updateItemElement_(itemElement, item);
+  this.updateCloseView_();
 };
 
 /**
@@ -114,8 +122,11 @@ ProgressCenterPanel.prototype.removeItem = function(id) {
   if (itemElement.classList.contains('complete'))
     return;
 
-  // Set timeout function to remove.
+  // Update view and set timeout function to remove.
   itemElement.classList.add('complete');
+  itemElement.setAttribute('data-progress-value',
+                           itemElement.getAttribute('data-progress-max'));
+  this.updateCloseView_();
   this.removingTimeout_.request(ProgressCenterPanel.HIDE_DELAY_TIME_MS_);
 };
 
@@ -138,30 +149,55 @@ ProgressCenterPanel.prototype.completeItemRemoving_ = function(itemElement) {
 };
 
 /**
- * Get an item element having the specified ID.
+ * Updates close view summarizing the progress tasks.
+ * @private
+ */
+ProgressCenterPanel.prototype.updateCloseView_ = function() {
+  var itemElements = this.openView_.querySelectorAll('li');
+  if (itemElements.length) {
+    this.closeView_.hidden = false;
+  } else {
+    this.closeView_.hidden = true;
+    return;
+  }
+  var totalProgressMax = 0;
+  var totalProgressValue = 0;
+  for (var i = 0; i < itemElements.length; i++) {
+    totalProgressMax += ~~itemElements[i].getAttribute('data-progress-max');
+    totalProgressValue += ~~itemElements[i].getAttribute('data-progress-value');
+  }
+  var item = new ProgressCenterItem();
+  item.progressMax = totalProgressMax;
+  item.progressValue = totalProgressValue;
+  // TODO(hirono): Replace it with a string asset.
+  item.message = itemElements.length == 1 ?
+      itemElements[0].querySelector('label').textContent :
+      itemElements.length + ' active process';
+  this.updateItemElement_(this.closeViewItem_, item);
+};
+
+/**
+ * Gets an item element having the specified ID.
  * @param {number} id progress item ID.
  * @return {HTMLElement} Item element having the ID.
  * @private
  */
 ProgressCenterPanel.prototype.getItemElement_ = function(id) {
-  var query = '.item[data-progress-id="$ID"]'.replace('$ID', id);
+  var query = 'li[data-progress-id="$ID"]'.replace('$ID', id);
   return this.element_.querySelector(query);
 };
 
 /**
- * Create an item element from ProgressCenterItem object.
- * @param {ProgressCenterItem} item Progress center item.
+ * Creates an item element.
  * @return {HTMLElement} Created item element.
  * @private
  */
-ProgressCenterPanel.prototype.createItemElement_ = function(item) {
+ProgressCenterPanel.prototype.createNewItemElement_ = function() {
   var label = this.element_.ownerDocument.createElement('label');
   label.className = 'label';
-  label.textContent = item.message;
 
   var progressBarIndicator = this.element_.ownerDocument.createElement('div');
   progressBarIndicator.className = 'progress-track';
-  progressBarIndicator.style.width = item.progressRateByPercent + '%';
 
   var progressBar = this.element_.ownerDocument.createElement('div');
   progressBar.className = 'progress-bar';
@@ -177,12 +213,25 @@ ProgressCenterPanel.prototype.createItemElement_ = function(item) {
   progressFrame.appendChild(cancelButton);
 
   var itemElement = this.element_.ownerDocument.createElement('li');
-  itemElement.className = 'item';
-  itemElement.setAttribute('data-progress-id', item.id);
   itemElement.appendChild(label);
   itemElement.appendChild(progressFrame);
 
   return itemElement;
+};
+
+/**
+ * Updates item element.
+ * @param {HTMLElement} element Element to be updated.
+ * @param {ProgressCenterItem} item Progress center item.
+ * @private
+ */
+ProgressCenterPanel.prototype.updateItemElement_ = function(element, item) {
+  element.querySelector('label').textContent = item.message;
+  element.querySelector('.progress-track').style.width =
+      item.progressRateByPercent + '%';
+  element.setAttribute('data-progress-id', item.id);
+  element.setAttribute('data-progress-max', item.progressMax);
+  element.setAttribute('data-progress-value', item.progressValue);
 };
 
 /**
