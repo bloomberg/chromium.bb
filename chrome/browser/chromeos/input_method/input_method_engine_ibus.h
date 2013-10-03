@@ -83,9 +83,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
   virtual void FocusOut() OVERRIDE;
   virtual void Enable() OVERRIDE;
   virtual void Disable() OVERRIDE;
-  virtual void PropertyActivate(
-      const std::string& property_name,
-      ibus::IBusPropertyState property_state) OVERRIDE;
+  virtual void PropertyActivate(const std::string& property_name) OVERRIDE;
   virtual void PropertyShow(const std::string& property_name) OVERRIDE;
   virtual void PropertyHide(const std::string& property_name) OVERRIDE;
   virtual void SetCapability(IBusCapability capability) OVERRIDE;

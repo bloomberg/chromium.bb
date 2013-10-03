@@ -72,8 +72,7 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
   virtual void Disable() = 0;
 
   // Called when a property is activated or changed.
-  virtual void PropertyActivate(const std::string& property_name,
-                                ibus::IBusPropertyState property_state) = 0;
+  virtual void PropertyActivate(const std::string& property_name) = 0;
 
   // Called when a property is shown.
   virtual void PropertyShow(const std::string& property_name) = 0;

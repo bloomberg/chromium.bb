@@ -36,9 +36,7 @@ void MockIMEEngineHandler::Enable() {
 void MockIMEEngineHandler::Disable() {
 }
 
-void MockIMEEngineHandler::PropertyActivate(
-    const std::string& property_name,
-    ibus::IBusPropertyState property_state) {
+void MockIMEEngineHandler::PropertyActivate(const std::string& property_name) {
 }
 
 void MockIMEEngineHandler::PropertyShow(const std::string& property_name) {

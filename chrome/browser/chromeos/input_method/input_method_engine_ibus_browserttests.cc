@@ -209,8 +209,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
   // onMenuItemActivated should be fired if PropertyActivate is called.
   ExtensionTestMessageListener property_listener("onMenuItemActivated", false);
-  engine_handler->PropertyActivate("property_name",
-                                   ibus::IBUS_PROPERTY_STATE_CHECKED);
+  engine_handler->PropertyActivate("property_name");
   ASSERT_TRUE(property_listener.WaitUntilSatisfied());
   ASSERT_TRUE(property_listener.was_satisfied());
 

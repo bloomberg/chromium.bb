@@ -446,9 +446,7 @@ void InputMethodEngineIBus::Disable() {
   observer_->OnDeactivated(engine_id_);
 }
 
-void InputMethodEngineIBus::PropertyActivate(
-    const std::string& property_name,
-    ibus::IBusPropertyState property_state) {
+void InputMethodEngineIBus::PropertyActivate(const std::string& property_name) {
   observer_->OnMenuItemActivated(engine_id_, property_name);
 }
 
