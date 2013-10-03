@@ -226,7 +226,7 @@ Status CreateLogs(const Capabilities& capabilities,
                   ScopedVector<DevToolsEventListener>* out_listeners) {
   ScopedVector<WebDriverLog> logs;
   ScopedVector<DevToolsEventListener> listeners;
-  Log::Level browser_log_level = Log::kOff;
+  Log::Level browser_log_level = Log::kWarning;
   const LoggingPrefs& prefs = capabilities.logging_prefs;
 
   for (LoggingPrefs::const_iterator iter = prefs.begin();

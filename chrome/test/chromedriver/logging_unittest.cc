@@ -120,7 +120,7 @@ TEST(Logging, IgnoreUnknownLogType) {
   Status status = CreateLogs(capabilities, &logs, &listeners);
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
-  ASSERT_EQ(0u, listeners.size());
+  ASSERT_EQ(1u, listeners.size());
   ASSERT_EQ("browser", logs[0]->type());
 }
 
@@ -132,5 +132,6 @@ TEST(Logging, DefaultLogs) {
   Status status = CreateLogs(capabilities, &logs, &listeners);
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
-  ASSERT_EQ(0u, listeners.size());
+  ASSERT_EQ(1u, listeners.size());
+  ASSERT_EQ("browser", logs[0]->type());
 }
