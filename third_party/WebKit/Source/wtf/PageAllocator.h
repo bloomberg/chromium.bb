@@ -33,6 +33,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
+#include "wtf/WTFExport.h"
 #include <stdint.h>
 
 namespace WTF {
@@ -111,7 +112,7 @@ public:
     static void unregisterSuperPage(void* ptr);
 
 private:
-    static unsigned char s_bitmap[1 << (32 - kSuperPageShift - 3)];
+    WTF_EXPORT static unsigned char s_bitmap[1 << (32 - kSuperPageShift - 3)];
 };
 
 #else // CPU(32BIT)
