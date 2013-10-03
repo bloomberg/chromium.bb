@@ -1,6 +1,8 @@
 include_rules = [
   "+base",
-  "+content",
+  "+content/public/browser",
+  "+content/public/common",
+  "+content/public/test",
   "+components/browser_context_keyed_service",
   "+components/user_prefs/pref_registry_syncable.h",
   "+components/web_modal",
