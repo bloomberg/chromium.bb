@@ -176,6 +176,19 @@ class MockInputMethodObserver : public InputMethodObserver {
   }
 
  private:
+  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE {
+  }
+  virtual void OnFocus() OVERRIDE {
+  }
+  virtual void OnBlur() OVERRIDE {
+  }
+  virtual void OnUntranslatedIMEMessage(
+      const base::NativeEvent& event) OVERRIDE {
+  }
+  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE {
+  }
+  virtual void OnInputLocaleChanged() OVERRIDE {
+  }
   virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE {
     verifier_->OnTextInputStateChanged(client);
   }

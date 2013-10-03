@@ -59,35 +59,45 @@ void MockInputMethod::Init(bool focused) {
 }
 
 void MockInputMethod::OnFocus() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnFocus());
+  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnFocus());
 }
 
 void MockInputMethod::OnBlur() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnBlur());
+  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnBlur());
 }
 
 bool MockInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                                NativeEventResult* result) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnUntranslatedIMEMessage(event));
+  FOR_EACH_OBSERVER(InputMethodObserver,
+                    observer_list_,
+                    OnUntranslatedIMEMessage(event));
   if (result)
     *result = NativeEventResult();
   return false;
 }
 
 void MockInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnTextInputTypeChanged(client));
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnTextInputStateChanged(client));
+  FOR_EACH_OBSERVER(InputMethodObserver,
+                    observer_list_,
+                    OnTextInputTypeChanged(client));
+  FOR_EACH_OBSERVER(InputMethodObserver,
+                    observer_list_,
+                    OnTextInputStateChanged(client));
 }
 
 void MockInputMethod::OnCaretBoundsChanged(const TextInputClient* client) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnCaretBoundsChanged(client));
+  FOR_EACH_OBSERVER(InputMethodObserver,
+                    observer_list_,
+                    OnCaretBoundsChanged(client));
 }
 
 void MockInputMethod::CancelComposition(const TextInputClient* client) {
 }
 
 void MockInputMethod::OnInputLocaleChanged() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnInputLocaleChanged());
+  FOR_EACH_OBSERVER(InputMethodObserver,
+                    observer_list_,
+                    OnInputLocaleChanged());
 }
 
 std::string MockInputMethod::GetInputLocale() {
@@ -119,11 +129,11 @@ bool MockInputMethod::IsCandidatePopupOpen() const {
 }
 
 void MockInputMethod::AddObserver(InputMethodObserver* observer) {
-  observer_list_.AddObserver(static_cast<Observer*>(observer));
+  observer_list_.AddObserver(observer);
 }
 
 void MockInputMethod::RemoveObserver(InputMethodObserver* observer) {
-  observer_list_.RemoveObserver(static_cast<Observer*>(observer));
+  observer_list_.RemoveObserver(observer);
 }
 
 }  // namespace ui

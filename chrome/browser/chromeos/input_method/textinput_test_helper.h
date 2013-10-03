@@ -29,7 +29,7 @@ class TextInputTestBase : public InProcessBrowserTest {
 };
 
 // Provides text input test utilities.
-class TextInputTestHelper : public ui::MockInputMethod::Observer {
+class TextInputTestHelper : public ui::InputMethodObserver {
  public:
   TextInputTestHelper();
   virtual ~TextInputTestHelper();

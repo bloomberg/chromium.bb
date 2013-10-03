@@ -25,19 +25,6 @@ class TextInputClient;
 // ui/base/ime/input_method_factory.h
 class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
  public:
-  class Observer : public InputMethodObserver {
-   public:
-    virtual void OnTextInputTypeChanged(const TextInputClient* client) = 0;
-    virtual void OnFocus() = 0;
-    virtual void OnBlur() = 0;
-    virtual void OnUntranslatedIMEMessage(const base::NativeEvent& event) = 0;
-    virtual void OnCaretBoundsChanged(const TextInputClient* client) = 0;
-    virtual void OnInputLocaleChanged() = 0;
-
-    // InputMethodObserver overrides
-    virtual void OnTextInputStateChanged(const TextInputClient* client) = 0;
-    virtual void OnInputMethodDestroyed(const InputMethod* input_method) = 0;
-  };
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);
   virtual ~MockInputMethod();
 
@@ -72,7 +59,7 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
  private:
   TextInputClient* text_input_client_;
   bool is_sticky_text_input_client_;
-  ObserverList<Observer> observer_list_;
+  ObserverList<InputMethodObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethod);
 };

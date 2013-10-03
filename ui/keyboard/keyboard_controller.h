@@ -6,6 +6,7 @@
 #define UI_KEYBOARD_KEYBOARD_CONTROLLER_H_
 
 #include "base/basictypes.h"
+#include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
@@ -61,6 +62,15 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // InputMethodObserver overrides
+  virtual void OnTextInputTypeChanged(
+      const ui::TextInputClient* client) OVERRIDE {}
+  virtual void OnFocus() OVERRIDE {}
+  virtual void OnBlur() OVERRIDE {}
+  virtual void OnUntranslatedIMEMessage(
+      const base::NativeEvent& event) OVERRIDE {}
+  virtual void OnCaretBoundsChanged(
+      const ui::TextInputClient* client) OVERRIDE {}
+  virtual void OnInputLocaleChanged() OVERRIDE {}
   virtual void OnTextInputStateChanged(
       const ui::TextInputClient* client) OVERRIDE;
   virtual void OnInputMethodDestroyed(
