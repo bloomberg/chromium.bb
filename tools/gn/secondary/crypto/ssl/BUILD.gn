@@ -36,7 +36,7 @@ group("metassl") {
     assert(is_linux)
     direct_dependent_configs = ":system_ssl_config"
   } else {
-    deps = [ "//net/third_party/nss/ssl" ]
+    deps = [ "//net/third_party/nss:ssl" ]
   }
 
   forward_dependent_configs_from = deps

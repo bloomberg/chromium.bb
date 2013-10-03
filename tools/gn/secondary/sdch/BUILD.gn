@@ -52,5 +52,5 @@ static_library("sdch") {
     includes = [ "win" ]
   }
 
-  deps = [ "//third_party/zlib:chrome_zlib" ]
+  deps = [ "//third_party/zlib" ]
 }

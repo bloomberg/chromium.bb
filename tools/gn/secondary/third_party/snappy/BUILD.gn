@@ -67,6 +67,6 @@ test("snappy_unittest") {
     ":snappy",
     "//base",
     "//testing:gtest",
-    "//third_party/zlib:chrome_zlib",
+    "//third_party/zlib",
   ]
 }

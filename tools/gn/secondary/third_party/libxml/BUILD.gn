@@ -147,7 +147,7 @@ static_library("libxml2") {
 
   deps = [
     "//third_party/icu:icuuc",
-    "//third_party/zlib:chrome_zlib",
+    "//third_party/zlib",
   ]
 
   if (is_linux) {

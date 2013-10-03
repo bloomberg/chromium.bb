@@ -1068,7 +1068,7 @@ component("net") {
     "//sdch",
     "//third_party/icu:icui18n",
     "//third_party/icu:icuuc",
-    "//third_party/zlib:chrome_zlib",
+    "//third_party/zlib",
     "//url",
   ]
 
@@ -1084,7 +1084,7 @@ component("net") {
       "udp/udp_socket_libevent.h",
     ]
     deps += [
-      #"//net/third_party/nss/ssl:crssl",
+      #"//net/third_party/nss:ssl",
       #"//third_party/nss:nspr",
       #"//third_party/nss:nss",
     ]
@@ -1104,7 +1104,7 @@ component("net") {
       "ssl/client_cert_store_impl_nss.cc",
     ]
     deps += [
-      #"//net/third_party/nss/ssl:crssl",
+      #"//net/third_party/nss:ssl",
       #"//third_party/nss:nspr",
       #"//third_party/nss:nss",
     ]
@@ -1207,6 +1207,7 @@ grit("net_resources") {
 }
 
 static_library("http_server") {
+  external = true
   sources = [
     "server/http_connection.cc",
     "server/http_connection.h",

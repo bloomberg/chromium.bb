@@ -63,33 +63,22 @@ config("skia_config") {
   }
 }
 
-component("skia") {
-  external = true
-
-  deps = [
-    ":skia_library",
-    ":skia_chrome",
-  ]
-
-  direct_dependent_configs = [ ":skia_config" ]
-
-  forward_dependent_configs_from = [
-    ":skia_library",
-    ":skia_chrome",
-  ]
-
-      #SKIA_IMPLEMENTATION=1
-  # ["clang==1", {
-  #   "xcode_settings": {
-  #     "WARNING_CFLAGS!": [
-  #       # Don"t warn about string->bool used in asserts.
-  #       "-Wstring-conversion",
-  #     ],
-  #   },
-  #   "cflags!": [
-  #     "-Wstring-conversion",
-  #   ],
-  # }],
+if (component_mode == "static_library") {
+  group("skia") {
+    deps = [
+      ":skia_library",
+      ":skia_chrome",
+    ]
+    forward_dependent_configs_from = deps
+  }
+} else {
+  shared_library("skia") {
+    deps = [
+      ":skia_library",
+      ":skia_chrome",
+      ":skia_common",
+    ]
+  }
 }
 
 config("skia_chrome_config") {
@@ -97,6 +86,7 @@ config("skia_chrome_config") {
 }
 
 static_library("skia_chrome") {
+  external = true
   sources = [
     "ext/analysis_canvas.cc",
     "ext/analysis_canvas.h",
@@ -406,6 +396,7 @@ skia_gpu_sources = [
 
 # TODO(brettw) finish this file.
 static_library("skia_library") {
+  external = true
   sources = [
     # this should likely be moved into src/utils in skia
     "//third_party/skia/src/core/SkFlate.cpp",

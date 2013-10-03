@@ -75,14 +75,17 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
     rspfile += ".rsp";
 
     out_ << "rule " << custom_rule_name << std::endl;
-    out_ << "  command = $pythonpath gyp-win-tool action-wrapper $arch "
-         << rspfile << std::endl;
+    out_ << "  command = ";
+    path_output_.WriteFile(out_, settings_->build_settings()->python_path());
+    out_ << " gyp-win-tool action-wrapper $arch " << rspfile << std::endl;
     out_ << "  description = CUSTOM " << target_label << std::endl;
     out_ << "  restat = 1" << std::endl;
     out_ << "  rspfile = " << rspfile << std::endl;
 
     // The build command goes in the rsp file.
-    out_ << "  rspfile_content = $pythonpath ";
+    out_ << "  rspfile_content = ";
+    path_output_.WriteFile(out_, settings_->build_settings()->python_path());
+    out_ << " ";
     path_output_.WriteFile(out_, target_->script_values().script());
     args_template.WriteWithNinjaExpansions(out_);
     out_ << std::endl;

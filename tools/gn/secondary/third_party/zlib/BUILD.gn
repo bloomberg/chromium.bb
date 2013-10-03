@@ -6,8 +6,14 @@ config("zlib_config") {
   includes = [ "." ]
 }
 
-static_library("chrome_zlib") {
+static_library("zlib") {
   external = true
+
+  if (!is_win) {
+    # Don't stomp on "libzlib" on other platforms.
+    output_name = "chrome_zlib"
+  }
+
   sources = [
     "adler32.c",
     "compress.c",
@@ -70,7 +76,7 @@ static_library("minizip") {
     cflags = [ "-Wno-parentheses-equality" ]
   }
 
-  deps = [ ":chrome_zlib" ]
+  deps = [ ":zlib" ]
 
   direct_dependent_configs = [ ":zlib_config" ]
 }

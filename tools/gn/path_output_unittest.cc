@@ -24,6 +24,14 @@ TEST(PathOutput, Basic) {
     writer.WriteFile(out, SourceFile("//foo.cc"));
     EXPECT_EQ("../../foo.cc", out.str());
   }
+  {
+    // Files in the output dir.
+    std::ostringstream out;
+    writer.WriteFile(out, SourceFile("//out/Debug/foo.cc"));
+    out << " ";
+    writer.WriteFile(out, SourceFile("//out/Debug/bar/baz.cc"));
+    EXPECT_EQ("foo.cc bar/baz.cc", out.str());
+  }
 #if defined(OS_WIN)
   {
     // System-absolute path.
@@ -170,8 +178,40 @@ TEST(PathOutput, WriteDir) {
     {
       std::ostringstream out;
       writer.WriteDir(out, SourceDir("/"),
-                      PathOutput::DIR_NO_LAST_SLASH);
+                      PathOutput::DIR_INCLUDE_LAST_SLASH);
       EXPECT_EQ("/", out.str());
+    }
+    {
+      std::ostringstream out;
+      writer.WriteDir(out, SourceDir("/"),
+                      PathOutput::DIR_NO_LAST_SLASH);
+      EXPECT_EQ("/.", out.str());
+    }
+
+    // Output inside current dir.
+    {
+      std::ostringstream out;
+      writer.WriteDir(out, SourceDir("//out/Debug/"),
+                      PathOutput::DIR_INCLUDE_LAST_SLASH);
+      EXPECT_EQ("./", out.str());
+    }
+    {
+      std::ostringstream out;
+      writer.WriteDir(out, SourceDir("//out/Debug/"),
+                      PathOutput::DIR_NO_LAST_SLASH);
+      EXPECT_EQ(".", out.str());
+    }
+    {
+      std::ostringstream out;
+      writer.WriteDir(out, SourceDir("//out/Debug/foo/"),
+                      PathOutput::DIR_INCLUDE_LAST_SLASH);
+      EXPECT_EQ("foo/", out.str());
+    }
+    {
+      std::ostringstream out;
+      writer.WriteDir(out, SourceDir("//out/Debug/foo/"),
+                      PathOutput::DIR_NO_LAST_SLASH);
+      EXPECT_EQ("foo", out.str());
     }
   }
   {

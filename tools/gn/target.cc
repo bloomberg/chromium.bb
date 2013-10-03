@@ -191,8 +191,10 @@ void Target::PullDependentTargetInfo(std::set<const Config*>* unique_configs) {
       inherited_libraries_.insert(dep);
 
     // Inherited libraries and flags are inherited across static library
-    // boundaries.
-    if (dep->output_type() != SHARED_LIBRARY &&
+    // boundaries. For external targets, assume that the external_link_deps
+    // will take care of this.
+    if (!dep->external() &&
+        dep->output_type() != SHARED_LIBRARY &&
         dep->output_type() != EXECUTABLE) {
       const std::set<const Target*> inherited = dep->inherited_libraries();
       for (std::set<const Target*>::const_iterator i = inherited.begin();

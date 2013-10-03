@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <fstream>
 
 #include "base/atomicops.h"
@@ -10,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/commands.h"
@@ -70,6 +72,11 @@ bool SimpleNinjaParse(const std::string& data,
     std::string filename = data.substr(
         next_subninja + kSubninjaPrefixLen,
         line_end - next_subninja - kSubninjaPrefixLen);
+    TrimWhitespaceASCII(filename, TRIM_ALL, &filename);
+#if defined(OS_WIN)
+    // We always want our array to use forward slashes.
+    std::replace(filename.begin(), filename.end(), '\\', '/');
+#endif
     subninjas->insert(filename);
 
     next_subninja = line_end;

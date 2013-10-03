@@ -13,6 +13,10 @@ PathOutput::PathOutput(const SourceDir& current_dir,
                        EscapingMode escaping,
                        bool convert_slashes)
     : current_dir_(current_dir) {
+  CHECK(current_dir.is_source_absolute())
+      << "Currently this only supports writing to output directories inside "
+         "the source root. There needs to be some tweaks to PathOutput to make "
+         "doing this work correctly.";
   inverse_current_dir_ = InvertDir(current_dir_);
 
   options_.mode = escaping;
@@ -36,7 +40,10 @@ void PathOutput::WriteDir(std::ostream& out,
   if (dir.value() == "/") {
     // Writing system root is always a slash (this will normally only come up
     // on Posix systems).
-    out << "/";
+    if (slash_ending == DIR_NO_LAST_SLASH)
+      out << "/.";
+    else
+      out << "/";
   } else if (dir.value() == "//") {
     // Writing out the source root.
     if (slash_ending == DIR_NO_LAST_SLASH) {
@@ -54,6 +61,13 @@ void PathOutput::WriteDir(std::ostream& out,
       else
         out << inverse_current_dir_;
     }
+  } else if (dir == current_dir_) {
+    // Writing the same directory. This needs special handling here since
+    // we need to output something else other than the input.
+    if (slash_ending == DIR_INCLUDE_LAST_SLASH)
+      out << "./";
+    else
+      out << ".";
   } else if (slash_ending == DIR_INCLUDE_LAST_SLASH) {
     WritePathStr(out, dir.value());
   } else {
@@ -68,11 +82,15 @@ void PathOutput::WriteFile(std::ostream& out, const OutputFile& file) const {
   EscapeStringToStream(out, file.value(), options_);
 }
 
+void PathOutput::WriteFile(std::ostream& out,
+                           const base::FilePath& file) const {
+  // Assume native file paths are always absolute.
+  EscapeStringToStream(out, FilePathToUTF8(file), options_);
+}
+
 void PathOutput::WriteSourceRelativeString(
     std::ostream& out,
     const base::StringPiece& str) const {
-  // Input begins with two slashes, is relative to source root. Strip off
-  // the two slashes when cat-ing it.
   if (options_.mode == ESCAPE_SHELL) {
     // Shell escaping needs an intermediate string since it may end up
     // quoting the whole thing. On Windows, the slashes may already be
@@ -100,7 +118,13 @@ void PathOutput::WritePathStr(std::ostream& out,
                               const base::StringPiece& str) const {
   DCHECK(str.size() > 0 && str[0] == '/');
 
-  if (str.size() >= 2 && str[1] == '/') {
+  if (str.substr(0, current_dir_.value().size()) ==
+      base::StringPiece(current_dir_.value())) {
+    // The current dir is a prefix of the output file, so we can strip the
+    // prefix and write out the result.
+    EscapeStringToStream(out, str.substr(current_dir_.value().size()),
+                         options_);
+  } else if (str.size() >= 2 && str[1] == '/') {
     WriteSourceRelativeString(out, str.substr(2));
   } else {
     // Input begins with one slash, don't write the current directory since

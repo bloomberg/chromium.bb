@@ -20,7 +20,7 @@ declare_args() {
   # Set to build the Android version.
   is_android = false
   # Component build.
-  is_component_build = true
+  is_component_build = false
   # ChromeOS build.
   is_chromeos = false
   # Debug build.
