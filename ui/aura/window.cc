@@ -817,6 +817,46 @@ void Window::OnParentChanged() {
       WindowObserver, observers_, OnWindowParentChanged(this, parent_));
 }
 
+bool Window::GetAllTransientAncestors(Window* window,
+                                      Windows* ancestors) const {
+  for (; window; window = window->transient_parent()) {
+    if (window->parent() == this)
+      ancestors->push_back(window);
+  }
+  return (!ancestors->empty());
+}
+
+void Window::FindCommonSiblings(Window** window1, Window** window2) const {
+  DCHECK(window1);
+  DCHECK(window2);
+  DCHECK(*window1);
+  DCHECK(*window2);
+  // Assemble chains of ancestors of both windows.
+  Windows ancestors1;
+  Windows ancestors2;
+  if (!GetAllTransientAncestors(*window1, &ancestors1) ||
+      !GetAllTransientAncestors(*window2, &ancestors2)) {
+    return;
+  }
+  // Walk the two chains backwards and look for the first difference.
+  Windows::const_reverse_iterator it1 = ancestors1.rbegin();
+  Windows::const_reverse_iterator it2 = ancestors2.rbegin();
+  for (; it1  != ancestors1.rend() && it2  != ancestors2.rend(); ++it1, ++it2) {
+    if (*it1 != *it2) {
+      *window1 = *it1;
+      *window2 = *it2;
+      break;
+    }
+  }
+}
+
+bool Window::HasTransientAncestor(const Window* ancestor) const {
+  if (transient_parent_ == ancestor)
+    return true;
+  return transient_parent_ ?
+      transient_parent_->HasTransientAncestor(ancestor) : false;
+}
+
 void Window::StackChildRelativeTo(Window* child,
                                   Window* target,
                                   StackDirection direction) {
@@ -826,14 +866,28 @@ void Window::StackChildRelativeTo(Window* child,
   DCHECK_EQ(this, child->parent());
   DCHECK_EQ(this, target->parent());
 
+  // Consider all transient children of both child's and target's ancestors
+  // up to the common ancestor if such exists and stack them as a unit.
+  // This prevents one transient group from being inserted in the middle of
+  // another.
+  FindCommonSiblings(&child, &target);
+
   const size_t target_i =
       std::find(children_.begin(), children_.end(), target) - children_.begin();
+
+  // When stacking above skip to the topmost transient descendant of the target.
+  size_t final_target_i = target_i;
+  if (direction == STACK_ABOVE && !child->HasTransientAncestor(target)) {
+    while (final_target_i + 1 < children_.size() &&
+           children_[final_target_i + 1]->HasTransientAncestor(target)) {
+      ++final_target_i;
+    }
+  }
 
   // By convention we don't stack on top of windows with layers with NULL
   // delegates.  Walk backward to find a valid target window.
   // See tests WindowTest.StackingMadrigal and StackOverClosingTransient
   // for an explanation of this.
-  size_t final_target_i = target_i;
   while (final_target_i > 0 &&
          children_[final_target_i]->layer()->delegate() == NULL) {
     --final_target_i;
@@ -853,8 +907,22 @@ void Window::StackChildRelativeTo(Window* child,
   if (child == final_target)
     return;
 
-  // Move the child and all its transients.
+  // Move the child.
   StackChildRelativeToImpl(child, final_target, direction);
+
+  // Stack any transient children that share the same parent to be in front of
+  // 'child'. Preserve the existing stacking order by iterating in the order
+  // those children appear in children_ array.
+  Window* last_transient = child;
+  Windows children(children_);
+  for (Windows::iterator it = children.begin(); it != children.end(); ++it) {
+    Window* transient_child = *it;
+    if (transient_child != last_transient &&
+        transient_child->HasTransientAncestor(child)) {
+      StackChildRelativeToImpl(transient_child, last_transient, STACK_ABOVE);
+      last_transient = transient_child;
+    }
+  }
 }
 
 void Window::StackChildRelativeToImpl(Window* child,
@@ -887,18 +955,6 @@ void Window::StackChildRelativeToImpl(Window* child,
     layer()->StackAbove(child->layer(), target->layer());
   else
     layer()->StackBelow(child->layer(), target->layer());
-
-  // Stack any transient children that share the same parent to be in front of
-  // 'child'.
-  Window* last_transient = child;
-  for (Windows::iterator it = child->transient_children_.begin();
-       it != child->transient_children_.end(); ++it) {
-    Window* transient_child = *it;
-    if (transient_child->parent_ == this) {
-      StackChildRelativeToImpl(transient_child, last_transient, STACK_ABOVE);
-      last_transient = transient_child;
-    }
-  }
 
   child->OnStackingChanged();
 }

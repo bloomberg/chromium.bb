@@ -16,6 +16,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/command_line.h"
@@ -228,7 +229,7 @@ void DockedWindowResizer::StartedDragging() {
     aura::Window* docked_container = Shell::GetContainer(
         GetTarget()->GetRootWindow(),
         kShellWindowId_DockedContainer);
-    docked_container->AddChild(GetTarget());
+    wm::ReparentChildWithTransientChildren(docked_container, GetTarget());
   }
   if (is_docked_)
     dock_layout_->DockDraggedWindow(GetTarget());
@@ -265,7 +266,7 @@ void DockedWindowResizer::FinishedDragging() {
   if ((is_resized || !attached_panel) &&
       is_docked_ != (window->parent() == dock_container)) {
     if (is_docked_) {
-      dock_container->AddChild(window);
+      wm::ReparentChildWithTransientChildren(dock_container, window);
     } else if (window->parent()->id() == kShellWindowId_DockedContainer) {
       // Reparent the window back to workspace.
       // We need to be careful to give SetDefaultParentByRootWindow location in
@@ -275,8 +276,11 @@ void DockedWindowResizer::FinishedDragging() {
       // mouse is).
       gfx::Rect near_last_location(last_location_, gfx::Size());
       // Reparenting will cause Relayout and possible dock shrinking.
+      aura::Window* previous_parent = window->parent();
       window->SetDefaultParentByRootWindow(window->GetRootWindow(),
                                            near_last_location);
+      if (window->parent() != previous_parent)
+        wm::ReparentTransientChildrenOfChild(window->parent(), window);
     }
   }
   dock_layout_->FinishDragging();

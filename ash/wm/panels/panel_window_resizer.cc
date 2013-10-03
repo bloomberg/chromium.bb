@@ -14,6 +14,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -197,6 +198,7 @@ void PanelWindowResizer::StartedDragging() {
     GetTarget()->SetDefaultParentByRootWindow(
         GetTarget()->GetRootWindow(),
         GetTarget()->GetRootWindow()->GetBoundsInScreen());
+    wm::ReparentTransientChildrenOfChild(GetTarget()->parent(), GetTarget());
   }
 }
 
@@ -210,6 +212,7 @@ void PanelWindowResizer::FinishDragging() {
     GetTarget()->SetDefaultParentByRootWindow(
         GetTarget()->GetRootWindow(),
         gfx::Rect(last_location_, gfx::Size()));
+    wm::ReparentTransientChildrenOfChild(GetTarget()->parent(), GetTarget());
   }
 
   // If we started the drag in one root window and moved into another root

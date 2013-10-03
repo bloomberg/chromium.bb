@@ -219,6 +219,22 @@ class PanelWindowResizerTextDirectionTest
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTextDirectionTest);
 };
 
+// PanelLayoutManager and PanelWindowResizer should work if panels have
+// transient children of supported types.
+class PanelWindowResizerTransientTest
+    : public PanelWindowResizerTest,
+      public testing::WithParamInterface<aura::client::WindowType> {
+ public:
+  PanelWindowResizerTransientTest() : transient_window_type_(GetParam()) {}
+  virtual ~PanelWindowResizerTransientTest() {}
+
+ protected:
+  aura::client::WindowType transient_window_type_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTransientTest);
+};
+
 // Verifies a window can be dragged from the panel and detached and then
 // reattached.
 TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
@@ -293,8 +309,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
   EXPECT_EQ(initial_bounds.x(), window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
   EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
-  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
-            window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
 
   DragStart(window.get());
   DragMove(500, 0);
@@ -303,8 +318,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
   EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
   EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
-  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
-            window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
 }
 
 TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
@@ -324,8 +338,7 @@ TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
   EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
   EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
-  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
-            window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
 }
 
 TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
@@ -403,8 +416,7 @@ TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
   DragMove(0, -100);
   DragEnd();
   EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
-  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
-            window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
 
   // Drag back to launcher.
   DragStart(window.get());
@@ -413,8 +425,7 @@ TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
   // When the drag is reverted it should remain detached.
   DragRevert();
   EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
-  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
-            window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
 }
 
 TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
@@ -422,8 +433,7 @@ TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
   DragStart(window.get());
   DragMove(0, -100);
   DragEnd();
-  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
-            window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
 
   // While moving the panel window should be moved to the panel container.
   DragStart(window.get());
@@ -452,8 +462,71 @@ TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
   DragAlongShelfReorder(0, -1);
 }
 
+// Tests that panels can have transient children of different types.
+// The transient children should be reparented in sync with the panel.
+TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
+  scoped_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
+  scoped_ptr<aura::Window> child(CreateTestWindowInShellWithDelegateAndType(
+      NULL, transient_window_type_, 0, gfx::Rect(20, 20, 150, 40)));
+  window->AddTransientChild(child.get());
+  if (window->parent() != child->parent())
+    window->parent()->AddChild(child.get());
+  EXPECT_EQ(window.get(), child->transient_parent());
+
+  // Drag the child to the shelf. Its new position should not be overridden.
+  const gfx::Rect attached_bounds(window->GetBoundsInScreen());
+  const int dy = window->GetBoundsInScreen().bottom() -
+      child->GetBoundsInScreen().bottom();
+  DragStart(child.get());
+  DragMove(50, dy);
+  // While moving the transient child window should be in the panel container.
+  EXPECT_EQ(internal::kShellWindowId_PanelContainer, child->parent()->id());
+  DragEnd();
+  // Child should move, |window| should not.
+  EXPECT_EQ(gfx::Point(20 + 50, 20 + dy).ToString(),
+            child->GetBoundsInScreen().origin().ToString());
+  EXPECT_EQ(attached_bounds.ToString(), window->GetBoundsInScreen().ToString());
+
+  // Drag the child along the the shelf past the |window|.
+  // Its new position should not be overridden.
+  DragStart(child.get());
+  DragMove(350, 0);
+  // While moving the transient child window should be in the panel container.
+  EXPECT_EQ(internal::kShellWindowId_PanelContainer, child->parent()->id());
+  DragEnd();
+  // |child| should move, |window| should not.
+  EXPECT_EQ(gfx::Point(20 + 50 + 350, 20 + dy).ToString(),
+            child->GetBoundsInScreen().origin().ToString());
+  EXPECT_EQ(attached_bounds.ToString(), window->GetBoundsInScreen().ToString());
+
+  DragStart(window.get());
+  DragMove(0, -100);
+  // While moving the windows should be in the panel container.
+  EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_PanelContainer, child->parent()->id());
+  DragEnd();
+  // When dropped they should return to the default container.
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, child->parent()->id());
+
+  // While moving the window and child should be moved to the panel container.
+  DragStart(window.get());
+  DragMove(20, 0);
+  EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_PanelContainer, child->parent()->id());
+  DragEnd();
+
+  // When dropped they should return to the default container.
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, child->parent()->id());
+}
+
 INSTANTIATE_TEST_CASE_P(LtrRtl, PanelWindowResizerTextDirectionTest,
                         testing::Bool());
+INSTANTIATE_TEST_CASE_P(NormalPanelPopup, PanelWindowResizerTransientTest,
+                        testing::Values(aura::client::WINDOW_TYPE_NORMAL,
+                                        aura::client::WINDOW_TYPE_PANEL,
+                                        aura::client::WINDOW_TYPE_POPUP));
 
 }  // namespace internal
 }  // namespace ash

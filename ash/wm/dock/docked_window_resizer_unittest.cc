@@ -430,8 +430,7 @@ TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
 }
 
 // Dock two windows, undock one, check that the other one is still docked.
-TEST_P(DockedWindowResizerTest, AttachTwoWindows)
-{
+TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -470,8 +469,7 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows)
 
 // Dock one window, try to dock another window on the opposite side (should not
 // dock).
-TEST_P(DockedWindowResizerTest, AttachOnTwoSides)
-{
+TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -584,8 +582,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
 
 // Dock two windows, undock one.
 // Test the docked windows area size and default container resizing.
-TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne)
-{
+TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -657,8 +654,7 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne)
 }
 
 // Dock one of the windows. Maximize other testing desktop resizing.
-TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
-{
+TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -757,8 +753,7 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
 }
 
 // Dock one window. Test the sticky behavior near screen or desktop edge.
-TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
-{
+TEST_P(DockedWindowResizerTest, AttachOneTestSticky) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -855,8 +850,7 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
 
 // Dock two windows, resize one or both.
 // Test the docked windows area size and remaining desktop resizing.
-TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
-{
+TEST_P(DockedWindowResizerTest, ResizeTwoWindows) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -996,8 +990,9 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 }
 
-TEST_P(DockedWindowResizerTest, DragToShelf)
-{
+// Tests that dragging a window down to shelf attaches a panel but does not
+// attach a regular window.
+TEST_P(DockedWindowResizerTest, DragToShelf) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -1040,6 +1035,47 @@ TEST_P(DockedWindowResizerTest, DragToShelf)
     // The window should not be touching the shelf.
     EXPECT_EQ(shelf_y - kDistanceFromShelf, w1->bounds().bottom());
   }
+}
+
+// Tests that docking and undocking a |window| with a transient child properly
+// maintains the parent of that transient child to be the same as the |window|.
+TEST_P(DockedWindowResizerTest, DragWindowWithTransientChild) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  // Create a window with a transient child.
+  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  scoped_ptr<aura::Window> child(CreateTestWindowInShellWithDelegateAndType(
+      NULL, aura::client::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
+  window->AddTransientChild(child.get());
+  if (window->parent() != child->parent())
+    window->parent()->AddChild(child.get());
+  EXPECT_EQ(window.get(), child->transient_parent());
+
+  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, window.get(), 20);
+
+  // A window should be attached and snapped to the right edge.
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, child->parent()->id());
+
+  // Drag the child - it should move freely and stay where it is dragged.
+  ASSERT_NO_FATAL_FAILURE(DragStart(child.get()));
+  DragMove(500, 20);
+  DragEnd();
+  EXPECT_EQ(gfx::Point(20 + 500, 20 + 20).ToString(),
+            child->GetBoundsInScreen().origin().ToString());
+
+  // Undock the window by dragging left.
+  ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
+  DragMove(-32, -10);
+  DragEnd();
+
+  // The window should be undocked and the transient child should be reparented.
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, child->parent()->id());
+  // The child should not have moved.
+  EXPECT_EQ(gfx::Point(20 + 500, 20 + 20).ToString(),
+            child->GetBoundsInScreen().origin().ToString());
 }
 
 // Tests run twice - on both panels and normal windows

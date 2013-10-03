@@ -109,5 +109,17 @@ bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
   return true;
 }
 
+void ReparentChildWithTransientChildren(aura::Window* window,
+                                        aura::Window* child) {
+  window->AddChild(child);
+  ReparentTransientChildrenOfChild(window, child);
+}
+
+void ReparentTransientChildrenOfChild(aura::Window* window,
+                                      aura::Window* child) {
+  for (size_t i = 0; i < child->transient_children().size(); ++i)
+    ReparentChildWithTransientChildren(window, child->transient_children()[i]);
+}
+
 }  // namespace wm
 }  // namespace ash

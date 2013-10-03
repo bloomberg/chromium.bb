@@ -358,6 +358,7 @@ void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
     child->SetDefaultParentByRootWindow(
         child->GetRootWindow(),
         child->GetRootWindow()->GetBoundsInScreen());
+    wm::ReparentTransientChildrenOfChild(child->parent(), child);
     DCHECK(child->parent()->id() != kShellWindowId_PanelContainer);
     return;
   }

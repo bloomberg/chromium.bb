@@ -69,6 +69,14 @@ ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
 ASH_EXPORT bool MoveWindowToEventRoot(aura::Window* window,
                                       const ui::Event& event);
 
+// Adds |child| and all its transient children to |window|.
+void ReparentChildWithTransientChildren(aura::Window* window,
+                                        aura::Window* child);
+
+// Changes the parent of all transient children of a |child| to |window|.
+void ReparentTransientChildrenOfChild(aura::Window* window,
+                                       aura::Window* child);
+
 }  // namespace wm
 }  // namespace ash
 

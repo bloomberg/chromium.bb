@@ -89,11 +89,17 @@ DockedWindowLayoutManager* GetDockLayoutManager(aura::Window* window,
       dock->layout_manager());
 }
 
+// Returns true if a window is a popup or a transient child.
+bool IsPopupOrTransient(aura::Window* window) {
+  return (window->type() == aura::client::WINDOW_TYPE_POPUP ||
+          window->transient_parent());
+}
+
 // Certain windows (minimized, hidden or popups) do not matter to docking.
 bool IsUsedByLayout(aura::Window* window) {
   return (window->IsVisible() &&
           !wm::GetWindowState(window)->IsMinimized() &&
-          window->type() != aura::client::WINDOW_TYPE_POPUP);
+          !IsPopupOrTransient(window));
 }
 
 // A functor used to sort the windows in order of their center Y position.
@@ -211,6 +217,7 @@ void DockedWindowLayoutManager::RemoveObserver(
 void DockedWindowLayoutManager::StartDragging(aura::Window* window) {
   DCHECK(!dragged_window_);
   dragged_window_ = window;
+  DCHECK(!IsPopupOrTransient(window));
   // Start observing a window unless it is docked container's child in which
   // case it is already observed.
   if (dragged_window_->parent() != dock_container_) {
@@ -222,11 +229,13 @@ void DockedWindowLayoutManager::StartDragging(aura::Window* window) {
 }
 
 void DockedWindowLayoutManager::DockDraggedWindow(aura::Window* window) {
+  DCHECK(!IsPopupOrTransient(window));
   OnWindowDocked(window);
   Relayout();
 }
 
 void DockedWindowLayoutManager::UndockDraggedWindow() {
+  DCHECK(!IsPopupOrTransient(dragged_window_));
   OnWindowUndocked();
   Relayout();
   UpdateDockBounds();
@@ -235,6 +244,7 @@ void DockedWindowLayoutManager::UndockDraggedWindow() {
 
 void DockedWindowLayoutManager::FinishDragging() {
   DCHECK(dragged_window_);
+  DCHECK(!IsPopupOrTransient(dragged_window_));
   if (is_dragged_window_docked_)
     OnWindowUndocked();
   DCHECK (!is_dragged_window_docked_);
@@ -299,10 +309,8 @@ DockedAlignment DockedWindowLayoutManager::CalculateAlignment() const {
   // the docked state).
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
     aura::Window* window(dock_container_->children()[i]);
-    if (window != dragged_window_ &&
-        window->type() != aura::client::WINDOW_TYPE_POPUP) {
+    if (window != dragged_window_ && !IsPopupOrTransient(window))
       return alignment_;
-    }
   }
   // No docked windows remain other than possibly the window being dragged.
   // Return |NONE| to indicate that windows may get docked on either side.
@@ -315,6 +323,10 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
       switches::kAshEnableDockedWindows)) {
     return false;
   }
+  // Don't allow interactive docking of windows with transient parents such as
+  // modal browser dialogs.
+  if (IsPopupOrTransient(window))
+    return false;
   // If a window is wide and cannot be resized down to maximum width allowed
   // then it cannot be docked.
   if (window->bounds().width() > kMaxDockWidth &&
@@ -351,7 +363,7 @@ void DockedWindowLayoutManager::OnWindowResized() {
 }
 
 void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  if (child->type() == aura::client::WINDOW_TYPE_POPUP)
+  if (IsPopupOrTransient(child))
     return;
   // Dragged windows are already observed by StartDragging and do not change
   // docked alignment during the drag.
@@ -370,7 +382,7 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 }
 
 void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-  if (child->type() == aura::client::WINDOW_TYPE_POPUP)
+  if (IsPopupOrTransient(child))
     return;
   // Dragged windows are stopped being observed by FinishDragging and do not
   // change alignment during the drag. They also cannot be set to be the
@@ -392,7 +404,7 @@ void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
 void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
-  if (child->type() == aura::client::WINDOW_TYPE_POPUP)
+  if (IsPopupOrTransient(child))
     return;
   if (visible)
     wm::GetWindowState(child)->Restore();
@@ -441,6 +453,8 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
 void DockedWindowLayoutManager::OnWindowShowTypeChanged(
     wm::WindowState* window_state,
     wm::WindowShowType old_type) {
+  if (IsPopupOrTransient(window_state->window()))
+    return;
   // The window property will still be set, but no actual change will occur
   // until WillChangeVisibilityState is called when the shelf is visible again
   if (shelf_hidden_)
@@ -465,6 +479,8 @@ void DockedWindowLayoutManager::OnWindowBoundsChanged(
 
 void DockedWindowLayoutManager::OnWindowVisibilityChanging(
     aura::Window* window, bool visible) {
+  if (IsPopupOrTransient(window))
+    return;
   int animation_type = WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
   if (visible) {
     animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT;
@@ -490,6 +506,8 @@ void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
 
 void DockedWindowLayoutManager::OnWindowActivated(aura::Window* gained_active,
                                                   aura::Window* lost_active) {
+  if (gained_active && IsPopupOrTransient(gained_active))
+    return;
   // Ignore if the window that is not managed by this was activated.
   aura::Window* ancestor = NULL;
   for (aura::Window* parent = gained_active;
@@ -523,7 +541,7 @@ void DockedWindowLayoutManager::WillChangeVisibilityState(
     base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
     for (size_t i = 0; i < dock_container_->children().size(); ++i) {
       aura::Window* window = dock_container_->children()[i];
-      if (window->type() == aura::client::WINDOW_TYPE_POPUP)
+      if (IsPopupOrTransient(window))
         continue;
       wm::WindowState* window_state = wm::GetWindowState(window);
       if (shelf_hidden_) {
@@ -559,7 +577,7 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
 
 void DockedWindowLayoutManager::MinimizeDockedWindow(
     wm::WindowState* window_state) {
-  DCHECK_NE(window_state->window()->type(), aura::client::WINDOW_TYPE_POPUP);
+  DCHECK(!IsPopupOrTransient(window_state->window()));
   window_state->window()->Hide();
   if (window_state->IsActive())
     window_state->Deactivate();
@@ -568,7 +586,7 @@ void DockedWindowLayoutManager::MinimizeDockedWindow(
 void DockedWindowLayoutManager::RestoreDockedWindow(
     wm::WindowState* window_state) {
   aura::Window* window = window_state->window();
-  DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
+  DCHECK(!IsPopupOrTransient(window));
   // Always place restored window at the top shuffling the other windows down.
   // TODO(varkha): add a separate container for docked windows to keep track
   // of ordering.
