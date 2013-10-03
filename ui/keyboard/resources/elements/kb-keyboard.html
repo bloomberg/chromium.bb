@@ -231,7 +231,12 @@
         var layout = this.inputTypeToLayoutMap[this.inputType];
         if (!layout)
           layout = this.inputTypeToLayoutMap.text;
-        this.layout = layout;
+        // Reselects the default keyset if target layout is the same as current
+        // layout. This forces a reset of the keyboard state.
+        if(this.layout == layout)
+          this.selectDefaultKeyset();
+        else
+          this.layout = layout;
       },
 
       /**
