@@ -60,7 +60,7 @@ volumeManagerUtil.validateError = function(error) {
  * - Either of '/drive', '/drive_shared_with_me', '/drive_offline',
  *   '/drive_recent' or '/Download'
  * - For archive, drive, removable can have (exactly one) sub directory in the
- *  root path. E.g. '/arhive/foo', '/removable/usb1' etc.
+ *  root path. E.g. '/archive/foo', '/removable/usb1' etc.
  *
  * @type {RegExp}
  * @private
@@ -268,7 +268,7 @@ VolumeInfoList.prototype.find = function(mountPath) {
 
 /**
  * @param {string} mountPath The mount path of searched volume.
- * @return {number} The index of the volumee if found, or the inserting
+ * @return {number} The index of the volume if found, or the inserting
  *     position of the volume.
  * @private
  */
@@ -349,7 +349,7 @@ VolumeManager.prototype.getDriveConnectionState = function() {
 VolumeManager.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * Time in milliseconds that we wait a respone for. If no response on
+ * Time in milliseconds that we wait a response for. If no response on
  * mount/unmount received the request supposed failed.
  */
 VolumeManager.TIMEOUT = 15 * 60 * 1000;
@@ -425,7 +425,7 @@ VolumeManager.prototype.initialize_ = function(callback) {
 };
 
 /**
- * Event handler called when some volume was mounted or unmouted.
+ * Event handler called when some volume was mounted or unmounted.
  * @param {MountCompletedEvent} event Received event.
  * @private
  */

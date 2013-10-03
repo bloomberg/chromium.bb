@@ -39,7 +39,7 @@ ShareDialog.FAILURE_TIMEOUT = 10000;
 ShareDialog.Result = Object.freeze({
   // The dialog is closed normally. This includes user cancel.
   SUCCESS: 'success',
-  // The dialog is closed by network errora.
+  // The dialog is closed by network error.
   NETWORK_ERROR: 'networkError',
   // The dialog is not opened because it is already showing.
   ALREADY_SHOWING: 'alreadyShowing'

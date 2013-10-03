@@ -268,8 +268,8 @@ FileTasks.prototype.processTasks_ = function(tasks) {
 /**
  * Executes default task.
  *
- * @param {function(boolean, Array.<string>)=} opt_callback Called wheh the
- *     default task is executed, or the error is occured.
+ * @param {function(boolean, Array.<string>)=} opt_callback Called when the
+ *     default task is executed, or the error is occurred.
  * @private
  */
 FileTasks.prototype.executeDefault_ = function(opt_callback) {
@@ -282,8 +282,8 @@ FileTasks.prototype.executeDefault_ = function(opt_callback) {
  * Executes default task.
  *
  * @param {Array.<string>} urls Urls to execute.
- * @param {function(boolean, Array.<string>)=} opt_callback Called wheh the
- *     default task is executed, or the error is occured.
+ * @param {function(boolean, Array.<string>)=} opt_callback Called when the
+ *     default task is executed, or the error is occurred.
  * @private
  */
 FileTasks.prototype.executeDefaultInternal_ = function(urls, opt_callback) {

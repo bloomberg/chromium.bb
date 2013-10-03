@@ -56,7 +56,7 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
 };
 
 /**
- * Removes an itme from the progress center panel.
+ * Removes an item from the progress center panel.
  * @param {number} id progress item ID.
  */
 ProgressCenterPanel.prototype.removeItem = function(id) {

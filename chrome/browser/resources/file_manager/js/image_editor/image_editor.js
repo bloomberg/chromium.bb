@@ -1115,7 +1115,7 @@ ImageEditor.Prompt.prototype.show = function(text, timeout, formatArgs) {
  * @param {string} pos The 'pos' attribute value.
  * @param {string} text The prompt text.
  * @param {number} timeout Timeout in ms.
- * @param {Object} formatArgs varArgs for the formatting fuction.
+ * @param {Object} formatArgs varArgs for the formatting function.
  */
 ImageEditor.Prompt.prototype.showAt = function(pos, text, timeout, formatArgs) {
   this.reset();

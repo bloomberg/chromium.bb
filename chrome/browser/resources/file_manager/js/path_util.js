@@ -65,7 +65,7 @@ PathUtil.isSpecialSearchRoot = function(path) {
 };
 
 /**
- * Checks |path| and return true if it is under Google Drive or a sepecial
+ * Checks |path| and return true if it is under Google Drive or a special
  * search root which represents a special search from Google Drive.
  * @param {string} path Path to check.
  * @return {boolean} True if the given path represents a Drive based path.
@@ -343,7 +343,7 @@ PathUtil.getFolderLabel = function(directoryPath) {
 /**
  * Returns if the given path can be a target path of folder shortcut.
  *
- * @param {string} directoryPath Diretcoty path to be checked.
+ * @param {string} directoryPath Directory path to be checked.
  * @return {boolean} True if the path can be a target path of the shortcut.
  */
 PathUtil.isEligibleForFolderShortcut = function(directoryPath) {

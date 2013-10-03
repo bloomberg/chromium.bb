@@ -339,7 +339,7 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
 /**
  * Execute an action when the editor is not busy.
  *
- * @param {function} action Function to exectute.
+ * @param {function} action Function to execute.
  */
 SlideMode.prototype.executeWhenReady = function(action) {
   this.editor_.executeWhenReady(action);
@@ -560,7 +560,7 @@ SlideMode.prototype.onSplice_ = function(event) {
 
 /**
  * @param {number} direction -1 for left, 1 for right.
- * @return {number} Next index in the gived direction, with wrapping.
+ * @return {number} Next index in the given direction, with wrapping.
  * @private
  */
 SlideMode.prototype.getNextSelectedIndex_ = function(direction) {

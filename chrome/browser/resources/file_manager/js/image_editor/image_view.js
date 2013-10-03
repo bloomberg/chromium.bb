@@ -70,7 +70,7 @@ ImageView.FAST_SCROLL_INTERVAL = 300;
 ImageView.LOAD_TYPE_CACHED_FULL = 0;
 
 /**
- * Image load type: screeb resolution preview loaded from cache.
+ * Image load type: screen resolution preview loaded from cache.
  */
 ImageView.LOAD_TYPE_CACHED_SCREEN = 1;
 

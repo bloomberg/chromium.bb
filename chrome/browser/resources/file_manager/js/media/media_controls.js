@@ -705,7 +705,7 @@ MediaControls.Slider.prototype.onInputChange_ = function() {
 };
 
 /**
- * @return {boolean} True if dragging is in progres.
+ * @return {boolean} True if dragging is in progress.
  */
 MediaControls.Slider.prototype.isDragging = function() {
   return this.isDragging_;
@@ -1005,7 +1005,7 @@ function VideoControls(containerElement, onMediaError, stringFunction,
 }
 
 /**
- * No resume if we are withing this margin from the start or the end.
+ * No resume if we are within this margin from the start or the end.
  */
 VideoControls.RESUME_MARGIN = 0.03;
 

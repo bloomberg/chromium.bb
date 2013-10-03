@@ -148,7 +148,7 @@ ExifEncoder.prototype.findInsertionRange = function(encodedImage) {
   var sectionStart = 2;
 
   // Default: an empty range right after SOI.
-  // Will be returned in absense of APP0 or Exif sections.
+  // Will be returned in absence of APP0 or Exif sections.
   var range = {from: sectionStart, to: sectionStart};
 
   for (;;) {

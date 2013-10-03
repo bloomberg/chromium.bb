@@ -242,6 +242,6 @@ DragSelector.prototype.onMouseUp_ = function(event) {
   this.target_.cachedBounds = null;
   this.target_ = null;
   // The target may select an item by reacting to the mouseup event.
-  // This surpress to the selecting behavior.
+  // This suppress to the selecting behavior.
   event.stopPropagation();
 };

@@ -205,7 +205,7 @@ Viewport.prototype.getScreenClipped = function() { return this.screenClipped_ };
 Viewport.prototype.getCacheGeneration = function() { return this.generation_ };
 
 /**
- * Called on evert view port state change (even if repaint has not been called).
+ * Called on event view port state change (even if repaint has not been called).
  */
 Viewport.prototype.invalidateCaches = function() { this.generation_++ };
 
@@ -245,8 +245,8 @@ Viewport.prototype.screenToImageY = function(y) {
 };
 
 /**
- * @param {Rect} rect Rectange in screen coordinates.
- * @return {Rect} Rectange in image coordinates.
+ * @param {Rect} rect Rectangle in screen coordinates.
+ * @return {Rect} Rectangle in image coordinates.
  */
 Viewport.prototype.screenToImageRect = function(rect) {
   return new Rect(
@@ -281,8 +281,8 @@ Viewport.prototype.imageToScreenY = function(y) {
 };
 
 /**
- * @param {Rect} rect Rectange in image coordinates.
- * @return {Rect} Rectange in screen coordinates.
+ * @param {Rect} rect Rectangle in image coordinates.
+ * @return {Rect} Rectangle in screen coordinates.
  */
 Viewport.prototype.imageToScreenRect = function(rect) {
   return new Rect(

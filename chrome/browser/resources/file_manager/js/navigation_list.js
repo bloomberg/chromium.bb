@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Entry of NavigationListModel. This construtor should be called only from
+ * Entry of NavigationListModel. This constructor should be called only from
  * the helper methods (NavigationModelItem.createFromPath/createFromEntry).
  *
  * @param {string} path Path.
@@ -74,7 +74,7 @@ NavigationModelItem.createFromEntry = function(entry) {
 };
 
 /**
- * Retrieves the entry. If the entry is being retrived, waits until it
+ * Retrieves the entry. If the entry is being retrieved, waits until it
  * finishes.
  * @param {function(Entry)} callback Called with the resolved entry. The entry
  *     may be NULL if resolving is failed.

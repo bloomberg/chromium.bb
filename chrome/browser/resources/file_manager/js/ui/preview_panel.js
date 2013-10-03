@@ -26,14 +26,14 @@ var PreviewPanel = function(element,
   this.height_ = 0;
 
   /**
-   * Visiblity type of the preview panel.
+   * Visibility type of the preview panel.
    * @type {PreviewPanel.VisiblityType}
    * @private
    */
   this.visibilityType_ = visibilityType;
 
   /**
-   * Current path to be desplayed.
+   * Current path to be displayed.
    * @type {string}
    * @private
    */
@@ -85,7 +85,7 @@ var PreviewPanel = function(element,
   this.selection_ = {entries: [], computeBytes: function() {}};
 
   /**
-   * Sequence value that is incremented by every selection update nad is used to
+   * Sequence value that is incremented by every selection update and is used to
    * check if the callback is up to date or not.
    * @type {number}
    * @private
@@ -366,7 +366,7 @@ PreviewPanel.Thumbnails = function(element, metadataCache) {
 };
 
 /**
- * Maximium number of thumbnails.
+ * Maximum number of thumbnails.
  * @const {number}
  */
 PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT = 4;
@@ -438,7 +438,7 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
  * zoomed image.
  *
  * @param {Image} image Image to be source of the zoomed image.
- * @param {transform} transform Transoformation to be applied to the image.
+ * @param {transform} transform Transformation to be applied to the image.
  * @private
  */
 PreviewPanel.Thumbnails.prototype.setZoomedImage_ =

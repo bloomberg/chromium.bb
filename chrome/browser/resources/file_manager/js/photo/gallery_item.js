@@ -44,14 +44,14 @@ Gallery.Item.prototype.isOriginal = function() { return this.original_ };
 Gallery.Item.COPY_SIGNATURE = ' - Edited';
 
 /**
- * Regular exression to match '... - Edited'.
+ * Regular expression to match '... - Edited'.
  * @type {RegExp}
  */
 Gallery.Item.REGEXP_COPY_0 =
     new RegExp('^(.+)' + Gallery.Item.COPY_SIGNATURE + '$');
 
 /**
- * Regular exression to match '... - Edited (N)'.
+ * Regular expression to match '... - Edited (N)'.
  * @type {RegExp}
  */
 Gallery.Item.REGEXP_COPY_N =

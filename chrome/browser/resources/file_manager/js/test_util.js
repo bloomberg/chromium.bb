@@ -438,7 +438,7 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
  * @param {Window} contentWindow Window to be tested.
  * @param {Array.<Array.<string>>} expected Expected contents of file list.
  * @param {{orderCheck:boolean=, ignoreLastModifiedTime:boolean=}=} opt_options
- *     Options of the comparision. If orderCheck is true, it also compares the
+ *     Options of the comparison. If orderCheck is true, it also compares the
  *     order of files. If ignoreLastModifiedTime is true, it compares the file
  *     without its last modified time.
  * @param {function()} callback Callback function to notify the caller that
@@ -565,7 +565,7 @@ test.util.sync.fakeMouseClick = function(
  */
 test.util.sync.fakeMouseDoubleClick = function(
     contentWindow, targetQuery, opt_iframeQuery) {
-  // Double click is always preceeded with a single click.
+  // Double click is always preceded with a single click.
   if (!test.util.sync.fakeMouseClick(
       contentWindow, targetQuery, opt_iframeQuery)) {
     return false;
@@ -695,7 +695,7 @@ test.util.sync.execCommand = function(contentWindow, command) {
  * Registers message listener, which runs test utility functions.
  */
 test.util.registerRemoteTestUtils = function() {
-  // Register the message listenr.
+  // Register the message listener.
   var onMessage = chrome.runtime ? chrome.runtime.onMessageExternal :
       chrome.extension.onMessageExternal;
   // Return true for asynchronous functions and false for synchronous.

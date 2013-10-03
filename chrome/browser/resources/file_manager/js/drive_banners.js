@@ -66,7 +66,7 @@ function FileListBannerController(
 FileListBannerController.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * Key in localStorage to keep numer of times the Drive Welcome
+ * Key in localStorage to keep number of times the Drive Welcome
  * banner has shown.
  */
 var WELCOME_HEADER_COUNTER_KEY = 'driveWelcomeHeaderCounter';
@@ -141,7 +141,7 @@ FileListBannerController.prototype.onDriveConnectionChanged_ = function() {
 
 /**
  * @param {string} type 'none'|'page'|'header'.
- * @param {string} messageId Reource ID of the message.
+ * @param {string} messageId Resource ID of the message.
  * @private
  */
 FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
@@ -607,7 +607,7 @@ FileListBannerController.prototype.onVolumeInfoListSplice_ = function(event) {
 
 /**
  * Shows the panel when current directory is DRIVE and it's unmounted.
- * Hides it otherwise. The pannel shows spinner if DRIVE is mounting or
+ * Hides it otherwise. The panel shows spinner if DRIVE is mounting or
  * an error message if it failed.
  * @private
  */

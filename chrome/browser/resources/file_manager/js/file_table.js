@@ -280,7 +280,7 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
     },
 
     /**
-     * Obtains a column by the specified horizontal positon.
+     * Obtains a column by the specified horizontal position.
      */
     getHitColumn: {
       /**
@@ -413,7 +413,7 @@ FileTable.prototype.shouldStartDragSelection = function(event) {
   if (this.lastSelection_.indexOf(itemIndex) != -1)
     return false;
 
-  // If the horizontal value is not hit to column, it shoud start the drag
+  // If the horizontal value is not hit to column, it should start the drag
   // selection.
   var hitColumn = this.columnModel.getHitColumn(pos.x);
   if (!hitColumn)

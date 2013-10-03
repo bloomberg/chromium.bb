@@ -84,7 +84,7 @@ DialogType.isModal = function(type) {
 
 /**
  * @param {string} type Dialog type.
- * @return {boolean} Whther the type is open dialog.
+ * @return {boolean} Whether the type is open dialog.
  */
 DialogType.isOpenDialog = function(type) {
   return type == DialogType.SELECT_OPEN_FILE ||
@@ -92,7 +92,7 @@ DialogType.isOpenDialog = function(type) {
 };
 
 /**
- * Bottom magrin of the list and tree for transparent preview panel.
+ * Bottom margin of the list and tree for transparent preview panel.
  * @const
  */
 var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
@@ -119,7 +119,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Update the elemenst to display the information about remainig space for
+   * Update the element to display the information about remaining space for
    * the storage.
    * @param {!Element} spaceInnerBar Block element for a percentage bar
    *                                 representing the remaining space.
@@ -442,7 +442,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.thumbnailViewButton_.checkable = true;
 
     if (util.platform.runningInBrowser()) {
-      // Supresses the default context menu.
+      // Suppresses the default context menu.
       this.dialogDom_.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -510,7 +510,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     node.addEventListener('keydown', function(e) {
       if (util.getKeyModifiers(e) + e.keyCode == '191') {
         // If this key event is propagated, this is handled search command,
-        // which calls 'preventDefault' mehtod.
+        // which calls 'preventDefault' method.
         e.stopPropagation();
       }
     });

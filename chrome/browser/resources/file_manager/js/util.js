@@ -708,7 +708,7 @@ function str(id) {
  * Return a translated string with arguments replaced.
  *
  * Wrapper function to make dealing with translated strings more concise.
- * Equivilant to loadTimeData.getStringF(id, ...).
+ * Equivalent to loadTimeData.getStringF(id, ...).
  *
  * @param {string} id The id of the string to return.
  * @param {...string} var_args The values to replace into the string.
@@ -825,7 +825,7 @@ util.AppCache.getValue = function(key, callback) {
  *
  * @param {string} key Key.
  * @param {string} value Value. Remove the key if value is null.
- * @param {number=} opt_lifetime Maximim time to keep an item (in milliseconds).
+ * @param {number=} opt_lifetime Maximum time to keep an item (in milliseconds).
  */
 util.AppCache.update = function(key, value, opt_lifetime) {
   util.AppCache.read_(function(map) {

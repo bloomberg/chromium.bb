@@ -228,7 +228,7 @@ VolumeManagerWrapper.prototype.mountArchive = function(
 };
 
 /**
- * Requests unmount the voume at mountPath.
+ * Requests unmount the volume at mountPath.
  * @param {string} mountPath The path to the mount location of the volume.
  * @param {function(string)} successCallback Called with the mount path
  *     on success.

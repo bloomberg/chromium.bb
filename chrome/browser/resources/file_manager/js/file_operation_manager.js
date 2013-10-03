@@ -55,7 +55,7 @@ fileOperationUtil.deduplicatePath = function(
  * @param {function(Array.<Entry>)} successCallback Called when the traverse
  *     is successfully done with the array of the entries.
  * @param {function(FileError)} errorCallback Called on error with the first
- *     occured error (i.e. following errors will just be discarded).
+ *     occurred error (i.e. following errors will just be discarded).
  */
 fileOperationUtil.resolveRecursively = function(
     entry, successCallback, errorCallback) {
@@ -976,7 +976,7 @@ FileOperationManager.prototype.getStatus = function() {
     if (task.operationType != operationType)
       operationType = null;
 
-    // Assuming the number of entries is small enough, count everytime.
+    // Assuming the number of entries is small enough, count every time.
     for (var j = 0; j < task.processingEntries.length; j++) {
       for (var url in task.processingEntries[j]) {
         ++result.numRemainingItems;
@@ -1024,7 +1024,7 @@ FileOperationManager.prototype.hasQueuedTasks = function() {
 };
 
 /**
- * Unloads the host page in 5 secs of idleing. Need to be called
+ * Unloads the host page in 5 secs of idling. Need to be called
  * each time this.copyTasks_.length or this.deleteTasks_.length
  * changed.
  *
@@ -1175,7 +1175,7 @@ FileOperationManager.prototype.paste = function(
 };
 
 /**
- * Checks if the move operation is avaiable between the given two locations.
+ * Checks if the move operation is available between the given two locations.
  *
  * @param {DirectoryEntry} sourceEntry An entry from the source.
  * @param {DirectoryEntry} targetDirEntry Directory entry for the target.

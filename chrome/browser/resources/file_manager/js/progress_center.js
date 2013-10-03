@@ -33,7 +33,7 @@ var ProgressCenter = function() {
   this.items_ = [];
 
   /**
-   * Async queue to operate the items array sequencially.
+   * Async queue to operate the items array sequentially.
    * @type {AsyncUtil.Queue}
    * @private
    */
@@ -60,7 +60,7 @@ ProgressCenter.prototype = {
  */
 ProgressCenter.prototype.addItem = function(item) {
   // If application window is opening, the item is displayed in the window.
-  // Otherwise the item is displayed in nortification.
+  // Otherwise the item is displayed in notification.
   item.id = this.idCounter_++;
   item.container = this.targetContainer_;
   this.items_.push(item);
@@ -128,7 +128,7 @@ ProgressCenter.prototype.switchContainer = function(newContainer) {
 };
 
 /**
- * Obtains item index that have the specifing ID.
+ * Obtains item index that have the specifying ID.
  * @param {number} id Item ID.
  * @return {number} Item index. Returns -1 If the item is not found.
  * @private

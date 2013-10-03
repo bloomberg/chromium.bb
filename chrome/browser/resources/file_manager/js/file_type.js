@@ -109,7 +109,7 @@ FileType.types = [
 FileType.DIRECTORY = {name: 'FOLDER', type: '.folder', icon: 'folder'};
 
 /**
- * Returns the file path extesion for a given file.
+ * Returns the file path extension for a given file.
  *
  * @param {string|Entry} file Reference to the file.
  *     Can be a name, a path, a url or a File API Entry.

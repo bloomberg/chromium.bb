@@ -545,7 +545,7 @@ DirectoryTree.prototype.decorate = function(directoryModel, volumeManager) {
 
   // Once, draws the list with the fake '/drive/' entry.
   this.redraw(false /* recursive */);
-  // Resoves 'My Drive' entry and replaces the fake with the true one.
+  // Resolves 'My Drive' entry and replaces the fake with the true one.
   this.maybeResolveMyDriveRoot_(function() {
     // After the true entry is resolved, draws the list again.
     this.redraw(true /* recursive */);

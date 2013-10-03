@@ -230,7 +230,7 @@ FolderShortcutsDataModel.prototype = {
 
   /**
    * Creates a permutation array for 'permuted' event, which is compatible with
-   * a parmutation array used in cr/ui/array_data_model.js.
+   * a permutation array used in cr/ui/array_data_model.js.
    *
    * @param {array} oldArray Previous array before changing.
    * @param {array} newArray New array after changing.

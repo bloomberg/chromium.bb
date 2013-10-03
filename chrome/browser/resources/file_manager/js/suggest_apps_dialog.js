@@ -254,7 +254,7 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
 
 /**
  * Called when the 'See more...' link is clicked to be navigated to Webstore.
- * @param {Event} e Evnet.
+ * @param {Event} e Event.
  * @private
  */
 SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
@@ -265,8 +265,8 @@ SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
 };
 
 /**
- * Called when the widget is loaded successfuly.
- * @param {Event} event Evnet.
+ * Called when the widget is loaded successfully.
+ * @param {Event} event Event.
  * @private
  */
 SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
@@ -278,7 +278,7 @@ SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
 
 /**
  * Called when the widget is failed to load.
- * @param {Event} event Evnet.
+ * @param {Event} event Event.
  * @private
  */
 SuggestAppsDialog.prototype.onWidgetLoadFailed_ = function(event) {
@@ -303,7 +303,7 @@ SuggestAppsDialog.prototype.onDriveConnectionChanged =
 
 /**
  * Called when receiving the install request from the webview client.
- * @param {Event} e Evnet.
+ * @param {Event} e Event.
  * @private
  */
 SuggestAppsDialog.prototype.onInstallRequest_ = function(e) {

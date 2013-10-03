@@ -465,7 +465,7 @@ Id3Parser.v1 = {
   /**
    * Genres list as described in id3 documentation. We aren't going to
    * localize this list, because at least in Russian (and I think most
-   * other languages), translation exists at least fo 10% and most time
+   * other languages), translation exists at least for 10% and most time
    * translation would degrade to transliteration.
    */
   GENRES: [

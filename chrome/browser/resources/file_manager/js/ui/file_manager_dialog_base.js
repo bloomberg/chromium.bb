@@ -46,10 +46,10 @@ FileManagerDialogBase.shown = false;
 /**
  * @param {string} title Title.
  * @param {string} message Message.
- * @param {function()} onOk Called when the OK buttun is pressed.
+ * @param {function()} onOk Called when the OK button is pressed.
  * @param {function()} onCancel Called when the cancel button is pressed.
  * @return {boolean} True if the dialog can show successfully. False if the
- *     dialog failed to show due to an exisiting dialog.
+ *     dialog failed to show due to an existing dialog.
  */
 FileManagerDialogBase.prototype.showOkCancelDialog = function(
     title, message, onOk, onCancel) {
@@ -59,10 +59,10 @@ FileManagerDialogBase.prototype.showOkCancelDialog = function(
 /**
  * @param {string} title Title.
  * @param {string} message Message.
- * @param {function()} onOk Called when the OK buttun is pressed.
+ * @param {function()} onOk Called when the OK button is pressed.
  * @param {function()} onCancel Called when the cancel button is pressed.
  * @return {boolean} True if the dialog can show successfully. False if the
- *     dialog failed to show due to an exisiting dialog.
+ *     dialog failed to show due to an existing dialog.
  * @private
  */
 FileManagerDialogBase.prototype.showImpl_ = function(
@@ -81,7 +81,7 @@ FileManagerDialogBase.prototype.showImpl_ = function(
 
 /**
  * @return {boolean} True if the dialog can show successfully. False if the
- *     dialog failed to show due to an exisiting dialog.
+ *     dialog failed to show due to an existing dialog.
  */
 FileManagerDialogBase.prototype.showBlankDialog = function() {
   return this.showImpl_('', '', null, null, null);
@@ -90,7 +90,7 @@ FileManagerDialogBase.prototype.showBlankDialog = function() {
 /**
  * @param {string} title Title.
  * @return {boolean} True if the dialog can show successfully. False if the
- *     dialog failed to show due to an exisiting dialog.
+ *     dialog failed to show due to an existing dialog.
  */
 FileManagerDialogBase.prototype.showTitleOnlyDialog = function(title) {
   return this.showImpl_(title, '', null, null, null);

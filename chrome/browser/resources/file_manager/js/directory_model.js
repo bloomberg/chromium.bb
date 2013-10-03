@@ -80,7 +80,7 @@ DirectoryModel.fakeDriveOfflineEntry_ = {
 };
 
 /**
- * Fake entry representing a psuedo directory, which contains shared-with-me
+ * Fake entry representing a pseudo directory, which contains shared-with-me
  * Drive files. This entry works as a trigger to start a search for
  * shared-with-me files.
  * @type {Object}
@@ -93,7 +93,7 @@ DirectoryModel.fakeDriveSharedWithMeEntry_ = {
 };
 
 /**
- * Fake entry representing a psuedo directory, which contains Drive files
+ * Fake entry representing a pseudo directory, which contains Drive files
  * accessed recently. This entry works as a trigger to start a metadata search
  * implemented as DirectoryContentsDriveRecent.
  * DirectoryModel is responsible to start the search when the UI tries to open
@@ -259,7 +259,7 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
   // Begin change.
   selection.beginChange();
 
-  // If dispatchNeeded is true, we should ensure the change evnet is
+  // If dispatchNeeded is true, we should ensure the change event is
   // dispatched.
   var dispatchNeeded = updateFunc();
 
@@ -270,7 +270,7 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
   selection.endChange();
   selection.removeEventListener('change', eventDispatched);
 
-  // If the change evnet have been already dispatched, dispatchNeeded is false.
+  // If the change event have been already dispatched, dispatchNeeded is false.
   if (dispatchNeeded) {
     var event = new Event('change');
     // The selection status (selected or not) is not changed because
@@ -874,8 +874,8 @@ DirectoryModel.prototype.changeDirectoryEntry_ = function(
 };
 
 /**
- * Creates an object wich could say wether directory has changed while it has
- * been active or not. Designed for long operations that should be canncelled
+ * Creates an object which could say whether directory has changed while it has
+ * been active or not. Designed for long operations that should be cancelled
  * if the used change current directory.
  * @return {Object} Created object.
  */
@@ -1038,7 +1038,7 @@ DirectoryModel.prototype.selectIndex = function(index) {
 /**
  * Called when VolumeInfoList is updated.
  *
- * @param {cr.Event} event Event of VolumeInfoList's 'sclice'.
+ * @param {cr.Event} event Event of VolumeInfoList's 'splice'.
  * @private
  */
 DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
@@ -1116,7 +1116,7 @@ DirectoryModel.isMountableRoot = function(path) {
  * Performs search and displays results. The search type is dependent on the
  * current directory. If we are currently on drive, server side content search
  * over drive mount point. If the current directory is not on the drive, file
- * name search over current directory wil be performed.
+ * name search over current directory will be performed.
  *
  * @param {string} query Query that will be searched for.
  * @param {function(Event)} onSearchRescan Function that will be called when the

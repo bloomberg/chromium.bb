@@ -41,7 +41,7 @@ function FileTransferController(doc,
   this.preloadedThumbnailImageNode_ = null;
 
   /**
-   * File objects for seletced files.
+   * File objects for selected files.
    *
    * @type {Array.<File>}
    * @private
@@ -199,7 +199,7 @@ FileTransferController.prototype = {
     var sourcePaths = (dataTransfer.getData('fs/sources') || '').split('\n');
     var destinationPath = opt_destinationPath ||
                           this.currentDirectoryContentPath;
-    // effectAllowed set in copy/pase handlers stay uninitialized. DnD handlers
+    // effectAllowed set in copy/paste handlers stay uninitialized. DnD handlers
     // work fine.
     var effectAllowed = dataTransfer.effectAllowed != 'uninitialized' ?
         dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
@@ -340,7 +340,7 @@ FileTransferController.prototype = {
   /**
    * @this {FileTransferController}
    * @param {boolean} onlyIntoDirectories True if the drag is only into
-   *     directoris.
+   *     directories.
    * @param {cr.ui.List} list Drop target list.
    * @param {Event} event A dragover event of DOM.
    */

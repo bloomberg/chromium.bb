@@ -257,7 +257,7 @@ LocalSearchContentScanner.prototype.scan = function(
 };
 
 /**
- * Scanner of the entries for the metadata seaerch on Drive File System.
+ * Scanner of the entries for the metadata search on Drive File System.
  * @param {string} query The query of the search.
  * @param {DriveMetadataSearchContentScanner.SearchType} searchType The option
  *     of the search.
@@ -438,7 +438,7 @@ function FileListContext(fileFilter, metadataCache) {
  *     false.
  * @param {DirectoryEntry} directoryEntry The entry of the current directory.
  * @param {DirectoryEntry} lastNonSearchDirectoryEntry The entry of the last
- *     non-search directroy.
+ *     non-search directory.
  * @param {function():ContentScanner} scannerFactory The factory to create
  *     ContentScanner instance.
  * @constructor

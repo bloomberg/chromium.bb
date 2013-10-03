@@ -14,7 +14,7 @@
  *
  * @constructor
  * @param {HTMLElement} element Element that has styles of measured text. The
- *     width of text is mesures like as it is rendered in this element.
+ *     width of text is measures like as it is rendered in this element.
  */
 var TextMeasure = function(element) {
   var doc = element.ownerDocument;
@@ -38,7 +38,7 @@ var TextMeasure = function(element) {
 };
 
 /**
- * Measures the widht of text.
+ * Measures the width of text.
  *
  * @param {string} text Text that is measured the width.
  * @return {number} Width of the specified text.

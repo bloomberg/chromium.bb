@@ -364,7 +364,7 @@ Command.Rotate.prototype.revertView = function(canvas, imageView) {
 /**
  * Crop command.
  *
- * @param {Rect} imageRect Crop rectange in image coordinates.
+ * @param {Rect} imageRect Crop rectangle in image coordinates.
  * @constructor
  * @extends {Command}
  */

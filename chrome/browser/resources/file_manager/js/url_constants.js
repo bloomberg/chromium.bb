@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Namespace for URL constnats.
+ * Namespace for URL constants.
  */
 var urlConstants = {};
 
