@@ -42,6 +42,7 @@
             ],
             'export_dependent_settings': [
                 '../Source/web/web.gyp:webkit',
+                '../Source/platform/blink_platform.gyp:blink_platform',
                 'blink_minimal',
             ]
         },
