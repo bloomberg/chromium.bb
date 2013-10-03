@@ -27,16 +27,6 @@
 
 namespace {
 
-// A trivial concrete instance of a WebContentsDelegate.
-class TestWebContentsDelegate : public content::WebContentsDelegate {
- public:
-  TestWebContentsDelegate() {}
-  virtual ~TestWebContentsDelegate() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWebContentsDelegate);
-};
-
 class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
  public:
   AutofillSignInContainerTest() : dialog_(&delegate_), test_window_(nil) {}
@@ -46,13 +36,10 @@ class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
     // from from CocoaTest, so do a bootstrap and create test window.
     CocoaTest::BootstrapCocoa();
 
-    web_contents()->SetDelegate(&dummy_web_contents_delegate_);
     container_.reset(
         [[AutofillSignInContainer alloc] initWithDialog:&dialog_]);
     EXPECT_CALL(delegate_, profile())
         .WillOnce(testing::Return(this->profile()));
-    EXPECT_CALL(delegate_, GetWebContents())
-        .WillOnce(testing::Return(this->web_contents()));
     [[test_window() contentView] addSubview:[container_ view]];
   }
 
@@ -79,7 +66,6 @@ class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
   base::scoped_nsobject<AutofillSignInContainer> container_;
   testing::NiceMock<autofill::MockAutofillDialogViewDelegate> delegate_;
   autofill::AutofillDialogCocoa dialog_;
-  TestWebContentsDelegate dummy_web_contents_delegate_;
   CocoaTestHelperWindow* test_window_;
 };
 
@@ -95,3 +81,4 @@ TEST_F(AutofillSignInContainerTest, Subviews) {
 
   EXPECT_TRUE(hasWebView);
 }
+

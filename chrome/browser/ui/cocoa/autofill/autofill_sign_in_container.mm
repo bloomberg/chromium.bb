@@ -27,18 +27,18 @@
   webContents_.reset(
       content::WebContents::Create(
           content::WebContents::CreateParams(dialog_->delegate()->profile())));
-  signInDelegate_.reset(
-      new autofill::AutofillDialogSignInDelegate(
-          dialog_, webContents_.get(),
-          dialog_->delegate()->GetWebContents()->GetDelegate(),
-          // TODO(groby): Implement proper minimum and maximum sizing on Mac.
-          dialog_->GetSize(), dialog_->GetSize()));
   NSView* webContentView = webContents_->GetView()->GetNativeView();
   [self setView:webContentView];
 }
 
 - (void)loadSignInPage {
   DCHECK(webContents_.get());
+  signInDelegate_.reset(
+      new autofill::AutofillDialogSignInDelegate(
+          dialog_, webContents_.get(),
+          dialog_->delegate()->GetWebContents()->GetDelegate(),
+          // TODO(groby): Implement proper minimum and maximum sizing on Mac.
+          dialog_->GetSize(), dialog_->GetSize()));
   webContents_->GetController().LoadURL(
       autofill::wallet::GetSignInUrl(),
       content::Referrer(),
