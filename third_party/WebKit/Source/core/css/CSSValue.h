@@ -89,12 +89,12 @@ public:
     bool isShadowValue() const { return m_classType == ShadowClass; }
     bool isCubicBezierTimingFunctionValue() const { return m_classType == CubicBezierTimingFunctionClass; }
     bool isStepsTimingFunctionValue() const { return m_classType == StepsTimingFunctionClass; }
-    bool isCSSTransformValue() const { return m_classType == CSSTransformClass; }
-    bool isCSSLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
+    bool isTransformValue() const { return m_classType == CSSTransformClass; }
+    bool isLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
     bool isCalcValue() const {return m_classType == CalculationClass; }
-    bool isCSSFilterValue() const { return m_classType == CSSFilterClass; }
-    bool isCSSArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
-    bool isCSSMixFunctionValue() const { return m_classType == CSSMixFunctionValueClass; }
+    bool isFilterValue() const { return m_classType == CSSFilterClass; }
+    bool isArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
+    bool isMixFunctionValue() const { return m_classType == CSSMixFunctionValueClass; }
     bool isShaderValue() const { return m_classType == CSSShaderClass; }
     bool isVariableValue() const { return m_classType == VariableClass; }
     bool isGridTemplateValue() const { return m_classType == GridTemplateClass; }

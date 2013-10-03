@@ -97,10 +97,10 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const Render
     for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
         CSSValue* currValue = i.value();
 
-        if (!currValue->isCSSTransformValue())
+        if (!currValue->isTransformValue())
             continue;
 
-        CSSTransformValue* transformValue = static_cast<CSSTransformValue*>(i.value());
+        CSSTransformValue* transformValue = toCSSTransformValue(i.value());
         if (!transformValue->length())
             continue;
 

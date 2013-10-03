@@ -406,7 +406,7 @@ void CSSValue::destroy()
         delete toCSSValueList(this);
         return;
     case CSSTransformClass:
-        delete static_cast<CSSTransformValue*>(this);
+        delete toCSSTransformValue(this);
         return;
     case LineBoxContainClass:
         delete static_cast<CSSLineBoxContainValue*>(this);
@@ -418,13 +418,13 @@ void CSSValue::destroy()
         delete toCSSImageSetValue(this);
         return;
     case CSSFilterClass:
-        delete static_cast<CSSFilterValue*>(this);
+        delete toCSSFilterValue(this);
         return;
     case CSSArrayFunctionValueClass:
-        delete static_cast<CSSArrayFunctionValue*>(this);
+        delete toCSSArrayFunctionValue(this);
         return;
     case CSSMixFunctionValueClass:
-        delete static_cast<CSSMixFunctionValue*>(this);
+        delete toCSSMixFunctionValue(this);
         return;
     case CSSShaderClass:
         delete toCSSShaderValue(this);

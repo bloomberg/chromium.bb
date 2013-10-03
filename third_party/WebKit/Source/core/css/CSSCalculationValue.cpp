@@ -611,8 +611,7 @@ private:
         if (!value || !value->isPrimitiveValue())
             return false;
 
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
-        result->value = CSSCalcPrimitiveValue::create(primitiveValue, parserValue->isInt);
+        result->value = CSSCalcPrimitiveValue::create(toCSSPrimitiveValue(value.get()), parserValue->isInt);
 
         ++*index;
         return true;

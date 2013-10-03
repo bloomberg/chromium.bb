@@ -161,14 +161,14 @@ static PassRefPtr<CustomFilterParameter> parseCustomFilterParameter(const String
     if (!values->length())
         return 0;
 
-    if (parameterValue->isCSSArrayFunctionValue())
+    if (parameterValue->isArrayFunctionValue())
         return parseCustomFilterArrayParameter(name, values);
 
     // If the first value of the list is a transform function,
     // then we could safely assume that all the remaining items
     // are transforms. parseCustomFilterTransformParameter will
     // return 0 if that assumption is incorrect.
-    if (values->itemWithoutBoundsCheck(0)->isCSSTransformValue())
+    if (values->itemWithoutBoundsCheck(0)->isTransformValue())
         return parseCustomFilterTransformParameter(name, values, state);
 
     // We can have only arrays of booleans or numbers, so use the first value to choose between those two.
@@ -263,8 +263,8 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
 
     if (shadersListLength > 1) {
         CSSValue* fragmentShaderOrMixFunction = shadersList->itemWithoutBoundsCheck(1);
-        if (fragmentShaderOrMixFunction->isCSSMixFunctionValue()) {
-            CSSMixFunctionValue* mixFunction = static_cast<CSSMixFunctionValue*>(fragmentShaderOrMixFunction);
+        if (fragmentShaderOrMixFunction->isMixFunctionValue()) {
+            CSSMixFunctionValue* mixFunction = toCSSMixFunctionValue(fragmentShaderOrMixFunction);
             CSSValueListIterator iterator(mixFunction);
 
             ASSERT(mixFunction->length());
@@ -381,10 +381,10 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
     FilterOperations operations;
     for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
         CSSValue* currValue = i.value();
-        if (!currValue->isCSSFilterValue())
+        if (!currValue->isFilterValue())
             continue;
 
-        CSSFilterValue* filterValue = static_cast<CSSFilterValue*>(i.value());
+        CSSFilterValue* filterValue = toCSSFilterValue(i.value());
         FilterOperation::OperationType operationType = filterOperationForType(filterValue->operationType());
 
         if (operationType == FilterOperation::VALIDATED_CUSTOM) {

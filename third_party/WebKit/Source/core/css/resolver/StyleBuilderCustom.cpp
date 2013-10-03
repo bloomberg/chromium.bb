@@ -1727,7 +1727,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             return;
         }
 
-        if (!value->isCSSLineBoxContainValue())
+        if (!value->isLineBoxContainValue())
             return;
 
         CSSLineBoxContainValue* lineBoxContainValue = static_cast<CSSLineBoxContainValue*>(value);

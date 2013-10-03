@@ -53,6 +53,8 @@ private:
     CSSMixFunctionValue(const CSSMixFunctionValue& cloneFrom);
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(MixFunctionValue);
+
 } // namespace WebCore
 
 

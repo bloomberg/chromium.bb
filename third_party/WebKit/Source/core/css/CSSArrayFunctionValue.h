@@ -53,6 +53,8 @@ private:
     explicit CSSArrayFunctionValue(const CSSArrayFunctionValue& cloneFrom);
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(ArrayFunctionValue);
+
 } // namespace WebCore
 
 

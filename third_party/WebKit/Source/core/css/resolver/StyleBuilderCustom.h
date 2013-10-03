@@ -53,9 +53,8 @@ public:
 template <typename T>
 T StyleBuilderConverter::convertComputedLength(StyleResolverState& state, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     float zoom = state.style()->effectiveZoom();
-    return primitiveValue->computeLength<T>(state.style(), state.rootElementStyle(), zoom);
+    return toCSSPrimitiveValue(value)->computeLength<T>(state.style(), state.rootElementStyle(), zoom);
 }
 
 template <typename T>

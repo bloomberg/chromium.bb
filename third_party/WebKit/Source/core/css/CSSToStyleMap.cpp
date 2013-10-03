@@ -308,8 +308,7 @@ void CSSToStyleMap::mapFillMaskSourceType(CSSPropertyID, FillLayer* layer, CSSVa
     if (!value->isPrimitiveValue())
         return;
 
-    CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
-    switch (primitiveValue->getValueID()) {
+    switch (toCSSPrimitiveValue(value)->getValueID()) {
     case CSSValueAlpha:
         type = MaskAlpha;
         break;
@@ -335,8 +334,7 @@ void CSSToStyleMap::mapAnimationDelay(CSSAnimationData* animation, CSSValue* val
     if (!value->isPrimitiveValue())
         return;
 
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    animation->setDelay(primitiveValue->computeTime<double, CSSPrimitiveValue::Seconds>());
+    animation->setDelay(toCSSPrimitiveValue(value)->computeTime<double, CSSPrimitiveValue::Seconds>());
 }
 
 void CSSToStyleMap::mapAnimationDirection(CSSAnimationData* layer, CSSValue* value) const
@@ -349,8 +347,7 @@ void CSSToStyleMap::mapAnimationDirection(CSSAnimationData* layer, CSSValue* val
     if (!value->isPrimitiveValue())
         return;
 
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    switch (primitiveValue->getValueID()) {
+    switch (toCSSPrimitiveValue(value)->getValueID()) {
     case CSSValueNormal:
         layer->setDirection(CSSAnimationData::AnimationDirectionNormal);
         break;
