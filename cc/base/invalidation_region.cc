@@ -19,14 +19,6 @@ InvalidationRegion::InvalidationRegion() {}
 InvalidationRegion::~InvalidationRegion() {}
 
 void InvalidationRegion::Swap(Region* region) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Renderer4.InvalidationRegionApproximateRectCount",
-      region_.GetRegionComplexity(),
-      1,
-      5000,
-      50);
-
-  SimplifyIfNeeded();
   region_.Swap(region);
 }
 
@@ -35,9 +27,8 @@ void InvalidationRegion::Clear() {
 }
 
 void InvalidationRegion::Union(gfx::Rect rect) {
-  // TODO(vmpstr): We should simplify the region after Union() after we get a
-  // good idea of what kind of regions are typical (from the UMA histogram).
   region_.Union(rect);
+  SimplifyIfNeeded();
 }
 
 void InvalidationRegion::SimplifyIfNeeded() {
