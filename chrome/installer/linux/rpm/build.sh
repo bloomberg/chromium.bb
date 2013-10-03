@@ -34,21 +34,32 @@ prep_staging_rpm() {
 
 # Put the package contents in the staging area.
 stage_install_rpm() {
-  local USR_BIN_SYMLINK_NAME="${PACKAGE}-${CHANNEL}"
+  # TODO(phajdan.jr): Deduplicate this and debian/build.sh .
+  # For now duplication is going to help us avoid merge conflicts
+  # as changes are frequently merged to older branches related to SxS effort.
+  if [ "$CHANNEL" != "stable" ]; then
+    # Avoid file collisions between channels.
+    # TODO(phajdan.jr): Do that for all packages for SxS,
+    # http://crbug.com/38598 .
+    # We can't do this for now for all packages because of
+    # http://crbug.com/295103 , and ultimately http://crbug.com/22703 .
+    # Also see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/DBEqOORaRiw/pE0bNI6h0kcJ .
+    if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
+      local PACKAGE="${PACKAGE}-${CHANNEL}"
+      local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
+    fi
 
-  # Trunk packages need to install to a custom path and with custom filenames
-  # (e.g. not /usr/bin/google-chrome) so they don't conflict with release
-  # channel packages.
-  if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
-    local PACKAGE="${PACKAGE}-${CHANNEL}"
-    local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
+    # Make it possible to distinguish between menu entries
+    # for different channels.
+    local MENUNAME="${MENUNAME} (${CHANNEL})"
+
     # This would ideally be compiled into the app, but that's a bit too
     # intrusive of a change for these limited use channels, so we'll just hack
     # it into the wrapper script. The user can still override since it seems to
     # work to specify --user-data-dir multiple times on the command line, with
     # the last occurrence winning.
-    local DEFAULT_FLAGS="--user-data-dir=\"\${HOME}/.config/${PACKAGE}\""
-    local MENUNAME="${MENUNAME} (${CHANNEL})"
+    local SXS_USER_DATA_DIR="\${XDG_CONFIG_HOME:-\${HOME}/.config}/${PACKAGE}"
+    local DEFAULT_FLAGS="--user-data-dir=\"${SXS_USER_DATA_DIR}\""
   fi
   prep_staging_rpm
   stage_install_common
@@ -278,6 +289,7 @@ eval $(sed -e "s/^\([^=]\+\)=\(.*\)$/export \1='\2'/" \
 
 REPOCONFIG="http://dl.google.com/linux/${PACKAGE#google-}/rpm/stable"
 verify_channel
+export USR_BIN_SYMLINK_NAME="${PACKAGE}-${CHANNEL}"
 
 # Make everything happen in the OUTPUTDIR.
 cd "${OUTPUTDIR}"

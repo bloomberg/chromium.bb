@@ -17,6 +17,8 @@ Packager        : @@MAINTNAME@@ <@@MAINTMAIL@@>
 
 Provides        : @@PROVIDES@@ = %{version}
 Requires        : @@DEPENDS@@
+Requires(post)  : %{_sbindir}/update-alternatives
+Requires(preun) : %{_sbindir}/update-alternatives
 Autoreqprov     : No
 Conflicts       : @@REPLACES@@
 
@@ -85,6 +87,7 @@ rm -rf "$RPM_BUILD_ROOT"
 # Be explicit about the files we scatter throughout the system we don't
 # accidentally "own" stuff that's not ours (crbug.com/123990).
 /etc/cron.daily/@@PACKAGE_FILENAME@@
+%ghost %attr(755,root,root) /usr/bin/google-chrome
 /usr/bin/@@USR_BIN_SYMLINK_NAME@@
 /usr/share/gnome-control-center/default-apps/@@PACKAGE_FILENAME@@.xml
 %docdir /usr/share/man/man1
@@ -151,6 +154,26 @@ fi
 # required LSB command.
 service atd start
 echo "sh /etc/cron.daily/@@PACKAGE@@" | at now + 2 minute > /dev/null 2>&1
+
+CHANNEL=@@CHANNEL@@
+case $CHANNEL in
+  stable )
+    PRIORITY=200
+    ;;
+  beta )
+    PRIORITY=150
+    ;;
+  unstable )
+    PRIORITY=120
+    ;;
+  * )
+    PRIORITY=0
+    ;;
+esac
+
+%{_sbindir}/update-alternatives --install /usr/bin/google-chrome google-chrome \
+  /usr/bin/@@USR_BIN_SYMLINK_NAME@@ $PRIORITY
+
 exit 0
 
 
@@ -175,6 +198,9 @@ if [ "$mode" = "uninstall" ]; then
 @@include@@../common/prerm.include
   remove_nss_symlinks
   remove_udev_symlinks
+
+  %{_sbindir}/update-alternatives --remove google-chrome \
+    /usr/bin/@@USR_BIN_SYMLINK_NAME@@
 fi
 
 # On Debian we only remove when we purge. However, RPM has no equivalent to
