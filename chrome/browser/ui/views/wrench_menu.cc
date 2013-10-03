@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/browser/ui/views/wrench_menu_observer.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -87,6 +88,18 @@ const int kHorizontalTouchPadding = 15;
 
 // Menu items which have embedded buttons should have this height in pixel.
 const int kMenuItemContainingButtonsHeight = 43;
+
+// Returns true if |command_id| identifies a bookmark menu item.
+bool IsBookmarkCommand(int command_id) {
+  return command_id >= WrenchMenuModel::kMinBookmarkCommandId &&
+      command_id <= WrenchMenuModel::kMaxBookmarkCommandId;
+}
+
+// Returns true if |command_id| identifies a recent tabs menu item.
+bool IsRecentTabsCommand(int command_id) {
+  return command_id >= WrenchMenuModel::kMinRecentTabsCommandId &&
+      command_id <= WrenchMenuModel::kMaxRecentTabsCommandId;
+}
 
 // Subclass of ImageButton whose preferred size includes the size of the border.
 class FullscreenButton : public ImageButton {
@@ -411,8 +424,8 @@ class ButtonContainerMenuItemView : public MenuItemView {
  public:
   // Constructor for use with button containing menu items which have a
   // different height then normal items.
-  ButtonContainerMenuItemView(MenuItemView* parent, int id, int height)
-      : MenuItemView(parent, id, MenuItemView::NORMAL),
+  ButtonContainerMenuItemView(MenuItemView* parent, int command_id, int height)
+      : MenuItemView(parent, command_id, MenuItemView::NORMAL),
         height_(height) {
   };
 
@@ -764,10 +777,7 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
   // ui::MenuModelDelegate implementation:
   virtual void OnIconChanged(int index) OVERRIDE {
-    // |index| specifies position in children items of |menu_item_| starting at
-    // 0, its corresponding command id as used in the children menu item views
-    // follows that of the parent menu item view |menu_item_|.
-    int command_id = menu_item_->GetCommand() + 1 + index;
+    int command_id = model_->GetCommandIdAt(index);
     views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
     DCHECK(item);
     gfx::Image icon;
@@ -782,9 +792,7 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     if (!submenu)
       return -1;
     const int kMaxMenuItemWidth = 320;
-    return menu->GetCommand() >= menu_item_->GetCommand() &&
-        menu->GetCommand() <=
-            menu_item_->GetCommand() + submenu->GetMenuItemCount() ?
+    return menu->GetCommand() == menu_item_->GetCommand() ?
         kMaxMenuItemWidth : -1;
   }
 
@@ -792,11 +800,11 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     return model_->GetLabelFontAt(index);
   }
 
-  bool GetForegroundColor(int command_id,
-                          bool is_hovered,
-                          SkColor* override_color) const {
+  bool GetForegroundColorAt(int index,
+                            bool is_hovered,
+                            SkColor* override_color) const {
     // The items for which we get a font, should be shown in black.
-    if (GetLabelFontAt(command_id)) {
+    if (GetLabelFontAt(index)) {
       *override_color = SK_ColorBLACK;
       return true;
     }
@@ -821,9 +829,6 @@ WrenchMenu::WrenchMenu(Browser* browser,
       selected_index_(0),
       bookmark_menu_(NULL),
       feedback_menu_item_(NULL),
-      first_bookmark_command_id_(0),
-      first_recent_tabs_command_id_(-1),
-      last_recent_tabs_command_id_(-1),
       use_new_menu_(use_new_menu),
       supports_new_separators_(supports_new_separators) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
@@ -845,9 +850,15 @@ void WrenchMenu::Init(ui::MenuModel* model) {
   root_ = new MenuItemView(this);
   root_->set_has_icons(true);  // We have checks, radios and icons, set this
                                // so we get the taller menu style.
-  int next_id = 1;
-  PopulateMenu(root_, model, &next_id);
-  first_bookmark_command_id_ = next_id + 1;
+  PopulateMenu(root_, model);
+
+#if defined(DEBUG)
+  // Verify that the reserved command ID's for bookmarks menu are not used.
+  for (int i = WrenchMenuModel:kMinBookmarkCommandId;
+       i <= WrenchMenuModel::kMaxBookmarkCommandId; ++i)
+    DCHECK(command_id_to_entry_.find(i) == command_id_to_entry_.end());
+#endif  // defined(DEBUG)
+
   menu_runner_.reset(new views::MenuRunner(root_));
 }
 
@@ -894,10 +905,10 @@ void WrenchMenu::RemoveObserver(WrenchMenuObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-const gfx::Font* WrenchMenu::GetLabelFont(int index) const {
-  if (is_recent_tabs_command(index)) {
+const gfx::Font* WrenchMenu::GetLabelFont(int command_id) const {
+  if (IsRecentTabsCommand(command_id)) {
     return recent_tabs_menu_model_delegate_->GetLabelFontAt(
-        index - first_recent_tabs_command_id_);
+        ModelIndexFromCommandId(command_id));
   }
   return NULL;
 }
@@ -905,24 +916,22 @@ const gfx::Font* WrenchMenu::GetLabelFont(int index) const {
 bool WrenchMenu::GetForegroundColor(int command_id,
                                     bool is_hovered,
                                     SkColor* override_color) const {
-  if (is_recent_tabs_command(command_id)) {
-    return recent_tabs_menu_model_delegate_->GetForegroundColor(
-        command_id - first_recent_tabs_command_id_,
-        is_hovered,
-        override_color);
+  if (IsRecentTabsCommand(command_id)) {
+    return recent_tabs_menu_model_delegate_->GetForegroundColorAt(
+        ModelIndexFromCommandId(command_id), is_hovered, override_color);
   }
   return false;
 }
 
-string16 WrenchMenu::GetTooltipText(int id,
+string16 WrenchMenu::GetTooltipText(int command_id,
                                     const gfx::Point& p) const {
-  return is_bookmark_command(id) ?
-      bookmark_menu_delegate_->GetTooltipText(id, p) : string16();
+  return IsBookmarkCommand(command_id) ?
+      bookmark_menu_delegate_->GetTooltipText(command_id, p) : string16();
 }
 
 bool WrenchMenu::IsTriggerableEvent(views::MenuItemView* menu,
                                     const ui::Event& e) {
-  return is_bookmark_command(menu->GetCommand()) ?
+  return IsBookmarkCommand(menu->GetCommand()) ?
       bookmark_menu_delegate_->IsTriggerableEvent(menu, e) :
       MenuDelegate::IsTriggerableEvent(menu, e);
 }
@@ -953,7 +962,7 @@ int WrenchMenu::GetDropOperation(
     MenuItemView* item,
     const ui::DropTargetEvent& event,
     DropPosition* position) {
-  return is_bookmark_command(item->GetCommand()) ?
+  return IsBookmarkCommand(item->GetCommand()) ?
       bookmark_menu_delegate_->GetDropOperation(item, event, position) :
       ui::DragDropTypes::DRAG_NONE;
 }
@@ -961,7 +970,7 @@ int WrenchMenu::GetDropOperation(
 int WrenchMenu::OnPerformDrop(MenuItemView* menu,
                               DropPosition position,
                               const ui::DropTargetEvent& event) {
-  if (!is_bookmark_command(menu->GetCommand()))
+  if (!IsBookmarkCommand(menu->GetCommand()))
     return ui::DragDropTypes::DRAG_NONE;
 
   int result = bookmark_menu_delegate_->OnPerformDrop(menu, position, event);
@@ -969,34 +978,34 @@ int WrenchMenu::OnPerformDrop(MenuItemView* menu,
 }
 
 bool WrenchMenu::ShowContextMenu(MenuItemView* source,
-                                 int id,
+                                 int command_id,
                                  const gfx::Point& p,
                                  ui::MenuSourceType source_type) {
-  return is_bookmark_command(id) ?
-      bookmark_menu_delegate_->ShowContextMenu(source, id, p,
+  return IsBookmarkCommand(command_id) ?
+      bookmark_menu_delegate_->ShowContextMenu(source, command_id, p,
                                                source_type) :
       false;
 }
 
 bool WrenchMenu::CanDrag(MenuItemView* menu) {
-  return is_bookmark_command(menu->GetCommand()) ?
+  return IsBookmarkCommand(menu->GetCommand()) ?
       bookmark_menu_delegate_->CanDrag(menu) : false;
 }
 
 void WrenchMenu::WriteDragData(MenuItemView* sender,
                                ui::OSExchangeData* data) {
-  DCHECK(is_bookmark_command(sender->GetCommand()));
+  DCHECK(IsBookmarkCommand(sender->GetCommand()));
   return bookmark_menu_delegate_->WriteDragData(sender, data);
 }
 
 int WrenchMenu::GetDragOperations(MenuItemView* sender) {
-  return is_bookmark_command(sender->GetCommand()) ?
+  return IsBookmarkCommand(sender->GetCommand()) ?
       bookmark_menu_delegate_->GetDragOperations(sender) :
       MenuDelegate::GetDragOperations(sender);
 }
 
 int WrenchMenu::GetMaxWidthForMenu(MenuItemView* menu) {
-  if (is_bookmark_command(menu->GetCommand()))
+  if (IsBookmarkCommand(menu->GetCommand()))
     return bookmark_menu_delegate_->GetMaxWidthForMenu(menu);
   int max_width = -1;
   // If recent tabs menu is available, it will decide if |menu| is one of recent
@@ -1009,39 +1018,36 @@ int WrenchMenu::GetMaxWidthForMenu(MenuItemView* menu) {
   return max_width;
 }
 
-bool WrenchMenu::IsItemChecked(int id) const {
-  if (is_bookmark_command(id))
+bool WrenchMenu::IsItemChecked(int command_id) const {
+  if (IsBookmarkCommand(command_id))
     return false;
 
-  const Entry& entry = id_to_entry_.find(id)->second;
+  const Entry& entry = command_id_to_entry_.find(command_id)->second;
   return entry.first->IsItemCheckedAt(entry.second);
 }
 
-bool WrenchMenu::IsCommandEnabled(int id) const {
-  if (is_bookmark_command(id))
+bool WrenchMenu::IsCommandEnabled(int command_id) const {
+  if (IsBookmarkCommand(command_id))
     return true;
 
-  if (id == 0)
+  if (command_id == 0)
     return false;  // The root item.
 
-  const Entry& entry = id_to_entry_.find(id)->second;
-  int command_id = entry.first->GetCommandIdAt(entry.second);
   // The items representing the cut menu (cut/copy/paste) and zoom menu
   // (increment/decrement/reset) are always enabled. The child views of these
   // items enabled state updates appropriately.
-  return command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
-      entry.first->IsEnabledAt(entry.second);
+  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS)
+    return true;
+
+  const Entry& entry = command_id_to_entry_.find(command_id)->second;
+  return entry.first->IsEnabledAt(entry.second);
 }
 
-void WrenchMenu::ExecuteCommand(int id, int mouse_event_flags) {
-  if (is_bookmark_command(id)) {
-    bookmark_menu_delegate_->ExecuteCommand(id, mouse_event_flags);
+void WrenchMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
+  if (IsBookmarkCommand(command_id)) {
+    bookmark_menu_delegate_->ExecuteCommand(command_id, mouse_event_flags);
     return;
   }
-
-  // Not a bookmark
-  const Entry& entry = id_to_entry_.find(id)->second;
-  int command_id = entry.first->GetCommandIdAt(entry.second);
 
   if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS) {
     // These items are represented by child views. If ExecuteCommand is invoked
@@ -1050,25 +1056,21 @@ void WrenchMenu::ExecuteCommand(int id, int mouse_event_flags) {
     return;
   }
 
+  const Entry& entry = command_id_to_entry_.find(command_id)->second;
   return entry.first->ActivatedAt(entry.second, mouse_event_flags);
 }
 
-bool WrenchMenu::GetAccelerator(int id, ui::Accelerator* accelerator) {
-  if (is_bookmark_command(id))
+bool WrenchMenu::GetAccelerator(int command_id, ui::Accelerator* accelerator) {
+  if (IsBookmarkCommand(command_id))
     return false;
-  IDToEntry::iterator ix = id_to_entry_.find(id);
-  if (ix == id_to_entry_.end()) {
-    // There is no entry for this id.
-    return false;
-  }
 
-  const Entry& entry = ix->second;
-  int command_id = entry.first->GetCommandIdAt(entry.second);
   if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS) {
     // These have special child views; don't show the accelerator for them.
     return false;
   }
 
+  CommandIDToEntry::iterator ix = command_id_to_entry_.find(command_id);
+  const Entry& entry = ix->second;
   ui::Accelerator menu_accelerator;
   if (!entry.first->GetAcceleratorAt(entry.second, &menu_accelerator))
     return false;
@@ -1118,8 +1120,7 @@ void WrenchMenu::Observe(int type,
 }
 
 void WrenchMenu::PopulateMenu(MenuItemView* parent,
-                              MenuModel* model,
-                              int* next_id) {
+                              MenuModel* model) {
   for (int i = 0, max = model->GetItemCount(); i < max; ++i) {
     // The button container menu items have a special height which we have to
     // use instead of the normal height.
@@ -1130,17 +1131,10 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
       height = kMenuItemContainingButtonsHeight;
 
     MenuItemView* item = AppendMenuItem(
-        parent, model, i, model->GetTypeAt(i), next_id, height);
+        parent, model, i, model->GetTypeAt(i), height);
 
-    if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU) {
-      bool is_recent_tabs_menu =
-          model->GetCommandIdAt(i) == IDC_RECENT_TABS_MENU;
-      if (is_recent_tabs_menu)
-        first_recent_tabs_command_id_ = *next_id;
-      PopulateMenu(item, model->GetSubmenuModelAt(i), next_id);
-      if (is_recent_tabs_menu)
-        last_recent_tabs_command_id_ = *next_id - 1;
-    }
+    if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU)
+      PopulateMenu(item, model->GetSubmenuModelAt(i));
 
     const ui::NativeTheme* native_theme = GetNativeTheme();
 
@@ -1195,23 +1189,34 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
                                          MenuModel* model,
                                          int index,
                                          MenuModel::ItemType menu_type,
-                                         int* next_id,
                                          int height) {
-  int id = (*next_id)++;
+  int command_id = model->GetCommandIdAt(index);
+  DCHECK(command_id > -1 ||
+         (command_id == -1 &&
+          model->GetTypeAt(index) == MenuModel::TYPE_SEPARATOR));
 
-  id_to_entry_[id].first = model;
-  id_to_entry_[id].second = index;
+  if (command_id > -1) {  // Don't add separators to |command_id_to_entry_|.
+    // All command ID's should be unique except for IDC_SHOW_HISTORY which is
+    // in both wrench menu and RecentTabs submenu,
+    if (command_id != IDC_SHOW_HISTORY) {
+      DCHECK(command_id_to_entry_.find(command_id) ==
+             command_id_to_entry_.end())
+          << "command ID " << command_id << " already exists!";
+    }
+    command_id_to_entry_[command_id].first = model;
+    command_id_to_entry_[command_id].second = index;
+  }
 
   MenuItemView* menu_item = NULL;
   if (height > 0) {
     // For menu items with a special menu height we use our special class to be
     // able to modify the item height.
-    menu_item = new ButtonContainerMenuItemView(parent, id, height);
+    menu_item = new ButtonContainerMenuItemView(parent, command_id, height);
     parent->GetSubmenu()->AddChildView(menu_item);
   } else {
     // For all other cases we use the more generic way to add menu items.
     menu_item = views::MenuModelAdapter::AppendMenuItemFromModel(
-        model, index, parent, id);
+        model, index, parent, command_id);
   }
 
   if (menu_item) {
@@ -1253,11 +1258,17 @@ void WrenchMenu::CreateBookmarkMenu() {
       new BookmarkMenuDelegate(browser_,
                                browser_,
                                parent,
-                               first_bookmark_command_id_));
+                               WrenchMenuModel::kMinBookmarkCommandId));
   bookmark_menu_delegate_->Init(this,
                                 bookmark_menu_,
                                 model->bookmark_bar_node(),
                                 0,
                                 BookmarkMenuDelegate::SHOW_PERMANENT_FOLDERS,
                                 BOOKMARK_LAUNCH_LOCATION_WRENCH_MENU);
+}
+
+int WrenchMenu::ModelIndexFromCommandId(int command_id) const {
+  CommandIDToEntry::const_iterator ix = command_id_to_entry_.find(command_id);
+  DCHECK(ix != command_id_to_entry_.end());
+  return ix->second.second;
 }

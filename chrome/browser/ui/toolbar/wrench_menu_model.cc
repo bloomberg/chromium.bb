@@ -227,6 +227,11 @@ void ToolsMenuModel::Build(Browser* browser) {
 ////////////////////////////////////////////////////////////////////////////////
 // WrenchMenuModel
 
+const int WrenchMenuModel::kMinBookmarkCommandId = 1;
+const int WrenchMenuModel::kMaxBookmarkCommandId = 1000;
+const int WrenchMenuModel::kMinRecentTabsCommandId = 1001;
+const int WrenchMenuModel::kMaxRecentTabsCommandId = 1200;
+
 WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
                                  Browser* browser,
                                  bool is_new_menu)
