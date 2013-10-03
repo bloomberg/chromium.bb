@@ -178,6 +178,14 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     ignored_by_shelf_ = ignored_by_shelf;
   }
 
+  // True if the window should be offered a chance to consume special system
+  // keys such as brightness, volume, etc. that are usually handled by the
+  // shell.
+  bool can_consume_system_keys() const { return can_consume_system_keys_; }
+  void set_can_consume_system_keys(bool can_consume_system_keys) {
+    can_consume_system_keys_ = can_consume_system_keys;
+  }
+
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -198,6 +206,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool panel_attached_;
   bool continue_drag_after_reparent_;
   bool ignored_by_shelf_;
+  bool can_consume_system_keys_;
 
   bool always_restores_to_restore_bounds_;
 

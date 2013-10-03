@@ -34,6 +34,7 @@ WindowState::WindowState(aura::Window* window)
       panel_attached_(true),
       continue_drag_after_reparent_(false),
       ignored_by_shelf_(false),
+      can_consume_system_keys_(false),
       always_restores_to_restore_bounds_(false),
       window_show_type_(ToWindowShowType(GetShowState())) {
   window_->AddObserver(this);

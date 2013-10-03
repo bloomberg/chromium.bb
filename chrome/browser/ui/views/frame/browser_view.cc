@@ -1302,6 +1302,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   //   with the browser, and it is not a reserved one, do nothing.
 
   if (browser_->is_app()) {
+    // Let all keys fall through to a v1 app's web content, even accelerators.
     // We don't have to flip |is_keyboard_shortcut| here. If we do that, the app
     // might not be able to see a subsequent Char event. See OnHandleInputEvent
     // in content/renderer/render_widget.cc for details.
@@ -1336,7 +1337,8 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
     if (event.type == WebKit::WebInputEvent::RawKeyDown)
       *is_keyboard_shortcut = true;
   } else if (processed) {
-    // |accelerator| is a non-browser shortcut (e.g. F4-F10 on Ash).
+    // |accelerator| is a non-browser shortcut (e.g. F4-F10 on Ash). Report
+    // that we handled it.
     return true;
   }
 

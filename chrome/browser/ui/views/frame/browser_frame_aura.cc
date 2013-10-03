@@ -106,6 +106,15 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
       !browser_view->browser()->is_session_restore())
     SetWindowAutoManaged();
 #endif
+#if defined(OS_CHROMEOS)
+  // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys
+  // like brightness, volume, etc. Otherwise these keys are handled by the
+  // Ash window manager.
+  if (browser_view->browser()->is_app()) {
+    ash::wm::GetWindowState(GetNativeWindow())->
+        set_can_consume_system_keys(true);
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -19,10 +19,11 @@ namespace ash {
 // * For example, Alt-Tab window cycling.
 // * See kReservedActions below.
 //
-// Ash (OS) non-reserved:
-// * Packaged apps can cancel but web pages cannot.
-// * For example, volume up and down.
-// * See kActionsAllowedInAppMode below.
+// Chrome OS system keys:
+// * For legacy reasons, v1 apps can process and cancel. Otherwise handled
+//   directly by Ash.
+// * Brightness, volume control, etc.
+// * See IsSystemKey() in ash/accelerators/accelerator_filter.cc.
 //
 // Browser reserved:
 // * Packaged apps can cancel but web pages cannot.
@@ -37,6 +38,10 @@ namespace ash {
 //
 // In particular, there is not an accelerator processing pass for Ash after
 // the browser gets the accelerator.  See crbug.com/285308 for details.
+//
+// There are also various restrictions on accelerators allowed at the login
+// screen, when running in "forced app mode" (like a kiosk), etc. See the
+// various kActionsAllowed* below.
 //
 // Please put if/def sections at the end of the bare section and keep the list
 // within each section in alphabetical order.

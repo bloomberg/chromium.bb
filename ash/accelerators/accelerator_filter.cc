@@ -11,6 +11,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/events/event.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 namespace {
@@ -18,6 +19,37 @@ namespace {
 const int kModifierFlagMask = (ui::EF_SHIFT_DOWN |
                                ui::EF_CONTROL_DOWN |
                                ui::EF_ALT_DOWN);
+
+// Returns true if |key_code| is a key usually handled directly by the shell.
+bool IsSystemKey(ui::KeyboardCode key_code) {
+#if defined(OS_CHROMEOS)
+  switch (key_code) {
+    case ui::VKEY_MEDIA_LAUNCH_APP2:  // Fullscreen button.
+    case ui::VKEY_MEDIA_LAUNCH_APP1:  // Overview button.
+    case ui::VKEY_BRIGHTNESS_DOWN:
+    case ui::VKEY_BRIGHTNESS_UP:
+    case ui::VKEY_KBD_BRIGHTNESS_DOWN:
+    case ui::VKEY_KBD_BRIGHTNESS_UP:
+    case ui::VKEY_VOLUME_MUTE:
+    case ui::VKEY_VOLUME_DOWN:
+    case ui::VKEY_VOLUME_UP:
+      return true;
+    default:
+      return false;
+  }
+#endif  // defined(OS_CHROMEOS)
+  return false;
+}
+
+// Returns true if the window should be allowed a chance to handle system keys.
+// Uses the top level window so if the target is a web contents window the
+// containing parent window will be checked for the property.
+bool CanConsumeSystemKeys(aura::Window* target) {
+  if (!target)  // Can be NULL in tests.
+    return false;
+  aura::Window* top_level = views::corewm::GetToplevelWindow(target);
+  return top_level && wm::GetWindowState(top_level)->can_consume_system_keys();
+}
 
 // Returns true if the |accelerator| should be processed now, inside Ash's env
 // event filter.
@@ -80,13 +112,24 @@ void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
 
   // Fill out context object so AcceleratorController will know what
   // was the previous accelerator or if the current accelerator is repeated.
-  Shell::GetInstance()->accelerator_controller()->context()->
-      UpdateContext(accelerator);
+  AcceleratorController* accelerator_controller =
+      Shell::GetInstance()->accelerator_controller();
+  accelerator_controller->context()->UpdateContext(accelerator);
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
+  // Handle special hardware keys like brightness and volume. However, some
+  // windows can override this behavior (e.g. Chrome v1 apps by default and
+  // Chrome v2 apps with permission) by setting a window property.
+  if (IsSystemKey(event->key_code()) && !CanConsumeSystemKeys(target)) {
+    accelerator_controller->Process(accelerator);
+    // These keys are always consumed regardless of whether they trigger an
+    // accelerator to prevent windows from seeing unexpected key up events.
+    event->StopPropagation();
+    return;
+  }
   if (!ShouldProcessAcceleratorsNow(accelerator, target))
     return;
-  if (Shell::GetInstance()->accelerator_controller()->Process(accelerator))
+  if (accelerator_controller->Process(accelerator))
     event->StopPropagation();
 }
 
