@@ -423,14 +423,6 @@ NavigationListItem.prototype.setModelItem =
 };
 
 /**
- * Add/remove fade-in animation.
- * @param {boolean} animation True if adding animation, false if removing.
- */
-NavigationListItem.prototype.setFadeinAnimation = function(animation) {
-  this.classList.toggle('fadein', animation);
-};
-
-/**
  * Associate a context menu with this item.
  * @param {cr.ui.Menu} menu Menu this item.
  */
@@ -553,35 +545,6 @@ NavigationList.prototype.measureItem = function(opt_item) {
 };
 
 /**
- * This overrides Node.removeChild().
- * Instead of just removing the given child, this method adds a fade-out
- * animation and removes the child after animation completes.
- *
- * @param {NavigationListItem} item List item to be removed.
- * @override
- */
-NavigationList.prototype.removeChild = function(item) {
-  // TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
-  // back. crbug.com/276132.
-  if (!item.modelItem.isShortcut() || this.measuringTemporaryItemNow_) {
-    Node.prototype.removeChild.call(this, item);
-    return;
-  }
-
-  var removeElement = function(event) {
-    // Must keep the animation name 'fadeOut' in sync with the css.
-    if (event.animationName == 'fadeOut')
-      // Checks if the element is still alive on the DOM tree.
-      if (item.parentElement && item.parentElement == this)
-        Node.prototype.removeChild.call(this, item);
-  }.bind(this);
-
-  item.addEventListener('webkitAnimationEnd', removeElement, false);
-  // Must keep the class name 'fadeout' in sync with the css.
-  item.classList.add('fadeout');
-};
-
-/**
  * Creates an element of a navigation list. This method is called from
  * cr.ui.List internally.
  *
@@ -595,11 +558,6 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
       PathUtil.isRootPath(modelItem.path) &&
       this.volumeManager_.getVolumeInfo(modelItem.path);
   item.setModelItem(modelItem, volumeInfo && volumeInfo.deviceType);
-
-  // TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
-  // back. crbug.com/276132.
-  item.setFadeinAnimation(modelItem.isShortcut() &&
-                          !this.measuringTemporaryItemNow_);
 
   var handleClick = function() {
     if (item.selected &&

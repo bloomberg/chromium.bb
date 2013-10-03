@@ -273,21 +273,6 @@ div.splitter {
   padding-left: 11px;
 }
 
-/* TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
-   back. crbug.com/276132. */
-#navigation-list li.root-item.fadein {
-  -webkit-animation: fadeIn 150ms ease-in-out;
-}
-
-/* This selector is used by JavaScript. "fadeout" class will be dinamically
-   added to elements.
-   Must keep the class name 'fadeout' and the animation name 'fadeOut' in sync
-   with JavaScript. */
-#navigation-list li.root-item.fadeout {
-  -webkit-animation: fadeOut 150ms ease-in-out 0 1 normal both;
-  opacity: 0;
-}
-
 #navigation-list li.root-item > .root-label {
   -webkit-box-flex: 1;
   margin: 0 2px;
@@ -1145,15 +1130,6 @@ input.rename {
   }
   to {
     opacity: 1;
-  }
-}
-
-@-webkit-keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
   }
 }
 
