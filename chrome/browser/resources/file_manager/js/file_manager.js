@@ -1853,6 +1853,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.dialogContainer_)
       this.dialogContainer_.setAttribute('connection', connection.type);
     this.shareDialog_.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
+    this.suggestAppsDialog.onDriveConnectionChanged(connection.type);
   };
 
   /**
@@ -2165,7 +2166,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
           // TODO(yoshiki): Now the integration is always enabled. Remove this
           // code when the feature is launched successfully in M31.
-          if (!this.enableExperimentalWebstoreIntegration_) {
+          if (!this.enableExperimentalWebstoreIntegration_ ||
+              this.isDriveOffline()) {
             showAlert();
             return;
           }

@@ -289,6 +289,19 @@ SuggestAppsDialog.prototype.onWidgetLoadFailed_ = function(event) {
 };
 
 /**
+ * Called when the connection status is changed.
+ * @param {util.DriveConnectionType} connectionType Current connection type.
+ */
+SuggestAppsDialog.prototype.onDriveConnectionChanged =
+    function(connectionType) {
+  if (this.state_ !== SuggestAppsDialog.State.UNINITIALIZED &&
+      connectionType === util.DriveConnectionType.OFFLINE) {
+    this.state_ = SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING;
+    this.hide();
+  }
+};
+
+/**
  * Called when receiving the install request from the webview client.
  * @param {Event} e Evnet.
  * @private
