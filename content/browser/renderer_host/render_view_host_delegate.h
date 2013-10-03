@@ -93,10 +93,15 @@ class CONTENT_EXPORT RenderViewHostDelegate {
         const base::TimeTicks& proceed_time) = 0;
 
     // The |pending_render_view_host| is ready to commit a page.  The delegate
-    // should ensure that the old RenderViewHost runs its unload handler first.
+    // should ensure that the old RenderViewHost runs its unload handler first
+    // and determine whether a RenderViewHost transfer is needed.
     virtual void OnCrossSiteResponse(
         RenderViewHost* pending_render_view_host,
-        const GlobalRequestID& global_request_id) = 0;
+        const GlobalRequestID& global_request_id,
+        bool is_transfer,
+        const GURL& transfer_url,
+        const Referrer& referrer,
+        int64 frame_id) = 0;
 
    protected:
     virtual ~RendererManagement() {}

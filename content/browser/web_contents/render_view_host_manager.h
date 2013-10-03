@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/referrer.h"
 
 
 namespace content {
@@ -218,7 +219,11 @@ class CONTENT_EXPORT RenderViewHostManager
       const base::TimeTicks& proceed_time) OVERRIDE;
   virtual void OnCrossSiteResponse(
       RenderViewHost* pending_render_view_host,
-      const GlobalRequestID& global_request_id) OVERRIDE;
+      const GlobalRequestID& global_request_id,
+      bool is_transfer,
+      const GURL& transfer_url,
+      const Referrer& referrer,
+      int64 frame_id) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -236,7 +241,8 @@ class CONTENT_EXPORT RenderViewHostManager
   RenderViewHostImpl* GetSwappedOutRenderViewHost(SiteInstance* instance);
 
   // Runs the unload handler in the current page, when we know that a pending
-  // cross-process navigation is going to commit.
+  // cross-process navigation is going to commit.  We may initiate a transfer
+  // to a new process after this completes or times out.
   void SwapOutOldPage();
 
  private:
@@ -244,13 +250,34 @@ class CONTENT_EXPORT RenderViewHostManager
   friend class TestWebContents;
 
   // Tracks information about a navigation while a cross-process transition is
-  // in progress.
-  // TODO(creis): Add transfer navigation params for http://crbug.com/238331.
+  // in progress, in case we need to transfer it to a new RenderViewHost.
   struct PendingNavigationParams {
     PendingNavigationParams();
-    explicit PendingNavigationParams(const GlobalRequestID& global_request_id);
+    PendingNavigationParams(const GlobalRequestID& global_request_id,
+                            bool is_transfer,
+                            const GURL& transfer_url,
+                            Referrer referrer,
+                            int64 frame_id);
 
+    // The child ID and request ID for the pending navigation.  Present whether
+    // |is_transfer| is true or false.
     GlobalRequestID global_request_id;
+
+    // Whether this pending navigation needs to be transferred to another
+    // process than the one it was going to commit in.  If so, the
+    // |transfer_url|, |referrer|, and |frame_id| parameters will be set.
+    bool is_transfer;
+
+    // If |is_transfer|, this is the destination URL to request in the new
+    // process.
+    GURL transfer_url;
+
+    // If |is_transfer|, this is the referrer to use for the request in the new
+    // process.
+    Referrer referrer;
+
+    // If |is_transfer|, this is the frame ID to use in RequestTransferURL.
+    int64 frame_id;
   };
 
   // Returns whether this tab should transition to a new renderer for

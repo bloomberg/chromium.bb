@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -22,6 +23,7 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
@@ -165,10 +167,10 @@ void ResourceLoader::MarkAsTransferring(const GURL& target_url) {
 }
 
 void ResourceLoader::CompleteTransfer() {
-  DCHECK_EQ(DEFERRED_REDIRECT, deferred_stage_);
+  DCHECK_EQ(DEFERRED_READ, deferred_stage_);
 
   is_transferring_ = false;
-  Resume();
+  GetRequestInfo()->cross_site_handler()->ResumeResponse();
 }
 
 ResourceRequestInfoImpl* ResourceLoader::GetRequestInfo() {
@@ -605,7 +607,12 @@ void ResourceLoader::ReadMore(int* bytes_read) {
   DCHECK(buf);
   DCHECK(buf_size > 0);
 
-  request_->Read(buf, buf_size, bytes_read);
+  // Make sure we track the buffer in at least one place.  This ensures it gets
+  // deleted even in the case the request has already finished its job and
+  // doesn't use the buffer.
+  scoped_refptr<net::IOBuffer> tracked_buf(buf);
+
+  request_->Read(tracked_buf.get(), buf_size, bytes_read);
 
   // No need to check the return value here as we'll detect errors by
   // inspecting the URLRequest's status.
