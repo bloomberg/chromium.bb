@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/message_bundle.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/common/error_utils.h"
+#include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
@@ -28,40 +29,59 @@ ExecuteCodeFunction::~ExecuteCodeFunction() {
 
 void ExecuteCodeFunction::DidLoadFile(bool success,
                                       const std::string& data) {
-  const Extension* extension = GetExtension();
 
-  // Check if the file is CSS and needs localization.
-  if (success &&
-      ShouldInsertCSS() &&
-      extension != NULL &&
-      data.find(MessageBundle::kMessageBegin) != std::string::npos) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ExecuteCodeFunction::LocalizeCSS, this,
-                   data,
-                   extension->id(),
-                   extension->path(),
-                   LocaleInfo::GetDefaultLocale(extension)));
-  } else {
+  if (!success || !details_->file) {
     DidLoadAndLocalizeFile(success, data);
+    return;
   }
+
+  ScriptExecutor::ScriptType script_type =
+      ShouldInsertCSS() ? ScriptExecutor::CSS : ScriptExecutor::JAVASCRIPT;
+
+  std::string extension_id;
+  base::FilePath extension_path;
+  std::string extension_default_locale;
+  const Extension* extension = GetExtension();
+  if (extension) {
+    extension_id = extension->id();
+    extension_path = extension->path();
+    extension_default_locale = LocaleInfo::GetDefaultLocale(extension);
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ExecuteCodeFunction::GetFileURLAndLocalizeCSS, this,
+                  script_type,
+                  data,
+                  extension_id,
+                  extension_path,
+                  extension_default_locale));
 }
 
-void ExecuteCodeFunction::LocalizeCSS(
+void ExecuteCodeFunction::GetFileURLAndLocalizeCSS(
+    ScriptExecutor::ScriptType script_type,
     const std::string& data,
     const std::string& extension_id,
     const base::FilePath& extension_path,
     const std::string& extension_default_locale) {
-  scoped_ptr<SubstitutionMap> localization_messages(
-      extension_file_util::LoadMessageBundleSubstitutionMap(
-          extension_path, extension_id, extension_default_locale));
 
-  // We need to do message replacement on the data, so it has to be mutable.
-  std::string css_data = data;
-  std::string error;
-  MessageBundle::ReplaceMessagesWithExternalDictionary(*localization_messages,
-                                                       &css_data,
-                                                       &error);
+  std::string localized_data = data;
+  // Check if the file is CSS and needs localization.
+  if ((script_type == ScriptExecutor::CSS) &&
+      !extension_id.empty() &&
+      (data.find(MessageBundle::kMessageBegin) != std::string::npos)) {
+    scoped_ptr<SubstitutionMap> localization_messages(
+        extension_file_util::LoadMessageBundleSubstitutionMap(
+            extension_path, extension_id, extension_default_locale));
+
+    // We need to do message replacement on the data, so it has to be mutable.
+    std::string error;
+    MessageBundle::ReplaceMessagesWithExternalDictionary(*localization_messages,
+                                                         &localized_data,
+                                                         &error);
+  }
+
+  file_url_ = net::FilePathToFileURL(resource_.GetFilePath());
 
   // Call back DidLoadAndLocalizeFile on the UI thread. The success parameter
   // is always true, because if loading had failed, we wouldn't have had
@@ -69,7 +89,7 @@ void ExecuteCodeFunction::LocalizeCSS(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
-                 true, css_data));
+                 true, localized_data));
 }
 
 void ExecuteCodeFunction::DidLoadAndLocalizeFile(bool success,
@@ -129,6 +149,7 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
       ScriptExecutor::ISOLATED_WORLD,
       IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS
                   : ScriptExecutor::DEFAULT_PROCESS,
+      file_url_,
       has_callback() ? ScriptExecutor::JSON_SERIALIZED_RESULT
                      : ScriptExecutor::NO_RESULT,
       base::Bind(&ExecuteCodeFunction::OnExecuteCodeFinished, this));

@@ -1350,6 +1350,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
             UserScript::DOCUMENT_IDLE,
             ScriptExecutor::MAIN_WORLD,
             ScriptExecutor::DEFAULT_PROCESS,
+            GURL(),
             ScriptExecutor::NO_RESULT,
             base::Bind(&TabsUpdateFunction::OnExecuteCodeFinished, this));
 

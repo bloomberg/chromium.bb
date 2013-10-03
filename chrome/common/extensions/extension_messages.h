@@ -122,6 +122,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // content scripts and executeScript() calls without a response callback
   // are examples of when this will be false.
   IPC_STRUCT_MEMBER(bool, wants_result)
+
+  // The URL of the file that was injected, if any.
+  IPC_STRUCT_MEMBER(GURL, file_url)
 IPC_STRUCT_END()
 
 // Struct containing the data for external connections to extensions. Used to

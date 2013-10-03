@@ -116,6 +116,7 @@ void ScriptExecutor::ExecuteScript(
     UserScript::RunLocation run_at,
     ScriptExecutor::WorldType world_type,
     ScriptExecutor::ProcessType process_type,
+    const GURL& file_url,
     ScriptExecutor::ResultType result_type,
     const ExecuteScriptCallback& callback) {
   ExtensionMsg_ExecuteCode_Params params;
@@ -127,6 +128,7 @@ void ScriptExecutor::ExecuteScript(
   params.run_at = static_cast<int>(run_at);
   params.in_main_world = (world_type == MAIN_WORLD);
   params.is_web_view = (process_type == WEB_VIEW_PROCESS);
+  params.file_url = file_url;
   params.wants_result = (result_type == JSON_SERIALIZED_RESULT);
 
   // Handler handles IPCs and deletes itself on completion.

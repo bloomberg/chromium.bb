@@ -86,6 +86,7 @@ class ScriptExecutor {
                      UserScript::RunLocation run_at,
                      WorldType world_type,
                      ProcessType process_type,
+                     const GURL& file_url,
                      ResultType result_type,
                      const ExecuteScriptCallback& callback);
 
