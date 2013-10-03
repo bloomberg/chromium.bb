@@ -32,6 +32,7 @@
 #ifndef SocketStreamHandle_h
 #define SocketStreamHandle_h
 
+#include "platform/PlatformExport.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -42,7 +43,7 @@ namespace WebCore {
 class SocketStreamHandleClient;
 class SocketStreamHandleInternal;
 
-class SocketStreamHandle : public RefCounted<SocketStreamHandle> {
+class PLATFORM_EXPORT SocketStreamHandle : public RefCounted<SocketStreamHandle> {
 public:
     enum SocketStreamState { Connecting, Open, Closing, Closed };
 
@@ -78,4 +79,4 @@ private:
 
 } // namespace WebCore
 
-#endif  // SocketStreamHandle_h
+#endif // SocketStreamHandle_h

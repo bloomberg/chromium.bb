@@ -32,13 +32,14 @@
 #ifndef SocketStreamError_h
 #define SocketStreamError_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class SocketStreamError : public RefCounted<SocketStreamError> {
+class PLATFORM_EXPORT SocketStreamError : public RefCounted<SocketStreamError> {
 public:
     static PassRefPtr<SocketStreamError> create(int errorCode, const String& errorMessage)
     {
@@ -70,6 +71,6 @@ private:
 inline bool operator==(const SocketStreamError& a, const SocketStreamError& b) { return SocketStreamError::compare(a, b); }
 inline bool operator!=(const SocketStreamError& a, const SocketStreamError& b) { return !(a == b); }
 
-}  // namespace WebCore
+} // namespace WebCore
 
-#endif  // SocketStreamError_h
+#endif // SocketStreamError_h

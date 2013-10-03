@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "core/platform/network/SocketStreamHandle.h"
+#include "platform/network/SocketStreamHandle.h"
 
 #include "platform/Logging.h"
 #include "platform/NotImplemented.h"
-#include "core/platform/network/SocketStreamError.h"
-#include "core/platform/network/SocketStreamHandleClient.h"
-#include "core/platform/network/SocketStreamHandleInternal.h"
+#include "platform/network/SocketStreamError.h"
+#include "platform/network/SocketStreamHandleClient.h"
+#include "platform/network/SocketStreamHandleInternal.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSocketStreamError.h"
@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-static const unsigned int bufferSize = 100 * 1024 * 1024;
+static const unsigned bufferSize = 100 * 1024 * 1024;
 
 SocketStreamHandleInternal::SocketStreamHandleInternal(SocketStreamHandle* handle)
     : m_handle(handle)
@@ -278,4 +278,4 @@ void SocketStreamHandle::closeInternal()
         m_internal->close();
 }
 
-}  // namespace WebCore
+} // namespace WebCore

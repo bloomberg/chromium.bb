@@ -35,7 +35,7 @@
 #include "WebString.h"
 #include <url/third_party/mozilla/url_parse.h>
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WebCore { class KURL; }
 #else
 #include <url/gurl.h>
@@ -43,7 +43,7 @@ namespace WebCore { class KURL; }
 
 namespace WebKit {
 
-class WebURL {
+class BLINK_PLATFORM_EXPORT WebURL {
 public:
     ~WebURL()
     {
@@ -101,7 +101,7 @@ public:
         return m_string.isEmpty();
     }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     WebURL(const WebCore::KURL&);
     WebURL& operator=(const WebCore::KURL&);
     operator WebCore::KURL() const;

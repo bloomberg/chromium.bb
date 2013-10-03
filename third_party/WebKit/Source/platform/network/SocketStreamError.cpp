@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2009, 2011, 2012 Google Inc.  All rights reserved.
+ * Copyright (C) 2009 Google Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,28 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SocketStreamHandleClient_h
-#define SocketStreamHandleClient_h
+#include "config.h"
+#include "platform/network/SocketStreamError.h"
 
 namespace WebCore {
 
-    class KURL;
-    class SocketStreamError;
-    class SocketStreamHandle;
+bool SocketStreamError::compare(const SocketStreamError& a, const SocketStreamError& b)
+{
+    if (a.isNull() && b.isNull())
+        return true;
 
-    class SocketStreamHandleClient {
-    public:
-        virtual ~SocketStreamHandleClient() { }
+    if (a.isNull() || b.isNull())
+        return false;
 
-        virtual void willOpenSocketStream(SocketStreamHandle*) { }
-        virtual void didOpenSocketStream(SocketStreamHandle*) { }
-        virtual void didCloseSocketStream(SocketStreamHandle*) { }
-        virtual void didReceiveSocketStreamData(SocketStreamHandle*, const char* /*data*/, int /*length*/) { }
-        virtual void didUpdateBufferedAmount(SocketStreamHandle*, size_t /*bufferedAmount*/) { }
+    if (a.errorCode() != b.errorCode())
+        return false;
 
-        virtual void didFailSocketStream(SocketStreamHandle*, const SocketStreamError&) { }
-    };
+    if (a.failingURL() != b.failingURL())
+        return false;
 
-}  // namespace WebCore
+    if (a.localizedDescription() != b.localizedDescription())
+        return false;
 
-#endif  // SocketStreamHandleClient_h
+    return true;
+}
+
+} // namespace WebCore

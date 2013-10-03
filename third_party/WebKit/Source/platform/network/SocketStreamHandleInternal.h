@@ -31,22 +31,21 @@
 #ifndef SocketStreamHandleInternal_h
 #define SocketStreamHandleInternal_h
 
-#include "core/platform/network/SocketStreamHandle.h"
+#include "platform/network/SocketStreamHandle.h"
 #include "public/platform/WebSocketStreamHandleClient.h"
 #include "public/platform/WebURL.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebKit {
-
 class WebData;
 class WebSocketStreamError;
 class WebSocketStreamHandle;
-
 }
 
 namespace WebCore {
 
-class SocketStreamHandleInternal : public WebKit::WebSocketStreamHandleClient {
+class PLATFORM_EXPORT SocketStreamHandleInternal : public WebKit::WebSocketStreamHandleClient {
+    WTF_MAKE_NONCOPYABLE(SocketStreamHandleInternal);
 public:
     static PassOwnPtr<SocketStreamHandleInternal> create(SocketStreamHandle* handle)
     {
