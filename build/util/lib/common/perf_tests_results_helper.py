@@ -92,10 +92,15 @@ def PrintPerfResult(measurement, trace, values, units,
 
   The string args may be empty but they must not contain any colons (:) or
   equals signs (=).
+  This is parsed by the buildbot using:
+  http://src.chromium.org/viewvc/chrome/trunk/tools/build/scripts/slave/process_log_utils.py
 
   Args:
     measurement: A description of the quantity being measured, e.g. "vm_peak".
+        On the dashboard, this maps to a particular graph. Mandatory.
     trace: A description of the particular data point, e.g. "reference".
+        On the dashboard, this maps to a particular "line" in the graph.
+        Mandatory.
     values: A list of numeric measured values. An N-dimensional list will be
         flattened and treated as a simple list.
     units: A description of the units of measure, e.g. "bytes".
