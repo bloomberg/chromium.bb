@@ -7219,3 +7219,35 @@
    fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
+{
+   bug_301900
+   Memcheck:Unaddressable
+   fun:_Z7GrCrashPKc
+   fun:_ZN19GrInOrderDrawBuffer6onDrawERKN12GrDrawTarget8DrawInfoE
+   fun:_ZN12GrDrawTarget20drawIndexedInstancesE15GrPrimitiveTypeiiiPK6SkRect
+   fun:_ZN19GrInOrderDrawBuffer10onDrawRectERK6SkRectPK8SkMatrixPS1_S5_
+   fun:_ZN12GrDrawTarget8drawRectERK6SkRectPK8SkMatrixPS1_S5_
+   ...
+   fun:_ZN13SkGPipeReader8playbackEPKvmjPm
+   fun:_ZN22DeferredPipeController8playbackEb
+   fun:_ZN14DeferredDevice20flushPendingCommandsE12PlaybackMode
+   fun:_ZN14DeferredDevice14onAccessBitmapEv
+   fun:_ZN12SkBaseDevice12accessBitmapEb
+   fun:_ZN12SkBaseDevice10readPixelsEP8SkBitmapiiN8SkCanvas10Config8888E
+   fun:_ZN8SkCanvas10readPixelsEP8SkBitmapiiNS_10Config8888E
+   fun:_ZN7WebCore15GraphicsContext10readPixelsEP8SkBitmapiiN8SkCanvas10Config8888E
+}
+{
+   bug_303546
+   Memcheck:Leak
+   ...
+   fun:_ZN16SkDeferredCanvas6CreateEP9SkSurface
+   fun:_ZN7WebCore19Canvas2DLayerBridge6createEN3WTF10PassRefPtrINS_17GraphicsContext3DEEERKNS_7IntSizeENS0_11OpacityModeE
+   fun:_ZN7WebCoreL23createAcceleratedCanvasERKNS_7IntSizeEPNS_22Canvas2DLayerBridgePtrENS_11OpacityModeE
+   fun:_ZN7WebCore11ImageBufferC1ERKNS_7IntSizeEfNS_13RenderingModeENS_11OpacityModeERb
+   fun:_ZN7WebCore11ImageBuffer6createERKNS_7IntSizeEfNS_13RenderingModeENS_11OpacityModeE
+   fun:_ZN7WebCore17HTMLCanvasElement17createImageBufferEv
+   fun:_ZNK7WebCore17HTMLCanvasElement6bufferEv
+   fun:_ZNK7WebCore17HTMLCanvasElement14drawingContextEv
+   fun:_ZNK7WebCore24CanvasRenderingContext2D14drawingContextEv
+}
