@@ -12,6 +12,7 @@
 #include "ash/accelerators/focus_manager_factory.h"
 #include "ash/accelerators/nested_dispatcher_controller.h"
 #include "ash/ash_switches.h"
+#include "ash/autoclick/autoclick_controller.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_view.h"
@@ -520,6 +521,8 @@ void Shell::Init() {
 
   partial_magnification_controller_.reset(
       new PartialMagnificationController());
+
+  autoclick_controller_.reset(AutoclickController::CreateInstance());
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
