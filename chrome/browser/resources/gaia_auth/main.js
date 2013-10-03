@@ -9,6 +9,13 @@ function Authenticator() {
 }
 
 /**
+ * Gaia auth extension url origin.
+ * @type {string}
+ */
+Authenticator.THIS_EXTENSION_ORIGIN =
+    'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik';
+
+/**
  * Singleton getter of Authenticator.
  * @return {Object} The singleton instance of Authenticator.
  */
@@ -34,7 +41,6 @@ Authenticator.prototype = {
   GAIA_URL: 'https://accounts.google.com/',
   GAIA_PAGE_PATH: 'ServiceLogin?service=chromeoslogin' +
       '&skipvpage=true&sarp=1&rm=hide',
-  THIS_EXTENSION_ORIGIN: 'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik',
   PARENT_PAGE: 'chrome://oobe/',
   CONTINUE_URL: Authenticator.THIS_EXTENSION_ORIGIN + '/success.html',
 
@@ -58,7 +64,7 @@ Authenticator.prototype = {
   },
 
   isInternalMessage_: function(msg) {
-    return msg.origin == this.THIS_EXTENSION_ORIGIN;
+    return msg.origin == Authenticator.THIS_EXTENSION_ORIGIN;
   },
 
   isParentMessage_: function(msg) {
