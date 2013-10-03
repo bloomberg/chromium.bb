@@ -554,8 +554,6 @@ class GitCheckout(CheckoutBase):
   """Manages a git checkout."""
   def __init__(self, root_dir, project_name, remote_branch, git_url,
       commit_user, post_processors=None):
-    assert git_url
-    assert commit_user
     super(GitCheckout, self).__init__(root_dir, project_name, post_processors)
     self.git_url = git_url
     self.commit_user = commit_user
@@ -565,6 +563,8 @@ class GitCheckout(CheckoutBase):
     self.working_branch = 'working_branch'
     # There is no reason to not hardcode origin.
     self.remote = 'origin'
+    # There is no reason to not hardcode master.
+    self.master_branch = 'master'
 
   def prepare(self, revision):
     """Resets the git repository in a clean state.
@@ -572,6 +572,7 @@ class GitCheckout(CheckoutBase):
     Checks it out if not present and deletes the working branch.
     """
     assert self.remote_branch
+    assert self.git_url
 
     if not os.path.isdir(self.project_path):
       # Clone the repo if the directory is not present.
@@ -599,8 +600,9 @@ class GitCheckout(CheckoutBase):
       self._check_call_git(['checkout', '--force', '--quiet', revision])
     else:
       branches, active = self._branches()
-      if active != 'master':
-        self._check_call_git(['checkout', '--force', '--quiet', 'master'])
+      if active != self.master_branch:
+        self._check_call_git(
+            ['checkout', '--force', '--quiet', self.master_branch])
       self._sync_remote_branch()
 
       if self.working_branch in branches:
@@ -709,13 +711,15 @@ class GitCheckout(CheckoutBase):
       cmd.append('--verbose')
     self._check_call_git(cmd)
     found_files = self._check_output_git(
-        ['diff', '%s/%s' % (self.remote, self.remote_branch),
+        ['diff', '%s/%s' % (self.remote,
+                            self.remote_branch or self.master_branch),
          '--name-only']).splitlines(False)
     assert sorted(patches.filenames) == sorted(found_files), (
         sorted(patches.filenames), sorted(found_files))
 
   def commit(self, commit_message, user):
     """Commits, updates the commit message and pushes."""
+    assert self.commit_user
     assert isinstance(commit_message, unicode)
     current_branch = self._check_output_git(
         ['rev-parse', '--abbrev-ref', 'HEAD']).strip()
