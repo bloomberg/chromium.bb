@@ -549,14 +549,12 @@ int SyncedNotification::GetPriority() const {
   // Convert the prioroty to the scheme used by the notification center.
   if (protobuf_priority ==
       sync_pb::CoalescedSyncedNotification_Priority_LOW) {
-    return message_center::LOW_PRIORITY;
+    return message_center::MIN_PRIORITY;
   } else if (protobuf_priority ==
              sync_pb::CoalescedSyncedNotification_Priority_STANDARD) {
-    return message_center::DEFAULT_PRIORITY;
+    return message_center::LOW_PRIORITY;
   } else if (protobuf_priority ==
              sync_pb::CoalescedSyncedNotification_Priority_HIGH) {
-    // High priority synced notifications are considered default priority in
-    // Chrome.
     return message_center::DEFAULT_PRIORITY;
   } else {
     // Complain if this is a new priority we have not seen before.
