@@ -63,22 +63,25 @@ PassRefPtr<Player> DocumentTimeline::play(TimedItem* child)
 
 void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
-    // FIXME: The below ASSERT fires on Windows when running chrome.exe.
-    // Does not fire with --single-process, or on Linux, or in
-    // content_shell.exe. The assert condition has been moved up into the
-    // outer 'if' to work around this. http://crbug.com/280439.
-    if (!isNull(m_zeroTimeAsPerfTime) && (m_currentTime <= monotonicAnimationStartTime - m_zeroTimeAsPerfTime)) {
-        ASSERT(m_currentTime <= monotonicAnimationStartTime - m_zeroTimeAsPerfTime);
-        m_currentTime = monotonicAnimationStartTime - m_zeroTimeAsPerfTime;
-    }
+    {
+        TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
+        // FIXME: The below ASSERT fires on Windows when running chrome.exe.
+        // Does not fire with --single-process, or on Linux, or in
+        // content_shell.exe. The assert condition has been moved up into the
+        // outer 'if' to work around this. http://crbug.com/280439.
+        if (!isNull(m_zeroTimeAsPerfTime) && (m_currentTime <= monotonicAnimationStartTime - m_zeroTimeAsPerfTime)) {
+            ASSERT(m_currentTime <= monotonicAnimationStartTime - m_zeroTimeAsPerfTime);
+            m_currentTime = monotonicAnimationStartTime - m_zeroTimeAsPerfTime;
+        }
 
-    for (int i = m_players.size() - 1; i >= 0; --i) {
-        if (!m_players[i]->update())
-            m_players.remove(i);
-    }
+        for (int i = m_players.size() - 1; i >= 0; --i) {
+            if (!m_players[i]->update())
+                m_players.remove(i);
+        }
 
-    if (m_document->view() && !m_players.isEmpty())
-        m_document->view()->scheduleAnimation();
+        if (m_document->view() && !m_players.isEmpty())
+            m_document->view()->scheduleAnimation();
+    }
 
     dispatchEvents();
 }
