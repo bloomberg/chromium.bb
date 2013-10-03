@@ -49,12 +49,6 @@ inline SVGAnimateMotionElement::SVGAnimateMotionElement(const QualifiedName& tag
     ScriptWrappable::init(this);
 }
 
-SVGAnimateMotionElement::~SVGAnimateMotionElement()
-{
-    if (targetElement())
-        clearAnimatedType(targetElement());
-}
-
 PassRefPtr<SVGAnimateMotionElement> SVGAnimateMotionElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGAnimateMotionElement(tagName, document));

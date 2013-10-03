@@ -84,7 +84,6 @@ SVGElement::SVGElement(const QualifiedName& tagName, Document& document, Constru
 
 SVGElement::~SVGElement()
 {
-    SVGAnimatedProperty::detachAnimatedPropertiesWrappersForElement(this);
     if (!hasSVGRareData())
         ASSERT(!SVGElementRareData::rareDataMap().contains(this));
     else {
@@ -112,7 +111,6 @@ SVGElement::~SVGElement()
     }
     document().accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
     document().accessSVGExtensions()->removeAllElementReferencesForTarget(this);
-    SVGAnimatedProperty::detachAnimatedPropertiesForElement(this);
 
     ASSERT(inDocument() || !hasRelativeLengths());
 }

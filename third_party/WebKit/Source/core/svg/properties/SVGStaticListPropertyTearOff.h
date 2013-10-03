@@ -43,8 +43,6 @@ public:
         return adoptRef(new SVGStaticListPropertyTearOff<PropertyType>(contextElement, values));
     }
 
-    SVGElement* contextElement() const { return m_contextElement; }
-
     // SVGList API
     void clear(ExceptionState& es)
     {
@@ -96,8 +94,7 @@ private:
     virtual void commitChange()
     {
         ASSERT(m_values);
-        ASSERT(m_contextElement);
-        m_values->commitChange(m_contextElement);
+        m_values->commitChange(m_contextElement.get());
     }
 
     virtual bool processIncomingListItemValue(const ListItemType&, unsigned*)
@@ -113,7 +110,7 @@ private:
     }
 
 private:
-    SVGElement* m_contextElement;
+    RefPtr<SVGElement> m_contextElement;
 };
 
 }
