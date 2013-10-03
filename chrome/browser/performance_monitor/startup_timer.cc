@@ -102,11 +102,13 @@ void StartupTimer::Observe(int type,
 // static
 void StartupTimer::SetElapsedSessionRestoreTime(
     const base::TimeDelta& elapsed_session_restore_time) {
-  g_startup_timer_->elapsed_session_restore_times_.push_back(
-      elapsed_session_restore_time);
+  if (PerformanceMonitor::GetInstance()->database_logging_enabled()) {
+    g_startup_timer_->elapsed_session_restore_times_.push_back(
+        elapsed_session_restore_time);
 
-  if (g_startup_timer_->performance_monitor_initialized_)
-    g_startup_timer_->InsertElapsedSessionRestoreTime();
+    if (g_startup_timer_->performance_monitor_initialized_)
+      g_startup_timer_->InsertElapsedSessionRestoreTime();
+  }
 }
 
 void StartupTimer::InsertElapsedStartupTime() {
