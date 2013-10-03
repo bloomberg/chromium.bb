@@ -276,32 +276,9 @@ void ReplaceString(std::string* str,
 
 /********************* Tests *********************/
 
-TEST_F(ProfileResetterTest, ResetDefaultSearchEngine) {
-  // Search engine's logic is tested by
-  // TemplateURLServiceTest.ResetURLs.
-  PrefService* prefs = profile()->GetPrefs();
-  DCHECK(prefs);
-  prefs->SetString(prefs::kLastPromptedGoogleURL, "http://www.foo.com/");
-
-  scoped_refptr<Extension> extension = CreateExtension(
-      ASCIIToUTF16("xxx"),
-      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
-      Manifest::COMPONENT,
-      extensions::Manifest::TYPE_EXTENSION,
-      false);
-  service_->AddExtension(extension.get());
-
-  ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE);
-
-  // TemplateURLService should reset extension search engines.
-  TemplateURLService* model =
-      TemplateURLServiceFactory::GetForProfile(profile());
-  TemplateURL* ext_url = model->GetTemplateURLForKeyword(ASCIIToUTF16("xxx"));
-  ASSERT_TRUE(ext_url);
-  EXPECT_TRUE(ext_url->IsExtensionKeyword());
-  EXPECT_EQ(ASCIIToUTF16("xxx"), ext_url->keyword());
-  EXPECT_EQ(ASCIIToUTF16("xxx"), ext_url->short_name());
-  EXPECT_EQ("", prefs->GetString(prefs::kLastPromptedGoogleURL));
+TEST_F(ProfileResetterTest, ResetNothing) {
+  // The callback should be called even if there is nothing to reset.
+  ResetAndWait(0);
 }
 
 TEST_F(ProfileResetterTest, ResetDefaultSearchEngineNonOrganic) {
@@ -313,7 +290,6 @@ TEST_F(ProfileResetterTest, ResetDefaultSearchEngineNonOrganic) {
 
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(profile());
-  EXPECT_EQ(1u, model->GetTemplateURLs().size());
   TemplateURL* default_engine = model->GetDefaultSearchProvider();
   ASSERT_NE(static_cast<TemplateURL*>(NULL), default_engine);
   EXPECT_EQ(ASCIIToUTF16("first"), default_engine->short_name());
@@ -323,18 +299,25 @@ TEST_F(ProfileResetterTest, ResetDefaultSearchEngineNonOrganic) {
   EXPECT_EQ("", prefs->GetString(prefs::kLastPromptedGoogleURL));
 }
 
-TEST_F(ProfileResetterTest, ResetHomepage) {
+TEST_F(ProfileResetterTest, ResetDefaultSearchEnginePartially) {
+  // Search engine's logic is tested by
+  // TemplateURLServiceTest.RepairPrepopulatedSearchEngines.
   PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
-  prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
-  prefs->SetString(prefs::kHomePage, "http://google.com");
-  prefs->SetBoolean(prefs::kShowHomeButton, true);
+  prefs->SetString(prefs::kLastPromptedGoogleURL, "http://www.foo.com/");
 
-  ResetAndWait(ProfileResetter::HOMEPAGE);
+  // Make sure TemplateURLService has loaded.
+  ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE);
 
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
-  EXPECT_EQ(std::string(), prefs->GetString(prefs::kHomePage));
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kShowHomeButton));
+  TemplateURLService* model =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLService::TemplateURLVector urls = model->GetTemplateURLs();
+
+  // The second call should produce no effect.
+  ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE);
+
+  EXPECT_EQ(urls, model->GetTemplateURLs());
+  EXPECT_EQ(std::string(), prefs->GetString(prefs::kLastPromptedGoogleURL));
 }
 
 TEST_F(ProfileResetterTest, ResetHomepageNonOrganic) {
@@ -349,6 +332,20 @@ TEST_F(ProfileResetterTest, ResetHomepageNonOrganic) {
   EXPECT_FALSE(prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
   EXPECT_EQ("http://www.foo.com", prefs->GetString(prefs::kHomePage));
   EXPECT_TRUE(prefs->GetBoolean(prefs::kShowHomeButton));
+}
+
+TEST_F(ProfileResetterTest, ResetHomepagePartially) {
+  PrefService* prefs = profile()->GetPrefs();
+  DCHECK(prefs);
+  prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
+  prefs->SetString(prefs::kHomePage, "http://www.foo.com");
+  prefs->SetBoolean(prefs::kShowHomeButton, true);
+
+  ResetAndWait(ProfileResetter::HOMEPAGE);
+
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
+  EXPECT_EQ("http://www.foo.com", prefs->GetString(prefs::kHomePage));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kShowHomeButton));
 }
 
 TEST_F(ProfileResetterTest, ResetContentSettings) {
@@ -572,22 +569,6 @@ TEST_F(ProfileResetterTest, ResetExtensionsAndDefaultApps) {
   EXPECT_TRUE(theme_service->UsingDefaultTheme());
 }
 
-TEST_F(ProfileResetterTest, ResetStartPage) {
-  PrefService* prefs = profile()->GetPrefs();
-  DCHECK(prefs);
-
-  SessionStartupPref startup_pref(SessionStartupPref::URLS);
-  startup_pref.urls.push_back(GURL("http://foo"));
-  startup_pref.urls.push_back(GURL("http://bar"));
-  SessionStartupPref::SetStartupPref(prefs, startup_pref);
-
-  ResetAndWait(ProfileResetter::STARTUP_PAGES);
-
-  startup_pref = SessionStartupPref::GetStartupPref(prefs);
-  EXPECT_EQ(SessionStartupPref::GetDefaultStartupType(), startup_pref.type);
-  EXPECT_EQ(std::vector<GURL>(), startup_pref.urls);
-}
-
 TEST_F(ProfileResetterTest, ResetStartPageNonOrganic) {
   PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
@@ -600,6 +581,23 @@ TEST_F(ProfileResetterTest, ResetStartPageNonOrganic) {
   startup_pref = SessionStartupPref::GetStartupPref(prefs);
   EXPECT_EQ(SessionStartupPref::URLS, startup_pref.type);
   const GURL urls[] = {GURL("http://goo.gl"), GURL("http://foo.de")};
+  EXPECT_EQ(std::vector<GURL>(urls, urls + arraysize(urls)), startup_pref.urls);
+}
+
+
+TEST_F(ProfileResetterTest, ResetStartPagePartially) {
+  PrefService* prefs = profile()->GetPrefs();
+  DCHECK(prefs);
+
+  const GURL urls[] = {GURL("http://foo"), GURL("http://bar")};
+  SessionStartupPref startup_pref(SessionStartupPref::URLS);
+  startup_pref.urls.assign(urls, urls + arraysize(urls));
+  SessionStartupPref::SetStartupPref(prefs, startup_pref);
+
+  ResetAndWait(ProfileResetter::STARTUP_PAGES, std::string());
+
+  startup_pref = SessionStartupPref::GetStartupPref(prefs);
+  EXPECT_EQ(SessionStartupPref::GetDefaultStartupType(), startup_pref.type);
   EXPECT_EQ(std::vector<GURL>(urls, urls + arraysize(urls)), startup_pref.urls);
 }
 
@@ -715,7 +713,8 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   // Reset to non organic defaults.
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
                ProfileResetter::HOMEPAGE |
-               ProfileResetter::STARTUP_PAGES, master_prefs);
+               ProfileResetter::STARTUP_PAGES,
+               master_prefs);
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
   EXPECT_EQ(ResettableSettingsSnapshot::ALL_FIELDS,
@@ -756,7 +755,8 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
   // Reset to non organic defaults.
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
                ProfileResetter::HOMEPAGE |
-               ProfileResetter::STARTUP_PAGES, kDistributionConfig);
+               ProfileResetter::STARTUP_PAGES,
+               kDistributionConfig);
 
   scoped_refptr<Extension> ext = CreateExtension(
       ASCIIToUTF16("example"),
@@ -769,7 +769,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
 
   const ResettableSettingsSnapshot nonorganic_snap(profile());
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 63,
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 15,
                  expand_this_test);
   for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
        ++field_mask) {
@@ -792,13 +792,13 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
     ListValue* extensions;
     int initiator = 0;
 
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_URLS),
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_MODE),
               dict->GetList("startup_urls", &startup_urls));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_TYPE),
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_MODE),
               dict->GetInteger("startup_type", &startup_type));
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
               dict->GetString("homepage", &homepage));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE_IS_NTP),
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
               dict->GetBoolean("homepage_is_ntp", &homepage_is_ntp));
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::DSE_URL),
               dict->GetString("default_search_engine", &default_search_engine));

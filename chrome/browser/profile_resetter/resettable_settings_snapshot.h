@@ -21,15 +21,12 @@ class ResettableSettingsSnapshot {
   typedef std::vector<std::pair<std::string, std::string> > ExtensionList;
   // All types of settings handled by this class.
   enum Field {
-    STARTUP_URLS = 1 << 0,
-    STARTUP_TYPE = 1 << 1,
-    HOMEPAGE = 1 << 2,
-    HOMEPAGE_IS_NTP = 1 << 3,
-    DSE_URL = 1 << 4,
-    EXTENSIONS = 1 << 5,
+    STARTUP_MODE = 1 << 0,
+    HOMEPAGE = 1 << 1,
+    DSE_URL = 1 << 2,
+    EXTENSIONS = 1 << 3,
 
-    ALL_FIELDS = STARTUP_URLS | STARTUP_TYPE | HOMEPAGE |
-                 HOMEPAGE_IS_NTP | DSE_URL | EXTENSIONS,
+    ALL_FIELDS = STARTUP_MODE | HOMEPAGE | DSE_URL | EXTENSIONS,
   };
 
   explicit ResettableSettingsSnapshot(Profile* profile);
@@ -50,7 +47,6 @@ class ResettableSettingsSnapshot {
     return enabled_extensions_;
   }
 
-  // Substitutes |startup_.urls| with |startup_.urls|\|snapshot.startup_.urls|.
   // Substitutes |enabled_extensions_| with
   // |enabled_extensions_|\|snapshot.enabled_extensions_|.
   void Subtract(const ResettableSettingsSnapshot& snapshot);

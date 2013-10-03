@@ -150,6 +150,17 @@ TemplateURL* GetTemplateURLByID(
   return NULL;
 }
 
+TemplateURL* FindURLByPrepopulateID(
+    const TemplateURLService::TemplateURLVector& template_urls,
+    int prepopulate_id) {
+  for (std::vector<TemplateURL*>::const_iterator i = template_urls.begin();
+       i < template_urls.end(); ++i) {
+    if ((*i)->prepopulate_id() == prepopulate_id)
+      return *i;
+  }
+  return NULL;
+}
+
 void MergeIntoPrepopulatedEngineData(TemplateURLData* prepopulated_url,
                                      const TemplateURL* original_turl) {
   DCHECK_EQ(original_turl->prepopulate_id(), prepopulated_url->prepopulate_id);
@@ -164,7 +175,10 @@ void MergeIntoPrepopulatedEngineData(TemplateURLData* prepopulated_url,
   prepopulated_url->last_modified = original_turl->last_modified();
 }
 
-// Merges the provided prepopulated engines with the provided existing engines.
+ActionsFromPrepopulateData::ActionsFromPrepopulateData() {}
+
+ActionsFromPrepopulateData::~ActionsFromPrepopulateData() {}
+
 // This is invoked when the version of the prepopulate data changes.
 // If |removed_keyword_guids| is not NULL, the Sync GUID of each item removed
 // from the DB will be added to it.  Note that this function will take
@@ -178,15 +192,69 @@ void MergeEnginesFromPrepopulateData(
     TemplateURL** default_search_provider,
     std::set<std::string>* removed_keyword_guids) {
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(prepopulated_urls);
   DCHECK(template_urls);
   DCHECK(default_search_provider);
 
+  int default_prepopulated_id =
+      (*prepopulated_urls)[default_search_index]->prepopulate_id();
+  ActionsFromPrepopulateData actions(CreateActionsFromCurrentPrepopulateData(
+      prepopulated_urls, *template_urls, *default_search_provider));
+
+  // Remove items.
+  for (std::vector<TemplateURL*>::iterator i = actions.removed_engines.begin();
+       i < actions.removed_engines.end(); ++i) {
+    scoped_ptr<TemplateURL> template_url(*i);
+    TemplateURLService::TemplateURLVector::iterator j =
+        std::find(template_urls->begin(), template_urls->end(), template_url);
+    DCHECK(j != template_urls->end());
+    DCHECK(*j != *default_search_provider);
+    template_urls->erase(j);
+    if (service) {
+      service->RemoveKeyword(template_url->id());
+      if (removed_keyword_guids)
+        removed_keyword_guids->insert(template_url->sync_guid());
+    }
+  }
+
+  // Edit items.
+  for (EditedEngines::iterator i(actions.edited_engines.begin());
+       i < actions.edited_engines.end(); ++i) {
+    TemplateURLData& data = i->second;
+    scoped_ptr<TemplateURL> existing_url(i->first);
+    if (service)
+      service->UpdateKeyword(data);
+
+    // Replace the entry in |template_urls| with the updated one.
+    TemplateURLService::TemplateURLVector::iterator j = std::find(
+        template_urls->begin(), template_urls->end(), existing_url.get());
+    *j = new TemplateURL(profile, data);
+    if (*default_search_provider == existing_url.get())
+      *default_search_provider = *j;
+  }
+
+  // Add items.
+  template_urls->insert(template_urls->end(), actions.added_engines.begin(),
+                        actions.added_engines.end());
+
+  if (!*default_search_provider) {
+    // The user had no existing default search provider, so set the
+    // default to the default prepopulated engine.
+    *default_search_provider = FindURLByPrepopulateID(*template_urls,
+                                                      default_prepopulated_id);
+  }
+}
+
+ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
+    ScopedVector<TemplateURL>* prepopulated_urls,
+    const TemplateURLService::TemplateURLVector& existing_urls,
+    const TemplateURL* default_search_provider) {
   // Create a map to hold all provided |template_urls| that originally came from
   // prepopulate data (i.e. have a non-zero prepopulate_id()).
   typedef std::map<int, TemplateURL*> IDMap;
   IDMap id_to_turl;
-  for (TemplateURLService::TemplateURLVector::iterator i(
-       template_urls->begin()); i != template_urls->end(); ++i) {
+  for (TemplateURLService::TemplateURLVector::const_iterator i(
+       existing_urls.begin()); i != existing_urls.end(); ++i) {
     int prepopulate_id = (*i)->prepopulate_id();
     if (prepopulate_id > 0)
       id_to_turl[prepopulate_id] = *i;
@@ -195,45 +263,30 @@ void MergeEnginesFromPrepopulateData(
   // For each current prepopulated URL, check whether |template_urls| contained
   // a matching prepopulated URL.  If so, update the passed-in URL to match the
   // current data.  (If the passed-in URL was user-edited, we persist the user's
-  // name and keyword.)  If not, add the prepopulated URL to |template_urls|.
-  // Along the way, point |default_search_provider| at the default prepopulated
-  // URL, if the user hasn't already set another URL as default.
+  // name and keyword.)  If not, add the prepopulated URL.
+  ActionsFromPrepopulateData actions;
   for (size_t i = 0; i < prepopulated_urls->size(); ++i) {
     // We take ownership of |prepopulated_urls[i]|.
     scoped_ptr<TemplateURL> prepopulated_url((*prepopulated_urls)[i]);
     const int prepopulated_id = prepopulated_url->prepopulate_id();
     DCHECK_NE(0, prepopulated_id);
 
-    TemplateURL* url_in_vector = NULL;
     IDMap::iterator existing_url_iter(id_to_turl.find(prepopulated_id));
     if (existing_url_iter != id_to_turl.end()) {
-      // Update the data store with the new prepopulated data.  Preserve user
+      // Update the data store with the new prepopulated data. Preserve user
       // edits to the name and keyword.
       TemplateURLData data(prepopulated_url->data());
-      scoped_ptr<TemplateURL> existing_url(existing_url_iter->second);
+      TemplateURL* existing_url(existing_url_iter->second);
       id_to_turl.erase(existing_url_iter);
-      MergeIntoPrepopulatedEngineData(&data, existing_url.get());
+      MergeIntoPrepopulatedEngineData(&data, existing_url);
       // Update last_modified to ensure that if this entry is later merged with
       // entries from Sync, the conflict resolution logic knows that this was
       // updated and propagates the new values to the server.
       data.last_modified = base::Time::Now();
-      if (service)
-        service->UpdateKeyword(data);
-
-      // Replace the entry in |template_urls| with the updated one.
-      TemplateURLService::TemplateURLVector::iterator j = std::find(
-          template_urls->begin(), template_urls->end(), existing_url.get());
-      *j = new TemplateURL(profile, data);
-      url_in_vector = *j;
-      if (*default_search_provider == existing_url.get())
-        *default_search_provider = url_in_vector;
+      actions.edited_engines.push_back(std::make_pair(existing_url, data));
     } else {
-      template_urls->push_back(prepopulated_url.release());
-      url_in_vector = template_urls->back();
+      actions.added_engines.push_back(prepopulated_url.release());
     }
-    DCHECK(url_in_vector);
-    if (i == default_search_index && !*default_search_provider)
-      *default_search_provider = url_in_vector;
   }
   // The above loop takes ownership of all the contents of prepopulated_urls.
   // Clear the pointers.
@@ -244,21 +297,13 @@ void MergeEnginesFromPrepopulateData(
   // found in the prepopulate data.  Any remaining URLs that haven't been
   // user-edited or made default can be removed from the data store.
   for (IDMap::iterator i(id_to_turl.begin()); i != id_to_turl.end(); ++i) {
-    const TemplateURL* template_url = i->second;
+    TemplateURL* template_url = i->second;
     if ((template_url->safe_for_autoreplace()) &&
-        (template_url != *default_search_provider)) {
-      TemplateURLService::TemplateURLVector::iterator j =
-          std::find(template_urls->begin(), template_urls->end(), template_url);
-      DCHECK(j != template_urls->end());
-      template_urls->erase(j);
-       if (service) {
-         service->RemoveKeyword(template_url->id());
-         if (removed_keyword_guids)
-           removed_keyword_guids->insert(template_url->sync_guid());
-       }
-      delete template_url;
-    }
+        (template_url != default_search_provider))
+      actions.removed_engines.push_back(template_url);
   }
+
+  return actions;
 }
 
 void GetSearchProvidersUsingKeywordResult(
@@ -321,10 +366,10 @@ void GetSearchProvidersUsingLoadedEngines(
   DCHECK(default_search_provider);
   DCHECK(resource_keyword_version);
 
-  ScopedVector<TemplateURL> prepopulated_urls;
   size_t default_search_index;
-  TemplateURLPrepopulateData::GetPrepopulatedEngines(profile,
-      &prepopulated_urls.get(), &default_search_index);
+  ScopedVector<TemplateURL> prepopulated_urls =
+      TemplateURLPrepopulateData::GetPrepopulatedEngines(profile,
+                                                         &default_search_index);
   RemoveDuplicatePrepopulateIDs(service, prepopulated_urls,
                                 *default_search_provider, template_urls,
                                 removed_keyword_guids);

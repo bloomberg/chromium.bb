@@ -14,6 +14,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -47,14 +48,19 @@ void ProfileResetter::Reset(
   DCHECK(CalledOnValidThread());
   DCHECK(master_settings);
 
-  master_settings_.swap(master_settings);
-
   // We should never be called with unknown flags.
   CHECK_EQ(static_cast<ResettableFlags>(0), resettable_flags & ~ALL);
 
   // We should never be called when a previous reset has not finished.
   CHECK_EQ(static_cast<ResettableFlags>(0), pending_reset_flags_);
 
+  if (!resettable_flags) {
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     callback);
+    return;
+  }
+
+  master_settings_.swap(master_settings);
   callback_ = callback;
 
   // These flags are set to false by the individual reset functions.
@@ -63,7 +69,7 @@ void ProfileResetter::Reset(
   struct {
     Resettable flag;
     void (ProfileResetter::*method)();
-  } flag2Method [] = {
+  } flagToMethod [] = {
       { DEFAULT_SEARCH_ENGINE, &ProfileResetter::ResetDefaultSearchEngine },
       { HOMEPAGE, &ProfileResetter::ResetHomepage },
       { CONTENT_SETTINGS, &ProfileResetter::ResetContentSettings },
@@ -74,10 +80,10 @@ void ProfileResetter::Reset(
   };
 
   ResettableFlags reset_triggered_for_flags = 0;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flag2Method); ++i) {
-    if (resettable_flags & flag2Method[i].flag) {
-      reset_triggered_for_flags |= flag2Method[i].flag;
-      (this->*flag2Method[i].method)();
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flagToMethod); ++i) {
+    if (resettable_flags & flagToMethod[i].flag) {
+      reset_triggered_for_flags |= flagToMethod[i].flag;
+      (this->*flagToMethod[i].method)();
     }
   }
 
@@ -124,7 +130,7 @@ void ProfileResetter::ResetDefaultSearchEngine() {
       update->Swap(search_engines.get());
     }
 
-    template_url_service_->ResetURLs();
+    template_url_service_->RepairPrepopulatedSearchEngines();
 
     // Reset Google search URL.
     prefs->ClearPref(prefs::kLastPromptedGoogleURL);
@@ -149,8 +155,6 @@ void ProfileResetter::ResetHomepage() {
 
   if (master_settings_->GetHomepage(&homepage))
     prefs->SetString(prefs::kHomePage, homepage);
-  else
-    prefs->ClearPref(prefs::kHomePage);
 
   if (master_settings_->GetHomepageIsNewTab(&homepage_is_ntp))
     prefs->SetBoolean(prefs::kHomePageIsNewTabPage, homepage_is_ntp);
@@ -217,8 +221,6 @@ void ProfileResetter::ResetStartupPages() {
   scoped_ptr<ListValue> url_list(master_settings_->GetUrlsToRestoreOnStartup());
   if (url_list)
     ListPrefUpdate(prefs, prefs::kURLsToRestoreOnStartup)->Swap(url_list.get());
-  else
-    prefs->ClearPref(prefs::kURLsToRestoreOnStartup);
 
   int restore_on_startup;
   if (master_settings_->GetRestoreOnStartup(&restore_on_startup))

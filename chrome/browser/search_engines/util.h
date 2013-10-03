@@ -27,10 +27,54 @@ string16 GetDefaultSearchEngineName(Profile* profile);
 // |profile|.
 GURL GetDefaultSearchURLForSearchTerms(Profile* profile, const string16& terms);
 
+// Returns matching URL from |template_urls| or NULL.
+TemplateURL* FindURLByPrepopulateID(
+    const TemplateURLService::TemplateURLVector& template_urls,
+    int prepopulate_id);
+
 // Modifies |prepopulated_url| so that it contains user-modified fields from
 // |original_turl|. Both URLs must have the same prepopulate_id.
 void MergeIntoPrepopulatedEngineData(TemplateURLData* prepopulated_url,
                                      const TemplateURL* original_turl);
+
+// CreateActionsFromCurrentPrepopulateData() (see below) takes in the current
+// prepopulated URLs as well as the user's current URLs, and returns an instance
+// of the following struct representing the changes necessary to bring the
+// user's URLs in line with the prepopulated URLs.
+//
+// There are three types of changes:
+// (1) Previous prepopulated engines that no longer exist in the current set of
+//     prepopulated engines and thus should be removed from the user's current
+//     URLs.
+// (2) Previous prepopulated engines whose data has changed.  The existing
+//     entries for these engines should be updated to reflect the new data,
+//     except for any user-set names and keywords, which can be preserved.
+// (3) New prepopulated engines not in the user's engine list, which should be
+//     added.
+
+// The pair of current search engine and its new value.
+typedef std::pair<TemplateURL*, TemplateURLData> EditedSearchEngine;
+typedef std::vector<EditedSearchEngine> EditedEngines;
+
+struct ActionsFromPrepopulateData {
+  ActionsFromPrepopulateData();
+  ~ActionsFromPrepopulateData();
+
+  TemplateURLService::TemplateURLVector removed_engines;
+  EditedEngines edited_engines;
+  TemplateURLService::TemplateURLVector added_engines;
+};
+
+// Given the user's current URLs and the current set of prepopulated URLs,
+// produces the set of actions (see above) required to make the user's URLs
+// reflect the prepopulate data.  |default_search_provider| is used to avoid
+// placing the current default provider on the "to be removed" list.
+//
+// NOTE: Takes ownership of, and clears, |prepopulated_urls|.
+ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
+    ScopedVector<TemplateURL>* prepopulated_urls,
+    const TemplateURLService::TemplateURLVector& existing_urls,
+    const TemplateURL* default_search_provider);
 
 // Processes the results of WebDataService::GetKeywords, combining it with
 // prepopulated search providers to result in:

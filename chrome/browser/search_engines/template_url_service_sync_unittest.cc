@@ -1885,10 +1885,10 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncDeletes) {
 TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
   const char* kNewKeyword = "somethingnew";
   // Fetch the prepopulate search engines so we know what they are.
-  ScopedVector<TemplateURL> prepop_turls;
   size_t default_search_provider_index = 0;
-  TemplateURLPrepopulateData::GetPrepopulatedEngines(
-      profile_a(), &prepop_turls.get(), &default_search_provider_index);
+  ScopedVector<TemplateURL> prepop_turls =
+      TemplateURLPrepopulateData::GetPrepopulatedEngines(
+          profile_a(), &default_search_provider_index);
 
   // We have to prematurely exit this test if for some reason this machine does
   // not have any prepopulate TemplateURLs.

@@ -79,10 +79,6 @@ ResettableSettingsSnapshot::~ResettableSettingsSnapshot() {}
 
 void ResettableSettingsSnapshot::Subtract(
     const ResettableSettingsSnapshot& snapshot) {
-  std::vector<GURL> urls = base::STLSetDifference<std::vector<GURL> >(
-      startup_.urls, snapshot.startup_.urls);
-  startup_.urls.swap(urls);
-
   ExtensionList extensions = base::STLSetDifference<ExtensionList>(
       enabled_extensions_, snapshot.enabled_extensions_);
   enabled_extensions_.swap(extensions);
@@ -92,18 +88,13 @@ int ResettableSettingsSnapshot::FindDifferentFields(
     const ResettableSettingsSnapshot& snapshot) const {
   int bit_mask = 0;
 
-  if (startup_.urls != snapshot.startup_.urls) {
-    bit_mask |= STARTUP_URLS;
-  }
+  if (startup_.type != snapshot.startup_.type ||
+      startup_.urls != snapshot.startup_.urls)
+    bit_mask |= STARTUP_MODE;
 
-  if (startup_.type != snapshot.startup_.type)
-    bit_mask |= STARTUP_TYPE;
-
-  if (homepage_ != snapshot.homepage_)
+  if (homepage_is_ntp_ != snapshot.homepage_is_ntp_ ||
+      homepage_ != snapshot.homepage_)
     bit_mask |= HOMEPAGE;
-
-  if (homepage_is_ntp_ != snapshot.homepage_is_ntp_)
-    bit_mask |= HOMEPAGE_IS_NTP;
 
   if (dse_url_ != snapshot.dse_url_)
     bit_mask |= DSE_URL;
@@ -111,7 +102,7 @@ int ResettableSettingsSnapshot::FindDifferentFields(
   if (enabled_extensions_ != snapshot.enabled_extensions_)
     bit_mask |= EXTENSIONS;
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 63,
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 15,
                  add_new_field_here);
 
   return bit_mask;
@@ -122,23 +113,20 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
                                     SnapshotCaller source) {
   DictionaryValue dict;
 
-  if (field_mask & ResettableSettingsSnapshot::STARTUP_URLS) {
+  if (field_mask & ResettableSettingsSnapshot::STARTUP_MODE) {
     ListValue* list = new ListValue;
     const std::vector<GURL>& urls = snapshot.startup_urls();
     for (std::vector<GURL>::const_iterator i = urls.begin();
          i != urls.end(); ++i)
       list->AppendString(i->spec());
     dict.Set(kStartupURLPath, list);
+    dict.SetInteger(kStartupTypePath, snapshot.startup_type());
   }
 
-  if (field_mask & ResettableSettingsSnapshot::STARTUP_TYPE)
-    dict.SetInteger(kStartupTypePath, snapshot.startup_type());
-
-  if (field_mask & ResettableSettingsSnapshot::HOMEPAGE)
+  if (field_mask & ResettableSettingsSnapshot::HOMEPAGE) {
     dict.SetString(kHomepagePath, snapshot.homepage());
-
-  if (field_mask & ResettableSettingsSnapshot::HOMEPAGE_IS_NTP)
     dict.SetBoolean(kHomepageIsNewTabPage, snapshot.homepage_is_ntp());
+  }
 
   if (field_mask & ResettableSettingsSnapshot::DSE_URL)
     dict.SetString(kDefaultSearchEnginePath, snapshot.dse_url());
@@ -157,7 +145,7 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
     dict.Set(kEnabledExtensions, list);
   }
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 63,
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 15,
                  serialize_new_field_here);
 
   dict.SetInteger(kFeedbackCaller, source);

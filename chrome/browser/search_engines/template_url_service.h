@@ -241,12 +241,16 @@ class TemplateURLService : public WebDataServiceConsumer,
   // destroyed at any time so should be used right after the call.
   TemplateURL* FindNewDefaultSearchProvider();
 
-  // Resets the search providers to the prepopulated engines plus any keywords
-  // from currently-installed extensions.  The user will lose all auto-added
-  // keywords from webpages, all edits to both normal and extension keywords,
-  // and any keywords belonging to no-longer-installed extensions.
-  // Modifications will be synced later.
-  void ResetURLs();
+  // Performs the same actions that happen when the prepopulate data version is
+  // revved: all existing prepopulated entries are checked against the current
+  // prepopulate data, any now-extraneous safe_for_autoreplace() entries are
+  // removed, any existing engines are reset to the provided data (except for
+  // user-edited names or keywords), and any new prepopulated anegines are
+  // added.
+  //
+  // After this, the default search engine is reset to the default entry in the
+  // prepopulate data.
+  void RepairPrepopulatedSearchEngines();
 
   // Observers used to listen for changes to the model.
   // TemplateURLService does NOT delete the observers when deleted.

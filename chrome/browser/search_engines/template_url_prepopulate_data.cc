@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -1118,15 +1117,15 @@ TemplateURL* MakePrepopulatedTemplateURL(
   return new TemplateURL(profile, data);
 }
 
-void GetPrepopulatedTemplateFromPrefs(Profile* profile,
-                                      std::vector<TemplateURL*>* t_urls) {
+ScopedVector<TemplateURL> GetPrepopulatedTemplateFromPrefs(Profile* profile) {
+  ScopedVector<TemplateURL> t_urls;
   if (!profile)
-    return;
+    return t_urls.Pass();
 
   const ListValue* list =
       profile->GetPrefs()->GetList(prefs::kSearchProviderOverrides);
   if (!list)
-    return;
+    return t_urls.Pass();
 
   size_t num_engines = list->GetSize();
   for (size_t i = 0; i != num_engines; ++i) {
@@ -1169,7 +1168,7 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
       engine->GetList("alternate_urls", &alternate_urls);
       engine->GetString("search_terms_replacement_key",
           &search_terms_replacement_key);
-      t_urls->push_back(MakePrepopulatedTemplateURL(profile, name, keyword,
+      t_urls.push_back(MakePrepopulatedTemplateURL(profile, name, keyword,
           search_url, suggest_url, instant_url, image_url, new_tab_url,
           search_url_post_params, suggest_url_post_params,
           instant_url_post_params, image_url_post_params,
@@ -1177,6 +1176,7 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
           id));
     }
   }
+  return t_urls.Pass();
 }
 
 // The caller owns the returned TemplateURL.
@@ -1248,24 +1248,24 @@ int GetDataVersion(PrefService* prefs) {
       kCurrentDataVersion;
 }
 
-void GetPrepopulatedEngines(Profile* profile,
-                            std::vector<TemplateURL*>* t_urls,
-                            size_t* default_search_provider_index) {
+ScopedVector<TemplateURL> GetPrepopulatedEngines(
+    Profile* profile, size_t* default_search_provider_index) {
   // If there is a set of search engines in the preferences file, it overrides
   // the built-in set.
   *default_search_provider_index = 0;
-  GetPrepopulatedTemplateFromPrefs(profile, t_urls);
-  if (!t_urls->empty())
-    return;
+  ScopedVector<TemplateURL> t_urls = GetPrepopulatedTemplateFromPrefs(profile);
+  if (!t_urls.empty())
+    return t_urls.Pass();
 
   const PrepopulatedEngine** engines;
   size_t num_engines;
   GetPrepopulationSetFromCountryID(profile ? profile->GetPrefs() : NULL,
                                    &engines, &num_engines);
   for (size_t i = 0; i != num_engines; ++i) {
-    t_urls->push_back(
+    t_urls.push_back(
         MakePrepopulatedTemplateURLFromPrepopulateEngine(profile, *engines[i]));
   }
+  return t_urls.Pass();
 }
 
 void ClearPrepopulatedEnginesInPrefs(Profile* profile) {
@@ -1280,11 +1280,11 @@ void ClearPrepopulatedEnginesInPrefs(Profile* profile) {
 
 TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile) {
   TemplateURL* default_search_provider = NULL;
-  ScopedVector<TemplateURL> loaded_urls;
   size_t default_search_index;
   // This could be more efficient.  We are loading all the URLs to only keep
   // the first one.
-  GetPrepopulatedEngines(profile, &loaded_urls.get(), &default_search_index);
+  ScopedVector<TemplateURL> loaded_urls = GetPrepopulatedEngines(
+      profile, &default_search_index);
   if (default_search_index < loaded_urls.size()) {
     default_search_provider = loaded_urls[default_search_index];
     loaded_urls.weak_erase(loaded_urls.begin() + default_search_index);
