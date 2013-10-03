@@ -136,6 +136,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
     archive_root = ArchivingStage.GetArchiveRoot(self._build_root, trybot)
     self.bot_archive_root = os.path.join(archive_root, self._bot_id)
     self.archive_path = os.path.join(self.bot_archive_root, self.version)
+    self.acl = None if self._build_config['internal'] else 'public-read'
 
     if options.buildbot or options.remote_trybot:
       base_download_url = gs.PRIVATE_BASE_HTTPS_URL
@@ -183,13 +184,12 @@ class ArchivingStage(BoardSpecificBuilderStage):
       archive: Whether to automatically copy files to the archive dir.
       strict: Whether to treat upload errors as fatal.
     """
-    acl = None if self._build_config['internal'] else 'public-read'
     filename = path
     if archive:
       filename = commands.ArchiveFile(path, self.archive_path)
     try:
       commands.UploadArchivedFile(self.archive_path, self.upload_url, filename,
-                                  self.debug, update_list=True, acl=acl)
+                                  self.debug, update_list=True, acl=self.acl)
     except cros_build_lib.RunCommandError as e:
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
@@ -2876,11 +2876,16 @@ class ArchiveStage(ArchivingStage):
 
     def MarkAsLatest():
       # Update and upload LATEST file.
-      filename = 'LATEST-%s' % self._target_manifest_branch
-      latest_path = os.path.join(self.bot_archive_root, filename)
-      osutils.WriteFile(latest_path, self.version, mode='w')
-      commands.UploadArchivedFile(
-          self.bot_archive_root, self._GetGSUtilArchiveDir(), filename, debug)
+      verinfo = self.GetVersionInfo()
+      calc_version = self.release_tag or verinfo.VersionString()
+      filenames = ('LATEST-%s' % self._target_manifest_branch,
+                   'LATEST-%s' % calc_version)
+      for filename in filenames:
+        latest_path = os.path.join(self.bot_archive_root, filename)
+        osutils.WriteFile(latest_path, self.version, mode='w')
+        commands.UploadArchivedFile(
+            self.bot_archive_root, self._GetGSUtilArchiveDir(), filename, debug,
+            acl=self.acl)
 
     try:
       if not self._build_config['pgo_generate']:

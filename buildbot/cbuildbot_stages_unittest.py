@@ -951,10 +951,11 @@ class ArchiveStageMock(partial_mock.PartialMock):
 
   TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
   ATTRS = ('GetVersionInfo', 'WaitForBreakpadSymbols',)
+  VERSION = '3333.1.0'
 
   def GetVersionInfo(self, inst):
     return manifest_version.VersionInfo(
-        version_string=inst.release_tag if inst.release_tag else '3333.1.0',
+        version_string=inst.release_tag if inst.release_tag else self.VERSION,
         chrome_branch='27')
 
   def WaitForBreakpadSymbols(self, _inst):
@@ -1059,10 +1060,12 @@ class ArchiveStageTest(AbstractStageTest):
     """Simple did-it-run test."""
     # TODO(davidjames): Test the individual archive steps as well.
     self.RunStage()
+    filenames = ('LATEST-%s' % self.TARGET_MANIFEST_BRANCH,
+                 'LATEST-%s' % ArchiveStageMock.VERSION)
+    calls = [mock.call(mock.ANY, mock.ANY, filename, False,
+                       acl=mock.ANY) for filename in filenames]
     # pylint: disable=E1101
-    self.assertEquals(
-        commands.UploadArchivedFile.call_args[0][2:],
-        ('LATEST-%s' % self.TARGET_MANIFEST_BRANCH, False))
+    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
 
   def testNoPushImagesForRemoteTrybot(self):
     """Test that remote trybot overrides work to disable push images."""
