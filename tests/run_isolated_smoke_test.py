@@ -126,6 +126,7 @@ class RunSwarmStep(unittest.TestCase):
       '--isolated', isolated,
       '--cache', self.cache,
       '--isolate-server', self.table,
+      '--namespace', 'default',
     ]
 
   def _generate_args_with_hash(self, hash_value):
@@ -137,6 +138,7 @@ class RunSwarmStep(unittest.TestCase):
       '--hash', hash_value,
       '--cache', self.cache,
       '--isolate-server', self.table,
+      '--namespace', 'default',
     ]
 
   def test_result(self):

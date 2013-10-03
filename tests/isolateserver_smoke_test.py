@@ -39,7 +39,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
                       + '-gzip')
     url = ISOLATE_SERVER + '/content/get_token?from_smoke_test=1'
-    self.token = urllib.quote(isolateserver.url_read(url))
+    self.token = urllib.quote(isolateserver.net.url_read(url))
 
   def _archive_given_files(self, files):
     """Given a list of files, call isolateserver.py with them. Then
@@ -66,7 +66,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       download_url = '%scontent/retrieve/%s/%s' % (
           ISOLATE_SERVER, self.namespace, file_hashes[i])
 
-      downloaded_file = isolateserver.url_read(download_url, retry_404=True)
+      downloaded_file = isolateserver.net.url_read(download_url, retry_404=True)
       self.assertTrue(downloaded_file is not None,
                       'File %s was missing from the server' % files[i])
 
@@ -82,7 +82,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       # use transaction for performance reasons, so even if one request was able
       # to retrieve the file, an subsequent may not see it! So retry a few time
       # until the database becomes consistent with regard to these entities.
-      response = isolateserver.url_read(
+      response = isolateserver.net.url_read(
           contains_hash_url,
           data=body,
           content_type='application/octet-stream')

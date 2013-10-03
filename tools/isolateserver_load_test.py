@@ -97,7 +97,7 @@ def gen_size(mid_size):
   return int(random.gammavariate(3, 2) * mid_size / 4)
 
 
-def send_and_receive(random_pool, dry_run, api, progress, size):
+def send_and_receive(random_pool, dry_run, zip_it, api, progress, size):
   """Sends a random file and gets it back.
 
   Returns (delay, size)
@@ -105,25 +105,21 @@ def send_and_receive(random_pool, dry_run, api, progress, size):
   # Create a file out of the pool.
   start = time.time()
   content = random_pool.gen(size)
-  compressed_content = zlib.compress(content, 0)
   hash_value = hashlib.sha1(content).hexdigest()
-  size = len(content)
+  pack = zlib.compress if zip_it else lambda x: x
+  unpack = zlib.decompress if zip_it else lambda x: x
   try:
     if not dry_run:
       logging.info('contains')
-      item = isolateserver.Item(hash_value, size)
+      item = isolateserver.Item(hash_value, len(content))
       item = api.contains([item])[0]
 
       logging.info('upload')
-      # TODO(maruel): There's currently a mismatch between push() and fetch(),
-      # push() gets the data pre-compressed but fetch() decompresses on the fly.
-      api.push(item, [compressed_content], len(compressed_content))
+      api.push(item, [pack(content)])
 
       logging.info('download')
-      # Only count download time when not in dry run time.
-      # TODO(maruel): Count the number of retries!
       start = time.time()
-      assert content == ''.join(api.fetch(hash_value, size))
+      assert content == unpack(''.join(api.fetch(hash_value)))
     else:
       time.sleep(size / 10.)
     duration = max(0, time.time() - start)
@@ -204,6 +200,7 @@ def main():
       send_and_receive,
       random_pool,
       options.dry_run,
+      isolateserver.is_namespace_with_compression(options.namespace),
       api,
       progress)
 

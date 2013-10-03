@@ -7,6 +7,7 @@
 
 __version__ = '0.2'
 
+import functools
 import hashlib
 import json
 import logging
@@ -251,23 +252,13 @@ def create_links(base_directory, files):
         lchmod(outfile, properties['m'])
 
 
-def generate_remaining_files(files):
-  """Generates a dictionary of all the remaining files to be downloaded."""
-  remaining = {}
-  for filepath, props in files:
-    if 'h' in props:
-      remaining.setdefault(props['h'], []).append((filepath, props))
-
-  return remaining
-
-
 def is_valid_file(filepath, size):
   """Determines if the given files appears valid.
 
   Currently it just checks the file's size.
   """
   if size == UNKNOWN_FILE_SIZE:
-    return True
+    return os.path.isfile(filepath)
   actual_size = os.stat(filepath).st_size
   if size != actual_size:
     logging.warning(
@@ -277,12 +268,23 @@ def is_valid_file(filepath, size):
   return True
 
 
-def try_remove(filepath):
-  """Removes a file without crashing even if it doesn't exist."""
-  try:
-    os.remove(filepath)
-  except OSError:
-    pass
+class WorkerPool(threading_utils.AutoRetryThreadPool):
+  """Thread pool that automatically retries on IOError and runs a preconfigured
+  function.
+  """
+  # Initial and maximum number of worker threads.
+  INITIAL_WORKERS = 2
+  MAX_WORKERS = 16
+  RETRIES = 5
+
+  def __init__(self):
+    super(WorkerPool, self).__init__(
+        [IOError],
+        self.RETRIES,
+        self.INITIAL_WORKERS,
+        self.MAX_WORKERS,
+        0,
+        'remote')
 
 
 class Item(object):
@@ -437,19 +439,19 @@ class Storage(object):
     """Starts asynchronous push to the server in a parallel thread.
 
     Arguments:
-      channel: TaskChannel object that receives back |item| when upload ends.
+      channel: TaskChannel that receives back |item| when upload ends.
       priority: thread pool task priority for the push.
       item: item to upload as instance of Item class.
     """
-    def push(content, size):
+    def push(content):
       """Pushes an item and returns its id, to pass as a result to |channel|."""
-      self._storage_api.push(item, content, size)
+      self._storage_api.push(item, content)
       return item
 
     # If zipping is not required, just start a push task.
     if not self.use_zip:
       self.net_thread_pool.add_task_with_channel(channel, priority, push,
-          item.content(DISK_FILE_CHUNK), item.size)
+          item.content(DISK_FILE_CHUNK))
       return
 
     # If zipping is enabled, zip in a separate thread.
@@ -464,9 +466,38 @@ class Storage(object):
         logging.error('Failed to zip \'%s\': %s', item, exc)
         channel.send_exception(exc)
         return
-      self.net_thread_pool.add_task_with_channel(channel, priority, push,
-          [data], UNKNOWN_FILE_SIZE)
+      self.net_thread_pool.add_task_with_channel(
+          channel, priority, push, [data])
     self.cpu_thread_pool.add_task(priority, zip_and_push)
+
+  def async_fetch(self, channel, priority, digest, size, sink):
+    """Starts asynchronous fetch from the server in a parallel thread.
+
+    Arguments:
+      channel: TaskChannel that receives back |digest| when download ends.
+      priority: thread pool task priority for the fetch.
+      digest: hex digest of an item to download.
+      size: expected size of the item (after decompression).
+      sink: function that will be called as sink(generator).
+    """
+    def fetch():
+      try:
+        # Prepare reading pipeline.
+        stream = self._storage_api.fetch(digest)
+        if self.use_zip:
+          stream = zip_decompress(stream, DISK_FILE_CHUNK)
+        # Run |stream| through verifier that will assert its size.
+        verifier = FetchStreamVerifier(stream, size)
+        # Verified stream goes to |sink|.
+        sink(verifier.run())
+      except Exception as err:
+        logging.warning('Failed to fetch %s: %s', digest, err)
+        raise
+      return digest
+
+    # Don't bother with zip_thread_pool for decompression. Decompression is
+    # really fast and most probably IO bound anyway.
+    self.net_thread_pool.add_task_with_channel(channel, priority, fetch)
 
   def get_missing_items(self, items):
     """Yields items that are missing from the server.
@@ -520,28 +551,164 @@ class Storage(object):
       yield next_queries
 
 
+class FetchQueue(object):
+  """Fetches items from Storage and places them into LocalCache.
+
+  It manages multiple concurrent fetch operations. Acts as a bridge between
+  Storage and LocalCache so that Storage and LocalCache don't depend on each
+  other at all.
+  """
+
+  def __init__(self, storage, cache):
+    self.storage = storage
+    self.cache = cache
+    self._channel = threading_utils.TaskChannel()
+    self._pending = set()
+    self._accessed = set()
+    self._fetched = cache.cached_set()
+
+  def add(self, priority, digest, size=UNKNOWN_FILE_SIZE):
+    """Starts asynchronous fetch of item |digest|."""
+    # Fetching it now?
+    if digest in self._pending:
+      return
+
+    # Mark this file as in use, verify_all_cached will later ensure it is still
+    # in cache.
+    self._accessed.add(digest)
+
+    # Already fetched? Notify cache to update item's LRU position.
+    if digest in self._fetched:
+      # 'touch' returns True if item is in cache and not corrupted.
+      if self.cache.touch(digest, size):
+        return
+      # Item is corrupted, remove it from cache and fetch it again.
+      self._fetched.remove(digest)
+      self.cache.evict(digest)
+
+    # TODO(maruel): It should look at the free disk space, the current cache
+    # size and the size of the new item on every new item:
+    # - Trim the cache as more entries are listed when free disk space is low,
+    #   otherwise if the amount of data downloaded during the run > free disk
+    #   space, it'll crash.
+    # - Make sure there's enough free disk space to fit all dependencies of
+    #   this run! If not, abort early.
+
+    # Start fetching.
+    self._pending.add(digest)
+    self.storage.async_fetch(
+        self._channel, priority, digest, size,
+        functools.partial(self.cache.write, digest))
+
+  def wait(self, digests):
+    """Starts a loop that waits for at least one of |digests| to be retrieved.
+
+    Returns the first digest retrieved.
+    """
+    # Flush any already fetched items.
+    for digest in digests:
+      if digest in self._fetched:
+        return digest
+
+    # Ensure all requested items are being fetched now.
+    assert all(digest in self._pending for digest in digests), (
+        digests, self._pending)
+
+    # Wait for some requested item to finish fetching.
+    while self._pending:
+      digest = self._channel.pull()
+      self._pending.remove(digest)
+      self._fetched.add(digest)
+      if digest in digests:
+        return digest
+
+    # Should never reach this point due to assert above.
+    raise RuntimeError('Impossible state')
+
+  def inject_local_file(self, path, algo):
+    """Adds local file to the cache as if it was fetched from storage."""
+    with open(path, 'rb') as f:
+      data = f.read()
+    digest = algo(data).hexdigest()
+    self.cache.write(digest, [data])
+    self._fetched.add(digest)
+    return digest
+
+  @property
+  def pending_count(self):
+    """Returns number of items to be fetched."""
+    return len(self._pending)
+
+  def verify_all_cached(self):
+    """True if all accessed items are in cache."""
+    return self._accessed.issubset(self.cache.cached_set())
+
+
+class FetchStreamVerifier(object):
+  """Verifies that fetched file is valid before passing it to the LocalCache."""
+
+  def __init__(self, stream, expected_size):
+    self.stream = stream
+    self.expected_size = expected_size
+    self.current_size = 0
+
+  def run(self):
+    """Generator that yields same items as |stream|.
+
+    Verifies |stream| is complete before yielding a last chunk to consumer.
+
+    Also wraps IOError produced by consumer into MappingError exceptions since
+    otherwise Storage will retry fetch on unrelated local cache errors.
+    """
+    # Read one chunk ahead, keep it in |stored|.
+    # That way a complete stream can be verified before pushing last chunk
+    # to consumer.
+    stored = None
+    for chunk in self.stream:
+      assert chunk is not None
+      if stored is not None:
+        self._inspect_chunk(stored, is_last=False)
+        try:
+          yield stored
+        except IOError as exc:
+          raise MappingError('Failed to store an item in cache: %s' % exc)
+      stored = chunk
+    if stored is not None:
+      self._inspect_chunk(stored, is_last=True)
+      try:
+        yield stored
+      except IOError as exc:
+        raise MappingError('Failed to store an item in cache: %s' % exc)
+
+  def _inspect_chunk(self, chunk, is_last):
+    """Called for each fetched chunk before passing it to consumer."""
+    self.current_size += len(chunk)
+    if (is_last and (self.expected_size != UNKNOWN_FILE_SIZE) and
+        (self.expected_size != self.current_size)):
+      raise IOError('Incorrect file size: expected %d, got %d' % (
+          self.expected_size, self.current_size))
+
+
 class StorageApi(object):
   """Interface for classes that implement low-level storage operations."""
 
-  def fetch(self, digest, size):
+  def fetch(self, digest):
     """Fetches an object and yields its content.
 
     Arguments:
       digest: hash digest of item to download.
-      size: expected size of the item, to validate it.
 
     Yields:
       Chunks of downloaded item (as str objects).
     """
     raise NotImplementedError()
 
-  def push(self, item, content, size):
+  def push(self, item, content):
     """Uploads an |item| with content generated by |content| generator.
 
     Arguments:
       item: Item object that holds information about an item being pushed.
       content: a generator that yields chunks to push.
-      size: expected size of stream produced by |content|.
 
     Returns:
       None.
@@ -582,8 +749,6 @@ class IsolateServer(StorageApi):
     assert base_url.startswith('http'), base_url
     self.base_url = base_url.rstrip('/')
     self.namespace = namespace
-    self.algo = get_hash_algo(namespace)
-    self._use_zip = is_namespace_with_compression(namespace)
     self._lock = threading.Lock()
     self._server_caps = None
 
@@ -645,9 +810,8 @@ class IsolateServer(StorageApi):
               exc.__class__.__name__, exc))
       return self._server_caps
 
-  def fetch(self, digest, size):
+  def fetch(self, digest):
     assert isinstance(digest, basestring)
-    assert (isinstance(size, (int, long)) or size == UNKNOWN_FILE_SIZE)
 
     source_url = '%s/content-gs/retrieve/%s/%s' % (
         self.base_url, self.namespace, digest)
@@ -660,29 +824,9 @@ class IsolateServer(StorageApi):
         source_url, retry_404=True, read_timeout=DOWNLOAD_READ_TIMEOUT)
     if not connection:
       raise IOError('Unable to open connection to %s' % source_url)
+    return stream_read(connection, NET_IO_FILE_CHUNK)
 
-    try:
-      # Prepare reading pipeline.
-      generator = stream_read(connection, NET_IO_FILE_CHUNK)
-      if self._use_zip:
-        generator = zip_decompress(generator, DISK_FILE_CHUNK)
-
-      # Read and yield data, calculate total length of the decompressed stream.
-      total_size = 0
-      for chunk in generator:
-        total_size += len(chunk)
-        yield chunk
-
-      # Verify data length matches expectation.
-      if size != UNKNOWN_FILE_SIZE and total_size != size:
-        raise IOError('Incorrect file size: expected %d, got %d' % (
-            size, total_size))
-
-    except IOError as err:
-      logging.warning('Failed to fetch %s: %s', digest, err)
-      raise
-
-  def push(self, item, content, size):
+  def push(self, item, content):
     assert isinstance(item, Item)
     assert isinstance(item.push_state, IsolateServer._PushState)
     assert not item.push_state.finalized
@@ -794,28 +938,104 @@ class FileSystem(StorageApi):
     super(FileSystem, self).__init__()
     self.base_path = base_path
 
-  def fetch(self, digest, size):
+  def fetch(self, digest):
     assert isinstance(digest, basestring)
-    assert isinstance(size, (int, long)) or size == UNKNOWN_FILE_SIZE
-    source = os.path.join(self.base_path, digest)
-    if size != UNKNOWN_FILE_SIZE and not is_valid_file(source, size):
-      raise IOError('Invalid file %s' % digest)
-    return file_read(source)
+    return file_read(os.path.join(self.base_path, digest))
 
-  def push(self, item, content, size):
+  def push(self, item, content):
     assert isinstance(item, Item)
-    assert isinstance(size, (int, long)) or size == UNKNOWN_FILE_SIZE
-    dest = os.path.join(self.base_path, item.digest)
-    total = file_write(dest, content)
-    if size != UNKNOWN_FILE_SIZE and total != size:
-      os.remove(dest)
-      raise IOError('Invalid file %s, %d != %d' % (item.digest, total, size))
+    file_write(os.path.join(self.base_path, item.digest), content)
 
   def contains(self, items):
     return [
         item for item in items
         if not os.path.exists(os.path.join(self.base_path, item.digest))
     ]
+
+
+class LocalCache(object):
+  """Local cache that stores objects fetched via Storage.
+
+  It can be accessed concurrently from multiple threads, so it should protect
+  its internal state with some lock.
+  """
+
+  def __enter__(self):
+    """Context manager interface."""
+    return self
+
+  def __exit__(self, _exc_type, _exec_value, _traceback):
+    """Context manager interface."""
+    return False
+
+  def cached_set(self):
+    """Returns a set of all cached digests (always a new object)."""
+    raise NotImplementedError()
+
+  def touch(self, digest, size):
+    """Ensures item is not corrupted and updates its LRU position.
+
+    Arguments:
+      digest: hash digest of item to check.
+      size: expected size of this item.
+
+    Returns:
+      True if item is in cache and not corrupted.
+    """
+    raise NotImplementedError()
+
+  def evict(self, digest):
+    """Removes item from cache if it's there."""
+    raise NotImplementedError()
+
+  def read(self, digest):
+    """Returns contents of the cached item as a single str."""
+    raise NotImplementedError()
+
+  def write(self, digest, content):
+    """Reads data from |content| generator and stores it in cache."""
+    raise NotImplementedError()
+
+  def link(self, digest, dest, file_mode=None):
+    """Ensures file at |dest| has same content as cached |digest|."""
+    raise NotImplementedError()
+
+
+class MemoryCache(LocalCache):
+  """LocalCache implementation that stores everything in memory."""
+
+  def __init__(self):
+    super(MemoryCache, self).__init__()
+    # Let's not assume dict is thread safe.
+    self._lock = threading.Lock()
+    self._contents = {}
+
+  def cached_set(self):
+    with self._lock:
+      return set(self._contents)
+
+  def touch(self, digest, size):
+    with self._lock:
+      return digest in self._contents
+
+  def evict(self, digest):
+    with self._lock:
+      self._contents.pop(digest, None)
+
+  def read(self, digest):
+    with self._lock:
+      return self._contents[digest]
+
+  def write(self, digest, content):
+    # Assemble whole stream before taking the lock.
+    data = ''.join(content)
+    with self._lock:
+      self._contents[digest] = data
+
+  def link(self, digest, dest, file_mode=None):
+    file_write(dest, [self.read(digest)])
+    if file_mode is not None:
+      os.chmod(dest, file_mode)
 
 
 def get_hash_algo(_namespace):
@@ -837,23 +1057,11 @@ def get_storage_api(file_or_url, namespace):
     return FileSystem(file_or_url)
 
 
-class WorkerPool(threading_utils.AutoRetryThreadPool):
-  """Thread pool that automatically retries on IOError and runs a preconfigured
-  function.
-  """
-  # Initial and maximum number of worker threads.
-  INITIAL_WORKERS = 2
-  MAX_WORKERS = 16
-  RETRIES = 5
-
-  def __init__(self):
-    super(WorkerPool, self).__init__(
-        [IOError],
-        self.RETRIES,
-        self.INITIAL_WORKERS,
-        self.MAX_WORKERS,
-        0,
-        'remote')
+def get_storage(file_or_url, namespace):
+  """Returns Storage class configured with appropriate StorageApi instance."""
+  return Storage(
+      get_storage_api(file_or_url, namespace),
+      is_namespace_with_compression(namespace))
 
 
 def upload_tree(base_url, indir, infiles, namespace):
@@ -867,72 +1075,9 @@ def upload_tree(base_url, indir, infiles, namespace):
     infiles:   dict of files to upload from |indir| to |base_url|.
     namespace: The namespace to use on the server.
   """
-  remote = get_storage_api(base_url, namespace)
-  with Storage(remote, is_namespace_with_compression(namespace)) as storage:
+  with get_storage(base_url, namespace) as storage:
     storage.upload_tree(indir, infiles)
   return 0
-
-
-class MemoryCache(object):
-  """This class is intended to be usable everywhere the Cache class is.
-
-  Instead of downloading to a cache, all files are kept in memory to be stored
-  in the target directory directly.
-  """
-
-  def __init__(self, remote):
-    self.remote = remote
-    self._pool = None
-    self._lock = threading.Lock()
-    self._contents = {}
-
-  def set_pool(self, pool):
-    self._pool = pool
-
-  def retrieve(self, priority, item, size):
-    """Gets the requested file."""
-    self._pool.add_task(priority, self._on_content, item, size)
-
-  def wait_for(self, items):
-    """Starts a loop that waits for at least one of |items| to be retrieved.
-
-    Returns the first item retrieved.
-    """
-    with self._lock:
-      # Flush items already present.
-      for item in items:
-        if item in self._contents:
-          return item
-
-    while True:
-      downloaded = self._pool.get_one_result()
-      if downloaded in items:
-        return downloaded
-
-  def add(self, filepath, item):
-    with self._lock:
-      with open(filepath, 'rb') as f:
-        self._contents[item] = f.read()
-
-  def read(self, item):
-    return self._contents[item]
-
-  def store_to(self, item, dest):
-    file_write(dest, [self._contents[item]])
-
-  def _on_content(self, item, size):
-    data = ''.join(self.remote.fetch(item, size))
-    with self._lock:
-      self._contents[item] = data
-    return item
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, _exc_type, _exec_value, _traceback):
-    with self._lock:
-      self._contents = {}
-    return False
 
 
 def load_isolated(content, os_flavor, algo):
@@ -1111,7 +1256,7 @@ class IsolatedFile(object):
     ]
     self._is_parsed = True
 
-  def fetch_files(self, cache, files):
+  def fetch_files(self, fetch_queue, files):
     """Adds files in this .isolated file not present in |files| dictionary.
 
     Preemptively request files.
@@ -1130,10 +1275,7 @@ class IsolatedFile(object):
         if 'h' in properties:
           # Preemptively request files.
           logging.debug('fetching %s' % filepath)
-          cache.retrieve(
-              WorkerPool.MED,
-              properties['h'],
-              properties['s'])
+          fetch_queue.add(WorkerPool.MED, properties['h'], properties['s'])
     self.files_fetched = True
 
 
@@ -1147,7 +1289,7 @@ class Settings(object):
     # The main .isolated file, a IsolatedFile instance.
     self.root = None
 
-  def load(self, cache, root_isolated_hash, os_flavor, algo):
+  def load(self, fetch_queue, root_isolated_hash, os_flavor, algo):
     """Loads the .isolated and all the included .isolated asynchronously.
 
     It enables support for "included" .isolated files. They are processed in
@@ -1179,14 +1321,14 @@ class Settings(object):
       assert h not in pending
       seen.add(h)
       pending[h] = isolated_file
-      cache.retrieve(WorkerPool.HIGH, h, UNKNOWN_FILE_SIZE)
+      fetch_queue.add(WorkerPool.HIGH, h)
 
     retrieve(self.root)
 
     while pending:
-      item_hash = cache.wait_for(pending)
+      item_hash = fetch_queue.wait(pending)
       item = pending.pop(item_hash)
-      item.load(os_flavor, cache.read(item_hash))
+      item.load(os_flavor, fetch_queue.cache.read(item_hash))
       if item_hash == root_isolated_hash:
         # It's the root item.
         item.can_fetch = True
@@ -1195,7 +1337,7 @@ class Settings(object):
         retrieve(new_child)
 
       # Traverse the whole tree to see if files can now be fetched.
-      self._traverse_tree(cache, self.root)
+      self._traverse_tree(fetch_queue, self.root)
 
     def check(n):
       return all(check(x) for x in n.children) and n.files_fetched
@@ -1204,10 +1346,10 @@ class Settings(object):
     self.relative_cwd = self.relative_cwd or ''
     self.read_only = self.read_only or False
 
-  def _traverse_tree(self, cache, node):
+  def _traverse_tree(self, fetch_queue, node):
     if node.can_fetch:
       if not node.files_fetched:
-        self._update_self(cache, node)
+        self._update_self(fetch_queue, node)
       will_break = False
       for i in node.children:
         if not i.can_fetch:
@@ -1216,10 +1358,10 @@ class Settings(object):
           # Automatically mark the first one as fetcheable.
           i.can_fetch = True
           will_break = True
-        self._traverse_tree(cache, i)
+        self._traverse_tree(fetch_queue, i)
 
-  def _update_self(self, cache, node):
-    node.fetch_files(cache, self.files)
+  def _update_self(self, fetch_queue, node):
+    node.fetch_files(fetch_queue, self.files)
     # Grabs properties.
     if not self.command and node.data.get('command'):
       # Ensure paths are correctly separated on windows.
@@ -1235,66 +1377,82 @@ class Settings(object):
 
 
 def fetch_isolated(
-    isolated_hash, cache, outdir, os_flavor, algo, require_command):
+    isolated_hash, storage, cache, algo, outdir, os_flavor, require_command):
   """Aggressively downloads the .isolated file(s), then download all the files.
-  """
-  settings = Settings()
-  with WorkerPool() as pool:
-    with cache:
-      cache.set_pool(pool)
-      with tools.Profiler('GetIsolateds'):
-        # Optionally support local files.
-        if not is_valid_hash(isolated_hash, algo):
-          # Adds it in the cache. While not strictly necessary, this
-          # simplifies the rest.
-          h = hash_file(isolated_hash, algo)
-          cache.add(isolated_hash, h)
-          isolated_hash = h
-        settings.load(cache, isolated_hash, os_flavor, algo)
 
+  Arguments:
+    isolated_hash: hash of the root *.isolated file.
+    storage: Storage class that communicates with isolate storage.
+    cache: LocalCache class that knows how to store and map files locally.
+    algo: hash algorithm to use.
+    outdir: Output directory to map file tree to.
+    os_flavor: OS flavor to choose when reading sections of *.isolated file.
+    require_command: Ensure *.isolated specifies a command to run.
+
+  Returns:
+    Settings object that holds details about loaded *.isolated file.
+  """
+  with cache:
+    fetch_queue = FetchQueue(storage, cache)
+    settings = Settings()
+
+    with tools.Profiler('GetIsolateds'):
+      # Optionally support local files by manually adding them to cache.
+      if not is_valid_hash(isolated_hash, algo):
+        isolated_hash = fetch_queue.inject_local_file(isolated_hash, algo)
+
+      # Load all *.isolated and start loading rest of the files.
+      settings.load(fetch_queue, isolated_hash, os_flavor, algo)
       if require_command and not settings.command:
+        # TODO(vadimsh): All fetch operations are already enqueue and there's no
+        # easy way to cancel them.
         raise ConfigError('No command to run')
 
-      with tools.Profiler('GetRest'):
-        create_directories(outdir, settings.files)
-        create_links(outdir, settings.files.iteritems())
-        remaining = generate_remaining_files(settings.files.iteritems())
+    with tools.Profiler('GetRest'):
+      # Create file system hierarchy.
+      if not os.path.isdir(outdir):
+        os.makedirs(outdir)
+      create_directories(outdir, settings.files)
+      create_links(outdir, settings.files.iteritems())
 
-        cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
-        if not os.path.isdir(cwd):
-          os.makedirs(cwd)
+      # Ensure working directory exists.
+      cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
+      if not os.path.isdir(cwd):
+        os.makedirs(cwd)
 
-        # Now block on the remaining files to be downloaded and mapped.
-        logging.info('Retrieving remaining files')
-        last_update = time.time()
-        with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
-          while remaining:
-            detector.ping()
-            obj = cache.wait_for(remaining)
-            for filepath, properties in remaining.pop(obj):
-              outfile = os.path.join(outdir, filepath)
-              cache.store_to(obj, outfile)
-              if 'm' in properties:
-                # It's not set on Windows.
-                os.chmod(outfile, properties['m'])
+      # Multimap: digest -> list of pairs (path, props).
+      remaining = {}
+      for filepath, props in settings.files.iteritems():
+        if 'h' in props:
+          remaining.setdefault(props['h'], []).append((filepath, props))
 
-            duration = time.time() - last_update
-            if duration > DELAY_BETWEEN_UPDATES_IN_SECS:
-              msg = '%d files remaining...' % len(remaining)
-              print msg
-              logging.info(msg)
-              last_update = time.time()
+      # Now block on the remaining files to be downloaded and mapped.
+      logging.info('Retrieving remaining files (%d of them)...',
+          fetch_queue.pending_count)
+      last_update = time.time()
+      with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
+        while remaining:
+          detector.ping()
+
+          # Wait for any item to finish fetching to cache.
+          digest = fetch_queue.wait(remaining)
+
+          # Link corresponding files to a fetched item in cache.
+          for filepath, props in remaining.pop(digest):
+            cache.link(digest, os.path.join(outdir, filepath), props.get('m'))
+
+          # Report progress.
+          duration = time.time() - last_update
+          if duration > DELAY_BETWEEN_UPDATES_IN_SECS:
+            msg = '%d files remaining...' % len(remaining)
+            print msg
+            logging.info(msg)
+            last_update = time.time()
+
+  # Cache could evict some items we just tried to fetch, it's a fatal error.
+  if not fetch_queue.verify_all_cached():
+    raise MappingError('Cache is too small to hold all requested files')
   return settings
-
-
-def download_isolated_tree(isolated_hash, target_directory, remote):
-  """Downloads the dependencies to the given directory."""
-  if not os.path.exists(target_directory):
-    os.makedirs(target_directory)
-
-  cache = MemoryCache(remote)
-  return fetch_isolated(
-      isolated_hash, cache, target_directory, None, remote.algo, False)
 
 
 @subcommand.usage('<file1..fileN> or - to read from stdin')
@@ -1354,18 +1512,42 @@ def CMDdownload(parser, args):
     parser.error('Use one of --isolated or --file, and only one.')
 
   options.target = os.path.abspath(options.target)
-  remote = get_storage_api(options.isolate_server, options.namespace)
-  for h, dest in options.file:
-    logging.info('%s: %s', h, dest)
-    file_write(
-        os.path.join(options.target, dest),
-        remote.fetch(h, UNKNOWN_FILE_SIZE))
+  storage = get_storage(options.isolate_server, options.namespace)
+  cache = MemoryCache()
+  algo = get_hash_algo(options.namespace)
+
+  # Fetching individual files.
+  if options.file:
+    channel = threading_utils.TaskChannel()
+    pending = {}
+    for digest, dest in options.file:
+      pending[digest] = dest
+      storage.async_fetch(
+          channel,
+          WorkerPool.MED,
+          digest,
+          UNKNOWN_FILE_SIZE,
+          functools.partial(file_write, os.path.join(options.target, dest)))
+    while pending:
+      fetched = channel.pull()
+      dest = pending.pop(fetched)
+      logging.info('%s: %s', fetched, dest)
+
+  # Fetching whole isolated tree.
   if options.isolated:
-    settings = download_isolated_tree(options.isolated, options.target, remote)
+    settings = fetch_isolated(
+        isolated_hash=options.isolated,
+        storage=storage,
+        cache=cache,
+        algo=algo,
+        outdir=options.target,
+        os_flavor=None,
+        require_command=False)
     rel = os.path.join(options.target, settings.relative_cwd)
     print('To run this test please run from the directory %s:' %
           os.path.join(options.target, rel))
     print('  ' + ' '.join(settings.command))
+
   return 0
 
 

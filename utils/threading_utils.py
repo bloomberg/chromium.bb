@@ -15,6 +15,29 @@ import time
 import traceback
 
 
+class LockWithAssert(object):
+  """Wrapper around (non recursive) Lock that tracks its owner."""
+
+  def __init__(self):
+    self._lock = threading.Lock()
+    self._owner = None
+
+  def __enter__(self):
+    self._lock.acquire()
+    assert self._owner is None
+    self._owner = threading.current_thread()
+
+  def __exit__(self, _exc_type, _exec_value, _traceback):
+    self.assert_locked('Releasing unowned lock')
+    self._owner = None
+    self._lock.release()
+    return False
+
+  def assert_locked(self, msg=None):
+    """Asserts the lock is owned by running thread."""
+    assert self._owner == threading.current_thread(), msg
+
+
 class ThreadPoolError(Exception):
   """Base class for exceptions raised by ThreadPool."""
   pass

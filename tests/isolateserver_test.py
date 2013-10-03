@@ -114,8 +114,8 @@ class StorageTest(TestCase):
     class MockedStorageApi(isolateserver.StorageApi):
       def __init__(self):
         self.pushed = []
-      def push(self, item, content, size):
-        self.pushed.append((item, ''.join(content), size))
+      def push(self, item, content):
+        self.pushed.append((item, ''.join(content)))
         if side_effect:
           side_effect()
     return MockedStorageApi()
@@ -164,15 +164,8 @@ class StorageTest(TestCase):
       pushed_item = channel.pull()
       self.assertEqual(item, pushed_item)
       # StorageApi.push was called with correct arguments.
-      if use_zip:
-        expected_data = item.zipped
-        expected_size = isolateserver.UNKNOWN_FILE_SIZE
-      else:
-        expected_data = item.data
-        expected_size = len(item.data)
       self.assertEqual(
-          [(item, expected_data, expected_size)],
-          storage_api.pushed)
+          [(item, item.zipped if use_zip else item.data)], storage_api.pushed)
 
   def test_async_push_generator_errors(self):
     class FakeException(Exception):
@@ -223,10 +216,7 @@ class StorageTest(TestCase):
         # First initial attempt + all retries.
         attempts = 1 + isolateserver.WorkerPool.RETRIES
         # Single push attempt parameters.
-        expected_push = (
-            item,
-            item.zipped if use_zip else item.data,
-            isolateserver.UNKNOWN_FILE_SIZE if use_zip else item.size)
+        expected_push = (item, item.zipped if use_zip else item.data)
         # Ensure all pushes are attempted.
         self.assertEqual(
             [expected_push] * attempts, storage_api.pushed)
@@ -270,8 +260,8 @@ class StorageTest(TestCase):
         contains_calls.append(items)
         return [i for i in items if os.path.basename(i.path) in missing]
 
-      def push(self, item, content, size):
-        push_calls.append((item, ''.join(content), size))
+      def push(self, item, content):
+        push_calls.append((item, ''.join(content)))
 
     storage_api = MockedStorageApi()
     storage = isolateserver.Storage(storage_api, use_zip=False)
@@ -288,7 +278,7 @@ class StorageTest(TestCase):
       set(files[name]['h'] for name in missing),
       set(call[0].digest for call in push_calls))
     # Pushing with correct data, size and push urls.
-    for pushed_item, pushed_content, pushed_size in push_calls:
+    for pushed_item, pushed_content in push_calls:
       filenames = [
           name for name, metadata in files.iteritems()
           if metadata['h'] == pushed_item.digest
@@ -297,7 +287,6 @@ class StorageTest(TestCase):
       filename = filenames[0]
       self.assertEqual(os.path.join(root, filename), pushed_item.path)
       self.assertEqual(files_data[filename], pushed_content)
-      self.assertEqual(len(files_data[filename]), pushed_size)
 
 
 class IsolateServerStorageApiTest(TestCase):
@@ -388,7 +377,7 @@ class IsolateServerStorageApiTest(TestCase):
     # Server error message should be reported to user.
     self.assertIn(error, str(context.exception))
 
-  def test_fetch_success_default(self):
+  def test_fetch_success(self):
     server = 'http://example.com'
     namespace = 'default'
     data = ''.join(str(x) for x in xrange(1000))
@@ -397,22 +386,10 @@ class IsolateServerStorageApiTest(TestCase):
       self.mock_fetch_request(server, namespace, item, data),
     ]
     storage = isolateserver.IsolateServer(server, namespace)
-    fetched = ''.join(storage.fetch(item, len(data)))
+    fetched = ''.join(storage.fetch(item))
     self.assertEqual(data, fetched)
 
-  def test_fetch_success_default_gzip(self):
-    server = 'http://example.com'
-    namespace = 'default-gzip'
-    data = ''.join(str(x) for x in xrange(1000))
-    item = ALGO(data).hexdigest()
-    self._requests = [
-      self.mock_fetch_request(server, namespace, item, zlib.compress(data)),
-    ]
-    storage = isolateserver.IsolateServer(server, namespace)
-    fetched = ''.join(storage.fetch(item, len(data)))
-    self.assertEqual(data, fetched)
-
-  def test_fetch_failure_missing(self):
+  def test_fetch_failure(self):
     server = 'http://example.com'
     namespace = 'default'
     item = ALGO('something').hexdigest()
@@ -421,31 +398,7 @@ class IsolateServerStorageApiTest(TestCase):
     ]
     storage = isolateserver.IsolateServer(server, namespace)
     with self.assertRaises(IOError):
-      _ = ''.join(storage.fetch(item, isolateserver.UNKNOWN_FILE_SIZE))
-
-  def test_fetch_failure_bad_size(self):
-    server = 'http://example.com'
-    namespace = 'default'
-    data = ''.join(str(x) for x in xrange(1000))
-    expected_size = len(data)
-    item = ALGO(data).hexdigest()
-    self._requests = [
-      self.mock_fetch_request(server, namespace, item, data[:100]),
-    ]
-    storage = isolateserver.IsolateServer(server, namespace)
-    with self.assertRaises(IOError):
-      _ = ''.join(storage.fetch(item, expected_size))
-
-  def test_fetch_failure_bad_zip(self):
-    server = 'http://example.com'
-    namespace = 'default-gzip'
-    item = ALGO('something').hexdigest()
-    self._requests = [
-      self.mock_fetch_request(server, namespace, item, 'Im not a zip'),
-    ]
-    storage = isolateserver.IsolateServer(server, namespace)
-    with self.assertRaises(IOError):
-      _ = ''.join(storage.fetch(item, isolateserver.UNKNOWN_FILE_SIZE))
+      _ = ''.join(storage.fetch(item))
 
   def test_push_success(self):
     server = 'http://example.com'
@@ -482,7 +435,7 @@ class IsolateServerStorageApiTest(TestCase):
     storage = isolateserver.IsolateServer(server, namespace)
     missing = storage.contains([item])
     self.assertEqual([item], missing)
-    storage.push(item, [data], len(data))
+    storage.push(item, [data])
     self.assertTrue(item.push_state.uploaded)
     self.assertTrue(item.push_state.finalized)
 
@@ -513,7 +466,7 @@ class IsolateServerStorageApiTest(TestCase):
     missing = storage.contains([item])
     self.assertEqual([item], missing)
     with self.assertRaises(IOError):
-      storage.push(item, [data], len(data))
+      storage.push(item, [data])
     self.assertFalse(item.push_state.uploaded)
     self.assertFalse(item.push_state.finalized)
 
@@ -553,7 +506,7 @@ class IsolateServerStorageApiTest(TestCase):
     missing = storage.contains([item])
     self.assertEqual([item], missing)
     with self.assertRaises(IOError):
-      storage.push(item, [data], len(data))
+      storage.push(item, [data])
     self.assertTrue(item.push_state.uploaded)
     self.assertFalse(item.push_state.finalized)
 
