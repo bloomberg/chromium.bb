@@ -1445,7 +1445,6 @@ def CalculateVariables(default_variables, params):
     default_variables['STATIC_LIB_SUFFIX'] = '.lib'
     default_variables['SHARED_LIB_PREFIX'] = ''
     default_variables['SHARED_LIB_SUFFIX'] = '.dll'
-    generator_flags = params.get('generator_flags', {})
 
     # Copy additional generator configuration data from VS, which is shared
     # by the Windows Ninja generator.
@@ -1455,19 +1454,7 @@ def CalculateVariables(default_variables, params):
     generator_additional_path_sections = getattr(msvs_generator,
         'generator_additional_path_sections', [])
 
-    # Set a variable so conditions can be based on msvs_version.
-    msvs_version = gyp.msvs_emulation.GetVSVersion(generator_flags)
-    default_variables['MSVS_VERSION'] = msvs_version.ShortName()
-
-    # To determine processor word size on Windows, in addition to checking
-    # PROCESSOR_ARCHITECTURE (which reflects the word size of the current
-    # process), it is also necessary to check PROCESSOR_ARCHITEW6432 (which
-    # contains the actual word size of the system when running thru WOW64).
-    if ('64' in os.environ.get('PROCESSOR_ARCHITECTURE', '') or
-        '64' in os.environ.get('PROCESSOR_ARCHITEW6432', '')):
-      default_variables['MSVS_OS_BITS'] = 64
-    else:
-      default_variables['MSVS_OS_BITS'] = 32
+    gyp.msvs_emulation.CalculateCommonVariables(default_variables, params)
   else:
     operating_system = flavor
     if flavor == 'android':
