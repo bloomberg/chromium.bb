@@ -217,7 +217,7 @@ interface InspectorInstrumentation {
     [Timeline, Inline=FastReturn]
     void willPaint([Keep] RenderObject*);
 
-    [Timeline, Page, Inline=FastReturn]
+    [Timeline, Page, LayerTree, Inline=FastReturn]
     void didPaint([Keep] RenderObject*, GraphicsContext*, const LayoutRect&);
 
     [Timeline, Inline=FastReturn]

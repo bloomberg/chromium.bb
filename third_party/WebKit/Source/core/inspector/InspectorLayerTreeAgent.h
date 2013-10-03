@@ -60,7 +60,9 @@ public:
     virtual void clearFrontend();
     virtual void restore();
 
+    // Called from InspectorInstrumentation
     void layerTreeDidChange();
+    void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
 
     // Called from the front-end.
     virtual void enable(ErrorString*);

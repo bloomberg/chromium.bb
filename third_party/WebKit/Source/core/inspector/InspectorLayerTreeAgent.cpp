@@ -56,10 +56,15 @@ namespace LayerTreeAgentState {
 static const char layerTreeAgentEnabled[] = "layerTreeAgentEnabled";
 };
 
+inline String idForLayer(GraphicsLayer* graphicsLayer)
+{
+    return String::number(graphicsLayer->platformLayer()->id());
+}
+
 static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId)
 {
     RefPtr<TypeBuilder::LayerTree::Layer> layerObject = TypeBuilder::LayerTree::Layer::create()
-        .setLayerId(String::number(graphicsLayer->platformLayer()->id()))
+        .setLayerId(idForLayer(graphicsLayer))
         .setOffsetX(graphicsLayer->position().x())
         .setOffsetY(graphicsLayer->position().y())
         .setWidth(graphicsLayer->size().width())
@@ -73,7 +78,7 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
     if (!parent)
         parent = graphicsLayer->replicatedLayer();
     if (parent)
-        layerObject->setParentLayerId(String::number(parent->platformLayer()->id()));
+        layerObject->setParentLayerId(idForLayer(parent));
     if (!graphicsLayer->contentsAreVisible())
         layerObject->setInvisible(true);
     const TransformationMatrix& transform = graphicsLayer->transform();
@@ -148,6 +153,22 @@ void InspectorLayerTreeAgent::disable(ErrorString*)
 void InspectorLayerTreeAgent::layerTreeDidChange()
 {
     m_frontend->layerTreeDidChange();
+}
+
+void InspectorLayerTreeAgent::didPaint(RenderObject* renderer, GraphicsContext*, const LayoutRect& rect)
+{
+    RenderLayer* renderLayer = toRenderLayerModelObject(renderer)->layer();
+    RenderLayerBacking* backing = renderLayer->backing();
+    // Should only happen for FrameView paints when compositing is off. Consider different instrumentation method for that.
+    if (!backing)
+        return;
+    GraphicsLayer* graphicsLayer = backing->graphicsLayer();
+    RefPtr<TypeBuilder::DOM::Rect> domRect = TypeBuilder::DOM::Rect::create()
+        .setX(rect.x())
+        .setY(rect.y())
+        .setWidth(rect.width())
+        .setHeight(rect.height());
+    m_frontend->layerPainted(idForLayer(graphicsLayer), domRect.release());
 }
 
 void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
