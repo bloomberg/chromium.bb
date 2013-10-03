@@ -57,6 +57,10 @@ namespace {
 const char kPrivetAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
 const int kRegistrationAnnouncementTimeoutSeconds = 5;
 
+const int kInitialRequeryTimeSeconds = 1;
+const int kMaxRequeryTimeSeconds = 2; // Time for last requery
+const int kRequeryExpontentialGrowthBase = 2;
+
 LocalDiscoveryUIHandler::Factory* g_factory = NULL;
 int g_num_visible = 0;
 
@@ -158,7 +162,7 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
   }
 
   privet_lister_->Start();
-  privet_lister_->DiscoverNewDevices(false);
+  SendQuery(kInitialRequeryTimeSeconds);
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   StartCloudPrintConnector();
@@ -412,7 +416,7 @@ void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
 
 void LocalDiscoveryUIHandler::DeviceCacheFlushed() {
   web_ui()->CallJavascriptFunction("local_discovery.onDeviceCacheFlushed");
-  privet_lister_->DiscoverNewDevices(false);
+  SendQuery(kInitialRequeryTimeSeconds);
 }
 
 void LocalDiscoveryUIHandler::OnCloudPrintPrinterListReady() {
@@ -532,6 +536,24 @@ void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
   base::FundamentalValue logged_in_value(!GetSyncAccount().empty());
   web_ui()->CallJavascriptFunction("local_discovery.setUserLoggedIn",
                                    logged_in_value);
+}
+
+void LocalDiscoveryUIHandler::ScheduleQuery(int timeout_seconds) {
+  if (timeout_seconds <= kMaxRequeryTimeSeconds) {
+    requery_callback_.Reset(base::Bind(&LocalDiscoveryUIHandler::SendQuery,
+                                       base::Unretained(this),
+                                       timeout_seconds * 2));
+
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        requery_callback_.callback(),
+        base::TimeDelta::FromSeconds(timeout_seconds));
+  }
+}
+
+void LocalDiscoveryUIHandler::SendQuery(int next_timeout_seconds) {
+  privet_lister_->DiscoverNewDevices(false);
+  ScheduleQuery(next_timeout_seconds);
 }
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
