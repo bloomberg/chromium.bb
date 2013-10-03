@@ -1,0 +1,138 @@
+
+
+
+Sanity tests:
+PASS: [1s linear] iteration time was [null] at -1s
+PASS: [1s linear] iteration time was [0] at 0s
+PASS: [1s linear] iteration time was [0.5] at 0.5s
+PASS: [1s linear] iteration time was [0.2] at 0.2s
+PASS: [1s linear] iteration time was [0.8] at 0.8s
+PASS: [1s linear] iteration time was [null] at 2s
+
+Fill-mode:
+PASS: [1s none] iteration time was [null] at -1s
+PASS: [1s none] iteration time was [null] at 2s
+PASS: [1s both] iteration time was [0] at -1s
+PASS: [1s both] iteration time was [1] at 2s
+PASS: [1s forwards] iteration time was [null] at -1s
+PASS: [1s forwards] iteration time was [1] at 2s
+PASS: [1s backwards] iteration time was [0] at -1s
+PASS: [1s backwards] iteration time was [null] at 2s
+
+Fill-mode + reverse direction:
+PASS: [1s none reverse] iteration time was [null] at -1s
+PASS: [1s none reverse] iteration time was [null] at 2s
+PASS: [1s both reverse] iteration time was [1] at -1s
+FAIL: [1s both reverse] iteration time was [1] at 2s expected [0]
+PASS: [1s forwards reverse] iteration time was [null] at -1s
+FAIL: [1s forwards reverse] iteration time was [1] at 2s expected [0]
+PASS: [1s backwards reverse] iteration time was [1] at -1s
+PASS: [1s backwards reverse] iteration time was [null] at 2s
+
+End exclusive timing:
+PASS: [1s] iteration time was [null] at 1s
+
+Zero duration:
+PASS: [] iteration time was [null] at -1s
+PASS: [] iteration time was [null] at 0s
+PASS: [] iteration time was [null] at 1s
+FAIL: [both] iteration time was [1] at -1s expected [0]
+FAIL: [both] iteration time was [null] at 0s expected [1]
+PASS: [both] iteration time was [1] at 1s
+PASS: [forwards] iteration time was [null] at -1s
+FAIL: [forwards] iteration time was [null] at 0s expected [1]
+PASS: [forwards] iteration time was [1] at 1s
+FAIL: [backwards] iteration time was [1] at -1s expected [0]
+PASS: [backwards] iteration time was [null] at 0s
+PASS: [backwards] iteration time was [null] at 1s
+
+Zero duration + reverse direction:
+PASS: [reverse] iteration time was [null] at -1s
+PASS: [reverse] iteration time was [null] at 0s
+PASS: [reverse] iteration time was [null] at 1s
+FAIL: [both reverse] iteration time was [0] at -1s expected [1]
+FAIL: [both reverse] iteration time was [null] at 0s expected [0]
+FAIL: [both reverse] iteration time was [1] at 1s expected [0]
+PASS: [forwards reverse] iteration time was [null] at -1s
+FAIL: [forwards reverse] iteration time was [null] at 0s expected [0]
+FAIL: [forwards reverse] iteration time was [1] at 1s expected [0]
+FAIL: [backwards reverse] iteration time was [0] at -1s expected [1]
+PASS: [backwards reverse] iteration time was [null] at 0s
+PASS: [backwards reverse] iteration time was [null] at 1s
+
+Zero iterations:
+PASS: [1s linear none 0] iteration time was [null] at -1s
+FAIL: [1s linear none 0] iteration time was [0] at 0s expected [null]
+FAIL: [1s linear none 0] iteration time was [0.5] at 0.5s expected [null]
+PASS: [1s linear none 0] iteration time was [null] at 2s
+PASS: [1s both 0] iteration time was [0] at -1s
+PASS: [1s both 0] iteration time was [0] at 0s
+FAIL: [1s both 0] iteration time was [1] at 2s expected [0]
+PASS: [1s forwards 0] iteration time was [null] at -1s
+PASS: [1s forwards 0] iteration time was [0] at 0s
+FAIL: [1s forwards 0] iteration time was [1] at 2s expected [0]
+PASS: [1s backwards 0] iteration time was [0] at -1s
+FAIL: [1s backwards 0] iteration time was [0] at 0s expected [null]
+PASS: [1s backwards 0] iteration time was [null] at 2s
+
+Zero iterations, zero duration:
+PASS: [none 0] iteration time was [null] at -1s
+PASS: [none 0] iteration time was [null] at 0s
+PASS: [none 0] iteration time was [null] at 2s
+FAIL: [both 0] iteration time was [1] at -1s expected [0]
+FAIL: [both 0] iteration time was [null] at 0s expected [0]
+FAIL: [both 0] iteration time was [1] at 1s expected [0]
+PASS: [forwards 0] iteration time was [null] at -1s
+FAIL: [forwards 0] iteration time was [null] at 0s expected [0]
+FAIL: [forwards 0] iteration time was [1] at 1s expected [0]
+FAIL: [backwards 0] iteration time was [1] at -1s expected [0]
+PASS: [backwards 0] iteration time was [null] at 0s
+PASS: [backwards 0] iteration time was [null] at 1s
+
+Multiple iterations:
+PASS: [1s 2 linear] iteration time was [null] at -1s
+PASS: [1s 2 linear] iteration time was [0] at 0s
+PASS: [1s 2 linear] iteration time was [0.4] at 0.4s
+PASS: [1s 2 linear] iteration time was [0] at 1s
+PASS: [1s 2 linear] iteration time was [0.6] at 1.6s
+PASS: [1s 2 linear] iteration time was [null] at 2s
+PASS: [1s 2 linear reverse] iteration time was [1] at 0s
+PASS: [1s 2 linear reverse] iteration time was [0.6] at 0.4s
+PASS: [1s 2 linear reverse] iteration time was [1] at 1s
+PASS: [1s 2 linear reverse] iteration time was [0.4] at 1.6s
+PASS: [1s 2 linear alternate] iteration time was [0] at 0s
+PASS: [1s 2 linear alternate] iteration time was [0.4] at 0.4s
+PASS: [1s 2 linear alternate] iteration time was [1] at 1s
+PASS: [1s 2 linear alternate] iteration time was [0.4] at 1.6s
+PASS: [1s 2 linear alternate-reverse] iteration time was [1] at 0s
+PASS: [1s 2 linear alternate-reverse] iteration time was [0.6] at 0.4s
+PASS: [1s 2 linear alternate-reverse] iteration time was [0] at 1s
+PASS: [1s 2 linear alternate-reverse] iteration time was [0.6] at 1.6s
+
+Fractional iterations:
+PASS: [1s 0.5 linear] iteration time was [null] at -1s
+PASS: [1s 0.5 linear] iteration time was [0] at 0s
+PASS: [1s 0.5 linear] iteration time was [0.2] at 0.2s
+PASS: [1s 0.5 linear] iteration time was [null] at 0.5s
+PASS: [1s 1.5 linear] iteration time was [null] at -1s
+PASS: [1s 1.5 linear] iteration time was [0] at 0s
+PASS: [1s 1.5 linear] iteration time was [0.5] at 0.5s
+PASS: [1s 1.5 linear] iteration time was [0] at 1s
+PASS: [1s 1.5 linear] iteration time was [0.4] at 1.4s
+PASS: [1s 1.5 linear] iteration time was [null] at 1.5s
+PASS: [1s 1.5 linear reverse] iteration time was [null] at -1s
+PASS: [1s 1.5 linear reverse] iteration time was [1] at 0s
+PASS: [1s 1.5 linear reverse] iteration time was [0.5] at 0.5s
+PASS: [1s 1.5 linear reverse] iteration time was [1] at 1s
+PASS: [1s 1.5 linear reverse] iteration time was [0.6] at 1.4s
+PASS: [1s 1.5 linear reverse] iteration time was [null] at 1.5s
+FAIL: [1s 1.6 linear forwards] iteration time was [1] at 2s expected [0.6]
+FAIL: [1s 1.6 linear forwards reverse ] iteration time was [1] at 2s expected [0.4]
+PASS: [1s 0.6 linear backwards reverse] iteration time was [1] at -1s
+
+Infinite iterations:
+PASS: [1s infinite linear] iteration time was [0] at 1s
+PASS: [1s infinite linear] iteration time was [0] at 10s
+PASS: [1s infinite linear] iteration time was [0] at 1000s
+PASS: [1s infinite linear] iteration time was [0.4] at 1000.4s
+
