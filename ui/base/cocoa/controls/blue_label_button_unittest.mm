@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/app_list/cocoa/blue_label_button.h"
+#import "ui/base/cocoa/controls/blue_label_button.h"
 
 #include "base/mac/scoped_nsobject.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
-namespace app_list {
+namespace ui {
 namespace test {
 
 class BlueLabelButtonTest : public ui::CocoaTest {
@@ -36,4 +36,4 @@ void BlueLabelButtonTest::SetUp() {
 TEST_VIEW(BlueLabelButtonTest, blue_label_button_);
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace ui

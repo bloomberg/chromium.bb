@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/app_list/cocoa/blue_label_button.h"
+#import "ui/base/cocoa/controls/blue_label_button.h"
 
 #include "base/mac/foundation_util.h"
 #include "skia/ext/skia_utils_mac.h"

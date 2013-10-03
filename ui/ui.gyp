@@ -93,6 +93,8 @@
         'base/cocoa/base_view.mm',
         'base/cocoa/cocoa_event_utils.h',
         'base/cocoa/cocoa_event_utils.mm',
+        'base/cocoa/controls/blue_label_button.h',
+        'base/cocoa/controls/blue_label_button.mm',
         'base/cocoa/controls/hover_image_menu_button.h',
         'base/cocoa/controls/hover_image_menu_button.mm',
         'base/cocoa/controls/hover_image_menu_button_cell.h',

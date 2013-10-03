@@ -11,8 +11,8 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_constants.h"
-#import "ui/app_list/cocoa/blue_label_button.h"
 #include "ui/app_list/signin_delegate.h"
+#import "ui/base/cocoa/controls/blue_label_button.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/resource/resource_bundle.h"
 

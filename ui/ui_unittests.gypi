@@ -147,6 +147,7 @@
         'base/clipboard/custom_data_helper_unittest.cc',
         'base/cocoa/base_view_unittest.mm',
         'base/cocoa/cocoa_event_utils_unittest.mm',
+        'base/cocoa/controls/blue_label_button_unittest.mm',
         'base/cocoa/controls/hover_image_menu_button_unittest.mm',
         'base/cocoa/controls/hyperlink_button_cell_unittest.mm',
         'base/cocoa/events_mac_unittest.mm',
