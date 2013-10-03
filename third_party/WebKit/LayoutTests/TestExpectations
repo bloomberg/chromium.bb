@@ -821,8 +821,6 @@ crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 
 crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ Failure Pass ]
 
-crbug.com/302005 fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
-
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
