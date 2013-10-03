@@ -7,27 +7,26 @@
 * that are needed by the desktop user chooser screen
 */
 #login-header-bar {
-  -webkit-padding-after: 7px;
+  -webkit-padding-after: 10px;
+  -webkit-padding-before: 10px;
+  background-color: white;
+  border-top: 1px solid #e2e2e2;
   bottom: 0;
   left: 0;
   position: absolute;
   right: 0;
 }
 
-#login-header-bar {
-  -webkit-padding-before: 7px;
-}
-
 .header-bar-item:first-child {
-  -webkit-padding-start: 15px;
+  -webkit-padding-start: 20px;
 }
 
 .header-bar-item {
   display: inline-block;
-  height: 34px;
 }
 
 html[dir=rtl] .header-bar-item {
+  background-color: white;
   background-position: right center;
 }
 
@@ -36,16 +35,22 @@ html[dir=rtl] #login-header-bar button {
 }
 
 #login-header-bar #add-user-button {
-  background-image: url('chrome://theme/IDR_ICON_ADD_USER_WHITE');
+  background-image: url('chrome://theme/IDR_ICON_PROFILES_ADD_USER');
 }
 
 #login-header-bar #guest-user-button {
-  background-image: url('chrome://theme/IDR_ICON_GUEST_WHITE');
+  background-image: url('chrome://theme/IDR_ICON_PROFILES_BROWSE_GUEST');
+  border-right: 1px solid #e2e2e2;
+  margin-right: 10px;
 }
 
 #login-header-bar button {
   -webkit-padding-start: 24px;
+  background-color: white;
   background-position: left center;
   background-repeat: no-repeat;
-  background-size: 24px;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: 12px;
 }

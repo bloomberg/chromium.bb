@@ -1,0 +1,62 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Overrides for the desktop user manager screen. */
+ .oobe-display {
+  background-color: #eee;
+}
+
+.pod {
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  width: 180px;
+}
+
+.pod.hovered {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pod .main-pane {
+  width: 180px;
+}
+
+.pod .user-image {
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  height: 180px;
+  opacity: 1;
+  width: 180px;
+}
+
+.pod .name {
+  color: black;
+  font-size: 15px;
+  line-height: 20px;
+  margin: 5px 0 5px;
+}
+
+/* For local/unlocked profiles, the name box becomes the focused element.
+However, don't display the blue focus outline around it. */
+.pod .name:focus {
+  outline: none;
+}
+
+/* For local/unlocked profiles, always display the name and not the
+sign-in button. */
+.pod.need-password.focused .name {
+  display: block;
+}
+
+.pod .locked-indicator {
+  background-image: url('chrome://theme/IDR_ICON_PROFILES_LOCKED');
+  background-repeat: no-repeat;
+  height: 35px;
+  left: 10px;
+  position: absolute;
+  top: 10px;
+  width: 35px;
+  z-index: 1;
+}

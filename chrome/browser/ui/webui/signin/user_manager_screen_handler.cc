@@ -301,6 +301,7 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("publicAccountReminder", string16());
   localized_strings->SetString("publicAccountEnter", string16());
   localized_strings->SetString("publicAccountEnterAccessibleName", string16());
+  localized_strings->SetString("multiple-signin-banner-text", string16());
  }
 
 void UserManagerScreenHandler::SendUserList() {

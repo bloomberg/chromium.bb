@@ -327,6 +327,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets the locked user indicator box.
+     * @type {!HTMLInputElement}
+     */
+    get lockedIndicatorElement() {
+      return this.querySelector('.locked-indicator');
+    },
+
+    /**
      * Updates the user pod element.
      */
     update: function() {
@@ -442,8 +450,10 @@ cr.define('login', function() {
 
       if (hovered) {
         this.actionBoxAreaElement.classList.add('hovered');
+        this.classList.add('hovered');
       } else {
         this.actionBoxAreaElement.classList.remove('hovered');
+        this.classList.remove('hovered');
       }
     },
 
@@ -857,20 +867,16 @@ cr.define('login', function() {
     __proto__: UserPod.prototype,
 
     /** @override */
-    decorate: function() {
-      UserPod.prototype.decorate.call(this);
+    get mainInput() {
+      if (!this.passwordElement.hidden)
+        return this.passwordElement;
+      else
+        return this.nameElement;
     },
 
     /** @override */
-    focusInput: function() {
-      var isLockedUser = this.user.needsSignin;
-      this.signinButtonElement.hidden = isLockedUser;
-      this.passwordElement.hidden = !isLockedUser;
-
-      // Move tabIndex from the whole pod to the main input.
-      this.tabIndex = -1;
-      this.mainInput.tabIndex = UserPodTabOrder.POD_INPUT;
-      this.mainInput.focus();
+    decorate: function() {
+      UserPod.prototype.decorate.call(this);
     },
 
     /** @override */
@@ -880,12 +886,38 @@ cr.define('login', function() {
       this.imageElement.src = this.user.emailAddress == '' ?
           'chrome://theme/IDR_USER_MANAGER_DEFAULT_AVATAR' :
           this.user.userImage;
-      this.nameElement.textContent = this.user_.displayName;
+      this.nameElement.textContent = this.user.displayName;
+
       var isLockedUser = this.user.needsSignin;
+      this.signinButtonElement.hidden = true;
+      this.lockedIndicatorElement.hidden = !isLockedUser;
       this.passwordElement.hidden = !isLockedUser;
-      this.signinButtonElement.hidden = isLockedUser;
+      this.nameElement.hidden = isLockedUser;
 
       UserPod.prototype.updateActionBoxArea.call(this);
+    },
+
+    /** @override */
+    focusInput: function() {
+      // For focused pods, display the name unless the pod is locked.
+      var isLockedUser = this.user.needsSignin;
+      this.signinButtonElement.hidden = true;
+      this.lockedIndicatorElement.hidden = !isLockedUser;
+      this.passwordElement.hidden = !isLockedUser;
+      this.nameElement.hidden = isLockedUser;
+
+      // Move tabIndex from the whole pod to the main input.
+      this.tabIndex = -1;
+      this.mainInput.tabIndex = UserPodTabOrder.POD_INPUT;
+      this.mainInput.focus();
+    },
+
+    /** @override */
+    reset: function(takeFocus) {
+      // Always display the user's name for unfocused pods.
+      if (!takeFocus)
+        this.nameElement.hidden = false;
+      UserPod.prototype.reset.call(this, takeFocus);
     },
 
     /** @override */
@@ -899,10 +931,13 @@ cr.define('login', function() {
       if (this.parentNode.disabled)
         return;
 
-      // Don't sign in until the user presses the button. Just activate the pod.
       Oobe.clearErrors();
-      this.parentNode.lastFocusedPod_ =
-          this.parentNode.getPodWithUsername_(this.user.emailAddress);
+      this.parentNode.lastFocusedPod_ = this;
+
+      // If this is an unlocked pod, then open a browser window. Otherwise
+      // just activate the pod and show the password field.
+      if (!this.user.needsSignin && !this.isActionBoxMenuActive)
+        this.activate();
     },
 
     /** @override */
