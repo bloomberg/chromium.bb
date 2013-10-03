@@ -1,0 +1,5 @@
+Test that an auto-height region, absolutely positioned with bottom 0, is correctly sized and positioned.
+
+On success you should see PASS below and a green rectangle in the lower right corner.
+
+PASS

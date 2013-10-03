@@ -647,8 +647,12 @@ void RenderRegion::updateLogicalHeight()
 
     LayoutUnit newLogicalHeight = autoHeight + borderAndPaddingLogicalHeight();
     ASSERT(newLogicalHeight < LayoutUnit::max() / 2);
-    if (newLogicalHeight > logicalHeight())
+    if (newLogicalHeight > logicalHeight()) {
         setLogicalHeight(newLogicalHeight);
+        // Recalculate position of the render block after new logical height is set.
+        // (needed in absolute positioning case with bottom alignment for example)
+        RenderBlock::updateLogicalHeight();
+    }
 }
 
 } // namespace WebCore
