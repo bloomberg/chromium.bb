@@ -4,8 +4,9 @@
 import os
 import math
 
-from telemetry.core import util
 from metrics import discrepancy
+from telemetry.core import util
+from telemetry.page import page_measurement
 
 TIMELINE_MARKER = 'smoothness_scroll'
 SYNTHETIC_GESTURE_MARKER = 'SyntheticGestureController::running'
@@ -68,6 +69,7 @@ class SmoothnessMetrics(object):
     return self._tab.EvaluateJavaScript(
       'window.__renderingStats.getDeltas()')
 
+
 def Total(data):
   if type(data) == float:
     total = data
@@ -79,7 +81,8 @@ def Total(data):
     raise TypeError
   return total
 
-def Average(numerator, denominator, scale = None, precision = None):
+
+def Average(numerator, denominator, scale=None, precision=None):
   numerator_total = Total(numerator)
   denominator_total = Total(denominator)
   if denominator_total == 0:
@@ -95,20 +98,23 @@ def Average(numerator, denominator, scale = None, precision = None):
     avg = round(avg, precision)
   return avg
 
+
 def DivideIfPossibleOrZero(numerator, denominator):
   if not denominator:
     return 0.0
   else:
     return numerator / denominator
 
+
 def GeneralizedMean(values, exponent):
-  ''' http://en.wikipedia.org/wiki/Generalized_mean '''
+  """See http://en.wikipedia.org/wiki/Generalized_mean"""
   if not values:
     return 0.0
   sum_of_powers = 0.0
   for v in values:
     sum_of_powers += v ** exponent
   return (sum_of_powers / len(values)) ** (1.0/exponent)
+
 
 def Median(values):
   if not values:
@@ -121,8 +127,9 @@ def Median(values):
     median = 0.5 * (sorted_values[n/2] + sorted_values[n/2 - 1])
   return median
 
+
 def Percentile(values, percentile):
-  ''' Computed using linear interpolation between closest ranks. '''
+  """Computed using linear interpolation between closest ranks."""
   if not values:
     return 0.0
   sorted_values = sorted(values)
@@ -138,6 +145,7 @@ def Percentile(values, percentile):
     ceil_value = sorted_values[floor_index+1]
     alpha = n * percentile - 0.5 - floor_index
     return floor_value + alpha * (ceil_value - floor_value)
+
 
 def CalcFirstPaintTimeResults(results, tab):
   if tab.browser.is_content_shell:
@@ -158,6 +166,7 @@ def CalcFirstPaintTimeResults(results, tab):
 
   results.Add('first_paint', 'ms', round(first_paint_secs * 1000, 1))
 
+
 def CalcResults(benchmark_stats, results):
   s = benchmark_stats
 
@@ -166,16 +175,38 @@ def CalcResults(benchmark_stats, results):
     frame_times.append(
         round(s.screen_frame_timestamps[i] - s.screen_frame_timestamps[i-1], 2))
 
-  # Scroll Results
+  # List of raw frame times.
   results.Add('frame_times', 'ms', frame_times)
-  # Arithmetic mean of frame times.
+
+  # Arithmetic mean of frame times. Not the generalized mean.
   results.Add('mean_frame_time', 'ms',
               Average(s.total_time, s.screen_frame_count, 1000, 3))
+
   # Absolute discrepancy of frame time stamps.
   results.Add('jank', '',
               round(discrepancy.FrameDiscrepancy(s.screen_frame_timestamps,
                                                  True), 4))
-  # Are we hitting 60 fps for 95 percent of all frames?
+
+  # Are we hitting 60 fps for 95 percent of all frames? (Boolean value)
   # We use 17ms as a slightly looser threshold, instead of 1000.0/60.0.
   results.Add('mostly_smooth', '',
               Percentile(frame_times, 95.0) < 17.0)
+
+
+class MissingTimelineMarker(page_measurement.MeasurementFailure):
+  def __init__(self, name):
+    super(MissingTimelineMarker, self).__init__(
+        'Timeline marker not found: ' + name)
+
+
+def FindTimelineMarker(timeline, name):
+  """Find the timeline event with the given name.
+
+  If there is not exactly one such timeline event, raise an error.
+  """
+  events = [s for s in timeline.GetAllEventsOfName(name)
+            if s.parent_slice == None]
+  if len(events) != 1:
+    raise MissingTimelineMarker(name)
+  return events[0]
+

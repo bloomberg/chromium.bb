@@ -19,12 +19,6 @@ class MissingDisplayFrameRate(page_measurement.MeasurementFailure):
         'Missing display frame rate metrics: ' + name)
 
 
-class MissingTimelineMarker(page_measurement.MeasurementFailure):
-  def __init__(self, name):
-    super(MissingTimelineMarker, self).__init__(
-        'Timeline marker not found: ' + name)
-
-
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
     super(Smoothness, self).__init__('smoothness')
@@ -64,14 +58,6 @@ class Smoothness(page_measurement.PageMeasurement):
       self._metrics.Stop()
     self._trace_result = tab.browser.StopTracing()
 
-  def FindTimelineMarker(self, timeline, name):
-    events = [s for
-              s in timeline.GetAllEventsOfName(name)
-              if s.parent_slice == None]
-    if len(events) != 1:
-      raise MissingTimelineMarker(name)
-    return events[0]
-
   def MeasurePage(self, page, tab, results):
     rendering_stats_deltas = self._metrics.deltas
 
@@ -79,14 +65,14 @@ class Smoothness(page_measurement.PageMeasurement):
       raise DidNotScrollException()
 
     timeline = self._trace_result.AsTimelineModel()
-    smoothness_marker = self.FindTimelineMarker(timeline,
+    smoothness_marker = smoothness.FindTimelineMarker(timeline,
         smoothness.TIMELINE_MARKER)
     # TODO(dominikg): remove try..except once CL 23532057 has been rolled to the
     # reference builds?
     try:
-      gesture_marker = self.FindTimelineMarker(timeline,
+      gesture_marker = smoothness.FindTimelineMarker(timeline,
           smoothness.SYNTHETIC_GESTURE_MARKER)
-    except MissingTimelineMarker:
+    except smoothness.MissingTimelineMarker:
       logging.warning(
         'No gesture marker found in timeline; using smoothness marker instead.')
       gesture_marker = smoothness_marker
