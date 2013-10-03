@@ -40,7 +40,7 @@ function test()
             function testReplaceAll(next)
             {
                 var source = "// var a1, a2, a3;\nconst  a1, a2, a3;\n";
-                sourceFrame.setContent(source, false, "text/javascript");
+                sourceFrame.setContent(source);
 
                 dumpTextEditor("--- Before replace ---");
 

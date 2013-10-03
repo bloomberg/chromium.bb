@@ -11,7 +11,7 @@ function test()
 
     function createContentProvider(url)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", "text/javascript");
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
         contentProvider.requestContent = function(callback)
         {
             InspectorTest.addResult("Source requested for " + url);

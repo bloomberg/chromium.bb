@@ -17,17 +17,17 @@ function test()
         function testUISourceCode(next)
         {
             var uiSourceCode = new WebInspector.UISourceCode(new MockProject(), "parentPath", "name", "originURL", "url", WebInspector.resourceTypes.Script, true);
-            function didRequestContent(callNumber, content, contentEncoded, mimeType)
+            function didRequestContent(callNumber, content)
             {
                 InspectorTest.addResult("Callback " + callNumber + " is invoked.");
-                InspectorTest.assertEquals("text/javascript", mimeType);
+                InspectorTest.assertEquals("text/javascript", uiSourceCode.highlighterType());
                 InspectorTest.assertEquals("var x = 0;", content);
 
                 if (callNumber === 3) {
                     // Check that sourceCodeProvider.requestContent won't be called anymore.
-                    uiSourceCode.requestContent(function(content, contentEncoded, mimeType)
+                    uiSourceCode.requestContent(function(content)
                     {
-                        InspectorTest.assertEquals("text/javascript", mimeType);
+                        InspectorTest.assertEquals("text/javascript", uiSourceCode.highlighterType());
                         InspectorTest.assertEquals("var x = 0;", content);
                         next();
                     });

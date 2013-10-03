@@ -209,7 +209,7 @@ function test()
     {
         breakpointManager._debuggerModel._addScript(url, url);
         InspectorTest.addResult("  Adding UISourceCode: " + url);
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", "text/javascript");
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
         var uiSourceCode = breakpointManager._networkWorkspaceProvider.addFileForURL(url, contentProvider, true);
         uiSourceCodes[url] = uiSourceCode;
         uiSourceCode.setSourceMapping(defaultMapping);
@@ -221,7 +221,7 @@ function test()
 
         breakpointManager._debuggerModel._addScript(url, url);
         InspectorTest.addResult("  Adding temporary UISourceCode: " + url);
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", "text/javascript");
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
         var uiSourceCode = breakpointManager._debuggerWorkspaceProvider.addUniqueFileForURL(url, contentProvider, true);
         uiSourceCode.setSourceMapping(defaultMapping);
         uiSourceCodes[url] = uiSourceCode;

@@ -6,7 +6,7 @@ Creating resource.
 UISourceCode: http://fake.url/1
 UISourceCode is editable: false
 UISourceCode is content script: false
-Mime type: text/html
+Highlighter type: text/html
 UISourceCode content: <document resource content>
 
 Running: testScriptResource
@@ -14,7 +14,7 @@ Creating resource.
 UISourceCode: http://fake.url/2
 UISourceCode is editable: true
 UISourceCode is content script: false
-Mime type: text/javascript
+Highlighter type: text/javascript
 UISourceCode content: <script resource content>
 
 Running: testVMScript
@@ -22,13 +22,13 @@ Creating script.
 UISourceCode: http://fake.url/3
 UISourceCode is editable: true
 UISourceCode is content script: false
-Mime type: text/javascript
+Highlighter type: text/javascript
 UISourceCode content: <script content>
 
 Running: testStylesheetResource
 Creating resource.
 UISourceCode: http://fake.url/4
 UISourceCode is editable: true
-Mime type: text/css
+Highlighter type: text/css
 UISourceCode content: <stylesheet resource content>
 

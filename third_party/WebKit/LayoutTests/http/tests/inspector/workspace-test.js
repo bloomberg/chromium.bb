@@ -70,9 +70,9 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
         InspectorTest.addResult("UISourceCode is content script: " + !!uiSourceCode.isContentScript);
     uiSourceCode.requestContent(didRequestContent);
 
-    function didRequestContent(content, contentEncoded, mimeType)
+    function didRequestContent(content, contentEncoded)
     {
-        InspectorTest.addResult("Mime type: " + mimeType);
+        InspectorTest.addResult("Highlighter type: " + uiSourceCode.highlighterType());
         InspectorTest.addResult("UISourceCode content: " + content);
         callback();
     }

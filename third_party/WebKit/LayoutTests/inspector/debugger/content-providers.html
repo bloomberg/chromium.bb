@@ -12,7 +12,7 @@ function test()
         return {
             requestContent: function(callback)
             {
-                callback(source, false, "text/javascript");
+                callback(source);
             },
             get lineOffset() { return range[0]; },
             get columnOffset() { return range[1]; },
@@ -30,9 +30,8 @@ function test()
             scripts.push(createMockScript("3", "function bar() { return 0; }", [1, 70, 1, 98]));
             scripts.push(createMockScript("4", "this should not appear in displayed content", [0, 20, 0, 63]));
             var contentProvider = new WebInspector.ConcatenatedScriptsContentProvider(scripts);
-            function didRequestContent(content, contentEncoded, mimeType)
+            function didRequestContent(content)
             {
-                InspectorTest.assertEquals("text/html", mimeType);
                 InspectorTest.addResult(content);
                 next();
             }

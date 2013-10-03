@@ -6,13 +6,13 @@ Adding script for pending request.
 UISourceCode: foo.js
 UISourceCode is editable: false
 UISourceCode is content script: true
-Mime type: text/javascript
+Highlighter type: text/javascript
 UISourceCode content: <content script source>
 Adding uiSourceCode for finished resource.
 UISourceCode: foo.js
 UISourceCode is editable: true
 UISourceCode is content script: false
-Mime type: text/javascript
+Highlighter type: text/javascript
 UISourceCode content: <content script resource content>
 
 Running: testScriptWithFinishedResource
@@ -20,13 +20,13 @@ Adding uiSourceCode for finished resource.
 UISourceCode: foo.js
 UISourceCode is editable: true
 UISourceCode is content script: false
-Mime type: text/javascript
+Highlighter type: text/javascript
 UISourceCode content: <script resource content>
 Adding script for finished request.
 UISourceCode: foo.js
 UISourceCode is editable: true
 UISourceCode is content script: false
-Mime type: text/javascript
+Highlighter type: text/javascript
 UISourceCode content: <script resource content>
 
 Running: testHTMLWithPendingResource
@@ -34,19 +34,19 @@ Adding first script for pending request.
 UISourceCode: index.html
 UISourceCode is editable: false
 UISourceCode is content script: false
-Mime type: text/html
+Highlighter type: text/html
 UISourceCode content:   <script><script source 1></script>
 Adding second script for pending request.
 UISourceCode: index.html
 UISourceCode is editable: false
 UISourceCode is content script: false
-Mime type: text/html
+Highlighter type: text/html
 UISourceCode content:                                      <script><script source 2></script>
 Adding uiSourceCode for finished resource.
 UISourceCode: index.html
 UISourceCode is editable: false
 UISourceCode is content script: false
-Mime type: text/html
+Highlighter type: text/html
 UISourceCode content: <resource content>
 
 Running: testHTMLWithFinishedResource
@@ -54,18 +54,18 @@ Adding uiSourceCode for finished resource.
 UISourceCode: index.html
 UISourceCode is editable: false
 UISourceCode is content script: false
-Mime type: text/html
+Highlighter type: text/html
 UISourceCode content: <resource content>
 Adding first script for finished request.
 UISourceCode: index.html
 UISourceCode is editable: false
 UISourceCode is content script: false
-Mime type: text/html
+Highlighter type: text/html
 UISourceCode content: <resource content>
 Adding second script for finished request.
 UISourceCode: index.html
 UISourceCode is editable: false
 UISourceCode is content script: false
-Mime type: text/html
+Highlighter type: text/html
 UISourceCode content: <resource content>
 
