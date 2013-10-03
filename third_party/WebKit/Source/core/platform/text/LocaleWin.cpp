@@ -29,10 +29,8 @@
  */
 
 #include "config.h"
-#include "core/platform/text/win/LocaleWin.h"
+#include "core/platform/text/LocaleWin.h"
 
-#include <windows.h>
-#include <limits>
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "platform/LayoutTestSupport.h"
@@ -46,6 +44,8 @@
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
+#include <limits>
+#include <windows.h>
 
 using namespace std;
 
@@ -280,10 +280,12 @@ static String convertWindowsDateTimeFormat(const String& format)
                 if (lastQuoteCanBeLiteral && format[i - 1] == '\'') {
                     literalBuffer.append('\'');
                     lastQuoteCanBeLiteral = false;
-                } else
+                } else {
                     lastQuoteCanBeLiteral = true;
-            } else
+                }
+            } else {
                 literalBuffer.append(ch);
+            }
             continue;
         }
 
@@ -292,16 +294,17 @@ static String convertWindowsDateTimeFormat(const String& format)
             if (lastQuoteCanBeLiteral && i > 0 && format[i - 1] == '\'') {
                 literalBuffer.append(ch);
                 lastQuoteCanBeLiteral = false;
-            } else
+            } else {
                 lastQuoteCanBeLiteral = true;
+            }
         } else if (isASCIIAlpha(ch)) {
             commitLiteralToken(literalBuffer, converted);
             unsigned symbolStart = i;
             unsigned count = countContinuousLetters(format, i);
             i += count - 1;
-            if (ch == 'h' || ch == 'H' || ch == 'm' || ch == 's' || ch == 'M' || ch == 'y')
+            if (ch == 'h' || ch == 'H' || ch == 'm' || ch == 's' || ch == 'M' || ch == 'y') {
                 converted.append(format, symbolStart, count);
-            else if (ch == 'd') {
+            } else if (ch == 'd') {
                 if (count <= 2)
                     converted.append(format, symbolStart, count);
                 else if (count == 3)
@@ -309,18 +312,20 @@ static String convertWindowsDateTimeFormat(const String& format)
                 else
                     converted.append("EEEE");
             } else if (ch == 'g') {
-                if (count == 1)
+                if (count == 1) {
                     converted.append('G');
-                else {
+                } else {
                     // gg means imperial era in Windows.
                     // Just ignore it.
                 }
-            } else if (ch == 't')
+            } else if (ch == 't') {
                 converted.append('a');
-            else
+            } else {
                 literalBuffer.append(format, symbolStart, count);
-        } else
+            }
+        } else {
             literalBuffer.append(ch);
+        }
     }
     commitLiteralToken(literalBuffer, converted);
     return converted.toString();

@@ -34,8 +34,8 @@
 #include "core/platform/text/PlatformLocale.h"
 #include "wtf/Forward.h"
 #include "wtf/RetainPtr.h"
-#include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 OBJC_CLASS NSCalendar;
 OBJC_CLASS NSDateFormatter;

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/mac/LocaleMac.h"
+#include "core/platform/text/LocaleMac.h"
 
 #include <gtest/gtest.h>
 #include "platform/DateComponents.h"
