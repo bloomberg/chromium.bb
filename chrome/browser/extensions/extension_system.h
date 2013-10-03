@@ -18,12 +18,6 @@ class ExtensionProcessManager;
 class ExtensionService;
 class Profile;
 
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class DeviceLocalAccountManagementPolicyProvider;
-}
-#endif  // defined(OS_CHROMEOS)
-
 namespace extensions {
 class Blacklist;
 class ErrorConsole;
@@ -218,11 +212,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ExtensionWarningService> extension_warning_service_;
     scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
     scoped_ptr<ErrorConsole> error_console_;
-
-#if defined(OS_CHROMEOS)
-    scoped_ptr<chromeos::DeviceLocalAccountManagementPolicyProvider>
-        device_local_account_management_policy_provider_;
-#endif
 
     OneShotEvent ready_;
   };

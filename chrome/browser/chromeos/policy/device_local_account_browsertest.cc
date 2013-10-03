@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -18,7 +17,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -35,8 +33,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
@@ -56,14 +52,11 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test_utils.h"
@@ -71,11 +64,7 @@
 #include "crypto/rsa_private_key.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/url_util.h"
-#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -101,129 +90,6 @@ const char* kStartupURLs[] = {
 };
 const char kExistentTermsOfServicePath[] = "chromeos/enterprise/tos.txt";
 const char kNonexistentTermsOfServicePath[] = "chromeos/enterprise/tos404.txt";
-const char kRelativeUpdateURL[] = "/service/update2/crx";
-const char kUpdateManifestHeader[] =
-    "<?xml version='1.0' encoding='UTF-8'?>\n"
-    "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>\n";
-const char kUpdateManifestTemplate[] =
-    "  <app appid='%s'>\n"
-    "    <updatecheck codebase='%s' version='%s' />\n"
-    "  </app>\n";
-const char kUpdateManifestFooter[] =
-    "</gupdate>\n";
-const char kHostedAppID[] = "kbmnembihfiondgfjekmnmcbddelicoi";
-const char kHostedAppCRXPath[] = "extensions/hosted_app.crx";
-const char kHostedAppVersion[] = "0.1";
-const char kGoodExtensionID[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
-const char kGoodExtensionPath[] = "extensions/good.crx";
-const char kGoodExtensionVersion[] = "1.0";
-
-// Helper that serves extension update manifests to Chrome.
-class TestingUpdateManifestProvider {
- public:
-
-  // Update manifests will be served at |relative_update_url|.
-  explicit TestingUpdateManifestProvider(
-      const std::string& relative_update_url);
-  ~TestingUpdateManifestProvider();
-
-  // When an update manifest is requested for the given extension |id|, indicate
-  // that |version| of the extension can be downloaded at |crx_url|.
-  void AddUpdate(const std::string& id,
-                 const std::string& version,
-                 const GURL& crx_url);
-
-  // This method must be registered with the test's EmbeddedTestServer to start
-  // serving update manifests.
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
-      const net::test_server::HttpRequest& request);
-
- private:
-  struct Update {
-   public:
-    Update(const std::string& version, const GURL& crx_url);
-    Update();
-
-    std::string version;
-    GURL crx_url;
-  };
-  typedef std::map<std::string, Update> UpdateMap;
-  UpdateMap updates_;
-
-  const std::string relative_update_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingUpdateManifestProvider);
-};
-
-TestingUpdateManifestProvider::Update::Update(const std::string& version,
-                                              const GURL& crx_url)
-    : version(version),
-      crx_url(crx_url) {
-}
-
-TestingUpdateManifestProvider::Update::Update() {
-}
-
-TestingUpdateManifestProvider::TestingUpdateManifestProvider(
-    const std::string& relative_update_url)
-    : relative_update_url_(relative_update_url) {
-}
-
-TestingUpdateManifestProvider::~TestingUpdateManifestProvider() {
-}
-
-void TestingUpdateManifestProvider::AddUpdate(const std::string& id,
-                                              const std::string& version,
-                                              const GURL& crx_url) {
-  updates_[id] = Update(version, crx_url);
-}
-
-scoped_ptr<net::test_server::HttpResponse>
-    TestingUpdateManifestProvider::HandleRequest(
-        const net::test_server::HttpRequest& request) {
-  const GURL url("http://localhost" + request.relative_url);
-  if (url.path() != relative_update_url_)
-    return scoped_ptr<net::test_server::HttpResponse>();
-
-  std::string content = kUpdateManifestHeader;
-  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
-    if (it.GetKey() != "x")
-      continue;
-    // Extract the extension id from the subquery. Since GetValueForKeyInQuery()
-    // expects a complete URL, dummy scheme and host must be prepended.
-    std::string id;
-    net::GetValueForKeyInQuery(GURL("http://dummy?" + it.GetUnescapedValue()),
-                               "id", &id);
-    UpdateMap::const_iterator entry = updates_.find(id);
-    if (entry != updates_.end()) {
-      content += base::StringPrintf(kUpdateManifestTemplate,
-                                    id.c_str(),
-                                    entry->second.crx_url.spec().c_str(),
-                                    entry->second.version.c_str());
-    }
-  }
-  content += kUpdateManifestFooter;
-  scoped_ptr<net::test_server::BasicHttpResponse>
-      http_response(new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content(content);
-  http_response->set_content_type("text/xml");
-  return http_response.PassAs<net::test_server::HttpResponse>();
-}
-
-bool DoesInstallSuccessReferToId(const std::string& id,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  return content::Details<const extensions::InstalledExtensionInfo>(details)->
-      extension->id() == id;
-}
-
-bool DoesInstallFailureReferToId(const std::string& id,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  return content::Details<const string16>(details)->find(UTF8ToUTF16(id)) !=
-      string16::npos;
-}
 
 }  // namespace
 
@@ -552,92 +418,6 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
   EXPECT_FALSE(browser_window->IsFullscreen());
   chrome::ToggleFullscreenMode(browser);
   EXPECT_FALSE(browser_window->IsFullscreen());
-}
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionWhitelist) {
-  // Make it possible to force-install a hosted app and an extension.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  TestingUpdateManifestProvider testing_update_manifest_provider(
-      kRelativeUpdateURL);
-  testing_update_manifest_provider.AddUpdate(
-      kHostedAppID,
-      kHostedAppVersion,
-      embedded_test_server()->GetURL(std::string("/") + kHostedAppCRXPath));
-  testing_update_manifest_provider.AddUpdate(
-      kGoodExtensionID,
-      kGoodExtensionVersion,
-      embedded_test_server()->GetURL(std::string("/") + kGoodExtensionPath));
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&TestingUpdateManifestProvider::HandleRequest,
-                 base::Unretained(&testing_update_manifest_provider)));
-
-  // Specify policy to force-install the hosted app and the extension.
-  em::StringList* forcelist = device_local_account_policy_.payload()
-      .mutable_extensioninstallforcelist()->mutable_value();
-  forcelist->add_entries(base::StringPrintf(
-      "%s;%s",
-      kHostedAppID,
-      embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
-  forcelist->add_entries(base::StringPrintf(
-      "%s;%s",
-      kGoodExtensionID,
-      embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
-
-  UploadAndInstallDeviceLocalAccountPolicy();
-  AddPublicSessionToDevicePolicy(kAccountId1);
-
-  // This observes the display name becoming available as this indicates
-  // device-local account policy is fully loaded, which is a prerequisite for
-  // successful login.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
-
-  // Wait for the login UI to be ready.
-  chromeos::LoginDisplayHostImpl* host =
-      reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
-          chromeos::LoginDisplayHostImpl::default_host());
-  ASSERT_TRUE(host);
-  chromeos::OobeUI* oobe_ui = host->GetOobeUI();
-  ASSERT_TRUE(oobe_ui);
-  base::RunLoop run_loop;
-  const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
-  if (!oobe_ui_ready)
-    run_loop.Run();
-
-  // Ensure that the browser stays alive, even though no windows are opened
-  // during session start.
-  chrome::StartKeepAlive();
-
-  // Start listening for app/extension installation results.
-  content::WindowedNotificationObserver hosted_app_observer(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
-      base::Bind(DoesInstallSuccessReferToId, kHostedAppID));
-  content::WindowedNotificationObserver extension_observer(
-      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-      base::Bind(DoesInstallFailureReferToId, kGoodExtensionID));
-
-  // Start login into the device-local account.
-  host->StartSignInScreen();
-  chromeos::ExistingUserController* controller =
-      chromeos::ExistingUserController::current_controller();
-  ASSERT_TRUE(controller);
-  controller->LoginAsPublicAccount(user_id_1_);
-
-  // Wait for the hosted app installation to succeed and the extension
-  // installation to fail.
-  hosted_app_observer.Wait();
-  extension_observer.Wait();
-
-  // Verify that the hosted app was installed.
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  ASSERT_TRUE(profile);
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  EXPECT_TRUE(extension_service->GetExtensionById(kHostedAppID, true));
-
-  // Verify that the extension was not installed.
-  EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
 }
 
 class TermsOfServiceTest : public DeviceLocalAccountTest,

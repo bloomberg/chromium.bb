@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -57,31 +56,16 @@ std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,
       domain_prefix + kDeviceLocalAccountDomainSuffix);
 }
 
-bool IsDeviceLocalAccountUser(const std::string& user_id,
-                              DeviceLocalAccount::Type* type) {
-  const std::string domain = gaia::ExtractDomainName(user_id);
-  if (!EndsWith(domain, kDeviceLocalAccountDomainSuffix, true))
-    return false;
+bool IsDeviceLocalAccountUser(const std::string& user_id) {
+  return EndsWith(gaia::ExtractDomainName(user_id),
+                  kDeviceLocalAccountDomainSuffix,
+                  true);
+}
 
-  const std::string domain_prefix = domain.substr(
-      0, domain.size() - arraysize(kDeviceLocalAccountDomainSuffix) + 1);
-
-  if (domain_prefix == kPublicAccountDomainPrefix) {
-    if (type)
-      *type = DeviceLocalAccount::TYPE_PUBLIC_SESSION;
-    return true;
-  }
-  if (domain_prefix == kKioskAppAccountDomainPrefix) {
-    if (type)
-      *type = DeviceLocalAccount::TYPE_KIOSK_APP;
-    return true;
-  }
-
-  // |user_id| is a device-local account but its type is not recognized.
-  NOTREACHED();
-  if (type)
-    *type = DeviceLocalAccount::TYPE_COUNT;
-  return true;
+bool IsKioskAppUser(const std::string& user_id) {
+  return gaia::ExtractDomainName(user_id) ==
+      std::string(kKioskAppAccountDomainPrefix) +
+          kDeviceLocalAccountDomainSuffix;
 }
 
 void SetDeviceLocalAccounts(

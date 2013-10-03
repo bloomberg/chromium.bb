@@ -48,10 +48,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
-#include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #endif
@@ -111,19 +107,7 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
 
   standard_management_policy_provider_.reset(
       new StandardManagementPolicyProvider(ExtensionPrefs::Get(profile_)));
-
-#if defined (OS_CHROMEOS)
-  const chromeos::User* user = chromeos::UserManager::Get()->GetActiveUser();
-  policy::DeviceLocalAccount::Type device_local_account_type;
-  if (user && policy::IsDeviceLocalAccountUser(user->email(),
-                                               &device_local_account_type)) {
-    device_local_account_management_policy_provider_.reset(
-        new chromeos::DeviceLocalAccountManagementPolicyProvider(
-            device_local_account_type));
-  }
-#endif  // defined (OS_CHROMEOS)
-
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif
 }
 
 void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
@@ -132,15 +116,7 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
   DCHECK(standard_management_policy_provider_.get());
   management_policy_->RegisterProvider(
       standard_management_policy_provider_.get());
-
-#if defined (OS_CHROMEOS)
-  if (device_local_account_management_policy_provider_) {
-    management_policy_->RegisterProvider(
-        device_local_account_management_policy_provider_.get());
-  }
-#endif  // defined (OS_CHROMEOS)
-
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif
 }
 
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {

@@ -362,15 +362,11 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     return;
   }
 
-  policy::DeviceLocalAccount::Type device_local_account_type;
   if (email == UserManager::kGuestUserName) {
     GuestUserLoggedIn();
   } else if (email == UserManager::kRetailModeUserName) {
     RetailModeUserLoggedIn();
-  } else if (policy::IsDeviceLocalAccountUser(email,
-                                              &device_local_account_type) &&
-             device_local_account_type ==
-                 policy::DeviceLocalAccount::TYPE_KIOSK_APP) {
+  } else if (policy::IsKioskAppUser(email)) {
     KioskAppLoggedIn(email);
   } else {
     EnsureUsersLoaded();
@@ -1406,11 +1402,7 @@ void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
 
 void UserManagerImpl::KioskAppLoggedIn(const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  policy::DeviceLocalAccount::Type device_local_account_type;
-  DCHECK(policy::IsDeviceLocalAccountUser(username,
-                                          &device_local_account_type));
-  DCHECK_EQ(policy::DeviceLocalAccount::TYPE_KIOSK_APP,
-            device_local_account_type);
+  DCHECK(policy::IsKioskAppUser(username));
 
   active_user_ = User::CreateKioskAppUser(username);
   active_user_->SetStubImage(User::kInvalidImageIndex, false);

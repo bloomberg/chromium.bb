@@ -100,8 +100,7 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
 // If the callback returns |true|, the condition is met. Otherwise, the
 // condition is not yet met and the callback will be invoked again every time a
 // notification of the expected type is received until the callback returns
-// |true|. For convenience, two callback types are defined, one that is provided
-// with the notification source and details, and one that is not.
+// |true|.
 //
 // This helper class exists to avoid the following common pattern in tests:
 //   PerformAction()
@@ -117,14 +116,8 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
 class WindowedNotificationObserver : public NotificationObserver {
  public:
   // Callback invoked on notifications. Should return |true| when the condition
-  // being waited for is met. For convenience, there is a choice between two
-  // callback types, one that is provided with the notification source and
-  // details, and one that is not.
-  typedef base::Callback<bool(const NotificationSource&,
-                              const NotificationDetails&)>
-      ConditionTestCallback;
-  typedef base::Callback<bool(void)>
-      ConditionTestCallbackWithoutSourceAndDetails;
+  // being waited for is met.
+  typedef base::Callback<bool(void)> ConditionTestCallback;
 
   // Set up to wait for a simple condition. The condition is met when a
   // notification of the given |notification_type| from the given |source| is
@@ -138,9 +131,6 @@ class WindowedNotificationObserver : public NotificationObserver {
   // of |notification_type| from any source is received.
   WindowedNotificationObserver(int notification_type,
                                const ConditionTestCallback& callback);
-  WindowedNotificationObserver(
-      int notification_type,
-      const ConditionTestCallbackWithoutSourceAndDetails& callback);
 
   virtual ~WindowedNotificationObserver();
 
