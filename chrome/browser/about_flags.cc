@@ -446,13 +446,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAcceleratedFilters)
   },
   {
-    "disable-gpu-vsync",
-    IDS_FLAGS_DISABLE_GPU_VSYNC_NAME,
-    IDS_FLAGS_DISABLE_GPU_VSYNC_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableGpuVsync)
-  },
-  {
     "disable-webgl",
     IDS_FLAGS_DISABLE_WEBGL_NAME,
     IDS_FLAGS_DISABLE_WEBGL_DESCRIPTION,
