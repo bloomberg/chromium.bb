@@ -898,7 +898,7 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
     client_->PostInvalidate();
   }
 
-  block_invalidates_ = true;
+  block_invalidates_ = compositor_needs_continuous_invalidate_;
 
   // Unretained here is safe because the callback is cancelled when
   // |fallback_tick_| is destroyed.
