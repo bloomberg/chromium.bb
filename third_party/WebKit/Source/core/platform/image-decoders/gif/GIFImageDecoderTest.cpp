@@ -451,3 +451,19 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
     EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->status());
     EXPECT_EQ(baselineHashes[0], hashSkBitmap(firstFrame->getSkBitmap()));
 }
+
+TEST(GIFImageDecoderTest, invalidDisposalMethod)
+{
+    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+
+    // The image has 2 frames, with disposal method 4 and 5, respectively.
+    RefPtr<SharedBuffer> data = readFile("/Source/web/tests/data/invalid-disposal-method.gif");
+    ASSERT_TRUE(data.get());
+    decoder->setData(data.get(), true);
+
+    EXPECT_EQ(2u, decoder->frameCount());
+    // Disposal method 4 is converted to ImageFrame::DisposeOverwritePrevious.
+    EXPECT_EQ(ImageFrame::DisposeOverwritePrevious, decoder->frameBufferAtIndex(0)->disposalMethod());
+    // Disposal method 5 is ignored.
+    EXPECT_EQ(ImageFrame::DisposeNotSpecified, decoder->frameBufferAtIndex(1)->disposalMethod());
+}

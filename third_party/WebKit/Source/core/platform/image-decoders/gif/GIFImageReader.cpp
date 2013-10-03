@@ -556,11 +556,13 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
             // NOTE: This relies on the values in the FrameDisposalMethod enum
             // matching those in the GIF spec!
             int disposalMethod = ((*currentComponent) >> 2) & 0x7;
-            currentFrame->setDisposalMethod(static_cast<WebCore::ImageFrame::DisposalMethod>(disposalMethod));
-            // Some specs say that disposal method 3 is "overwrite previous", others that setting
-            // the third bit of the field (i.e. method 4) is. We map both to the same value.
-            if (disposalMethod == 4)
+            if (disposalMethod < 4) {
+                currentFrame->setDisposalMethod(static_cast<WebCore::ImageFrame::DisposalMethod>(disposalMethod));
+            } else if (disposalMethod == 4) {
+                // Some specs say that disposal method 3 is "overwrite previous", others that setting
+                // the third bit of the field (i.e. method 4) is. We map both to the same value.
                 currentFrame->setDisposalMethod(WebCore::ImageFrame::DisposeOverwritePrevious);
+            }
             currentFrame->setDelayTime(GETINT16(currentComponent + 1) * 10);
             GETN(1, GIFConsumeBlock);
             break;
