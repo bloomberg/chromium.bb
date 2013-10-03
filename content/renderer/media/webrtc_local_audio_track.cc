@@ -153,6 +153,7 @@ void WebRtcLocalAudioTrack::Capture(media::AudioBus* audio_source,
   int number_of_channels = 0;
   int number_of_frames = 0;
   SinkList sinks;
+  bool is_webaudio_source = false;
   scoped_refptr<ConfiguredBuffer> current_buffer;
   {
     base::AutoLock auto_lock(lock_);
@@ -163,14 +164,21 @@ void WebRtcLocalAudioTrack::Capture(media::AudioBus* audio_source,
     number_of_channels = current_buffer->params().channels();
     number_of_frames = current_buffer->sink_buffer_size();
     sinks = sinks_;
+    is_webaudio_source = (webaudio_source_.get() != NULL);
   }
 
   // Push the data to the fifo.
   current_buffer->Push(audio_source);
-  // Only turn off the audio processing when the constraint is set to false as
-  // well as there is no correct delay value.
-  bool need_audio_processing = need_audio_processing_ ?
-      need_audio_processing_ : (audio_delay_milliseconds != 0);
+
+  // When the source is WebAudio, turn off the audio processing if the delay
+  // value is 0 even though the constraint is set to true. In such case, it
+  // indicates the data is not from microphone.
+  // TODO(xians): remove the flag when supporting one APM per audio track.
+  // See crbug/264611 for details.
+  bool need_audio_processing = need_audio_processing_;
+  if (is_webaudio_source && need_audio_processing)
+    need_audio_processing = (audio_delay_milliseconds != 0);
+
   int current_volume = volume;
   while (current_buffer->Consume()) {
     // Feed the data to the sinks.
