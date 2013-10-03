@@ -807,20 +807,30 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   // render_surfaces.
   //
 
+  // Scroll compensation restarts from identity under two possible conditions:
+  //  - the current layer is a container for fixed-position descendants
+  //  - the current layer is fixed-position itself, so any fixed-position
+  //    descendants are positioned with respect to this layer. Thus, any
+  //    fixed position descendants only need to compensate for scrollDeltas
+  //    that occur below this layer.
+  bool current_layer_resets_scroll_compensation_for_descendants =
+      layer->IsContainerForFixedPositionLayers() ||
+      layer->position_constraint().is_fixed_position();
+
   // Avoid the overheads (including stack allocation and matrix
   // initialization/copy) if we know that the scroll compensation doesn't need
   // to be reset or adjusted.
   gfx::Vector2dF scroll_delta = GetEffectiveScrollDelta(layer);
-  if (!layer->IsContainerForFixedPositionLayers() &&
+  if (!current_layer_resets_scroll_compensation_for_descendants &&
       scroll_delta.IsZero() && !layer->render_surface())
     return current_scroll_compensation_matrix;
 
   // Start as identity matrix.
   gfx::Transform next_scroll_compensation_matrix;
 
-  // If this layer is not a container, then it inherits the existing scroll
-  // compensations.
-  if (!layer->IsContainerForFixedPositionLayers())
+  // If this layer does not reset scroll compensation, then it inherits the
+  // existing scroll compensations.
+  if (!current_layer_resets_scroll_compensation_for_descendants)
     next_scroll_compensation_matrix = current_scroll_compensation_matrix;
 
   // If the current layer has a non-zero scroll_delta, then we should compute

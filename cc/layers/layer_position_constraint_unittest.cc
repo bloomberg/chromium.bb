@@ -1094,5 +1094,120 @@ TEST_F(LayerPositionConstraintTest,
                                   grand_child->draw_transform());
 }
 
+TEST_F(LayerPositionConstraintTest,
+     ScrollCompensationForFixedWithinFixedWithSameContainer) {
+  // This test checks scroll compensation for a fixed-position layer that is
+  // inside of another fixed-position layer and both share the same container.
+  // In this situation, the parent fixed-position layer will receive
+  // the scroll compensation, and the child fixed-position layer does not
+  // need to compensate further.
+
+  LayerImpl* child = root_->children()[0];
+  LayerImpl* grand_child = child->children()[0];
+  LayerImpl* great_grand_child = grand_child->children()[0];
+
+  child->SetIsContainerForFixedPositionLayers(true);
+  grand_child->SetPositionConstraint(fixed_to_top_left_);
+
+  // Note carefully - great_grand_child is fixed to bottom right, to test
+  // sizeDelta being applied correctly; the compensation skips the grand_child
+  // because it is fixed to top left.
+  great_grand_child->SetPositionConstraint(fixed_to_bottom_right_);
+
+  // Case 1: scrollDelta
+  child->SetScrollDelta(gfx::Vector2d(10, 10));
+  ExecuteCalculateDrawProperties(root_.get());
+
+  // Here the child is affected by scroll delta, but the fixed position
+  // grand_child should not be affected.
+  gfx::Transform expected_child_transform;
+  expected_child_transform.Translate(-10.0, -10.0);
+
+  gfx::Transform expected_grand_child_transform;
+  gfx::Transform expected_great_grand_child_transform;
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
+                                  child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
+                                  grand_child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
+                                  great_grand_child->draw_transform());
+
+  // Case 2: sizeDelta
+  child->SetScrollDelta(gfx::Vector2d(0, 0));
+  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  ExecuteCalculateDrawProperties(root_.get());
+
+  expected_child_transform.MakeIdentity();
+
+  expected_grand_child_transform.MakeIdentity();
+
+  // Fixed to bottom-right, size-delta compensation is applied.
+  expected_great_grand_child_transform.MakeIdentity();
+  expected_great_grand_child_transform.Translate(20.0, 20.0);
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
+                                  child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
+                                  grand_child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
+                                  great_grand_child->draw_transform());
+}
+
+TEST_F(LayerPositionConstraintTest,
+     ScrollCompensationForFixedWithinFixedWithInterveningContainer) {
+  // This test checks scroll compensation for a fixed-position layer that is
+  // inside of another fixed-position layer, but they have different fixed
+  // position containers. In this situation, the child fixed-position element
+  // would still have to compensate with respect to its container.
+
+  LayerImpl* container1 = root_->children()[0];
+  LayerImpl* fixed_to_container1 = container1->children()[0];
+  LayerImpl* container2 = fixed_to_container1->children()[0];
+
+  {
+    // Add one more layer to the hierarchy for this test.
+    scoped_ptr<LayerImpl> fixed_to_container2_ptr =
+        LayerImpl::Create(host_impl_.active_tree(), 5);
+    container2->AddChild(fixed_to_container2_ptr.Pass());
+  }
+
+  LayerImpl* fixed_to_container2 = container2->children()[0];
+
+  container1->SetIsContainerForFixedPositionLayers(true);
+  fixed_to_container1->SetPositionConstraint(fixed_to_top_left_);
+  container2->SetIsContainerForFixedPositionLayers(true);
+  fixed_to_container2->SetPositionConstraint(fixed_to_top_left_);
+
+  container1->SetScrollDelta(gfx::Vector2d(0, 15));
+  container2->SetScrollDelta(gfx::Vector2d(30, 0));
+  ExecuteCalculateDrawProperties(root_.get());
+
+  gfx::Transform expected_container1_transform;
+  expected_container1_transform.Translate(0.0, -15.0);
+
+  gfx::Transform expected_fixed_to_container1_transform;
+
+  // Since the container is a descendant of the fixed layer above,
+  // the expected draw transform for container2 would not
+  // include the scrollDelta that was applied to container1.
+  gfx::Transform expected_container2_transform;
+  expected_container2_transform.Translate(-30.0, 0.0);
+
+  gfx::Transform expected_fixed_to_container2_transform;
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_container1_transform,
+                                  container1->draw_transform());
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_to_container1_transform,
+                                  fixed_to_container1->draw_transform());
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_container2_transform,
+                                  container2->draw_transform());
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_to_container2_transform,
+                                  fixed_to_container2->draw_transform());
+}
+
 }  // namespace
 }  // namespace cc
