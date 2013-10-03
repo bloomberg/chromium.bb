@@ -4,7 +4,7 @@
 
 {
   'conditions': [
-    ['OS != "ios"', {
+    ['OS != "ios" and android_webview_build == 0', {
       'targets': [
         {
           'target_name': 'components_unittests',
@@ -16,6 +16,7 @@
             'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
             'browser_context_keyed_service/dependency_graph_unittest.cc',
             'dom_distiller/core/dom_distiller_database_unittest.cc',
+            'dom_distiller/core/article_entry_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
@@ -37,6 +38,7 @@
           ],
           'dependencies': [
             '../base/base.gyp:test_support_base',
+            '../sync/sync.gyp:sync',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
 
@@ -51,7 +53,6 @@
 
             # Dependencies of dom_distiller
             'dom_distiller_core',
-            'dom_distiller_core_proto',
 
             # Dependencies of encryptor
             'encryptor',
@@ -99,11 +100,6 @@
             ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-            ['android_webview_build == 0', {
-              'dependencies': [
-                '../sync/sync.gyp:sync',
               ],
             }],
             ['OS=="linux" and component=="shared_library" and linux_use_tcmalloc==1', {

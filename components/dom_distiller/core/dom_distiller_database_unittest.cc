@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "components/dom_distiller/core/proto/article_entry.pb.h"
+#include "components/dom_distiller/core/article_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

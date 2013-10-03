@@ -1,5 +1,6 @@
 include_rules = [
   "+grit",  # For generated headers.
+  "+sync/protocol",
   "+third_party/leveldatabase/src/include",
 
   # The dom distiller is a layered component; subdirectories must explicitly

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "components/dom_distiller/core/article_entry.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -26,7 +27,6 @@ class DB;
 
 namespace dom_distiller {
 
-class ArticleEntry;
 typedef std::vector<ArticleEntry> EntryVector;
 
 // Interface for classes providing persistent storage of DomDistiller entries.

@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "components/dom_distiller/core/proto/article_entry.pb.h"
+#include "components/dom_distiller/core/article_entry.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
