@@ -179,6 +179,7 @@ class _JSCModel(object):
       return {}
     as_dict = {
       'name': self._namespace.name,
+      'documentationOptions': self._namespace.documentation_options,
       'types': self._GenerateTypes(self._namespace.types.values()),
       'functions': self._GenerateFunctions(self._namespace.functions),
       'events': self._GenerateEvents(self._namespace.events),

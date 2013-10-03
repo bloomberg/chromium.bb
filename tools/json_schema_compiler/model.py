@@ -73,6 +73,7 @@ class Namespace(object):
     self.properties = _GetProperties(self, json, self, toplevel_origin)
     self.compiler_options = (json.get('compiler_options', {})
         if include_compiler_options else {})
+    self.documentation_options = json.get('documentation_options', {})
 
 class Origin(object):
   """Stores the possible origin of model object as a pair of bools. These are:

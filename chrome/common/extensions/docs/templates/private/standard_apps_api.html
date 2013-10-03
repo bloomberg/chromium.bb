@@ -9,7 +9,7 @@
     <div id="gc-container">
       {{+partials.sidenav items:sidenavs.apps}}
       <div id="gc-pagecontent">
-        <h1 class="page_title">chrome.{{api.name}}</h1>
+        <h1 class="page_title">{{+partials.api_title api:api}}</h1>
         {{?api.channelWarning.trunk}}{{+partials.warning_trunk}}{{/}}
         {{?api.channelWarning.dev}}{{+partials.warning_dev}}{{/}}
         {{?api.channelWarning.beta}}{{+partials.warning_beta}}{{/}}

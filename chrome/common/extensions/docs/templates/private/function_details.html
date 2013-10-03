@@ -4,7 +4,7 @@
     |parentName|: name of the parent object of the function
 -}}
 <div class="summary{{^function.returns}}{{?api}} uncapitalize{{/}}{{/}}">
-<span>{{?function.returns}}{{+partials.variable_type}} {{/}}{{?api}}chrome.{{api.name}}.{{/}}{{?parentName}}{{parentName}}.{{/}}{{function.name}}</span>({{#function.parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
+<span>{{?function.returns}}{{+partials.variable_type}} {{/}}{{?api}}{{+partials.api_namespace api:api}}{{/}}{{?parentName}}{{parentName}}.{{/}}{{function.name}}</span>({{#function.parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
 </div>
 <div class="description">
   {{?function.description}}
