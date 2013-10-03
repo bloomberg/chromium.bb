@@ -9,7 +9,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/combobox_model_observer.h"
 
 namespace {
 
@@ -51,7 +50,6 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
     const BookmarkNode* node)
     : bookmark_model_(model),
       node_parent_index_(0) {
-  bookmark_model_->AddObserver(this);
   // Use + 2 to account for bookmark bar and other node.
   std::vector<const BookmarkNode*> nodes =
       bookmark_utils::GetMostRecentlyModifiedFolders(model, kMaxMRUFolders + 2);
@@ -92,9 +90,7 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   node_parent_index_ = static_cast<int>(it - items_.begin());
 }
 
-RecentlyUsedFoldersComboModel::~RecentlyUsedFoldersComboModel() {
-  bookmark_model_->RemoveObserver(this);
-}
+RecentlyUsedFoldersComboModel::~RecentlyUsedFoldersComboModel() {}
 
 int RecentlyUsedFoldersComboModel::GetItemCount() const {
   return static_cast<int>(items_.size());
@@ -122,101 +118,6 @@ bool RecentlyUsedFoldersComboModel::IsItemSeparatorAt(int index) {
 
 int RecentlyUsedFoldersComboModel::GetDefaultIndex() const {
   return node_parent_index_;
-}
-
-void RecentlyUsedFoldersComboModel::AddObserver(
-    ui::ComboboxModelObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void RecentlyUsedFoldersComboModel::RemoveObserver(
-    ui::ComboboxModelObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-
-void RecentlyUsedFoldersComboModel::Loaded(BookmarkModel* model,
-                                           bool ids_reassigned) {
-}
-
-void RecentlyUsedFoldersComboModel::BookmarkModelBeingDeleted(
-    BookmarkModel* model) {
-}
-
-void RecentlyUsedFoldersComboModel::BookmarkNodeMoved(
-    BookmarkModel* model,
-    const BookmarkNode* old_parent,
-    int old_index,
-    const BookmarkNode* new_parent,
-    int new_index) {
-}
-
-void RecentlyUsedFoldersComboModel::BookmarkNodeAdded(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int index) {
-}
-
-void RecentlyUsedFoldersComboModel::OnWillRemoveBookmarks(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int old_index,
-    const BookmarkNode* node) {
-  // Changing is rare enough that we don't attempt to readjust the contents.
-  // Update |items_| so we aren't left pointing to a deleted node.
-  bool changed = false;
-  for (std::vector<Item>::iterator i = items_.begin();
-       i != items_.end();) {
-    if (i->type == Item::TYPE_NODE && i->node->HasAncestor(node)) {
-      i = items_.erase(i);
-      changed = true;
-    } else {
-      ++i;
-    }
-  }
-  if (changed)
-    FOR_EACH_OBSERVER(ui::ComboboxModelObserver, observers_, OnModelChanged());
-}
-
-void RecentlyUsedFoldersComboModel::BookmarkNodeRemoved(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int old_index,
-    const BookmarkNode* node) {
-}
-
-void RecentlyUsedFoldersComboModel::BookmarkNodeChanged(
-    BookmarkModel* model,
-    const BookmarkNode* node) {
-}
-
-void RecentlyUsedFoldersComboModel::BookmarkNodeFaviconChanged(
-    BookmarkModel* model,
-    const BookmarkNode* node) {
-}
-
-void RecentlyUsedFoldersComboModel::BookmarkNodeChildrenReordered(
-      BookmarkModel* model,
-      const BookmarkNode* node) {
-}
-
-void RecentlyUsedFoldersComboModel::BookmarkAllNodesRemoved(
-    BookmarkModel* model) {
-  // Changing is rare enough that we don't attempt to readjust the contents.
-  // Update |items_| so we aren't left pointing to a deleted node.
-  bool changed = false;
-  for (std::vector<Item>::iterator i = items_.begin();
-       i != items_.end();) {
-    if (i->type == Item::TYPE_NODE &&
-        !bookmark_model_->is_permanent_node(i->node)) {
-      i = items_.erase(i);
-      changed = true;
-    } else {
-      ++i;
-    }
-  }
-  if (changed)
-    FOR_EACH_OBSERVER(ui::ComboboxModelObserver, observers_, OnModelChanged());
 }
 
 void RecentlyUsedFoldersComboModel::MaybeChangeParent(

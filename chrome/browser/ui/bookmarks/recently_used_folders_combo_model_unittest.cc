@@ -13,34 +13,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/combobox_model_observer.h"
 
 using content::BrowserThread;
-
-// Implementation of ComboboxModelObserver that records when OnModelChanged()
-// is invoked.
-class TestComboboxModelObserver : public ui::ComboboxModelObserver {
- public:
-  TestComboboxModelObserver() : changed_(false) {}
-  virtual ~TestComboboxModelObserver() {}
-
-  // Returns whether the model changed and clears changed state.
-  bool GetAndClearChanged() {
-    const bool changed = changed_;
-    changed_ = false;
-    return changed;
-  }
-
-  // ComboboxModelObserver:
-  virtual void OnModelChanged() OVERRIDE {
-    changed_ = true;
-  }
-
- private:
-  bool changed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestComboboxModelObserver);
-};
 
 class RecentlyUsedFoldersComboModelTest : public testing::Test {
  public:
@@ -92,31 +66,4 @@ TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
     if (!model.IsItemSeparatorAt(i))
       EXPECT_EQ(0u, items.count(model.GetItemAt(i)));
   }
-}
-
-// Verifies that observers are notified on changes.
-TEST_F(RecentlyUsedFoldersComboModelTest, NotifyObserver) {
-  const BookmarkNode* folder = GetModel()->AddFolder(
-      GetModel()->bookmark_bar_node(), 0, ASCIIToUTF16("a"));
-  const BookmarkNode* sub_folder = GetModel()->AddFolder(
-      folder, 0, ASCIIToUTF16("b"));
-  const BookmarkNode* new_node = GetModel()->AddURL(
-      sub_folder, 0, ASCIIToUTF16("a"), GURL("http://a"));
-  RecentlyUsedFoldersComboModel model(GetModel(), new_node);
-  TestComboboxModelObserver observer;
-  model.AddObserver(&observer);
-
-  const int initial_count = model.GetItemCount();
-  // Remove a folder, it should remove an item from the model too.
-  GetModel()->Remove(folder, folder->GetIndexOf(sub_folder));
-  EXPECT_TRUE(observer.GetAndClearChanged());
-  const int updated_count = model.GetItemCount();
-  EXPECT_LT(updated_count, initial_count);
-
-  // Remove all, which should remove a folder too.
-  GetModel()->RemoveAll();
-  EXPECT_TRUE(observer.GetAndClearChanged());
-  EXPECT_LT(model.GetItemCount(), updated_count);
-
-  model.RemoveObserver(&observer);
 }
