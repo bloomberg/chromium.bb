@@ -1100,6 +1100,11 @@ void SessionModelAssociator::DeleteForeignSession(const std::string& tag) {
     if (specifics.session_tag() == tag)
       sync_node.Tombstone();
   }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
+      content::Source<Profile>(sync_service_->profile()),
+      content::NotificationService::NoDetails());
 }
 
 bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) const {

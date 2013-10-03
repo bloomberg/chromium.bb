@@ -123,8 +123,8 @@ class ProfileSyncServiceSessionTest
  public:
   ProfileSyncServiceSessionTest()
       : window_bounds_(0, 1, 2, 3),
-        notified_of_update_(false),
-        notified_of_refresh_(false) {}
+        notified_of_refresh_(false),
+        notified_of_update_(false) {}
   ProfileSyncService* sync_service() { return sync_service_.get(); }
 
  protected:
@@ -236,8 +236,8 @@ class ProfileSyncServiceSessionTest
   SessionID window_id_;
   scoped_ptr<TestProfileSyncService> sync_service_;
   const gfx::Rect window_bounds_;
-  bool notified_of_update_;
   bool notified_of_refresh_;
+  bool notified_of_update_;
   content::NotificationRegistrar registrar_;
   net::TestURLFetcherFactory fetcher_factory_;
   SessionSyncTestHelper helper_;
@@ -734,8 +734,12 @@ TEST_F(ProfileSyncServiceSessionTest, DeleteForeignSession) {
   // Should do nothing if the foreign session doesn't exist.
   std::vector<const SyncedSession*> foreign_sessions;
   ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_FALSE(notified_of_update_);
   model_associator_->DeleteForeignSession(tag);
   ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  // Verify that deleteForeignSession did not trigger the
+  // NOTIFICATION_FOREIGN_SESSION_DISABLED notification.
+  ASSERT_FALSE(notified_of_update_);
 
   // Fill an instance of session specifics with a foreign session's data.
   SessionID::id_type nums1[] = {5, 10, 13, 17};
@@ -759,9 +763,14 @@ TEST_F(ProfileSyncServiceSessionTest, DeleteForeignSession) {
   session_reference.push_back(tab_list1);
   helper_.VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
 
+  ASSERT_FALSE(notified_of_update_);
   // Now delete the foreign session.
   model_associator_->DeleteForeignSession(tag);
   ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+
+  // Verify that deleteForeignSession triggers the
+  // NOTIFICATION_FOREIGN_SESSION_DISABLED notification.
+  ASSERT_TRUE(notified_of_update_);
 }
 
 // Associate both a non-stale foreign session and a stale foreign session.
