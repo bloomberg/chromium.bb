@@ -63,6 +63,15 @@ const int kHierarchyButtonXMargin = 4;
     [self configureBookmarkButtonCell];
     [self setTextColor:[NSColor blackColor]];
     [self setBookmarkNode:node];
+    // When opening a bookmark folder, the default behavior is that the
+    // favicon is greyed when menu item is hovered with the mouse cursor.
+    // When using NSNoCellMask, the favicon won't be greyed when menu item
+    // is hovered.
+    // In the bookmark bar, the favicon is not greyed when the bookmark is
+    // hovered with the mouse cursor.
+    // It makes the behavior of the bookmark folder consistent with hovering
+    // on the bookmark bar.
+    [self setHighlightsBy:NSNoCellMask];
 
     if (node) {
       NSString* title = base::SysUTF16ToNSString(node->GetTitle());
