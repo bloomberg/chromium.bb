@@ -41,6 +41,15 @@ using namespace WebCore;
 
 namespace {
 
+void testExpression(PassRefPtr<CSSCalcExpressionNode> expression, const RenderStyle* style)
+{
+    EXPECT_TRUE(
+        expression->equals(
+            *CSSCalcValue::createExpressionNode(
+                expression->toCalcValue(style, style, style->effectiveZoom()).get(),
+                style).get()));
+}
+
 TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
 {
     RefPtr<RenderStyle> style = RenderStyle::create();
@@ -95,6 +104,44 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
             CalculationRangeAll)),
         style.get());
     EXPECT_TRUE(actual->equals(*expected.get()));
+}
+
+TEST(CSSCalculationValue, CreateExpressionNodeFromLengthFromExpressionNode)
+{
+    RefPtr<CSSCalcExpressionNode> expression;
+    RefPtr<RenderStyle> style = RenderStyle::createDefaultStyle();
+    style->setEffectiveZoom(5);
+
+    testExpression(
+        CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX), true),
+        style.get());
+
+    testExpression(
+        CSSCalcValue::createExpressionNode(
+            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX), true),
+            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX), true),
+            CalcAdd),
+        style.get());
+
+    testExpression(
+        CSSCalcValue::createExpressionNode(
+            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PX), true),
+            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_NUMBER), true),
+            CalcMultiply),
+        style.get());
+
+    testExpression(
+        CSSCalcValue::createExpressionNode(
+            CSSCalcValue::createExpressionNode(
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(50, CSSPrimitiveValue::CSS_PX), true),
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(0.25, CSSPrimitiveValue::CSS_NUMBER), false),
+                CalcMultiply),
+            CSSCalcValue::createExpressionNode(
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(60, CSSPrimitiveValue::CSS_PX), true),
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(0.75, CSSPrimitiveValue::CSS_NUMBER), false),
+                CalcMultiply),
+            CalcAdd),
+        style.get());
 }
 
 }

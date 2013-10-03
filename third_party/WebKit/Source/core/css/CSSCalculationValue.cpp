@@ -230,7 +230,7 @@ public:
         case CalcNumber:
             return adoptPtr(new CalcExpressionNumber(m_value->getFloatValue()));
         case CalcLength:
-            return adoptPtr(new CalcExpressionNumber(m_value->computeLength<float>(style, rootStyle, zoom)));
+            return adoptPtr(new CalcExpressionLength(Length(m_value->computeLength<float>(style, rootStyle, zoom), WebCore::Fixed)));
         case CalcPercent:
         case CalcPercentLength: {
             CSSPrimitiveValue* primitiveValue = m_value.get();

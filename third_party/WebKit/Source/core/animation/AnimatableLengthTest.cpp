@@ -175,7 +175,7 @@ TEST_F(AnimatableLengthTest, ToLength)
     EXPECT_EQ(
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBinaryOperation(
-                adoptPtr(new CalcExpressionNumber(-5)),
+                adoptPtr(new CalcExpressionLength(Length(-5, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
             CalculationRangeAll)),
@@ -183,7 +183,7 @@ TEST_F(AnimatableLengthTest, ToLength)
     EXPECT_EQ(
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBinaryOperation(
-                adoptPtr(new CalcExpressionNumber(-15)),
+                adoptPtr(new CalcExpressionLength(Length(-15, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
             CalculationRangeAll)),
@@ -191,7 +191,7 @@ TEST_F(AnimatableLengthTest, ToLength)
     EXPECT_EQ(
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBinaryOperation(
-                adoptPtr(new CalcExpressionNumber(-5)),
+                adoptPtr(new CalcExpressionLength(Length(-5, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
             CalculationRangeNonNegative)),
@@ -199,7 +199,7 @@ TEST_F(AnimatableLengthTest, ToLength)
     EXPECT_EQ(
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBinaryOperation(
-                adoptPtr(new CalcExpressionNumber(-15)),
+                adoptPtr(new CalcExpressionLength(Length(-15, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
             CalculationRangeNonNegative)),
