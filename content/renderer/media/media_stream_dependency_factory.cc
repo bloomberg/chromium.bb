@@ -77,17 +77,20 @@ struct {
     webrtc::MediaConstraintsInterface::kValueTrue },
 };
 
+// Merge |constraints| with |kDefaultAudioConstraints|. For any key which exists
+// in both, the value from |constraints| is maintained, including its
+// mandatory/optional status. New values from |kDefaultAudioConstraints| will
+// be added with mandatory status.
 void ApplyFixedAudioConstraints(RTCMediaConstraints* constraints) {
-  const webrtc::MediaConstraintsInterface::Constraints& mandatory =
-      constraints->GetMandatory();
-  std::string string_value;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDefaultAudioConstraints); ++i) {
-    if (!mandatory.FindFirst(kDefaultAudioConstraints[i].key, &string_value)) {
+    bool already_set_value;
+    if (!webrtc::FindConstraint(constraints, kDefaultAudioConstraints[i].key,
+                                &already_set_value, NULL)) {
       constraints->AddMandatory(kDefaultAudioConstraints[i].key,
           kDefaultAudioConstraints[i].value, false);
     } else {
       DVLOG(1) << "Constraint " << kDefaultAudioConstraints[i].key
-               << " already set to " << string_value;
+               << " already set to " << already_set_value;
     }
   }
 }
