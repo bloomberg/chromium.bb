@@ -203,8 +203,6 @@ deps_os = {
             None,
         'src/third_party/hunspell_dictionaries':
             None,
-        'src/third_party/leveldatabase/src':
-            None,
         'src/third_party/libexif/sources':
             None,
         'src/third_party/libjpeg_turbo':
@@ -234,8 +232,6 @@ deps_os = {
         'src/third_party/sfntly/cpp/src':
             None,
         'src/third_party/smhasher/src':
-            None,
-        'src/third_party/snappy/src':
             None,
         'src/third_party/swig/Lib':
             None,
