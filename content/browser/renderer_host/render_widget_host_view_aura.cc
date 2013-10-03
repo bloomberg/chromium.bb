@@ -1425,23 +1425,18 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     scoped_ptr<cc::DelegatedFrameData> frame_data,
     float frame_device_scale_factor,
     const ui::LatencyInfo& latency_info) {
-  gfx::Size frame_size;
-  gfx::Size frame_size_in_dip;
-  gfx::Rect damage_rect;
-  gfx::Rect damage_rect_in_dip;
+  DCHECK_NE(0u, frame_data->render_pass_list.size());
 
-  bool has_content = !frame_data->render_pass_list.empty();
-  if (has_content) {
-    cc::RenderPass* root_pass = frame_data->render_pass_list.back();
+  cc::RenderPass* root_pass = frame_data->render_pass_list.back();
 
-    frame_size = root_pass->output_rect.size();
-    frame_size_in_dip = ConvertSizeToDIP(frame_device_scale_factor, frame_size);
+  gfx::Size frame_size = root_pass->output_rect.size();
+  gfx::Size frame_size_in_dip =
+      ConvertSizeToDIP(frame_device_scale_factor, frame_size);
 
-    damage_rect = gfx::ToEnclosingRect(root_pass->damage_rect);
-    damage_rect.Intersect(gfx::Rect(frame_size));
-    damage_rect_in_dip = ConvertRectToDIP(frame_device_scale_factor,
-                                          damage_rect);
-  }
+  gfx::Rect damage_rect = gfx::ToEnclosingRect(root_pass->damage_rect);
+  damage_rect.Intersect(gfx::Rect(frame_size));
+  gfx::Rect damage_rect_in_dip =
+      ConvertRectToDIP(frame_device_scale_factor, damage_rect);
 
   framebuffer_holder_ = NULL;
   FrameMemoryManager::GetInstance()->RemoveFrame(this);
@@ -1475,13 +1470,16 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     // resources from the old one with resources from the new one which would
     // have the same id. Changing the layer to showing painted content destroys
     // the DelegatedRendererLayer.
+    // TODO(danakj): Lose and return all resources in the delegated layer first.
     window_->layer()->SetShowPaintedContent();
     last_output_surface_id_ = output_surface_id;
   }
-  if (has_content)
-    window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
-  else
+  if (frame_size.IsEmpty()) {
+    // TODO(danakj): Return all resources in the delegated layer somehow.
     window_->layer()->SetShowPaintedContent();
+  } else {
+    window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
+  }
   released_front_lock_ = NULL;
   current_frame_size_ = frame_size_in_dip;
   CheckResizeLock();

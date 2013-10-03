@@ -724,6 +724,7 @@ void ParamTraits<cc::CompositorFrameAck>::Log(const param_type& p,
 
 void ParamTraits<cc::DelegatedFrameData>::Write(Message* m,
                                                 const param_type& p) {
+  DCHECK_NE(0u, p.render_pass_list.size());
   WriteParam(m, p.resource_list);
   WriteParam(m, p.render_pass_list.size());
   for (size_t i = 0; i < p.render_pass_list.size(); ++i)
@@ -738,7 +739,7 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
   size_t num_render_passes;
   if (!ReadParam(m, iter, &p->resource_list) ||
       !ReadParam(m, iter, &num_render_passes) ||
-      num_render_passes > kMaxRenderPasses)
+      num_render_passes > kMaxRenderPasses || num_render_passes == 0)
     return false;
   for (size_t i = 0; i < num_render_passes; ++i) {
     scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();

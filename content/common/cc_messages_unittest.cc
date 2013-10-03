@@ -528,9 +528,14 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource2.size = gfx::Size(89123, 23789);
   arbitrary_resource2.mailbox.SetName(arbitrary_mailbox2);
 
+  scoped_ptr<RenderPass> renderpass_in = RenderPass::Create();
+  renderpass_in->SetNew(
+      RenderPass::Id(1, 1), gfx::Rect(), gfx::Rect(), gfx::Transform());
+
   DelegatedFrameData frame_in;
   frame_in.resource_list.push_back(arbitrary_resource1);
   frame_in.resource_list.push_back(arbitrary_resource2);
+  frame_in.render_pass_list.push_back(renderpass_in.Pass());
 
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
