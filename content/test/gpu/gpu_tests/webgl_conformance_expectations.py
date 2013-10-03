@@ -76,3 +76,21 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'])
     self.Fail('conformance/textures/texture-size-cube-maps.html',
         ['win7', 'intel'])
+
+    # Mac/Intel failures
+    # The following two tests hang the WindowServer.
+    self.Skip('conformance/canvas/drawingbuffer-static-canvas-test.html',
+        ['mac', 'intel'], bug=303915)
+    self.Skip('conformance/canvas/drawingbuffer-test.html',
+        ['mac', 'intel'], bug=303915)
+    # The following three tests only fail.
+    # Radar 13499677
+    self.Fail(
+        'conformance/glsl/functions/glsl-function-smoothstep-gentype.html',
+        ['mac', 'intel'], bug=225642)
+    # Radar 13499466
+    self.Fail('conformance/limits/gl-max-texture-dimensions.html',
+        ['mac', 'intel'], bug=225642)
+    # Radar 13499623
+    self.Fail('conformance/textures/texture-size.html',
+        ['mac', 'intel'], bug=225642)
