@@ -54,6 +54,8 @@ class EVENTS_EXPORT DeviceListCacheX {
   std::map<Display*, XDeviceList> x_dev_list_map_;
   std::map<Display*, XIDeviceList> xi_dev_list_map_;
 
+  bool xi2_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceListCacheX);
 };
 

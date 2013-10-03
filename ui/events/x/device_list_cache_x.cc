@@ -7,19 +7,37 @@
 #include <algorithm>
 
 #include "base/memory/singleton.h"
+#include "base/message_loop/message_loop.h"
+
+namespace {
+
+bool IsXI2Available() {
+#if defined(USE_AURA)
+  return base::MessagePumpForUI::HasXInput2();
+#else
+  return false;
+#endif
+}
+
+}
 
 namespace ui {
 
-DeviceListCacheX::DeviceListCacheX() {
+DeviceListCacheX::DeviceListCacheX()
+    : xi2_(IsXI2Available()) {
 }
 
 DeviceListCacheX::~DeviceListCacheX() {
   std::map<Display*, XDeviceList>::iterator xp;
-  for (xp = x_dev_list_map_.begin(); xp != x_dev_list_map_.end(); xp++)
-    XFreeDeviceList(xp->second.devices);
+  for (xp = x_dev_list_map_.begin(); xp != x_dev_list_map_.end(); xp++) {
+    if (xp->second.devices)
+      XFreeDeviceList(xp->second.devices);
+  }
   std::map<Display*, XIDeviceList>::iterator xip;
-  for (xip = xi_dev_list_map_.begin(); xip != xi_dev_list_map_.end(); xip++)
-    XIFreeDeviceInfo(xip->second.devices);
+  for (xip = xi_dev_list_map_.begin(); xip != xi_dev_list_map_.end(); xip++) {
+    if (xip->second.devices)
+      XIFreeDeviceInfo(xip->second.devices);
+  }
 }
 
 DeviceListCacheX* DeviceListCacheX::GetInstance() {
@@ -35,8 +53,8 @@ void DeviceListCacheX::UpdateDeviceList(Display* display) {
   XIDeviceList& new_xi_dev_list = xi_dev_list_map_[display];
   if (new_xi_dev_list.devices)
     XIFreeDeviceInfo(new_xi_dev_list.devices);
-  new_xi_dev_list.devices = XIQueryDevice(display, XIAllDevices,
-                                         &new_xi_dev_list.count);
+  new_xi_dev_list.devices = xi2_ ? XIQueryDevice(display, XIAllDevices,
+                                                 &new_xi_dev_list.count) : NULL;
 }
 
 const XDeviceList& DeviceListCacheX::GetXDeviceList(Display* display) {
@@ -49,7 +67,7 @@ const XDeviceList& DeviceListCacheX::GetXDeviceList(Display* display) {
 
 const XIDeviceList& DeviceListCacheX::GetXI2DeviceList(Display* display) {
   XIDeviceList& xi_dev_list = xi_dev_list_map_[display];
-  if (!xi_dev_list.devices && !xi_dev_list.count) {
+  if (xi2_ && !xi_dev_list.devices && !xi_dev_list.count) {
     xi_dev_list.devices = XIQueryDevice(display, XIAllDevices,
                                        &xi_dev_list.count);
   }
