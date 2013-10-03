@@ -30,6 +30,8 @@
       'geometry/LayoutRect.cpp',
       'geometry/LayoutRect.h',
       'geometry/LayoutSize.h',
+      'geometry/RoundedRect.cpp',
+      'geometry/RoundedRect.h',
       'text/DateTimeFormat.cpp',
       'text/DateTimeFormat.h',
       'transforms/AffineTransform.cpp',
@@ -80,6 +82,7 @@
     ],
     'platform_test_files': [
       'clipboard/ClipboardUtilitiesTest.cpp',
+      'geometry/RoundedRectTest.cpp',
       'text/DateTimeFormatTest.cpp',
       'ClockTest.cpp',
       'DecimalTest.cpp',

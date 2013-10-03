@@ -22,10 +22,10 @@
 #ifndef HitTestLocation_h
 #define HitTestLocation_h
 
-#include "core/platform/graphics/RoundedRect.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/geometry/RoundedRect.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
