@@ -55,11 +55,6 @@ class PermissionSet
   static PermissionSet* CreateUnion(
       const PermissionSet* set1, const PermissionSet* set2);
 
-  // Creates a new permission set that only contains permissions that must be
-  // in the manifest.  Passes ownership of the new set to the caller.
-  static PermissionSet* ExcludeNotInManifestPermissions(
-      const PermissionSet* set);
-
   bool operator==(const PermissionSet& rhs) const;
 
   // Returns true if every API or host permission available to |set| is also
@@ -137,15 +132,15 @@ class PermissionSet
  private:
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest, HasLessHostPrivilegesThan);
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetWarningMessages_AudioVideo);
-  FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetDistinctHostsForDisplay);
+  FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetDistinctHosts);
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest,
-                           GetDistinctHostsForDisplay_ComIsBestRcd);
+                           GetDistinctHosts_ComIsBestRcd);
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest,
-                           GetDistinctHostsForDisplay_NetIs2ndBestRcd);
+                           GetDistinctHosts_NetIs2ndBestRcd);
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest,
-                           GetDistinctHostsForDisplay_OrgIs3rdBestRcd);
+                           GetDistinctHosts_OrgIs3rdBestRcd);
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest,
-                           GetDistinctHostsForDisplay_FirstInListIs4thBestRcd);
+                           GetDistinctHosts_FirstInListIs4thBestRcd);
   friend class base::RefCountedThreadSafe<PermissionSet>;
 
   ~PermissionSet();
@@ -178,11 +173,6 @@ class PermissionSet
   // set.
   bool HasLessHostPrivilegesThan(const PermissionSet* permissions,
                                  Manifest::Type extension_type) const;
-
-  // Gets a list of the distinct hosts for displaying to the user.
-  // NOTE: do not use this for comparing permissions, since this disgards some
-  // information.
-  std::set<std::string> GetDistinctHostsForDisplay() const;
 
   // The api list is used when deciding if an extension can access certain
   // extension APIs and features.

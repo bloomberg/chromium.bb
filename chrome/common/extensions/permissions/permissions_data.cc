@@ -38,21 +38,6 @@ namespace {
 
 PermissionsData::PolicyDelegate* g_policy_delegate = NULL;
 
-bool ContainsManifestForbiddenPermission(const APIPermissionSet& apis,
-                                         string16* error) {
-  CHECK(error);
-  for (APIPermissionSet::const_iterator iter = apis.begin();
-       iter != apis.end(); ++iter) {
-    if ((*iter)->ManifestEntryForbidden()) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kPermissionNotAllowedInManifest,
-          (*iter)->info()->name());
-      return true;
-    }
-  }
-  return false;
-}
-
 // Custom checks for the experimental permission that can't be expressed in
 // _permission_features.json.
 bool CanSpecifyExperimentalPermission(const Extension* extension) {
@@ -614,13 +599,6 @@ bool PermissionsData::ParsePermissions(Extension* extension, string16* error) {
                    &initial_optional_permissions_->api_permissions,
                    &initial_optional_permissions_->host_permissions,
                    error)) {
-    return false;
-  }
-
-  if (ContainsManifestForbiddenPermission(
-          initial_required_permissions_->api_permissions, error) ||
-      ContainsManifestForbiddenPermission(
-          initial_optional_permissions_->api_permissions, error)) {
     return false;
   }
 

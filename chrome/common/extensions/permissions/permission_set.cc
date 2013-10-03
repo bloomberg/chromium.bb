@@ -9,11 +9,10 @@
 #include <string>
 
 #include "base/stl_util.h"
-#include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
-#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/permission_message_util.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/generated_resources.h"
@@ -140,23 +139,6 @@ PermissionSet* PermissionSet::CreateUnion(
   return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
 }
 
-// static
-PermissionSet* PermissionSet::ExcludeNotInManifestPermissions(
-    const PermissionSet* set) {
-  if (!set)
-    return new PermissionSet();
-
-  APIPermissionSet apis;
-  for (APIPermissionSet::const_iterator i = set->apis().begin();
-       i != set->apis().end(); ++i) {
-    if (!i->ManifestEntryForbidden())
-      apis.insert(i->Clone());
-  }
-
-  return new PermissionSet(
-      apis, set->explicit_hosts(), set->scriptable_hosts());
-}
-
 bool PermissionSet::operator==(
     const PermissionSet& rhs) const {
   return apis_ == rhs.apis_ &&
@@ -177,18 +159,6 @@ std::set<std::string> PermissionSet::GetAPIsAsStrings() const {
     apis_str.insert(i->name());
   }
   return apis_str;
-}
-
-std::set<std::string> PermissionSet::GetDistinctHostsForDisplay() const {
-  URLPatternSet hosts_displayed_as_url;
-  // Filters out every URL pattern that matches chrome:// scheme.
-  for (URLPatternSet::const_iterator i = effective_hosts_.begin();
-       i != effective_hosts_.end(); ++i) {
-    if (i->scheme() != chrome::kChromeUIScheme) {
-      hosts_displayed_as_url.AddPattern(*i);
-    }
-  }
-  return GetDistinctHosts(hosts_displayed_as_url, true, true);
 }
 
 PermissionMessages PermissionSet::GetPermissionMessages(
@@ -263,14 +233,6 @@ std::vector<string16> PermissionSet::GetWarningMessages(
         continue;
       }
     }
-
-    // The warning message for declarativeWebRequest permissions speaks about
-    // blocking parts of pages, which is a subset of what the "<all_urls>"
-    // access allows. Therefore we display only the "<all_urls>" warning message
-    // if both permissions are required.
-    if (id == PermissionMessage::kDeclarativeWebRequest &&
-        HasEffectiveAccessToAllHosts())
-      continue;
 
     messages.push_back(i->message());
   }
@@ -496,6 +458,18 @@ std::set<PermissionMessage> PermissionSet::GetAPIPermissionMessages() const {
     messages.erase(
         PermissionMessage(PermissionMessage::kFileSystemDirectory, string16()));
   }
+
+  // A special hack: The warning message for declarativeWebRequest
+  // permissions speaks about blocking parts of pages, which is a
+  // subset of what the "<all_urls>" access allows. Therefore we
+  // display only the "<all_urls>" warning message if both permissions
+  // are required.
+  if (HasEffectiveAccessToAllHosts()) {
+    messages.erase(
+        PermissionMessage(
+            PermissionMessage::kDeclarativeWebRequest, string16()));
+  }
+
   return messages;
 }
 
@@ -514,12 +488,11 @@ std::set<PermissionMessage> PermissionSet::GetHostPermissionMessages(
         PermissionMessage::kHostsAll,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
   } else {
-    PermissionMessages additional_warnings =
-        GetChromeSchemePermissionWarnings(effective_hosts_);
-    for (size_t i = 0; i < additional_warnings.size(); ++i)
-      messages.insert(additional_warnings[i]);
+    URLPatternSet regular_hosts;
+    ExtensionsClient::Get()->FilterHostPermissions(
+        effective_hosts_, &regular_hosts, &messages);
 
-    std::set<std::string> hosts = GetDistinctHostsForDisplay();
+    std::set<std::string> hosts = GetDistinctHosts(regular_hosts, true, true);
     if (!hosts.empty())
       messages.insert(permission_message_util::CreateFromHostList(hosts));
   }
@@ -536,14 +509,6 @@ bool PermissionSet::HasLessAPIPrivilegesThan(
   PermissionMsgSet new_warnings = permissions->GetAPIPermissionMessages();
   PermissionMsgSet delta_warnings =
       base::STLSetDifference<PermissionMsgSet>(new_warnings, current_warnings);
-
-  // A special hack: the DWR permission is weaker than all hosts permission.
-  if (delta_warnings.size() == 1u &&
-      delta_warnings.begin()->id() ==
-          PermissionMessage::kDeclarativeWebRequest &&
-      HasEffectiveAccessToAllHosts()) {
-    return false;
-  }
 
   // A special hack: kFileSystemWriteDirectory implies kFileSystemDirectory and
   // kFileSystemWrite.

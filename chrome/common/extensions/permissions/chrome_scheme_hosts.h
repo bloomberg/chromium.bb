@@ -5,8 +5,6 @@
 #ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_SCHEME_HOSTS_H_
 #define CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_SCHEME_HOSTS_H_
 
-#include "extensions/common/permissions/permission_message.h"
-
 // Chrome-specific special case handling for permissions on hosts in
 // the chrome:// scheme.
 namespace extensions {
@@ -14,9 +12,6 @@ namespace extensions {
 class APIPermissionSet;
 class Extension;
 class URLPatternSet;
-
-PermissionMessages GetChromeSchemePermissionWarnings(
-    const URLPatternSet& hosts);
 
 URLPatternSet GetPermittedChromeSchemeHosts(
     const Extension* extension,

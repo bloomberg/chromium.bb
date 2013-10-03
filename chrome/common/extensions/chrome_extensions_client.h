@@ -25,6 +25,10 @@ class ChromeExtensionsClient : public ExtensionsClient {
   virtual void RegisterManifestHandlers() const OVERRIDE;
   virtual FeatureProvider* GetFeatureProviderByName(const std::string& name)
       const OVERRIDE;
+  virtual void FilterHostPermissions(
+      const URLPatternSet& hosts,
+      URLPatternSet* new_hosts,
+      std::set<PermissionMessage>* messages) const OVERRIDE;
 
   // Get the LazyInstance for ChromeExtensionsClient.
   static ChromeExtensionsClient* GetInstance();

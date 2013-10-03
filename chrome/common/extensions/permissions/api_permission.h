@@ -180,9 +180,6 @@ class APIPermission {
     return info_;
   }
 
-  // Returns true if this permission cannot be found in the manifest.
-  virtual bool ManifestEntryForbidden() const;
-
   // Returns true if this permission has any PermissionMessages.
   virtual bool HasMessages() const = 0;
 

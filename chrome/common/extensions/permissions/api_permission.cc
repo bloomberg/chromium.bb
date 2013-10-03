@@ -105,10 +105,6 @@ const char* APIPermission::name() const {
   return info()->name();
 }
 
-bool APIPermission::ManifestEntryForbidden() const {
-  return false;
-}
-
 PermissionMessage APIPermission::GetMessage_() const {
   return info()->GetMessage_();
 }
