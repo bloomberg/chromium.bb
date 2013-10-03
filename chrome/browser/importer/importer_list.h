@@ -29,6 +29,7 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   // the real work of detecting source profiles. |observer| must be non-NULL.
   // |locale|: As in DetectSourceProfilesWorker().
   void DetectSourceProfiles(const std::string& locale,
+                            bool include_interactive_profiles,
                             importer::ImporterListObserver* observer);
 
   // Sets the observer of this object. When the current observer is destroyed,
@@ -41,7 +42,8 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   // DEPRECATED: This method is synchronous and performs file operations which
   // may end up blocking the current thread, which is usually the UI thread.
   // |locale|: As in DetectSourceProfilesWorker().
-  void DetectSourceProfilesHack(const std::string& locale);
+  void DetectSourceProfilesHack(const std::string& locale,
+                                bool include_interactive_profiles);
 
   // Returns the number of different source profiles you can import from.
   size_t count() const { return source_profiles_.size(); }
@@ -67,7 +69,8 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   // thread. |locale|:The application locale (it must be taken as an argument
   // since this code runs on the FILE thread where GetApplicationLocale() isn't
   // available).
-  void DetectSourceProfilesWorker(const std::string& locale);
+  void DetectSourceProfilesWorker(const std::string& locale,
+                                  bool include_interactive_profiles);
 
   // Called by DetectSourceProfilesWorker() on the source thread. This method
   // notifies |observer_| that the source profiles are loaded. |profiles| is

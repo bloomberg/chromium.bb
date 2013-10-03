@@ -725,7 +725,7 @@ void AutoImport(
 
   scoped_refptr<ImporterList> importer_list(new ImporterList());
   importer_list->DetectSourceProfilesHack(
-      g_browser_process->GetApplicationLocale());
+      g_browser_process->GetApplicationLocale(), false);
 
   // Do import if there is an available profile for us to import.
   if (importer_list->count() > 0) {

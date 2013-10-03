@@ -73,7 +73,7 @@ void ImportDataHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 void ImportDataHandler::InitializeHandler() {
   importer_list_ = new ImporterList();
   importer_list_->DetectSourceProfiles(
-      g_browser_process->GetApplicationLocale(), this);
+      g_browser_process->GetApplicationLocale(), true, this);
 }
 
 void ImportDataHandler::RegisterMessages() {

@@ -139,14 +139,14 @@ class FirstRunMasterPrefsBrowserTestT
 int MaskExpectedImportState(int expected_import_state) {
   scoped_refptr<ImporterList> importer_list(new ImporterList());
   importer_list->DetectSourceProfilesHack(
-      g_browser_process->GetApplicationLocale());
+      g_browser_process->GetApplicationLocale(), false);
   int source_profile_count = importer_list->count();
 #if defined(OS_WIN)
   // On Windows, the importer's DetectIEProfiles() will always add to the count.
   // Internet Explorer always exists and always has something to import.
   EXPECT_GT(source_profile_count, 0);
 #endif
-  if (source_profile_count == 1)
+  if (source_profile_count == 0)
     return expected_import_state & ~first_run::AUTO_IMPORT_PROFILE_IMPORTED;
 
   return expected_import_state;
