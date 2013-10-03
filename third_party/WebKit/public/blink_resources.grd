@@ -257,15 +257,11 @@
       <if expr="is_macosx">
         <include name="IDR_ALIAS_CURSOR" file="../Source/core/Resources/aliasCursor.png" type="BINDATA" />
         <include name="IDR_CELL_CURSOR" file="../Source/core/Resources/cellCursor.png" type="BINDATA" />
-        <include name="IDR_CONTEXTMENU_CURSOR" file="../Source/core/Resources/contextMenuCursor.png" type="BINDATA" />
-        <include name="IDR_COPY_CURSOR" file="../Source/core/Resources/copyCursor.png" type="BINDATA" />
         <include name="IDR_EAST_RESIZE_CURSOR" file="../Source/core/Resources/eastResizeCursor.png" type="BINDATA" />
         <include name="IDR_EASTWEST_RESIZE_CURSOR" file="../Source/core/Resources/eastWestResizeCursor.png" type="BINDATA" />
         <include name="IDR_HELP_CURSOR" file="../Source/core/Resources/helpCursor.png" type="BINDATA" />
         <include name="IDR_LINK_CURSOR" file="../Source/core/Resources/linkCursor.png" type="BINDATA" />
-        <include name="IDR_MISSING_IMAGE_CURSOR" file="../Source/core/Resources/missingImage.png" type="BINDATA" />
         <include name="IDR_MOVE_CURSOR" file="../Source/core/Resources/moveCursor.png" type="BINDATA" />
-        <include name="IDR_NODROP_CURSOR" file="../Source/core/Resources/noDropCursor.png" type="BINDATA" />
         <include name="IDR_NONE_CURSOR" file="../Source/core/Resources/noneCursor.png" type="BINDATA" />
         <include name="IDR_NORTHEAST_RESIZE_CURSOR" file="../Source/core/Resources/northEastResizeCursor.png" type="BINDATA" />
         <include name="IDR_NORTHEASTSOUTHWEST_RESIZE_CURSOR" file="../Source/core/Resources/northEastSouthWestResizeCursor.png" type="BINDATA" />
