@@ -79,4 +79,5 @@ interface TestObjectPython {
     static readonly attribute long staticReadonlyLongAttribute;
     // Miscellaneous special types
     readonly attribute EventHandler readonlyEventHandlerAttribute;
+    readonly attribute Promise readonlyPromiseAttribute;
 };

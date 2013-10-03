@@ -377,6 +377,8 @@ def preprocess_type_and_value(idl_type, cpp_value, extended_attributes):
     if enum_type(idl_type):
         # Enumerations are internally DOMStrings
         idl_type = 'DOMString'
+    if idl_type in ['Promise', 'any'] or callback_function_type(idl_type):
+        idl_type = 'ScriptValue'
     if idl_type in ['long long', 'unsigned long long']:
         # long long and unsigned long long are not representable in ECMAScript;
         # we represent them as doubles.
@@ -406,10 +408,8 @@ def v8_conversion_type_and_includes(idl_type):
         return 'int', set()
     if idl_type in CPP_UNSIGNED_TYPES:
         return 'unsigned', set()
-    if basic_type(idl_type):
+    if basic_type(idl_type) or idl_type == 'ScriptValue':
         return idl_type, set()
-    if idl_type == 'any' or callback_function_type(idl_type):
-        return 'ScriptValue', set()
 
     # Data type with potential additional includes
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
