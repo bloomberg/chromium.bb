@@ -174,11 +174,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // does nothing (either by accepting what the password manager did, or
   // by simply (not typing anything at all), you get None. If there were
   // multiple choices and the user selects one other than the default,
-  // you get Choose, and if the user types in a new value, you get
-  // Override.
+  // you get Choose, if user selects an entry from matching against the Public
+  // Suffix List you get ChoosePslMatch, and if the user types in a new value,
+  // you get Override.
   enum UserAction {
     kUserActionNone = 0,
     kUserActionChoose,
+    kUserActionChoosePslMatch,
     kUserActionOverride,
     kUserActionMax
   };

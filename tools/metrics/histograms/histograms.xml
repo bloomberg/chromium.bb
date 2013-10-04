@@ -11054,6 +11054,17 @@ other types of suffix sets.
 
 <histogram name="PasswordManager.ActionsTaken"
     enum="PasswordManagerActionsTaken">
+  <obsolete>
+    Deprecated as of Chrome 32. See PasswordManagerActionsTakenWithPsl
+  </obsolete>
+  <summary>
+    Stats documenting how we handle every form containing a password, bucketed
+    by the actions taken.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.ActionsTakenWithPsl"
+    enum="PasswordManagerActionsTakenWithPsl">
   <summary>
     Stats documenting how we handle every form containing a password, bucketed
     by the actions taken.
@@ -11117,6 +11128,15 @@ other types of suffix sets.
   <summary>
     Breakdown of cases where a password is submitted, but we don't even try and
     save it. Recorded for every password form submit.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PSLDomainMatchTriggering"
+    enum="PasswordManagerPSLDomainMatchTriggering">
+  <summary>
+    Breakdown on trigger rate of providing a password form autofill entry based
+    on matching stored information using the public suffix list for possible
+    matches.
   </summary>
 </histogram>
 
@@ -24904,6 +24924,9 @@ other types of suffix sets.
 </enum>
 
 <enum name="PasswordManagerActionsTaken" type="int">
+  <obsolete>
+    Deprecated as of Chrome 32. See PasswordManagerActionsTakenWithPsl
+  </obsolete>
   <summary>
     The value is a combination of three different options - what did the
     password manager do, what did the user do, and was the form submitted (and
@@ -25012,6 +25035,164 @@ other types of suffix sets.
   <int value="35"
       label="manager did nothing (autocomplete off) / user typed in something
              / form submit succeeded"/>
+</enum>
+
+<enum name="PasswordManagerActionsTakenWithPsl" type="int">
+  <summary>
+    The value is a combination of three different options - what did the
+    password manager do, what did the user do, and was the form submitted (and
+    submitted successfully or not). The meaning of each value can be determined
+    from the values in chrome/browser/password_manager/password_form_manager.h
+  </summary>
+  <int value="0"
+      label="manager did nothing / user did nothing / form not submitted"/>
+  <int value="1"
+      label="manager did nothing / user chose a value / form not submitted"/>
+  <int value="2"
+      label="manager did nothing / user chose a value from PSL / form not
+             submitted"/>
+  <int value="3"
+      label="manager did nothing / user typed in something / form not
+             submitted"/>
+  <int value="4"
+      label="manager filled the fields / user did nothing / form not
+             submitted"/>
+  <int value="5"
+      label="manager filled the fields / user chose a value / form not
+             submitted"/>
+  <int value="6"
+      label="manager filled the fields / user chose a value from PSL / form
+             not submitted"/>
+  <int value="7"
+      label="manager filled the fields / user typed in something / form not
+             submitted"/>
+  <int value="8"
+      label="manager did nothing (site was blacklisted) / user did nothing /
+             form not submitted"/>
+  <int value="9"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             / form not submitted (this value shouldn't be possible)"/>
+  <int value="10"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             from PSL / form not submitted (this value shouldn't be possible)"/>
+  <int value="11"
+      label="manager did nothing (site was blacklisted) / user typed in
+             something / form not submitted"/>
+  <int value="12"
+      label="manager did nothing (autocomplete off) / user did nothing / form
+             not submitted"/>
+  <int value="13"
+      label="manager did nothing (autocomplete off) / user chose a value /
+             form not submitted (this value shouldn't be possible)"/>
+  <int value="14"
+      label="manager did nothing (autocomplete off) / user chose a value from
+             psl / form not submitted (this value shouldn't be possible)"/>
+  <int value="15"
+      label="manager did nothing (autocomplete off) / user typed in something
+             / form not submitted"/>
+  <int value="16"
+      label="manager did nothing / user did nothing / form submit failed"/>
+  <int value="17"
+      label="manager did nothing / user chose a value / form submit failed"/>
+  <int value="18"
+      label="manager did nothing / user chose a value from psl / form submit
+             failed"/>
+  <int value="19"
+      label="manager did nothing / user typed in something / form submit
+             failed"/>
+  <int value="20"
+      label="manager filled the fields / user did nothing / form submit
+             failed"/>
+  <int value="21"
+      label="manager filled the fields / user chose a value / form submit
+             failed"/>
+  <int value="22"
+      label="manager filled the fields / user chose a value from psl / form
+             submit failed"/>
+  <int value="23"
+      label="manager filled the fields / user typed in something / form
+             submit failed"/>
+  <int value="24"
+      label="manager did nothing (site was blacklisted) / user did nothing /
+             form submit failed"/>
+  <int value="25"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             / form submit failed (this value shouldn't be possible)"/>
+  <int value="26"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             from psl / form submit failed (this value shouldn't be possible)"/>
+  <int value="27"
+      label="manager did nothing (site was blacklisted) / user typed in
+             something / form submit failed"/>
+  <int value="28"
+      label="manager did nothing (autocomplete off) / user did nothing / form
+             submit failed"/>
+  <int value="29"
+      label="manager did nothing (autocomplete off) / user chose a value /
+             form submit failed (this value shouldn't be possible)"/>
+  <int value="30"
+      label="manager did nothing (autocomplete off) / user chose a value from
+             psl / form submit failed (this value shouldn't be possible)"/>
+  <int value="31"
+      label="manager did nothing (autocomplete off) / user typed in something
+             / form submit failed"/>
+  <int value="32"
+      label="manager did nothing / user did nothing / form submit succeeded"/>
+  <int value="33"
+      label="manager did nothing / user chose a value / form submit succeeded"/>
+  <int value="34"
+      label="manager did nothing / user chose a value from psl / form submit
+             succeeded"/>
+  <int value="35"
+      label="manager did nothing / user typed in something / form submit
+             succeeded"/>
+  <int value="36"
+      label="manager filled the fields / user did nothing / form submit
+             succeeded"/>
+  <int value="37"
+      label="manager filled the fields / user chose a value / form submit
+             succeeded"/>
+  <int value="38"
+      label="manager filled the fields / user chose a value from psl / form
+             submit succeeded"/>
+  <int value="39"
+      label="manager filled the fields / user typed in something / form
+             submit succeeded"/>
+  <int value="40"
+      label="manager did nothing (site was blacklisted) / user did nothing /
+             form submit succeeded"/>
+  <int value="41"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             / form submit succeeded (this value shouldn't be possible)"/>
+  <int value="42"
+      label="manager did nothing (site was blacklisted) / user chose a value
+             from psl / form submit succeeded (this value shouldn't be
+             possible)"/>
+  <int value="43"
+      label="manager did nothing (site was blacklisted) / user typed in
+             something / form submit succeeded"/>
+  <int value="44"
+      label="manager did nothing (autocomplete off) / user did nothing / form
+             submit succeeded"/>
+  <int value="45"
+      label="manager did nothing (autocomplete off) / user chose a value /
+             form submit succeeded (this value shouldn't be possible)"/>
+  <int value="46"
+      label="manager did nothing (autocomplete off) / user chose a value from
+             psl / form submit succeeded (this value shouldn't be possible)"/>
+  <int value="47"
+      label="manager did nothing (autocomplete off) / user typed in something
+             / form submit succeeded"/>
+</enum>
+
+<enum name="PasswordManagerPSLDomainMatchTriggering" type="int">
+  <summary>
+    The value indicates whether an entry returned by password autofill contains
+    a value that was found by matching against the public suffix list.
+  </summary>
+  <int value="0" label="Matching disabled"/>
+  <int value="1" label="No match"/>
+  <int value="2" label="Match"/>
 </enum>
 
 <enum name="PepperVideoDecodeError" type="int">

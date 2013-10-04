@@ -48,6 +48,16 @@ enum LoginTableColumns {
   COLUMN_FORM_DATA
 };
 
+// Enum used for histogram tracking PSL Domain triggering.
+// New entries should only be added to the end of the enum (before *_COUNT) so
+// as to not disrupt existing data.
+enum PSLDomainMatchMetric {
+  PSL_DOMAIN_MATCH_DISABLED = 0,
+  PSL_DOMAIN_MATCH_NONE,
+  PSL_DOMAIN_MATCH_FOUND,
+  PSL_DOMAIN_MATCH_COUNT
+};
+
 // Using the public suffix list for matching the origin is only needed for
 // websites that do not have a single hostname for entering credentials. It
 // would be better for their users if they did, but until then we help them find
@@ -474,6 +484,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
   sql::Statement s;
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
+  PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
   if (public_suffix_domain_matching_ &&
       ShouldPSLDomainMatchingApply(registered_domain)) {
     // We are extending the original SQL query with one that includes more
@@ -505,6 +516,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
     s.BindString(0, form.signon_realm);
     s.BindString(1, regexp);
   } else {
+    psl_domain_match_metric = PSL_DOMAIN_MATCH_DISABLED;
     s.Assign(db_.GetCachedStatement(SQL_FROM_HERE, sql_query.c_str()));
     s.BindString(0, form.signon_realm);
   }
@@ -525,6 +537,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
         continue;
       }
       if (form.signon_realm != new_form->signon_realm) {
+        psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
         // This is not a perfect match, so we need to create a new valid result.
         // We do this by copying over origin, signon realm and action from the
         // observed form and setting the original signon realm to what we found
@@ -539,6 +552,9 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
     }
     forms->push_back(new_form.release());
   }
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
+                            psl_domain_match_metric,
+                            PSL_DOMAIN_MATCH_COUNT);
   return s.Succeeded();
 }
 

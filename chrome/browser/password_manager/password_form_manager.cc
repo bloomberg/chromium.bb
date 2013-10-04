@@ -51,7 +51,7 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
 }
 
 PasswordFormManager::~PasswordFormManager() {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTaken",
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenWithPsl",
                             GetActionsTaken(),
                             kMaxNumActionsTaken);
   // In case the tab is closed before the next navigation occurs this will
@@ -218,6 +218,8 @@ void PasswordFormManager::ProvisionallySave(
     // Public suffix matches should always be new logins, since we want to store
     // them so they can automatically be filled in later.
     is_new_login_ = IsPendingCredentialsPublicSuffixMatch();
+    if (is_new_login_)
+      user_action_ = kUserActionChoosePslMatch;
 
     // Check to see if we're using a known username but a new password.
     if (pending_credentials_.password_value != credentials.password_value)
