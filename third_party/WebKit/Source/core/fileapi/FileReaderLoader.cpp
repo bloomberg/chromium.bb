@@ -189,11 +189,14 @@ void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse&
     }
 
     ASSERT(!m_rawData);
-    m_rawData = ArrayBuffer::create(static_cast<unsigned>(length), 1);
 
-    if (!m_rawData) {
-        failed(FileError::NOT_READABLE_ERR);
-        return;
+    if (m_readType != ReadByClient) {
+        m_rawData = ArrayBuffer::create(static_cast<unsigned>(length), 1);
+
+        if (!m_rawData) {
+            failed(FileError::NOT_READABLE_ERR);
+            return;
+        }
     }
 
     m_totalBytes = static_cast<unsigned>(length);
