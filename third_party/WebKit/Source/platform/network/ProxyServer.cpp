@@ -23,57 +23,53 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ProxyServer_h
-#define ProxyServer_h
+#include "config.h"
+#include "platform/network/ProxyServer.h"
 
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-class KURL;
-class NetworkingContext;
-
-// Represents a single proxy server.
-class ProxyServer {
-public:
-    enum Type {
-        Direct,
-        HTTP,
-        HTTPS,
-        SOCKS,
-    };
-
-    ProxyServer()
-        : m_type(Direct)
-        , m_port(-1)
-    {
+static void appendProxyServerString(StringBuilder& builder, const ProxyServer& proxyServer)
+{
+    switch (proxyServer.type()) {
+    case ProxyServer::Direct:
+        builder.append("DIRECT");
+        return;
+    case ProxyServer::HTTP:
+    case ProxyServer::HTTPS:
+        builder.append("PROXY");
+        break;
+    case ProxyServer::SOCKS:
+        builder.append("SOCKS");
+        break;
     }
 
-    ProxyServer(Type type, const String& hostName, int port)
-        : m_type(type)
-        , m_hostName(hostName)
-        , m_port(port)
-    {
+    builder.append(' ');
+
+    ASSERT(!proxyServer.hostName().isNull());
+    builder.append(proxyServer.hostName());
+
+    builder.append(':');
+    ASSERT(proxyServer.port() != -1);
+    builder.appendNumber(proxyServer.port());
+}
+
+String toString(const Vector<ProxyServer>& proxyServers)
+{
+    if (proxyServers.isEmpty())
+        return "DIRECT";
+
+    StringBuilder stringBuilder;
+    for (size_t i = 0; i < proxyServers.size(); ++i) {
+        if (i)
+            stringBuilder.append("; ");
+
+        appendProxyServerString(stringBuilder, proxyServers[i]);
     }
 
-    Type type() const { return m_type; }
-    const String& hostName() const { return m_hostName; }
-    int port() const { return m_port; }
+    return stringBuilder.toString();
+}
 
-private:
-    Type m_type;
-    String m_hostName;
-    int m_port;
-};
-
-// Return a vector of proxy servers for the given URL.
-Vector<ProxyServer> proxyServersForURL(const KURL&, const NetworkingContext*);
-
-// Converts the given vector of proxy servers to a PAC string, as described in
-// http://web.archive.org/web/20060424005037/wp.netscape.com/eng/mozilla/2.0/relnotes/demo/proxy-live.html
-String toString(const Vector<ProxyServer>&);
 
 } // namespace WebCore
-
-#endif // ProxyServer_h

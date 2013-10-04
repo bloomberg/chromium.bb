@@ -36,6 +36,8 @@
       'network/DNS.h',
       'network/ParsedContentType.cpp',
       'network/ParsedContentType.h',
+      'network/ProxyServer.cpp',
+      'network/ProxyServer.h',
       'network/SocketStreamError.cpp',
       'network/SocketStreamError.h',
       'network/SocketStreamHandle.cpp',

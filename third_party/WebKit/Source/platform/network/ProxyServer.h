@@ -23,53 +23,58 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/platform/network/ProxyServer.h"
+#ifndef ProxyServer_h
+#define ProxyServer_h
 
-#include "wtf/text/StringBuilder.h"
+#include "platform/PlatformExport.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-static void appendProxyServerString(StringBuilder& builder, const ProxyServer& proxyServer)
-{
-    switch (proxyServer.type()) {
-    case ProxyServer::Direct:
-        builder.append("DIRECT");
-        return;
-    case ProxyServer::HTTP:
-    case ProxyServer::HTTPS:
-        builder.append("PROXY");
-        break;
-    case ProxyServer::SOCKS:
-        builder.append("SOCKS");
-        break;
+class KURL;
+class NetworkingContext;
+
+// Represents a single proxy server.
+class PLATFORM_EXPORT ProxyServer {
+public:
+    enum Type {
+        Direct,
+        HTTP,
+        HTTPS,
+        SOCKS,
+    };
+
+    ProxyServer()
+        : m_type(Direct)
+        , m_port(-1)
+    {
     }
 
-    builder.append(' ');
-
-    ASSERT(!proxyServer.hostName().isNull());
-    builder.append(proxyServer.hostName());
-
-    builder.append(':');
-    ASSERT(proxyServer.port() != -1);
-    builder.appendNumber(proxyServer.port());
-}
-
-String toString(const Vector<ProxyServer>& proxyServers)
-{
-    if (proxyServers.isEmpty())
-        return "DIRECT";
-
-    StringBuilder stringBuilder;
-    for (size_t i = 0; i < proxyServers.size(); ++i) {
-        if (i)
-            stringBuilder.append("; ");
-
-        appendProxyServerString(stringBuilder, proxyServers[i]);
+    ProxyServer(Type type, const String& hostName, int port)
+        : m_type(type)
+        , m_hostName(hostName)
+        , m_port(port)
+    {
     }
 
-    return stringBuilder.toString();
-}
+    Type type() const { return m_type; }
+    const String& hostName() const { return m_hostName; }
+    int port() const { return m_port; }
 
+private:
+    Type m_type;
+    String m_hostName;
+    int m_port;
+};
+
+// Return a vector of proxy servers for the given URL.
+PLATFORM_EXPORT Vector<ProxyServer> proxyServersForURL(const KURL&, const NetworkingContext*);
+
+// Converts the given vector of proxy servers to a PAC string, as described in
+// http://web.archive.org/web/20060424005037/wp.netscape.com/eng/mozilla/2.0/relnotes/demo/proxy-live.html
+PLATFORM_EXPORT String toString(const Vector<ProxyServer>&);
 
 } // namespace WebCore
+
+#endif // ProxyServer_h
