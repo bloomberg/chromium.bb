@@ -1553,11 +1553,9 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   // Only show proxy for remembered networks.
   dictionary.SetBoolean(kTagShowProxy, !network->profile_path().empty());
 
-  // Enable static ip config for ethernet. For wifi, enable if flag is set.
+  // Enable static ip config for Ethernet or WiFi.
   bool staticIPConfig = network->Matches(NetworkTypePattern::Ethernet()) ||
-                        (type == shill::kTypeWifi &&
-                         CommandLine::ForCurrentProcess()->HasSwitch(
-                             chromeos::switches::kEnableStaticIPConfig));
+                        type == shill::kTypeWifi;
   dictionary.SetBoolean(kTagShowStaticIPConfig, staticIPConfig);
 
   dictionary.SetBoolean(kTagShowPreferred, !network->profile_path().empty());

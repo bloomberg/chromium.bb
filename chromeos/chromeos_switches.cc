@@ -112,10 +112,6 @@ const char kEnableKioskMode[]               = "enable-kiosk-mode";
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
 
-// Enables static ip configuration. This flag should be removed when it's on by
-// default.
-const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
-
 // Power of the power-of-2 initial modulus that will be used by the
 // auto-enrollment client. E.g. "4" means the modulus will be 2^4 = 16.
 const char kEnterpriseEnrollmentInitialModulus[] =

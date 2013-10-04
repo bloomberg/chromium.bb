@@ -680,18 +680,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "static-ip-config",
-    IDS_FLAGS_STATIC_IP_CONFIG_NAME,
-    IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION,
-    kOsCrOS,
-#if defined(OS_CHROMEOS)
-    // This switch exists only on Chrome OS.
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableStaticIPConfig)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
-  {
     "show-autofill-type-predictions",
     IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,
     IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION,
