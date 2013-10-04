@@ -5,6 +5,8 @@
 #include "sync/sessions/data_type_tracker.h"
 
 #include "base/logging.h"
+#include "sync/internal_api/public/base/invalidation.h"
+#include "sync/notifier/single_object_invalidation_set.h"
 #include "sync/sessions/nudge_tracker.h"
 
 namespace syncer {
@@ -27,13 +29,20 @@ void DataTypeTracker::RecordLocalRefreshRequest() {
   local_refresh_request_count_++;
 }
 
-void DataTypeTracker::RecordRemoteInvalidation(
-    const std::string& payload) {
-  pending_payloads_.push_back(payload);
-  if (pending_payloads_.size() > payload_buffer_size_) {
-    // Drop the oldest payload if we've overflowed.
-    pending_payloads_.pop_front();
-    local_payload_overflow_ = true;
+void DataTypeTracker::RecordRemoteInvalidations(
+    const SingleObjectInvalidationSet& invalidations) {
+  for (SingleObjectInvalidationSet::const_iterator it =
+       invalidations.begin(); it != invalidations.end(); ++it) {
+    if (it->is_unknown_version()) {
+      server_payload_overflow_ = true;
+    } else {
+      pending_payloads_.push_back(it->payload());
+      if (pending_payloads_.size() > payload_buffer_size_) {
+        // Drop the oldest payload if we've overflowed.
+        pending_payloads_.pop_front();
+        local_payload_overflow_ = true;
+      }
+    }
   }
 }
 

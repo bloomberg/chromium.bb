@@ -49,8 +49,7 @@ class P2PInvalidationService
   void UpdateCredentials(const std::string& username,
                          const std::string& password);
 
-  void SendInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map);
+  void SendInvalidation(const syncer::ObjectIdSet& ids);
 
  private:
   scoped_ptr<syncer::P2PInvalidator> invalidator_;

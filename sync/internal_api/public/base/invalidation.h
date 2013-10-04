@@ -9,59 +9,73 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
+#include "base/values.h"
+#include "google/cacheinvalidation/include/types.h"
 #include "sync/base/sync_export.h"
-
-namespace base {
-class DictionaryValue;
-}  // namespace
+#include "sync/internal_api/public/base/ack_handle.h"
 
 namespace syncer {
 
-// Opaque class that represents a local ack handle. We don't reuse the
-// invalidation ack handles to avoid unnecessary dependencies.
-class SYNC_EXPORT AckHandle {
- public:
-  static AckHandle CreateUnique();
-  static AckHandle InvalidAckHandle();
-
-  bool Equals(const AckHandle& other) const;
-
-  scoped_ptr<base::DictionaryValue> ToValue() const;
-  bool ResetFromValue(const base::DictionaryValue& value);
-
-  bool IsValid() const;
-
-  ~AckHandle();
-
- private:
-  // Explicitly copyable and assignable for STL containers.
-  AckHandle(const std::string& state, base::Time timestamp);
-
-  std::string state_;
-  base::Time timestamp_;
-};
+class DroppedInvalidationTracker;
+class AckHandler;
 
 // Represents a local invalidation, and is roughly analogous to
-// invalidation::Invalidation. It contains a version (which may be
-// kUnknownVersion), a payload (which may be empty) and an
-// associated ack handle that an InvalidationHandler implementation can use to
-// acknowledge receipt of the invalidation. It does not embed the object ID,
-// since it is typically associated with it through ObjectIdInvalidationMap.
-struct SYNC_EXPORT Invalidation {
-  static const int64 kUnknownVersion;
+// invalidation::Invalidation.  Unlike invalidation::Invalidation, this class
+// supports "local" ack-tracking and simple serialization to pref values.
+class SYNC_EXPORT Invalidation {
+ public:
+  // Factory functions.
+  static Invalidation Init(
+      const invalidation::ObjectId& id,
+      int64 version,
+      const std::string& payload);
+  static Invalidation InitUnknownVersion(const invalidation::ObjectId& id);
+  static scoped_ptr<Invalidation> InitFromValue(
+      const base::DictionaryValue& value);
 
-  Invalidation();
   ~Invalidation();
 
+  // Compares two invalidations.  The comparison ignores ack-tracking state.
   bool Equals(const Invalidation& other) const;
 
-  scoped_ptr<base::DictionaryValue> ToValue() const;
-  bool ResetFromValue(const base::DictionaryValue& value);
+  invalidation::ObjectId object_id() const;
+  bool is_unknown_version() const;
 
-  int64 version;
-  std::string payload;
-  AckHandle ack_handle;
+  // Safe to call only if is_unknown_version() returns false.
+  int64 version() const;
+
+  // Safe to call only if is_unknown_version() returns false.
+  const std::string& payload() const;
+
+  const AckHandle& ack_handle() const;
+  void set_ack_handle(const AckHandle& ack_handle);
+
+  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::string ToString() const;
+
+ private:
+  Invalidation(const invalidation::ObjectId& id,
+               bool is_unknown_version,
+               int64 version,
+               const std::string& payload,
+               AckHandle ack_handle);
+
+  // The ObjectId to which this invalidation belongs.
+  invalidation::ObjectId id_;
+
+  // This flag is set to true if this is an unknown version invalidation.
+  bool is_unknown_version_;
+
+  // The version number of this invalidation.  Should not be accessed if this is
+  // an unkown version invalidation.
+  int64 version_;
+
+  // The payaload associated with this invalidation.  Should not be accessed if
+  // this is an unknown version invalidation.
+  std::string payload_;
+
+  // A locally generated unique ID used to manage local acknowledgements.
+  AckHandle ack_handle_;
 };
 
 }  // namespace syncer

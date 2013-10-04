@@ -35,6 +35,8 @@
     'notifier/invalidator_state.h',
     'notifier/object_id_invalidation_map.cc',
     'notifier/object_id_invalidation_map.h',
+    'notifier/single_object_invalidation_set.cc',
+    'notifier/single_object_invalidation_set.h',
   ],
   'conditions': [
     ['OS != "android"', {

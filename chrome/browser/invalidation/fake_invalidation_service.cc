@@ -65,24 +65,17 @@ void FakeInvalidationService::SetInvalidatorState(
   invalidator_registrar_.UpdateInvalidatorState(state);
 }
 
-syncer::AckHandle FakeInvalidationService::EmitInvalidationForTest(
-      const invalidation::ObjectId& object_id,
-      int64 version,
-      const std::string& payload) {
+void FakeInvalidationService::EmitInvalidationForTest(
+    const syncer::Invalidation& invalidation) {
   syncer::ObjectIdInvalidationMap invalidation_map;
 
-  syncer::Invalidation inv;
-  inv.version = version;
-  inv.payload = payload;
-  inv.ack_handle = syncer::AckHandle::CreateUnique();
-
-  invalidation_map.insert(std::make_pair(object_id, inv));
+  invalidation_map.Insert(invalidation);
   unacknowledged_handles_.push_back(
-      AckHandleList::value_type(inv.ack_handle, object_id));
+      AckHandleList::value_type(
+          invalidation.ack_handle(),
+          invalidation.object_id()));
 
   invalidator_registrar_.DispatchInvalidationsToHandlers(invalidation_map);
-
-  return inv.ack_handle;
 }
 
 bool FakeInvalidationService::IsInvalidationAcknowledged(

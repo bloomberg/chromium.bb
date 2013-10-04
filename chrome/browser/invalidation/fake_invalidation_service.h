@@ -41,10 +41,7 @@ class FakeInvalidationService : public InvalidationService {
   const syncer::InvalidatorRegistrar& invalidator_registrar() const {
     return invalidator_registrar_;
   }
-  syncer::AckHandle EmitInvalidationForTest(
-      const invalidation::ObjectId& object_id,
-      int64 version,
-      const std::string& payload);
+  void EmitInvalidationForTest(const syncer::Invalidation& invalidation);
 
   // Determines if the given AckHandle has been acknowledged.
   bool IsInvalidationAcknowledged(const syncer::AckHandle& ack_handle) const;

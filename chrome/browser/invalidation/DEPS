@@ -2,9 +2,7 @@ include_rules = [
   # Needed for P2PInvalidationService construction.
   "+jingle/notifier",
 
-  # Needed for SyncMaxInvalidationVersions Migration.
-  "+sync/internal_api/public/base/model_type.h",
-  "+sync/internal_api/public/base/invalidation_test_util.h",
+  "+sync/internal_api/public/base",
 
   # Needed for InvalidationController JNI methods.
   "+sync/jni/InvalidationController_jni.h",

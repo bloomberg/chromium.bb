@@ -24,6 +24,7 @@
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_registrar.h"
 #include "sync/notifier/invalidator_state.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace notifier {
 class PushClient;
@@ -118,8 +119,7 @@ class SYNC_EXPORT_PRIVATE P2PInvalidator
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
 
-  void SendInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map);
+  void SendInvalidation(const ObjectIdSet& ids);
 
   void SendNotificationDataForTest(
       const P2PNotificationData& notification_data);

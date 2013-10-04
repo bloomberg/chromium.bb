@@ -135,19 +135,15 @@ void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
 }
 
 void DebugInfoEventListener::OnIncomingNotification(
-    const ObjectIdInvalidationMap& invalidations) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_pb::DebugEventInfo event_info;
-  ModelTypeSet types = ObjectIdSetToModelTypeSet(ObjectIdInvalidationMapToSet(
-          invalidations));
+  ModelTypeSet types =
+      ObjectIdSetToModelTypeSet(invalidation_map.GetObjectIds());
 
-  for (ObjectIdInvalidationMap::const_iterator it = invalidations.begin();
-       it != invalidations.end(); ++it) {
-    ModelType type = UNSPECIFIED;
-    if (ObjectIdToRealModelType(it->first, &type)) {
-      event_info.add_datatypes_notified_from_server(
-          GetSpecificsFieldNumberFromModelType(type));
-    }
+  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
+    event_info.add_datatypes_notified_from_server(
+        GetSpecificsFieldNumberFromModelType(it.Get()));
   }
 
   AddEventToQueue(event_info);

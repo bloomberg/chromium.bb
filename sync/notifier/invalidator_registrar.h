@@ -13,13 +13,14 @@
 #include "sync/base/sync_export.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace invalidation {
 class ObjectId;
 }  // namespace invalidation
 
 namespace syncer {
+
+class ObjectIdInvalidationMap;
 
 // A helper class for implementations of the Invalidator interface.  It helps
 // keep track of registered handlers and which object ID registrations are
@@ -76,15 +77,11 @@ class SYNC_EXPORT InvalidatorRegistrar {
   void DetachFromThreadForTest();
 
  private:
-  typedef std::map<invalidation::ObjectId, InvalidationHandler*,
-                   ObjectIdLessThan>
-      IdHandlerMap;
-
-  InvalidationHandler* ObjectIdToHandler(const invalidation::ObjectId& id);
+  typedef std::map<InvalidationHandler*, ObjectIdSet> HandlerIdsMap;
 
   base::ThreadChecker thread_checker_;
   ObserverList<InvalidationHandler> handlers_;
-  IdHandlerMap id_to_handler_map_;
+  HandlerIdsMap handler_to_ids_map_;
   InvalidatorState state_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidatorRegistrar);

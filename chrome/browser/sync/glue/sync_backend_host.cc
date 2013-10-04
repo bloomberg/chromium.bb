@@ -1505,13 +1505,14 @@ void SyncBackendHost::OnInvalidatorStateChange(syncer::InvalidatorState state) {
 
 void SyncBackendHost::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
-  // TODO(dcheng): Acknowledge immediately for now. Fix this once the
-  // invalidator doesn't repeatedly ping for unacknowledged invaliations, since
-  // it conflicts with the sync scheduler's internal backoff algorithm.
-  // See http://crbug.com/124149 for more information.
-  for (syncer::ObjectIdInvalidationMap::const_iterator it =
-       invalidation_map.begin(); it != invalidation_map.end(); ++it) {
-    invalidator_->AcknowledgeInvalidation(it->first, it->second.ack_handle);
+  // TODO(rlarocque): Acknowledge these invalidations only after the syncer has
+  // acted on them and saved the results to disk.
+  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
+  for (syncer::ObjectIdSet::const_iterator it = ids.begin();
+       it != ids.end(); ++it) {
+    const syncer::AckHandle& handle =
+        invalidation_map.ForObject(*it).back().ack_handle();
+    invalidator_->AcknowledgeInvalidation(*it, handle);
   }
 
   registrar_->sync_thread()->message_loop()->PostTask(

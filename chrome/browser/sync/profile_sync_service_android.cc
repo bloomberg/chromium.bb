@@ -105,8 +105,10 @@ void ProfileSyncServiceAndroid::SendNudgeNotification(
   invalidation::ObjectId object_id(
       object_source,
       str_object_id);
+  syncer::ObjectIdInvalidationMap object_ids_with_states;
   if (version == ipc::invalidation::Constants::UNKNOWN) {
-    version = syncer::Invalidation::kUnknownVersion;
+    object_ids_with_states.Insert(
+        syncer::Invalidation::InitUnknownVersion(object_id));
   } else {
     ObjectIdVersionMap::iterator it =
         max_invalidation_versions_.find(object_id);
@@ -116,12 +118,9 @@ void ProfileSyncServiceAndroid::SendNudgeNotification(
       return;
     }
     max_invalidation_versions_[object_id] = version;
+    object_ids_with_states.Insert(
+        syncer::Invalidation::Init(object_id, version, state));
   }
-
-  syncer::ObjectIdSet object_ids;
-  object_ids.insert(object_id);
-  syncer::ObjectIdInvalidationMap object_ids_with_states =
-      syncer::ObjectIdSetToInvalidationMap(object_ids, version, state);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,

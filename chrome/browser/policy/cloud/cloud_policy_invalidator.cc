@@ -92,13 +92,13 @@ void CloudPolicyInvalidator::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(state_ == STARTED);
   DCHECK(thread_checker_.CalledOnValidThread());
-  const syncer::ObjectIdInvalidationMap::const_iterator invalidation =
-      invalidation_map.find(object_id_);
-  if (invalidation == invalidation_map.end()) {
+  const syncer::SingleObjectInvalidationSet& list =
+      invalidation_map.ForObject(object_id_);
+  if (list.IsEmpty()) {
     NOTREACHED();
     return;
   }
-  HandleInvalidation(invalidation->second);
+  HandleInvalidation(list.back());
 }
 
 void CloudPolicyInvalidator::OnCoreConnected(CloudPolicyCore* core) {}
@@ -156,7 +156,7 @@ void CloudPolicyInvalidator::HandleInvalidation(
     const syncer::Invalidation& invalidation) {
   // The invalidation service may send an invalidation more than once if there
   // is a delay in acknowledging it. Duplicate invalidations are ignored.
-  if (invalid_ && ack_handle_.Equals(invalidation.ack_handle))
+  if (invalid_ && ack_handle_.Equals(invalidation.ack_handle()))
     return;
 
   // If there is still a pending invalidation, acknowledge it, since we only
@@ -166,15 +166,17 @@ void CloudPolicyInvalidator::HandleInvalidation(
 
   // Update invalidation state.
   invalid_ = true;
-  ack_handle_ = invalidation.ack_handle;
-  invalidation_version_ = invalidation.version;
+  ack_handle_ = invalidation.ack_handle();
 
   // When an invalidation with unknown version is received, use negative
   // numbers based on the number of such invalidations received. This
   // ensures that the version numbers do not collide with "real" versions
   // (which are positive) or previous invalidations with unknown version.
-  if (invalidation_version_ == syncer::Invalidation::kUnknownVersion)
+  if (invalidation.is_unknown_version()) {
     invalidation_version_ = -(++unknown_version_invalidation_count_);
+  } else {
+    invalidation_version_ = invalidation.version();
+  }
 
   // In order to prevent the cloud policy server from becoming overwhelmed when
   // a policy with many users is modified, delay for a random period of time
@@ -184,11 +186,14 @@ void CloudPolicyInvalidator::HandleInvalidation(
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
       base::RandInt(20, max_fetch_delay_));
 
+  std::string payload;
+  if (!invalidation.is_unknown_version())
+    payload = invalidation.payload();
+
   // If there is a payload, the policy can be refreshed at any time, so set
   // the version and payload on the client immediately. Otherwise, the refresh
   // must only run after at least kMissingPayloadDelay minutes.
-  const std::string& payload = invalidation.payload;
-  if (!invalidation.payload.empty())
+  if (!payload.empty())
     core_->client()->SetInvalidationInfo(invalidation_version_, payload);
   else
     delay += base::TimeDelta::FromMinutes(kMissingPayloadDelay);

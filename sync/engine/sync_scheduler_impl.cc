@@ -393,12 +393,12 @@ void SyncSchedulerImpl::ScheduleInvalidationNudge(
     const ObjectIdInvalidationMap& invalidation_map,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!invalidation_map.empty());
+  DCHECK(!invalidation_map.Empty());
 
   SDVLOG_LOC(nudge_location, 2)
       << "Scheduling sync because we received invalidation for "
-      << ModelTypeSetToString(ObjectIdSetToModelTypeSet(
-              ObjectIdInvalidationMapToSet(invalidation_map)));
+      << ModelTypeSetToString(
+          ObjectIdSetToModelTypeSet(invalidation_map.GetObjectIds()));
   nudge_tracker_.RecordRemoteInvalidation(invalidation_map);
   ScheduleNudgeImpl(desired_delay, nudge_location);
 }

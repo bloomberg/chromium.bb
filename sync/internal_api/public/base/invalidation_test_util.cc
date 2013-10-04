@@ -75,7 +75,18 @@ InvalidationEqMatcher::InvalidationEqMatcher(
 
 bool InvalidationEqMatcher::MatchAndExplain(
     const Invalidation& actual, MatchResultListener* listener) const {
-  return expected_.payload == actual.payload;
+  if (!(expected_.object_id() == actual.object_id())) {
+    return false;
+  }
+  if (expected_.is_unknown_version() && actual.is_unknown_version()) {
+    return true;
+  } else if (expected_.is_unknown_version() != actual.is_unknown_version()) {
+    return false;
+  } else {
+    // Neither is unknown version.
+    return expected_.payload() == actual.payload()
+        && expected_.version() == actual.version();
+  }
 }
 
 void InvalidationEqMatcher::DescribeTo(::std::ostream* os) const {
@@ -99,12 +110,8 @@ Matcher<const AckHandle&> Eq(const AckHandle& expected) {
   return MakeMatcher(new AckHandleEqMatcher(expected));
 }
 
-void PrintTo(const Invalidation& state, ::std::ostream* os) {
-  std::string printable_payload;
-  base::JsonDoubleQuote(state.payload,
-                        true /* put_in_quotes */,
-                        &printable_payload);
-  *os << "{ payload: " << printable_payload << " }";
+void PrintTo(const Invalidation& inv, ::std::ostream* os) {
+  *os << "{ payload: " << inv.ToString() << " }";
 }
 
 Matcher<const Invalidation&> Eq(const Invalidation& expected) {

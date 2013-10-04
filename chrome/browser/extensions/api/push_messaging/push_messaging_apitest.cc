@@ -80,11 +80,10 @@ class PushMessagingApiTest : public ExtensionApiTest {
 
   void EmitInvalidation(
       const invalidation::ObjectId& object_id,
+      int64 version,
       const std::string& payload) {
     fake_invalidation_service_->EmitInvalidationForTest(
-        object_id,
-        syncer::Invalidation::kUnknownVersion,
-        payload);
+        syncer::Invalidation::Init(object_id, version, payload));
   }
 
   PushMessagingAPI* GetAPI() {
@@ -129,11 +128,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, ReceivesPush) {
   // each subchannel at install, so trigger the suppressions first.
   for (int i = 0; i < 3; ++i) {
     EmitInvalidation(
-        ExtensionAndSubchannelToObjectId(extension->id(), i), std::string());
+        ExtensionAndSubchannelToObjectId(extension->id(), i), i, std::string());
   }
 
   EmitInvalidation(
-      ExtensionAndSubchannelToObjectId(extension->id(), 1), "payload");
+      ExtensionAndSubchannelToObjectId(extension->id(), 1), 5, "payload");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 

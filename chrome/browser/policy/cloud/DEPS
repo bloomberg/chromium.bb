@@ -32,6 +32,10 @@ specific_include_rules = {
     "+content/test/net",
   ],
 
+  r"cloud_policy_browsertest.cc": [
+    "+sync/internal_api/public/base/invalidation.h",
+  ],
+
   # TODO(joaodasilva): remove these exceptions.
   r"cloud_external_data_manager_base_unittest\.cc": [
     "+content/public/test/test_browser_thread_bundle.h",

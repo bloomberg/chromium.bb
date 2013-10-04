@@ -14,6 +14,10 @@
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
+
+class Invalidation;
+class SingleObjectInvalidationSet;
+
 namespace sessions {
 
 typedef std::deque<std::string> PayloadList;
@@ -32,8 +36,9 @@ class DataTypeTracker {
   // Tracks that a local refresh request has been made for this type.
   void RecordLocalRefreshRequest();
 
-  // Tracks that we received an invalidation notification for this type.
-  void RecordRemoteInvalidation(const std::string& payload);
+  // Tracks that we received invalidation notifications for this type.
+  void RecordRemoteInvalidations(
+      const SingleObjectInvalidationSet& invalidations);
 
   // Records that a sync cycle has been performed successfully.
   // Generally, this means that all local changes have been committed and all

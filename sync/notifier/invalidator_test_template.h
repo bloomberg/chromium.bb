@@ -81,11 +81,11 @@
 #include "base/compiler_specific.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "sync/internal_api/public/base/invalidation_test_util.h"
+#include "sync/internal_api/public/base/object_id_invalidation_map_test_util.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidation_state_tracker.h"
 #include "sync/notifier/invalidator.h"
-#include "sync/notifier/object_id_invalidation_map.h"
-#include "sync/notifier/object_id_invalidation_map_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -135,13 +135,13 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
 
   invalidator->RegisterHandler(&handler);
 
-  ObjectIdInvalidationMap states;
-  states[this->id1].payload = "1";
-  states[this->id2].payload = "2";
-  states[this->id3].payload = "3";
+  ObjectIdInvalidationMap invalidation_map;
+  invalidation_map.Insert(Invalidation::Init(this->id1, 1, "1"));
+  invalidation_map.Insert(Invalidation::Init(this->id2, 2, "2"));
+  invalidation_map.Insert(Invalidation::Init(this->id3, 3, "3"));
 
   // Should be ignored since no IDs are registered to |handler|.
-  this->delegate_.TriggerOnIncomingInvalidation(states);
+  this->delegate_.TriggerOnIncomingInvalidation(invalidation_map);
   EXPECT_EQ(0, handler.GetInvalidationCount());
 
   ObjectIdSet ids;
@@ -152,25 +152,26 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   this->delegate_.TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
 
-  ObjectIdInvalidationMap expected_states;
-  expected_states[this->id1].payload = "1";
-  expected_states[this->id2].payload = "2";
+  ObjectIdInvalidationMap expected_invalidations;
+  expected_invalidations.Insert(Invalidation::Init(this->id1, 1, "1"));
+  expected_invalidations.Insert(Invalidation::Init(this->id2, 2, "2"));
 
-  this->delegate_.TriggerOnIncomingInvalidation(states);
+  this->delegate_.TriggerOnIncomingInvalidation(invalidation_map);
   EXPECT_EQ(1, handler.GetInvalidationCount());
-  EXPECT_THAT(expected_states, Eq(handler.GetLastInvalidationMap()));
+  EXPECT_THAT(expected_invalidations, Eq(handler.GetLastInvalidationMap()));
 
   ids.erase(this->id1);
   ids.insert(this->id3);
   invalidator->UpdateRegisteredIds(&handler, ids);
 
-  expected_states.erase(this->id1);
-  expected_states[this->id3].payload = "3";
+  expected_invalidations = ObjectIdInvalidationMap();
+  expected_invalidations.Insert(Invalidation::Init(this->id2, 2, "2"));
+  expected_invalidations.Insert(Invalidation::Init(this->id3, 3, "3"));
 
   // Removed object IDs should not be notified, newly-added ones should.
-  this->delegate_.TriggerOnIncomingInvalidation(states);
+  this->delegate_.TriggerOnIncomingInvalidation(invalidation_map);
   EXPECT_EQ(2, handler.GetInvalidationCount());
-  EXPECT_THAT(expected_states, Eq(handler.GetLastInvalidationMap()));
+  EXPECT_THAT(expected_invalidations, Eq(handler.GetLastInvalidationMap()));
 
   this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR,
@@ -184,7 +185,7 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   invalidator->UnregisterHandler(&handler);
 
   // Should be ignored since |handler| isn't registered anymore.
-  this->delegate_.TriggerOnIncomingInvalidation(states);
+  this->delegate_.TriggerOnIncomingInvalidation(invalidation_map);
   EXPECT_EQ(2, handler.GetInvalidationCount());
 }
 
@@ -236,25 +237,26 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler4.GetInvalidatorState());
 
   {
-    ObjectIdInvalidationMap states;
-    states[this->id1].payload = "1";
-    states[this->id2].payload = "2";
-    states[this->id3].payload = "3";
-    states[this->id4].payload = "4";
-    this->delegate_.TriggerOnIncomingInvalidation(states);
+    ObjectIdInvalidationMap invalidation_map;
+    invalidation_map.Insert(Invalidation::Init(this->id1, 1, "1"));
+    invalidation_map.Insert(Invalidation::Init(this->id2, 2, "2"));
+    invalidation_map.Insert(Invalidation::Init(this->id3, 3, "3"));
+    invalidation_map.Insert(Invalidation::Init(this->id4, 4, "4"));
 
-    ObjectIdInvalidationMap expected_states;
-    expected_states[this->id1].payload = "1";
-    expected_states[this->id2].payload = "2";
+    this->delegate_.TriggerOnIncomingInvalidation(invalidation_map);
+
+    ObjectIdInvalidationMap expected_invalidations;
+    expected_invalidations.Insert(Invalidation::Init(this->id1, 1, "1"));
+    expected_invalidations.Insert(Invalidation::Init(this->id2, 2, "2"));
 
     EXPECT_EQ(1, handler1.GetInvalidationCount());
-    EXPECT_THAT(expected_states, Eq(handler1.GetLastInvalidationMap()));
+    EXPECT_THAT(expected_invalidations, Eq(handler1.GetLastInvalidationMap()));
 
-    expected_states.clear();
-    expected_states[this->id3].payload = "3";
+    expected_invalidations = ObjectIdInvalidationMap();
+    expected_invalidations.Insert(Invalidation::Init(this->id3, 3, "3"));
 
     EXPECT_EQ(1, handler2.GetInvalidationCount());
-    EXPECT_THAT(expected_states, Eq(handler2.GetLastInvalidationMap()));
+    EXPECT_THAT(expected_invalidations, Eq(handler2.GetLastInvalidationMap()));
 
     EXPECT_EQ(0, handler3.GetInvalidationCount());
     EXPECT_EQ(0, handler4.GetInvalidationCount());
@@ -306,11 +308,11 @@ TYPED_TEST_P(InvalidatorTest, EmptySetUnregisters) {
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler2.GetInvalidatorState());
 
   {
-    ObjectIdInvalidationMap states;
-    states[this->id1].payload = "1";
-    states[this->id2].payload = "2";
-    states[this->id3].payload = "3";
-    this->delegate_.TriggerOnIncomingInvalidation(states);
+    ObjectIdInvalidationMap invalidation_map;
+    invalidation_map.Insert(Invalidation::Init(this->id1, 1, "1"));
+    invalidation_map.Insert(Invalidation::Init(this->id2, 2, "2"));
+    invalidation_map.Insert(Invalidation::Init(this->id3, 3, "3"));
+    this->delegate_.TriggerOnIncomingInvalidation(invalidation_map);
     EXPECT_EQ(0, handler1.GetInvalidationCount());
     EXPECT_EQ(1, handler2.GetInvalidationCount());
   }

@@ -64,8 +64,8 @@ void P2PInvalidationService::AcknowledgeInvalidation(
 }
 
 void P2PInvalidationService::SendInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map) {
-  invalidator_->SendInvalidation(invalidation_map);
+    const syncer::ObjectIdSet& ids) {
+  invalidator_->SendInvalidation(ids);
 }
 
 syncer::InvalidatorState P2PInvalidationService::GetInvalidatorState() const {

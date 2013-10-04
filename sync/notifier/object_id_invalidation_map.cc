@@ -1,93 +1,112 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "sync/notifier/object_id_invalidation_map.h"
 
-#include <algorithm>
-
-#include "base/compiler_specific.h"
-#include "base/values.h"
+#include "base/json/json_string_value_serializer.h"
 
 namespace syncer {
 
-ObjectIdSet ObjectIdInvalidationMapToSet(
-    const ObjectIdInvalidationMap& invalidation_map) {
-  ObjectIdSet ids;
-  for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
-       it != invalidation_map.end(); ++it) {
-    ids.insert(it->first);
-  }
-  return ids;
-}
-
-ObjectIdInvalidationMap ObjectIdSetToInvalidationMap(
-    const ObjectIdSet& ids, int64 version, const std::string& payload) {
-  ObjectIdInvalidationMap invalidation_map;
+// static
+ObjectIdInvalidationMap ObjectIdInvalidationMap::InvalidateAll(
+    const ObjectIdSet& ids) {
+  ObjectIdInvalidationMap invalidate_all;
   for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    // TODO(dcheng): Do we need to provide a way to set AckHandle?
-    invalidation_map[*it].version = version;
-    invalidation_map[*it].payload = payload;
+    invalidate_all.Insert(Invalidation::InitUnknownVersion(*it));
   }
-  return invalidation_map;
+  return invalidate_all;
 }
 
-namespace {
+ObjectIdInvalidationMap::ObjectIdInvalidationMap() {}
 
-struct ObjectIdInvalidationMapValueEquals {
-  bool operator()(const ObjectIdInvalidationMap::value_type& value1,
-                  const ObjectIdInvalidationMap::value_type& value2) const {
-    return
-        (value1.first == value2.first) &&
-        value1.second.Equals(value2.second);
+ObjectIdInvalidationMap::~ObjectIdInvalidationMap() {}
+
+ObjectIdSet ObjectIdInvalidationMap::GetObjectIds() const {
+  ObjectIdSet ret;
+  for (IdToListMap::const_iterator it = map_.begin(); it != map_.end(); ++it) {
+    ret.insert(it->first);
   }
-};
-
-}  // namespace
-
-bool ObjectIdInvalidationMapEquals(
-    const ObjectIdInvalidationMap& invalidation_map1,
-    const ObjectIdInvalidationMap& invalidation_map2) {
-  return
-      (invalidation_map1.size() == invalidation_map2.size()) &&
-      std::equal(invalidation_map1.begin(), invalidation_map1.end(),
-                 invalidation_map2.begin(),
-                 ObjectIdInvalidationMapValueEquals());
+  return ret;
 }
 
-scoped_ptr<base::ListValue> ObjectIdInvalidationMapToValue(
-    const ObjectIdInvalidationMap& invalidation_map) {
+bool ObjectIdInvalidationMap::Empty() const {
+  return map_.empty();
+}
+
+void ObjectIdInvalidationMap::Insert(const Invalidation& invalidation) {
+  map_[invalidation.object_id()].Insert(invalidation);
+}
+
+ObjectIdInvalidationMap ObjectIdInvalidationMap::GetSubsetWithObjectIds(
+    const ObjectIdSet& ids) const {
+  IdToListMap new_map;
+  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
+    IdToListMap::const_iterator lookup = map_.find(*it);
+    if (lookup != map_.end()) {
+      new_map[*it] = lookup->second;
+    }
+  }
+  return ObjectIdInvalidationMap(new_map);
+}
+
+const SingleObjectInvalidationSet& ObjectIdInvalidationMap::ForObject(
+    invalidation::ObjectId id) const {
+  IdToListMap::const_iterator lookup = map_.find(id);
+  DCHECK(lookup != map_.end());
+  DCHECK(!lookup->second.IsEmpty());
+  return lookup->second;
+}
+
+void ObjectIdInvalidationMap::GetAllInvalidations(
+    std::vector<syncer::Invalidation>* out) const {
+  for (IdToListMap::const_iterator it = map_.begin(); it != map_.end(); ++it) {
+    out->insert(out->begin(), it->second.begin(), it->second.end());
+  }
+}
+
+bool ObjectIdInvalidationMap::operator==(
+    const ObjectIdInvalidationMap& other) const {
+  return map_ == other.map_;
+}
+
+scoped_ptr<base::ListValue> ObjectIdInvalidationMap::ToValue() const {
   scoped_ptr<base::ListValue> value(new base::ListValue());
-  for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
-       it != invalidation_map.end(); ++it) {
-    base::DictionaryValue* entry = new base::DictionaryValue();
-    entry->Set("objectId", ObjectIdToValue(it->first).release());
-    entry->Set("state", it->second.ToValue().release());
-    value->Append(entry);
+  for (IdToListMap::const_iterator it1 = map_.begin();
+       it1 != map_.end(); ++it1) {
+    for (SingleObjectInvalidationSet::const_iterator it2 =
+         it1->second.begin(); it2 != it1->second.end(); ++it2) {
+      value->Append(it2->ToValue().release());
+    }
   }
   return value.Pass();
 }
 
-bool ObjectIdInvalidationMapFromValue(const base::ListValue& value,
-                               ObjectIdInvalidationMap* out) {
-  out->clear();
-  for (base::ListValue::const_iterator it = value.begin();
-       it != value.end(); ++it) {
-    const base::DictionaryValue* entry = NULL;
-    const base::DictionaryValue* id_value = NULL;
-    const base::DictionaryValue* invalidation_value = NULL;
-    invalidation::ObjectId id;
-    Invalidation invalidation;
-    if (!(*it)->GetAsDictionary(&entry) ||
-        !entry->GetDictionary("objectId", &id_value) ||
-        !entry->GetDictionary("state", &invalidation_value) ||
-        !ObjectIdFromValue(*id_value, &id) ||
-        !invalidation.ResetFromValue(*invalidation_value)) {
+bool ObjectIdInvalidationMap::ResetFromValue(const base::ListValue& value) {
+  map_.clear();
+  for (size_t i = 0; i < value.GetSize(); ++i) {
+    const DictionaryValue* dict;
+    if (!value.GetDictionary(i, &dict)) {
       return false;
     }
-    ignore_result(out->insert(std::make_pair(id, invalidation)));
+    scoped_ptr<Invalidation> invalidation = Invalidation::InitFromValue(*dict);
+    if (!invalidation) {
+      return false;
+    }
+    Insert(*invalidation.get());
   }
   return true;
 }
+
+std::string ObjectIdInvalidationMap::ToString() const {
+  std::string output;
+  JSONStringValueSerializer serializer(&output);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(*ToValue().get());
+  return output;
+}
+
+ObjectIdInvalidationMap::ObjectIdInvalidationMap(const IdToListMap& map)
+  : map_(map) {}
 
 }  // namespace syncer

@@ -10,6 +10,7 @@
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/internal_api/public/base/invalidation_test_util.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,6 +18,7 @@ using ::testing::_;
 using ::testing::NotNull;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using syncer::AckHandle;
 
 namespace extensions {
 
@@ -104,67 +106,79 @@ TEST_F(PushMessagingInvalidationHandlerTest, RegisterUnregisterExtension) {
 }
 
 TEST_F(PushMessagingInvalidationHandlerTest, Dispatch) {
-  syncer::ObjectIdSet ids;
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/dddddddddddddddddddddddddddddddd/0"));
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/dddddddddddddddddddddddddddddddd/3"));
+  syncer::ObjectIdInvalidationMap invalidation_map;
+  // A normal invalidation.
+  invalidation_map.Insert(
+      syncer::Invalidation::Init(
+          invalidation::ObjectId(
+              ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
+              "U/dddddddddddddddddddddddddddddddd/0"),
+          10,
+          "payload"));
+
+  // An unknown version invalidation.
+  invalidation_map.Insert(syncer::Invalidation::InitUnknownVersion(
+      invalidation::ObjectId(
+        ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
+        "U/dddddddddddddddddddddddddddddddd/3")));
+
   EXPECT_CALL(delegate_,
               OnMessage("dddddddddddddddddddddddddddddddd", 0, "payload"));
   EXPECT_CALL(delegate_,
-              OnMessage("dddddddddddddddddddddddddddddddd", 3, "payload"));
+              OnMessage("dddddddddddddddddddddddddddddddd", 3, ""));
+
+  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
   for (syncer::ObjectIdSet::const_iterator it = ids.begin(); it != ids.end();
        ++it) {
-    EXPECT_CALL(service_, AcknowledgeInvalidation(
-        *it, syncer::AckHandle::InvalidAckHandle()));
+    const syncer::Invalidation& inv = invalidation_map.ForObject(*it).back();
+    const syncer::AckHandle& ack_handle = inv.ack_handle();
+    EXPECT_CALL(service_, AcknowledgeInvalidation(*it, ack_handle));
   }
-  handler_->OnIncomingInvalidation(
-      ObjectIdSetToInvalidationMap(
-          ids,
-          syncer::Invalidation::kUnknownVersion,
-          "payload"));
+  handler_->OnIncomingInvalidation(invalidation_map);
 }
 
 // Tests that malformed object IDs don't trigger spurious callbacks.
 TEST_F(PushMessagingInvalidationHandlerTest, DispatchInvalidObjectIds) {
-  syncer::ObjectIdSet ids;
+  syncer::ObjectIdInvalidationMap invalidation_map;
   // Completely incorrect format.
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::TEST,
-      "Invalid"));
+  invalidation_map.Insert(syncer::Invalidation::InitUnknownVersion(
+          invalidation::ObjectId(
+              ipc::invalidation::ObjectSource::TEST,
+              "Invalid")));
   // Incorrect source.
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::TEST,
-      "U/dddddddddddddddddddddddddddddddd/3"));
+  invalidation_map.Insert(syncer::Invalidation::InitUnknownVersion(
+          invalidation::ObjectId(
+              ipc::invalidation::ObjectSource::TEST,
+              "U/dddddddddddddddddddddddddddddddd/3")));
   // Incorrect format type.
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "V/dddddddddddddddddddddddddddddddd/3"));
+  invalidation_map.Insert(syncer::Invalidation::InitUnknownVersion(
+          invalidation::ObjectId(
+              ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
+              "V/dddddddddddddddddddddddddddddddd/3")));
   // Invalid extension ID length.
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/ddddddddddddddddddddddddddddddddd/3"));
+  invalidation_map.Insert(syncer::Invalidation::InitUnknownVersion(
+          invalidation::ObjectId(
+              ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
+              "U/ddddddddddddddddddddddddddddddddd/3")));
   // Non-numeric subchannel.
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/dddddddddddddddddddddddddddddddd/z"));
+  invalidation_map.Insert(syncer::Invalidation::InitUnknownVersion(
+          invalidation::ObjectId(
+              ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
+              "U/dddddddddddddddddddddddddddddddd/z")));
   // Subchannel out of range.
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/dddddddddddddddddddddddddddddddd/4"));
+  invalidation_map.Insert(syncer::Invalidation::InitUnknownVersion(
+          invalidation::ObjectId(
+              ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
+              "U/dddddddddddddddddddddddddddddddd/4")));
   // Invalid object IDs should still be acknowledged.
+  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
   for (syncer::ObjectIdSet::const_iterator it = ids.begin(); it != ids.end();
        ++it) {
-    EXPECT_CALL(service_, AcknowledgeInvalidation(
-        *it, syncer::AckHandle::InvalidAckHandle()));
+    const syncer::Invalidation& inv = invalidation_map.ForObject(*it).back();
+    const syncer::AckHandle& ack_handle = inv.ack_handle();
+    EXPECT_CALL(service_, AcknowledgeInvalidation(*it, ack_handle));
   }
-  handler_->OnIncomingInvalidation(
-      ObjectIdSetToInvalidationMap(
-          ids,
-          syncer::Invalidation::kUnknownVersion,
-          "payload"));
+  handler_->OnIncomingInvalidation(invalidation_map);
 }
 
 }  // namespace extensions

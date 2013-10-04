@@ -275,8 +275,8 @@ TEST_F(InvalidatorStorageTest, DeserializeFromListBasic) {
   EXPECT_EQ(1U, map.size());
   EXPECT_EQ(20, map[kAppNotificationsId_].version);
   EXPECT_EQ("testing", map[kAppNotificationsId_].payload);
-  EXPECT_THAT(map[kAppNotificationsId_].current, Eq(ack_handle_1));
-  EXPECT_THAT(map[kAppNotificationsId_].expected, Eq(ack_handle_2));
+  EXPECT_THAT(map[kAppNotificationsId_].current, syncer::Eq(ack_handle_1));
+  EXPECT_THAT(map[kAppNotificationsId_].expected, syncer::Eq(ack_handle_2));
 }
 
 // Tests that deserializing well-formed values when optional parameters are

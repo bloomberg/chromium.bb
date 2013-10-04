@@ -5,100 +5,144 @@
 #include "sync/internal_api/public/base/invalidation.h"
 
 #include <cstddef>
+
+#include "base/json/json_string_value_serializer.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
 
 namespace {
-// Hopefully enough bytes for uniqueness.
-const size_t kBytesInHandle = 16;
-}  // namespace
-
-AckHandle AckHandle::CreateUnique() {
-  // This isn't a valid UUID, so we don't attempt to format it like one.
-  uint8 random_bytes[kBytesInHandle];
-  base::RandBytes(random_bytes, sizeof(random_bytes));
-  return AckHandle(base::HexEncode(random_bytes, sizeof(random_bytes)),
-                   base::Time::Now());
+const char kObjectIdKey[] = "objectId";
+const char kIsUnknownVersionKey[] = "isUnknownVersion";
+const char kVersionKey[] = "version";
+const char kPayloadKey[] = "payload";
 }
 
-AckHandle AckHandle::InvalidAckHandle() {
-  return AckHandle(std::string(), base::Time());
+Invalidation Invalidation::Init(
+    const invalidation::ObjectId& id,
+    int64 version,
+    const std::string& payload) {
+  return Invalidation(id, false, version, payload, AckHandle::CreateUnique());
 }
 
-bool AckHandle::Equals(const AckHandle& other) const {
-  return state_ == other.state_ && timestamp_ == other.timestamp_;
+Invalidation Invalidation::InitUnknownVersion(
+    const invalidation::ObjectId& id) {
+  return Invalidation(id, true, -1, std::string(), AckHandle::CreateUnique());
 }
 
-scoped_ptr<base::DictionaryValue> AckHandle::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->SetString("state", state_);
-  value->SetString("timestamp",
-                   base::Int64ToString(timestamp_.ToInternalValue()));
-  return value.Pass();
+scoped_ptr<Invalidation> Invalidation::InitFromValue(
+    const base::DictionaryValue& value) {
+  invalidation::ObjectId id;
+
+  const base::DictionaryValue* object_id_dict;
+  if (!value.GetDictionary(kObjectIdKey, &object_id_dict)
+      || !ObjectIdFromValue(*object_id_dict, &id)) {
+    DLOG(WARNING) << "Failed to parse id";
+    return scoped_ptr<Invalidation>();
+  }
+  bool is_unknown_version;
+  if (!value.GetBoolean(kIsUnknownVersionKey, &is_unknown_version)) {
+    DLOG(WARNING) << "Failed to parse is_unknown_version flag";
+    return scoped_ptr<Invalidation>();
+  }
+  if (is_unknown_version) {
+    return scoped_ptr<Invalidation>(new Invalidation(
+        id,
+        true,
+        -1,
+        std::string(),
+        AckHandle::CreateUnique()));
+  } else {
+    int64 version;
+    std::string version_as_string;
+    if (!value.GetString(kVersionKey, &version_as_string)
+        || !base::StringToInt64(version_as_string, &version)) {
+      DLOG(WARNING) << "Failed to parse version";
+      return scoped_ptr<Invalidation>();
+    }
+    std::string payload;
+    if (!value.GetString(kPayloadKey, &payload)) {
+      DLOG(WARNING) << "Failed to parse payload";
+      return scoped_ptr<Invalidation>();
+    }
+    return scoped_ptr<Invalidation>(new Invalidation(
+        id,
+        false,
+        version,
+        payload,
+        AckHandle::CreateUnique()));
+  }
 }
 
-bool AckHandle::ResetFromValue(const base::DictionaryValue& value) {
-  if (!value.GetString("state", &state_))
-    return false;
-  std::string timestamp_as_string;
-  if (!value.GetString("timestamp", &timestamp_as_string))
-    return false;
-  int64 timestamp_value;
-  if (!base::StringToInt64(timestamp_as_string, &timestamp_value))
-    return false;
-  timestamp_ = base::Time::FromInternalValue(timestamp_value);
-  return true;
+Invalidation::~Invalidation() {}
+
+invalidation::ObjectId Invalidation::object_id() const {
+  return id_;
 }
 
-bool AckHandle::IsValid() const {
-  return !state_.empty();
+bool Invalidation::is_unknown_version() const {
+  return is_unknown_version_;
 }
 
-AckHandle::AckHandle(const std::string& state, base::Time timestamp)
-    : state_(state), timestamp_(timestamp) {
+int64 Invalidation::version() const {
+  DCHECK(!is_unknown_version_);
+  return version_;
 }
 
-AckHandle::~AckHandle() {
+const std::string& Invalidation::payload() const {
+  DCHECK(!is_unknown_version_);
+  return payload_;
 }
 
-const int64 Invalidation::kUnknownVersion = -1;
-
-Invalidation::Invalidation()
-    : version(kUnknownVersion), ack_handle(AckHandle::InvalidAckHandle()) {
+const AckHandle& Invalidation::ack_handle() const {
+  return ack_handle_;
 }
 
-Invalidation::~Invalidation() {
+void Invalidation::set_ack_handle(const AckHandle& ack_handle) {
+  ack_handle_ = ack_handle;
 }
 
 bool Invalidation::Equals(const Invalidation& other) const {
-  return (version == other.version) && (payload == other.payload) &&
-      ack_handle.Equals(other.ack_handle);
+  return id_ == other.id_
+      && is_unknown_version_ == other.is_unknown_version_
+      && version_ == other.version_
+      && payload_ == other.payload_;
 }
 
 scoped_ptr<base::DictionaryValue> Invalidation::ToValue() const {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->SetString("version", base::Int64ToString(version));
-  value->SetString("payload", payload);
-  value->Set("ackHandle", ack_handle.ToValue().release());
+  value->Set(kObjectIdKey, ObjectIdToValue(id_).release());
+  if (is_unknown_version_) {
+    value->SetBoolean(kIsUnknownVersionKey, true);
+  } else {
+    value->SetBoolean(kIsUnknownVersionKey, false);
+    value->SetString(kVersionKey, base::Int64ToString(version_));
+    value->SetString(kPayloadKey, payload_);
+  }
   return value.Pass();
 }
 
-bool Invalidation::ResetFromValue(const base::DictionaryValue& value) {
-  const base::DictionaryValue* ack_handle_value = NULL;
-  std::string version_as_string;
-  if (value.GetString("version", &version_as_string)) {
-    if (!base::StringToInt64(version_as_string, &version))
-      return false;
-  } else {
-    version = kUnknownVersion;
-  }
-  return
-      value.GetString("payload", &payload) &&
-      value.GetDictionary("ackHandle", &ack_handle_value) &&
-      ack_handle.ResetFromValue(*ack_handle_value);
+std::string Invalidation::ToString() const {
+  std::string output;
+  JSONStringValueSerializer serializer(&output);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(*ToValue().get());
+  return output;
 }
+
+Invalidation::Invalidation(
+    const invalidation::ObjectId& id,
+    bool is_unknown_version,
+    int64 version,
+    const std::string& payload,
+    AckHandle ack_handle)
+  : id_(id),
+    is_unknown_version_(is_unknown_version),
+    version_(version),
+    payload_(payload),
+    ack_handle_(ack_handle) {}
 
 }  // namespace syncer

@@ -77,11 +77,9 @@ void InvalidationServiceAndroid::Observe(
 
   // An empty map implies that we should invalidate all.
   const syncer::ObjectIdInvalidationMap& effective_invalidation_map =
-      object_invalidation_map.empty() ?
-      ObjectIdSetToInvalidationMap(
-          invalidator_registrar_.GetAllRegisteredIds(),
-          syncer::Invalidation::kUnknownVersion,
-          std::string()) :
+      object_invalidation_map.Empty() ?
+      syncer::ObjectIdInvalidationMap::InvalidateAll(
+          invalidator_registrar_.GetAllRegisteredIds()) :
       object_invalidation_map;
 
   invalidator_registrar_.DispatchInvalidationsToHandlers(

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/object_id_invalidation_map_test_util.h"
+#include "sync/internal_api/public/base/object_id_invalidation_map_test_util.h"
 
 #include <algorithm>
 
@@ -24,7 +24,7 @@ class ObjectIdInvalidationMapEqMatcher
   explicit ObjectIdInvalidationMapEqMatcher(
       const ObjectIdInvalidationMap& expected);
 
-  virtual bool MatchAndExplain(const ObjectIdInvalidationMap& actual,
+  virtual bool MatchAndExplain(const ObjectIdInvalidationMap& lhs,
                                MatchResultListener* listener) const;
   virtual void DescribeTo(::std::ostream* os) const;
   virtual void DescribeNegationTo(::std::ostream* os) const;
@@ -39,37 +39,57 @@ ObjectIdInvalidationMapEqMatcher::ObjectIdInvalidationMapEqMatcher(
     const ObjectIdInvalidationMap& expected) : expected_(expected) {
 }
 
+namespace {
+
+struct InvalidationEqPredicate {
+  InvalidationEqPredicate(const Invalidation& inv1)
+      : inv1_(inv1) { }
+
+  bool operator()(const Invalidation& inv2) {
+    return inv1_.Equals(inv2);
+  }
+
+  const Invalidation& inv1_;
+};
+
+}
+
 bool ObjectIdInvalidationMapEqMatcher::MatchAndExplain(
     const ObjectIdInvalidationMap& actual,
     MatchResultListener* listener) const {
-  ObjectIdInvalidationMap expected_only;
-  ObjectIdInvalidationMap actual_only;
-  typedef std::pair<invalidation::ObjectId,
-                    std::pair<Invalidation, Invalidation> >
-      ValueDifference;
-  std::vector<ValueDifference> value_differences;
 
-  std::set_difference(expected_.begin(), expected_.end(),
-                      actual.begin(), actual.end(),
-                      std::inserter(expected_only, expected_only.begin()),
-                      expected_.value_comp());
-  std::set_difference(actual.begin(), actual.end(),
-                      expected_.begin(), expected_.end(),
-                      std::inserter(actual_only, actual_only.begin()),
-                      actual.value_comp());
+  std::vector<syncer::Invalidation> expected_invalidations;
+  std::vector<syncer::Invalidation> actual_invalidations;
 
-  for (ObjectIdInvalidationMap::const_iterator it = expected_.begin();
-       it != expected_.end(); ++it) {
-    ObjectIdInvalidationMap::const_iterator find_it =
-        actual.find(it->first);
-    if (find_it != actual.end() &&
-        !Matches(Eq(it->second))(find_it->second)) {
-      value_differences.push_back(std::make_pair(
-          it->first, std::make_pair(it->second, find_it->second)));
+  expected_.GetAllInvalidations(&expected_invalidations);
+  actual.GetAllInvalidations(&actual_invalidations);
+
+  std::vector<syncer::Invalidation> expected_only;
+  std::vector<syncer::Invalidation> actual_only;
+
+  for (std::vector<syncer::Invalidation>::iterator it =
+       expected_invalidations.begin();
+       it != expected_invalidations.end(); ++it) {
+    if (std::find_if(actual_invalidations.begin(),
+                     actual_invalidations.end(),
+                     InvalidationEqPredicate(*it))
+        == actual_invalidations.end()) {
+      expected_only.push_back(*it);
     }
   }
 
-  if (expected_only.empty() && actual_only.empty() && value_differences.empty())
+  for (std::vector<syncer::Invalidation>::iterator it =
+       actual_invalidations.begin();
+       it != actual_invalidations.end(); ++it) {
+    if (std::find_if(expected_invalidations.begin(),
+                     expected_invalidations.end(),
+                     InvalidationEqPredicate(*it))
+        == expected_invalidations.end()) {
+      actual_only.push_back(*it);
+    }
+  }
+
+  if (expected_only.empty() && actual_only.empty())
     return true;
 
   bool printed_header = false;
@@ -86,12 +106,6 @@ bool ObjectIdInvalidationMapEqMatcher::MatchAndExplain(
     printed_header = true;
   }
 
-  if (!value_differences.empty()) {
-    *listener << (printed_header ? ",\nand" : "which")
-              << " differ in the following values: "
-              << PrintToString(value_differences);
-  }
-
   return false;
 }
 
@@ -99,8 +113,8 @@ void ObjectIdInvalidationMapEqMatcher::DescribeTo(::std::ostream* os) const {
   *os << " is equal to " << PrintToString(expected_);
 }
 
-void ObjectIdInvalidationMapEqMatcher::DescribeNegationTo
-(::std::ostream* os) const {
+void ObjectIdInvalidationMapEqMatcher::DescribeNegationTo(
+    ::std::ostream* os) const {
   *os << " isn't equal to " << PrintToString(expected_);
 }
 

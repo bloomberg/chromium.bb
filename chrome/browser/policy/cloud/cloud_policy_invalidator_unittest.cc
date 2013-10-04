@@ -117,7 +117,7 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   // Causes the invalidation service to fire an invalidation with unknown
   // version. Returns an ack handle which be used to verify that the
   // invalidation was acknowledged.
-  syncer::AckHandle FireInvalidation(PolicyObject object);
+  syncer::AckHandle FireUnknownVersionInvalidation(PolicyObject object);
 
   // Checks the expected value of the currently set invalidation info.
   bool CheckInvalidationInfo(int64 version, const std::string& payload);
@@ -305,18 +305,20 @@ syncer::AckHandle CloudPolicyInvalidatorTest::FireInvalidation(
     PolicyObject object,
     int64 version,
     const std::string& payload) {
-  return invalidation_service_.EmitInvalidationForTest(
+  syncer::Invalidation invalidation = syncer::Invalidation::Init(
       GetPolicyObjectId(object),
       version,
       payload);
+  invalidation_service_.EmitInvalidationForTest(invalidation);
+  return invalidation.ack_handle();
 }
 
-syncer::AckHandle CloudPolicyInvalidatorTest::FireInvalidation(
+syncer::AckHandle CloudPolicyInvalidatorTest::FireUnknownVersionInvalidation(
     PolicyObject object) {
-  return invalidation_service_.EmitInvalidationForTest(
-      GetPolicyObjectId(object),
-      syncer::Invalidation::kUnknownVersion,
-      std::string());
+  syncer::Invalidation invalidation =
+      syncer::Invalidation::InitUnknownVersion(GetPolicyObjectId(object));
+  invalidation_service_.EmitInvalidationForTest(invalidation);
+  return invalidation.ack_handle();
 }
 
 bool CloudPolicyInvalidatorTest::CheckInvalidationInfo(
@@ -420,7 +422,7 @@ TEST_F(CloudPolicyInvalidatorTest, Uninitialized) {
   StartInvalidator(false /* initialize */, true /* start_refresh_scheduler */);
   StorePolicy(POLICY_OBJECT_A);
   EXPECT_FALSE(IsInvalidatorRegistered());
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
 }
 
@@ -430,7 +432,7 @@ TEST_F(CloudPolicyInvalidatorTest, RefreshSchedulerNotStarted) {
   StartInvalidator(true /* initialize */, false /* start_refresh_scheduler */);
   StorePolicy(POLICY_OBJECT_A);
   EXPECT_FALSE(IsInvalidatorRegistered());
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
 }
 
@@ -442,7 +444,7 @@ TEST_F(CloudPolicyInvalidatorTest, DisconnectCoreThenInitialize) {
   InitializeInvalidator();
   StorePolicy(POLICY_OBJECT_A);
   EXPECT_FALSE(IsInvalidatorRegistered());
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
 }
 
@@ -457,7 +459,7 @@ TEST_F(CloudPolicyInvalidatorTest, InitializeThenStartRefreshScheduler) {
   StartRefreshScheduler();
   StorePolicy(POLICY_OBJECT_A);
   EXPECT_TRUE(IsInvalidatorRegistered());
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
 }
 
@@ -466,25 +468,25 @@ TEST_F(CloudPolicyInvalidatorTest, RegisterOnStoreLoaded) {
   StartInvalidator();
   EXPECT_FALSE(IsInvalidatorRegistered());
   EXPECT_FALSE(InvalidationsEnabled());
-  FireInvalidation(POLICY_OBJECT_A);
-  FireInvalidation(POLICY_OBJECT_B);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_B);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
 
   // No registration when store is loaded with no invalidation object id.
   StorePolicy(POLICY_OBJECT_NONE);
   EXPECT_FALSE(IsInvalidatorRegistered());
   EXPECT_FALSE(InvalidationsEnabled());
-  FireInvalidation(POLICY_OBJECT_A);
-  FireInvalidation(POLICY_OBJECT_B);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_B);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
 
   // Check registration when store is loaded for object A.
   StorePolicy(POLICY_OBJECT_A);
   EXPECT_TRUE(IsInvalidatorRegistered());
   EXPECT_TRUE(InvalidationsEnabled());
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
-  FireInvalidation(POLICY_OBJECT_B);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_B);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
 }
 
@@ -494,11 +496,11 @@ TEST_F(CloudPolicyInvalidatorTest, ChangeRegistration) {
   StorePolicy(POLICY_OBJECT_A);
   EXPECT_TRUE(IsInvalidatorRegistered());
   EXPECT_TRUE(InvalidationsEnabled());
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
-  FireInvalidation(POLICY_OBJECT_B);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_B);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
-  syncer::AckHandle ack = FireInvalidation(POLICY_OBJECT_A);
+  syncer::AckHandle ack = FireUnknownVersionInvalidation(POLICY_OBJECT_A);
 
   // Check re-registration for object B. Make sure the pending invalidation for
   // object A is acknowledged without making the callback.
@@ -510,9 +512,9 @@ TEST_F(CloudPolicyInvalidatorTest, ChangeRegistration) {
 
   // Make sure future invalidations for object A are ignored and for object B
   // are processed.
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
-  FireInvalidation(POLICY_OBJECT_B);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_B);
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
 }
 
@@ -522,25 +524,25 @@ TEST_F(CloudPolicyInvalidatorTest, UnregisterOnStoreLoaded) {
   StorePolicy(POLICY_OBJECT_A);
   EXPECT_TRUE(IsInvalidatorRegistered());
   EXPECT_TRUE(InvalidationsEnabled());
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
 
   // Check unregistration when store is loaded with no invalidation object id.
-  syncer::AckHandle ack = FireInvalidation(POLICY_OBJECT_A);
+  syncer::AckHandle ack = FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_FALSE(IsInvalidationAcknowledged(ack));
   StorePolicy(POLICY_OBJECT_NONE);
   EXPECT_FALSE(IsInvalidatorRegistered());
   EXPECT_TRUE(IsInvalidationAcknowledged(ack));
   EXPECT_FALSE(InvalidationsEnabled());
-  FireInvalidation(POLICY_OBJECT_A);
-  FireInvalidation(POLICY_OBJECT_B);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_B);
   EXPECT_TRUE(CheckPolicyNotRefreshed());
 
   // Check re-registration for object B.
   StorePolicy(POLICY_OBJECT_B);
   EXPECT_TRUE(IsInvalidatorRegistered());
   EXPECT_TRUE(InvalidationsEnabled());
-  FireInvalidation(POLICY_OBJECT_B);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_B);
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
 }
 
@@ -567,7 +569,7 @@ TEST_F(CloudPolicyInvalidatorTest, HandleInvalidationWithUnknownVersion) {
   // Register and fire invalidation with unknown version.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
-  syncer::AckHandle ack = FireInvalidation(POLICY_OBJECT_A);
+  syncer::AckHandle ack = FireUnknownVersionInvalidation(POLICY_OBJECT_A);
 
   // Make sure client info is not set until after the invalidation callback is
   // made.
@@ -616,15 +618,15 @@ TEST_F(CloudPolicyInvalidatorTest,
   // unique invalidation version numbers.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
-  syncer::AckHandle ack1 = FireInvalidation(POLICY_OBJECT_A);
+  syncer::AckHandle ack1 = FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckInvalidationInfo(0, std::string()));
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
   EXPECT_TRUE(CheckInvalidationInfo(-1, std::string()));
-  syncer::AckHandle ack2 = FireInvalidation(POLICY_OBJECT_A);
+  syncer::AckHandle ack2 = FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckInvalidationInfo(0, std::string()));
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
   EXPECT_TRUE(CheckInvalidationInfo(-2, std::string()));
-  syncer::AckHandle ack3 = FireInvalidation(POLICY_OBJECT_A);
+  syncer::AckHandle ack3 = FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   EXPECT_TRUE(CheckInvalidationInfo(0, std::string()));
   EXPECT_TRUE(CheckPolicyRefreshedWithUnknownVersion());
   EXPECT_TRUE(CheckInvalidationInfo(-3, std::string()));
@@ -830,13 +832,13 @@ TEST_F(CloudPolicyInvalidatorTest, InvalidationMetrics) {
   // Generate a mix of versioned and unknown-version invalidations.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
-  FireInvalidation(POLICY_OBJECT_B);
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_B);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   FireInvalidation(POLICY_OBJECT_B, 1, "test");
   FireInvalidation(POLICY_OBJECT_A, 1, "test");
   FireInvalidation(POLICY_OBJECT_A, 2, "test");
-  FireInvalidation(POLICY_OBJECT_A);
-  FireInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
+  FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   FireInvalidation(POLICY_OBJECT_A, 3, "test");
   FireInvalidation(POLICY_OBJECT_A, 4, "test");
 

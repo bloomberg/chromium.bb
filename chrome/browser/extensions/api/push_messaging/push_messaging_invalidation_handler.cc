@@ -13,6 +13,7 @@
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace extensions {
 
@@ -124,29 +125,38 @@ void PushMessagingInvalidationHandler::OnInvalidatorStateChange(
 void PushMessagingInvalidationHandler::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (syncer::ObjectIdInvalidationMap::const_iterator it =
-           invalidation_map.begin(); it != invalidation_map.end(); ++it) {
-    service_->AcknowledgeInvalidation(it->first, it->second.ack_handle);
+  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
+  for (syncer::ObjectIdSet::const_iterator it = ids.begin();
+       it != ids.end(); ++it) {
+    const syncer::SingleObjectInvalidationSet& list =
+        invalidation_map.ForObject(*it);
+    const syncer::Invalidation& invalidation = list.back();
+    service_->AcknowledgeInvalidation(*it, invalidation.ack_handle());
+
+    std::string payload;
+    if (invalidation.is_unknown_version()) {
+      payload = std::string();
+    } else {
+      payload = list.back().payload();
+    }
 
     syncer::ObjectIdSet::iterator suppressed_id =
-        suppressed_ids_.find(it->first);
+        suppressed_ids_.find(*it);
     if (suppressed_id != suppressed_ids_.end()) {
       suppressed_ids_.erase(suppressed_id);
       continue;
     }
     DVLOG(2) << "Incoming push message, id is: "
-             << syncer::ObjectIdToString(it->first)
-             << " and payload is:" << it->second.payload;
+             << syncer::ObjectIdToString(*it)
+             << " and payload is:" << payload;
 
     std::string extension_id;
     int subchannel;
-    if (ObjectIdToExtensionAndSubchannel(it->first,
-                                         &extension_id,
-                                         &subchannel)) {
+    if (ObjectIdToExtensionAndSubchannel(*it, &extension_id, &subchannel)) {
       DVLOG(2) << "Sending push message to reciever, extension is "
                << extension_id << ", subchannel is " << subchannel
-               << ", and payload is " << it->second.payload;
-      delegate_->OnMessage(extension_id, subchannel, it->second.payload);
+               << ", and payload is " << payload;
+      delegate_->OnMessage(extension_id, subchannel, payload);
     }
   }
 }

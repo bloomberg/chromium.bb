@@ -12,7 +12,7 @@
 namespace syncer {
 
 class AckHandle;
-struct Invalidation;
+class Invalidation;
 
 void PrintTo(const AckHandle& ack_handle, ::std::ostream* os);
 ::testing::Matcher<const AckHandle&> Eq(const AckHandle& expected);

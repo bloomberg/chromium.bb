@@ -1005,7 +1005,7 @@ base::DictionaryValue* SyncManagerImpl::NotificationInfoToValue(
 
   for (NotificationInfoMap::const_iterator it = notification_info.begin();
       it != notification_info.end(); ++it) {
-    const std::string& model_type_str = ModelTypeToString(it->first);
+    const std::string model_type_str = ModelTypeToString(it->first);
     value->Set(model_type_str, it->second.ToValue());
   }
 
@@ -1148,13 +1148,22 @@ JsArgList SyncManagerImpl::GetChildNodeIds(const JsArgList& args) {
 
 void SyncManagerImpl::UpdateNotificationInfo(
     const ObjectIdInvalidationMap& invalidation_map) {
-  for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
-       it != invalidation_map.end(); ++it) {
+  ObjectIdSet ids = invalidation_map.GetObjectIds();
+  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
     ModelType type = UNSPECIFIED;
-    if (ObjectIdToRealModelType(it->first, &type)) {
+    if (!ObjectIdToRealModelType(*it, &type)) {
+      continue;
+    }
+    const SingleObjectInvalidationSet& type_invalidations =
+        invalidation_map.ForObject(*it);
+    for (SingleObjectInvalidationSet::const_iterator inv_it =
+         type_invalidations.begin(); inv_it != type_invalidations.end();
+         ++inv_it) {
       NotificationInfo* info = &notification_info_map_[type];
       info->total_count++;
-      info->payload = it->second.payload;
+      std::string payload =
+          inv_it->is_unknown_version() ? "UNKNOWN" : inv_it->payload();
+      info->payload = payload;
     }
   }
 }
@@ -1185,7 +1194,7 @@ void SyncManagerImpl::OnIncomingInvalidation(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // We should never receive IDs from non-sync objects.
-  ObjectIdSet ids = ObjectIdInvalidationMapToSet(invalidation_map);
+  ObjectIdSet ids = invalidation_map.GetObjectIds();
   for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
     ModelType type;
     if (!ObjectIdToRealModelType(*it, &type)) {
@@ -1193,7 +1202,7 @@ void SyncManagerImpl::OnIncomingInvalidation(
     }
   }
 
-  if (invalidation_map.empty()) {
+  if (invalidation_map.Empty()) {
     LOG(WARNING) << "Sync received invalidation without any type information.";
   } else {
     allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_NOTIFICATION);
@@ -1209,7 +1218,8 @@ void SyncManagerImpl::OnIncomingInvalidation(
     base::DictionaryValue details;
     base::ListValue* changed_types = new base::ListValue();
     details.Set("changedTypes", changed_types);
-    ObjectIdSet id_set = ObjectIdInvalidationMapToSet(invalidation_map);
+
+    ObjectIdSet id_set = invalidation_map.GetObjectIds();
     ModelTypeSet nudged_types = ObjectIdSetToModelTypeSet(id_set);
     DCHECK(!nudged_types.Empty());
     for (ModelTypeSet::Iterator it = nudged_types.First();

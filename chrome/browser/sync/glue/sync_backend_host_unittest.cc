@@ -30,7 +30,6 @@
 #include "sync/internal_api/public/test/fake_sync_manager.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/object_id_invalidation_map_test_util.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/util/test_unrecoverable_error_handler.h"

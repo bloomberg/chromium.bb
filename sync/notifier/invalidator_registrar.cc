@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace syncer {
 
@@ -17,7 +18,7 @@ InvalidatorRegistrar::InvalidatorRegistrar()
 InvalidatorRegistrar::~InvalidatorRegistrar() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(!handlers_.might_have_observers());
-  // |id_to_handler_map_| may be non-empty but that's okay.
+  CHECK(handler_to_ids_map_.empty());
 }
 
 void InvalidatorRegistrar::RegisterHandler(InvalidationHandler* handler) {
@@ -33,29 +34,29 @@ void InvalidatorRegistrar::UpdateRegisteredIds(
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
-  // Remove all existing entries for |handler|.
-  for (IdHandlerMap::iterator it = id_to_handler_map_.begin();
-       it != id_to_handler_map_.end(); ) {
-    if (it->second == handler) {
-      IdHandlerMap::iterator erase_it = it;
-      ++it;
-      id_to_handler_map_.erase(erase_it);
-    } else {
-      ++it;
+
+  for (HandlerIdsMap::const_iterator it = handler_to_ids_map_.begin();
+       it != handler_to_ids_map_.end(); ++it) {
+    if (it->first == handler) {
+      continue;
     }
+
+    std::vector<invalidation::ObjectId> intersection;
+    std::set_intersection(
+        it->second.begin(), it->second.end(),
+        ids.begin(), ids.end(),
+        intersection.begin(), ObjectIdLessThan());
+    CHECK(intersection.empty())
+        << "Duplicate registration: trying to register "
+        << ObjectIdToString(*intersection.begin()) << " for "
+        << handler << " when it's already registered for "
+        << it->first;
   }
 
-  // Now add the entries for |handler|. We keep track of the last insertion
-  // point so we only traverse the map once to insert all the new entries.
-  IdHandlerMap::iterator insert_it = id_to_handler_map_.begin();
-  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    insert_it =
-        id_to_handler_map_.insert(insert_it, std::make_pair(*it, handler));
-    CHECK_EQ(handler, insert_it->second)
-        << "Duplicate registration: trying to register "
-        << ObjectIdToString(insert_it->first) << " for "
-        << handler << " when it's already registered for "
-        << insert_it->second;
+  if (ids.empty()) {
+    handler_to_ids_map_.erase(handler);
+  } else {
+    handler_to_ids_map_[handler] = ids;
   }
 }
 
@@ -64,27 +65,26 @@ void InvalidatorRegistrar::UnregisterHandler(InvalidationHandler* handler) {
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
   handlers_.RemoveObserver(handler);
+  handler_to_ids_map_.erase(handler);
 }
 
 ObjectIdSet InvalidatorRegistrar::GetRegisteredIds(
     InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ObjectIdSet registered_ids;
-  for (IdHandlerMap::const_iterator it = id_to_handler_map_.begin();
-       it != id_to_handler_map_.end(); ++it) {
-    if (it->second == handler) {
-      registered_ids.insert(it->first);
-    }
+  HandlerIdsMap::const_iterator lookup = handler_to_ids_map_.find(handler);
+  if (lookup != handler_to_ids_map_.end()) {
+    return lookup->second;
+  } else {
+    return ObjectIdSet();
   }
-  return registered_ids;
 }
 
 ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   ObjectIdSet registered_ids;
-  for (IdHandlerMap::const_iterator it = id_to_handler_map_.begin();
-       it != id_to_handler_map_.end(); ++it) {
-    registered_ids.insert(it->first);
+  for (HandlerIdsMap::const_iterator it = handler_to_ids_map_.begin();
+       it != handler_to_ids_map_.end(); ++it) {
+    registered_ids.insert(it->second.begin(), it->second.end());
   }
   return registered_ids;
 }
@@ -97,23 +97,13 @@ void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
     return;
   }
 
-  typedef std::map<InvalidationHandler*, ObjectIdInvalidationMap> DispatchMap;
-  DispatchMap dispatch_map;
-  for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
-       it != invalidation_map.end(); ++it) {
-    InvalidationHandler* const handler = ObjectIdToHandler(it->first);
-    // Filter out invalidations for IDs with no handler.
-    if (handler)
-      dispatch_map[handler].insert(*it);
-  }
-
-  // Emit invalidations only for handlers in |handlers_|.
-  ObserverListBase<InvalidationHandler>::Iterator it(handlers_);
-  InvalidationHandler* handler = NULL;
-  while ((handler = it.GetNext()) != NULL) {
-    DispatchMap::const_iterator dispatch_it = dispatch_map.find(handler);
-    if (dispatch_it != dispatch_map.end())
-      handler->OnIncomingInvalidation(dispatch_it->second);
+  for (HandlerIdsMap::iterator it = handler_to_ids_map_.begin();
+       it != handler_to_ids_map_.end(); ++it) {
+    ObjectIdInvalidationMap to_emit =
+        invalidation_map.GetSubsetWithObjectIds(it->second);
+    if (!to_emit.Empty()) {
+      it->first->OnIncomingInvalidation(to_emit);
+    }
   }
 }
 
@@ -140,13 +130,6 @@ bool InvalidatorRegistrar::IsHandlerRegisteredForTest(
 void InvalidatorRegistrar::DetachFromThreadForTest() {
   DCHECK(thread_checker_.CalledOnValidThread());
   thread_checker_.DetachFromThread();
-}
-
-InvalidationHandler* InvalidatorRegistrar::ObjectIdToHandler(
-    const invalidation::ObjectId& id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  IdHandlerMap::const_iterator it = id_to_handler_map_.find(id);
-  return (it == id_to_handler_map_.end()) ? NULL : it->second;
 }
 
 }  // namespace syncer

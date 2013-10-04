@@ -504,12 +504,7 @@ void ProfileSyncServiceHarness::OnSyncCycleCompleted() {
     syncer::ModelTypeSet model_types =
         snap.model_neutral_state().commit_request_types;
     syncer::ObjectIdSet ids = ModelTypeSetToObjectIdSet(model_types);
-    syncer::ObjectIdInvalidationMap invalidation_map =
-        syncer::ObjectIdSetToInvalidationMap(
-            ids,
-            syncer::Invalidation::kUnknownVersion,
-            "");
-    p2p_invalidation_service_->SendInvalidation(invalidation_map);
+    p2p_invalidation_service_->SendInvalidation(ids);
   }
 
   OnStateChanged();

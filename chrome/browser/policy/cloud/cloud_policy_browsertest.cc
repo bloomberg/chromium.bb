@@ -39,6 +39,7 @@
 #include "policy/policy_constants.h"
 #include "policy/proto/chrome_settings.pb.h"
 #include "policy/proto/cloud_policy.pb.h"
+#include "sync/internal_api/public/base/invalidation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -309,9 +310,10 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, InvalidatePolicy) {
   // Update the homepage in the policy and trigger an invalidation.
   ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy("youtube.com", 0)));
   GetInvalidationService()->EmitInvalidationForTest(
-      invalidation::ObjectId(16, "test_policy"),
-      1 /* version */,
-      "payload");
+      syncer::Invalidation::Init(
+          invalidation::ObjectId(16, "test_policy"),
+          1 /* version */,
+          "payload"));
   {
     base::RunLoop run_loop;
     on_policy_updated_ = run_loop.QuitClosure();

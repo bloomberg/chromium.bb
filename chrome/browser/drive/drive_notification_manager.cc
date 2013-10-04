@@ -68,18 +68,18 @@ void DriveNotificationManager::OnInvalidatorStateChange(
 void DriveNotificationManager::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DVLOG(2) << "XMPP Drive Notification Received";
-  DCHECK_EQ(1U, invalidation_map.size());
+  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
+  DCHECK_EQ(1U, ids.size());
   const invalidation::ObjectId object_id(
       ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
       kDriveInvalidationObjectId);
-  DCHECK_EQ(1U, invalidation_map.count(object_id));
+  DCHECK_EQ(1U, ids.count(object_id));
 
   // TODO(dcheng): Only acknowledge the invalidation once the fetch has
   // completed. http://crbug.com/156843
   DCHECK(invalidation_service_);
-  invalidation_service_->AcknowledgeInvalidation(
-      invalidation_map.begin()->first,
-      invalidation_map.begin()->second.ack_handle);
+  syncer::Invalidation inv = invalidation_map.ForObject(object_id).back();
+  invalidation_service_->AcknowledgeInvalidation(object_id, inv.ack_handle());
 
   NotifyObserversToUpdate(NOTIFICATION_XMPP);
 }

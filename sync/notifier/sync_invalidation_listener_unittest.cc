@@ -141,37 +141,62 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
         state_(TRANSIENT_INVALIDATION_ERROR) {}
   virtual ~FakeDelegate() {}
 
-  int GetInvalidationCount(const ObjectId& id) const {
-    ObjectIdCountMap::const_iterator it = invalidation_counts_.find(id);
-    return (it == invalidation_counts_.end()) ? 0 : it->second;
+  size_t GetInvalidationCount(const ObjectId& id) const {
+    Map::const_iterator it = invalidations_.find(id);
+    if (it == invalidations_.end()) {
+      return 0;
+    } else {
+      return it->second.size();
+    }
   }
 
   int64 GetVersion(const ObjectId& id) const {
-    ObjectIdInvalidationMap::const_iterator it = invalidations_.find(id);
-    return (it == invalidations_.end()) ? 0 : it->second.version;
+    Map::const_iterator it = invalidations_.find(id);
+    if (it == invalidations_.end()) {
+      ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
+      return 0;
+    } else {
+      return it->second.back().version();
+    }
   }
 
   std::string GetPayload(const ObjectId& id) const {
-    ObjectIdInvalidationMap::const_iterator it = invalidations_.find(id);
-    return (it == invalidations_.end()) ? std::string() : it->second.payload;
+    Map::const_iterator it = invalidations_.find(id);
+    if (it == invalidations_.end()) {
+      ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
+      return "";
+    } else {
+      return it->second.back().payload();
+    }
   }
 
+  bool IsUnknownVersion(const ObjectId& id) const {
+    Map::const_iterator it = invalidations_.find(id);
+    if (it == invalidations_.end()) {
+      ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
+      return false;
+    } else {
+      return it->second.back().is_unknown_version();
+    }
+  }
   InvalidatorState GetInvalidatorState() const {
     return state_;
   }
 
   void Acknowledge(const ObjectId& id) {
-    listener_->Acknowledge(id, invalidations_[id].ack_handle);
+    listener_->Acknowledge(id, invalidations_[id].back().ack_handle());
   }
 
   // SyncInvalidationListener::Delegate implementation.
 
   virtual void OnInvalidate(
       const ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
-    for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
-         it != invalidation_map.end(); ++it) {
-      ++invalidation_counts_[it->first];
-      invalidations_[it->first] = it->second;
+    ObjectIdSet ids = invalidation_map.GetObjectIds();
+    for (ObjectIdSet::iterator it = ids.begin(); it != ids.end(); ++it) {
+      const SingleObjectInvalidationSet& incoming =
+          invalidation_map.ForObject(*it);
+      List& list = invalidations_[*it];
+      list.insert(list.end(), incoming.begin(), incoming.end());
     }
   }
 
@@ -181,8 +206,9 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
 
  private:
   typedef std::map<ObjectId, int, ObjectIdLessThan> ObjectIdCountMap;
-  ObjectIdCountMap invalidation_counts_;
-  ObjectIdInvalidationMap invalidations_;
+  typedef std::vector<Invalidation> List;
+  typedef std::map<ObjectId, List, ObjectIdLessThan> Map;
+  Map invalidations_;
   SyncInvalidationListener* listener_;
   InvalidatorState state_;
 };
@@ -306,6 +332,10 @@ class SyncInvalidationListenerTest : public testing::Test {
 
   std::string GetPayload(const ObjectId& id) const {
     return fake_delegate_.GetPayload(id);
+  }
+
+  bool IsUnknownVersion(const ObjectId& id) const {
+    return fake_delegate_.IsUnknownVersion(id);
   }
 
   InvalidatorState GetInvalidatorState() const {
@@ -489,7 +519,6 @@ TEST_F(SyncInvalidationListenerTest, InvalidateUnregisteredWithPayload) {
   const ObjectId& id = kUnregisteredId;
 
   EXPECT_EQ(0, GetInvalidationCount(id));
-  EXPECT_EQ("", GetPayload(id));
   EXPECT_EQ(kMinVersion, GetMaxVersion(id));
 
   FireInvalidate(id, kVersion1, "unregistered payload");
@@ -524,25 +553,18 @@ TEST_F(SyncInvalidationListenerTest, InvalidateVersion) {
   VerifyAcknowledged(id);
 }
 
-// Fire an invalidation with an unknown version twice.  It shouldn't
-// update the payload or version either time, but it should still be
-// processed.
+// Fire an invalidation with an unknown version twice.  It shouldn't update the
+// version either time, but it should still be processed.
 TEST_F(SyncInvalidationListenerTest, InvalidateUnknownVersion) {
   const ObjectId& id = kBookmarksId_;
 
   FireInvalidateUnknownVersion(id);
 
   EXPECT_EQ(1, GetInvalidationCount(id));
-  EXPECT_EQ(Invalidation::kUnknownVersion, GetVersion(id));
-  EXPECT_EQ("", GetPayload(id));
-  EXPECT_EQ(kMinVersion, GetMaxVersion(id));
+  EXPECT_TRUE(IsUnknownVersion(id));
   AcknowledgeAndVerify(id);
 
   FireInvalidateUnknownVersion(id);
-
-  EXPECT_EQ(2, GetInvalidationCount(id));
-  EXPECT_EQ(Invalidation::kUnknownVersion, GetVersion(id));
-  EXPECT_EQ("", GetPayload(id));
   EXPECT_EQ(kMinVersion, GetMaxVersion(id));
   AcknowledgeAndVerify(id);
 }
@@ -555,8 +577,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidateAll) {
   for (ObjectIdSet::const_iterator it = registered_ids_.begin();
        it != registered_ids_.end(); ++it) {
     EXPECT_EQ(1, GetInvalidationCount(*it));
-    EXPECT_EQ(Invalidation::kUnknownVersion, GetVersion(*it));
-    EXPECT_EQ("", GetPayload(*it));
+    EXPECT_TRUE(IsUnknownVersion(*it));
     EXPECT_EQ(kMinVersion, GetMaxVersion(*it));
     AcknowledgeAndVerify(*it);
   }
@@ -601,14 +622,12 @@ TEST_F(SyncInvalidationListenerTest, InvalidateMultipleIds) {
   FireInvalidateAll();
 
   EXPECT_EQ(2, GetInvalidationCount(kBookmarksId_));
-  EXPECT_EQ(Invalidation::kUnknownVersion, GetVersion(kBookmarksId_));
-  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_TRUE(IsUnknownVersion(kBookmarksId_));
   EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
   AcknowledgeAndVerify(kBookmarksId_);
 
   EXPECT_EQ(1, GetInvalidationCount(kPreferencesId_));
-  EXPECT_EQ(Invalidation::kUnknownVersion, GetVersion(kPreferencesId_));
-  EXPECT_EQ("", GetPayload(kPreferencesId_));
+  EXPECT_TRUE(IsUnknownVersion(kBookmarksId_));
   EXPECT_EQ(kMinVersion, GetMaxVersion(kPreferencesId_));
   AcknowledgeAndVerify(kPreferencesId_);
 
