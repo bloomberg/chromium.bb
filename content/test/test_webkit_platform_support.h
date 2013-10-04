@@ -53,7 +53,7 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebCompositorSupport* compositorSupport();
 
   WebURLLoaderMockFactory* url_loader_factory() {
-    return &url_loader_factory_;
+    return url_loader_factory_.get();
   }
 
   const base::FilePath& file_system_root() const {
@@ -96,10 +96,10 @@ class TestWebKitPlatformSupport :
 
  private:
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
-  MockWebClipboardImpl mock_clipboard_;
+  scoped_ptr<MockWebClipboardImpl> mock_clipboard_;
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir file_system_root_;
-  WebURLLoaderMockFactory url_loader_factory_;
+  scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
   webkit::WebCompositorSupportImpl compositor_support_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

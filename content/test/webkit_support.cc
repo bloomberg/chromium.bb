@@ -86,7 +86,6 @@ void TearDownTestEnvironment() {
 
   if (RunningOnValgrind())
     WebKit::WebCache::clear();
-  WebKit::shutdown();
   delete test_environment;
   test_environment = NULL;
 }

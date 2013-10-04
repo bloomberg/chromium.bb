@@ -47,6 +47,8 @@ using WebKit::WebScriptController;
 using webkit::WebLayerTreeViewImplForTesting;
 
 TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
+  url_loader_factory_.reset(new WebURLLoaderMockFactory());
+  mock_clipboard_.reset(new MockWebClipboardImpl());
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -103,6 +105,9 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
 }
 
 TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {
+  url_loader_factory_.reset();
+  mock_clipboard_.reset();
+  WebKit::shutdown();
 }
 
 WebKit::WebMimeRegistry* TestWebKitPlatformSupport::mimeRegistry() {
@@ -112,7 +117,7 @@ WebKit::WebMimeRegistry* TestWebKitPlatformSupport::mimeRegistry() {
 WebKit::WebClipboard* TestWebKitPlatformSupport::clipboard() {
   // Mock out clipboard calls so that tests don't mess
   // with each other's copies/pastes when running in parallel.
-  return &mock_clipboard_;
+  return mock_clipboard_.get();
 }
 
 WebKit::WebFileUtilities* TestWebKitPlatformSupport::fileUtilities() {
@@ -126,7 +131,7 @@ WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
 }
 
 WebKit::WebURLLoader* TestWebKitPlatformSupport::createURLLoader() {
-  return url_loader_factory_.CreateURLLoader(
+  return url_loader_factory_->CreateURLLoader(
       webkit_glue::WebKitPlatformSupportImpl::createURLLoader());
 }
 
@@ -258,26 +263,26 @@ void TestWebKitPlatformSupport::registerMockedURL(
     const WebKit::WebURL& url,
     const WebKit::WebURLResponse& response,
     const WebKit::WebString& file_path) {
-  url_loader_factory_.RegisterURL(url, response, file_path);
+  url_loader_factory_->RegisterURL(url, response, file_path);
 }
 
 void TestWebKitPlatformSupport::registerMockedErrorURL(
     const WebKit::WebURL& url,
     const WebKit::WebURLResponse& response,
     const WebKit::WebURLError& error) {
-  url_loader_factory_.RegisterErrorURL(url, response, error);
+  url_loader_factory_->RegisterErrorURL(url, response, error);
 }
 
 void TestWebKitPlatformSupport::unregisterMockedURL(const WebKit::WebURL& url) {
-  url_loader_factory_.UnregisterURL(url);
+  url_loader_factory_->UnregisterURL(url);
 }
 
 void TestWebKitPlatformSupport::unregisterAllMockedURLs() {
-  url_loader_factory_.UnregisterAllURLs();
+  url_loader_factory_->UnregisterAllURLs();
 }
 
 void TestWebKitPlatformSupport::serveAsynchronousMockedRequests() {
-  url_loader_factory_.ServeAsynchronousRequests();
+  url_loader_factory_->ServeAsynchronousRequests();
 }
 
 WebKit::WebString TestWebKitPlatformSupport::webKitRootDir() {
