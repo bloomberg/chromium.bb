@@ -102,7 +102,7 @@ public:
 protected:
     void destroy();
     friend class Canvas2DLayerBridgePtr;
-    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, SkDeferredCanvas*, OpacityMode);
+    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, PassRefPtr<SkDeferredCanvas>, OpacityMode);
     void setRateLimitingEnabled(bool);
 
     RefPtr<SkDeferredCanvas> m_canvas;

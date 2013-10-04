@@ -81,12 +81,12 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(PassRefPtr<GraphicsC
     if (!surface.get()) {
         return PassRefPtr<Canvas2DLayerBridge>();
     }
-    SkDeferredCanvas* canvas = SkDeferredCanvas::Create(surface.get());
-    RefPtr<Canvas2DLayerBridge> layerBridge = adoptRef(new Canvas2DLayerBridge(context, canvas, opacityMode));
+    RefPtr<SkDeferredCanvas> canvas = adoptRef(SkDeferredCanvas::Create(surface.get()));
+    RefPtr<Canvas2DLayerBridge> layerBridge = adoptRef(new Canvas2DLayerBridge(context, canvas.release(), opacityMode));
     return layerBridge.release();
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, OpacityMode opacityMode)
     : m_canvas(canvas)
     , m_context(context)
     , m_bytesAllocated(0)
