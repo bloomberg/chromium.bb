@@ -14,6 +14,7 @@ import os
 import shutil
 import tempfile
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import cbuildbot_stages
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.lib import commandline
@@ -21,6 +22,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import parallel
 
 
 class LKGMNotFound(Exception):
@@ -62,6 +64,7 @@ class ChromeCommitter(object):
     self._old_lkgm = osutils.ReadFile(
         os.path.join(self._checkout_dir, constants.CHROME_LKGM_FILE))
 
+  @cros_build_lib.MemoizedSingleCall
   def _GetLatestCanaryVersions(self):
     """Returns the latest CANDIDATES_TO_CONSIDER canary versions."""
     gs_handle = gs.GSContext()
@@ -146,6 +149,43 @@ class ChromeCommitter(object):
     else:
       logging.info('Would have run: %s', ' '.join(commit_cmd))
 
+  def UpdateLatestFilesForBot(self, config, versions):
+    """Update the LATEST files, for a given bot, in Google Storage.
+
+    Args:
+      config: The builder config to update.
+      versions: Versions of ChromeOS to look at, sorted in descending order.
+    """
+    base_url = cbuildbot_stages.ArchivingStage.GetBaseUploadURL(config)
+    acl = cbuildbot_stages.ArchivingStage.GetUploadACL(config)
+    latest_url = None
+    # gs.GSContext skips over all commands (including read-only checks)
+    # when dry_run is True, so we have to create two context objects.
+    # TODO(davidjames): Fix this.
+    gs_ctx = gs.GSContext()
+    copy_ctx = gs.GSContext(dry_run=self._dryrun)
+    for version in reversed(versions):
+      url = os.path.join(base_url, 'LATEST-%s' % version)
+      found = gs_ctx.Exists(url, print_cmd=False)
+      if not found and latest_url:
+        try:
+          copy_ctx.Copy(latest_url, url, version=0, acl=acl)
+          cros_build_lib.Info('Copied %s -> %s', latest_url, url)
+        except gs.GSContextPreconditionFailed:
+          found = True
+
+      if found:
+        cros_build_lib.Info('Found %s', url)
+        latest_url = url
+
+  def UpdateLatestFiles(self):
+    """Update the LATEST files since LKGM, in Google Storage."""
+    ext_cfgs, int_cfgs = cbuildbot_config.FindFullConfigsForBoard(board=None)
+    versions = self._GetLatestCanaryVersions() + [self._old_lkgm]
+    tasks = [[cfg, versions] for cfg in ext_cfgs + int_cfgs]
+    parallel.RunTasksInProcessPool(self.UpdateLatestFilesForBot, tasks,
+                                   processes=100)
+
 
 def _GetParser():
   """Returns the parser to use for this module."""
@@ -163,6 +203,7 @@ def main(argv):
   try:
     committer = ChromeCommitter(checkout_dir, dryrun=args.dryrun)
     committer.CheckoutChromeLKGM()
+    committer.UpdateLatestFiles()
     committer.FindNewLKGM()
     committer.CommitNewLKGM()
     return 0

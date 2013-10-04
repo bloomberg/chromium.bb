@@ -144,9 +144,18 @@ class ArchivingStage(BoardSpecificBuilderStage):
     archive_base = cls._TRYBOT_ARCHIVE if trybot else cls._BUILDBOT_ARCHIVE
     return os.path.join(buildroot, archive_base)
 
+  @classmethod
+  def GetUploadACL(cls, config):
+    """Get the ACL we should use to upload artifacts for a given config."""
+    if config['internal']:
+      # Use the bucket default ACL.
+      return None
+    return 'public-read'
+
   def __init__(self, options, build_config, board, archive_stage, suffix=None):
     super(ArchivingStage, self).__init__(options, build_config, board,
                                          suffix=suffix)
+    self.acl = self.GetUploadACL(build_config)
     self.archive_stage = archive_stage
 
     if options.remote_trybot:
@@ -160,7 +169,6 @@ class ArchivingStage(BoardSpecificBuilderStage):
     archive_root = self.GetLocalArchiveRoot(self._build_root, trybot)
     self.bot_archive_root = os.path.join(archive_root, self._bot_id)
     self.archive_path = os.path.join(self.bot_archive_root, self.version)
-    self.acl = None if self._build_config['internal'] else 'public-read'
     base_upload_url = self.GetBaseUploadURL(build_config, options.archive_base,
                                             options.remote_trybot)
     self.upload_url = '%s/%s' % (base_upload_url, self.version)
@@ -3083,7 +3091,7 @@ class ReportStage(bs.BuilderStage):
     self._sync_instance = sync_instance
 
   def PerformStage(self):
-    acl = None if self._build_config['internal'] else 'public-read'
+    acl = ArchivingStage.GetUploadACL(self._build_config)
     archive_urls = {}
 
     for board_config, archive_stage in sorted(self._archive_stages.iteritems()):

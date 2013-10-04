@@ -412,7 +412,7 @@ class GSContext(object):
 
     self.DoCommand(['setacl', acl, upload_url])
 
-  def Exists(self, path):
+  def Exists(self, path, **kwargs):
     """Checks whether the given object exists.
 
     Args:
@@ -422,7 +422,7 @@ class GSContext(object):
       True if the path exists; otherwise returns False.
     """
     try:
-      self.DoCommand(['getacl', path], redirect_stdout=True)
+      self.DoCommand(['getacl', path], redirect_stdout=True, **kwargs)
     except GSNoSuchKey:
       return False
     return True

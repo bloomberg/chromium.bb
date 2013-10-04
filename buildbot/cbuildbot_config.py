@@ -160,18 +160,21 @@ def GetCanariesForChromeLKGM(configs=config):
   return builders
 
 
-def FindFullConfigsForBoard(board):
+def FindFullConfigsForBoard(board=None):
   """Returns full builder configs for a board.
+
+  Args:
+    board: The board to match. By default, match all boards.
 
   Returns:
     A tuple containing a list of matching external configs and a list of
-    matching internal configs for a board.
+    matching internal release configs for a board.
   """
   ext_cfgs = []
   int_cfgs = []
 
   for name, c in config.iteritems():
-    if c['boards'] and board in c['boards']:
+    if c['boards'] and (board is None or board in c['boards']):
       if name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']:
         int_cfgs.append(copy.deepcopy(c))
       elif name.endswith('-%s' % CONFIG_TYPE_FULL) and not c['internal']:
