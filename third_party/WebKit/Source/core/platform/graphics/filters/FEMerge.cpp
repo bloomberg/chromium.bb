@@ -70,7 +70,8 @@ PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder* bui
         inputRefs[i] = builder->build(inputEffect(i), operatingColorSpace());
         inputs[i] = inputRefs[i].get();
     }
-    return adoptRef(new SkMergeImageFilter(inputs.get(), size));
+    SkIRect rect = getCropRect(builder->cropOffset());
+    return adoptRef(new SkMergeImageFilter(inputs.get(), size, 0, &rect));
 }
 
 TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const

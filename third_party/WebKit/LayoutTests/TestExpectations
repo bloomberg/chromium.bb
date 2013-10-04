@@ -1078,6 +1078,7 @@ crbug.com/244123 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-key
 crbug.com/244123 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-key-operations.html [ Failure Pass ]
 crbug.com/244123 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-key-operations.html [ Failure Pass ]
 crbug.com/244341 css3/filters/composited-during-animation-layertree.html [ Failure Pass ]
+crbug.com/229910 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
 crbug.com/245566 editing/execCommand/delete-no-scroll.html [ Pass Timeout ]
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 crbug.com/247575 [ Linux MountainLion Win ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure Pass ]
