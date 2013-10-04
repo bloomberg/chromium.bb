@@ -128,12 +128,13 @@ bool AvatarMenu::CompareItems(const Item* item1, const Item* item2) {
 }
 
 // static
-void AvatarMenu::SwitchToGuestProfileWindow(Browser* browser) {
+void AvatarMenu::SwitchToGuestProfileWindow(
+    chrome::HostDesktopType desktop_type) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_manager->CreateProfileAsync(ProfileManager::GetGuestProfilePath(),
                                       base::Bind(&OnProfileCreated,
                                                  false,
-                                                 browser->host_desktop_type()),
+                                                 desktop_type),
                                       string16(),
                                       string16(),
                                       std::string());

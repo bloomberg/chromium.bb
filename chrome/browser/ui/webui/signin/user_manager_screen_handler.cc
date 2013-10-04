@@ -165,9 +165,6 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetLastUsedProfileAllowedByPolicy(), desktop_type_);
-  DCHECK(browser);
   profiles::CreateAndSwitchToNewProfile(desktop_type_);
 }
 
@@ -195,9 +192,7 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetLastUsedProfileAllowedByPolicy(), desktop_type_);
-  AvatarMenu::SwitchToGuestProfileWindow(browser);
+  AvatarMenu::SwitchToGuestProfileWindow(desktop_type_);
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {

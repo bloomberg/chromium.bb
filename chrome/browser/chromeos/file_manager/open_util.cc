@@ -51,13 +51,10 @@ namespace {
 
 // Shows a warning message box saying that the file could not be opened.
 void ShowWarningMessageBox(Profile* profile, const base::FilePath& file_path) {
-  // TODO: if FindOrCreateTabbedBrowser creates a new browser the returned
-  // browser is leaked.
-  Browser* browser =
-      chrome::FindOrCreateTabbedBrowser(profile,
-                                        chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* browser = chrome::FindTabbedBrowser(
+      profile, false, chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::ShowMessageBox(
-      browser->window()->GetNativeWindow(),
+      browser ? browser->window()->GetNativeWindow() : NULL,
       l10n_util::GetStringFUTF16(
           IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
           UTF8ToUTF16(file_path.BaseName().value())),

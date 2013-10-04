@@ -331,7 +331,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     sender->SetEnabled(false);
 
   if (sender == guest_button_) {
-    avatar_menu_->SwitchToGuestProfileWindow(browser_);
+    avatar_menu_->SwitchToGuestProfileWindow(browser_->host_desktop_type());
   } else if (sender == end_guest_button_) {
     profiles::CloseGuestProfileWindows();
   } else if (sender == users_button_) {

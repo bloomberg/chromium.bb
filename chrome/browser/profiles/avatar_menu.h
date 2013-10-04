@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -88,7 +89,7 @@ class AvatarMenu : public content::NotificationObserver {
   static bool CompareItems(const Item* item1, const Item* item2);
 
   // Creates a new guest user window.
-  static void SwitchToGuestProfileWindow(Browser* browser);
+  static void SwitchToGuestProfileWindow(chrome::HostDesktopType desktop_type);
 
   // Opens a Browser with the specified profile in response to the user
   // selecting an item. If |always_create| is true then a new window is created
