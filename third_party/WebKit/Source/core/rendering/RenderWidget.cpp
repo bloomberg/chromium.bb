@@ -36,12 +36,6 @@ using namespace std;
 
 namespace WebCore {
 
-static HashMap<const Widget*, RenderWidget*>& widgetRendererMap()
-{
-    static HashMap<const Widget*, RenderWidget*>* staticWidgetRendererMap = new HashMap<const Widget*, RenderWidget*>;
-    return *staticWidgetRendererMap;
-}
-
 unsigned WidgetHierarchyUpdatesSuspensionScope::s_widgetHierarchyUpdateSuspendCount = 0;
 
 WidgetHierarchyUpdatesSuspensionScope::WidgetToParentMap& WidgetHierarchyUpdatesSuspensionScope::widgetNewParentMap()
@@ -176,12 +170,10 @@ void RenderWidget::setWidget(PassRefPtr<Widget> widget)
 
     if (m_widget) {
         moveWidgetToParentSoon(m_widget.get(), 0);
-        widgetRendererMap().remove(m_widget.get());
         clearWidget();
     }
     m_widget = widget;
     if (m_widget) {
-        widgetRendererMap().add(m_widget.get(), this);
         // If we've already received a layout, apply the calculated space to the
         // widget immediately, but we have to have really been fully constructed (with a non-null
         // style pointer).
@@ -354,11 +346,6 @@ IntRect RenderWidget::windowClipRect() const
 void RenderWidget::clearWidget()
 {
     m_widget = 0;
-}
-
-RenderWidget* RenderWidget::find(const Widget* widget)
-{
-    return widgetRendererMap().get(widget);
 }
 
 bool RenderWidget::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)

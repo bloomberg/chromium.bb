@@ -60,8 +60,6 @@ public:
     Widget* widget() const { return m_widget.get(); }
     virtual void setWidget(PassRefPtr<Widget>);
 
-    static RenderWidget* find(const Widget*);
-
     void updateWidgetPosition();
     void widgetPositionsUpdated();
     IntRect windowClipRect() const;

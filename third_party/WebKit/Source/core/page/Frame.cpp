@@ -302,21 +302,6 @@ RenderPart* Frame::ownerRenderer() const
     return toRenderPart(object);
 }
 
-Frame* Frame::frameForWidget(const Widget* widget)
-{
-    ASSERT_ARG(widget, widget);
-
-    if (RenderWidget* renderer = RenderWidget::find(widget)) {
-        if (Node* node = renderer->node())
-            return node->document().frame();
-    }
-
-    // Assume all widgets are either a FrameView or owned by a RenderWidget.
-    // FIXME: That assumption is not right for scroll bars!
-    ASSERT_WITH_SECURITY_IMPLICATION(widget->isFrameView());
-    return &toFrameView(widget)->frame();
-}
-
 void Frame::clearTimers(FrameView *view, Document *document)
 {
     if (view) {

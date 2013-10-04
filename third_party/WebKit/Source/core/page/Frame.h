@@ -118,8 +118,6 @@ namespace WebCore {
         String layerTreeAsText(unsigned flags = 0) const;
         String trackedRepaintRectsAsText() const;
 
-        static Frame* frameForWidget(const Widget*);
-
         Settings* settings() const; // can be NULL
 
         void setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio, AdjustViewSizeOrNot);
