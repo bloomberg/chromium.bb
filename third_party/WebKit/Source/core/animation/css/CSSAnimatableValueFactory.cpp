@@ -39,6 +39,7 @@
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
+#include "core/animation/AnimatableSVGPaint.h"
 #include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
@@ -176,6 +177,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromColor(property, style);
     case CSSPropertyFillOpacity:
         return createFromDouble(style->fillOpacity());
+    case CSSPropertyFill:
+        return AnimatableSVGPaint::create(style->svgStyle()->fillPaintType(), style->svgStyle()->fillPaintColor(), style->svgStyle()->fillPaintUri());
     case CSSPropertyHeight:
         return createFromLength(style->height(), style);
     case CSSPropertyListStyleImage:
@@ -222,6 +225,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->stopOpacity());
     case CSSPropertyStrokeOpacity:
         return createFromDouble(style->strokeOpacity());
+    case CSSPropertyStroke:
+        return AnimatableSVGPaint::create(style->svgStyle()->strokePaintType(), style->svgStyle()->strokePaintColor(), style->svgStyle()->strokePaintUri());
     case CSSPropertyTextDecorationColor:
         return createFromColor(property, style);
     case CSSPropertyTextIndent:

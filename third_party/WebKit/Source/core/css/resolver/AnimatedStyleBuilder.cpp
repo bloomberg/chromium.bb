@@ -38,6 +38,7 @@
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
+#include "core/animation/AnimatableSVGPaint.h"
 #include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
@@ -169,6 +170,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyFillOpacity:
         style->setFillOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
+    case CSSPropertyFill:
+        {
+            const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
+            style->accessSVGStyle()->setFillPaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri());
+        }
+        return;
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state));
         return;
@@ -238,6 +245,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyStrokeOpacity:
         style->setStrokeOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
+        return;
+    case CSSPropertyStroke:
+        {
+            const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
+            style->accessSVGStyle()->setStrokePaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri());
+        }
         return;
     case CSSPropertyTextDecorationColor:
         style->setTextDecorationColor(toAnimatableColor(value)->color());

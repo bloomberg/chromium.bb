@@ -540,6 +540,8 @@
             'animation/AnimatableNeutral.h',
             'animation/AnimatableShapeValue.cpp',
             'animation/AnimatableShapeValue.h',
+            'animation/AnimatableSVGPaint.cpp',
+            'animation/AnimatableSVGPaint.h',
             'animation/AnimatableTransform.cpp',
             'animation/AnimatableTransform.h',
             'animation/AnimatableUnknown.h',
