@@ -60,6 +60,27 @@ enum {
 
 #endif  // MAC_OS_X_VERSION_10_7
 
+namespace {
+
+// When gfx::Size is used as a min/max size, a zero represents an unbounded
+// component. This method checks whether either component is specified.
+// Note we can't use gfx::Size::IsEmpty as it returns true if either width or
+// height is zero.
+bool IsBoundedSize(const gfx::Size& size) {
+  return size.width() != 0 || size.height() != 0;
+}
+
+void SetFullScreenCollectionBehavior(NSWindow* window, bool allow_fullscreen) {
+  NSWindowCollectionBehavior behavior = [window collectionBehavior];
+  if (allow_fullscreen)
+    behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+  else
+    behavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
+  [window setCollectionBehavior:behavior];
+}
+
+}  // namespace
+
 @implementation NativeAppWindowController
 
 @synthesize appWindow = appWindow_;
@@ -276,7 +297,6 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   // Initialize |restored_bounds_| after |cocoa_bounds| have been sanitized.
   restored_bounds_ = cocoa_bounds;
 
-  resizable_ = params.resizable;
   base::scoped_nsobject<NSWindow> window;
   Class window_class;
   if (has_frame_) {
@@ -288,19 +308,23 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   } else {
     window_class = [ShellFramelessNSWindow class];
   }
+
+  min_size_ = params.minimum_size;
+  max_size_ = params.maximum_size;
+  shows_resize_controls_ = params.resizable &&
+      (min_size_.IsEmpty() || max_size_.IsEmpty() || min_size_ != max_size_);
+  shows_fullscreen_controls_ = params.resizable && !IsBoundedSize(max_size_);
   window.reset([[window_class alloc]
       initWithContentRect:cocoa_bounds
                 styleMask:GetWindowStyleMask()
                   backing:NSBackingStoreBuffered
                     defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(extension()->name())];
-  min_size_ = params.minimum_size;
-  if (min_size_.width() || min_size_.height()) {
+  if (IsBoundedSize(min_size_)) {
     [window setContentMinSize:
         NSMakeSize(min_size_.width(), min_size_.height())];
   }
-  max_size_ = params.maximum_size;
-  if (max_size_.width() || max_size_.height()) {
+  if (IsBoundedSize(max_size_)) {
     CGFloat max_width = max_size_.width() ? max_size_.width() : CGFLOAT_MAX;
     CGFloat max_height = max_size_.height() ? max_size_.height() : CGFLOAT_MAX;
     [window setContentMaxSize:NSMakeSize(max_width, max_height)];
@@ -311,11 +335,10 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     [window setBottomCornerRounded:NO];
 
   // Set the window to participate in Lion Fullscreen mode. Setting this flag
-  // has no effect on Snow Leopard or earlier. Packaged apps don't show the
-  // fullscreen button on their window decorations.
-  NSWindowCollectionBehavior behavior = [window collectionBehavior];
-  behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
-  [window setCollectionBehavior:behavior];
+  // has no effect on Snow Leopard or earlier. UI controls for fullscreen are
+  // only shown for apps that have unbounded size.
+  if (shows_fullscreen_controls_)
+    SetFullScreenCollectionBehavior(window, true);
 
   window_controller_.reset(
       [[NativeAppWindowController alloc] initWithWindow:window.release()]);
@@ -345,7 +368,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
 NSUInteger NativeAppWindowCocoa::GetWindowStyleMask() const {
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
                           NSMiniaturizableWindowMask;
-  if (resizable_)
+  if (shows_resize_controls_)
     style_mask |= NSResizableWindowMask;
   if (!has_frame_ ||
       !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -360,10 +383,10 @@ void NativeAppWindowCocoa::InstallView() {
   if (has_frame_) {
     [view setFrame:[[window() contentView] bounds]];
     [[window() contentView] addSubview:view];
-    if (!max_size_.IsEmpty() && min_size_ == max_size_) {
+    if (!shows_fullscreen_controls_)
       [[window() standardWindowButton:NSWindowZoomButton] setEnabled:NO];
+    if (!shows_resize_controls_)
       [window() setShowsResizeIndicator:NO];
-    }
   } else {
     // TODO(jeremya): find a cleaner way to send this information to the
     // WebContentsViewCocoa view.
@@ -415,6 +438,11 @@ void NativeAppWindowCocoa::SetFullscreen(bool fullscreen) {
   is_fullscreen_ = fullscreen;
 
   if (base::mac::IsOSLionOrLater()) {
+    // If going fullscreen, but the window is constrained (fullscreen UI control
+    // is disabled), temporarily enable it. It will be disabled again on leaving
+    // fullscreen.
+    if (fullscreen && !shows_fullscreen_controls_)
+      SetFullScreenCollectionBehavior(window(), true);
     [window() toggleFullScreen:nil];
     return;
   }
@@ -874,6 +902,10 @@ void NativeAppWindowCocoa::WindowDidFinishResize() {
 
   // Update |is_fullscreen_| if needed.
   is_fullscreen_ = ([window() styleMask] & NSFullScreenWindowMask) != 0;
+  // If not fullscreen but the window is constrained, disable the fullscreen UI
+  // control.
+  if (!is_fullscreen_ && !shows_fullscreen_controls_)
+    SetFullScreenCollectionBehavior(window(), false);
 
   UpdateRestoredBounds();
 }
