@@ -154,13 +154,16 @@
     "contexts": ["blessed_extension"]
   },
   "devtools.inspectedWindow": {
-    "extension_types": ["extension"]
+    "dependencies": ["manifest:devtools_page"],
+    "contexts": ["blessed_extension"]
   },
   "devtools.network": {
-    "extension_types": ["extension"]
+    "dependencies": ["manifest:devtools_page"],
+    "contexts": ["blessed_extension"]
   },
   "devtools.panels": {
-    "extension_types": ["extension"]
+    "dependencies": ["manifest:devtools_page"],
+    "contexts": ["blessed_extension"]
   },
   "diagnostics": {
     "dependencies": ["permission:diagnostics"],
@@ -208,12 +211,14 @@
     "contexts": ["blessed_extension"]
   },
   "experimental.devtools.audits": {
-    "dependencies": ["permission:experimental"],
-    "extension_types": ["platform_app"]
+    "dependencies": ["permission:experimental", "manifest:devtools_page"],
+    "extension_types": ["platform_app"],
+    "contexts": ["blessed_extension"]
   },
   "experimental.devtools.console": {
-    "dependencies": ["permission:experimental"],
-    "extension_types": ["platform_app"]
+    "dependencies": ["permission:experimental", "manifest:devtools_page"],
+    "extension_types": ["platform_app"],
+    "contexts": ["blessed_extension"]
   },
   "experimental.discovery": {
     "dependencies": ["permission:experimental"],
@@ -638,6 +643,8 @@
     "contexts": ["blessed_extension", "unblessed_extension"]
   },
   "webviewTag": {
+    "internal": true,
+    "channel": "stable",
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]
   },
