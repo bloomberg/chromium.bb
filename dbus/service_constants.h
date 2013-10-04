@@ -805,6 +805,18 @@ const char kVendorWPSModelNumberProperty[] = "ModelNumber";
 const char kVendorWPSDeviceNameProperty[] = "DeviceName";
 const char kVendorOUIListProperty[] = "OUIList";
 
+// WiFi Device link property names.
+const char kLinkStatisticsProperty[] = "LinkStatistics";
+const char kAverageReceiveSignalDbmProperty[] = "AverageReceiveSignalDbm";
+const char kInactiveTimeMillisecondsProperty[] =
+    "InactiveTimeMilliseconds";
+const char kLastReceiveSignalDbmProperty[] = "LastReceiveSignalDbm";
+const char kPacketReceiveSuccessesProperty[] = "PacketReceiveSuccesses";
+const char kPacketTransmitFailuresProperty[] = "PacketTransmitFailures";
+const char kPacketTransmitSuccessesProperty[] = "PacketTrasmitSuccesses";
+const char kTransmitBitrateProperty[] = "TransmitBitrate";
+const char kTransmitRetriesProperty[] = "TransmitRetries";
+
 // Cellular service carriers.
 const char kCarrierGenericUMTS[] = "Generic UMTS";
 const char kCarrierSprint[] = "Sprint";
