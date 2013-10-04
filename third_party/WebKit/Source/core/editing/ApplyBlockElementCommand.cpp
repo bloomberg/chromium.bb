@@ -129,7 +129,6 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         rangeForParagraphSplittingTextNodesIfNeeded(endOfCurrentParagraph, start, end);
         endOfCurrentParagraph = end;
 
-        Position afterEnd = end.next();
         Node* enclosingCell = enclosingNodeOfType(start, &isTableCell);
         VisiblePosition endOfNextParagraph = endOfNextParagrahSplittingTextNodesIfNeeded(endOfCurrentParagraph, start, end);
 

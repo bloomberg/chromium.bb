@@ -138,10 +138,6 @@ Node* highestEditableRoot(const Position& position, EditableType editableType)
 
 Node* lowestEditableAncestor(Node* node)
 {
-    if (!node)
-        return 0;
-
-    Node* lowestRoot = 0;
     while (node) {
         if (node->rendererIsEditable())
             return node->rootEditableElement();
@@ -150,7 +146,7 @@ Node* lowestEditableAncestor(Node* node)
         node = node->parentNode();
     }
 
-    return lowestRoot;
+    return 0;
 }
 
 bool isEditablePosition(const Position& p, EditableType editableType, EUpdateStyle updateStyle)
