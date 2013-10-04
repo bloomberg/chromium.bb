@@ -30,7 +30,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/TextTrackResource.h"
 #include "core/html/track/WebVTTParser.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {

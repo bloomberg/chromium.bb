@@ -33,10 +33,10 @@
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 
 #include <algorithm>
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebExternalBitmap.h"

@@ -30,9 +30,9 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "core/html/URLRegistry.h"
-#include "core/platform/Timer.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "modules/mediastream/MediaStreamTrack.h"
+#include "platform/Timer.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 

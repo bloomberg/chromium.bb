@@ -42,7 +42,7 @@
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 #include "wtf/Functional.h"
 
 namespace WebCore {

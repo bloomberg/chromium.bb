@@ -26,16 +26,16 @@
 #ifndef EventHandler_h
 #define EventHandler_h
 
-#include "core/events/TextEventInputType.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/TextGranularity.h"
+#include "core/events/TextEventInputType.h"
 #include "core/page/DragActions.h"
 #include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollTypes.h"
-#include "core/platform/Timer.h"
 #include "core/rendering/HitTestRequest.h"
+#include "platform/Timer.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"

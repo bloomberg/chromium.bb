@@ -27,8 +27,8 @@
 #define ScrollAnimatorMac_h
 
 #include "core/platform/ScrollAnimator.h"
-#include "core/platform/Timer.h"
 #include "core/platform/mac/ScrollElasticityController.h"
+#include "platform/Timer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"

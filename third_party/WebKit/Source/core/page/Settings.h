@@ -29,7 +29,7 @@
 
 #include "SettingsMacros.h"
 #include "core/editing/EditingBehaviorTypes.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "platform/geometry/IntSize.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashMap.h"

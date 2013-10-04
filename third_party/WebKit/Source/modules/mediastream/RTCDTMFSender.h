@@ -29,8 +29,8 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
-#include "core/platform/Timer.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
+#include "platform/Timer.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

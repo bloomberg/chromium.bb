@@ -25,11 +25,11 @@
 
 #include "core/fetch/CachePolicy.h"
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "platform/Timer.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"

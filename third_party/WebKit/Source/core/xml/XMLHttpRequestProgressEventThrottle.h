@@ -27,7 +27,7 @@
 #ifndef XMLHttpRequestProgressEventThrottle_h
 #define XMLHttpRequestProgressEventThrottle_h
 
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 

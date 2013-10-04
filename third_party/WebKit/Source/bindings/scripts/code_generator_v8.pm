@@ -3928,7 +3928,7 @@ sub GenerateImplementation
     AddToImplIncludes("core/dom/ContextFeatures.h");
     AddToImplIncludes("core/dom/Document.h");
     AddToImplIncludes("RuntimeEnabledFeatures.h");
-    AddToImplIncludes("core/platform/chromium/TraceEvent.h");
+    AddToImplIncludes("platform/TraceEvent.h");
 
     AddIncludesForType($interfaceName);
 

@@ -52,7 +52,7 @@ INTERFACE_CPP_INCLUDES = set([
     'bindings/v8/V8DOMWrapper.h',  # FIXME: necessary?
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
-    'core/platform/chromium/TraceEvent.h',
+    'platform/TraceEvent.h',
     'wtf/UnusedParam.h',
 ])
 

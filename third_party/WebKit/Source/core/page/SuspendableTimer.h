@@ -28,7 +28,7 @@
 #define SuspendableTimer_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 
 namespace WebCore {
 

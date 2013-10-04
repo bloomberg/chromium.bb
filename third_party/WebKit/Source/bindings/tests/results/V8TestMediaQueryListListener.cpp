@@ -31,7 +31,7 @@
 #include "core/css/MediaQueryListListener.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {

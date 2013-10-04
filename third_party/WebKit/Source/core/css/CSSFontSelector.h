@@ -28,8 +28,8 @@
 
 #include "core/css/CSSSegmentedFontFaceCache.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/platform/Timer.h"
 #include "core/platform/graphics/FontSelector.h"
+#include "platform/Timer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

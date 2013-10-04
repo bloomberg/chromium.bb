@@ -29,7 +29,7 @@
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 
 
 namespace WebCore {

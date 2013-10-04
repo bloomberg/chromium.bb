@@ -26,8 +26,8 @@
 #ifndef MediaStreamTrackSourcesRequest_h
 #define MediaStreamTrackSourcesRequest_h
 
-#include "core/platform/Timer.h"
 #include "modules/mediastream/SourceInfo.h"
+#include "platform/Timer.h"
 #include "public/platform/WebVector.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

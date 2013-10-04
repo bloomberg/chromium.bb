@@ -39,12 +39,12 @@
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarTheme.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/chromium/support/WebScrollbarImpl.h"
 #include "core/platform/chromium/support/WebScrollbarThemeGeometryNative.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/Region.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "platform/TraceEvent.h"
 #if OS(MACOSX)
 #include "core/platform/mac/ScrollAnimatorMac.h"
 #endif

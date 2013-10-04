@@ -45,9 +45,9 @@
 #define RenderMarquee_h
 
 #include "core/platform/Length.h"
-#include "core/platform/Timer.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "platform/Timer.h"
 
 namespace WebCore {
 

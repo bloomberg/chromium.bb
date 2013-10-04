@@ -35,7 +35,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorState.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {

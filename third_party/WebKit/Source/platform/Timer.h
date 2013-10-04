@@ -26,6 +26,7 @@
 #ifndef Timer_h
 #define Timer_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -36,7 +37,7 @@ namespace WebCore {
 
 class TimerHeapElement;
 
-class TimerBase {
+class PLATFORM_EXPORT TimerBase {
     WTF_MAKE_NONCOPYABLE(TimerBase); WTF_MAKE_FAST_ALLOCATED;
 public:
     TimerBase();
@@ -104,7 +105,8 @@ private:
     friend class TimerHeapReference;
 };
 
-template <typename TimerFiredClass> class Timer : public TimerBase {
+template <typename TimerFiredClass>
+class Timer : public TimerBase {
 public:
     typedef void (TimerFiredClass::*TimerFiredFunction)(Timer*);
 
@@ -124,7 +126,8 @@ inline bool TimerBase::isActive() const
     return m_nextFireTime;
 }
 
-template <typename TimerFiredClass> class DeferrableOneShotTimer : private TimerBase {
+template <typename TimerFiredClass>
+class DeferrableOneShotTimer : private TimerBase {
 public:
     typedef void (TimerFiredClass::*TimerFiredFunction)(DeferrableOneShotTimer*);
 
@@ -151,6 +154,7 @@ public:
 
     using TimerBase::stop;
     using TimerBase::isActive;
+
 private:
     virtual void fired()
     {

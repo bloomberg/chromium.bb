@@ -28,7 +28,7 @@
 
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicString.h"
 

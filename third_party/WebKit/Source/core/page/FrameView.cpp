@@ -34,8 +34,8 @@
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/events/OverflowEvent.h"
 #include "core/editing/FrameSelection.h"
+#include "core/events/OverflowEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/html/HTMLFrameElement.h"
@@ -77,7 +77,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/TemporaryChange.h"
 
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 

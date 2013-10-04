@@ -23,13 +23,13 @@
 #define SVGElement_h
 
 #include "core/dom/Element.h"
-#include "core/platform/Timer.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
+#include "platform/Timer.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

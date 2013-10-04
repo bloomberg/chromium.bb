@@ -25,16 +25,16 @@
  */
 
 #include "config.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 
-#include <limits.h>
-#include <math.h>
-#include <limits>
-#include "core/platform/ThreadGlobalData.h"
-#include "core/platform/ThreadTimers.h"
+#include "platform/PlatformThreadData.h"
+#include "platform/ThreadTimers.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
+#include <limits.h>
+#include <math.h>
+#include <limits>
 
 using namespace std;
 
@@ -49,7 +49,7 @@ class TimerHeapReference;
 // When a timer's "next fire time" changes, we need to move it around in the priority queue.
 static Vector<TimerBase*>& threadGlobalTimerHeap()
 {
-    return threadGlobalData().threadTimers().timerHeap();
+    return PlatformThreadData::current().threadTimers().timerHeap();
 }
 // ----------------
 
@@ -389,7 +389,7 @@ void TimerBase::setNextFireTime(double newUnalignedTime)
         bool isFirstTimerInHeap = m_heapIndex == 0;
 
         if (wasFirstTimerInHeap || isFirstTimerInHeap)
-            threadGlobalData().threadTimers().updateSharedTimer();
+            PlatformThreadData::current().threadTimers().updateSharedTimer();
     }
 
     checkConsistency();
@@ -398,7 +398,7 @@ void TimerBase::setNextFireTime(double newUnalignedTime)
 void TimerBase::fireTimersInNestedEventLoop()
 {
     // Redirect to ThreadTimers.
-    threadGlobalData().threadTimers().fireTimersInNestedEventLoop();
+    PlatformThreadData::current().threadTimers().fireTimersInNestedEventLoop();
 }
 
 void TimerBase::didChangeAlignmentInterval()

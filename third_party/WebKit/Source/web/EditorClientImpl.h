@@ -32,8 +32,8 @@
 #define EditorClientImpl_h
 
 #include "core/page/EditorClient.h"
-#include "core/platform/Timer.h"
 #include "core/platform/text/TextCheckerClient.h"
+#include "platform/Timer.h"
 #include "wtf/Deque.h"
 #include "wtf/HashSet.h"
 

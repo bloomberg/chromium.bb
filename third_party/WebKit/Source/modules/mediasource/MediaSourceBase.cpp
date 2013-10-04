@@ -33,13 +33,13 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/Logging.h"
+#include "platform/TraceEvent.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

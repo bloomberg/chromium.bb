@@ -50,12 +50,12 @@
 #include "core/page/FrameView.h"
 #include "core/page/PageConsole.h"
 #include "core/platform/MemoryUsageSupport.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/xml/XMLHttpRequest.h"
+#include "platform/TraceEvent.h"
 
 #include "wtf/CurrentTime.h"
 

@@ -34,8 +34,7 @@ namespace WTF {
 ThreadSpecific<WTFThreadData>* WTFThreadData::staticData;
 
 WTFThreadData::WTFThreadData()
-    : m_apiData(0)
-    , m_atomicStringTable(0)
+    : m_atomicStringTable(0)
     , m_atomicStringTableDestructor(0)
     , m_cachedConverterICU(adoptPtr(new ICUConverterWrapper))
 {

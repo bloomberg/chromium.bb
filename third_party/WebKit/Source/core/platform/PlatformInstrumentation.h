@@ -31,10 +31,9 @@
 #ifndef PlatformInstrumentation_h
 #define PlatformInstrumentation_h
 
+#include "platform/TraceEvent.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/WTFString.h"
-
-#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 

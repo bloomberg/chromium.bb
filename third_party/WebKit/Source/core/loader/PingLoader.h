@@ -33,7 +33,7 @@
 #define PingLoader_h
 
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"

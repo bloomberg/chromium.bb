@@ -27,7 +27,7 @@
 #define DeviceSensorEventController_h
 
 #include "core/events/Event.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 
 namespace WebCore {
 

@@ -35,7 +35,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

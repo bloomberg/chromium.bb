@@ -276,4 +276,6 @@ inline T& ThreadSpecific<T>::operator*()
 
 } // namespace WTF
 
+using WTF::ThreadSpecific;
+
 #endif // WTF_ThreadSpecific_h

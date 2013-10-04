@@ -47,9 +47,7 @@
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/HistogramSupport.h"
-#include "platform/Logging.h"
 #include "core/platform/ScrollbarTheme.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/platform/graphics/transforms/TransformState.h"
@@ -63,6 +61,8 @@
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+#include "platform/Logging.h"
+#include "platform/TraceEvent.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/StringBuilder.h"
 

@@ -32,7 +32,7 @@
 #define WebDevToolsFrontendImpl_h
 
 #include "WebDevToolsFrontend.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"

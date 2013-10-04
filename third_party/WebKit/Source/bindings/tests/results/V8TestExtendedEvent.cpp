@@ -35,7 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/page/PageConsole.h"
 #include "core/page/UseCounter.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {

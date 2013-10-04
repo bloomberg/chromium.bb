@@ -29,7 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"

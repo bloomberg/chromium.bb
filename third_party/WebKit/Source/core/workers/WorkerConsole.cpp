@@ -41,10 +41,10 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/page/ConsoleBase.h"
 #include "core/page/ConsoleTypes.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/TraceEvent.h"
 
 #include "wtf/text/WTFString.h"
 

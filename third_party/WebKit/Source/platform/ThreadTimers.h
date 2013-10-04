@@ -27,40 +27,41 @@
 #ifndef ThreadTimers_h
 #define ThreadTimers_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-    class SharedTimer;
-    class TimerBase;
+class SharedTimer;
+class TimerBase;
 
-    // A collection of timers per thread. Kept in ThreadGlobalData.
-    class ThreadTimers {
-        WTF_MAKE_NONCOPYABLE(ThreadTimers); WTF_MAKE_FAST_ALLOCATED;
-    public:
-        ThreadTimers();
+// A collection of timers per thread. Kept in PlatformThreadData.
+class PLATFORM_EXPORT ThreadTimers {
+    WTF_MAKE_NONCOPYABLE(ThreadTimers); WTF_MAKE_FAST_ALLOCATED;
+public:
+    ThreadTimers();
 
-        // On a thread different then main, we should set the thread's instance of the SharedTimer.
-        void setSharedTimer(SharedTimer*);
+    // On a thread different then main, we should set the thread's instance of the SharedTimer.
+    void setSharedTimer(SharedTimer*);
 
-        Vector<TimerBase*>& timerHeap() { return m_timerHeap; }
+    Vector<TimerBase*>& timerHeap() { return m_timerHeap; }
 
-        void updateSharedTimer();
-        void fireTimersInNestedEventLoop();
+    void updateSharedTimer();
+    void fireTimersInNestedEventLoop();
 
-    private:
-        static void sharedTimerFired();
+private:
+    static void sharedTimerFired();
 
-        void sharedTimerFiredInternal();
-        void fireTimersInNestedEventLoopInternal();
+    void sharedTimerFiredInternal();
+    void fireTimersInNestedEventLoopInternal();
 
-        Vector<TimerBase*> m_timerHeap;
-        SharedTimer* m_sharedTimer; // External object, can be a run loop on a worker thread. Normally set/reset by worker thread.
-        bool m_firingTimers; // Reentrancy guard.
-        double m_pendingSharedTimerFireTime;
-    };
+    Vector<TimerBase*> m_timerHeap;
+    SharedTimer* m_sharedTimer; // External object, can be a run loop on a worker thread. Normally set/reset by worker thread.
+    bool m_firingTimers; // Reentrancy guard.
+    double m_pendingSharedTimerFireTime;
+};
 
 }
 

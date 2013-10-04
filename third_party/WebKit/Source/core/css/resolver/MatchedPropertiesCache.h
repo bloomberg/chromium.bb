@@ -25,7 +25,7 @@
 
 #include "core/css/resolver/MatchResult.h"
 
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

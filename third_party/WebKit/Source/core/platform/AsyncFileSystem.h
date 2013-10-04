@@ -31,8 +31,8 @@
 #ifndef AsyncFileSystem_h
 #define AsyncFileSystem_h
 
-#include "core/platform/Timer.h"
 #include "modules/filesystem/FileSystemType.h"
+#include "platform/Timer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 

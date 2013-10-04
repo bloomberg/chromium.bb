@@ -26,11 +26,11 @@
 #ifndef GeneratorGeneratedImage_h
 #define GeneratorGeneratedImage_h
 
-#include "core/platform/Timer.h"
 #include "core/platform/graphics/GeneratedImage.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "platform/Timer.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/RefPtr.h"
 

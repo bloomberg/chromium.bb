@@ -27,7 +27,7 @@
 #define ScriptRunner_h
 
 #include "core/fetch/ResourcePtr.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"

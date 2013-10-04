@@ -37,7 +37,7 @@
 #include "core/page/PagePopup.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/PagePopupController.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 
 namespace WebCore {
 

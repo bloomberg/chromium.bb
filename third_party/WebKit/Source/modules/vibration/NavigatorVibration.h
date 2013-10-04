@@ -22,7 +22,7 @@
 
 #include "core/page/Page.h"
 #include "core/page/PageLifecycleObserver.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 

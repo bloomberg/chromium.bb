@@ -30,8 +30,8 @@
 #include "ContinuousPainter.h"
 
 #include "PageOverlayList.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "platform/TraceEvent.h"
 
 using namespace WebCore;
 

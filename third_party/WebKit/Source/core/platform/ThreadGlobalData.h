@@ -36,8 +36,6 @@
 #include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
 
-using WTF::ThreadSpecific;
-
 namespace WebCore {
 
     class EventNames;
@@ -51,21 +49,14 @@ namespace WebCore {
     public:
         ThreadGlobalData();
         ~ThreadGlobalData();
+
         void destroy(); // called on workers to clean up the ThreadGlobalData before the thread exits.
 
         EventNames& eventNames() { return *m_eventNames; }
-        ThreadTimers& threadTimers() { return *m_threadTimers; }
-
         ThreadLocalInspectorCounters& inspectorCounters() { return *m_inspectorCounters; }
 
     private:
         OwnPtr<EventNames> m_eventNames;
-        OwnPtr<ThreadTimers> m_threadTimers;
-
-#ifndef NDEBUG
-        bool m_isMainThread;
-#endif
-
         OwnPtr<ThreadLocalInspectorCounters> m_inspectorCounters;
 
         static ThreadSpecific<ThreadGlobalData>* staticData;

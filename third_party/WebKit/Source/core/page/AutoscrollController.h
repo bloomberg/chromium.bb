@@ -26,7 +26,7 @@
 #ifndef AutoscrollController_h
 #define AutoscrollController_h
 
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "platform/geometry/IntPoint.h"
 #include "wtf/PassOwnPtr.h"
 

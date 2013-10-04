@@ -33,7 +33,7 @@
 #include "core/fetch/ResourceLoaderHost.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

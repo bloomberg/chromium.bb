@@ -29,12 +29,12 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/platform/Timer.h"
 #include "modules/geolocation/Geoposition.h"
 #include "modules/geolocation/PositionCallback.h"
 #include "modules/geolocation/PositionError.h"
 #include "modules/geolocation/PositionErrorCallback.h"
 #include "modules/geolocation/PositionOptions.h"
+#include "platform/Timer.h"
 
 namespace WebCore {
 

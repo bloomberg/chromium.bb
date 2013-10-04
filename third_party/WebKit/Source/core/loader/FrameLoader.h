@@ -40,7 +40,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/HistoryController.h"
 #include "core/loader/MixedContentChecker.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"

@@ -74,6 +74,7 @@
 #include "config.h"
 #include "WebFrameImpl.h"
 
+#include <algorithm>
 #include "AssociatedURLLoader.h"
 #include "DOMUtilitiesPrivate.h"
 #include "EventListenerWrapper.h"
@@ -160,7 +161,6 @@
 #include "core/page/Settings.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/ScrollbarTheme.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
@@ -180,6 +180,7 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemType.h"
+#include "platform/TraceEvent.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
@@ -196,7 +197,6 @@
 #include "weborigin/SecurityPolicy.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
-#include <algorithm>
 
 using namespace WebCore;
 

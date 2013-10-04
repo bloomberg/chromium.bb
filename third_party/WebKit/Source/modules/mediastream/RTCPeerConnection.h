@@ -35,11 +35,11 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
-#include "core/platform/Timer.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/RTCIceCandidate.h"
+#include "platform/Timer.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

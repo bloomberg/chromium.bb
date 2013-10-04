@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8GCController.h"
 
+#include <algorithm>
 #include "V8MessagePort.h"
 #include "V8MutationObserver.h"
 #include "V8Node.h"
@@ -44,8 +45,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/platform/chromium/TraceEvent.h"
-#include <algorithm>
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 

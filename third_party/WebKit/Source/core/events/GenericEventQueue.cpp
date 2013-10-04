@@ -28,7 +28,7 @@
 #include "core/events/GenericEventQueue.h"
 
 #include "core/events/Event.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 

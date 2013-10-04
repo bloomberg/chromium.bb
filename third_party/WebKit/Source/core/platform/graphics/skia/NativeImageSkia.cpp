@@ -32,11 +32,11 @@
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 
 #include "core/platform/PlatformInstrumentation.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
+#include "platform/TraceEvent.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
@@ -47,8 +47,8 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkLumaXfermode.h"
 
-#include <limits>
 #include <math.h>
+#include <limits>
 
 namespace WebCore {
 

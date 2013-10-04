@@ -39,9 +39,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Frame.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 

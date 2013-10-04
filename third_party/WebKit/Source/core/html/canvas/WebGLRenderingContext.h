@@ -30,9 +30,9 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/WebGLGetInfo.h"
 #include "core/page/Page.h"
-#include "core/platform/Timer.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "platform/Timer.h"
 
 #include "wtf/Float32Array.h"
 #include "wtf/Int32Array.h"

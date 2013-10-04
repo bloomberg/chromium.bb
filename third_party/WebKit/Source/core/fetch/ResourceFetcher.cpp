@@ -61,7 +61,7 @@
 #include "core/page/ResourceTimingInfo.h"
 #include "core/page/Settings.h"
 #include "platform/Logging.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "weborigin/SecurityOrigin.h"

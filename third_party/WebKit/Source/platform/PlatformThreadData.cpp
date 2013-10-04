@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,45 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SearchInputType_h
-#define SearchInputType_h
+#include "config.h"
+#include "platform/PlatformThreadData.h"
 
-#include "core/html/forms/BaseTextInputType.h"
-#include "platform/Timer.h"
+#include "platform/ThreadTimers.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class SearchFieldCancelButtonElement;
-class SearchFieldDecorationElement;
+static ThreadSpecific<PlatformThreadData>* s_data;
 
-class SearchInputType : public BaseTextInputType {
-public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+PlatformThreadData::PlatformThreadData()
+    : m_threadTimers(adoptPtr(new ThreadTimers))
+{
+}
 
-    void stopSearchEventTimer();
+PlatformThreadData::~PlatformThreadData()
+{
+}
 
-private:
-    SearchInputType(HTMLInputElement*);
-    virtual void countUsage() OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool shouldRespectSpeechAttribute() OVERRIDE;
-    virtual bool isSearchField() const OVERRIDE;
-    virtual bool needsContainer() const OVERRIDE;
-    virtual void createShadowSubtree() OVERRIDE;
-    virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
-    virtual void didSetValueByUserEdit(ValueChangeState) OVERRIDE;
-    virtual bool supportsInputModeAttribute() const OVERRIDE;
-    virtual void updateInnerTextValue() OVERRIDE;
+void PlatformThreadData::destroy()
+{
+    m_threadTimers.clear();
+}
 
-    void searchEventTimerFired(Timer<SearchInputType>*);
-    bool searchEventsShouldBeDispatched() const;
-    void startSearchEventTimer();
-    void updateCancelButtonVisibility();
-
-    Timer<SearchInputType> m_searchEventTimer;
-};
+PlatformThreadData& PlatformThreadData::current()
+{
+    if (!s_data)
+        s_data = new ThreadSpecific<PlatformThreadData>;
+    return **s_data;
+}
 
 } // namespace WebCore
-
-#endif // SearchInputType_h

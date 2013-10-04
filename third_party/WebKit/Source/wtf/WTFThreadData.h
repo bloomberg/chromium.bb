@@ -55,8 +55,6 @@ public:
 
     ICUConverterWrapper& cachedConverterICU() { return *m_cachedConverterICU; }
 
-    void* m_apiData;
-
 private:
     AtomicStringTable* m_atomicStringTable;
     AtomicStringTableDestructor m_atomicStringTableDestructor;

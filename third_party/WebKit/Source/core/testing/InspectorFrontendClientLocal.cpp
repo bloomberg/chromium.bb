@@ -36,7 +36,7 @@
 #include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Deque.h"

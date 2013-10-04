@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "core/platform/ThreadTimers.h"
+#include "platform/ThreadTimers.h"
 
-#include "core/platform/SharedTimer.h"
-#include "core/platform/ThreadGlobalData.h"
-#include "core/platform/Timer.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/SharedTimer.h"
+#include "platform/PlatformThreadData.h"
+#include "platform/Timer.h"
+#include "platform/TraceEvent.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 
@@ -105,7 +105,7 @@ void ThreadTimers::sharedTimerFired()
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "Internal");
 
     // Redirect to non-static method.
-    threadGlobalData().threadTimers().sharedTimerFiredInternal();
+    PlatformThreadData::current().threadTimers().sharedTimerFiredInternal();
 
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "Sleeping");
 }

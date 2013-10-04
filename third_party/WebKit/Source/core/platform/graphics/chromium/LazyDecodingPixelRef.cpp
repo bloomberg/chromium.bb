@@ -27,9 +27,9 @@
 #include "core/platform/graphics/chromium/LazyDecodingPixelRef.h"
 
 #include "SkData.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 

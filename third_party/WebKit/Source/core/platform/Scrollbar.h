@@ -28,8 +28,8 @@
 
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/ScrollbarThemeClient.h"
-#include "core/platform/Timer.h"
 #include "core/platform/Widget.h"
+#include "platform/Timer.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassRefPtr.h"
 

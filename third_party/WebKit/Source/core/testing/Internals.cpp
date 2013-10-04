@@ -27,6 +27,7 @@
 #include "config.h"
 #include "Internals.h"
 
+#include <v8.h>
 #include "HTMLNames.h"
 #include "InspectorFrontendClientLocal.h"
 #include "InternalProfilers.h"
@@ -101,8 +102,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ColorChooser.h"
 #include "core/platform/Cursor.h"
-#include "platform/Language.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
@@ -119,12 +118,13 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 #include "modules/speech/SpeechSynthesis.h"
+#include "platform/Language.h"
+#include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "public/platform/WebLayer.h"
 #include "weborigin/SchemeRegistry.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
-#include <v8.h>
 
 namespace WebCore {
 

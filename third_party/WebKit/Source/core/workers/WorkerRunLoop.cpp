@@ -33,11 +33,12 @@
 
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/platform/SharedTimer.h"
 #include "core/platform/ThreadGlobalData.h"
-#include "core/platform/ThreadTimers.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/PlatformThreadData.h"
+#include "platform/SharedTimer.h"
+#include "platform/ThreadTimers.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -112,7 +113,7 @@ public:
         , m_context(context)
     {
         if (!m_runLoop.m_nestedCount)
-            threadGlobalData().threadTimers().setSharedTimer(m_runLoop.m_sharedTimer.get());
+            PlatformThreadData::current().threadTimers().setSharedTimer(m_runLoop.m_sharedTimer.get());
         m_runLoop.m_nestedCount++;
         InspectorInstrumentation::willEnterNestedRunLoop(m_context);
     }
@@ -121,7 +122,7 @@ public:
     {
         m_runLoop.m_nestedCount--;
         if (!m_runLoop.m_nestedCount)
-            threadGlobalData().threadTimers().setSharedTimer(0);
+            PlatformThreadData::current().threadTimers().setSharedTimer(0);
         InspectorInstrumentation::didLeaveNestedRunLoop(m_context);
     }
 private:

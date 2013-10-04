@@ -30,7 +30,7 @@
 #define InspectorOverlay_h
 
 #include "core/platform/graphics/Color.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/OwnPtr.h"

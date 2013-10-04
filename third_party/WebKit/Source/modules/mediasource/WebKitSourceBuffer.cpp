@@ -34,9 +34,9 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/TimeRanges.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/WebKitMediaSource.h"
+#include "platform/TraceEvent.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {

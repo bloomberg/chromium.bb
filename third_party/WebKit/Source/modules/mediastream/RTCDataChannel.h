@@ -27,8 +27,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
-#include "core/platform/Timer.h"
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
+#include "platform/Timer.h"
 #include "wtf/RefCounted.h"
 
 namespace WebKit {

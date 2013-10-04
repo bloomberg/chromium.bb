@@ -32,7 +32,7 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 

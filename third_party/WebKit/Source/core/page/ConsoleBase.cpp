@@ -38,7 +38,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"
 #include "core/page/ConsoleTypes.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 

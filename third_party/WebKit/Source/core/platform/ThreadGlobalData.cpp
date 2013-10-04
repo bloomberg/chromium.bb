@@ -29,7 +29,7 @@
 
 #include "core/events/EventNames.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/platform/ThreadTimers.h"
+#include "platform/PlatformThreadData.h"
 #include "wtf/MainThread.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
@@ -44,10 +44,6 @@ ThreadSpecific<ThreadGlobalData>* ThreadGlobalData::staticData;
 
 ThreadGlobalData::ThreadGlobalData()
     : m_eventNames(adoptPtr(new EventNames))
-    , m_threadTimers(adoptPtr(new ThreadTimers))
-#ifndef NDEBUG
-    , m_isMainThread(isMainThread())
-#endif
     , m_inspectorCounters(adoptPtr(new ThreadLocalInspectorCounters()))
 {
     // This constructor will have been called on the main thread before being called on
@@ -55,6 +51,7 @@ ThreadGlobalData::ThreadGlobalData()
     // point to call methods that internally perform a one-time initialization that is not
     // threadsafe.
     wtfThreadData();
+    PlatformThreadData::current();
     StringImpl::empty();
 }
 
@@ -66,7 +63,7 @@ void ThreadGlobalData::destroy()
 {
     m_inspectorCounters.clear();
     m_eventNames.clear();
-    m_threadTimers.clear();
+    PlatformThreadData::current().destroy();
 }
 
 } // namespace WebCore

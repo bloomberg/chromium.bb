@@ -37,7 +37,7 @@
 #include "bindings/v8/custom/V8Int32ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/platform/chromium/TraceEvent.h"
+#include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/UnusedParam.h"

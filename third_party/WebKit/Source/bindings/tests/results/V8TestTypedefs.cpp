@@ -36,8 +36,8 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
+#include "platform/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {

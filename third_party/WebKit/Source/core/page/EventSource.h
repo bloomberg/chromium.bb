@@ -36,7 +36,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/platform/Timer.h"
+#include "platform/Timer.h"
 #include "weborigin/KURL.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
