@@ -252,7 +252,7 @@
 
       # Use ANGLE target translator instead of translator_glsl.
       # TODO(zmo): clean this up when both chromium and webkit switch over.
-      'use_angle_translator%': 0,
+      'use_angle_translator%': 1,
 
       # By default, component is set to static_library and it can be overriden
       # by the GYP command line or by ~/.gyp/include.gypi.
