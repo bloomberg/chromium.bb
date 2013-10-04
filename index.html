@@ -104,16 +104,6 @@ the yellow div and hit <code>&lt;enter&gt;</code> a bunch of times. Then
 you press <code>&lt;up&gt;</code>, the result of
 <code>queryCommandValue('bold')</code> changes inconsistently.<p>
 
-<h3><a name="bugfix-caretPosition">bugfix/caretPosition</a> (Tianyin Zhang; D38913437, D38277785)</h3>
-<p>This branch consists of multiple fixes that were merged together:</p>
-<ul><li><b>fixUndoSpellCaretPos (D38913437)</b><br>
-    Open <a href="repros/fixUndoSpellCaretPos.html">this link</a> in test shell. Enable AsynchronousSpellCheckEnabled bit, Spellchecker, and AutoCorrection. Assuming the Spellchecker will autocorrect all the 'tset' into 'test' and will auto capitalize first letter in a sentence which happens before the autocorrect. Now type 'tset' in the following DIV and hit space. Autocapitalize and autocorrection will happen in order and text gets replaced by 'Test '. Then hit 'Ctrl + Z' to undo this change. The first time it undid the autocorrection and produce 'Tset '. However the cursor position is not after the space but after the 't'. Hit space again we have 'tset ' and the cursor position is after the space. The correct behavior is that the cursor position should always be after the space when undo.
-    </li>
-    <li><b>restoreCaretPosition (D38277785)</b><br>
-    Open <a href="repros/restoreCaretPosition.html">this link</a> in test_shell. Enable AsynchronousSpellCheckEnabled bit, Spellchecker, and AutoCorrection. Assuming the Spellchecker will autocorrect all the 'tst' into 'test'. Now type really fast in the DIV[contenteditable] below. Make sure 'tsts' is typed multiple times.  Note that the caret position should always be at the end of this text flow.  Due to a bug in Editor, this could break when user types fast because it would reset the caret position after a replacement under some cases.
-    </li>
-</ul>
-
 <h3><a name="bugfix-cellInMulticol">bugfix/cellInMulticol</a> (Shezan Baig; D34079255)</h3>
 <p>Open <a href="repros/cellInMulticol.html">this link</a> in Chrome and keep
 resizing the window. You will see that the table cells get split when they
@@ -477,6 +467,10 @@ text.</p>
 
 <h3><a name="bugfix-autocorrectcaret2">bugfix/autocorrectcaret2</a> (Calum Robinson)</h3>
 <p>Retired because there are no reproduction steps to verify the fix.</p>
+
+<h3><a name="bugfix-caretPosition">bugfix/caretPosition</a> (Tianyin Zhang; D38913437, D38277785)</h3>
+<p>Retired because the reproduction steps depend on features in blpwtk1 that
+are not available in the chromium.bb repo.</p>
 
 <h3><a name="bugfix-fixUndoSpellCaretPos">bugfix/fixUndoSpellCaretPos</a> (Tianyin Zhang; D38913437)</h3>
 <p>Retired in favor of <code><a
