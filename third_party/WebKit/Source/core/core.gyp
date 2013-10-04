@@ -647,6 +647,11 @@
           'sources': [
             'editing/SmartReplaceCF.cpp',
           ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+            ],
+          },
           'sources/': [
             # Additional files from the WebCore Mac build that are presently
             # used in the WebCore Chromium Mac build too.
