@@ -13,6 +13,11 @@
 #include "chrome/common/extensions/api/braille_display_private.h"
 
 namespace extensions {
+namespace api {
+namespace braille_display_private {
+class BrailleDisplayPrivateAPIUserTest;
+}  // namespace braille_display_private
+}  // namespace api
 
 // Implementation of the chrome.brailleDisplayPrivate API.
 class BrailleDisplayPrivateAPI
@@ -42,10 +47,27 @@ class BrailleDisplayPrivateAPI
 
  private:
   friend class ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI>;
+  friend class api::braille_display_private::BrailleDisplayPrivateAPIUserTest;
+
+  class EventDelegate {
+   public:
+    virtual ~EventDelegate() {}
+    virtual void BroadcastEvent(scoped_ptr<Event> event) = 0;
+    virtual bool HasListener() = 0;
+  };
+
+  class DefaultEventDelegate;
+
+  // Returns whether the profile that this API was created for is currently
+  // the active profile.
+  bool IsProfileActive();
+
+  void SetEventDelegateForTest(scoped_ptr<EventDelegate> delegate);
 
   Profile* profile_;
   ScopedObserver<api::braille_display_private::BrailleController,
                  BrailleObserver> scoped_observer_;
+  scoped_ptr<EventDelegate> event_delegate_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
