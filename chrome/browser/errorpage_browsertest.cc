@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -20,6 +24,7 @@
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -349,6 +354,17 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
       1);
 }
 
+// Returns Javascript code that executes plain text search for the page.
+// Pass into content::ExecuteScriptAndExtractBool as |script| parameter.
+std::string GetTextContentContainsStringScript(
+    const std::string& value_to_search) {
+  return base::StringPrintf(
+      "var textContent = document.body.textContent;"
+      "var hasError = textContent.indexOf('%s') >= 0;"
+      "domAutomationController.send(hasError);",
+      value_to_search.c_str());
+}
+
 // Protocol handler that fails all requests with net::ERR_ADDRESS_UNREACHABLE.
 class AddressUnreachableProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
@@ -424,9 +440,65 @@ IN_PROC_BROWSER_TEST_F(ErrorPageLinkDoctorFailTest, LinkDoctorFail) {
   bool result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      "var textContent = document.body.textContent;"
-      "var hasError = textContent.indexOf('ERR_NAME_NOT_RESOLVED') >= 0;"
-      "domAutomationController.send(hasError);",
+      GetTextContentContainsStringScript("ERR_NAME_NOT_RESOLVED"),
+      &result));
+  EXPECT_TRUE(result);
+}
+
+// A test fixture that simulates failing requests for an IDN domain name.
+class ErrorPageForIDNTest : public InProcessBrowserTest {
+ public:
+  // Target hostname in different forms.
+  static const char kHostname[];
+  static const char kHostnameJSUnicode[];
+
+  // InProcessBrowserTest:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // Clear AcceptLanguages to force punycode decoding.
+    browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages,
+                                                std::string());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ErrorPageForIDNTest::AddFilters));
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ErrorPageForIDNTest::RemoveFilters));
+  }
+
+ private:
+  static void AddFilters() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    content::URLRequestFailedJob::AddUrlHandlerForHostname(kHostname);
+  }
+
+  static void RemoveFilters() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    net::URLRequestFilter::GetInstance()->ClearHandlers();
+  }
+};
+
+const char ErrorPageForIDNTest::kHostname[] =
+    "xn--d1abbgf6aiiy.xn--p1ai";
+const char ErrorPageForIDNTest::kHostnameJSUnicode[] =
+    "\\u043f\\u0440\\u0435\\u0437\\u0438\\u0434\\u0435\\u043d\\u0442."
+    "\\u0440\\u0444";
+
+// Make sure error page shows correct unicode for IDN.
+IN_PROC_BROWSER_TEST_F(ErrorPageForIDNTest, IDN) {
+  // ERR_UNSAFE_PORT will not trigger the link doctor.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      URLRequestFailedJob::GetMockHttpUrlForHostname(net::ERR_UNSAFE_PORT,
+                                                     kHostname),
+      1);
+
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      GetTextContentContainsStringScript(kHostnameJSUnicode),
       &result));
   EXPECT_TRUE(result);
 }

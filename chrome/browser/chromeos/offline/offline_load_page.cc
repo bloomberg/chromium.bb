@@ -9,6 +9,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/localized_error.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
@@ -102,9 +104,11 @@ std::string OfflineLoadPage::GetHTMLContents() {
     resource_id = IDR_OFFLINE_APP_LOAD_HTML;
   } else {
     const std::string locale = g_browser_process->GetApplicationLocale();
+    const std::string accept_languages =
+        profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
     LocalizedError::GetStrings(net::ERR_INTERNET_DISCONNECTED,
                                net::kErrorDomain, url_, false, locale,
-                               &error_strings);
+                               accept_languages, &error_strings);
     resource_id = IDR_OFFLINE_NET_LOAD_HTML;
   }
 

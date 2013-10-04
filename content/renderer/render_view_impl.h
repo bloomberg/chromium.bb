@@ -700,6 +700,7 @@ class CONTENT_EXPORT RenderViewImpl
                                              const std::string& value) OVERRIDE;
   virtual void ClearEditCommands() OVERRIDE;
   virtual SSLStatus GetSSLStatusOfFrame(WebKit::WebFrame* frame) const OVERRIDE;
+  virtual const std::string& GetAcceptLanguages() const OVERRIDE;
 #if defined(OS_ANDROID)
   virtual void UpdateTopControlsState(TopControlsState constraints,
                                       TopControlsState current,

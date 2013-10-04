@@ -174,6 +174,7 @@ bool NetErrorHelper::GetErrorStringsForDnsProbe(
     const WebKit::WebURLError& error,
     bool is_failed_post,
     const std::string& locale,
+    const std::string& accept_languages,
     base::DictionaryValue* error_strings) {
   if (!IsMainFrame(frame))
     return false;
@@ -186,7 +187,7 @@ bool NetErrorHelper::GetErrorStringsForDnsProbe(
       chrome_common_net::DNS_PROBE_POSSIBLE,
       chrome_common_net::kDnsProbeErrorDomain,
       error.unreachableURL,
-      is_failed_post, locale, error_strings);
+      is_failed_post, locale, accept_languages, error_strings);
   return true;
 }
 
@@ -219,6 +220,7 @@ void NetErrorHelper::UpdateErrorPage() {
                              error.unreachableURL,
                              is_failed_post_,
                              RenderThread::Get()->GetLocale(),
+                             render_view()->GetAcceptLanguages(),
                              &error_strings);
 
   std::string json;

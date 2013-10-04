@@ -26,12 +26,20 @@ class URLRequestFailedJob : public net::URLRequestJob {
 
   // Adds the testing URLs to the net::URLRequestFilter.
   static void AddUrlHandler();
+  static void AddUrlHandlerForHostname(const std::string& hostname);
 
   // Given a net error code, constructs a mock URL that will return that error
   // asynchronously when started.  |net_error| must be a valid net error code
   // other than net::OK and net::ERR_IO_PENDING.
   static GURL GetMockHttpUrl(int net_error);
   static GURL GetMockHttpsUrl(int net_error);
+
+  // URLRequestFailedJob must be added as a handler for |hostname| for
+  // the returned URL to return |net_error|.
+  static GURL GetMockHttpUrlForHostname(int net_error,
+                                        const std::string& hostname);
+  static GURL GetMockHttpsUrlForHostname(int net_error,
+                                         const std::string& hostname);
 
  private:
   static net::URLRequestJob* Factory(net::URLRequest* request,

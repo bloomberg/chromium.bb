@@ -879,6 +879,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     WebKit::WebFrame* frame,
     const WebKit::WebURLRequest& failed_request,
     const WebKit::WebURLError& error,
+    const std::string& accept_languages,
     std::string* error_html,
     string16* error_description) {
   const GURL failed_url = error.unreachableURL;
@@ -905,12 +906,13 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     } else {
       const std::string locale = RenderThread::Get()->GetLocale();
       if (!NetErrorHelper::GetErrorStringsForDnsProbe(
-              frame, error, is_post, locale, &error_strings)) {
+              frame, error, is_post, locale, accept_languages,
+              &error_strings)) {
         // In most cases, the NetErrorHelper won't provide DNS-probe-specific
         // error pages, so fall back to LocalizedError.
         LocalizedError::GetStrings(error.reason, error.domain.utf8(),
                                    error.unreachableURL, is_post, locale,
-                                   &error_strings);
+                                   accept_languages, &error_strings);
       }
       resource_id = IDR_NET_ERROR_HTML;
     }

@@ -33,6 +33,7 @@ class LocalizedError {
                          const GURL& failed_url,
                          bool is_post,
                          const std::string& locale,
+                         const std::string& accept_languages,
                          base::DictionaryValue* strings);
 
   // Returns a description of the encountered error.

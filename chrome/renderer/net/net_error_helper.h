@@ -50,6 +50,7 @@ class NetErrorHelper : public content::RenderViewObserver {
       const WebKit::WebURLError& error,
       bool is_failed_post,
       const std::string& locale,
+      const std::string& accept_languages,
       base::DictionaryValue* error_strings);
 
  protected:

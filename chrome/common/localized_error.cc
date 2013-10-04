@@ -20,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
@@ -496,6 +497,7 @@ void LocalizedError::GetStrings(int error_code,
                                 const GURL& failed_url,
                                 bool is_post,
                                 const std::string& locale,
+                                const std::string& accept_languages,
                                 base::DictionaryValue* error_strings) {
   bool rtl = LocaleIsRTL();
   error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
@@ -530,7 +532,9 @@ void LocalizedError::GetStrings(int error_code,
     options.suggestions = SUGGEST_NONE;
   }
 
-  string16 failed_url_string(UTF8ToUTF16(failed_url.spec()));
+  string16 failed_url_string(net::FormatUrl(
+      failed_url, accept_languages, net::kFormatUrlOmitNothing,
+      net::UnescapeRule::NORMAL, NULL, NULL, NULL));
   // URLs are always LTR.
   if (rtl)
     base::i18n::WrapStringWithLTRFormatting(&failed_url_string);
@@ -545,10 +549,9 @@ void LocalizedError::GetStrings(int error_code,
   base::DictionaryValue* summary = new base::DictionaryValue;
   summary->SetString("msg",
       l10n_util::GetStringUTF16(options.summary_resource_id));
-  // TODO(tc): We want the unicode url and host here since they're being
-  //           displayed.
   summary->SetString("failedUrl", failed_url_string);
-  summary->SetString("hostName", failed_url.host());
+  summary->SetString("hostName", net::IDNToUnicode(failed_url.host(),
+                                                   accept_languages));
   summary->SetString("productName",
                      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 

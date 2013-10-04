@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_VIEW_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_VIEW_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
@@ -162,6 +164,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Returns a collection of security info about |frame|.
   virtual SSLStatus GetSSLStatusOfFrame(WebKit::WebFrame* frame) const = 0;
+
+  // Returns |renderer_preferences_.accept_languages| value.
+  virtual const std::string& GetAcceptLanguages() const = 0;
 
 #if defined(OS_ANDROID)
   virtual void UpdateTopControlsState(TopControlsState constraints,

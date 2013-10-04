@@ -2197,7 +2197,8 @@ void RenderViewImpl::LoadNavigationErrorPage(
     error_html = &html;
   } else {
     GetContentClient()->renderer()->GetNavigationErrorStrings(
-        frame, failed_request, error, &alt_html, NULL);
+        frame, failed_request, error, renderer_preferences_.accept_languages,
+        &alt_html, NULL);
     error_html = &alt_html;
   }
 
@@ -3151,6 +3152,10 @@ SSLStatus RenderViewImpl::GetSSLStatusOfFrame(WebKit::WebFrame* frame) const {
   return ssl_status;
 }
 
+const std::string& RenderViewImpl::GetAcceptLanguages() const {
+  return renderer_preferences_.accept_languages;
+}
+
 WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     WebFrame* frame, WebDataSource::ExtraData* extraData,
     const WebURLRequest& request, WebNavigationType type,
@@ -3641,6 +3646,7 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
       frame,
       failed_request,
       error,
+      renderer_preferences_.accept_languages,
       NULL,
       &params.error_description);
   params.url = error.unreachableURL;
@@ -3895,6 +3901,7 @@ void RenderViewImpl::didFailLoad(WebFrame* frame, const WebURLError& error) {
       frame,
       failed_request,
       error,
+      renderer_preferences_.accept_languages,
       NULL,
       &error_description);
   Send(new ViewHostMsg_DidFailLoadWithError(routing_id_,
@@ -4591,6 +4598,8 @@ GURL RenderViewImpl::GetAlternateErrorPageURL(const GURL& failed_url,
   remove_params.ClearQuery();
   remove_params.ClearRef();
   const GURL url_to_send = failed_url.ReplaceComponents(remove_params);
+  // TODO(yuusuke): change to net::FormatUrl when link doctor
+  // becomes unicode-capable.
   std::string spec_to_send = url_to_send.spec();
   // Notify link doctor of the url truncation by sending of "?" at the end.
   if (failed_url.has_query())
