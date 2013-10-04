@@ -121,7 +121,7 @@ void PrivetTrafficDetector::Restart(const net::NetworkInterfaceList& networks) {
 int PrivetTrafficDetector::Bind() {
   if (!start_time_.is_null()) {
     base::TimeDelta time_delta = base::Time::Now() - start_time_;
-    UMA_HISTOGRAM_LONG_TIMES("LocaDiscovery.DetectorRestartTime", time_delta);
+    UMA_HISTOGRAM_LONG_TIMES("LocalDiscovery.DetectorRestartTime", time_delta);
   }
   start_time_ = base::Time::Now();
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -175,7 +175,8 @@ int PrivetTrafficDetector::DoLoop(int rv) {
       socket_.reset();
       callback_runner_->PostTask(FROM_HERE, on_traffic_detected_);
       base::TimeDelta time_delta = base::Time::Now() - start_time_;
-      UMA_HISTOGRAM_LONG_TIMES("LocaDiscovery.DetectorTriggerTime", time_delta);
+      UMA_HISTOGRAM_LONG_TIMES("LocalDiscovery.DetectorTriggerTime",
+                               time_delta);
       return net::OK;
     }
 

@@ -44,6 +44,7 @@ class ServiceDiscoveryClientMdns
   virtual ~ServiceDiscoveryClientMdns();
   void ScheduleStartNewClient();
   void StartNewClient();
+  void ReportSuccess();
 
   scoped_refptr<ServiceDiscoveryHostClient> host_client_;
   int restart_attempts_;

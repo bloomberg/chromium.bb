@@ -4,6 +4,7 @@
 
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -14,6 +15,7 @@ using content::BrowserThread;
 namespace {
 const int kMaxRestartAttempts = 10;
 const int kRestartDelayOnNetworkChangeSeconds = 3;
+const int kReportSuccessAfterSeconds = 10;
 }
 
 scoped_ptr<ServiceWatcher> ServiceDiscoveryClientMdns::CreateServiceWatcher(
@@ -81,11 +83,25 @@ void ServiceDiscoveryClientMdns::StartNewClient() {
     host_client_->Start(
         base::Bind(&ServiceDiscoveryClientMdns::ScheduleStartNewClient,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ServiceDiscoveryClientMdns::ReportSuccess,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(kReportSuccessAfterSeconds));
+  } else {
+    restart_attempts_ = -1;
+    ReportSuccess();
   }
   // Run when host_client_ is created. Callbacks created by InvalidateWatchers
   // may create new watchers.
   if (old_client)
     old_client->InvalidateWatchers();
+}
+
+void ServiceDiscoveryClientMdns::ReportSuccess() {
+  UMA_HISTOGRAM_COUNTS_100("LocalDiscovery.ClientRestartAttempts",
+                           kMaxRestartAttempts - restart_attempts_);
 }
 
 }  // namespace local_discovery
