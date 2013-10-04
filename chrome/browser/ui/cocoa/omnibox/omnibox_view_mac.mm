@@ -764,7 +764,6 @@ void OmniboxViewMac::OnKillFocus() {
   // Tell the model to reset itself.
   model()->OnWillKillFocus(NULL);
   model()->OnKillFocus();
-  controller()->OnKillFocus();
 }
 
 void OmniboxViewMac::OnMouseDown(NSInteger button_number) {

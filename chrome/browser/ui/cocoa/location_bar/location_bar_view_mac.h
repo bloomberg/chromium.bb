@@ -108,11 +108,6 @@ class LocationBarViewMac : public LocationBar,
   // redrawn and laid out if necessary.
   void OnDecorationsChanged();
 
-  // Updates the location bar.  We also reset the bar's permanent text and
-  // security style, and, if |contents| is non-NULL, also restore saved state
-  // that the tab holds.
-  void Update(const content::WebContents* contents);
-
   // Layout the various decorations which live in the field.
   void Layout();
 
@@ -137,17 +132,9 @@ class LocationBarViewMac : public LocationBar,
   NSPoint GetPageActionBubblePoint(ExtensionAction* page_action);
 
   // OmniboxEditController:
-  virtual void OnAutocompleteAccept(
-      const GURL& url,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition) OVERRIDE;
+  virtual void Update(const content::WebContents* contents) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
-  virtual void OnSelectionBoundsChanged() OVERRIDE;
-  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
-  virtual void OnKillFocus() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
-  virtual gfx::Image GetFavicon() OVERRIDE;
-  virtual string16 GetTitle() OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
@@ -208,14 +195,7 @@ class LocationBarViewMac : public LocationBar,
 
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 
-  CommandUpdater* command_updater_;  // Weak, owned by Browser.
-
   AutocompleteTextField* field_;  // owned by tab controller
-
-  // The details necessary to open the user's desired omnibox match.
-  GURL destination_url_;
-  WindowOpenDisposition disposition_;
-  content::PageTransition transition_;
 
   // A decoration that shows an icon to the left of the address.
   scoped_ptr<LocationIconDecoration> location_icon_decoration_;

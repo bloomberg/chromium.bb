@@ -89,11 +89,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   // corresponding to |page_action|.
   GtkWidget* GetPageActionWidget(ExtensionAction* page_action);
 
-  // Updates the location bar.  We also reset the bar's permanent text and
-  // security style, and, if |contents| is non-NULL, also restore saved state
-  // that the tab holds.
-  void Update(const content::WebContents* contents);
-
   // Performs any updates which depend on the image having already been laid out
   // by the owning LocationBarViewGtk.
   void UpdatePostLayout();
@@ -112,17 +107,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   void SetStarred(bool starred);
 
   // OmniboxEditController:
-  virtual void OnAutocompleteAccept(
-      const GURL& url,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition) OVERRIDE;
+  virtual void Update(const content::WebContents* contents) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
-  virtual void OnSelectionBoundsChanged() OVERRIDE;
-  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
-  virtual void OnKillFocus() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
-  virtual gfx::Image GetFavicon() OVERRIDE;
-  virtual string16 GetTitle() OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
@@ -484,13 +471,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Alignment used to wrap |location_entry_|.
   GtkWidget* location_entry_alignment_;
 
-  CommandUpdater* command_updater_;
   Browser* browser_;
-
-  // The details necessary to open the user's desired omnibox match.
-  GURL destination_url_;
-  WindowOpenDisposition disposition_;
-  content::PageTransition transition_;
 
   // Used to schedule a task for the first run bubble.
   base::WeakPtrFactory<LocationBarViewGtk> weak_ptr_factory_;

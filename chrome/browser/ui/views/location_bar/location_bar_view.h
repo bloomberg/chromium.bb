@@ -156,11 +156,6 @@ class LocationBarView : public LocationBar,
   SkColor GetColor(ToolbarModel::SecurityLevel security_level,
                    ColorKind kind) const;
 
-  // Updates the location bar.  We also reset the bar's permanent text and
-  // security style, and, if |contents| is non-NULL, also restore saved state
-  // that the tab holds.
-  void Update(const content::WebContents* contents);
-
   // Returns corresponding profile.
   Profile* profile() const { return profile_; }
 
@@ -252,17 +247,9 @@ class LocationBarView : public LocationBar,
   views::View* generated_credit_card_view();
 
   // OmniboxEditController:
-  virtual void OnAutocompleteAccept(
-      const GURL& url,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition) OVERRIDE;
+  virtual void Update(const content::WebContents* contents) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
-  virtual void OnSelectionBoundsChanged() OVERRIDE;
-  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
-  virtual void OnKillFocus() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
-  virtual gfx::Image GetFavicon() OVERRIDE;
-  virtual string16 GetTitle() OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
@@ -440,16 +427,8 @@ class LocationBarView : public LocationBar,
   // The profile which corresponds to this View.
   Profile* profile_;
 
-  // Command updater which corresponds to this View.
-  CommandUpdater* command_updater_;
-
   // Our delegate.
   Delegate* delegate_;
-
-  // The details necessary to open the user's desired omnibox match.
-  GURL destination_url_;
-  WindowOpenDisposition disposition_;
-  content::PageTransition transition_;
 
   // An object used to paint the normal-mode background.
   scoped_ptr<views::Painter> background_border_painter_;

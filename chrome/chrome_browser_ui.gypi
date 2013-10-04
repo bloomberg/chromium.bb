@@ -1349,6 +1349,7 @@
         'browser/ui/omnibox/omnibox_current_page_delegate.h',
         'browser/ui/omnibox/omnibox_current_page_delegate_impl.cc',
         'browser/ui/omnibox/omnibox_current_page_delegate_impl.h',
+        'browser/ui/omnibox/omnibox_edit_controller.cc',
         'browser/ui/omnibox/omnibox_edit_controller.h',
         'browser/ui/omnibox/omnibox_edit_model.cc',
         'browser/ui/omnibox/omnibox_edit_model.h',

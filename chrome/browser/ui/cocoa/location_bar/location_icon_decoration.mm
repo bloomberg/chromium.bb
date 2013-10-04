@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -64,10 +65,13 @@ NSPasteboard* LocationIconDecoration::GetDragPasteboard() {
 }
 
 NSImage* LocationIconDecoration::GetDragImage() {
-  NSImage* favicon = owner_->GetFavicon().AsNSImage();
+  content::WebContents* web_contents = owner_->GetWebContents();
+  NSImage* favicon =
+      FaviconTabHelper::FromWebContents(web_contents)->GetFavicon().AsNSImage();
   NSImage* iconImage = favicon ? favicon : GetImage();
 
-  NSImage* image = chrome::DragImageForBookmark(iconImage, owner_->GetTitle());
+  NSImage* image =
+      chrome::DragImageForBookmark(iconImage, web_contents->GetTitle());
   NSSize imageSize = [image size];
   drag_frame_ = NSMakeRect(0, 0, imageSize.width, imageSize.height);
   return image;

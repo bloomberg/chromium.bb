@@ -31,15 +31,9 @@ class LocationBar {
   // Shows the first run bubble anchored to the location bar.
   virtual void ShowFirstRunBubble() = 0;
 
-  // Returns the string of text entered in the location bar.
+  // The details necessary to open the user's desired omnibox match.
   virtual GURL GetDestinationURL() const = 0;
-
-  // Returns the WindowOpenDisposition that should be used to determine where
-  // to open a URL entered in the location bar.
   virtual WindowOpenDisposition GetWindowOpenDisposition() const = 0;
-
-  // Returns the PageTransition that should be recorded in history when the URL
-  // entered in the location bar is loaded.
   virtual content::PageTransition GetPageTransition() const = 0;
 
   // Accepts the current string of text entered in the location bar.

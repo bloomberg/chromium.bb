@@ -20,22 +20,16 @@
 namespace {
 class OmniboxEditControllerMock : public OmniboxEditController {
  public:
-  MOCK_METHOD3(OnAutocompleteAccept, void(const GURL& url,
-                                          WindowOpenDisposition disposition,
-                                          content::PageTransition transition));
+  OmniboxEditControllerMock() : OmniboxEditController(NULL) {}
+  virtual ~OmniboxEditControllerMock() {}
+
+  MOCK_METHOD1(Update, void(const content::WebContents* contents));
   MOCK_METHOD0(OnChanged, void());
-  MOCK_METHOD0(OnSelectionBoundsChanged, void());
-  MOCK_METHOD1(OnInputInProgress, void(bool in_progress));
-  MOCK_METHOD0(OnKillFocus, void());
   MOCK_METHOD0(OnSetFocus, void());
-  MOCK_METHOD0(GetFavicon, gfx::Image());
-  MOCK_METHOD0(GetTitle, string16());
   MOCK_METHOD0(GetInstant, InstantController*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD0(GetToolbarModel, ToolbarModel*());
   MOCK_CONST_METHOD0(GetToolbarModel, ToolbarModel*());
-
-  virtual ~OmniboxEditControllerMock() {}
 };
 }  // namespace
 

@@ -26,6 +26,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
@@ -374,8 +375,9 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
   *url = CurrentMatch(NULL).destination_url;
   if (*url == URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_),
                                       std::string())) {
-    *title = controller_->GetTitle();
-    *favicon = controller_->GetFavicon();
+    content::WebContents* web_contents = controller_->GetWebContents();
+    *title = web_contents->GetTitle();
+    *favicon = FaviconTabHelper::FromWebContents(web_contents)->GetFavicon();
   }
 }
 
@@ -467,7 +469,9 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     // (While the edit is in progress, this won't have a visible effect.)
     controller_->GetToolbarModel()->set_search_term_replacement_enabled(true);
   }
-  controller_->OnInputInProgress(in_progress);
+
+  controller_->GetToolbarModel()->set_input_in_progress(in_progress);
+  controller_->Update(NULL);
 
   delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
 }

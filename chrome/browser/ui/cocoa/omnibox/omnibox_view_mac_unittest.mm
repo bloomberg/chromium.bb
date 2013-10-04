@@ -81,21 +81,15 @@ class TestingToolbarModelDelegate : public ToolbarModelDelegate {
 class TestingOmniboxEditController : public OmniboxEditController {
  public:
   explicit TestingOmniboxEditController(ToolbarModel* toolbar_model)
-      : toolbar_model_(toolbar_model) {}
+      : OmniboxEditController(NULL),
+        toolbar_model_(toolbar_model) {
+  }
   virtual ~TestingOmniboxEditController() {}
 
   // Overridden from OmniboxEditController:
-  virtual void OnAutocompleteAccept(
-      const GURL& url,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition) OVERRIDE {}
+  virtual void Update(const content::WebContents* contents) OVERRIDE {}
   virtual void OnChanged() OVERRIDE {}
-  virtual void OnSelectionBoundsChanged() OVERRIDE {}
-  virtual void OnInputInProgress(bool in_progress) OVERRIDE {}
-  virtual void OnKillFocus() OVERRIDE {}
   virtual void OnSetFocus() OVERRIDE {}
-  virtual gfx::Image GetFavicon() OVERRIDE { return gfx::Image(); }
-  virtual string16 GetTitle() OVERRIDE { return string16(); }
   virtual InstantController* GetInstant() OVERRIDE { return NULL; }
   virtual content::WebContents* GetWebContents() OVERRIDE { return NULL; }
   virtual ToolbarModel* GetToolbarModel() OVERRIDE { return toolbar_model_; }

@@ -358,7 +358,8 @@ const GdkColor LocationBarViewGtk::kBackgroundColor =
     GDK_COLOR_RGB(255, 255, 255);
 
 LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
-    : zoom_image_(NULL),
+    : OmniboxEditController(browser->command_controller()->command_updater()),
+      zoom_image_(NULL),
       script_bubble_button_image_(NULL),
       num_running_scripts_(0u),
       star_image_(NULL),
@@ -378,12 +379,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       tab_to_search_hint_leading_label_(NULL),
       tab_to_search_hint_icon_(NULL),
       tab_to_search_hint_trailing_label_(NULL),
-      command_updater_(browser->command_controller()->command_updater()),
       browser_(browser),
-      disposition_(CURRENT_TAB),
-      transition_(content::PageTransitionFromInt(
-          content::PAGE_TRANSITION_TYPED |
-          content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       weak_ptr_factory_(this),
       popup_window_mode_(false),
       theme_service_(NULL),
@@ -420,8 +416,8 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   // Now initialize the OmniboxViewGtk.
   location_entry_.reset(new OmniboxViewGtk(this, browser_, browser_->profile(),
-                                           command_updater_, popup_window_mode_,
-                                           hbox_.get()));
+                                           command_updater(),
+                                           popup_window_mode_, hbox_.get()));
   location_entry_->Init();
 
   g_signal_connect(hbox_.get(), "expose-event",
@@ -597,29 +593,6 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
   return NULL;
 }
 
-void LocationBarViewGtk::Update(const WebContents* contents) {
-  UpdateZoomIcon();
-  UpdateScriptBubbleIcon();
-  UpdateStarIcon();
-  UpdateSiteTypeArea();
-  UpdateContentSettingsIcons();
-  UpdatePageActions();
-  if (contents)
-    location_entry_->OnTabChanged(contents);
-  else
-    location_entry_->Update();
-  // The security level (background color) could have changed, etc.
-  if (theme_service_->UsingNativeTheme()) {
-    // In GTK mode, we need our parent to redraw, as it draws the text entry
-    // border.
-    gtk_widget_queue_draw(gtk_widget_get_parent(widget()));
-  } else {
-    gtk_widget_queue_draw(widget());
-  }
-  ZoomBubbleGtk::CloseBubble();
-  UpdatePostLayout();
-}
-
 void LocationBarViewGtk::UpdatePostLayout() {
   for (ScopedVector<PageToolViewGtk>::iterator i(
            content_setting_views_.begin());
@@ -659,15 +632,27 @@ void LocationBarViewGtk::SetStarred(bool starred) {
   UpdateStarIcon();
 }
 
-void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition) {
-  destination_url_ = url;
-  disposition_ = disposition;
-  transition_ = transition;
-
-  if (command_updater_)
-    command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+void LocationBarViewGtk::Update(const WebContents* contents) {
+  UpdateZoomIcon();
+  UpdateScriptBubbleIcon();
+  UpdateStarIcon();
+  UpdateSiteTypeArea();
+  UpdateContentSettingsIcons();
+  UpdatePageActions();
+  if (contents)
+    location_entry_->OnTabChanged(contents);
+  else
+    location_entry_->Update();
+  // The security level (background color) could have changed, etc.
+  if (theme_service_->UsingNativeTheme()) {
+    // In GTK mode, we need our parent to redraw, as it draws the text entry
+    // border.
+    gtk_widget_queue_draw(gtk_widget_get_parent(widget()));
+  } else {
+    gtk_widget_queue_draw(widget());
+  }
+  ZoomBubbleGtk::CloseBubble();
+  UpdatePostLayout();
 }
 
 void LocationBarViewGtk::OnChanged() {
@@ -687,20 +672,6 @@ void LocationBarViewGtk::OnChanged() {
   AdjustChildrenVisibility();
 }
 
-void LocationBarViewGtk::OnSelectionBoundsChanged() {
-}
-
-void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
-  // The edit should make sure we're only notified when something changes.
-  DCHECK_NE(GetToolbarModel()->input_in_progress(), in_progress);
-
-  GetToolbarModel()->set_input_in_progress(in_progress);
-  Update(NULL);
-}
-
-void LocationBarViewGtk::OnKillFocus() {
-}
-
 void LocationBarViewGtk::OnSetFocus() {
   Profile* profile = browser_->profile();
   AccessibilityTextBoxInfo info(
@@ -714,14 +685,6 @@ void LocationBarViewGtk::OnSetFocus() {
 
   // Update the keyword and search hint states.
   OnChanged();
-}
-
-gfx::Image LocationBarViewGtk::GetFavicon() {
-  return FaviconTabHelper::FromWebContents(GetWebContents())->GetFavicon();
-}
-
-string16 LocationBarViewGtk::GetTitle() {
-  return GetWebContents()->GetTitle();
 }
 
 InstantController* LocationBarViewGtk::GetInstant() {
@@ -751,15 +714,15 @@ void LocationBarViewGtk::ShowFirstRunBubble() {
 }
 
 GURL LocationBarViewGtk::GetDestinationURL() const {
-  return destination_url_;
+  return destination_url();
 }
 
 WindowOpenDisposition LocationBarViewGtk::GetWindowOpenDisposition() const {
-  return disposition_;
+  return disposition();
 }
 
 content::PageTransition LocationBarViewGtk::GetPageTransition() const {
-  return transition_;
+  return transition();
 }
 
 void LocationBarViewGtk::AcceptInput() {
@@ -1218,18 +1181,16 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
 
 void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
                                          GdkDragContext* context) {
-  gfx::Image favicon = GetFavicon();
+  content::WebContents* web_contents = GetWebContents();
+  gfx::Image favicon =
+      FaviconTabHelper::FromWebContents(web_contents)->GetFavicon();
   if (favicon.IsEmpty())
     return;
-  drag_icon_ =
-      GetDragRepresentation(favicon.ToGdkPixbuf(), GetTitle(), theme_service_);
+  drag_url_ = web_contents->GetURL();
+  drag_title_ = web_contents->GetTitle();
+  drag_icon_ = GetDragRepresentation(favicon.ToGdkPixbuf(), drag_title_,
+                                     theme_service_);
   gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
-
-  WebContents* tab = GetWebContents();
-  if (!tab)
-    return;
-  drag_url_ = tab->GetURL();
-  drag_title_ = tab->GetTitle();
 }
 
 void LocationBarViewGtk::OnIconDragEnd(GtkWidget* sender,
@@ -1682,9 +1643,9 @@ void LocationBarViewGtk::UpdateStarIcon() {
   star_sized_ = false;
   bool star_enabled = !GetToolbarModel()->input_in_progress() &&
       edit_bookmarks_enabled_.GetValue();
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
-                                         star_enabled);
+  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
+  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
+                                          star_enabled);
   if (star_enabled) {
     gtk_widget_show_all(star_.get());
     int id = starred_ ? IDR_STAR_LIT : IDR_STAR;

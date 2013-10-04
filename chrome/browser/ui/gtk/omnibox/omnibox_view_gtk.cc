@@ -1119,7 +1119,6 @@ gboolean OmniboxViewGtk::HandleViewFocusOut(GtkWidget* sender,
   CloseOmniboxPopup();
   // Tell the model to reset itself.
   model()->OnKillFocus();
-  controller()->OnKillFocus();
 
   g_signal_handlers_disconnect_by_func(
       gdk_keymap_get_for_display(gtk_widget_get_display(text_view_)),

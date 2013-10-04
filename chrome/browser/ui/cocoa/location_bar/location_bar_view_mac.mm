@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -83,13 +82,9 @@ LocationBarViewMac::LocationBarViewMac(
     CommandUpdater* command_updater,
     Profile* profile,
     Browser* browser)
-    : omnibox_view_(new OmniboxViewMac(this, profile, command_updater, field)),
-      command_updater_(command_updater),
+    : OmniboxEditController(command_updater),
+      omnibox_view_(new OmniboxViewMac(this, profile, command_updater, field)),
       field_(field),
-      disposition_(CURRENT_TAB),
-      transition_(content::PageTransitionFromInt(
-          content::PAGE_TRANSITION_TYPED |
-          content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       location_icon_decoration_(new LocationIconDecoration(this)),
       selected_keyword_decoration_(new SelectedKeywordDecoration()),
       ev_bubble_decoration_(
@@ -144,15 +139,15 @@ void LocationBarViewMac::ShowFirstRunBubble() {
 }
 
 GURL LocationBarViewMac::GetDestinationURL() const {
-  return destination_url_;
+  return destination_url();
 }
 
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
-  return disposition_;
+  return disposition();
 }
 
 content::PageTransition LocationBarViewMac::GetPageTransition() const {
-  return transition_;
+  return transition();
 }
 
 void LocationBarViewMac::AcceptInput() {
@@ -335,23 +330,6 @@ void LocationBarViewMac::OnDecorationsChanged() {
   [field_ setNeedsDisplay:YES];
 }
 
-void LocationBarViewMac::Update(const WebContents* contents) {
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsStarEnabled());
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
-                                         IsStarEnabled());
-  UpdateStarDecorationVisibility();
-  UpdateZoomDecoration();
-  RefreshPageActionDecorations();
-  RefreshContentSettingsDecorations();
-  UpdateMicSearchDecorationVisibility();
-  if (contents)
-    omnibox_view_->OnTabChanged(contents);
-  else
-    omnibox_view_->Update();
-  OnChanged();
-  PopUpContentSettingIfNeeded();
-}
-
 // TODO(shess): This function should over time grow to closely match
 // the views Layout() function.
 void LocationBarViewMac::Layout() {
@@ -482,16 +460,20 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
   return [field_ convertPoint:bubble_point toView:nil];
 }
 
-void LocationBarViewMac::OnAutocompleteAccept(
-    const GURL& url,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition) {
-  destination_url_ = url;
-  disposition_ = disposition;
-  transition_ = transition;
-
-  if (command_updater_)
-    command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+void LocationBarViewMac::Update(const WebContents* contents) {
+  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsStarEnabled());
+  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
+                                          IsStarEnabled());
+  UpdateStarDecorationVisibility();
+  UpdateZoomDecoration();
+  RefreshPageActionDecorations();
+  RefreshContentSettingsDecorations();
+  UpdateMicSearchDecorationVisibility();
+  if (contents)
+    omnibox_view_->OnTabChanged(contents);
+  else
+    omnibox_view_->Update();
+  OnChanged();
 }
 
 void LocationBarViewMac::OnChanged() {
@@ -508,31 +490,9 @@ void LocationBarViewMac::OnChanged() {
   }
 }
 
-void LocationBarViewMac::OnSelectionBoundsChanged() {
-}
-
-void LocationBarViewMac::OnInputInProgress(bool in_progress) {
-  // The edit should make sure we're only notified when something changes.
-  DCHECK_NE(GetToolbarModel()->input_in_progress(), in_progress);
-
-  GetToolbarModel()->set_input_in_progress(in_progress);
-  Update(NULL);
-}
-
-void LocationBarViewMac::OnKillFocus() {
-}
-
 void LocationBarViewMac::OnSetFocus() {
   // Update the keyword and search hint states.
   OnChanged();
-}
-
-gfx::Image LocationBarViewMac::GetFavicon() {
-  return FaviconTabHelper::FromWebContents(GetWebContents())->GetFavicon();
-}
-
-string16 LocationBarViewMac::GetTitle() {
-  return GetWebContents()->GetTitle();
 }
 
 InstantController* LocationBarViewMac::GetInstant() {
