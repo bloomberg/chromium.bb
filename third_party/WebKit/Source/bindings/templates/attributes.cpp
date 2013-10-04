@@ -23,7 +23,7 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "{{attribute.name}}", wrapper);
-        v8SetReturnValue(info, wrapper);
+        {{attribute.return_v8_value_statement}}
     }
     {% else %}
     {{attribute.return_v8_value_statement}}

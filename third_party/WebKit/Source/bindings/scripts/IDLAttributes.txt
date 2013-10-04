@@ -32,9 +32,8 @@
 #
 
 ActiveDOMObject
-ActivityLog=Access|Setter|Getter|AccessForIsolatedWorlds|SetterForIsolatedWorlds|GetterForIsolatedWorlds
+ActivityLog=Access|Getter|Setter|AccessForIsolatedWorlds|GetterForIsolatedWorlds|SetterForIsolatedWorlds
 CachedAttribute=*
-KeepAttributeAliveForGC
 CallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity
 CheckSecurityForNode
@@ -74,6 +73,7 @@ GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGl
 Immutable
 ImplementedAs=*
 InitializedByEventConstructor
+KeepAttributeAliveForGC
 # FIXME: We should remove this extended attribute once the needed refactoring is complete.
 LegacyImplementedInBaseClass
 MasqueradesAsUndefined
