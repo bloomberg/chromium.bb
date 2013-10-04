@@ -155,6 +155,13 @@ class TestGypBase(TestCommon.TestCommon):
     """
     return self.must_not_match(self.built_file_path(name, **kw), contents)
 
+  def built_file_must_not_contain(self, name, contents, **kw):
+    """
+    Fails the test if the specified built file name contains the specified
+    contents.
+    """
+    return self.must_not_contain(self.built_file_path(name, **kw), contents)
+
   def copy_test_configuration(self, source_dir, dest_dir):
     """
     Copies the test configuration from the specified source_dir
