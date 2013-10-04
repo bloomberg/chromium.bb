@@ -24,20 +24,19 @@ message HistogramEventProto {
   // The per-bucket data.
   message Bucket {
     // Each bucket's range is bounded by min <= x < max.
-    // We expect min and max (as well all other fields in this file) to always
-    // be set.  They're marked as optional because that is considered to be good
-    // practice in protocol buffer design, for the sake of
-    // forward-compatibility.
+    // It is valid to omit one of these two fields in a bucket, but not both.
+    // If the min field is omitted, its value is assumed to be equal to max - 1.
+    // If the max field is omitted, its value is assumed to be equal to the next
+    // bucket's min value (possibly computed per above).  The last bucket in a
+    // histogram should always include the max field.
     optional int64 min = 1;
     optional int64 max = 2;
 
     // The bucket's index in the list of buckets, sorted in ascending order.
-    // Historically, we've had trouble with corruption of the min or the max,
-    // most commonly in the client.  The bucket index gives us some redundancy,
-    // which allows the processing code to "vote" on what the correct range
-    // should be for each bucket.  This in turn allows us to better identify and
-    // discard corrupted reports.
-    optional int32 bucket_index = 3;
+    // This field was intended to provide extra redundancy to detect corrupted
+    // records, but was never used.  As of M31, it is no longer sent by Chrome
+    // clients to reduce the UMA upload size.
+    optional int32 bucket_index = 3 [deprecated = true];
 
     // The number of entries in this bucket.
     optional int64 count = 4;
