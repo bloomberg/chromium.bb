@@ -56,6 +56,19 @@
 </polymer-element>
 
 <!-- Special keys -->
+<polymer-element name="kb-abc-key" class="symbol dark" char="Invalid"
+    extends="kb-key">
+  <script>
+    Polymer('kb-abc-key', {
+      // TODO(rsadam@): Move this logic into populateDetails.
+      down: function(event) {
+        var detail = this.populateDetails();
+        detail.relegateToShift = true;
+        this.fire('key-down', detail);
+      }
+    });
+  </script>
+</polymer-element>
 
 <!--
   -- TODO(kevers): Rip this out if and when we are done implementing the proper

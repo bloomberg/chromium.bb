@@ -208,7 +208,16 @@
 
         get state() {
           return state;
-        }
+        },
+
+        get textKeyset() {
+          switch (state) {
+            case KEY_STATES.UNLOCKED:
+              return this.lowerCaseKeysetId;
+            default:
+              return this.upperCaseKeysetId;
+          }
+        },
       });
     })();
   </script>

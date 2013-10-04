@@ -19,6 +19,7 @@ kb-keyboard {
   display: -webkit-box;
 }
 
+kb-abc-key,
 kb-shift-key,
 kb-key {
   background-color: #3b3b3e;
@@ -35,6 +36,7 @@ kb-key {
   position: relative;
 }
 
+kb-abc-key::x-key,
 kb-shift-key::x-key,
 kb-key::x-key {
   bottom: 0;
@@ -64,6 +66,7 @@ kb-key::x-hinttext[inverted] {
   color: #ffffff;
 }
 
+kb-abc-key.dark,
 kb-shift-key.dark,
 kb-key.dark {
   background-color: #2a2a2c;
@@ -84,11 +87,13 @@ kb-altkey::x-key {
 /* Left and right-side special keys with a character letter next to them need
  * additional padding.
  * */
+kb-abc-key.padded-left-special,
 kb-shift-key.padded-left-special,
 kb-key.padded-left-special {
   margin-right: 2px;
 }
 
+kb-abc-key.padded-right-special,
 kb-shift-key.padded-right-special,
 kb-key.padded-right-special {
   margin-left: 5px;

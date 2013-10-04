@@ -21,6 +21,7 @@ kb-keyboard {
   width: 1280px;
 }
 
+kb-abc-key,
 kb-shift-key,
 kb-hide-keyboard-key,
 kb-layout-selector,
@@ -39,6 +40,7 @@ kb-key {
   position: relative;
 }
 
+kb-abc-key::x-key,
 kb-shift-key::x-key,
 kb-layout-selector::x-key,
 kb-key::x-key {
@@ -146,6 +148,7 @@ kb-altkey::x-key {
 }
 
 kb-shift-key.shift,
+kb-abc-key,
 kb-key:-webkit-any(.backspace,
                    .dotcom,
                    .left-more,
