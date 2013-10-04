@@ -412,6 +412,7 @@ Bug(nbarth) [ Release ] perf/show-hide-table-rows.html [ Failure Pass Timeout ]
 Bug(nbarth) [ Release ] perf/svg-path-appenditem.html [ Failure Pass Timeout ]
 Bug(nbarth) [ Release ] perf/table-rows-length-caching.html [ Failure Pass Timeout ]
 Bug(nbarth) [ Release ] perf/typing-at-end-of-line.html [ Failure Pass Timeout ]
+crbug.com/299177 [ Release ] perf/compositor-touch-hit-rects.html [ Failure Pass Timeout ]
 
 webkit.org/b/45737 [ Debug ] fast/frames/frame-limit.html [ Timeout ]
 

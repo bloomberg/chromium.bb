@@ -1,0 +1,4 @@
+Tests that compositor touch hit rect calculation is linear in the number of rects and in the number of layers.
+PASS
+PASS
+

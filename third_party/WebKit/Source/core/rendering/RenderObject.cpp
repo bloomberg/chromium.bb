@@ -2330,12 +2330,25 @@ void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Ren
     LayoutRect newContainerRect;
     computeSelfHitTestRects(ownRects, layerOffset);
 
+    // When we get to have a lot of rects on a layer, the performance cost of tracking those
+    // rects outweighs the benefit of doing compositor thread hit testing.
+    // FIXME: This limit needs to be low due to the O(n^2) algorithm in
+    // WebLayer::setTouchEventHandlerRegion - crbug.com/300282.
+    const size_t maxRectsPerLayer = 100;
+
     LayerHitTestRects::iterator iter = layerRects.find(currentLayer);
     if (iter == layerRects.end())
         iter = layerRects.add(currentLayer, Vector<LayoutRect>()).iterator;
     for (size_t i = 0; i < ownRects.size(); i++) {
         if (!containerRect.contains(ownRects[i])) {
             iter->value.append(ownRects[i]);
+            if (iter->value.size() > maxRectsPerLayer) {
+                // Just mark the entire layer instead, and switch to walking the layer
+                // tree instead of the render tree.
+                layerRects.remove(currentLayer);
+                currentLayer->addLayerHitTestRects(layerRects);
+                return;
+            }
             if (newContainerRect.isEmpty())
                 newContainerRect = ownRects[i];
         }
