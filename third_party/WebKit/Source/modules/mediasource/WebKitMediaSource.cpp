@@ -35,10 +35,10 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/TimeRanges.h"
-#include "core/platform/ContentType.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
+#include "platform/ContentType.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {

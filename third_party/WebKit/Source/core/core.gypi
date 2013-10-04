@@ -2593,8 +2593,6 @@
             'platform/AsyncFileSystemCallbacks.h',
             'platform/CalculationValue.cpp',
             'platform/CalculationValue.h',
-            'platform/ContentType.cpp',
-            'platform/ContentType.h',
             'platform/ContextMenu.cpp',
             'platform/ContextMenuItem.cpp',
             'platform/CrossThreadCopier.cpp',

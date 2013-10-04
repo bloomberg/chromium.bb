@@ -59,7 +59,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/ContentType.h"
+#include "platform/ContentType.h"
 #include "platform/Language.h"
 #include "platform/Logging.h"
 #include "core/platform/MIMETypeFromURL.h"

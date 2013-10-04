@@ -47,12 +47,12 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/ContentType.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/plugins/PluginData.h"
 #include "core/svg/SVGDocument.h"
+#include "platform/ContentType.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/StdLibExtras.h"
 

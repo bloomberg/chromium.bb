@@ -36,7 +36,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/TimeRanges.h"
-#include "core/platform/ContentType.h"
+#include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"

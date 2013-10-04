@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/platform/ContentType.h"
+#include "platform/ContentType.h"
 
 namespace WebCore {
 
@@ -49,9 +49,9 @@ String ContentType::parameter(const String& parameterName) const
             if (start != kNotFound) {
                 size_t quote = strippedType.find('\"', start + 1);
                 size_t end = strippedType.find('\"', start + 2);
-                if (quote != kNotFound && end != kNotFound)
+                if (quote != kNotFound && end != kNotFound) {
                     start = quote;
-                else {
+                } else {
                     end = strippedType.find(';', start + 1);
                     if (end == kNotFound)
                         end = strippedType.length();

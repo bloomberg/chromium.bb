@@ -50,6 +50,8 @@
       'text/BidiContext.h',
       'Clock.cpp',
       'Clock.h',
+      'ContentType.cpp',
+      'ContentType.h',
       'DateComponents.cpp',
       'DateComponents.h',
       'Decimal.cpp',
