@@ -137,8 +137,9 @@ static inline void executeTakeAllChildrenTask(HTMLConstructionSiteTask& task)
     task.parent->parserTakeAllChildrenFrom(task.oldParent());
 }
 
-static inline void executeTask(HTMLConstructionSiteTask& task)
+void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task)
 {
+    ASSERT(m_taskQueue.isEmpty());
     if (task.operation == HTMLConstructionSiteTask::Insert)
         return executeInsertTask(task);
 
@@ -564,7 +565,7 @@ void HTMLConstructionSite::insertTextNode(const String& characters, WhitespaceMo
         ASSERT(currentPosition <= characters.length());
         task.child = textNode.release();
 
-        executeTask(task);
+        m_taskQueue.append(task);
     }
 }
 

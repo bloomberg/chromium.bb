@@ -2825,4 +2825,4 @@ void HTMLTreeBuilder::parseError(AtomicHTMLToken*)
 {
 }
 
-}
+} // namespace WebCore

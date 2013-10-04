@@ -195,6 +195,8 @@ private:
     void mergeAttributesFromTokenIntoElement(AtomicHTMLToken*, Element*);
     void dispatchDocumentElementAvailableIfNeeded();
 
+    void executeTask(HTMLConstructionSiteTask&);
+
     Document* m_document;
 
     // This is the root ContainerNode to which the parser attaches all newly
