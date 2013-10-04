@@ -763,8 +763,8 @@ bool Planet::HandleInputEvent(const pp::InputEvent& event) {
         PP_Point mouse_pos = mouse.GetPosition();
         float delta_x = static_cast<float>(mouse_pos.x - last_mouse_pos_.x);
         float delta_y = static_cast<float>(mouse_pos.y - last_mouse_pos_.y);
-        float spin_x = std::min(4.0f, std::max(-4.0f, delta_x * 0.5f));
-        float spin_y = std::min(4.0f, std::max(-4.0f, delta_y * 0.5f));
+        float spin_x = std::min(10.0f, std::max(-10.0f, delta_x * 0.5f));
+        float spin_y = std::min(10.0f, std::max(-10.0f, delta_y * 0.5f));
         ui_spin_x_ = spin_x / 100.0f;
         ui_spin_y_ = spin_y / 100.0f;
         last_mouse_pos_ = mouse_pos;
