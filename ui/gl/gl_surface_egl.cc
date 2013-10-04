@@ -145,9 +145,16 @@ bool GLSurfaceEGL::InitializeOneOff() {
     EGL_NONE
   };
 
+#if defined(USE_OZONE)
+  const EGLint* config_attribs =
+      surface_factory->GetEGLSurfaceProperties(kConfigAttribs);
+#else
+  const EGLint* config_attribs = kConfigAttribs;
+#endif
+
   EGLint num_configs;
   if (!eglChooseConfig(g_display,
-                       kConfigAttribs,
+                       config_attribs,
                        NULL,
                        0,
                        &num_configs)) {
@@ -162,7 +169,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
   }
 
   if (!eglChooseConfig(g_display,
-                       kConfigAttribs,
+                       config_attribs,
                        &g_config,
                        1,
                        &num_configs)) {

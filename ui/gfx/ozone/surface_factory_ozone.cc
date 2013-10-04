@@ -69,6 +69,11 @@ bool SurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget) {
   return true;
 }
 
+const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(
+    const int32* desired_attributes) {
+  return desired_attributes;
+}
+
 // static
 SurfaceFactoryOzone* SurfaceFactoryOzone::CreateTestHelper() {
   return new SurfaceFactoryOzoneStub;

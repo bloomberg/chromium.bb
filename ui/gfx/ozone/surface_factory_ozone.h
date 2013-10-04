@@ -82,6 +82,13 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // in InitializeHardware. Returns NULL on error.
   virtual gfx::VSyncProvider* GetVSyncProvider(gfx::AcceleratedWidget w) = 0;
 
+  // Returns an array of EGL properties, which can be used in any EGL function
+  // used to select a display configuration. Note that all properties should be
+  // immediately followed by the corresponding desired value and array should be
+  // terminated with EGL_NONE. Ownership of the array is not transferred to
+  // caller. desired_list contains list of desired EGL properties and values.
+  virtual const int32* GetEGLSurfaceProperties(const int32* desired_list);
+
   // Create a default SufaceFactoryOzone implementation useful for tests.
   static SurfaceFactoryOzone* CreateTestHelper();
 
