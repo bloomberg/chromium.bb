@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_URL_FETCHER_H_
-#define CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_URL_FETCHER_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_NAVIGATION_OBSERVER_H_
+#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_NAVIGATION_OBSERVER_H_
 
 #include <string>
 
@@ -22,24 +22,24 @@ class URLFetcher;
 class URLRequestStatus;
 }
 
-// Attempts to get the HEAD of a host name and displays an info bar if the
-// request was successful. This is used for single-word queries where we can't
-// tell if the entry was a search or an intranet hostname. The autocomplete bar
-// assumes it's a query and issues an AlternateNavURLFetcher to display a "did
-// you mean" infobar suggesting a navigation.
+// Monitors omnibox navigations in order to trigger behaviors that depend on
+// successful navigations.
 //
-// The memory management of this object is a bit tricky. The location bar view
+// Currently two such behaviors exist:
+// (1) For single-word queries where we can't tell if the entry was a search or
+//     an intranet hostname, the omnibox opens as a search by default, but this
+//     class attempts to open as a URL via an HTTP HEAD request.  If successful,
+//     displays an infobar once the search result has also loaded.  See
+//     AlternateNavInfoBarDelegate.
+// (2) Omnibox navigations that complete successfully are added to the
+//     Shortcuts backend.  TODO(pkasting): Not yet implemented.
+//
+// The memory management of this object is a bit tricky. The OmniboxEditModel
 // will create us and be responsible for us until we attach as an observer
 // after a pending load starts (it will delete us if this doesn't happen).
 // Once this pending load starts, we're responsible for deleting ourselves.
-// We'll do this in the following cases:
-//   * The tab is navigated again once we start listening (so the fetch is no
-//     longer useful)
-//   * The tab is closed before we show an infobar
-//   * The intranet fetch fails
-//   * None of the above apply, so we successfully show an infobar
-class AlternateNavURLFetcher : public content::NotificationObserver,
-                               public net::URLFetcherDelegate {
+class OmniboxNavigationObserver : public content::NotificationObserver,
+                                  public net::URLFetcherDelegate {
  public:
   enum State {
     NOT_STARTED,
@@ -48,8 +48,8 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
     FAILED,
   };
 
-  explicit AlternateNavURLFetcher(const GURL& alternate_nav_url);
-  virtual ~AlternateNavURLFetcher();
+  explicit OmniboxNavigationObserver(const GURL& alternate_nav_url);
+  virtual ~OmniboxNavigationObserver();
 
   State state() const { return state_; }
 
@@ -86,7 +86,7 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(AlternateNavURLFetcher);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxNavigationObserver);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_URL_FETCHER_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_NAVIGATION_OBSERVER_H_

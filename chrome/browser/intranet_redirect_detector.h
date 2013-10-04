@@ -26,7 +26,7 @@ class PrefRegistrySimple;
 // 302 redirect to "http://isp.domain.com/search?q=query" in order to display
 // custom pages on typos, nonexistent sites, etc.
 //
-// We use this information in the AlternateNavURLFetcher to avoid displaying
+// We use this information in the OmniboxNavigationObserver to avoid displaying
 // infobars for these cases.  Our infobars are designed to allow users to get at
 // intranet sites when they were erroneously taken to a search result page.  In
 // these cases, however, users would be shown a confusing and useless infobar

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/omnibox/alternate_nav_url_fetcher.h"
+#include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -21,7 +21,7 @@
 
 using content::NavigationController;
 
-AlternateNavURLFetcher::AlternateNavURLFetcher(
+OmniboxNavigationObserver::OmniboxNavigationObserver(
     const GURL& alternate_nav_url)
     : alternate_nav_url_(alternate_nav_url),
       controller_(NULL),
@@ -31,10 +31,10 @@ AlternateNavURLFetcher::AlternateNavURLFetcher(
                  content::NotificationService::AllSources());
 }
 
-AlternateNavURLFetcher::~AlternateNavURLFetcher() {
+OmniboxNavigationObserver::~OmniboxNavigationObserver() {
 }
 
-void AlternateNavURLFetcher::Observe(
+void OmniboxNavigationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -79,7 +79,7 @@ void AlternateNavURLFetcher::Observe(
   }
 }
 
-void AlternateNavURLFetcher::OnURLFetchComplete(
+void OmniboxNavigationObserver::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
   SetStatusFromURLFetch(
@@ -88,7 +88,7 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
   // WARNING: |this| may be deleted!
 }
 
-void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
+void OmniboxNavigationObserver::StartFetch(NavigationController* controller) {
   controller_ = controller;
   content::WebContents* web_contents = controller_->GetWebContents();
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
@@ -105,7 +105,7 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
   fetcher_->Start();
 }
 
-void AlternateNavURLFetcher::SetStatusFromURLFetch(
+void OmniboxNavigationObserver::SetStatusFromURLFetch(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code) {
@@ -132,7 +132,7 @@ void AlternateNavURLFetcher::SetStatusFromURLFetch(
   }
 }
 
-void AlternateNavURLFetcher::ShowInfoBarIfPossible() {
+void OmniboxNavigationObserver::ShowInfoBarIfPossible() {
   if (navigated_to_entry_ && (state_ == SUCCEEDED)) {
     AlternateNavInfoBarDelegate::Create(
         InfoBarService::FromWebContents(controller_->GetWebContents()),
