@@ -22,20 +22,25 @@ class SigninManagerCookieHelper
   explicit SigninManagerCookieHelper(
       net::URLRequestContextGetter* request_context_getter);
 
-  // Starts the fetching process, which will notify its completion via
+  // Starts fetching gaia cookies, which will notify its completion via
   // callback.
   void StartFetchingGaiaCookiesOnUIThread(
+      const base::Callback<void(const net::CookieList& cookies)>& callback);
+
+  // Starts fetching cookies for the given URL.
+  void StartFetchingCookiesOnUIThread(
+      const GURL& url,
       const base::Callback<void(const net::CookieList& cookies)>& callback);
 
  private:
   friend class base::RefCountedThreadSafe<SigninManagerCookieHelper>;
   ~SigninManagerCookieHelper();
 
-  // Fetch the GAIA cookies. This must be called in the IO thread.
-  void FetchGaiaCookiesOnIOThread();
+  // Fetch cookies for the given URL. This must be called in the IO thread.
+  void FetchCookiesOnIOThread(const GURL& url);
 
   // Callback for fetching cookies. This must be called in the IO thread.
-  void OnGaiaCookiesFetched(const net::CookieList& cookies);
+  void OnCookiesFetched(const net::CookieList& cookies);
 
   // Notifies the completion callback. This must be called in the UI thread.
   void NotifyOnUIThread(const net::CookieList& cookies);

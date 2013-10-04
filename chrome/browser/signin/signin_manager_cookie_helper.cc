@@ -24,6 +24,13 @@ SigninManagerCookieHelper::~SigninManagerCookieHelper() {
 
 void SigninManagerCookieHelper::StartFetchingGaiaCookiesOnUIThread(
     const base::Callback<void(const net::CookieList& cookies)>& callback) {
+  StartFetchingCookiesOnUIThread(
+      GaiaUrls::GetInstance()->gaia_url(), callback);
+}
+
+void SigninManagerCookieHelper::StartFetchingCookiesOnUIThread(
+    const GURL& url,
+    const base::Callback<void(const net::CookieList& cookies)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(completion_callback_.is_null());
@@ -31,10 +38,11 @@ void SigninManagerCookieHelper::StartFetchingGaiaCookiesOnUIThread(
   completion_callback_ = callback;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SigninManagerCookieHelper::FetchGaiaCookiesOnIOThread, this));
+      base::Bind(&SigninManagerCookieHelper::FetchCookiesOnIOThread, this,
+                 url));
 }
 
-void SigninManagerCookieHelper::FetchGaiaCookiesOnIOThread() {
+void SigninManagerCookieHelper::FetchCookiesOnIOThread(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_refptr<net::CookieMonster> cookie_monster =
@@ -42,14 +50,13 @@ void SigninManagerCookieHelper::FetchGaiaCookiesOnIOThread() {
       cookie_store()->GetCookieMonster();
   if (cookie_monster.get()) {
     cookie_monster->GetAllCookiesForURLAsync(
-        GaiaUrls::GetInstance()->gaia_url(),
-        base::Bind(&SigninManagerCookieHelper::OnGaiaCookiesFetched, this));
+        url, base::Bind(&SigninManagerCookieHelper::OnCookiesFetched, this));
   } else {
-    OnGaiaCookiesFetched(net::CookieList());
+    OnCookiesFetched(net::CookieList());
   }
 }
 
-void SigninManagerCookieHelper::OnGaiaCookiesFetched(
+void SigninManagerCookieHelper::OnCookiesFetched(
     const net::CookieList& cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(

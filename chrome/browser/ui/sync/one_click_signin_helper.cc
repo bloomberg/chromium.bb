@@ -353,7 +353,6 @@ void StartSync(const StartSyncArgs& args,
                                 "" /* oauth_code */, start_mode,
                                 args.web_contents,
                                 args.confirmation_required,
-                                args.source,
                                 args.callback);
 
   int action = one_click_signin::HISTOGRAM_MAX;

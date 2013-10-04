@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -94,7 +93,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             StartSyncMode start_mode,
                             content::WebContents* web_contents,
                             ConfirmationRequired display_confirmation,
-                            signin::Source source,
                             Callback callback);
 
   // chrome::BrowserListObserver override.
@@ -210,7 +208,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   chrome::HostDesktopType desktop_type_;
   bool force_same_tab_navigation_;
   ConfirmationRequired confirmation_required_;
-  signin::Source source_;
 
   // Callback executed when sync setup succeeds or fails.
   Callback sync_setup_completed_callback_;

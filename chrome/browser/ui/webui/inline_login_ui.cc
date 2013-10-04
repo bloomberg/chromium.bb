@@ -12,12 +12,15 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_cookie_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -79,7 +82,8 @@ class InlineLoginUIOAuth2Delegate
 
 class InlineLoginUIHandler : public content::WebUIMessageHandler {
  public:
-  explicit InlineLoginUIHandler(Profile* profile) : profile_(profile) {}
+  explicit InlineLoginUIHandler(Profile* profile)
+      : profile_(profile), weak_factory_(this) {}
   virtual ~InlineLoginUIHandler() {}
 
   // content::WebUIMessageHandler overrides:
@@ -156,24 +160,46 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       return;
     }
 
-    // Call OneClickSigninSyncStarter to exchange cookies for oauth tokens.
-    // OneClickSigninSyncStarter will delete itself once the job is done.
-    // TODO(guohui): should collect from user whether they want to use
-    // default sync settings or configure first.
-    new OneClickSigninSyncStarter(
-        profile_, NULL, "0" /* session_index 0 for the default user */,
-        UTF16ToASCII(email), UTF16ToASCII(password),
-        "" /* auth_code */,
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
-        web_ui()->GetWebContents(),
-        OneClickSigninSyncStarter::NO_CONFIRMATION,
-        signin::SOURCE_UNKNOWN,
-        OneClickSigninSyncStarter::Callback());
-    web_ui()->CallJavascriptFunction("inline.login.closeDialog");
+    content::WebContents* web_contents = web_ui()->GetWebContents();
+    content::StoragePartition* partition =
+        content::BrowserContext::GetStoragePartitionForSite(
+            web_contents->GetBrowserContext(),
+            GURL("chrome-guest://mfffpogegjflfpflabcdkioaeobkgjik/?"));
+
+    scoped_refptr<SigninManagerCookieHelper> cookie_helper(
+        new SigninManagerCookieHelper(partition->GetURLRequestContext()));
+    cookie_helper->StartFetchingCookiesOnUIThread(
+        GURL(GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
+        base::Bind(&InlineLoginUIHandler::OnGaiaCookiesFetched,
+                   weak_factory_.GetWeakPtr(), email, password));
 #endif
   }
 
+  void OnGaiaCookiesFetched(
+      const string16 email,
+      const string16 password,
+      const net::CookieList& cookie_list) {
+    net::CookieList::const_iterator it;
+    for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
+      if (it->Name() == "oauth_code") {
+        // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
+        // OneClickSigninSyncStarter will delete itself once the job is done.
+        // TODO(guohui): should collect from user whether they want to use
+        // default sync settings or configure first.
+        new OneClickSigninSyncStarter(
+            profile_, NULL, "0" /* session_index 0 for the default user */,
+            UTF16ToASCII(email), UTF16ToASCII(password), it->Value(),
+            OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
+            web_ui()->GetWebContents(),
+            OneClickSigninSyncStarter::NO_CONFIRMATION,
+            OneClickSigninSyncStarter::Callback());
+      }
+    }
+    web_ui()->CallJavascriptFunction("inline.login.closeDialog");
+  }
+
   Profile* profile_;
+  base::WeakPtrFactory<InlineLoginUIHandler> weak_factory_;
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<InlineLoginUIOAuth2Delegate> oauth2_delegate_;

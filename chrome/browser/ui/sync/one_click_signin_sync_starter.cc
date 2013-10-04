@@ -51,13 +51,11 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     StartSyncMode start_mode,
     content::WebContents* web_contents,
     ConfirmationRequired confirmation_required,
-    signin::Source source,
     Callback sync_setup_completed_callback)
     : content::WebContentsObserver(web_contents),
       start_mode_(start_mode),
       desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
       confirmation_required_(confirmation_required),
-      source_(source),
       sync_setup_completed_callback_(sync_setup_completed_callback),
       weak_pointer_factory_(this) {
   DCHECK(profile);

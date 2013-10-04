@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -64,7 +63,6 @@ class OneClickSigninSyncStarterTest : public testing::Test {
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
       NULL,
       OneClickSigninSyncStarter::NO_CONFIRMATION,
-      signin::SOURCE_UNKNOWN,
       callback
     );
   }
