@@ -577,20 +577,19 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       RequestUpdateForNetwork(service_path);
     }
   } else {
-    bool noisy_property =
-        key == shill::kSignalStrengthProperty ||
-        key == shill::kWifiFrequencyListProperty;
-    if (network->path() == default_network_path_ && !noisy_property) {
-      // Wifi SignalStrength and WifiFrequencyList updates are too noisy, so
-      // don't trigger default network updates for those changes.
-      OnDefaultNetworkChanged();
-    }
-    if (prev_profile_path.empty() && !network->profile_path().empty()) {
-      // If added to a Profile, request a full update so that a FavoriteState
-      // gets created.
-      RequestUpdateForNetwork(service_path);
-    }
-    if (!noisy_property) {
+    std::string value_str;
+    value.GetAsString(&value_str);
+    // Some property changes are noisy and not interesting:
+    // * Wifi SignalStrength
+    // * WifiFrequencyList updates
+    // * Device property changes to "/" (occurs before a service is removed)
+    if (key != shill::kSignalStrengthProperty &&
+        key != shill::kWifiFrequencyListProperty &&
+        (key != shill::kDeviceProperty || value_str != "/")) {
+      // Trigger a default network update for interesting changes only.
+      if (network->path() == default_network_path_)
+        OnDefaultNetworkChanged();
+      // Log interesting event.
       std::string detail = network->name() + "." + key;
       detail += " = " + network_event_log::ValueAsString(value);
       network_event_log::LogLevel log_level;
@@ -602,7 +601,14 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       NET_LOG_LEVEL(log_level, "NetworkPropertyUpdated", detail);
     }
   }
+
+  // All property updates signal 'NetworkPropertiesUpdated'.
   NetworkPropertiesUpdated(network);
+
+  // If added to a Profile, request a full update so that a FavoriteState
+  // gets created.
+  if (prev_profile_path.empty() && !network->profile_path().empty())
+    RequestUpdateForNetwork(service_path);
 }
 
 void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
