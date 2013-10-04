@@ -412,9 +412,7 @@ SpdySession::SpdySession(
           base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
       trusted_spdy_proxy_(trusted_spdy_proxy),
       time_func_(time_func) {
-  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
-  // stop supporting SPDY/1.
-  DCHECK_GE(protocol_, kProtoSPDY2);
+  DCHECK_GE(protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
   DCHECK(HttpStreamFactory::spdy_enabled());
   net_log_.BeginEvent(
@@ -470,9 +468,7 @@ Error SpdySession::InitializeWithSocket(
   if (protocol_negotiated != kProtoUnknown) {
     protocol_ = protocol_negotiated;
   }
-  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
-  // stop supporting SPDY/1.
-  DCHECK_GE(protocol_, kProtoSPDY2);
+  DCHECK_GE(protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
 
   SSLClientSocket* ssl_socket = GetSSLClientSocket();

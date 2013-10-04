@@ -383,10 +383,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   bool IsIdle() const;
 
   // Returns the protocol used by this stream. Always between
-  // kProtoSPDY2 and kProtoSPDYMaximumVersion.
-  //
-  // TODO(akalin): Change the lower bound to kProtoSPDYMinimumVersion
-  // once we stop supporting SPDY/1.
+  // kProtoSPDYMinimumVersion and kProtoSPDYMaximumVersion.
   NextProto GetProtocol() const;
 
   int response_status() const { return response_status_; }

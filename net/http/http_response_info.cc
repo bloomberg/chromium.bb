@@ -345,8 +345,6 @@ HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
 
     case kProtoUnknown:
     case kProtoHTTP11:
-    case kProtoSPDY1:
-    case kProtoSPDY21:
       break;
   }
 

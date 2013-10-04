@@ -207,11 +207,10 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
   if (alternate.protocol == ALTERNATE_PROTOCOL_BROKEN)
     return kNoAlternateProtocol;
 
-  DCHECK_LE(NPN_SPDY_1, alternate.protocol);
-  DCHECK_GT(NUM_ALTERNATE_PROTOCOLS, alternate.protocol);
-
-  if (alternate.protocol < NPN_SPDY_2)
+  if (!IsAlternateProtocolValid(alternate.protocol)) {
+    NOTREACHED();
     return kNoAlternateProtocol;
+  }
 
   // Some shared unix systems may have user home directories (like
   // http://foo.com/~mike) which allow users to emit headers.  This is a bad

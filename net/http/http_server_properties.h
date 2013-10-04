@@ -18,9 +18,9 @@
 namespace net {
 
 enum AlternateProtocol {
-  NPN_SPDY_1 = 0,
-  NPN_SPDY_MINIMUM_VERSION = NPN_SPDY_1,
-  NPN_SPDY_2,
+  NPN_SPDY_2 = 0,
+  ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION = NPN_SPDY_2,
+  NPN_SPDY_MINIMUM_VERSION = NPN_SPDY_2,
   NPN_SPDY_3,
   NPN_SPDY_3_1,
   NPN_SPDY_4A2,
@@ -28,14 +28,25 @@ enum AlternateProtocol {
   NPN_HTTP2_DRAFT_04,
   NPN_SPDY_MAXIMUM_VERSION = NPN_HTTP2_DRAFT_04,
   QUIC,
-  NUM_ALTERNATE_PROTOCOLS,
+  ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION = QUIC,
   ALTERNATE_PROTOCOL_BROKEN,  // The alternate protocol is known to be broken.
   UNINITIALIZED_ALTERNATE_PROTOCOL,
 };
 
+// Simply returns whether |protocol| is between
+// ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION and
+// ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION (inclusive).
+NET_EXPORT bool IsAlternateProtocolValid(AlternateProtocol protocol);
+
+enum AlternateProtocolSize {
+  NUM_VALID_ALTERNATE_PROTOCOLS =
+    ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION -
+    ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION + 1,
+};
+
 NET_EXPORT const char* AlternateProtocolToString(AlternateProtocol protocol);
 NET_EXPORT AlternateProtocol AlternateProtocolFromString(
-    const std::string& protocol);
+    const std::string& str);
 NET_EXPORT_PRIVATE AlternateProtocol AlternateProtocolFromNextProto(
     NextProto next_proto);
 

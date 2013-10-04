@@ -11,7 +11,6 @@ namespace net {
 SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
   switch (next_proto) {
     case kProtoSPDY2:
-    case kProtoSPDY21:
       return SPDY2;
     case kProtoSPDY3:
     case kProtoSPDY31:
@@ -22,7 +21,6 @@ SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
       return SPDY4;
     case kProtoUnknown:
     case kProtoHTTP11:
-    case kProtoSPDY1:
     case kProtoQUIC1SPDY3:
       break;
   }

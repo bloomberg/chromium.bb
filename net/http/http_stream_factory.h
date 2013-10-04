@@ -298,8 +298,13 @@ class NET_EXPORT HttpStreamFactory {
   HttpStreamFactory();
 
  private:
+  // |protocol| must be a valid protocol value.
+  static bool IsProtocolEnabled(AlternateProtocol protocol);
+  static void SetProtocolEnabled(AlternateProtocol protocol);
+  static void ResetEnabledProtocols();
+
   static std::vector<std::string>* next_protos_;
-  static bool enabled_protocols_[NUM_ALTERNATE_PROTOCOLS];
+  static bool enabled_protocols_[NUM_VALID_ALTERNATE_PROTOCOLS];
   static bool spdy_enabled_;
   static bool use_alternate_protocols_;
   static bool force_spdy_over_ssl_;

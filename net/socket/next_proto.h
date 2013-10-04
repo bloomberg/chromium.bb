@@ -13,23 +13,19 @@ namespace net {
 // protocols that we recognise.
 enum NextProto {
   kProtoUnknown = 0,
-  kProtoHTTP11 = 1,
+  kProtoHTTP11,
   kProtoMinimumVersion = kProtoHTTP11,
 
-  // TODO(akalin): Stop advertising SPDY/1 and remove this.
-  kProtoSPDY1 = 2,
-  kProtoSPDYMinimumVersion = kProtoSPDY1,
-  kProtoSPDY2 = 3,
-  // TODO(akalin): Stop adverising SPDY/2.1, too.
-  kProtoSPDY21 = 4,
-  kProtoSPDY3 = 5,
-  kProtoSPDY31 = 6,
-  kProtoSPDY4a2 = 7,
+  kProtoSPDY2,
+  kProtoSPDYMinimumVersion = kProtoSPDY2,
+  kProtoSPDY3,
+  kProtoSPDY31,
+  kProtoSPDY4a2,
   // We lump in HTTP/2 with the SPDY protocols for now.
-  kProtoHTTP2Draft04 = 8,
+  kProtoHTTP2Draft04,
   kProtoSPDYMaximumVersion = kProtoHTTP2Draft04,
 
-  kProtoQUIC1SPDY3 = 9,
+  kProtoQUIC1SPDY3,
 
   kProtoMaximumVersion = kProtoQUIC1SPDY3,
 };

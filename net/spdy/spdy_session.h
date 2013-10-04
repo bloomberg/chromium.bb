@@ -262,10 +262,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                              int certificate_error_code);
 
   // Returns the protocol used by this session. Always between
-  // kProtoSPDY2 and kProtoSPDYMaximumVersion.
-  //
-  // TODO(akalin): Change the lower bound to kProtoSPDYMinimumVersion
-  // once we stop supporting SPDY/1.
+  // kProtoSPDYMinimumVersion and kProtoSPDYMaximumVersion.
   NextProto protocol() const { return protocol_; }
 
   // Check to see if this SPDY session can support an additional domain.
@@ -1100,11 +1097,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   bool enable_compression_;
   bool enable_ping_based_connection_checking_;
 
-  // The SPDY protocol used. Always between kProtoSPDY2 and
+  // The SPDY protocol used. Always between kProtoSPDYMinimumVersion and
   // kProtoSPDYMaximumVersion.
-  //
-  // TODO(akalin): Change the lower bound to kProtoSPDYMinimumVersion
-  // once we stop supporting SPDY/1.
   NextProto protocol_;
 
   SpdyCredentialState credential_state_;

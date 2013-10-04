@@ -20,8 +20,6 @@ NextProto SSLClientSocket::NextProtoFromString(
     const std::string& proto_string) {
   if (proto_string == "http1.1" || proto_string == "http/1.1") {
     return kProtoHTTP11;
-  } else if (proto_string == "spdy/1") {
-    return kProtoSPDY1;
   } else if (proto_string == "spdy/2") {
     return kProtoSPDY2;
   } else if (proto_string == "spdy/3") {
@@ -44,8 +42,6 @@ const char* SSLClientSocket::NextProtoToString(NextProto next_proto) {
   switch (next_proto) {
     case kProtoHTTP11:
       return "http/1.1";
-    case kProtoSPDY1:
-      return "spdy/1";
     case kProtoSPDY2:
       return "spdy/2";
     case kProtoSPDY3:
@@ -58,7 +54,6 @@ const char* SSLClientSocket::NextProtoToString(NextProto next_proto) {
       return "HTTP-draft-04/2.0";
     case kProtoQUIC1SPDY3:
       return "quic/1+spdy/3";
-    case kProtoSPDY21:
     case kProtoUnknown:
       break;
   }

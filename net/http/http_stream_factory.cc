@@ -19,7 +19,7 @@ namespace net {
 // static
 std::vector<std::string>* HttpStreamFactory::next_protos_ = NULL;
 // static
-bool HttpStreamFactory::enabled_protocols_[NUM_ALTERNATE_PROTOCOLS];
+bool HttpStreamFactory::enabled_protocols_[NUM_VALID_ALTERNATE_PROTOCOLS];
 // static
 bool HttpStreamFactory::spdy_enabled_ = true;
 // static
@@ -34,6 +34,28 @@ std::list<HostPortPair>* HttpStreamFactory::forced_spdy_exclusions_ = NULL;
 HttpStreamFactory::~HttpStreamFactory() {}
 
 // static
+bool HttpStreamFactory::IsProtocolEnabled(AlternateProtocol protocol) {
+  DCHECK(IsAlternateProtocolValid(protocol));
+  return enabled_protocols_[
+      protocol - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION];
+}
+
+// static
+void HttpStreamFactory::SetProtocolEnabled(AlternateProtocol protocol) {
+  DCHECK(IsAlternateProtocolValid(protocol));
+  enabled_protocols_[
+      protocol - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] = true;
+}
+
+// static
+void HttpStreamFactory::ResetEnabledProtocols() {
+  for (int i = ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION;
+       i <= ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION; ++i) {
+    enabled_protocols_[i - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] = false;
+  }
+}
+
+// static
 void HttpStreamFactory::ResetStaticSettingsToInit() {
   // WARNING: These must match the initializers above.
   delete next_protos_;
@@ -44,8 +66,7 @@ void HttpStreamFactory::ResetStaticSettingsToInit() {
   force_spdy_over_ssl_ = true;
   force_spdy_always_ = false;
   forced_spdy_exclusions_ = NULL;
-  for (int i = 0; i < NUM_ALTERNATE_PROTOCOLS; ++i)
-    enabled_protocols_[i] = false;
+  ResetEnabledProtocols();
 }
 
 void HttpStreamFactory::ProcessAlternateProtocol(
@@ -72,11 +93,11 @@ void HttpStreamFactory::ProcessAlternateProtocol(
 
   AlternateProtocol protocol =
       AlternateProtocolFromString(port_protocol_vector[1]);
-  if (protocol < NUM_ALTERNATE_PROTOCOLS && !enabled_protocols_[protocol])
+  if (IsAlternateProtocolValid(protocol) && !IsProtocolEnabled(protocol)) {
     protocol = ALTERNATE_PROTOCOL_BROKEN;
+  }
 
   if (protocol == ALTERNATE_PROTOCOL_BROKEN) {
-    // Currently, we only recognize the npn-spdy protocol.
     DLOG(WARNING) << kAlternateProtocolHeader
                   << " header has unrecognized protocol: "
                   << port_protocol_vector[1];
@@ -212,8 +233,7 @@ void HttpStreamFactory::SetNextProtos(const std::vector<NextProto>& value) {
 
   next_protos_->clear();
 
-  for (uint32 i = 0; i < NUM_ALTERNATE_PROTOCOLS; ++i)
-    enabled_protocols_[i] = false;
+  ResetEnabledProtocols();
 
   // TODO(rtenneti): bug 116575 - consider combining the NextProto and
   // AlternateProtocol.
@@ -229,11 +249,11 @@ void HttpStreamFactory::SetNextProtos(const std::vector<NextProto>& value) {
     // which has not corresponding alternative.
     if (proto != kProtoHTTP11) {
       AlternateProtocol alternate = AlternateProtocolFromNextProto(proto);
-      if (alternate == UNINITIALIZED_ALTERNATE_PROTOCOL) {
+      if (!IsAlternateProtocolValid(alternate)) {
         NOTREACHED() << "Invalid next proto: " << proto;
         continue;
       }
-      enabled_protocols_[alternate] = true;
+      SetProtocolEnabled(alternate);
     }
   }
 }

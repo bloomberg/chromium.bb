@@ -30,9 +30,8 @@ namespace net {
 namespace {
 
 bool next_proto_is_spdy(NextProto next_proto) {
-  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
-  // stop supporting SPDY/1.
-  return next_proto >= kProtoSPDY2 && next_proto <= kProtoSPDYMaximumVersion;
+  return next_proto >= kProtoSPDYMinimumVersion &&
+      next_proto <= kProtoSPDYMaximumVersion;
 }
 
 // Parses a URL into the scheme, host, and path components required for a
@@ -54,9 +53,7 @@ void ParseUrl(base::StringPiece url, std::string* scheme, std::string* host,
 std::vector<NextProto> SpdyNextProtos() {
   std::vector<NextProto> next_protos;
   for (int i = kProtoMinimumVersion; i <= kProtoMaximumVersion; ++i) {
-    NextProto proto = static_cast<NextProto>(i);
-    if (proto != kProtoSPDY1 && proto != kProtoSPDY21)
-      next_protos.push_back(proto);
+    next_protos.push_back(static_cast<NextProto>(i));
   }
   return next_protos;
 }

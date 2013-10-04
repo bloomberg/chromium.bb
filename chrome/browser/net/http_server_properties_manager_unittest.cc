@@ -152,7 +152,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set up alternate_protocol for www.google.com:80.
   base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
   alternate_protocol->SetInteger("port", 443);
-  alternate_protocol->SetString("protocol_str", "npn-spdy/1");
+  alternate_protocol->SetString("protocol_str", "npn-spdy/2");
   server_pref_dict->SetWithoutPathExpansion(
       "alternate_protocol", alternate_protocol);
 
@@ -173,7 +173,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set up alternate_protocol for mail.google.com:80
   base::DictionaryValue* alternate_protocol1 = new base::DictionaryValue;
   alternate_protocol1->SetInteger("port", 444);
-  alternate_protocol1->SetString("protocol_str", "npn-spdy/2");
+  alternate_protocol1->SetString("protocol_str", "npn-spdy/3");
 
   server_pref_dict1->SetWithoutPathExpansion(
       "alternate_protocol", alternate_protocol1);
@@ -218,12 +218,12 @@ TEST_F(HttpServerPropertiesManagerTest,
       http_server_props_manager_->GetAlternateProtocol(
           net::HostPortPair::FromString("www.google.com:80"));
   EXPECT_EQ(443, port_alternate_protocol.port);
-  EXPECT_EQ(net::NPN_SPDY_1, port_alternate_protocol.protocol);
+  EXPECT_EQ(net::NPN_SPDY_2, port_alternate_protocol.protocol);
   port_alternate_protocol =
       http_server_props_manager_->GetAlternateProtocol(
           net::HostPortPair::FromString("mail.google.com:80"));
   EXPECT_EQ(444, port_alternate_protocol.port);
-  EXPECT_EQ(net::NPN_SPDY_2, port_alternate_protocol.protocol);
+  EXPECT_EQ(net::NPN_SPDY_3, port_alternate_protocol.protocol);
 
   // Verify pipeline capability.
   EXPECT_EQ(net::PIPELINE_CAPABLE,

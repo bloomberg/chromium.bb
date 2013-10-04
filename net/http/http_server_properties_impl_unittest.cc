@@ -189,12 +189,12 @@ typedef HttpServerPropertiesImplTest AlternateProtocolServerPropertiesTest;
 TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
   HostPortPair test_host_port_pair("foo", 80);
   EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
-  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_1);
+  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_2);
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
   const PortAlternateProtocolPair alternate =
       impl_.GetAlternateProtocol(test_host_port_pair);
   EXPECT_EQ(443, alternate.port);
-  EXPECT_EQ(NPN_SPDY_1, alternate.protocol);
+  EXPECT_EQ(NPN_SPDY_2, alternate.protocol);
 
   impl_.Clear();
   EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
@@ -204,7 +204,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   HostPortPair test_host_port_pair1("foo1", 80);
   impl_.SetBrokenAlternateProtocol(test_host_port_pair1);
   HostPortPair test_host_port_pair2("foo2", 80);
-  impl_.SetAlternateProtocol(test_host_port_pair2, 443, NPN_SPDY_1);
+  impl_.SetAlternateProtocol(test_host_port_pair2, 443, NPN_SPDY_2);
 
   AlternateProtocolMap alternate_protocol_map;
   PortAlternateProtocolPair port_alternate_protocol_pair;
@@ -235,7 +235,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   impl_.SetAlternateProtocol(
       test_host_port_pair,
       1234,
-      NPN_SPDY_1);
+      NPN_SPDY_2);
   alternate = impl_.GetAlternateProtocol(test_host_port_pair);
   EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol)
       << "Second attempt should be ignored.";
@@ -258,11 +258,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, Forced) {
   EXPECT_EQ(default_protocol.protocol, alternate.protocol);
 
   // Verify the real protocol overrides the forced protocol.
-  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_1);
+  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_2);
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
   alternate = impl_.GetAlternateProtocol(test_host_port_pair);
   EXPECT_EQ(443, alternate.port);
-  EXPECT_EQ(NPN_SPDY_1, alternate.protocol);
+  EXPECT_EQ(NPN_SPDY_2, alternate.protocol);
 
   // Turn off the static, forced alternate protocol so that tests don't
   // have this state.

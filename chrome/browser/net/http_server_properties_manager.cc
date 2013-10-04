@@ -398,7 +398,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       }
       net::AlternateProtocol protocol =
           net::AlternateProtocolFromString(protocol_str);
-      if (protocol > net::NUM_ALTERNATE_PROTOCOLS) {
+      if (!net::IsAlternateProtocolValid(protocol)) {
         DVLOG(1) << "Malformed Alternate-Protocol server: " << server_str;
         detected_corrupted_prefs = true;
         continue;
@@ -594,8 +594,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
     const net::HostPortPair& server = map_it->first;
     const net::PortAlternateProtocolPair& port_alternate_protocol =
         map_it->second;
-    if (port_alternate_protocol.protocol < 0 ||
-        port_alternate_protocol.protocol >= net::NUM_ALTERNATE_PROTOCOLS) {
+    if (!net::IsAlternateProtocolValid(port_alternate_protocol.protocol)) {
       continue;
     }
 
