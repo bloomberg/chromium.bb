@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_WINDOW_POSITIONER_H_
-#define CHROME_BROWSER_UI_ASH_WINDOW_POSITIONER_H_
+#ifndef ASH_WM_WINDOW_POSITIONER_H_
+#define ASH_WM_WINDOW_POSITIONER_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "ui/gfx/rect.h"
 
@@ -20,7 +21,7 @@ class WindowPositionerTest;
 
 // WindowPositioner is used by the browser to move new popups automatically to
 // a usable position on the closest work area (of the active window).
-class WindowPositioner {
+class ASH_EXPORT WindowPositioner {
  public:
   WindowPositioner();
   ~WindowPositioner();
@@ -71,4 +72,4 @@ class WindowPositioner {
 
 }  // namespace ash
 
-#endif  // CHROME_BROWSER_UI_ASH_WINDOW_POSITIONER_H_
+#endif  // ASH_WM_WINDOW_POSITIONER_H_

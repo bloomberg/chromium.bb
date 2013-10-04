@@ -17,10 +17,6 @@
 
 class Browser;
 
-namespace ash {
-class WindowPositioner;
-}
-
 namespace content {
 class WebContents;
 }
@@ -38,10 +34,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ~ChromeShellDelegate();
 
   static ChromeShellDelegate* instance() { return instance_; }
-
-  ash::WindowPositioner* window_positioner() {
-    return window_positioner_.get();
-  }
 
   // ash::ShellDelegate overrides;
   virtual bool IsFirstRunAfterBoot() const OVERRIDE;
@@ -116,8 +108,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   static ChromeShellDelegate* instance_;
 
   content::NotificationRegistrar registrar_;
-
-  scoped_ptr<ash::WindowPositioner> window_positioner_;
 
   base::WeakPtrFactory<ChromeShellDelegate> weak_factory_;
 

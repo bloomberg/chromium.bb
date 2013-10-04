@@ -97,6 +97,7 @@ class UserWallpaperDelegate;
 class VideoDetector;
 class WebNotificationTray;
 class WindowCycleController;
+class WindowPositioner;
 class WindowSelectorController;
 
 namespace internal {
@@ -120,7 +121,6 @@ class OverlayEventFilter;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
-class RootWindowLayoutManager;
 class ScopedTargetRootWindow;
 class ScreenPositionController;
 class SlowAnimationEventFilter;
@@ -473,6 +473,10 @@ class ASH_EXPORT Shell
     return launcher_model_.get();
   }
 
+  WindowPositioner* window_positioner() {
+    return window_positioner_.get();
+  }
+
   // Returns the launcher delegate, creating if necesary.
   LauncherDelegate* GetLauncherDelegate();
 
@@ -551,6 +555,7 @@ class ASH_EXPORT Shell
       app_list_shelf_item_delegate_;
 
   scoped_ptr<LauncherModel> launcher_model_;
+  scoped_ptr<ash::WindowPositioner> window_positioner_;
 
   scoped_ptr<internal::AppListController> app_list_controller_;
 

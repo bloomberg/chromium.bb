@@ -299,8 +299,6 @@
         'browser/ui/ash/user_wallpaper_delegate_win.h',
         'browser/ui/ash/volume_controller_chromeos.cc',
         'browser/ui/ash/volume_controller_chromeos.h',
-        'browser/ui/ash/window_positioner.cc',
-        'browser/ui/ash/window_positioner.h',
         'browser/ui/aura/active_desktop_monitor.cc',
         'browser/ui/aura/active_desktop_monitor.h',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.cc',

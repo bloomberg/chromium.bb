@@ -515,6 +515,8 @@
         'wm/window_cycle_controller.h',
         'wm/window_cycle_list.cc',
         'wm/window_cycle_list.h',
+        'wm/window_positioner.cc',
+        'wm/window_positioner.h',
         'wm/window_state.cc',
         'wm/window_state.h',
         'wm/window_state_observer.h',

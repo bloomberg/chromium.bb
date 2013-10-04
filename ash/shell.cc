@@ -70,6 +70,7 @@
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
@@ -162,6 +163,7 @@ Shell::Shell(ShellDelegate* delegate)
       target_root_window_(NULL),
       scoped_target_root_window_(NULL),
       delegate_(delegate),
+      window_positioner_(new WindowPositioner),
       activation_client_(NULL),
 #if defined(OS_CHROMEOS) && defined(USE_X11)
       output_configurator_(new chromeos::OutputConfigurator()),

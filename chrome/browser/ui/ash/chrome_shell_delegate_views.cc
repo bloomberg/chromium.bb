@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_views.h"
 #include "chrome/browser/ui/ash/session_state_delegate_views.h"
-#include "chrome/browser/ui/ash/window_positioner.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"

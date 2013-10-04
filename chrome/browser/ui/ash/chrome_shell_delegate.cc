@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/user_action_handler.h"
-#include "chrome/browser/ui/ash/window_positioner.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -100,8 +99,7 @@ class ChromeShellDelegate::TabRestoreHelper : public TabRestoreServiceObserver {
 };
 
 ChromeShellDelegate::ChromeShellDelegate()
-    : window_positioner_(new ash::WindowPositioner()),
-      weak_factory_(this),
+    : weak_factory_(this),
       launcher_delegate_(NULL) {
   instance_ = this;
   PlatformInit();

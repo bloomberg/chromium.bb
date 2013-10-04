@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/window_positioner.h"
+#include "ash/wm/window_positioner.h"
 
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"

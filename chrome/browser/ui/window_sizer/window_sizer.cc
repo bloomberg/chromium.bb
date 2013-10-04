@@ -19,9 +19,9 @@
 #include "ui/gfx/screen.h"
 
 #if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ash/wm/window_positioner.h"
 #include "chrome/browser/ui/ash/ash_init.h"
-#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/ash/window_positioner.h"
 #endif
 
 // Minimum height of the visible part of a window.
@@ -221,7 +221,7 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
     // looking for a good screen location. We are interpreting (0,0) as an
     // unspecified location.
     if (IsPopupBrowserInAsh() && bounds->origin().IsOrigin()) {
-      *bounds = ChromeShellDelegate::instance()->window_positioner()->
+      *bounds = ash::Shell::GetInstance()->window_positioner()->
           GetPopupPosition(*bounds);
       return;
     }
