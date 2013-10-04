@@ -153,10 +153,17 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
     }
 
     if (wideViewportQuirkEnabled) {
-        if (useWideViewport && (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom != 1.0f)
+        if (useWideViewport && (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom != 1.0f) {
             adjustedLayoutSizeWidth = layoutFallbackWidth;
-        else if (!useWideViewport)
-            adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(viewSize, initialScale) / targetDensityDPIFactor;
+        } else if (!useWideViewport) {
+            const float nonWideScale = description.zoom < 1 && !description.maxWidth.isViewportPercentage() ? -1 : initialScale;
+            adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(viewSize, nonWideScale) / targetDensityDPIFactor;
+            if (description.zoom < 1) {
+                m_pageDefinedConstraints.initialScale = viewSize.width() / adjustedLayoutSizeWidth;
+                m_pageDefinedConstraints.minimumScale = std::min<float>(m_pageDefinedConstraints.minimumScale, m_pageDefinedConstraints.initialScale);
+                m_pageDefinedConstraints.maximumScale = std::max<float>(m_pageDefinedConstraints.maximumScale, m_pageDefinedConstraints.initialScale);
+            }
+        }
     }
 
     if (adjustedLayoutSizeWidth != m_pageDefinedConstraints.layoutSize.width()) {
