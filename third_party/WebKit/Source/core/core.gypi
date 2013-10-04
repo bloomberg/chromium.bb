@@ -655,6 +655,8 @@
             'css/CSSRuleList.h',
             'css/CSSSegmentedFontFace.cpp',
             'css/CSSSegmentedFontFace.h',
+            'css/CSSSegmentedFontFaceCache.cpp',
+            'css/CSSSegmentedFontFaceCache.h',
             'css/CSSSelector.cpp',
             'css/CSSSelectorList.cpp',
             'css/CSSSelectorList.h',
