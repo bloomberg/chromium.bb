@@ -499,7 +499,7 @@ void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewWin::SetBounds(const gfx::Rect& rect) {
-  if (is_hidden_)
+  if (is_hidden_ || being_destroyed_)
     return;
 
   // No SWP_NOREDRAW as autofill popups can move and the underneath window
