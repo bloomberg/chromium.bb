@@ -110,11 +110,16 @@ InspectorTest.expandConsoleMessages = function()
 {
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
-        var element = WebInspector.console.messages[indices[i]].toMessageElement();
+        var message = WebInspector.console.messages[indices[i]];
+        var element = message.toMessageElement();
         var node = element;
         while (node) {
             if (node.treeElementForTest)
                 node.treeElementForTest.expand();
+            if (node._section) {
+                message.section = node._section;
+                node._section.expanded = true;
+            }
             node = node.traverseNextNode(element);
         }
     }

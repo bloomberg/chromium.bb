@@ -986,8 +986,12 @@ InjectedScript.RemoteObject.prototype = {
                     continue;
 
                 var descriptor = Object.getOwnPropertyDescriptor(object, name);
-                if (!("value" in descriptor) || !descriptor.enumerable) {
+                if (!descriptor.enumerable) {
                     preview.lossless = false;
+                    continue;
+                }
+                if (!("value" in descriptor)) {
+                    this._appendPropertyPreview(preview, { name: name, type: "accessor" }, propertiesThreshold);
                     continue;
                 }
 

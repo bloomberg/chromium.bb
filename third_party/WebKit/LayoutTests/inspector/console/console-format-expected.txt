@@ -124,10 +124,10 @@ id="x""x" console-format.html:54
 [id] console-format.html:55
 globals[14]
 id="x""x"
-Object {} console-format.html:54
+Object {length: (...)} console-format.html:54
 [Object] console-format.html:55
 globals[15]
-Object {}
+Object {length: (...)}
 NaN console-format.html:54
 [NaN] console-format.html:55
 globals[16]
