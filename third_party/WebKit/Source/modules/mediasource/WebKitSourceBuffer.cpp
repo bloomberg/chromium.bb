@@ -34,6 +34,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/TimeRanges.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/WebKitMediaSource.h"
 #include "wtf/Uint8Array.h"
@@ -106,6 +107,8 @@ void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
 
 void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionState& es)
 {
+    TRACE_EVENT0("media", "SourceBuffer::append");
+
     // SourceBuffer.append() steps from October 1st version of the Media Source Extensions spec.
     // https://dvcs.w3.org/hg/html-media/raw-file/7bab66368f2c/media-source/media-source.html#dom-append
 

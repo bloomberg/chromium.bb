@@ -28,6 +28,7 @@
 #include "core/events/GenericEventQueue.h"
 
 #include "core/events/Event.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 
@@ -55,6 +56,7 @@ bool GenericEventQueue::enqueueEvent(PassRefPtr<Event> event)
     if (event->target() == m_owner)
         event->setTarget(0);
 
+    TRACE_EVENT_ASYNC_BEGIN1("event", "GenericEventQueue:enqueueEvent", event.get(), "type", event->type().string().ascii());
     m_pendingEvents.append(event);
 
     if (!m_timer.isActive())
@@ -67,8 +69,10 @@ bool GenericEventQueue::cancelEvent(Event* event)
 {
     bool found = m_pendingEvents.contains(event);
 
-    if (found)
+    if (found) {
         m_pendingEvents.remove(m_pendingEvents.find(event));
+        TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event, "type", event->type().string().ascii(), "status", "cancelled");
+    }
 
     if (m_pendingEvents.isEmpty())
         m_timer.stop();
@@ -86,8 +90,12 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
 
     RefPtr<EventTarget> protect(m_owner);
     for (unsigned i = 0; i < pendingEvents.size(); ++i) {
-        EventTarget* target = pendingEvents[i]->target() ? pendingEvents[i]->target() : m_owner;
+        Event* event = pendingEvents[i].get();
+        EventTarget* target = event->target() ? event->target() : m_owner;
+        CString type(event->type().string().ascii());
+        TRACE_EVENT_ASYNC_STEP1("event", "GenericEventQueue:enqueueEvent", event, "dispatch", "type", type);
         target->dispatchEvent(pendingEvents[i].release());
+        TRACE_EVENT_ASYNC_END1("event", "GenericEventQueue:enqueueEvent", event, "type", type);
     }
 }
 

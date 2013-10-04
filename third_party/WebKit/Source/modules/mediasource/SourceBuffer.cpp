@@ -39,9 +39,10 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/Stream.h"
 #include "core/html/TimeRanges.h"
-#include "platform/Logging.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSource.h"
+#include "platform/Logging.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/MathExtras.h"
@@ -286,6 +287,8 @@ void SourceBuffer::remove(double start, double end, ExceptionState& es)
         return;
     }
 
+    TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::remove", this);
+
     // 5. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
     // 5.1. Set the readyState attribute of the parent media source to "open"
     // 5.2. Queue a task to fire a simple event named sourceopen at the parent media source .
@@ -311,6 +314,17 @@ void SourceBuffer::abortIfUpdating()
     if (!m_updating)
         return;
 
+    const char* traceEventName = 0;
+    if (!m_pendingAppendData.isEmpty()) {
+        traceEventName = "SourceBuffer::appendBuffer";
+    } else if (m_stream) {
+        traceEventName = "SourceBuffer::appendStream";
+    } else if (m_pendingRemoveStart != -1) {
+        traceEventName = "SourceBuffer::remove";
+    } else {
+        ASSERT_NOT_REACHED();
+    }
+
     // 3.1. Abort the buffer append and stream append loop algorithms if they are running.
     m_appendBufferTimer.stop();
     m_pendingAppendData.clear();
@@ -330,6 +344,8 @@ void SourceBuffer::abortIfUpdating()
 
     // 3.4. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(eventNames().updateendEvent);
+
+    TRACE_EVENT_ASYNC_END0("media", traceEventName, this);
 }
 
 void SourceBuffer::removedFromMediaSource()
@@ -404,6 +420,8 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
         return;
     }
 
+    TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::appendBuffer", this);
+
     // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps: ...
     m_source->openIfInEndedState();
 
@@ -420,11 +438,15 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
 
     // 10. Asynchronously run the buffer append algorithm.
     m_appendBufferTimer.startOneShot(0);
+
+    TRACE_EVENT_ASYNC_STEP0("media", "SourceBuffer::appendBuffer", this, "waiting");
 }
 
 void SourceBuffer::appendBufferTimerFired(Timer<SourceBuffer>*)
 {
     ASSERT(m_updating);
+
+    TRACE_EVENT_ASYNC_STEP0("media", "SourceBuffer::appendBuffer", this, "appending");
 
     // Section 3.5.4 Buffer Append Algorithm
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-buffer-append
@@ -449,6 +471,7 @@ void SourceBuffer::appendBufferTimerFired(Timer<SourceBuffer>*)
 
     // 5. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(eventNames().updateendEvent);
+    TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
 }
 
 void SourceBuffer::removeTimerFired(Timer<SourceBuffer>*)
@@ -494,6 +517,8 @@ void SourceBuffer::appendStreamInternal(PassRefPtr<Stream> stream, ExceptionStat
         es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
+
+    TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::appendStream", this);
 
     //  3. If the readyState attribute of the parent media source is in the "ended" state then run the following steps: ...
     m_source->openIfInEndedState();
@@ -556,6 +581,7 @@ void SourceBuffer::appendStreamDone(bool success)
 
         // 4. Queue a task to fire a simple event named updateend at this SourceBuffer object.
         scheduleEvent(eventNames().updateendEvent);
+        TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
         return;
     }
 
@@ -569,6 +595,7 @@ void SourceBuffer::appendStreamDone(bool success)
 
     // 14. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(eventNames().updateendEvent);
+    TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
 }
 
 void SourceBuffer::clearAppendStreamState()

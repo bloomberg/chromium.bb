@@ -36,9 +36,10 @@
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/GenericEventQueue.h"
-#include "platform/Logging.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
+#include "platform/Logging.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -75,6 +76,7 @@ const AtomicString& MediaSourceBase::endedKeyword()
 
 void MediaSourceBase::setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate> mediaSourcePrivate)
 {
+    TRACE_EVENT_ASYNC_END0("media", "MediaSourceBase::attachToElement", this);
     ASSERT(mediaSourcePrivate);
     ASSERT(!m_private);
     ASSERT(m_attachedElement);
@@ -232,6 +234,7 @@ bool MediaSourceBase::attachToElement(HTMLMediaElement* element)
 
     ASSERT(isClosed());
 
+    TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourceBase::attachToElement", this);
     m_attachedElement = element;
     return true;
 }
