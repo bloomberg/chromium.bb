@@ -55,9 +55,6 @@ class AppListShower {
   Profile* profile_;
   bool can_close_app_list_;
 
-  // PaginationModel that is shared across all views.
-  app_list::PaginationModel pagination_model_;
-
   // Used to keep the browser process alive while the app list is visible.
 
   DISALLOW_COPY_AND_ASSIGN(AppListShower);

@@ -20,7 +20,6 @@ class AppListViewFactory {
   virtual ~AppListViewFactory() {}
   virtual AppListViewWin* CreateAppListView(
       Profile* profile,
-      app_list::PaginationModel* pagination_model,
       const base::Closure& on_should_dismiss) = 0;
 };
 

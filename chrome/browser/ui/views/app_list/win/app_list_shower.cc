@@ -62,7 +62,7 @@ void AppListShower::CreateViewForProfile(Profile* requested_profile) {
 
   profile_ = requested_profile;
   view_.reset(factory_->CreateAppListView(
-      profile_, &pagination_model_,
+      profile_,
       base::Bind(&AppListShower::DismissAppList, base::Unretained(this))));
 }
 

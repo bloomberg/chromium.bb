@@ -66,7 +66,6 @@ class FakeFactory : public AppListViewFactory {
 
   virtual AppListViewWin* CreateAppListView(
       Profile* profile,
-      app_list::PaginationModel* pagination_model,
       const base::Closure& on_should_dismiss) OVERRIDE {
     views_created_++;
     return new FakeView(profile);

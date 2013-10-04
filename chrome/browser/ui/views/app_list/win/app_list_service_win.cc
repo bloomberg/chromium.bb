@@ -100,11 +100,6 @@ void AppListService::InitAll(Profile* initial_profile) {
 
 namespace {
 
-// Offset from the cursor to the point of the bubble arrow. It looks weird
-// if the arrow comes up right on top of the cursor, so it is offset by this
-// amount.
-static const int kAnchorOffset = 25;
-
 // Migrate chrome::kAppLauncherIsEnabled pref to
 // chrome::kAppLauncherHasBeenEnabled pref.
 void MigrateAppLauncherEnabledPref() {
@@ -324,7 +319,6 @@ class AppListViewFactoryImpl : public AppListViewFactory {
 
   virtual AppListViewWin* CreateAppListView(
       Profile* profile,
-      app_list::PaginationModel* pagination_model,
       const base::Closure& on_should_dismiss) OVERRIDE {
     // The controller will be owned by the view delegate, and the delegate is
     // owned by the app list view. The app list view manages it's own lifetime.
@@ -334,7 +328,7 @@ class AppListViewFactoryImpl : public AppListViewFactory {
     app_list::AppListView* view = new app_list::AppListView(view_delegate);
     gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
     view->InitAsBubbleAtFixedLocation(NULL,
-                                      pagination_model,
+                                      &pagination_model_,
                                       cursor,
                                       views::BubbleBorder::FLOAT,
                                       false /* border_accepts_events */);
@@ -343,6 +337,9 @@ class AppListViewFactoryImpl : public AppListViewFactory {
   }
 
  private:
+  // PaginationModel that is shared across all views.
+  app_list::PaginationModel pagination_model_;
+
   scoped_ptr<AppListControllerDelegate> delegate_;
   DISALLOW_COPY_AND_ASSIGN(AppListViewFactoryImpl);
 };
