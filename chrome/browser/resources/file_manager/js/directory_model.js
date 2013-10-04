@@ -701,16 +701,17 @@ DirectoryModel.prototype.onRenameEntry = function(
     if (index >= 0) {
       // Update the content list and selection status.
       var wasSelected = this.fileListSelection_.getIndexSelected(index);
-      this.fileListSelection_.beginChange();
-      this.fileListSelection_.setIndexSelected(index, false);
-      this.getFileList().splice(index, 1, newEntry);
-      if (wasSelected) {
-        // We re-search the index, because splice may trigger sorting so that
-        // index may be stale.
-        this.fileListSelection_.setIndexSelected(
-            this.findIndexByEntry_(newEntry), true);
-      }
-      this.fileListSelection_.endChange();
+      this.updateSelectionAndPublishEvent_(this.fileListSelection_, function() {
+        this.fileListSelection_.setIndexSelected(index, false);
+        this.getFileList().splice(index, 1, newEntry);
+        if (wasSelected) {
+          // We re-search the index, because splice may trigger sorting so that
+          // index may be stale.
+          this.fileListSelection_.setIndexSelected(
+              this.findIndexByEntry_(newEntry), true);
+        }
+        return true;
+      }.bind(this));
     }
 
     // Run callback, finally.
