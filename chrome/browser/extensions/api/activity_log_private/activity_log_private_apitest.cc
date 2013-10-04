@@ -46,8 +46,8 @@ class ActivityLogApiTest : public ExtensionApiTest {
   CommandLine saved_cmdline_;
 };
 
-#if defined(OS_WIN)
-// TODO(karenlees): test flaky on windows. See Bug: crbug.com/245594
+#if defined(OS_WIN) && !defined(NDEBUG)
+// TODO(karenlees): fix flakiness on win debug - crbug.com/299393
 #define MAYBE_TriggerEvent DISABLED_TriggerEvent
 #else
 #define MAYBE_TriggerEvent TriggerEvent
