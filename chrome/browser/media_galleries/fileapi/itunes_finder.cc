@@ -15,10 +15,10 @@ namespace itunes {
 void FindITunesLibrary(const ITunesFinderCallback& callback) {
 #if defined(OS_MACOSX)
   // Deletes itself on completion.
-  new ITunesFinderMac(callback);
+  (new ITunesFinderMac(callback))->Start();
 #elif defined(OS_WIN)
   // Deletes itself on completion.
-  new ITunesFinderWin(callback);
+  (new ITunesFinderWin(callback))->Start();
 #else
   callback.Run(std::string());
 #endif

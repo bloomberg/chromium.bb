@@ -22,6 +22,10 @@ class IAppFinder {
  public:
   virtual ~IAppFinder();
 
+  // Start the finder. Once the finder is started, it will delete itself. If an
+  // IAppFinder is constructed, but not started, it must be deleted.
+  void Start();
+
  protected:
   IAppFinder(StorageInfo::Type type, const IAppFinderCallback& callback);
 

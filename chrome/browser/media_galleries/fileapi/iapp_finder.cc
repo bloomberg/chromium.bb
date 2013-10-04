@@ -12,17 +12,19 @@ namespace iapps {
 
 IAppFinder::~IAppFinder() {}
 
+void IAppFinder::Start() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&IAppFinder::FindIAppOnFileThread, base::Unretained(this)));
+}
+
 IAppFinder::IAppFinder(StorageInfo::Type type,
                        const IAppFinderCallback& callback)
     : type_(type),
       callback_(callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&IAppFinder::FindIAppOnFileThread, base::Unretained(this)));
 }
 
 void IAppFinder::PostResultToUIThread(const std::string& unique_id) {

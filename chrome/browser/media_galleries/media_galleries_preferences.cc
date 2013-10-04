@@ -397,7 +397,7 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
                  weak_factory_.GetWeakPtr()));
 
 #if 0
-  new iphoto::IPhotoFinder(
+  iphoto::FindIPhotoLibrary(
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
 #endif
