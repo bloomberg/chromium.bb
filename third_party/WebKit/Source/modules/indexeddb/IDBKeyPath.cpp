@@ -28,7 +28,10 @@
 
 #include "wtf/ASCIICType.h"
 #include "wtf/dtoa.h"
+#include "wtf/unicode/CharacterNames.h"
 #include "wtf/unicode/Unicode.h"
+
+using namespace WTF::Unicode;
 
 namespace WebCore {
 
@@ -91,8 +94,6 @@ const uint32_t unicodeLetter = Letter_Uppercase | Letter_Lowercase | Letter_Titl
 const uint32_t unicodeCombiningMark = Mark_NonSpacing | Mark_SpacingCombining;
 const uint32_t unicodeDigit = Number_DecimalDigit;
 const uint32_t unicodeConnectorPunctuation = Punctuation_Connector;
-const UChar ZWNJ = 0x200C;
-const UChar ZWJ = 0x200D;
 
 static inline bool isIdentifierStartCharacter(UChar c)
 {
@@ -101,7 +102,7 @@ static inline bool isIdentifierStartCharacter(UChar c)
 
 static inline bool isIdentifierCharacter(UChar c)
 {
-    return (category(c) & (unicodeLetter | unicodeCombiningMark | unicodeDigit | unicodeConnectorPunctuation)) || (c == '$') || (c == '_') || (c == ZWNJ) || (c == ZWJ);
+    return (category(c) & (unicodeLetter | unicodeCombiningMark | unicodeDigit | unicodeConnectorPunctuation)) || (c == '$') || (c == '_') || (c == zeroWidthNonJoiner) || (c == zeroWidthJoiner);
 }
 
 } // namespace
