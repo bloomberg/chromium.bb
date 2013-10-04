@@ -365,8 +365,11 @@ private:
 //
 // <compressed data (zip)>
 // ------**--yradnuoBgoLtrapitluMklaTelgooG--**------
+//
+// TODO(grunell): Test has been disabled due to the logging API being moved to
+// an extension API. Move test to extension tests.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       MANUAL_RunsAudioVideoWebRTCCallInTwoTabsWithLogging) {
+                       DISABLED_RunsAudioVideoWebRTCCallInTwoTabsWithLogging) {
   EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
