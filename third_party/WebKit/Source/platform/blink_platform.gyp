@@ -65,6 +65,8 @@
       '../weborigin/weborigin.gyp:weborigin',
       '<(DEPTH)/skia/skia.gyp:skia',
       '<(DEPTH)/url/url.gyp:url_lib',
+      '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+      '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       'blink_common',
     ],
     'defines': [

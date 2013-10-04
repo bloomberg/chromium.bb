@@ -34,6 +34,8 @@
       'geometry/LayoutSize.h',
       'network/DNS.cpp',
       'network/DNS.h',
+      'network/HTTPHeaderMap.cpp',
+      'network/HTTPHeaderMap.h',
       'network/ParsedContentType.cpp',
       'network/ParsedContentType.h',
       'network/ProxyServer.cpp',

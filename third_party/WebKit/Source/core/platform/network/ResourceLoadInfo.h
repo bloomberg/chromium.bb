@@ -27,7 +27,7 @@
 #ifndef ResourceLoadInfo_h
 #define ResourceLoadInfo_h
 
-#include "core/platform/network/HTTPHeaderMap.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

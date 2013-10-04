@@ -27,39 +27,40 @@
 #ifndef HTTPHeaderMap_h
 #define HTTPHeaderMap_h
 
-#include <utility>
+#include "platform/PlatformExport.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringHash.h"
+#include <utility>
 
 namespace WebCore {
 
-    typedef Vector<std::pair<String, String> > CrossThreadHTTPHeaderMapData;
+typedef Vector<std::pair<String, String> > CrossThreadHTTPHeaderMapData;
 
-    // FIXME: Not every header fits into a map. Notably, multiple Set-Cookie header fields are needed to set multiple cookies.
-    class HTTPHeaderMap : public HashMap<AtomicString, AtomicString, CaseFoldingHash> {
-    public:
-        HTTPHeaderMap();
-        ~HTTPHeaderMap();
+// FIXME: Not every header fits into a map. Notably, multiple Set-Cookie header fields are needed to set multiple cookies.
+class PLATFORM_EXPORT HTTPHeaderMap : public HashMap<AtomicString, AtomicString, CaseFoldingHash> {
+public:
+    HTTPHeaderMap();
+    ~HTTPHeaderMap();
 
-        // Gets a copy of the data suitable for passing to another thread.
-        PassOwnPtr<CrossThreadHTTPHeaderMapData> copyData() const;
+    // Gets a copy of the data suitable for passing to another thread.
+    PassOwnPtr<CrossThreadHTTPHeaderMapData> copyData() const;
 
-        void adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData>);
+    void adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData>);
 
-        AtomicString get(const AtomicString& name) const;
+    AtomicString get(const AtomicString& name) const;
 
-        AddResult add(const AtomicString& name, const AtomicString& value);
+    AddResult add(const AtomicString& name, const AtomicString& value);
 
-        // Alternate accessors that are faster than converting the char* to AtomicString first.
-        bool contains(const char*) const;
-        AtomicString get(const char*) const;
-        AddResult add(const char* name, const AtomicString& value);
+    // Alternate accessors that are faster than converting the char* to AtomicString first.
+    bool contains(const char*) const;
+    AtomicString get(const char*) const;
+    AddResult add(const char* name, const AtomicString& value);
 
-    };
+};
 
 } // namespace WebCore
 

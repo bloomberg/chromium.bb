@@ -29,8 +29,8 @@
 #define ResourceRequest_h
 
 #include "core/platform/network/FormData.h"
-#include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceLoadPriority.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 

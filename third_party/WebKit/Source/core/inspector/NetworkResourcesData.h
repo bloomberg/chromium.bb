@@ -31,7 +31,7 @@
 
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/inspector/InspectorPageAgent.h"
-#include "core/platform/network/HTTPHeaderMap.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "weborigin/KURL.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"

@@ -28,9 +28,9 @@
 #define ResourceResponse_h
 
 #include "core/platform/network/BlobData.h"
-#include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceLoadInfo.h"
 #include "core/platform/network/ResourceLoadTiming.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"

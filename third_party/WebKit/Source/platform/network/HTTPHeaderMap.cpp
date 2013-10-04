@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/network/HTTPHeaderMap.h"
+#include "platform/network/HTTPHeaderMap.h"
 
 #include <utility>
 
@@ -50,8 +50,8 @@ PassOwnPtr<CrossThreadHTTPHeaderMapData> HTTPHeaderMap::copyData() const
     OwnPtr<CrossThreadHTTPHeaderMapData> data = adoptPtr(new CrossThreadHTTPHeaderMapData());
     data->reserveInitialCapacity(size());
 
-    HTTPHeaderMap::const_iterator end_it = end();
-    for (HTTPHeaderMap::const_iterator it = begin(); it != end_it; ++it)
+    HTTPHeaderMap::const_iterator endIt = end();
+    for (HTTPHeaderMap::const_iterator it = begin(); it != endIt; ++it)
         data->uncheckedAppend(make_pair(it->key.string().isolatedCopy(), it->value.string().isolatedCopy()));
 
     return data.release();

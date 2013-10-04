@@ -3143,7 +3143,6 @@
             'platform/network/FormData.cpp',
             'platform/network/FormDataBuilder.cpp',
             'platform/network/FormDataBuilder.h',
-            'platform/network/HTTPHeaderMap.cpp',
             'platform/network/HTTPParsers.cpp',
             'platform/network/HTTPParsers.h',
             'platform/network/HTTPRequest.cpp',
