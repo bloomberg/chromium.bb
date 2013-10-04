@@ -196,6 +196,33 @@ test.util.sync.getFileList = function(contentWindow) {
 };
 
 /**
+ * Checkes if the given label and path of the volume are selected.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} label Correct label the selected volume should have.
+ * @param {string} path Correct path the selected volume should have.
+ * @return {boolean} True for success.
+ */
+test.util.sync.checkSelectedVolume = function(contentWindow, label, path) {
+  var list = contentWindow.document.querySelector('#navigation-list');
+  var rows = list.querySelectorAll('li');
+  var selected = [];
+  for (var i = 0; i < rows.length; ++i) {
+    if (rows[i].hasAttribute('selected'))
+      selected.push(rows[i]);
+  }
+  // Selected item must be one.
+  if (selected.length !== 1)
+    return false;
+
+  if (selected[0].modelItem.path !== path ||
+      selected[0].querySelector('.root-label').textContent !== label) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
  * Waits until the window is set to the specified dimensions.
  *
  * @param {Window} contentWindow Window to be tested.

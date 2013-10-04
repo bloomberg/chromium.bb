@@ -712,5 +712,11 @@ INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 
+INSTANTIATE_TEST_CASE_P(
+    NavigationList,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "traverseNavigationList")));
+
 }  // namespace
 }  // namespace file_manager

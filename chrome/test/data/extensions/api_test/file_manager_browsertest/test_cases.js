@@ -1432,6 +1432,109 @@ testcase.restoreCurrentView = function() {
 };
 
 /**
+ * Tests keyboard operations of the navigation list.
+ */
+testcase.traverseNavigationList = function() {
+  var appId;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      var appState = {defaultPath: '/drive/root'};
+      setupAndWaitUntilReady(appState, this.next);
+    },
+    // Wait for the navigation list.
+    function(inAppId) {
+      appId = inAppId;
+      callRemoteTestUtil(
+          'waitForElement',
+          appId,
+          ['#navigation-list > .root-item > ' +
+               '.volume-icon[volume-type-icon="drive"]'],
+          this.next);
+    },
+    // Ensure that the 'Gogole Drive' is selected.
+    function() {
+      callRemoteTestUtil('checkSelectedVolume',
+                         appId,
+                         ['Google Drive', '/drive/root'],
+                         this.next);
+    },
+    // Ensure that the current directory is changed to 'Gogole Drive'.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET),
+                          {ignoreLastModifiedTime: true}],
+                         this.next);
+    },
+    // Press the UP key.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('fakeKeyDown',
+                         appId,
+                         ['#navigation-list', 'Up', true],
+                         this.next);
+    },
+    // Ensure that the 'Gogole Drive' is still selected since it is the first
+    // item.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('checkSelectedVolume',
+                         appId,
+                         ['Google Drive', '/drive/root'],
+                         this.next);
+    },
+    // Press the DOWN key.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('fakeKeyDown',
+                         appId,
+                         ['#navigation-list', 'Down', true],
+                         this.next);
+    },
+    // Ensure that the 'Download' is selected.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('checkSelectedVolume',
+                         appId,
+                         ['Downloads', '/Downloads'],
+                         this.next);
+    },
+    // Ensure that the current directory is changed to 'Downloads'.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET),
+                          {ignoreLastModifiedTime: true}],
+                         this.next);
+    },
+    // Press the DOWN key again.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('fakeKeyDown',
+                         appId,
+                         ['#navigation-list', 'Down', true],
+                         this.next);
+    },
+    // Ensure that the 'Downloads' is still selected since it is the last item.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('checkSelectedVolume',
+                         appId,
+                         ['Downloads', '/Downloads'],
+                         this.next);
+    },
+    // Check for errors.
+    function(result) {
+      chrome.test.assertTrue(result);
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
  * Tests restoring geometry of the Files app.
  */
 testcase.restoreGeometry = function() {
