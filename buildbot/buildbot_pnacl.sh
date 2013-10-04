@@ -571,6 +571,16 @@ tc-tests-all() {
   scons-stage-irt "arm" \
     "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
     "run_hello_world_test"
+
+  # Run the GCC torture tests just for x86-32.  Testing a single
+  # architecture gives good coverage without taking too long.  We
+  # don't test x86-64 here because some of the torture tests fail on
+  # the x86-64 toolchain trybot (though not the buildbots, apparently
+  # due to a hardware difference:
+  # https://code.google.com/p/nativeclient/issues/detail?id=3697).
+  echo "@@@BUILD_STEP torture_tests x86-32 @@@"
+  tools/toolchain_tester/torture_test.py pnacl x86-32 --bot --verbose \
+      --concurrency=8 || handle-error
 }
 
 tc-tests-fast() {

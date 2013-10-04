@@ -394,6 +394,11 @@ tc-test-bot() {
   # run the torture tests. the "trybot" phases take care of prerequisites
   # for both test sets
   for arch in ${archset}; do
+    if [[ "${arch}" == "x86-32" ]]; then
+      # Torture tests on x86-32 are covered by tc-tests-all in
+      # buildbot_pnacl.sh.
+      continue
+    fi
     echo "@@@BUILD_STEP torture_tests $arch @@@"
     ${TORTURE_TEST} pnacl ${arch} --bot --verbose \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
