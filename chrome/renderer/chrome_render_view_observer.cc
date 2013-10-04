@@ -441,8 +441,9 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
     success = false;
   }
 
-  if (main_frame && is_apple_mobile_webapp_capable &&
-      !is_mobile_webapp_capable) {
+  bool is_only_apple_mobile_webapp_capable =
+      is_apple_mobile_webapp_capable && !is_mobile_webapp_capable;
+  if (main_frame && is_only_apple_mobile_webapp_capable) {
     WebKit::WebConsoleMessage message(
         WebKit::WebConsoleMessage::LevelWarning,
         "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
@@ -452,12 +453,12 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
     main_frame->addMessageToConsole(message);
   }
 
-  bool webapp_capable =
-      is_mobile_webapp_capable || is_apple_mobile_webapp_capable;
-  Send(new ChromeViewHostMsg_DidRetrieveWebappInformation(routing_id(),
-                                                          success,
-                                                          webapp_capable,
-                                                          expected_url));
+  Send(new ChromeViewHostMsg_DidRetrieveWebappInformation(
+      routing_id(),
+      success,
+      is_mobile_webapp_capable,
+      is_apple_mobile_webapp_capable,
+      expected_url));
 }
 #endif
 
