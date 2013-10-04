@@ -89,8 +89,8 @@ Target* TargetManager::GetTarget(const Label& label,
   } else {
     // Error, we previously saw this thing as a non-target.
     *err = Err(specified_from_here, "Not previously a target.",
-        "The target being declared here was previously seen referenced as a\n"
-        "non-target (like a config)");
+        "The target being declared here was previously seen referenced as a " +
+        target_node->item()->GetItemTypeName());
     err->AppendSubErr(Err(target_node->originally_referenced_from_here(),
                           "Originally referenced from here."));
     return NULL;

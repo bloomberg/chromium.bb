@@ -40,6 +40,7 @@ Config* Config::GetConfig(const Settings* settings,
   if (!node) {
     config = new Config(label);
     node = new ItemNode(config);
+    node->set_originally_referenced_from_here(specified_from_here);
     tree->AddNodeLocked(node);
 
     // Only schedule loading the given target if somebody is depending on it

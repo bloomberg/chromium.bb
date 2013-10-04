@@ -47,8 +47,15 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
 
   CommandLine cmdline(executable);
   cmdline.AppendSwitchPath("--root", build_settings->root_path());
+  cmdline.AppendSwitch("-q");  // Don't write output.
 
-  // TODO(brettw) append other parameters.
+  const CommandLine& our_cmdline = *CommandLine::ForCurrentProcess();
+  const CommandLine::SwitchMap& switches = our_cmdline.GetSwitches();
+  for (CommandLine::SwitchMap::const_iterator i = switches.begin();
+       i != switches.end(); ++i) {
+    if (i->first != "q" && i->first != "root")
+      cmdline.AppendSwitchNative(i->first, i->second);
+  }
 
 #if defined(OS_WIN)
   return WideToUTF8(cmdline.GetCommandLineString());

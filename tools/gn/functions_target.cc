@@ -43,6 +43,8 @@ Value ExecuteGenericTarget(const char* target_type,
 
   TargetGenerator::GenerateTarget(&block_scope, function->function(), args,
                                   target_type, err);
+  if (err->has_error())
+    return Value();
 
   block_scope.CheckForUnusedVars(err);
   return Value();
