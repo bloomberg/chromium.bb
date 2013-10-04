@@ -71,8 +71,6 @@ public:
     // The returned pointer is valid until closeHelperPlugin() is called.
     // Returns 0 if the plugin could not be instantiated.
     virtual WebPlugin* createHelperPlugin(const WebString& pluginType, WebFrame*) = 0;
-    // FIXME: Remove this override when Chromium is updated to use closeHelperPluginSoon().
-    virtual void closeHelperPlugin() = 0;
     virtual void closeHelperPluginSoon(WebFrame*) = 0;
     virtual bool needsWebLayerForVideo() const = 0;
     virtual void setWebLayer(WebLayer*) = 0;

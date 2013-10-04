@@ -165,21 +165,13 @@ WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginT
     if (!plugin) {
         // There is no need to keep the helper plugin around and the caller
         // should not be expected to call close after a failure (null pointer).
-        closeHelperPlugin();
+        closeHelperPluginSoon(frame);
         return 0;
     }
 
     return plugin;
 }
 
-
-// FIXME: Remove this override and cast when Chromium is updated to use closeHelperPluginSoon().
-void WebMediaPlayerClientImpl::closeHelperPlugin()
-{
-    Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document().frame();
-    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
-    closeHelperPluginSoon(webFrame);
-}
 
 void WebMediaPlayerClientImpl::closeHelperPluginSoon(WebFrame* frame)
 {
