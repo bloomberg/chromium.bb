@@ -542,8 +542,6 @@
     'browser/geolocation/geolocation_dispatcher_host.h',
     'browser/geolocation/geolocation_provider_impl.cc',
     'browser/geolocation/geolocation_provider_impl.h',
-    'browser/geolocation/gps_location_provider_linux.cc',
-    'browser/geolocation/gps_location_provider_linux.h',
     'browser/geolocation/location_api_adapter_android.cc',
     'browser/geolocation/location_api_adapter_android.h',
     'browser/geolocation/location_arbitrator.h',
@@ -1561,11 +1559,6 @@
       'dependencies': [
         '../third_party/flac/flac.gyp:libflac',
         '../third_party/speex/speex.gyp:libspeex',
-      ],
-    }],
-    ['linux_use_libgps==1', {
-      'dependencies': [
-        '../build/linux/system.gyp:libgps',
       ],
     }],
   ],

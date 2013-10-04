@@ -639,14 +639,6 @@
           'linux_use_gold_flags%': 0,
         }],
 
-        ['chromeos==1', {
-          'linux_use_libgps%': 1,
-        }, { # chromeos==0
-          # Do not use libgps on desktop Linux by default,
-          # see http://crbug.com/103751.
-          'linux_use_libgps%': 0,
-        }],
-
         ['OS=="android" or OS=="ios"', {
           'enable_captive_portal_detection%': 0,
         }, {
@@ -866,7 +858,6 @@
     'enable_background%': '<(enable_background)',
     'linux_use_gold_binary%': '<(linux_use_gold_binary)',
     'linux_use_gold_flags%': '<(linux_use_gold_flags)',
-    'linux_use_libgps%': '<(linux_use_libgps)',
     'use_canvas_skia%': '<(use_canvas_skia)',
     'test_isolation_mode%': '<(test_isolation_mode)',
     'test_isolation_outdir%': '<(test_isolation_outdir)',

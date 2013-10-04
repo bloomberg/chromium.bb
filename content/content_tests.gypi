@@ -376,7 +376,6 @@
         'browser/gamepad/gamepad_test_helpers.cc',
         'browser/gamepad/gamepad_test_helpers.h',
         'browser/geolocation/geolocation_provider_unittest.cc',
-        'browser/geolocation/gps_location_provider_unittest_linux.cc',
         'browser/geolocation/location_arbitrator_impl_unittest.cc',
         'browser/geolocation/network_location_provider_unittest.cc',
         'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
@@ -770,7 +769,6 @@
             'browser/renderer_host/java/jni_helper_unittest.cc',
           ],
           'sources!': [
-            'browser/geolocation/gps_location_provider_unittest_linux.cc',
             'browser/geolocation/network_location_provider_unittest.cc',
             'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
