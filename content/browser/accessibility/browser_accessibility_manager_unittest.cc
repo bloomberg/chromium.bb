@@ -550,6 +550,12 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
 }
 
+// Crashes on Windows. http://crbug.com/304130
+#if defined(OS_WIN)
+#define MAYBE_TestFatalError DISABLED_TestFatalError
+#else
+#define MAYBE_TestFatalError TestFatalError
+#endif
 TEST(BrowserAccessibilityManagerTest, TestFatalError) {
   // Test that BrowserAccessibilityManager raises a fatal error
   // (which will crash the renderer) if the same id is used in
