@@ -5,18 +5,18 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_FINDER_MAC_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_FINDER_MAC_H_
 
-#include "chrome/browser/media_galleries/fileapi/iapp_finder.h"
+#include "chrome/browser/media_galleries/fileapi/iapp_finder_mac.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
 
 namespace itunes {
 
-class ITunesFinderMac : public iapps::IAppFinder {
+class ITunesFinderMac : public iapps::IAppFinderMac {
  public:
   explicit ITunesFinderMac(const ITunesFinderCallback& callback);
   virtual ~ITunesFinderMac();
 
  private:
-  virtual void FindIAppOnFileThread() OVERRIDE;
+  virtual base::FilePath ExtractPath(NSString* path_ns) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ITunesFinderMac);
 };

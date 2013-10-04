@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/browser/media_galleries/fileapi/safe_itunes_pref_parser_win.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 

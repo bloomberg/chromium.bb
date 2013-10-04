@@ -1057,6 +1057,8 @@
         'browser/media_galleries/fileapi/device_media_async_file_util.h',
         'browser/media_galleries/fileapi/iapp_finder.cc',
         'browser/media_galleries/fileapi/iapp_finder.h',
+        'browser/media_galleries/fileapi/iapp_finder_mac.h',
+        'browser/media_galleries/fileapi/iapp_finder_mac.mm',
         'browser/media_galleries/fileapi/iphoto_finder_mac.h',
         'browser/media_galleries/fileapi/iphoto_finder_mac.mm',
         'browser/media_galleries/fileapi/itunes_finder.cc',
