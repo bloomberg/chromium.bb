@@ -29,6 +29,8 @@ PASS 'clear' in store is true
 PASS typeof store.clear is "function"
 PASS 'openCursor' in store is true
 PASS typeof store.openCursor is "function"
+PASS 'openKeyCursor' in store is true
+PASS typeof store.openKeyCursor is "function"
 PASS 'createIndex' in store is true
 PASS typeof store.createIndex is "function"
 PASS 'index' in store is true

@@ -65,6 +65,7 @@ public:
     bool autoIncrement() const { return m_metadata.autoIncrement; }
 
     PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
+    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
     PassRefPtr<IDBRequest> get(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
     PassRefPtr<IDBRequest> add(ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
     PassRefPtr<IDBRequest> put(ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);

@@ -539,6 +539,37 @@ PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ScriptExecutionContext* contex
     return request.release();
 }
 
+PassRefPtr<IDBRequest> IDBObjectStore::openKeyCursor(ScriptExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
+{
+    IDB_TRACE("IDBObjectStore::openKeyCursor");
+    if (isDeleted()) {
+        es.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
+        return 0;
+    }
+    if (m_transaction->isFinished()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        return 0;
+    }
+    if (!m_transaction->isActive()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        return 0;
+    }
+
+    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, es);
+    if (es.hadException())
+        return 0;
+
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, es);
+    if (es.hadException())
+        return 0;
+
+    RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
+
+    backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, direction, true, IDBDatabaseBackendInterface::NormalTask, request);
+    return request.release();
+}
+
 PassRefPtr<IDBRequest> IDBObjectStore::count(ScriptExecutionContext* context, const ScriptValue& range, ExceptionState& es)
 {
     IDB_TRACE("IDBObjectStore::count");

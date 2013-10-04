@@ -256,6 +256,24 @@ Expecting TypeError exception from store.openCursor(0, 'invalid-direction')
 PASS Exception was thrown.
 PASS store.openCursor(0, 'invalid-direction') threw TypeError: Type error
 
+IDBObjectStore.openKeyCursor()
+If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
+Expecting exception from store.openKeyCursor({})
+PASS Exception was thrown.
+PASS code is 0
+PASS ename is 'DataError'
+Exception message: The parameter is not a valid key.
+The transaction this IDBObjectStore belongs to is not active.
+Expecting exception from storeFromInactiveTransaction.openKeyCursor()
+PASS Exception was thrown.
+PASS code is 0
+PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
+The value for the direction parameter is invalid.
+Expecting TypeError exception from store.openKeyCursor(0, 'invalid-direction')
+PASS Exception was thrown.
+PASS store.openKeyCursor(0, 'invalid-direction') threw TypeError: Type error
+
 IDBObjectStore.put()
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBObjectStore belongs to is has its mode set to "readonly".
 Expecting exception from storeFromReadOnlyTransaction.put(0, 0)

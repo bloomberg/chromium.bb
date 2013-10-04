@@ -30,6 +30,8 @@ PASS [Worker] 'clear' in store is true
 PASS [Worker] typeof store.clear is "function"
 PASS [Worker] 'openCursor' in store is true
 PASS [Worker] typeof store.openCursor is "function"
+PASS [Worker] 'openKeyCursor' in store is true
+PASS [Worker] typeof store.openKeyCursor is "function"
 PASS [Worker] 'createIndex' in store is true
 PASS [Worker] typeof store.createIndex is "function"
 PASS [Worker] 'index' in store is true

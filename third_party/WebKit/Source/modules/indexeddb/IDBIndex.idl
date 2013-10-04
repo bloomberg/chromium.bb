@@ -31,8 +31,8 @@
     readonly attribute boolean unique;
     readonly attribute boolean multiEntry;
 
-    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openCursor([Default=Undefined] optional any key, [Default=NullString] optional DOMString direction);
-    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openKeyCursor([Default=Undefined] optional any key, [Default=NullString] optional DOMString direction);
+    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, [Default=NullString] optional DOMString direction);
+    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openKeyCursor([Default=Undefined] optional any range, [Default=NullString] optional DOMString direction);
 
     [CallWith=ScriptExecutionContext, RaisesException] IDBRequest get(any key);
     [CallWith=ScriptExecutionContext, RaisesException] IDBRequest getKey(any key);

@@ -36,7 +36,8 @@
     [CallWith=ScriptExecutionContext, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete(any key);
     [CallWith=ScriptExecutionContext, RaisesException] IDBRequest clear();
     [CallWith=ScriptExecutionContext, RaisesException] IDBRequest get(any key);
-    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openCursor([Default=Undefined] optional any key, [Default=NullString] optional DOMString direction);
+    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, [Default=NullString] optional DOMString direction);
+    [CallWith=ScriptExecutionContext, RaisesException, EnabledAtRuntime=IndexedDBExperimental] IDBRequest openKeyCursor([Default=Undefined] optional any range, [Default=NullString] optional DOMString direction);
 
     [CallWith=ScriptExecutionContext, RaisesException] IDBIndex createIndex(DOMString name, sequence<DOMString> keyPath, optional Dictionary options);
     [CallWith=ScriptExecutionContext, RaisesException] IDBIndex createIndex(DOMString name, DOMString keyPath, optional Dictionary options);
