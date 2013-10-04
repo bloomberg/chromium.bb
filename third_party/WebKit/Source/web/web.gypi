@@ -236,6 +236,7 @@
       'WebSpeechRecognitionResult.cpp',
       'WebStorageEventDispatcherImpl.cpp',
       'WebSurroundingText.cpp',
+      'WebTextAreaElement.cpp',
       'WebTextCheckingCompletionImpl.cpp',
       'WebTextCheckingCompletionImpl.h',
       'WebTextCheckingResult.cpp',

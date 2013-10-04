@@ -87,19 +87,14 @@ void WebFormElement::getNamedElements(const WebString& name,
 void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& result) const
 {
     const HTMLFormElement* form = constUnwrap<HTMLFormElement>();
-    Vector<RefPtr<HTMLFormControlElement> > tempVector;
-    // FIXME: We should move the for-loop condition into a variable instead of
-    // re-evaluating size each time. Also, consider refactoring this code so that
-    // we don't call form->associatedElements() multiple times.
-    for (size_t i = 0; i < form->associatedElements().size(); i++) {
-        if (!form->associatedElements()[i]->isFormControlElement())
-            continue;
-        HTMLFormControlElement* element = toHTMLFormControlElement(form->associatedElements()[i]);
-        if (element->hasLocalName(HTMLNames::inputTag)
-            || element->hasLocalName(HTMLNames::selectTag))
-            tempVector.append(element);
+    Vector<RefPtr<HTMLFormControlElement> > formControlElements;
+
+    const Vector<FormAssociatedElement*>& associatedElements = form->associatedElements();
+    for (Vector<FormAssociatedElement*>::const_iterator it = associatedElements.begin(); it != associatedElements.end(); ++it) {
+        if ((*it)->isFormControlElement())
+            formControlElements.append(toHTMLFormControlElement(*it));
     }
-    result.assign(tempVector);
+    result.assign(formControlElements);
 }
 
 bool WebFormElement::checkValidityWithoutDispatchingEvents()
