@@ -141,7 +141,7 @@ public:
         return getFloatValue();
     }
 
-    PassRefPtr<CalculationValue> calculationValue() const;
+    CalculationValue* calculationValue() const;
 
     LengthType type() const { return static_cast<LengthType>(m_type); }
     bool quirk() const { return m_quirk; }

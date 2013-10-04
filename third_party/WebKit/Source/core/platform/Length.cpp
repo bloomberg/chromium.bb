@@ -138,10 +138,23 @@ public:
         m_map.remove(index);
     }
 
-    PassRefPtr<CalculationValue> get(int index)
+    CalculationValue* get(int index)
     {
         ASSERT(m_map.contains(index));
         return m_map.get(index);
+    }
+
+    void decrementRef(int index)
+    {
+        ASSERT(m_map.contains(index));
+        CalculationValue* value = m_map.get(index);
+        if (value->hasOneRef()) {
+            // Force the CalculationValue destructor early to avoid a potential recursive call inside HashMap remove().
+            m_map.set(index, 0);
+            m_map.remove(index);
+        } else {
+            value->deref();
+        }
     }
 
 private:
@@ -175,7 +188,7 @@ Length Length::blendMixedTypes(const Length& from, double progress) const
     return Length(CalculationValue::create(blend.release(), CalculationRangeAll));
 }
 
-PassRefPtr<CalculationValue> Length::calculationValue() const
+CalculationValue* Length::calculationValue() const
 {
     ASSERT(isCalculated());
     return calcHandles().get(calculationHandle());
@@ -190,10 +203,7 @@ void Length::incrementCalculatedRef() const
 void Length::decrementCalculatedRef() const
 {
     ASSERT(isCalculated());
-    RefPtr<CalculationValue> calcLength = calculationValue();
-    if (calcLength->hasOneRef())
-        calcHandles().remove(calculationHandle());
-    calcLength->deref();
+    calcHandles().decrementRef(calculationHandle());
 }
 
 float Length::nonNanCalculatedValue(int maxValue) const

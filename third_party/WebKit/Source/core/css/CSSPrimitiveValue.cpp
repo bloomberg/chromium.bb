@@ -299,7 +299,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, const RenderStyle* st
         m_value.num = adjustFloatForAbsoluteZoom(length.value(), style);
         return;
     case Calculated:
-        init(CSSCalcValue::create(length.calculationValue().get(), style));
+        init(CSSCalcValue::create(length.calculationValue(), style));
         return;
     case Relative:
     case Undefined:
