@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_name__",
+  "description": "__MSG_description__",
+  "version": "1.0",
+  "default_locale": "en",
+  "icons": {
+    "32": "images/camera_app_icons_32.png",
+    "48": "images/camera_app_icons_48.png",
+    "64": "images/camera_app_icons_64.png",
+    "96": "images/camera_app_icons_96.png",
+    "128": "images/camera_app_icons_128.png"
+  },
+  "permissions": [
+    "videoCapture",
+    "storage",
+    "unlimitedStorage",
+    {"fileSystem": ["write"]}
+  ],
+  "app": {
+    "background": {
+      "scripts": ["js/background.js", "js/test.js", "js/test_cases.js"]
+    }
+  }
+}
