@@ -125,7 +125,7 @@ SuggestionState::SuggestionState(bool visible,
       extra_icon(extra_icon) {}
 SuggestionState::~SuggestionState() {}
 
-DialogOverlayString::DialogOverlayString() : alignment(gfx::ALIGN_LEFT) {}
+DialogOverlayString::DialogOverlayString() {}
 DialogOverlayString::~DialogOverlayString() {}
 
 DialogOverlayState::DialogOverlayState() {}

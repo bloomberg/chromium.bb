@@ -14,8 +14,8 @@
 
 namespace {
 
-// Spacing between lines of text in the overlay view.
-const CGFloat kOverlayTextInterlineSpacing = 10;
+// Spacing around the message in the overlay view.
+const CGFloat kOverlayLabelMargin = 10;
 
 // Spacing below image and above text messages in overlay view.
 const CGFloat kOverlayImageBottomMargin = 50;
@@ -30,14 +30,18 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 }  // namespace
 
 // An NSView encapsulating the message stack and its custom drawn elements.
-@interface AutofillMessageStackView : NSView<AutofillLayout>
+@interface AutofillMessageView : NSView<AutofillLayout> {
+ @private
+  base::scoped_nsobject<NSTextField> label_;
+}
+
+- (id)initWithFrame:(NSRect)frame;
 - (CGFloat)heightForWidth:(CGFloat)width;
-- (void)setMessages:
-      (const std::vector<autofill::DialogOverlayString>&)messages;
+- (void)setMessage:(const autofill::DialogOverlayString&)message;
 @end
 
 
-@implementation AutofillMessageStackView
+@implementation AutofillMessageView
 
 - (void)drawRect:(NSRect)dirtyRect {
   NSColor* shadingColor = gfx::SkColorToCalibratedNSColor(kShadingColor);
@@ -70,52 +74,41 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
   [arrow stroke];
 }
 
-- (CGFloat)heightForWidth:(CGFloat)width {
-  CGFloat height = kOverlayTextInterlineSpacing;
-  for (NSTextField* label in [self subviews]) {
-    height += NSHeight([label frame]);
-    height += kOverlayTextInterlineSpacing;
+- (id)initWithFrame:(NSRect)frame {
+  if (self = [super initWithFrame:frame]) {
+    label_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
+    [label_ setEditable:NO];
+    [label_ setBordered:NO];
+    [label_ setDrawsBackground:NO];
+    [label_ setAlignment:NSCenterTextAlignment];
+    [self addSubview:label_];
   }
-  return height + autofill::kArrowHeight;
+  return self;
 }
 
-- (void)setMessages:
-      (const std::vector<autofill::DialogOverlayString>&) messages {
+- (CGFloat)heightForWidth:(CGFloat)width {
+  return NSHeight([label_ frame]) + autofill::kArrowHeight +
+      2 * kOverlayLabelMargin;
+}
+
+- (void)setMessage:(const autofill::DialogOverlayString&)message {
   // We probably want to look at other multi-line messages somewhere.
-  base::scoped_nsobject<NSMutableArray> labels(
-      [[NSMutableArray alloc] initWithCapacity:messages.size()]);
-  for (size_t i = 0; i < messages.size(); ++i) {
-    base::scoped_nsobject<NSTextField> label(
-        [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  [label_ setFont:message.font.GetNativeFont()];
+  [label_ setStringValue:base::SysUTF16ToNSString(message.text)];
+  [label_ setTextColor:gfx::SkColorToCalibratedNSColor(message.text_color)];
+  [label_ sizeToFit];
 
-    NSFont* labelFont = messages[i].font.GetNativeFont();
-    [label setEditable:NO];
-    [label setBordered:NO];
-    [label setDrawsBackground:NO];
-    [label setFont:labelFont];
-    [label setStringValue:base::SysUTF16ToNSString(messages[i].text)];
-    [label setTextColor:gfx::SkColorToDeviceNSColor(messages[i].text_color)];
-    DCHECK_EQ(messages[i].alignment, gfx::ALIGN_CENTER);
-    [label setAlignment:NSCenterTextAlignment];
-    [label sizeToFit];
-
-    [labels addObject:label];
-  }
-  [self setSubviews:labels];
-  [self setHidden:([labels count] == 0)];
+  [self setHidden:message.text.empty()];
 }
 
 - (void)performLayout {
-  CGFloat y = NSMaxY([self bounds]) - autofill::kArrowHeight -
-      kOverlayTextInterlineSpacing;
-  for (NSTextField* label in [self subviews]) {
-    DCHECK([label isKindOfClass:[NSTextField class]]);
-    CGFloat labelHeight = NSHeight([label frame]);
-    [label setFrame:NSMakeRect(0, y - labelHeight,
-                               NSWidth([self bounds]), labelHeight)];
-    y = NSMinY([label frame]) - kOverlayTextInterlineSpacing;
-  }
-  DCHECK_GE(y, 0.0);
+  if ([self isHidden])
+    return;
+
+  CGFloat labelHeight = NSHeight([label_ frame]);
+  [label_ setFrame:NSMakeRect(0, kOverlayLabelMargin,
+                              NSWidth([self bounds]), labelHeight)];
+  // TODO(groby): useful DCHECK() goes here.
 }
 
 - (NSSize)preferredSize {
@@ -132,20 +125,18 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
   if (self = [super initWithNibName:nil bundle:nil]) {
     delegate_ = delegate;
 
-    base::scoped_nsobject<NSBox> view(
-        [[NSBox alloc] initWithFrame:NSZeroRect]);
+    base::scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:NSZeroRect]);
     [view setBoxType:NSBoxCustom];
     [view setBorderType:NSNoBorder];
     [view setContentViewMargins:NSZeroSize];
     [view setTitlePosition:NSNoTitle];
 
     childView_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
-    messageStackView_.reset(
-        [[AutofillMessageStackView alloc] initWithFrame:NSZeroRect]);
+    messageView_.reset([[AutofillMessageView alloc] initWithFrame:NSZeroRect]);
     imageView_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
     [imageView_ setImageAlignment:NSImageAlignCenter];
 
-    [childView_ setSubviews:@[messageStackView_, imageView_]];
+    [childView_ setSubviews:@[messageView_, imageView_]];
     [view addSubview:childView_];
     [self setView:view];
   }
@@ -165,7 +156,7 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
   [view setAlphaValue:1];
   [childView_ setAlphaValue:1];
   [imageView_ setImage:state.image.ToNSImage()];
-  [messageStackView_ setMessages:state.strings];
+  [messageView_ setMessage:state.string];
   [childView_ setHidden:NO];
   [view setHidden:NO];
 
@@ -176,12 +167,11 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 
 - (CGFloat)heightForWidth:(int) width {
   // 0 means "no preference". Image-only overlays fit the container.
-  if ([messageStackView_ isHidden])
+  if ([messageView_ isHidden])
     return 0;
 
   // Overlays with text messages express a size preference.
-  return kOverlayImageBottomMargin +
-      [messageStackView_ heightForWidth:width] +
+  return kOverlayImageBottomMargin + [messageView_ heightForWidth:width] +
       NSHeight([imageView_ frame]);
 }
 
@@ -193,19 +183,18 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 - (void)performLayout {
   NSRect bounds = [[self view] bounds];
   [childView_ setFrame:bounds];
-  if ([messageStackView_ isHidden]) {
+  if ([messageView_ isHidden]) {
     [imageView_ setFrame:bounds];
     return;
   }
 
-  int messageHeight = [messageStackView_ heightForWidth:NSWidth(bounds)];
-  [messageStackView_ setFrame:
-      NSMakeRect(0, 0, NSWidth(bounds), messageHeight)];
-  [messageStackView_ performLayout];
+  int messageHeight = [messageView_ heightForWidth:NSWidth(bounds)];
+  [messageView_ setFrame:NSMakeRect(0, 0, NSWidth(bounds), messageHeight)];
+  [messageView_ performLayout];
 
   NSSize imageSize = [[imageView_ image] size];
   [imageView_ setFrame:NSMakeRect(
-       0, NSMaxY([messageStackView_ frame]) + kOverlayImageBottomMargin,
+       0, NSMaxY([messageView_ frame]) + kOverlayImageBottomMargin,
        NSWidth(bounds), imageSize.height)];
 }
 

@@ -32,15 +32,20 @@ struct DetailInput {
   // kBillingInputs. If negative, don't show the input at all (leave it hidden
   // at all times).
   int row_id;
+
   ServerFieldType type;
+
   // Placeholder text resource ID.
   int placeholder_text_rid;
+
   // A number between 0 and 1.0 that describes how much of the horizontal space
   // in the row should be allotted to this input. 0 is equivalent to 1.
   float expand_weight;
+
   // When non-empty, indicates the starting value for this input. This will be
   // used when the user is editing existing data.
   string16 initial_value;
+
   // Whether the input is able to be edited (e.g. text changed in textfields,
   // index changed in comboboxes).
   bool editable;
@@ -145,14 +150,17 @@ struct SuggestionState {
                   const string16& extra_text,
                   const gfx::Image& extra_icon);
   ~SuggestionState();
+
   // Whether a suggestion should be shown.
   bool visible;
+
   // Text to be shown for the suggestion. This should be preferred over
   // |horizontally_compact_text| when there's enough horizontal space available
   // to display it. When there's not enough space, fall back to
   // |horizontally_compact_text|.
   base::string16 vertically_compact_text;
   base::string16 horizontally_compact_text;
+
   gfx::Image icon;
   string16 extra_text;
   gfx::Image extra_icon;
@@ -162,12 +170,15 @@ struct SuggestionState {
 struct DialogOverlayString {
   DialogOverlayString();
   ~DialogOverlayString();
+
+  // Text content of the message.
   base::string16 text;
-  // TODO(estade): should be able to remove this; text is always black.
+
+  // Color of the message's text.
   SkColor text_color;
+
+  // Font to render the message's text in.
   gfx::Font font;
-  // TODO(estade): should be able to remove this; text is always centered.
-  gfx::HorizontalAlignment alignment;
 };
 
 // A struct to describe a dialog overlay. If |image| is empty, no overlay should
@@ -175,13 +186,13 @@ struct DialogOverlayString {
 struct DialogOverlayState {
   DialogOverlayState();
   ~DialogOverlayState();
+
   // If empty, there should not be an overlay. If non-empty, an image that is
   // more or less front and center.
   gfx::Image image;
-  // If non-empty, messages to display.
-  // TODO(estade): make this a single string, no longer need to support multiple
-  // messages.
-  std::vector<DialogOverlayString> strings;
+
+  // Message to display.
+  DialogOverlayString string;
 };
 
 enum ValidationType {

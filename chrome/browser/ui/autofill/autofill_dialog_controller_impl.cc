@@ -855,12 +855,8 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   DialogOverlayState state;
-
-  state.strings.push_back(DialogOverlayString());
-  DialogOverlayString& string = state.strings.back();
-  string.font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(3);
-  string.alignment = gfx::ALIGN_CENTER;
-  string.text_color = SK_ColorDKGRAY;
+  state.string.font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(3);
+  state.string.text_color = SK_ColorDKGRAY;
 
   const SkColor start_top_color = SkColorSetRGB(0xD6, 0xD6, 0xD6);
   const SkColor start_bottom_color = SkColorSetRGB(0x98, 0x98, 0x98);
@@ -888,7 +884,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
             start_bottom_color,
             255 * card_generated_animation_.GetCurrentValue()));
 
-    string.text = l10n_util::GetStringUTF16(
+    state.string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE);
   } else {
     // Start the refresher if it isn't running. Wait one second before pumping
@@ -911,7 +907,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
         start_bottom_color);
 
     // "Submitting" waiting page.
-    string.text = l10n_util::GetStringUTF16(
+    state.string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_IN_PROGRESS);
   }
 

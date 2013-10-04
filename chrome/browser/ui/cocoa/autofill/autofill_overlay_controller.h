@@ -16,17 +16,16 @@ class AutofillDialogViewDelegate;
 struct DialogOverlayState;
 }  // autofill
 
-@class AutofillMessageStackView;
+@class AutofillMessageView;
 
-@interface AutofillOverlayController :
-    NSViewController<AutofillLayout> {
+@interface AutofillOverlayController : NSViewController<AutofillLayout> {
  @private
   // |childView_| contains all overlay UI elements. This is used to fade out
   // UI elements first, before making the main view transparent to fade out the
   // overlay shield.
   base::scoped_nsobject<NSView> childView_;
   base::scoped_nsobject<NSImageView> imageView_;
-  base::scoped_nsobject<AutofillMessageStackView> messageStackView_;
+  base::scoped_nsobject<AutofillMessageView> messageView_;
 
   autofill::AutofillDialogViewDelegate* delegate_;  // not owned, owns dialog.
 }

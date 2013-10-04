@@ -675,18 +675,18 @@ void AutofillDialogViews::OverlayView::UpdateState() {
 
   int label_height = 0;
   message_stack_->RemoveAllChildViews(true);
-  if (!state.strings.empty() && !state.strings[0].text.empty()) {
-    const DialogOverlayString& string = state.strings[0];
+
+  if (!state.string.text.empty()) {
     views::Label* label = new views::Label();
     label->SetAutoColorReadabilityEnabled(false);
     label->SetMultiLine(true);
-    label->SetText(string.text);
-    label->SetFont(string.font);
-    label->SetEnabledColor(string.text_color);
-    label->SetHorizontalAlignment(string.alignment);
+    label->SetText(state.string.text);
+    label->SetFont(state.string.font);
+    label->SetEnabledColor(state.string.text_color);
     message_stack_->AddChildView(label);
     label_height = label->GetPreferredSize().height();
   }
+
   message_stack_->SetVisible(message_stack_->child_count() > 0);
 
   const int kVerticalPadding = std::max(
