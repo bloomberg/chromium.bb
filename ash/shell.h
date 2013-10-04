@@ -391,6 +391,11 @@ class ASH_EXPORT Shell
   // Dims or undims the screen.
   void SetDimming(bool should_dim);
 
+  // Notifies |observers_| when entering or exiting fullscreen mode in
+  // |root_window|.
+  void NotifyFullscreenStateChange(bool is_fullscreen,
+                                   aura::RootWindow* root_window);
+
   // Creates a modal background (a partially-opaque fullscreen window)
   // on all displays for |window|.
   void CreateModalBackground(aura::Window* window);

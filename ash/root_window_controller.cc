@@ -602,7 +602,8 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* docked_container = GetContainer(
       internal::kShellWindowId_DockedContainer);
   docked_layout_manager_ =
-      new internal::DockedWindowLayoutManager(docked_container);
+      new internal::DockedWindowLayoutManager(docked_container,
+                                              workspace_controller());
   docked_container_handler_.reset(
       new ToplevelWindowEventHandler(docked_container));
   docked_container->SetLayoutManager(docked_layout_manager_);

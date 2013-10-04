@@ -33,6 +33,11 @@
 #include "chrome/common/pref_names.h"
 #endif
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ui/aura/window.h"
+#endif
+
 using content::RenderViewHost;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -485,6 +490,21 @@ void FullscreenController::UpdateNotificationRegistrations() {
 
 void FullscreenController::PostFullscreenChangeNotification(
     bool is_fullscreen) {
+#if defined(USE_ASH)
+  if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
+    // Ash window may not be a browser window and ash can't (and shouldn't)
+    // depend on chrome/ so it needs a separate notification.
+    // In ash send notification to ShellObserver objects specifying the root
+    // window. This allows different handling and layout adjustments in each
+    // screen.
+    aura::Window* window = window_->GetNativeWindow();
+    // GetNativeWindow may return NULL in tests.
+    if (window) {
+      ash::Shell::GetInstance()->NotifyFullscreenStateChange(
+          is_fullscreen, window->GetRootWindow());
+    }
+  }
+#endif
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FullscreenController::NotifyFullscreenChange,

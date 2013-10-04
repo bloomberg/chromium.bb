@@ -780,6 +780,12 @@ void Shell::SetDimming(bool should_dim) {
     (*iter)->screen_dimmer()->SetDimming(should_dim);
 }
 
+void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
+                                        aura::RootWindow* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnFullscreenStateChanged(
+      is_fullscreen, root_window));
+}
+
 void Shell::CreateModalBackground(aura::Window* window) {
   if (!modality_filter_) {
     modality_filter_.reset(new internal::SystemModalContainerEventFilter(this));

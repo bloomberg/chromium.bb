@@ -35,6 +35,10 @@ class ASH_EXPORT ShellObserver {
   // Invoked when the projection touch HUD is toggled.
   virtual void OnTouchHudProjectionToggled(bool enabled) {}
 
+  // Invoked when entering or exiting fullscreen mode in |root_window|.
+  virtual void OnFullscreenStateChanged(bool is_fullscreen,
+                                        aura::RootWindow* root_window) {}
+
  protected:
   virtual ~ShellObserver() {}
 };

@@ -17,6 +17,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -164,15 +165,16 @@ struct CompareWindowPos {
 ////////////////////////////////////////////////////////////////////////////////
 // DockLayoutManager public implementation:
 DockedWindowLayoutManager::DockedWindowLayoutManager(
-    aura::Window* dock_container)
+    aura::Window* dock_container, WorkspaceController* workspace_controller)
     : dock_container_(dock_container),
       in_layout_(false),
       dragged_window_(NULL),
       is_dragged_window_docked_(false),
       is_dragged_from_dock_(false),
       launcher_(NULL),
-      shelf_layout_manager_(NULL),
-      shelf_hidden_(false),
+      workspace_controller_(workspace_controller),
+      in_fullscreen_(workspace_controller_->GetWindowState() ==
+          WORKSPACE_WINDOW_STATE_FULL_SCREEN),
       docked_width_(0),
       max_visible_windows_(kMaxVisibleWindows),
       alignment_(DOCKED_ALIGNMENT_NONE),
@@ -189,10 +191,6 @@ DockedWindowLayoutManager::~DockedWindowLayoutManager() {
 }
 
 void DockedWindowLayoutManager::Shutdown() {
-  if (shelf_layout_manager_) {
-    shelf_layout_manager_->RemoveObserver(this);
-  }
-  shelf_layout_manager_ = NULL;
   launcher_ = NULL;
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
     aura::Window* child = dock_container_->children()[i];
@@ -270,14 +268,7 @@ void DockedWindowLayoutManager::FinishDragging() {
 
 void DockedWindowLayoutManager::SetLauncher(ash::Launcher* launcher) {
   DCHECK(!launcher_);
-  DCHECK(!shelf_layout_manager_);
   launcher_ = launcher;
-  if (launcher_->shelf_widget()) {
-    shelf_layout_manager_ = ash::internal::ShelfLayoutManager::ForLauncher(
-        launcher_->shelf_widget()->GetNativeWindow());
-    WillChangeVisibilityState(shelf_layout_manager_->visibility_state());
-    shelf_layout_manager_->AddObserver(this);
-  }
 }
 
 DockedAlignment DockedWindowLayoutManager::GetAlignmentOfWindow(
@@ -422,6 +413,36 @@ void DockedWindowLayoutManager::SetChildBounds(
 ////////////////////////////////////////////////////////////////////////////////
 // DockLayoutManager, ash::ShellObserver implementation:
 
+void DockedWindowLayoutManager::OnFullscreenStateChanged(
+    bool is_fullscreen, aura::RootWindow* root_window) {
+  if (dock_container_->GetRootWindow() != root_window)
+    return;
+  // Entering fullscreen mode (including immersive) hides docked windows.
+  in_fullscreen_ = workspace_controller_->GetWindowState() ==
+      WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+  {
+    // prevent Relayout from getting called multiple times during this
+    base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
+    for (aura::Window::Windows::const_iterator iter =
+             dock_container_->children().begin();
+         iter != dock_container_->children().end(); ++iter) {
+      aura::Window* window(*iter);
+      if (IsPopupOrTransient(window))
+        continue;
+      wm::WindowState* window_state = wm::GetWindowState(window);
+      if (in_fullscreen_) {
+        if (window->IsVisible())
+          MinimizeDockedWindow(window_state);
+      } else {
+        if (!window_state->IsMinimized())
+          RestoreDockedWindow(window_state);
+      }
+    }
+  }
+  Relayout();
+  UpdateDockBounds();
+}
+
 void DockedWindowLayoutManager::OnShelfAlignmentChanged(
     aura::RootWindow* root_window) {
   if (dock_container_->GetRootWindow() != root_window)
@@ -456,8 +477,8 @@ void DockedWindowLayoutManager::OnWindowShowTypeChanged(
   if (IsPopupOrTransient(window_state->window()))
     return;
   // The window property will still be set, but no actual change will occur
-  // until WillChangeVisibilityState is called when the shelf is visible again
-  if (shelf_hidden_)
+  // until OnFullscreenStateChange is called when exiting fullscreen.
+  if (in_fullscreen_)
     return;
   if (window_state->IsMinimized())
     MinimizeDockedWindow(window_state);
@@ -519,42 +540,6 @@ void DockedWindowLayoutManager::OnWindowActivated(aura::Window* gained_active,
   }
   if (ancestor)
     UpdateStacking(ancestor);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager, ShelfLayoutManagerObserver implementation:
-
-void DockedWindowLayoutManager::WillChangeVisibilityState(
-    ShelfVisibilityState new_state) {
-  // On entering / leaving full screen mode the shelf visibility state is
-  // changed to / from SHELF_HIDDEN. In this state, docked windows should hide
-  // to allow the full-screen application to use the full screen.
-
-  // TODO(varkha): ShelfLayoutManager::UpdateVisibilityState sets state to
-  // SHELF_AUTO_HIDE when in immersive mode. Distinguish this from
-  // when shelf enters auto-hide state based on mouse hover when auto-hide
-  // setting is enabled and hide all windows (immersive mode should hide docked
-  // windows).
-  shelf_hidden_ = new_state == ash::SHELF_HIDDEN;
-  {
-    // prevent Relayout from getting called multiple times during this
-    base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
-    for (size_t i = 0; i < dock_container_->children().size(); ++i) {
-      aura::Window* window = dock_container_->children()[i];
-      if (IsPopupOrTransient(window))
-        continue;
-      wm::WindowState* window_state = wm::GetWindowState(window);
-      if (shelf_hidden_) {
-        if (window->IsVisible())
-          MinimizeDockedWindow(window_state);
-      } else {
-        if (!window_state->IsMinimized())
-          RestoreDockedWindow(window_state);
-      }
-    }
-  }
-  Relayout();
-  UpdateDockBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -658,7 +643,7 @@ void DockedWindowLayoutManager::Relayout() {
 
     // If the shelf is currently hidden (full-screen mode), hide window until
     // full-screen mode is exited.
-    if (shelf_hidden_) {
+    if (in_fullscreen_) {
       // The call to Hide does not set the minimize property, so the window will
       // be restored when the shelf becomes visible again.
       window->Hide();
