@@ -71,6 +71,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../components/nacl_common.gyp:nacl_switches',
+        '../content/content.gyp:content_common',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
       'target_conditions': [
