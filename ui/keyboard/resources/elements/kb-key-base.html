@@ -132,12 +132,20 @@
 
       /**
        * Character value associated with the key. Typically, the value is a
-       * single charcater, but may be multi-character in cases like a ".com"
+       * single character, but may be multi-character in cases like a ".com"
        * button.
-       * @type {string}
+       * @return {string}
        */
       get charValue() {
-        return this.char || this.textContent;
+        return this.invert? this.hintText : (this.char || this.textContent);
+      },
+
+      /* Hint text value associated with the key. Typically, the value is a
+       * single character.
+       * @return {string}
+       */
+      get hintTextValue() {
+        return this.invert? (this.char || this.textContent) : this.hintText;
       },
 
       populateDetails: function() {
@@ -152,7 +160,7 @@
         return this.asyncMethod(function() {
           var detail = {
             char: this.charValue,
-            hintText: this.hintText
+            hintText: this.hintTextValue
           };
           if (this.keysetRules && this.keysetRules.long != undefined) {
             detail.toKeyset = this.keysetRules.long[TO_KEYSET - OFFSET];
