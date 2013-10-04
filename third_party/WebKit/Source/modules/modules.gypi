@@ -248,7 +248,6 @@
       'device_orientation/DeviceMotionDispatcher.h',
       'device_orientation/DeviceMotionEvent.cpp',
       'device_orientation/DeviceMotionEvent.h',
-      'device_orientation/DeviceOrientationClientMock.cpp',
       'device_orientation/DeviceOrientationDispatcher.cpp',
       'device_orientation/DeviceOrientationDispatcher.h',
       'device_orientation/DeviceOrientationData.cpp',

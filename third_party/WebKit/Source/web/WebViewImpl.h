@@ -92,7 +92,6 @@ class AutocompletePopupMenuClient;
 class AutofillPopupMenuClient;
 class ContextFeaturesClientImpl;
 class ContextMenuClientImpl;
-class DeviceOrientationClientProxy;
 class GeolocationClientProxy;
 class LinkHighlight;
 class MIDIClientProxy;
@@ -804,7 +803,6 @@ private:
 #endif
     OwnPtr<SpeechRecognitionClientProxy> m_speechRecognitionClient;
 
-    OwnPtr<DeviceOrientationClientProxy> m_deviceOrientationClientProxy;
     OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;
 
     UserMediaClientImpl m_userMediaClientImpl;

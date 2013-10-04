@@ -51,7 +51,6 @@
 #include "CSSValueKeywords.h"
 #include "CompositionUnderlineVectorBuilder.h"
 #include "ContextFeaturesClientImpl.h"
-#include "DeviceOrientationClientProxy.h"
 #include "FullscreenController.h"
 #include "GeolocationClientProxy.h"
 #include "GraphicsLayerFactoryChromium.h"
@@ -435,7 +434,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_speechInputClient(SpeechInputClientImpl::create(client))
 #endif
     , m_speechRecognitionClient(SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : 0))
-    , m_deviceOrientationClientProxy(adoptPtr(new DeviceOrientationClientProxy(client ? client->deviceOrientationClient() : 0)))
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
     , m_userMediaClientImpl(this)
     , m_midiClientProxy(adoptPtr(new MIDIClientProxy(client ? client->webMIDIClient() : 0)))
@@ -474,7 +472,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 #endif
 
     provideContextFeaturesTo(m_page.get(), m_featureSwitchClient.get());
-    provideDeviceOrientationTo(m_page.get(), m_deviceOrientationClientProxy.get());
     provideGeolocationTo(m_page.get(), m_geolocationClientProxy.get());
     m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
 

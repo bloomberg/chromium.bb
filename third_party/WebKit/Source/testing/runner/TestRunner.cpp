@@ -48,8 +48,6 @@
 #include "public/testing/WebTestProxy.h"
 #include "public/web/WebBindings.h"
 #include "public/web/WebDataSource.h"
-#include "public/web/WebDeviceOrientation.h"
-#include "public/web/WebDeviceOrientationClientMock.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebFindOptions.h"

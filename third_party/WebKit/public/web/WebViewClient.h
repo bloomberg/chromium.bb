@@ -53,7 +53,6 @@ class WebColorChooser;
 class WebColorChooserClient;
 class WebCompositorOutputSurface;
 class WebDateTimeChooserCompletion;
-class WebDeviceOrientationClient;
 class WebDragData;
 class WebElement;
 class WebExternalPopupMenu;
@@ -348,11 +347,6 @@ public:
 
     // Access the embedder API for speech recognition services.
     virtual WebSpeechRecognizer* speechRecognizer() { return 0; }
-
-    // Device Orientation --------------------------------------------------
-
-    // Access the embedder API for device orientation services.
-    virtual WebDeviceOrientationClient* deviceOrientationClient() { return 0; }
 
     // Zoom ----------------------------------------------------------------
 

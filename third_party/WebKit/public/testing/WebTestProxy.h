@@ -59,8 +59,6 @@ class WebCachedURLRequest;
 class WebColorChooser;
 class WebColorChooserClient;
 class WebDataSource;
-class WebDeviceOrientationClient;
-class WebDeviceOrientationClientMock;
 class WebDragData;
 class WebFileChooserCompletion;
 class WebFrame;
@@ -141,7 +139,6 @@ public:
     void displayInvalidatedRegion();
     void discardBackingStore();
 
-    WebKit::WebDeviceOrientationClientMock* deviceOrientationClientMock();
     WebKit::WebGeolocationClientMock* geolocationClientMock();
     WebKit::WebMIDIClientMock* midiClientMock();
     MockWebSpeechInputController* speechInputControllerMock();
@@ -187,7 +184,6 @@ protected:
     WebKit::WebMIDIClient* webMIDIClient();
     WebKit::WebSpeechInputController* speechInputController(WebKit::WebSpeechInputListener*);
     WebKit::WebSpeechRecognizer* speechRecognizer();
-    WebKit::WebDeviceOrientationClient* deviceOrientationClient();
     bool requestPointerLock();
     void requestPointerUnlock();
     bool isPointerLocked();
@@ -258,7 +254,6 @@ private:
 
     std::auto_ptr<WebKit::WebGeolocationClientMock> m_geolocationClient;
     std::auto_ptr<WebKit::WebMIDIClientMock> m_midiClient;
-    std::auto_ptr<WebKit::WebDeviceOrientationClientMock> m_deviceOrientationClient;
     std::auto_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
     std::auto_ptr<MockWebSpeechInputController> m_speechInputController;
     std::auto_ptr<MockWebValidationMessageClient> m_validationMessageClient;
@@ -433,10 +428,6 @@ public:
     virtual WebKit::WebSpeechRecognizer* speechRecognizer()
     {
         return WebTestProxyBase::speechRecognizer();
-    }
-    virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient()
-    {
-        return WebTestProxyBase::deviceOrientationClient();
     }
     virtual bool requestPointerLock()
     {

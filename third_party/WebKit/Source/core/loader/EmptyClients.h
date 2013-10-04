@@ -29,7 +29,6 @@
 #ifndef EmptyClients_h
 #define EmptyClients_h
 
-#include "core/dom/DeviceOrientationClient.h"
 #include "core/history/BackForwardClient.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -344,19 +343,6 @@ public:
 
     virtual void highlight() OVERRIDE { }
     virtual void hideHighlight() OVERRIDE { }
-};
-
-class EmptyDeviceClient : public DeviceClient {
-public:
-    virtual void startUpdating() OVERRIDE { }
-    virtual void stopUpdating() OVERRIDE { }
-};
-
-class EmptyDeviceOrientationClient : public DeviceOrientationClient {
-public:
-    virtual void setController(DeviceOrientationController*) OVERRIDE { }
-    virtual DeviceOrientationData* lastOrientation() const OVERRIDE { return 0; }
-    virtual void deviceOrientationControllerDestroyed() OVERRIDE { }
 };
 
 class EmptyBackForwardClient : public BackForwardClient {

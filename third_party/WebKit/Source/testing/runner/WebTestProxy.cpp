@@ -54,7 +54,6 @@
 #include "public/web/WebCachedURLRequest.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDataSource.h"
-#include "public/web/WebDeviceOrientationClientMock.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
@@ -743,13 +742,6 @@ WebMIDIClientMock* WebTestProxyBase::midiClientMock()
     return m_midiClient.get();
 }
 
-WebDeviceOrientationClientMock* WebTestProxyBase::deviceOrientationClientMock()
-{
-    if (!m_deviceOrientationClient.get())
-        m_deviceOrientationClient.reset(WebDeviceOrientationClientMock::create());
-    return m_deviceOrientationClient.get();
-}
-
 #if ENABLE_INPUT_SPEECH
 MockWebSpeechInputController* WebTestProxyBase::speechInputControllerMock()
 {
@@ -1135,11 +1127,6 @@ WebSpeechInputController* WebTestProxyBase::speechInputController(WebSpeechInput
 WebSpeechRecognizer* WebTestProxyBase::speechRecognizer()
 {
     return speechRecognizerMock();
-}
-
-WebDeviceOrientationClient* WebTestProxyBase::deviceOrientationClient()
-{
-    return deviceOrientationClientMock();
 }
 
 bool WebTestProxyBase::requestPointerLock()
