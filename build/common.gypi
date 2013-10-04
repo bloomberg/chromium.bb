@@ -1059,10 +1059,6 @@
     # Enable EGLImage support in OpenMAX
     'enable_eglimage%': 1,
 
-    # Enable a variable used elsewhere throughout the GYP files to determine
-    # whether to compile in the sources for the GPU plugin / process.
-    'enable_gpu%': 1,
-
     # .gyp files or targets should set chromium_code to 1 if they build
     # Chromium-specific code, as opposed to external code.  This variable is
     # used to control such things as the set of warnings to enable, and
@@ -1216,7 +1212,6 @@
       ['OS=="ios"', {
         'disable_nacl%': 1,
         'enable_background%': 0,
-        'enable_gpu%': 0,
         'enable_task_manager%': 0,
         'icu_use_data_file_flag%': 1,
         'use_system_libxml%': 1,
@@ -2155,11 +2150,6 @@
           ['OS=="win"', {
             'defines': ['NO_TCMALLOC'],
           }],
-        ],
-      }],
-      ['enable_gpu==1', {
-        'defines': [
-          'ENABLE_GPU=1',
         ],
       }],
       ['use_openssl==1', {

@@ -696,13 +696,6 @@
         'renderer/media/crypto/ppapi_decryptor.h',
       ],
     }],
-    ['enable_gpu!=1', {
-      'sources!': [
-        'renderer/pepper/ppb_graphics_3d_impl.cc',
-        'renderer/pepper/ppb_graphics_3d_impl.h',
-        'renderer/pepper/ppb_open_gl_es_impl.cc',
-      ],
-    }],
     ['use_openssl==1', {
       'sources!': [
         'renderer/webcrypto/webcrypto_impl_nss.cc',

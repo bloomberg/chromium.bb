@@ -244,10 +244,8 @@ class GpuChannel : public IPC::Listener,
   scoped_ptr<StreamTextureManagerAndroid> stream_texture_manager_;
 #endif
 
-#if defined(ENABLE_GPU)
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
-#endif  // defined (ENABLE_GPU)
 
   typedef IDMap<GpuVideoEncodeAccelerator, IDMapOwnPointer> EncoderMap;
   EncoderMap video_encoders_;

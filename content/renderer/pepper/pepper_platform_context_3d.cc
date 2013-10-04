@@ -15,8 +15,6 @@
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
 
-#ifdef ENABLE_GPU
-
 namespace content {
 
 PlatformContext3D::PlatformContext3D()
@@ -170,5 +168,3 @@ void PlatformContext3D::OnConsoleMessage(const std::string& msg, int id) {
 }
 
 }  // namespace content
-
-#endif  // ENABLE_GPU

@@ -12,8 +12,6 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "gpu/command_buffer/common/mailbox.h"
 
-#ifdef ENABLE_GPU
-
 class CommandBufferProxy;
 namespace gpu {
 class CommandBuffer;
@@ -78,7 +76,5 @@ class PlatformContext3D {
 };
 
 }  // namespace content
-
-#endif  // ENABLE_GPU
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_CONTEXT_3D_H_

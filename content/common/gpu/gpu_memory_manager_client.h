@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_CLIENT_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_CLIENT_H_
 
-#if defined(ENABLE_GPU)
-
 #include <list>
 
 #include "base/basictypes.h"
@@ -107,7 +105,5 @@ class CONTENT_EXPORT GpuMemoryManagerClientState {
 };
 
 }  // namespace content
-
-#endif
 
 #endif  // CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_CLIENT_H_

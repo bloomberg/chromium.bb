@@ -617,8 +617,6 @@ void GpuChannel::CreateViewCommandBuffer(
 
   *route_id = MSG_ROUTING_NONE;
 
-#if defined(ENABLE_GPU)
-
   GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
 
   // Virtualize compositor contexts on OS X to prevent performance regressions
@@ -650,7 +648,6 @@ void GpuChannel::CreateViewCommandBuffer(
     stub->SetPreemptByFlag(preempted_flag_);
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
-#endif  // ENABLE_GPU
 }
 
 GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32 route_id) {

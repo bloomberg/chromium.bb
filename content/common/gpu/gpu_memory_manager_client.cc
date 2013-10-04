@@ -4,8 +4,6 @@
 
 #include "content/common/gpu/gpu_memory_manager_client.h"
 
-#if defined(ENABLE_GPU)
-
 #include "content/common/gpu/gpu_memory_manager.h"
 
 namespace content {
@@ -47,5 +45,3 @@ void GpuMemoryManagerClientState::SetManagedMemoryStats(
 }
 
 }  // namespace content
-
-#endif

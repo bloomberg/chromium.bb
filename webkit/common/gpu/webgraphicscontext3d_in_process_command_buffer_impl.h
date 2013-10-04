@@ -5,8 +5,6 @@
 #ifndef WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
 #define WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
 
-#if defined(ENABLE_GPU)
-
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -591,5 +589,4 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 }  // namespace gpu
 }  // namespace webkit
 
-#endif  // defined(ENABLE_GPU)
 #endif  // WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_

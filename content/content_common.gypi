@@ -404,6 +404,7 @@
     }, {  # OS!="ios"
       'dependencies': [
         '../cc/cc.gyp:cc',
+        '../gpu/gpu.gyp:command_buffer_service',
         '../gpu/gpu.gyp:gles2_c_lib',
         '../gpu/gpu.gyp:gles2_implementation',
         '../gpu/gpu.gyp:gpu_ipc',
@@ -482,11 +483,6 @@
         'common/pepper_plugin_list.cc',
         'common/pepper_plugin_list.h',
         'common/sandbox_util.cc',
-      ],
-    }],
-    ['enable_gpu==1', {
-      'dependencies': [
-        '../gpu/gpu.gyp:command_buffer_service',
       ],
     }],
     ['OS=="android"', {
