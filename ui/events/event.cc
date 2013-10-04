@@ -526,8 +526,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
             EventFlagsFromNative(native_event)),
       key_code_(KeyboardCodeFromNative(native_event)),
       is_char_(is_char),
-      character_(0),
-      unmodified_character_(0) {
+      character_(0) {
 #if defined(USE_X11)
   NormalizeFlags();
 #endif
@@ -540,8 +539,7 @@ KeyEvent::KeyEvent(EventType type,
     : Event(type, EventTimeForNow(), flags),
       key_code_(key_code),
       is_char_(is_char),
-      character_(GetCharacterFromKeyCode(key_code, flags)),
-      unmodified_character_(0) {
+      character_(GetCharacterFromKeyCode(key_code, flags)) {
 }
 
 uint16 KeyEvent::GetCharacter() const {
@@ -562,39 +560,6 @@ uint16 KeyEvent::GetCharacter() const {
   if (!IsControlDown())
     ch = GetCharacterFromXEvent(native_event());
   return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
-#else
-  NOTIMPLEMENTED();
-  return 0;
-#endif
-}
-
-uint16 KeyEvent::GetUnmodifiedCharacter() const {
-  if (unmodified_character_)
-    return unmodified_character_;
-
-#if defined(OS_WIN)
-  // Looks like there is no way to get unmodified character on Windows.
-  return (native_event().message == WM_CHAR) ? key_code_ :
-      GetCharacterFromKeyCode(key_code_, flags() & EF_SHIFT_DOWN);
-#elif defined(USE_X11)
-  if (!native_event())
-    return GetCharacterFromKeyCode(key_code_, flags() & EF_SHIFT_DOWN);
-
-  DCHECK(native_event()->type == KeyPress ||
-         native_event()->type == KeyRelease);
-
-  static const unsigned int kIgnoredModifiers = ControlMask | LockMask |
-      Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask;
-
-  XKeyEvent copy = native_event()->xkey;  // bit-wise copy is safe.
-  // We can't use things like (native_event()->xkey.state & ShiftMask), as it
-  // may mask out bits used by X11 internally.
-  copy.state &= ~kIgnoredModifiers;
-  uint16 ch = GetCharacterFromXEvent(reinterpret_cast<XEvent*>(&copy));
-  return ch ? ch : GetCharacterFromKeyCode(key_code_, flags() & EF_SHIFT_DOWN);
-#elif defined(USE_OZONE)
-  return is_char() ? key_code_ : GetCharacterFromKeyCode(
-                                     key_code_, flags() & EF_SHIFT_DOWN);
 #else
   NOTIMPLEMENTED();
   return 0;
