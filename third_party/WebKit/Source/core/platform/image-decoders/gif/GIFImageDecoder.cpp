@@ -135,7 +135,8 @@ bool GIFImageDecoder::setFailed()
     return ImageDecoder::setFailed();
 }
 
-bool GIFImageDecoder::haveDecodedRow(size_t frameIndex, GIFRow::const_iterator rowBegin, size_t width, size_t rowNumber, unsigned repeatCount, bool writeTransparentPixels)
+// FIXME: Can the intermediate |rowBuffer| be avoided?
+bool GIFImageDecoder::haveDecodedRow(size_t frameIndex, const Vector<unsigned char>& rowBuffer, size_t width, size_t rowNumber, unsigned repeatCount, bool writeTransparentPixels)
 {
     const GIFFrameContext* frameContext = m_reader->frameContext(frameIndex);
     // The pixel data and coordinates supplied to us are relative to the frame's
@@ -148,7 +149,7 @@ bool GIFImageDecoder::haveDecodedRow(size_t frameIndex, GIFRow::const_iterator r
     const int yBegin = frameContext->yOffset() + rowNumber;
     const int xEnd = std::min(static_cast<int>(frameContext->xOffset() + width), size().width());
     const int yEnd = std::min(static_cast<int>(frameContext->yOffset() + rowNumber + repeatCount), size().height());
-    if (!width || (xBegin < 0) || (yBegin < 0) || (xEnd <= xBegin) || (yEnd <= yBegin))
+    if (rowBuffer.isEmpty() || (xBegin < 0) || (yBegin < 0) || (xEnd <= xBegin) || (yEnd <= yBegin))
         return true;
 
     const GIFColorMap::Table& colorTable = frameContext->localColorMap().isDefined() ? frameContext->localColorMap().table() : m_reader->globalColorMap().table();
@@ -164,7 +165,8 @@ bool GIFImageDecoder::haveDecodedRow(size_t frameIndex, GIFRow::const_iterator r
         return false;
 
     const size_t transparentPixel = frameContext->transparentPixel();
-    GIFRow::const_iterator rowEnd = rowBegin + (xEnd - xBegin);
+    Vector<unsigned char>::const_iterator rowBegin = rowBuffer.begin();
+    Vector<unsigned char>::const_iterator rowEnd = rowBegin + (xEnd - xBegin);
     ImageFrame::PixelData* currentAddress = buffer.getAddr(xBegin, yBegin);
 
     // We may or may not need to write transparent pixels to the buffer.

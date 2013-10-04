@@ -98,7 +98,7 @@ using WebCore::GIFImageDecoder;
 #define GETINT16(p)   ((p)[1]<<8|(p)[0])
 
 // Send the data to the display front-end.
-bool GIFLZWContext::outputRow(GIFRow::const_iterator rowBegin)
+bool GIFLZWContext::outputRow()
 {
     int drowStart = irow;
     int drowEnd = irow;
@@ -148,7 +148,7 @@ bool GIFLZWContext::outputRow(GIFRow::const_iterator rowBegin)
         return true;
 
     // CALLBACK: Let the client know we have decoded a row.
-    if (!m_client->haveDecodedRow(m_frameContext->frameId(), rowBegin, m_frameContext->width(),
+    if (!m_client->haveDecodedRow(m_frameContext->frameId(), rowBuffer, m_frameContext->width(),
         drowStart, drowEnd - drowStart + 1, m_frameContext->progressiveDisplay() && m_frameContext->interlaced() && ipass > 1))
         return false;
 
@@ -202,12 +202,24 @@ bool GIFLZWContext::outputRow(GIFRow::const_iterator rowBegin)
 // Otherwise, decoding failed; returns false in this case, which will always cause the GIFImageReader to set the "decode failed" flag.
 bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
 {
-    const size_t width = m_frameContext->width();
+    int code;
+    int incode;
+    const unsigned char *ch;
 
     if (rowIter == rowBuffer.end())
         return true;
 
-    for (const unsigned char* ch = block; bytesInBlock-- > 0; ch++) {
+#define OUTPUT_ROW \
+    do { \
+        if (!outputRow()) \
+            return false; \
+        rowsRemaining--; \
+        rowIter = rowBuffer.begin(); \
+        if (!rowsRemaining) \
+            return true; \
+    } while (0)
+
+    for (ch = block; bytesInBlock-- > 0; ch++) {
         // Feed the next byte into the decoder's 32-bit input buffer.
         datum += ((int) *ch) << bits;
         bits += 8;
@@ -215,7 +227,7 @@ bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
         // Check for underflow of decoder's 32-bit input buffer.
         while (bits >= codesize) {
             // Get the leading variable-length symbol from the data stream.
-            int code = datum & codemask;
+            code = datum & codemask;
             datum >>= codesize;
             bits -= codesize;
 
@@ -236,72 +248,66 @@ bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
                 return false;
             }
 
-            const int tempCode = code;
-            unsigned short codeLength = 0;
-            if (code < avail) {
-                // This is a pre-existing code, so we already know what it
-                // encodes.
-                codeLength = suffixLength[code];
-                rowIter += codeLength;
-            } else if (code == avail && oldcode != -1) {
-                // This is a new code just being added to the dictionary.
-                // It must encode the contents of the previous code, plus
-                // the first character of the previous code again.
-                codeLength = suffixLength[oldcode] + 1;
-                rowIter += codeLength;
-                *--rowIter = firstchar;
+            if (oldcode == -1) {
+                *rowIter++ = suffix[code];
+                if (rowIter == rowBuffer.end())
+                    OUTPUT_ROW;
+
+                firstchar = oldcode = code;
+                continue;
+            }
+
+            incode = code;
+            if (code >= avail) {
+                stack[stackp++] = firstchar;
                 code = oldcode;
-            } else {
-                // This is an invalid code. The dictionary is just initialized
-                // and the code is incomplete. We don't know how to handle
-                // this case.
-                return false;
+
+                if (stackp == MAX_BYTES)
+                    return false;
             }
 
             while (code >= clearCode) {
-                *--rowIter = suffix[code];
+                if (code >= MAX_BYTES || code == prefix[code])
+                    return false;
+
+                // Even though suffix[] only holds characters through suffix[avail - 1],
+                // allowing code >= avail here lets us be more tolerant of malformed
+                // data. As long as code < MAX_BYTES, the only risk is a garbled image,
+                // which is no worse than refusing to display it.
+                stack[stackp++] = suffix[code];
                 code = prefix[code];
+
+                if (stackp == MAX_BYTES)
+                    return false;
             }
 
-            *--rowIter = firstchar = suffix[code];
+            stack[stackp++] = firstchar = suffix[code];
 
-            // Define a new codeword in the dictionary as long as we've read
-            // more than one value from the stream.
-            if (avail < MAX_DICTIONARY_ENTRIES && oldcode != -1) {
+            // Define a new codeword in the dictionary.
+            if (avail < 4096) {
                 prefix[avail] = oldcode;
                 suffix[avail] = firstchar;
-                suffixLength[avail] = suffixLength[oldcode] + 1;
-                ++avail;
+                avail++;
 
                 // If we've used up all the codewords of a given length
                 // increase the length of codewords by one bit, but don't
-                // exceed the specified maximum codeword size.
-                if (!(avail & codemask) && avail < MAX_DICTIONARY_ENTRIES) {
-                    ++codesize;
+                // exceed the specified maximum codeword size of 12 bits.
+                if ((!(avail & codemask)) && (avail < 4096)) {
+                    codesize++;
                     codemask += avail;
                 }
             }
-            oldcode = tempCode;
-            rowIter += codeLength;
+            oldcode = incode;
 
-            // Output as many rows as possible.
-            GIFRow::iterator rowBegin = rowBuffer.begin();
-            for (; rowBegin + width <= rowIter; rowBegin += width) {
-                if (!outputRow(rowBegin))
-                    return false;
-                rowsRemaining--;
-                if (!rowsRemaining)
-                    return true;
-            }
-
-            if (rowBegin != rowBuffer.begin()) {
-                // Move the remaining bytes to the beginning of the buffer.
-                const size_t bytesToCopy = rowIter - rowBegin;
-                memcpy(rowBuffer.begin(), rowBegin, bytesToCopy);
-                rowIter = rowBuffer.begin() + bytesToCopy;
-            }
+            // Copy the decoded data out to the scanline buffer.
+            do {
+                *rowIter++ = stack[--stackp];
+                if (rowIter == rowBuffer.end())
+                    OUTPUT_ROW;
+            } while (stackp > 0);
         }
     }
+
     return true;
 }
 
@@ -310,12 +316,12 @@ void GIFColorMap::buildTable(const unsigned char* data, size_t length)
     if (!m_isDefined || !m_table.isEmpty())
         return;
 
-    RELEASE_ASSERT(m_position + m_colors * BYTES_PER_COLORMAP_ENTRY <= length);
+    RELEASE_ASSERT(m_position + m_colors * GIF_COLORS <= length);
     const unsigned char* srcColormap = data + m_position;
     m_table.resize(m_colors);
     for (Table::iterator iter = m_table.begin(); iter != m_table.end(); ++iter) {
         *iter = SkPackARGB32NoCheck(255, srcColormap[0], srcColormap[1], srcColormap[2]);
-        srcColormap += BYTES_PER_COLORMAP_ENTRY;
+        srcColormap += GIF_COLORS;
     }
 }
 
@@ -450,7 +456,7 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
 
             if ((currentComponent[4] & 0x80) && globalColorMapColors > 0) { /* global map */
                 m_globalColorMap.setTablePositionAndSize(dataPosition, globalColorMapColors);
-                GETN(BYTES_PER_COLORMAP_ENTRY * globalColorMapColors, GIFGlobalColormap);
+                GETN(GIF_COLORS * globalColorMapColors, GIFGlobalColormap);
                 break;
             }
 
@@ -690,7 +696,7 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
                 // The three low-order bits of currentComponent[8] specify the bits per pixel.
                 const size_t numColors = 2 << (currentComponent[8] & 0x7);
                 currentFrame->localColorMap().setTablePositionAndSize(dataPosition, numColors);
-                GETN(BYTES_PER_COLORMAP_ENTRY * numColors, GIFImageColormap);
+                GETN(GIF_COLORS * numColors, GIFImageColormap);
                 break;
             }
 
@@ -754,10 +760,14 @@ bool GIFLZWContext::prepareToDecode()
     ASSERT(m_frameContext->isDataSizeDefined() && m_frameContext->isHeaderDefined());
 
     // Since we use a codesize of 1 more than the datasize, we need to ensure
-    // that our datasize is strictly less than the MAX_DICTIONARY_ENTRY_BITS.
-    if (m_frameContext->dataSize() >= MAX_DICTIONARY_ENTRY_BITS)
+    // that our datasize is strictly less than the MAX_LZW_BITS value (12).
+    // This sets the largest possible codemask correctly at 4095.
+    if (m_frameContext->dataSize() >= MAX_LZW_BITS)
         return false;
     clearCode = 1 << m_frameContext->dataSize();
+    if (clearCode >= MAX_BYTES)
+        return false;
+
     avail = clearCode + 2;
     oldcode = -1;
     codesize = m_frameContext->dataSize() + 1;
@@ -766,36 +776,18 @@ bool GIFLZWContext::prepareToDecode()
     ipass = m_frameContext->interlaced() ? 1 : 0;
     irow = 0;
 
-    // We want to know the longest sequence encodable by a dictionary with
-    // MAX_DICTIONARY_ENTRIES entries. If we ignore the need to encode the base
-    // values themselves at the beginning of the dictionary, as well as the need
-    // for a clear code or a termination code, we could use every entry to
-    // encode a series of multiple values. If the input value stream looked
-    // like "AAAAA..." (a long string of just one value), the first dictionary
-    // entry would encode AA, the next AAA, the next AAAA, and so forth. Thus
-    // the longest sequence would be MAX_DICTIONARY_ENTRIES + 1 values.
-    //
-    // However, we have to account for reserved entries. The first |datasize|
-    // bits are reserved for the base values, and the next two entries are
-    // reserved for the clear code and termination code. In theory a GIF can
-    // set the datasize to 0, meaning we have just two reserved entries, making
-    // the longest sequence (MAX_DICTIONARY_ENTIRES + 1) - 2 values long. Since
-    // each value is a byte, this is also the number of bytes in the longest
-    // encodable sequence.
-    const size_t maxBytes = MAX_DICTIONARY_ENTRIES - 1;
-
-    // Now allocate the output buffer. We decode directly into this buffer
-    // until we have at least one row worth of data, then call outputRow().
-    // This means worst case we may have (row width - 1) bytes in the buffer
-    // and then decode a sequence |maxBytes| long to append.
-    rowBuffer.resize(m_frameContext->width() - 1 + maxBytes);
+    // Initialize output row buffer.
+    rowBuffer.resize(m_frameContext->width());
     rowIter = rowBuffer.begin();
     rowsRemaining = m_frameContext->height();
 
     // Clearing the whole suffix table lets us be more tolerant of bad data.
-    for (int i = 0; i < clearCode; ++i) {
+    memset(suffix, 0, sizeof(suffix));
+
+    // Clearing the whole prefix table to prevent uninitialized access.
+    memset(prefix, 0, sizeof(prefix));
+    for (int i = 0; i < clearCode; i++)
         suffix[i] = i;
-        suffixLength[i] = 1;
-    }
+    stackp = 0;
     return true;
 }

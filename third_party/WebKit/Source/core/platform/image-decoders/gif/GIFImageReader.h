@@ -46,10 +46,10 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-#define MAX_DICTIONARY_ENTRY_BITS 12
-#define MAX_DICTIONARY_ENTRIES    4096 // 2^MAX_DICTIONARY_ENTRY_BITS
-#define MAX_COLORS                256
-#define BYTES_PER_COLORMAP_ENTRY  3
+#define MAX_LZW_BITS          12
+#define MAX_BYTES           4097 /* 2^MAX_LZW_BITS+1 */
+#define MAX_COLORS           256
+#define GIF_COLORS             3
 
 const int cLoopCountNotSeen = -2;
 
@@ -95,13 +95,14 @@ public:
         , ipass(0)
         , irow(0)
         , rowsRemaining(0)
+        , stackp(0)
         , rowIter(0)
         , m_client(client)
         , m_frameContext(frameContext)
     { }
 
     bool prepareToDecode();
-    bool outputRow(GIFRow::const_iterator rowBegin);
+    bool outputRow();
     bool doLZW(const unsigned char* block, size_t bytesInBlock);
     bool hasRemainingRows() { return rowsRemaining; }
 
@@ -119,11 +120,13 @@ private:
     size_t irow; // Current output row, starting at zero.
     size_t rowsRemaining; // Rows remaining to be output.
 
-    unsigned short prefix[MAX_DICTIONARY_ENTRIES];
-    unsigned char suffix[MAX_DICTIONARY_ENTRIES];
-    unsigned short suffixLength[MAX_DICTIONARY_ENTRIES];
-    GIFRow rowBuffer; // Single scanline temporary buffer.
-    GIFRow::iterator rowIter;
+    unsigned short prefix[MAX_BYTES];
+    unsigned char suffix[MAX_BYTES];
+    unsigned char stack[MAX_BYTES];
+    Vector<unsigned char> rowBuffer; // Single scanline temporary buffer.
+
+    size_t stackp; // Current stack pointer.
+    Vector<unsigned char>::iterator rowIter;
 
     // Initialized during construction and read-only.
     WebCore::GIFImageDecoder* m_client;
