@@ -171,8 +171,7 @@ class Emulator(object):
       avd_name: name of the AVD to create
       abi: target platform for emulator being created
     """
-    android_sdk_root = os.path.join(constants.EMULATOR_SDK_ROOT,
-                                    'android_tools', 'sdk')
+    android_sdk_root = os.path.join(constants.EMULATOR_SDK_ROOT, 'sdk')
     self.emulator = os.path.join(android_sdk_root, 'tools', 'emulator')
     self.android = os.path.join(android_sdk_root, 'tools', 'android')
     self.popen = None

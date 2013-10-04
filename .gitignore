@@ -42,6 +42,7 @@ Thumbs.db
 v8.log
 /Makefile
 /_out
+/android_emulator_sdk
 /arm-sysroot
 /base/base_unittests_run.xml
 /breakpad/src/

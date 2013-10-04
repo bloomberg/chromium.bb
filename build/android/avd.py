@@ -23,8 +23,7 @@ from pylib.utils import emulator
 def main(argv):
   # ANDROID_SDK_ROOT needs to be set to the location of the SDK used to launch
   # the emulator to find the system images upon launch.
-  emulator_sdk = os.path.join(constants.EMULATOR_SDK_ROOT,
-                              'android_tools', 'sdk')
+  emulator_sdk = os.path.join(constants.EMULATOR_SDK_ROOT, 'sdk')
   os.environ['ANDROID_SDK_ROOT'] = emulator_sdk
 
   opt_parser = optparse.OptionParser(description='AVD script.')

@@ -5,7 +5,7 @@
 
 """Installs deps for using SDK emulator for testing.
 
-The script will download system images, if they are not present, and
+The script will download the SDK and system images, if they are not present, and
 install and enable KVM, if virtualization has been enabled in the BIOS.
 """
 
@@ -19,8 +19,9 @@ from pylib import cmd_helper
 from pylib import constants
 from pylib.utils import run_tests_helper
 
-# Android ARMv7 system image for the SDK.
-ARMV7_IMG_URL = 'https://dl-ssl.google.com/android/repository/sysimg_armv7a-18_r01.zip'
+# From the Android Developer's website.
+SDK_BASE_URL = 'http://dl.google.com/android/adt'
+SDK_ZIP = 'adt-bundle-linux-x86_64-20130729.zip'
 
 # Android x86 system image from the Intel website:
 # http://software.intel.com/en-us/articles/intel-eula-x86-android-4-2-jelly-bean-bin
@@ -34,32 +35,19 @@ def CheckSDK():
   """Check if SDK is already installed.
 
   Returns:
-    True if android_tools directory exists in current directory.
+    True if the emulator SDK directory (src/android_emulator_sdk/) exists.
   """
-  return os.path.exists(os.path.join(constants.EMULATOR_SDK_ROOT,
-                                     'android_tools'))
-
-
-def CheckARMv7Image():
-  """Check if the ARMv7 system images have been installed.
-
-  Returns:
-    True if the armeabi-v7a directory is present inside the Android SDK
-    checkout directory.
-  """
-  return os.path.exists(os.path.join(constants.EMULATOR_SDK_ROOT,
-                                     'android_tools', 'sdk', 'system-images',
-                                     API_TARGET, 'armeabi-v7a'))
+  return os.path.exists(constants.EMULATOR_SDK_ROOT)
 
 
 def CheckX86Image():
   """Check if Android system images have been installed.
 
   Returns:
-    True if android_tools/sdk/system-images directory exists.
+    True if sdk/system-images/<API TARGET>/x86 exists inside EMULATOR_SDK_ROOT.
   """
   return os.path.exists(os.path.join(constants.EMULATOR_SDK_ROOT,
-                                     'android_tools', 'sdk', 'system-images',
+                                     'sdk', 'system-images',
                                      API_TARGET, 'x86'))
 
 
@@ -74,6 +62,25 @@ def CheckKVM():
   except OSError:
     logging.info('kvm-ok not installed')
     return False
+
+
+def GetSDK():
+  """Download the SDK and unzip it into EMULATOR_SDK_ROOT."""
+  logging.info('Download Android SDK.')
+  sdk_url = '%s/%s' % (SDK_BASE_URL, SDK_ZIP)
+  try:
+    cmd_helper.RunCmd(['curl', '-o', '/tmp/sdk.zip', sdk_url])
+    print 'curled unzipping...'
+    rc = cmd_helper.RunCmd(['unzip', '-o', '/tmp/sdk.zip', '-d', '/tmp/'])
+    if rc:
+      raise Exception('ERROR: could not download/unzip Android SDK.')
+    # Get the name of the sub-directory that everything will be extracted to.
+    dirname, _ = os.path.splitext(SDK_ZIP)
+    zip_dir = '/tmp/%s' % dirname
+    # Move the extracted directory to EMULATOR_SDK_ROOT
+    shutil.move(zip_dir, constants.EMULATOR_SDK_ROOT)
+  finally:
+    os.unlink('/tmp/sdk.zip')
 
 
 def InstallKVM():
@@ -96,21 +103,6 @@ def InstallKVM():
                      'AMD SVM).')
 
 
-def GetARMv7Image():
-  """Download and install the ARMv7 system image."""
-  logging.info('Download ARMv7 system image directory into sdk directory.')
-  try:
-    cmd_helper.RunCmd(['curl', '-o', '/tmp/armv7_img.zip', ARMV7_IMG_URL])
-    rc = cmd_helper.RunCmd(['unzip', '-o', '/tmp/armv7_img.zip', '-d', '/tmp/'])
-    if rc:
-      raise Exception('ERROR: Could not download/unzip image zip.')
-    sys_imgs = os.path.join(constants.EMULATOR_SDK_ROOT, 'android_tools', 'sdk',
-                            'system-images', API_TARGET, 'armeabi-v7a')
-    shutil.move('/tmp/armeabi-v7a', sys_imgs)
-  finally:
-    os.unlink('/tmp/armv7_img.zip')
-
-
 def GetX86Image():
   """Download x86 system image from Intel's website."""
   logging.info('Download x86 system image directory into sdk directory.')
@@ -119,7 +111,7 @@ def GetX86Image():
     rc = cmd_helper.RunCmd(['unzip', '-o', '/tmp/x86_img.zip', '-d', '/tmp/'])
     if rc:
       raise Exception('ERROR: Could not download/unzip image zip.')
-    sys_imgs = os.path.join(constants.EMULATOR_SDK_ROOT, 'android_tools', 'sdk',
+    sys_imgs = os.path.join(constants.EMULATOR_SDK_ROOT, 'sdk',
                             'system-images', API_TARGET, 'x86')
     shutil.move('/tmp/x86', sys_imgs)
   finally:
@@ -131,22 +123,15 @@ def main(argv):
                       format='# %(asctime)-15s: %(message)s')
   run_tests_helper.SetLogLevel(verbose_count=1)
 
-  if not CheckSDK():
-    logging.critical(
-      'ERROR: android_tools does not exist. Make sure your .gclient file '
-      'contains the right \'target_os\' entry. See '
-      'https://code.google.com/p/chromium/wiki/AndroidBuildInstructions for '
-      'more information.')
-    return 1
-
-  # Download system images only if needed.
-  if CheckARMv7Image():
-    logging.info('The ARMv7 image is already present.')
+  # Calls below will download emulator SDK and/or system images only if needed.
+  if CheckSDK():
+    logging.info('android_emulator_sdk/ already exists, skipping download.')
   else:
-    GetARMv7Image()
+    GetSDK()
 
+  # Download the x86 system image only if needed.
   if CheckX86Image():
-    logging.info('The x86 image is already present.')
+    logging.info('The x86 image is already present, skipping download.')
   else:
     GetX86Image()
 

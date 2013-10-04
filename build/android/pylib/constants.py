@@ -13,8 +13,6 @@ import sys
 DIR_SOURCE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                os.pardir, os.pardir, os.pardir))
 ISOLATE_DEPS_DIR = os.path.join(DIR_SOURCE_ROOT, 'isolate_deps_dir')
-EMULATOR_SDK_ROOT = os.path.abspath(os.path.join(DIR_SOURCE_ROOT, os.pardir,
-                                                 os.pardir))
 
 CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR = os.path.join(
     DIR_SOURCE_ROOT, 'chrome', 'android')
@@ -119,6 +117,8 @@ ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party/android_tools/sdk')
 ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party/android_tools/ndk')
+
+EMULATOR_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'android_emulator_sdk')
 
 UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 
