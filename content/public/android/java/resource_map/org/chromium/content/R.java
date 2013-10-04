@@ -73,6 +73,10 @@ public final class R {
         public static int media_player_error_title;
         public static int media_player_loading_video;
         public static int month_picker_dialog_title;
+        public static int profiler_error_toast;
+        public static int profiler_no_storage_toast;
+        public static int profiler_started_toast;
+        public static int profiler_stopped_toast;
         public static int time_picker_dialog_am;
         public static int time_picker_dialog_hour_minute_separator;
         public static int time_picker_dialog_minute_second_separator;

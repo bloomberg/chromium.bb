@@ -5,10 +5,8 @@
 package org.chromium.content_shell_apk;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,7 +21,7 @@ import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
-import org.chromium.content.browser.TracingIntentHandler;
+import org.chromium.content.browser.TracingControllerAndroid;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.Shell;
@@ -39,10 +37,6 @@ public class ContentShellActivity extends Activity {
     private static final String TAG = "ContentShellActivity";
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
-    private static final String ACTION_START_TRACE =
-            "org.chromium.content_shell.action.PROFILE_START";
-    private static final String ACTION_STOP_TRACE =
-            "org.chromium.content_shell.action.PROFILE_STOP";
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
     /**
@@ -62,7 +56,7 @@ public class ContentShellActivity extends Activity {
 
     private ShellManager mShellManager;
     private WindowAndroid mWindowAndroid;
-    private BroadcastReceiver mReceiver;
+    private TracingControllerAndroid mTracingController;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -163,6 +157,25 @@ public class ContentShellActivity extends Activity {
         }
     }
 
+    private TracingControllerAndroid getTracingController() {
+        if (mTracingController == null) {
+            mTracingController = new TracingControllerAndroid(this);
+        }
+        return mTracingController;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getTracingController().registerReceiver(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getTracingController().unregisterReceiver(this);
+    }
+
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode != KeyEvent.KEYCODE_BACK) return super.onKeyUp(keyCode, event);
@@ -205,8 +218,6 @@ public class ContentShellActivity extends Activity {
 
         ContentView view = getActiveContentView();
         if (view != null) view.onHide();
-
-        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -215,27 +226,6 @@ public class ContentShellActivity extends Activity {
 
         ContentView view = getActiveContentView();
         if (view != null) view.onShow();
-        IntentFilter intentFilter = new IntentFilter(ACTION_START_TRACE);
-        intentFilter.addAction(ACTION_STOP_TRACE);
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                String extra = intent.getStringExtra("file");
-                if (ACTION_START_TRACE.equals(action)) {
-                    if (extra.isEmpty()) {
-                        Log.e(TAG, "Can not start tracing without specifing saving location");
-                    } else {
-                        TracingIntentHandler.beginTracing(extra);
-                        Log.i(TAG, "start tracing");
-                    }
-                } else if (ACTION_STOP_TRACE.equals(action)) {
-                    Log.i(TAG, "stop tracing");
-                    TracingIntentHandler.endTracing();
-                }
-            }
-        };
-        registerReceiver(mReceiver, intentFilter);
     }
 
     @Override

@@ -92,6 +92,18 @@
       <message desc="NO DESCRIPTION [CHAR-LIMIT=16]" name="IDS_MEDIA_PLAYER_LOADING_VIDEO">
         Loading video
       </message>
+      <message name="IDS_PROFILER_STARTED_TOAST" desc="Toast notifying the user that profiler started">
+        Profiler started
+      </message>
+      <message name="IDS_PROFILER_STOPPED_TOAST" desc="Toast notifying the user that profiler results were written to a file">
+        Profiler finished. Results are in <ph name="FILENAME">%1$s<ex>output.txt</ex></ph>.
+      </message>
+      <message name="IDS_PROFILER_NO_STORAGE_TOAST" desc="Toast notifying the user that we can't start profiler because there's no external storage">
+        Can't start profiler because external storage is not ready
+      </message>
+      <message name="IDS_PROFILER_ERROR_TOAST" desc="Toast notifying the user that we failed to start profiler">
+        Failed to start profiler
+      </message>
     </messages>
   </release>
   <translations>

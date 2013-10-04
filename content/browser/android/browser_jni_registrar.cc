@@ -21,7 +21,7 @@
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #include "content/browser/android/touch_point.h"
-#include "content/browser/android/tracing_intent_handler.h"
+#include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/android/vibration_message_filter.h"
 #include "content/browser/android/web_contents_observer_android.h"
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
@@ -65,7 +65,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
     {"TouchPoint", content::RegisterTouchPoint},
-    {"TracingIntentHandler", content::RegisterTracingIntentHandler},
+    {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
     {"VibrationMessageFilter", content::VibrationMessageFilter::Register},
     {"WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid},
     {"WebViewStatics", content::RegisterWebViewStatics}, };
