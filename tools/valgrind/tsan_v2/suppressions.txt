@@ -140,7 +140,3 @@ race:net::URLFetcherCore::Stop
 
 # http://crbug.com/304178
 race:localtime_r
-
-# http://crbug.com/304180
-race:ImageLoaderTest::OnImageLoaded
-race:extensions::ImageLoader::FinalizeImageOnFileThread
