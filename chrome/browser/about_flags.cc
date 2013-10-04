@@ -1359,15 +1359,6 @@ const Experiment kExperiments[] = {
         switches::kTouchSideBezels, "0")
   },
   {
-    "enable-no-touch-to-renderer-while-scrolling",
-    IDS_FLAGS_ENABLE_NO_TOUCH_TO_RENDERER_WHILE_SCROLLING_NAME,
-    IDS_FLAGS_ENABLE_NO_TOUCH_TO_RENDERER_WHILE_SCROLLING_DESCRIPTION,
-    kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
-        switches::kNoTouchToRendererWhileScrolling, "1",
-        switches::kNoTouchToRendererWhileScrolling, "0")
-  },
-  {
     "enable-touch-drag-drop",
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION,

@@ -87,9 +87,6 @@ ImmediateInputRouter::ImmediateInputRouter(RenderProcessHost* process,
       has_touch_handler_(false),
       touch_event_queue_(new TouchEventQueue(this)),
       gesture_event_filter_(new GestureEventFilter(this)) {
-  enable_no_touch_to_renderer_while_scrolling_ =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoTouchToRendererWhileScrolling);
   DCHECK(process);
   DCHECK(client);
 }
@@ -562,8 +559,7 @@ void ImmediateInputRouter::ProcessTouchAck(
 
 void ImmediateInputRouter::HandleGestureScroll(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (enable_no_touch_to_renderer_while_scrolling_)
-    touch_event_queue_->OnGestureScrollEvent(gesture_event);
+  touch_event_queue_->OnGestureScrollEvent(gesture_event);
 }
 
 }  // namespace content

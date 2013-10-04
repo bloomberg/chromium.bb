@@ -1179,66 +1179,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verify that the first event sent while the page is scrolling will be
-     * converted to a touchcancel. The touchcancel event should stay in the
-     * pending queue. Acking the touchcancel event will consume all the touch
-     * events of the current session.
-     */
-    @SmallTest
-    @Feature({"Gestures"})
-    public void testTouchEventsCanceledWhileScrolling() {
-        final int deltaY = 84;
-        final long downTime = SystemClock.uptimeMillis();
-
-        MockMotionEventDelegate delegate = new MockMotionEventDelegate();
-        ContentViewGestureHandler gestureHandler = new ContentViewGestureHandler(
-                getInstrumentation().getTargetContext(), delegate, mMockZoomManager,
-                ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
-        gestureHandler.hasTouchEventHandlers(true);
-        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
-        assertTrue(gestureHandler.onTouchEvent(event));
-        gestureHandler.confirmTouchEvent(
-                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-        event = MotionEvent.obtain(
-                downTime, downTime + 5, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X, FAKE_COORD_Y - deltaY / 2, 0);
-        assertTrue(gestureHandler.onTouchEvent(event));
-        gestureHandler.confirmTouchEvent(
-                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-        // This event will be converted to touchcancel and put into the pending
-        // queue.
-        event = MotionEvent.obtain(
-                downTime, downTime + 10, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X, FAKE_COORD_Y - deltaY, 0);
-        assertTrue(gestureHandler.onTouchEvent(event));
-        assertEquals(1, gestureHandler.getNumberOfPendingMotionEventsForTesting());
-        assertTrue(gestureHandler.isEventCancelledForTesting(
-                gestureHandler.peekFirstInPendingMotionEventsForTesting()));
-        MotionEvent canceledEvent = gestureHandler.peekFirstInPendingMotionEventsForTesting();
-
-        event = motionEvent(MotionEvent.ACTION_POINTER_DOWN, downTime + 15, downTime + 15);
-        assertTrue(gestureHandler.onTouchEvent(event));
-        assertEquals(2, gestureHandler.getNumberOfPendingMotionEventsForTesting());
-
-        // Acking the touchcancel will drain all the events, and clear the event previously marked
-        // for cancellation.
-        gestureHandler.confirmTouchEvent(
-                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-        assertEquals(0, gestureHandler.getNumberOfPendingMotionEventsForTesting());
-        assertFalse(gestureHandler.isEventCancelledForTesting(canceledEvent));
-
-        // Note: This check relies on an implementation detail of MotionEvent, namely, that the last
-        //       event recycled is the the first returned by MotionEvent.obtain(). Should
-        //       MotioEvent's implementation change, this assumption will need to be rebased.
-        MotionEvent recycledCanceledEvent =
-                motionEvent(MotionEvent.ACTION_DOWN, downTime + 20 , downTime + 20);
-        assertSame("The canceled event should have been recycled.",
-                canceledEvent, recycledCanceledEvent);
-    }
-
-    /**
      * Generate a scroll gesture and verify that the resulting scroll motion event has both absolute
      * and relative position information.
      */
@@ -1334,29 +1274,9 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
 
-        MockMotionEventDelegate eventDelegate = new MockMotionEventDelegate() {
-            @Override
-            public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {
-                if (action == TouchPoint.TOUCH_EVENT_TYPE_CANCEL) {
-                    // Ensure the event to be cancelled is already in the pending queue.
-                    MotionEvent canceledEvent =
-                            mGestureHandler.peekFirstInPendingMotionEventsForTesting();
-                    assertTrue(mGestureHandler.isEventCancelledForTesting(canceledEvent));
-
-                    mGestureHandler.confirmTouchEvent(
-                            ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-
-                    // Ensure that the canceled event has been removed from the event queue and is
-                    // no longer scheduled for cancellation.
-                    assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-                    assertFalse(mGestureHandler.isEventCancelledForTesting(canceledEvent));
-                }
-                return super.sendTouchEvent(timeMs, action, pts);
-            }
-        };
         mGestureHandler = new ContentViewGestureHandler(
-                getInstrumentation().getTargetContext(), eventDelegate, mMockZoomManager,
-                ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
+                getInstrumentation().getTargetContext(), new MockMotionEventDelegate(),
+                mMockZoomManager, ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
         mLongPressDetector = new LongPressDetector(
                 getInstrumentation().getTargetContext(), mGestureHandler);
 

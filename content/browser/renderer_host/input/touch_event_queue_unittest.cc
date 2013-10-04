@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
+using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebTouchEvent;
 using WebKit::WebTouchPoint;
@@ -53,6 +54,13 @@ class TouchEventQueueTest : public testing::Test,
           followup_touch_event_.Pass();
       SendTouchEvent(*followup_touch_event);
     }
+    if (followup_gesture_event_) {
+      scoped_ptr<WebGestureEvent> followup_gesture_event =
+          followup_gesture_event_.Pass();
+      queue_->OnGestureScrollEvent(
+          GestureEventWithLatencyInfo(*followup_gesture_event,
+                                      ui::LatencyInfo()));
+    }
   }
 
  protected:
@@ -66,12 +74,23 @@ class TouchEventQueueTest : public testing::Test,
     touch_event_.ResetPoints();
   }
 
+  void SendGestureEvent(WebInputEvent::Type type) {
+    WebGestureEvent event;
+    event.type = type;
+    queue_->OnGestureScrollEvent(
+        GestureEventWithLatencyInfo(event, ui::LatencyInfo()));
+  }
+
   void SendTouchEventACK(InputEventAckState ack_result) {
     queue_->ProcessTouchAck(ack_result, ui::LatencyInfo());
   }
 
   void SetFollowupEvent(const WebTouchEvent& event) {
     followup_touch_event_.reset(new WebTouchEvent(event));
+  }
+
+  void SetFollowupEvent(const WebGestureEvent& event) {
+    followup_gesture_event_.reset(new WebGestureEvent(event));
   }
 
   int PressTouchPoint(int x, int y) {
@@ -114,6 +133,10 @@ class TouchEventQueueTest : public testing::Test,
     return last_acked_event_;
   }
 
+  const WebTouchEvent& sent_event() const {
+    return last_sent_event_;
+  }
+
   InputEventAckState acked_event_state() const {
     return last_acked_event_state_;
   }
@@ -135,6 +158,7 @@ class TouchEventQueueTest : public testing::Test,
   InputEventAckState last_acked_event_state_;
   MockWebTouchEvent touch_event_;
   scoped_ptr<WebTouchEvent> followup_touch_event_;
+  scoped_ptr<WebGestureEvent> followup_gesture_event_;
 };
 
 
@@ -624,45 +648,119 @@ TEST_F(TouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
 }
 
-// Tests that no touch move events are sent to renderer during scrolling.
-TEST_F(TouchEventQueueTest, NoTouchMove) {
-  // First touch press.
-  PressTouchPoint(0, 1);
-  SendTouchEvent();
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  // Touch moves may trigger scroll.
-  MoveTouchPoint(0, 20, 5);
-  SendTouchEvent();
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  // Touch move should not be sent to renderer (e.g., when scrolling starts).
+// Tests basic TouchEvent forwarding suppression.
+TEST_F(TouchEventQueueTest, NoTouchBasic) {
+  // Disable TouchEvent forwarding.
   set_no_touch_to_renderer(true);
   MoveTouchPoint(0, 30, 5);
   SendTouchEvent();
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Touch move should not be sent to renderer.
+  // TouchMove should not be sent to renderer.
   MoveTouchPoint(0, 65, 10);
   SendTouchEvent();
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Touch end should not be sent to renderer.
+  // TouchEnd should not be sent to renderer.
   ReleaseTouchPoint(0);
   SendTouchEvent();
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Resume sending touch moves to renderer (e.g., when scrolling ends).
+  // TouchStart should not be sent to renderer.
+  PressTouchPoint(5, 5);
+  SendTouchEvent();
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Enable TouchEvent forwarding.
   set_no_touch_to_renderer(false);
 
-  // Now touch events should come through to renderer.
+  PressTouchPoint(80, 10);
+  SendTouchEvent();
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, 80, 20);
+  SendTouchEvent();
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+}
+
+// Tests that no TouchEvents are sent to renderer during scrolling.
+TEST_F(TouchEventQueueTest, NoTouchOnScroll) {
+  // Queue a TouchStart.
+  PressTouchPoint(0, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, 20, 5);
+  SendTouchEvent();
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  // Queue another TouchStart.
+  PressTouchPoint(20, 20);
+  SendTouchEvent();
+  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(WebInputEvent::TouchStart, latest_event().type);
+
+  // GestureScrollBegin inserts a synthetic TouchCancel before the TouchStart.
+  WebGestureEvent followup_scroll;
+  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  SetFollowupEvent(followup_scroll);
+  ASSERT_FALSE(no_touch_to_renderer());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(no_touch_to_renderer());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_EQ(WebInputEvent::TouchCancel, sent_event().type);
+  EXPECT_EQ(WebInputEvent::TouchStart, latest_event().type);
+
+  // Acking the TouchCancel will result in dispatch of the next TouchStart.
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // The synthetic TouchCancel should not reach client, only the TouchStart.
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
+
+  // TouchMove should not be sent to renderer.
+  MoveTouchPoint(0, 30, 5);
+  SendTouchEvent();
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
+
+  // GestureScrollUpdates should not change affect touch forwarding.
+  SendGestureEvent(WebInputEvent::GestureScrollUpdate);
+  EXPECT_TRUE(no_touch_to_renderer());
+
+  // TouchEnd should not be sent to renderer.
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
+
+  // GestureScrollEnd will resume the sending of TouchEvents to renderer.
+  SendGestureEvent(WebKit::WebInputEvent::GestureScrollEnd);
+  EXPECT_FALSE(no_touch_to_renderer());
+
+  // Now TouchEvents should be forwarded normally.
   PressTouchPoint(80, 10);
   SendTouchEvent();
   EXPECT_EQ(1U, GetAndResetSentEventCount());
