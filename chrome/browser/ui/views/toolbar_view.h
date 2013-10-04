@@ -105,7 +105,6 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual void ShowWebsiteSettings(content::WebContents* web_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) OVERRIDE;
-  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
 
   // Overridden from CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;

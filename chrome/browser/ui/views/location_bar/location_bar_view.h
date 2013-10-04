@@ -118,11 +118,6 @@ class LocationBarView : public LocationBar,
                                      const GURL& url,
                                      const content::SSLStatus& ssl) = 0;
 
-    // Called by the location bar view when the user starts typing in the edit.
-    // This forces our security style to be UNKNOWN for the duration of the
-    // editing.
-    virtual void OnInputInProgress(bool in_progress) = 0;
-
    protected:
     virtual ~Delegate() {}
   };

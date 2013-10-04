@@ -87,7 +87,6 @@ class SimpleWebViewDialog : public views::ButtonListener,
   virtual void ShowWebsiteSettings(content::WebContents* web_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) OVERRIDE;
-  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
 
   // Implements ToolbarModelDelegate:
   virtual content::WebContents* GetActiveWebContents() const OVERRIDE;

@@ -381,14 +381,6 @@ PageActionImageView* ToolbarView::CreatePageActionImageView(
   return new PageActionImageView(owner, action, browser_);
 }
 
-void ToolbarView::OnInputInProgress(bool in_progress) {
-  // The edit should make sure we're only notified when something changes.
-  DCHECK_NE(GetToolbarModel()->input_in_progress(), in_progress);
-
-  GetToolbarModel()->set_input_in_progress(in_progress);
-  location_bar_->Update(NULL);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, CommandObserver implementation:
 

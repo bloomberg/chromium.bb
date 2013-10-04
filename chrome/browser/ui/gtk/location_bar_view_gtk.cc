@@ -715,8 +715,6 @@ void LocationBarViewGtk::OnSelectionBoundsChanged() {
 }
 
 void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
-  // This is identical to the Windows code, except that we don't proxy the call
-  // back through the Toolbar, and just access the model here.
   // The edit should make sure we're only notified when something changes.
   DCHECK_NE(GetToolbarModel()->input_in_progress(), in_progress);
 

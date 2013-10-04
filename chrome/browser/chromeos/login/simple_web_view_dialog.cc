@@ -318,9 +318,6 @@ PageActionImageView* SimpleWebViewDialog::CreatePageActionImageView(
   return NULL;
 }
 
-void SimpleWebViewDialog::OnInputInProgress(bool in_progress) {
-}
-
 content::WebContents* SimpleWebViewDialog::GetActiveWebContents() const {
   return web_view_->web_contents();
 }

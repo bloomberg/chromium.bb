@@ -1056,7 +1056,11 @@ void LocationBarView::OnSelectionBoundsChanged() {
 }
 
 void LocationBarView::OnInputInProgress(bool in_progress) {
-  delegate_->OnInputInProgress(in_progress);
+  // The edit should make sure we're only notified when something changes.
+  DCHECK_NE(GetToolbarModel()->input_in_progress(), in_progress);
+
+  GetToolbarModel()->set_input_in_progress(in_progress);
+  Update(NULL);
 }
 
 void LocationBarView::OnKillFocus() {
