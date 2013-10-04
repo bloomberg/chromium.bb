@@ -56,7 +56,6 @@
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/text/TextStream.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/RenderCounter.h"
@@ -74,7 +73,7 @@
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/geometry/FloatRect.h"
-
+#include "platform/text/TextStream.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/TemporaryChange.h"
 

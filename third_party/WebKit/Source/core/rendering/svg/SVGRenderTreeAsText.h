@@ -26,7 +26,7 @@
 #ifndef SVGRenderTreeAsText_h
 #define SVGRenderTreeAsText_h
 
-#include "core/platform/text/TextStream.h"
+#include "platform/text/TextStream.h"
 
 namespace WebCore {
 

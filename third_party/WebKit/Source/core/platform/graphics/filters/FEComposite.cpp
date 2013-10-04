@@ -33,8 +33,8 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/cpu/arm/filters/FECompositeArithmeticNEON.h"
 #include "core/platform/graphics/filters/Filter.h"
-#include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
+#include "platform/text/TextStream.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
 #include "wtf/Uint8ClampedArray.h"

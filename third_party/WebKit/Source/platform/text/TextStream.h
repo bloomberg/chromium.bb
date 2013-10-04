@@ -26,13 +26,14 @@
 #ifndef TextStream_h
 #define TextStream_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 
-class TextStream {
+class PLATFORM_EXPORT TextStream {
 public:
     struct FormatNumberRespectingIntegers {
         FormatNumberRespectingIntegers(double number) : value(number) { }

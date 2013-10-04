@@ -56,6 +56,8 @@
       'text/DateTimeFormat.h',
       'text/QuotedPrintable.cpp',
       'text/QuotedPrintable.h',
+      'text/TextStream.cpp',
+      'text/TextStream.h',
       'text/UnicodeRange.cpp',
       'text/UnicodeRange.h',
       'Clock.cpp',

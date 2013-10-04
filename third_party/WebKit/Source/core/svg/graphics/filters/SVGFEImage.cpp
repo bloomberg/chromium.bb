@@ -28,13 +28,13 @@
 #include "SkBitmapSource.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
-#include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {

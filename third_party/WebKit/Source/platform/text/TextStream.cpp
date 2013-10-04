@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextStream.h"
+#include "platform/text/TextStream.h"
 
 #include "wtf/MathExtras.h"
 #include "wtf/StringExtras.h"
