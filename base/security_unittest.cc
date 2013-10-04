@@ -75,11 +75,14 @@ bool IsTcMallocBypassed() {
 }
 
 bool CallocDiesOnOOM() {
-// The sanitizers' calloc dies on OOM instead of returning NULL.
 // The wrapper function in base/process_util_linux.cc that is used when we
 // compile without TCMalloc will just die on OOM instead of returning NULL.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(THREAD_SANITIZER) || (defined(OS_LINUX) && defined(NO_TCMALLOC))
+// This function is explicitly disabled if we compile with AddressSanitizer,
+// MemorySanitizer or ThreadSanitizer.
+#if defined(OS_LINUX) && defined(NO_TCMALLOC) && \
+    (!defined(ADDRESS_SANITIZER) && \
+     !defined(MEMORY_SANITIZER) && \
+     !defined(THREAD_SANITIZER))
   return true;
 #else
   return false;
