@@ -1283,8 +1283,6 @@ crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/time
 # WebKit Win7 (dbg)
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
 
-crbug.com/303279 [ Debug ] http/tests/history/back-to-javascript-url-iframe.html [ Crash Pass ]
-
 crbug.com/303444 animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
 crbug.com/303444 animations/unsigned-underflow.html [ Timeout ]
 crbug.com/303444 virtual/threaded/animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
