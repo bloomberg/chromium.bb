@@ -285,7 +285,7 @@ def EscapeBuilderName(builder_name):
 
 def SpawnLogcatMonitor():
   shutil.rmtree(LOGCAT_DIR, ignore_errors=True)
-  bb_utils.RunCmd([
+  bb_utils.SpawnCmd([
       os.path.join(CHROME_SRC_DIR, 'build', 'android', 'adb_logcat_monitor.py'),
       LOGCAT_DIR])
 

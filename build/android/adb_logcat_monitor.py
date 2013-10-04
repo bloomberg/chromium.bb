@@ -96,15 +96,6 @@ def GetAttachedDevices(adb_cmd):
 
 def main(base_dir, adb_cmd='adb'):
   """Monitor adb forever.  Expects a SIGINT (Ctrl-C) to kill."""
-  # Spawn a detached child process.
-  pid = os.fork()
-  if pid > 0:
-    os._exit(os.EX_OK)
-  elif pid < 0:
-    sys.exit('Unable to spawn a detached child process.')
-  os.setsid()
-  # The rest happens in the child process.
-
   # We create the directory to ensure 'run once' semantics
   if os.path.exists(base_dir):
     print 'adb_logcat_monitor: %s already exists? Cleaning' % base_dir
