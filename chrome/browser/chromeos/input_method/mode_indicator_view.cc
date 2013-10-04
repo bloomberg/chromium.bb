@@ -30,10 +30,13 @@ void ModeIndicatorView::SetLabelTextUtf8(const std::string& text_utf8) {
 void ModeIndicatorView::Layout() {
   DCHECK(label_);
 
+  // Set the label in the center of the contents bounds.
+  const gfx::Rect cb = GetContentsBounds();
   const gfx::Size ps = label_->GetPreferredSize();
-  label_->SetBounds((width() - ps.width()) / 2,
-                    (height() - ps.height()) / 2,
-                    ps.width(), ps.height());
+  label_->SetBounds(cb.x() + (cb.width() - ps.width()) / 2,
+                    cb.y() + (cb.height() - ps.height()) / 2,
+                    ps.width(),
+                    ps.height());
 }
 
 gfx::Size ModeIndicatorView::GetPreferredSize() {
