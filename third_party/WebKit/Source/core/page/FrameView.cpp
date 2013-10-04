@@ -169,7 +169,6 @@ FrameView::FrameView(Frame* frame)
     , m_inProgrammaticScroll(false)
     , m_safeToPropagateScrollToParent(true)
     , m_deferredRepaintTimer(this, &FrameView::deferredRepaintTimerFired)
-    , m_disableRepaints(0)
     , m_isTrackingRepaints(false)
     , m_shouldUpdateWhileOffscreen(true)
     , m_deferSetNeedsLayouts(0)
@@ -273,7 +272,6 @@ void FrameView::reset()
     m_isVisuallyNonEmpty = false;
     m_firstVisuallyNonEmptyLayoutCallbackPending = true;
     m_maintainScrollPositionAnchor = 0;
-    m_disableRepaints = 0;
     m_partialLayout.reset();
 }
 
@@ -1782,9 +1780,6 @@ void FrameView::startDeferredRepaintTimer(double delay)
     if (m_deferredRepaintTimer.isActive())
         return;
 
-    if (m_disableRepaints)
-        return;
-
     m_deferredRepaintTimer.startOneShot(delay);
 }
 
@@ -1809,9 +1804,6 @@ void FrameView::flushDeferredRepaints()
 
 void FrameView::doDeferredRepaints()
 {
-    if (m_disableRepaints)
-        return;
-
     ASSERT(!m_deferringRepaints);
     if (!shouldUpdate()) {
         m_repaintRects.clear();
@@ -1875,17 +1867,6 @@ double FrameView::adjustedDeferredRepaintDelay() const
 void FrameView::deferredRepaintTimerFired(Timer<FrameView>*)
 {
     doDeferredRepaints();
-}
-
-void FrameView::beginDisableRepaints()
-{
-    m_disableRepaints++;
-}
-
-void FrameView::endDisableRepaints()
-{
-    ASSERT(m_disableRepaints > 0);
-    m_disableRepaints--;
 }
 
 void FrameView::layoutTimerFired(Timer<FrameView>*)

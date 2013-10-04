@@ -527,18 +527,11 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
     }
 }
 
-bool RenderView::shouldRepaint(const LayoutRect& r) const
+bool RenderView::shouldRepaint(const LayoutRect& rect) const
 {
-    if (document().printing() || r.width() == 0 || r.height() == 0)
+    if (document().printing())
         return false;
-
-    if (!m_frameView)
-        return false;
-
-    if (m_frameView->repaintsDisabled())
-        return false;
-
-    return true;
+    return m_frameView && !rect.isEmpty();
 }
 
 void RenderView::repaintViewRectangle(const LayoutRect& ur) const
