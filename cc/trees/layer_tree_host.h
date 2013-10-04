@@ -272,10 +272,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   // RateLimiterClient implementation.
   virtual void RateLimit() OVERRIDE;
 
-  bool buffered_updates() const {
-    return settings_.max_partial_texture_updates !=
-        std::numeric_limits<size_t>::max();
-  }
+  bool AlwaysUsePartialTextureUpdates();
   bool RequestPartialTextureUpdate();
 
   void SetDeviceScaleFactor(float device_scale_factor);

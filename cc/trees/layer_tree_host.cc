@@ -1118,6 +1118,12 @@ void LayerTreeHost::RateLimit() {
   proxy_->ForceSerializeOnSwapBuffers();
 }
 
+bool LayerTreeHost::AlwaysUsePartialTextureUpdates() {
+  if (!proxy_->GetRendererCapabilities().allow_partial_texture_updates)
+    return false;
+  return !proxy_->HasImplThread();
+}
+
 bool LayerTreeHost::RequestPartialTextureUpdate() {
   if (partial_texture_update_requests_ >= settings_.max_partial_texture_updates)
     return false;

@@ -50,18 +50,21 @@ class TiledLayerTest : public testing::Test {
       : proxy_(NULL),
         output_surface_(FakeOutputSurface::Create3d()),
         queue_(make_scoped_ptr(new ResourceUpdateQueue)),
-        fake_layer_impl_tree_host_client_(FakeLayerTreeHostClient::DIRECT_3D),
+        impl_thread_("ImplThread"),
+        fake_layer_tree_host_client_(FakeLayerTreeHostClient::DIRECT_3D),
         occlusion_(NULL) {
     settings_.max_partial_texture_updates = std::numeric_limits<size_t>::max();
     settings_.layer_transforms_should_scale_layer_contents = true;
   }
 
   virtual void SetUp() {
-    layer_tree_host_ = LayerTreeHost::Create(&fake_layer_impl_tree_host_client_,
+    impl_thread_.Start();
+    layer_tree_host_ = LayerTreeHost::Create(&fake_layer_tree_host_client_,
                                              settings_,
-                                             NULL);
+                                             impl_thread_.message_loop_proxy());
     proxy_ = layer_tree_host_->proxy();
     resource_manager_ = PrioritizedResourceManager::Create(proxy_);
+    layer_tree_host_->SetLayerTreeHostClientReady();
     layer_tree_host_->InitializeOutputSurfaceIfNeeded();
     layer_tree_host_->SetRootLayer(Layer::Create());
 
@@ -192,7 +195,8 @@ class TiledLayerTest : public testing::Test {
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<ResourceUpdateQueue> queue_;
   PriorityCalculator priority_calculator_;
-  FakeLayerTreeHostClient fake_layer_impl_tree_host_client_;
+  base::Thread impl_thread_;
+  FakeLayerTreeHostClient fake_layer_tree_host_client_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
   scoped_ptr<PrioritizedResourceManager> resource_manager_;

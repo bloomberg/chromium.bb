@@ -441,8 +441,8 @@ gfx::Rect TiledLayer::MarkTilesForUpdate(int left,
         continue;
       // TODO(reveman): Decide if partial update should be allowed based on cost
       // of update. https://bugs.webkit.org/show_bug.cgi?id=77376
-      if (tile->is_dirty() && layer_tree_host() &&
-          layer_tree_host()->buffered_updates()) {
+      if (tile->is_dirty() &&
+          !layer_tree_host()->AlwaysUsePartialTextureUpdates()) {
         // If we get a partial update, we use the same texture, otherwise return
         // the current texture backing, so we don't update visible textures
         // non-atomically.  If the current backing is in-use, it won't be

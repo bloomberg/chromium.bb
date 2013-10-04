@@ -1483,31 +1483,57 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
         context->ResetUsedTextures();
         break;
       case 1:
-        // Number of textures should be two for each content layer.
-        ASSERT_EQ(4u, context->NumTextures());
+        if (HasImplThread()) {
+          // Number of textures should be two for each content layer.
+          ASSERT_EQ(4u, context->NumTextures());
+        } else {
+          // In single thread we can always do partial updates, so the limit has
+          // no effect.
+          ASSERT_EQ(2u, context->NumTextures());
+        }
         // Number of textures used for commit should be one for each content
         // layer.
         EXPECT_EQ(2u, context->NumUsedTextures());
 
-        // First content textures should not have been used.
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
-        // New textures should have been used.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
+        if (HasImplThread()) {
+          // First content textures should not have been used.
+          EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
+          EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
+          // New textures should have been used.
+          EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
+          EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
+        } else {
+          // In single thread we can always do partial updates, so the limit has
+          // no effect.
+          EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
+          EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
+        }
 
         context->ResetUsedTextures();
         break;
       case 2:
-        // Number of textures should be two for each content layer.
-        ASSERT_EQ(4u, context->NumTextures());
+        if (HasImplThread()) {
+          // Number of textures should be two for each content layer.
+          ASSERT_EQ(4u, context->NumTextures());
+        } else {
+          // In single thread we can always do partial updates, so the limit has
+          // no effect.
+          ASSERT_EQ(2u, context->NumTextures());
+        }
         // Number of textures used for commit should be one for each content
         // layer.
         EXPECT_EQ(2u, context->NumUsedTextures());
 
-        // One content layer does a partial update also.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(3)));
+        if (HasImplThread()) {
+          // One content layer does a partial update also.
+          EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
+          EXPECT_FALSE(context->UsedTexture(context->TextureAt(3)));
+        } else {
+          // In single thread we can always do partial updates, so the limit has
+          // no effect.
+          EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
+          EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
+        }
 
         context->ResetUsedTextures();
         break;
