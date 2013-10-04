@@ -49,30 +49,20 @@
 /* OS(ANDROID) - Android */
 #ifdef ANDROID
 #define WTF_OS_ANDROID 1
-#endif
-
 /* OS(MACOSX) - Any Darwin-based OS, including Mac OS X and iPhone OS */
-#ifdef __APPLE__
+#elif defined(__APPLE__)
 #define WTF_OS_MACOSX 1
-#endif
-
 /* OS(FREEBSD) - FreeBSD */
-#if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
+#elif defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
 #define WTF_OS_FREEBSD 1
-#endif
-
 /* OS(LINUX) - Linux */
-#ifdef __linux__
+#elif defined(__linux__)
 #define WTF_OS_LINUX 1
-#endif
-
 /* OS(OPENBSD) - OpenBSD */
-#ifdef __OpenBSD__
+#elif defined(__OpenBSD__)
 #define WTF_OS_OPENBSD 1
-#endif
-
 /* OS(WIN) - Any version of Windows */
-#if defined(WIN32) || defined(_WIN32)
+#elif defined(WIN32) || defined(_WIN32)
 #define WTF_OS_WIN 1
 #endif
 

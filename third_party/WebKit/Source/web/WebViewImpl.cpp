@@ -711,7 +711,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     switch (event.type) {
     case WebInputEvent::GestureTapDown:
         // Queue a highlight animation, then hand off to regular handler.
-#if OS(LINUX)
+#if OS(LINUX) || OS(ANDROID)
         if (settingsImpl()->gestureTapHighlightEnabled())
             enableTapHighlightAtPoint(platformEvent);
 #endif
