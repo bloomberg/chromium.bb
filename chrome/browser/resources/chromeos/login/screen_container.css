@@ -7,7 +7,7 @@
   -webkit-box-align: center;
   -webkit-box-pack: center;
   -webkit-perspective: 600px;
-  bottom: 48px;  /* Leave space for the header bar */
+  bottom: 51px;  /* Leave space for the header bar */
   display: -webkit-box;
   left: 0;
   position: absolute;

@@ -5,6 +5,7 @@
 
 #login-header-bar {
   -webkit-padding-after: 7px;
+  border-bottom: 3px solid black;
   bottom: 0;
   left: 0;
   position: absolute;

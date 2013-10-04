@@ -194,14 +194,17 @@ cr.define('login', function() {
     handleSelect_: function(e) {
       var imageGrid = $('user-image-grid');
       $('ok-button').disabled = false;
+
       // Camera selection
       if (imageGrid.selectionType == 'camera') {
         $('flip-photo').tabIndex = 0;
+
         // No current image selected.
         if (imageGrid.cameraLive) {
           $('ok-button').disabled = true;
           chrome.send('selectImage',
-                      [imageGrid.selectedItemUrl, imageGrid.selectionType,
+                      [imageGrid.selectedItemUrl,
+                       imageGrid.selectionType,
                        !imageGrid.inProgramSelection]);
         }
       } else {
