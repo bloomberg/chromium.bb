@@ -79,7 +79,7 @@ OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
   LazyInitialize();
   DCHECK(!main_request_context_getter_.get());
   main_request_context_getter_ =
-      ChromeURLRequestContextGetter::CreateOffTheRecord(
+      ChromeURLRequestContextGetter::Create(
           profile_, io_data_, protocol_handlers);
   return main_request_context_getter_;
 }
@@ -90,8 +90,7 @@ OffTheRecordProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
   LazyInitialize();
   if (!extensions_request_context_getter_.get()) {
     extensions_request_context_getter_ =
-        ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
-            profile_, io_data_);
+        ChromeURLRequestContextGetter::CreateForExtensions(profile_, io_data_);
   }
   return extensions_request_context_getter_;
 }
@@ -130,7 +129,7 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
           ProtocolHandlerRegistryFactory::GetForProfile(profile_)->
               CreateJobInterceptorFactory());
   ChromeURLRequestContextGetter* context =
-      ChromeURLRequestContextGetter::CreateOffTheRecordForIsolatedApp(
+      ChromeURLRequestContextGetter::CreateForIsolatedApp(
           profile_, io_data_, descriptor, protocol_handler_interceptor.Pass(),
           protocol_handlers);
   app_request_context_getter_map_[descriptor] = context;

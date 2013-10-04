@@ -193,43 +193,39 @@ ChromeURLRequestContextGetter::GetNetworkTaskRunner() const {
 }
 
 // static
-ChromeURLRequestContextGetter* ChromeURLRequestContextGetter::CreateOriginal(
+ChromeURLRequestContextGetter* ChromeURLRequestContextGetter::Create(
     Profile* profile,
     const ProfileIOData* profile_io_data,
     content::ProtocolHandlerMap* protocol_handlers) {
-  DCHECK(!profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       new FactoryForMain(profile_io_data, protocol_handlers));
 }
 
 // static
 ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOriginalForMedia(
+ChromeURLRequestContextGetter::CreateForMedia(
     Profile* profile, const ProfileIOData* profile_io_data) {
-  DCHECK(!profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       new FactoryForMedia(profile_io_data));
 }
 
 // static
 ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOriginalForExtensions(
+ChromeURLRequestContextGetter::CreateForExtensions(
     Profile* profile, const ProfileIOData* profile_io_data) {
-  DCHECK(!profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       new FactoryForExtensions(profile_io_data));
 }
 
 // static
 ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOriginalForIsolatedApp(
+ChromeURLRequestContextGetter::CreateForIsolatedApp(
     Profile* profile,
     const ProfileIOData* profile_io_data,
     const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers) {
-  DCHECK(!profile->IsOffTheRecord());
   ChromeURLRequestContextGetter* main_context =
       static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
   return new ChromeURLRequestContextGetter(
@@ -241,54 +237,14 @@ ChromeURLRequestContextGetter::CreateOriginalForIsolatedApp(
 
 // static
 ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOriginalForIsolatedMedia(
+ChromeURLRequestContextGetter::CreateForIsolatedMedia(
     Profile* profile,
     ChromeURLRequestContextGetter* app_context,
     const ProfileIOData* profile_io_data,
     const StoragePartitionDescriptor& partition_descriptor) {
-  DCHECK(!profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       new FactoryForIsolatedMedia(
           profile_io_data, partition_descriptor, app_context));
-}
-
-// static
-ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOffTheRecord(
-    Profile* profile,
-    const ProfileIOData* profile_io_data,
-    content::ProtocolHandlerMap* protocol_handlers) {
-  DCHECK(profile->IsOffTheRecord());
-  return new ChromeURLRequestContextGetter(
-      new FactoryForMain(profile_io_data, protocol_handlers));
-}
-
-// static
-ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
-    Profile* profile, const ProfileIOData* profile_io_data) {
-  DCHECK(profile->IsOffTheRecord());
-  return new ChromeURLRequestContextGetter(
-      new FactoryForExtensions(profile_io_data));
-}
-
-// static
-ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOffTheRecordForIsolatedApp(
-    Profile* profile,
-    const ProfileIOData* profile_io_data,
-    const StoragePartitionDescriptor& partition_descriptor,
-    scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-        protocol_handler_interceptor,
-    content::ProtocolHandlerMap* protocol_handlers) {
-  DCHECK(profile->IsOffTheRecord());
-  ChromeURLRequestContextGetter* main_context =
-      static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
-  return new ChromeURLRequestContextGetter(
-      new FactoryForIsolatedApp(profile_io_data, partition_descriptor,
-                                main_context,
-                                protocol_handler_interceptor.Pass(),
-                                protocol_handlers));
 }
 
 // ----------------------------------------------------------------------------

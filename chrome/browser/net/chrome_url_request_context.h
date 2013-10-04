@@ -89,7 +89,7 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
 
   // Create an instance for use with an 'original' (non-OTR) profile. This is
   // expected to get called on the UI thread.
-  static ChromeURLRequestContextGetter* CreateOriginal(
+  static ChromeURLRequestContextGetter* Create(
       Profile* profile,
       const ProfileIOData* profile_io_data,
       content::ProtocolHandlerMap* protocol_handlers);
@@ -97,17 +97,17 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
   // Create an instance for an original profile for media. This is expected to
   // get called on UI thread. This method takes a profile and reuses the
   // 'original' net::URLRequestContext for common files.
-  static ChromeURLRequestContextGetter* CreateOriginalForMedia(
+  static ChromeURLRequestContextGetter* CreateForMedia(
       Profile* profile, const ProfileIOData* profile_io_data);
 
   // Create an instance for an original profile for extensions. This is expected
   // to get called on UI thread.
-  static ChromeURLRequestContextGetter* CreateOriginalForExtensions(
+  static ChromeURLRequestContextGetter* CreateForExtensions(
       Profile* profile, const ProfileIOData* profile_io_data);
 
   // Create an instance for an original profile for an app with isolated
   // storage. This is expected to get called on UI thread.
-  static ChromeURLRequestContextGetter* CreateOriginalForIsolatedApp(
+  static ChromeURLRequestContextGetter* CreateForIsolatedApp(
       Profile* profile,
       const ProfileIOData* profile_io_data,
       const StoragePartitionDescriptor& partition_descriptor,
@@ -117,33 +117,11 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
 
   // Create an instance for an original profile for media with isolated
   // storage. This is expected to get called on UI thread.
-  static ChromeURLRequestContextGetter* CreateOriginalForIsolatedMedia(
+  static ChromeURLRequestContextGetter* CreateForIsolatedMedia(
       Profile* profile,
       ChromeURLRequestContextGetter* app_context,
       const ProfileIOData* profile_io_data,
       const StoragePartitionDescriptor& partition_descriptor);
-
-  // Create an instance for use with an OTR profile. This is expected to get
-  // called on the UI thread.
-  static ChromeURLRequestContextGetter* CreateOffTheRecord(
-      Profile* profile,
-      const ProfileIOData* profile_io_data,
-      content::ProtocolHandlerMap* protocol_handlers);
-
-  // Create an instance for an OTR profile for extensions. This is expected
-  // to get called on UI thread.
-  static ChromeURLRequestContextGetter* CreateOffTheRecordForExtensions(
-      Profile* profile, const ProfileIOData* profile_io_data);
-
-  // Create an instance for an OTR profile for an app with isolated storage.
-  // This is expected to get called on UI thread.
-  static ChromeURLRequestContextGetter* CreateOffTheRecordForIsolatedApp(
-      Profile* profile,
-      const ProfileIOData* profile_io_data,
-      const StoragePartitionDescriptor& partition_descriptor,
-      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-          protocol_handler_interceptor,
-      content::ProtocolHandlerMap* protocol_handlers);
 
  private:
   virtual ~ChromeURLRequestContextGetter();

@@ -163,7 +163,7 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
   DCHECK(!main_request_context_getter_.get());
-  main_request_context_getter_ = ChromeURLRequestContextGetter::CreateOriginal(
+  main_request_context_getter_ = ChromeURLRequestContextGetter::Create(
       profile_, io_data_, protocol_handlers);
 
   io_data_->predictor_
@@ -185,8 +185,7 @@ ProfileImplIOData::Handle::GetMediaRequestContextGetter() const {
   LazyInitialize();
   if (!media_request_context_getter_.get()) {
     media_request_context_getter_ =
-        ChromeURLRequestContextGetter::CreateOriginalForMedia(profile_,
-                                                              io_data_);
+        ChromeURLRequestContextGetter::CreateForMedia(profile_, io_data_);
   }
   return media_request_context_getter_;
 }
@@ -197,8 +196,7 @@ ProfileImplIOData::Handle::GetExtensionsRequestContextGetter() const {
   LazyInitialize();
   if (!extensions_request_context_getter_.get()) {
     extensions_request_context_getter_ =
-        ChromeURLRequestContextGetter::CreateOriginalForExtensions(profile_,
-                                                                   io_data_);
+        ChromeURLRequestContextGetter::CreateForExtensions(profile_, io_data_);
   }
   return extensions_request_context_getter_;
 }
@@ -226,7 +224,7 @@ ProfileImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
           ProtocolHandlerRegistryFactory::GetForProfile(profile_)->
               CreateJobInterceptorFactory());
   ChromeURLRequestContextGetter* context =
-      ChromeURLRequestContextGetter::CreateOriginalForIsolatedApp(
+      ChromeURLRequestContextGetter::CreateForIsolatedApp(
           profile_, io_data_, descriptor,
           protocol_handler_interceptor.Pass(),
           protocol_handlers);
@@ -259,7 +257,7 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
   DCHECK(app_iter != app_request_context_getter_map_.end());
   ChromeURLRequestContextGetter* app_context = app_iter->second.get();
   ChromeURLRequestContextGetter* context =
-      ChromeURLRequestContextGetter::CreateOriginalForIsolatedMedia(
+      ChromeURLRequestContextGetter::CreateForIsolatedMedia(
           profile_, app_context, io_data_, descriptor);
   isolated_media_request_context_getter_map_[descriptor] = context;
 
