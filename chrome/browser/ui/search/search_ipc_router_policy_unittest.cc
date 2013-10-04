@@ -80,6 +80,24 @@ TEST_F(SearchIPCRouterPolicyTest,
       ShouldSendSetDisplayInstantResults());
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendSetPromoInformation());
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldSendThemeBackgroundInfo());
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldSendMostVisitedItems());
+}
+
+TEST_F(SearchIPCRouterPolicyTest,
+       AppropriateMessagesSentToIncognitoPages) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  SearchIPCRouterPolicyImpl* policy =
+      static_cast<SearchIPCRouterPolicyImpl*>(
+          search_tab_helper->ipc_router().policy());
+  policy->set_is_incognito(true);
+
+  EXPECT_TRUE(search_tab_helper->ipc_router().policy()->ShouldSubmitQuery());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendMostVisitedItems) {
@@ -93,17 +111,6 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendMostVisitedItems) {
   // Send most visited items only if the current tab is an Instant NTP.
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
-  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
-      ShouldSendMostVisitedItems());
-}
-
-TEST_F(SearchIPCRouterPolicyTest, DoNotSendMostVisitedItemsForIncognitoPage) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  SearchTabHelper* search_tab_helper = GetSearchTabHelper();
-  SearchIPCRouterPolicyImpl* policy =
-      static_cast<SearchIPCRouterPolicyImpl*>(
-          search_tab_helper->ipc_router().policy());
-  policy->set_is_incognito(true);
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendMostVisitedItems());
 }
@@ -124,14 +131,10 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendThemeBackgroundInfo) {
       ShouldSendThemeBackgroundInfo());
 }
 
-TEST_F(SearchIPCRouterPolicyTest,
-       DoNotSendThemeBackgroundInfoForIncognitoPage) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  SearchTabHelper* search_tab_helper = GetSearchTabHelper();
-  SearchIPCRouterPolicyImpl* policy =
-      static_cast<SearchIPCRouterPolicyImpl*>(
-          search_tab_helper->ipc_router().policy());
-  policy->set_is_incognito(true);
-  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
-      ShouldSendThemeBackgroundInfo());
+TEST_F(SearchIPCRouterPolicyTest, SubmitQuery) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  EXPECT_TRUE(search_tab_helper->ipc_router().policy()->ShouldSubmitQuery());
 }

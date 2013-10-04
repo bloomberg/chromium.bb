@@ -67,6 +67,13 @@ void SearchIPCRouter::SetSuggestionToPrefetch(
                                                           suggestion));
 }
 
+void SearchIPCRouter::Submit(const string16& text) {
+  if (!policy_->ShouldSubmitQuery())
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxSubmit(routing_id(), text));
+}
+
 bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchIPCRouter, message)

@@ -28,8 +28,6 @@ class InstantIPCSender : public content::WebContentsObserver {
   // Sets |web_contents| as the receiver of IPCs.
   void SetContents(content::WebContents* web_contents);
 
-  // Tells the page that the user pressed Enter in the omnibox.
-  virtual void Submit(const string16& text) {}
 
   // Tells the page the left and right margins of the omnibox. This is used by
   // the page to align text or assets properly with the omnibox.

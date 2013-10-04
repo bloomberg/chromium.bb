@@ -64,3 +64,7 @@ bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedItems() {
 bool SearchIPCRouterPolicyImpl::ShouldSendThemeBackgroundInfo() {
   return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }
+
+bool SearchIPCRouterPolicyImpl::ShouldSubmitQuery() {
+  return true;
+}

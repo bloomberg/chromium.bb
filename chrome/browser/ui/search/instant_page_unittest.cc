@@ -330,8 +330,6 @@ TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
   process()->sink().ClearMessages();
 
   // Incognito pages should get these messages.
-  page->sender()->Submit(string16());
-  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
   page->sender()->SetOmniboxBounds(gfx::Rect());
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
   page->sender()->ToggleVoiceSearch();

@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -45,6 +46,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
   MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
   MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
+  MOCK_METHOD0(ShouldSubmitQuery, bool());
 };
 
 }  // namespace
@@ -283,4 +285,32 @@ TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
   GetSearchTabHelper(web_contents())->ipc_router().SendThemeBackgroundInfo(
       ThemeBackgroundInfo());
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
+}
+
+TEST_F(SearchIPCRouterTest, SendSubmitMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSubmitQuery()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  GetSearchTabHelper(web_contents())->ipc_router().Submit(string16());
+  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendSubmitMsg) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSubmitQuery()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  GetSearchTabHelper(web_contents())->ipc_router().Submit(string16());
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
 }

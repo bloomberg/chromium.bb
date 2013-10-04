@@ -15,10 +15,6 @@ class InstantIPCSenderImpl : public InstantIPCSender {
   virtual ~InstantIPCSenderImpl() {}
 
  private:
-  virtual void Submit(const string16& text) OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxSubmit(routing_id(), text));
-  }
-
   virtual void SetOmniboxBounds(const gfx::Rect& bounds) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxMarginChange(
         routing_id(), bounds.x(), bounds.width()));
@@ -48,10 +44,6 @@ class IncognitoInstantIPCSenderImpl : public InstantIPCSender {
   virtual ~IncognitoInstantIPCSenderImpl() {}
 
  private:
-  virtual void Submit(const string16& text) OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxSubmit(routing_id(), text));
-  }
-
   virtual void SetOmniboxBounds(const gfx::Rect& bounds) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxMarginChange(
         routing_id(), bounds.x(), bounds.width()));

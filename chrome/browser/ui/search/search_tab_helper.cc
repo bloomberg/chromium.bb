@@ -189,6 +189,11 @@ void SearchTabHelper::SetSuggestionToPrefetch(
   ipc_router_.SetSuggestionToPrefetch(suggestion);
 }
 
+void SearchTabHelper::Submit(const string16& text) {
+  DCHECK(!chrome::IsInstantNTP(web_contents_));
+  ipc_router_.Submit(text);
+}
+
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,

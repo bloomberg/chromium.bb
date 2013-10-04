@@ -49,6 +49,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
+    virtual bool ShouldSubmitQuery() = 0;
   };
 
   SearchIPCRouter(content::WebContents* web_contents, Delegate* delegate,
@@ -75,6 +76,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // Tells the page the suggestion to be prefetched if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
+  // Tells the page that the user pressed Enter in the omnibox.
+  void Submit(const string16& text);
+
  private:
   friend class SearchIPCRouterTest;
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
@@ -94,13 +98,12 @@ class SearchIPCRouter : public content::WebContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendMostVisitedItems);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendMostVisitedItems);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSendMostVisitedItemsForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendThemeBackgroundInfo);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SubmitQuery);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSendThemeBackgroundInfoForIncognitoPage);
+                           AppropriateMessagesSentToIncognitoPages);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendSetPromoInformation);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendSetPromoInformation);
