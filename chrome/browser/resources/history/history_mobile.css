@@ -267,41 +267,41 @@ input {
 
 @media only screen and (max-width:600px) {
 
-/* Omit the time on very small screens. */
-.entry .time {
-  display: none;
-}
+  /* Omit the time on very small screens. */
+  .entry .time {
+    display: none;
+  }
 
 } /* @media only screen and (max-width:600px) */
 
 @media only screen and (min-width:720px) {
 
-body {
-  margin-bottom: 76px;
-}
+  body {
+    margin-bottom: 76px;
+  }
 
-h3,
-.entry,
-#search-field {
-  border: 1px solid rgb(220, 220, 220);
-}
+  h3,
+  .entry,
+  #search-field {
+    border: 1px solid rgb(220, 220, 220);
+  }
 
-h3 {
-  margin-top: 30px;
-}
+  h3 {
+    margin-top: 30px;
+  }
 
-.page {
-  margin: 0 auto;
-  max-width: 718px;
-}
+  .page {
+    margin: 0 auto;
+    max-width: 718px;
+  }
 
-h1,
-#notification-bar,
-#loading-spinner,
-.no-results-message {
-  padding-left: 0;
-  padding-right: 0;
-}
+  h1,
+  #notification-bar,
+  #loading-spinner,
+  .no-results-message {
+    padding-left: 0;
+    padding-right: 0;
+  }
 
 } /* @media only screen and (max-width:720px) */
 
@@ -310,19 +310,21 @@ h1,
    visible. The cutoff values are chosen to be compatible with all known device
    aspect ratios. */
 
-#clear-browsing-data {
-  display: none;
+@media only screen and (min-aspect-ratio: 6/5) and (max-aspect-ratio: 3/2) {
+  #clear-browsing-data {
+    display: none;
+  }
+  #scrolling-container {
+    bottom: 0;
+  }
 }
 
-@media only screen and (orientation: portrait) and (max-aspect-ratio: 1/1) {
-#clear-browsing-data {
-  display: block;
-}
-}
-
-@media only screen and (orientation: landscape) and (max-aspect-ratio: 5/2) {
-#clear-browsing-data {
-  display: block;
-}
+@media only screen and (min-aspect-ratio: 3/1) {
+  #clear-browsing-data {
+    display: none;
+  }
+  #scrolling-container {
+    bottom: 0;
+  }
 }
 </if> /* is_ios */
