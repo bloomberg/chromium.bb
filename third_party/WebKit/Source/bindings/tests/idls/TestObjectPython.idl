@@ -67,7 +67,6 @@ interface TestObjectPython {
     readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     // Exceptions for is_keep_alive_for_gc
     readonly attribute TestInterfaceEmpty self;
-    readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;
     readonly attribute Window readonlyWindowAttribute;
     readonly attribute HTMLCollection readonlyHTMLCollectionAttribute;
     readonly attribute HTMLElement readonlyHTMLElementAttribute;
@@ -90,5 +89,6 @@ interface TestObjectPython {
     // Extended attributes
     [ActivityLog=Access] readonly attribute long activityLogAccessReadonlyLongAttribute;
     [ActivityLog=Getter] readonly attribute long activityLogGetterReadonlyLongAttribute;
+    [CachedAttribute=isValueDirty] readonly attribute any value;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
 };

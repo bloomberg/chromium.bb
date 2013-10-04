@@ -1421,10 +1421,9 @@ END
             $imp = 1;
             $code .= <<END;
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("${attrName}");
-    v8::Handle<v8::Value> value;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     if (!imp->$attrCached()) {
-        value = info.Holder()->GetHiddenValue(propertyName);
+        v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
         if (!value.IsEmpty()) {
             v8SetReturnValue(info, value);
             return;
@@ -1605,21 +1604,25 @@ END
         }
     } elsif ($attrCached) {
         if ($attribute->type eq "SerializedScriptValue") {
-            $code .= "    RefPtr<SerializedScriptValue> serialized = $getterString;\n";
-            $code .= "    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));\n";
-        } else {
-            $code .= "    value = $getterString.v8Value();\n";
-        }
         $code .= <<END;
+    RefPtr<SerializedScriptValue> serialized = $getterString;
+    ScriptValue value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
 END
+        } else {
+            $code .= <<END;
+    ScriptValue value = $getterString;
+    info.Holder()->SetHiddenValue(propertyName, value.v8Value());
+    v8SetReturnValue(info, value.v8Value());
+END
+        }
     } elsif ($attribute->type eq "EventHandler") {
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
         my $getterFunc = ToMethodName($attribute->name);
         # FIXME: Pass the main world ID for main-world-only getters.
-        $code .= "    EventListener* listener = imp->${getterFunc}(isolatedWorldForIsolate(info.GetIsolate()));\n";
-        $code .= "    v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
+        $code .= "    EventListener* value = imp->${getterFunc}(isolatedWorldForIsolate(info.GetIsolate()));\n";
+        $code .= "    v8SetReturnValue(info, value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(value)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
     } else {
         my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", $forMainWorldSuffix, "return");
         $code .= "${nativeValue}\n";

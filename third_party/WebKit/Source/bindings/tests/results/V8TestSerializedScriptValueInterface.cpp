@@ -105,17 +105,16 @@ static void readonlyValueAttributeGetterCallback(v8::Local<v8::String> name, con
 static void dirtySerializedValueAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("dirtySerializedValue");
-    v8::Handle<v8::Value> value;
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     if (!imp->isValueDirty()) {
-        value = info.Holder()->GetHiddenValue(propertyName);
+        v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
         if (!value.IsEmpty()) {
             v8SetReturnValue(info, value);
             return;
         }
     }
     RefPtr<SerializedScriptValue> serialized = imp->dirtySerializedValue();
-    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
+    ScriptValue value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
 }
@@ -145,18 +144,17 @@ static void dirtySerializedValueAttributeSetterCallback(v8::Local<v8::String> na
 static void dirtyScriptValueAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("dirtyScriptValue");
-    v8::Handle<v8::Value> value;
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     if (!imp->isValueDirty()) {
-        value = info.Holder()->GetHiddenValue(propertyName);
+        v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
         if (!value.IsEmpty()) {
             v8SetReturnValue(info, value);
             return;
         }
     }
-    value = imp->dirtyScriptValue().v8Value();
-    info.Holder()->SetHiddenValue(propertyName, value);
-    v8SetReturnValue(info, value);
+    ScriptValue value = imp->dirtyScriptValue();
+    info.Holder()->SetHiddenValue(propertyName, value.v8Value());
+    v8SetReturnValue(info, value.v8Value());
 }
 
 static void dirtyScriptValueAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -184,10 +182,9 @@ static void dirtyScriptValueAttributeSetterCallback(v8::Local<v8::String> name, 
 static void cachedValueCallWithAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("cachedValueCallWith");
-    v8::Handle<v8::Value> value;
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     if (!imp->isValueDirty()) {
-        value = info.Holder()->GetHiddenValue(propertyName);
+        v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
         if (!value.IsEmpty()) {
             v8SetReturnValue(info, value);
             return;
@@ -198,7 +195,7 @@ static void cachedValueCallWithAttributeGetter(v8::Local<v8::String> name, const
         return v8Undefined();
     ScriptState& state = *currentState;
     RefPtr<SerializedScriptValue> serialized = imp->cachedValueCallWith(&state);
-    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
+    ScriptValue value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
 }

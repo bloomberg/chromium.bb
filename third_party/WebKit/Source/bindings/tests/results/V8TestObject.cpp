@@ -440,8 +440,8 @@ static void stringAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Lo
 static void eventHandlerAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    EventListener* listener = imp->eventHandlerAttr(isolatedWorldForIsolate(info.GetIsolate()));
-    v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    EventListener* value = imp->eventHandlerAttr(isolatedWorldForIsolate(info.GetIsolate()));
+    v8SetReturnValue(info, value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(value)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void eventHandlerAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

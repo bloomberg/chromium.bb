@@ -2,9 +2,20 @@
 {% macro attribute_getter(attribute) %}
 static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {% if not attribute.is_static %}
+    {% if attribute.cached_attribute_validation_method %}
+    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("{{attribute.name}}");
+    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
+    if (!imp->{{attribute.cached_attribute_validation_method}}()) {
+        v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
+        if (!value.IsEmpty()) {
+            v8SetReturnValue(info, value);
+            return;
+        }
+    }
+    {% elif not attribute.is_static %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
+    {# Special cases #}
     {% if attribute.is_nullable %}
     bool isNull = false;
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
@@ -12,10 +23,14 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
         v8SetReturnValueNull(info);
         return;
     }
-    {% endif %}
-    {% if attribute.idl_type == 'EventHandler' %}
+    {% elif attribute.idl_type == 'EventHandler' or
+            attribute.cached_attribute_validation_method %}
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {% endif %}
+    {% if attribute.cached_attribute_validation_method %}
+    info.Holder()->SetHiddenValue(propertyName, {{attribute.cpp_value}}.v8Value());
+    {% endif %}
+    {# End special cases #}
     {% if attribute.is_keep_alive_for_gc %}
     {{attribute.cpp_type}} result = {{attribute.cpp_value}};
     if (result.get() && DOMDataStore::setReturnValueFromWrapper<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
