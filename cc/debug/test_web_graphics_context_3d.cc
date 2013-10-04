@@ -261,16 +261,20 @@ WebGLId TestWebGraphicsContext3D::createTexture() {
   WebGLId texture_id = NextTextureId();
   DCHECK_NE(texture_id, kExternalTextureId);
   base::AutoLock lock(namespace_->lock);
-  namespace_->textures.push_back(texture_id);
+  namespace_->textures.Append(texture_id, new TestTexture());
   return texture_id;
+}
+
+WebGLId TestWebGraphicsContext3D::createExternalTexture() {
+  base::AutoLock lock(namespace_->lock);
+  namespace_->textures.Append(kExternalTextureId, new TestTexture());
+  return kExternalTextureId;
 }
 
 void TestWebGraphicsContext3D::deleteTexture(WebGLId texture_id) {
   base::AutoLock lock(namespace_->lock);
-  std::vector<WebKit::WebGLId>& textures = namespace_->textures;
-  DCHECK(std::find(textures.begin(), textures.end(), texture_id) !=
-         textures.end());
-  textures.erase(std::find(textures.begin(), textures.end(), texture_id));
+  namespace_->textures.Remove(texture_id);
+  texture_targets_.UnbindTexture(texture_id);
 }
 
 void TestWebGraphicsContext3D::attachShader(WebGLId program, WebGLId shader) {
@@ -310,13 +314,15 @@ void TestWebGraphicsContext3D::bindTexture(
 
   if (!texture_id)
     return;
-  if (texture_id == kExternalTextureId)
-    return;
   base::AutoLock lock(namespace_->lock);
-  std::vector<WebKit::WebGLId>& textures = namespace_->textures;
-  DCHECK(std::find(textures.begin(), textures.end(), texture_id) !=
-         textures.end());
+  DCHECK(namespace_->textures.ContainsId(texture_id));
+  texture_targets_.BindTexture(target, texture_id);
   used_textures_.insert(texture_id);
+}
+
+WebKit::WebGLId TestWebGraphicsContext3D::BoundTextureId(
+    WebKit::WGC3Denum target) {
+  return texture_targets_.BoundTexture(target);
 }
 
 void TestWebGraphicsContext3D::endQueryEXT(WGC3Denum target) {
@@ -563,12 +569,12 @@ void TestWebGraphicsContext3D::unmapImageCHROMIUM(
 
 size_t TestWebGraphicsContext3D::NumTextures() const {
   base::AutoLock lock(namespace_->lock);
-  return namespace_->textures.size();
+  return namespace_->textures.Size();
 }
 
 WebKit::WebGLId TestWebGraphicsContext3D::TextureAt(int i) const {
   base::AutoLock lock(namespace_->lock);
-  return namespace_->textures[i];
+  return namespace_->textures.IdAt(i);
 }
 
 WebGLId TestWebGraphicsContext3D::NextTextureId() {
@@ -611,6 +617,40 @@ void TestWebGraphicsContext3D::SetMaxTransferBufferUsageBytes(
     size_t max_transfer_buffer_usage_bytes) {
   test_capabilities_.max_transfer_buffer_usage_bytes =
       max_transfer_buffer_usage_bytes;
+}
+
+TestWebGraphicsContext3D::TextureTargets::TextureTargets() {
+  // Initialize default bindings.
+  bound_textures_[GL_TEXTURE_2D] = 0;
+  bound_textures_[GL_TEXTURE_EXTERNAL_OES] = 0;
+  bound_textures_[GL_TEXTURE_RECTANGLE_ARB] = 0;
+}
+
+TestWebGraphicsContext3D::TextureTargets::~TextureTargets() {}
+
+void TestWebGraphicsContext3D::TextureTargets::BindTexture(
+    WebKit::WGC3Denum target,
+    WebKit::WebGLId id) {
+  // Make sure this is a supported target by seeing if it was bound to before.
+  DCHECK(bound_textures_.find(target) != bound_textures_.end());
+  bound_textures_[target] = id;
+}
+
+void TestWebGraphicsContext3D::TextureTargets::UnbindTexture(
+    WebKit::WebGLId id) {
+  // Bind zero to any targets that the id is bound to.
+  for (TargetTextureMap::iterator it = bound_textures_.begin();
+       it != bound_textures_.end();
+       it++) {
+    if (it->second == id)
+      it->second = 0;
+  }
+}
+
+WebKit::WebGLId TestWebGraphicsContext3D::TextureTargets::BoundTexture(
+    WebKit::WGC3Denum target) {
+  DCHECK(bound_textures_.find(target) != bound_textures_.end());
+  return bound_textures_[target];
 }
 
 TestWebGraphicsContext3D::Buffer::Buffer() : target(0), size(0) {}

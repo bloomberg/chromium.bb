@@ -17,6 +17,8 @@
 #include "base/synchronization/lock.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/fake_web_graphics_context_3d.h"
+#include "cc/debug/ordered_texture_map.h"
+#include "cc/debug/test_texture.h"
 #include "cc/output/context_provider.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -73,6 +75,7 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual WebKit::WebGLId createRenderbuffer();
   virtual WebKit::WebGLId createShader(WebKit::WGC3Denum);
   virtual WebKit::WebGLId createTexture();
+  virtual WebKit::WebGLId createExternalTexture();
 
   virtual void deleteBuffer(WebKit::WebGLId id);
   virtual void deleteFramebuffer(WebKit::WebGLId id);
@@ -210,6 +213,20 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
 
  protected:
+  struct TextureTargets {
+    TextureTargets();
+    ~TextureTargets();
+
+    void BindTexture(WebKit::WGC3Denum target, WebKit::WebGLId id);
+    void UnbindTexture(WebKit::WebGLId id);
+
+    WebKit::WebGLId BoundTexture(WebKit::WGC3Denum target);
+
+   private:
+    typedef base::hash_map<WebKit::WGC3Denum, WebKit::WebGLId> TargetTextureMap;
+    TargetTextureMap bound_textures_;
+  };
+
   struct Buffer {
     Buffer();
     ~Buffer();
@@ -240,9 +257,9 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     unsigned next_buffer_id;
     unsigned next_image_id;
     unsigned next_texture_id;
-    std::vector<WebKit::WebGLId> textures;
     base::ScopedPtrHashMap<unsigned, Buffer> buffers;
     base::ScopedPtrHashMap<unsigned, Image> images;
+    OrderedTextureMap textures;
 
    private:
     friend class base::RefCountedThreadSafe<Namespace>;
@@ -257,6 +274,7 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void CallAllSyncPointCallbacks();
   void SwapBuffersComplete();
   void CreateNamespace();
+  WebKit::WebGLId BoundTextureId(WebKit::WGC3Denum target);
 
   unsigned context_id_;
   Attributes attributes_;
@@ -278,6 +296,7 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int height_;
 
   unsigned bound_buffer_;
+  TextureTargets texture_targets_;
 
   scoped_refptr<Namespace> namespace_;
   static Namespace* shared_namespace_;
