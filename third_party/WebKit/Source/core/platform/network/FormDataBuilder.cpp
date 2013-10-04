@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/platform/network/FormDataBuilder.h"
 
-#include "core/dom/Document.h"
 #include "wtf/HexNumber.h"
 #include "wtf/RandomNumber.h"
 #include "wtf/text/CString.h"
@@ -75,7 +74,7 @@ static void appendQuotedString(Vector<char>& buffer, const CString& string)
     }
 }
 
-WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& acceptCharset, Document* document)
+WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& acceptCharset, const String& inputEncoding)
 {
     String normalizedAcceptCharset = acceptCharset;
     normalizedAcceptCharset.replace(',', ' ');
@@ -91,7 +90,7 @@ WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& accep
             return encoding;
     }
 
-    return document->inputEncoding();
+    return inputEncoding;
 }
 
 Vector<char> FormDataBuilder::generateUniqueBoundaryString()
