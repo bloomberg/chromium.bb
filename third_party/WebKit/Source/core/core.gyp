@@ -765,10 +765,6 @@
             ['include', 'platform/graphics/opentype/'],
             ['include', 'platform/graphics/skia/SkiaFontWin\\.(cpp|h)$'],
 
-            # Windows currently uses FontCustomPlatformDataWin.cpp instead.
-            ['exclude', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
-            ['include', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
-
             # SystemInfo.cpp is useful and we don't want to copy it.
             ['include', 'platform/win/SystemInfo\\.cpp$'],
 
@@ -780,10 +776,12 @@
           'conditions': [
             ['"ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines', {
               'sources/': [
+                ['include', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
                 ['exclude', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
                 ['exclude', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
                 ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
                 ['exclude', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
+                ['exclude', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
               ],
             },{ # ENABLE_GDI_FONTS_ON_WINDOWS!=1
               'sources/': [
@@ -791,9 +789,11 @@
                 ['include', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
+                ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
                 ['exclude', 'platform/graphics/chromium/SimpleFontDataChromiumWin\\.cpp$'],
                 ['exclude', 'platform/graphics/chromium/GlyphPageTreeNodeChromiumWin\\.cpp$'],
                 ['exclude', 'platform/graphics/chromium/FontCacheChromiumWin\\.cpp$'],
+                ['exclude', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
                 ['exclude', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
               ],
             }],
