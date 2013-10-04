@@ -3686,6 +3686,7 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
     } else if (eventType == eventNames().webkitTransitionEndEvent || eventType == eventNames().transitionendEvent) {
         addListenerType(TRANSITIONEND_LISTENER);
     } else if (eventType == eventNames().beforeloadEvent) {
+        UseCounter::count(this, UseCounter::BeforeLoadEvent);
         addListenerType(BEFORELOAD_LISTENER);
     } else if (eventType == eventNames().scrollEvent) {
         addListenerType(SCROLL_LISTENER);
