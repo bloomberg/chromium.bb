@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/test_launcher.h"
+#include "base/test/launcher/test_launcher.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>

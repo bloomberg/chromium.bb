@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TEST_PARALLEL_TEST_LAUNCHER_H_
-#define BASE_TEST_PARALLEL_TEST_LAUNCHER_H_
+#ifndef BASE_TEST_LAUNCHER_PARALLEL_TEST_LAUNCHER_H_
+#define BASE_TEST_LAUNCHER_PARALLEL_TEST_LAUNCHER_H_
 
 #include <map>
 #include <string>
@@ -88,4 +88,4 @@ class ParallelTestLauncher {
 
 }  // namespace base
 
-#endif  // BASE_TEST_PARALLEL_TEST_LAUNCHER_H_
+#endif  // BASE_TEST_LAUNCHER_PARALLEL_TEST_LAUNCHER_H_

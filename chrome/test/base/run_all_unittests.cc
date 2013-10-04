@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/test/unit_test_launcher.h"
+#include "base/test/launcher/unit_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "content/public/test/unittest_test_suite.h"
 

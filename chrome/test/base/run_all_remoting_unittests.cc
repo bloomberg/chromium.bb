@@ -7,8 +7,8 @@
 // (required for JS unittests) without updating the DEPS file for each
 // subproject.
 
+#include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "base/test/unit_test_launcher.h"
 #include "chrome/common/chrome_paths.h"
 #include "media/base/media.h"
 #include "net/socket/ssl_server_socket.h"

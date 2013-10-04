@@ -5,8 +5,8 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "base/test/unit_test_launcher.h"
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/unit_test_launcher.h"
+#include "base/test/launcher/unit_test_launcher.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -17,8 +17,8 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/test/gtest_xml_util.h"
-#include "base/test/parallel_test_launcher.h"
-#include "base/test/test_launcher.h"
+#include "base/test/launcher/parallel_test_launcher.h"
+#include "base/test/launcher/test_launcher.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_checker.h"

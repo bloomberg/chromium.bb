@@ -4,8 +4,8 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "base/test/unit_test_launcher.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

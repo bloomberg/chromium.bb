@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "base/test/unit_test_launcher.h"
 #include "ui/compositor/test/test_suite.h"
 
 namespace {

@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/test_launcher.h"
+#include "base/test/launcher/test_launcher.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace base {
