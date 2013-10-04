@@ -180,6 +180,9 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
         'INTERACTIVE_TESTS',
       ],
+      'variables': {
+        'win_use_external_manifest': 1,
+      },
       'sources': [
         '../apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
         '../ui/views/corewm/desktop_capture_controller_unittest.cc',
