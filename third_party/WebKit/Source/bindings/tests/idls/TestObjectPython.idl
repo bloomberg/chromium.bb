@@ -59,6 +59,10 @@ interface TestObjectPython {
     readonly attribute Entity readonlyEntityAttribute;
     readonly attribute Node readonlyNodeAttribute;
     readonly attribute ShadowRoot readonlyShadowRootAttribute;
+    // Typed arrays
+    readonly attribute ArrayBuffer readonlyArrayBufferAttribute;
+    readonly attribute Float32Array readonlyFloat32ArrayAttribute;
+    readonly attribute Uint8Array readonlyUint8ArrayAttribute;
     // Exceptions for is_keep_alive_for_gc
     readonly attribute TestInterfaceEmpty self;
     readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;

@@ -41,6 +41,10 @@
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
+#include "bindings/v8/custom/V8Float32ArrayCustom.h"
+#include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/platform/chromium/TraceEvent.h"
@@ -389,6 +393,66 @@ static void readonlyShadowRootAttributeAttributeGetterCallback(v8::Local<v8::Str
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void readonlyArrayBufferAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    RefPtr<ArrayBuffer> result = imp->readonlyArrayBufferAttribute();
+    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8ArrayBuffer>(info.GetReturnValue(), result.get()))
+        return;
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    if (!wrapper.IsEmpty()) {
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "readonlyArrayBufferAttribute", wrapper);
+        v8SetReturnValue(info, wrapper);
+    }
+}
+
+static void readonlyArrayBufferAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::readonlyArrayBufferAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void readonlyFloat32ArrayAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    RefPtr<Float32Array> result = imp->readonlyFloat32ArrayAttribute();
+    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8Float32Array>(info.GetReturnValue(), result.get()))
+        return;
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    if (!wrapper.IsEmpty()) {
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "readonlyFloat32ArrayAttribute", wrapper);
+        v8SetReturnValue(info, wrapper);
+    }
+}
+
+static void readonlyFloat32ArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::readonlyFloat32ArrayAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void readonlyUint8ArrayAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    RefPtr<Uint8Array> result = imp->readonlyUint8ArrayAttribute();
+    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8Uint8Array>(info.GetReturnValue(), result.get()))
+        return;
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    if (!wrapper.IsEmpty()) {
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "readonlyUint8ArrayAttribute", wrapper);
+        v8SetReturnValue(info, wrapper);
+    }
+}
+
+static void readonlyUint8ArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::readonlyUint8ArrayAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void selfAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -654,6 +718,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"readonlyEntityAttribute", TestObjectPythonV8Internal::readonlyEntityAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyNodeAttribute", TestObjectPythonV8Internal::readonlyNodeAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyShadowRootAttribute", TestObjectPythonV8Internal::readonlyShadowRootAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyArrayBufferAttribute", TestObjectPythonV8Internal::readonlyArrayBufferAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyFloat32ArrayAttribute", TestObjectPythonV8Internal::readonlyFloat32ArrayAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyUint8ArrayAttribute", TestObjectPythonV8Internal::readonlyUint8ArrayAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"self", TestObjectPythonV8Internal::selfAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlySerializedScriptValueAttribute", TestObjectPythonV8Internal::readonlySerializedScriptValueAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyWindowAttribute", TestObjectPythonV8Internal::readonlyWindowAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

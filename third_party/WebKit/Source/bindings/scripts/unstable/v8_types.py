@@ -159,12 +159,29 @@ NON_WRAPPER_TYPES = set([
     'NodeFilter',
     'SerializedScriptValue',
 ])
-
+TYPED_ARRAYS = {
+    # (cpp_type, v8_type), used by constructor templates
+    'ArrayBuffer': None,
+    'ArrayBufferView': None,
+    'Float32Array': ('float', 'v8::kExternalFloatArray'),
+    'Float64Array': ('double', 'v8::kExternalDoubleArray'),
+    'Int8Array': ('signed char', 'v8::kExternalByteArray'),
+    'Int16Array': ('short', 'v8::kExternalShortArray'),
+    'Int32Array': ('int', 'v8::kExternalIntArray'),
+    'Uint8Array': ('unsigned char', 'v8::kExternalUnsignedByteArray'),
+    'Uint8ClampedArray': ('unsigned char', 'v8::kExternalPixelArray'),
+    'Uint16Array': ('unsigned short', 'v8::kExternalUnsignedShortArray'),
+    'Uint32Array': ('unsigned int', 'v8::kExternalUnsignedIntArray'),
+}
 
 def dom_node_type(idl_type):
     return (idl_type in DOM_NODE_TYPES or
             (idl_type.startswith(('HTML', 'SVG')) and
              idl_type.endswith('Element')))
+
+
+def typed_array_type(idl_type):
+    return idl_type in TYPED_ARRAYS
 
 
 def wrapper_type(idl_type):
@@ -271,6 +288,8 @@ def includes_for_type(idl_type):
         return INCLUDES_FOR_TYPE[idl_type]
     if skip_includes(idl_type):
         return set()
+    if typed_array_type(idl_type):
+        return set(['bindings/v8/custom/V8%sCustom.h' % idl_type])
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
         return includes_for_type(this_array_or_sequence_type)
