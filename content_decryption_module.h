@@ -259,15 +259,15 @@ enum StreamType {
 struct PlatformChallengeResponse {
   // |challenge| provided during Host::SendPlatformChallenge() combined with
   // nonce data and signed with the platform's private key.
-  uint8_t* signed_data;
+  const uint8_t* signed_data;
   int32_t signed_data_length;
 
   // RSASSA-PKCS1-v1_5-SHA256 signature of the |signed_data| block.
-  uint8_t* signed_data_signature;
+  const uint8_t* signed_data_signature;
   int32_t signed_data_signature_length;
 
   // X.509 device specific certificate for the |service_id| requested.
-  uint8_t* platform_key_certificate;
+  const uint8_t* platform_key_certificate;
   int32_t platform_key_certificate_length;
 };
 
@@ -565,8 +565,8 @@ class ContentDecryptionModule_2 {
 const int kCdmInterfaceVersion_1 = 1;
 const int kCdmInterfaceVersion_2 = 2;
 
-typedef ContentDecryptionModule_1 ContentDecryptionModule;
-const int kCdmInterfaceVersion = kCdmInterfaceVersion_1;
+typedef ContentDecryptionModule_2 ContentDecryptionModule;
+const int kCdmInterfaceVersion = kCdmInterfaceVersion_2;
 
 // Represents a buffer created by Allocator implementations.
 class Buffer {
@@ -691,8 +691,8 @@ class Host_2 {
 const int kHostInterfaceVersion_1 = 1;
 const int kHostInterfaceVersion_2 = 2;
 
-typedef Host_1 Host;
-const int kHostInterfaceVersion = kHostInterfaceVersion_1;
+typedef Host_2 Host;
+const int kHostInterfaceVersion = kHostInterfaceVersion_2;
 
 // Represents a decrypted block that has not been decoded.
 class DecryptedBlock {
