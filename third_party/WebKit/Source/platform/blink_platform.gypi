@@ -54,6 +54,8 @@
       'text/BidiContext.h',
       'text/DateTimeFormat.cpp',
       'text/DateTimeFormat.h',
+      'text/LineEnding.cpp',
+      'text/LineEnding.h',
       'text/QuotedPrintable.cpp',
       'text/QuotedPrintable.h',
       'text/TextStream.cpp',

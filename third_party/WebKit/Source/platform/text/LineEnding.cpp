@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/LineEnding.h"
+#include "platform/text/LineEnding.h"
 
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
@@ -39,7 +39,7 @@ namespace {
 
 class OutputBuffer {
 public:
-    virtual char* allocate(size_t size) = 0;
+    virtual char* allocate(size_t) = 0;
     virtual void copy(const CString&) = 0;
     virtual ~OutputBuffer() { }
 };

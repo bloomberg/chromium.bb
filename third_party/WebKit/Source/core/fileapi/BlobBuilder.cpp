@@ -34,7 +34,7 @@
 
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
-#include "core/platform/text/LineEnding.h"
+#include "platform/text/LineEnding.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/PassRefPtr.h"

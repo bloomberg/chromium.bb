@@ -3156,7 +3156,6 @@
             'platform/network/ResourceRequest.h',
             'platform/network/ResourceResponse.cpp',
             'platform/network/ResourceResponse.h',
-            'platform/text/LineEnding.cpp',
             'platform/text/LocaleICU.cpp',
             'platform/text/LocaleICU.h',
             'platform/text/LocaleMac.h',
