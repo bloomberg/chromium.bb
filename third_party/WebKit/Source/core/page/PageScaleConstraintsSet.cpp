@@ -148,7 +148,8 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
             m_pageDefinedConstraints.initialScale *= targetDensityDPIFactor;
         m_pageDefinedConstraints.minimumScale *= targetDensityDPIFactor;
         m_pageDefinedConstraints.maximumScale *= targetDensityDPIFactor;
-        adjustedLayoutSizeWidth /= targetDensityDPIFactor;
+        if (wideViewportQuirkEnabled && (!useWideViewport || !description.maxWidth.isFixed()))
+            adjustedLayoutSizeWidth /= targetDensityDPIFactor;
     }
 
     if (wideViewportQuirkEnabled) {

@@ -1469,9 +1469,10 @@ TEST_F(WebFrameTest, targetDensityDpiHigh)
         client.m_screenInfo.deviceScaleFactor = deviceScaleFactor;
 
         FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-high.html", true, 0, &client);
+        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-high.html", true, 0, &client);
         webViewHelper.webView()->enableFixedLayoutMode(true);
         webViewHelper.webView()->settings()->setViewportEnabled(true);
+        webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
         webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
         webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
@@ -1499,15 +1500,45 @@ TEST_F(WebFrameTest, targetDensityDpiDevice)
         client.m_screenInfo.deviceScaleFactor = deviceScaleFactors[i];
 
         FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-device.html", true, 0, &client);
+        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-device.html", true, 0, &client);
         webViewHelper.webView()->enableFixedLayoutMode(true);
         webViewHelper.webView()->settings()->setViewportEnabled(true);
+        webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
         webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
         webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
         EXPECT_NEAR(viewportWidth * client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->fixedLayoutSize().width, 1.0f);
         EXPECT_NEAR(viewportHeight * client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->fixedLayoutSize().height, 1.0f);
         EXPECT_NEAR(1.0f / client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->pageScaleFactor(), 0.01f);
+    }
+}
+
+TEST_F(WebFrameTest, targetDensityDpiDeviceAndFixedWidth)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("viewport-target-densitydpi-device-and-fixed-width.html");
+
+    float deviceScaleFactors[] = { 1.0f, 4.0f / 3.0f, 2.0f };
+
+    FixedLayoutTestWebViewClient client;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    for (size_t i = 0; i < ARRAY_SIZE(deviceScaleFactors); ++i) {
+        client.m_screenInfo.deviceScaleFactor = deviceScaleFactors[i];
+
+        FrameTestHelpers::WebViewHelper webViewHelper;
+        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-device-and-fixed-width.html", true, 0, &client);
+        webViewHelper.webView()->enableFixedLayoutMode(true);
+        webViewHelper.webView()->settings()->setViewportEnabled(true);
+        webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
+        webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
+        webViewHelper.webView()->settings()->setUseWideViewport(true);
+        webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+        EXPECT_NEAR(viewportWidth, webViewHelper.webView()->fixedLayoutSize().width, 1.0f);
+        EXPECT_NEAR(viewportHeight, webViewHelper.webView()->fixedLayoutSize().height, 1.0f);
+        EXPECT_NEAR(1.0f, webViewHelper.webView()->pageScaleFactor(), 0.01f);
     }
 }
 
