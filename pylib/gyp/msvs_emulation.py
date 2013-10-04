@@ -202,7 +202,8 @@ class MsvsSettings(object):
 
   def AdjustLibraries(self, libraries):
     """Strip -l from library if it's specified with that."""
-    return [lib[2:] if lib.startswith('-l') else lib for lib in libraries]
+    libs = [lib[2:] if lib.startswith('-l') else lib for lib in libraries]
+    return [lib + '.lib' if not lib.endswith('.lib') else lib for lib in libs]
 
   def _GetAndMunge(self, field, path, default, prefix, append, map):
     """Retrieve a value from |field| at |path| or return |default|. If
