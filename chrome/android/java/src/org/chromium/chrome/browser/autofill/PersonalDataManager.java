@@ -370,6 +370,28 @@ public class PersonalDataManager {
         nativeRemoveByGUID(mPersonalDataManagerAndroid, guid);
     }
 
+    /**
+     * @return Whether the Autofill feature is enabled.
+     */
+    public static boolean isAutofillEnabled() {
+        return nativeIsAutofillEnabled();
+    }
+
+    /**
+     * Enables or disables the Autofill feature.
+     * @param enable True to disable Autofill, false otherwise.
+     */
+    public static void setAutofillEnabled(boolean enable) {
+        nativeSetAutofillEnabled(enable);
+    }
+
+    /**
+     * @return Whether the Autofill feature is managed.
+     */
+    public static boolean isAutofillManaged() {
+        return nativeIsAutofillManaged();
+    }
+
     private native int nativeInit();
     private native int nativeGetProfileCount(int nativePersonalDataManagerAndroid);
     private native AutofillProfile nativeGetProfileByIndex(int nativePersonalDataManagerAndroid,
@@ -386,5 +408,8 @@ public class PersonalDataManager {
     private native String nativeSetCreditCard(int nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeRemoveByGUID(int nativePersonalDataManagerAndroid, String guid);
+    private static native boolean nativeIsAutofillEnabled();
+    private static native void nativeSetAutofillEnabled(boolean enable);
+    private static native boolean nativeIsAutofillManaged();
     private static native String nativeToCountryCode(String countryName);
 }

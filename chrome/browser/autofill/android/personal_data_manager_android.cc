@@ -6,11 +6,13 @@
 
 #include "base/android/jni_string.h"
 #include "base/format_macros.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -27,6 +29,10 @@ namespace {
 
 Profile* GetDefaultProfile() {
   return g_browser_process->profile_manager()->GetDefaultProfile();
+}
+
+PrefService* GetPrefs() {
+  return GetDefaultProfile()->GetOriginalProfile()->GetPrefs();
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
@@ -165,7 +171,6 @@ PersonalDataManagerAndroid::~PersonalDataManagerAndroid() {
   personal_data_manager_->RemoveObserver(this);
 }
 
-
 jint PersonalDataManagerAndroid::GetProfileCount(JNIEnv* unused_env,
                                                  jobject unused_obj) {
   return personal_data_manager_->GetProfiles().size();
@@ -281,6 +286,21 @@ void PersonalDataManagerAndroid::OnPersonalDataChanged() {
 // static
 bool PersonalDataManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+// Returns whether the Autofill feature is enabled.
+static jboolean IsAutofillEnabled(JNIEnv* env, jclass clazz) {
+  return GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled);
+}
+
+// Enables or disables the Autofill feature.
+static void SetAutofillEnabled(JNIEnv* env, jclass clazz, jboolean enable) {
+  GetPrefs()->SetBoolean(autofill::prefs::kAutofillEnabled, enable);
+}
+
+// Returns whether Autofill feature is managed.
+static jboolean IsAutofillManaged(JNIEnv* env, jclass clazz) {
+  return GetPrefs()->IsManagedPreference(autofill::prefs::kAutofillEnabled);
 }
 
 // Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using
