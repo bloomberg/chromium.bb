@@ -26,6 +26,9 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunImpl() {
   return false;
 }
 
+void WebrtcLoggingPrivateSetMetaDataFunction::SetMetaDataCallback(
+    bool success, const std::string& error_message) {}
+
 WebrtcLoggingPrivateStartFunction::WebrtcLoggingPrivateStartFunction() {}
 
 WebrtcLoggingPrivateStartFunction::~WebrtcLoggingPrivateStartFunction() {}
@@ -36,7 +39,8 @@ bool WebrtcLoggingPrivateStartFunction::RunImpl() {
   return false;
 }
 
-void WebrtcLoggingPrivateStartFunction::StartCallback(bool success) {}
+void WebrtcLoggingPrivateStartFunction::StartCallback(
+    bool success, const std::string& error_message) {}
 
 WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::
 WebrtcLoggingPrivateSetUploadOnRenderCloseFunction() {}
@@ -60,7 +64,8 @@ bool WebrtcLoggingPrivateStopFunction::RunImpl() {
   return false;
 }
 
-void WebrtcLoggingPrivateStopFunction::StopCallback(bool success) {}
+void WebrtcLoggingPrivateStopFunction::StopCallback(
+    bool success, const std::string& error_message) {}
 
 WebrtcLoggingPrivateUploadFunction::WebrtcLoggingPrivateUploadFunction() {}
 
@@ -73,7 +78,8 @@ bool WebrtcLoggingPrivateUploadFunction::RunImpl() {
 }
 
 void WebrtcLoggingPrivateUploadFunction::UploadCallback(
-    bool success, std::string report_id) {
+    bool success, const std::string& report_id,
+    const std::string& error_message) {
 }
 
 WebrtcLoggingPrivateDiscardFunction::WebrtcLoggingPrivateDiscardFunction() {}
@@ -86,6 +92,7 @@ bool WebrtcLoggingPrivateDiscardFunction::RunImpl() {
   return false;
 }
 
-void WebrtcLoggingPrivateDiscardFunction::DiscardCallback(bool success) {}
+void WebrtcLoggingPrivateDiscardFunction::DiscardCallback(
+    bool success, const std::string& error_message) {}
 
 }  // namespace extensions
