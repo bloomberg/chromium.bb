@@ -36,10 +36,10 @@
 #include "core/page/WindowFeatures.h"
 #include "core/platform/ColorChooser.h"
 #include "core/platform/DateTimeChooser.h"
-#include "core/platform/network/DNS.h"
 #include "core/rendering/HitTestResult.h"
 #include "platform/FileChooser.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/network/DNS.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 

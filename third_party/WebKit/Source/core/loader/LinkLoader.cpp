@@ -40,7 +40,7 @@
 #include "core/loader/Prerenderer.h"
 #include "core/page/Settings.h"
 #include "core/platform/Prerender.h"
-#include "core/platform/network/DNS.h"
+#include "platform/network/DNS.h"
 
 namespace WebCore {
 

@@ -3139,8 +3139,6 @@
             'platform/mock/ScrollbarThemeOverlayMock.h',
             'platform/network/BlobData.cpp',
             'platform/network/BlobData.h',
-            'platform/network/DNS.cpp',
-            'platform/network/DNS.h',
             'platform/network/FormData.cpp',
             'platform/network/FormDataBuilder.cpp',
             'platform/network/FormDataBuilder.h',

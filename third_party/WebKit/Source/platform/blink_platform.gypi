@@ -32,6 +32,8 @@
       'geometry/LayoutRect.cpp',
       'geometry/LayoutRect.h',
       'geometry/LayoutSize.h',
+      'network/DNS.cpp',
+      'network/DNS.h',
       'text/DateTimeFormat.cpp',
       'text/DateTimeFormat.h',
       'network/SocketStreamError.cpp',

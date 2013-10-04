@@ -24,15 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DNS_h
-#define DNS_h
+#include "config.h"
+#include "platform/network/DNS.h"
 
-#include "wtf/Forward.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebPrescientNetworking.h"
 
 namespace WebCore {
 
-void prefetchDNS(const String& hostname);
+void prefetchDNS(const String& hostname)
+{
+    WebKit::WebPrescientNetworking* prescientNetworking = WebKit::Platform::current()->prescientNetworking();
+
+    if (!prescientNetworking)
+        return;
+
+    prescientNetworking->prefetchDNS(hostname);
+}
 
 } // namespace WebCore
-
-#endif
