@@ -780,17 +780,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.backgroundPage_.progressCenter.addEventListener(
         ProgressCenterEvent.ITEM_ADDED,
         function(event) {
-          this.progressCenterPanel_.addItem(event.item);
+          this.progressCenterPanel_.updateItem(event.item);
         }.bind(this));
     this.backgroundPage_.progressCenter.addEventListener(
         ProgressCenterEvent.ITEM_UPDATED,
         function(event) {
           this.progressCenterPanel_.updateItem(event.item);
-        }.bind(this));
-    this.backgroundPage_.progressCenter.addEventListener(
-        ProgressCenterEvent.ITEM_REMOVED,
-        function(event) {
-          this.progressCenterPanel_.removeItem(event.itemId);
         }.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));

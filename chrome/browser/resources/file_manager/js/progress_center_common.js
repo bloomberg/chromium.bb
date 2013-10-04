@@ -28,12 +28,18 @@ var ProgressCenterEvent = Object.freeze({
   /**
    * Background page notifies item update to application windows.
    */
-  ITEM_UPDATED: 'itemUpdated',
+  ITEM_UPDATED: 'itemUpdated'
+});
 
-  /**
-   * Background page notifies item removed to application windows.
-   */
-  ITEM_REMOVED: 'itemRemoved'
+/**
+ * State of progress items.
+ * @enum {string}
+ * @const
+ */
+var ProgressItemState = Object.freeze({
+  PROGRESSING: 'progressing',
+  COMPLETE: 'complete',
+  ERROR: 'error'
 });
 
 /**
@@ -47,6 +53,12 @@ var ProgressCenterItem = function() {
    * @private
    */
   this.id_ = null;
+
+  /**
+   * State of the progress item.
+   * @type {ProgressItemState}
+   */
+  this.state = ProgressItemState.PROGRESSING;
 
   /**
    * Message of the progress item.

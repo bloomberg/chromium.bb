@@ -27,8 +27,8 @@ var ProgressCenterPanel = function(element) {
    * @type {TimeoutManager}
    * @private
    */
-  this.removingTimeout_ = new ProgressCenterPanel.TimeoutManager(
-      this.completeItemRemoving_.bind(this));
+  this.hidingTimeout_ = new ProgressCenterPanel.TimeoutManager(
+      this.hideByTimeout_.bind(this));
 
   Object.freeze(this);
 
@@ -80,16 +80,32 @@ ProgressCenterPanel.TimeoutManager.prototype.request = function(milliseconds) {
 };
 
 /**
- * Adds an item to the progress center panel.
- * @param {ProgressCenterItem} item Item to be added.
+ * Update item element.
+ * @param {HTMLElement} element Element to be updated.
+ * @param {ProgressCenterItem} item Progress center item.
+ * @private
  */
-ProgressCenterPanel.prototype.addItem = function(item) {
-  var element = this.createNewItemElement_();
-  this.updateItemElement_(element, item);
-  this.openView_.insertBefore(element, this.openView_.firstNode);
-  this.updateCloseView_();
-  if (ProgressCenterPanel.ENABLED_)
-    this.element_.hidden = false;
+ProgressCenterPanel.updateItemElement_ = function(element, item) {
+  var additionalClass = item.state === ProgressItemState.COMPLETE ? 'complete' :
+                        item.state === ProgressItemState.ERROR ? 'error' :
+                        '';
+  if (item.state === ProgressItemState.COMPLETE &&
+      parseInt(element.querySelector('.progress-track').style.width) ===
+          item.progressRateByPercent) {
+    // Stop to update the message until the transition ends.
+    element.setAttribute('data-complete-message', item.message);
+    // The class pre-complete means that the actual operation is already done
+    // but the UI transition of progress bar is not complete.
+    additionalClass = 'pre-complete';
+  } else {
+    element.querySelector('label').textContent = item.message;
+  }
+  element.querySelector('.progress-track').style.width =
+      item.progressRateByPercent + '%';
+  element.setAttribute('data-progress-id', item.id);
+  element.setAttribute('data-progress-max', item.progressMax);
+  element.setAttribute('data-progress-value', item.progressValue);
+  element.className = additionalClass;
 };
 
 /**
@@ -99,45 +115,24 @@ ProgressCenterPanel.prototype.addItem = function(item) {
 ProgressCenterPanel.prototype.updateItem = function(item) {
   var itemElement = this.getItemElement_(item.id);
   if (!itemElement) {
-    console.error('Invalid progress ID.');
-    return;
+    itemElement = this.createNewItemElement_();
+    this.openView_.insertBefore(itemElement, this.openView_.firstNode);
   }
-  this.updateItemElement_(itemElement, item);
+  ProgressCenterPanel.updateItemElement_(itemElement, item);
+  if (item.state !== ProgressItemState.PROGRESSING)
+    this.hidingTimeout_.request(ProgressCenterPanel.HIDE_DELAY_TIME_MS_);
   this.updateCloseView_();
+  if (ProgressCenterPanel.ENABLED_)
+    this.element_.hidden = false;
 };
 
 /**
- * Removes an item from the progress center panel.
- * @param {number} id progress item ID.
- */
-ProgressCenterPanel.prototype.removeItem = function(id) {
-  // Obtain the item element.
-  var itemElement = this.getItemElement_(id);
-  if (!itemElement) {
-    console.error('Invalid progress ID.');
-    return;
-  }
-
-  // Check if already requested to remove.
-  if (itemElement.classList.contains('complete'))
-    return;
-
-  // Update view and set timeout function to remove.
-  itemElement.classList.add('complete');
-  itemElement.setAttribute('data-progress-value',
-                           itemElement.getAttribute('data-progress-max'));
-  this.updateCloseView_();
-  this.removingTimeout_.request(ProgressCenterPanel.HIDE_DELAY_TIME_MS_);
-};
-
-/**
- * Completes item removing.
- * @param {HTMLElement} itemElement Element to be removed.
+ * Hides the progress center if there is no progressing items.
  * @private
  */
-ProgressCenterPanel.prototype.completeItemRemoving_ = function(itemElement) {
+ProgressCenterPanel.prototype.hideByTimeout_ = function() {
   // If there are still progressing items, return the function.
-  if (this.openView_.querySelectorAll('li:not(.complete)').length)
+  if (this.openView_.querySelectorAll('li:not(.complete):not(.error)').length)
     return;
 
   // Clear the all compete item.
@@ -153,13 +148,10 @@ ProgressCenterPanel.prototype.completeItemRemoving_ = function(itemElement) {
  * @private
  */
 ProgressCenterPanel.prototype.updateCloseView_ = function() {
-  var itemElements = this.openView_.querySelectorAll('li');
-  if (itemElements.length) {
-    this.closeView_.hidden = false;
-  } else {
-    this.closeView_.hidden = true;
-    return;
-  }
+  var itemElements = this.openView_.querySelectorAll('li:not(.error)');
+  var activeElements = this.openView_.querySelectorAll(
+      'li:not(.error):not(.complete)');
+  var errorCount = this.openView_.querySelectorAll('li.error').length;
   var totalProgressMax = 0;
   var totalProgressValue = 0;
   for (var i = 0; i < itemElements.length; i++) {
@@ -169,15 +161,26 @@ ProgressCenterPanel.prototype.updateCloseView_ = function() {
   var item = new ProgressCenterItem();
   item.progressMax = totalProgressMax;
   item.progressValue = totalProgressValue;
-  // TODO(hirono): Replace it with a string asset.
-  item.message = itemElements.length == 1 ?
-      itemElements[0].querySelector('label').textContent :
-      itemElements.length + ' active process';
-  this.updateItemElement_(this.closeViewItem_, item);
+  item.state = errorCount ?
+      ProgressItemState.ERROR : ProgressItemState.PROGRESSING;
+
+  // TODO(hirono): Replace the messages with a string asset.
+  if (activeElements.length == 0)
+    if (errorCount > 1)
+      item.message = errorCount + ' errors';
+    else if (errorCount == 1)
+      item.message = errorCount + ' error';
+    else
+      item.message = 'Complete';
+  else if (activeElements.length == 1)
+    item.message = activeElements[0].querySelector('label').textContent;
+  else
+    item.message = activeElements.length + ' active process';
+  ProgressCenterPanel.updateItemElement_(this.closeViewItem_, item);
 };
 
 /**
- * Gets an item element having the specified ID.
+ * Get an item element having the specified ID.
  * @param {number} id progress item ID.
  * @return {HTMLElement} Item element having the ID.
  * @private
@@ -216,22 +219,29 @@ ProgressCenterPanel.prototype.createNewItemElement_ = function() {
   itemElement.appendChild(label);
   itemElement.appendChild(progressFrame);
 
+  itemElement.addEventListener(
+      'webkitTransitionEnd', this.onItemTransitionEnd_.bind(this));
+
   return itemElement;
 };
 
 /**
- * Updates item element.
- * @param {HTMLElement} element Element to be updated.
- * @param {ProgressCenterItem} item Progress center item.
+ * Handles the transition end event of items.
+ * @param {Event} event Transition end event.
  * @private
  */
-ProgressCenterPanel.prototype.updateItemElement_ = function(element, item) {
-  element.querySelector('label').textContent = item.message;
-  element.querySelector('.progress-track').style.width =
-      item.progressRateByPercent + '%';
-  element.setAttribute('data-progress-id', item.id);
-  element.setAttribute('data-progress-max', item.progressMax);
-  element.setAttribute('data-progress-value', item.progressValue);
+ProgressCenterPanel.prototype.onItemTransitionEnd_ = function(event) {
+  console.debug(event);
+  if (event.currentTarget.className !== 'pre-complete' ||
+      event.propertyName !== 'width')
+    return;
+  var completeMessage =
+      event.currentTarget.getAttribute('data-complete-message');
+  if (!completeMessage)
+    return;
+  event.currentTarget.className = 'complete';
+  event.currentTarget.querySelector('label').textContent = completeMessage;
+  this.updateCloseView_();
 };
 
 /**

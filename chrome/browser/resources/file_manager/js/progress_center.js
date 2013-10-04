@@ -31,13 +31,6 @@ var ProgressCenter = function() {
    * @private
    */
   this.items_ = [];
-
-  /**
-   * Async queue to operate the items array sequentially.
-   * @type {AsyncUtil.Queue}
-   * @private
-   */
-  this.queue_ = new AsyncUtil.Queue();
 };
 
 ProgressCenter.prototype = {
@@ -83,22 +76,6 @@ ProgressCenter.prototype.updateItem = function(item) {
 
   var event = new cr.Event(ProgressCenterEvent.ITEM_UPDATED);
   event.item = item;
-  this.dispatchEvent(event);
-};
-
-/**
- * Removes the item in the progress center.
- *
- * @param {number} id ID of the item to be removed.
- */
-ProgressCenter.prototype.removeItem = function(id) {
-  var index = this.getItemIndex_(id);
-  if (index === -1)
-    return;
-  this.items_.splice(index, 1);
-
-  var event = new cr.Event(ProgressCenterEvent.ITEM_REMOVED);
-  event.itemId = id;
   this.dispatchEvent(event);
 };
 
@@ -213,12 +190,21 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
       break;
 
     case 'SUCCESS':
+    case 'ERROR':
       if (!this.copyingItem_) {
         console.error('Cannot find copying item.');
         return;
       }
-      this.copyingItem_.progressValue = this.copyingItem_.progressMax;
-      progressCenter.removeItem(this.copyingItem_.id);
+      // TODO(hirono): Replace the message with the string assets.
+      if (event.reason === 'SUCCESS') {
+        this.copyingItem_.message = 'Complete.';
+        this.copyingItem_.state = ProgressItemState.COMPLETE;
+        this.copyingItem_.progressValue = this.copyingItem_.progressMax;
+      } else {
+        this.copyingItem_.message = 'Error.';
+        this.copyingItem_.state = ProgressItemState.ERROR;
+      }
+      progressCenter.updateItem(this.copyingItem_);
       this.copyingItem_ = null;
       break;
   }
@@ -251,11 +237,20 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
       break;
 
     case 'SUCCESS':
+    case 'ERROR':
       if (!this.deletingItem_) {
         console.error('Cannot find deleting item.');
         return;
       }
-      progressCenter.removeItem(this.deletingItem_.id);
+      if (event.reason === 'SUCCESS') {
+        this.deletingItem_.message = 'Complete.';
+        this.deletingItem_.state = ProgressItemState.COMPLETE;
+        this.deletingItem_.progressValue = this.deletingItem_.progressMax;
+      } else {
+        this.deletingItem_.message = 'Error.';
+        this.deletingItem_.state = ProgressItemState.ERROR;
+      }
+      progressCenter.updateItem(this.deletingItem_);
       this.deletingItem_ = null;
       break;
   }
