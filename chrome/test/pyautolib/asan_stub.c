@@ -65,6 +65,31 @@ void __asan_init_v1() {
   __asan_init();
 }
 
+void __asan_init_v3() {
+  static int inited = 0;
+  if (inited) return;
+  inited = 1;
+#if __WORDSIZE == 64
+  unsigned long start = 0x00007fff8000;
+  unsigned long size  = 0x100000000000;
+#else
+  unsigned long start = 0x20000000;
+  unsigned long size = 0x20000000;
+#endif
+  void *res = mmap((void*)start, size,
+                    PROT_READ | PROT_WRITE,
+                    MAP_PRIVATE | MAP_ANON | MAP_FIXED | MAP_NORESERVE,
+                    0, 0);
+  if (res == (void*)start) {
+    fprintf(stderr, "Fake AddressSanitizer run-time initialized ok at %p\n",
+           res);
+  } else {
+    fprintf(stderr, "Fake AddressSanitizer run-time failed to initialize.\n"
+    "You have been warned. Aborting.");
+  abort();
+  }
+}
+
 void __asan_handle_no_return() { }
 void __asan_register_globals() { }
 void __asan_report_load1() { }
@@ -82,3 +107,6 @@ void __asan_report_store_n() { }
 void __asan_set_error_report_callback() { }
 void __asan_unregister_globals() { }
 void __sanitizer_sandbox_on_notify() { }
+void __asan_before_dynamic_init(const char *module_name) { }
+void __asan_after_dynamic_init() { }
+
