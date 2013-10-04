@@ -33,8 +33,7 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebString.h"
-#include "WebTextCheckingType.h" // TODO(rouslan): Remove this include when it's no longer used here.
-#include "WebTextDecorationType.h"
+#include "WebTextCheckingType.h"
 
 namespace WebCore {
 struct TextCheckingResult;
@@ -45,25 +44,15 @@ namespace WebKit {
 // A checked entry of text checking.
 struct WebTextCheckingResult {
     WebTextCheckingResult()
-        : type(WebTextDecorationTypeSpelling)
+        : type(WebTextCheckingTypeSpelling)
         , location(0)
         , length(0)
         , hash(0)
     {
     }
 
-    WebTextCheckingResult(WebTextDecorationType decorationType, int location, int length, const WebString& replacement = WebString(), uint32_t hash = 0)
-        : type(decorationType)
-        , location(location)
-        , length(length)
-        , replacement(replacement)
-        , hash(hash)
-    {
-    }
-
-    // TODO(rouslan): Remove this deprecated constructor when clients no longer use it.
-    WebTextCheckingResult(WebTextCheckingType checkingType, int location, int length, const WebString& replacement = WebString(), uint32_t hash = 0)
-        : type(static_cast<WebTextDecorationType>(checkingType))
+    WebTextCheckingResult(WebTextCheckingType type, int location, int length, const WebString& replacement = WebString(), uint32_t hash = 0)
+        : type(type)
         , location(location)
         , length(length)
         , replacement(replacement)
@@ -75,13 +64,7 @@ struct WebTextCheckingResult {
     operator WebCore::TextCheckingResult() const;
 #endif
 
-    // TODO(rouslan): Remove these methods after the field |type| has been renamed to |decoration|.
-    WebTextDecorationType getDecoration() const { return type; }
-    void setDecoration(WebTextDecorationType decoration) { type = decoration; }
-
-    // TODO(rouslan): Rename field |type| to |decoration| after clients start using the decoration() method above instead of
-    // accessing this field directly.
-    WebTextDecorationType type;
+    WebTextCheckingType type;
     int location;
     int length;
     WebString replacement;

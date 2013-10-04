@@ -57,7 +57,7 @@ static void findBadGrammars(TextCheckerClient& client, const UChar* text, int st
         ASSERT(0 <= badGrammarLocation && badGrammarLocation <= checkLength);
         ASSERT(0 < badGrammarLength && badGrammarLocation + badGrammarLength <= checkLength);
         TextCheckingResult badGrammar;
-        badGrammar.decoration = TextDecorationTypeGrammar;
+        badGrammar.type = TextCheckingTypeGrammar;
         badGrammar.location = checkLocation + badGrammarLocation;
         badGrammar.length = badGrammarLength;
         badGrammar.details.swap(badGrammarDetails);
@@ -86,7 +86,7 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
             ASSERT(0 <= misspellingLocation && misspellingLocation <= wordLength);
             ASSERT(0 < misspellingLength && misspellingLocation + misspellingLength <= wordLength);
             TextCheckingResult misspelling;
-            misspelling.decoration = TextDecorationTypeSpelling;
+            misspelling.type = TextCheckingTypeSpelling;
             misspelling.location = start + wordStart + misspellingLocation;
             misspelling.length = misspellingLength;
             misspelling.replacement = client.getAutoCorrectSuggestionForMisspelledWord(String(text + misspelling.location, misspelling.length));
@@ -343,14 +343,14 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
 
                 for (unsigned i = 0; i < results.size(); i++) {
                     const TextCheckingResult* result = &results[i];
-                    if (result->decoration == TextDecorationTypeSpelling && result->location >= currentStartOffset && result->location + result->length <= currentEndOffset) {
+                    if (result->type == TextCheckingTypeSpelling && result->location >= currentStartOffset && result->location + result->length <= currentEndOffset) {
                         ASSERT(result->length > 0 && result->location >= 0);
                         spellingLocation = result->location;
                         misspelledWord = paragraphString.substring(result->location, result->length);
                         ASSERT(misspelledWord.length());
                         break;
                     }
-                    if (checkGrammar && result->decoration == TextDecorationTypeGrammar && result->location < currentEndOffset && result->location + result->length > currentStartOffset) {
+                    if (checkGrammar && result->type == TextCheckingTypeGrammar && result->location < currentEndOffset && result->location + result->length > currentStartOffset) {
                         ASSERT(result->length > 0 && result->location >= 0);
                         // We can't stop after the first grammar result, since there might still be a spelling result after
                         // it begins but before the first detail in it, but we can stop if we find a second grammar result.

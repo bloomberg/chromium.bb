@@ -58,7 +58,6 @@
 #include "WebTextAffinity.h"
 #include "WebTextCheckingResult.h"
 #include "WebTextCheckingType.h"
-#include "WebTextDecorationType.h"
 #include "WebView.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -93,7 +92,6 @@
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/platform/text/TextChecking.h"
-#include "core/platform/text/TextDecoration.h"
 #include "core/rendering/CompositingReasons.h"
 #include "modules/filesystem/FileSystemType.h"
 #include "modules/geolocation/GeolocationError.h"
@@ -563,15 +561,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebGeolocationError::ErrorPositionUnavailable, Geol
 
 COMPILE_ASSERT_MATCHING_ENUM(WebTextCheckingTypeSpelling, TextCheckingTypeSpelling);
 COMPILE_ASSERT_MATCHING_ENUM(WebTextCheckingTypeGrammar, TextCheckingTypeGrammar);
-
-// TODO(rouslan): Remove these comparisons between text-checking and text-decoration enum values after removing the
-// deprecated constructor WebTextCheckingResult(WebTextCheckingType).
-COMPILE_ASSERT_MATCHING_ENUM(WebTextCheckingTypeSpelling, TextDecorationTypeSpelling);
-COMPILE_ASSERT_MATCHING_ENUM(WebTextCheckingTypeGrammar, TextDecorationTypeGrammar);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebTextDecorationTypeSpelling, TextDecorationTypeSpelling);
-COMPILE_ASSERT_MATCHING_ENUM(WebTextDecorationTypeGrammar, TextDecorationTypeGrammar);
-COMPILE_ASSERT_MATCHING_ENUM(WebTextDecorationTypeInCustomSpellcheckDictionary, TextDecorationTypeInCustomSpellcheckDictionary);
+COMPILE_ASSERT_MATCHING_ENUM(WebTextCheckingTypeInCustomSpellcheckDictionary, TextCheckingTypeInCustomSpellcheckDictionary);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaErrorNotSupported, NotSupportedError);
 COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaErrorInvalidModification, InvalidModificationError);
