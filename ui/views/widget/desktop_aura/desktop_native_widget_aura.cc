@@ -365,6 +365,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                       visibility_controller_.get());
     views::corewm::SetChildWindowVisibilityChangesAnimated(
         GetNativeView()->GetRootWindow());
+    views::corewm::SetChildWindowVisibilityChangesAnimated(
+        content_window_container_);
   }
 
   window_->Show();
