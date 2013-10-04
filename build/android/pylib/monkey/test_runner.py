@@ -67,7 +67,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
                or after_pids[0] != before_pids[0])
 
     results = base_test_result.TestRunResults()
-    if 'Monkey finished' in output and not crashed:
+    success_pattern = 'Events injected: %d' % self.options.event_count
+    if success_pattern in output and not crashed:
       result = base_test_result.BaseTestResult(
           test_name, base_test_result.ResultType.PASS, log=output)
     else:
