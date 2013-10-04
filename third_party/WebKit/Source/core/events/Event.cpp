@@ -143,6 +143,11 @@ bool Event::isGestureEvent() const
     return false;
 }
 
+bool Event::isWheelEvent() const
+{
+    return false;
+}
+
 bool Event::isDragEvent() const
 {
     return false;

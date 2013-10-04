@@ -94,7 +94,8 @@ public:
     bool webkitDirectionInvertedFromDevice() const { return m_directionInvertedFromDevice; }
 
     virtual const AtomicString& interfaceName() const;
-    virtual bool isMouseEvent() const;
+    virtual bool isMouseEvent() const OVERRIDE;
+    virtual bool isWheelEvent() const OVERRIDE;
 
 private:
     WheelEvent();
@@ -110,6 +111,12 @@ private:
     unsigned m_deltaMode;
     bool m_directionInvertedFromDevice;
 };
+
+inline WheelEvent* toWheelEvent(Event* event)
+{
+    ASSERT(event && event->isWheelEvent());
+    return static_cast<WheelEvent*>(event);
+}
 
 class WheelEventDispatchMediator : public EventDispatchMediator {
 public:

@@ -121,6 +121,11 @@ bool WheelEvent::isMouseEvent() const
     return false;
 }
 
+bool WheelEvent::isWheelEvent() const
+{
+    return true;
+}
+
 inline static unsigned deltaMode(const PlatformWheelEvent& event)
 {
     return event.granularity() == ScrollByPageWheelEvent ? WheelEvent::DOM_DELTA_PAGE : WheelEvent::DOM_DELTA_PIXEL;

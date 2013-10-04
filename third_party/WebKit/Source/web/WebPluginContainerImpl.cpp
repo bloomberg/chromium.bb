@@ -189,8 +189,8 @@ void WebPluginContainerImpl::handleEvent(Event* event)
     // where mozilla behaves differently than the spec.
     if (event->isMouseEvent())
         handleMouseEvent(toMouseEvent(event));
-    else if (event->hasInterface(eventNames().interfaceForWheelEvent))
-        handleWheelEvent(static_cast<WheelEvent*>(event));
+    else if (event->isWheelEvent())
+        handleWheelEvent(toWheelEvent(event));
     else if (event->isKeyboardEvent())
         handleKeyboardEvent(toKeyboardEvent(event));
     else if (event->isTouchEvent())
