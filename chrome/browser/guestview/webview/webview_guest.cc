@@ -320,6 +320,12 @@ bool WebViewGuest::RequestPermission(
       break;
     }
     case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
+      chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+      if (channel > chrome::VersionInfo::CHANNEL_DEV) {
+        // 'dialog' API is not available in stable/beta.
+        callback.Run(false, std::string());
+        return true;
+      }
       DispatchEvent(new GuestView::Event(webview::kEventDialog,
                                          args.Pass()));
       break;
