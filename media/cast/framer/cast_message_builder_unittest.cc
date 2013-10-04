@@ -45,7 +45,8 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
           std::make_pair(frame_it->first, kRtcpCastAllPacketsLost));
       } else {
       missing_packets_.insert(
-          std::make_pair(frame_it->first, frame_it->second.size()));
+          std::make_pair(frame_it->first,
+                         static_cast<int>(frame_it->second.size())));
       }
       ++frame_it;
     }
