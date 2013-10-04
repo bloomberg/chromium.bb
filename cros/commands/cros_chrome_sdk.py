@@ -39,8 +39,14 @@ def Log(*args, **kwargs):
   logging.log(level, *args, **kwargs)
 
 
-class SDKError(Exception):
-  """Raised by SDKFetcher."""
+class MissingSDK(Exception):
+  """Error thrown when we cannot find an SDK."""
+
+  def __init__(self, board, version=None):
+    msg = 'Cannot find SDK for %r' % (board,)
+    if version is not None:
+      msg += ' with version %s' % (version,)
+    Exception.__init__(self, msg)
 
 
 class SDKFetcher(object):
@@ -75,7 +81,6 @@ class SDKFetcher(object):
         SDK components from.
       silent: If set, the fetcher prints less output.
     """
-    self.gs_ctx = gs.GSContext.Cached(cache_dir, init_boto=True)
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
     if clear_cache:
       logging.warning('Clearing the SDK cache.')
@@ -92,6 +97,11 @@ class SDKFetcher(object):
     self.chrome_src = chrome_src
     self.sdk_path = sdk_path
     self.silent = silent
+
+    # For external configs, there is no need to run 'gsutil config', because
+    # the necessary files are all accessible to anonymous users.
+    internal = self.config['internal']
+    self.gs_ctx = gs.GSContext.Cached(cache_dir, init_boto=internal)
 
     if self.sdk_path is None:
       self.sdk_path = os.environ.get(self.SDK_PATH_ENV)
@@ -142,24 +152,41 @@ class SDKFetcher(object):
         env={'CHROMEOS_OFFICIAL': '1'})
     return sourced_env['CHROMEOS_VERSION_STRING']
 
+  def _GetNewestFullVersion(self, version=None):
+    """Gets the full version number of the latest build for the given |version|.
+
+    Args:
+      version: The version number or branch to look at. By default, look at
+        builds on the current branch.
+
+    Returns:
+      Version number in the format 'R30-3929.0.0'.
+    """
+    if version is None:
+      version = git.GetChromiteTrackingBranch()
+    version_file = '%s/LATEST-%s' % (self.gs_base, version)
+    try:
+      full_version = self.gs_ctx.Cat(version_file).output
+      assert full_version.startswith('R')
+      return full_version
+    except gs.GSNoSuchKey:
+      return None
+
   def _GetNewestManifestVersion(self):
     """Gets the latest uploaded SDK version.
 
     Returns:
       Version number in the format '3929.0.0'.
     """
-    branch = git.GetChromiteTrackingBranch()
-    version_file = '%s/LATEST-%s' % (self.gs_base, branch)
-    full_version = self.gs_ctx.Cat(version_file).output
-    assert full_version.startswith('R')
-    return full_version.split('-')[1]
+    full_version = self._GetNewestFullVersion()
+    return None if full_version is None else full_version.split('-')[1]
 
   def GetDefaultVersion(self):
     """Get the default SDK version to use.
 
-    If we are in an existing SDK shell, use the SDK version of the shell.
-    Otherwise, use what we defaulted to last time.  If there was no last time,
-    returns None.
+    If we are in an existing SDK shell, the default version will just be
+    the current version. Otherwise, we will try to calculate the
+    appropriate version to use based on the checkout.
     """
     if os.environ.get(self.SDK_BOARD_ENV) == self.board:
       sdk_version = os.environ.get(self.SDK_VERSION_ENV)
@@ -203,10 +230,14 @@ class SDKFetcher(object):
           newest = self._GetNewestManifestVersion()
           # The SDK for the version of the checkout has not been uploaded yet,
           # so fall back to the latest uploaded SDK.
-          if lv_cls(target) > lv_cls(newest):
+          if newest is not None and lv_cls(target) > lv_cls(newest):
             target = newest
     else:
       target = self._GetNewestManifestVersion()
+
+    if target is None:
+      raise MissingSDK(self.board)
+
     self._SetDefaultVersion(target)
     return target, target != current
 
@@ -232,26 +263,35 @@ class SDKFetcher(object):
       if ref.Exists(lock=True):
         return osutils.ReadFile(ref.path).strip()
       else:
-        # First, assume crbug.com/230190 has been fixed, and we can just use
-        # the bare version.  The 'ls' we do here is a relatively cheap check
-        # compared to the pattern matching we do below.
-        # TODO(rcui): Rename this function to VerifyVersion()
-        lines = DebugGsLs(
-            os.path.join(self.gs_base, version) + '/').output.splitlines()
-        full_version = version
-        if not lines:
-          # TODO(rcui): Remove this code when crbug.com/230190 is fixed.
+        # First, check if there is a LATEST file and grab from there.
+        full_version = self._GetNewestFullVersion(version=version)
+
+        # If the LATEST file is missing, try using 'gsutil ls' to find the SDK.
+        # This logic is only here to allow using old versions of the SDK.
+        if full_version is None and self.config['internal']:
+          # Find all builds that match the specified version number. Under the
+          # covers, gsutil actually downloads the full list of files under
+          # self.gs_base and filters them, so this will be slow.
           lines = DebugGsLs(os.path.join(
-              self.gs_base, 'R*-%s' % version) + '/').output.splitlines()
+              self.gs_base, 'R*-%s*' % version) + '/').output.splitlines()
+
+          # Verify we found at least one matching SDK.
           if not lines:
-            raise SDKError('Invalid version %s' % version)
+            raise MissingSDK(self.board, version)
+
+          # ls will return a list of files that match the specified version.
+          # Arbitrarily pick the first one we see.
           real_path = lines[0]
+
+          # Strip the base URL from the filename.
           if not real_path.startswith(self.gs_base):
             raise AssertionError('%s does not start with %s'
                                  % (real_path, self.gs_base))
           real_path = real_path[len(self.gs_base) + 1:]
+
+          # Verify that the returned version matches what we expect.
           full_version = real_path.partition('/')[0]
-          if not full_version.endswith(version):
+          if full_version.split('-')[1] != version:
             raise AssertionError('%s does not end with %s'
                                  % (full_version, version))
 
@@ -811,10 +851,6 @@ class ChromeSDKCommand(cros.CrosCommand):
                           chrome_src=self.options.chrome_src,
                           sdk_path=self.options.sdk_path,
                           silent=self.silent)
-
-    if not self.sdk.config['internal']:
-      cros_build_lib.Die('External boards are not supported due to '
-                         'http://crbug.com/236500')
 
     prepare_version = self.options.version
     if not prepare_version and not self.options.sdk_path:

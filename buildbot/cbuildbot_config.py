@@ -687,6 +687,7 @@ full = _config(
 
   usepkg_setup_board=False,
   usepkg_build_packages=False,
+  chrome_sdk=True,
   chroot_replace=True,
 
   quick_unit=False,
@@ -1655,6 +1656,7 @@ _firmware = _config(
   usepkg_build_packages=True,
   sync_chrome=False,
   build_tests=False,
+  chrome_sdk=False,
   unittests=False,
   vm_tests=None,
   hw_tests=[],

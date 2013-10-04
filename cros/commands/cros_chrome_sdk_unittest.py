@@ -359,15 +359,11 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
   FULL_VERSION = 'R55-%s' % VERSION
   BOARD = 'lumpy'
 
-  VERSION_BASE = ("gs://chromeos-image-archive/%s-release/%s"
-                  % (BOARD, FULL_VERSION))
-  FAKE_LS = """\
-%(base)s/UPLOADED
-%(base)s/au-generator.zip
-%(base)s/autotest.tar
-%(base)s/bootloader.tar.xz
-""" % {'base': VERSION_BASE}
+  VERSION_BASE = ('gs://chromeos-image-archive/%s-release/LATEST-%s'
+                  % (BOARD, VERSION))
 
+  CAT_ERROR = ('InvalidUriError: Attempt to get key for '
+               '%s failed.' % VERSION_BASE)
   LS_ERROR = 'CommandException: One or more URIs matched no objects.'
 
   def setUp(self):
@@ -435,36 +431,29 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
 
     self.sdk_mock.UnMockAttr('GetFullVersion')
     self.gs_mock.AddCmdResult(
-        partial_mock.ListRegex('ls .*/%s' % self.VERSION),
-        error=self.LS_ERROR, returncode=1)
-    self.gs_mock.AddCmdResult(
-        partial_mock.ListRegex('ls .*-%s' % self.VERSION),
-        output=self.FAKE_LS)
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
+        output=self.FULL_VERSION)
     self.assertEquals(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
     # Test that we access the cache on the next call, rather than checking GS.
     self.gs_mock.AddCmdResult(
-        partial_mock.ListRegex('ls .*/%s' % self.VERSION),
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         side_effect=RaiseException)
     self.assertEquals(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
 
-  def testBareVersion(self):
-    """Codepath where crbug.com/230190 has been fixed."""
-    self.sdk_mock.UnMockAttr('GetFullVersion')
-    self.gs_mock.AddCmdResult(partial_mock.ListRegex('ls .*/%s' % self.VERSION),
-                              output='results')
-    self.assertEquals(self.VERSION, self.sdk.GetFullVersion(self.VERSION))
-
   def testBadVersion(self):
     """We raise an exception for a bad version."""
     self.sdk_mock.UnMockAttr('GetFullVersion')
     self.gs_mock.AddCmdResult(
-        partial_mock.ListRegex('ls .*'),
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
+        output='', error=self.CAT_ERROR, returncode=1)
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('ls .*%s' % self.VERSION),
         output='', error=self.LS_ERROR, returncode=1)
-    self.assertRaises(cros_chrome_sdk.SDKError, self.sdk.GetFullVersion,
+    self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
                       self.VERSION)
 
   def testDefaultEnvBadBoard(self):
