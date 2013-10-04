@@ -162,6 +162,7 @@ void AutofillDialogControllerAndroid::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
+#if defined(ENABLE_AUTOFILL_DIALOG)
 // static
 base::WeakPtr<AutofillDialogController>
 AutofillDialogController::Create(
@@ -180,6 +181,7 @@ void AutofillDialogController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   AutofillDialogControllerAndroid::RegisterProfilePrefs(registry);
 }
+#endif  // defined(ENABLE_AUTOFILL_DIALOG)
 
 AutofillDialogControllerAndroid::~AutofillDialogControllerAndroid() {
   if (java_object_.is_null())
