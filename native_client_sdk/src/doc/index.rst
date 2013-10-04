@@ -37,6 +37,7 @@ Contents:
    community/middleware.rst
    peppercpp/index.rst
    reference/index.rst
+   reference/pnacl-bitcode-abi.rst
    reference/nacl-manifest-format.rst
    publications-and-presentations.rst
    faq.rst
