@@ -61,14 +61,14 @@ WebVector<WebElement> WebSelectElement::listItems() const
     return items;
 }
 
-WebSelectElement::WebSelectElement(const PassRefPtr<HTMLSelectElement>& elem)
-    : WebFormControlElement(elem)
+WebSelectElement::WebSelectElement(const PassRefPtr<HTMLSelectElement>& element)
+    : WebFormControlElement(element)
 {
 }
 
-WebSelectElement& WebSelectElement::operator=(const PassRefPtr<HTMLSelectElement>& elem)
+WebSelectElement& WebSelectElement::operator=(const PassRefPtr<HTMLSelectElement>& element)
 {
-    m_private = elem;
+    m_private = element;
     return *this;
 }
 
