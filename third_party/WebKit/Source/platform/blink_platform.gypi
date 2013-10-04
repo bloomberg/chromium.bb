@@ -50,6 +50,8 @@
       'transforms/TransformationMatrix.h',
       'text/BidiContext.cpp',
       'text/BidiContext.h',
+      'text/UnicodeRange.cpp',
+      'text/UnicodeRange.h',
       'Clock.cpp',
       'Clock.h',
       'ContentType.cpp',

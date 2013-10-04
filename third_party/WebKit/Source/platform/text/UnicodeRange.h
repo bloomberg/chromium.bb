@@ -32,9 +32,10 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef UnicodeRange_H
-#define UnicodeRange_H
+#ifndef UnicodeRange_h
+#define UnicodeRange_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
@@ -70,12 +71,12 @@ const unsigned char   cRangeMalayalam =  21;
 
 const unsigned char   cRangeSpecificItemNum = 22;
 
-//range/rangeSet grow to this place 22-29
+// range/rangeSet grow to this place 22-29
 
-const unsigned char   cRangeSetStart  =  30;    // range set definition starts from here
+const unsigned char   cRangeSetStart  =  30; // range set definition starts from here
 const unsigned char   cRangeSetLatin  =  30;
 const unsigned char   cRangeSetCJK    =  31;
-const unsigned char   cRangeSetEnd    =  31;   // range set definition ends here
+const unsigned char   cRangeSetEnd    =  31; // range set definition ends here
 
 // less frequently used range definition
 const unsigned char   cRangeSurrogate            = 32;
@@ -105,16 +106,14 @@ const unsigned char   cRangeYi                   = 55;
 const unsigned char   cRangeCombiningDiacriticalMarks = 56;
 const unsigned char   cRangeSpecials             = 57;
 
-const unsigned char   cRangeTableBase   = 128;    //values over 127 are reserved for internal use only
-const unsigned char   cRangeTertiaryTable  = 145; // leave room for 16 subtable
-                                            // indices (cRangeTableBase + 1 ..
-                                            // cRangeTableBase + 16)
+const unsigned char   cRangeTableBase   = 128; // values over 127 are reserved for internal use only
+const unsigned char   cRangeTertiaryTable  = 145; // leave room for 16 subtable indices (cRangeTableBase + 1 .. cRangeTableBase + 16)
 
 
 
-unsigned int findCharUnicodeRange(UChar32 ch);
-const char* langGroupFromUnicodeRange(unsigned char unicodeRange);
+PLATFORM_EXPORT unsigned findCharUnicodeRange(UChar32);
+PLATFORM_EXPORT const char* langGroupFromUnicodeRange(unsigned char unicodeRange);
 
 }
 
-#endif // UnicodeRange_H
+#endif // UnicodeRange_h

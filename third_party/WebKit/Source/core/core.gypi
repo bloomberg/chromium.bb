@@ -3176,7 +3176,6 @@
             'platform/text/TextEncodingDetector.h',
             'platform/text/TextEncodingDetectorICU.cpp',
             'platform/text/TextStream.cpp',
-            'platform/text/UnicodeRange.cpp',
             'platform/text/transcoder/FontTranscoder.cpp',
             'platform/text/transcoder/FontTranscoder.h',
             'platform/win/SystemInfo.cpp',

@@ -33,7 +33,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/UnicodeRange.h"
+#include "platform/text/UnicodeRange.h"
 
 namespace WebCore {
 
