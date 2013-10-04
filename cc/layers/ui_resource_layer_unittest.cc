@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layers/nine_patch_layer.h"
+#include "cc/layers/ui_resource_layer.h"
 
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/resources/prioritized_resource_manager.h"
@@ -37,9 +37,9 @@ class MockLayerTreeHost : public LayerTreeHost {
   }
 };
 
-class NinePatchLayerTest : public testing::Test {
+class UIResourceLayerTest : public testing::Test {
  public:
-  NinePatchLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+  UIResourceLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
   cc::Proxy* Proxy() const { return layer_tree_host_->proxy(); }
 
@@ -56,8 +56,38 @@ class NinePatchLayerTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
 };
 
-TEST_F(NinePatchLayerTest, SetLayerProperties) {
-  scoped_refptr<NinePatchLayer> test_layer = NinePatchLayer::Create();
+TEST_F(UIResourceLayerTest, SetBitmap) {
+  scoped_refptr<UIResourceLayer> test_layer = UIResourceLayer::Create();
+  ASSERT_TRUE(test_layer.get());
+  test_layer->SetIsDrawable(true);
+  test_layer->SetBounds(gfx::Size(100, 100));
+
+  layer_tree_host_->SetRootLayer(test_layer);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+  EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
+
+  layer_tree_host_->InitializeOutputSurfaceIfNeeded();
+
+  ResourceUpdateQueue queue;
+  OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+  test_layer->SavePaintProperties();
+  test_layer->Update(&queue, &occlusion_tracker);
+
+  EXPECT_FALSE(test_layer->DrawsContent());
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+  bitmap.allocPixels();
+  bitmap.setImmutable();
+
+  test_layer->SetBitmap(bitmap);
+  test_layer->Update(&queue, &occlusion_tracker);
+
+  EXPECT_TRUE(test_layer->DrawsContent());
+}
+
+TEST_F(UIResourceLayerTest, SetUIResourceId) {
+  scoped_refptr<UIResourceLayer> test_layer = UIResourceLayer::Create();
   ASSERT_TRUE(test_layer.get());
   test_layer->SetIsDrawable(true);
   test_layer->SetBounds(gfx::Size(100, 100));
@@ -82,11 +112,7 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
 
   scoped_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
       layer_tree_host_.get(), UIResourceBitmap(bitmap));
-  gfx::Rect aperture(5, 5, 1, 1);
-  bool fill_center = true;
-  test_layer->SetAperture(aperture);
   test_layer->SetUIResourceId(resource->id());
-  test_layer->SetFillCenter(fill_center);
   test_layer->Update(&queue, &occlusion_tracker);
 
   EXPECT_TRUE(test_layer->DrawsContent());

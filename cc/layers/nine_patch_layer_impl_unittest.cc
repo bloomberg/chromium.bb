@@ -9,7 +9,7 @@
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/test/fake_impl_proxy.h"
-#include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_ui_resource_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/mock_quad_culler.h"
@@ -22,40 +22,6 @@
 
 namespace cc {
 namespace {
-
-class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
- public:
-  explicit FakeUIResourceLayerTreeHostImpl(Proxy* proxy)
-      : FakeLayerTreeHostImpl(proxy), fake_next_resource_id_(1) {}
-
-  virtual void CreateUIResource(
-      UIResourceId uid,
-      const UIResourceBitmap& bitmap) OVERRIDE {
-    if (ResourceIdForUIResource(uid))
-      DeleteUIResource(uid);
-    fake_ui_resource_map_[uid] = fake_next_resource_id_;
-  }
-
-  virtual void DeleteUIResource(UIResourceId uid) OVERRIDE {
-    ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
-    if (id)
-      fake_ui_resource_map_.erase(uid);
-  }
-
-  virtual ResourceProvider::ResourceId ResourceIdForUIResource(
-      UIResourceId uid) const OVERRIDE {
-    UIResourceMap::const_iterator iter = fake_ui_resource_map_.find(uid);
-    if (iter != fake_ui_resource_map_.end())
-      return iter->second;
-    return 0;
-  }
-
- private:
-  ResourceProvider::ResourceId fake_next_resource_id_;
-  typedef base::hash_map<UIResourceId, ResourceProvider::ResourceId>
-      UIResourceMap;
-  UIResourceMap fake_ui_resource_map_;
-};
 
 gfx::Rect ToRoundedIntRect(gfx::RectF rect_f) {
   return gfx::Rect(gfx::ToRoundedInt(rect_f.x()),
@@ -97,8 +63,8 @@ void NinePatchLayerLayoutTest(gfx::Size bitmap_size,
 
   host_impl.CreateUIResource(uid, bitmap);
   layer->SetUIResourceId(uid);
-
-  layer->SetLayout(bitmap_size, aperture_rect, border, fill_center);
+  layer->SetImageBounds(bitmap_size);
+  layer->SetLayout(aperture_rect, border, fill_center);
   AppendQuadsData data;
   layer->AppendQuads(&quad_culler, &data);
 

@@ -399,6 +399,11 @@ class CC_EXPORT LayerTreeHostImpl
   virtual ResourceProvider::ResourceId ResourceIdForUIResource(
       UIResourceId uid) const;
 
+  struct UIResourceData {
+    ResourceProvider::ResourceId resource_id;
+    gfx::Size size;
+  };
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -484,7 +489,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   void MarkUIResourceNotEvicted(UIResourceId uid);
 
-  typedef base::hash_map<UIResourceId, ResourceProvider::ResourceId>
+  typedef base::hash_map<UIResourceId, UIResourceData>
       UIResourceMap;
   UIResourceMap ui_resource_map_;
 

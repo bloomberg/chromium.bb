@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/ui_resource_client.h"
 #include "ui/gfx/rect.h"
 
@@ -16,15 +17,11 @@ namespace cc {
 class LayerTreeHost;
 class ScopedUIResource;
 
-class CC_EXPORT NinePatchLayer : public Layer {
+class CC_EXPORT NinePatchLayer : public UIResourceLayer {
  public:
   static scoped_refptr<NinePatchLayer> Create();
 
-  virtual bool DrawsContent() const OVERRIDE;
-
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-
-  virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
 
   // |border| is the space around the center rectangular region in layer space
   // (known as aperture in image space).  |border.x()| and |border.y()| are the
@@ -39,29 +36,17 @@ class CC_EXPORT NinePatchLayer : public Layer {
   // on the edges of the layer. The corners are unscaled, the top and bottom
   // rects are x-stretched to fit, and the left and right rects are
   // y-stretched to fit.
-  void SetBitmap(const SkBitmap& skbitmap, gfx::Rect aperture);
-
-  // An alternative way of setting the resource to allow for sharing.
-  void SetUIResourceId(UIResourceId resource_id, gfx::Rect aperture);
+  void SetAperture(gfx::Rect aperture);
   void SetFillCenter(bool fill_center);
-
-  class UIResourceHolder {
-   public:
-    virtual UIResourceId id() = 0;
-    virtual ~UIResourceHolder();
-  };
 
  private:
   NinePatchLayer();
   virtual ~NinePatchLayer();
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
-  void RecreateUIResourceHolder();
 
   gfx::Rect border_;
   bool fill_center_;
-  scoped_ptr<UIResourceHolder> ui_resource_holder_;
-  SkBitmap bitmap_;
 
   // The transparent center region that shows the parent layer's contents in
   // image space.

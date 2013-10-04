@@ -21,7 +21,14 @@ class WebNinePatchLayerImpl : public WebKit::WebNinePatchLayer {
 
   // WebKit::WebNinePatchLayer implementation.
   virtual WebKit::WebLayer* layer();
-  virtual void setBitmap(SkBitmap, const WebKit::WebRect& aperture);
+
+  // TODO(ccameron): Remove setBitmap(SkBitmap, WebKit::WebRect) in favor of
+  // setBitmap(), setAperture(), and setBorder();
+  virtual void setBitmap(SkBitmap bitmap, const WebKit::WebRect& aperture);
+  virtual void setBitmap(SkBitmap bitmap);
+  virtual void setAperture(const WebKit::WebRect& aperture);
+  virtual void setBorder(const WebKit::WebRect& border);
+  virtual void setFillCenter(bool fill_center);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

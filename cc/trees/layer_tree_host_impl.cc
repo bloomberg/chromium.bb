@@ -2745,7 +2745,11 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       ResourceProvider::TextureUsageAny,
       resource_provider_->best_texture_format());
 
-  ui_resource_map_[uid] = id;
+  UIResourceData data;
+  data.resource_id = id;
+  data.size = bitmap.GetSize();
+
+  ui_resource_map_[uid] = data;
 
   AutoLockUIResourceBitmap bitmap_lock(bitmap);
   resource_provider_->SetPixels(id,
@@ -2773,7 +2777,7 @@ void LayerTreeHostImpl::EvictAllUIResources() {
       iter != ui_resource_map_.end();
       ++iter) {
     evicted_ui_resources_.insert(iter->first);
-    resource_provider_->DeleteResource(iter->second);
+    resource_provider_->DeleteResource(iter->second.resource_id);
   }
   ui_resource_map_.clear();
 
@@ -2786,7 +2790,7 @@ ResourceProvider::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(
     UIResourceId uid) const {
   UIResourceMap::const_iterator iter = ui_resource_map_.find(uid);
   if (iter != ui_resource_map_.end())
-    return iter->second;
+    return iter->second.resource_id;
   return 0;
 }
 

@@ -9,6 +9,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/ui_resource_layer_impl.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/ui_resource_client.h"
 #include "ui/gfx/rect.h"
@@ -20,16 +21,13 @@ class DictionaryValue;
 
 namespace cc {
 
-class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
+class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
  public:
   static scoped_ptr<NinePatchLayerImpl> Create(LayerTreeImpl* tree_impl,
                                                int id) {
     return make_scoped_ptr(new NinePatchLayerImpl(tree_impl, id));
   }
   virtual ~NinePatchLayerImpl();
-
-
-  void SetUIResourceId(UIResourceId uid);
 
   // The bitmap stretches out the bounds of the layer.  The following picture
   // illustrates the parameters associated with the dimensions.
@@ -55,8 +53,7 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
   // |image_aperture| = (X, Y, P, Q)
   // |border| = (A, C, A + B, C + D)
   // |fill_center| indicates whether to draw the center quad or not.
-  void SetLayout(gfx::Size image_bounds,
-                 gfx::Rect image_aperture,
+  void SetLayout(gfx::Rect image_aperture,
                  gfx::Rect border,
                  bool fill_center);
 
@@ -64,11 +61,8 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
       OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
-  virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
 
   virtual base::DictionaryValue* LayerTreeAsJson() const OVERRIDE;
 
@@ -78,8 +72,7 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
  private:
   virtual const char* LayerTypeAsString() const OVERRIDE;
 
-  // The size of the NinePatch bitmap in pixels.
-  gfx::Size image_bounds_;
+  void CheckGeometryLimitations();
 
   // The transparent center region that shows the parent layer's contents in
   // image space.
@@ -89,8 +82,6 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
   gfx::Rect border_;
 
   bool fill_center_;
-
-  UIResourceId ui_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NinePatchLayerImpl);
 };

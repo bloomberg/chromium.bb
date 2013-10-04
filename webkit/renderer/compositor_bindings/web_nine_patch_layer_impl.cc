@@ -23,8 +23,35 @@ WebKit::WebLayer* WebNinePatchLayerImpl::layer() { return layer_.get(); }
 
 void WebNinePatchLayerImpl::setBitmap(SkBitmap bitmap,
                                       const WebKit::WebRect& aperture) {
-  static_cast<cc::NinePatchLayer*>(layer_->layer())->SetBitmap(
-      bitmap, gfx::Rect(aperture));
+  setBitmap(bitmap);
+  setAperture(aperture);
+  setBorder(WebKit::WebRect(aperture.x, aperture.y,
+                            bitmap.width() - aperture.width,
+                            bitmap.height() - aperture.height));
+}
+
+void WebNinePatchLayerImpl::setBitmap(SkBitmap bitmap) {
+  cc::NinePatchLayer* nine_patch =
+      static_cast<cc::NinePatchLayer*>(layer_->layer());
+  nine_patch->SetBitmap(bitmap);
+}
+
+void WebNinePatchLayerImpl::setAperture(const WebKit::WebRect& aperture) {
+  cc::NinePatchLayer* nine_patch =
+      static_cast<cc::NinePatchLayer*>(layer_->layer());
+  nine_patch->SetAperture(gfx::Rect(aperture));
+}
+
+void WebNinePatchLayerImpl::setBorder(const WebKit::WebRect& border) {
+  cc::NinePatchLayer* nine_patch =
+      static_cast<cc::NinePatchLayer*>(layer_->layer());
+  nine_patch->SetBorder(gfx::Rect(border));
+}
+
+void WebNinePatchLayerImpl::setFillCenter(bool fill_center) {
+  cc::NinePatchLayer* nine_patch =
+      static_cast<cc::NinePatchLayer*>(layer_->layer());
+  nine_patch->SetFillCenter(fill_center);
 }
 
 }  // namespace webkit

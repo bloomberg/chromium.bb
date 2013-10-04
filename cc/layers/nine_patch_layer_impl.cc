@@ -15,15 +15,10 @@
 namespace cc {
 
 NinePatchLayerImpl::NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id),
-      fill_center_(false),
-      ui_resource_id_(0) {}
+    : UIResourceLayerImpl(tree_impl, id),
+      fill_center_(false) {}
 
 NinePatchLayerImpl::~NinePatchLayerImpl() {}
-
-ResourceProvider::ResourceId NinePatchLayerImpl::ContentsResourceId() const {
-  return 0;
-}
 
 scoped_ptr<LayerImpl> NinePatchLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
@@ -31,11 +26,10 @@ scoped_ptr<LayerImpl> NinePatchLayerImpl::CreateLayerImpl(
 }
 
 void NinePatchLayerImpl::PushPropertiesTo(LayerImpl* layer) {
-  LayerImpl::PushPropertiesTo(layer);
+  UIResourceLayerImpl::PushPropertiesTo(layer);
   NinePatchLayerImpl* layer_impl = static_cast<NinePatchLayerImpl*>(layer);
 
-  layer_impl->SetUIResourceId(ui_resource_id_);
-  layer_impl->SetLayout(image_bounds_, image_aperture_, border_, fill_center_);
+  layer_impl->SetLayout(image_aperture_, border_, fill_center_);
 }
 
 static gfx::RectF NormalizedRect(float x,
@@ -50,54 +44,17 @@ static gfx::RectF NormalizedRect(float x,
                     height / total_height);
 }
 
-void NinePatchLayerImpl::SetUIResourceId(UIResourceId uid) {
-  if (uid == ui_resource_id_)
-    return;
-  ui_resource_id_ = uid;
-  NoteLayerPropertyChanged();
-}
-
-void NinePatchLayerImpl::SetLayout(gfx::Size image_bounds,
-                                   gfx::Rect aperture,
+void NinePatchLayerImpl::SetLayout(gfx::Rect aperture,
                                    gfx::Rect border,
                                    bool fill_center) {
   // This check imposes an ordering on the call sequence.  An UIResource must
   // exist before SetLayout can be called.
   DCHECK(ui_resource_id_);
 
-  // TODO(ccameron): the following "greater than or equal to" (GE) checks should
-  // be greater than (GT) to avoid degenerate nine-patches.  The relaxed
-  // condition "equal to" is a workaround for the overhang shadow use case and
-  // should be investigated further.
-
-  // |border| is in layer space.  It cannot exceed the bounds of the layer.
-  DCHECK(!border.size().IsEmpty());
-  DCHECK_GE(bounds().width(), border.width());
-  DCHECK_GE(bounds().height(), border.height());
-
-  // Sanity Check on |border|
-  DCHECK_LT(border.x(), border.width());
-  DCHECK_LT(border.y(), border.height());
-  DCHECK_GE(border.x(), 0);
-  DCHECK_GE(border.y(), 0);
-
-  // |aperture| is in image space.  It cannot exceed the bounds of the bitmap.
-  DCHECK(!aperture.size().IsEmpty());
-  DCHECK(gfx::Rect(image_bounds.width(), image_bounds.height())
-             .Contains(aperture));
-
-  // Avoid the degenerate cases where the aperture touches the edge of the
-  // image.
-  DCHECK_LT(aperture.width(), image_bounds.width() - 1);
-  DCHECK_LT(aperture.height(), image_bounds.height() - 1);
-  DCHECK_GT(aperture.x(), 0);
-  DCHECK_GT(aperture.y(), 0);
-
-  if (image_bounds_ == image_bounds && image_aperture_ == aperture &&
+  if (image_aperture_ == aperture &&
       border_ == border && fill_center_ == fill_center)
     return;
 
-  image_bounds_ = image_bounds;
   image_aperture_ = aperture;
   border_ = border;
   fill_center_ = fill_center;
@@ -105,15 +62,39 @@ void NinePatchLayerImpl::SetLayout(gfx::Size image_bounds,
   NoteLayerPropertyChanged();
 }
 
-bool NinePatchLayerImpl::WillDraw(DrawMode draw_mode,
-                                  ResourceProvider* resource_provider) {
-  if (!ui_resource_id_ || draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
-    return false;
-  return LayerImpl::WillDraw(draw_mode, resource_provider);
+void NinePatchLayerImpl::CheckGeometryLimitations() {
+  // TODO(ccameron): the following "greater than or equal to" (GE) checks should
+  // be greater than (GT) to avoid degenerate nine-patches.  The relaxed
+  // condition "equal to" is a workaround for the overhang shadow use case and
+  // should be investigated further.
+
+  // |border| is in layer space.  It cannot exceed the bounds of the layer.
+  DCHECK(!border_.size().IsEmpty());
+  DCHECK_GE(bounds().width(), border_.width());
+  DCHECK_GE(bounds().height(), border_.height());
+
+  // Sanity Check on |border|
+  DCHECK_LT(border_.x(), border_.width());
+  DCHECK_LT(border_.y(), border_.height());
+  DCHECK_GE(border_.x(), 0);
+  DCHECK_GE(border_.y(), 0);
+
+  // |aperture| is in image space.  It cannot exceed the bounds of the bitmap.
+  DCHECK(!image_aperture_.size().IsEmpty());
+  DCHECK(gfx::Rect(image_bounds_.width(), image_bounds_.height())
+             .Contains(image_aperture_));
+
+  // Avoid the degenerate cases where the aperture touches the edge of the
+  // image.
+  DCHECK_LT(image_aperture_.width(), image_bounds_.width() - 1);
+  DCHECK_LT(image_aperture_.height(), image_bounds_.height() - 1);
+  DCHECK_GT(image_aperture_.x(), 0);
+  DCHECK_GT(image_aperture_.y(), 0);
 }
 
 void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                                      AppendQuadsData* append_quads_data) {
+  CheckGeometryLimitations();
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
