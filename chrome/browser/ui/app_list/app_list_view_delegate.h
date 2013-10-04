@@ -63,8 +63,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
-  virtual void ActivateAppListItem(app_list::AppListItemModel* item,
-                                   int event_flags) OVERRIDE;
   virtual void StartSearch() OVERRIDE;
   virtual void StopSearch() OVERRIDE;
   virtual void OpenSearchResult(app_list::SearchResult* result,

@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -382,7 +383,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   for (size_t i = 0; i < [items_ count]; ++i) {
     AppsGridViewItem* item = [self itemAtIndex:i];
     if ([[item button] isEqual:sender])
-      delegate_->ActivateAppListItem([item model], 0);
+      [item model]->Activate(0);
   }
 }
 

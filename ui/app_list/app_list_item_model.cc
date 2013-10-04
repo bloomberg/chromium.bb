@@ -72,6 +72,9 @@ void AppListItemModel::RemoveObserver(AppListItemModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void AppListItemModel::Activate(int event_flags) {
+}
+
 ui::MenuModel* AppListItemModel::GetContextMenuModel() {
   return NULL;
 }

@@ -141,7 +141,6 @@
         'browser/ui/app_list/app_list_view_delegate.h',
         'browser/ui/app_list/apps_model_builder.cc',
         'browser/ui/app_list/apps_model_builder.h',
-        'browser/ui/app_list/chrome_app_list_item.h',
         'browser/ui/app_list/chrome_signin_delegate.cc',
         'browser/ui/app_list/chrome_signin_delegate.h',
         'browser/ui/app_list/extension_app_item.cc',

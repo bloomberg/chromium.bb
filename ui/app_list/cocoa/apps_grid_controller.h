@@ -72,8 +72,7 @@ APP_LIST_EXPORT
 
 - (size_t)visiblePage;
 
-// Calls delegate_->ActivateAppListItem for the currently selected item by
-// simulating a click.
+// Calls item->Activate for the currently selected item by simulating a click.
 - (void)activateSelection;
 
 // Return the number of pages of icons in the grid.

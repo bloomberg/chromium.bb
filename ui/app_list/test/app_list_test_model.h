@@ -42,7 +42,17 @@ class AppListTestModel : public AppListModel {
   // Call SetHighlighted on the specified item.
   void HighlightItemAt(int index);
 
+  int activate_count() { return activate_count_; }
+  AppListItemModel* last_activated() { return last_activated_; }
+
  private:
+  class AppListTestItemModel;
+
+  void ItemActivated(AppListTestItemModel* item);
+
+  int activate_count_;
+  AppListItemModel* last_activated_;
+
   DISALLOW_COPY_AND_ASSIGN(AppListTestModel);
 };
 

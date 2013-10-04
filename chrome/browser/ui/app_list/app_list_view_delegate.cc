@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/apps_model_builder.h"
-#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -162,13 +161,6 @@ void AppListViewDelegate::InitModel(app_list::AppListModel* model) {
 
 app_list::SigninDelegate* AppListViewDelegate::GetSigninDelegate() {
   return &signin_delegate_;
-}
-
-void AppListViewDelegate::ActivateAppListItem(
-    app_list::AppListItemModel* item,
-    int event_flags) {
-  content::RecordAction(content::UserMetricsAction("AppList_ClickOnApp"));
-  static_cast<ChromeAppListItem*>(item)->Activate(event_flags);
 }
 
 void AppListViewDelegate::GetShortcutPathForApp(

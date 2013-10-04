@@ -190,8 +190,7 @@ void AppListMainView::OnItemIconLoaded(IconLoader* loader) {
 }
 
 void AppListMainView::ActivateApp(AppListItemModel* item, int event_flags) {
-  if (delegate_)
-    delegate_->ActivateAppListItem(item, event_flags);
+  item->Activate(event_flags);
 }
 
 void AppListMainView::GetShortcutPathForApp(

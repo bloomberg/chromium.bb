@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -71,8 +72,7 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                    const std::string& extension_name,
                                    const gfx::ImageSkia& installing_icon,
                                    bool is_platform_app)
-    : ChromeAppListItem(TYPE_APP),
-      profile_(profile),
+    : profile_(profile),
       extension_id_(extension_id),
       controller_(controller),
       extension_name_(extension_name),
@@ -263,6 +263,7 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (RunExtensionEnableFlow())
     return;
 
+  content::RecordAction(content::UserMetricsAction("AppList_ClickOnApp"));
   CoreAppLauncherHandler::RecordAppListMainLaunch(extension);
   controller_->ActivateApp(profile_,
                            extension,

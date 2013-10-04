@@ -52,10 +52,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) = 0;
 
-  // Invoked when an AppListeItemModelView is activated by click or enter key.
-  virtual void ActivateAppListItem(AppListItemModel* item,
-                                   int event_flags) = 0;
-
   // Invoked to start a new search. Delegate collects query input from
   // SearchBoxModel and populates SearchResults. Both models are sub models
   // of AppListModel.

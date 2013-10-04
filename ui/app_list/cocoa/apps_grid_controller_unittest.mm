@@ -209,8 +209,9 @@ TEST_F(AppsGridControllerTest, DISABLED_SingleEntryModel) {
   // Launch the item.
   SimulateClick(subview);
   SinkEvents();
-  EXPECT_EQ(1, delegate()->activate_count());
-  EXPECT_EQ(std::string("Item 0"), delegate()->last_activated()->title());
+  EXPECT_EQ(1, model()->activate_count());
+  ASSERT_TRUE(model()->last_activated());
+  EXPECT_EQ(std::string("Item 0"), model()->last_activated()->title());
 }
 
 // Test activating an item on the second page (the 17th item).
@@ -227,8 +228,9 @@ TEST_F(AppsGridControllerTest, DISABLED_TwoPageModel) {
   // Launch the item.
   SimulateClick(subview);
   SinkEvents();
-  EXPECT_EQ(1, delegate()->activate_count());
-  EXPECT_EQ(std::string("Item 16"), delegate()->last_activated()->title());
+  EXPECT_EQ(1, model()->activate_count());
+  ASSERT_TRUE(model()->last_activated());
+  EXPECT_EQ(std::string("Item 16"), model()->last_activated()->title());
 }
 
 // Test setModel.
@@ -315,8 +317,9 @@ TEST_F(AppsGridControllerTest, FirstPageKeyboardNavigation) {
   SimulateKeyAction(@selector(moveRight:));
   EXPECT_EQ(2u, [apps_grid_controller_ selectedItemIndex]);
   SimulateKeyAction(@selector(insertNewline:));
-  EXPECT_EQ(1, delegate()->activate_count());
-  EXPECT_EQ(std::string("Item 2"), delegate()->last_activated()->title());
+  EXPECT_EQ(1, model()->activate_count());
+  ASSERT_TRUE(model()->last_activated());
+  EXPECT_EQ(std::string("Item 2"), model()->last_activated()->title());
 }
 
 // Tests keyboard navigation across pages.

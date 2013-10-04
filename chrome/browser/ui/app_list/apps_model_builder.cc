@@ -308,11 +308,7 @@ void AppsModelBuilder::UpdateHighlight() {
 
 ExtensionAppItem* AppsModelBuilder::GetAppAt(size_t index) {
   DCHECK_LT(index, model_->item_count());
-  ChromeAppListItem* item =
-      static_cast<ChromeAppListItem*>(model_->GetItemAt(index));
-  DCHECK_EQ(item->type(), ChromeAppListItem::TYPE_APP);
-
-  return static_cast<ExtensionAppItem*>(item);
+  return static_cast<ExtensionAppItem*>(model_->GetItemAt(index));
 }
 
 void AppsModelBuilder::ListItemsAdded(size_t start, size_t count) {

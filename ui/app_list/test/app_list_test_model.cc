@@ -10,7 +10,25 @@
 namespace app_list {
 namespace test {
 
-AppListTestModel::AppListTestModel() {
+class AppListTestModel::AppListTestItemModel : public AppListItemModel {
+ public:
+  explicit AppListTestItemModel(AppListTestModel* model)
+      : model_(model) {
+  }
+  virtual ~AppListTestItemModel() {}
+
+  virtual void Activate(int event_flags) OVERRIDE {
+    model_->ItemActivated(this);
+  }
+
+ private:
+  AppListTestModel* model_;
+  DISALLOW_COPY_AND_ASSIGN(AppListTestItemModel);
+};
+
+AppListTestModel::AppListTestModel()
+    : activate_count_(0),
+      last_activated_(NULL) {
   SetSignedIn(true);
 }
 
@@ -52,6 +70,11 @@ void AppListTestModel::AddItem(const std::string& title,
 void AppListTestModel::HighlightItemAt(int index) {
   AppListItemModel* item = apps()->GetItemAt(index);
   item->SetHighlighted(true);
+}
+
+void AppListTestModel::ItemActivated(AppListTestItemModel* item) {
+  last_activated_ = item;
+  ++activate_count_;
 }
 
 }  // namespace test

@@ -99,7 +99,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
     }
   }
 
-  static void Activate(Type type, int event_flags) {
+  static void ActivateItem(Type type, int event_flags) {
      switch (type) {
       case TOPLEVEL_WINDOW: {
         ToplevelWindow::CreateParams params;
@@ -130,8 +130,9 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
     }
   }
 
-  void Activate(int event_flags) {
-    Activate(type_, event_flags);
+  // AppListItemModel
+  virtual void Activate(int event_flags) OVERRIDE {
+    ActivateItem(type_, event_flags);
   }
 
  private:
@@ -240,16 +241,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE {
   }
 
-  virtual void ActivateAppListItem(app_list::AppListItemModel* item,
-                                   int event_flags) OVERRIDE {
-    static_cast<WindowTypeLauncherItem*>(item)->Activate(event_flags);
-  }
-
   virtual void OpenSearchResult(app_list::SearchResult* result,
                                 int event_flags) OVERRIDE {
     const ExampleSearchResult* example_result =
         static_cast<const ExampleSearchResult*>(result);
-    WindowTypeLauncherItem::Activate(example_result->type(), event_flags);
+    WindowTypeLauncherItem::ActivateItem(example_result->type(), event_flags);
   }
 
   virtual void InvokeSearchResultAction(app_list::SearchResult* result,

@@ -18,9 +18,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   AppListTestViewDelegate();
   virtual ~AppListTestViewDelegate();
 
-  int activate_count() { return activate_count_; }
   int dismiss_count() { return dismiss_count_; }
-  AppListItemModel* last_activated() { return last_activated_; }
   void set_test_signin_delegate(SigninDelegate* signin_delegate) {
     test_signin_delegate_ = signin_delegate;
   }
@@ -32,8 +30,6 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
-  virtual void ActivateAppListItem(AppListItemModel* item,
-                                   int event_flags) OVERRIDE;
   virtual void StartSearch() OVERRIDE {}
   virtual void StopSearch() OVERRIDE {}
   virtual void OpenSearchResult(SearchResult* result,
@@ -52,9 +48,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
 
  private:
-  int activate_count_;
   int dismiss_count_;
-  AppListItemModel* last_activated_;
   SigninDelegate* test_signin_delegate_;  // Weak. Owned by test.
 };
 
