@@ -27,9 +27,9 @@
 
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioDestinationNode.h"
+#include "public/platform/WebThread.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
 
 namespace WebCore {
 
@@ -56,6 +56,9 @@ public:
     virtual float sampleRate()  const { return m_renderTarget->sampleRate(); }
 
 private:
+    class OfflineRenderingTask;
+    friend class OfflineRenderingTask;
+
     OfflineAudioDestinationNode(AudioContext*, AudioBuffer* renderTarget);
 
     // This AudioNode renders into this AudioBuffer.
@@ -65,9 +68,8 @@ private:
     RefPtr<AudioBus> m_renderBus;
 
     // Rendering thread.
-    volatile ThreadIdentifier m_renderThread;
+    OwnPtr<WebKit::WebThread> m_renderThread;
     bool m_startedRendering;
-    static void offlineRenderEntry(void* threadData);
     void offlineRender();
 
     // For completion callback on main thread.
