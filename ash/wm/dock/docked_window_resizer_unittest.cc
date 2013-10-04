@@ -419,14 +419,39 @@ TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
             window->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
   // Minimize the window, it should be hidden.
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  window_state->Minimize();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(window->IsVisible());
+  EXPECT_TRUE(window_state->IsMinimized());
   // Restore the window; window should be visible.
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window_state->Restore();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(window_state->IsNormalShowState());
+}
+
+// Maximize a docked window and check that it is maximized and no longer docked.
+TEST_P(DockedWindowResizerTest, AttachMaximize) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
+
+  // The window should be attached and snapped to the right edge.
+  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+            window->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  // Maximize the window, it should get undocked and maximized in a desktop.
+  window_state->Maximize();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
 }
 
 // Dock two windows, undock one, check that the other one is still docked.

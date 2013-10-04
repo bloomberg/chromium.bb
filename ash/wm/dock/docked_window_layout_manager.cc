@@ -474,16 +474,34 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
 void DockedWindowLayoutManager::OnWindowShowTypeChanged(
     wm::WindowState* window_state,
     wm::WindowShowType old_type) {
-  if (IsPopupOrTransient(window_state->window()))
+  aura::Window* window = window_state->window();
+  if (IsPopupOrTransient(window))
     return;
   // The window property will still be set, but no actual change will occur
   // until OnFullscreenStateChange is called when exiting fullscreen.
   if (in_fullscreen_)
     return;
-  if (window_state->IsMinimized())
+  if (window_state->IsMinimized()) {
     MinimizeDockedWindow(window_state);
-  else
+  } else if (window_state->IsMaximizedOrFullscreen()) {
+    // Reparenting changes the source bounds for the animation if a window is
+    // visible so hide it here and show later when it is already in the desktop.
+    if (window_state->IsMaximized())
+      window->Hide();
+    gfx::Rect previous_bounds = window->bounds();
+    aura::Window* previous_parent = window->parent();
+    window->SetDefaultParentByRootWindow(window->GetRootWindow(), gfx::Rect());
+    if (window->parent() != previous_parent)
+      wm::ReparentTransientChildrenOfChild(window->parent(), window);
+    if (window_state->IsMaximized()) {
+      // Animate maximize animation from previous window bounds.
+      SetChildBoundsDirect(window, previous_bounds);
+      window->Show();
+    }
+    UpdateDockBounds();
+  } else {
     RestoreDockedWindow(window_state);
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
