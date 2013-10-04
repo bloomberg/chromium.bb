@@ -233,6 +233,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyRight:
         style->setRight(animatableValueToLength(value, state));
         return;
+    case CSSPropertyStopOpacity:
+        style->setStopOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
+        return;
     case CSSPropertyStrokeOpacity:
         style->setStrokeOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;

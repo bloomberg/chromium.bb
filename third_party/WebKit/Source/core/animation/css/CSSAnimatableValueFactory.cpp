@@ -218,6 +218,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->paddingTop(), style);
     case CSSPropertyRight:
         return createFromLength(style->right(), style);
+    case CSSPropertyStopOpacity:
+        return createFromDouble(style->stopOpacity());
     case CSSPropertyStrokeOpacity:
         return createFromDouble(style->strokeOpacity());
     case CSSPropertyTextDecorationColor:

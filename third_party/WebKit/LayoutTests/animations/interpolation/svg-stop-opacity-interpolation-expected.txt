@@ -1,0 +1,8 @@
+     
+FAIL: stop-opacity from [0] to [1] was [-0.4000000059604645] at -0.4, expected [0]
+PASS: stop-opacity from [0] to [1] was [0] at 0
+PASS: stop-opacity from [0] to [1] was [0.2] at 0.2
+PASS: stop-opacity from [0] to [1] was [0.6] at 0.6
+PASS: stop-opacity from [0] to [1] was [1] at 1
+FAIL: stop-opacity from [0] to [1] was [1.5] at 1.5, expected [1]
+
