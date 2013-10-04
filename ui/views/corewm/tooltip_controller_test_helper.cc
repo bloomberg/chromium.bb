@@ -48,14 +48,6 @@ bool TooltipControllerTestHelper::IsTooltipVisible() {
   return controller_->IsTooltipVisible();
 }
 
-// static
-void TooltipControllerTestHelper::TrimTooltipToFit(int max_width,
-                                                   string16* text,
-                                                   int* width,
-                                                   int* line_count) {
-  TooltipController::TrimTooltipToFit(max_width, text, width, line_count);
-}
-
 TooltipTestView::TooltipTestView() {
 }
 

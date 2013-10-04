@@ -24,6 +24,8 @@ class Window;
 namespace views {
 namespace corewm {
 
+class Tooltip;
+
 namespace test {
 class TooltipControllerTestHelper;
 }  // namespace test
@@ -56,24 +58,6 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
  private:
   friend class test::TooltipControllerTestHelper;
 
-  class Tooltip;
-
-  // Returns the max width of the tooltip when shown at the specified location.
-  int GetMaxWidth(const gfx::Point& location) const;
-
-  // Returns the bounds to fit the tooltip in.
-  gfx::Rect GetBoundsForTooltip(const gfx::Point& origin) const;
-
-  // Trims the tooltip to fit in the width |max_width|, setting |text| to the
-  // clipped result, |width| to the width (in pixels) of the clipped text
-  // and |line_count| to the number of lines of text in the tooltip. |x| and |y|
-  // give the location of the tooltip in screen coordinates. |max_width| comes
-  // from GetMaxWidth().
-  static void TrimTooltipToFit(int max_width,
-                               string16* text,
-                               int* width,
-                               int* line_count);
-
   void TooltipTimerFired();
   void TooltipShownTimerFired();
 
@@ -98,11 +82,11 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
   const gfx::ScreenType screen_type_;
 
   aura::Window* tooltip_window_;
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   // These fields are for tracking state when the user presses a mouse button.
   aura::Window* tooltip_window_at_mouse_press_;
-  string16 tooltip_text_at_mouse_press_;
+  base::string16 tooltip_text_at_mouse_press_;
   bool mouse_pressed_;
 
   scoped_ptr<Tooltip> tooltip_;

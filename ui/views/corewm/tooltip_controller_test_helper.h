@@ -38,10 +38,6 @@ class TooltipControllerTestHelper {
   void FireTooltipShownTimer();
   bool IsTooltipShownTimerRunning();
   bool IsTooltipVisible();
-  static void TrimTooltipToFit(int max_width,
-                               string16* text,
-                               int* width,
-                               int* line_count);
 
  private:
   TooltipController* controller_;
