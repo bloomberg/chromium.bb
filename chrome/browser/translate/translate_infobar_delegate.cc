@@ -129,7 +129,11 @@ void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
-  if (!web_contents()->GetBrowserContext()->IsOffTheRecord()) {
+  // TODO(miguelg) switch this back to just calling web_contents()
+  // once we've diagnosed crbug/283720
+  content::WebContents* contents = owner()->web_contents();
+  content::BrowserContext* context = contents->GetBrowserContext();
+  if (!context->IsOffTheRecord()) {
     prefs_.ResetTranslationAcceptedCount(original_language_code());
     prefs_.IncrementTranslationDeniedCount(original_language_code());
   }
