@@ -186,12 +186,23 @@ cr.define('options', function() {
     /**
      * Reveals the password for a saved password entry. This is called by the
      * backend after it has authenticated the user.
-     * @param {number} index The index of the entry.
+     * @param {number} index The original index of the entry in the model.
      * @param {string} password The saved password.
      */
     showPassword_: function(index, password) {
-      // Update the data model.
       var model = this.savedPasswordsList_.dataModel;
+      if (this.lastQuery_) {
+        // When a filter is active, |index| does not represent the current
+        // index in the model, but each entry stores its original index, so
+        // we can find the item using a linear search.
+        for (var i = 0; i < model.length; ++i) {
+          if (model.item(i)[3] == index) {
+            index = i;
+            break;
+          }
+        }
+      }
+      // Update the data model.
       model.item(index)[2] = password;
       model.updateIndex(index);
 

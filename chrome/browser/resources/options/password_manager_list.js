@@ -125,12 +125,13 @@ cr.define('options.passwordManager', function() {
     },
 
     /**
-     * Get the index of this item in the list.
+     * Get the original index of this item in the data model.
      * @return {number} The index.
      * @private
      */
-    getIndex_: function() {
-      return this.dataModel.indexOf(this.dataItem);
+    getOriginalIndex_: function() {
+      var index = this.dataItem[3];
+      return index ? index : this.dataModel.indexOf(this.dataItem);
     },
 
     /**
@@ -141,7 +142,7 @@ cr.define('options.passwordManager', function() {
     onClick_: function(event) {
       if (this.passwordField.type == 'password') {
         // After the user is authenticated, showPassword() will be called.
-        PasswordManager.requestShowPassword(this.getIndex_());
+        PasswordManager.requestShowPassword(this.getOriginalIndex_());
       } else {
         this.hidePassword();
       }
