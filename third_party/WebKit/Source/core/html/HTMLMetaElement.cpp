@@ -211,12 +211,8 @@ float HTMLMetaElement::parseViewportValueAsZoom(const String& keyString, const S
     if (value > 10.0)
         reportViewportWarning(MaximumScaleTooLargeError, String(), String());
 
-    if (!value && document().page() && document().page()->settings().viewportMetaZeroValuesQuirk()) {
-        if (keyString == "minimum-scale" || keyString == "maximum-scale")
-            return ViewportDescription::ValueAuto;
-        if (keyString == "initial-scale")
-            return value;
-    }
+    if (!value && document().page() && document().page()->settings().viewportMetaZeroValuesQuirk())
+        return ViewportDescription::ValueAuto;
 
     return clampScaleValue(value);
 }
@@ -367,13 +363,6 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
             newDescriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
             newDescriptionFromLegacyTag.maxWidth = Length(ExtendToZoom);
         }
-    }
-
-    if (settings.viewportMetaZeroValuesQuirk()
-        && newDescriptionFromLegacyTag.type == ViewportDescription::ViewportMeta
-        && newDescriptionFromLegacyTag.maxWidth.type() == ViewportPercentageWidth
-        && !newDescriptionFromLegacyTag.zoom) {
-        newDescriptionFromLegacyTag.zoom = 1.0;
     }
 
     document().setViewportDescription(newDescriptionFromLegacyTag);
