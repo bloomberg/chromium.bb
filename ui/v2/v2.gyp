@@ -52,6 +52,7 @@
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:test_support_base',
+        '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../gfx/gfx.gyp:gfx',
         'v2',

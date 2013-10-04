@@ -9,16 +9,22 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/gfx/rect.h"
 #include "ui/v2/public/layout.h"
 #include "ui/v2/public/painter.h"
 #include "ui/v2/public/v2_export.h"
+
+namespace ui {
+class Layer;
+}
 
 namespace v2 {
 
 class Layout;
 class Painter;
 class ViewObserver;
+class ViewLayerOwner;
 
 class V2_EXPORT View /* : public EventTarget */ {
  public:
@@ -70,8 +76,16 @@ class V2_EXPORT View /* : public EventTarget */ {
   void StackChildAbove(View* child, View* other);
   void StackChildBelow(View* child, View* other);
 
+  // Layer.
+
+  inline const ui::Layer* layer() const;
+  inline ui::Layer* layer();
+  bool HasLayer() const;
+  void CreateLayer(ui::LayerType layer_type);
+  void DestroyLayer();
+  ui::Layer* AcquireLayer();
+
  private:
-  friend class Layout;
   friend class ViewPrivate;
 
   // Disposition attributes.
@@ -85,6 +99,9 @@ class V2_EXPORT View /* : public EventTarget */ {
   bool owned_by_parent_;
   View* parent_;
   Children children_;
+
+  // Layer.
+  scoped_ptr<ViewLayerOwner> layer_owner_;
 
   ObserverList<ViewObserver> observers_;
 

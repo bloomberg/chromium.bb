@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/v2/public/view_observer.h"
 #include "ui/v2/src/view_private.h"
 
@@ -112,6 +114,34 @@ void RemoveChildImpl(View* child, View::Children* children) {
     ViewPrivate(child).ClearParent();
   }
 }
+
+class ViewLayerOwner : public ui::LayerOwner,
+                       public ui::LayerDelegate {
+ public:
+  explicit ViewLayerOwner(ui::Layer* layer) {
+    layer_ = layer;
+  }
+  ~ViewLayerOwner() {}
+
+ private:
+  // Overridden from ui::LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+    // TODO(beng): paint processor.
+  }
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+    // TODO(beng): ???
+  }
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+    return base::Bind(&ViewLayerOwner::OnLayerBoundsChanged,
+                      base::Unretained(this));
+  }
+
+  void OnLayerBoundsChanged() {
+    // TODO(beng): ???
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ViewLayerOwner);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
@@ -235,6 +265,38 @@ void View::StackChildAbove(View* child, View* other) {
 
 void View::StackChildBelow(View* child, View* other) {
   StackChildRelativeTo(this, &children_, child, other, STACK_BELOW);
+}
+
+// Layer -----------------------------------------------------------------------
+
+const ui::Layer* View::layer() const {
+  return layer_owner_.get() ? layer_owner_->layer() : NULL;
+}
+
+ui::Layer* View::layer() {
+  return const_cast<ui::Layer*>(const_cast<const View*>(this)->layer());
+}
+
+bool View::HasLayer() const {
+  return !!layer();
+}
+
+void View::CreateLayer(ui::LayerType layer_type) {
+  layer_owner_.reset(new ViewLayerOwner(new ui::Layer(layer_type)));
+  layer()->SetVisible(visible_);
+  layer()->set_delegate(layer_owner_.get());
+  // TODO(beng): layer name?
+  // TODO(beng): SetFillsBoundsOpaquely?
+}
+
+void View::DestroyLayer() {
+  DCHECK(layer_owner_.get());
+  layer_owner_.reset();
+}
+
+ui::Layer* View::AcquireLayer() {
+  DCHECK(layer_owner_.get());
+  return layer_owner_->AcquireLayer();
 }
 
 }  // namespace v2

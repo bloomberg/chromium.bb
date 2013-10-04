@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_type.h"
 
 namespace v2 {
 
@@ -91,6 +93,19 @@ TEST_F(ViewTest, Stacking) {
   v1.StackChildBelow(v11, v12);
   EXPECT_EQ(v11, v1.children().front());
   EXPECT_EQ(v13, v1.children().back());
+}
+
+TEST_F(ViewTest, Layer) {
+  View v1;
+  v1.CreateLayer(ui::LAYER_NOT_DRAWN);
+  EXPECT_TRUE(v1.HasLayer());
+  v1.DestroyLayer();
+  EXPECT_FALSE(v1.HasLayer());
+
+  v1.CreateLayer(ui::LAYER_NOT_DRAWN);
+  scoped_ptr<ui::Layer>(v1.AcquireLayer());
+  // Acquiring the layer transfers ownership to the scoped_ptr above, so this
+  // test passes if it doesn't crash.
 }
 
 // ViewObserver ----------------------------------------------------------------

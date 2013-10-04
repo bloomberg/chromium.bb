@@ -48,16 +48,11 @@ class V2_EXPORT ViewObserver {
   // and after the change is committed.
   virtual void OnViewTreeChange(const TreeChangeParams& params) {}
 
-  // TODO(beng): stacking change notification?
-
   // Disposition.
-
   virtual void OnViewDestroy(View* view, DispositionChangePhase phase) {}
-
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) {}
-
   virtual void OnViewVisibilityChange(View* view,
                                       DispositionChangePhase phase) {}
 
