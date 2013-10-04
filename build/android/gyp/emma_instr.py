@@ -57,6 +57,10 @@ def _AddInstrumentOptions(option_parser):
                            help='Root of the src repository.')
   option_parser.add_option('--emma-jar',
                            help='Path to emma.jar.')
+  option_parser.add_option(
+      '--filter-string', default='',
+      help=('Filter string consisting of a list of inclusion/exclusion '
+            'patterns separated with whitespace and/or comma.'))
 
 
 def _RunCopyCommand(command, options, args, option_parser):
@@ -150,13 +154,14 @@ def _RunInstrumentCommand(command, options, args, option_parser):
                               options.sources_file)
   temp_dir = tempfile.mkdtemp()
   try:
-    # TODO(gkanwar): Add '-ix' option to filter out useless classes.
-    build_utils.CheckCallDie(['java', '-cp', options.emma_jar,
-                              'emma', 'instr',
-                              '-ip', options.input_path,
-                              '-d', temp_dir,
-                              '-out', coverage_file,
-                              '-m', 'fullcopy'], suppress_output=True)
+    cmd = ['java', '-cp', options.emma_jar,
+           'emma', 'instr',
+           '-ip', options.input_path,
+           '-ix', options.filter_string,
+           '-d', temp_dir,
+           '-out', coverage_file,
+           '-m', 'fullcopy']
+    build_utils.CheckCallDie(cmd, suppress_output=True)
 
     if command == 'instrument_jar':
       for jar in os.listdir(os.path.join(temp_dir, 'lib')):

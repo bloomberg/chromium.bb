@@ -22,6 +22,7 @@
           '--sources=<(java_in_dir)/src >(additional_src_dirs) >(generated_src_dirs)',
           '--src-root=<(DEPTH)',
           '--emma-jar=<(emma_jar)',
+          '--filter-string=<(emma_filter)',
         ],
         'conditions': [
           ['instr_type == "jar"', {
