@@ -17369,6 +17369,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SpellCheck.SpellingService.Enabled" enum="BooleanEnabled">
+  <summary>
+    Whether the user has opted in to asking Google for spelling suggestions.
+    Recorded both when spelling is initialized and when the preference is
+    changed.
+  </summary>
+</histogram>
+
 <histogram name="Sqlite.AppCache.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite for the appcache db.</summary>
 </histogram>
