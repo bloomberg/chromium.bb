@@ -9,7 +9,7 @@ import android.app.Application;
 /**
  * Basic application functionality that should be shared among all browser applications.
  */
-public class ChromiumApplication extends Application {
+public class BaseChromiumApplication extends Application {
 
     @Override
     public void onCreate() {

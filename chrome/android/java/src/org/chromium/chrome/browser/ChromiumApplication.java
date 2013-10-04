@@ -1,0 +1,20 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser;
+
+import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.CalledByNative;
+
+/**
+ * Basic application functionality that should be shared among all browser applications that use
+ * chrome layer.
+ */
+public abstract class ChromiumApplication extends BaseChromiumApplication {
+    /**
+     * Opens a protected content settings page, if available.
+     */
+    @CalledByNative
+    protected abstract void openProtectedContentSettings();
+}

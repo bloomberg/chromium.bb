@@ -12,6 +12,10 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chromium_application.h"
+#endif
+
 // static
 InfoBarDelegate* ProtectedMediaIdentifierInfoBarDelegate::Create(
     InfoBarService* infobar_service,
@@ -105,4 +109,24 @@ string16 ProtectedMediaIdentifierInfoBarDelegate::GetButtonLabel(
 bool ProtectedMediaIdentifierInfoBarDelegate::Cancel() {
   SetPermission(true, false);
   return true;
+}
+
+string16 ProtectedMediaIdentifierInfoBarDelegate::GetLinkText() const {
+#if defined(OS_ANDROID)
+  return l10n_util::GetStringUTF16(
+      IDS_PROTECTED_MEDIA_IDENTIFIER_SETTINGS_LINK);
+#else
+  NOTIMPLEMENTED();
+  return string16();
+#endif
+}
+
+bool ProtectedMediaIdentifierInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+#if defined(OS_ANDROID)
+  chrome::android::ChromiumApplication::OpenProtectedContentSettings();
+#else
+  NOTIMPLEMENTED();
+#endif
+  return false; // Do not dismiss the info bar.
 }

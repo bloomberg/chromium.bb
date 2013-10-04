@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "chrome/browser/android/bookmarks_bridge.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
+#include "chrome/browser/android/chromium_application.h"
 #include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/favicon_helper.h"
@@ -82,6 +83,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler },
   { "ChromeWebContentsDelegateAndroid",
     RegisterChromeWebContentsDelegateAndroid },
+  { "ChromiumApplication",
+    ChromiumApplication::RegisterBindings },
   {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
   { "ContentViewUtil", RegisterContentViewUtil },
   { "DevToolsServer", RegisterDevToolsServer },

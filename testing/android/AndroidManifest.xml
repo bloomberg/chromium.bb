@@ -13,7 +13,7 @@ found in the LICENSE file.
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="18" />
 
     <application android:label="ChromeNativeTests"
-            android:name="org.chromium.base.ChromiumApplication">
+            android:name="org.chromium.base.BaseChromiumApplication">
         <activity android:name=".ChromeNativeTestActivity"
                 android:label="ChromeNativeTest"
                 android:configChanges="orientation|keyboardHidden">
