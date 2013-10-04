@@ -215,7 +215,7 @@ TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
 }
 
 // WindowObserver implementation used by DontClobberRestoreBoundsWindowObserver.
-// This code mirrors what BrowserFrameAura does. In particular when this code
+// This code mirrors what BrowserFrameAsh does. In particular when this code
 // sees the window was maximized it changes the bounds of a secondary
 // window. The secondary window mirrors the status window.
 class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
@@ -258,7 +258,7 @@ TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(gfx::Rect(10, 20, 30, 40));
   // NOTE: for this test to exercise the failure the observer needs to be added
-  // before the parent set. This mimics what BrowserFrameAura does.
+  // before the parent set. This mimics what BrowserFrameAsh does.
   window->AddObserver(&window_observer);
   SetDefaultParentByPrimaryRootWindow(window.get());
   window->Show();

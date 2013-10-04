@@ -217,9 +217,9 @@ bool DoesRectContainVerticalPointExpanded(
 
 // WidgetObserver implementation that resets the window position managed
 // property on Show.
-// We're forced to do this here since BrowserFrameAura resets the 'window
+// We're forced to do this here since BrowserFrameAsh resets the 'window
 // position managed' property during a show and we need the property set to
-// false before WorkspaceLayoutManager2 sees the visibility change.
+// false before WorkspaceLayoutManager sees the visibility change.
 class WindowPositionManagedUpdater : public views::WidgetObserver {
  public:
   virtual void OnWidgetVisibilityChanged(views::Widget* widget,

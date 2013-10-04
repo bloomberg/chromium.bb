@@ -1,37 +1,27 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_frame_aura.h"
+#include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 
-#include "base/command_line.h"
-#include "chrome/app/chrome_command_ids.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/hit_test.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/font.h"
 #include "ui/views/view.h"
-
-#if defined(USE_ASH)
-#include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
-#endif
 
 using aura::Window;
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAura::WindowPropertyWatcher
+// BrowserFrameAsh::WindowPropertyWatcher
 
-class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
+class BrowserFrameAsh::WindowPropertyWatcher : public aura::WindowObserver {
  public:
-  explicit WindowPropertyWatcher(BrowserFrameAura* browser_frame_aura,
+  explicit WindowPropertyWatcher(BrowserFrameAsh* browser_frame_ash,
                                  BrowserFrame* browser_frame)
-      : browser_frame_aura_(browser_frame_aura),
+      : browser_frame_ash_(browser_frame_ash),
         browser_frame_(browser_frame) {}
 
   virtual void OnWindowPropertyChanged(aura::Window* window,
@@ -47,7 +37,7 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
     // Allow the frame to be replaced when entering or exiting the maximized
     // state.
     if (browser_frame_->non_client_view() &&
-        browser_frame_aura_->browser_view()->browser()->is_app() &&
+        browser_frame_ash_->browser_view()->browser()->is_app() &&
         (old_state == ui::SHOW_STATE_MAXIMIZED ||
          new_state == ui::SHOW_STATE_MAXIMIZED)) {
       // Defer frame layout when replacing the frame. Layout will occur when the
@@ -77,26 +67,25 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
   }
 
  private:
-  BrowserFrameAura* browser_frame_aura_;
+  BrowserFrameAsh* browser_frame_ash_;
   BrowserFrame* browser_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPropertyWatcher);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAura, public:
+// BrowserFrameAsh, public:
 
 // static
-const char BrowserFrameAura::kWindowName[] = "BrowserFrameAura";
+const char BrowserFrameAsh::kWindowName[] = "BrowserFrameAsh";
 
-BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
-                                   BrowserView* browser_view)
+BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
+                                 BrowserView* browser_view)
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view),
       window_property_watcher_(new WindowPropertyWatcher(this, browser_frame)) {
   GetNativeWindow()->SetName(kWindowName);
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
-#if defined(USE_ASH)
   if (browser_view->browser()->is_type_tabbed())
     ash::wm::SetAnimateToFullscreen(GetNativeWindow(), false);
 
@@ -105,7 +94,6 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
   if (!browser_view->browser()->bounds_overridden() &&
       !browser_view->browser()->is_session_restore())
     SetWindowAutoManaged();
-#endif
 #if defined(OS_CHROMEOS)
   // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys
   // like brightness, volume, etc. Otherwise these keys are handled by the
@@ -118,16 +106,16 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAura, views::NativeWidgetAura overrides:
+// BrowserFrameAsh, views::NativeWidgetAura overrides:
 
-void BrowserFrameAura::OnWindowDestroying() {
+void BrowserFrameAsh::OnWindowDestroying() {
   // Window is destroyed before our destructor is called, so clean up our
   // observer here.
   GetNativeWindow()->RemoveObserver(window_property_watcher_.get());
   views::NativeWidgetAura::OnWindowDestroying();
 }
 
-void BrowserFrameAura::OnWindowTargetVisibilityChanged(bool visible) {
+void BrowserFrameAsh::OnWindowTargetVisibilityChanged(bool visible) {
   if (visible) {
     // Once the window has been shown we know the requested bounds
     // (if provided) have been honored and we can switch on window management.
@@ -137,48 +125,37 @@ void BrowserFrameAura::OnWindowTargetVisibilityChanged(bool visible) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAura, NativeBrowserFrame implementation:
+// BrowserFrameAsh, NativeBrowserFrame implementation:
 
-views::NativeWidget* BrowserFrameAura::AsNativeWidget() {
+views::NativeWidget* BrowserFrameAsh::AsNativeWidget() {
   return this;
 }
 
-const views::NativeWidget* BrowserFrameAura::AsNativeWidget() const {
+const views::NativeWidget* BrowserFrameAsh::AsNativeWidget() const {
   return this;
 }
 
-bool BrowserFrameAura::UsesNativeSystemMenu() const {
+bool BrowserFrameAsh::UsesNativeSystemMenu() const {
   return false;
 }
 
-int BrowserFrameAura::GetMinimizeButtonOffset() const {
+int BrowserFrameAsh::GetMinimizeButtonOffset() const {
   return 0;
 }
 
-void BrowserFrameAura::TabStripDisplayModeChanged() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserFrame, public:
-
-// static
-const gfx::Font& BrowserFrame::GetTitleFont() {
-  static gfx::Font* title_font = new gfx::Font;
-  return *title_font;
+void BrowserFrameAsh::TabStripDisplayModeChanged() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAura, private:
+// BrowserFrameAsh, private:
 
-BrowserFrameAura::~BrowserFrameAura() {
+BrowserFrameAsh::~BrowserFrameAsh() {
 }
 
-void BrowserFrameAura::SetWindowAutoManaged() {
-#if defined(USE_ASH)
+void BrowserFrameAsh::SetWindowAutoManaged() {
   if (browser_view_->browser()->type() != Browser::TYPE_POPUP ||
       browser_view_->browser()->is_app()) {
     ash::wm::GetWindowState(GetNativeWindow())->
         set_window_position_managed(true);
   }
-#endif
 }

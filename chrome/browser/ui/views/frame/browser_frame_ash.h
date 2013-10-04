@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_AURA_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_AURA_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_ASH_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_ASH_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,17 +14,17 @@ class BrowserFrame;
 class BrowserView;
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAura
+//  BrowserFrameAsh
 //
-//  BrowserFrameAura is a NativeWidgetAura subclass that provides the window
+//  BrowserFrameAsh is a NativeWidgetAura subclass that provides the window
 //  frame for the Chrome browser window.
 //
-class BrowserFrameAura : public views::NativeWidgetAura,
-                         public NativeBrowserFrame {
+class BrowserFrameAsh : public views::NativeWidgetAura,
+                        public NativeBrowserFrame {
  public:
   static const char kWindowName[];
 
-  BrowserFrameAura(BrowserFrame* browser_frame, BrowserView* browser_view);
+  BrowserFrameAsh(BrowserFrame* browser_frame, BrowserView* browser_view);
 
   BrowserView* browser_view() const { return browser_view_; }
 
@@ -43,7 +43,7 @@ class BrowserFrameAura : public views::NativeWidgetAura,
  private:
   class WindowPropertyWatcher;
 
-  virtual ~BrowserFrameAura();
+  virtual ~BrowserFrameAsh();
 
   // Set the window into the auto managed mode.
   void SetWindowAutoManaged();
@@ -53,7 +53,7 @@ class BrowserFrameAura : public views::NativeWidgetAura,
 
   scoped_ptr<WindowPropertyWatcher> window_property_watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserFrameAura);
+  DISALLOW_COPY_AND_ASSIGN(BrowserFrameAsh);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_AURA_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_ASH_H_

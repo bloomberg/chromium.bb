@@ -36,7 +36,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 #include "ui/views/views_delegate.h"
@@ -507,13 +506,6 @@ void BrowserFrameWin::GetMetroCurrentTabInfo(WPARAM w_param) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, public:
-
-// static
-const gfx::Font& BrowserFrame::GetTitleFont() {
-  static gfx::Font* title_font =
-      new gfx::Font(views::NativeWidgetWin::GetWindowTitleFont());
-  return *title_font;
-}
 
 bool BrowserFrame::ShouldLeaveOffsetNearTopBorder() {
   if (win8::IsSingleWindowMetroMode()) {

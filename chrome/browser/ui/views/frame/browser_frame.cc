@@ -27,12 +27,14 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
+#include "ui/views/widget/native_widget_win.cc"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -60,6 +62,17 @@ BrowserFrame::BrowserFrame(BrowserView* browser_view)
 }
 
 BrowserFrame::~BrowserFrame() {
+}
+
+// static
+const gfx::Font& BrowserFrame::GetTitleFont() {
+#if !defined(OS_WIN) || defined(USE_AURA)
+  static gfx::Font* title_font = new gfx::Font;
+#else
+  static gfx::Font* title_font =
+      new gfx::Font(views::NativeWidgetWin::GetWindowTitleFont());
+#endif
+  return *title_font;
 }
 
 void BrowserFrame::InitBrowserFrame() {
