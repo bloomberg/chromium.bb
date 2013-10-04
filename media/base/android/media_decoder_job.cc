@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/bind_to_loop.h"
@@ -40,6 +41,11 @@ void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
   DVLOG(1) << __FUNCTION__ << ": " << data.access_units.size() << " units";
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(!on_data_received_cb_.is_null());
+
+  TRACE_EVENT_ASYNC_END2(
+      "media", "MediaDecoderJob::RequestData", this,
+      "Data type", data.type == media::DemuxerStream::AUDIO ? "AUDIO" : "VIDEO",
+      "Units read", data.access_units.size());
 
   base::Closure done_cb = base::ResetAndReturn(&on_data_received_cb_);
 
@@ -132,6 +138,7 @@ void MediaDecoderJob::Release() {
 MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(decoder_loop_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", __FUNCTION__);
 
   int input_buf_index = input_buf_index_;
   input_buf_index_ = -1;
@@ -198,6 +205,8 @@ void MediaDecoderJob::RequestData(const base::Closure& done_cb) {
   DCHECK(on_data_received_cb_.is_null());
   DCHECK(!input_eos_encountered_);
 
+  TRACE_EVENT_ASYNC_BEGIN0("media", "MediaDecoderJob::RequestData", this);
+
   received_data_ = DemuxerData();
   access_unit_index_ = 0;
   on_data_received_cb_ = done_cb;
@@ -228,6 +237,7 @@ void MediaDecoderJob::DecodeInternal(
     const MediaDecoderJob::DecoderCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(decoder_loop_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", __FUNCTION__);
 
   if (needs_flush) {
     DVLOG(1) << "DecodeInternal needs flush.";

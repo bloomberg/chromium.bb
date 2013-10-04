@@ -28,7 +28,7 @@ class MEDIA_EXPORT DemuxerAndroid {
   // Called to request the current audio/video decoder configurations.
   virtual void RequestDemuxerConfigs() = 0;
 
-  // Called to request additiona data from the demuxer.
+  // Called to request additional data from the demuxer.
   virtual void RequestDemuxerData(media::DemuxerStream::Type type) = 0;
 
   // Called to request the demuxer to seek to a particular media time.

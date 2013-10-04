@@ -11,7 +11,9 @@
 #include "base/barrier_closure.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/android/audio_decoder_job.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
@@ -463,6 +465,21 @@ void MediaSourcePlayer::MediaDecoderCallback(
     const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes) {
   DVLOG(1) << __FUNCTION__ << ": " << is_audio << ", " << status;
 
+  // TODO(xhwang): Drop IntToString() when http://crbug.com/303899 is fixed.
+  if (is_audio) {
+    TRACE_EVENT_ASYNC_END1("media",
+                           "MediaSourcePlayer::DecodeMoreAudio",
+                           audio_decoder_job_.get(),
+                           "MediaCodecStatus",
+                           base::IntToString(status));
+  } else {
+    TRACE_EVENT_ASYNC_END1("media",
+                           "MediaSourcePlayer::DecodeMoreVideo",
+                           video_decoder_job_.get(),
+                           "MediaCodecStatus",
+                           base::IntToString(status));
+  }
+
   bool is_clock_manager = is_audio || !HasAudio();
 
   if (is_clock_manager)
@@ -521,6 +538,8 @@ void MediaSourcePlayer::DecodeMoreAudio() {
           start_time_ticks_, start_presentation_timestamp_, base::Bind(
               &MediaSourcePlayer::MediaDecoderCallback,
               weak_this_.GetWeakPtr(), true))) {
+    TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreAudio",
+                             audio_decoder_job_.get());
     return;
   }
 
@@ -539,6 +558,8 @@ void MediaSourcePlayer::DecodeMoreVideo() {
           start_time_ticks_, start_presentation_timestamp_, base::Bind(
               &MediaSourcePlayer::MediaDecoderCallback,
               weak_this_.GetWeakPtr(), false))) {
+    TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreVideo",
+                             video_decoder_job_.get());
     return;
   }
 
