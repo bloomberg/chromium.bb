@@ -2153,7 +2153,9 @@ bool RenderWidgetHostViewAura::LockMouse() {
     return true;
 
   mouse_locked_ = true;
+#if !defined(OS_WIN)
   window_->SetCapture();
+#endif
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client) {
@@ -2177,7 +2179,9 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 
   mouse_locked_ = false;
 
+#if !defined(OS_WIN)
   window_->ReleaseCapture();
+#endif
   window_->MoveCursorTo(unlocked_mouse_position_);
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
