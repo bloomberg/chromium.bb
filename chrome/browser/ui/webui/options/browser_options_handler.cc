@@ -346,6 +346,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
     { "accessibilityAlwaysShowMenu",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SHOULD_ALWAYS_SHOW_MENU },
+    { "enableContentProtectionAttestation",
+      IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION },
     { "factoryResetHeading", IDS_OPTIONS_FACTORY_RESET_HEADING },
     { "factoryResetTitle", IDS_OPTIONS_FACTORY_RESET },
     { "factoryResetRestart", IDS_OPTIONS_FACTORY_RESET_BUTTON },
@@ -466,6 +468,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   values->SetString("accessibilityLearnMoreURL",
                     chrome::kChromeAccessibilityHelpURL);
+
+  values->SetString("contentProtectionAttestationLearnMoreURL",
+                    chrome::kAttestationForContentProtectionLearnMoreURL);
 
   // Creates magnifierList.
   scoped_ptr<base::ListValue> magnifier_list(new base::ListValue);

@@ -95,6 +95,10 @@ cr.define('options', function() {
             'hasRecommendation':
                 loadTimeData.getString('controlledSettingHasRecommendation'),
           };
+          if (cr.isChromeOS) {
+            defaultStrings.owner =
+                loadTimeData.getString('controlledSettingOwner');
+          }
         }
 
         // No controller, no bubble.

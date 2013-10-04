@@ -705,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSDeviceFetchPrefs) {
   // Verify notifications when default values are in effect.
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, default_values_,
-                      "", true, false);
+                      "owner", true, false);
 
   // Verify notifications when mandatory values are in effect.
   chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
@@ -716,7 +716,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSDeviceFetchPrefs) {
   // decorated with "controlledBy: policy".
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, decorated_non_default_values,
-                      "", true, false);
+                      "owner", true, false);
 
   STLDeleteElements(&decorated_non_default_values);
 }

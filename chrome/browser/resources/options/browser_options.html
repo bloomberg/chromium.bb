@@ -328,6 +328,25 @@
           <span i18n-content="doNotTrack"></span>
         </label>
       </div>
+<if expr="pp_ifdef('chromeos')">
+      <div class="checkbox">
+        <span class="controlled-settings-with-label">
+          <input id="content-protection-attestation-enabled" type="checkbox"
+              pref="cros.device.attestation_for_content_protection_enabled">
+          <span>
+            <label for="content-protection-attestation-enabled"
+                i18n-content="enableContentProtectionAttestation">
+            </label>
+            <a target="_blank" i18n-content="learnMore"
+                i18n-values="href:contentProtectionAttestationLearnMoreURL">
+            </a>
+          </span>
+          <span class="controlled-setting-indicator"
+              pref="cros.device.attestation_for_content_protection_enabled">
+          </span>
+        </span>
+      </div>
+</if>
     </div>
   </section>
 <if expr="pp_ifdef('chromeos')">

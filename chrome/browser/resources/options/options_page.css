@@ -493,7 +493,18 @@ input:-webkit-any([type='text'],[type='url'],:not([type])) +
 }
 
 .controlled-setting-indicator[controlled-by='policy'] >
-    div:-webkit-any(:hover,.showing-bubble) {
+    div:-webkit-any(:hover, .showing-bubble) {
+  background-image:
+      url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+}
+
+.controlled-setting-indicator[controlled-by='owner'] > div {
+  background-image:
+      url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
+}
+
+.controlled-setting-indicator[controlled-by='owner'] >
+    div:-webkit-any(:hover, .showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
 }
@@ -504,7 +515,7 @@ input:-webkit-any([type='text'],[type='url'],:not([type])) +
 }
 
 .controlled-setting-indicator[controlled-by='extension'] >
-    div:-webkit-any(:hover,.showing-bubble) {
+    div:-webkit-any(:hover, .showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION');
 }
@@ -530,6 +541,11 @@ input:-webkit-any([type='text'],[type='url'],:not([type])) +
 }
 
 .controlled-setting-bubble-content[controlled-by='policy'] {
+  background-image:
+      url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_LARGE');
+}
+
+.controlled-setting-bubble-content[controlled-by='owner'] {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_LARGE');
 }

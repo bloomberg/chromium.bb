@@ -1491,6 +1491,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_REQUIRE_HARDWARE_BACKED" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when a non hardware-backed user certificate is selected.">
     User certificate must be hardware-backed.
   </message>
+  <message name="IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION" desc="description label for verified access about premium contents">
+    Enable Verified Access service
+  </message>
   <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
     Reconnect
   </message>
@@ -1723,6 +1726,9 @@ Press any key to continue exploring.
     Accept and continue
   </message>
 
+  <message name="IDS_OPTIONS_CONTROLLED_SETTING_OWNER" desc="Tooltip for options which can be edited only by the owner">
+    This setting is enforced by the owner of the device.
+  </message>
   <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by enterprise policy">
     This option is controlled by enterprise policy. Please contact your administrator for more information.
   </message>

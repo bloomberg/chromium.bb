@@ -23,6 +23,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace options {
@@ -150,9 +152,11 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     dict->Set("value", pref_value->DeepCopy());
   if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged())
     dict->SetString("controlledBy", "policy");
-  dict->SetBoolean("disabled",
-                   IsSettingOwnerOnly(pref_name) &&
-                       !UserManager::Get()->IsCurrentUserOwner());
+  bool disabled_by_owner = IsSettingOwnerOnly(pref_name) &&
+      !UserManager::Get()->IsCurrentUserOwner();
+  dict->SetBoolean("disabled", disabled_by_owner);
+  if (disabled_by_owner)
+    dict->SetString("controlledBy", "owner");
   return dict;
 }
 
@@ -209,6 +213,8 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
   CoreOptionsHandler::GetLocalizedValues(localized_strings);
 
   AddAccountUITweaksLocalizedValues(localized_strings);
+  localized_strings->SetString("controlledSettingOwner",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_OWNER));
 }
 
 void CoreChromeOSOptionsHandler::SelectNetworkCallback(
