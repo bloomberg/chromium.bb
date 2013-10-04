@@ -151,6 +151,17 @@ Pagination::Mode paginationModeForRenderStyle(RenderStyle* style)
     return Pagination::BottomToTopPaginated;
 }
 
+FrameView::DeferredRepaintScope::DeferredRepaintScope(FrameView& view)
+    : m_view(&view)
+{
+    m_view->beginDeferredRepaints();
+}
+
+FrameView::DeferredRepaintScope::~DeferredRepaintScope()
+{
+    m_view->endDeferredRepaints();
+}
+
 FrameView::FrameView(Frame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
@@ -879,6 +890,8 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     // performLayout is the actual guts of layout().
     // FIXME: The 300 other lines in layout() probably belong in other helper functions
     // so that a single human could understand what layout() is actually doing.
+    FrameView::DeferredRepaintScope deferRepaints(*this);
+
     {
         bool disableLayoutState = false;
         if (inSubtreeLayout) {
@@ -890,7 +903,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
 
         m_inLayout = true;
 
-        beginDeferredRepaints();
         forceLayoutParentViewIfNeeded();
         renderView()->updateConfiguration();
 
@@ -910,7 +922,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         rootForThisLayout->layout();
     }
 
-    endDeferredRepaints();
     m_inLayout = false;
 
     if (inSubtreeLayout)
@@ -1082,18 +1093,19 @@ void FrameView::layout(bool allowSubtree)
 
     m_doFullRepaint = neededFullRepaint;
 
-    // Now update the positions of all layers.
-    beginDeferredRepaints();
-    if (m_doFullRepaint) {
-        // FIXME: This isn't really right, since the RenderView doesn't fully encompass
-        // the visibleContentRect(). It just happens to work out most of the time,
-        // since first layouts and printing don't have you scrolled anywhere.
-        rootForThisLayout->view()->repaint();
+    {
+        // FIXME: Can this scope just encompass this entire function?
+        FrameView::DeferredRepaintScope deferRepaints(*this);
+
+        if (m_doFullRepaint) {
+            // FIXME: This isn't really right, since the RenderView doesn't fully encompass
+            // the visibleContentRect(). It just happens to work out most of the time,
+            // since first layouts and printing don't have you scrolled anywhere.
+            rootForThisLayout->view()->repaint();
+        }
+
+        layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
     }
-
-    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
-
-    endDeferredRepaints();
 
     updateCompositingLayersAfterLayout();
 

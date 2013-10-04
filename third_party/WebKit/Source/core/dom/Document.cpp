@@ -156,8 +156,6 @@
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "platform/DateComponents.h"
-#include "platform/Language.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/Timer.h"
 #include "core/platform/chromium/TraceEvent.h"
@@ -174,6 +172,8 @@
 #include "core/workers/SharedWorkerRepository.h"
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "platform/DateComponents.h"
+#include "platform/Language.h"
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
@@ -181,6 +181,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/TemporaryChange.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextEncodingRegistry.h"
@@ -1702,11 +1703,8 @@ void Document::recalcStyle(StyleRecalcChange change)
     {
         PostAttachCallbacks::SuspendScope suspendPostAttachCallbacks;
         WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
-
-        m_inStyleRecalc = true;
-
-        RefPtr<FrameView> frameView = view();
-        frameView->beginDeferredRepaints();
+        FrameView::DeferredRepaintScope deferRepaints(*view());
+        TemporaryChange<bool> changeInStyleRecalc(m_inStyleRecalc, true);
 
         if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
@@ -1726,7 +1724,7 @@ void Document::recalcStyle(StyleRecalcChange change)
                 documentElement->recalcStyle(change);
         }
 
-        frameView->updateCompositingLayersAfterStyleChange();
+        view()->updateCompositingLayersAfterStyleChange();
 
         clearNeedsStyleRecalc();
         clearChildNeedsStyleRecalc();
@@ -1742,10 +1740,6 @@ void Document::recalcStyle(StyleRecalcChange change)
             m_styleEngine->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
             m_styleResolver->clearStyleSharingList();
         }
-
-        m_inStyleRecalc = false;
-
-        frameView->endDeferredRepaints();
     }
 
     STYLE_STATS_PRINT();

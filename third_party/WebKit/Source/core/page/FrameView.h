@@ -186,11 +186,7 @@ public:
     const ViewportConstrainedObjectSet* viewportConstrainedObjects() const { return m_viewportConstrainedObjects.get(); }
     bool hasViewportConstrainedObjects() const { return m_viewportConstrainedObjects && m_viewportConstrainedObjects->size() > 0; }
 
-    void beginDeferredRepaints();
-    void endDeferredRepaints();
     void handleLoadCompleted();
-    void flushDeferredRepaints();
-    void startDeferredRepaintTimer(double delay);
     void resetDeferredRepaintDelay();
 
     void updateAnnotatedRegions();
@@ -332,6 +328,14 @@ public:
 
     PartialLayoutState& partialLayout() { return m_partialLayout; }
 
+    class DeferredRepaintScope {
+    public:
+        DeferredRepaintScope(FrameView&);
+        ~DeferredRepaintScope();
+    private:
+        RefPtr<FrameView> m_view;
+    };
+
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
     virtual void scrollContentsSlowPath(const IntRect& updateRect);
@@ -341,6 +345,11 @@ protected:
 
 private:
     explicit FrameView(Frame*);
+
+    void beginDeferredRepaints();
+    void endDeferredRepaints();
+    void flushDeferredRepaints();
+    void startDeferredRepaintTimer(double delay);
 
     void reset();
     void init();
