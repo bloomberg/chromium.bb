@@ -721,8 +721,9 @@ cr.define('cr.ui.login', function() {
       error.appendChild(helpLink);
     }
 
-    var currentScreenId = Oobe.getInstance().currentScreen.id;
-    $(currentScreenId).showErrorBubble(loginAttempts, error);
+    var currentScreen = Oobe.getInstance().currentScreen;
+    if (currentScreen && typeof currentScreen.showErrorBubble === 'function')
+      currentScreen.showErrorBubble(loginAttempts, error);
   };
 
   /**

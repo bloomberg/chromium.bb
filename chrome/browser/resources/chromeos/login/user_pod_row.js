@@ -1156,7 +1156,7 @@ cr.define('login', function() {
       // force a resize, as it may be a background window which won't get a
       // mouseout event for a while; the pods would be displayed incorrectly
       // until then.
-      if (this.preselectedPod.user.isDesktopUser)
+      if (this.preselectedPod && this.preselectedPod.user.isDesktopUser)
         this.resize_(columns, rows);
 
       if (!this.columns || !this.rows) {
