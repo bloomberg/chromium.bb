@@ -2425,15 +2425,13 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
 MULTI_THREAD_TEST_F(
     LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled);
 
-class LayerTreeHostTestAbortedCommitDoesntStallNextCommitWhenIdle
-    : public LayerTreeHostTest {
+class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
  protected:
-  LayerTreeHostTestAbortedCommitDoesntStallNextCommitWhenIdle()
+  LayerTreeHostTestAbortedCommitDoesntStall()
       : commit_count_(0), commit_complete_count_(0) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->begin_frame_scheduling_enabled = true;
-    settings->using_synchronous_renderer_compositor = true;
   }
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
@@ -2467,8 +2465,26 @@ class LayerTreeHostTestAbortedCommitDoesntStallNextCommitWhenIdle
   int commit_complete_count_;
 };
 
+class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
+    : public LayerTreeHostTestAbortedCommitDoesntStall {
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    LayerTreeHostTestAbortedCommitDoesntStall::InitializeSettings(settings);
+    settings->using_synchronous_renderer_compositor = true;
+  }
+};
+
 MULTI_THREAD_TEST_F(
-    LayerTreeHostTestAbortedCommitDoesntStallNextCommitWhenIdle);
+    LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor);
+
+class LayerTreeHostTestAbortedCommitDoesntStallDisabledVsync
+    : public LayerTreeHostTestAbortedCommitDoesntStall {
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    LayerTreeHostTestAbortedCommitDoesntStall::InitializeSettings(settings);
+    settings->throttle_frame_production = false;
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestAbortedCommitDoesntStallDisabledVsync);
 
 class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     : public LayerTreeHostTest {

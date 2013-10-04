@@ -223,6 +223,8 @@ class CC_EXPORT SchedulerStateMachine {
   // True if we need to abort draws to make forward progress.
   bool PendingDrawsShouldBeAborted() const;
 
+  bool SupportsProactiveBeginFrame() const;
+
  protected:
   bool BeginFrameNeededToDrawByImplThread() const;
   bool ProactiveBeginFrameWantedByImplThread() const;

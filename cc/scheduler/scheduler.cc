@@ -157,7 +157,7 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   // aren't expecting any more BeginFrames. This should only be needed by the
   // synchronous compositor when BeginFrameNeededByImplThread is false.
   if (state_machine_.ShouldPollForAnticipatedDrawTriggers()) {
-    DCHECK(settings_.using_synchronous_renderer_compositor);
+    DCHECK(!state_machine_.SupportsProactiveBeginFrame());
     DCHECK(!needs_begin_frame);
     if (poll_for_draw_triggers_closure_.IsCancelled()) {
       poll_for_draw_triggers_closure_.Reset(

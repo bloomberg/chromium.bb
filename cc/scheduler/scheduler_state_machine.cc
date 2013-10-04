@@ -751,7 +751,7 @@ bool SchedulerStateMachine::BeginFrameNeededByImplThread() const {
   // duplicate frames if our new frame isn't ready in time.
   // To poll for state with the synchronous compositor without having to draw,
   // we rely on ShouldPollForAnticipatedDrawTriggers instead.
-  if (settings_.using_synchronous_renderer_compositor)
+  if (!SupportsProactiveBeginFrame())
     return BeginFrameNeededToDrawByImplThread();
 
   return BeginFrameNeededToDrawByImplThread() ||
@@ -762,7 +762,7 @@ bool SchedulerStateMachine::ShouldPollForAnticipatedDrawTriggers() const {
   // ShouldPollForAnticipatedDrawTriggers is what we use in place of
   // ProactiveBeginFrameWantedByImplThread when we are using the synchronous
   // compositor.
-  if (settings_.using_synchronous_renderer_compositor) {
+  if (!SupportsProactiveBeginFrame()) {
     return !BeginFrameNeededToDrawByImplThread() &&
            ProactiveBeginFrameWantedByImplThread();
   }
@@ -770,6 +770,14 @@ bool SchedulerStateMachine::ShouldPollForAnticipatedDrawTriggers() const {
   // Non synchronous compositors should rely on
   // ProactiveBeginFrameWantedByImplThread to poll for state instead.
   return false;
+}
+
+bool SchedulerStateMachine::SupportsProactiveBeginFrame() const {
+  // Both the synchronous compositor and disabled vsync settings
+  // make it undesirable to proactively request begin frames.
+  // If this is true, the scheduler should poll.
+  return !settings_.using_synchronous_renderer_compositor &&
+         settings_.throttle_frame_production;
 }
 
 // These are the cases where we definitely (or almost definitely) have a
@@ -810,10 +818,6 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
   // The output surface is the provider of BeginFrames for the impl thread,
   // so we are not going to get them even if we ask for them.
   if (!HasInitializedOutputSurface())
-    return false;
-
-  // Do not be proactive if vsync is off.
-  if (!settings_.throttle_frame_production)
     return false;
 
   // Do not be proactive when invisible.
