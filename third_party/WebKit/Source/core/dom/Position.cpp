@@ -55,10 +55,10 @@ using namespace HTMLNames;
 static Node* nextRenderedEditable(Node* node)
 {
     while ((node = node->nextLeafNode())) {
-        if (!node->rendererIsEditable())
-            continue;
         RenderObject* renderer = node->renderer();
         if (!renderer)
+            continue;
+        if (!node->rendererIsEditable())
             continue;
         if ((renderer->isBox() && toRenderBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toRenderText(renderer)->firstTextBox()))
             return node;
@@ -69,10 +69,10 @@ static Node* nextRenderedEditable(Node* node)
 static Node* previousRenderedEditable(Node* node)
 {
     while ((node = node->previousLeafNode())) {
-        if (!node->rendererIsEditable())
-            continue;
         RenderObject* renderer = node->renderer();
         if (!renderer)
+            continue;
+        if (!node->rendererIsEditable())
             continue;
         if ((renderer->isBox() && toRenderBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toRenderText(renderer)->firstTextBox()))
             return node;
