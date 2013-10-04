@@ -26,6 +26,7 @@ enum CornerFlags {
 
 enum BubbleArrowLocation {
   kTopLeft,
+  kTopCenter,
   kTopRight,
   kNoArrow,
 };

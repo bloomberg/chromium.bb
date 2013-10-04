@@ -64,7 +64,7 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
   infoBubble_.reset([[InfoBubbleView alloc] initWithFrame:NSZeroRect]);
   [infoBubble_ setBackgroundColor:
       gfx::SkColorToCalibratedNSColor(kWarningColor)];
-  [infoBubble_ setArrowLocation:info_bubble::kTopRight];
+  [infoBubble_ setArrowLocation:info_bubble::kTopCenter];
   [infoBubble_ setAlignment:info_bubble::kAlignArrowToAnchor];
   [infoBubble_ setHidden:YES];
 
@@ -72,6 +72,7 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
   [label setEditable:NO];
   [label setBordered:NO];
   [label setDrawsBackground:NO];
+  [label setTextColor:[NSColor whiteColor]];
   [infoBubble_ addSubview:label];
 
   [[scrollView_ documentView] addSubview:infoBubble_];
@@ -127,19 +128,14 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
 
 // TODO(groby): Unify with BaseBubbleController's originFromAnchor:view:.
 - (NSPoint)originFromAnchorView:(NSView*)view {
-  NSView* bubbleParent = [infoBubble_ superview];
-  NSPoint origin = [[view superview] convertPoint:[view frame].origin
-                                           toView:nil];
-  NSRect bubbleFrame =
-      [bubbleParent convertRect:[infoBubble_ frame] toView:nil];
-
-  NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
-                              info_bubble::kBubbleArrowWidth / 2.0, 0);
-  offsets = [view convertSize:offsets toView:nil];
-  origin.x -= NSWidth(bubbleFrame) - offsets.width;
-
-  origin.y -= NSHeight(bubbleFrame);
-  return [bubbleParent convertPoint:origin fromView:nil];
+  // All math done in window coordinates, since views might be flipped.
+  NSRect viewRect = [view convertRect:[view bounds] toView:nil];
+  NSPoint anchorPoint =
+      NSMakePoint(NSMidX(viewRect), NSMinY(viewRect));
+  NSRect bubbleRect = [infoBubble_ convertRect:[infoBubble_ bounds] toView:nil];
+  NSPoint bubbleOrigin = NSMakePoint(anchorPoint.x - NSWidth(bubbleRect) / 2.0,
+                                     anchorPoint.y - NSHeight(bubbleRect));
+  return [[infoBubble_ superview] convertPoint:bubbleOrigin fromView:nil];
 }
 
 - (void)updateMessageForField:(NSControl<AutofillInputField>*)field {
