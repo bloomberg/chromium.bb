@@ -193,6 +193,7 @@ FontPlatformData::FontPlatformData()
 {
 }
 
+#if ENABLE(GDI_FONTS_ON_WINDOWS)
 FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orientation)
     : m_font(RefCountedHFONT::create(font))
     , m_textSize(size)
@@ -204,6 +205,7 @@ FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orien
     , m_isHashTableDeletedValue(false)
 {
 }
+#endif
 
 // FIXME: this constructor is needed for SVG fonts but doesn't seem to do much
 FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)

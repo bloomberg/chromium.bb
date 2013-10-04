@@ -70,8 +70,10 @@ public:
     // set everything to NULL.
     FontPlatformData(WTF::HashTableDeletedValueType);
     FontPlatformData();
+#if ENABLE(GDI_FONTS_ON_WINDOWS)
     // This constructor takes ownership of the HFONT
     FontPlatformData(HFONT, float size, FontOrientation);
+#endif
     FontPlatformData(float size, bool bold, bool oblique);
     FontPlatformData(const FontPlatformData&);
     FontPlatformData(const FontPlatformData&, float textSize);
