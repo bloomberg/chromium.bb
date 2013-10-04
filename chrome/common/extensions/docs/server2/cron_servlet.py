@@ -216,18 +216,23 @@ class CronServlet(Servlet):
     existed.
     '''
     delegate = self._delegate
-    server_instance_at_head = self._CreateServerInstance(None)
+
+    # IMPORTANT: Get a ServerInstance pinned to the most recent revision, not
+    # HEAD. These cron jobs take a while and run very frequently such that
+    # there is usually one running at any given time, and eventually a file
+    # that we're dealing with will change underneath it, putting the server in
+    # an undefined state.
+    server_instance_near_head = self._CreateServerInstance(
+        self._GetMostRecentRevision())
 
     app_yaml_handler = AppYamlHelper(
         svn_constants.APP_YAML_PATH,
-        server_instance_at_head.host_file_system,
-        server_instance_at_head.object_store_creator,
-        server_instance_at_head.host_file_system_creator)
+        server_instance_near_head.host_file_system,
+        server_instance_near_head.object_store_creator,
+        server_instance_near_head.host_file_system_creator)
 
     if app_yaml_handler.IsUpToDate(delegate.GetAppVersion()):
-      # TODO(kalman): return a new ServerInstance at an explicit revision in
-      # case the HEAD version changes underneath us.
-      return server_instance_at_head
+      return server_instance_near_head
 
     # The version in app.yaml is greater than the currently running app's.
     # The safe version is the one before it changed.
@@ -239,7 +244,18 @@ class CronServlet(Servlet):
 
     return self._CreateServerInstance(safe_revision)
 
+  def _GetMostRecentRevision(self):
+    '''Gets the revision of the most recent patch submitted to the host file
+    system. This is similar to HEAD but it's a concrete revision so won't
+    change as the cron runs.
+    '''
+    return self._CreateServerInstance(None).host_file_system.Stat('/').version
+
   def _CreateServerInstance(self, revision):
+    '''Creates a ServerInstance pinned to |revision|, or HEAD if None.
+    NOTE: If passed None it's likely that during the cron run patches will be
+    submitted at HEAD, which may change data underneath the cron run.
+    '''
     object_store_creator = ObjectStoreCreator(start_empty=True)
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
     host_file_system_creator = self._delegate.CreateHostFileSystemCreator(

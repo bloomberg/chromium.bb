@@ -135,7 +135,9 @@ class CronServletTest(unittest.TestCase):
       to it.
       '''
       mock_file_system = MockFileSystem(TestFileSystem(test_data))
-      for update in updates[:revision]:
+      updates_for_revision = (
+          updates if revision is None else updates[:int(revision)])
+      for update in updates_for_revision:
         mock_file_system.Update(update)
       return mock_file_system
 

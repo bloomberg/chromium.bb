@@ -42,13 +42,13 @@ class CachingFileSystem(FileSystem):
           category='%s/%s' % (file_system.GetIdentity(), category),
           **optargs)
     self._stat_object_store = create_object_store('stat')
-    # The read caches can both (a) start populated and (b) be shared with all
-    # other app versions, because the data changing is detected by the stat.
-    # Without this optimisation, bumping app version is extremely slow.
-    self._read_object_store = create_object_store(
-        'read', start_empty=False, app_version=None)
-    self._read_binary_object_store = create_object_store(
-        'read-binary', start_empty=False, app_version=None)
+    # The read caches can start populated (start_empty=False) because file
+    # updates are picked up by the stat, so it doesn't need the force-refresh
+    # which starting empty is designed for. Without this optimisation, cron
+    # runs are extra slow.
+    self._read_object_store = create_object_store('read', start_empty=False)
+    self._read_binary_object_store = create_object_store('read-binary',
+                                                         start_empty=False)
 
   def Refresh(self):
     return self._file_system.Refresh()
