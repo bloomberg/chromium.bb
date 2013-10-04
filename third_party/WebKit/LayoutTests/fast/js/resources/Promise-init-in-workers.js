@@ -15,7 +15,8 @@ var promise = new Promise(function(newResolve, newReject) {
 
 shouldBeTrue('promise instanceof Promise');
 shouldBe('promise.constructor', 'Promise');
-shouldBe('thisInInit', 'promise');
+shouldBeFalse('thisInInit === promise');
+shouldBeTrue('thisInInit === global');
 shouldBeTrue('resolve instanceof Function');
 shouldBeTrue('reject instanceof Function');
 

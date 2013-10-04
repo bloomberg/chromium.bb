@@ -59,7 +59,8 @@ namespace WebCore {
     V(sleepFunction) \
     V(state) \
     V(toStringString) \
-    V(typedArrayHiddenCopyMethod)
+    V(typedArrayHiddenCopyMethod) \
+    V(thenableHiddenPromise)
 
 class V8HiddenPropertyName {
 public:

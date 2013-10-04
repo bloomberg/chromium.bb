@@ -15,12 +15,14 @@ var firstPromise = new Promise(function(newResolve) {
 
 var secondPromise = firstPromise.then(function(result) {
   global.thisInFulfillCallback = this;
-  shouldBeTrue('thisInFulfillCallback === secondPromise');
+  shouldBeFalse('thisInFulfillCallback === secondPromise');
+  shouldBeTrue('thisInFulfillCallback === global');
   global.result = result;
   shouldBeEqualToString('result', 'hello');
   finishJSTest();
 });
 
-shouldBeTrue('thisInInit === firstPromise');
+shouldBeFalse('thisInInit === firstPromise');
+shouldBeTrue('thisInInit === global');
 
 resolve('hello');

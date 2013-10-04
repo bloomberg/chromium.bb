@@ -20,7 +20,8 @@ var firstPromise = new Promise(function(_, newReject) {
 var secondPromise = firstPromise.catch(function(result) {
   window.thisInFulfillCallback = this;
   shouldBeFalse('thisInFulfillCallback === firstPromise');
-  shouldBeTrue('thisInFulfillCallback === secondPromise');
+  shouldBeFalse('thisInFulfillCallback === secondPromise');
+  shouldBeTrue('thisInFulfillCallback === window');
   window.result = result;
   shouldBeEqualToString('result', 'hello');
   return 'bye';
@@ -37,12 +38,13 @@ secondPromise.then(function(result) {
 }, function() {
 });
 
-shouldBeTrue('thisInInit === firstPromise');
+shouldBeFalse('thisInInit === firstPromise');
+shouldBeTrue('thisInInit === window');
 shouldBeTrue('firstPromise instanceof Promise');
 shouldBeTrue('secondPromise instanceof Promise');
 
-shouldThrow('firstPromise.catch(null)', '"TypeError: rejectCallback must be a function or undefined"');
-shouldThrow('firstPromise.catch(37)', '"TypeError: rejectCallback must be a function or undefined"');
+shouldThrow('firstPromise.catch(null)', '"TypeError: onRejected must be a function or undefined"');
+shouldThrow('firstPromise.catch(37)', '"TypeError: onRejected must be a function or undefined"');
 
 reject('hello');
 </script>

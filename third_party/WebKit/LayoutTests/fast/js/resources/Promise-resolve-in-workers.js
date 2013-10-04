@@ -11,7 +11,8 @@ var firstPromise = new Promise(function(resolve) {
 
 var secondPromise = firstPromise.then(function(result) {
   global.thisInFulfillCallback = this;
-  shouldBeTrue('thisInFulfillCallback === secondPromise');
+  shouldBeFalse('thisInFulfillCallback === secondPromise');
+  shouldBeTrue('thisInFulfillCallback === global');
   global.result = result;
   shouldBeEqualToString('result', 'hello');
   finishJSTest();

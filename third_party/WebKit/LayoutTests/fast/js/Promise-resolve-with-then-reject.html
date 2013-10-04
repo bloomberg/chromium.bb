@@ -10,13 +10,12 @@
 description('Test Promise.');
 
 window.jsTestIsAsync = true;
-var callback;
 var value = {
   then: function(fulfillCallback, rejectCallback) {
     testPassed('value.then is called.');
     window.thisValue = this;
     shouldBe('thisValue', 'value');
-    callback = rejectCallback;
+    rejectCallback('hello');
   }
 };
 var promise = new Promise(function(resolve) { resolve(value); });
@@ -33,7 +32,6 @@ promise.then(function(result) {
 
 debug('The promise is not rejected now.');
 
-callback('hello');
 </script>
 <script src="resources/js-test-post.js"></script>
 </body>

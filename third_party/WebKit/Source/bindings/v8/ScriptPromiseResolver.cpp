@@ -124,7 +124,7 @@ void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
     ASSERT(v8::Context::InContext());
     if (!isPending())
         return;
-    V8PromiseCustom::resolve(m_promise.v8Value().As<v8::Object>(), value, V8PromiseCustom::Asynchronous, m_isolate);
+    V8PromiseCustom::resolve(m_promise.v8Value().As<v8::Object>(), value, m_isolate);
     detachPromiseForResolve();
 }
 
@@ -133,7 +133,7 @@ void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
     ASSERT(v8::Context::InContext());
     if (!isPending())
         return;
-    V8PromiseCustom::reject(m_promise.v8Value().As<v8::Object>(), value, V8PromiseCustom::Asynchronous, m_isolate);
+    V8PromiseCustom::reject(m_promise.v8Value().As<v8::Object>(), value, m_isolate);
     detachPromiseForResolve();
 }
 

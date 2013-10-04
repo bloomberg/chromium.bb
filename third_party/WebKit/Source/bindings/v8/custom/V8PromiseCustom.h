@@ -38,13 +38,8 @@ public:
         InternalResultIndex,
         InternalFulfillCallbackIndex,
         InternalRejectCallbackIndex,
+        InternalDerivedPromiseIndex,
         InternalFieldCount, // This entry must always be at the bottom.
-    };
-
-    enum WrapperCallbackEnvironmentFieldIndex {
-        WrapperCallbackEnvironmentPromiseIndex,
-        WrapperCallbackEnvironmentCallbackIndex,
-        WrapperCallbackEnvironmentFieldCount, // This entry must always be at the bottom.
     };
 
     enum PromiseAllEnvironmentFieldIndex {
@@ -67,46 +62,73 @@ public:
         Following,
     };
 
-    enum SynchronousMode {
-        Synchronous,
-        Asynchronous,
-    };
-
     static v8::Local<v8::Object> createPromise(v8::Handle<v8::Object> creationContext, v8::Isolate*);
-
-    // |promise| must be a Promise instance.
-    static void fulfill(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
-    // |promise| must be a Promise instance.
-    static void resolve(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
-    // |promise| must be a Promise instance.
-    static void reject(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
-
-    // |promise| must be a Promise instance.
-    // |fulfillCallback| and |rejectCallback| can be an empty function respectively.
-    static void append(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> fulfillCallback, v8::Handle<v8::Function> rejectCallback, v8::Isolate*);
 
     // |promise| must be a Promise instance.
     static v8::Local<v8::Object> getInternal(v8::Handle<v8::Object> promise);
 
     // |internal| must be a Promise internal object.
-    // Clear the Promise internal object with the given state and result.
-    // This function clears callbacks in the object.
-    static void clearInternal(v8::Handle<v8::Object> internal, PromiseState, v8::Handle<v8::Value> result, v8::Isolate*);
-
-    // |internal| must be a Promise internal object.
     static PromiseState getState(v8::Handle<v8::Object> internal);
+
     // |internal| must be a Promise internal object.
-    static void setState(v8::Handle<v8::Object> internal, PromiseState, v8::Isolate*);
+    // Set a |promise|'s state and result that correspond to the state.
+    static void setState(v8::Handle<v8::Object> internal, PromiseState, v8::Handle<v8::Value>, v8::Isolate*);
 
-    // Call |function| synchronously or asynchronously, depending on |mode|.
-    // If |function| throws an exception, this function catches it and does not rethrow.
-    static void call(v8::Handle<v8::Function> /* function */, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> result, SynchronousMode /* mode */, v8::Isolate*);
-
-    // Return true if |maybePromise| is a Promise object.
+    // Return true if |maybePromise| is a Promise instance.
     static bool isPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate*);
 
-    // Coerces |maybePromise| to a Promise object.
+    // Coerces |maybePromise| to a Promise instance.
     static v8::Local<v8::Object> toPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate*);
+
+    // |promise| must be a Promise instance.
+    static void resolve(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> result, v8::Isolate*);
+
+    // |promise| must be a Promise instance.
+    static void reject(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> result, v8::Isolate*);
+
+    // |promise| must be a Promise instance.
+    // |onFulfilled| and |onRejected| can be an empty value respectively.
+    // Appends |onFulfilled| and/or |onRejected| handlers to |promise|.
+    static v8::Local<v8::Object> then(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Function> onRejected, v8::Isolate*);
+
+    // |promise| must be a Promise instance.
+    // Set a |promise|'s value and propagate it to derived promises.
+    static void setValue(v8::Handle<v8::Object> promise, v8::Handle<v8::Value>, v8::Isolate*);
+
+    // |promise| must be a Promise instance.
+    // Set a |promise|'s failure reason and propagate it to derived promises.
+    static void setReason(v8::Handle<v8::Object> promise, v8::Handle<v8::Value>, v8::Isolate*);
+
+    // |promise| must be a Promise instance.
+    // Propagate a |promise|'s value or reason to all of its derived promies.
+    static void propagateToDerived(v8::Handle<v8::Object> promise, v8::Isolate*);
+
+    // |derivedPromise| and |originator| must be a Promise instance.
+    // |onFulfilled| and |onRejected| can be an empty value respectively.
+    // Propagate |originator|'s state to |derivedPromise|.
+    static void updateDerived(v8::Handle<v8::Object> derivedPromise, v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Function> onRejected, v8::Handle<v8::Object> originator, v8::Isolate*);
+
+    // |derivedPromise| must be a Promise instance.
+    // Propagate a value to |derivedPromise|.
+    static void updateDerivedFromValue(v8::Handle<v8::Object> derivedPromise, v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Value>, v8::Isolate*);
+
+    // |derivedPromise| must be a Promise instance.
+    // Propagate a failure reason to |derivedPromise|.
+    static void updateDerivedFromReason(v8::Handle<v8::Object> derivedPromise, v8::Handle<v8::Function> onRejected, v8::Handle<v8::Value>, v8::Isolate*);
+
+    // |derivedPromise| and |promise| must be a Promise instance.
+    // |onFulfilled| and |onRejected| can be an empty value respectively.
+    // Propagate |promise|'s state to |derivedPromise|.
+    static void updateDerivedFromPromise(v8::Handle<v8::Object> derivedPromise, v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Function> onRejected, v8::Handle<v8::Object> promise, v8::Isolate*);
+
+    // Returns a Promise instance that will be fulfilled or rejected by
+    // |thenable|'s result.
+    static v8::Local<v8::Object> coerceThenable(v8::Handle<v8::Object> thenable, v8::Handle<v8::Function> then, v8::Isolate*);
+
+    // |promise| must be a Promise instance.
+    // Applies a transformation to an argument and use it to update derived
+    // promies.
+    static void callHandler(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, v8::Isolate*);
 };
 
 } // namespace WebCore

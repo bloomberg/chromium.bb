@@ -24,7 +24,8 @@ var thirdPromise = secondPromise.then(function(result) {
   fail('Unexpected invocation of fulfillCallback');
 }, function(result) {
   window.thisInThenCallback = this;
-  shouldBeTrue('thisInThenCallback === thirdPromise');
+  shouldBeFalse('thisInThenCallback === thirdPromise');
+  shouldBeTrue('thisInThenCallback === window');
   window.result = result;
   shouldBeEqualToString('result', 'foobar');
   finishJSTest();
