@@ -102,10 +102,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
     return always_on_top_controller_.get();
   }
 
-  keyboard::KeyboardController* keyboard_controller() {
-    return keyboard_controller_.get();
-  }
-
   ScreenDimmer* screen_dimmer() { return screen_dimmer_.get(); }
 
   // Access the shelf associated with this root window controller,
@@ -214,6 +210,12 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // windows are in fullscreen state, the topmost one is preferred.
   const aura::Window* GetTopmostFullscreenWindow() const;
 
+  // Activate virtual keyboard on current root window controller.
+  void ActivateKeyboard(keyboard::KeyboardController* keyboard_controller);
+
+  // Deactivate virtual keyboard on current root window controller.
+  void DeactivateKeyboard(keyboard::KeyboardController* keyboard_controller);
+
  private:
   void InitLayoutManagers();
 
@@ -224,9 +226,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Creates each of the special window containers that holds windows of various
   // types in the shell UI.
   void CreateContainersInRootWindow(aura::RootWindow* root_window);
-
-  // Initializes the virtual keyboard.
-  void InitKeyboard();
 
   // Enables projection touch HUD.
   void EnableTouchHudProjection();
@@ -242,8 +241,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   RootWindowLayoutManager* root_window_layout_;
 
   scoped_ptr<StackingController> stacking_controller_;
-
-  scoped_ptr<keyboard::KeyboardController> keyboard_controller_;
 
   // The shelf for managing the launcher and the status widget.
   scoped_ptr<ShelfWidget> shelf_;

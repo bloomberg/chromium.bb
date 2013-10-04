@@ -626,11 +626,34 @@ class VirtualKeyboardRootWindowControllerTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardRootWindowControllerTest);
 };
 
+// Test for http://crbug.com/297858. Virtual keyboard container should only show
+// on primary root window.
+TEST_F(VirtualKeyboardRootWindowControllerTest,
+       VirtualKeyboardOnPrimaryRootWindowOnly) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("500x500,500x500");
+
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::RootWindow* primary_root_window = Shell::GetPrimaryRootWindow();
+  aura::RootWindow* secondary_root_window =
+      root_windows[0] == primary_root_window ?
+          root_windows[1] : root_windows[0];
+
+  ASSERT_TRUE(Shell::GetContainer(
+      primary_root_window,
+      internal::kShellWindowId_VirtualKeyboardContainer));
+  ASSERT_FALSE(Shell::GetContainer(
+      secondary_root_window,
+      internal::kShellWindowId_VirtualKeyboardContainer));
+}
+
 // Test for http://crbug.com/263599. Virtual keyboard should be able to receive
 // events at blocked user session.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        ClickVirtualKeyboardInBlockedWindow) {
-  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* keyboard_container = Shell::GetContainer(root_window,
       internal::kShellWindowId_VirtualKeyboardContainer);
   ASSERT_TRUE(keyboard_container);

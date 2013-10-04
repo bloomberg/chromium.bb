@@ -227,7 +227,7 @@ class KeyboardControllerTest : public testing::Test {
 };
 
 TEST_F(KeyboardControllerTest, KeyboardSize) {
-  scoped_ptr<aura::Window> container(controller()->GetContainerWindow());
+  aura::Window* container(controller()->GetContainerWindow());
   gfx::Rect bounds(0, 0, 100, 100);
   container->SetBounds(bounds);
 
@@ -252,11 +252,10 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   window->Show();
   window->Focus();
 
-  scoped_ptr<aura::Window> keyboard_container(
-      controller()->GetContainerWindow());
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
   keyboard_container->SetBounds(root_bounds);
 
-  root_window()->AddChild(keyboard_container.get());
+  root_window()->AddChild(keyboard_container);
   keyboard_container->Show();
 
   ShowKeyboard();
@@ -297,12 +296,11 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   TestTextInputClient no_input_client_1(ui::TEXT_INPUT_TYPE_NONE);
   input_method->SetFocusedTextInputClient(&input_client_0);
 
-  scoped_ptr<aura::Window> keyboard_container(
-      controller()->GetContainerWindow());
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
   scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
-      new KeyboardContainerObserver(keyboard_container.get()));
+      new KeyboardContainerObserver(keyboard_container));
   keyboard_container->SetBounds(root_bounds);
-  root_window()->AddChild(keyboard_container.get());
+  root_window()->AddChild(keyboard_container);
 
   EXPECT_TRUE(keyboard_container->IsVisible());
 

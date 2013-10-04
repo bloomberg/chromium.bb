@@ -122,7 +122,6 @@ class KeyboardLayoutManager : public aura::LayoutManager {
 
 KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
     : proxy_(proxy),
-      container_(NULL),
       input_method_(NULL),
       keyboard_visible_(false),
       weak_factory_(this) {
@@ -132,21 +131,22 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
 }
 
 KeyboardController::~KeyboardController() {
-  if (container_)
+  if (container_.get())
     container_->RemoveObserver(this);
   if (input_method_)
     input_method_->RemoveObserver(this);
 }
 
 aura::Window* KeyboardController::GetContainerWindow() {
-  if (!container_) {
-    container_ = new aura::Window(new KeyboardWindowDelegate());
+  if (!container_.get()) {
+    container_.reset(new aura::Window(new KeyboardWindowDelegate()));
     container_->SetName("KeyboardContainer");
+    container_->set_owned_by_parent(false);
     container_->Init(ui::LAYER_NOT_DRAWN);
     container_->AddObserver(this);
-    container_->SetLayoutManager(new KeyboardLayoutManager(container_));
+    container_->SetLayoutManager(new KeyboardLayoutManager(container_.get()));
   }
-  return container_;
+  return container_.get();
 }
 
 void KeyboardController::HideKeyboard() {
@@ -156,7 +156,7 @@ void KeyboardController::HideKeyboard() {
                     observer_list_,
                     OnKeyboardBoundsChanging(gfx::Rect()));
 
-  proxy_->HideKeyboardContainer(container_);
+  proxy_->HideKeyboardContainer(container_.get());
 }
 
 void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
@@ -169,18 +169,13 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
 
 void KeyboardController::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
-  if (params.new_parent && params.target == container_)
+  if (params.new_parent && params.target == container_.get())
     OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
-}
-
-void KeyboardController::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(container_, window);
-  container_ = NULL;
 }
 
 void KeyboardController::OnTextInputStateChanged(
     const ui::TextInputClient* client) {
-  if (!container_)
+  if (!container_.get())
     return;
 
   bool was_showing = keyboard_visible_;
@@ -197,7 +192,7 @@ void KeyboardController::OnTextInputStateChanged(
       container_->layout_manager()->OnWindowResized();
     }
     proxy_->SetUpdateInputType(type);
-    container_->parent()->StackChildAtTop(container_);
+    container_->parent()->StackChildAtTop(container_.get());
     should_show = true;
   }
 
@@ -212,7 +207,7 @@ void KeyboardController::OnTextInputStateChanged(
           KeyboardControllerObserver,
           observer_list_,
           OnKeyboardBoundsChanging(container_->children()[0]->bounds()));
-      proxy_->ShowKeyboardContainer(container_);
+      proxy_->ShowKeyboardContainer(container_.get());
     } else {
       // Set the visibility state here so that any queries for visibility
       // before the timer fires returns the correct future value.

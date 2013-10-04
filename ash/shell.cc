@@ -92,6 +92,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/keyboard/keyboard.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/corewm/compound_event_filter.h"
@@ -156,150 +157,6 @@ bool Shell::initially_hide_cursor_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
-
-Shell::Shell(ShellDelegate* delegate)
-    : screen_(new ScreenAsh),
-      target_root_window_(NULL),
-      scoped_target_root_window_(NULL),
-      delegate_(delegate),
-      window_positioner_(new WindowPositioner),
-      activation_client_(NULL),
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-      output_configurator_(new chromeos::OutputConfigurator()),
-#endif  // defined(OS_CHROMEOS)
-      native_cursor_manager_(new AshNativeCursorManager),
-      cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
-          native_cursor_manager_)),
-      browser_context_(NULL),
-      simulate_modal_window_open_for_testing_(false),
-      is_touch_hud_projection_enabled_(false) {
-  DCHECK(delegate_.get());
-  display_manager_.reset(new internal::DisplayManager);
-
-  ANNOTATE_LEAKING_OBJECT_PTR(screen_);  // see crbug.com/156466
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
-  if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
-  display_controller_.reset(new DisplayController);
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-  bool is_panel_fitting_disabled =
-      content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-          gpu::GPU_FEATURE_TYPE_PANEL_FITTING);
-
-  output_configurator_->Init(!is_panel_fitting_disabled);
-
-  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
-      output_configurator());
-  // We can't do this with a root window listener because XI_HierarchyChanged
-  // messages don't have a target window.
-  base::MessagePumpX11::Current()->AddObserver(output_configurator());
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
-  internal::PowerStatus::Initialize();
-#endif
-}
-
-Shell::~Shell() {
-  TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
-
-  views::FocusManagerFactory::Install(NULL);
-
-  // Remove the focus from any window. This will prevent overhead and side
-  // effects (e.g. crashes) from changing focus during shutdown.
-  // See bug crbug.com/134502.
-  aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(NULL);
-
-  // Please keep in same order as in Init() because it's easy to miss one.
-  if (window_modality_controller_)
-    window_modality_controller_.reset();
-  RemovePreTargetHandler(event_rewriter_filter_.get());
-  RemovePreTargetHandler(user_activity_detector_.get());
-  RemovePreTargetHandler(overlay_filter_.get());
-  RemovePreTargetHandler(input_method_filter_.get());
-  if (mouse_cursor_filter_)
-    RemovePreTargetHandler(mouse_cursor_filter_.get());
-  RemovePreTargetHandler(system_gesture_filter_.get());
-  RemovePreTargetHandler(keyboard_metrics_filter_.get());
-  RemovePreTargetHandler(event_transformation_handler_.get());
-  RemovePreTargetHandler(accelerator_filter_.get());
-
-  // TooltipController is deleted with the Shell so removing its references.
-  RemovePreTargetHandler(tooltip_controller_.get());
-
-  // AppList needs to be released before shelf layout manager, which is
-  // destroyed with launcher container in the loop below. However, app list
-  // container is now on top of launcher container and released after it.
-  // TODO(xiyuan): Move it back when app list container is no longer needed.
-  app_list_controller_.reset();
-
-  // Destroy SystemTrayDelegate before destroying the status area(s).
-  system_tray_delegate_->Shutdown();
-  system_tray_delegate_.reset();
-
-  locale_notification_controller_.reset();
-
-  // Drag-and-drop must be canceled prior to close all windows.
-  drag_drop_controller_.reset();
-
-  // Destroy all child windows including widgets.
-  display_controller_->CloseChildWindows();
-
-  // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems
-  // needs to remove observers from it.
-  system_tray_notifier_.reset();
-
-  // These need a valid Shell instance to clean up properly, so explicitly
-  // delete them before invalidating the instance.
-  // Alphabetical. TODO(oshima): sort.
-  magnification_controller_.reset();
-  partial_magnification_controller_.reset();
-  resize_shadow_controller_.reset();
-  shadow_controller_.reset();
-  tooltip_controller_.reset();
-  event_client_.reset();
-  window_cycle_controller_.reset();
-  nested_dispatcher_controller_.reset();
-  user_action_client_.reset();
-  visibility_controller_.reset();
-  launcher_delegate_.reset();
-  launcher_model_.reset();
-  video_detector_.reset();
-
-  power_button_controller_.reset();
-  lock_state_controller_.reset();
-  mru_window_tracker_.reset();
-
-  resolution_notification_controller_.reset();
-  desktop_background_controller_.reset();
-
-  // This also deletes all RootWindows. Note that we invoke Shutdown() on
-  // DisplayController before resetting |display_controller_|, since destruction
-  // of its owned RootWindowControllers relies on the value.
-  display_controller_->Shutdown();
-  display_controller_.reset();
-  screen_position_controller_.reset();
-
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-   if (display_change_observer_)
-    output_configurator_->RemoveObserver(display_change_observer_.get());
-  if (output_configurator_animation_)
-    output_configurator_->RemoveObserver(output_configurator_animation_.get());
-  if (display_error_observer_)
-    output_configurator_->RemoveObserver(display_error_observer_.get());
-  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(
-      output_configurator());
-  base::MessagePumpX11::Current()->RemoveObserver(output_configurator());
-  display_change_observer_.reset();
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
-  internal::PowerStatus::Shutdown();
-#endif
-
-  DCHECK(instance_ == this);
-  instance_ = NULL;
-}
 
 // static
 Shell* Shell::CreateInstance(ShellDelegate* delegate) {
@@ -398,212 +255,6 @@ bool Shell::IsForcedMaximizeMode() {
   return command_line->HasSwitch(switches::kForcedMaximizeMode);
 }
 
-void Shell::Init() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-  delegate_->PreInit();
-  bool display_initialized = false;
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-  output_configurator_animation_.reset(
-      new internal::OutputConfiguratorAnimation());
-  output_configurator_->AddObserver(output_configurator_animation_.get());
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    display_change_observer_.reset(new internal::DisplayChangeObserver);
-    // Register |display_change_observer_| first so that the rest of
-    // observer gets invoked after the root windows are configured.
-    output_configurator_->AddObserver(display_change_observer_.get());
-    display_error_observer_.reset(new internal::DisplayErrorObserver());
-    output_configurator_->AddObserver(display_error_observer_.get());
-    output_configurator_->set_state_controller(display_change_observer_.get());
-    if (!command_line->HasSwitch(ash::switches::kAshDisableSoftwareMirroring))
-      output_configurator_->set_mirroring_controller(display_manager_.get());
-    output_configurator_->Start(
-        delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
-    display_initialized = true;
-  }
-#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
-  if (!display_initialized)
-    display_manager_->InitFromCommandLine();
-
-  // Install the custom factory first so that views::FocusManagers for Tray,
-  // Launcher, and WallPaper could be created by the factory.
-  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
-
-  // The WindowModalityController needs to be at the front of the input event
-  // pretarget handler list to ensure that it processes input events when modal
-  // windows are active.
-  window_modality_controller_.reset(
-      new views::corewm::WindowModalityController(this));
-
-  AddPreTargetHandler(this);
-
-  env_filter_.reset(new views::corewm::CompoundEventFilter);
-  AddPreTargetHandler(env_filter_.get());
-
-  // Env creates the compositor. Historically it seems to have been implicitly
-  // initialized first by the ActivationController, but now that FocusController
-  // no longer does this we need to do it explicitly.
-  aura::Env::GetInstance();
-  views::corewm::FocusController* focus_controller =
-      new views::corewm::FocusController(new wm::AshFocusRules);
-  focus_client_.reset(focus_controller);
-  activation_client_ = focus_controller;
-  activation_client_->AddObserver(this);
-  focus_cycler_.reset(new internal::FocusCycler());
-
-  screen_position_controller_.reset(new internal::ScreenPositionController);
-  root_window_host_factory_.reset(delegate_->CreateRootWindowHostFactory());
-
-  display_controller_->Start();
-  display_controller_->InitPrimaryDisplay();
-  aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
-  target_root_window_ = root_window;
-
-  resolution_notification_controller_.reset(
-      new internal::ResolutionNotificationController);
-
-  cursor_manager_.SetDisplay(DisplayController::GetPrimaryDisplay());
-
-  nested_dispatcher_controller_.reset(new NestedDispatcherController);
-  accelerator_controller_.reset(new AcceleratorController);
-
-  // The order in which event filters are added is significant.
-  event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
-  AddPreTargetHandler(event_rewriter_filter_.get());
-
-  // UserActivityDetector passes events to observers, so let them get
-  // rewritten first.
-  user_activity_detector_.reset(new UserActivityDetector);
-  AddPreTargetHandler(user_activity_detector_.get());
-
-  overlay_filter_.reset(new internal::OverlayEventFilter);
-  AddPreTargetHandler(overlay_filter_.get());
-  AddShellObserver(overlay_filter_.get());
-
-  input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
-                                 root_window->GetAcceleratedWidget()));
-  AddPreTargetHandler(input_method_filter_.get());
-
-  accelerator_filter_.reset(new internal::AcceleratorFilter);
-  AddPreTargetHandler(accelerator_filter_.get());
-
-  event_transformation_handler_.reset(new internal::EventTransformationHandler);
-  AddPreTargetHandler(event_transformation_handler_.get());
-
-  system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
-  AddPreTargetHandler(system_gesture_filter_.get());
-
-  keyboard_metrics_filter_.reset(new internal::KeyboardUMAEventFilter);
-  AddPreTargetHandler(keyboard_metrics_filter_.get());
-
-  // The keyboard system must be initialized before the RootWindowController is
-  // created.
-  if (keyboard::IsKeyboardEnabled())
-    keyboard::InitializeKeyboard();
-
-  lock_state_controller_.reset(new LockStateController);
-  power_button_controller_.reset(new PowerButtonController(
-      lock_state_controller_.get()));
-  AddShellObserver(lock_state_controller_.get());
-
-  drag_drop_controller_.reset(new internal::DragDropController);
-  mouse_cursor_filter_.reset(new internal::MouseCursorEventFilter());
-  PrependPreTargetHandler(mouse_cursor_filter_.get());
-
-  // Create Controllers that may need root window.
-  // TODO(oshima): Move as many controllers before creating
-  // RootWindowController as possible.
-  visibility_controller_.reset(new AshVisibilityController);
-  user_action_client_.reset(delegate_->CreateUserActionClient());
-
-  magnification_controller_.reset(
-      MagnificationController::CreateInstance());
-  mru_window_tracker_.reset(new MruWindowTracker(activation_client_));
-
-  partial_magnification_controller_.reset(
-      new PartialMagnificationController());
-
-  high_contrast_controller_.reset(new HighContrastController);
-  video_detector_.reset(new VideoDetector);
-  window_cycle_controller_.reset(new WindowCycleController());
-  window_selector_controller_.reset(new WindowSelectorController());
-
-  tooltip_controller_.reset(new views::corewm::TooltipController(
-                                gfx::SCREEN_TYPE_ALTERNATE));
-  AddPreTargetHandler(tooltip_controller_.get());
-
-  event_client_.reset(new internal::EventClientImpl);
-
-  // This controller needs to be set before SetupManagedWindowMode.
-  desktop_background_controller_.reset(new DesktopBackgroundController());
-  user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
-
-  // StatusAreaWidget uses Shell's CapsLockDelegate.
-  caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
-
-  session_state_delegate_.reset(delegate_->CreateSessionStateDelegate());
-
-  if (!command_line->HasSwitch(views::corewm::switches::kNoDropShadows)) {
-    resize_shadow_controller_.reset(new internal::ResizeShadowController());
-    shadow_controller_.reset(
-        new views::corewm::ShadowController(activation_client_));
-  }
-
-  // Create system_tray_notifier_ before the delegate.
-  system_tray_notifier_.reset(new ash::SystemTrayNotifier());
-
-  // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
-  system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
-  DCHECK(system_tray_delegate_.get());
-
-  internal::RootWindowController* root_window_controller =
-      new internal::RootWindowController(root_window);
-  InitRootWindowController(root_window_controller,
-                           delegate_->IsFirstRunAfterBoot());
-
-  locale_notification_controller_.reset(
-      new internal::LocaleNotificationController);
-
-  // Initialize system_tray_delegate_ after StatusAreaWidget is created.
-  system_tray_delegate_->Initialize();
-
-  display_controller_->InitSecondaryDisplays();
-
-  // Force Layout
-  root_window_controller->root_window_layout()->OnWindowResized();
-
-  // It needs to be created after OnWindowResized has been called, otherwise the
-  // widget will not paint when restoring after a browser crash.  Also it needs
-  // to be created after InitSecondaryDisplays() to initialize the wallpapers in
-  // the correct size.
-  user_wallpaper_delegate_->InitializeWallpaper();
-
-  if (initially_hide_cursor_)
-    cursor_manager_.HideCursor();
-  cursor_manager_.SetCursor(ui::kCursorPointer);
-
-  if (!cursor_manager_.IsCursorVisible()) {
-    // Cursor might have been hidden by something other than chrome.
-    // Let the first mouse event show the cursor.
-    env_filter_->set_cursor_hidden_by_filter(true);
-  }
-
-  // Set accelerator controller delegates.
-#if defined(OS_CHROMEOS)
-  accelerator_controller_->SetBrightnessControlDelegate(
-      scoped_ptr<ash::BrightnessControlDelegate>(
-          new ash::system::BrightnessControllerChromeos).Pass());
-#endif
-
-  // The compositor thread and main message loop have to be running in
-  // order to create mirror window. Run it after the main message loop
-  // is started.
-  base::MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&internal::DisplayManager::CreateMirrorWindowIfAny,
-                 base::Unretained(display_manager_.get())));
-}
-
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
                             ui::MenuSourceType source_type) {
   // No context menus if there is no session with an active user.
@@ -687,6 +338,11 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
 }
 
 void Shell::OnLoginStateChanged(user::LoginStatus status) {
+  if (status != user::LOGGED_IN_NONE) {
+    // TODO(bshe): Primary root window controller may not be the controller to
+    // attach virtual keyboard. See http://crbug.com/303429
+    InitKeyboard(GetPrimaryRootWindowController());
+  }
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnLoginStateChanged(status));
 }
 
@@ -876,6 +532,379 @@ void Shell::DoInitialWorkspaceAnimation() {
       DoInitialAnimation();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Shell, private:
+
+Shell::Shell(ShellDelegate* delegate)
+    : screen_(new ScreenAsh),
+      target_root_window_(NULL),
+      scoped_target_root_window_(NULL),
+      delegate_(delegate),
+      window_positioner_(new WindowPositioner),
+      activation_client_(NULL),
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+      output_configurator_(new chromeos::OutputConfigurator()),
+#endif  // defined(OS_CHROMEOS)
+      native_cursor_manager_(new AshNativeCursorManager),
+      cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
+          native_cursor_manager_)),
+      browser_context_(NULL),
+      simulate_modal_window_open_for_testing_(false),
+      is_touch_hud_projection_enabled_(false) {
+  DCHECK(delegate_.get());
+  display_manager_.reset(new internal::DisplayManager);
+
+  ANNOTATE_LEAKING_OBJECT_PTR(screen_);  // see crbug.com/156466
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
+  if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
+  display_controller_.reset(new DisplayController);
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  bool is_panel_fitting_disabled =
+      content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
+          gpu::GPU_FEATURE_TYPE_PANEL_FITTING);
+
+  output_configurator_->Init(!is_panel_fitting_disabled);
+
+  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
+      output_configurator());
+  // We can't do this with a root window listener because XI_HierarchyChanged
+  // messages don't have a target window.
+  base::MessagePumpX11::Current()->AddObserver(output_configurator());
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+  internal::PowerStatus::Initialize();
+#endif
+}
+
+Shell::~Shell() {
+  TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
+
+  views::FocusManagerFactory::Install(NULL);
+
+  // Remove the focus from any window. This will prevent overhead and side
+  // effects (e.g. crashes) from changing focus during shutdown.
+  // See bug crbug.com/134502.
+  aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(NULL);
+
+  // Please keep in same order as in Init() because it's easy to miss one.
+  if (window_modality_controller_)
+    window_modality_controller_.reset();
+  RemovePreTargetHandler(event_rewriter_filter_.get());
+  RemovePreTargetHandler(user_activity_detector_.get());
+  RemovePreTargetHandler(overlay_filter_.get());
+  RemovePreTargetHandler(input_method_filter_.get());
+  if (mouse_cursor_filter_)
+    RemovePreTargetHandler(mouse_cursor_filter_.get());
+  RemovePreTargetHandler(system_gesture_filter_.get());
+  RemovePreTargetHandler(keyboard_metrics_filter_.get());
+  RemovePreTargetHandler(event_transformation_handler_.get());
+  RemovePreTargetHandler(accelerator_filter_.get());
+
+  // TooltipController is deleted with the Shell so removing its references.
+  RemovePreTargetHandler(tooltip_controller_.get());
+
+  // AppList needs to be released before shelf layout manager, which is
+  // destroyed with launcher container in the loop below. However, app list
+  // container is now on top of launcher container and released after it.
+  // TODO(xiyuan): Move it back when app list container is no longer needed.
+  app_list_controller_.reset();
+
+  // Destroy SystemTrayDelegate before destroying the status area(s).
+  system_tray_delegate_->Shutdown();
+  system_tray_delegate_.reset();
+
+  locale_notification_controller_.reset();
+
+  // Drag-and-drop must be canceled prior to close all windows.
+  drag_drop_controller_.reset();
+
+  // Destroy all child windows including widgets.
+  display_controller_->CloseChildWindows();
+
+  // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems
+  // needs to remove observers from it.
+  system_tray_notifier_.reset();
+
+  // These need a valid Shell instance to clean up properly, so explicitly
+  // delete them before invalidating the instance.
+  // Alphabetical. TODO(oshima): sort.
+  magnification_controller_.reset();
+  partial_magnification_controller_.reset();
+  resize_shadow_controller_.reset();
+  shadow_controller_.reset();
+  tooltip_controller_.reset();
+  event_client_.reset();
+  window_cycle_controller_.reset();
+  nested_dispatcher_controller_.reset();
+  user_action_client_.reset();
+  visibility_controller_.reset();
+  launcher_delegate_.reset();
+  launcher_model_.reset();
+  video_detector_.reset();
+
+  power_button_controller_.reset();
+  lock_state_controller_.reset();
+  mru_window_tracker_.reset();
+
+  resolution_notification_controller_.reset();
+  desktop_background_controller_.reset();
+
+  // This also deletes all RootWindows. Note that we invoke Shutdown() on
+  // DisplayController before resetting |display_controller_|, since destruction
+  // of its owned RootWindowControllers relies on the value.
+  display_controller_->Shutdown();
+  display_controller_.reset();
+  screen_position_controller_.reset();
+
+  keyboard_controller_.reset();
+
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+   if (display_change_observer_)
+    output_configurator_->RemoveObserver(display_change_observer_.get());
+  if (output_configurator_animation_)
+    output_configurator_->RemoveObserver(output_configurator_animation_.get());
+  if (display_error_observer_)
+    output_configurator_->RemoveObserver(display_error_observer_.get());
+  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(
+      output_configurator());
+  base::MessagePumpX11::Current()->RemoveObserver(output_configurator());
+  display_change_observer_.reset();
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+  internal::PowerStatus::Shutdown();
+#endif
+
+  DCHECK(instance_ == this);
+  instance_ = NULL;
+}
+
+void Shell::Init() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  delegate_->PreInit();
+  bool display_initialized = false;
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  output_configurator_animation_.reset(
+      new internal::OutputConfiguratorAnimation());
+  output_configurator_->AddObserver(output_configurator_animation_.get());
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    display_change_observer_.reset(new internal::DisplayChangeObserver);
+    // Register |display_change_observer_| first so that the rest of
+    // observer gets invoked after the root windows are configured.
+    output_configurator_->AddObserver(display_change_observer_.get());
+    display_error_observer_.reset(new internal::DisplayErrorObserver());
+    output_configurator_->AddObserver(display_error_observer_.get());
+    output_configurator_->set_state_controller(display_change_observer_.get());
+    if (!command_line->HasSwitch(ash::switches::kAshDisableSoftwareMirroring))
+      output_configurator_->set_mirroring_controller(display_manager_.get());
+    output_configurator_->Start(
+        delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
+    display_initialized = true;
+  }
+#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+  if (!display_initialized)
+    display_manager_->InitFromCommandLine();
+
+  // Install the custom factory first so that views::FocusManagers for Tray,
+  // Launcher, and WallPaper could be created by the factory.
+  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
+
+  // The WindowModalityController needs to be at the front of the input event
+  // pretarget handler list to ensure that it processes input events when modal
+  // windows are active.
+  window_modality_controller_.reset(
+      new views::corewm::WindowModalityController(this));
+
+  AddPreTargetHandler(this);
+
+  env_filter_.reset(new views::corewm::CompoundEventFilter);
+  AddPreTargetHandler(env_filter_.get());
+
+  // Env creates the compositor. Historically it seems to have been implicitly
+  // initialized first by the ActivationController, but now that FocusController
+  // no longer does this we need to do it explicitly.
+  aura::Env::GetInstance();
+  views::corewm::FocusController* focus_controller =
+      new views::corewm::FocusController(new wm::AshFocusRules);
+  focus_client_.reset(focus_controller);
+  activation_client_ = focus_controller;
+  activation_client_->AddObserver(this);
+  focus_cycler_.reset(new internal::FocusCycler());
+
+  screen_position_controller_.reset(new internal::ScreenPositionController);
+  root_window_host_factory_.reset(delegate_->CreateRootWindowHostFactory());
+
+  display_controller_->Start();
+  display_controller_->InitPrimaryDisplay();
+  aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
+  target_root_window_ = root_window;
+
+  resolution_notification_controller_.reset(
+      new internal::ResolutionNotificationController);
+
+  cursor_manager_.SetDisplay(DisplayController::GetPrimaryDisplay());
+
+  nested_dispatcher_controller_.reset(new NestedDispatcherController);
+  accelerator_controller_.reset(new AcceleratorController);
+
+  // The order in which event filters are added is significant.
+  event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
+  AddPreTargetHandler(event_rewriter_filter_.get());
+
+  // UserActivityDetector passes events to observers, so let them get
+  // rewritten first.
+  user_activity_detector_.reset(new UserActivityDetector);
+  AddPreTargetHandler(user_activity_detector_.get());
+
+  overlay_filter_.reset(new internal::OverlayEventFilter);
+  AddPreTargetHandler(overlay_filter_.get());
+  AddShellObserver(overlay_filter_.get());
+
+  input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
+                                 root_window->GetAcceleratedWidget()));
+  AddPreTargetHandler(input_method_filter_.get());
+
+  accelerator_filter_.reset(new internal::AcceleratorFilter);
+  AddPreTargetHandler(accelerator_filter_.get());
+
+  event_transformation_handler_.reset(new internal::EventTransformationHandler);
+  AddPreTargetHandler(event_transformation_handler_.get());
+
+  system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
+  AddPreTargetHandler(system_gesture_filter_.get());
+
+  keyboard_metrics_filter_.reset(new internal::KeyboardUMAEventFilter);
+  AddPreTargetHandler(keyboard_metrics_filter_.get());
+
+  // The keyboard system must be initialized before the RootWindowController is
+  // created.
+  if (keyboard::IsKeyboardEnabled())
+    keyboard::InitializeKeyboard();
+
+  lock_state_controller_.reset(new LockStateController);
+  power_button_controller_.reset(new PowerButtonController(
+      lock_state_controller_.get()));
+  AddShellObserver(lock_state_controller_.get());
+
+  drag_drop_controller_.reset(new internal::DragDropController);
+  mouse_cursor_filter_.reset(new internal::MouseCursorEventFilter());
+  PrependPreTargetHandler(mouse_cursor_filter_.get());
+
+  // Create Controllers that may need root window.
+  // TODO(oshima): Move as many controllers before creating
+  // RootWindowController as possible.
+  visibility_controller_.reset(new AshVisibilityController);
+  user_action_client_.reset(delegate_->CreateUserActionClient());
+
+  magnification_controller_.reset(
+      MagnificationController::CreateInstance());
+  mru_window_tracker_.reset(new MruWindowTracker(activation_client_));
+
+  partial_magnification_controller_.reset(
+      new PartialMagnificationController());
+
+  high_contrast_controller_.reset(new HighContrastController);
+  video_detector_.reset(new VideoDetector);
+  window_cycle_controller_.reset(new WindowCycleController());
+  window_selector_controller_.reset(new WindowSelectorController());
+
+  tooltip_controller_.reset(new views::corewm::TooltipController(
+                                gfx::SCREEN_TYPE_ALTERNATE));
+  AddPreTargetHandler(tooltip_controller_.get());
+
+  event_client_.reset(new internal::EventClientImpl);
+
+  // This controller needs to be set before SetupManagedWindowMode.
+  desktop_background_controller_.reset(new DesktopBackgroundController());
+  user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
+
+  // StatusAreaWidget uses Shell's CapsLockDelegate.
+  caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
+
+  session_state_delegate_.reset(delegate_->CreateSessionStateDelegate());
+
+  if (!command_line->HasSwitch(views::corewm::switches::kNoDropShadows)) {
+    resize_shadow_controller_.reset(new internal::ResizeShadowController());
+    shadow_controller_.reset(
+        new views::corewm::ShadowController(activation_client_));
+  }
+
+  // Create system_tray_notifier_ before the delegate.
+  system_tray_notifier_.reset(new ash::SystemTrayNotifier());
+
+  // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
+  system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
+  DCHECK(system_tray_delegate_.get());
+
+  internal::RootWindowController* root_window_controller =
+      new internal::RootWindowController(root_window);
+  InitRootWindowController(root_window_controller,
+                           delegate_->IsFirstRunAfterBoot());
+  InitKeyboard(root_window_controller);
+
+  locale_notification_controller_.reset(
+      new internal::LocaleNotificationController);
+
+  // Initialize system_tray_delegate_ after StatusAreaWidget is created.
+  system_tray_delegate_->Initialize();
+
+  display_controller_->InitSecondaryDisplays();
+
+  // Force Layout
+  root_window_controller->root_window_layout()->OnWindowResized();
+
+  // It needs to be created after OnWindowResized has been called, otherwise the
+  // widget will not paint when restoring after a browser crash.  Also it needs
+  // to be created after InitSecondaryDisplays() to initialize the wallpapers in
+  // the correct size.
+  user_wallpaper_delegate_->InitializeWallpaper();
+
+  if (initially_hide_cursor_)
+    cursor_manager_.HideCursor();
+  cursor_manager_.SetCursor(ui::kCursorPointer);
+
+  if (!cursor_manager_.IsCursorVisible()) {
+    // Cursor might have been hidden by something other than chrome.
+    // Let the first mouse event show the cursor.
+    env_filter_->set_cursor_hidden_by_filter(true);
+  }
+
+  // Set accelerator controller delegates.
+#if defined(OS_CHROMEOS)
+  accelerator_controller_->SetBrightnessControlDelegate(
+      scoped_ptr<ash::BrightnessControlDelegate>(
+          new ash::system::BrightnessControllerChromeos).Pass());
+#endif
+
+  // The compositor thread and main message loop have to be running in
+  // order to create mirror window. Run it after the main message loop
+  // is started.
+  base::MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&internal::DisplayManager::CreateMirrorWindowIfAny,
+                 base::Unretained(display_manager_.get())));
+}
+
+void Shell::InitKeyboard(internal::RootWindowController* root) {
+  if (keyboard::IsKeyboardEnabled()) {
+    if (keyboard_controller_.get()) {
+      RootWindowControllerList controllers = GetAllRootWindowControllers();
+      for (RootWindowControllerList::iterator iter = controllers.begin();
+           iter != controllers.end(); ++iter) {
+        (*iter)->DeactivateKeyboard(keyboard_controller_.get());
+      }
+    }
+    keyboard::KeyboardControllerProxy* proxy =
+        delegate_->CreateKeyboardControllerProxy();
+    keyboard_controller_.reset(
+        new keyboard::KeyboardController(proxy));
+    root->ActivateKeyboard(keyboard_controller_.get());
+  }
+}
+
 void Shell::InitRootWindowController(
     internal::RootWindowController* controller,
     bool first_run_after_boot) {
@@ -909,9 +938,6 @@ void Shell::InitRootWindowController(
 
   controller->Init(first_run_after_boot);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Shell, private:
 
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {
   RootWindowControllerList controllers = GetAllRootWindowControllers();

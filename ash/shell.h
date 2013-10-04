@@ -49,6 +49,11 @@ class ImageSkia;
 class Point;
 class Rect;
 }
+
+namespace keyboard {
+class KeyboardController;
+}
+
 namespace ui {
 class Layer;
 }
@@ -276,6 +281,10 @@ class ASH_EXPORT Shell
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
+  keyboard::KeyboardController* keyboard_controller() {
+    return keyboard_controller_.get();
+  }
+
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }
@@ -502,6 +511,9 @@ class ASH_EXPORT Shell
 
   void Init();
 
+  // Initializes virtual keyboard controller and attaches it to |root|.
+  void InitKeyboard(internal::RootWindowController* root);
+
   // Initializes the root window and root window controller so that it
   // can host browser windows. |first_run_after_boot| is true for the
   // primary display only first time after boot.
@@ -540,6 +552,7 @@ class ASH_EXPORT Shell
 
   std::vector<WindowAndBoundsPair> to_restore_;
 
+  scoped_ptr<keyboard::KeyboardController> keyboard_controller_;
   scoped_ptr<NestedDispatcherController> nested_dispatcher_controller_;
   scoped_ptr<AcceleratorController> accelerator_controller_;
   scoped_ptr<ShellDelegate> delegate_;

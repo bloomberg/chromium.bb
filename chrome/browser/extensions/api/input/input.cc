@@ -87,8 +87,7 @@ bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  ash::Shell::GetPrimaryRootWindowController()->keyboard_controller()->
-      HideKeyboard();
+  ash::Shell::GetInstance()->keyboard_controller()->HideKeyboard();
 
   return true;
 #endif

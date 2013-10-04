@@ -140,6 +140,11 @@ bool AshKeyboardControllerProxy::OnMessageReceived(
 
 void AshKeyboardControllerProxy::ShowKeyboardContainer(
     aura::Window* container) {
+  // TODO(bshe): Implement logic to decide which root window should display
+  // virtual keyboard. http://crbug.com/303429
+  if (container->GetRootWindow() != ash::Shell::GetPrimaryRootWindow())
+    NOTIMPLEMENTED();
+
   KeyboardControllerProxy::ShowKeyboardContainer(container);
   gfx::Rect showing_area =
       ash::DisplayController::GetPrimaryDisplay().work_area();

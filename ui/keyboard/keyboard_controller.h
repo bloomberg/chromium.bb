@@ -39,8 +39,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   explicit KeyboardController(KeyboardControllerProxy* proxy);
   virtual ~KeyboardController();
 
-  // Returns the container for the keyboard, which is then owned by the caller.
-  // It is the responsibility of the caller to Show() the returned window.
+  // Returns the container for the keyboard, which is owned by
+  // KeyboardController.
   aura::Window* GetContainerWindow();
 
   // Hides virtual keyboard and notifies observer bounds change.
@@ -59,7 +59,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // aura::WindowObserver overrides
   virtual void OnWindowHierarchyChanged(
       const HierarchyChangeParams& params) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // InputMethodObserver overrides
   virtual void OnTextInputTypeChanged(
@@ -80,7 +79,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   bool WillHideKeyboard() const;
 
   scoped_ptr<KeyboardControllerProxy> proxy_;
-  aura::Window* container_;
+  scoped_ptr<aura::Window> container_;
   ui::InputMethod* input_method_;
   bool keyboard_visible_;
   base::WeakPtrFactory<KeyboardController> weak_factory_;

@@ -331,7 +331,6 @@ void RootWindowController::Init(bool first_run_after_boot) {
   CreateSystemBackground(first_run_after_boot);
 
   InitLayoutManagers();
-  InitKeyboard();
   InitTouchHuds();
 
   if (Shell::GetPrimaryRootWindowController()->
@@ -406,6 +405,10 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 
 void RootWindowController::CloseChildWindows() {
   mouse_event_target_.reset();
+
+  // Deactivate keyboard container before closing child windows and shutting
+  // down associated layout managers.
+  DeactivateKeyboard(Shell::GetInstance()->keyboard_controller());
 
   if (!shelf_.get())
     return;
@@ -528,28 +531,39 @@ const aura::Window* RootWindowController::GetTopmostFullscreenWindow() const {
   return NULL;
 }
 
-void RootWindowController::InitKeyboard() {
-  if (keyboard::IsKeyboardEnabled()) {
-    aura::Window* parent = root_window();
+void RootWindowController::ActivateKeyboard(
+    keyboard::KeyboardController* keyboard_controller) {
+  if (!keyboard::IsKeyboardEnabled() ||
+      GetContainer(kShellWindowId_VirtualKeyboardContainer)) {
+    return;
+  }
+  DCHECK(keyboard_controller);
+  keyboard_controller->AddObserver(shelf()->shelf_layout_manager());
+  keyboard_controller->AddObserver(panel_layout_manager_);
+  keyboard_controller->AddObserver(docked_layout_manager_);
+  aura::Window* parent = root_window();
+  aura::Window* keyboard_container =
+      keyboard_controller->GetContainerWindow();
+  keyboard_container->set_id(kShellWindowId_VirtualKeyboardContainer);
+  parent->AddChild(keyboard_container);
+  // TODO(oshima): Bounds of keyboard container should be handled by
+  // RootWindowLayoutManager. Remove this after fixed RootWindowLayoutManager.
+  keyboard_container->SetBounds(parent->bounds());
+}
 
-    keyboard::KeyboardControllerProxy* proxy =
-        Shell::GetInstance()->delegate()->CreateKeyboardControllerProxy();
-    keyboard_controller_.reset(
-        new keyboard::KeyboardController(proxy));
+void RootWindowController::DeactivateKeyboard(
+    keyboard::KeyboardController* keyboard_controller) {
+  if (!keyboard::IsKeyboardEnabled())
+    return;
 
-    keyboard_controller_->AddObserver(shelf()->shelf_layout_manager());
-    keyboard_controller_->AddObserver(panel_layout_manager_);
-    keyboard_controller_->AddObserver(docked_layout_manager_);
-
-    // Deletes the old container since |keyboard_controller_| creates a
-    // new container window in GetContainerWindow().
-    delete GetContainer(kShellWindowId_VirtualKeyboardContainer);
-
-    aura::Window* keyboard_container =
-        keyboard_controller_->GetContainerWindow();
-    keyboard_container->set_id(kShellWindowId_VirtualKeyboardContainer);
-    parent->AddChild(keyboard_container);
-    keyboard_container->SetBounds(parent->bounds());
+  DCHECK(keyboard_controller);
+  aura::Window* keyboard_container =
+      keyboard_controller->GetContainerWindow();
+  if (keyboard_container->GetRootWindow() == root_window()) {
+    root_window()->RemoveChild(keyboard_container);
+    keyboard_controller->RemoveObserver(shelf()->shelf_layout_manager());
+    keyboard_controller->RemoveObserver(panel_layout_manager_);
+    keyboard_controller->RemoveObserver(docked_layout_manager_);
   }
 }
 
@@ -827,8 +841,6 @@ void RootWindowController::DisableTouchHudProjection() {
 }
 
 void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
-  if (status != user::LOGGED_IN_NONE)
-    InitKeyboard();
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
