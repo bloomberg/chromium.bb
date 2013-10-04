@@ -7,6 +7,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -1760,6 +1761,13 @@ TEST_F(RenderViewImplTest, TestBackForward) {
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
+
+#if defined(OS_WIN)
+  // http://crbug.com/304193
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#endif
+
   LoadHTML("<textarea id=\"test\"></textarea>");
   ExecuteJavaScript("document.getElementById('test').focus();");
 
