@@ -7,7 +7,7 @@ with the <a href="http://angularjs.org/">AngularJS</a> MVC framework.
 To illustrate Angular in action,
 we'll be referencing an actual app built using the framework,
 the Google Drive Uploader.
-The <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gdocs">source code</a>
+The <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gdrive">source code</a>
 is available on GitHub.
 </p>
 
@@ -38,7 +38,7 @@ See <a href="app_identity.html#non">non-Google Account authentication</a>.
 
 <p>
 The Uploader uses OAuth2 to access the user's data. The
-<a href="experimental.identity.html">chrome.experimental.identity API</a>
+<a href="identity.html">chrome.identity API</a>
 handles fetching an OAuth token for the logged-in user,
 so the hard work is done for us!
 Once we have a long-lived access token,
@@ -61,7 +61,7 @@ Key features this app uses:
     <li><a href="http://www.html5rocks.com/en/tutorials/dnd/basics/">HTML5 Drag and Drop</a>
         for importing/uploading new files from the desktop</li>
     <li>XHR2 to load images, cross-domain</li>
-    <li><a href="app_identity.html">chrome.experimental.identity API</a>
+    <li><a href="app_identity.html">chrome.identity API</a>
         for OAuth authorization</li>
     <li>Chromeless frames to define the app's own navbar look and feel</li>
 </ul>
@@ -87,15 +87,11 @@ A stripped down version of the Uploader's manifest looks like this:
   "oauth2": {
     "client_id": "665859454684.apps.googleusercontent.com",
     "scopes": [
-      "https://docs.google.com/feeds/",
-      "https://docs.googleusercontent.com/",
-      "https://spreadsheets.google.com/feeds/",
       "https://www.googleapis.com/auth/drive"
     ]
   },
  ...
   "permissions": [
-    "experimental",
     "https://docs.google.com/feeds/",
     "https://docs.googleusercontent.com/",
     "https://spreadsheets.google.com/feeds/",
@@ -117,20 +113,8 @@ The "scopes" list the authorization scopes
 that the OAuth token will be valid for (for example, the APIs the app wants to access).
 </p>
 
-<p class="note">
-<strong>Note: </strong>
-The Uploader actually uses the
-<a href="https://developers.google.com/google-apps/documents-list/">Documents List API v3</a>
-to access Google Drive content,
-hence needing the first several scopes to access all the different types of files.
-However, when using the Google Drive API, you only need
-<a href="https://www.googleapis.com/auth/drive">"https://www.googleapis.com/auth/drive"</a>.
-</p>
-
 <p>
-The "permissions" section includes the "experimental" bit
-(necessary because the current chrome.identity API is still experimental)
-and additional URLs that the app will access via XHR2.
+The "permissions" section includes URLs that the app will access via XHR2.
 The URL prefixes are required in order for Chrome
 to know which cross-domain requests to allow.
 </p>
@@ -144,7 +128,7 @@ to launch the app and respond to system events.
 
 <p>
 In its
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdocs/js/background.js">background.js</a> 
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/background.js">background.js</a> 
 script,
 Drive Uploader opens a 500x600px window to the main page.
 It also specifies a minimum height and width for the window
@@ -212,7 +196,7 @@ nav:hover #close-button {
 
 <p>
 In
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdocs/js/app.js">app.js</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/app.js">app.js</a>,
 this button is hooked up to <code>window.close()</code>.
 </p>
 
@@ -230,7 +214,7 @@ The View is the easiest, so let's start there.
 <h3 id="view">Creating the view</h3>
 
 <p>
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdocs/main.html">main.html</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/main.html">main.html</a>
 is the "V" in MVC; where we define HTML templates to render data into.
 In Angular, templates are simple blocks of HTML with some special sauce.
 </p>
@@ -374,7 +358,7 @@ Thus, there's a bit of work necessary in order to populate the app's data.
 Before we can make an API request,
 we need to fetch an OAuth token for the user's Google Account.
 For that, we've created a method to wrap the call
-to <code>chrome.experimental.identity.getAuthToken()</code> and
+to <code>chrome.identity.getAuthToken()</code> and
 store the <code>accessToken</code>,
 which we can reuse for future calls to the Drive API.
 </p>
@@ -382,7 +366,7 @@ which we can reuse for future calls to the Drive API.
 <pre data-filename="gdocs.js">
 GDocs.prototype.auth = function(opt_callback) {
   try {
-    <strong>chrome.experimental.identity.getAuthToken({interactive: false}, function(token) {</strong>
+    <strong>chrome.identity.getAuthToken({interactive: false}, function(token) {</strong>
       if (token) {
         this.accessToken = token;
         opt_callback && opt_callback();
@@ -404,7 +388,7 @@ of knowing when the OAuth token is ready.
 <strong>Note: </strong>
 To simplify things a bit,
 we've created a library,
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdocs/js/gdocs.js">gdocs.js</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/gdocs.js">gdocs.js</a>
 to handle API tasks.
 </p>
 
@@ -717,7 +701,7 @@ For that case,
 we can reuse the technique from before and fetch the images.
 The only difference this time is that
 each blob is written to the filesystem (see
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdocs/js/app.js#L25">writeBlob()</a>).
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/app.js#L27">writeFile()</a>).
 The console verifies this behavior:
 </p>
 
@@ -743,7 +727,7 @@ if it can't upload files!
 </p>
 
 <p>
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdocs/js/app.js#L177">app.js</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/app.js#L52">app.js</a>
 handles this feature by implementing a small library
 around HTML5 Drag and Drop called <code>DnDFileController</code>.
 It gives the ability to drag in files from the desktop

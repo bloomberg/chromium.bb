@@ -130,17 +130,14 @@ an error will occur when your app calls <a href="#token">getAuthToken()</a>.
 You need to update your manifest to include
 the client ID and scopes.
 Here's the sample "oauth2" for the
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gdocs">gdocs sample</a>:
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gdrive">gdrive sample</a>:
 </p>
 
 <pre data-filename="manifest.json">
 "oauth2": {
     "client_id": "665859454684.apps.googleusercontent.com",
     "scopes": [
-      "https://docs.google.com/feeds/",
-      "https://docs.googleusercontent.com/",
-      "https://spreadsheets.google.com/feeds/",
-      "https://www.googleapis.com/auth/drive.file"
+      "https://www.googleapis.com/auth/drive"
     ]
   }
 </pre>
