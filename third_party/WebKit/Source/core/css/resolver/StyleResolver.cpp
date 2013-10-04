@@ -378,19 +378,14 @@ StyleResolver::~StyleResolver()
     m_viewportStyleResolver->clearDocument();
 }
 
-inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& collector, bool includeEmptyRules)
+inline void StyleResolver::collectShadowDistributedRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    // FIXME: Determine tree position.
-    CascadeScope cascadeScope = ignoreCascadeScope;
-
     if (m_ruleSets.shadowDistributedRules().isEmpty())
         return;
 
     bool previousCanUseFastReject = collector.canUseFastReject();
     collector.setCanUseFastReject(false);
 
-    collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
 
     for (ShadowDistributedRules::iterator it = m_ruleSets.shadowDistributedRules().begin(); it != m_ruleSets.shadowDistributedRules().end(); ++it) {
@@ -401,9 +396,8 @@ inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& col
             boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
             scopingNode = toShadowRoot(scopingNode)->host();
         }
-        collector.collectMatchingRules(MatchRequest(it->value.get(), includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), cascadeScope);
+        collector.collectMatchingRules(MatchRequest(it->value.get(), includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope);
     }
-    collector.sortAndTransferMatchedRules();
     collector.setCanUseFastReject(previousCanUseFastReject);
 }
 
@@ -419,7 +413,7 @@ static inline bool applyAuthorStylesOf(const Element* element)
     return element->treeScope().applyAuthorStyles() || (element->shadow() && element->shadow()->applyAuthorStyles());
 }
 
-void StyleResolver::matchScopedAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree)
+void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree)
 {
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
@@ -437,13 +431,14 @@ void StyleResolver::matchScopedAuthorRulesForShadowHost(Element* element, Elemen
     for (unsigned i = 0; i < resolvers.size(); ++i)
         resolvers.at(i)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, --cascadeOrder);
 
+    collectShadowDistributedRules(collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
 
     if (!resolvers.isEmpty())
         matchHostRules(element, resolvers.first(), collector, includeEmptyRules);
 }
 
-void StyleResolver::matchScopedAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
+void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
     if (m_styleTree.hasOnlyScopedResolverForDocument()) {
         m_styleTree.scopedStyleResolverForDocument()->matchAuthorRules(collector, includeEmptyRules, applyAuthorStylesOf(element));
@@ -456,7 +451,7 @@ void StyleResolver::matchScopedAuthorRules(Element* element, ElementRuleCollecto
     Vector<ScopedStyleResolver*, 8> resolversInShadowTree;
     m_styleTree.collectScopedResolversForHostedShadowTrees(element, resolversInShadowTree);
     if (!resolversInShadowTree.isEmpty()) {
-        matchScopedAuthorRulesForShadowHost(element, collector, includeEmptyRules, resolvers, resolversInShadowTree);
+        matchAuthorRulesForShadowHost(element, collector, includeEmptyRules, resolvers, resolversInShadowTree);
         return;
     }
 
@@ -475,15 +470,10 @@ void StyleResolver::matchScopedAuthorRules(Element* element, ElementRuleCollecto
         resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, &resolver->treeScope() == &element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
     }
 
+    collectShadowDistributedRules(collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
 
     matchHostRules(element, resolvers.first(), collector, includeEmptyRules);
-}
-
-void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
-{
-    matchScopedAuthorRules(element, collector, includeEmptyRules);
-    matchShadowDistributedRules(collector, includeEmptyRules);
 }
 
 void StyleResolver::matchUserRules(ElementRuleCollector& collector, bool includeEmptyRules)
