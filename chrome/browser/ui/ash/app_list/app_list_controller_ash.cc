@@ -35,8 +35,10 @@ void AppListControllerDelegateAsh::UnpinApp(const std::string& extension_id) {
   ChromeLauncherController::instance()->UnpinAppWithID(extension_id);
 }
 
-bool AppListControllerDelegateAsh::CanPin() {
-  return ChromeLauncherController::instance()->CanPin();
+AppListControllerDelegate::Pinnable
+    AppListControllerDelegateAsh::GetPinnable() {
+  return ChromeLauncherController::instance()->CanPin() ? PIN_EDITABLE :
+      PIN_FIXED;
 }
 
 bool AppListControllerDelegateAsh::CanDoCreateShortcutsFlow(

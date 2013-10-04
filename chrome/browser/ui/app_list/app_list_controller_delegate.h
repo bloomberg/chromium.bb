@@ -35,6 +35,13 @@ class AppListControllerDelegate {
     LAUNCH_FROM_APP_LIST_SEARCH
   };
 
+  // Whether apps can be pinned, and whether pinned apps are editable or fixed.
+  enum Pinnable {
+    NO_PIN,
+    PIN_EDITABLE,
+    PIN_FIXED
+  };
+
   virtual ~AppListControllerDelegate();
 
   // Dismisses the view.
@@ -53,7 +60,7 @@ class AppListControllerDelegate {
   virtual bool IsAppPinned(const std::string& extension_id);
   virtual void PinApp(const std::string& extension_id);
   virtual void UnpinApp(const std::string& extension_id);
-  virtual bool CanPin() = 0;
+  virtual Pinnable GetPinnable() = 0;
 
   // Be aware of the extension prompt (either uninstalling flow or enable flow).
   virtual void OnShowExtensionPrompt() {}

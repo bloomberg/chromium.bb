@@ -88,7 +88,7 @@ class AppListControllerDelegateCocoa : public AppListControllerDelegate {
   // AppListControllerDelegate overrides:
   virtual void DismissView() OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual bool CanPin() OVERRIDE;
+  virtual Pinnable GetPinnable() OVERRIDE;
   virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;
   virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void DoCreateShortcutsFlow(Profile* profile,
@@ -211,8 +211,9 @@ gfx::NativeWindow AppListControllerDelegateCocoa::GetAppListWindow() {
   return AppListServiceMac::GetInstance()->GetAppListWindow();
 }
 
-bool AppListControllerDelegateCocoa::CanPin() {
-  return false;
+AppListControllerDelegate::Pinnable
+    AppListControllerDelegateCocoa::GetPinnable() {
+  return NO_PIN;
 }
 
 bool AppListControllerDelegateCocoa::CanDoCreateShortcutsFlow(

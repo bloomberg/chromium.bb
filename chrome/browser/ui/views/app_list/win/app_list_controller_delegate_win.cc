@@ -41,8 +41,9 @@ gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
   return *resource;
 }
 
-bool AppListControllerDelegateWin::CanPin() {
-  return false;
+AppListControllerDelegate::Pinnable
+    AppListControllerDelegateWin::GetPinnable() {
+  return NO_PIN;
 }
 
 void AppListControllerDelegateWin::ShowForProfileByPath(

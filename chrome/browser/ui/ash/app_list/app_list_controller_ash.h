@@ -22,7 +22,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   virtual bool IsAppPinned(const std::string& extension_id) OVERRIDE;
   virtual void PinApp(const std::string& extension_id) OVERRIDE;
   virtual void UnpinApp(const std::string& extension_id) OVERRIDE;
-  virtual bool CanPin() OVERRIDE;
+  virtual Pinnable GetPinnable() OVERRIDE;
   virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;
   virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void ActivateApp(Profile* profile,

@@ -28,7 +28,7 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual void ViewClosing() OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual bool CanPin() OVERRIDE;
+  virtual Pinnable GetPinnable() OVERRIDE;
   virtual void OnShowExtensionPrompt() OVERRIDE;
   virtual void OnCloseExtensionPrompt() OVERRIDE;
   virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;

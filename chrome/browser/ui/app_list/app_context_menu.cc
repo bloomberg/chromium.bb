@@ -179,15 +179,15 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
     extension_menu_items_->AppendExtensionItems(app_id_, string16(),
                                                 &index);
 
-#if defined(USE_ASH)
-    // Always show Pin/Unpin option for ash.
-    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-    menu_model_->AddItemWithStringId(
-        TOGGLE_PIN,
-        controller_->IsAppPinned(app_id_) ?
-            IDS_APP_LIST_CONTEXT_MENU_UNPIN :
-            IDS_APP_LIST_CONTEXT_MENU_PIN);
-#endif
+    // Show Pin/Unpin option if shelf is available.
+    if (controller_->GetPinnable() != AppListControllerDelegate::NO_PIN) {
+      menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      menu_model_->AddItemWithStringId(
+          TOGGLE_PIN,
+          controller_->IsAppPinned(app_id_) ?
+              IDS_APP_LIST_CONTEXT_MENU_UNPIN :
+              IDS_APP_LIST_CONTEXT_MENU_PIN);
+    }
 
     if (controller_->CanDoCreateShortcutsFlow(is_platform_app_)) {
       menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,
@@ -323,7 +323,8 @@ bool AppContextMenu::IsCommandIdChecked(int command_id) const {
 
 bool AppContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == TOGGLE_PIN) {
-    return controller_->CanPin();
+    return controller_->GetPinnable() ==
+        AppListControllerDelegate::PIN_EDITABLE;
   } else if (command_id == OPTIONS) {
     const ExtensionService* service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -364,7 +365,8 @@ bool AppContextMenu::GetAcceleratorForCommandId(
 void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == LAUNCH_NEW) {
     delegate_->ExecuteLaunchCommand(event_flags);
-  } else if (command_id == TOGGLE_PIN && controller_->CanPin()) {
+  } else if (command_id == TOGGLE_PIN && controller_->GetPinnable() ==
+      AppListControllerDelegate::PIN_EDITABLE) {
     if (controller_->IsAppPinned(app_id_))
       controller_->UnpinApp(app_id_);
     else
