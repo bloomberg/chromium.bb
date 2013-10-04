@@ -692,6 +692,10 @@ public class AwContents {
         return nativeGetAwDrawGLFunction();
     }
 
+    public static void setShouldDownloadFavicons() {
+        nativeSetShouldDownloadFavicons();
+    }
+
     /**
      * Intended for test code.
      * @return the number of native instances of this class.
@@ -1941,6 +1945,7 @@ public class AwContents {
     private static native void nativeSetAwDrawGLFunctionTable(int functionTablePointer);
     private static native int nativeGetAwDrawGLFunction();
     private static native int nativeGetNativeInstanceCount();
+    private static native void nativeSetShouldDownloadFavicons();
     private native void nativeSetJavaPeers(int nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,
             AwContentsClientBridge contentsClientBridge,

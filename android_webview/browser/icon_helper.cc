@@ -60,9 +60,7 @@ void IconHelper::DidUpdateFaviconURL(int32 page_id,
 
     switch(i->icon_type) {
       case content::FaviconURL::FAVICON:
-        // TODO(acleung): only fetch the URL if favicon downloading is enabled.
-        // (currently that is, the app has called WebIconDatabase.open()
-        // but we should decouple that setting via a boolean setting)
+        if (listener_ && !listener_->ShouldDownloadFavicon(i->icon_url)) break;
         web_contents()->DownloadImage(i->icon_url,
             true,  // Is a favicon
             0,  // No maximum size

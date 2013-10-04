@@ -243,6 +243,7 @@ public class AwTestBase
                 mBrowserContext, testContainerView, testContainerView.getInternalAccessDelegate(),
                 awContentsClient, false, testDependencyFactory.createLayoutSizer(),
                 supportsLegacyQuirks));
+        AwContents.setShouldDownloadFavicons();
         return testContainerView;
     }
 

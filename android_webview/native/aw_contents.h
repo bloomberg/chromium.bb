@@ -139,6 +139,7 @@ class AwContents : public FindHelper::Listener,
                                     int match_count,
                                     bool finished) OVERRIDE;
   // IconHelper::Listener implementation.
+  virtual bool ShouldDownloadFavicon(const GURL& icon_url) OVERRIDE;
   virtual void OnReceivedIcon(const GURL& icon_url,
                               const SkBitmap& bitmap) OVERRIDE;
   virtual void OnReceivedTouchIconUrl(const std::string& url,
