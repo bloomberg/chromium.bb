@@ -108,8 +108,8 @@
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderObject.h"
@@ -1328,7 +1328,7 @@ unsigned Internals::touchEventHandlerCount(Document* document, ExceptionState& e
 
 static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, GraphicsLayer* graphicsLayer, String* layerType)
 {
-    if (searchRoot->backing() && graphicsLayer == searchRoot->backing()->graphicsLayer())
+    if (searchRoot->compositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer())
         return searchRoot;
 
     if (graphicsLayer == searchRoot->layerForScrolling()) {
@@ -1787,13 +1787,13 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
 
     RenderLayer* layer = toRenderBox(renderer)->layer();
     if (!layer
-        || !layer->backing()
-        || !layer->backing()->graphicsLayer()) {
+        || !layer->compositedLayerMapping()
+        || !layer->compositedLayerMapping()->mainGraphicsLayer()) {
         // Don't raise exception in these cases which may be normally used in tests.
         return String();
     }
 
-    return layer->backing()->graphicsLayer()->layerTreeAsText(flags);
+    return layer->compositedLayerMapping()->mainGraphicsLayer()->layerTreeAsText(flags);
 }
 
 static RenderLayer* getRenderLayerForElement(Element* element, ExceptionState& es)

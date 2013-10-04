@@ -49,8 +49,8 @@
 #include "core/platform/mac/ScrollAnimatorMac.h"
 #endif
 #include "core/plugins/PluginView.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderGeometryMap.h"
-#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/IntRect.h"
@@ -174,13 +174,13 @@ static WebLayerPositionConstraint computePositionConstraint(const RenderLayer* l
 
 void ScrollingCoordinator::updateLayerPositionConstraint(RenderLayer* layer)
 {
-    ASSERT(layer->backing());
-    RenderLayerBacking* backing = layer->backing();
-    GraphicsLayer* mainLayer = backing->childForSuperlayers();
+    ASSERT(layer->compositedLayerMapping());
+    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
+    GraphicsLayer* mainLayer = compositedLayerMapping->childForSuperlayers();
 
     // Avoid unnecessary commits
-    clearPositionConstraintExceptForLayer(backing->ancestorClippingLayer(), mainLayer);
-    clearPositionConstraintExceptForLayer(backing->graphicsLayer(), mainLayer);
+    clearPositionConstraintExceptForLayer(compositedLayerMapping->ancestorClippingLayer(), mainLayer);
+    clearPositionConstraintExceptForLayer(compositedLayerMapping->mainGraphicsLayer(), mainLayer);
 
     if (WebLayer* scrollableLayer = scrollingWebLayerForGraphicsLayer(mainLayer))
         scrollableLayer->setPositionConstraint(computePositionConstraint(layer));
@@ -477,12 +477,12 @@ void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& lay
         WebVector<WebRect> webRects(iter->value.size());
         for (size_t i = 0; i < iter->value.size(); ++i)
             webRects[i] = enclosingIntRect(iter->value[i]);
-        RenderLayerBacking* backing = layer->backing();
+        CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
         // If the layer is using composited scrolling, then it's the contents that these
         // rects apply to.
-        GraphicsLayer* graphicsLayer = backing->scrollingContentsLayer();
+        GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
         if (!graphicsLayer)
-            graphicsLayer = backing->graphicsLayer();
+            graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
         graphicsLayer->platformLayer()->setTouchEventHandlerRegion(webRects);
         oldLayersWithTouchRects.remove(layer);
         m_layersWithTouchRects.add(layer);
@@ -490,10 +490,10 @@ void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& lay
 
     // If there are any layers left that we haven't updated, clear them out.
     for (HashSet<const RenderLayer*>::iterator it = oldLayersWithTouchRects.begin(); it != oldLayersWithTouchRects.end(); ++it) {
-        if (RenderLayerBacking* backing = (*it)->backing()) {
-            GraphicsLayer* graphicsLayer = backing->scrollingContentsLayer();
+        if (CompositedLayerMapping* compositedLayerMapping = (*it)->compositedLayerMapping()) {
+            GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
             if (!graphicsLayer)
-                graphicsLayer = backing->graphicsLayer();
+                graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
             graphicsLayer->platformLayer()->setTouchEventHandlerRegion(WebVector<WebRect>());
         }
     }
@@ -518,8 +518,8 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange(const Document*)
 void ScrollingCoordinator::updateScrollParentForGraphicsLayer(GraphicsLayer* child, RenderLayer* parent)
 {
     WebLayer* scrollParentWebLayer = 0;
-    if (parent && parent->backing())
-        scrollParentWebLayer = scrollingWebLayerForGraphicsLayer(parent->backing()->parentForSublayers());
+    if (parent && parent->compositedLayerMapping())
+        scrollParentWebLayer = scrollingWebLayerForGraphicsLayer(parent->compositedLayerMapping()->parentForSublayers());
 
     child->setScrollParent(scrollParentWebLayer);
 }
@@ -527,8 +527,8 @@ void ScrollingCoordinator::updateScrollParentForGraphicsLayer(GraphicsLayer* chi
 void ScrollingCoordinator::updateClipParentForGraphicsLayer(GraphicsLayer* child, RenderLayer* parent)
 {
     WebLayer* clipParentWebLayer = 0;
-    if (parent && parent->backing())
-        clipParentWebLayer = scrollingWebLayerForGraphicsLayer(parent->backing()->parentForSublayers());
+    if (parent && parent->compositedLayerMapping())
+        clipParentWebLayer = scrollingWebLayerForGraphicsLayer(parent->compositedLayerMapping()->parentForSublayers());
 
     child->setClipParent(clipParentWebLayer);
 }
@@ -810,7 +810,7 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
 
         // Composited layers that actually paint into their enclosing ancestor
         // must also force main thread scrolling.
-        if (layer->isComposited() && layer->backing()->paintsIntoCompositedAncestor())
+        if (layer->isComposited() && layer->compositedLayerMapping()->paintsIntoCompositedAncestor())
             return true;
     }
     return false;

@@ -28,7 +28,7 @@
 namespace WebCore {
 
 class RenderLayer;
-class RenderLayerBacking;
+class CompositedLayerMapping;
 class ScrollableArea;
 
 class RenderLayerModelObject : public RenderObject {
@@ -56,7 +56,7 @@ public:
     // This is null for anonymous renderers.
     ContainerNode* node() const { return toContainerNode(RenderObject::node()); }
 
-    RenderLayerBacking* backing() const;
+    CompositedLayerMapping* compositedLayerMapping() const;
 
 protected:
     void ensureLayer();

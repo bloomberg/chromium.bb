@@ -206,9 +206,9 @@ void RenderLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, cons
     }
 }
 
-RenderLayerBacking* RenderLayerModelObject::backing() const
+CompositedLayerMapping* RenderLayerModelObject::compositedLayerMapping() const
 {
-    return m_layer ? m_layer->backing() : 0;
+    return m_layer ? m_layer->compositedLayerMapping() : 0;
 }
 
 } // namespace WebCore

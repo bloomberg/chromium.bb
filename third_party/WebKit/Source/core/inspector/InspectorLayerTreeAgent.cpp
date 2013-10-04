@@ -41,8 +41,8 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/IntRect.h"
@@ -158,11 +158,11 @@ void InspectorLayerTreeAgent::layerTreeDidChange()
 void InspectorLayerTreeAgent::didPaint(RenderObject* renderer, GraphicsContext*, const LayoutRect& rect)
 {
     RenderLayer* renderLayer = toRenderLayerModelObject(renderer)->layer();
-    RenderLayerBacking* backing = renderLayer->backing();
+    CompositedLayerMapping* compositedLayerMapping = renderLayer->compositedLayerMapping();
     // Should only happen for FrameView paints when compositing is off. Consider different instrumentation method for that.
-    if (!backing)
+    if (!compositedLayerMapping)
         return;
-    GraphicsLayer* graphicsLayer = backing->graphicsLayer();
+    GraphicsLayer* graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
     RefPtr<TypeBuilder::DOM::Rect> domRect = TypeBuilder::DOM::Rect::create()
         .setX(rect.x())
         .setY(rect.y())
@@ -197,7 +197,7 @@ void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nod
         return;
     }
     RenderLayer* enclosingLayer = renderer->enclosingLayer();
-    GraphicsLayer* enclosingGraphicsLayer = enclosingLayer->enclosingCompositingLayer()->backing()->childForSuperlayers();
+    GraphicsLayer* enclosingGraphicsLayer = enclosingLayer->enclosingCompositingLayer()->compositedLayerMapping()->childForSuperlayers();
     buildLayerIdToNodeIdMap(errorString, enclosingLayer, layerIdToNodeIdMap);
     gatherGraphicsLayers(enclosingGraphicsLayer, layerIdToNodeIdMap, layers);
 }
@@ -206,7 +206,7 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(ErrorString* errorString, 
 {
     if (root->isComposited()) {
         if (Node* node = root->renderer()->generatingNode()) {
-            GraphicsLayer* graphicsLayer = root->backing()->childForSuperlayers();
+            GraphicsLayer* graphicsLayer = root->compositedLayerMapping()->childForSuperlayers();
             layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(errorString, node));
         }
     }

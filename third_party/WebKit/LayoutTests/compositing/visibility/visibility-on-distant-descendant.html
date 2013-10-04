@@ -43,8 +43,9 @@
 <body>
   <!--
     https://bugs.webkit.org/show_bug.cgi?id=108118
+    (Note: CompositedLayerMapping was formerly known as RenderLayerBacking)
 
-    The boolean check RenderLayerBacking::hasVisibleNonCompositingDescendant()
+    The boolean check CompositedLayerMapping::hasVisibleNonCompositingDescendant()
     was actually not checking for visible content beyond children layers. As a
     result, composited layers sometimes did not see that they actually have
     visible content in a descendant RenderLayer. This test recreates that

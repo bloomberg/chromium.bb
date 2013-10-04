@@ -35,7 +35,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/platform/graphics/GraphicsLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "public/platform/Platform.h"
@@ -153,10 +153,10 @@ static WebLayer* webLayerFromElement(Element* element)
     RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
     if (!layer)
         return 0;
-    RenderLayerBacking* backing = layer->backing();
-    if (!backing)
+    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
+    if (!compositedLayerMapping)
         return 0;
-    GraphicsLayer* graphicsLayer = backing->graphicsLayer();
+    GraphicsLayer* graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
     if (!graphicsLayer)
         return 0;
     return graphicsLayer->platformLayer();
@@ -294,22 +294,22 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
     ASSERT_TRUE(layer->usesCompositedScrolling());
     ASSERT_TRUE(layer->isComposited());
 
-    RenderLayerBacking* layerBacking = layer->backing();
-    ASSERT_TRUE(layerBacking->hasScrollingLayer());
-    ASSERT(layerBacking->scrollingContentsLayer());
+    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
+    ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
+    ASSERT(compositedLayerMapping->scrollingContentsLayer());
 
-    GraphicsLayer* graphicsLayer = layerBacking->scrollingContentsLayer();
+    GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
     ASSERT_EQ(layer->scrollableArea(), graphicsLayer->scrollableArea());
 
-    WebLayer* webScrollLayer = layerBacking->scrollingContentsLayer()->platformLayer();
+    WebLayer* webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
 
 #if OS(ANDROID)
     // Now verify we've attached impl-side scrollbars onto the scrollbar layers
-    ASSERT_TRUE(layerBacking->layerForHorizontalScrollbar());
-    ASSERT_TRUE(layerBacking->layerForHorizontalScrollbar()->hasContentsLayer());
-    ASSERT_TRUE(layerBacking->layerForVerticalScrollbar());
-    ASSERT_TRUE(layerBacking->layerForVerticalScrollbar()->hasContentsLayer());
+    ASSERT_TRUE(compositedLayerMapping->layerForHorizontalScrollbar());
+    ASSERT_TRUE(compositedLayerMapping->layerForHorizontalScrollbar()->hasContentsLayer());
+    ASSERT_TRUE(compositedLayerMapping->layerForVerticalScrollbar());
+    ASSERT_TRUE(compositedLayerMapping->layerForVerticalScrollbar()->hasContentsLayer());
 #endif
 }
 

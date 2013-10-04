@@ -79,7 +79,8 @@ The crashing scenario happened as follows:
 
  - overflow-scroll as the compositing trigger, because it does not enable
    compositing mode before computeCompositingRequirements. Other triggers
-   happen during RenderLayerBacking incremental update entry points.
+   happen during CompositedLayerMapping incremental update entry points.
+   (Note: CompositedLayerMapping was formerly known as RenderLayerBacking.)
 
  - The above two requirements are necessary to create the scenario where
    the root layer does not create an overlap context.

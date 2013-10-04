@@ -57,11 +57,11 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbar.h"
@@ -1244,7 +1244,7 @@ bool FrameView::contentsInCompositedLayer() const
 {
     RenderView* renderView = this->renderView();
     if (renderView && renderView->isComposited()) {
-        GraphicsLayer* layer = renderView->layer()->backing()->graphicsLayer();
+        GraphicsLayer* layer = renderView->layer()->compositedLayerMapping()->mainGraphicsLayer();
         if (layer && layer->drawsContent())
             return true;
     }
@@ -1357,7 +1357,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         // Composited layers may still actually paint into their ancestor.
         // If that happens, the viewport constrained object needs to be
         // repainted on scroll.
-        if (layer->isComposited() && !layer->backing()->paintsIntoCompositedAncestor())
+        if (layer->isComposited() && !layer->compositedLayerMapping()->paintsIntoCompositedAncestor())
             continue;
 
         if (layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForBoundsOutOfView
@@ -2020,8 +2020,8 @@ bool FrameView::isTransparent() const
 void FrameView::setTransparent(bool isTransparent)
 {
     m_isTransparent = isTransparent;
-    if (renderView() && renderView()->layer()->backing())
-        renderView()->layer()->backing()->updateContentsOpaque();
+    if (renderView() && renderView()->layer()->compositedLayerMapping())
+        renderView()->layer()->compositedLayerMapping()->updateContentsOpaque();
 }
 
 bool FrameView::hasOpaqueBackground() const
@@ -2041,10 +2041,10 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
     else
         m_baseBackgroundColor = backgroundColor;
 
-    if (RenderLayerBacking* backing = renderView() ? renderView()->layer()->backing() : 0) {
-        backing->updateContentsOpaque();
-        if (backing->graphicsLayer())
-            backing->graphicsLayer()->setNeedsDisplay();
+    if (CompositedLayerMapping* compositedLayerMapping = renderView() ? renderView()->layer()->compositedLayerMapping() : 0) {
+        compositedLayerMapping->updateContentsOpaque();
+        if (compositedLayerMapping->mainGraphicsLayer())
+            compositedLayerMapping->mainGraphicsLayer()->setNeedsDisplay();
     }
     recalculateScrollbarOverlayStyle();
 }

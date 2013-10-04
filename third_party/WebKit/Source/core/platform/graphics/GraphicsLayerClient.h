@@ -77,7 +77,7 @@ public:
     virtual String debugName(const GraphicsLayer*) = 0;
 
 #ifndef NDEBUG
-    // RenderLayerBacking overrides this to verify that it is not
+    // CompositedLayerMapping overrides this to verify that it is not
     // currently painting contents. An ASSERT fails, if it is.
     // This is executed in GraphicsLayer construction and destruction
     // to verify that we don't create or destroy GraphicsLayers

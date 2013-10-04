@@ -60,7 +60,7 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/GraphicsLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -866,7 +866,7 @@ void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFr
         m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));
 
     if (m_box->isComposited())
-        layer()->backing()->positionOverflowControlsLayers(offsetFromRoot);
+        layer()->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
 }
 
 void RenderLayerScrollableArea::updateScrollCornerStyle()

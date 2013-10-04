@@ -50,8 +50,8 @@
   <!--
        Among other duplicate bugs: https://code.google.com/p/chromium/issues/detail?id=151734
 
-       In the current code, a layer may actually be composited, but not have its own backing.
-       In these cases, the layer paints into its composited ancestor with a backing.
+       In the current code, a layer may actually be composited, but not have its own backing store.
+       In these cases, the layer paints into its composited ancestor with a backing store.
        For fixed-position elements, however, this goes wrong because no other code
        realizes that there is a software-painted fixed-position element.  As a result,
        the composited parent does not receive repaint invalidations, and the fixed-position
@@ -60,7 +60,7 @@
        The scenario that reproduces this:  A fixed position element that has an overflow-clip with
        a composited child.  In this case, the fixed-position element needs to be composited.
        However, this is one of the few reasons that does not require that the composited layer needs
-       its own backing.
+       its own backing store.
     -->
 
   <!-- Scrolling should not cause either div to move around on the viewport. -->

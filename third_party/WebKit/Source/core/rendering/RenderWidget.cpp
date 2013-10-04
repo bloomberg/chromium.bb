@@ -27,9 +27,9 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/page/Frame.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderView.h"
 
 using namespace std;
@@ -145,7 +145,7 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
         m_widget->clipRectChanged();
 
     if (hasLayer() && layer()->isComposited())
-        layer()->backing()->updateAfterWidgetResize();
+        layer()->compositedLayerMapping()->updateAfterWidgetResize();
 
     bool boundsChanged = m_widget->frameRect().size() != newFrame.size();
     return boundsChanged;

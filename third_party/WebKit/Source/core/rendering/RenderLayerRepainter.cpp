@@ -44,8 +44,8 @@
 #include "config.h"
 #include "core/rendering/RenderLayerRepainter.h"
 
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -125,7 +125,7 @@ inline bool RenderLayerRepainter::shouldRepaintAfterLayout() const
     // Composited layers that were moved during a positioned movement only
     // layout, don't need to be repainted. They just need to be recomposited.
     ASSERT(m_repaintStatus == NeedsFullRepaintForPositionedMovementLayout);
-    return !m_renderer->isComposited() || (m_renderer->isComposited() && m_renderer->layer()->backing()->paintsIntoCompositedAncestor());
+    return !m_renderer->isComposited() || (m_renderer->isComposited() && m_renderer->layer()->compositedLayerMapping()->paintsIntoCompositedAncestor());
 }
 
 // Since we're only painting non-composited layers, we know that they all share the same repaintContainer.

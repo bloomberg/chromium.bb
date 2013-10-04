@@ -35,8 +35,8 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/Color.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerModelObject.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -127,13 +127,13 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     if (!renderLayer || !renderLayer->isComposited())
         return 0;
 
-    GraphicsLayer* newGraphicsLayer = renderLayer->backing()->graphicsLayer();
+    GraphicsLayer* newGraphicsLayer = renderLayer->compositedLayerMapping()->mainGraphicsLayer();
     m_clipLayer->setSublayerTransform(SkMatrix44());
 
     if (!newGraphicsLayer->drawsContent()) {
         if (renderLayer->usesCompositedScrolling()) {
-            ASSERT(renderLayer->backing() && renderLayer->backing()->scrollingContentsLayer());
-            newGraphicsLayer = renderLayer->backing()->scrollingContentsLayer();
+            ASSERT(renderLayer->compositedLayerMapping() && renderLayer->compositedLayerMapping()->scrollingContentsLayer());
+            newGraphicsLayer = renderLayer->compositedLayerMapping()->scrollingContentsLayer();
         } else
             ASSERT_NOT_REACHED();
     }

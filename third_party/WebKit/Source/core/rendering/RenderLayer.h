@@ -66,7 +66,7 @@ class HitTestingTransformState;
 class PlatformEvent;
 class RenderFlowThread;
 class RenderGeometryMap;
-class RenderLayerBacking;
+class CompositedLayerMapping;
 class RenderLayerCompositor;
 class RenderReplica;
 class RenderScrollbarPart;
@@ -462,12 +462,12 @@ public:
     // Only safe to call from RenderLayerModelObject::destroyLayer()
     void operator delete(void*);
 
-    bool isComposited() const { return m_backing != 0; }
+    bool isComposited() const { return m_compositedLayerMapping; }
     bool hasCompositedMask() const;
     bool hasCompositedClippingMask() const;
-    RenderLayerBacking* backing() const { return m_backing.get(); }
-    RenderLayerBacking* ensureBacking();
-    void clearBacking(bool layerBeingDestroyed = false);
+    CompositedLayerMapping* compositedLayerMapping() const { return m_compositedLayerMapping.get(); }
+    CompositedLayerMapping* ensureCompositedLayerMapping();
+    void clearCompositedLayerMapping(bool layerBeingDestroyed = false);
     bool needsCompositedScrolling() const;
     bool needsToBeStackingContainer() const;
 
@@ -810,7 +810,7 @@ private:
     // Returns true if z ordering would not change if this layer were a stacking container.
     bool canBeStackingContainer() const;
 
-    friend class RenderLayerBacking;
+    friend class CompositedLayerMapping;
     friend class RenderLayerCompositor;
     friend class RenderLayerModelObject;
 
@@ -952,7 +952,7 @@ protected:
 private:
     IntRect m_blockSelectionGapsBounds;
 
-    OwnPtr<RenderLayerBacking> m_backing;
+    OwnPtr<CompositedLayerMapping> m_compositedLayerMapping;
     OwnPtr<RenderLayerScrollableArea> m_scrollableArea;
 
     RenderLayerRepainter m_repainter;

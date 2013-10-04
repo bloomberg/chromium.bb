@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderLayerBacking_h
-#define RenderLayerBacking_h
+#ifndef CompositedLayerMapping_h
+#define CompositedLayerMapping_h
 
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
@@ -59,17 +59,18 @@ struct GraphicsLayerPaintInfo {
     bool isBackgroundLayer;
 };
 
-// RenderLayerBacking controls the compositing behavior for a single RenderLayer.
-// It holds the various GraphicsLayers, and makes decisions about intra-layer rendering
-// optimizations.
+// CompositedLayerMapping keeps track of how RenderLayers of the render tree correspond to
+// GraphicsLayers of the composited layer tree. Each instance of CompositedLayerMapping
+// manages a small cluster of GraphicsLayers and the references to which RenderLayers
+// and paint phases contribute to each GraphicsLayer.
 //
-// There is one RenderLayerBacking for each RenderLayer that is composited.
-
-class RenderLayerBacking : public GraphicsLayerClient {
-    WTF_MAKE_NONCOPYABLE(RenderLayerBacking); WTF_MAKE_FAST_ALLOCATED;
+// Currently (Oct. 2013) there is one CompositedLayerMapping for each RenderLayer,
+// but this is likely to evolve soon.
+class CompositedLayerMapping : public GraphicsLayerClient {
+    WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit RenderLayerBacking(RenderLayer*);
-    ~RenderLayerBacking();
+    explicit CompositedLayerMapping(RenderLayer*);
+    ~CompositedLayerMapping();
 
     RenderLayer* owningLayer() const { return m_owningLayer; }
 
@@ -88,7 +89,7 @@ public:
     // Update whether layer needs blending.
     void updateContentsOpaque();
 
-    GraphicsLayer* graphicsLayer() const { return m_graphicsLayer.get(); }
+    GraphicsLayer* mainGraphicsLayer() const { return m_graphicsLayer.get(); }
 
     // Layer to clip children
     bool hasClippingLayer() const { return m_childContainmentLayer; }
@@ -98,7 +99,7 @@ public:
     bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer; }
     GraphicsLayer* ancestorClippingLayer() const { return m_ancestorClippingLayer.get(); }
 
-    bool hasContentsLayer() const { return m_foregroundLayer != 0; }
+    bool hasContentsLayer() const { return m_foregroundLayer; }
     GraphicsLayer* foregroundLayer() const { return m_foregroundLayer.get(); }
 
     GraphicsLayer* backgroundLayer() const { return m_backgroundLayer.get(); }
@@ -108,7 +109,7 @@ public:
     GraphicsLayer* scrollingLayer() const { return m_scrollingLayer.get(); }
     GraphicsLayer* scrollingContentsLayer() const { return m_scrollingContentsLayer.get(); }
 
-    bool hasMaskLayer() const { return m_maskLayer != 0; }
+    bool hasMaskLayer() const { return m_maskLayer; }
     bool hasChildClippingMaskLayer() const { return m_childClippingMaskLayer; }
 
     GraphicsLayer* parentForSublayers() const;
@@ -132,7 +133,7 @@ public:
     void transitionPaused(double timeOffset, CSSPropertyID);
     void transitionFinished(CSSPropertyID);
 
-    bool startAnimation(double timeOffset, const CSSAnimationData* anim, const KeyframeList& keyframes);
+    bool startAnimation(double timeOffset, const CSSAnimationData*, const KeyframeList& keyframes);
     void animationPaused(double timeOffset, const String& name);
     void animationFinished(const String& name);
 
@@ -249,7 +250,7 @@ private:
 
     RenderLayer* m_owningLayer;
 
-    // The hierarchy of layers that is maintained by the RenderLayerBacking looks like this:
+    // The hierarchy of layers that is maintained by the CompositedLayerMapping looks like this:
     //
     //  + m_ancestorClippingLayer [OPTIONAL]
     //     + m_graphicsLayer
@@ -288,7 +289,7 @@ private:
     OwnPtr<GraphicsLayer> m_maskLayer; // Only used if we have a mask.
     OwnPtr<GraphicsLayer> m_childClippingMaskLayer; // Only used if we have to clip child layers or accelerated contents with border radius or clip-path.
 
-    // There are two other (optional) layers whose painting is managed by the RenderLayerBacking,
+    // There are two other (optional) layers whose painting is managed by the CompositedLayerMapping,
     // but whose position in the hierarchy is maintained by the RenderLayerCompositor. These
     // are the foreground and background layers. The foreground layer exists if we have composited
     // descendants with negative z-order. We need the extra layer in this case because the layer
@@ -331,4 +332,4 @@ private:
 
 } // namespace WebCore
 
-#endif // RenderLayerBacking_h
+#endif // CompositedLayerMapping_h

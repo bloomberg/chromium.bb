@@ -34,12 +34,12 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
@@ -103,49 +103,49 @@ bool RenderBoxModelObject::startTransition(double timeOffset, CSSPropertyID prop
 {
     ASSERT(hasLayer());
     ASSERT(isComposited());
-    return layer()->backing()->startTransition(timeOffset, propertyId, fromStyle, toStyle);
+    return layer()->compositedLayerMapping()->startTransition(timeOffset, propertyId, fromStyle, toStyle);
 }
 
 void RenderBoxModelObject::transitionPaused(double timeOffset, CSSPropertyID propertyId)
 {
     ASSERT(hasLayer());
     ASSERT(isComposited());
-    layer()->backing()->transitionPaused(timeOffset, propertyId);
+    layer()->compositedLayerMapping()->transitionPaused(timeOffset, propertyId);
 }
 
 void RenderBoxModelObject::transitionFinished(CSSPropertyID propertyId)
 {
     ASSERT(hasLayer());
     ASSERT(isComposited());
-    layer()->backing()->transitionFinished(propertyId);
+    layer()->compositedLayerMapping()->transitionFinished(propertyId);
 }
 
 bool RenderBoxModelObject::startAnimation(double timeOffset, const CSSAnimationData* animation, const KeyframeList& keyframes)
 {
     ASSERT(hasLayer());
     ASSERT(isComposited());
-    return layer()->backing()->startAnimation(timeOffset, animation, keyframes);
+    return layer()->compositedLayerMapping()->startAnimation(timeOffset, animation, keyframes);
 }
 
 void RenderBoxModelObject::animationPaused(double timeOffset, const String& name)
 {
     ASSERT(hasLayer());
     ASSERT(isComposited());
-    layer()->backing()->animationPaused(timeOffset, name);
+    layer()->compositedLayerMapping()->animationPaused(timeOffset, name);
 }
 
 void RenderBoxModelObject::animationFinished(const String& name)
 {
     ASSERT(hasLayer());
     ASSERT(isComposited());
-    layer()->backing()->animationFinished(name);
+    layer()->compositedLayerMapping()->animationFinished(name);
 }
 
 void RenderBoxModelObject::suspendAnimations(double time)
 {
     ASSERT(hasLayer());
     ASSERT(isComposited());
-    layer()->backing()->suspendAnimations(time);
+    layer()->compositedLayerMapping()->suspendAnimations(time);
 }
 
 bool RenderBoxModelObject::shouldPaintAtLowQuality(GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
@@ -986,7 +986,7 @@ bool RenderBoxModelObject::fixedBackgroundPaintsInLocalCoordinates() const
     if (!rootLayer || !rootLayer->isComposited())
         return false;
 
-    return rootLayer->backing()->backgroundLayerPaintsFixedRootBackground();
+    return rootLayer->compositedLayerMapping()->backgroundLayerPaintsFixedRootBackground();
 }
 
 void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fillLayer, const LayoutRect& paintRect,

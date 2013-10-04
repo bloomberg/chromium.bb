@@ -275,6 +275,7 @@
     'web_unittest_files': [
       'tests/AssociatedURLLoaderTest.cpp',
       'tests/ChromeClientImplTest.cpp',
+      'tests/CompositedLayerMappingTest.cpp',
       'tests/CustomEventTest.cpp',
       'tests/DragImageTest.cpp',
       'tests/FakeWebPlugin.cpp',
@@ -298,7 +299,6 @@
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',
       'tests/RegionTest.cpp',
-      'tests/RenderLayerBackingTest.cpp',
       'tests/RenderTableCellTest.cpp',
       'tests/RenderTableRowTest.cpp',
       'tests/ScrollingCoordinatorChromiumTest.cpp',

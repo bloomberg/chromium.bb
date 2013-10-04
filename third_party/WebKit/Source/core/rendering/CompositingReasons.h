@@ -47,7 +47,7 @@ const uint64_t CompositingReasonReflectionOfCompositedParent           = UINT64_
 // a layer if anything else in the subtree is composited.
 const uint64_t CompositingReasonRoot                                   = UINT64_C(1) << 25;
 
-// RenderLayerBacking internal hierarchy reasons
+// CompositedLayerMapping internal hierarchy reasons
 const uint64_t CompositingReasonLayerForClip                           = UINT64_C(1) << 26;
 const uint64_t CompositingReasonLayerForScrollbar                      = UINT64_C(1) << 27;
 const uint64_t CompositingReasonLayerForScrollingContainer             = UINT64_C(1) << 28;

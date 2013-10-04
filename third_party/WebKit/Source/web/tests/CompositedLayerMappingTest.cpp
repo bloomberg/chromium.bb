@@ -25,9 +25,8 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/CompositedLayerMapping.h"
 
-#include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
 #include "WebDocument.h"
@@ -41,6 +40,8 @@
 #include "core/page/FrameView.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+
+#include <gtest/gtest.h>
 
 using namespace WebKit;
 
@@ -68,9 +69,9 @@ private:
 class MockWebFrameClient : public WebFrameClient {
 };
 
-class RenderLayerBackingTest : public testing::Test {
+class CompositedLayerMappingTest : public testing::Test {
 public:
-    RenderLayerBackingTest()
+    CompositedLayerMappingTest()
         : m_baseURL("http://www.test.com/")
     {
         // We cannot reuse FrameTestHelpers::createWebViewAndLoad here because the compositing
@@ -114,7 +115,7 @@ protected:
     WebFrame* m_mainFrame;
 };
 
-TEST_F(RenderLayerBackingTest, DISABLED_GraphicsLayerBackgroundColor)
+TEST_F(CompositedLayerMappingTest, DISABLED_GraphicsLayerBackgroundColor)
 {
     registerMockedHttpURLLoad("layer_background_color.html");
     navigateTo(m_baseURL + "layer_background_color.html");
@@ -124,12 +125,12 @@ TEST_F(RenderLayerBackingTest, DISABLED_GraphicsLayerBackgroundColor)
     Element* layerElement = document->getElementById("layer");
     RenderLayerModelObject* renderer = toRenderLayerModelObject(layerElement->renderer());
     EXPECT_EQ(renderer->style()->visitedDependentColor(CSSPropertyBackgroundColor),
-              renderer->layer()->backing()->graphicsLayer()->backgroundColor());
+        renderer->layer()->compositedLayerMapping()->mainGraphicsLayer()->backgroundColor());
 
     layerElement = document->getElementById("layer-solid-color");
     renderer = toRenderLayerModelObject(layerElement->renderer());
-    // RenderLayerBacking::graphicsLayer's background color is unset if SolidColorLayer is created.
-    EXPECT_EQ(Color(), renderer->layer()->backing()->graphicsLayer()->backgroundColor());
+    // CompositedLayerMapping::graphicsLayer's background color is unset if SolidColorLayer is created.
+    EXPECT_EQ(Color(), renderer->layer()->compositedLayerMapping()->mainGraphicsLayer()->backgroundColor());
 }
 
 }
