@@ -250,6 +250,10 @@
       # use_libjpeg_turbo is set.
       'use_system_libjpeg%': 0,
 
+      # Use ANGLE target translator instead of translator_glsl.
+      # TODO(zmo): clean this up when both chromium and webkit switch over.
+      'use_angle_translator%': 0,
+
       # By default, component is set to static_library and it can be overriden
       # by the GYP command line or by ~/.gyp/include.gypi.
       'component%': 'static_library',
@@ -879,6 +883,7 @@
     'wix_path%': '<(wix_path)',
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
+    'use_angle_translator%': '<(use_angle_translator)',
     'android_webview_build%': '<(android_webview_build)',
     'gyp_managed_install%': 0,
     'create_standalone_apk%': 1,

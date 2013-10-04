@@ -126,7 +126,6 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '../ui/gl/gl.gyp:gl',
         '../ui/gfx/gfx.gyp:gfx',
         'command_buffer/command_buffer.gyp:gles2_utils',
@@ -241,6 +240,15 @@
             '../base/allocator/allocator.gyp:allocator',
           ],
         }],
+        ['use_angle_translator==1', {
+          'dependencies': [
+            '../third_party/angle_dx11/src/build_angle.gyp:translator',
+          ],
+        }, {
+          'dependencies': [
+            '../third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
+          ],
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -253,7 +261,6 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '../ui/gfx/gfx.gyp:gfx',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'command_buffer_client',
@@ -300,6 +307,15 @@
         ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+        ['use_angle_translator==1', {
+          'dependencies': [
+            '../third_party/angle_dx11/src/build_angle.gyp:translator',
+          ],
+        }, {
+          'dependencies': [
+            '../third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
           ],
         }],
       ],
