@@ -38,6 +38,10 @@
 #include "ui/views/widget/native_widget_win.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 namespace views {
 namespace test {
 
@@ -2053,6 +2057,99 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   modal_dialog_widget->CloseNow();
   top_level_widget.CloseNow();
 }
+
+#if defined(OS_WIN)
+
+// Provides functionality to test widget activation via an activation flag
+// which can be set by an accessor.
+class ModalWindowTestWidgetDelegate : public WidgetDelegate {
+ public:
+  ModalWindowTestWidgetDelegate()
+      : widget_(NULL),
+        can_activate_(true) {}
+
+  virtual ~ModalWindowTestWidgetDelegate() {}
+
+  // Overridden from WidgetDelegate:
+  virtual void DeleteDelegate() OVERRIDE {
+    delete this;
+  }
+  virtual Widget* GetWidget() OVERRIDE {
+    return widget_;
+  }
+  virtual const Widget* GetWidget() const OVERRIDE {
+    return widget_;
+  }
+  virtual bool CanActivate() const OVERRIDE {
+    return can_activate_;
+  }
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+    return true;
+  }
+
+  void set_can_activate(bool can_activate) {
+    can_activate_ = can_activate;
+  }
+
+  void set_widget(Widget* widget) {
+    widget_ = widget;
+  }
+
+ private:
+  Widget* widget_;
+  bool can_activate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModalWindowTestWidgetDelegate);
+};
+
+// Tests whether we can activate the top level widget when a modal dialog is
+// active.
+TEST_F(WidgetTest, WindowModalityActivationTest) {
+  // Destroyed when the top level widget created below is destroyed.
+  ModalWindowTestWidgetDelegate* widget_delegate =
+      new ModalWindowTestWidgetDelegate;
+  // Create a top level widget.
+  Widget top_level_widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  gfx::Rect initial_bounds(0, 0, 500, 500);
+  init_params.bounds = initial_bounds;
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&top_level_widget);
+  init_params.delegate = widget_delegate;
+  top_level_widget.Init(init_params);
+  widget_delegate->set_widget(&top_level_widget);
+  top_level_widget.Show();
+  EXPECT_TRUE(top_level_widget.IsVisible());
+
+  HWND win32_window = views::HWNDForWidget(&top_level_widget);
+  EXPECT_TRUE(::IsWindow(win32_window));
+
+  // This instance will be destroyed when the dialog is destroyed.
+  ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate;
+
+  // We should be able to activate the window even if the WidgetDelegate
+  // says no, when a modal dialog is active.
+  widget_delegate->set_can_activate(false);
+
+  Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
+      dialog_delegate, NULL, top_level_widget.GetNativeWindow());
+  modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
+  modal_dialog_widget->Show();
+  EXPECT_TRUE(modal_dialog_widget->IsVisible());
+
+  LRESULT activate_result = ::SendMessage(
+      win32_window,
+      WM_MOUSEACTIVATE,
+      reinterpret_cast<WPARAM>(win32_window),
+      MAKELPARAM(WM_LBUTTONDOWN, HTCLIENT));
+  EXPECT_EQ(activate_result, MA_ACTIVATE);
+
+  modal_dialog_widget->CloseNow();
+  top_level_widget.CloseNow();
+}
+#endif
 #endif
 
 }  // namespace test

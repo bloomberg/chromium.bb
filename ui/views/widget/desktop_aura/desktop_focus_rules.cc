@@ -21,4 +21,15 @@ bool DesktopFocusRules::SupportsChildActivation(aura::Window* window) const {
          window->GetRootWindow() == window;
 }
 
+aura::Window* DesktopFocusRules::GetToplevelWindow(
+    aura::Window* window) const {
+  aura::Window* top_level_window =
+      corewm::BaseFocusRules::GetToplevelWindow(window);
+  // In Desktop-Aura, only the content_window or children of the RootWindow are
+  // considered as top level windows.
+  if (top_level_window == content_window_->parent())
+    return content_window_;
+  return top_level_window;
+}
+
 }  // namespace views

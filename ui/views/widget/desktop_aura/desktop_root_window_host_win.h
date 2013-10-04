@@ -210,6 +210,9 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
  private:
   void SetWindowTransparency();
 
+  // Returns true if a modal window is active in the current root window chain.
+  bool IsModalWindowActive() const;
+
   // We are owned by the RootWindow, but we have to have a back pointer to it.
   aura::RootWindow* root_window_;
 

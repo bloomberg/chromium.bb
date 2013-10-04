@@ -549,6 +549,8 @@ bool DesktopRootWindowHostWin::CanMaximize() const {
 }
 
 bool DesktopRootWindowHostWin::CanActivate() const {
+  if (IsModalWindowActive())
+    return true;
   return native_widget_delegate_->CanActivate();
 }
 
@@ -853,6 +855,18 @@ void DesktopRootWindowHostWin::SetWindowTransparency() {
   bool transparent = ShouldUseNativeFrame() && !IsFullscreen();
   root_window_->compositor()->SetHostHasTransparentBackground(transparent);
   root_window_->SetTransparent(transparent);
+}
+
+bool DesktopRootWindowHostWin::IsModalWindowActive() const {
+  aura::Window::Windows::const_iterator index;
+  for (index = root_window_->children().begin();
+       index != root_window_->children().end();
+       ++index) {
+    if ((*index)->GetProperty(aura::client::kModalKey) !=
+        ui:: MODAL_TYPE_NONE && (*index)->TargetVisibility())
+      return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
