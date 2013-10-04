@@ -354,7 +354,6 @@
         '../config.gyp:config',
         '../platform/blink_platform.gyp:blink_platform',
         '../weborigin/weborigin.gyp:weborigin',
-        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
@@ -374,7 +373,6 @@
       'export_dependent_settings': [
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
-        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
@@ -419,6 +417,21 @@
                'USING_V8_SHARED',
             ],
           },
+        }],
+        ['use_angle_translator == 1', {
+          'dependencies': [
+            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+          ],
+          'export_dependent_settings': [
+            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+          ],
+        }, {
+          'dependencies': [
+            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
+          ],
+          'export_dependent_settings': [
+            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
+          ],
         }],
         ['use_x11 == 1', {
           'dependencies': [
