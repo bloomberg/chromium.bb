@@ -297,6 +297,7 @@ crbug.com/258896 virtual/web-animations-css/animations/play-state-paused.html [ 
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-background-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
+crbug.com/258896 virtual/web-animations-css/animations/unsigned-underflow.html [ Crash ]
 crbug.com/258896 [ Debug ] virtual/web-animations-css/animations/width-using-ems.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Failure Timeout ]
@@ -1291,3 +1292,6 @@ crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/time
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
 
 crbug.com/303279 [ Debug ] http/tests/history/back-to-javascript-url-iframe.html [ Crash Pass ]
+
+crbug.com/303444 animations/unsigned-underflow.html [ Timeout ]
+crbug.com/303444 virtual/threaded/animations/unsigned-underflow.html [ Timeout ]

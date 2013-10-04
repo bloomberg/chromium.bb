@@ -29,6 +29,7 @@
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/IntPoint.h"
 #include "wtf/MathExtras.h"
+#include "wtf/TypeTraits.h"
 
 namespace WebCore {
 
@@ -37,9 +38,12 @@ inline int blend(int from, int to, double progress)
     return lround(from + (to - from) * progress);
 }
 
-inline unsigned blend(unsigned from, unsigned to, double progress)
+// For unsigned types.
+template <typename T>
+inline T blend(T from, T to, double progress)
 {
-    return clampTo<unsigned>(round(to > from ? from + (to - from) * progress : from - (from - to) * progress));
+    COMPILE_ASSERT(WTF::IsInteger<T>::value, BlendForUnsignedTypes);
+    return clampTo<T>(round(to > from ? from + (to - from) * progress : from - (from - to) * progress));
 }
 
 inline double blend(double from, double to, double progress)

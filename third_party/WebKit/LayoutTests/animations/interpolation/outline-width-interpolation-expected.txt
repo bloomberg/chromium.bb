@@ -1,5 +1,5 @@
      
-FAIL: outline-width from [0px] to [10px] was [65533px] at -0.3, expected [0px]
+PASS: outline-width from [0px] to [10px] was [0px] at -0.3
 PASS: outline-width from [0px] to [10px] was [0px] at 0
 PASS: outline-width from [0px] to [10px] was [3px] at 0.3
 PASS: outline-width from [0px] to [10px] was [6px] at 0.6

@@ -9,8 +9,18 @@
     -webkit-animation-name: anim;
 }
 @-webkit-keyframes "anim" {
-    from { border-top-width: 0px; }
-    to   { border-top-width: 10px; }
+    from {
+        border-top-width: 0px;
+        outline-width: 0px;
+        -webkit-column-count: 1;
+        -webkit-column-rule-width: 0px;
+    }
+    to {
+        border-top-width: 10px;
+        outline-width: 10px;
+        -webkit-column-count: 10;
+        -webkit-column-rule-width: 10px;
+    }
 }
 </style>
 <script src="resources/animation-test-helpers.js"></script>
@@ -21,6 +31,9 @@ if (window.testRunner)
 const expectedValues = [
   // [animation-name, time, element-id, property, expected-value, tolerance]
   ['anim', 0.5, 'target', 'border-top-width', 0, 0],
+  ['anim', 0.5, 'target', 'outline-width', 0, 0],
+  ['anim', 0.5, 'target', '-webkit-column-count', 1, 0],
+  ['anim', 0.5, 'target', '-webkit-column-rule-width', 0, 0],
 ];
 
 runAnimationTest(expectedValues);

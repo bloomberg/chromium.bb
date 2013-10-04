@@ -1,2 +1,5 @@
 PASS - "border-top-width" property for "target" element at 0.5s saw something close to: 0
+PASS - "outline-width" property for "target" element at 0.5s saw something close to: 0
+FAIL - "-webkit-column-count" property for "target" element at 0.5s expected: 1 but saw: 0
+PASS - "-webkit-column-rule-width" property for "target" element at 0.5s saw something close to: 0
 
