@@ -109,7 +109,7 @@ PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, Exce
 {
     if (channelIndex >= m_channels.size()) {
         es.throwDOMException(
-            SyntaxError,
+            IndexSizeError,
             ExceptionMessages::failedToExecute(
                 "getChannelData",
                 "AudioBuffer",

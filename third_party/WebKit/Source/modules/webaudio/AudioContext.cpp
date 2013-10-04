@@ -296,22 +296,28 @@ PassRefPtr<AudioBuffer> AudioContext::createBuffer(unsigned numberOfChannels, si
     if (!audioBuffer.get()) {
         if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
             es.throwDOMException(
-                SyntaxError,
+                NotSupportedError,
                 ExceptionMessages::failedToConstruct(
                     "AudioBuffer",
                     "requested number of channels (" + String::number(numberOfChannels) + ") exceeds maximum (" + String::number(AudioContext::maxNumberOfChannels()) + ")"));
         } else if (sampleRate < AudioBuffer::minAllowedSampleRate() || sampleRate > AudioBuffer::maxAllowedSampleRate()) {
             es.throwDOMException(
-                SyntaxError,
+                NotSupportedError,
                 ExceptionMessages::failedToConstruct(
                     "AudioBuffer",
                     "requested sample rate (" + String::number(sampleRate)
                     + ") does not lie in the allowed range of "
                     + String::number(AudioBuffer::minAllowedSampleRate())
                     + "-" + String::number(AudioBuffer::maxAllowedSampleRate()) + " Hz"));
+        } else if (!numberOfFrames) {
+            es.throwDOMException(
+                NotSupportedError,
+                ExceptionMessages::failedToConstruct(
+                    "AudioBuffer",
+                    "number of frames must be greater than 0."));
         } else {
             es.throwDOMException(
-                SyntaxError,
+                NotSupportedError,
                 ExceptionMessages::failedToConstruct(
                     "AudioBuffer",
                     "invalid number of channels, frames, or sample rate."));
@@ -476,13 +482,13 @@ PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t buffe
     if (!node.get()) {
         if (!numberOfInputChannels && !numberOfOutputChannels) {
             es.throwDOMException(
-                SyntaxError,
+                IndexSizeError,
                 ExceptionMessages::failedToConstruct(
                     "ScriptProcessorNode",
                     "number of input channels and output channels cannot both be zero."));
         } else if (numberOfInputChannels > AudioContext::maxNumberOfChannels()) {
             es.throwDOMException(
-                SyntaxError,
+                IndexSizeError,
                 ExceptionMessages::failedToConstruct(
                     "ScriptProcessorNode",
                     "number of input channels (" + String::number(numberOfInputChannels)
@@ -490,7 +496,7 @@ PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t buffe
                     + String::number(AudioContext::maxNumberOfChannels()) + ")."));
         } else if (numberOfOutputChannels > AudioContext::maxNumberOfChannels()) {
             es.throwDOMException(
-                SyntaxError,
+                IndexSizeError,
                 ExceptionMessages::failedToConstruct(
                     "ScriptProcessorNode",
                     "number of output channels (" + String::number(numberOfInputChannels)
@@ -498,7 +504,7 @@ PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t buffe
                     + String::number(AudioContext::maxNumberOfChannels()) + ")."));
         } else {
             es.throwDOMException(
-                SyntaxError,
+                IndexSizeError,
                 ExceptionMessages::failedToConstruct(
                     "ScriptProcessorNode",
                     "buffer size (" + String::number(bufferSize)
@@ -591,7 +597,7 @@ PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(size_t numbe
 
     if (!node.get()) {
         es.throwDOMException(
-            SyntaxError,
+            IndexSizeError,
             ExceptionMessages::failedToConstruct(
                 "ChannelSplitterNode",
                 "number of outputs (" + String::number(numberOfOutputs)
@@ -618,7 +624,7 @@ PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(size_t numberOfI
 
     if (!node.get()) {
         es.throwDOMException(
-            SyntaxError,
+            IndexSizeError,
             ExceptionMessages::failedToConstruct(
                 "ChannelMergerNode",
                 "number of inputs (" + String::number(numberOfInputs)
@@ -668,12 +674,32 @@ PassRefPtr<PeriodicWave> AudioContext::createPeriodicWave(Float32Array* real, Fl
 
     if (real->length() != imag->length()) {
         es.throwDOMException(
-            SyntaxError,
+            IndexSizeError,
             ExceptionMessages::failedToConstruct(
                 "PeriodicWave",
                 "length of real array (" + String::number(real->length())
                 + ") and length of imaginary array (" +  String::number(imag->length())
                 + ") must match."));
+        return 0;
+    }
+
+    if (real->length() > 4096) {
+        es.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::failedToConstruct(
+                "PeriodicWave",
+                "length of real array (" + String::number(real->length())
+                + ") exceeds allowed maximum of 4096"));
+        return 0;
+    }
+
+    if (imag->length() > 4096) {
+        es.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::failedToConstruct(
+                "PeriodicWave",
+                "length of imaginary array (" + String::number(imag->length())
+                + ") exceeds allowed maximum of 4096"));
         return 0;
     }
 

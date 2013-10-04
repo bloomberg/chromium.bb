@@ -28,43 +28,49 @@ function runTest() {
     context = new webkitAudioContext();
     otherContext = new webkitAudioContext();
 
-    // Test createion of various objects
+    // Test creation of various objects
 
-    // Invalid number of channels
+    // Invalid number of channels: NotSupportedError
     shouldThrow("context.createBuffer(99, 1, context.sampleRate)");
-    // Invalid sample rate
+    // Invalid sample rate: NotSupportedError
     shouldThrow("context.createBuffer(1, 1, 1)");
     shouldThrow("context.createBuffer(1, 1, 1e6)");
-    // Invalid ArrayBuffer
+    // Invalid number of frames: NotSupportedError
+    shouldThrow("context.createBuffer(1, 0, context.sampleRate)");
+    // Invalid ArrayBuffer (unspecified error)
     shouldThrow("context.createBuffer(new ArrayBuffer(100), true)");
-    // Invalid ArrayBuffer
+    // Invalid ArrayBuffer (unspecified error)
     shouldThrow("context.decodeAudioData(null, function() {}, function () {})");
-    // Invalid sources
+    // Invalid sources (unspecified error)
     shouldThrow("context.createMediaElementSource(null)");
     shouldThrow("context.createMediaStreamSource(null)");
-    // Invalid buffer size
+    // Invalid buffer size: IndexSizeError
     shouldThrow("context.createScriptProcessor(1, 1, 1)");
-    // Invalid number of inputs and outputs
+    // Invalid number of inputs and outputs: IndexSizeError
     shouldThrow("context.createScriptProcessor(4096, 100, 1)");
     shouldThrow("context.createScriptProcessor(4096, 1, 100)");
     shouldNotThrow("context.createScriptProcessor()");
     shouldNotThrow("context.createScriptProcessor(0)");
 
-    // Invalid number of channels
+    // Invalid number of channels: IndexSizeError
     shouldThrow("context.createChannelSplitter(0)");
     shouldThrow("context.createChannelSplitter(99)");
     shouldThrow("context.createChannelMerger(0)");
     shouldThrow("context.createChannelMerger(99)");
-    // Invalid real/imag arrays
+    // Invalid real/imag arrays: IndexSizeError
     shouldThrow("context.createPeriodicWave(null, null)");
     shouldThrow("context.createPeriodicWave(new Float32Array(10), null)");
-    // Real and imaginary arrays must have the same size
+    shouldThrow("context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100))");
+    // Real and imaginary arrays must have the same size: IndexSizeError
     shouldThrow("context.createPeriodicWave(new Float32Array(10), new Float32Array(7))");
+    
 
     // Analysers
     node = context.createAnalyser();
-    // Invalid fftSize
+    // Invalid fftSize: IndexSizeError
     shouldThrow("node.fftSize = 42");
+    shouldThrow("node.fftSize = 16");
+    shouldThrow("node.fftSize = 4096");
 
     shouldThrow("node.minDecibels = -10");
     shouldThrow("node.maxDecibels = -150");
@@ -73,38 +79,38 @@ function runTest() {
 
     // AudioBuffers
     node = context.createBuffer(1,1, context.sampleRate);
-    // Invalid channel index
+    // Invalid channel index: IndexSizeError
     shouldThrow("node.getChannelData(2)");
 
     // AudioNode connections
     node = context.createGain();
     node2 = context.createGain();
-    // Invalid destination node
+    // Invalid destination node (unspecified error)
     shouldThrow("node.connect(null, 0, 0)");
-    // Invalid input or output index
+    // Invalid input or output index: IndexSizeError
     shouldThrow("node.connect(context.destination, 100, 0)");
     shouldThrow("node.connect(context.destination, 0, 100)");
     shouldThrow("node.connect(node2.gain, 100)");
     shouldThrow("node.disconnect(99)");
-    // Can't connect to a different context
+    // Can't connect to a different context (unspecified error)
     shouldThrow("node.connect(otherContext.destination)");
 
-    // Invalid channel count
+    // Invalid channel count: NotSupportedError
     shouldThrow("node.channelCount = 99");
-    // Invalid mode or interpretation
+    // Invalid mode or interpretation (unspecified error)
     mode = "fancy";
     shouldThrow("node.channelCountMode = mode");
     shouldThrow("node.channelInterpretation = mode");
 
-    // Destination
+    // Destination: IndexSizeError
     shouldThrow("context.destination.channelCount = 99");
 
     // Delay nodes are tested elsewhere, so don't duplicate that work here.
 
     // OfflineAudioContext
-    // Invalid number of channels
+    // Invalid number of channels (unspecified error)
     shouldThrow("new webkitOfflineAudioContext(99, 100, context.sampleRate)");
-    // Invalid sample rate.
+    // Invalid sample rate. (unspecified error)
     shouldThrow("new webkitOfflineAudioContext(1, 100, 1)");
     shouldThrow("new webkitOfflineAudioContext(1, 100, 1e6)");
 

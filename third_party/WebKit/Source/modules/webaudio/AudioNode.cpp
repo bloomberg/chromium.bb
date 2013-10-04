@@ -256,7 +256,7 @@ void AudioNode::setChannelCount(unsigned long channelCount, ExceptionState& es)
         }
     } else {
         es.throwDOMException(
-            InvalidStateError,
+            NotSupportedError,
             ExceptionMessages::failedToSet(
                 "channelCount",
                 "AudioNode",

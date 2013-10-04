@@ -78,7 +78,7 @@ void AnalyserNode::setFftSize(unsigned size, ExceptionState& es)
 {
     if (!m_analyser.setFftSize(size)) {
         es.throwDOMException(
-            NotSupportedError,
+            IndexSizeError,
             ExceptionMessages::failedToSet(
                 "fftSize",
                 "AnalyserNode",

@@ -121,7 +121,7 @@ void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, Ex
 
     if (!maxChannelCount() || channelCount > maxChannelCount()) {
         es.throwDOMException(
-            InvalidStateError,
+            IndexSizeError,
             ExceptionMessages::failedToSet(
                 "channelCount",
                 "AudioDestinationNode",
