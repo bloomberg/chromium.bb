@@ -387,8 +387,6 @@
         'midi/midi_manager_mac.h',
         'midi/midi_port_info.cc',
         'midi/midi_port_info.h',
-        'mp3/mp3_stream_parser.cc',
-        'mp3/mp3_stream_parser.h',
         'video/capture/android/video_capture_device_android.cc',
         'video/capture/android/video_capture_device_android.h',
         'video/capture/fake_video_capture_device.cc',
@@ -712,12 +710,6 @@
             'audio/pulse/pulse_util.h',
           ],
         }],
-        ['os_posix==1', {
-          'sources!': [
-            'video/capture/video_capture_device_dummy.cc',
-            'video/capture/video_capture_device_dummy.h',
-          ],
-        }],
         ['OS=="mac"', {
           'link_settings': {
             'libraries': [
@@ -732,10 +724,6 @@
           },
         }],
         ['OS=="win"', {
-          'sources!': [
-            'video/capture/video_capture_device_dummy.cc',
-            'video/capture/video_capture_device_dummy.h',
-          ],
           'link_settings':  {
             'libraries': [
               '-lmf.lib',
@@ -774,7 +762,7 @@
             }],
           ],
         }],
-        ['proprietary_codecs==1 or branding=="Chrome"', {
+        ['proprietary_codecs==1', {
           'sources': [
             'mp2t/es_parser.h',
             'mp2t/es_parser_adts.cc',
@@ -795,6 +783,8 @@
             'mp2t/ts_section_pmt.h',
             'mp2t/ts_section_psi.cc',
             'mp2t/ts_section_psi.h',
+            'mp3/mp3_stream_parser.cc',
+            'mp3/mp3_stream_parser.h',
             'mp4/aac.cc',
             'mp4/aac.h',
             'mp4/avc.cc',
@@ -1013,7 +1003,6 @@
             'ffmpeg/ffmpeg_common_unittest.cc',
             'filters/audio_file_reader_unittest.cc',
             'filters/blocking_url_protocol_unittest.cc',
-            'filters/chunk_demuxer_unittest.cc',
             'filters/ffmpeg_audio_decoder_unittest.cc',
             'filters/ffmpeg_demuxer_unittest.cc',
             'filters/ffmpeg_glue_unittest.cc',
@@ -1021,10 +1010,6 @@
             'filters/ffmpeg_video_decoder_unittest.cc',
             'filters/pipeline_integration_test.cc',
             'filters/pipeline_integration_test_base.cc',
-            'mp2t/mp2t_stream_parser_unittest.cc',
-            'mp3/mp3_stream_parser_unittest.cc',
-            'mp4/mp4_stream_parser_unittest.cc',
-            'webm/webm_cluster_parser_unittest.cc',
           ],
           'conditions': [
             ['gtest_target_type=="shared_library"', {
