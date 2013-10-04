@@ -33,6 +33,7 @@
 
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/platform/CalculationValue.h"
+#include "core/platform/animation/AnimationUtilities.h"
 
 namespace WebCore {
 
@@ -55,16 +56,6 @@ PassRefPtr<AnimatableLength> AnimatableLength::create(CSSValue* value)
 
     ASSERT_NOT_REACHED();
     return 0;
-}
-
-PassRefPtr<AnimatableLength> AnimatableLength::create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
-{
-    ASSERT(leftAddend);
-    ASSERT(rightAddend);
-
-    if (!leftAddend->m_isCalc && !rightAddend->m_isCalc && leftAddend->m_unitType == rightAddend->m_unitType)
-        return create(leftAddend->m_number + rightAddend->m_number, leftAddend->m_unitType);
-    return create(CSSCalcValue::createExpressionNode(leftAddend->toCSSCalcExpressionNode(), rightAddend->toCSSCalcExpressionNode(), CalcAdd));
 }
 
 bool AnimatableLength::canCreateFrom(const CSSValue* value)
@@ -98,8 +89,10 @@ Length AnimatableLength::toLength(const RenderStyle* style, const RenderStyle* r
 
 PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    const AnimatableLength* number = toAnimatableLength(value);
-    return AnimatableLength::create(scale(1 - fraction).get(), number->scale(fraction).get());
+    const AnimatableLength* length = toAnimatableLength(value);
+    if (hasSameUnitType(*length))
+        return AnimatableLength::create(blend(m_number, length->m_number, fraction), m_unitType);
+    return AnimatableLength::create(scale(1 - fraction).get(), length->scale(fraction).get());
 }
 
 PassRefPtr<AnimatableValue> AnimatableLength::addWith(const AnimatableValue* value) const
@@ -107,11 +100,13 @@ PassRefPtr<AnimatableValue> AnimatableLength::addWith(const AnimatableValue* val
     // Optimization for adding with 0.
     if (!m_isCalc && !m_number)
         return takeConstRef(value);
-    const AnimatableLength* number = toAnimatableLength(value);
-    if (!number->m_isCalc && !number->m_number)
+    const AnimatableLength* length = toAnimatableLength(value);
+    if (!length->m_isCalc && !length->m_number)
         return takeConstRef(this);
 
-    return AnimatableLength::create(this, number);
+    if (hasSameUnitType(*length))
+        return AnimatableLength::create(m_number + length->m_number, m_unitType);
+    return AnimatableLength::create(this, length);
 }
 
 PassRefPtr<CSSCalcExpressionNode> AnimatableLength::toCSSCalcExpressionNode() const

@@ -97,7 +97,11 @@ private:
     {
         return adoptRef(new AnimatableLength(calcExpression, cssPrimitiveValue));
     }
-    static PassRefPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend);
+    static PassRefPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
+    {
+        ASSERT(leftAddend && rightAddend);
+        return create(CSSCalcValue::createExpressionNode(leftAddend->toCSSCalcExpressionNode(), rightAddend->toCSSCalcExpressionNode(), CalcAdd));
+    }
 
     PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(NumberRange) const;
     PassRefPtr<CSSCalcExpressionNode> toCSSCalcExpressionNode() const;
@@ -110,6 +114,10 @@ private:
     }
     static NumberUnitType primitiveUnitToNumberType(unsigned short primitiveUnit);
     static unsigned short numberTypeToPrimitiveUnit(NumberUnitType numberType);
+    bool hasSameUnitType(const AnimatableLength& length) const
+    {
+        return !m_isCalc && !length.m_isCalc && m_unitType == length.m_unitType;
+    }
 
     bool m_isCalc;
 
