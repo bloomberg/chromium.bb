@@ -1866,6 +1866,8 @@
             'dom/NameNodeList.cpp',
             'dom/NameNodeList.h',
             'dom/Node.cpp',
+            'dom/NodeChildRemovalTracker.h',
+            'dom/NodeChildRemovalTracker.cpp',
             'dom/NodeFilter.cpp',
             'dom/NodeFilter.h',
             'dom/NodeFilterCondition.cpp',

@@ -70,6 +70,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NamedFlowCollection.h"
+#include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
 #include "core/dom/NodeRareData.h"
@@ -3290,6 +3291,9 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
 
     // Make sure newFocusedNode is actually in this document
     if (newFocusedElement && (&newFocusedElement->document() != this))
+        return true;
+
+    if (NodeChildRemovalTracker::isBeingRemoved(newFocusedElement.get()))
         return true;
 
     if (m_focusedElement == newFocusedElement)

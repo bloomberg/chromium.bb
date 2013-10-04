@@ -1,0 +1,16 @@
+<body>
+<script src="../js/resources/js-test-pre.js"></script>
+<script>
+(function() {
+    (function() {
+        var theElement = document.createElement("details");
+        document.body.appendChild(theElement);
+        theElement.addEventListener("DOMNodeRemovedFromDocument", function () { eventSender.keyDown("\t"); }, false);
+        theElement.parentNode.removeChild(theElement);
+    })();
+    gc();
+    debug("PASS unless crash");
+})();
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
