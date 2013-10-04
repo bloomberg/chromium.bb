@@ -1,27 +1,12 @@
-Test XMLHttpRequest with responseType set to 'json' for various input
 
-PASS: "200" == "200"
-PASS: "4" == "4"
-PASS: "a" == "a"
-PASS: "b" == "b"
-PASS: "2" == "2"
-PASS: "3" == "3"
-PASS: "200" == "200"
-PASS: "1" == "1"
-PASS: "200" == "200"
-PASS: "-1" == "-1"
-PASS: "200" == "200"
-PASS: "null" == "null"
-PASS: "200" == "200"
-PASS: "{}" == "{}"
-PASS: "200" == "200"
-PASS: "[]" == "[]"
-PASS: "200" == "200"
-PASS: "{"a":5,"b":10,"c":[{},5,"\n"]}" == "{"a":5,"b":10,"c":[{},5,"\n"]}"
-PASS: "200" == "200"
-PASS: "null" == "null"
-PASS: "200" == "200"
-PASS: "null" == "null"
-PASS: "200" == "200"
-PASS: "null" == "null"
+PASS Test XMLHttpRequest with responseType set to 'json' for '' expecting failure. 
+PASS Test XMLHttpRequest with responseType set to 'json' for '00' expecting failure. 
+PASS Test XMLHttpRequest with responseType set to 'json' for 'a' expecting failure. 
+PASS Test XMLHttpRequest with responseType set to 'json' for '1' expecting success. 
+PASS Test XMLHttpRequest with responseType set to 'json' for '-1' expecting success. 
+PASS Test XMLHttpRequest with responseType set to 'json' for 'null' expecting success. 
+PASS Test XMLHttpRequest with responseType set to 'json' for '{}' expecting success. 
+PASS Test XMLHttpRequest with responseType set to 'json' for '[]' expecting success. 
+PASS Test XMLHttpRequest with responseType set to 'json' for '{"a":5,"b":10,"c":[{},5,"\n"]}' expecting success. 
+PASS Test XMLHttpRequest with responseType set to 'json' for test.json. 
 
