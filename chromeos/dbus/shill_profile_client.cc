@@ -86,7 +86,7 @@ ShillClientHelper* ShillProfileClientImpl::GetHelper(
   // There is no helper for the profile, create it.
   dbus::ObjectProxy* object_proxy =
       bus_->GetObjectProxy(shill::kFlimflamServiceName, profile_path);
-  ShillClientHelper* helper = new ShillClientHelper(bus_, object_proxy);
+  ShillClientHelper* helper = new ShillClientHelper(object_proxy);
   helper->MonitorPropertyChanged(shill::kFlimflamProfileInterface);
   helpers_.insert(HelperMap::value_type(profile_path.value(), helper));
   return helper;
