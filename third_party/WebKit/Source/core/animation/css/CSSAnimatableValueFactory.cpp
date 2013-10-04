@@ -239,6 +239,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->verticalBorderSpacing());
     case CSSPropertyWebkitClipPath:
         return AnimatableClipPathOperation::create(style->clipPath());
+    case CSSPropertyWebkitColumnCount:
+        return createFromDouble(style->columnCount());
     case CSSPropertyWebkitColumnGap:
         return createFromDouble(style->columnGap());
     case CSSPropertyWebkitColumnRuleColor:

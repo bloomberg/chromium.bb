@@ -66,10 +66,10 @@ Length animatableValueToLength(const AnimatableValue* value, const StyleResolver
     return cssPrimitiveValue->convertToLength<AnyConversion>(style, state.rootElementStyle(), style->effectiveZoom());
 }
 
-template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value)
+template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value, T min = defaultMinimumForClamp<T>(), T max = defaultMaximumForClamp<T>())
 {
     COMPILE_ASSERT(WTF::IsInteger<T>::value, ShouldUseIntegralTypeTWhenRoundingValues);
-    return clampTo<T>(round(toAnimatableDouble(value)->toDouble()));
+    return clampTo<T>(round(toAnimatableDouble(value)->toDouble()), min, max);
 }
 
 LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleResolverState& state)
@@ -270,6 +270,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyWebkitClipPath:
         style->setClipPath(toAnimatableClipPathOperation(value)->clipPathOperation());
+        return;
+    case CSSPropertyWebkitColumnCount:
+        style->setColumnCount(animatableValueRoundClampTo<unsigned short>(value, 1));
         return;
     case CSSPropertyWebkitColumnGap:
         style->setColumnGap(clampTo(toAnimatableDouble(value)->toDouble(), 0));
