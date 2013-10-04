@@ -220,6 +220,11 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
 
   MediaDrmBridge* drm_bridge_;
 
+  // No decryption key available to decrypt the encrypted buffer. In this case,
+  // the player should pause. When a new key is added (OnKeyAdded()), we should
+  // try to start playback again.
+  bool is_waiting_for_key_;
+
   friend class MediaSourcePlayerTest;
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayer);
 };
