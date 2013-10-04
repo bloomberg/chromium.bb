@@ -1292,8 +1292,15 @@
     ['OS!="android" and OS!="ios"', {
       'dependencies': [
         'browser/tracing/tracing_resources.gyp:tracing_resources',
+      ],
+    }],
+    ['android_webview_build==0 and OS!="ios"', {
+      'dependencies': [
         '../third_party/libyuv/libyuv.gyp:libyuv',
       ],
+    }],
+    ['android_webview_build==1', {
+      'defines': ['AVOID_LIBYUV_FOR_ANDROID_WEBVIEW'],
     }],
     ['enable_webrtc==1', {
       'dependencies': [

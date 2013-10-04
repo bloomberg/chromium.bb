@@ -17,37 +17,9 @@
 #include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(AVOID_LIBYUV_FOR_ANDROID_WEBVIEW)
 #include "third_party/libyuv/include/libyuv.h"
 #endif
-
-namespace {
-
-#if defined(OS_IOS) || defined(OS_ANDROID)
-// TODO(wjia): Support stride.
-void RotatePackedYV12Frame(
-    const uint8* src,
-    uint8* dest_yplane,
-    uint8* dest_uplane,
-    uint8* dest_vplane,
-    int width,
-    int height,
-    int rotation,
-    bool flip_vert,
-    bool flip_horiz) {
-  media::RotatePlaneByPixels(
-      src, dest_yplane, width, height, rotation, flip_vert, flip_horiz);
-  int y_size = width * height;
-  src += y_size;
-  media::RotatePlaneByPixels(
-      src, dest_uplane, width/2, height/2, rotation, flip_vert, flip_horiz);
-  src += y_size/4;
-  media::RotatePlaneByPixels(
-      src, dest_vplane, width/2, height/2, rotation, flip_vert, flip_horiz);
-}
-#endif  // #if defined(OS_IOS) || defined(OS_ANDROID)
-
-}  // namespace
 
 namespace content {
 
@@ -139,13 +111,6 @@ class VideoCaptureController::VideoCaptureDeviceClient
 
   // Tracks the current frame format.
   media::VideoCaptureCapability frame_info_;
-
-  // For NV21 we have to do color conversion into the intermediate buffer and
-  // from there the rotations. This variable won't be needed after
-  // http://crbug.com/292400
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  scoped_ptr<uint8[]> i420_intermediate_buffer_;
-#endif  // #if defined(OS_IOS) || defined(OS_ANDROID)
 };
 
 VideoCaptureController::VideoCaptureController()
@@ -276,7 +241,6 @@ VideoCaptureController::VideoCaptureDeviceClient::ReserveOutputBuffer() {
                                              0);
 }
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
 void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
     const uint8* data,
     int length,
@@ -293,6 +257,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
 
   if (!dst.get())
     return;
+#if !defined(AVOID_LIBYUV_FOR_ANDROID_WEBVIEW)
 
   uint8* yplane = dst->data(media::VideoFrame::kYPlane);
   uint8* uplane = dst->data(media::VideoFrame::kUPlane);
@@ -301,6 +266,8 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   int uv_plane_stride = (frame_info_.width + 1) / 2;
   int crop_x = 0;
   int crop_y = 0;
+  int destination_width = frame_info_.width;
+  int destination_height = frame_info_.height;
   libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
   // Assuming rotation happens first and flips next, we can consolidate both
   // vertical and horizontal flips together with rotation into two variables:
@@ -376,24 +343,44 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
                              yplane_stride,
                              uv_plane_stride);
   } else {
+    if (new_rotation_angle==90 || new_rotation_angle==270){
+      // To be compatible with non-libyuv code in RotatePlaneByPixels, when
+      // rotating by 90/270, only the maximum square portion located in the
+      // center of the image is rotated. F.i. 640x480 pixels, only the central
+      // 480 pixels would be rotated and the leftmost and rightmost 80 columns
+      // would be ignored. This process is called letterboxing.
+      int letterbox_thickness = abs(frame_info_.width - frame_info_.height) / 2;
+      if (destination_width > destination_height) {
+        yplane += letterbox_thickness;
+        uplane += letterbox_thickness / 2;
+        vplane += letterbox_thickness / 2;
+        destination_width = destination_height;
+      } else {
+        yplane += letterbox_thickness * destination_width;
+        uplane += (letterbox_thickness * destination_width) / 2;
+        vplane += (letterbox_thickness * destination_width) / 2;
+        destination_height = destination_width;
+      }
+    }
     libyuv::ConvertToI420(
-        data,
-        length,
-        yplane,
-        yplane_stride,
-        uplane,
-        uv_plane_stride,
-        vplane,
-        uv_plane_stride,
-        crop_x,
-        crop_y,
+        data, length,
+        yplane, yplane_stride,
+        uplane, uv_plane_stride,
+        vplane, uv_plane_stride,
+        crop_x, crop_y,
         frame_info_.width + chopped_width_,
         frame_info_.height * (flip_vert ^ flip_horiz ? -1 : 1),
-        frame_info_.width,
-        frame_info_.height,
+        destination_width,
+        destination_height,
         rotation_mode,
         origin_colorspace);
   }
+#else
+  // Libyuv is not linked in for Android WebView builds, but video capture is
+  // not used in those builds either. Whenever libyuv is added in that build,
+  // address all these #ifdef parts, see http://crbug.com/299611 .
+  NOTREACHED();
+#endif  // if !defined(AVOID_LIBYUV_FOR_ANDROID_WEBVIEW)
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -402,103 +389,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
                  dst,
                  timestamp));
 }
-#else
-void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
-    const uint8* data,
-    int length,
-    base::Time timestamp,
-    int rotation,
-    bool flip_vert,
-    bool flip_horiz) {
-  DCHECK(frame_info_.color == media::PIXEL_FORMAT_I420 ||
-         frame_info_.color == media::PIXEL_FORMAT_YV12 ||
-         frame_info_.color == media::PIXEL_FORMAT_NV21 ||
-         (rotation == 0 && !flip_vert && !flip_horiz));
-
-  TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
-
-  if (!buffer_pool_)
-    return;
-  scoped_refptr<media::VideoFrame> dst =
-      buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
-                                                    frame_info_.height),
-                                          rotation);
-
-  if (!dst.get())
-    return;
-
-  uint8* yplane = dst->data(media::VideoFrame::kYPlane);
-  uint8* uplane = dst->data(media::VideoFrame::kUPlane);
-  uint8* vplane = dst->data(media::VideoFrame::kVPlane);
-
-  // Do color conversion from the camera format to I420.
-  switch (frame_info_.color) {
-    case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
-      break;
-    case media::PIXEL_FORMAT_I420:
-      DCHECK(!chopped_width_ && !chopped_height_);
-      RotatePackedYV12Frame(
-          data, yplane, uplane, vplane, frame_info_.width, frame_info_.height,
-          rotation, flip_vert, flip_horiz);
-      break;
-    case media::PIXEL_FORMAT_YV12:
-      DCHECK(!chopped_width_ && !chopped_height_);
-      RotatePackedYV12Frame(
-          data, yplane, vplane, uplane, frame_info_.width, frame_info_.height,
-          rotation, flip_vert, flip_horiz);
-      break;
-    case media::PIXEL_FORMAT_NV21: {
-      DCHECK(!chopped_width_ && !chopped_height_);
-      int num_pixels = frame_info_.width * frame_info_.height;
-      media::ConvertNV21ToYUV(data,
-                              &i420_intermediate_buffer_[0],
-                              &i420_intermediate_buffer_[num_pixels],
-                              &i420_intermediate_buffer_[num_pixels * 5 / 4],
-                              frame_info_.width,
-                              frame_info_.height);
-      RotatePackedYV12Frame(
-          i420_intermediate_buffer_.get(), yplane, uplane, vplane,
-          frame_info_.width, frame_info_.height,
-          rotation, flip_vert, flip_horiz);
-       break;
-    }
-    case media::PIXEL_FORMAT_YUY2:
-      DCHECK(!chopped_width_ && !chopped_height_);
-      if (frame_info_.width * frame_info_.height * 2 != length) {
-        // If |length| of |data| does not match the expected width and height
-        // we can't convert the frame to I420. YUY2 is 2 bytes per pixel.
-        break;
-      }
-
-      media::ConvertYUY2ToYUV(data, yplane, uplane, vplane, frame_info_.width,
-                              frame_info_.height);
-      break;
-    case media::PIXEL_FORMAT_RGB24: {
-      int ystride = frame_info_.width;
-      int uvstride = frame_info_.width / 2;
-      int rgb_stride = 3 * (frame_info_.width + chopped_width_);
-      const uint8* rgb_src = data;
-      media::ConvertRGB24ToYUV(rgb_src, yplane, uplane, vplane,
-                               frame_info_.width, frame_info_.height,
-                               rgb_stride, ystride, uvstride);
-      break;
-    }
-    case media::PIXEL_FORMAT_ARGB:
-      media::ConvertRGB32ToYUV(data, yplane, uplane, vplane, frame_info_.width,
-                               frame_info_.height,
-                               (frame_info_.width + chopped_width_) * 4,
-                               frame_info_.width, frame_info_.width / 2);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  BrowserThread::PostTask(BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
-                 controller_, dst, timestamp));
-}
-#endif  // #if !defined(OS_IOS) && !defined(OS_ANDROID)
 
 void
 VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
@@ -636,13 +526,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnFrameInfo(
   } else {
     chopped_height_ = 0;
   }
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  if (frame_info_.color == media::PIXEL_FORMAT_NV21 &&
-      !i420_intermediate_buffer_) {
-    i420_intermediate_buffer_.reset(
-        new uint8[frame_info_.width * frame_info_.height * 12 / 8]);
-  }
-#endif  // #if defined(OS_IOS) || defined(OS_ANDROID)
 
   DCHECK(!buffer_pool_.get());
 
