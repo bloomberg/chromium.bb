@@ -35,6 +35,10 @@ Contents:
    devguide/distributing.rst
    community/application-gallery.rst
    community/middleware.rst
+   community/security-contest/index.rst
+   community/security-contest/contest-announcement.rst
+   community/security-contest/contest-terms.rst
+   community/security-contest/contest-faq.rst
    peppercpp/index.rst
    reference/index.rst
    reference/pnacl-bitcode-abi.rst
