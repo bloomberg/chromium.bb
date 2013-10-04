@@ -34,7 +34,7 @@
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
-#include "ui/views/widget/native_widget_win.cc"
+#include "ui/views/widget/native_widget_win.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
