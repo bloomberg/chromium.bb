@@ -73,7 +73,7 @@ FontCustomPlatformData::~FontCustomPlatformData()
         RemoveFontMemResourceEx(m_fontReference);
 }
 
-FontPlatformData FontCustomPlatformData::fontPlatformData(int size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant)
+FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant)
 {
     ASSERT(m_fontReference);
 
@@ -90,7 +90,7 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(int size, bool bold, b
 
     // FIXME: almost identical to FillLogFont in FontCacheWin.cpp.
     // Need to refactor.
-    logFont.lfHeight = -size;
+    logFont.lfHeight = -static_cast<int>(size);
     logFont.lfWidth = 0;
     logFont.lfEscapement = 0;
     logFont.lfOrientation = 0;

@@ -100,7 +100,7 @@ FontPlatformData FontResource::platformDataFromCustomData(float size, bool bold,
         return FontPlatformData(size, bold, italic);
 #endif
     ASSERT(m_fontData);
-    return m_fontData->fontPlatformData(static_cast<int>(size), bold, italic, orientation, widthVariant);
+    return m_fontData->fontPlatformData(size, bold, italic, orientation, widthVariant);
 }
 
 #if ENABLE(SVG_FONTS)

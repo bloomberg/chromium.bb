@@ -26,8 +26,9 @@
 #include "config.h"
 #include "core/css/CSSSegmentedFontFace.h"
 
-#include "core/css/CSSFontFace.h"
 #include "RuntimeEnabledFeatures.h"
+#include "core/css/CSSFontFace.h"
+#include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SegmentedFontData.h"
 #include "core/platform/graphics/SimpleFontData.h"
@@ -110,8 +111,14 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     if (!isValid())
         return 0;
 
+    float fontSize;
+    if (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+        fontSize = fontDescription.computedSize();
+    else
+        fontSize = fontDescription.computedPixelSize();
+
     FontTraitsMask desiredTraitsMask = fontDescription.traitsMask();
-    unsigned hashKey = ((fontDescription.computedPixelSize() + 1) << (FontTraitsMaskWidth + FontWidthVariantWidth + 1))
+    unsigned hashKey = ((static_cast<unsigned>(fontSize * FontCache::s_fontSizePrecisionMultiplier) + 1) << (FontTraitsMaskWidth + FontWidthVariantWidth + 1))
         | ((fontDescription.orientation() == Vertical ? 1 : 0) << (FontTraitsMaskWidth + FontWidthVariantWidth))
         | fontDescription.widthVariant() << FontTraitsMaskWidth
         | desiredTraitsMask;

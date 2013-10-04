@@ -117,6 +117,10 @@ public:
     static void getFontFamilyForCharacter(UChar32, const char* preferredLocale, SimpleFontFamily*);
 #endif
 
+    // Multiplying the floating point size by 100 gives two decimal
+    // point precision which should be sufficient.
+    static const unsigned s_fontSizePrecisionMultiplier = 100;
+
 private:
     FontCache();
     ~FontCache();

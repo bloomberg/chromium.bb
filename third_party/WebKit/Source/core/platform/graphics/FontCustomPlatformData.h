@@ -64,7 +64,7 @@ public:
     static PassOwnPtr<FontCustomPlatformData> create(SharedBuffer*);
     ~FontCustomPlatformData();
 
-    FontPlatformData fontPlatformData(int size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
+    FontPlatformData fontPlatformData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
 
     static bool supportsFormat(const String&);
 

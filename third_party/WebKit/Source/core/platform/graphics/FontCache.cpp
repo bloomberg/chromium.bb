@@ -66,7 +66,7 @@ struct FontPlatformDataCacheKey {
 public:
     FontPlatformDataCacheKey(const AtomicString& family = AtomicString(), float size = 0, unsigned weight = 0, bool italic = false,
         bool isPrinterFont = false, FontOrientation orientation = Horizontal, FontWidthVariant widthVariant = RegularWidth)
-        : m_size(size * s_fontSizePrecisionMultiplier)
+        : m_size(size * FontCache::s_fontSizePrecisionMultiplier)
         , m_weight(weight)
         , m_family(family)
         , m_italic(italic)
@@ -95,10 +95,6 @@ public:
     FontWidthVariant m_widthVariant;
 
 private:
-    // Multiplying the floating point size by 100 gives two decimal
-    // point precision which should be sufficient.
-    static const unsigned s_fontSizePrecisionMultiplier = 100;
-
     static unsigned hashTableDeletedSize() { return 0xFFFFFFFFU; }
 };
 

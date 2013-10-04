@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/css/CSSFontFaceSource.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/fetch/FontResource.h"
@@ -139,9 +140,18 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
         return fontData;
     }
 
+    float fontSize;
+    if (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+        fontSize = fontDescription.computedSize();
+    else
+        fontSize = fontDescription.computedPixelSize();
+
     // See if we have a mapping in our FontData cache.
-    unsigned hashKey = (fontDescription.computedPixelSize() + 1) << 5 | fontDescription.widthVariant() << 3
-                       | (fontDescription.orientation() == Vertical ? 4 : 0) | (syntheticBold ? 2 : 0) | (syntheticItalic ? 1 : 0);
+    unsigned hashKey = (static_cast<unsigned>(fontSize * FontCache::s_fontSizePrecisionMultiplier) + 1) << 5
+        | fontDescription.widthVariant() << 3
+        | (fontDescription.orientation() == Vertical ? 4 : 0)
+        | (syntheticBold ? 2 : 0)
+        | (syntheticItalic ? 1 : 0);
 
     RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(hashKey, 0).iterator->value;
     if (fontData)
@@ -184,7 +194,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                         m_svgFontFaceElement = fontFaceElement;
                     }
 
-                    fontData = SimpleFontData::create(SVGFontData::create(fontFaceElement), fontDescription.computedPixelSize(), syntheticBold, syntheticItalic);
+                    fontData = SimpleFontData::create(SVGFontData::create(fontFaceElement), fontSize, syntheticBold, syntheticItalic);
                 }
             } else
 #endif
@@ -193,14 +203,14 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                 if (!m_font->ensureCustomFontData())
                     return 0;
 
-                fontData = SimpleFontData::create(m_font->platformDataFromCustomData(fontDescription.computedPixelSize(), syntheticBold, syntheticItalic,
+                fontData = SimpleFontData::create(m_font->platformDataFromCustomData(fontSize, syntheticBold, syntheticItalic,
                     fontDescription.orientation(), fontDescription.widthVariant()), true, false);
             }
         } else {
 #if ENABLE(SVG_FONTS)
             // In-Document SVG Fonts
             if (m_svgFontFaceElement)
-                fontData = SimpleFontData::create(SVGFontData::create(m_svgFontFaceElement.get()), fontDescription.computedPixelSize(), syntheticBold, syntheticItalic);
+                fontData = SimpleFontData::create(SVGFontData::create(m_svgFontFaceElement.get()), fontSize, syntheticBold, syntheticItalic);
 #endif
         }
     } else {
