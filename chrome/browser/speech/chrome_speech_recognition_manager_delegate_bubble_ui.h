@@ -43,7 +43,7 @@ class ChromeSpeechRecognitionManagerDelegateBubbleUI
   // (which is copied into |last_session_config_|). Used for "try again".
   void RestartLastSession();
 
-  // Called by the base class when tab closure was detected.
+  // Called on the UI thread by the base class when tab closure was detected.
   virtual void TabClosedCallback(
       int render_process_id, int render_view_id) OVERRIDE;
 

@@ -190,14 +190,15 @@ void ChromeSpeechRecognitionManagerDelegateBubbleUI::OnRecognitionEnd(
 
 void ChromeSpeechRecognitionManagerDelegateBubbleUI::TabClosedCallback(
     int render_process_id, int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ChromeSpeechRecognitionManagerDelegate::TabClosedCallback(
       render_process_id, render_view_id);
 
-  if (bubble_controller_.get() &&
-      bubble_controller_->IsShowingBubbleForRenderView(render_process_id,
-                                                       render_view_id)) {
-    bubble_controller_->CloseBubble();
-  }
+  // Avoid instantiating a bubble_controller_ if not needed. Thus, prefer a
+  // checked access to bubble_controller_ to GetBubbleController().
+  if (bubble_controller_.get())
+    bubble_controller_->CloseBubbleForRenderViewOnUIThread(render_process_id,
+                                                           render_view_id);
 }
 
 SpeechRecognitionBubbleController*

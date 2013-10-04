@@ -26,10 +26,10 @@ namespace speech {
 SpeechRecognitionBubbleController::SpeechRecognitionBubbleController(
     Delegate* delegate)
     : delegate_(delegate),
+      last_request_issued_(REQUEST_CLOSE),
       current_bubble_session_id_(kInvalidSessionId),
       current_bubble_render_process_id_(0),
-      current_bubble_render_view_id_(0),
-      last_request_issued_(REQUEST_CLOSE) {
+      current_bubble_render_view_id_(0) {
 }
 
 SpeechRecognitionBubbleController::~SpeechRecognitionBubbleController() {
@@ -41,9 +41,12 @@ void SpeechRecognitionBubbleController::CreateBubble(
     int render_process_id,
     int render_view_id,
     const gfx::Rect& element_rect) {
-  current_bubble_session_id_ = session_id;
-  current_bubble_render_process_id_ = render_process_id;
-  current_bubble_render_view_id_ = render_view_id;
+  {
+    base::AutoLock auto_lock(lock_);
+    current_bubble_session_id_ = session_id;
+    current_bubble_render_process_id_ = render_process_id;
+    current_bubble_render_view_id_ = render_view_id;
+  }
 
   UIRequest request(REQUEST_CREATE);
   request.render_process_id = render_process_id;
@@ -80,20 +83,30 @@ void SpeechRecognitionBubbleController::SetBubbleInputVolume(
 }
 
 void SpeechRecognitionBubbleController::CloseBubble() {
-  current_bubble_session_id_ = kInvalidSessionId;
+  {
+    base::AutoLock auto_lock(lock_);
+    current_bubble_session_id_ = kInvalidSessionId;
+  }
   ProcessRequestInUiThread(UIRequest(REQUEST_CLOSE));
 }
 
-int SpeechRecognitionBubbleController::GetActiveSessionID() const {
-  return current_bubble_session_id_;
+void SpeechRecognitionBubbleController::CloseBubbleForRenderViewOnUIThread(
+    int render_process_id, int render_view_id) {
+  {
+    base::AutoLock auto_lock(lock_);
+    if (current_bubble_session_id_ == kInvalidSessionId ||
+        current_bubble_render_process_id_ != render_process_id ||
+        current_bubble_render_view_id_ != render_view_id) {
+      return;
+    }
+    current_bubble_session_id_ = kInvalidSessionId;
+  }
+  ProcessRequestInUiThread(UIRequest(REQUEST_CLOSE));
 }
 
-bool SpeechRecognitionBubbleController::IsShowingBubbleForRenderView(
-    int render_process_id,
-    int render_view_id) {
-  return (current_bubble_session_id_ != kInvalidSessionId) &&
-      (current_bubble_render_process_id_ == render_process_id) &&
-      (current_bubble_render_view_id_ == render_view_id);
+int SpeechRecognitionBubbleController::GetActiveSessionID() {
+  base::AutoLock auto_lock(lock_);
+  return current_bubble_session_id_;
 }
 
 void SpeechRecognitionBubbleController::InfoBubbleButtonClicked(
@@ -115,14 +128,22 @@ void SpeechRecognitionBubbleController::InfoBubbleFocusChanged() {
 void SpeechRecognitionBubbleController::InvokeDelegateButtonClicked(
     SpeechRecognitionBubble::Button button) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (kInvalidSessionId != current_bubble_session_id_)
-    delegate_->InfoBubbleButtonClicked(current_bubble_session_id_, button);
+  {
+    base::AutoLock auto_lock(lock_);
+    if (kInvalidSessionId == current_bubble_session_id_)
+      return;
+  }
+  delegate_->InfoBubbleButtonClicked(current_bubble_session_id_, button);
 }
 
 void SpeechRecognitionBubbleController::InvokeDelegateFocusChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (kInvalidSessionId != current_bubble_session_id_)
-    delegate_->InfoBubbleFocusChanged(current_bubble_session_id_);
+  {
+    base::AutoLock auto_lock(lock_);
+    if (kInvalidSessionId == current_bubble_session_id_)
+      return;
+  }
+  delegate_->InfoBubbleFocusChanged(current_bubble_session_id_);
 }
 
 void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
@@ -136,6 +157,12 @@ void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // In the case of a tab closed or crashed, the bubble can have been destroyed
+  // earlier on the UI thread, while other tasks were being enqueued from the IO
+  // to the UI thread. Simply return in such cases.
+  if (request.type != REQUEST_CREATE && !bubble_.get())
+    return;
 
   switch (request.type) {
     case REQUEST_CREATE:
@@ -157,26 +184,15 @@ void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
       bubble_->SetWarmUpMode();
       break;
     case REQUEST_SET_RECORDING_MODE:
-      if (!bubble_.get()) {
-        // We've seen this on crash/ but don't yet understand why this happen.
-        // TODO(tommi): It would be nice to figure this out properly and fix
-        // but since this feature is being deprecated, removing the code
-        // altogether is probably a simpler and more permanent fix :)
-        DLOG(ERROR) << "NULL bubble in REQUEST_SET_RECORDING_MODE!";
-      } else {
-        bubble_->SetRecordingMode();
-      }
+      bubble_->SetRecordingMode();
       break;
     case REQUEST_SET_RECOGNIZING_MODE:
-      DCHECK(bubble_.get());
       bubble_->SetRecognizingMode();
       break;
     case REQUEST_SET_MESSAGE:
-      DCHECK(bubble_.get());
       bubble_->SetMessage(request.message);
       break;
     case REQUEST_SET_INPUT_VOLUME:
-      DCHECK(bubble_.get());
       bubble_->SetInputVolume(request.volume, request.noise_volume);
       break;
     case REQUEST_CLOSE:

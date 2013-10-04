@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/speech/speech_recognition_bubble.h"
 #include "ui/gfx/rect.h"
 
@@ -57,15 +58,16 @@ class SpeechRecognitionBubbleController
   // Updates the current captured audio volume displayed on screen.
   void SetBubbleInputVolume(float volume, float noise_volume);
 
+  // Closes the bubble.
   void CloseBubble();
+
+  // This is the only method that can be called from the UI thread.
+  void CloseBubbleForRenderViewOnUIThread(int render_process_id,
+                                          int render_view_id);
 
   // Retrieves the session ID associated to the active bubble (if any).
   // Returns 0 if no bubble is currently shown.
-  int GetActiveSessionID() const;
-
-  // Checks whether a bubble is being shown on the RenderView (tab/extension)
-  // identified by the tuple {|render_process_id|,|render_view_id|}
-  bool IsShowingBubbleForRenderView(int render_process_id, int render_view_id);
+  int GetActiveSessionID();
 
   // SpeechRecognitionBubble::Delegate methods.
   virtual void InfoBubbleButtonClicked(
@@ -104,8 +106,15 @@ class SpeechRecognitionBubbleController
   void InvokeDelegateFocusChanged();
   void ProcessRequestInUiThread(const UIRequest& request);
 
-  // *** The following are accessed only on the IO thread.
+  // The following are accessed only on the IO thread.
   Delegate* delegate_;
+  RequestType last_request_issued_;
+
+  // The following are accessed only on the UI thread.
+  scoped_ptr<SpeechRecognitionBubble> bubble_;
+
+  // The following are accessed on both IO and  UI threads.
+  base::Lock lock_;
 
   // The session id for currently visible bubble.
   int current_bubble_session_id_;
@@ -113,11 +122,6 @@ class SpeechRecognitionBubbleController
   // The render process and view ids for the currently visible bubble.
   int current_bubble_render_process_id_;
   int current_bubble_render_view_id_;
-
-  RequestType last_request_issued_;
-
-  // *** The following are accessed only on the UI thread.
-  scoped_ptr<SpeechRecognitionBubble> bubble_;
 };
 
 // This typedef is to workaround the issue with certain versions of

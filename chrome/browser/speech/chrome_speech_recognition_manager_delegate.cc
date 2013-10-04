@@ -43,6 +43,24 @@ using content::WebContents;
 
 namespace speech {
 
+namespace {
+
+void TabClosedCallbackOnIOThread(int render_process_id, int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  SpeechRecognitionManager* manager = SpeechRecognitionManager::GetInstance();
+  // |manager| becomes NULL if a browser shutdown happens between the post of
+  // this task (from the UI thread) and this call (on the IO thread). In this
+  // case we just return.
+  if (!manager)
+    return;
+
+  manager->AbortAllSessionsForRenderView(render_process_id, render_view_id);
+}
+
+}  // namespace
+
+
 // Asynchronously fetches the PC and audio hardware/driver info if
 // the user has opted into UMA. This information is sent with speech input
 // requests to the server for identifying and improving quality issues with
@@ -110,8 +128,8 @@ class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
 };
 
 // Simple utility to get notified when a WebContent (a tab or an extension's
-// background page) is closed or crashes. Both the callback site and the
-// callback thread are passed by the caller in the constructor.
+// background page) is closed or crashes. The callback will always be called on
+// the UI thread.
 // There is no restriction on the constructor, however this class must be
 // destroyed on the UI thread, due to the NotificationRegistrar dependency.
 class ChromeSpeechRecognitionManagerDelegate::TabWatcher
@@ -121,10 +139,8 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
   typedef base::Callback<void(int render_process_id, int render_view_id)>
       TabClosedCallback;
 
-  TabWatcher(TabClosedCallback tab_closed_callback,
-             BrowserThread::ID callback_thread)
-      : tab_closed_callback_(tab_closed_callback),
-        callback_thread_(callback_thread) {
+  explicit TabWatcher(TabClosedCallback tab_closed_callback)
+      : tab_closed_callback_(tab_closed_callback) {
   }
 
   // Starts monitoring the WebContents corresponding to the given
@@ -189,8 +205,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
                        content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                        content::Source<WebContents>(web_contents));
 
-    BrowserThread::PostTask(callback_thread_, FROM_HERE, base::Bind(
-        tab_closed_callback_, render_process_id, render_view_id));
+    tab_closed_callback_.Run(render_process_id, render_view_id);
   }
 
  private:
@@ -243,7 +258,6 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
   // Callback used to notify, on the thread specified by |callback_thread_| the
   // closure of a registered tab.
   TabClosedCallback tab_closed_callback_;
-  content::BrowserThread::ID callback_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TabWatcher);
 };
@@ -258,16 +272,12 @@ ChromeSpeechRecognitionManagerDelegate
 
 void ChromeSpeechRecognitionManagerDelegate::TabClosedCallback(
     int render_process_id, int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SpeechRecognitionManager* manager = SpeechRecognitionManager::GetInstance();
-  // |manager| becomes NULL if a browser shutdown happens between the post of
-  // this task (from the UI thread) and this call (on the IO thread). In this
-  // case we just return.
-  if (!manager)
-    return;
-
-  manager->AbortAllSessionsForRenderView(render_process_id, render_view_id);
+  // Tell the S.R. Manager (which lives on the IO thread) to abort all the
+  // sessions for the given renderer view.
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+      &TabClosedCallbackOnIOThread, render_process_id, render_view_id));
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionStart(
@@ -280,8 +290,7 @@ void ChromeSpeechRecognitionManagerDelegate::OnRecognitionStart(
   if (!tab_watcher_.get()) {
     tab_watcher_ = new TabWatcher(
         base::Bind(&ChromeSpeechRecognitionManagerDelegate::TabClosedCallback,
-                   base::Unretained(this)),
-        BrowserThread::IO);
+                   base::Unretained(this)));
   }
   tab_watcher_->Watch(context.render_process_id, context.render_view_id);
 }
