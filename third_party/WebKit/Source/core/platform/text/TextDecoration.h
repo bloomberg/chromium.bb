@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (c) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,32 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WebTextCheckingResult.h"
+#ifndef TextDecoration_h
+#define TextDecoration_h
 
-#include "core/platform/text/TextCheckerClient.h"
+namespace WebCore {
 
-using namespace WebCore;
+enum TextDecorationType {
+    TextDecorationTypeSpelling                     = 1 << 1,
+    TextDecorationTypeGrammar                      = 1 << 2,
+    TextDecorationTypeInCustomSpellcheckDictionary = 1 << 3,
+};
 
-namespace WebKit {
-
-WebTextCheckingResult::operator TextCheckingResult() const
-{
-    TextCheckingResult result;
-    result.decoration = static_cast<TextDecorationType>(type);
-    result.location = location;
-    result.length = length;
-    result.replacement = replacement;
-    result.hash = hash;
-    if (result.decoration == TextDecorationTypeGrammar) {
-        GrammarDetail detail;
-        detail.location = 0;
-        detail.length = length;
-        detail.userDescription = replacement;
-        result.details.append(detail);
-    }
-
-    return result;
 }
 
-} // namespace WebKit
+#endif // TextDecoration_h
