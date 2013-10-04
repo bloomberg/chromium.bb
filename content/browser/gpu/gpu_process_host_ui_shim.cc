@@ -22,14 +22,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(TOOLKIT_GTK)
-// These two #includes need to come after gpu_messages.h.
-#include "ui/base/x/x11_util.h"
-#include "ui/gfx/size.h"
-#include <gdk/gdk.h>   // NOLINT
-#include <gdk/gdkx.h>  // NOLINT
-#endif
-
 // From gl2/gl2ext.h.
 #ifndef GL_MAILBOX_SIZE_CHROMIUM
 #define GL_MAILBOX_SIZE_CHROMIUM 64
@@ -207,9 +199,7 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnUpdateVSyncParameters)
     IPC_MESSAGE_HANDLER(GpuHostMsg_FrameDrawn, OnFrameDrawn)
 
-#if defined(TOOLKIT_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
-#endif
 
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -251,8 +241,6 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
   GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
-#if defined(TOOLKIT_GTK) || defined(OS_WIN)
-
 void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
                                         int32 route_id,
                                         gfx::Size size) {
@@ -268,33 +256,8 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
   if (!view)
     return;
 
-  gfx::GLSurfaceHandle surface = view->GetCompositingSurface();
-
-  // Resize the window synchronously. The GPU process must not issue GL
-  // calls on the command buffer until the window is the size it expects it
-  // to be.
-#if defined(TOOLKIT_GTK)
-  GdkWindow* window = reinterpret_cast<GdkWindow*>(
-      gdk_xid_table_lookup(surface.handle));
-  if (window) {
-    Display* display = GDK_WINDOW_XDISPLAY(window);
-    gdk_window_resize(window, size.width(), size.height());
-    XSync(display, False);
-  }
-#elif defined(OS_WIN)
-  // Ensure window does not have zero area because D3D cannot create a zero
-  // area swap chain.
-  SetWindowPos(surface.handle,
-      NULL,
-      0, 0,
-      std::max(1, size.width()),
-      std::max(1, size.height()),
-      SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
-          SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOMOVE);
-#endif
+  view->ResizeCompositingSurface(size);
 }
-
-#endif
 
 static base::TimeDelta GetSwapDelay() {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
