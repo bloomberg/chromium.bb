@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/platform/graphics/FontPlatformData.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "SkTypeface_win.h"
@@ -58,6 +59,8 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     paint->setTypeface(typeface());
     paint->setFakeBoldText(m_fakeBold);
     paint->setTextSkewX(m_fakeItalic ? -SK_Scalar1 / 4 : 0);
+    if (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+        paint->setSubpixelText(true);
 
     // Only set painting flags when we're actually painting.
     if (context) {
