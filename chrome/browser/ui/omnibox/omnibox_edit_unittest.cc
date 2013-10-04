@@ -91,10 +91,10 @@ class TestingOmniboxEditController : public OmniboxEditController {
  public:
   explicit TestingOmniboxEditController(ToolbarModel* toolbar_model)
       : toolbar_model_(toolbar_model) {}
-  virtual void OnAutocompleteAccept(const GURL& url,
-                                    WindowOpenDisposition disposition,
-                                    content::PageTransition transition,
-                                    const GURL& alternate_nav_url) OVERRIDE {}
+  virtual void OnAutocompleteAccept(
+      const GURL& url,
+      WindowOpenDisposition disposition,
+      content::PageTransition transition) OVERRIDE {}
   virtual void OnChanged() OVERRIDE {}
   virtual void OnSelectionBoundsChanged() OVERRIDE {}
   virtual void OnInputInProgress(bool in_progress) OVERRIDE {}

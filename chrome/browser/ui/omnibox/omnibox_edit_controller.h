@@ -30,14 +30,9 @@ class OmniboxEditController {
   // When the user presses enter or selects a line with the mouse, this
   // function will get called synchronously with the url to open and
   // disposition and transition to use when opening it.
-  //
-  // |alternate_nav_url|, if non-empty, contains the alternate navigation URL
-  // for |url|, which the controller can check for existence.  See comments on
-  // AutocompleteResult::GetAlternateNavURL().
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
-                                    content::PageTransition transition,
-                                    const GURL& alternate_nav_url) = 0;
+                                    content::PageTransition transition) = 0;
 
   // Called when anything has changed that might affect the layout or contents
   // of the views around the edit, including the text of the edit and the

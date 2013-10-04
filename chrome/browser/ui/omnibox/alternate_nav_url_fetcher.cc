@@ -47,7 +47,7 @@ void AlternateNavURLFetcher::Observe(
           content::Source<NavigationController>(source).ptr();
       if (controller_ == controller) {
         delete this;
-      } else if (!controller_) {
+      } else if (!controller_ && alternate_nav_url_.is_valid()) {
         // Start listening for the commit notification.
         DCHECK(controller->GetPendingEntry());
         registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,

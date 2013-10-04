@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/omnibox/alternate_nav_url_fetcher.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
@@ -1010,37 +1009,13 @@ views::View* LocationBarView::generated_credit_card_view() {
 void LocationBarView::OnAutocompleteAccept(
     const GURL& url,
     WindowOpenDisposition disposition,
-    content::PageTransition transition,
-    const GURL& alternate_nav_url) {
-  // WARNING: don't add an early return here. The calls after the if must
-  // happen.
-  if (url.is_valid()) {
-    destination_url_ = url;
-    disposition_ = disposition;
-    transition_ = content::PageTransitionFromInt(
-        transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    content::PageTransition transition) {
+  destination_url_ = url;
+  disposition_ = disposition;
+  transition_ = transition;
 
-    if (command_updater_) {
-      if (!alternate_nav_url.is_valid()) {
-        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-      } else {
-        AlternateNavURLFetcher* fetcher =
-            new AlternateNavURLFetcher(alternate_nav_url);
-        // The AlternateNavURLFetcher will listen for the pending navigation
-        // notification that will be issued as a result of the "open URL." It
-        // will automatically install itself into that navigation controller.
-        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-        if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
-          // I'm not sure this should be reachable, but I'm not also sure enough
-          // that it shouldn't to stick in a NOTREACHED().  In any case, this is
-          // harmless.
-          delete fetcher;
-        } else {
-          // The navigation controller will delete the fetcher.
-        }
-      }
-    }
-  }
+  if (command_updater_)
+    command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
 }
 
 void LocationBarView::OnChanged() {

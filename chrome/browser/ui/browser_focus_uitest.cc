@@ -893,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
 
   // Simulate an alt-enter.
   controller->OnAutocompleteAccept(url2, NEW_FOREGROUND_TAB,
-                                   content::PAGE_TRANSITION_TYPED, GURL());
+                                   content::PAGE_TRANSITION_TYPED);
 
   // Make sure the second tab is selected.
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());

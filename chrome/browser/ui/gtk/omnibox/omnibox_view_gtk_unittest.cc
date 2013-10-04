@@ -20,10 +20,9 @@
 namespace {
 class OmniboxEditControllerMock : public OmniboxEditController {
  public:
-  MOCK_METHOD4(OnAutocompleteAccept, void(const GURL& url,
+  MOCK_METHOD3(OnAutocompleteAccept, void(const GURL& url,
                                           WindowOpenDisposition disposition,
-                                          content::PageTransition transition,
-                                          const GURL& alternate_nav_url));
+                                          content::PageTransition transition));
   MOCK_METHOD0(OnChanged, void());
   MOCK_METHOD0(OnSelectionBoundsChanged, void());
   MOCK_METHOD1(OnInputInProgress, void(bool in_progress));

@@ -140,8 +140,7 @@ class LocationBarViewMac : public LocationBar,
   virtual void OnAutocompleteAccept(
       const GURL& url,
       WindowOpenDisposition disposition,
-      content::PageTransition transition,
-      const GURL& alternate_nav_url) OVERRIDE;
+      content::PageTransition transition) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
   virtual void OnSelectionBoundsChanged() OVERRIDE;
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;

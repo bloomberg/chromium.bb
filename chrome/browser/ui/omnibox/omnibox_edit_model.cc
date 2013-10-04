@@ -42,6 +42,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/omnibox/alternate_nav_url_fetcher.h"
 #include "chrome/browser/ui/omnibox/omnibox_current_page_delegate_impl.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -765,10 +766,20 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
           UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
     }
 
-    // This calls RevertAll again.
-    base::AutoReset<bool> tmp(&in_revert_, true);
-    controller_->OnAutocompleteAccept(destination_url, disposition,
-                                      match.transition, alternate_nav_url);
+    if (destination_url.is_valid()) {
+      // The OmniboxNavigationObserver will listen for the pending navigation
+      // notification that will be issued as a result of the "open URL."
+      scoped_ptr<AlternateNavURLFetcher> fetcher(
+          new AlternateNavURLFetcher(alternate_nav_url));
+      // This calls RevertAll again.
+      base::AutoReset<bool> tmp(&in_revert_, true);
+      controller_->OnAutocompleteAccept(
+          destination_url, disposition,
+          content::PageTransitionFromInt(
+              match.transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+      if (fetcher->state() != AlternateNavURLFetcher::NOT_STARTED)
+        ignore_result(fetcher.release());  // The fetcher will delete itself.
+    }
   }
 
   if (match.starred)
