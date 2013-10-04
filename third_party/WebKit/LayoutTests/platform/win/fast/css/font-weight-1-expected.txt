@@ -22,8 +22,8 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,1) size 34x55
           text run at (0,1) width 34: "A"
       RenderBlock {DIV} at (0,321) size 784x57
-        RenderText {#text} at (0,1) size 35x55
-          text run at (0,1) width 35: "A"
+        RenderText {#text} at (0,1) size 34x55
+          text run at (0,1) width 34: "A"
       RenderBlock {DIV} at (0,378) size 784x57
         RenderText {#text} at (0,1) size 35x55
           text run at (0,1) width 35: "A"
