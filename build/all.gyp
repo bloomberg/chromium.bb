@@ -41,6 +41,7 @@
             '../gpu/tools/tools.gyp:*',
             '../ipc/ipc.gyp:*',
             '../jingle/jingle.gyp:*',
+            '../media/cast/cast.gyp:*',
             '../media/media.gyp:*',
             '../ppapi/ppapi.gyp:*',
             '../ppapi/ppapi_internal.gyp:*',
