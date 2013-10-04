@@ -21,16 +21,12 @@
           "css": {
             "type": "array",
             "optional": true,
-            "description": "Matches if all of the CSS selectors in the array match in a frame with the same origin as the page's main frame.  Note that listing hundreds of CSS selectors here can slow down web sites.",
+            "description": "Matches if all of the CSS selectors in the array match in a frame with the same origin as the page's main frame.  Note that listing hundreds of CSS selectors or CSS selectors that match hundreds of times per page can slow down web sites.",
             // TODO(jyasskin): Figure out if we want to require all
             // the selectors to match in the same frame, or allow several
             // frames to contribute to a match.
             "items": { "type": "string" }
-            // TODO(jyasskin): Validate that the selectors in this
-            // array are valid. Otherwise, we can get exceptions from
-            // content_watcher.js:FindMatchingSelectors() long after the
-            // rule is registered.
-//          },
+//        },
 //          TODO: "text": {
 //            "type": "array",
 //            "optional": true,

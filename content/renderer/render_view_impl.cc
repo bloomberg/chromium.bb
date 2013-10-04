@@ -3113,6 +3113,15 @@ void RenderViewImpl::willClose(WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameWillClose(frame));
 }
 
+void RenderViewImpl::didMatchCSS(
+    WebFrame* frame,
+    const WebVector<WebString>& newly_matching_selectors,
+    const WebVector<WebString>& stopped_matching_selectors) {
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_,
+      DidMatchCSS(frame, newly_matching_selectors, stopped_matching_selectors));
+}
+
 void RenderViewImpl::Repaint(const gfx::Size& size) {
   OnRepaint(size);
 }

@@ -63,6 +63,11 @@ class ExtensionHelper
   virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidMatchCSS(
+      WebKit::WebFrame* frame,
+      const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
+      const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors)
+      OVERRIDE;
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds) OVERRIDE;
   virtual void DraggableRegionsChanged(WebKit::WebFrame* frame) OVERRIDE;

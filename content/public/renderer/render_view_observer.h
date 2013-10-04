@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebIconURL.h"
 
 class GURL;
@@ -67,6 +68,10 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                             WebKit::WebFrame* frame) {}
   virtual void FrameDetached(WebKit::WebFrame* frame) {}
   virtual void FrameWillClose(WebKit::WebFrame* frame) {}
+  virtual void DidMatchCSS(
+      WebKit::WebFrame* frame,
+      const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
+      const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors) {}
   virtual void WillSendSubmitEvent(WebKit::WebFrame* frame,
                                    const WebKit::WebFormElement& form) {}
   virtual void WillSubmitForm(WebKit::WebFrame* frame,

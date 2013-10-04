@@ -20,6 +20,8 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/features/feature.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "v8/include/v8.h"
 
 class ChromeRenderViewTest;
@@ -96,6 +98,11 @@ class Dispatcher : public content::RenderProcessObserver {
                                 int world_id);
 
   void DidCreateDocumentElement(WebKit::WebFrame* frame);
+
+  void DidMatchCSS(
+      WebKit::WebFrame* frame,
+      const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
+      const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors);
 
   // TODO(mpcomplete): remove. http://crbug.com/100411
   bool IsAdblockWithWebRequestInstalled() const {

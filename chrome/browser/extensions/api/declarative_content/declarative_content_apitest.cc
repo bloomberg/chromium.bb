@@ -96,8 +96,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   // Insert a password field to make sure that's noticed.
   ASSERT_TRUE(content::ExecuteScript(
       tab, "document.body.innerHTML = '<input type=\"password\">';"));
-  // Give the mutation observer a chance to run and send back the
-  // matching-selector update.
+  // Give the style match a chance to run and send back the matching-selector
+  // update.  This takes one time through the Blink message loop to apply the
+  // style to the new element, and a second to dedupe updates.
+  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
   ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
   EXPECT_TRUE(page_action->GetIsVisible(tab_id))
       << "Adding a matching element should show the page action.";
@@ -105,8 +107,9 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   // Remove it again to make sure that reverts the action.
   ASSERT_TRUE(content::ExecuteScript(
       tab, "document.body.innerHTML = 'Hello world';"));
-  // Give the mutation observer a chance to run and send back the
-  // matching-selector update.
+  // Give the style match a chance to run and send back the
+  // matching-selector update.  This also takes 2 iterations.
+  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
   ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
   EXPECT_FALSE(page_action->GetIsVisible(tab_id))
       << "Removing the matching element should hide the page action again.";
@@ -155,7 +158,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                 "  actions: [new ShowPageAction()]\n"
                 "}], 'rule0');\n"));
   // Give the renderer a chance to apply the rules change and notify the
-  // browser.
+  // browser.  This takes one time through the Blink message loop to receive
+  // the rule change and apply the new stylesheet, and a second to dedupe the
+  // update.
+  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
   ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
 
   EXPECT_FALSE(tab->IsCrashed());

@@ -309,6 +309,14 @@ void RenderFrameImpl::didChangeName(WebKit::WebFrame* frame,
                                       UTF16ToUTF8(name)));
 }
 
+void RenderFrameImpl::didMatchCSS(
+    WebKit::WebFrame* frame,
+    const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
+    const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors) {
+  render_view_->didMatchCSS(
+      frame, newly_matching_selectors, stopped_matching_selectors);
+}
+
 void RenderFrameImpl::loadURLExternally(WebKit::WebFrame* frame,
                                         const WebKit::WebURLRequest& request,
                                         WebKit::WebNavigationPolicy policy) {

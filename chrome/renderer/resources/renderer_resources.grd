@@ -27,7 +27,6 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_NET_ERROR_HTML" file="neterror.html" flattenhtml="true" type="BINDATA" />
 
       <!-- Extension libraries. -->
-      <include name="IDR_CONTENT_WATCHER_JS" file="extensions\content_watcher.js" type="BINDATA" />
       <include name="IDR_ENTRY_ID_MANAGER" file="extensions\entry_id_manager.js" type="BINDATA" />
       <include name="IDR_EVENT_BINDINGS_JS" file="extensions\event.js" type="BINDATA" />
       <include name="IDR_GREASEMONKEY_API_JS" file="extensions\greasemonkey_api.js" type="BINDATA" />

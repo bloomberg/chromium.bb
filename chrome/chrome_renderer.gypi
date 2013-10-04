@@ -187,7 +187,6 @@
         'renderer/resources/extensions/chrome_direct_setting.js',
         'renderer/resources/extensions/chrome_setting.js',
         'renderer/resources/extensions/content_setting.js',
-        'renderer/resources/extensions/content_watcher.js',
         'renderer/resources/extensions/context_menus_custom_bindings.js',
         'renderer/resources/extensions/declarative_content_custom_bindings.js',
         'renderer/resources/extensions/declarative_webrequest_custom_bindings.js',

@@ -396,7 +396,7 @@ void CallModuleMethod(const std::string& module_name,
 }  // namespace
 
 Dispatcher::Dispatcher()
-    : content_watcher_(new ContentWatcher(this)),
+    : content_watcher_(new ContentWatcher()),
       is_webkit_initialized_(false),
       webrequest_adblock_(false),
       webrequest_adblock_plus_(false),
@@ -829,9 +829,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("setIcon",
       scoped_ptr<NativeHandler>(
           new SetIconNatives(this, request_sender_.get(), context)));
-  module_system->RegisterNativeHandler(
-      "contentWatcherNative",
-      content_watcher_->MakeNatives(context));
   module_system->RegisterNativeHandler("activityLogger",
       scoped_ptr<NativeHandler>(new APIActivityLogger(this, context)));
   module_system->RegisterNativeHandler("renderViewObserverNatives",
@@ -898,7 +895,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
 
 void Dispatcher::PopulateSourceMap() {
   // Libraries.
-  source_map_.RegisterSource("contentWatcher", IDR_CONTENT_WATCHER_JS);
   source_map_.RegisterSource("entryIdManager", IDR_ENTRY_ID_MANAGER);
   source_map_.RegisterSource(kEventBindings, IDR_EVENT_BINDINGS_JS);
   source_map_.RegisterSource("imageUtil", IDR_IMAGE_UTIL_JS);
@@ -1217,6 +1213,15 @@ void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
 
   content_watcher_->DidCreateDocumentElement(frame);
 }
+
+void Dispatcher::DidMatchCSS(
+    WebKit::WebFrame* frame,
+    const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
+    const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors) {
+  content_watcher_->DidMatchCSS(
+      frame, newly_matching_selectors, stopped_matching_selectors);
+}
+
 
 void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   const Extension* extension = extensions_.GetByID(extension_id);

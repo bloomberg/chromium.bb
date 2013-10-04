@@ -6,16 +6,15 @@
 #define CHROME_RENDERER_EXTENSIONS_CONTENT_WATCHER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece.h"
-#include "v8/include/v8.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace WebKit {
 class WebFrame;
+class WebString;
 }
 
 namespace extensions {
@@ -32,31 +31,25 @@ class NativeHandler;
 // WebFrames can move between RenderViews through adoptNode.
 class ContentWatcher {
  public:
-  explicit ContentWatcher(Dispatcher* dispatcher);
+  ContentWatcher();
   ~ContentWatcher();
-
-  // Returns the callback to call on a frame change.
-  scoped_ptr<NativeHandler> MakeNatives(ChromeV8Context* context);
 
   // Handler for ExtensionMsg_WatchPages.
   void OnWatchPages(const std::vector<std::string>& css_selectors);
 
-  // Registers the MutationObserver to call back into this object whenever the
-  // content of |frame| changes.
+  // Uses WebDocument::watchCSSSelectors to watch the selectors in
+  // css_selectors_ and get a callback into DidMatchCSS() whenever the set of
+  // matching selectors in |frame| changes.
   void DidCreateDocumentElement(WebKit::WebFrame* frame);
 
-  // Scans *frame for the current set of interesting CSS selectors, and if
-  // they've changed sends ExtensionHostMsg_OnWatchedPageChange back to the
-  // RenderViewHost that owns the frame.
-  void ScanAndNotify(WebKit::WebFrame* frame);
+  // Records that |newly_matching_selectors| have started matching on |*frame|,
+  // and |stopped_matching_selectors| have stopped matching.
+  void DidMatchCSS(
+      WebKit::WebFrame* frame,
+      const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
+      const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors);
 
  private:
-  void EnsureWatchingMutations(WebKit::WebFrame* frame);
-
-  ModuleSystem* GetModuleSystem(WebKit::WebFrame* frame) const;
-  std::vector<base::StringPiece> FindMatchingSelectors(
-      WebKit::WebFrame* frame) const;
-
   // Given that we saw a change in the CSS selectors that |changed_frame|
   // matched, tell the browser about the new set of matching selectors in its
   // top-level page.  We filter this so that if an extension were to be granted
@@ -64,21 +57,13 @@ class ContentWatcher {
   // frames that it could run on.
   void NotifyBrowserOfChange(WebKit::WebFrame* changed_frame) const;
 
-  base::WeakPtrFactory<ContentWatcher> weak_ptr_factory_;
-  Dispatcher* dispatcher_;
-
   // If any of these selectors match on a page, we need to send an
   // ExtensionHostMsg_OnWatchedPageChange back to the browser.
-  std::vector<std::string> css_selectors_;
+  WebKit::WebVector<WebKit::WebString> css_selectors_;
 
-  // Maps live WebFrames to the set of CSS selectors they match.  This lets us
-  // traverse a top-level frame's sub-frames without rescanning them all each
-  // time any one changes.
-  //
-  // The StringPieces point into css_selectors_ above, so when it changes, they
-  // all need to be regenerated.
-  std::map<WebKit::WebFrame*,
-           std::vector<base::StringPiece> > matching_selectors_;
+  // Maps live WebFrames to the set of CSS selectors they match. Blink sends
+  // back diffs, which we apply to these sets.
+  std::map<WebKit::WebFrame*, std::set<std::string> > matching_selectors_;
 };
 
 }  // namespace extensions

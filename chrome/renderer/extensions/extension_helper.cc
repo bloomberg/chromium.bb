@@ -230,6 +230,14 @@ void ExtensionHelper::FrameDetached(WebFrame* frame) {
   g_schedulers.Get().erase(i);
 }
 
+void ExtensionHelper::DidMatchCSS(
+    WebKit::WebFrame* frame,
+    const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
+    const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors) {
+  dispatcher_->DidMatchCSS(
+      frame, newly_matching_selectors, stopped_matching_selectors);
+}
+
 void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   // Check first if we created a scheduler for the frame, since this function
   // gets called for navigations within the document.

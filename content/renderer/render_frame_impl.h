@@ -61,6 +61,10 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void willClose(WebKit::WebFrame* frame);
   virtual void didChangeName(WebKit::WebFrame* frame,
                              const WebKit::WebString& name);
+  virtual void didMatchCSS(
+      WebKit::WebFrame* frame,
+      const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
+      const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors);
   virtual void loadURLExternally(WebKit::WebFrame* frame,
                                  const WebKit::WebURLRequest& request,
                                  WebKit::WebNavigationPolicy policy);
