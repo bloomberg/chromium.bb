@@ -459,14 +459,6 @@ class AndroidCommands(object):
     if out.strip() != 'remount succeeded':
       raise errors.MsgException('Remount failed: %s' % out)
 
-  def KillAdbdDevice(self):
-    logging.info('Killing adbd on the device...')
-    adb_pids = self.ExtractPid('adbd')
-    if adb_pids:
-      self.RunShellCommandWithSU('kill %s' % ' '.join(adb_pids))
-    logging.info('Waiting for device to settle...')
-    time.sleep(5)
-
   def RestartAdbServer(self):
     """Restart the adb server."""
     ret = self.KillAdbServer()
