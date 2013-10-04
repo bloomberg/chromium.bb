@@ -142,8 +142,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   } else if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAddToHomescreen)) {
     bookmark_shortcuts_allowed = false;
-  } else if (VersionInfo::GetChannel() == VersionInfo::CHANNEL_BETA ||
-      VersionInfo::GetChannel() == VersionInfo::CHANNEL_STABLE) {
+  } else if (VersionInfo::GetChannel() == VersionInfo::CHANNEL_STABLE) {
     bookmark_shortcuts_allowed = true;
   }
   localized_strings.SetString(
