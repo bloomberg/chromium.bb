@@ -96,9 +96,7 @@ bool QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad,
         layer_->render_target(),
         draw_quad->rect,
         draw_quad->quadTransform(),
-        impl_draw_transform_is_unknown,
-        draw_quad->isClipped(),
-        draw_quad->clipRect());
+        impl_draw_transform_is_unknown);
   }
 
   return AppendQuadInternal(draw_quad.Pass(),

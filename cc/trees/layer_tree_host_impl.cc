@@ -768,9 +768,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
               it->render_target(),
               it->visible_content_rect(),
               it->draw_transform(),
-              impl_draw_transform_is_unknown,
-              it->is_clipped(),
-              it->clip_rect());
+              impl_draw_transform_is_unknown);
       if (!occluded && it->WillDraw(draw_mode, resource_provider_.get())) {
         DCHECK_EQ(active_tree_, it->layer_tree_impl());
 
