@@ -92,12 +92,14 @@ KeyboardEventInit::KeyboardEventInit()
     , altKey(false)
     , shiftKey(false)
     , metaKey(false)
+    , repeat(false)
 {
 }
 
 KeyboardEvent::KeyboardEvent()
     : m_location(DOM_KEY_LOCATION_STANDARD)
     , m_altGraphKey(false)
+    , m_isAutoRepeat(false)
 {
     ScriptWrappable::init(this);
 }
@@ -109,6 +111,7 @@ KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* vie
     , m_keyIdentifier(key.keyIdentifier())
     , m_location(keyLocationCode(key))
     , m_altGraphKey(false)
+    , m_isAutoRepeat(key.isAutoRepeat())
 {
     ScriptWrappable::init(this);
 }
@@ -118,6 +121,7 @@ KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventI
     , m_keyIdentifier(initializer.keyIdentifier)
     , m_location(initializer.location)
     , m_altGraphKey(false)
+    , m_isAutoRepeat(initializer.repeat)
 {
     ScriptWrappable::init(this);
 }
@@ -129,6 +133,7 @@ KeyboardEvent::KeyboardEvent(const AtomicString& eventType, bool canBubble, bool
     , m_keyIdentifier(keyIdentifier)
     , m_location(location)
     , m_altGraphKey(altGraphKey)
+    , m_isAutoRepeat(false)
 {
     ScriptWrappable::init(this);
 }

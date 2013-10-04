@@ -184,6 +184,8 @@ bool applyKeyModifier(const string& modifierName, WebInputEvent* event)
     } else if (!strcmp(characters, "metaKey")) {
         event->modifiers |= WebInputEvent::MetaKey;
 #endif
+    } else if (!strcmp(characters, "autoRepeat")) {
+        event->modifiers |= WebInputEvent::IsAutoRepeat;
     }
     return isSystemKey;
 }

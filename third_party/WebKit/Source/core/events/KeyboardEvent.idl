@@ -33,6 +33,7 @@
     [InitializedByEventConstructor] readonly attribute boolean          shiftKey;
     [InitializedByEventConstructor] readonly attribute boolean          altKey;
     [InitializedByEventConstructor] readonly attribute boolean          metaKey;
+    [InitializedByEventConstructor] readonly attribute boolean          repeat;
     readonly attribute boolean          altGraphKey;
 
     boolean getModifierState(DOMString keyArgument);

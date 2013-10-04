@@ -42,6 +42,7 @@ struct KeyboardEventInit : public UIEventInit {
     bool altKey;
     bool shiftKey;
     bool metaKey;
+    bool repeat;
 };
 
 class KeyboardEvent : public UIEventWithKeyState {
@@ -93,6 +94,7 @@ public:
 
     int keyCode() const; // key code for keydown and keyup, character for keypress
     int charCode() const; // character code for keypress, 0 for keydown and keyup
+    bool repeat() const { return m_isAutoRepeat; }
 
     virtual const AtomicString& interfaceName() const;
     virtual bool isKeyboardEvent() const;
@@ -110,6 +112,7 @@ private:
     String m_keyIdentifier;
     unsigned m_location;
     bool m_altGraphKey : 1;
+    bool m_isAutoRepeat : 1;
 };
 
 KeyboardEvent* findKeyboardEvent(Event*);
