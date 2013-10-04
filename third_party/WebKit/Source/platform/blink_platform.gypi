@@ -82,6 +82,8 @@
       'geometry/LayoutRect.cpp',
       'geometry/LayoutRect.h',
       'geometry/LayoutSize.h',
+      'geometry/RoundedRect.cpp',
+      'geometry/RoundedRect.h',
       'network/DNS.cpp',
       'network/DNS.h',
       'network/HTTPHeaderMap.cpp',
@@ -120,6 +122,7 @@
     ],
     'platform_test_files': [
       'clipboard/ClipboardUtilitiesTest.cpp',
+      'geometry/RoundedRectTest.cpp',
       'text/DateTimeFormatTest.cpp',
       'ClockTest.cpp',
       'DecimalTest.cpp',
