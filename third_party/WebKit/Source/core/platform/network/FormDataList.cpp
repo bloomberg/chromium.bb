@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/html/FormDataList.h"
+#include "core/platform/network/FormDataList.h"
 
 #include "platform/text/LineEnding.h"
 

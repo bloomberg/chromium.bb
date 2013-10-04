@@ -32,7 +32,6 @@ class TextEncoding;
 
 namespace WebCore {
 
-class Document;
 class FormDataList;
 
 class FormDataElement {
@@ -95,7 +94,7 @@ public:
     static PassRefPtr<FormData> create(const CString&);
     static PassRefPtr<FormData> create(const Vector<char>&);
     static PassRefPtr<FormData> create(const FormDataList&, const WTF::TextEncoding&, EncodingType = FormURLEncoded);
-    static PassRefPtr<FormData> createMultiPart(const FormDataList&, const WTF::TextEncoding&, Document*);
+    static PassRefPtr<FormData> createMultiPart(const FormDataList&, const WTF::TextEncoding&);
     PassRefPtr<FormData> copy() const;
     PassRefPtr<FormData> deepCopy() const;
     ~FormData();
@@ -138,7 +137,7 @@ private:
     FormData();
     FormData(const FormData&);
 
-    void appendKeyValuePairItems(const FormDataList&, const WTF::TextEncoding&, bool isMultiPartForm, Document*, EncodingType = FormURLEncoded);
+    void appendKeyValuePairItems(const FormDataList&, const WTF::TextEncoding&, bool isMultiPartForm, EncodingType = FormURLEncoded);
 
     Vector<FormDataElement> m_elements;
 

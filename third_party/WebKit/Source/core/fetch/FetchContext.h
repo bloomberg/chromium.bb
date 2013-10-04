@@ -39,6 +39,7 @@
 
 namespace WebCore {
 
+class Document;
 class DocumentLoader;
 class Frame;
 class KURL;

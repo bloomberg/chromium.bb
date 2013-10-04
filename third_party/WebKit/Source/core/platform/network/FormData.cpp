@@ -23,10 +23,10 @@
 #include "core/platform/network/FormData.h"
 
 #include "core/fileapi/File.h"
-#include "core/html/FormDataList.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/FormDataBuilder.h"
+#include "core/platform/network/FormDataList.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
@@ -80,14 +80,14 @@ PassRefPtr<FormData> FormData::create(const Vector<char>& vector)
 PassRefPtr<FormData> FormData::create(const FormDataList& list, const WTF::TextEncoding& encoding, EncodingType encodingType)
 {
     RefPtr<FormData> result = create();
-    result->appendKeyValuePairItems(list, encoding, false, 0, encodingType);
+    result->appendKeyValuePairItems(list, encoding, false, encodingType);
     return result.release();
 }
 
-PassRefPtr<FormData> FormData::createMultiPart(const FormDataList& list, const WTF::TextEncoding& encoding, Document* document)
+PassRefPtr<FormData> FormData::createMultiPart(const FormDataList& list, const WTF::TextEncoding& encoding)
 {
     RefPtr<FormData> result = create();
-    result->appendKeyValuePairItems(list, encoding, true, document);
+    result->appendKeyValuePairItems(list, encoding, true);
     return result.release();
 }
 
@@ -159,7 +159,7 @@ void FormData::appendURLRange(const KURL& url, long long start, long long length
     m_elements.append(FormDataElement(url, start, length, expectedModificationTime));
 }
 
-void FormData::appendKeyValuePairItems(const FormDataList& list, const WTF::TextEncoding& encoding, bool isMultiPartForm, Document* document, EncodingType encodingType)
+void FormData::appendKeyValuePairItems(const FormDataList& list, const WTF::TextEncoding& encoding, bool isMultiPartForm, EncodingType encodingType)
 {
     if (isMultiPartForm)
         m_boundary = FormDataBuilder::generateUniqueBoundaryString();

@@ -31,7 +31,7 @@
 #ifndef DOMFormData_h
 #define DOMFormData_h
 
-#include "core/html/FormDataList.h"
+#include "core/platform/network/FormDataList.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

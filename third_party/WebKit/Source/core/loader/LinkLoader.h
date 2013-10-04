@@ -41,6 +41,7 @@
 
 namespace WebCore {
 
+class Document;
 class LinkRelAttribute;
 class Prerender;
 

@@ -34,9 +34,9 @@
 
 #include "HTMLNames.h"
 #include "core/events/KeyboardEvent.h"
-#include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/platform/network/FormDataList.h"
 
 namespace WebCore {
 

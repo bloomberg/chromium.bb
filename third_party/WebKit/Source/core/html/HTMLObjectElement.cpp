@@ -32,7 +32,6 @@
 #include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
 #include "core/fetch/ImageResource.h"
-#include "core/html/FormDataList.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLMetaElement.h"
@@ -42,6 +41,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/Widget.h"
+#include "core/platform/network/FormDataList.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 
