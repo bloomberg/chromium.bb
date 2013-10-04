@@ -432,6 +432,8 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
 std::vector<GURL> GetSearchURLs(Profile* profile) {
   std::vector<GURL> result;
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (!template_url)
+    return result;
   for (size_t i = 0; i < template_url->URLCount(); ++i) {
     TemplateURLRef ref(template_url, i);
     result.push_back(TemplateURLRefToGURL(ref, kDisableStartMargin, false));
