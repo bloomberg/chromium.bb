@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "grit/blink_resources.h"
 #include "grit/webkit_resources.h"
@@ -888,11 +889,17 @@ bool WebKitPlatformSupportImpl::memoryAllocatorWasteInBytes(size_t* size) {
 
 size_t WebKitPlatformSupportImpl::maxDecodedImageBytes() {
 #if defined(OS_ANDROID)
-  // Limit image decoded size to 3M pixels on low end devices.
-  if (base::android::SysUtils::IsLowEndDevice())
-    return 3 * 1024 * 1024 * 4;  // 4 is maximum number of bytes per pixel.
-#endif
+  if (base::android::SysUtils::IsLowEndDevice()) {
+    // Limit image decoded size to 3M pixels on low end devices.
+    // 4 is maximum number of bytes per pixel.
+    return 3 * 1024 * 1024 * 4;
+  }
+  // For other devices, limit decoded image size based on the amount of physical
+  // memory. For a device with 2GB physical memory the limit is 16M pixels.
+  return base::SysInfo::AmountOfPhysicalMemory() / 32;
+#else
   return noDecodedImageByteLimit;
+#endif
 }
 
 void WebKitPlatformSupportImpl::SuspendSharedTimer() {
