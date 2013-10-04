@@ -67,7 +67,10 @@ CDM_EXPORT const char* GetCdmVersion();
 
 namespace cdm {
 
-class AudioFrames;
+class AudioFrames_1;
+class AudioFrames_2;
+typedef AudioFrames_2 AudioFrames;
+
 class DecryptedBlock;
 class VideoFrame;
 
@@ -179,6 +182,17 @@ struct AudioDecoderConfig {
   int32_t extra_data_size;
 };
 
+// Supported sample formats for AudioFrames.
+enum AudioFormat {
+  kUnknownAudioFormat = 0,  // Unknown format value. Used for error reporting.
+  kAudioFormatU8,  // Interleaved unsigned 8-bit w/ bias of 128.
+  kAudioFormatS16,  // Interleaved signed 16-bit.
+  kAudioFormatS32,  // Interleaved signed 32-bit.
+  kAudioFormatF32,  // Interleaved float 32-bit.
+  kAudioFormatPlanarS16,  // Signed 16-bit planar.
+  kAudioFormatPlanarF32,  // Float 32-bit planar.
+};
+
 // Surface formats based on FOURCC labels, see: http://www.fourcc.org/yuv.php
 enum VideoFormat {
   kUnknownVideoFormat = 0,  // Unknown format value. Used for error reporting.
@@ -275,6 +289,10 @@ enum OutputLinkTypes {
   kLinkTypeDisplayPort = 1 << 5
 };
 
+//
+// WARNING: Deprecated.  Will be removed in the near future.  CDMs should
+// implement ContentDecryptionModule_2 instead.
+//
 // ContentDecryptionModule interface that all CDMs need to implement.
 // The interface is versioned for backward compatibility.
 // Note: ContentDecryptionModule implementations must use the allocator
@@ -282,6 +300,132 @@ enum OutputLinkTypes {
 // be passed back to the caller. Implementations must call Buffer::Destroy()
 // when a Buffer is created that will never be returned to the caller.
 class ContentDecryptionModule_1 {
+ public:
+  // Generates a |key_request| given |type| and |init_data|.
+  //
+  // Returns kSuccess if the key request was successfully generated, in which
+  // case the CDM must send the key message by calling Host::SendKeyMessage().
+  // Returns kSessionError if any error happened, in which case the CDM must
+  // send a key error by calling Host::SendKeyError().
+  virtual Status GenerateKeyRequest(
+      const char* type, int type_size,
+      const uint8_t* init_data, int init_data_size) = 0;
+
+  // Adds the |key| to the CDM to be associated with |key_id|.
+  //
+  // Returns kSuccess if the key was successfully added, kSessionError
+  // otherwise.
+  virtual Status AddKey(const char* session_id, int session_id_size,
+                        const uint8_t* key, int key_size,
+                        const uint8_t* key_id, int key_id_size) = 0;
+
+  // Cancels any pending key request made to the CDM for |session_id|.
+  //
+  // Returns kSuccess if all pending key requests for |session_id| were
+  // successfully canceled or there was no key request to be canceled,
+  // kSessionError otherwise.
+  virtual Status CancelKeyRequest(
+      const char* session_id, int session_id_size) = 0;
+
+  // Performs scheduled operation with |context| when the timer fires.
+  virtual void TimerExpired(void* context) = 0;
+
+  // Decrypts the |encrypted_buffer|.
+  //
+  // Returns kSuccess if decryption succeeded, in which case the callee
+  // should have filled the |decrypted_buffer| and passed the ownership of
+  // |data| in |decrypted_buffer| to the caller.
+  // Returns kNoKey if the CDM did not have the necessary decryption key
+  // to decrypt.
+  // Returns kDecryptError if any other error happened.
+  // If the return value is not kSuccess, |decrypted_buffer| should be ignored
+  // by the caller.
+  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
+                         DecryptedBlock* decrypted_buffer) = 0;
+
+  // Initializes the CDM audio decoder with |audio_decoder_config|. This
+  // function must be called before DecryptAndDecodeSamples() is called.
+  //
+  // Returns kSuccess if the |audio_decoder_config| is supported and the CDM
+  // audio decoder is successfully initialized.
+  // Returns kSessionError if |audio_decoder_config| is not supported. The CDM
+  // may still be able to do Decrypt().
+  virtual Status InitializeAudioDecoder(
+      const AudioDecoderConfig& audio_decoder_config) = 0;
+
+  // Initializes the CDM video decoder with |video_decoder_config|. This
+  // function must be called before DecryptAndDecodeFrame() is called.
+  //
+  // Returns kSuccess if the |video_decoder_config| is supported and the CDM
+  // video decoder is successfully initialized.
+  // Returns kSessionError if |video_decoder_config| is not supported. The CDM
+  // may still be able to do Decrypt().
+  virtual Status InitializeVideoDecoder(
+      const VideoDecoderConfig& video_decoder_config) = 0;
+
+  // De-initializes the CDM decoder and sets it to an uninitialized state. The
+  // caller can initialize the decoder again after this call to re-initialize
+  // it. This can be used to reconfigure the decoder if the configuration
+  // changes.
+  virtual void DeinitializeDecoder(StreamType decoder_type) = 0;
+
+  // Resets the CDM decoder to an initialized clean state. All internal buffers
+  // MUST be flushed.
+  virtual void ResetDecoder(StreamType decoder_type) = 0;
+
+  // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into a
+  // |video_frame|. Upon end-of-stream, the caller should call this function
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
+  // |video_frame| (|format| == kEmptyVideoFrame) is produced.
+  //
+  // Returns kSuccess if decryption and decoding both succeeded, in which case
+  // the callee will have filled the |video_frame| and passed the ownership of
+  // |frame_buffer| in |video_frame| to the caller.
+  // Returns kNoKey if the CDM did not have the necessary decryption key
+  // to decrypt.
+  // Returns kNeedMoreData if more data was needed by the decoder to generate
+  // a decoded frame (e.g. during initialization and end-of-stream).
+  // Returns kDecryptError if any decryption error happened.
+  // Returns kDecodeError if any decoding error happened.
+  // If the return value is not kSuccess, |video_frame| should be ignored by
+  // the caller.
+  virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
+                                       VideoFrame* video_frame) = 0;
+
+  // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
+  // |audio_frames|. Upon end-of-stream, the caller should call this function
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
+  // |audio_frames| is produced.
+  //
+  // Returns kSuccess if decryption and decoding both succeeded, in which case
+  // the callee will have filled |audio_frames| and passed the ownership of
+  // |data| in |audio_frames| to the caller.
+  // Returns kNoKey if the CDM did not have the necessary decryption key
+  // to decrypt.
+  // Returns kNeedMoreData if more data was needed by the decoder to generate
+  // audio samples (e.g. during initialization and end-of-stream).
+  // Returns kDecryptError if any decryption error happened.
+  // Returns kDecodeError if any decoding error happened.
+  // If the return value is not kSuccess, |audio_frames| should be ignored by
+  // the caller.
+  virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
+                                         AudioFrames_1* audio_frames) = 0;
+
+  // Destroys the object in the same context as it was created.
+  virtual void Destroy() = 0;
+
+ protected:
+  ContentDecryptionModule_1() {}
+  virtual ~ContentDecryptionModule_1() {}
+};
+
+// ContentDecryptionModule interface that all CDMs need to implement.
+// The interface is versioned for backward compatibility.
+// Note: ContentDecryptionModule implementations must use the allocator
+// provided in CreateCdmInstance() to allocate any Buffer that needs to
+// be passed back to the caller. Implementations must call Buffer::Destroy()
+// when a Buffer is created that will never be returned to the caller.
+class ContentDecryptionModule_2 {
  public:
   // Generates a |key_request| given |type| and |init_data|.
   //
@@ -399,16 +543,6 @@ class ContentDecryptionModule_1 {
   virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
                                          AudioFrames* audio_frames) = 0;
 
-  // Destroys the object in the same context as it was created.
-  virtual void Destroy() = 0;
-
- protected:
-  ContentDecryptionModule_1() {}
-  virtual ~ContentDecryptionModule_1() {}
-};
-
-class ContentDecryptionModule_2 : public ContentDecryptionModule_1 {
- public:
   // Called by the host after a platform challenge was initiated via
   // Host::SendPlatformChallenge().
   virtual void OnPlatformChallengeResponse(
@@ -419,6 +553,9 @@ class ContentDecryptionModule_2 : public ContentDecryptionModule_1 {
   // is a bit mask of OutputProtectionMethods.
   virtual void OnQueryOutputProtectionStatus(
       uint32_t link_mask, uint32_t output_protection_mask) = 0;
+
+  // Destroys the object in the same context as it was created.
+  virtual void Destroy() = 0;
 
  protected:
   ContentDecryptionModule_2() {}
@@ -605,6 +742,10 @@ class VideoFrame {
   virtual ~VideoFrame() {}
 };
 
+//
+// WARNING: Deprecated.  Will be removed in the near future.  CDMs should be
+// implementing ContentDecryptionModule_2 instead which uses AudioFrames_2.
+//
 // Represents decrypted and decoded audio frames. AudioFrames can contain
 // multiple audio output buffers, which are serialized into this format:
 //
@@ -616,14 +757,31 @@ class VideoFrame {
 //
 // |<----------------- AudioFrames ------------------>|
 // | audio buffer 0 | audio buffer 1 | audio buffer 2 |
-class AudioFrames {
+class AudioFrames_1 {
  public:
   virtual void SetFrameBuffer(Buffer* buffer) = 0;
   virtual Buffer* FrameBuffer() = 0;
 
  protected:
-  AudioFrames() {}
-  virtual ~AudioFrames() {}
+  AudioFrames_1() {}
+  virtual ~AudioFrames_1() {}
+};
+
+// Same as AudioFrames except the format of the data may be specified to avoid
+// unnecessary conversion steps. Planar data should be stored end to end; e.g.,
+// |ch1 sample1||ch1 sample2|....|ch1 sample_last||ch2 sample1|...
+class AudioFrames_2 {
+ public:
+  virtual void SetFrameBuffer(Buffer* buffer) = 0;
+  virtual Buffer* FrameBuffer() = 0;
+
+  // Layout of the audio data.  Defaults to kAudioFormatS16.
+  virtual void SetFormat(AudioFormat format) = 0;
+  virtual AudioFormat Format() const = 0;
+
+ protected:
+  AudioFrames_2() {}
+  virtual ~AudioFrames_2() {}
 };
 
 }  // namespace cdm
