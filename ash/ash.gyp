@@ -766,6 +766,7 @@
         'test/ash_unittests.cc',
         'tooltips/tooltip_controller_unittest.cc',
         'touch/touch_observer_hud_unittest.cc',
+        'wm/app_list_controller_unittest.cc',
         'wm/ash_native_cursor_manager_unittest.cc',
         'wm/base_layout_manager_unittest.cc',
         'wm/caption_buttons/frame_caption_button_container_view_unittest.cc',
