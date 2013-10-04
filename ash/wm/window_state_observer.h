@@ -18,12 +18,12 @@ class ASH_EXPORT WindowStateObserver {
       WindowState* window,
       bool old_value) {}
 
-  // Called when the window's show type has changed.
-  // This is different from kWindowShowStatekey property change
-  // as this will be invoked when the window gets left/right maximized,
-  // and auto positioned.
+  // Called when the window's show type has changed. This is different from
+  // kWindowShowStatekey property change as this will be invoked when the window
+  // gets left/right maximized, and auto positioned. |old_type| is the value
+  // before the change.
   virtual void OnWindowShowTypeChanged(WindowState* window_state,
-                                       WindowShowType type) {}
+                                       WindowShowType old_type) {}
 };
 
 }  // namespace wm
