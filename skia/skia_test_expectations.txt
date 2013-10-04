@@ -48,85 +48,14 @@
 #
 # START OVERRIDES HERE
 
-# The Skia roll to r11121 altered this layout test
-crbug.com/286312 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
-
-# Skia CL r11158 improved GPU-base gradient rendering (and changed three baseline images)
-crbug.com/288674 css3/filters/effect-reference-zoom-hw.html [ ImageOnlyFailure ]
-crbug.com/288674 virtual/gpu/fast/canvas/canvas-text-alignment.html [ ImageOnlyFailure ]
-crbug.com/288674 virtual/gpu/fast/canvas/fillrect_gradient.html [ ImageOnlyFailure ]
-# This image difference is related to the recent oval rendering changes
-crbug.com/288674 virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
-
-# Skia CL r11249 altered some of the parameters to the spot light filter
-crbug.com/292656 css3/filters/effect-reference-colorspace-hw.html [ ImageOnlyFailure ]
-crbug.com/292656 css3/filters/effect-reference-hw.html [ ImageOnlyFailure ]
-crbug.com/292656 css3/filters/effect-reference-subregion-hw.html [ ImageOnlyFailure ]
-
-# Skia r11365 slightly changed how the GPU draws lines
-crbug.com/295579 virtual/gpu/fast/canvas/canvas-text-baseline.html [ ImageOnlyFailure ]
-crbug.com/295579 virtual/gpu/fast/canvas/canvas-transforms-during-path.html [ ImageOnlyFailure ]
-crbug.com/295579 virtual/gpu/fast/canvas/quadraticCurveTo.xml [ ImageOnlyFailure ]
-
-
-# Skia's roll to r11515 introduced minor changes to arcs
-crbug.com/301130 fast/backgrounds/border-radius-split-background-image.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/backgrounds/border-radius-split-background.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-complex-inner.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-inset-outset.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-mask-canvas-border.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-mask-canvas.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-mask-video-ratio.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-mask-video-shadow.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-mask-video.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-percent.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-wide-border-05.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-with-box-shadow-01.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-radius-with-box-shadow.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-shadow-large-radius.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/border-styles-split.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/borderRadiusAllStylesAllCorners.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/borderRadiusArcs01.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/borderRadiusMultiColors01.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/borderRadiusMultiColors02.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/borders/borderRadiusSlope.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/box-shadow/shadow-tiling-artifact.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/canvas/arc360.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/canvas/canvas-arc-circumference-fill.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/canvas/canvas-arc-circumference.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/canvas/canvas-ellipse-circumference.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/css/background-clip-radius-values.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/css/box-shadow-and-border-radius.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/replaced/border-radius-clip-content-edge.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/writing-mode/border-styles-vertical-lr.html [ ImageOnlyFailure ]
-crbug.com/301130 fast/writing-mode/border-styles-vertical-rl.html [ ImageOnlyFailure ]
-crbug.com/301130 ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-001.htm [ ImageOnlyFailure ]
-crbug.com/301130 ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-002.htm [ ImageOnlyFailure ]
-crbug.com/301130 ietestcenter/css3/bordersbackgrounds/border-top-left-radius-values-004.htm [ ImageOnlyFailure ]
-crbug.com/301130 ietestcenter/css3/bordersbackgrounds/border-top-right-radius-values-004.htm [ ImageOnlyFailure ]
-crbug.com/301130 media/audio-repaint.html [ ImageOnlyFailure ]
-crbug.com/301130 svg/W3C-SVG-1.1/paths-data-10-t.svg [ ImageOnlyFailure ]
-crbug.com/301130 svg/W3C-SVG-1.1/struct-group-03-t.svg [ ImageOnlyFailure ]
-crbug.com/301130 svg/as-background-image/svg-as-background-6.html [ ImageOnlyFailure ]
-crbug.com/301130 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
-crbug.com/301130 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
-crbug.com/301130 svg/custom/marker-opacity.svg [ ImageOnlyFailure ]
-crbug.com/301130 svg/custom/svg-fonts-in-html.html [ ImageOnlyFailure ]
-crbug.com/301130 virtual/gpu/fast/canvas/arc360.html [ ImageOnlyFailure ]
-crbug.com/301130 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ ImageOnlyFailure ]
-crbug.com/301130 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ ImageOnlyFailure ]
-crbug.com/301130 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ ImageOnlyFailure ]
-crbug.com/301130 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
-
 # r11592 alters the GDI font rendering results
 crbug.com/304146 fast/repaint/caret-with-transformation.html [ ImageOnlyFailure ]
 crbug.com/304146 fast/transforms/transformed-caret.html [ ImageOnlyFailure ]
 crbug.com/304146 svg/W3C-SVG-1.1/text-path-01-b.svg [ ImageOnlyFailure ]
 crbug.com/304146 svg/W3C-SVG-1.1/text-text-07-t.svg [ ImageOnlyFailure ]
+crbug.com/301130 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
 crbug.com/304146 svg/batik/text/textEffect3.svg [ ImageOnlyFailure ]
+crbug.com/301130 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
 crbug.com/304146 svg/batik/text/textGlyphOrientationHorizontal.svg [ ImageOnlyFailure ]
 crbug.com/304146 svg/batik/text/textOnPath.svg [ ImageOnlyFailure ]
 crbug.com/304146 svg/batik/text/textOnPath2.svg [ ImageOnlyFailure ]
