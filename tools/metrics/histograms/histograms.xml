@@ -13974,6 +13974,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.InvalidationRegionApproximateRectCount"
+    units="rects">
+  <summary>
+    Number of rects inside of a PictureLayer's invalidation region per commit.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.LanguageDetection" units="milliseconds">
   <summary>
     Time to determine the page language. This is done after the page has been
