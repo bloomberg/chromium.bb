@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "ui/base/models/combobox_model.h"
 
 class BookmarkModel;
@@ -18,7 +20,9 @@ class BookmarkNode;
 // list always contains the Bookmarks Bar, Other Bookmarks and the parent
 // folder. The list also contains an extra item that shows the text
 // "Choose Another Folder...".
-class RecentlyUsedFoldersComboModel : public ui::ComboboxModel {
+class RecentlyUsedFoldersComboModel
+    : public ui::ComboboxModel,
+      public BookmarkModelObserver {
  public:
   RecentlyUsedFoldersComboModel(BookmarkModel* model, const BookmarkNode* node);
   virtual ~RecentlyUsedFoldersComboModel();
@@ -28,6 +32,36 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel {
   virtual string16 GetItemAt(int index) OVERRIDE;
   virtual bool IsItemSeparatorAt(int index) OVERRIDE;
   virtual int GetDefaultIndex() const OVERRIDE;
+  virtual void AddObserver(ui::ComboboxModelObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(ui::ComboboxModelObserver* observer) OVERRIDE;
+
+  // Overriden from BaseBookmarkModelObserver:
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkNodeMoved(BookmarkModel* model,
+                                 const BookmarkNode* old_parent,
+                                 int old_index,
+                                 const BookmarkNode* new_parent,
+                                 int new_index) OVERRIDE;
+  virtual void BookmarkNodeAdded(BookmarkModel* model,
+                                 const BookmarkNode* parent,
+                                 int index) OVERRIDE;
+  virtual void OnWillRemoveBookmarks(BookmarkModel* model,
+                                     const BookmarkNode* parent,
+                                     int old_index,
+                                     const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeChanged(BookmarkModel* model,
+                                   const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeChildrenReordered(
+      BookmarkModel* model,
+      const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE;
 
   // If necessary this function moves |node| into the corresponding folder for
   // the given |selected_index|.
@@ -47,6 +81,8 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel {
 
   // The index of the original parent folder.
   int node_parent_index_;
+
+  ObserverList<ui::ComboboxModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersComboModel);
 };

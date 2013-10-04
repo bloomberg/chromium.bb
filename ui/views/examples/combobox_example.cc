@@ -30,6 +30,9 @@ ComboboxExample::ComboboxExample() : ExampleBase("Combo Box"), combobox_(NULL) {
 }
 
 ComboboxExample::~ComboboxExample() {
+  // Delete |combobox_| first as it references |combobox_model_|.
+  delete combobox_;
+  combobox_ = NULL;
 }
 
 void ComboboxExample::CreateExampleView(View* container) {

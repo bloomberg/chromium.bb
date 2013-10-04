@@ -39,6 +39,9 @@ UninstallView::UninstallView(int* user_selection,
 UninstallView::~UninstallView() {
   // Exit the message loop we were started with so that uninstall can continue.
   quit_closure_.Run();
+
+  // Delete Combobox as it holds a reference to us.
+  delete browsers_combo_;
 }
 
 void UninstallView::SetupControls() {

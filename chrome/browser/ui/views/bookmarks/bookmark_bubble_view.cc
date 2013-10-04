@@ -92,6 +92,9 @@ BookmarkBubbleView::~BookmarkBubbleView() {
     if (node)
       model->Remove(node->parent(), node->parent()->GetIndexOf(node));
   }
+  // |parent_combobox_| needs to be destroyed before |parent_model_| as it
+  // uses |parent_model_| in its destructor.
+  delete parent_combobox_;
 }
 
 views::View* BookmarkBubbleView::GetInitiallyFocusedView() {

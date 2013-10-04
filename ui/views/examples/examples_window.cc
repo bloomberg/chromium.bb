@@ -79,7 +79,11 @@ class ExamplesWindowContents : public WidgetDelegateView,
     instance_ = this;
     combobox_->set_listener(this);
   }
-  virtual ~ExamplesWindowContents() {}
+  virtual ~ExamplesWindowContents() {
+    // Delete |combobox_| first as it references |combobox_model_|.
+    delete combobox_;
+    combobox_ = NULL;
+  }
 
   // Prints a message in the status area, at the bottom of the window.
   void SetStatus(const std::string& status) {

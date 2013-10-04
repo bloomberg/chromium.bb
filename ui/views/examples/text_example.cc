@@ -168,6 +168,9 @@ TextExample::TextExample() : ExampleBase("Text Styles") {
 }
 
 TextExample::~TextExample() {
+  // Remove all the views first as some reference models in
+  // |example_combobox_model_|.
+  container()->RemoveAllChildViews(true);
 }
 
 Checkbox* TextExample::AddCheckbox(GridLayout* layout, const char* name) {
