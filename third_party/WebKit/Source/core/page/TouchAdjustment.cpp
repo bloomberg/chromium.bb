@@ -29,7 +29,6 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
@@ -38,6 +37,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/text/TextBreakIterator.h"
 
 namespace WebCore {
 

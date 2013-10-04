@@ -65,9 +65,9 @@
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/page/Page.h"
 #include "core/platform/text/PlatformLocale.h"
-#include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/LocalizedStrings.h"
+#include "platform/text/TextBreakIterator.h"
 
 namespace WebCore {
 

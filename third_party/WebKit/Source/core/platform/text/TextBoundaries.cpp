@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/platform/text/TextBoundaries.h"
 
-#include "core/platform/text/TextBreakIterator.h"
+#include "platform/text/TextBreakIterator.h"
 #include "wtf/text/StringImpl.h"
 #include "wtf/unicode/Unicode.h"
 

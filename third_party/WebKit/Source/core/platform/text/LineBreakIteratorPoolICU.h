@@ -26,14 +26,14 @@
 #ifndef LineBreakIteratorPoolICU_h
 #define LineBreakIteratorPoolICU_h
 
-#include <unicode/ubrk.h>
-#include "core/platform/text/TextBreakIteratorInternalICU.h"
+#include "platform/text/TextBreakIteratorInternalICU.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
 #include "wtf/ThreadSpecific.h"
+#include <unicode/ubrk.h>
 
 namespace WebCore {
 

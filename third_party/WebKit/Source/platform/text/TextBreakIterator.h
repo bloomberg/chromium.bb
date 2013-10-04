@@ -22,6 +22,7 @@
 #ifndef TextBreakIterator_h
 #define TextBreakIterator_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/unicode/Unicode.h"
 
@@ -35,28 +36,28 @@ class TextBreakIterator;
 // platform UI conventions. One notable example where this can be different
 // from character break iterator is Thai prepend characters, see bug 24342.
 // Use this for insertion point and selection manipulations.
-TextBreakIterator* cursorMovementIterator(const UChar*, int length);
+PLATFORM_EXPORT TextBreakIterator* cursorMovementIterator(const UChar*, int length);
 
-TextBreakIterator* wordBreakIterator(const String&, int start, int length);
-TextBreakIterator* wordBreakIterator(const UChar*, int length);
-TextBreakIterator* acquireLineBreakIterator(const LChar*, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength);
-TextBreakIterator* acquireLineBreakIterator(const UChar*, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength);
-void releaseLineBreakIterator(TextBreakIterator*);
-TextBreakIterator* sentenceBreakIterator(const UChar*, int length);
+PLATFORM_EXPORT TextBreakIterator* wordBreakIterator(const String&, int start, int length);
+PLATFORM_EXPORT TextBreakIterator* wordBreakIterator(const UChar*, int length);
+PLATFORM_EXPORT TextBreakIterator* acquireLineBreakIterator(const LChar*, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength);
+PLATFORM_EXPORT TextBreakIterator* acquireLineBreakIterator(const UChar*, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength);
+PLATFORM_EXPORT void releaseLineBreakIterator(TextBreakIterator*);
+PLATFORM_EXPORT TextBreakIterator* sentenceBreakIterator(const UChar*, int length);
 
-int textBreakFirst(TextBreakIterator*);
-int textBreakLast(TextBreakIterator*);
-int textBreakNext(TextBreakIterator*);
-int textBreakPrevious(TextBreakIterator*);
-int textBreakCurrent(TextBreakIterator*);
-int textBreakPreceding(TextBreakIterator*, int);
-int textBreakFollowing(TextBreakIterator*, int);
-bool isTextBreak(TextBreakIterator*, int);
-bool isWordTextBreak(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakFirst(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakLast(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakNext(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakPrevious(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakCurrent(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakPreceding(TextBreakIterator*, int);
+PLATFORM_EXPORT int textBreakFollowing(TextBreakIterator*, int);
+PLATFORM_EXPORT bool isTextBreak(TextBreakIterator*, int);
+PLATFORM_EXPORT bool isWordTextBreak(TextBreakIterator*);
 
 const int TextBreakDone = -1;
 
-class LazyLineBreakIterator {
+class PLATFORM_EXPORT LazyLineBreakIterator {
 public:
     LazyLineBreakIterator()
         : m_iterator(0)
@@ -177,7 +178,7 @@ private:
 // version 4.0 only supports "legacy grapheme clusters".
 // Use this for general text processing, e.g. string truncation.
 
-class NonSharedCharacterBreakIterator {
+class PLATFORM_EXPORT NonSharedCharacterBreakIterator {
     WTF_MAKE_NONCOPYABLE(NonSharedCharacterBreakIterator);
 public:
     explicit NonSharedCharacterBreakIterator(const String&);
@@ -232,10 +233,10 @@ private:
 // Counts the number of grapheme clusters. A surrogate pair or a sequence
 // of a non-combining character and following combining characters is
 // counted as 1 grapheme cluster.
-unsigned numGraphemeClusters(const String&);
+PLATFORM_EXPORT unsigned numGraphemeClusters(const String&);
 // Returns the number of characters which will be less than or equal to
 // the specified grapheme cluster length.
-unsigned numCharactersInGraphemeClusters(const String&, unsigned);
+PLATFORM_EXPORT unsigned numCharactersInGraphemeClusters(const String&, unsigned);
 
 }
 

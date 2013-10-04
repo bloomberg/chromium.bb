@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextBreakIteratorInternalICU.h"
+#include "platform/text/TextBreakIteratorInternalICU.h"
 
 #include "platform/Language.h"
 #include "wtf/StdLibExtras.h"

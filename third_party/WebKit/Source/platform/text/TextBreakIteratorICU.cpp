@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextBreakIterator.h"
+#include "platform/text/TextBreakIterator.h"
 
 #include "core/platform/text/LineBreakIteratorPoolICU.h"
 #include "wtf/ThreadingPrimitives.h"

@@ -34,7 +34,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/platform/text/TextBreakIterator.h"
+#include "platform/text/TextBreakIterator.h"
 
 using namespace std;
 

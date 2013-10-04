@@ -29,7 +29,7 @@
 
 #include "core/events/KeyboardEvent.h"
 #include "core/platform/graphics/Font.h"
-#include "core/platform/text/TextBreakIterator.h"
+#include "platform/text/TextBreakIterator.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/Unicode.h"
 
