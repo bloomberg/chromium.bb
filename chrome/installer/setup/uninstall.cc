@@ -1212,11 +1212,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     }
 
     DeleteShortcuts(installer_state, product, base::FilePath(chrome_exe));
-
-  } else if (product.is_chrome_app_host()) {
-    const base::FilePath app_host_exe(
-        installer_state.target_path().Append(installer::kChromeAppHostExe));
-    DeleteShortcuts(installer_state, product, app_host_exe);
   }
 
   // Delete the registry keys (Uninstall key and Version key).
