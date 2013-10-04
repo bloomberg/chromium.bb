@@ -72,7 +72,7 @@ namespace WTF {
     private:
         explicit PassOwnPtr(PtrType ptr) : m_ptr(ptr) { }
 
-        PassOwnPtr& operator=(const PassOwnPtr&) { COMPILE_ASSERT(!sizeof(T*), PassOwnPtr_should_never_be_assigned_to); ASSERT_NOT_REACHED(); return *this; }
+        PassOwnPtr& operator=(const PassOwnPtr&) { COMPILE_ASSERT(!sizeof(T*), PassOwnPtr_should_never_be_assigned_to); return *this; }
 
         // We should never have two OwnPtrs for the same underlying object (otherwise we'll get
         // double-destruction), so these equality operators should never be needed.

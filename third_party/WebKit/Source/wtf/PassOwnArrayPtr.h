@@ -70,7 +70,7 @@ public:
 private:
     explicit PassOwnArrayPtr(PtrType ptr) : m_ptr(ptr) { }
 
-    PassOwnArrayPtr& operator=(const PassOwnArrayPtr&) { COMPILE_ASSERT(!sizeof(T*), PassOwnArrayPtr_should_never_be_assigned_to); ASSERT_NOT_REACHED(); return *this; }
+    PassOwnArrayPtr& operator=(const PassOwnArrayPtr&) { COMPILE_ASSERT(!sizeof(T*), PassOwnArrayPtr_should_never_be_assigned_to); return *this; }
 
     mutable PtrType m_ptr;
 };

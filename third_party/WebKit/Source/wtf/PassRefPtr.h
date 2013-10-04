@@ -78,7 +78,7 @@ namespace WTF {
         // adopting constructor
         PassRefPtr(T* ptr, bool) : m_ptr(ptr) { }
 
-        PassRefPtr& operator=(const PassRefPtr&) { COMPILE_ASSERT(!sizeof(T*), PassRefPtr_should_never_be_assigned_to); ASSERT_NOT_REACHED(); return *this; }
+        PassRefPtr& operator=(const PassRefPtr&) { COMPILE_ASSERT(!sizeof(T*), PassRefPtr_should_never_be_assigned_to); return *this; }
 
         mutable T* m_ptr;
     };
