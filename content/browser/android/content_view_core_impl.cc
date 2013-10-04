@@ -1448,10 +1448,6 @@ int ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
   return rwhva->GetNativeImeAdapter();
 }
 
-jboolean ContentViewCoreImpl::NeedsReload(JNIEnv* env, jobject obj) {
-  return web_contents_->GetController().NeedsReload();
-}
-
 void ContentViewCoreImpl::UndoScrollFocusedEditableNodeIntoView(
     JNIEnv* env,
     jobject obj) {

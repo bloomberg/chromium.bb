@@ -650,13 +650,6 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * @return Whether a reload happens when this ContentView is activated.
-     */
-    public boolean needsReload() {
-        return mContentViewCore.needsReload();
-    }
-
-    /**
      * Checks whether the WebView can be zoomed in.
      *
      * @return True if the WebView can be zoomed in.

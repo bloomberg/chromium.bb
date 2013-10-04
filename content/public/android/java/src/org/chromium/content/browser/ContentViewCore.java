@@ -2579,13 +2579,6 @@ import java.util.Map;
     }
 
     /**
-     * @return Whether a reload happens when this ContentView is activated.
-     */
-    public boolean needsReload() {
-        return mNativeContentViewCore != 0 && nativeNeedsReload(mNativeContentViewCore);
-    }
-
-    /**
      * @see View#hasFocus()
      */
     @CalledByNative
@@ -3214,7 +3207,6 @@ import java.util.Map;
 
     private native void nativeScrollFocusedEditableNodeIntoView(int nativeContentViewCoreImpl);
     private native void nativeUndoScrollFocusedEditableNodeIntoView(int nativeContentViewCoreImpl);
-    private native boolean nativeNeedsReload(int nativeContentViewCoreImpl);
 
     private native void nativeClearHistory(int nativeContentViewCoreImpl);
 

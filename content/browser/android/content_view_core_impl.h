@@ -149,7 +149,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void Reload(JNIEnv* env, jobject obj);
   void CancelPendingReload(JNIEnv* env, jobject obj);
   void ContinuePendingReload(JNIEnv* env, jobject obj);
-  jboolean NeedsReload(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);
   void EvaluateJavaScript(JNIEnv* env,
                           jobject obj,
