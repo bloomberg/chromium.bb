@@ -78,29 +78,11 @@ public:
     BLINK_EXPORT WebString target() const;
     BLINK_EXPORT void setTarget(const WebString&);
 
-    BLINK_EXPORT WebString parent() const;
-    BLINK_EXPORT void setParent(const WebString&);
-
-    BLINK_EXPORT WebString title() const;
-    BLINK_EXPORT void setTitle(const WebString&);
-
-    BLINK_EXPORT WebString alternateTitle() const;
-    BLINK_EXPORT void setAlternateTitle(const WebString&);
-
-    BLINK_EXPORT double lastVisitedTime() const;
-    BLINK_EXPORT void setLastVisitedTime(double);
-
     BLINK_EXPORT WebPoint scrollOffset() const;
     BLINK_EXPORT void setScrollOffset(const WebPoint&);
 
     BLINK_EXPORT float pageScaleFactor() const;
     BLINK_EXPORT void setPageScaleFactor(float);
-
-    BLINK_EXPORT bool isTargetItem() const;
-    BLINK_EXPORT void setIsTargetItem(bool);
-
-    BLINK_EXPORT int visitCount() const;
-    BLINK_EXPORT void setVisitCount(int);
 
     BLINK_EXPORT WebVector<WebString> documentState() const;
     BLINK_EXPORT void setDocumentState(const WebVector<WebString>&);
@@ -121,7 +103,6 @@ public:
     BLINK_EXPORT void setHTTPBody(const WebHTTPBody&);
 
     BLINK_EXPORT WebVector<WebHistoryItem> children() const;
-    BLINK_EXPORT void setChildren(const WebVector<WebHistoryItem>&);
     BLINK_EXPORT void appendToChildren(const WebHistoryItem&);
 
     BLINK_EXPORT WebVector<WebString> getReferencedFilePaths() const;

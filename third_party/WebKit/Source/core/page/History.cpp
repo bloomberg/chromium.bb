@@ -139,7 +139,7 @@ KURL History::urlForState(const String& urlString)
     return KURL(baseURL, urlString);
 }
 
-void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& title, const String& urlString, SameDocumentNavigationSource sameDocumentNavigationSource, ExceptionState& es)
+void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& /* title */, const String& urlString, SameDocumentNavigationSource sameDocumentNavigationSource, ExceptionState& es)
 {
     if (!m_frame || !m_frame->page())
         return;
@@ -150,7 +150,7 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
         es.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->securityOrigin()->toString() + "'.");
         return;
     }
-    m_frame->loader()->updateForSameDocumentNavigation(fullURL, sameDocumentNavigationSource, data, title, FrameLoader::DoNotUpdateBackForwardList);
+    m_frame->loader()->updateForSameDocumentNavigation(fullURL, sameDocumentNavigationSource, data, FrameLoader::DoNotUpdateBackForwardList);
 }
 
 } // namespace WebCore

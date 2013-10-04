@@ -524,7 +524,7 @@ bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
     return allowed;
 }
 
-void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, const String& title, UpdateBackForwardListPolicy updateBackForwardList)
+void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, UpdateBackForwardListPolicy updateBackForwardList)
 {
     // Update the data source's request with the new URL to fake the URL change
     KURL oldURL = m_frame->document()->url();
@@ -541,9 +541,9 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (sameDocumentNavigationSource == SameDocumentNavigationDefault)
         history()->updateForSameDocumentNavigation();
     else if (sameDocumentNavigationSource == SameDocumentNavigationPushState)
-        history()->pushState(data, title, newURL.string());
+        history()->pushState(data, newURL.string());
     else if (sameDocumentNavigationSource == SameDocumentNavigationReplaceState)
-        history()->replaceState(data, title, newURL.string());
+        history()->replaceState(data, newURL.string());
     else
         ASSERT_NOT_REACHED();
 
@@ -580,7 +580,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     m_documentLoader->setIsClientRedirect((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
     m_documentLoader->setReplacesCurrentHistoryItem(!isNewNavigation);
     UpdateBackForwardListPolicy updateBackForwardList = isNewNavigation && !shouldTreatURLAsSameAsCurrent(url) && !stateObject ? UpdateBackForwardList : DoNotUpdateBackForwardList;
-    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, 0, String(), updateBackForwardList);
+    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, 0, updateBackForwardList);
 
     // It's important to model this as a load that starts and immediately finishes.
     // Otherwise, the parent frame may think we never finished loading.

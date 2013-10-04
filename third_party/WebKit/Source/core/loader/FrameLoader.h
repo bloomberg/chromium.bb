@@ -210,7 +210,7 @@ public:
         UpdateBackForwardList,
         DoNotUpdateBackForwardList
     };
-    void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, const String& title, UpdateBackForwardListPolicy);
+    void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
 
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants

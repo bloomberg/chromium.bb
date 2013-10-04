@@ -1305,7 +1305,6 @@ void Document::updateTitle(const String& title)
 
     if (!m_frame || oldTitle == m_title)
         return;
-    m_frame->loader()->history()->setCurrentItemTitle(m_title);
     m_frame->loader()->client()->dispatchDidReceiveTitle(m_title);
 }
 

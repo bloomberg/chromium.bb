@@ -317,12 +317,6 @@ void HistoryController::setCurrentItem(HistoryItem* item)
     m_currentItem = item;
 }
 
-void HistoryController::setCurrentItemTitle(const String& title)
-{
-    if (m_currentItem)
-        m_currentItem->setTitle(title);
-}
-
 bool HistoryController::currentItemShouldBeReplaced() const
 {
     // From the HTML5 spec for location.assign():
@@ -370,9 +364,6 @@ void HistoryController::initializeItem(HistoryItem* item)
 
     item->setURL(url);
     item->setTarget(m_frame->tree()->uniqueName());
-    item->setParent(parent);
-    // FIXME: should store title directionality in history as well.
-    item->setTitle(m_frame->document()->title());
     item->setOriginalURLString(originalURL.string());
 
     // Save form state if this is a POST
@@ -415,9 +406,6 @@ PassRefPtr<HistoryItem> HistoryController::createItemTree(Frame* targetFrame, bo
                 bfItem->addChildItem(childLoader->history()->createItemTree(targetFrame, clipAtTarget));
         }
     }
-    // FIXME: Eliminate the isTargetItem flag in favor of itemSequenceNumber.
-    if (m_frame == targetFrame)
-        bfItem->setIsTargetItem(true);
     return bfItem;
 }
 
@@ -541,21 +529,15 @@ void HistoryController::updateWithoutCreatingNewBackForwardItem()
         return;
 
     if (m_currentItem->url() != documentLoader->url()) {
-        // We ended up on a completely different URL this time, so the HistoryItem
-        // needs to be re-initialized.  Preserve the isTargetItem flag as it is a
-        // property of how this HistoryItem was originally created and is not
-        // dependent on the document.
-        bool isTargetItem = m_currentItem->isTargetItem();
         m_currentItem->reset();
         initializeItem(m_currentItem.get());
-        m_currentItem->setIsTargetItem(isTargetItem);
     } else {
         // Even if the final URL didn't change, the form data may have changed.
         m_currentItem->setFormInfoFromRequest(documentLoader->request());
     }
 }
 
-void HistoryController::pushState(PassRefPtr<SerializedScriptValue> stateObject, const String& title, const String& urlString)
+void HistoryController::pushState(PassRefPtr<SerializedScriptValue> stateObject, const String& urlString)
 {
     if (!m_currentItem)
         return;
@@ -568,20 +550,18 @@ void HistoryController::pushState(PassRefPtr<SerializedScriptValue> stateObject,
 
     // Override data in the current item (created by createItemTree) to reflect
     // the pushState() arguments.
-    m_currentItem->setTitle(title);
     m_currentItem->setStateObject(stateObject);
     m_currentItem->setURLString(urlString);
     page->backForward().addItem(topItem.release());
 }
 
-void HistoryController::replaceState(PassRefPtr<SerializedScriptValue> stateObject, const String& title, const String& urlString)
+void HistoryController::replaceState(PassRefPtr<SerializedScriptValue> stateObject, const String& urlString)
 {
     if (!m_currentItem)
         return;
 
     if (!urlString.isEmpty())
         m_currentItem->setURLString(urlString);
-    m_currentItem->setTitle(title);
     m_currentItem->setStateObject(stateObject);
     m_currentItem->setFormData(0);
     m_currentItem->setFormContentType(String());

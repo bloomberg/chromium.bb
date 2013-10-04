@@ -60,7 +60,6 @@ public:
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
     void setCurrentItem(HistoryItem*);
-    void setCurrentItemTitle(const String&);
     bool currentItemShouldBeReplaced() const;
 
     HistoryItem* previousItem() const { return m_previousItem.get(); }
@@ -68,8 +67,8 @@ public:
     HistoryItem* provisionalItem() const { return m_provisionalItem.get(); }
     void setProvisionalItem(HistoryItem*);
 
-    void pushState(PassRefPtr<SerializedScriptValue>, const String& title, const String& url);
-    void replaceState(PassRefPtr<SerializedScriptValue>, const String& title, const String& url);
+    void pushState(PassRefPtr<SerializedScriptValue>, const String& url);
+    void replaceState(PassRefPtr<SerializedScriptValue>, const String& url);
 
     void setDefersLoading(bool);
 

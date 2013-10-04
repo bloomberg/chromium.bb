@@ -129,55 +129,6 @@ void WebHistoryItem::setTarget(const WebString& target)
     m_private->setTarget(target);
 }
 
-WebString WebHistoryItem::parent() const
-{
-    return m_private->parent();
-}
-
-void WebHistoryItem::setParent(const WebString& parent)
-{
-    ensureMutable();
-    m_private->setParent(parent);
-}
-
-WebString WebHistoryItem::title() const
-{
-    return m_private->title();
-}
-
-void WebHistoryItem::setTitle(const WebString& title)
-{
-    ensureMutable();
-    m_private->setTitle(title);
-}
-
-WebString WebHistoryItem::alternateTitle() const
-{
-    return m_private->alternateTitle();
-}
-
-void WebHistoryItem::setAlternateTitle(const WebString& alternateTitle)
-{
-    ensureMutable();
-    m_private->setAlternateTitle(alternateTitle);
-}
-
-double WebHistoryItem::lastVisitedTime() const
-{
-    return m_private->lastVisitedTime();
-}
-
-void WebHistoryItem::setLastVisitedTime(double lastVisitedTime)
-{
-    ensureMutable();
-    // FIXME: setLastVisitedTime increments the visit count, so we have to
-    // correct for that.  Instead, we should have a back-door to just mutate
-    // the last visited time directly.
-    int count = m_private->visitCount();
-    m_private->setLastVisitedTime(lastVisitedTime);
-    m_private->setVisitCount(count);
-}
-
 WebPoint WebHistoryItem::scrollOffset() const
 {
     return m_private->scrollPoint();
@@ -198,28 +149,6 @@ void WebHistoryItem::setPageScaleFactor(float scale)
 {
     ensureMutable();
     m_private->setPageScaleFactor(scale);
-}
-
-bool WebHistoryItem::isTargetItem() const
-{
-    return m_private->isTargetItem();
-}
-
-void WebHistoryItem::setIsTargetItem(bool isTargetItem)
-{
-    ensureMutable();
-    m_private->setIsTargetItem(isTargetItem);
-}
-
-int WebHistoryItem::visitCount() const
-{
-    return m_private->visitCount();
-}
-
-void WebHistoryItem::setVisitCount(int count)
-{
-    ensureMutable();
-    m_private->setVisitCount(count);
 }
 
 WebVector<WebString> WebHistoryItem::documentState() const
@@ -295,14 +224,6 @@ void WebHistoryItem::setHTTPBody(const WebHTTPBody& httpBody)
 WebVector<WebHistoryItem> WebHistoryItem::children() const
 {
     return m_private->children();
-}
-
-void WebHistoryItem::setChildren(const WebVector<WebHistoryItem>& items)
-{
-    ensureMutable();
-    m_private->clearChildren();
-    for (size_t i = 0; i < items.size(); ++i)
-        m_private->addChildItem(items[i]);
 }
 
 void WebHistoryItem::appendToChildren(const WebHistoryItem& item)

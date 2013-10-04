@@ -56,24 +56,14 @@ public:
 
     const String& originalURLString() const;
     const String& urlString() const;
-    const String& title() const;
-
-    double lastVisitedTime() const;
-
-    void setAlternateTitle(const String& alternateTitle);
-    const String& alternateTitle() const;
-
-    const String& parent() const;
     KURL url() const;
     KURL originalURL() const;
+
     const String& referrer() const;
     const String& target() const;
-    bool isTargetItem() const;
 
     FormData* formData();
     String formContentType() const;
-
-    int visitCount() const;
 
     const IntPoint& scrollPoint() const;
     void setScrollPoint(const IntPoint&);
@@ -91,9 +81,6 @@ public:
     void setOriginalURLString(const String&);
     void setReferrer(const String&);
     void setTarget(const String&);
-    void setParent(const String&);
-    void setTitle(const String&);
-    void setIsTargetItem(bool);
 
     void setStateObject(PassRefPtr<SerializedScriptValue> object);
     SerializedScriptValue* stateObject() const { return m_stateObject.get(); }
@@ -108,8 +95,6 @@ public:
     void setFormData(PassRefPtr<FormData>);
     void setFormContentType(const String&);
 
-    void setVisitCount(int);
-
     void addChildItem(PassRefPtr<HistoryItem>);
     void setChildItem(PassRefPtr<HistoryItem>);
     HistoryItem* childItemWithTarget(const String&) const;
@@ -119,8 +104,6 @@ public:
 
     bool shouldDoSameDocumentNavigationTo(HistoryItem* otherItem) const;
     bool hasSameFrames(HistoryItem* otherItem) const;
-
-    void setLastVisitedTime(double);
 
     bool isCurrentDocument(Document*) const;
 
@@ -133,28 +116,18 @@ private:
     HistoryItem();
     explicit HistoryItem(const HistoryItem&);
 
-    void recordVisitAtTime(double);
-
     bool hasSameDocumentTree(HistoryItem* otherItem) const;
 
     String m_urlString;
     String m_originalURLString;
     String m_referrer;
     String m_target;
-    String m_parent;
-    String m_title;
-    String m_displayTitle;
-
-    double m_lastVisitedTime;
 
     IntPoint m_scrollPoint;
     float m_pageScaleFactor;
     Vector<String> m_documentState;
 
     HistoryItemVector m_children;
-
-    bool m_isTargetItem;
-    int m_visitCount;
 
     // If two HistoryItems have the same item sequence number, then they are
     // clones of one another.  Traversing history from one such HistoryItem to
