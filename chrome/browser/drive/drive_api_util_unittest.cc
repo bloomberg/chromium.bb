@@ -192,5 +192,99 @@ TEST(FileSystemUtilTest, ConvertAccountMetadataToAppList) {
   EXPECT_EQ("http://icon/url", icon.icon_url().spec());
 }
 
+TEST(FileSystemUtilTest, ConvertFileResourceToResourceEntryImageMediaMetadata) {
+  google_apis::FileResource file_resource_all_fields;
+  google_apis::FileResource file_resource_zero_fields;
+  google_apis::FileResource file_resource_no_fields;
+  // Set up FileResource instances;
+  {
+    {
+      google_apis::ImageMediaMetadata* image_media_metadata =
+        file_resource_all_fields.mutable_image_media_metadata();
+      image_media_metadata->set_width(640);
+      image_media_metadata->set_height(480);
+      image_media_metadata->set_rotation(90);
+    }
+    {
+      google_apis::ImageMediaMetadata* image_media_metadata =
+        file_resource_zero_fields.mutable_image_media_metadata();
+      image_media_metadata->set_width(0);
+      image_media_metadata->set_height(0);
+      image_media_metadata->set_rotation(0);
+    }
+  }
+
+  // Verify the converted values.
+  {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry(
+        ConvertFileResourceToResourceEntry(file_resource_all_fields));
+
+    EXPECT_EQ(640, resource_entry->image_width());
+    EXPECT_EQ(480, resource_entry->image_height());
+    EXPECT_EQ(90, resource_entry->image_rotation());
+  }
+  {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry(
+        ConvertFileResourceToResourceEntry(file_resource_zero_fields));
+
+    EXPECT_EQ(0, resource_entry->image_width());
+    EXPECT_EQ(0, resource_entry->image_height());
+    EXPECT_EQ(0, resource_entry->image_rotation());
+  }
+  {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry(
+        ConvertFileResourceToResourceEntry(file_resource_no_fields));
+
+    EXPECT_EQ(-1, resource_entry->image_width());
+    EXPECT_EQ(-1, resource_entry->image_height());
+    EXPECT_EQ(-1, resource_entry->image_rotation());
+  }
+}
+
+TEST(FileSystemUtilTest, ConvertResourceEntryToFileResourceImageMediaMetadata) {
+  google_apis::ResourceEntry resource_entry_all_fields;
+  google_apis::ResourceEntry resource_entry_zero_fields;
+  google_apis::ResourceEntry resource_entry_no_fields;
+  // Set up FileResource instances;
+  {
+    resource_entry_all_fields.set_image_width(640);
+    resource_entry_all_fields.set_image_height(480);
+    resource_entry_all_fields.set_image_rotation(90);
+
+    resource_entry_zero_fields.set_image_width(0);
+    resource_entry_zero_fields.set_image_height(0);
+    resource_entry_zero_fields.set_image_rotation(0);
+  }
+
+  // Verify the converted values.
+  {
+    scoped_ptr<google_apis::FileResource> file_resource(
+        ConvertResourceEntryToFileResource(resource_entry_all_fields));
+    const google_apis::ImageMediaMetadata& image_media_metadata =
+      file_resource->image_media_metadata();
+    EXPECT_EQ(640, image_media_metadata.width());
+    EXPECT_EQ(480, image_media_metadata.height());
+    EXPECT_EQ(90, image_media_metadata.rotation());
+  }
+  {
+    scoped_ptr<google_apis::FileResource> file_resource(
+        ConvertResourceEntryToFileResource(resource_entry_zero_fields));
+    const google_apis::ImageMediaMetadata& image_media_metadata =
+      file_resource->image_media_metadata();
+    EXPECT_EQ(0, image_media_metadata.width());
+    EXPECT_EQ(0, image_media_metadata.height());
+    EXPECT_EQ(0, image_media_metadata.rotation());
+  }
+  {
+    scoped_ptr<google_apis::FileResource> file_resource(
+        ConvertResourceEntryToFileResource(resource_entry_no_fields));
+    const google_apis::ImageMediaMetadata& image_media_metadata =
+      file_resource->image_media_metadata();
+    EXPECT_EQ(-1, image_media_metadata.width());
+    EXPECT_EQ(-1, image_media_metadata.height());
+    EXPECT_EQ(-1, image_media_metadata.rotation());
+  }
+}
+
 }  // namespace util
 }  // namespace drive

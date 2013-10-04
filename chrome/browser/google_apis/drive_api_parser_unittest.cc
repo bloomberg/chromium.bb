@@ -150,6 +150,10 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_FALSE(file1.labels().is_restricted());
   EXPECT_TRUE(file1.labels().is_viewed());
 
+  EXPECT_EQ(640, file1.image_media_metadata().width());
+  EXPECT_EQ(480, file1.image_media_metadata().height());
+  EXPECT_EQ(90, file1.image_media_metadata().rotation());
+
   base::Time created_time;
   ASSERT_TRUE(
       util::GetTimeFromString("2012-07-24T08:51:16.570Z", &created_time));
@@ -197,6 +201,11 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_TRUE(file2.labels().is_trashed());
   EXPECT_TRUE(file2.labels().is_restricted());
   EXPECT_TRUE(file2.labels().is_viewed());
+
+  EXPECT_EQ(-1, file2.image_media_metadata().width());
+  EXPECT_EQ(-1, file2.image_media_metadata().height());
+  EXPECT_EQ(-1, file2.image_media_metadata().rotation());
+
   base::Time shared_with_me_time;
   ASSERT_TRUE(util::GetTimeFromString("2012-07-27T04:54:11.030Z",
                                       &shared_with_me_time));

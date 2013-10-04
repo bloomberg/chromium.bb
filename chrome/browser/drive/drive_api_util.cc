@@ -315,6 +315,12 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
   file->mutable_labels()->set_trashed(entry.deleted());
   file->set_etag(entry.etag());
 
+  google_apis::ImageMediaMetadata* image_media_metadata =
+    file->mutable_image_media_metadata();
+  image_media_metadata->set_width(entry.image_width());
+  image_media_metadata->set_height(entry.image_height());
+  image_media_metadata->set_rotation(entry.image_rotation());
+
   ScopedVector<google_apis::ParentReference> parents;
   for (size_t i = 0; i < entry.links().size(); ++i) {
     using google_apis::Link;
@@ -414,6 +420,11 @@ ConvertFileResourceToResourceEntry(
   // ChangeResource, and is reflected in |removed_|. If file is trashed, the
   // file entry still exists but with its "trashed" label true.
   entry->set_deleted(file_resource.labels().is_trashed());
+
+  // ImageMediaMetadata
+  entry->set_image_width(file_resource.image_media_metadata().width());
+  entry->set_image_height(file_resource.image_media_metadata().height());
+  entry->set_image_rotation(file_resource.image_media_metadata().rotation());
 
   // CommonMetadata
   entry->set_etag(file_resource.etag());

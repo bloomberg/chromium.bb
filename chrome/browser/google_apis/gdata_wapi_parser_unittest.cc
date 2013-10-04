@@ -229,6 +229,12 @@ TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
   EXPECT_EQ("File 1.mp3", entry->suggested_filename());
   EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce", entry->file_md5());
   EXPECT_EQ(892721, entry->file_size());
+
+  // WAPI doesn't provide image metadata, but these fields are available
+  // since this class can wrap data received from Drive API (via a converter).
+  EXPECT_EQ(-1, entry->image_width());
+  EXPECT_EQ(-1, entry->image_height());
+  EXPECT_EQ(-1, entry->image_rotation());
 }
 
 TEST(GDataWAPIParserTest, AccountMetadataParser) {

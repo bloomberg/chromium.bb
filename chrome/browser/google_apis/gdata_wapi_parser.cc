@@ -451,7 +451,10 @@ ResourceEntry::ResourceEntry()
       file_size_(0),
       deleted_(false),
       removed_(false),
-      changestamp_(0) {
+      changestamp_(0),
+      image_width_(-1),
+      image_height_(-1),
+      image_rotation_(-1) {
 }
 
 ResourceEntry::~ResourceEntry() {
@@ -516,6 +519,7 @@ void ResourceEntry::RegisterJSONConverter(
   converter->RegisterCustomValueField<int64>(
       kChangestampField, &ResourceEntry::changestamp_,
       &ResourceEntry::ParseChangestamp);
+  // ImageMediaMetadata fields are not supported by WAPI.
 }
 
 std::string ResourceEntry::GetHostedDocumentExtension() const {

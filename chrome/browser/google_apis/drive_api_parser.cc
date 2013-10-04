@@ -139,12 +139,17 @@ const char kThumbnailLink[] = "thumbnailLink";
 const char kWebContentLink[] = "webContentLink";
 const char kOpenWithLinks[] = "openWithLinks";
 const char kLabels[] = "labels";
+const char kImageMediaMetadata[] = "imageMediaMetadata";
 // These 5 flags are defined under |labels|.
 const char kLabelStarred[] = "starred";
 const char kLabelHidden[] = "hidden";
 const char kLabelTrashed[] = "trashed";
 const char kLabelRestricted[] = "restricted";
 const char kLabelViewed[] = "viewed";
+// These 3 flags are defined under |imageMediaMetadata|.
+const char kImageMediaMetadataWidth[] = "width";
+const char kImageMediaMetadataHeight[] = "height";
+const char kImageMediaMetadataRotation[] = "rotation";
 
 const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
@@ -433,6 +438,8 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterStringField(kTitle, &FileResource::title_);
   converter->RegisterStringField(kMimeType, &FileResource::mime_type_);
   converter->RegisterNestedField(kLabels, &FileResource::labels_);
+  converter->RegisterNestedField(kImageMediaMetadata,
+                                 &FileResource::image_media_metadata_);
   converter->RegisterCustomField<base::Time>(
       kCreatedDate,
       &FileResource::created_date_,
@@ -669,7 +676,49 @@ scoped_ptr<FileLabels> FileLabels::CreateFrom(const base::Value& value) {
 bool FileLabels::Parse(const base::Value& value) {
   base::JSONValueConverter<FileLabels> converter;
   if (!converter.Convert(value, this)) {
-    LOG(ERROR) << "Unable to parse: Invalid FileLabels";
+    LOG(ERROR) << "Unable to parse: Invalid FileLabels.";
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ImageMediaMetadata implementation
+
+ImageMediaMetadata::ImageMediaMetadata()
+    : width_(-1),
+      height_(-1),
+      rotation_(-1) {}
+
+ImageMediaMetadata::~ImageMediaMetadata() {}
+
+// static
+void ImageMediaMetadata::RegisterJSONConverter(
+    base::JSONValueConverter<ImageMediaMetadata>* converter) {
+  converter->RegisterIntField(kImageMediaMetadataWidth,
+                              &ImageMediaMetadata::width_);
+  converter->RegisterIntField(kImageMediaMetadataHeight,
+                              &ImageMediaMetadata::height_);
+  converter->RegisterIntField(kImageMediaMetadataRotation,
+                              &ImageMediaMetadata::rotation_);
+}
+
+// static
+scoped_ptr<ImageMediaMetadata> ImageMediaMetadata::CreateFrom(
+    const base::Value& value) {
+  scoped_ptr<ImageMediaMetadata> resource(new ImageMediaMetadata());
+  if (!resource->Parse(value)) {
+    LOG(ERROR) << "Unable to create: Invalid ImageMediaMetadata JSON!";
+    return scoped_ptr<ImageMediaMetadata>();
+  }
+  return resource.Pass();
+}
+
+bool ImageMediaMetadata::Parse(const base::Value& value) {
+  return true;
+  base::JSONValueConverter<ImageMediaMetadata> converter;
+  if (!converter.Convert(value, this)) {
+    LOG(ERROR) << "Unable to parse: Invalid ImageMediaMetadata.";
     return false;
   }
   return true;

@@ -59,6 +59,18 @@ void FillDriveEntryPropertiesValue(
   properties->thumbnail_url.reset(
       new std::string("https://www.googledrive.com/thumb/" +
           entry_proto.resource_id() + "?width=500&height=500"));
+  if (file_specific_info.has_image_width()) {
+    properties->image_width.reset(
+        new int(file_specific_info.image_width()));
+  }
+  if (file_specific_info.has_image_height()) {
+    properties->image_height.reset(
+        new int(file_specific_info.image_height()));
+  }
+  if (file_specific_info.has_image_rotation()) {
+    properties->image_rotation.reset(
+        new int(file_specific_info.image_rotation()));
+  }
   properties->is_hosted.reset(
       new bool(file_specific_info.is_hosted_document()));
   properties->content_mime_type.reset(

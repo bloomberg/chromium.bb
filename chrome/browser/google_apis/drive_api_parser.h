@@ -416,6 +416,47 @@ class FileLabels {
   DISALLOW_COPY_AND_ASSIGN(FileLabels);
 };
 
+// ImageMediaMetadata represents image metadata for a file.
+// https://developers.google.com/drive/v2/reference/files
+class ImageMediaMetadata {
+ public:
+  ImageMediaMetadata();
+  ~ImageMediaMetadata();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<ImageMediaMetadata>* converter);
+
+  // Creates about resource from parsed JSON.
+  static scoped_ptr<ImageMediaMetadata> CreateFrom(const base::Value& value);
+
+  // Width of the image in pixels.
+  int width() const { return width_; }
+  // Height of the image in pixels.
+  int height() const { return height_; }
+  // Rotation of the image in clockwise degrees.
+  int rotation() const { return rotation_; }
+
+  void set_width(int width) { width_ = width; }
+  void set_height(int height) { height_ = height; }
+  void set_rotation(int rotation) { rotation_ = rotation; }
+
+ private:
+  friend class FileResource;
+
+  // Parses and initializes data members from content of |value|.
+  // Return false if parsing fails.
+  bool Parse(const base::Value& value);
+
+  int width_;
+  int height_;
+  int rotation_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageMediaMetadata);
+};
+
+
 // FileResource represents a file or folder metadata in Drive.
 // https://developers.google.com/drive/v2/reference/files
 class FileResource {
@@ -459,6 +500,11 @@ class FileResource {
 
   // Returns labels for this file.
   const FileLabels& labels() const { return labels_; }
+
+  // Returns image media metadata for this file.
+  const ImageMediaMetadata& image_media_metadata() const {
+    return image_media_metadata_;
+  }
 
   // Returns created time of this file.
   const base::Time& created_date() const { return created_date_; }
@@ -532,6 +578,9 @@ class FileResource {
   FileLabels* mutable_labels() {
     return &labels_;
   }
+  ImageMediaMetadata* mutable_image_media_metadata() {
+    return &image_media_metadata_;
+  }
   void set_created_date(const base::Time& created_date) {
     created_date_ = created_date;
   }
@@ -590,6 +639,7 @@ class FileResource {
   std::string title_;
   std::string mime_type_;
   FileLabels labels_;
+  ImageMediaMetadata image_media_metadata_;
   base::Time created_date_;
   base::Time modified_date_;
   base::Time modified_by_me_date_;

@@ -44,6 +44,21 @@
             "optional": true,
             "description": "URL to the Drive thumbnail image for this file."
           },
+          "imageWidth": {
+            "type": "integer",
+            "optional": true,
+            "description": "Width, if the entry is an image."
+          },
+          "imageHeight": {
+            "type": "integer",
+            "optional": true,
+            "description": "Height, if the entry is an image."
+          },
+          "imageRotation": {
+            "type": "integer",
+            "optional": true,
+            "description": "Rotation in clockwise degrees, if the entry is an image."
+          },
           "isPinned": {
             "type": "boolean",
             "optional": true,

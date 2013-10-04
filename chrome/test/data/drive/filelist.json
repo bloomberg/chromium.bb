@@ -24,6 +24,11 @@
     "restricted": false,
     "viewed": true
    },
+   "imageMediaMetadata": {
+     "width": 640,
+     "height": 480,
+     "rotation": 90
+   },
    "createdDate": "2012-07-24T08:51:16.570Z",
    "modifiedDate": "2012-07-27T05:43:20.269Z",
    "modifiedByMeDate": "2012-07-27T05:43:20.269Z",

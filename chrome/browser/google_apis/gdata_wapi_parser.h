@@ -452,6 +452,18 @@ class ResourceEntry : public CommonMetadata {
   // If not exists, defaults to 0.
   int64 changestamp() const { return changestamp_; }
 
+  // Image width (exists only for images).
+  // If doesn't exist, then equals -1.
+  int64 image_width() const { return image_width_; }
+
+  // Image height (exists only for images).
+  // If doesn't exist, then equals -1.
+  int64 image_height() const { return image_height_; }
+
+  // Image rotation in clockwise degrees (exists only for images).
+  // If doesn't exist, then equals -1.
+  int64 image_rotation() const { return image_rotation_; }
+
   // Text version of resource entry kind. Returns an empty string for
   // unknown entry kind.
   std::string GetEntryKindText() const;
@@ -537,6 +549,11 @@ class ResourceEntry : public CommonMetadata {
   void set_deleted(bool deleted) { deleted_ = deleted; }
   void set_removed(bool removed) { removed_ = removed; }
   void set_changestamp(int64 changestamp) { changestamp_ = changestamp; }
+  void set_image_width(int64 image_width) { image_width_ = image_width; }
+  void set_image_height(int64 image_height) { image_height_ = image_height; }
+  void set_image_rotation(int64 image_rotation) {
+    image_rotation_ = image_rotation;
+  }
 
   // Fills the remaining fields where JSONValueConverter cannot catch.
   // Currently, sets |kind_| and |labels_| based on the |categories_| in the
@@ -571,6 +588,9 @@ class ResourceEntry : public CommonMetadata {
   bool deleted_;
   bool removed_;
   int64 changestamp_;
+  int64 image_width_;
+  int64 image_height_;
+  int64 image_rotation_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceEntry);
 };

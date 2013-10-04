@@ -95,20 +95,25 @@ const char kAboutResourceFields[] =
     "kind,quotaBytesTotal,quotaBytesUsed,largestChangeId,rootFolderId";
 const char kFileResourceFields[] =
     "kind,id,title,createdDate,sharedWithMeDate,downloadUrl,mimeType,"
-    "md5Checksum,fileSize,labels/trashed,etag,parents/parentLink,selfLink,"
-    "thumbnailLink,alternateLink,embedLink,modifiedDate,lastViewedByMeDate";
+    "md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
+    "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
+    "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
+    "modifiedDate,lastViewedByMeDate";
 const char kFileResourceOpenWithLinksFields[] =
     "kind,id,openWithLinks/*";
 const char kFileListFields[] =
     "kind,items(kind,id,title,createdDate,sharedWithMeDate,downloadUrl,"
-    "mimeType,md5Checksum,fileSize,labels/trashed,etag,parents/parentLink,"
-    "selfLink,thumbnailLink,alternateLink,embedLink,modifiedDate,"
-    "lastViewedByMeDate),nextLink";
+    "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
+    "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
+    "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
+    "modifiedDate,lastViewedByMeDate),nextLink";
 const char kChangeListFields[] =
     "kind,items(file(kind,id,title,createdDate,sharedWithMeDate,downloadUrl,"
-    "mimeType,md5Checksum,fileSize,labels/trashed,etag,parents/parentLink,"
-    "selfLink,thumbnailLink,alternateLink,embedLink,modifiedDate,"
-    "lastViewedByMeDate),deleted,id,fileId),nextLink,largestChangeId";
+    "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
+    "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
+    "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
+    "modifiedDate,lastViewedByMeDate),deleted,id,fileId),nextLink,"
+    "largestChangeId";
 
 // Callback invoked when the parsing of resource list is completed,
 // regardless whether it is succeeded or not.

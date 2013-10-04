@@ -390,4 +390,53 @@ TEST(ResourceEntryConversionTest, FromPlatformFileInfo) {
             base::Time::FromInternalValue(entry.file_info().last_accessed()));
 }
 
+TEST(ResourceEntryConversionTest, ConvertToResourceEntry_ImageMediaMetadata) {
+  google_apis::ResourceEntry entry_all_fields;
+  google_apis::ResourceEntry entry_zero_fields;
+  google_apis::ResourceEntry entry_no_fields;
+
+  entry_all_fields.set_image_width(640);
+  entry_all_fields.set_image_height(480);
+  entry_all_fields.set_image_rotation(90);
+  entry_all_fields.set_kind(google_apis::ENTRY_KIND_FILE);
+
+  entry_zero_fields.set_image_width(0);
+  entry_zero_fields.set_image_height(0);
+  entry_zero_fields.set_image_rotation(0);
+  entry_zero_fields.set_kind(google_apis::ENTRY_KIND_FILE);
+
+  entry_no_fields.set_kind(google_apis::ENTRY_KIND_FILE);
+
+  {
+    ResourceEntry entry;
+    std::string parent_resource_id;
+    EXPECT_TRUE(ConvertToResourceEntry(entry_all_fields, &entry,
+                                       &parent_resource_id));
+    EXPECT_EQ(640, entry.file_specific_info().image_width());
+    EXPECT_EQ(480, entry.file_specific_info().image_height());
+    EXPECT_EQ(90, entry.file_specific_info().image_rotation());
+  }
+  {
+    ResourceEntry entry;
+    std::string parent_resource_id;
+    EXPECT_TRUE(ConvertToResourceEntry(entry_zero_fields, &entry,
+                                       &parent_resource_id));
+    EXPECT_TRUE(entry.file_specific_info().has_image_width());
+    EXPECT_TRUE(entry.file_specific_info().has_image_height());
+    EXPECT_TRUE(entry.file_specific_info().has_image_rotation());
+    EXPECT_EQ(0, entry.file_specific_info().image_width());
+    EXPECT_EQ(0, entry.file_specific_info().image_height());
+    EXPECT_EQ(0, entry.file_specific_info().image_rotation());
+  }
+  {
+    ResourceEntry entry;
+    std::string parent_resource_id;
+    EXPECT_TRUE(ConvertToResourceEntry(entry_no_fields, &entry,
+                                       &parent_resource_id));
+    EXPECT_FALSE(entry.file_specific_info().has_image_width());
+    EXPECT_FALSE(entry.file_specific_info().has_image_height());
+    EXPECT_FALSE(entry.file_specific_info().has_image_rotation());
+  }
+}
+
 }  // namespace drive

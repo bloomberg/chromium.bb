@@ -46,7 +46,16 @@ message FileSpecificInfo {
   // drive.google.com such as documents, spreadsheets, and presentations).
   optional bool is_hosted_document = 6;
 
-  // The argument with ID 7 had been used, but got deleted. Next ID to use: 8.
+  // The argument with ID 7 had been used, but got deleted.
+
+  // Width of the media if the file is an image.
+  optional int64 image_width = 8;
+
+  // Height of the media if the file is an image.
+  optional int64 image_height = 9;
+
+  // Rotation of the image in clockwise degrees (if an image).
+  optional int64 image_rotation = 10;
 }
 
 // Directory specific info, which is a part of ResourceEntry.

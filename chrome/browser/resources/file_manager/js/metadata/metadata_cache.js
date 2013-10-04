@@ -815,6 +815,9 @@ DriveProvider.prototype.convert_ = function(data, url) {
     present: data.isPresent,
     pinned: data.isPinned,
     hosted: data.isHosted,
+    imageWidth: data.imageWidth,
+    imageHeight: data.imageHeight,
+    imageRotation: data.imageRotation,
     availableOffline: DriveProvider.isAvailableOffline(data, url),
     availableWhenMetered: DriveProvider.isAvailableWhenMetered(data),
     customIconUrl: data.customIconUrl || '',
@@ -824,7 +827,7 @@ DriveProvider.prototype.convert_ = function(data, url) {
 
   if (!data.isPresent) {
     // Block the local fetch for drive files, which require downloading.
-    result.thumbnail = { url: '', transform: null };
+    result.thumbnail = {url: '', transform: null};
     result.media = {};
   }
 
