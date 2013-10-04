@@ -1707,6 +1707,15 @@ const Experiment kExperiments[] = {
     kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kDisableAppList)
   },
+#if defined(ENABLE_APP_LIST)
+  {
+    "enable-app-launcher-start-page",
+    IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_NAME,
+    IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kShowAppListStartPage)
+  },
+#endif
 #if defined(OS_CHROMEOS)
   {
     "disable-user-image-sync",

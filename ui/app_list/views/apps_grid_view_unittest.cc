@@ -101,7 +101,8 @@ class AppsGridViewTest : public testing::Test {
     model_.reset(new AppListTestModel);
     pagination_model_.reset(new PaginationModel);
 
-    apps_grid_view_.reset(new AppsGridView(NULL, pagination_model_.get()));
+    apps_grid_view_.reset(
+        new AppsGridView(NULL, pagination_model_.get(), NULL));
     apps_grid_view_->SetLayout(kIconDimension, kCols, kRows);
     apps_grid_view_->SetBoundsRect(gfx::Rect(gfx::Size(kWidth, kHeight)));
     apps_grid_view_->SetModel(model_.get());

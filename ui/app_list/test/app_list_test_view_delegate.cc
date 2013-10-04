@@ -44,5 +44,9 @@ gfx::ImageSkia AppListTestViewDelegate::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
+content::WebContents* AppListTestViewDelegate::GetStartPageContents() {
+  return NULL;
+}
+
 }  // namespace test
 }  // namespace app_list

@@ -464,6 +464,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // found.
   base::Time GetInstallTime(const std::string& extension_id) const;
 
+  // Gets/sets the last launch time of an extension.
+  base::Time GetLastLaunchTime(const std::string& extension_id) const;
+  void SetLastLaunchTime(const std::string& extension_id,
+                         const base::Time& time);
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   bool extensions_disabled() { return extensions_disabled_; }

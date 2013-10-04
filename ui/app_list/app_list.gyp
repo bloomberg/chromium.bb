@@ -119,6 +119,9 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
+            '../../content/content.gyp:content',
+            '../../content/content.gyp:content_browser',
+            '../views/controls/webview/webview.gyp:webview',
             '../views/views.gyp:views',
           ],
         }, {  # toolkit_views==0
@@ -182,6 +185,8 @@
           'dependencies': [
             '../views/views.gyp:views',
             '../views/views.gyp:views_test_support',
+            '../../content/content.gyp:content',
+            '../../content/content.gyp:content_browser',
           ],
         }, {  # toolkit_views==0
           'sources/': [
@@ -207,6 +212,11 @@
         ['OS=="linux" and linux_use_tcmalloc==1', {
           'dependencies': [
             '../../base/allocator/allocator.gyp:allocator',
+            # The following two dependencies provide the missing
+            # symbol HeapProfilerStart in Linux component builds.
+            # They probably can be removed after http://crbug.com/263316
+            '../../webkit/glue/webkit_glue.gyp:glue',
+            '../../webkit/glue/webkit_glue.gyp:glue_child',
           ],
         }],
       ],

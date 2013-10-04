@@ -24,6 +24,7 @@ extern const char kAboutVersionURL[];
 // components below.
 extern const char kChromeUIAboutURL[];
 extern const char kChromeUIAppsURL[];
+extern const char kChromeUIAppListStartPageURL[];
 extern const char kChromeUIBookmarksURL[];
 extern const char kChromeUICertificateViewerURL[];
 extern const char kChromeUIChromeURLsURL[];
@@ -136,6 +137,7 @@ extern const char kChromeUIAboutHost[];
 extern const char kChromeUIAboutPageFrameHost[];
 extern const char kChromeUIBlankHost[];
 extern const char kChromeUIAppLauncherPageHost[];
+extern const char kChromeUIAppListStartPageHost[];
 extern const char kChromeUIBookmarksHost[];
 extern const char kChromeUICacheHost[];
 extern const char kChromeUICertificateViewerHost[];

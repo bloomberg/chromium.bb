@@ -22,9 +22,19 @@
 #include "ui/base/dragdrop/drag_source_win.h"
 #endif
 
+#if defined(USE_AURA)
+#include "base/memory/scoped_ptr.h"
+#include "ui/compositor/layer.h"
+#endif
+
+namespace content {
+class WebContents;
+}
+
 namespace views {
 class ButtonListener;
 class DragImageView;
+class WebView;
 }
 
 namespace app_list {
@@ -56,8 +66,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     TOUCH,
   };
 
+  // Constructs the app icon grid view. |delegate| is the delegate of this
+  // view, which usually is the hosting AppListView. |pagination_model| is
+  // the paging info shared within the launcher UI. |start_page_contents| is
+  // the contents for the launcher start page. It could be NULL if the start
+  // page is not available.
   AppsGridView(AppsGridViewDelegate* delegate,
-               PaginationModel* pagination_model);
+               PaginationModel* pagination_model,
+               content::WebContents* start_page_contents);
   virtual ~AppsGridView();
 
   // Sets fixed layout parameters. After setting this, CalculateLayout below
@@ -167,6 +183,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   views::View* CreateViewForItemAtIndex(size_t index);
 
+  // Convert between the model index and the visual index. The model index
+  // is the index of the item in AppListModel. The visual index is the Index
+  // struct above with page/slot info of where to display the item.
+  Index GetIndexFromModelIndex(int model_index) const;
+  int GetModelIndexFromIndex(const Index& index) const;
+
   void SetSelectedItemByIndex(const Index& index);
   bool IsValidIndex(const Index& index) const;
 
@@ -226,6 +248,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // buffer area surrounding it.
   bool IsPointWithinDragBuffer(const gfx::Point& point) const;
 
+  // Handles start page layout and transition animation.
+  void LayoutStartPage();
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
@@ -255,6 +280,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   AppsGridViewDelegate* delegate_;
   PaginationModel* pagination_model_;  // Owned by AppListController.
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
+  views::WebView* start_page_view_;  // Owned by views hierarchy.
 
   gfx::Size icon_size_;
   int cols_;
@@ -312,6 +338,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   int page_flip_delay_in_ms_;
 
   views::BoundsAnimator bounds_animator_;
+
+#if defined(USE_AURA)
+  // The layer used in transition animation for start page.
+  scoped_ptr<ui::Layer> animating_start_page_layer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

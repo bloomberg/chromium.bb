@@ -77,7 +77,7 @@ class AppListService {
   // Get the window the app list is in, or NULL if the app list isn't visible.
   virtual gfx::NativeWindow GetAppListWindow() = 0;
 
-  // Exposed to allow testing of the controller delegate.
+  // Creates a platform specific AppListControllerDelegate.
   virtual AppListControllerDelegate* CreateControllerDelegate() = 0;
 
  protected:

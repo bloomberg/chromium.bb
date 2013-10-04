@@ -317,6 +317,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
+  virtual content::WebContents* GetStartPageContents() OVERRIDE {
+    return NULL;
+  }
+
   app_list::AppListModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);

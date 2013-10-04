@@ -24,6 +24,11 @@
         <structure name="IDR_ABOUT_WELCOME_HTML" file="resources\about_welcome_android\about_welcome_android.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_ABOUT_WELCOME_CSS" file="resources\about_welcome_android\about_welcome_android.css" flattenhtml="true" type="chrome_html" />
       </if>
+      <if expr="pp_ifdef('enable_app_list')">
+        <structure name="IDR_APP_LIST_START_PAGE_CSS" file="resources\app_list\start_page.css" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_APP_LIST_START_PAGE_HTML" file="resources\app_list\start_page.html" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_APP_LIST_START_PAGE_JS" file="resources\app_list\start_page.js" flattenhtml="true" type="chrome_html" />
+      </if>
       <if expr="pp_ifdef('chromeos')">
         <structure name="IDR_DEMO_USER_LOGIN_HTML" file="resources\chromeos\login\demo_user_login.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_DEMO_USER_LOGIN_JS" file="resources\chromeos\login\demo_user_login.js" flattenhtml="true" type="chrome_html" />

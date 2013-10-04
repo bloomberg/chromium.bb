@@ -71,6 +71,9 @@ const char kAppId[]                         = "app-id";
 // mode.
 const char kApp[]                           = "app";
 
+// Specifies an URL to use for app list start page.
+const char kAppListStartPageURL[]           = "app-list-start-page-url";
+
 // Flag to enable apps_devtool app.
 const char kAppsDevtool[]                   = "apps-devtool";
 
@@ -1295,6 +1298,9 @@ const char kSetToken[]                      = "set-token";
 
 // If true the app list will be shown.
 const char kShowAppList[]                   = "show-app-list";
+
+// If true the app list will show the start page webui.
+const char kShowAppListStartPage[]          = "show-app-list-start-page";
 
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";

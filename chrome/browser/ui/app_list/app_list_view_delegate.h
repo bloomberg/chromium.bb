@@ -80,6 +80,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void OpenFeedback() OVERRIDE;
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
+  virtual content::WebContents* GetStartPageContents() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

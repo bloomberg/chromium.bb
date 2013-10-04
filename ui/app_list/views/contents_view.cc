@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
@@ -47,7 +48,8 @@ SearchResultListView* GetSearchResultListView(views::ViewModel* model) {
 
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            PaginationModel* pagination_model,
-                           AppListModel* model)
+                           AppListModel* model,
+                           content::WebContents* start_page_contents)
     : show_state_(SHOW_APPS),
       pagination_model_(pagination_model),
       view_model_(new views::ViewModel),
@@ -57,7 +59,8 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
       kPageTransitionDurationInMs,
       kOverscrollPageTransitionDurationMs);
 
-  apps_grid_view_ = new AppsGridView(app_list_main_view, pagination_model);
+  apps_grid_view_ = new AppsGridView(
+      app_list_main_view, pagination_model, start_page_contents);
   apps_grid_view_->SetLayout(kPreferredIconDimension,
                              kPreferredCols,
                              kPreferredRows);

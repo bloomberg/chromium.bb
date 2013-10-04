@@ -8,9 +8,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_runtime.h"
@@ -46,6 +49,8 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
   event->restrict_to_profile = profile;
   system->event_router()->DispatchEventWithLazyListener(extension_id,
                                                         event.Pass());
+  system->extension_service()->extension_prefs()->SetLastLaunchTime(
+      extension_id, base::Time::Now());
 }
 
 }  // anonymous namespace

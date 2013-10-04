@@ -13,6 +13,10 @@ namespace base {
 class FilePath;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class ImageSkia;
 }
@@ -90,6 +94,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Shows the app list for the profile specified by |profile_path|.
   virtual void ShowForProfileByPath(const base::FilePath& profile_path) = 0;
+
+  // Get the start page web contents. Owned by the AppListViewDelegate.
+  virtual content::WebContents* GetStartPageContents() = 0;
 };
 
 }  // namespace app_list

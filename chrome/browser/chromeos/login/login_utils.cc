@@ -58,6 +58,7 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -295,6 +296,9 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
                                 chrome::startup::IS_PROCESS_STARTUP,
                                 first_run,
                                 &return_code);
+
+  // Triggers app launcher start page service to load start page web contents.
+  app_list::StartPageService::Get(profile);
 
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the

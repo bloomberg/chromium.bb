@@ -1415,6 +1415,7 @@
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/toolbar_view_browsertest.cc',
         'browser/ui/views/web_dialog_view_browsertest.cc',
+        'browser/ui/webui/app_list/start_page_browsertest.js',
         'browser/ui/webui/bidi_checker_web_ui_test.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.h',
         'browser/ui/webui/bookmarks_ui_browsertest.cc',
@@ -1880,6 +1881,7 @@
         ['enable_app_list==0', {
           'sources/': [
             ['exclude', '^browser/ui/app_list/'],
+            ['exclude', '^browser/ui/webui/app_list/'],
           ],
         }],
         ['enable_plugins==1', {

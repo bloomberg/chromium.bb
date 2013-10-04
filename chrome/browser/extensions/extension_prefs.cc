@@ -184,6 +184,9 @@ const char kPrefWasInstalledByDefault[] = "was_installed_by_default";
 // Key for Geometry Cache preference.
 const char kPrefGeometryCache[] = "geometry_cache";
 
+// A preference that indicates when an extension is last launched.
+const char kPrefLastLaunchTime[] = "last_launch_time";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1547,6 +1550,28 @@ base::Time ExtensionPrefs::GetInstallTime(
   if (!base::StringToInt64(install_time_str, &install_time_i64))
     return base::Time();
   return base::Time::FromInternalValue(install_time_i64);
+}
+
+base::Time ExtensionPrefs::GetLastLaunchTime(
+    const std::string& extension_id) const {
+  const DictionaryValue* extension = GetExtensionPref(extension_id);
+  if (!extension)
+    return base::Time();
+
+  std::string launch_time_str;
+  if (!extension->GetString(kPrefLastLaunchTime, &launch_time_str))
+    return base::Time();
+  int64 launch_time_i64 = 0;
+  if (!base::StringToInt64(launch_time_str, &launch_time_i64))
+    return base::Time();
+  return base::Time::FromInternalValue(launch_time_i64);
+}
+
+void ExtensionPrefs::SetLastLaunchTime(const std::string& extension_id,
+                                       const base::Time& time) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  ScopedExtensionPrefUpdate update(prefs_, extension_id);
+  SaveTime(update.Get(), kPrefLastLaunchTime, time);
 }
 
 void ExtensionPrefs::GetExtensions(ExtensionIdList* out) {

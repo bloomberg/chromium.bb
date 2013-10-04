@@ -335,6 +335,7 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile)->
       extension_service()->extension_prefs();
   prefs->SetActiveBit(extension->id(), true);
+  prefs->SetLastLaunchTime(extension->id(), base::Time::Now());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
 

@@ -10,6 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/view.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace views {
 class BoundsAnimator;
 class ViewModel;
@@ -21,6 +25,7 @@ class AppsGridView;
 class ApplicationDragAndDropHost;
 class AppListMainView;
 class AppListModel;
+class AppListViewDelegate;
 class PaginationModel;
 
 // A view to manage sub views under the search box (apps grid view + page
@@ -31,7 +36,8 @@ class ContentsView : public views::View {
  public:
   ContentsView(AppListMainView* app_list_main_view,
                PaginationModel* pagination_model,
-               AppListModel* model);
+               AppListModel* model,
+               content::WebContents* start_page_contents);
   virtual ~ContentsView();
 
   // The app list gets closed and drag and drop operations need to be cancelled.

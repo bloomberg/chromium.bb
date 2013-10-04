@@ -49,6 +49,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual void OpenFeedback() OVERRIDE {}
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE {};
+  virtual content::WebContents* GetStartPageContents() OVERRIDE;
 
  private:
   int activate_count_;
