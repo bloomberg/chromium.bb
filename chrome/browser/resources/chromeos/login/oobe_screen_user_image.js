@@ -193,14 +193,19 @@ cr.define('login', function() {
      */
     handleSelect_: function(e) {
       var imageGrid = $('user-image-grid');
-      if (imageGrid.selectionType == 'camera' && imageGrid.cameraLive) {
+      $('ok-button').disabled = false;
+      // Camera selection
+      if (imageGrid.selectionType == 'camera') {
+        $('flip-photo').tabIndex = 0;
         // No current image selected.
-        $('ok-button').disabled = true;
+        if (imageGrid.cameraLive) {
+          $('ok-button').disabled = true;
+          chrome.send('selectImage',
+                      [imageGrid.selectedItemUrl, imageGrid.selectionType,
+                       !imageGrid.inProgramSelection]);
+        }
       } else {
-        $('ok-button').disabled = false;
-        chrome.send('selectImage',
-                    [imageGrid.selectedItemUrl, imageGrid.selectionType,
-                     !imageGrid.inProgramSelection]);
+        $('flip-photo').tabIndex = -1;
       }
       // Start/stop camera on (de)selection.
       if (!imageGrid.inProgramSelection &&

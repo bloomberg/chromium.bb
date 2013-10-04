@@ -358,6 +358,16 @@ cr.define('options', function() {
       previewClassList[value == 'default' ? 'add' : 'remove']('default-image');
       previewClassList[value == 'profile' ? 'add' : 'remove']('profile-image');
       previewClassList[value == 'camera' ? 'add' : 'remove']('camera');
+
+      var setFocusIfLost = function() {
+        // Set focus to the grid, if focus is not on UI.
+        if (!document.activeElement ||
+            document.activeElement.tagName == 'BODY') {
+          $('user-image-grid').focus();
+        }
+      }
+      // Timeout guarantees processing AFTER style changes display attribute.
+      setTimeout(setFocusIfLost, 0);
     },
 
     /**
@@ -380,12 +390,6 @@ cr.define('options', function() {
       } else {
         this.removeItem(this.cameraImage_);
         this.cameraImage_ = null;
-      }
-
-      // Set focus to the grid, unless focus is on the OK button.
-      if ((!document.activeElement ||
-           document.activeElement.tagName != 'BUTTON') && imageUrl) {
-        this.focus();
       }
     },
 
