@@ -145,7 +145,8 @@ bool IoThreadClientThrottle::MaybeBlockRequest() {
 bool IoThreadClientThrottle::ShouldBlockRequest() {
   scoped_ptr<AwContentsIoThreadClient> io_client =
       AwContentsIoThreadClient::FromID(child_id_, route_id_);
-  DCHECK(io_client.get());
+  if (!io_client)
+    return false;
 
   // Part of implementation of WebSettings.allowContentAccess.
   if (request_->url().SchemeIs(android_webview::kContentScheme) &&
@@ -326,8 +327,10 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
       scoped_ptr<AwContentsIoThreadClient> io_client =
           AwContentsIoThreadClient::FromID(request_info->GetChildID(),
                                            request_info->GetRouteID());
-      io_client->NewLoginRequest(
-          header_data.realm, header_data.account, header_data.args);
+      if (io_client) {
+        io_client->NewLoginRequest(
+            header_data.realm, header_data.account, header_data.args);
+      }
     }
   }
 }
