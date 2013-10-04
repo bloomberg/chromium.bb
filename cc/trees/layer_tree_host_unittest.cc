@@ -873,8 +873,9 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   base::TimeTicks first_frame_time_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
+// Flaky: http://crbug.com/304251
+// SINGLE_AND_MULTI_THREAD_TEST_F(
+//    LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
 
 // This test verifies that LayerTreeHostImpl's current frame time gets
 // updated in consecutive frames when it draws in each frame.
