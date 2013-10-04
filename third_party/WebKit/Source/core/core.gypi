@@ -3170,8 +3170,6 @@
             'platform/text/ParserUtilities.h',
             'platform/text/PlatformLocale.cpp',
             'platform/text/PlatformLocale.h',
-            'platform/text/QuotedPrintable.h',
-            'platform/text/QuotedPrintable.cpp',
             'platform/text/RegularExpression.cpp',
             'platform/text/SegmentedString.cpp',
             'platform/text/SuffixTree.h',

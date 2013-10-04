@@ -34,7 +34,7 @@
 #include "core/loader/archive/MHTMLArchive.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/network/MIMEHeader.h"
-#include "core/platform/text/QuotedPrintable.h"
+#include "platform/text/QuotedPrintable.h"
 #include "wtf/text/Base64.h"
 
 namespace WebCore {

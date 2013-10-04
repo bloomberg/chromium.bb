@@ -31,15 +31,16 @@
 #ifndef QuotedPrintable_h
 #define QuotedPrintable_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-void quotedPrintableEncode(const Vector<char>&, Vector<char>&);
-void quotedPrintableEncode(const char*, size_t, Vector<char>&);
+PLATFORM_EXPORT void quotedPrintableEncode(const Vector<char>&, Vector<char>&);
+PLATFORM_EXPORT void quotedPrintableEncode(const char*, size_t, Vector<char>&);
 
-void quotedPrintableDecode(const Vector<char>&, Vector<char>&);
-void quotedPrintableDecode(const char*, size_t, Vector<char>&);
+PLATFORM_EXPORT void quotedPrintableDecode(const Vector<char>&, Vector<char>&);
+PLATFORM_EXPORT void quotedPrintableDecode(const char*, size_t, Vector<char>&);
 
 } // namespace WebCore
 
