@@ -390,10 +390,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   clientRect.size.height -= chrome_style::kTitleTopPadding +
                             chrome_style::kClientBottomPadding;
 
-  [titleTextField_ setStringValue:
-      base::SysUTF16ToNSString(autofillDialog_->delegate()->DialogTitle())];
-  [titleTextField_ sizeToFit];
-
   NSRect headerRect, mainRect, titleRect, dummyRect;
   NSDivideRect(clientRect, &headerRect, &mainRect,
                kAccountChooserHeight, NSMinYEdge);
