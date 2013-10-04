@@ -449,6 +449,12 @@ PassRefPtr<MediaStreamAudioDestinationNode> AudioContext::createMediaStreamDesti
     return MediaStreamAudioDestinationNode::create(this, 1);
 }
 
+PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(ExceptionState& es)
+{
+    // Set number of input/output channels to stereo by default.
+    return createScriptProcessor(0, 2, 2, es);
+}
+
 PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, ExceptionState& es)
 {
     // Set number of input/output channels to stereo by default.

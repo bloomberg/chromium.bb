@@ -130,6 +130,7 @@ public:
     PassRefPtr<ConvolverNode> createConvolver();
     PassRefPtr<DynamicsCompressorNode> createDynamicsCompressor();
     PassRefPtr<AnalyserNode> createAnalyser();
+    PassRefPtr<ScriptProcessorNode> createScriptProcessor(ExceptionState&);
     PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, ExceptionState&);
     PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
     PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);

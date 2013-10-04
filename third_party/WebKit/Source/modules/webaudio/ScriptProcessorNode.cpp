@@ -35,6 +35,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioProcessingEvent.h"
+#include "public/platform/Platform.h"
 #include "wtf/Float32Array.h"
 #include "wtf/MainThread.h"
 
@@ -42,10 +43,29 @@ namespace WebCore {
 
 const size_t DefaultBufferSize = 4096;
 
+static size_t chooseBufferSize()
+{
+    // Choose a buffer size based on the audio hardware buffer size. Arbitarily make it a power of
+    // two that is 4 times greater than the hardware buffer size.
+    // FIXME: What is the best way to choose this?
+    size_t hardwareBufferSize = WebKit::Platform::current()->audioHardwareBufferSize();
+    size_t bufferSize = 1 << static_cast<unsigned>(log2(4 * hardwareBufferSize) + 0.5);
+
+    if (bufferSize < 256)
+        return 256;
+    if (bufferSize > 16384)
+        return 16384;
+
+    return bufferSize;
+}
+
 PassRefPtr<ScriptProcessorNode> ScriptProcessorNode::create(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
 {
     // Check for valid buffer size.
     switch (bufferSize) {
+    case 0:
+        bufferSize = chooseBufferSize();
+        break;
     case 256:
     case 512:
     case 1024:

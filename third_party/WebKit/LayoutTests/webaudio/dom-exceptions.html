@@ -47,6 +47,9 @@ function runTest() {
     // Invalid number of inputs and outputs
     shouldThrow("context.createScriptProcessor(4096, 100, 1)");
     shouldThrow("context.createScriptProcessor(4096, 1, 100)");
+    shouldNotThrow("context.createScriptProcessor()");
+    shouldNotThrow("context.createScriptProcessor(0)");
+
     // Invalid number of channels
     shouldThrow("context.createChannelSplitter(0)");
     shouldThrow("context.createChannelSplitter(99)");
