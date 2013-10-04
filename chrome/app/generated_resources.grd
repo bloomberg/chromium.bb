@@ -4934,6 +4934,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_BUTTON" desc="Text for the Revoke File Access button on the extension permissions prompt">
         Revoke File Access
       </message>
+      <message name="IDS_EXTENSION_PROMPT_FIRST_RUN_ACCEPT_BUTTON" desc="Text for the allow button on the first run promopt to accept permissions and launch app">
+        Accept and open
+      </message>
       <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
         Chrome Web Store
       </message>
@@ -5023,6 +5026,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON" desc="Button on the external install prompt to remove an extension installed by a third party.">
         Remove from Chrome
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_FIRST_RUN_DECLINE_BUTTON" desc="Button on the first run dialog to remove an app installed by OEM.">
+        Remove app
       </message>
       <message name="IDS_EXTENSIONS_DISABLED" desc="(Disabled) label next to the application name when the application is disabled.">
         (Disabled)

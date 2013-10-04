@@ -135,6 +135,11 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
     return prompt_.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
   }
 
+  bool is_first_run() const {
+    return prompt_.type() ==
+        ExtensionInstallPrompt::DEFAULT_INSTALL_FIRST_RUN_PROMPT;
+  }
+
   bool is_bundle_install() const {
     return prompt_.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
   }
@@ -412,7 +417,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       icon_row_span = 4;
     } else if (prompt.ShouldShowPermissions()) {
       size_t permission_count = prompt.GetPermissionCount();
-      if (permission_count > 0) {
+      if (is_first_run()) {
+        // In first run case we have separator.
+        icon_row_span = 1;
+      } else if (permission_count > 0) {
         // Also span the permission header and each of the permission rows (all
         // have a padding row above it).
         icon_row_span = 3 + permission_count * 2;
@@ -482,7 +490,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
     if (prompt.GetPermissionCount() > 0) {
-      if (is_inline_install()) {
+      if (is_inline_install() || is_first_run()) {
         layout->StartRow(0, column_set_id);
         layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
                         3, 1, views::GridLayout::FILL, views::GridLayout::FILL);
@@ -655,7 +663,10 @@ string16 ExtensionInstallDialogView::GetDialogButtonLabel(
 }
 
 int ExtensionInstallDialogView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
+  if (is_first_run())
+    return ui::DIALOG_BUTTON_OK;
+  else
+    return ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool ExtensionInstallDialogView::Cancel() {

@@ -24,6 +24,13 @@
 #include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;
+using extensions::Manifest;
+
+namespace {
+
+const char kTestExtensionId[] = "pgdpcfcocojkjfbgpiianjngphoopgmo";
+
+}
 
 class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
  protected:
@@ -221,4 +228,59 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   EXPECT_EQ(Extension::DISABLE_PERMISSIONS_INCREASE,
             service_->extension_prefs()->GetDisableReasons(extension_id));
   EXPECT_TRUE(GetExtensionDisabledGlobalError());
+}
+
+// Tests that default app with user consent are not enabled after install.
+IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, DefaultWithConsent) {
+  InstallExtensionWithSourceAndFlags(path_v1_, 0, Manifest::EXTERNAL_PREF,
+      Extension::InitFromValueFlags(Extension::FROM_WEBSTORE |
+          Extension::WAS_INSTALLED_BY_DEFAULT |
+          Extension::REQUIRE_PERMISSIONS_CONSENT));
+  ASSERT_FALSE(GetExtensionDisabledGlobalError());
+
+  // Should be disabled with no error after install.
+  const Extension* extension =
+      service_->GetExtensionById(kTestExtensionId, true);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("1", extension->VersionString());
+  EXPECT_FALSE(service_->IsExtensionEnabled(kTestExtensionId));
+  EXPECT_EQ(Extension::DISABLE_PERMISSIONS_CONSENT,
+            service_->extension_prefs()->GetDisableReasons(kTestExtensionId));
+
+  // Update to v2 with more permissions, extension should stay disabled with
+  // the same reason, no error message.
+  UpdateIncreasingPermissionExtension(extension, path_v2_, 0);
+  extension = service_->GetExtensionById(kTestExtensionId, true);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("2", extension->VersionString());
+  EXPECT_FALSE(service_->IsExtensionEnabled(kTestExtensionId));
+  EXPECT_EQ(Extension::DISABLE_PERMISSIONS_CONSENT |
+                Extension::DISABLE_PERMISSIONS_INCREASE,
+            service_->extension_prefs()->GetDisableReasons(kTestExtensionId));
+
+  service_->GrantPermissionsAndEnableExtension(extension);
+  EXPECT_TRUE(service_->IsExtensionEnabled(kTestExtensionId));
+
+  // Update to v3 with more permissions, should be disabled with error.
+  UpdateIncreasingPermissionExtension(extension, path_v3_, -1);
+  extension = service_->GetExtensionById(kTestExtensionId, true);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("3", extension->VersionString());
+  ASSERT_TRUE(GetExtensionDisabledGlobalError());
+  EXPECT_FALSE(service_->IsExtensionEnabled(kTestExtensionId));
+  EXPECT_EQ(Extension::DISABLE_PERMISSIONS_INCREASE,
+            service_->extension_prefs()->GetDisableReasons(kTestExtensionId));
+
+  // Enabled extension with granting permissions.
+  extension = UpdateExtension(kTestExtensionId, path_v3_, 0);
+  extension = service_->GetExtensionById(kTestExtensionId, true);
+  ASSERT_TRUE(extension);
+  service_->GrantPermissionsAndEnableExtension(extension);
+  EXPECT_TRUE(service_->IsExtensionEnabled(kTestExtensionId));
+
+  // Update again to v3 with the same permissions.
+  extension = UpdateExtension(kTestExtensionId, path_v3_, 0);
+  ASSERT_TRUE(extension);
+  ASSERT_FALSE(GetExtensionDisabledGlobalError());
+  EXPECT_TRUE(service_->IsExtensionEnabled(kTestExtensionId));
 }

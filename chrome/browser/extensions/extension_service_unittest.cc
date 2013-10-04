@@ -4916,6 +4916,21 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
       "  }"
       "}";
   EXPECT_EQ(1, from_webstore_visitor.Visit(json_data));
+
+  // Test require_permissions_consent.
+  MockProviderVisitor permissions_consent_visitor(
+      base_path, Extension::REQUIRE_PERMISSIONS_CONSENT);
+  json_data =
+      "{"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"require_permissions_consent\": true"
+      "  }"
+      "}";
+  {
+    EXPECT_EQ(1, permissions_consent_visitor.Visit(json_data));
+  }
 }
 
 // Test loading good extensions from the profile directory.

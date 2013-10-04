@@ -363,7 +363,7 @@ const Extension* ExtensionBrowserTest::UpdateExtensionWaitForIdle(
                                   expected_change,
                                   Manifest::INTERNAL,
                                   browser(),
-                                  false,
+                                  Extension::NO_FLAGS,
                                   true);
 }
 
@@ -376,7 +376,7 @@ const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
                                   expected_change,
                                   Manifest::INTERNAL,
                                   browser(),
-                                  true,
+                                  Extension::FROM_WEBSTORE,
                                   false);
 }
 
@@ -386,7 +386,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     InstallUIType ui_type,
     int expected_change) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
-                                  Manifest::INTERNAL, browser(), false, false);
+      Manifest::INTERNAL, browser(), Extension::NO_FLAGS, false);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -395,9 +395,9 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     InstallUIType ui_type,
     int expected_change,
     Browser* browser,
-    bool from_webstore) {
+    Extension::InitFromValueFlags creation_flags) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
-                                  Manifest::INTERNAL, browser, from_webstore,
+                                  Manifest::INTERNAL, browser, creation_flags,
                                   false);
 }
 
@@ -408,7 +408,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     int expected_change,
     Manifest::Location install_source) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
-                                  install_source, browser(), false, false);
+      install_source, browser(), Extension::NO_FLAGS, false);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -418,7 +418,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     int expected_change,
     Manifest::Location install_source,
     Browser* browser,
-    bool from_webstore,
+    Extension::InitFromValueFlags creation_flags,
     bool wait_for_idle) {
   ExtensionService* service = profile()->GetExtensionService();
   service->set_show_extensions_prompts(false);
@@ -448,10 +448,10 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     scoped_refptr<extensions::CrxInstaller> installer(
         extensions::CrxInstaller::Create(service, install_ui.Pass()));
     installer->set_expected_id(id);
-    installer->set_is_gallery_install(from_webstore);
+    installer->set_creation_flags(creation_flags);
     installer->set_install_source(install_source);
     installer->set_install_wait_for_idle(wait_for_idle);
-    if (!from_webstore) {
+    if (!installer->is_gallery_install()) {
       installer->set_off_store_install_allow_reason(
           extensions::CrxInstaller::OffStoreInstallAllowedInTest);
     }

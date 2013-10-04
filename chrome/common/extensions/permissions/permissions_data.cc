@@ -391,6 +391,9 @@ const URLPatternSet& PermissionsData::GetEffectiveHostPermissions(
 // static
 bool PermissionsData::CanSilentlyIncreasePermissions(
     const Extension* extension) {
+  if (extension->requires_permissions_consent())
+    return false;
+
   return extension->location() != Manifest::INTERNAL;
 }
 

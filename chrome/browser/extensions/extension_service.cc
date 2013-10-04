@@ -937,6 +937,13 @@ bool ExtensionService::IsExtensionEnabledForLauncher(
       !GetTerminatedExtension(extension_id);
 }
 
+bool ExtensionService::DoesExtensionRequirePermissionConsent(
+      const std::string& extension_id) const {
+  return extension_prefs_->IsExtensionDisabled(extension_id) &&
+      (extension_prefs_->GetDisableReasons(extension_id) &
+          Extension::DISABLE_PERMISSIONS_CONSENT);
+}
+
 void ExtensionService::EnableExtension(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2242,7 +2249,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
 
   bool auto_grant_permission =
-      (!is_extension_installed && extension->was_installed_by_default()) ||
+      (!is_extension_installed && extension->was_installed_by_default() &&
+       !extension->requires_permissions_consent()) ||
       chrome::IsRunningInForcedAppMode();
   // Silently grant all active permissions to default apps only on install.
   // After install they should behave like other apps.
@@ -2291,6 +2299,9 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
         disable_reasons |= Extension::DISABLE_USER_ACTION;
     }
     disable_reasons &= ~Extension::DISABLE_UNKNOWN_FROM_SYNC;
+  } else if (extension->requires_permissions_consent()) {
+    disable_reasons |= Extension::DISABLE_PERMISSIONS_CONSENT;
+    extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
   }
 
   // Extension has changed permissions significantly. Disable it. A

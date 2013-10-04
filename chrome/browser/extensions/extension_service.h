@@ -309,8 +309,13 @@ class ExtensionService
   virtual bool IsExternalExtensionUninstalled(
       const std::string& extension_id) const OVERRIDE;
 
-  // Whether the extension should show as enabled state in launcher.
+  // Whether the extension should be enabled for running.
   bool IsExtensionEnabledForLauncher(const std::string& extension_id) const;
+
+  // Whether the extension is waiting for permission consent. Such extensions
+  // technically disabled (can't be launched) but UI shows them as normal.
+  bool DoesExtensionRequirePermissionConsent(
+      const std::string& extension_id) const;
 
   // Enables the extension.  If the extension is already enabled, does
   // nothing.

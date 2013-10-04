@@ -164,7 +164,16 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
                                     INSTALL_UI_TYPE_AUTO_CONFIRM,
                                     expected_change,
                                     browser,
-                                    false);
+                                    extensions::Extension::NO_FLAGS);
+  }
+
+  const extensions::Extension* InstallExtensionWithSourceAndFlags(
+      const base::FilePath& path,
+      int expected_change,
+      extensions::Manifest::Location install_source,
+      extensions::Extension::InitFromValueFlags creation_flags) {
+    return InstallOrUpdateExtension(std::string(), path, INSTALL_UI_TYPE_NONE,
+        expected_change, install_source, browser(), creation_flags, false);
   }
 
   // Begins install process but simulates a user cancel.
@@ -275,7 +284,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       InstallUIType ui_type,
       int expected_change,
       Browser* browser,
-      bool from_webstore);
+      extensions::Extension::InitFromValueFlags creation_flags);
   const extensions::Extension* InstallOrUpdateExtension(
       const std::string& id,
       const base::FilePath& path,
@@ -289,7 +298,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       int expected_change,
       extensions::Manifest::Location install_source,
       Browser* browser,
-      bool from_webstore,
+      extensions::Extension::InitFromValueFlags creation_flags,
       bool wait_for_idle);
 
   // Wait for a notification of the specified type to be sent.
