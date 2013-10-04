@@ -94,3 +94,24 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Radar 13499623
     self.Fail('conformance/textures/texture-size.html',
         ['mac', 'intel'], bug=225642)
+
+    # Mac/Intel failures on 10.7
+    self.Skip('conformance/glsl/functions/glsl-function-asin.html',
+        ['lion', 'intel'])
+    self.Skip('conformance/glsl/functions/glsl-function-dot.html',
+        ['lion', 'intel'])
+    self.Skip('conformance/glsl/functions/glsl-function-faceforward.html',
+        ['lion', 'intel'])
+    self.Skip('conformance/glsl/functions/glsl-function-length.html',
+        ['lion', 'intel'])
+    self.Skip('conformance/glsl/functions/glsl-function-normalize.html',
+        ['lion', 'intel'])
+    self.Skip('conformance/glsl/functions/glsl-function-reflect.html',
+        ['lion', 'intel'])
+    self.Skip(
+        'conformance/glsl/functions/glsl-function-smoothstep-gentype.html',
+        ['lion', 'intel'])
+    self.Skip('conformance/limits/gl-max-texture-dimensions.html',
+        ['lion', 'intel'])
+    self.Skip('conformance/rendering/line-loop-tri-fan.html',
+        ['lion', 'intel'])
