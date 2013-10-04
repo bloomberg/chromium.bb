@@ -139,6 +139,7 @@ void InspectorFrontendHost::closeWindow()
 {
     if (m_client) {
         RefPtr<JSONObject> message = JSONObject::create();
+        message->setNumber("id", 0);
         message->setString("method", "closeWindow");
         sendMessageToEmbedder(message->toJSONString());
         disconnectClient(); // Disconnect from client.
