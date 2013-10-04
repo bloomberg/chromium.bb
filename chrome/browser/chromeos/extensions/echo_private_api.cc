@@ -183,37 +183,6 @@ bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileThread() {
   return true;
 }
 
-EchoPrivateCheckAllowRedeemOffersFunction::
-    EchoPrivateCheckAllowRedeemOffersFunction() {
-}
-
-EchoPrivateCheckAllowRedeemOffersFunction::
-    ~EchoPrivateCheckAllowRedeemOffersFunction() {
-}
-
-void EchoPrivateCheckAllowRedeemOffersFunction::CheckAllowRedeemOffers() {
-  chromeos::CrosSettingsProvider::TrustedStatus status =
-      chromeos::CrosSettings::Get()->PrepareTrustedValues(base::Bind(
-          &EchoPrivateCheckAllowRedeemOffersFunction::CheckAllowRedeemOffers,
-          this));
-  if (status == chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
-    return;
-
-  bool allow = true;
-  chromeos::CrosSettings::Get()->GetBoolean(
-      chromeos::kAllowRedeemChromeOsRegistrationOffers, &allow);
-  results_ = echo_api::CheckAllowRedeemOffers::Results::Create(allow);
-  SendResponse(true);
-}
-
-// Check the enterprise policy kAllowRedeemChromeOsRegistrationOffers flag
-// value. This policy is used to control whether user can redeem offers using
-// enterprise device.
-bool EchoPrivateCheckAllowRedeemOffersFunction::RunImpl() {
-  CheckAllowRedeemOffers();
-  return true;
-}
-
 EchoPrivateGetUserConsentFunction::EchoPrivateGetUserConsentFunction()
     : redeem_offers_allowed_(false) {
 }

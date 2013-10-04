@@ -95,24 +95,6 @@
         ]
       },
       {
-        "name": "checkAllowRedeemOffers",
-        "description": "Check if device policy allows users to redeem offers.",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name": "result",
-                "type": "boolean",
-                "description" : "true if allowed to redeem offers."
-              }
-            ]
-          }
-        ]
-      },
-      {
         "name": "getUserConsent",
         "description": "If device policy allows user to redeem offer, displays a native dialog asking user for a consent to verify device's eligibility for the offer. If the device policy forbids user to redeem offers, displays a native dialog informing user the offer redeeming is disabled.",
         "type": "function",

@@ -78,23 +78,6 @@ class EchoPrivateGetOfferInfoFunction : public SyncExtensionFunction {
                              ECHOPRIVATE_GETOFFERINFO)
 };
 
-// TODO(tbarzic): Remove this once echo.getUserConsent function is up and
-// running.
-class EchoPrivateCheckAllowRedeemOffersFunction
-    : public AsyncExtensionFunction {
- public:
-  EchoPrivateCheckAllowRedeemOffersFunction();
-
- protected:
-  virtual ~EchoPrivateCheckAllowRedeemOffersFunction();
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  void CheckAllowRedeemOffers();
-  DECLARE_EXTENSION_FUNCTION("echoPrivate.checkAllowRedeemOffers",
-                             ECHOPRIVATE_CHECKALLOWREDEEMOFFERS)
-};
-
 // The function first checks if offers redeeming is allowed by the device
 // policy. It should then show a dialog that, depending on the check result,
 // either asks user's consent to verify the device's eligibility for the offer,
