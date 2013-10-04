@@ -63,6 +63,8 @@ private:
     double m_y2;
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(CubicBezierTimingFunctionValue);
+
 class CSSStepsTimingFunctionValue : public CSSValue {
 public:
     static PassRefPtr<CSSStepsTimingFunctionValue> create(int steps, bool stepAtStart)
@@ -88,6 +90,8 @@ private:
     int m_steps;
     bool m_stepAtStart;
 };
+
+DEFINE_CSS_VALUE_TYPE_CASTS(StepsTimingFunctionValue);
 
 } // namespace
 

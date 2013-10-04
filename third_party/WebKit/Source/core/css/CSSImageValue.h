@@ -67,20 +67,7 @@ private:
     AtomicString m_initiatorName;
 };
 
-inline CSSImageValue* toCSSImageValue(CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isImageValue());
-    return static_cast<CSSImageValue*>(value);
-}
-
-inline const CSSImageValue* toCSSImageValue(const CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isImageValue());
-    return static_cast<const CSSImageValue*>(value);
-}
-
-// Catch unneeded cast.
-void toCSSImageValue(const CSSImageValue*);
+DEFINE_CSS_VALUE_TYPE_CASTS(ImageValue);
 
 } // namespace WebCore
 

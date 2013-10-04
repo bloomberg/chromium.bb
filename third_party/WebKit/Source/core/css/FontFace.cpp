@@ -446,7 +446,7 @@ PassRefPtr<CSSFontFace> FontFace::createCSSFontFace(Document* document)
     if (CSSValueList* rangeList = toCSSValueList(m_unicodeRange.get())) {
         unsigned numRanges = rangeList->length();
         for (unsigned i = 0; i < numRanges; i++) {
-            CSSUnicodeRangeValue* range = static_cast<CSSUnicodeRangeValue*>(rangeList->itemWithoutBoundsCheck(i));
+            CSSUnicodeRangeValue* range = toCSSUnicodeRangeValue(rangeList->itemWithoutBoundsCheck(i));
             cssFontFace->addRange(range->from(), range->to());
         }
     }

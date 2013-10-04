@@ -346,7 +346,7 @@ void CSSValue::destroy()
         delete toCSSBorderImageSliceValue(this);
         return;
     case CanvasClass:
-        delete static_cast<CSSCanvasValue*>(this);
+        delete toCSSCanvasValue(this);
         return;
     case CursorImageClass:
         delete toCSSCursorImageValue(this);
@@ -370,7 +370,7 @@ void CSSValue::destroy()
         delete toCSSRadialGradientValue(this);
         return;
     case CrossfadeClass:
-        delete static_cast<CSSCrossfadeValue*>(this);
+        delete toCSSCrossfadeValue(this);
         return;
     case ImageClass:
         delete toCSSImageValue(this);
@@ -379,7 +379,7 @@ void CSSValue::destroy()
         delete toCSSInheritedValue(this);
         return;
     case InitialClass:
-        delete static_cast<CSSInitialValue*>(this);
+        delete toCSSInitialValue(this);
         return;
     case GridTemplateClass:
         delete toCSSGridTemplateValue(this);
@@ -394,13 +394,13 @@ void CSSValue::destroy()
         delete static_cast<ShadowValue*>(this);
         return;
     case CubicBezierTimingFunctionClass:
-        delete static_cast<CSSCubicBezierTimingFunctionValue*>(this);
+        delete toCSSCubicBezierTimingFunctionValue(this);
         return;
     case StepsTimingFunctionClass:
-        delete static_cast<CSSStepsTimingFunctionValue*>(this);
+        delete toCSSStepsTimingFunctionValue(this);
         return;
     case UnicodeRangeClass:
-        delete static_cast<CSSUnicodeRangeValue*>(this);
+        delete toCSSUnicodeRangeValue(this);
         return;
     case ValueListClass:
         delete toCSSValueList(this);
@@ -409,7 +409,7 @@ void CSSValue::destroy()
         delete toCSSTransformValue(this);
         return;
     case LineBoxContainClass:
-        delete static_cast<CSSLineBoxContainValue*>(this);
+        delete toCSSLineBoxContainValue(this);
         return;
     case CalculationClass:
         delete toCSSCalcValue(this);

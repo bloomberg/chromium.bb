@@ -71,7 +71,9 @@ public:
 
     bool isAspectRatioValue() const { return m_classType == AspectRatioClass; }
     bool isBorderImageSliceValue() const { return m_classType == BorderImageSliceClass; }
+    bool isCanvasValue() const { return m_classType == CanvasClass; }
     bool isCursorImageValue() const { return m_classType == CursorImageClass; }
+    bool isCrossfadeValue() const { return m_classType == CrossfadeClass; }
     bool isFontFeatureValue() const { return m_classType == FontFeatureClass; }
     bool isFontValue() const { return m_classType == FontClass; }
     bool isFontFaceSrcValue() const { return m_classType == FontFaceSrcClass; }
@@ -101,6 +103,7 @@ public:
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
     bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
+    bool isUnicodeRangeValue() const { return m_classType == UnicodeRangeClass; }
 
     bool isCSSOMSafe() const { return m_isCSSOMSafe; }
     bool isSubtypeExposedToCSSOM() const

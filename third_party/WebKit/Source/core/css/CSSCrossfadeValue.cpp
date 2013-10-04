@@ -41,7 +41,7 @@ static bool subimageIsPending(CSSValue* value)
         return toCSSImageValue(value)->cachedOrPendingImage()->isPendingImage();
 
     if (value->isImageGeneratorValue())
-        return static_cast<CSSImageGeneratorValue*>(value)->isPending();
+        return toCSSImageGeneratorValue(value)->isPending();
 
     ASSERT_NOT_REACHED();
 
@@ -54,7 +54,7 @@ static bool subimageKnownToBeOpaque(CSSValue* value, const RenderObject* rendere
         return toCSSImageValue(value)->knownToBeOpaque(renderer);
 
     if (value->isImageGeneratorValue())
-        return static_cast<CSSImageGeneratorValue*>(value)->knownToBeOpaque(renderer);
+        return toCSSImageGeneratorValue(value)->knownToBeOpaque(renderer);
 
     ASSERT_NOT_REACHED();
 
@@ -75,7 +75,7 @@ static ImageResource* cachedImageForCSSValue(CSSValue* value, ResourceFetcher* f
     }
 
     if (value->isImageGeneratorValue()) {
-        static_cast<CSSImageGeneratorValue*>(value)->loadSubimages(fetcher);
+        toCSSImageGeneratorValue(value)->loadSubimages(fetcher);
         // FIXME: Handle CSSImageGeneratorValue (and thus cross-fades with gradients and canvas).
         return 0;
     }

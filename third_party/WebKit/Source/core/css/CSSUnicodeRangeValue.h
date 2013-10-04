@@ -57,6 +57,8 @@ private:
     UChar32 m_to;
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(UnicodeRangeValue);
+
 } // namespace WebCore
 
 #endif // CSSUnicodeRangeValue_h

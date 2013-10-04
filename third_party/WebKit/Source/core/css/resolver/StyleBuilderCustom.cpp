@@ -1330,7 +1330,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
                     if (item->isGradientValue())
                         state.style()->setContent(StyleGeneratedImage::create(toCSSGradientValue(item)->gradientWithStylesResolved(state.document().textLinkColors(), state.style()->color()).get()), didSet);
                     else
-                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSImageGeneratorValue*>(item)), didSet);
+                        state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(item)), didSet);
                     didSet = true;
                 } else if (item->isImageSetValue()) {
                     state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(item)), didSet);
@@ -1730,8 +1730,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         if (!value->isLineBoxContainValue())
             return;
 
-        CSSLineBoxContainValue* lineBoxContainValue = static_cast<CSSLineBoxContainValue*>(value);
-        state.style()->setLineBoxContain(lineBoxContainValue->value());
+        state.style()->setLineBoxContain(toCSSLineBoxContainValue(value)->value());
         return;
     }
 

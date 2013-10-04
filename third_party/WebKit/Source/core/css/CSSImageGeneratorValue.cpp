@@ -110,9 +110,9 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(RenderObject* renderer, const In
 {
     switch (classType()) {
     case CanvasClass:
-        return static_cast<CSSCanvasValue*>(this)->image(renderer, size);
+        return toCSSCanvasValue(this)->image(renderer, size);
     case CrossfadeClass:
-        return static_cast<CSSCrossfadeValue*>(this)->image(renderer, size);
+        return toCSSCrossfadeValue(this)->image(renderer, size);
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->image(renderer, size);
     case RadialGradientClass:
@@ -144,9 +144,9 @@ IntSize CSSImageGeneratorValue::fixedSize(const RenderObject* renderer)
 {
     switch (classType()) {
     case CanvasClass:
-        return static_cast<CSSCanvasValue*>(this)->fixedSize(renderer);
+        return toCSSCanvasValue(this)->fixedSize(renderer);
     case CrossfadeClass:
-        return static_cast<CSSCrossfadeValue*>(this)->fixedSize(renderer);
+        return toCSSCrossfadeValue(this)->fixedSize(renderer);
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->fixedSize(renderer);
     case RadialGradientClass:
@@ -195,10 +195,10 @@ void CSSImageGeneratorValue::loadSubimages(ResourceFetcher* fetcher)
 {
     switch (classType()) {
     case CrossfadeClass:
-        static_cast<CSSCrossfadeValue*>(this)->loadSubimages(fetcher);
+        toCSSCrossfadeValue(this)->loadSubimages(fetcher);
         break;
     case CanvasClass:
-        static_cast<CSSCanvasValue*>(this)->loadSubimages(fetcher);
+        toCSSCanvasValue(this)->loadSubimages(fetcher);
         break;
     case LinearGradientClass:
         toCSSLinearGradientValue(this)->loadSubimages(fetcher);
