@@ -15,7 +15,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "net/base/linked_hash_map.h"
-#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_protocol.h"
 
 NET_EXPORT_PRIVATE extern bool FLAGS_track_retransmission_history;
@@ -246,11 +245,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   bool is_server_;
 
   HelperInterface* helper_;
-
-  // An AckNotifier can register to be informed when ACKs have been received for
-  // all packets that a given block of data was sent in. The AckNotifierManager
-  // maintains the currently active notifiers.
-  AckNotifierManager ack_notifier_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

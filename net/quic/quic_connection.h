@@ -722,9 +722,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // An alarm that is scheduled when the sent scheduler requires a
   // a delay before sending packets and fires when the packet may be sent.
   scoped_ptr<QuicAlarm> send_alarm_;
-  // An alarm that is scheduled when the connection can still write and there
-  // may be more data to send.
-  scoped_ptr<QuicAlarm> resume_writes_alarm_;
   // An alarm that fires when the connection may have timed out.
   scoped_ptr<QuicAlarm> timeout_alarm_;
 
@@ -749,11 +746,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // The time that we last sent a packet for this connection.
   QuicTime time_of_last_sent_packet_;
-
-  // Sequence number of the last packet guaranteed to be sent in packet sequence
-  // number order.  Not set when packets are queued, since that may cause
-  // re-ordering.
-  QuicPacketSequenceNumber sequence_number_of_last_inorder_packet_;
 
   // Congestion manager which controls the rate the connection sends packets
   // as well as collecting and generating congestion feedback.

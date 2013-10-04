@@ -9,8 +9,6 @@
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::pair;
-
 namespace net {
 namespace test {
 
@@ -63,14 +61,14 @@ class InterArrivalSenderTest : public ::testing::Test {
     receive_clock_.AdvanceTime(spike_time);
     QuicTime receive_time = receive_clock_.ApproximateNow();
     feedback.inter_arrival.received_packet_times.insert(
-        pair<QuicPacketSequenceNumber, QuicTime>(
+        std::pair<QuicPacketSequenceNumber, QuicTime>(
             feedback_sequence_number_, receive_time));
     feedback_sequence_number_++;
 
     // We need to send feedback for 2 packets since they where sent at the
     // same time.
     feedback.inter_arrival.received_packet_times.insert(
-        pair<QuicPacketSequenceNumber, QuicTime>(
+        std::pair<QuicPacketSequenceNumber, QuicTime>(
             feedback_sequence_number_, receive_time));
     feedback_sequence_number_++;
 
@@ -92,7 +90,7 @@ class InterArrivalSenderTest : public ::testing::Test {
       }
       QuicTime receive_time = receive_clock_.ApproximateNow();
       feedback.inter_arrival.received_packet_times.insert(
-          pair<QuicPacketSequenceNumber, QuicTime>(
+          std::pair<QuicPacketSequenceNumber, QuicTime>(
               feedback_sequence_number_, receive_time));
       feedback_sequence_number_++;
     }

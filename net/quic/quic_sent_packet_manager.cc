@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "net/quic/quic_ack_notifier_manager.h"
 
 using std::make_pair;
 
@@ -59,8 +58,6 @@ void QuicSentPacketManager::OnSerializedPacket(
     return;
   }
 
-  ack_notifier_manager_.OnSerializedPacket(serialized_packet);
-
   DCHECK(unacked_packets_.empty() ||
          unacked_packets_.rbegin()->first <
          serialized_packet.sequence_number);
@@ -91,12 +88,6 @@ void QuicSentPacketManager::OnRetransmittedPacket(
 
   RetransmittableFrames* frames = unacked_packets_[old_sequence_number];
   DCHECK(frames);
-
-  // A notifier may be waiting to hear about ACKs for the original sequence
-  // number. Inform them that the sequence number has changed.
-  ack_notifier_manager_.UpdateSequenceNumber(old_sequence_number,
-                                             new_sequence_number);
-
   if (FLAGS_track_retransmission_history) {
     // We keep the old packet in the unacked packet list until it, or one of
     // the retransmissions of it are acked.
@@ -135,11 +126,6 @@ void QuicSentPacketManager::OnIncomingAck(
     SequenceNumberSet* acked_packets) {
   HandleAckForSentPackets(received_info, is_truncated_ack, acked_packets);
   HandleAckForSentFecPackets(received_info, acked_packets);
-
-  if (acked_packets->size() > 0) {
-    // The AckNotifierManager should be informed of every ACKed sequence number.
-    ack_notifier_manager_.OnIncomingAck(*acked_packets);
-  }
 }
 
 void QuicSentPacketManager::DiscardUnackedPacket(
