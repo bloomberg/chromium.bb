@@ -7,6 +7,7 @@ This module contains classes that help to emulate xcodebuild behavior on top of
 other build systems, such as make and ninja.
 """
 
+import copy
 import gyp.common
 import os.path
 import re
@@ -1190,3 +1191,35 @@ def GetSpecPostbuildCommands(spec, quiet=False):
             spec['target_name'], postbuild['postbuild_name']))
     postbuilds.append(gyp.common.EncodePOSIXShellList(postbuild['action']))
   return postbuilds
+
+
+def _HasIOSTarget(targets):
+  """Returns true if any target contains the iOS specific key
+  IPHONEOS_DEPLOYMENT_TARGET."""
+  for target_dict in targets.values():
+    for config in target_dict['configurations'].values():
+      if config.get('xcode_settings', {}).get('IPHONEOS_DEPLOYMENT_TARGET'):
+        return True
+  return False
+
+
+def _AddIOSDeviceConfigurations(targets):
+  """Clone all targets and append -iphoneos to the name. Configure these targets
+  to build for iOS devices."""
+  for target_dict in targets.values():
+    for config_name in target_dict['configurations'].keys():
+      config = target_dict['configurations'][config_name]
+      new_config_name = config_name + '-iphoneos'
+      new_config_dict = copy.deepcopy(config)
+      if target_dict['toolset'] == 'target':
+        new_config_dict['xcode_settings']['ARCHS'] = ['armv7']
+        new_config_dict['xcode_settings']['SDKROOT'] = 'iphoneos'
+      target_dict['configurations'][new_config_name] = new_config_dict
+  return targets
+
+def CloneConfigurationForDeviceAndEmulator(target_dicts):
+  """If |target_dicts| contains any iOS targets, automatically create -iphoneos
+  targets for iOS device builds."""
+  if _HasIOSTarget(target_dicts):
+    return _AddIOSDeviceConfigurations(target_dicts)
+  return target_dicts

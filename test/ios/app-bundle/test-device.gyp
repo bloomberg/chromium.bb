@@ -2,22 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-   'target_defaults': {
-    'configurations': {
-      'Debug-iphoneos': {
-        'xcode_settings': {
-          'ARCHS': [ 'armv7' ],
-          'SDKROOT': 'iphoneos',  # -isysroot
-        },
-      },
-      'Debug-iphonesimulator': {
-        'xcode_settings': {
-          'ARCHS': [ 'i386' ],
-          'SDKROOT': 'iphonesimulator',  # -isysroot
-        },
-      },
-    },
-  },
   'make_global_settings': [
     ['CC', '/usr/bin/clang'],
   ],
@@ -45,6 +29,7 @@
         'OTHER_CFLAGS': [
           '-fobjc-abi-version=2',
         ],
+        'SDKROOT': 'iphonesimulator',  # -isysroot
         'INFOPLIST_FILE': 'TestApp/TestApp-Info.plist',
         'IPHONEOS_DEPLOYMENT_TARGET': '4.2',
       },

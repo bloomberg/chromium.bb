@@ -2101,6 +2101,10 @@ def CallGenerateOutputForConfig(arglist):
 
 
 def GenerateOutput(target_list, target_dicts, data, params):
+  # Update target_dicts for iOS device builds.
+  target_dicts = gyp.xcode_emulation.CloneConfigurationForDeviceAndEmulator(
+      target_dicts)
+
   user_config = params.get('generator_flags', {}).get('config', None)
   if gyp.common.GetFlavor(params) == 'win':
     target_list, target_dicts = MSVSUtil.ShardTargets(target_list, target_dicts)

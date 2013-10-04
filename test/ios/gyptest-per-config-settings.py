@@ -29,13 +29,13 @@ if sys.platform == 'darwin':
 
   test.run_gyp('test-device.gyp', chdir='app-bundle')
 
-  for configuration in ['Debug-iphoneos', 'Debug-iphonesimulator']:
+  for configuration in ['Default-iphoneos', 'Default']:
     test.set_configuration(configuration)
     test.build('test-device.gyp', test.ALL, chdir='app-bundle')
     result_file = test.built_file_path('Test App Gyp.bundle/Test App Gyp',
                                        chdir='app-bundle')
     test.must_exist(result_file)
-    if configuration == 'Debug-iphoneos':
+    if configuration == 'Default-iphoneos':
       CheckFileType(result_file, 'armv7')
     else:
       CheckFileType(result_file, 'i386')
