@@ -1041,14 +1041,15 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& es)
         if (collapsed)
             lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? newNode->lastChild() : newNode;
 
-        int startOffset = m_start.offset();
         container = m_start.container();
-        container->insertBefore(newNode.release(), container->childNode(startOffset), es);
+        container->insertBefore(newNode.release(), container->childNode(m_start.offset()), es);
         if (es.hadException())
             return;
 
+        // Note that m_start.offset() may have changed as a result of container->insertBefore,
+        // when the node we are inserting comes before the range in the same container.
         if (collapsed && numNewChildren)
-            m_end.set(m_start.container(), startOffset + numNewChildren, lastChild.get());
+            m_end.set(m_start.container(), m_start.offset() + numNewChildren, lastChild.get());
     }
 }
 
