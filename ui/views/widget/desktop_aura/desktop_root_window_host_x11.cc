@@ -1053,7 +1053,8 @@ void DesktopRootWindowHostX11::ResetWindowRegion() {
 
   // If we didn't set the shape for any reason, reset the shaping information
   // by ShapeSet-ing with our bounds rect.
-  XRectangle r = { 0, 0, bounds_.width(), bounds_.height() };
+  XRectangle r = { 0, 0, static_cast<unsigned short>(bounds_.width()),
+                   static_cast<unsigned short>(bounds_.height()) };
   XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding,
                           0, 0, &r, 1, ShapeSet, YXBanded);
 }
