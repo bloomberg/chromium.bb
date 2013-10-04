@@ -73,6 +73,18 @@ testFilterAtRule("Rule with arbitrary properties.",
 testFilterAtRule("Empty rule, missing closing brace.",
     "@-webkit-filter my-filter {",
     "@-webkit-filter my-filter { }");
+testFilterAtRule("Empty rule, comment separators",
+    "@-webkit-filter/**/my-filter/**/{ }",
+    "@-webkit-filter my-filter { }");
+testFilterAtRule("Empty rule, comment+space separators",
+    "@-webkit-filter/**/ my-filter/**/ { }",
+    "@-webkit-filter my-filter { }");
+testFilterAtRule("Empty rule, space+comment separators",
+    "@-webkit-filter /**/my-filter /**/{ }",
+    "@-webkit-filter my-filter { }");
+testFilterAtRule("Empty rule, space+comment+space separators",
+    "@-webkit-filter /**/ my-filter /**/ { }",
+    "@-webkit-filter my-filter { }");
 
 heading("Nested filter at-rule tests.");
 testNestedRules("Nested rule.",

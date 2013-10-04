@@ -1095,7 +1095,7 @@ before_region_rule:
     ;
 
 region:
-    before_region_rule WEBKIT_REGION_RULE_SYM WHITESPACE region_selector at_rule_header_end '{' at_rule_body_start maybe_space region_block_rule_body closing_brace {
+    before_region_rule WEBKIT_REGION_RULE_SYM maybe_space region_selector at_rule_header_end '{' at_rule_body_start maybe_space region_block_rule_body closing_brace {
         $$ = parser->createRegionRule($4, $9);
     }
   | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_recovery {
@@ -1112,7 +1112,7 @@ before_filter_rule:
     ;
 
 filter:
-    before_filter_rule WEBKIT_FILTER_RULE_SYM WHITESPACE IDENT at_rule_header_end_maybe_space
+    before_filter_rule WEBKIT_FILTER_RULE_SYM maybe_space IDENT at_rule_header_end_maybe_space
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         parser->m_inFilterRule = false;
         $$ = parser->createFilterRule($4);
@@ -1778,10 +1778,10 @@ calc_func_term:
   ;
 
 calc_func_operator:
-    WHITESPACE '+' WHITESPACE {
+    space '+' space {
         $$ = '+';
     }
-    | WHITESPACE '-' WHITESPACE {
+    | space '-' space {
         $$ = '-';
     }
     | calc_maybe_space '*' maybe_space {
