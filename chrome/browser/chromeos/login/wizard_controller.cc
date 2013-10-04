@@ -352,7 +352,6 @@ void WizardController::ShowUserImageScreen() {
   screen->SetProfilePictureEnabled(profile_picture_enabled);
 
   SetCurrentScreen(screen);
-  host_->SetShutdownButtonEnabled(false);
 }
 
 void WizardController::ShowEulaScreen() {

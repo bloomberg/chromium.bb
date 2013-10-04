@@ -42,9 +42,6 @@ class LoginDisplayHost {
   // Returns the current login view.
   virtual WebUILoginView* GetWebUILoginView() const = 0;
 
-  // Returns corresponding widget.
-  virtual views::Widget* GetWidget() const = 0;
-
   // Called when browsing session starts before creating initial browser.
   virtual void BeforeSessionStart() = 0;
 
@@ -57,12 +54,6 @@ class LoginDisplayHost {
 
   // Open proxy settings dialog.
   virtual void OpenProxySettings() = 0;
-
-  // Toggles OOBE progress bar visibility, the bar is hidden by default.
-  virtual void SetOobeProgressBarVisible(bool visible) = 0;
-
-  // Enable/disable shutdown button.
-  virtual void SetShutdownButtonEnabled(bool enable) = 0;
 
   // Toggles status area visibility.
   virtual void SetStatusAreaVisible(bool visible) = 0;

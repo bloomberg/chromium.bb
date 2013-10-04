@@ -302,10 +302,6 @@ WebUILoginView* LoginDisplayHostImpl::GetWebUILoginView() const {
   return login_view_;
 }
 
-views::Widget* LoginDisplayHostImpl::GetWidget() const {
-  return login_window_;
-}
-
 void LoginDisplayHostImpl::BeforeSessionStart() {
   session_starting_ = true;
 }
@@ -338,13 +334,6 @@ void LoginDisplayHostImpl::OnCompleteLogin() {
 void LoginDisplayHostImpl::OpenProxySettings() {
   if (login_view_)
     login_view_->OpenProxySettings();
-}
-
-void LoginDisplayHostImpl::SetOobeProgressBarVisible(bool visible) {
-  GetOobeUI()->ShowOobeUI(visible);
-}
-
-void LoginDisplayHostImpl::SetShutdownButtonEnabled(bool enable) {
 }
 
 void LoginDisplayHostImpl::SetStatusAreaVisible(bool visible) {
@@ -436,7 +425,6 @@ void LoginDisplayHostImpl::StartUserAdding(
   sign_in_controller_.reset(new chromeos::ExistingUserController(this));
   SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
   SetStatusAreaVisible(true);
-  SetShutdownButtonEnabled(true);
   sign_in_controller_->Init(
       chromeos::UserManager::Get()->GetUsersAdmittedForMultiProfile());
   CHECK(webui_login_display_);
@@ -477,7 +465,6 @@ void LoginDisplayHostImpl::StartSignInScreen() {
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   SetStatusAreaVisible(true);
-  SetShutdownButtonEnabled(true);
   sign_in_controller_->Init(users);
 
   // We might be here after a reboot that was triggered after OOBE was complete,
@@ -509,7 +496,6 @@ void LoginDisplayHostImpl::ResumeSignInScreen() {
   CHECK(sign_in_controller_.get());
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   SetStatusAreaVisible(true);
-  SetShutdownButtonEnabled(true);
   sign_in_controller_->ResumeLogin();
 }
 
@@ -834,6 +820,10 @@ bool LoginDisplayHostImpl::IsRunningUserAdding() {
 
 void LoginDisplayHostImpl::OnAuthPrewarmDone() {
   auth_prewarmer_.reset();
+}
+
+void LoginDisplayHostImpl::SetOobeProgressBarVisible(bool visible) {
+  GetOobeUI()->ShowOobeUI(visible);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

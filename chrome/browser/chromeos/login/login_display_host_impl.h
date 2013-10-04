@@ -54,13 +54,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
       LoginDisplay::Delegate* delegate) OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual WebUILoginView* GetWebUILoginView() const OVERRIDE;
-  virtual views::Widget* GetWidget() const OVERRIDE;
   virtual void BeforeSessionStart() OVERRIDE;
   virtual void Finalize() OVERRIDE;
   virtual void OnCompleteLogin() OVERRIDE;
   virtual void OpenProxySettings() OVERRIDE;
-  virtual void SetOobeProgressBarVisible(bool visible) OVERRIDE;
-  virtual void SetShutdownButtonEnabled(bool enable) OVERRIDE;
   virtual void SetStatusAreaVisible(bool visible) OVERRIDE;
   virtual void CheckForAutoEnrollment() OVERRIDE;
   virtual void StartWizard(
@@ -139,6 +136,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Deletes |auth_prewarmer_|.
   void OnAuthPrewarmDone();
+
+  // Toggles OOBE progress bar visibility, the bar is hidden by default.
+  void SetOobeProgressBarVisible(bool visible);
 
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;
