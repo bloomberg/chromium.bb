@@ -42,8 +42,9 @@ class FakeRemoteChangeProcessor : public RemoteChangeProcessor {
       const base::FilePath& local_path,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback) OVERRIDE;
-  virtual void ClearLocalChanges(
+  virtual void FinalizeRemoteSync(
       const fileapi::FileSystemURL& url,
+      bool clear_local_changes,
       const base::Closure& completion_callback) OVERRIDE;
   virtual void RecordFakeLocalChange(
       const fileapi::FileSystemURL& url,

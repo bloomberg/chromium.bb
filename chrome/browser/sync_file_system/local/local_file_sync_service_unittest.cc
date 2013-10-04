@@ -166,12 +166,22 @@ class LocalFileSyncServiceTest
   SyncStatusCode ApplyRemoteChange(const FileChange& change,
                                    const base::FilePath& local_path,
                                    const FileSystemURL& url) {
-    base::RunLoop run_loop;
     SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
-    local_service_->ApplyRemoteChange(
-        change, local_path, url,
-        AssignAndQuitCallback(&run_loop, &sync_status));
-    run_loop.Run();
+    {
+      base::RunLoop run_loop;
+      local_service_->ApplyRemoteChange(
+          change, local_path, url,
+          AssignAndQuitCallback(&run_loop, &sync_status));
+      run_loop.Run();
+    }
+    {
+      base::RunLoop run_loop;
+      local_service_->FinalizeRemoteSync(
+          url,
+          sync_status == SYNC_STATUS_OK,
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
     return sync_status;
   }
 

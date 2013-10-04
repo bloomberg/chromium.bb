@@ -52,8 +52,9 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
       FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
 }
 
-void FakeRemoteChangeProcessor::ClearLocalChanges(
+void FakeRemoteChangeProcessor::FinalizeRemoteSync(
     const fileapi::FileSystemURL& url,
+    bool clear_local_changes,
     const base::Closure& completion_callback) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE, completion_callback);
 }

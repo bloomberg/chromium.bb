@@ -92,6 +92,7 @@ class LocalFileSyncContext
   void GetFileForLocalSync(fileapi::FileSystemContext* file_system_context,
                            const LocalFileSyncInfoCallback& callback);
 
+  // TODO(kinuko): Make this private.
   // Clears all pending local changes for |url|. |done_callback| is called
   // when the changes are cleared.
   // This method must be called on UI thread.
@@ -99,20 +100,25 @@ class LocalFileSyncContext
                           const fileapi::FileSystemURL& url,
                           const base::Closure& done_callback);
 
+  // Finalizes SnapshotSync, which must have been started by
+  // PrepareForSync with SYNC_SNAPSHOT.
   // Updates the on-disk dirty flag for |url| in the tracker DB.
   // This will clear the dirty flag if |sync_finish_status| is SYNC_STATUS_OK
   // or SYNC_STATUS_HAS_CONFLICT.
   // |done_callback| is called when the changes are committed.
-  void CommitChangeStatusForURL(
+  void FinalizeSnapshotSync(
       fileapi::FileSystemContext* file_system_context,
       const fileapi::FileSystemURL& url,
       SyncStatusCode sync_finish_status,
       const base::Closure& done_callback);
 
-  // A local or remote sync has been finished (either successfully or
-  // with an error). Clears the internal sync flag and enable writing for |url|.
-  // This method must be called on UI thread.
-  void ClearSyncFlagForURL(const fileapi::FileSystemURL& url);
+  // Finalizes ExclusiveSync, which must have been started by
+  // PrepareForSync with SYNC_EXCLUSIVE.
+  void FinalizeExclusiveSync(
+      fileapi::FileSystemContext* file_system_context,
+      const fileapi::FileSystemURL& url,
+      bool clear_local_changes,
+      const base::Closure& done_callback);
 
   // Prepares for sync |url| by disabling writes on |url|.
   // If the target |url| is being written and cannot start sync it
@@ -123,15 +129,10 @@ class LocalFileSyncContext
   // If |sync_mode| is SYNC_SNAPSHOT this creates a snapshot (if the
   // target file is not deleted) and unlocks the file before returning.
   //
-  // It is expected that:
-  // - SYNC_EXCLUSIVE is used for RemoteSync. ApplyRemoteChange expects
-  //   that the file is locked, and DidApplyRemoteChange will unlock the
-  //   file once the sync is done.
-  // - SYNC_SNAPSHOT is used for LocalSync. The caller must finalize the sync
-  //   by calling CommitChangeStatusForURL, which will in turn reset the
-  //   mirrored change status during the sync.
-  //
-  // TODO(kinuko): Cleanup this local/remote sync flow, it's too messy.
+  // For SYNC_EXCLUSIVE, caller must call FinalizeExclusiveSync() to finalize
+  // sync and unlock the file.
+  // For SYNC_SNAPSHOT, caller must call FinalizeSnapshotSync() to finalize
+  // sync to reset the mirrored change status and decrement writing count.
   //
   // This method must be called on UI thread.
   void PrepareForSync(fileapi::FileSystemContext* file_system_context,
@@ -265,16 +266,16 @@ class LocalFileSyncContext
       SyncMode sync_mode,
       const LocalFileSyncInfoCallback& callback);
 
-  // Helper routine for sync/writing flag handling, primarily for
-  // ClearSyncFlagForURL but is also called by other internal routines.
-  // If |keep_url_in_writing| is true this increments the writing counter
-  // for |url| (after clearing syncing flag), so that the caller can
-  // continue to hold a shared lock on the URL.
-  // (The counter must be manually decremented by EndWritingOnIOThread
-  // if that's the case)
+  // Helper routine for sync/writing flag handling.
+  //
+  // If |for_snapshot_sync| is true, this increments the writing counter
+  // for |url| (after clearing syncing flag), so that other sync activities
+  // won't step in while snapshot sync is ongoing.
+  // In this case FinalizeSnapshotSyncOnIOThread must be called after the
+  // snapshot sync is finished to decrement the writing counter.
   void ClearSyncFlagOnIOThread(const fileapi::FileSystemURL& url,
-                               bool keep_url_in_writing);
-  void EndWritingOnIOThread(const fileapi::FileSystemURL& url);
+                               bool for_snapshot_sync);
+  void FinalizeSnapshotSyncOnIOThread(const fileapi::FileSystemURL& url);
 
   void DidRemoveExistingEntryForApplyRemoteChange(
       fileapi::FileSystemContext* file_system_context,

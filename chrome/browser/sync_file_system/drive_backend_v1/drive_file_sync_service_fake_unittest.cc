@@ -143,7 +143,7 @@ GURL ExtensionNameToGURL(const std::string& extension_name) {
 }
 
 ACTION(InvokeCompletionCallback) {
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE, arg1);
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE, arg2);
 }
 
 ACTION(PrepareForRemoteChange_Busy) {
@@ -623,7 +623,7 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_Busy() {
               PrepareForProcessRemoteChange(CreateURL(origin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_Busy());
   EXPECT_CALL(*mock_remote_processor(),
-              ClearLocalChanges(CreateURL(origin, kFileName), _))
+              FinalizeRemoteSync(CreateURL(origin, kFileName), _, _))
       .WillOnce(InvokeCompletionCallback());
 
   SetUpDriveSyncService(true);
@@ -652,7 +652,7 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_NewFile() {
               PrepareForProcessRemoteChange(CreateURL(origin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_NotFound());
   EXPECT_CALL(*mock_remote_processor(),
-              ClearLocalChanges(CreateURL(origin, kFileName), _))
+              FinalizeRemoteSync(CreateURL(origin, kFileName), _, _))
       .WillOnce(InvokeCompletionCallback());
 
   EXPECT_CALL(*mock_remote_processor(),
@@ -685,7 +685,7 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_UpdateFile() {
               PrepareForProcessRemoteChange(CreateURL(origin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_NotModified());
   EXPECT_CALL(*mock_remote_processor(),
-              ClearLocalChanges(CreateURL(origin, kFileName), _))
+              FinalizeRemoteSync(CreateURL(origin, kFileName), _, _))
       .WillOnce(InvokeCompletionCallback());
 
   EXPECT_CALL(*mock_remote_processor(),

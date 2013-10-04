@@ -87,6 +87,8 @@ class RemoteSyncDelegate : public base::SupportsWeakPtr<RemoteSyncDelegate> {
                  SyncStatusCode status);
   void DidFinish(const SyncStatusCallback& callback,
                  SyncStatusCode status);
+  void DispatchCallbackAfterDidFinish(const SyncStatusCallback& callback,
+                                      SyncStatusCode status);
 
   SyncStatusCode GDataErrorCodeToSyncStatusCodeWrapper(
       google_apis::GDataErrorCode error);

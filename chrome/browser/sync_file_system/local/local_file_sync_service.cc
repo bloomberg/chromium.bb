@@ -180,12 +180,6 @@ void LocalFileSyncService::HasPendingLocalChanges(
       origin_to_contexts_[url.origin()], url, callback);
 }
 
-void LocalFileSyncService::ClearSyncFlagForURL(
-    const FileSystemURL& url) {
-  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
-  sync_context_->ClearSyncFlagForURL(url);
-}
-
 void LocalFileSyncService::GetLocalFileMetadata(
     const FileSystemURL& url, const SyncFileMetadataCallback& callback) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
@@ -254,12 +248,14 @@ void LocalFileSyncService::ApplyRemoteChange(
       change, local_path, url, callback);
 }
 
-void LocalFileSyncService::ClearLocalChanges(
+void LocalFileSyncService::FinalizeRemoteSync(
     const FileSystemURL& url,
+    bool clear_local_changes,
     const base::Closure& completion_callback) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
-  sync_context_->ClearChangesForURL(origin_to_contexts_[url.origin()],
-                                    url, completion_callback);
+  sync_context_->FinalizeExclusiveSync(
+      origin_to_contexts_[url.origin()],
+      url, clear_local_changes, completion_callback);
 }
 
 void LocalFileSyncService::RecordFakeLocalChange(
@@ -426,10 +422,10 @@ void LocalFileSyncService::ProcessNextChangeForURL(
   const FileSystemURL& url = sync_file_info.url;
   if (status != SYNC_STATUS_OK || changes.empty()) {
     DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
-    sync_context_->CommitChangeStatusForURL(
+    sync_context_->FinalizeSnapshotSync(
         origin_to_contexts_[url.origin()], url, status,
         base::Bind(&LocalFileSyncService::RunLocalSyncCallback,
-                  AsWeakPtr(), status, url));
+                   AsWeakPtr(), status, url));
     return;
   }
 

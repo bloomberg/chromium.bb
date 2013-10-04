@@ -64,11 +64,14 @@ class RemoteChangeProcessor {
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback) = 0;
 
-  // Clears all local changes. This should be called when the remote sync
-  // service reconciled or processed the existing local changes while
-  // processing a remote change.
-  virtual void ClearLocalChanges(
+  // Finalizes the remote sync started by PrepareForProcessRemoteChange.
+  // This clears sync flag on |url| to unlock the file for future writes/sync.
+  // Clears all local changes if |clear_local_changes| is true.
+  // This should be set to true when the remote sync service reconciled or
+  // processed the existing local changes while processing a remote change.
+  virtual void FinalizeRemoteSync(
       const fileapi::FileSystemURL& url,
+      bool clear_local_changes,
       const base::Closure& completion_callback) = 0;
 
   // Records a fake local change so that the change will be processed in the

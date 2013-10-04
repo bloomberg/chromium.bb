@@ -18,7 +18,6 @@
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/fake_drive_service_helper.h"
-#include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
@@ -232,8 +231,6 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
         base::Bind(&SyncResultCallback, &done, &status, &url));
     FlushMessageLoop();
     EXPECT_TRUE(done);
-    if (status != SYNC_STATUS_NO_CHANGE_TO_SYNC)
-      local_sync_service_->ClearSyncFlagForURL(url);
     return status;
   }
 
@@ -245,8 +242,6 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
         base::Bind(&SyncResultCallback, &done, &status, &url));
     FlushMessageLoop();
     EXPECT_TRUE(done);
-    if (status != SYNC_STATUS_NO_CHANGE_TO_SYNC)
-      local_sync_service_->ClearSyncFlagForURL(url);
     return status;
   }
 

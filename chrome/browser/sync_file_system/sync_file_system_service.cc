@@ -544,9 +544,6 @@ void SyncFileSystemService::DidProcessRemoteChange(
             "ProcessRemoteChange finished with status=%d (%s) for url=%s",
             status, SyncStatusCodeToString(status), url.DebugString().c_str());
 
-  if (url.is_valid())
-    local_file_service_->ClearSyncFlagForURL(url);
-
   if (status == SYNC_STATUS_FILE_BUSY) {
     local_file_service_->RegisterURLForWaitingSync(
         url, base::Bind(&SyncFileSystemService::OnSyncEnabledForRemoteSync,
@@ -563,9 +560,6 @@ void SyncFileSystemService::DidProcessLocalChange(
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "ProcessLocalChange finished with status=%d (%s) for url=%s",
             status, SyncStatusCodeToString(status), url.DebugString().c_str());
-
-  if (url.is_valid())
-    local_file_service_->ClearSyncFlagForURL(url);
 
   callback.Run(status);
 }

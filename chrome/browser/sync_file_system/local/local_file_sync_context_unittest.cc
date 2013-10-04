@@ -154,14 +154,20 @@ class LocalFileSyncContextTest : public testing::Test {
     sync_context_->ApplyRemoteChange(
         file_system_context, change, local_path, url,
         base::Bind(&LocalFileSyncContextTest::DidApplyRemoteChange,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   make_scoped_refptr(file_system_context), url));
     base::MessageLoop::current()->Run();
     return status_;
   }
 
-  void DidApplyRemoteChange(SyncStatusCode status) {
-    base::MessageLoop::current()->Quit();
+  void DidApplyRemoteChange(FileSystemContext* file_system_context,
+                            const FileSystemURL& url,
+                            SyncStatusCode status) {
     status_ = status;
+    sync_context_->FinalizeExclusiveSync(
+        file_system_context, url,
+        status == SYNC_STATUS_OK /* clear_local_changes */,
+        base::MessageLoop::QuitClosure());
   }
 
   void StartModifyFileOnIOThread(CannedSyncableFileSystem* file_system,
@@ -205,14 +211,18 @@ class LocalFileSyncContextTest : public testing::Test {
 
   void SimulateFinishSync(FileSystemContext* file_system_context,
                           const FileSystemURL& url,
-                          SyncStatusCode status) {
-    sync_context_->CommitChangeStatusForURL(
-        file_system_context,
-        url,
-        status,
-        base::Bind(&LocalFileSyncContext::ClearSyncFlagForURL,
-                   sync_context_, url));
-    base::MessageLoop::current()->RunUntilIdle();
+                          SyncStatusCode status,
+                          LocalFileSyncContext::SyncMode sync_mode) {
+    if (sync_mode == LocalFileSyncContext::SYNC_SNAPSHOT) {
+      sync_context_->FinalizeSnapshotSync(
+          file_system_context, url, status,
+          base::Bind(&base::DoNothing));
+    } else {
+      sync_context_->FinalizeExclusiveSync(
+          file_system_context, url,
+          status == SYNC_STATUS_OK /* clear_local_changes */,
+          base::Bind(&base::DoNothing));
+    }
   }
 
   void PrepareForSync_Basic(LocalFileSyncContext::SyncMode sync_mode,
@@ -247,7 +257,7 @@ class LocalFileSyncContextTest : public testing::Test {
     EXPECT_TRUE(changes.list().back().IsAddOrUpdate());
 
     SimulateFinishSync(file_system.file_system_context(), kFile,
-                       simulate_sync_finish_status);
+                       simulate_sync_finish_status, sync_mode);
 
     file_system.GetChangesForURLInTracker(kFile, &changes);
     if (simulate_sync_finish_status == SYNC_STATUS_OK) {
@@ -311,7 +321,7 @@ class LocalFileSyncContextTest : public testing::Test {
     }
 
     SimulateFinishSync(file_system.file_system_context(), kFile,
-                       SYNC_STATUS_OK);
+                       SYNC_STATUS_OK, sync_mode);
 
     EXPECT_EQ(base::PLATFORM_FILE_OK, WaitUntilModifyFileIsDone());
 
