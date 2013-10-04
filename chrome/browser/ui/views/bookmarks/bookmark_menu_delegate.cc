@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop_views.h"
 #include "chrome/browser/ui/views/event_utils.h"
@@ -66,6 +67,7 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
                                 BookmarkLaunchLocation location) {
   GetBookmarkModel()->AddObserver(this);
   real_delegate_ = real_delegate;
+  location_ = location;
   if (parent) {
     parent_menu_item_ = parent;
     int initial_count = parent->GetSubmenu() ?
@@ -80,8 +82,6 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
   } else {
     menu_ = CreateMenu(node, start_child_index, show_options);
   }
-
-  location_ = location;
 }
 
 void BookmarkMenuDelegate::SetPageNavigator(PageNavigator* navigator) {
@@ -456,6 +456,10 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
   for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
     const int id = *next_menu_id;
+    if (location_ == BOOKMARK_LAUNCH_LOCATION_WRENCH_MENU &&
+        id > WrenchMenuModel::kMaxBookmarkCommandId)
+      break;
+
     (*next_menu_id)++;
 
     menu_id_to_node_map_[id] = node;
