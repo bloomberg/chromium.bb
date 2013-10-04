@@ -151,6 +151,10 @@ void GetMostVisitedURLs(
   if (!top_sites)
     return;
 
+  // TopSites updates itself after a delay. To ensure up-to-date results, force
+  // an update now.
+  top_sites->SyncWithHistory();
+
   scoped_refptr<NativeCallback> native_callback =
       new NativeCallback(j_callback_obj, static_cast<int>(num_results));
   top_sites->GetMostVisitedURLs(
