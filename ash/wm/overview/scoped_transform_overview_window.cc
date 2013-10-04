@@ -150,6 +150,17 @@ class WindowSelectorAnimationSettings
   }
 };
 
+void SetTransformOnWindow(aura::Window* window,
+                          const gfx::Transform& transform,
+                          bool animate) {
+  if (animate) {
+    WindowSelectorAnimationSettings animation_settings(window);
+    window->SetTransform(transform);
+  } else {
+    window->SetTransform(transform);
+  }
+}
+
 }  // namespace
 
 const int ScopedTransformOverviewWindow::kTransitionMilliseconds = 100;
@@ -176,7 +187,7 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
     // layer after the animation is complete.
     if (window_copy_)
       new CleanupWidgetAfterAnimationObserver(window_copy_, layer_);
-    AnimateTransformOnWindowAndTransientChildren(original_transform_);
+    SetTransformOnWindowAndTransientChildren(original_transform_, true);
     window_copy_ = NULL;
     layer_ = NULL;
     if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) !=
@@ -246,12 +257,22 @@ gfx::Transform ScopedTransformOverviewWindow::
 
 void ScopedTransformOverviewWindow::SetTransform(
     aura::RootWindow* root_window,
-    const gfx::Transform& transform) {
-  // If this is the first transform, perform one-time window modifications
-  // necessary for overview mode.
-  if (!overview_started_) {
-    OnOverviewStarted();
-    overview_started_ = true;
+    const gfx::Transform& transform,
+    bool animate) {
+  DCHECK(overview_started_);
+
+  // If the window bounds have changed and a copy of the window is being
+  // shown on another display, forcibly recreate the copy.
+  if (window_copy_ && window_copy_->GetNativeWindow()->GetBoundsInScreen() !=
+      window_->GetBoundsInScreen()) {
+    DCHECK_NE(window_->GetRootWindow(), root_window);
+    // TODO(flackr): If only the position changed and not the size, update the
+    // existing window_copy_'s position and continue to use it.
+    window_copy_->Close();
+    if (layer_)
+      views::corewm::DeepDeleteLayers(layer_);
+    window_copy_ = NULL;
+    layer_ = NULL;
   }
 
   if (root_window != window_->GetRootWindow() && !window_copy_) {
@@ -259,19 +280,16 @@ void ScopedTransformOverviewWindow::SetTransform(
     layer_ = views::corewm::RecreateWindowLayers(window_, true);
     window_copy_ = CreateCopyOfWindow(root_window, window_, layer_);
   }
-  AnimateTransformOnWindowAndTransientChildren(transform);
+  SetTransformOnWindowAndTransientChildren(transform, animate);
 }
 
-void ScopedTransformOverviewWindow::
-    AnimateTransformOnWindowAndTransientChildren(
-        const gfx::Transform& transform) {
-  WindowSelectorAnimationSettings animation_settings(window_);
-  window_->SetTransform(transform);
+void ScopedTransformOverviewWindow::SetTransformOnWindowAndTransientChildren(
+    const gfx::Transform& transform,
+    bool animate) {
+  SetTransformOnWindow(window_, transform, animate);
 
   if (window_copy_) {
-    WindowSelectorAnimationSettings animation_settings(
-        window_copy_->GetNativeWindow());
-    window_copy_->GetNativeWindow()->SetTransform(transform);
+    SetTransformOnWindow(window_copy_->GetNativeWindow(), transform, animate);
   }
 
   // TODO(flackr): Create copies of the transient children windows as well.
@@ -280,7 +298,6 @@ void ScopedTransformOverviewWindow::
   for (aura::Window::Windows::iterator iter = transient_children.begin();
        iter != transient_children.end(); ++iter) {
     aura::Window* transient_child = *iter;
-    WindowSelectorAnimationSettings animation_settings(transient_child);
     gfx::Transform transient_window_transform;
     gfx::Rect window_bounds = window_->bounds();
     gfx::Rect child_bounds = transient_child->bounds();
@@ -289,11 +306,13 @@ void ScopedTransformOverviewWindow::
     transient_window_transform.PreconcatTransform(transform);
     transient_window_transform.Translate(child_bounds.x() - window_bounds.x(),
                                          child_bounds.y() - window_bounds.y());
-    transient_child->SetTransform(transient_window_transform);
+    SetTransformOnWindow(transient_child, transient_window_transform, animate);
   }
 }
 
-void ScopedTransformOverviewWindow::OnOverviewStarted() {
+void ScopedTransformOverviewWindow::PrepareForOverview() {
+  DCHECK(!overview_started_);
+  overview_started_ = true;
   ash::wm::GetWindowState(window_)->set_ignored_by_shelf(true);
   RestoreWindow();
 }

@@ -31,8 +31,10 @@ class WindowSelectorWindow : public WindowSelectorItem {
   virtual aura::Window* SelectionWindow() OVERRIDE;
   virtual void RemoveWindow(const aura::Window* window) OVERRIDE;
   virtual bool empty() const OVERRIDE;
+  virtual void PrepareForOverview() OVERRIDE;
   virtual void SetItemBounds(aura::RootWindow* root_window,
-                             const gfx::Rect& target_bounds) OVERRIDE;
+                             const gfx::Rect& target_bounds,
+                             bool animate) OVERRIDE;
 
  private:
   ScopedTransformOverviewWindow transform_window_;

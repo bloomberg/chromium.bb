@@ -45,21 +45,40 @@ class WindowSelectorItem {
   // calling RemoveWindow for the last contained window).
   virtual bool empty() const = 0;
 
+  // Dispatched before beginning window overview. This will do any necessary
+  // one time actions such as restoring minimized windows.
+  virtual void PrepareForOverview() = 0;
+
   // Sets the bounds of this window selector item to |target_bounds| in the
   // |root_window| root window.
   void SetBounds(aura::RootWindow* root_window,
                  const gfx::Rect& target_bounds);
 
+  // Recomputes the positions for the windows in this selection item. This is
+  // dispatched when the bounds of a window change.
+  void RecomputeWindowTransforms();
+
   // Returns the current bounds of this selector item.
   const gfx::Rect& bounds() { return bounds_; }
 
  protected:
+  // Sets the bounds of this selector item to |target_bounds| in |root_window|.
+  // If |animate| the windows are animated from their current location.
   virtual void SetItemBounds(aura::RootWindow* root_window,
-                             const gfx::Rect& target_bounds) = 0;
+                             const gfx::Rect& target_bounds,
+                             bool animate) = 0;
 
  private:
+  // The root window this item is being displayed on.
+  aura::RootWindow* root_window_;
+
   // The bounds this item is fit to.
   gfx::Rect bounds_;
+
+  // True if running SetItemBounds. This prevents recursive calls resulting from
+  // the bounds update when calling views::corewm::RecreateWindowLayers to copy
+  // a window layer for display on another monitor.
+  bool in_bounds_update_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };

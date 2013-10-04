@@ -251,7 +251,7 @@ void WindowSelector::OnWindowAdded(aura::Window* new_window) {
   }
 }
 
-void WindowSelector::OnWindowDestroyed(aura::Window* window) {
+void WindowSelector::OnWindowDestroying(aura::Window* window) {
   ScopedVector<WindowSelectorItem>::iterator iter =
       std::find_if(windows_.begin(), windows_.end(),
                    WindowSelectorItemComparator(window));
@@ -284,6 +284,27 @@ void WindowSelector::OnWindowDestroyed(aura::Window* window) {
     if (window_overview_)
       window_overview_->SetSelection(selected_window_);
   }
+}
+
+void WindowSelector::OnWindowBoundsChanged(aura::Window* window,
+                                           const gfx::Rect& old_bounds,
+                                           const gfx::Rect& new_bounds) {
+  if (!window_overview_)
+    return;
+
+  ScopedVector<WindowSelectorItem>::iterator iter =
+      std::find_if(windows_.begin(), windows_.end(),
+                   WindowSelectorItemComparator(window));
+  DCHECK(window == restore_focus_window_ || iter != windows_.end());
+  if (iter == windows_.end())
+    return;
+
+  // Immediately finish any active bounds animation.
+  window->layer()->GetAnimator()->StopAnimatingProperty(
+      ui::LayerAnimationElement::BOUNDS);
+
+  // Recompute the transform for the window.
+  (*iter)->RecomputeWindowTransforms();
 }
 
 void WindowSelector::OnWindowActivated(aura::Window* gained_active,

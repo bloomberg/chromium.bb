@@ -42,12 +42,18 @@ bool WindowSelectorWindow::empty() const {
   return transform_window_.window() == NULL;
 }
 
+void WindowSelectorWindow::PrepareForOverview() {
+  transform_window_.PrepareForOverview();
+}
+
 void WindowSelectorWindow::SetItemBounds(aura::RootWindow* root_window,
-                                         const gfx::Rect& target_bounds) {
+                                         const gfx::Rect& target_bounds,
+                                         bool animate) {
   gfx::Rect bounding_rect = transform_window_.window()->GetBoundsInScreen();
   transform_window_.SetTransform(root_window,
       ScopedTransformOverviewWindow::GetTransformForRectPreservingAspectRatio(
-          transform_window_.window()->GetBoundsInScreen(), target_bounds));
+          transform_window_.window()->GetBoundsInScreen(), target_bounds),
+      animate);
 }
 
 }  // namespace ash

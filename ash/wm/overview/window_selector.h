@@ -73,7 +73,10 @@ class ASH_EXPORT WindowSelector
 
   // aura::WindowObserver:
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // Overridden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,

@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 #include "ash/wm/overview/window_selector_item.h"
+#include "base/auto_reset.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
-WindowSelectorItem::WindowSelectorItem() {
+WindowSelectorItem::WindowSelectorItem()
+    : root_window_(NULL),
+      in_bounds_update_(false) {
 }
 
 WindowSelectorItem::~WindowSelectorItem() {
@@ -14,8 +18,20 @@ WindowSelectorItem::~WindowSelectorItem() {
 
 void WindowSelectorItem::SetBounds(aura::RootWindow* root_window,
                                    const gfx::Rect& target_bounds) {
+  if (in_bounds_update_)
+    return;
+  base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
+  root_window_ = root_window;
   bounds_ = target_bounds;
-  SetItemBounds(root_window, target_bounds);
+  SetItemBounds(root_window, target_bounds, true);
+}
+
+void WindowSelectorItem::RecomputeWindowTransforms() {
+  if (in_bounds_update_ || bounds_.IsEmpty())
+    return;
+  DCHECK(root_window_);
+  base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
+  SetItemBounds(root_window_, bounds_, false);
 }
 
 }  // namespace ash

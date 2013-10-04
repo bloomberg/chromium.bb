@@ -107,6 +107,10 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
       single_root_window_(single_root_window),
       overview_start_time_(base::Time::Now()),
       cursor_client_(NULL) {
+  for (WindowSelectorItemList::iterator iter = windows_->begin();
+       iter != windows_->end(); ++iter) {
+    (*iter)->PrepareForOverview();
+  }
   PositionWindows();
   DCHECK(!windows_->empty());
   cursor_client_ = aura::client::GetCursorClient(

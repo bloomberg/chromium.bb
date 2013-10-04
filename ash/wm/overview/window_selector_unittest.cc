@@ -270,6 +270,22 @@ TEST_F(WindowSelectorTest, MinimizedWindowVisibility) {
   }
 }
 
+// Tests that a bounds change during overview is corrected for.
+TEST_F(WindowSelectorTest, BoundsChangeDuringOverview) {
+  scoped_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 400, 400)));
+  ToggleOverview();
+  gfx::Rect overview_bounds =
+      ToEnclosingRect(GetTransformedTargetBounds(window.get()));
+  window->SetBounds(gfx::Rect(200, 0, 200, 200));
+  gfx::Rect new_overview_bounds =
+      ToEnclosingRect(GetTransformedTargetBounds(window.get()));
+  EXPECT_EQ(overview_bounds.x(), new_overview_bounds.x());
+  EXPECT_EQ(overview_bounds.y(), new_overview_bounds.y());
+  EXPECT_EQ(overview_bounds.width(), new_overview_bounds.width());
+  EXPECT_EQ(overview_bounds.height(), new_overview_bounds.height());
+  ToggleOverview();
+}
+
 // Tests entering overview mode with three windows and cycling through them.
 TEST_F(WindowSelectorTest, BasicCycle) {
   gfx::Rect bounds(0, 0, 400, 400);
@@ -617,6 +633,40 @@ TEST_F(WindowSelectorTest, MultipleDisplaysOverviewTransitionToCycle) {
       ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
   EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
       ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
+  StopCycling();
+}
+
+// Tests that a bounds change during overview is corrected for.
+TEST_F(WindowSelectorTest, BoundsChangeDuringCycleOnOtherDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> window2(CreateWindow(gfx::Rect(450, 0, 100, 100)));
+  EXPECT_EQ(root_windows[0], window1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window2->GetRootWindow());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  Cycle(WindowSelector::FORWARD);
+  FireOverviewStartTimer();
+
+  gfx::Rect overview_bounds(
+      ToEnclosingRect(GetTransformedTargetBounds(window1.get())));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(overview_bounds));
+
+  // Change the position and size of window1 (being displayed on the second
+  // root window) and it should remain within the same bounds.
+  window1->SetBounds(gfx::Rect(100, 0, 200, 200));
+  gfx::Rect new_overview_bounds =
+      ToEnclosingRect(GetTransformedTargetBounds(window1.get()));
+  EXPECT_EQ(overview_bounds.x(), new_overview_bounds.x());
+  EXPECT_EQ(overview_bounds.y(), new_overview_bounds.y());
+  EXPECT_EQ(overview_bounds.width(), new_overview_bounds.width());
+  EXPECT_EQ(overview_bounds.height(), new_overview_bounds.height());
   StopCycling();
 }
 
