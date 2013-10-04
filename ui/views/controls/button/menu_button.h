@@ -66,6 +66,9 @@ class VIEWS_EXPORT MenuButton : public TextButton {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
+  // Paint the menu marker image.
+  void PaintMenuMarker(gfx::Canvas* canvas);
+
   // True if the menu is currently visible.
   bool menu_visible_;
 
