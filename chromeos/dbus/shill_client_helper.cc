@@ -5,7 +5,6 @@
 #include "chromeos/dbus/shill_client_helper.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/values.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -14,36 +13,12 @@
 
 namespace chromeos {
 
-// Class to hold onto a reference to a ShillClientHelper. This calss
-// is owned by callbacks and released once the callback completes.
-// Note: Only success callbacks hold the reference. If an error callback is
-// invoked instead, the success callback will still be destroyed and the
-// RefHolder with it, once the callback chain completes.
-class ShillClientHelper::RefHolder {
- public:
-  explicit RefHolder(base::WeakPtr<ShillClientHelper> helper)
-      : helper_(helper) {
-    helper_->AddRef();
-  }
-  ~RefHolder() {
-    if (helper_)
-      helper_->Release();
-  }
-
- private:
-  base::WeakPtr<ShillClientHelper> helper_;
-};
-
 namespace {
 
 const char kInvalidResponseErrorName[] = "";  // No error name.
 const char kInvalidResponseErrorMessage[] = "Invalid response.";
 
-// Note: here and below, |ref_holder| is unused in the function body. It only
-// exists so that it will be destroyed (and the reference released) with the
-// Callback object once completed.
 void OnBooleanMethodWithErrorCallback(
-    ShillClientHelper::RefHolder* ref_holder,
     const ShillClientHelper::BooleanCallback& callback,
     const ShillClientHelper::ErrorCallback& error_callback,
     dbus::Response* response) {
@@ -61,7 +36,6 @@ void OnBooleanMethodWithErrorCallback(
 }
 
 void OnStringMethodWithErrorCallback(
-    ShillClientHelper::RefHolder* ref_holder,
     const ShillClientHelper::StringCallback& callback,
     const ShillClientHelper::ErrorCallback& error_callback,
     dbus::Response* response) {
@@ -79,8 +53,7 @@ void OnStringMethodWithErrorCallback(
 }
 
 // Handles responses for methods without results.
-void OnVoidMethod(ShillClientHelper::RefHolder* ref_holder,
-                  const VoidDBusMethodCallback& callback,
+void OnVoidMethod(const VoidDBusMethodCallback& callback,
                   dbus::Response* response) {
   if (!response) {
     callback.Run(DBUS_METHOD_CALL_FAILURE);
@@ -91,7 +64,6 @@ void OnVoidMethod(ShillClientHelper::RefHolder* ref_holder,
 
 // Handles responses for methods with ObjectPath results.
 void OnObjectPathMethod(
-    ShillClientHelper::RefHolder* ref_holder,
     const ObjectPathDBusMethodCallback& callback,
     dbus::Response* response) {
   if (!response) {
@@ -109,7 +81,6 @@ void OnObjectPathMethod(
 
 // Handles responses for methods with ObjectPath results and no status.
 void OnObjectPathMethodWithoutStatus(
-    ShillClientHelper::RefHolder* ref_holder,
     const ObjectPathCallback& callback,
     const ShillClientHelper::ErrorCallback& error_callback,
     dbus::Response* response) {
@@ -128,7 +99,6 @@ void OnObjectPathMethodWithoutStatus(
 
 // Handles responses for methods with DictionaryValue results.
 void OnDictionaryValueMethod(
-    ShillClientHelper::RefHolder* ref_holder,
     const ShillClientHelper::DictionaryValueCallback& callback,
     dbus::Response* response) {
   if (!response) {
@@ -149,7 +119,6 @@ void OnDictionaryValueMethod(
 
 // Handles responses for methods without results.
 void OnVoidMethodWithErrorCallback(
-    ShillClientHelper::RefHolder* ref_holder,
     const base::Closure& callback,
     dbus::Response* response) {
   callback.Run();
@@ -158,7 +127,6 @@ void OnVoidMethodWithErrorCallback(
 // Handles responses for methods with DictionaryValue results.
 // Used by CallDictionaryValueMethodWithErrorCallback().
 void OnDictionaryValueMethodWithErrorCallback(
-    ShillClientHelper::RefHolder* ref_holder,
     const ShillClientHelper::DictionaryValueCallbackWithoutStatus& callback,
     const ShillClientHelper::ErrorCallback& error_callback,
     dbus::Response* response) {
@@ -174,7 +142,6 @@ void OnDictionaryValueMethodWithErrorCallback(
 
 // Handles responses for methods with ListValue results.
 void OnListValueMethodWithErrorCallback(
-    ShillClientHelper::RefHolder* ref_holder,
     const ShillClientHelper::ListValueCallback& callback,
     const ShillClientHelper::ErrorCallback& error_callback,
     dbus::Response* response) {
@@ -204,9 +171,9 @@ void OnError(const ShillClientHelper::ErrorCallback& error_callback,
 
 }  // namespace
 
-ShillClientHelper::ShillClientHelper(dbus::ObjectProxy* proxy)
+ShillClientHelper::ShillClientHelper(dbus::Bus* bus,
+                                     dbus::ObjectProxy* proxy)
     : proxy_(proxy),
-      active_refs_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -215,16 +182,8 @@ ShillClientHelper::~ShillClientHelper() {
       << "ShillClientHelper destroyed with active observers";
 }
 
-void ShillClientHelper::SetReleasedCallback(ReleasedCallback callback) {
-  CHECK(released_callback_.is_null());
-  released_callback_ = callback;
-}
-
 void ShillClientHelper::AddPropertyChangedObserver(
     ShillPropertyChangedObserver* observer) {
-  if (observer_list_.HasObserver(observer))
-    return;
-  AddRef();
   // Excecute all the pending MonitorPropertyChanged calls.
   for (size_t i = 0; i < interfaces_to_be_monitored_.size(); ++i) {
     MonitorPropertyChangedInternal(interfaces_to_be_monitored_[i]);
@@ -236,10 +195,7 @@ void ShillClientHelper::AddPropertyChangedObserver(
 
 void ShillClientHelper::RemovePropertyChangedObserver(
     ShillPropertyChangedObserver* observer) {
-  if (!observer_list_.HasObserver(observer))
-    return;
   observer_list_.RemoveObserver(observer);
-  Release();
 }
 
 void ShillClientHelper::MonitorPropertyChanged(
@@ -269,22 +225,18 @@ void ShillClientHelper::CallVoidMethod(
     dbus::MethodCall* method_call,
     const VoidDBusMethodCallback& callback) {
   DCHECK(!callback.is_null());
-  proxy_->CallMethod(
-      method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnVoidMethod,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback));
+  proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                     base::Bind(&OnVoidMethod,
+                                callback));
 }
 
 void ShillClientHelper::CallObjectPathMethod(
     dbus::MethodCall* method_call,
     const ObjectPathDBusMethodCallback& callback) {
   DCHECK(!callback.is_null());
-  proxy_->CallMethod(
-      method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnObjectPathMethod,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback));
+  proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                     base::Bind(&OnObjectPathMethod,
+                                callback));
 }
 
 void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
@@ -297,7 +249,6 @@ void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
       method_call,
       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&OnObjectPathMethodWithoutStatus,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
                  callback,
                  error_callback),
       base::Bind(&OnError,
@@ -308,11 +259,9 @@ void ShillClientHelper::CallDictionaryValueMethod(
     dbus::MethodCall* method_call,
     const DictionaryValueCallback& callback) {
   DCHECK(!callback.is_null());
-  proxy_->CallMethod(
-      method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnDictionaryValueMethod,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback));
+  proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                     base::Bind(&OnDictionaryValueMethod,
+                                callback));
 }
 
 void ShillClientHelper::CallVoidMethodWithErrorCallback(
@@ -324,7 +273,6 @@ void ShillClientHelper::CallVoidMethodWithErrorCallback(
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&OnVoidMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
                  callback),
       base::Bind(&OnError,
                  error_callback));
@@ -339,7 +287,6 @@ void ShillClientHelper::CallBooleanMethodWithErrorCallback(
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&OnBooleanMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
                  callback,
                  error_callback),
       base::Bind(&OnError,
@@ -355,7 +302,6 @@ void ShillClientHelper::CallStringMethodWithErrorCallback(
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&OnStringMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
                  callback,
                  error_callback),
       base::Bind(&OnError,
@@ -370,10 +316,10 @@ void ShillClientHelper::CallDictionaryValueMethodWithErrorCallback(
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnDictionaryValueMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback,
-                 error_callback),
+      base::Bind(
+          &OnDictionaryValueMethodWithErrorCallback,
+          callback,
+          error_callback),
       base::Bind(&OnError,
                  error_callback));
 }
@@ -386,10 +332,10 @@ void ShillClientHelper::CallListValueMethodWithErrorCallback(
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnListValueMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback,
-                 error_callback),
+      base::Bind(
+          &OnListValueMethodWithErrorCallback,
+          callback,
+          error_callback),
       base::Bind(&OnError,
                  error_callback));
 }
@@ -474,16 +420,6 @@ void ShillClientHelper::AppendServicePropertiesDictionary(
   writer->CloseContainer(&array_writer);
 }
 
-void ShillClientHelper::AddRef() {
-  ++active_refs_;
-}
-
-void ShillClientHelper::Release() {
-  --active_refs_;
-  if (active_refs_ == 0 && !released_callback_.is_null())
-    base::ResetAndReturn(&released_callback_).Run(this);  // May delete this
-}
-
 void ShillClientHelper::OnSignalConnected(const std::string& interface,
                                           const std::string& signal,
                                           bool success) {
@@ -506,5 +442,6 @@ void ShillClientHelper::OnPropertyChanged(dbus::Signal* signal) {
   FOR_EACH_OBSERVER(ShillPropertyChangedObserver, observer_list_,
                     OnPropertyChanged(name, *value));
 }
+
 
 }  // namespace chromeos
