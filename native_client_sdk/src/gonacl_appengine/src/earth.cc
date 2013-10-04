@@ -295,6 +295,7 @@ class Planet : public pp::Instance {
   int width_;
   int height_;
   bool hidden_;
+  PP_Point last_mouse_pos_;
   uint32_t stride_in_pixels_;
   uint32_t* pixel_buffer_;
   int benchmark_frame_counter_;
@@ -395,6 +396,7 @@ Planet::Planet(PP_Instance instance) : pp::Instance(instance),
   base_tex_ = NULL;
   night_tex_ = NULL;
   name_for_tex_ = "";
+  last_mouse_pos_ = PP_MakePoint(0, 0);
 
   Reset();
 
@@ -748,17 +750,24 @@ bool Planet::HandleInputEvent(const pp::InputEvent& event) {
           StartBenchmark();
       break;
     }
-    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
     case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
       pp::MouseInputEvent mouse = pp::MouseInputEvent(event);
+      last_mouse_pos_ = mouse.GetPosition();
+      ui_spin_x_ = 0.0f;
+      ui_spin_y_ = 0.0f;
+      break;
+    }
+    case PP_INPUTEVENT_TYPE_MOUSEMOVE: {
+      pp::MouseInputEvent mouse = pp::MouseInputEvent(event);
       if (mouse.GetModifiers() & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) {
-        PP_Point delta = mouse.GetMovement();
-        float delta_x = static_cast<float>(delta.x);
-        float delta_y = static_cast<float>(delta.y);
+        PP_Point mouse_pos = mouse.GetPosition();
+        float delta_x = static_cast<float>(mouse_pos.x - last_mouse_pos_.x);
+        float delta_y = static_cast<float>(mouse_pos.y - last_mouse_pos_.y);
         float spin_x = std::min(4.0f, std::max(-4.0f, delta_x * 0.5f));
         float spin_y = std::min(4.0f, std::max(-4.0f, delta_y * 0.5f));
         ui_spin_x_ = spin_x / 100.0f;
         ui_spin_y_ = spin_y / 100.0f;
+        last_mouse_pos_ = mouse_pos;
       }
       break;
     }
