@@ -261,8 +261,8 @@ class LocationBarView : public LocationBar,
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;
   virtual void OnKillFocus() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
-  virtual gfx::Image GetFavicon() const OVERRIDE;
-  virtual string16 GetTitle() const OVERRIDE;
+  virtual gfx::Image GetFavicon() OVERRIDE;
+  virtual string16 GetTitle() OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;

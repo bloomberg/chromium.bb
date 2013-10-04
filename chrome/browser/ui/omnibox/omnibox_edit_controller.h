@@ -54,10 +54,10 @@ class OmniboxEditController {
   virtual void OnSetFocus() = 0;
 
   // Returns the favicon of the current page.
-  virtual gfx::Image GetFavicon() const = 0;
+  virtual gfx::Image GetFavicon() = 0;
 
   // Returns the title of the current page.
-  virtual string16 GetTitle() const = 0;
+  virtual string16 GetTitle() = 0;
 
   // Returns the InstantController, or NULL if instant is not enabled.
   virtual InstantController* GetInstant() = 0;

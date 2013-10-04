@@ -1050,13 +1050,12 @@ void LocationBarView::OnSetFocus() {
   focus_manager->SetFocusedView(this);
 }
 
-gfx::Image LocationBarView::GetFavicon() const {
-  return FaviconTabHelper::FromWebContents(
-      delegate_->GetWebContents())->GetFavicon();
+gfx::Image LocationBarView::GetFavicon() {
+  return FaviconTabHelper::FromWebContents(GetWebContents())->GetFavicon();
 }
 
-string16 LocationBarView::GetTitle() const {
-  return delegate_->GetWebContents()->GetTitle();
+string16 LocationBarView::GetTitle() {
+  return GetWebContents()->GetTitle();
 }
 
 InstantController* LocationBarView::GetInstant() {

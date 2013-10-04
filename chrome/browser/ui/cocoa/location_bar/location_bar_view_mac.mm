@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -508,16 +509,17 @@ void LocationBarViewMac::OnChanged() {
 }
 
 void LocationBarViewMac::OnSelectionBoundsChanged() {
-  NOTIMPLEMENTED();
 }
 
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {
+  // The edit should make sure we're only notified when something changes.
+  DCHECK_NE(GetToolbarModel()->input_in_progress(), in_progress);
+
   GetToolbarModel()->set_input_in_progress(in_progress);
   Update(NULL);
 }
 
 void LocationBarViewMac::OnKillFocus() {
-  // Do nothing.
 }
 
 void LocationBarViewMac::OnSetFocus() {
@@ -525,12 +527,12 @@ void LocationBarViewMac::OnSetFocus() {
   OnChanged();
 }
 
-gfx::Image LocationBarViewMac::GetFavicon() const {
-  return browser_->GetCurrentPageIcon();
+gfx::Image LocationBarViewMac::GetFavicon() {
+  return FaviconTabHelper::FromWebContents(GetWebContents())->GetFavicon();
 }
 
-string16 LocationBarViewMac::GetTitle() const {
-  return browser_->GetWindowTitleForCurrentTab();
+string16 LocationBarViewMac::GetTitle() {
+  return GetWebContents()->GetTitle();
 }
 
 InstantController* LocationBarViewMac::GetInstant() {

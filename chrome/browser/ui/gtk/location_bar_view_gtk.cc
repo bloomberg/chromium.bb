@@ -688,7 +688,6 @@ void LocationBarViewGtk::OnChanged() {
 }
 
 void LocationBarViewGtk::OnSelectionBoundsChanged() {
-  NOTIMPLEMENTED();
 }
 
 void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
@@ -717,13 +716,12 @@ void LocationBarViewGtk::OnSetFocus() {
   OnChanged();
 }
 
-gfx::Image LocationBarViewGtk::GetFavicon() const {
-  return FaviconTabHelper::FromWebContents(
-      browser_->tab_strip_model()->GetActiveWebContents())->GetFavicon();
+gfx::Image LocationBarViewGtk::GetFavicon() {
+  return FaviconTabHelper::FromWebContents(GetWebContents())->GetFavicon();
 }
 
-string16 LocationBarViewGtk::GetTitle() const {
-  return browser_->tab_strip_model()->GetActiveWebContents()->GetTitle();
+string16 LocationBarViewGtk::GetTitle() {
+  return GetWebContents()->GetTitle();
 }
 
 InstantController* LocationBarViewGtk::GetInstant() {

@@ -94,8 +94,8 @@ class TestingOmniboxEditController : public OmniboxEditController {
   virtual void OnInputInProgress(bool in_progress) OVERRIDE {}
   virtual void OnKillFocus() OVERRIDE {}
   virtual void OnSetFocus() OVERRIDE {}
-  virtual gfx::Image GetFavicon() const OVERRIDE { return gfx::Image(); }
-  virtual string16 GetTitle() const OVERRIDE { return string16(); }
+  virtual gfx::Image GetFavicon() OVERRIDE { return gfx::Image(); }
+  virtual string16 GetTitle() OVERRIDE { return string16(); }
   virtual InstantController* GetInstant() OVERRIDE { return NULL; }
   virtual content::WebContents* GetWebContents() OVERRIDE { return NULL; }
   virtual ToolbarModel* GetToolbarModel() OVERRIDE { return toolbar_model_; }

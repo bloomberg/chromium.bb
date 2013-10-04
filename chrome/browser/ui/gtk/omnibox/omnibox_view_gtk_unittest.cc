@@ -28,8 +28,8 @@ class OmniboxEditControllerMock : public OmniboxEditController {
   MOCK_METHOD1(OnInputInProgress, void(bool in_progress));
   MOCK_METHOD0(OnKillFocus, void());
   MOCK_METHOD0(OnSetFocus, void());
-  MOCK_CONST_METHOD0(GetFavicon, gfx::Image());
-  MOCK_CONST_METHOD0(GetTitle, string16());
+  MOCK_METHOD0(GetFavicon, gfx::Image());
+  MOCK_METHOD0(GetTitle, string16());
   MOCK_METHOD0(GetInstant, InstantController*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD0(GetToolbarModel, ToolbarModel*());
