@@ -538,6 +538,8 @@
             'animation/AnimatableLengthSize.cpp',
             'animation/AnimatableLengthSize.h',
             'animation/AnimatableNeutral.h',
+            'animation/AnimatableSVGLength.cpp',
+            'animation/AnimatableSVGLength.h',
             'animation/AnimatableShapeValue.cpp',
             'animation/AnimatableShapeValue.h',
             'animation/AnimatableSVGPaint.cpp',

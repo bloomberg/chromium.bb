@@ -54,6 +54,7 @@ public:
     bool isLengthBox() const { return type() == TypeLengthBox; }
     bool isLengthSize() const { return type() == TypeLengthSize; }
     bool isNeutral() const { return type() == TypeNeutral; }
+    bool isSVGLength() const { return type() == TypeSVGLength; }
     bool isShapeValue() const { return type() == TypeShapeValue; }
     bool isSVGPaint() const { return type() == TypeSVGPaint; }
     bool isTransform() const { return type() == TypeTransform; }
@@ -70,6 +71,7 @@ protected:
         TypeLengthBox,
         TypeLengthSize,
         TypeNeutral,
+        TypeSVGLength,
         TypeShapeValue,
         TypeSVGPaint,
         TypeTransform,

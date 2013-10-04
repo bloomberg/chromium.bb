@@ -38,6 +38,7 @@
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
+#include "core/animation/AnimatableSVGLength.h"
 #include "core/animation/AnimatableSVGPaint.h"
 #include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableTransform.h"
@@ -104,6 +105,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyBackgroundColor:
         style->setBackgroundColor(toAnimatableColor(value)->color());
         style->setVisitedLinkBackgroundColor(toAnimatableColor(value)->visitedLinkColor());
+        return;
+    case CSSPropertyBaselineShift:
+        style->setBaselineShiftValue(toAnimatableSVGLength(value)->toSVGLength());
         return;
     case CSSPropertyBorderBottomColor:
         style->setBorderBottomColor(toAnimatableColor(value)->color());
