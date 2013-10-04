@@ -3143,8 +3143,6 @@
             'platform/network/MIMEHeader.cpp',
             'platform/network/NetworkStateNotifier.cpp',
             'platform/network/NetworkStateNotifier.h',
-            'platform/network/ParsedContentType.cpp',
-            'platform/network/ParsedContentType.h',
             'platform/network/ProxyServer.cpp',
             'platform/network/ResourceError.cpp',
             'platform/network/ResourceError.h',

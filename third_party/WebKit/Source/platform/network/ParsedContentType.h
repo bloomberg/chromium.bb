@@ -32,6 +32,7 @@
 #ifndef ParsedContentType_h
 #define ParsedContentType_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 
@@ -39,10 +40,10 @@ namespace WebCore {
 
 // <index, length>
 typedef std::pair<unsigned, unsigned> SubstringRange;
-bool isValidContentType(const String&);
+PLATFORM_EXPORT bool isValidContentType(const String&);
 
 // FIXME: add support for comments.
-class ParsedContentType {
+class PLATFORM_EXPORT ParsedContentType {
 public:
     explicit ParsedContentType(const String&);
 

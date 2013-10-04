@@ -36,6 +36,8 @@
       'network/DNS.h',
       'text/DateTimeFormat.cpp',
       'text/DateTimeFormat.h',
+      'network/ParsedContentType.cpp',
+      'network/ParsedContentType.h',
       'network/SocketStreamError.cpp',
       'network/SocketStreamError.h',
       'network/SocketStreamHandle.cpp',

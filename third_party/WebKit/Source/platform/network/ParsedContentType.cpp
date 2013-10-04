@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "core/platform/network/ParsedContentType.h"
+#include "platform/network/ParsedContentType.h"
 
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
