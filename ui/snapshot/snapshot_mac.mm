@@ -16,35 +16,12 @@ namespace ui {
 bool GrabViewSnapshot(gfx::NativeView view,
                       std::vector<unsigned char>* png_representation,
                       const gfx::Rect& snapshot_bounds) {
-  NSWindow* window = [view window];
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
-  gfx::Rect screen_bounds = gfx::Rect(NSRectToCGRect([screen frame]));
-
-
-  // Get the view bounds relative to the screen
-  NSRect frame = [view convertRect:[view bounds] toView:nil];
-  frame.origin = [window convertBaseToScreen:frame.origin];
-
-  gfx::Rect view_bounds = gfx::Rect(NSRectToCGRect(frame));
-
-  // Flip window coordinates based on the primary screen.
-  view_bounds.set_y(
-      screen_bounds.height() - view_bounds.y() - view_bounds.height());
-
-  // Convert snapshot bounds relative to window into bounds relative to
-  // screen.
-  gfx::Rect screen_snapshot_bounds = snapshot_bounds;
-  screen_snapshot_bounds.Offset(view_bounds.OffsetFromOrigin());
-
-  DCHECK_LE(screen_snapshot_bounds.right(), view_bounds.right());
-  DCHECK_LE(screen_snapshot_bounds.bottom(), view_bounds.bottom());
-
   png_representation->clear();
 
   base::ScopedCFTypeRef<CGImageRef> windowSnapshot(
-      CGWindowListCreateImage(screen_snapshot_bounds.ToCGRect(),
+      CGWindowListCreateImage(snapshot_bounds.ToCGRect(),
                               kCGWindowListOptionIncludingWindow,
-                              [window windowNumber],
+                              [[view window] windowNumber],
                               kCGWindowImageBoundsIgnoreFraming));
   if (CGImageGetWidth(windowSnapshot) <= 0)
     return false;
