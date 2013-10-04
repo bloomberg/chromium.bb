@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/translate/translate_util.h"
+#include "components/translate/common/translate_util.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,7 +29,7 @@ TranslateAcceptLanguages::~TranslateAcceptLanguages() {
 bool TranslateAcceptLanguages::CanBeAcceptLanguage(
     const std::string& language) {
   std::string accept_language = language;
-  TranslateUtil::ToChromeLanguageSynonym(&accept_language);
+  translate::ToChromeLanguageSynonym(&accept_language);
 
   const std::string locale = g_browser_process->GetApplicationLocale();
   std::vector<std::string> accept_language_codes;
@@ -73,7 +73,7 @@ bool TranslateAcceptLanguages::IsAcceptLanguage(Profile* profile,
   }
 
   std::string accept_language = language;
-  TranslateUtil::ToChromeLanguageSynonym(&accept_language);
+  translate::ToChromeLanguageSynonym(&accept_language);
   return iter->second.count(accept_language) != 0;
 }
 

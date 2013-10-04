@@ -24,6 +24,9 @@
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'test/run_all_unittests.cc',
+            'translate/common/translate_metrics_unittest.cc',
+            'translate/common/translate_util_unittest.cc',
+            'translate/language_detection/language_detection_util_unittest.cc',
             # TODO(asvitkine): These should be tested on iOS too.
             'variations/entropy_provider_unittest.cc',
             'variations/metrics_util_unittest.cc',
@@ -74,6 +77,10 @@
             'sessions',
             'sessions_test_support',
 
+            # Dependencies of translate.
+            'translate_common',
+            'translate_language_detection',
+
             # Dependencies of variations
             'variations',
 
@@ -93,6 +100,7 @@
                 # http://crbug.com/303011.
                 # TODO(asvitkine): Bring up varations/ unittests on iOS.
                 ['include', '^dom_distiller'],
+                ['include', '^translate'],
               ],
               'dependencies!': [
                 'autofill_core_common',

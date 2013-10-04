@@ -15,6 +15,8 @@
         'chrome_resources.gyp:chrome_strings',
         '../components/components.gyp:autofill_content_renderer',
         '../components/components.gyp:startup_metric_utils',
+        '../components/components.gyp:translate_common',
+        '../components/components.gyp:translate_language_detection',
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
         '../net/net.gyp:net',
@@ -404,11 +406,11 @@
             ['exclude', '^renderer/automation/']
           ]
         }],
-	['enable_printing==0', {
+        ['enable_printing==0', {
           'sources/': [
             ['exclude', '^renderer/printing/']
           ]
-	}],
+        }],
         ['OS=="android"', {
           'sources!': [
             'renderer/prerender/prerender_media_load_deferrer.cc',

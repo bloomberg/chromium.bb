@@ -1,0 +1,4 @@
+include_rules = [
+  # translate is used on iOS, which cannot depend on content.
+  "-content",
+]

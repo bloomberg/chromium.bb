@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/translate/translate_util.h"
+#include "components/translate/common/translate_util.h"
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/translate/common/translate_switches.h"
 #include "url/gurl.h"
 
 namespace {
@@ -32,7 +32,7 @@ void SplitIntoMainAndTail(const std::string& language,
 
 }  // namespace
 
-namespace TranslateUtil {
+namespace translate {
 
 struct LanguageCodePair {
   // Code used in supporting list of Translate.
@@ -122,4 +122,4 @@ GURL GetTranslateSecurityOrigin() {
   return GURL(security_origin);
 }
 
-}  // namespace TranslateUtil
+}  // namespace translate

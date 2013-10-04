@@ -179,7 +179,7 @@ cr.googleTranslate = (function() {
       if (!libReady || !finished || errorCode != ERROR['NONE'])
         return '';
       if (!lib.getDetectedLanguage)
-        return 'und'; // defined as chrome::kUnknownLanguageCode in C++ world.
+        return 'und'; // Defined as translate::kUnknownLanguageCode in C++.
       return lib.getDetectedLanguage();
     },
 

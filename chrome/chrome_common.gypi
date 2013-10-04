@@ -404,13 +404,7 @@
         'common/thumbnail_score.h',
         'common/translate/language_detection_details.cc',
         'common/translate/language_detection_details.h',
-        'common/translate/language_detection_util.cc',
-        'common/translate/language_detection_util.h',
-        'common/translate/translate_common_metrics.cc',
-        'common/translate/translate_common_metrics.h',
         'common/translate/translate_errors.h',
-        'common/translate/translate_util.cc',
-        'common/translate/translate_util.h',
         'common/tts_messages.h',
         'common/tts_utterance_request.cc',
         'common/tts_utterance_request.h',
@@ -614,16 +608,6 @@
             'common/print_messages.cc',
             'common/print_messages.h',
           ]
-        }],
-        ['cld_version==0 or cld_version==1', {
-          'dependencies': [
-            '<(DEPTH)/third_party/cld/cld.gyp:cld',
-          ],
-        }],
-        ['cld_version==0 or cld_version==2', {
-          'dependencies': [
-            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
-          ],
         }],
       ],
       'target_conditions': [

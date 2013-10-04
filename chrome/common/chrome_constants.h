@@ -93,10 +93,6 @@ extern const wchar_t kUserDataDirname[];
 
 extern const bool kRecordModeEnabled;
 
-// The language code used when the language of a page could not be detected.
-// (Matches what the CLD -Compact Language Detection- library reports.)
-extern const char* const kUnknownLanguageCode;
-
 // If a WebContents is impolite and displays a second JavaScript alert within
 // kJavaScriptMessageExpectedDelay of a previous JavaScript alert being
 // dismissed, display an option to suppress future alerts from this WebContents.

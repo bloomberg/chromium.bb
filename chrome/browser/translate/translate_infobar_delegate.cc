@@ -62,7 +62,7 @@ void TranslateInfoBarDelegate::Create(
       // infobar, which is the case when the user started a translation from the
       // context menu.
       DCHECK(infobar_type == TRANSLATING || infobar_type == AFTER_TRANSLATE);
-      DCHECK_EQ(chrome::kUnknownLanguageCode, original_language);
+      DCHECK_EQ(translate::kUnknownLanguageCode, original_language);
     }
   }
 

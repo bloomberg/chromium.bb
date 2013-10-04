@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_UTIL_H_
-#define CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_UTIL_H_
+#ifndef COMPONENTS_TRANSLATE_LANGUAGE_DETECTION_LANGUAGE_DETECTION_UTIL_H_
+#define COMPONENTS_TRANSLATE_LANGUAGE_DETECTION_LANGUAGE_DETECTION_UTIL_H_
 
 #include <string>
 
 #include "base/strings/string16.h"
 
-namespace LanguageDetectionUtil {
+namespace translate {
 
 // Determines content page language from Content-Language code and contents.
 std::string DeterminePageLanguage(const std::string& code,
@@ -42,6 +42,6 @@ bool MaybeServerWrongConfiguration(const std::string& page_language,
 // Returns the version string of CLD.
 std::string GetCLDVersion();
 
-}  // namespace LanguageDetectionUtil
+}  // namespace translate
 
-#endif  // CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_UTIL_H_
+#endif  // COMPONENTS_TRANSLATE_LANGUAGE_DETECTION_LANGUAGE_DETECTION_UTIL_H_

@@ -1,0 +1,6 @@
+include_rules = [
+  # CLD library.
+  "+third_party/cld",
+  "+third_party/cld/encodings/compact_lang_det/win",
+  "+third_party/cld_2/src",
+]

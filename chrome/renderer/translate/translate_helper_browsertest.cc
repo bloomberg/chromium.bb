@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate/translate_helper.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "components/translate/common/translate_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -233,7 +233,7 @@ TEST_F(TranslateHelperBrowserTest, UndefinedSourceLang) {
               ExecuteScriptAndGetDoubleResult(_)).Times(3);
 
   translate_helper_->TranslatePage(view_->GetPageId(),
-                                   chrome::kUnknownLanguageCode, "fr",
+                                   translate::kUnknownLanguageCode, "fr",
                                    std::string());
   base::MessageLoop::current()->RunUntilIdle();
 

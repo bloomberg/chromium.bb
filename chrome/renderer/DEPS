@@ -1,6 +1,8 @@
 include_rules = [
   "+components/autofill/content/renderer",
   "+components/autofill/core/common",
+  "+components/translate/common",
+  "+components/translate/language_detection",
   "+components/visitedlink/renderer",
   "+content/public/child",
   "+content/public/renderer",

@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/translate/translate_errors.h"
+#include "components/translate/common/translate_constants.h"
 
 class PrefService;
 
@@ -103,7 +103,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // Convenience methods.
   std::string original_language_code() const {
     return (original_language_index() == kNoIndex) ?
-        chrome::kUnknownLanguageCode :
+        translate::kUnknownLanguageCode :
         language_code_at(original_language_index());
   }
   std::string target_language_code() const {

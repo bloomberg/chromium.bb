@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/translate/language_detection_util.h"
+#include "components/translate/language_detection/language_detection_util.h"
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_constants.h"
+#include "components/translate/common/translate_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test LanguageDetectionUtilTest;
@@ -17,17 +17,17 @@ TEST_F(LanguageDetectionUtilTest, LanguageCodeTypoCorrection) {
 
   // Strip the second and later codes.
   language = std::string("ja,en");
-  LanguageDetectionUtil::CorrectLanguageCodeTypo(&language);
+  translate::CorrectLanguageCodeTypo(&language);
   EXPECT_EQ("ja", language);
 
   // Replace dash with hyphen.
   language = std::string("ja_JP");
-  LanguageDetectionUtil::CorrectLanguageCodeTypo(&language);
+  translate::CorrectLanguageCodeTypo(&language);
   EXPECT_EQ("ja-JP", language);
 
   // Correct wrong cases.
   language = std::string("JA-jp");
-  LanguageDetectionUtil::CorrectLanguageCodeTypo(&language);
+  translate::CorrectLanguageCodeTypo(&language);
   EXPECT_EQ("ja-JP", language);
 }
 
@@ -36,63 +36,59 @@ TEST_F(LanguageDetectionUtilTest, IsValidLanguageCode) {
   std::string language;
 
   language = std::string("ja");
-  EXPECT_TRUE(LanguageDetectionUtil::IsValidLanguageCode(language));
+  EXPECT_TRUE(translate::IsValidLanguageCode(language));
 
   language = std::string("ja-JP");
-  EXPECT_TRUE(LanguageDetectionUtil::IsValidLanguageCode(language));
+  EXPECT_TRUE(translate::IsValidLanguageCode(language));
 
   language = std::string("ceb");
-  EXPECT_TRUE(LanguageDetectionUtil::IsValidLanguageCode(language));
+  EXPECT_TRUE(translate::IsValidLanguageCode(language));
 
   language = std::string("ceb-XX");
-  EXPECT_TRUE(LanguageDetectionUtil::IsValidLanguageCode(language));
+  EXPECT_TRUE(translate::IsValidLanguageCode(language));
 
   // Invalid because the sub code consists of a number.
   language = std::string("utf-8");
-  EXPECT_FALSE(LanguageDetectionUtil::IsValidLanguageCode(language));
+  EXPECT_FALSE(translate::IsValidLanguageCode(language));
 
   // Invalid because of six characters after hyphen.
   language = std::string("ja-YUKARI");
-  EXPECT_FALSE(LanguageDetectionUtil::IsValidLanguageCode(language));
+  EXPECT_FALSE(translate::IsValidLanguageCode(language));
 
   // Invalid because of four characters.
   language = std::string("DHMO");
-  EXPECT_FALSE(LanguageDetectionUtil::IsValidLanguageCode(language));
+  EXPECT_FALSE(translate::IsValidLanguageCode(language));
 }
 
 // Tests that similar language table works.
 TEST_F(LanguageDetectionUtilTest, SimilarLanguageCode) {
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("en", "en"));
-  EXPECT_FALSE(LanguageDetectionUtil::IsSameOrSimilarLanguages("en", "ja"));
+  EXPECT_TRUE(translate::IsSameOrSimilarLanguages("en", "en"));
+  EXPECT_FALSE(translate::IsSameOrSimilarLanguages("en", "ja"));
 
   // Language codes are same if the main parts are same. The synonyms should be
   // took into account (ex: 'iw' and 'he').
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("sr-ME", "sr"));
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("sr", "sr-ME"));
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("he", "he-IL"));
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("eng", "eng-US"));
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("eng-US", "eng"));
-  EXPECT_FALSE(LanguageDetectionUtil::IsSameOrSimilarLanguages("eng", "enm"));
+  EXPECT_TRUE(translate::IsSameOrSimilarLanguages("sr-ME", "sr"));
+  EXPECT_TRUE(translate::IsSameOrSimilarLanguages("sr", "sr-ME"));
+  EXPECT_TRUE(translate::IsSameOrSimilarLanguages("he", "he-IL"));
+  EXPECT_TRUE(translate::IsSameOrSimilarLanguages("eng", "eng-US"));
+  EXPECT_TRUE(translate::IsSameOrSimilarLanguages("eng-US", "eng"));
+  EXPECT_FALSE(translate::IsSameOrSimilarLanguages("eng", "enm"));
 
   // Even though the main parts are different, some special language pairs are
   // recognized as same languages.
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("bs", "hr"));
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("ne", "hi"));
-  EXPECT_FALSE(LanguageDetectionUtil::IsSameOrSimilarLanguages("bs", "hi"));
+  EXPECT_TRUE(translate::IsSameOrSimilarLanguages("bs", "hr"));
+  EXPECT_TRUE(translate::IsSameOrSimilarLanguages("ne", "hi"));
+  EXPECT_FALSE(translate::IsSameOrSimilarLanguages("bs", "hi"));
 }
 
 // Tests that well-known languages which often have wrong server configuration
 // are handles.
 TEST_F(LanguageDetectionUtilTest, WellKnownWrongConfiguration) {
-  EXPECT_TRUE(LanguageDetectionUtil::MaybeServerWrongConfiguration("en", "ja"));
-  EXPECT_TRUE(LanguageDetectionUtil::MaybeServerWrongConfiguration("en-US",
-                                                                   "ja"));
-  EXPECT_TRUE(LanguageDetectionUtil::MaybeServerWrongConfiguration("en",
-                                                                   "zh-CN"));
-  EXPECT_FALSE(LanguageDetectionUtil::MaybeServerWrongConfiguration("ja",
-                                                                    "en"));
-  EXPECT_FALSE(LanguageDetectionUtil::MaybeServerWrongConfiguration("en",
-                                                                    "he"));
+  EXPECT_TRUE(translate::MaybeServerWrongConfiguration("en", "ja"));
+  EXPECT_TRUE(translate::MaybeServerWrongConfiguration("en-US", "ja"));
+  EXPECT_TRUE(translate::MaybeServerWrongConfiguration("en", "zh-CN"));
+  EXPECT_FALSE(translate::MaybeServerWrongConfiguration("ja", "en"));
+  EXPECT_FALSE(translate::MaybeServerWrongConfiguration("en", "he"));
 }
 
 // Tests that the language meta tag providing wrong information is ignored by
@@ -105,10 +101,12 @@ TEST_F(LanguageDetectionUtilTest, CLDDisagreeWithWrongLanguageCode) {
       "is suspicious.</body></html>");
   std::string cld_language;
   bool is_cld_reliable;
-  std::string language = LanguageDetectionUtil::DeterminePageLanguage(
-      std::string("ja"), std::string(), contents, &cld_language,
-      &is_cld_reliable);
-  EXPECT_EQ(chrome::kUnknownLanguageCode, language);
+  std::string language = translate::DeterminePageLanguage(std::string("ja"),
+                                                          std::string(),
+                                                          contents,
+                                                          &cld_language,
+                                                          &is_cld_reliable);
+  EXPECT_EQ(translate::kUnknownLanguageCode, language);
   EXPECT_EQ("en", cld_language);
   EXPECT_TRUE(is_cld_reliable);
 }
@@ -123,9 +121,11 @@ TEST_F(LanguageDetectionUtilTest, CLDAgreeWithLanguageCodeHavingCountryCode) {
       "is suspicious.</body></html>");
   std::string cld_language;
   bool is_cld_reliable;
-  std::string language = LanguageDetectionUtil::DeterminePageLanguage(
-      std::string("en-US"), std::string(), contents, &cld_language,
-      &is_cld_reliable);
+  std::string language = translate::DeterminePageLanguage(std::string("en-US"),
+                                                          std::string(),
+                                                          contents,
+                                                          &cld_language,
+                                                          &is_cld_reliable);
   EXPECT_EQ("en-US", language);
   EXPECT_EQ("en", cld_language);
   EXPECT_TRUE(is_cld_reliable);
@@ -142,9 +142,11 @@ TEST_F(LanguageDetectionUtilTest, InvalidLanguageMetaTagProviding) {
       " language will be adopted if the value is invalid.</body></html>");
   std::string cld_language;
   bool is_cld_reliable;
-  std::string language = LanguageDetectionUtil::DeterminePageLanguage(
-      std::string("utf-8"), std::string(), contents, &cld_language,
-      &is_cld_reliable);
+  std::string language = translate::DeterminePageLanguage(std::string("utf-8"),
+                                                          std::string(),
+                                                          contents,
+                                                          &cld_language,
+                                                          &is_cld_reliable);
   EXPECT_EQ("en", language);
   EXPECT_EQ("en", cld_language);
   EXPECT_TRUE(is_cld_reliable);
@@ -160,9 +162,11 @@ TEST_F(LanguageDetectionUtilTest, AdoptHtmlLang) {
       "is suspicious.</body></html>");
   std::string cld_language;
   bool is_cld_reliable;
-  std::string language = LanguageDetectionUtil::DeterminePageLanguage(
-      std::string("ja"), std::string("en"), contents, &cld_language,
-      &is_cld_reliable);
+  std::string language = translate::DeterminePageLanguage(std::string("ja"),
+                                                          std::string("en"),
+                                                          contents,
+                                                          &cld_language,
+                                                          &is_cld_reliable);
   EXPECT_EQ("en", language);
   EXPECT_EQ("en", cld_language);
   EXPECT_TRUE(is_cld_reliable);

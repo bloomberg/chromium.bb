@@ -30,6 +30,9 @@
         '../components/components.gyp:encryptor',
         '../components/components.gyp:sessions',
         '../components/components.gyp:startup_metric_utils',
+        '../components/components.gyp:translate_common',
+        # TODO(droger): Remove this dependency, see http://crbug.com/297777.
+        '../components/components.gyp:translate_language_detection',
         '../components/components.gyp:user_prefs',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to

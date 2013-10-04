@@ -15,7 +15,7 @@
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/translate/translate_util.h"
+#include "components/translate/common/translate_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 const char TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
@@ -63,7 +63,7 @@ std::string ConvertLangCodeForTranslation(const std::string &lang) {
   if (main_part == "zh")
     return lang;
 
-  TranslateUtil::ToTranslateLanguageSynonym(&main_part);
+  translate::ToTranslateLanguageSynonym(&main_part);
   return main_part;
 }
 
@@ -116,7 +116,7 @@ void TranslatePrefs::BlockLanguage(
 
   // Add the language to the language list at chrome://settings/languages.
   std::string language = original_language;
-  TranslateUtil::ToChromeLanguageSynonym(&language);
+  translate::ToChromeLanguageSynonym(&language);
 
   std::vector<std::string> languages;
   GetLanguageList(&languages);
@@ -421,7 +421,7 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {
              blocked_languages.begin();
          it != blocked_languages.end(); ++it) {
       std::string lang = *it;
-      TranslateUtil::ToChromeLanguageSynonym(&lang);
+      translate::ToChromeLanguageSynonym(&lang);
       bool not_found =
           std::find(accept_languages.begin(), accept_languages.end(), lang) ==
           accept_languages.end();

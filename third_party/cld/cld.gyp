@@ -11,7 +11,10 @@
       'target_name': 'cld',
       'type': 'static_library',
       'dependencies': [
-      	'../icu/icu.gyp:icuuc',
+        '../icu/icu.gyp:icuuc',
+      ],
+      'export_dependent_settings': [
+        '../icu/icu.gyp:icuuc',
       ],
       'include_dirs': [
         '.',

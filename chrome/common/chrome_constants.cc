@@ -220,8 +220,6 @@ const wchar_t kUserDataDirname[] = L"User Data";
 
 const bool kRecordModeEnabled = true;
 
-const char* const kUnknownLanguageCode = "und";
-
 const int kJavaScriptMessageExpectedDelay = 1000;
 
 #if defined(OS_ANDROID)

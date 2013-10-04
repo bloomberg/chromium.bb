@@ -11,13 +11,13 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/translate/language_detection_util.h"
-#include "chrome/common/translate/translate_common_metrics.h"
-#include "chrome/common/translate/translate_util.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/isolated_world_ids.h"
+#include "components/translate/common/translate_constants.h"
+#include "components/translate/common/translate_metrics.h"
+#include "components/translate/common/translate_util.h"
+#include "components/translate/language_detection/language_detection_util.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -101,7 +101,7 @@ void TranslateHelper::PageCaptured(int page_id, const string16& contents) {
     html_lang = html_element.getAttribute("lang").utf8();
   std::string cld_language;
   bool is_cld_reliable;
-  std::string language = LanguageDetectionUtil::DeterminePageLanguage(
+  std::string language = translate::DeterminePageLanguage(
       content_language, html_lang, contents, &cld_language, &is_cld_reliable);
 
   if (language.empty())
@@ -335,15 +335,15 @@ void TranslateHelper::OnTranslatePage(int page_id,
 
   // If the source language is undetermined, we'll let the translate element
   // detect it.
-  source_lang_ = (source_lang != chrome::kUnknownLanguageCode) ?
+  source_lang_ = (source_lang != translate::kUnknownLanguageCode) ?
                   source_lang : kAutoDetectionLanguage;
   target_lang_ = target_lang;
 
-  TranslateCommonMetrics::ReportUserActionDuration(language_determined_time_,
-                                                   base::TimeTicks::Now());
+  translate::ReportUserActionDuration(language_determined_time_,
+                                      base::TimeTicks::Now());
 
   GURL url(main_frame->document().url());
-  TranslateCommonMetrics::ReportPageScheme(url.scheme());
+  translate::ReportPageScheme(url.scheme());
 
   // Set up v8 isolated world with proper content-security-policy and
   // security-origin.
@@ -353,7 +353,7 @@ void TranslateHelper::OnTranslatePage(int page_id,
         chrome::ISOLATED_WORLD_ID_TRANSLATE,
         WebString::fromUTF8(kContentSecurityPolicy));
 
-    GURL security_origin = TranslateUtil::GetTranslateSecurityOrigin();
+    GURL security_origin = translate::GetTranslateSecurityOrigin();
     frame->setIsolatedWorldSecurityOrigin(
         chrome::ISOLATED_WORLD_ID_TRANSLATE,
         WebSecurityOrigin::create(security_origin));
@@ -421,7 +421,7 @@ void TranslateHelper::CheckTranslateStatus() {
     translation_pending_ = false;
 
     // Check JavaScript performance counters for UMA reports.
-    TranslateCommonMetrics::ReportTimeToTranslate(
+    translate::ReportTimeToTranslate(
         ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime"));
 
     // Notify the browser we are done.
@@ -462,9 +462,9 @@ void TranslateHelper::TranslatePageImpl(int count) {
 
   // The library is loaded, and ready for translation now.
   // Check JavaScript performance counters for UMA reports.
-  TranslateCommonMetrics::ReportTimeToBeReady(
+  translate::ReportTimeToBeReady(
       ExecuteScriptAndGetDoubleResult("cr.googleTranslate.readyTime"));
-  TranslateCommonMetrics::ReportTimeToLoad(
+  translate::ReportTimeToLoad(
       ExecuteScriptAndGetDoubleResult("cr.googleTranslate.loadTime"));
 
   if (!StartTranslation()) {

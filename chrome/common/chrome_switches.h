@@ -387,7 +387,6 @@ extern const char kTestType[];
 extern const char kTestingChannelID[];
 extern const char kTrackActiveVisitTime[];
 extern const char kTranslateScriptURL[];
-extern const char kTranslateSecurityOrigin[];
 extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUninstallExtension[];

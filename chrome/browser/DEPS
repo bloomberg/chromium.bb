@@ -14,6 +14,9 @@ include_rules = [
   "+components/navigation_interception",
   "+components/policy",
   "+components/startup_metric_utils",
+  "+components/translate/common",
+  # TODO(droger): Remove dependency on language detection, see crbug.com/297777.
+  "+components/translate/language_detection",
   "+components/user_prefs",
   "+components/visitedlink/browser",
   "+components/webdata",

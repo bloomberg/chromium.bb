@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/translate/language_detection_util.h"
+#include "components/translate/language_detection/language_detection_util.h"
 
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -10,9 +10,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/translate/translate_common_metrics.h"
-#include "chrome/common/translate/translate_util.h"
+#include "components/translate/common/translate_constants.h"
+#include "components/translate/common/translate_metrics.h"
+#include "components/translate/common/translate_util.h"
 
 #if !defined(CLD_VERSION) || CLD_VERSION==1
 #include "third_party/cld/encodings/compact_lang_det/compact_lang_det.h"
@@ -52,7 +52,7 @@ int GetSimilarLanguageGroupCode(const std::string& language) {
 // Well-known languages which often have wrong server configuration of
 // Content-Language: en.
 // TODO(toyoshim): Remove these static tables and caller functions to
-// chrome/common/translate, and implement them as std::set<>.
+// translate/common, and implement them as std::set<>.
 const char* kWellKnownCodesOnWrongConfiguration[] = {
   "es", "pt", "ja", "ru", "de", "zh-CN", "zh-TW", "ar", "id", "fr", "it", "th"
 };
@@ -60,14 +60,14 @@ const char* kWellKnownCodesOnWrongConfiguration[] = {
 // Applies a series of language code modification in proper order.
 void ApplyLanguageCodeCorrection(std::string* code) {
   // Correct well-known format errors.
-  LanguageDetectionUtil::CorrectLanguageCodeTypo(code);
+  translate::CorrectLanguageCodeTypo(code);
 
-  if (!LanguageDetectionUtil::IsValidLanguageCode(*code)) {
+  if (!translate::IsValidLanguageCode(*code)) {
     *code = std::string();
     return;
   }
 
-  TranslateUtil::ToTranslateLanguageSynonym(code);
+  translate::ToTranslateLanguageSynonym(code);
 }
 
 int GetCLDMajorVersion() {
@@ -87,7 +87,7 @@ int GetCLDMajorVersion() {
 // |is_cld_reliable| will be set as true if CLD says the detection is reliable.
 std::string DetermineTextLanguage(const base::string16& text,
                                   bool* is_cld_reliable) {
-  std::string language = chrome::kUnknownLanguageCode;
+  std::string language = translate::kUnknownLanguageCode;
   int text_bytes = 0;
   bool is_reliable = false;
 
@@ -113,10 +113,9 @@ std::string DetermineTextLanguage(const base::string16& text,
       std::string utf8_text(UTF16ToUTF8(text));
       CLD2::Language language3[3];
       int percent3[3];
-      cld_language =
-          CLD2::DetectLanguageSummary(utf8_text.c_str(), utf8_text.size(), true,
-                                      language3, percent3,
-                                      &text_bytes, &is_reliable);
+      cld_language = CLD2::DetectLanguageSummary(
+          utf8_text.c_str(), (int)utf8_text.size(), true, language3, percent3,
+          &text_bytes, &is_reliable);
       is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
           cld_language != CLD2::UNKNOWN_LANGUAGE &&
           cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
@@ -193,7 +192,7 @@ bool CanCLDComplementSubCode(
 
 }  // namespace
 
-namespace LanguageDetectionUtil {
+namespace translate {
 
 std::string DeterminePageLanguage(const std::string& code,
                                   const std::string& html_lang,
@@ -203,21 +202,20 @@ std::string DeterminePageLanguage(const std::string& code,
   base::TimeTicks begin_time = base::TimeTicks::Now();
   bool is_cld_reliable;
   std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
-  TranslateCommonMetrics::ReportLanguageDetectionTime(begin_time,
-                                                      base::TimeTicks::Now());
+  translate::ReportLanguageDetectionTime(begin_time, base::TimeTicks::Now());
 
   if (cld_language_p != NULL)
     *cld_language_p = cld_language;
   if (is_cld_reliable_p != NULL)
     *is_cld_reliable_p = is_cld_reliable;
-  TranslateUtil::ToTranslateLanguageSynonym(&cld_language);
+  translate::ToTranslateLanguageSynonym(&cld_language);
 
   // Check if html lang attribute is valid.
   std::string modified_html_lang;
   if (!html_lang.empty()) {
     modified_html_lang = html_lang;
     ApplyLanguageCodeCorrection(&modified_html_lang);
-    TranslateCommonMetrics::ReportHtmlLang(html_lang, modified_html_lang);
+    translate::ReportHtmlLang(html_lang, modified_html_lang);
     VLOG(9) << "html lang based language code: " << modified_html_lang;
   }
 
@@ -226,7 +224,7 @@ std::string DeterminePageLanguage(const std::string& code,
   if (!code.empty()) {
     modified_code = code;
     ApplyLanguageCodeCorrection(&modified_code);
-    TranslateCommonMetrics::ReportContentLanguage(code, modified_code);
+    translate::ReportContentLanguage(code, modified_code);
   }
 
   // Adopt |modified_html_lang| if it is valid. Otherwise, adopt
@@ -235,37 +233,37 @@ std::string DeterminePageLanguage(const std::string& code,
                                                       modified_html_lang;
 
   // If |language| is empty, just use CLD result even though it might be
-  // chrome::kUnknownLanguageCode.
+  // translate::kUnknownLanguageCode.
   if (language.empty()) {
-    TranslateCommonMetrics::ReportLanguageVerification(
-        TranslateCommonMetrics::LANGUAGE_VERIFICATION_CLD_ONLY);
+    translate::ReportLanguageVerification(
+        translate::LANGUAGE_VERIFICATION_CLD_ONLY);
     return cld_language;
   }
 
-  if (cld_language == chrome::kUnknownLanguageCode) {
-    TranslateCommonMetrics::ReportLanguageVerification(
-        TranslateCommonMetrics::LANGUAGE_VERIFICATION_UNKNOWN);
+  if (cld_language == kUnknownLanguageCode) {
+    translate::ReportLanguageVerification(
+        translate::LANGUAGE_VERIFICATION_UNKNOWN);
     return language;
   } else if (CanCLDComplementSubCode(language, cld_language)) {
-    TranslateCommonMetrics::ReportLanguageVerification(
-        TranslateCommonMetrics::LANGUAGE_VERIFICATION_CLD_COMPLEMENT_SUB_CODE);
+    translate::ReportLanguageVerification(
+        translate::LANGUAGE_VERIFICATION_CLD_COMPLEMENT_SUB_CODE);
     return cld_language;
   } else if (IsSameOrSimilarLanguages(language, cld_language)) {
-    TranslateCommonMetrics::ReportLanguageVerification(
-        TranslateCommonMetrics::LANGUAGE_VERIFICATION_CLD_AGREE);
+    translate::ReportLanguageVerification(
+        translate::LANGUAGE_VERIFICATION_CLD_AGREE);
     return language;
   } else if (MaybeServerWrongConfiguration(language, cld_language)) {
-    TranslateCommonMetrics::ReportLanguageVerification(
-        TranslateCommonMetrics::LANGUAGE_VERIFICATION_TRUST_CLD);
+    translate::ReportLanguageVerification(
+        translate::LANGUAGE_VERIFICATION_TRUST_CLD);
     return cld_language;
   } else {
-    TranslateCommonMetrics::ReportLanguageVerification(
-        TranslateCommonMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE);
+    translate::ReportLanguageVerification(
+        translate::LANGUAGE_VERIFICATION_CLD_DISAGREE);
     // Content-Language value might be wrong because CLD says that this page
     // is written in another language with confidence.
     // In this case, Chrome doesn't rely on any of the language codes, and
     // gives up suggesting a translation.
-    return std::string(chrome::kUnknownLanguageCode);
+    return std::string(kUnknownLanguageCode);
   }
 
   return language;
@@ -352,7 +350,7 @@ bool IsSameOrSimilarLanguages(const std::string& page_language,
   if (page_language_main_part == cld_language_main_part) {
     // Languages are matched strictly. Reports false to metrics, but returns
     // true.
-    TranslateCommonMetrics::ReportSimilarLanguageMatch(false);
+    translate::ReportSimilarLanguageMatch(false);
     return true;
   }
 
@@ -362,7 +360,7 @@ bool IsSameOrSimilarLanguages(const std::string& page_language,
   bool match = page_code != 0 &&
                page_code == GetSimilarLanguageGroupCode(cld_language);
 
-  TranslateCommonMetrics::ReportSimilarLanguageMatch(match);
+  translate::ReportSimilarLanguageMatch(match);
   return match;
 }
 
@@ -400,4 +398,4 @@ std::string GetCLDVersion() {
   return "";
 }
 
-}  // namespace LanguageDetectionUtil
+}  // namespace translate

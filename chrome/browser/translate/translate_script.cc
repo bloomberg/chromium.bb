@@ -14,7 +14,7 @@
 #include "chrome/browser/translate/translate_url_fetcher.h"
 #include "chrome/browser/translate/translate_url_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/translate/translate_util.h"
+#include "components/translate/common/translate_util.h"
 #include "google_apis/google_api_keys.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
@@ -126,7 +126,7 @@ void TranslateScript::OnScriptFetchComplete(
     data_ = base::StringPrintf("var translateApiKey = '%s';\n",
                                google_apis::GetAPIKey().c_str());
 
-    GURL security_origin = TranslateUtil::GetTranslateSecurityOrigin();
+    GURL security_origin = translate::GetTranslateSecurityOrigin();
     base::StringAppendF(
         &data_, "var securityOrigin = '%s';", security_origin.spec().c_str());
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_TRANSLATE_TRANSLATE_UTIL_H_
-#define CHROME_COMMON_TRANSLATE_TRANSLATE_UTIL_H_
+#ifndef COMPONENTS_TRANSLATE_COMMON_TRANSLATE_UTIL_H_
+#define COMPONENTS_TRANSLATE_COMMON_TRANSLATE_UTIL_H_
 
 #include <string>
 
 class GURL;
 
-namespace TranslateUtil {
+namespace translate {
 
 // Isolated world sets following security-origin by default.
 extern const char kSecurityOrigin[];
@@ -23,6 +23,6 @@ void ToChromeLanguageSynonym(std::string* language);
 // Get Security origin with which Translate runs.
 GURL GetTranslateSecurityOrigin();
 
-}  // namespace TranslateUtil
+}  // namespace translate
 
-#endif  // CHROME_COMMON_TRANSLATE_TRANSLATE_UTIL_H_
+#endif  // COMPONENTS_TRANSLATE_COMMON_TRANSLATE_UTIL_H_

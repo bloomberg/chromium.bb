@@ -12,10 +12,10 @@
 #include "chrome/browser/translate/translate_script.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/translate/common/translate_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/http/http_status_code.h"
@@ -56,8 +56,9 @@ class TranslateBrowserTest : public InProcessBrowserTest {
     // Setup alternate security origin for testing in order to allow XHR against
     // local test server. Note that this flag shows a confirm infobar in tests.
     GURL base_url = GetSecureURL("");
-    command_line->AppendSwitchASCII(switches::kTranslateSecurityOrigin,
-                                    base_url.GetOrigin().spec());
+    command_line->AppendSwitchASCII(
+        translate::switches::kTranslateSecurityOrigin,
+        base_url.GetOrigin().spec());
   }
 
  protected:

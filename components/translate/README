@@ -1,0 +1,8 @@
+- translate/language detection depends on the CLD library and should only be
+used from the renderer to avoid bloating the DLLs on Windows.
+
+- Translate is not allowed to depend on content/, because it is used by iOS.
+If dependences on content/ need to be added to Translate, it will have to be
+made into a layered component: see
+http://www.chromium.org/developers/design-documents/layered-components-design
+for more information.

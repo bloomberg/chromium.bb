@@ -21,6 +21,7 @@
     'policy.gypi',
     'sessions.gypi',
     'startup_metric_utils.gypi',
+    'translate.gypi',
     'user_prefs.gypi',
     'variations.gypi',
     'visitedlink.gypi',
