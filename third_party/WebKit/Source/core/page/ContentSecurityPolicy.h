@@ -27,6 +27,7 @@
 #define ContentSecurityPolicy_h
 
 #include "bindings/v8/ScriptState.h"
+#include "core/platform/network/HTTPParsers.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -72,15 +73,6 @@ public:
     enum ReportingStatus {
         SendReport,
         SuppressReport
-    };
-
-    // Be sure to update the behavior of XSSAuditor::combineXSSProtectionHeaderAndCSP whenever you change this enum's content or ordering.
-    enum ReflectedXSSDisposition {
-        ReflectedXSSUnset = 0,
-        AllowReflectedXSS,
-        ReflectedXSSInvalid,
-        FilterReflectedXSS,
-        BlockReflectedXSS
     };
 
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);

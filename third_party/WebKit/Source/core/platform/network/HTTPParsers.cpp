@@ -33,7 +33,6 @@
 #include "config.h"
 #include "core/platform/network/HTTPParsers.h"
 
-#include "core/page/ContentSecurityPolicy.h"
 #include "wtf/DateMath.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -352,7 +351,7 @@ void findCharsetInMediaType(const String& mediaType, unsigned int& charsetPos, u
     }
 }
 
-ContentSecurityPolicy::ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL)
+ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL)
 {
     DEFINE_STATIC_LOCAL(String, failureReasonInvalidToggle, ("expected 0 or 1"));
     DEFINE_STATIC_LOCAL(String, failureReasonInvalidSeparator, ("expected semicolon"));
@@ -366,17 +365,17 @@ ContentSecurityPolicy::ReflectedXSSDisposition parseXSSProtectionHeader(const St
     unsigned pos = 0;
 
     if (!skipWhiteSpace(header, pos, false))
-        return ContentSecurityPolicy::ReflectedXSSUnset;
+        return ReflectedXSSUnset;
 
     if (header[pos] == '0')
-        return ContentSecurityPolicy::AllowReflectedXSS;
+        return AllowReflectedXSS;
 
     if (header[pos++] != '1') {
         failureReason = failureReasonInvalidToggle;
-        return ContentSecurityPolicy::ReflectedXSSInvalid;
+        return ReflectedXSSInvalid;
     }
 
-    ContentSecurityPolicy::ReflectedXSSDisposition result = ContentSecurityPolicy::FilterReflectedXSS;
+    ReflectedXSSDisposition result = FilterReflectedXSS;
     bool modeDirectiveSeen = false;
     bool reportDirectiveSeen = false;
 
@@ -388,7 +387,7 @@ ContentSecurityPolicy::ReflectedXSSDisposition parseXSSProtectionHeader(const St
         if (header[pos++] != ';') {
             failureReason = failureReasonInvalidSeparator;
             failurePosition = pos;
-            return ContentSecurityPolicy::ReflectedXSSInvalid;
+            return ReflectedXSSInvalid;
         }
 
         if (!skipWhiteSpace(header, pos, false))
@@ -399,44 +398,44 @@ ContentSecurityPolicy::ReflectedXSSDisposition parseXSSProtectionHeader(const St
             if (modeDirectiveSeen) {
                 failureReason = failureReasonDuplicateMode;
                 failurePosition = pos;
-                return ContentSecurityPolicy::ReflectedXSSInvalid;
+                return ReflectedXSSInvalid;
             }
             modeDirectiveSeen = true;
             if (!skipEquals(header, pos)) {
                 failureReason = failureReasonInvalidEquals;
                 failurePosition = pos;
-                return ContentSecurityPolicy::ReflectedXSSInvalid;
+                return ReflectedXSSInvalid;
             }
             if (!skipToken(header, pos, "block")) {
                 failureReason = failureReasonInvalidMode;
                 failurePosition = pos;
-                return ContentSecurityPolicy::ReflectedXSSInvalid;
+                return ReflectedXSSInvalid;
             }
-            result = ContentSecurityPolicy::BlockReflectedXSS;
+            result = BlockReflectedXSS;
         } else if (skipToken(header, pos, "report")) {
             if (reportDirectiveSeen) {
                 failureReason = failureReasonDuplicateReport;
                 failurePosition = pos;
-                return ContentSecurityPolicy::ReflectedXSSInvalid;
+                return ReflectedXSSInvalid;
             }
             reportDirectiveSeen = true;
             if (!skipEquals(header, pos)) {
                 failureReason = failureReasonInvalidEquals;
                 failurePosition = pos;
-                return ContentSecurityPolicy::ReflectedXSSInvalid;
+                return ReflectedXSSInvalid;
             }
             size_t startPos = pos;
             if (!skipValue(header, pos)) {
                 failureReason = failureReasonInvalidReport;
                 failurePosition = pos;
-                return ContentSecurityPolicy::ReflectedXSSInvalid;
+                return ReflectedXSSInvalid;
             }
             reportURL = header.substring(startPos, pos - startPos);
             failurePosition = startPos; // If later semantic check deems unacceptable.
         } else {
             failureReason = failureReasonInvalidDirective;
             failurePosition = pos;
-            return ContentSecurityPolicy::ReflectedXSSInvalid;
+            return ReflectedXSSInvalid;
         }
     }
 }

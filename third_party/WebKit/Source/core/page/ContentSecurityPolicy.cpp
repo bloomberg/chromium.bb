@@ -803,7 +803,7 @@ public:
 
     void gatherReportURIs(DOMStringList&) const;
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
-    ContentSecurityPolicy::ReflectedXSSDisposition reflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
+    ReflectedXSSDisposition reflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
     bool isReportOnly() const { return m_reportOnly; }
     const Vector<KURL>& reportURIs() const { return m_reportURIs; }
 
@@ -848,7 +848,7 @@ private:
 
     bool m_reportOnly;
     bool m_haveSandboxPolicy;
-    ContentSecurityPolicy::ReflectedXSSDisposition m_reflectedXSSDisposition;
+    ReflectedXSSDisposition m_reflectedXSSDisposition;
 
     OwnPtr<MediaListDirective> m_pluginTypes;
     OwnPtr<SourceListDirective> m_baseURI;
@@ -873,7 +873,7 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     , m_headerType(type)
     , m_reportOnly(false)
     , m_haveSandboxPolicy(false)
-    , m_reflectedXSSDisposition(ContentSecurityPolicy::ReflectedXSSUnset)
+    , m_reflectedXSSDisposition(ReflectedXSSUnset)
 {
     m_reportOnly = (type == ContentSecurityPolicy::Report || type == ContentSecurityPolicy::PrefixedReport);
 }
@@ -1308,14 +1308,14 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
 
 void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value)
 {
-    if (m_reflectedXSSDisposition != ContentSecurityPolicy::ReflectedXSSUnset) {
+    if (m_reflectedXSSDisposition != ReflectedXSSUnset) {
         m_policy->reportDuplicateDirective(name);
-        m_reflectedXSSDisposition = ContentSecurityPolicy::ReflectedXSSInvalid;
+        m_reflectedXSSDisposition = ReflectedXSSInvalid;
         return;
     }
 
     if (value.isEmpty()) {
-        m_reflectedXSSDisposition = ContentSecurityPolicy::ReflectedXSSInvalid;
+        m_reflectedXSSDisposition = ReflectedXSSInvalid;
         m_policy->reportInvalidReflectedXSS(value);
         return;
     }
@@ -1333,24 +1333,24 @@ void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value
     // value1
     //       ^
     if (equalIgnoringCase("allow", begin, position - begin))
-        m_reflectedXSSDisposition = ContentSecurityPolicy::AllowReflectedXSS;
+        m_reflectedXSSDisposition = AllowReflectedXSS;
     else if (equalIgnoringCase("filter", begin, position - begin))
-        m_reflectedXSSDisposition = ContentSecurityPolicy::FilterReflectedXSS;
+        m_reflectedXSSDisposition = FilterReflectedXSS;
     else if (equalIgnoringCase("block", begin, position - begin))
-        m_reflectedXSSDisposition = ContentSecurityPolicy::BlockReflectedXSS;
+        m_reflectedXSSDisposition = BlockReflectedXSS;
     else {
-        m_reflectedXSSDisposition = ContentSecurityPolicy::ReflectedXSSInvalid;
+        m_reflectedXSSDisposition = ReflectedXSSInvalid;
         m_policy->reportInvalidReflectedXSS(value);
         return;
     }
 
     skipWhile<UChar, isASCIISpace>(position, end);
-    if (position == end && m_reflectedXSSDisposition != ContentSecurityPolicy::ReflectedXSSUnset)
+    if (position == end && m_reflectedXSSDisposition != ReflectedXSSUnset)
         return;
 
     // value1 value2
     //        ^
-    m_reflectedXSSDisposition = ContentSecurityPolicy::ReflectedXSSInvalid;
+    m_reflectedXSSDisposition = ReflectedXSSInvalid;
     m_policy->reportInvalidReflectedXSS(value);
 }
 
@@ -1647,7 +1647,7 @@ bool ContentSecurityPolicy::isActive() const
     return !m_policies.isEmpty();
 }
 
-ContentSecurityPolicy::ReflectedXSSDisposition ContentSecurityPolicy::reflectedXSSDisposition() const
+ReflectedXSSDisposition ContentSecurityPolicy::reflectedXSSDisposition() const
 {
     ReflectedXSSDisposition disposition = ReflectedXSSUnset;
     for (size_t i = 0; i < m_policies.size(); ++i) {

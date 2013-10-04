@@ -31,7 +31,6 @@
 #ifndef HTTPParsers_h
 #define HTTPParsers_h
 
-#include "core/page/ContentSecurityPolicy.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
@@ -61,6 +60,15 @@ enum XFrameOptionsDisposition {
     XFrameOptionsConflict
 };
 
+// Be sure to update the behavior of XSSAuditor::combineXSSProtectionHeaderAndCSP whenever you change this enum's content or ordering.
+enum ReflectedXSSDisposition {
+    ReflectedXSSUnset = 0,
+    AllowReflectedXSS,
+    ReflectedXSSInvalid,
+    FilterReflectedXSS,
+    BlockReflectedXSS
+};
+
 ContentDispositionType contentDispositionType(const String&);
 bool isValidHTTPHeaderValue(const String&);
 bool isValidHTTPToken(const String&);
@@ -70,7 +78,7 @@ String filenameFromHTTPContentDisposition(const String&);
 String extractMIMETypeFromMediaType(const String&);
 String extractCharsetFromMediaType(const String&);
 void findCharsetInMediaType(const String& mediaType, unsigned int& charsetPos, unsigned int& charsetLen, unsigned int start = 0);
-ContentSecurityPolicy::ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL);
+ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL);
 String extractReasonPhraseFromHTTPStatusLine(const String&);
 XFrameOptionsDisposition parseXFrameOptionsHeader(const String&);
 
