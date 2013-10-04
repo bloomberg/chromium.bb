@@ -1405,6 +1405,14 @@ public:
     void setShapeMargin(Length shapeMargin) { SET_VAR(rareNonInheritedData, m_shapeMargin, shapeMargin); }
     static Length initialShapeMargin() { return Length(0, Fixed); }
 
+    float shapeImageThreshold() const { return rareNonInheritedData->m_shapeImageThreshold; }
+    void setShapeImageThreshold(float shapeImageThreshold)
+    {
+        float clampedShapeImageThreshold = clampTo<float>(shapeImageThreshold, 0, 1);
+        SET_VAR(rareNonInheritedData, m_shapeImageThreshold, clampedShapeImageThreshold);
+    }
+    static float initialShapeImageThreshold() { return 0; }
+
     bool hasContent() const { return contentData(); }
     const ContentData* contentData() const { return rareNonInheritedData->m_content.get(); }
     bool contentDataEquivalent(const RenderStyle* otherStyle) const { return const_cast<RenderStyle*>(this)->rareNonInheritedData->contentDataEquivalent(*const_cast<RenderStyle*>(otherStyle)->rareNonInheritedData); }

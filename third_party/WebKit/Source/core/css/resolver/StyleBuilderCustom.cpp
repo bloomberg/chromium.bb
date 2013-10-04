@@ -2121,6 +2121,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitWrapFlow:
     case CSSPropertyWebkitShapeMargin:
     case CSSPropertyWebkitShapePadding:
+    case CSSPropertyWebkitShapeImageThreshold:
     case CSSPropertyWebkitWrapThrough:
     case CSSPropertyWebkitShapeInside:
     case CSSPropertyWebkitShapeOutside:

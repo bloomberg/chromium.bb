@@ -225,6 +225,7 @@ z-index type_name=int, custom_all
 -webkit-shape-margin type_name=Length, converter=convertLength
 -webkit-shape-outside type_name=ShapeValue*, custom_value
 -webkit-shape-padding type_name=Length, converter=convertLength
+-webkit-shape-image-threshold type_name=float
 -webkit-text-combine type_name=TextCombine
 -webkit-text-emphasis-color custom_all
 -webkit-text-emphasis-position type_name=TextEmphasisPosition

@@ -341,6 +341,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitWrapFlow,
     CSSPropertyWebkitShapeMargin,
     CSSPropertyWebkitShapePadding,
+    CSSPropertyWebkitShapeImageThreshold,
     CSSPropertyWebkitWrapThrough,
     CSSPropertyBufferedRendering,
     CSSPropertyClipPath,
@@ -2734,6 +2735,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->shapeMargin());
         case CSSPropertyWebkitShapePadding:
             return cssValuePool().createValue(style->shapePadding());
+        case CSSPropertyWebkitShapeImageThreshold:
+            return cssValuePool().createValue(style->shapeImageThreshold(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyWebkitShapeInside:
             if (!style->shapeInside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);

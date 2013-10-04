@@ -368,6 +368,7 @@ webkitRegionBreakInside
 webkitRegionFragment
 webkitRtlOrdering
 webkitRubyPosition
+webkitShapeImageThreshold
 webkitShapeInside
 webkitShapeMargin
 webkitShapeOutside

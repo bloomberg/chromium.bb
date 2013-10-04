@@ -412,6 +412,7 @@ order
 -webkit-shape-outside
 -webkit-shape-margin
 -webkit-shape-padding
+-webkit-shape-image-threshold
 -webkit-wrap-flow
 -webkit-wrap-through
 max-zoom
