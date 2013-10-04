@@ -35,6 +35,7 @@ An example usage (using git hashes):
 
 """
 
+import datetime
 import errno
 import imp
 import math
@@ -183,6 +184,22 @@ def CalculateStandardDeviation(v):
   std_dev = math.sqrt(variance)
 
   return std_dev
+
+
+def CalculatePooledStandardError(work_sets):
+  numerator = 0.0
+  denominator1 = 0.0
+  denominator2 = 0.0
+
+  for current_set in work_sets:
+    std_dev = CalculateStandardDeviation(current_set)
+    numerator += (len(current_set) - 1) * std_dev ** 2
+    denominator1 += len(current_set) - 1
+    denominator2 += 1.0 / len(current_set)
+
+  if denominator1:
+    return math.sqrt(numerator / denominator1) * math.sqrt(denominator2)
+  return 0.0
 
 
 def CalculateStandardError(v):
@@ -1458,6 +1475,7 @@ class BisectPerformanceMetrics(object):
               BUILD_RESULT_SKIPPED)
 
         if self.BuildCurrentRevision(depot):
+          start_time = time.time()
           results = self.RunPerformanceTestAndParseResults(command_to_run,
                                                            metric)
 
@@ -1466,7 +1484,8 @@ class BisectPerformanceMetrics(object):
                 depot, revision)
 
             if not external_revisions is None:
-              return (results[0], results[1], external_revisions)
+              return (results[0], results[1], external_revisions,
+                  time.time() - start_time)
             else:
               return ('Failed to parse DEPS file for external revisions.',
                   BUILD_RESULT_FAIL)
@@ -1660,6 +1679,7 @@ class BisectPerformanceMetrics(object):
       revision_data[r] = {'revision' : r,
                           'depot' : depot,
                           'value' : None,
+                          'time' : 0,
                           'passed' : '?',
                           'sort' : i + sort + 1}
 
@@ -1863,6 +1883,7 @@ class BisectPerformanceMetrics(object):
                                               'passed' : '?',
                                               'depot' : target_depot,
                                               'external' : None,
+                                              'time' : 0,
                                               'sort' : sort_key_ids}
         revision_list.append(current_revision_id)
 
@@ -1911,11 +1932,13 @@ class BisectPerformanceMetrics(object):
       # already know the results.
       bad_revision_data = revision_data[revision_list[0]]
       bad_revision_data['external'] = bad_results[2]
+      bad_revision_data['time'] = bad_results[3]
       bad_revision_data['passed'] = False
       bad_revision_data['value'] = known_bad_value
 
       good_revision_data = revision_data[revision_list[max_revision]]
       good_revision_data['external'] = good_results[2]
+      good_revision_data['time'] = good_results[3]
       good_revision_data['passed'] = True
       good_revision_data['value'] = known_good_value
 
@@ -2013,6 +2036,7 @@ class BisectPerformanceMetrics(object):
         if not run_results[1]:
           if len(run_results) > 2:
             next_revision_data['external'] = run_results[2]
+            next_revision_data['time'] = run_results[3]
 
           passed_regression = self.CheckIfRunPassed(run_results[0],
                                                     known_good_value,
@@ -2110,6 +2134,8 @@ class BisectPerformanceMetrics(object):
         'Commit SHA'.center(40, ' '), 'Mean'.center(12, ' '),
         'Std. Error'.center(14, ' '), 'State'.center(13, ' '))
     state = 0
+    step_time_avg = 0.0
+    step_count = 0.0
     for current_id, current_data in revision_data_sorted:
       if current_data['value']:
         if (current_id == last_broken_revision or
@@ -2130,6 +2156,12 @@ class BisectPerformanceMetrics(object):
         print '  %20s  %40s  %12s %14s %13s' % (
             current_data['depot'].center(20, ' '), current_id, mean,
             std_error, state_str)
+
+        step_time_avg += current_data['time']
+        step_count += 1
+
+    if step_count:
+      step_time_avg = step_time_avg / step_count
 
     if last_broken_revision != None and first_working_revision != None:
       bounds_broken = [revision_data[last_broken_revision]['value']['mean'],
@@ -2159,18 +2191,16 @@ class BisectPerformanceMetrics(object):
       mean_of_good_runs = CalculateTruncatedMean(working_mean, 0.0)
 
       regression_size = math.fabs(max(mean_of_good_runs, mean_of_bad_runs) /
-          min(mean_of_good_runs, mean_of_bad_runs)) * 100.0 - 100.0
+          max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0 - 100.0
 
-      regression_size_max = math.fabs(max(bounds_working[0], bounds_broken[1]) /
-          min(bounds_working[0], bounds_broken[1])) * 100.0 - 100.0
-      regression_size_min = math.fabs(max(bounds_working[1], bounds_broken[0]) /
-          min(bounds_working[1], bounds_broken[0])) * 100.0 - 100.0
-      regression_diff = max(math.fabs(regression_size_max - regression_size),
-          math.fabs(regression_size - regression_size_min))
+      regression_std_err = CalculatePooledStandardError(
+          [working_mean, broken_mean])
 
       print
-      print 'Approximate size of regression: %.02f%%  +- %.02f%%' % (
-          regression_size, regression_diff)
+      print 'Average step time: %s' % datetime.timedelta(
+          seconds=int(step_time_avg))
+      print 'Approximate size of regression: %.02f%%, +-%.02f%% std. err' % (
+          regression_size, regression_std_err)
 
       # Give a "confidence" in the bisect. At the moment we use how distinct the
       # values are before and after the last broken revision, and how noisy the
@@ -2185,6 +2215,11 @@ class BisectPerformanceMetrics(object):
       confidence = min(1.0, max(confidence, 0.0)) * 100.0
 
       print 'Confidence in Bisection Results: %d%%' % int(confidence)
+      print
+      print 'Experimental - If confidence is less than 100%, there are could '\
+          'be some other strong candidates for this regression. You can '\
+          'try increasing the repeat_count, or looking for a sub-metric that '\
+          'shows the regression more clearly.'
       print
 
       print 'Results: Regression may have occurred in range:'
