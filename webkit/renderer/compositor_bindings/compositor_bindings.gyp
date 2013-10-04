@@ -55,6 +55,8 @@
         'web_external_bitmap_impl.h',
         'web_external_texture_layer_impl.cc',
         'web_external_texture_layer_impl.h',
+        'web_filter_animation_curve_impl.cc',
+        'web_filter_animation_curve_impl.h',
         'web_filter_operations_impl.cc',
         'web_filter_operations_impl.h',
         'web_float_animation_curve_impl.cc',

@@ -1,0 +1,56 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_FILTER_ANIMATION_CURVE_IMPL_H_
+#define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_FILTER_ANIMATION_CURVE_IMPL_H_
+
+#include "third_party/WebKit/public/platform/WebAnimationCurve.h"
+
+#if WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
+
+#include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/public/platform/WebFilterAnimationCurve.h"
+#include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
+
+namespace cc {
+class AnimationCurve;
+class KeyframedFilterAnimationCurve;
+}
+
+namespace WebKit { class WebFilterKeyframe; }
+
+namespace webkit {
+
+class WebFilterAnimationCurveImpl
+    : public WebKit::WebFilterAnimationCurve {
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebFilterAnimationCurveImpl();
+  virtual ~WebFilterAnimationCurveImpl();
+
+  // WebKit::WebAnimationCurve implementation.
+  virtual AnimationCurveType type() const;
+
+  // WebKit::WebFilterAnimationCurve implementation.
+  virtual void add(const WebKit::WebFilterKeyframe& keyframe);
+  virtual void add(const WebKit::WebFilterKeyframe& keyframe,
+                   TimingFunctionType type);
+  virtual void add(const WebKit::WebFilterKeyframe& keyframe,
+                   double x1,
+                   double y1,
+                   double x2,
+                   double y2);
+
+  scoped_ptr<cc::AnimationCurve> CloneToAnimationCurve() const;
+
+ private:
+  scoped_ptr<cc::KeyframedFilterAnimationCurve> curve_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebFilterAnimationCurveImpl);
+};
+
+}  // namespace webkit
+
+#endif  // WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
+
+#endif  // WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_FILTER_ANIMATION_CURVE_IMPL_H_
