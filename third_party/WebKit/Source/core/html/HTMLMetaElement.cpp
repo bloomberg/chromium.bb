@@ -405,24 +405,30 @@ void HTMLMetaElement::process()
     if (!inDocument())
         return;
 
+    // All below situations require a content attribute (which can be the empty string).
     const AtomicString& contentValue = fastGetAttribute(contentAttr);
     if (contentValue.isNull())
         return;
 
-    if (equalIgnoringCase(name(), "viewport"))
-        processViewportContentAttribute(contentValue, ViewportDescription::ViewportMeta);
-    else if (equalIgnoringCase(name(), "referrer"))
-        document().processReferrerPolicy(contentValue);
-    else if (equalIgnoringCase(name(), "handheldfriendly") && equalIgnoringCase(contentValue, "true"))
-        processViewportContentAttribute("width=device-width", ViewportDescription::HandheldFriendlyMeta);
-    else if (equalIgnoringCase(name(), "mobileoptimized"))
-        processViewportContentAttribute("width=device-width, initial-scale=1", ViewportDescription::MobileOptimizedMeta);
+    const AtomicString& nameValue = fastGetAttribute(nameAttr);
+    if (nameValue.isNull()) {
+        // Get the document to process the tag, but only if we're actually part of DOM
+        // tree (changing a meta tag while it's not in the tree shouldn't have any effect
+        // on the document)
+        const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
+        if (!httpEquivValue.isNull())
+            document().processHttpEquiv(httpEquivValue, contentValue);
+        return;
+    }
 
-    // Get the document to process the tag, but only if we're actually part of DOM tree (changing a meta tag while
-    // it's not in the tree shouldn't have any effect on the document)
-    const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
-    if (!httpEquivValue.isNull())
-        document().processHttpEquiv(httpEquivValue, contentValue);
+    if (equalIgnoringCase(nameValue, "viewport"))
+        processViewportContentAttribute(contentValue, ViewportDescription::ViewportMeta);
+    else if (equalIgnoringCase(nameValue, "referrer"))
+        document().processReferrerPolicy(contentValue);
+    else if (equalIgnoringCase(nameValue, "handheldfriendly") && equalIgnoringCase(contentValue, "true"))
+        processViewportContentAttribute("width=device-width", ViewportDescription::HandheldFriendlyMeta);
+    else if (equalIgnoringCase(nameValue, "mobileoptimized"))
+        processViewportContentAttribute("width=device-width, initial-scale=1", ViewportDescription::MobileOptimizedMeta);
 }
 
 String HTMLMetaElement::content() const
