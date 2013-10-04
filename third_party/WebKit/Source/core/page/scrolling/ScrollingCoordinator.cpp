@@ -105,7 +105,8 @@ ScrollingCoordinator::~ScrollingCoordinator()
 bool ScrollingCoordinator::touchHitTestingEnabled() const
 {
     RenderView* contentRenderer = m_page->mainFrame()->contentRenderer();
-    return RuntimeEnabledFeatures::touchEnabled() && contentRenderer && contentRenderer->usesCompositing();
+    Settings* settings = m_page->mainFrame()->document()->settings();
+    return RuntimeEnabledFeatures::touchEnabled() && settings->compositorTouchHitTesting() && contentRenderer && contentRenderer->usesCompositing();
 }
 
 void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const Region& region)

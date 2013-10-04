@@ -103,6 +103,7 @@ deviceSupportsTouch initial=false
 deviceSupportsMouse initial=true
 
 touchAdjustmentEnabled initial=true
+compositorTouchHitTesting initial=true
 
 fixedPositionCreatesStackingContext initial=false
 syncXHRInDocumentsEnabled initial=true

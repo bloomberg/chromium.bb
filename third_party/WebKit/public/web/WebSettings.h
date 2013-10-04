@@ -82,6 +82,7 @@ public:
     virtual void setAuthorAndUserStylesEnabled(bool) = 0;
     virtual void setCaretBrowsingEnabled(bool) = 0;
     virtual void setCompositedScrollingForFramesEnabled(bool) = 0;
+    virtual void setCompositorTouchHitTesting(bool) = 0;
     virtual void setCookieEnabled(bool) = 0;
     virtual void setCursiveFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setDNSPrefetchingEnabled(bool) = 0;
