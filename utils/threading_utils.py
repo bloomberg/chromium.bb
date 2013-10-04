@@ -423,9 +423,11 @@ class Progress(object):
     """Queue information to print out.
 
     Arguments:
+      name: string to print out to describe something that was completed.
       raw: if True, prints the data without the header.
-      <name>: argument name is a name of a column. it's value is the increment
-              to the column, value is usually 0 or 1.
+      raw: if True, prints the data without the header.
+      <kwargs>: argument name is a name of a column. it's value is the increment
+                to the column, value is usually 0 or 1.
     """
     assert isinstance(name, str)
     assert isinstance(raw, bool)
