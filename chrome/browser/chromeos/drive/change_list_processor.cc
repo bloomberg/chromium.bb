@@ -16,33 +16,9 @@
 namespace drive {
 namespace internal {
 
-std::string DirectoryFetchInfo::ToString() const {
-  return ("resource_id: " + resource_id_ +
-          ", changestamp: " + base::Int64ToString(changestamp_));
-}
+namespace {
 
-ChangeList::ChangeList() {}
-
-ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
-    : largest_changestamp_(resource_list.largest_changestamp()) {
-  resource_list.GetNextFeedURL(&next_url_);
-
-  entries_.resize(resource_list.entries().size());
-  parent_resource_ids_.resize(resource_list.entries().size());
-  size_t entries_index = 0;
-  for (size_t i = 0; i < resource_list.entries().size(); ++i) {
-    if (ConvertToResourceEntry(*resource_list.entries()[i],
-                               &entries_[entries_index],
-                               &parent_resource_ids_[entries_index]))
-      ++entries_index;
-  }
-  entries_.resize(entries_index);
-  parent_resource_ids_.resize(entries_index);
-}
-
-ChangeList::~ChangeList() {}
-
-class ChangeListProcessor::ChangeListToEntryMapUMAStats {
+class ChangeListToEntryMapUMAStats {
  public:
   ChangeListToEntryMapUMAStats()
     : num_regular_files_(0),
@@ -77,6 +53,34 @@ class ChangeListProcessor::ChangeListToEntryMapUMAStats {
   int num_shared_with_me_entries_;
 };
 
+}  // namespace
+
+std::string DirectoryFetchInfo::ToString() const {
+  return ("resource_id: " + resource_id_ +
+          ", changestamp: " + base::Int64ToString(changestamp_));
+}
+
+ChangeList::ChangeList() {}
+
+ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
+    : largest_changestamp_(resource_list.largest_changestamp()) {
+  resource_list.GetNextFeedURL(&next_url_);
+
+  entries_.resize(resource_list.entries().size());
+  parent_resource_ids_.resize(resource_list.entries().size());
+  size_t entries_index = 0;
+  for (size_t i = 0; i < resource_list.entries().size(); ++i) {
+    if (ConvertToResourceEntry(*resource_list.entries()[i],
+                               &entries_[entries_index],
+                               &parent_resource_ids_[entries_index]))
+      ++entries_index;
+  }
+  entries_.resize(entries_index);
+  parent_resource_ids_.resize(entries_index);
+}
+
+ChangeList::~ChangeList() {}
+
 ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata)
   : resource_metadata_(resource_metadata) {
 }
@@ -105,8 +109,31 @@ FileError ChangeListProcessor::Apply(
     DCHECK(!about_resource->root_folder_id().empty());
   }
 
+  // Convert ChangeList to map.
   ChangeListToEntryMapUMAStats uma_stats;
-  ConvertToMap(change_lists.Pass(), &entry_map_, &uma_stats);
+  for (size_t i = 0; i < change_lists.size(); ++i) {
+    ChangeList* change_list = change_lists[i];
+
+    std::vector<ResourceEntry>* entries = change_list->mutable_entries();
+    for (size_t i = 0; i < entries->size(); ++i) {
+      ResourceEntry* entry = &(*entries)[i];
+
+      // Count the number of files.
+      if (!entry->file_info().is_directory()) {
+        uma_stats.IncrementNumFiles(
+            entry->file_specific_info().is_hosted_document());
+        if (entry->shared_with_me())
+          uma_stats.IncrementNumSharedWithMeEntries();
+      }
+
+      // TODO(hashimoto): Stop using resource ID as local ID. crbug.com/260514
+      entry->set_parent_local_id(change_list->parent_resource_ids()[i]);
+
+      entry_map_[entry->resource_id()].Swap(entry);
+      LOG_IF(WARNING, !entry->resource_id().empty())
+          << "Found duplicated file: " << entry->base_name();
+    }
+  }
 
   // Add the largest changestamp for directories.
   for (ResourceEntryMap::iterator it = entry_map_.begin();
@@ -296,41 +323,6 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
   }
 
   return error;
-}
-
-// static
-void ChangeListProcessor::ConvertToMap(
-    ScopedVector<ChangeList> change_lists,
-    ResourceEntryMap* entry_map,
-    ChangeListToEntryMapUMAStats* uma_stats) {
-  for (size_t i = 0; i < change_lists.size(); ++i) {
-    ChangeList* change_list = change_lists[i];
-
-    std::vector<ResourceEntry>* entries = change_list->mutable_entries();
-    for (size_t i = 0; i < entries->size(); ++i) {
-      ResourceEntry* entry = &(*entries)[i];
-      // Some document entries don't map into files (i.e. sites).
-      if (entry->resource_id().empty())
-        continue;
-
-      // Count the number of files.
-      if (uma_stats) {
-        if (!entry->file_info().is_directory()) {
-          uma_stats->IncrementNumFiles(
-              entry->file_specific_info().is_hosted_document());
-        }
-        if (entry->shared_with_me())
-          uma_stats->IncrementNumSharedWithMeEntries();
-      }
-
-      // TODO(hashimoto): Stop using resource ID as local ID. crbug.com/260514
-      entry->set_parent_local_id(change_list->parent_resource_ids()[i]);
-
-      (*entry_map)[entry->resource_id()].Swap(entry);
-      LOG_IF(WARNING, !entry->resource_id().empty())
-          << "Found duplicated file: " << entry->base_name();
-    }
-  }
 }
 
 // static

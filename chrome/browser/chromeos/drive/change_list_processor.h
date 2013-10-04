@@ -89,12 +89,6 @@ class ChangeList {
 // updates the resource metadata stored locally.
 class ChangeListProcessor {
  public:
-  typedef std::map<std::string /* resource_id */, ResourceEntry>
-      ResourceEntryMap;
-
-  // Class used to record UMA stats with ConvertToMap().
-  class ChangeListToEntryMapUMAStats;
-
   explicit ChangeListProcessor(ResourceMetadata* resource_metadata);
   ~ChangeListProcessor();
 
@@ -108,12 +102,6 @@ class ChangeListProcessor {
                   ScopedVector<ChangeList> change_lists,
                   bool is_delta_update);
 
-  // Converts change lists into a ResourceEntryMap.
-  // |uma_stats| may be NULL.
-  static void ConvertToMap(ScopedVector<ChangeList> change_lists,
-                           ResourceEntryMap* entry_map,
-                           ChangeListToEntryMapUMAStats* uma_stats);
-
   // The set of changed directories as a result of change list processing.
   const std::set<base::FilePath>& changed_dirs() const { return changed_dirs_; }
 
@@ -126,6 +114,9 @@ class ChangeListProcessor {
       base::FilePath* out_file_path);
 
  private:
+  typedef std::map<std::string /* resource_id */, ResourceEntry>
+      ResourceEntryMap;
+
   // Applies the pre-processed metadata from entry_map_ onto the resource
   // metadata. If this is not delta update (i.e. |is_delta_update| is false),
   // |about_resource| must not be null.
