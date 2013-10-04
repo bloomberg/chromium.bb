@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Intent;
 import android.os.Parcel;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Log;
 import org.chromium.base.test.util.Feature;
@@ -78,8 +79,12 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         super.setUp();
     }
 
-    @MediumTest
-    @Feature("{Webapp}")
+    /**
+     * @MediumTest
+     * @Feature("{Webapp}")
+     * crbug.com/303486
+     */
+    @FlakyTest
     public void testAddWebappShortcuts() throws InterruptedException {
         // Add a webapp shortcut and make sure the intent's parameters make sense.
         addShortcutToURL(WEBAPP_HTML, "");
@@ -104,8 +109,12 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         assertEquals(mActivity.getPackageName(), newLaunchIntent.getPackage());
     }
 
-    @MediumTest
-    @Feature("{Webapp}")
+    /**
+     * @MediumTest
+     * @Feature("{Webapp}")
+     * crbug.com/303486
+     */
+    @FlakyTest
     public void testAddBookmarkShortcut() throws InterruptedException {
         addShortcutToURL(NORMAL_HTML, "");
 
@@ -119,8 +128,12 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         assertEquals(NORMAL_HTML, launchIntent.getDataString());
     }
 
-    @MediumTest
-    @Feature("{Webapp}")
+    /**
+     * @MediumTest
+     * @Feature("{Webapp}")
+     * crbug.com/303486
+     */
+    @FlakyTest
     public void testAddWebappShortcutsWithoutTitleEdit() throws InterruptedException {
         // Add a webapp shortcut to check unedited title.
         addShortcutToURL(WEBAPP_HTML, "");
@@ -128,8 +141,12 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         assertEquals(WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
     }
 
-    @MediumTest
-    @Feature("{Webapp}")
+    /**
+     * @MediumTest
+     * @Feature("{Webapp}")
+     * crbug.com/303486
+     */
+    @FlakyTest
     public void testAddWebappShortcutsWithTitleEdit() throws InterruptedException {
         // Add a webapp shortcut to check edited title.
         addShortcutToURL(WEBAPP_HTML, EDITED_WEBAPP_TITLE);
