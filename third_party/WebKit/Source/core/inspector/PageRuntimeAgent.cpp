@@ -136,14 +136,6 @@ void PageRuntimeAgent::didCreateIsolatedContext(Frame* frame, ScriptState* scrip
 InjectedScript PageRuntimeAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
 {
     if (!executionContextId) {
-        // We shouldn't be able to create an injected script if the main
-        // window shell not initialized. See crbug.com/263162.
-        ScriptController* scriptController = m_inspectedPage->mainFrame()->script();
-        if (!scriptController->existingWindowShell(mainThreadNormalWorld())) {
-            *errorString = "Window shell for main world not initialized yet.";
-            return InjectedScript();
-        }
-
         ScriptState* scriptState = mainWorldScriptState(m_inspectedPage->mainFrame());
         InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
         if (result.hasNoValue())
