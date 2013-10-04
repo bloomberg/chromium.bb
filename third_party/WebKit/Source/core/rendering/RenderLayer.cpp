@@ -2376,12 +2376,14 @@ bool RenderLayer::hasOverflowControls() const
 
 int RenderLayer::scrollWidth() const
 {
-    return m_scrollableArea->scrollWidth();
+    // FIXME: We should add an ASSERT where it makes sense to force callers
+    // to check if we have a scrollable area before calling its methods.
+    return m_scrollableArea ? m_scrollableArea->scrollWidth() : 0;
 }
 
 int RenderLayer::scrollHeight() const
 {
-    return m_scrollableArea->scrollHeight();
+    return m_scrollableArea ? m_scrollableArea->scrollHeight() : 0;
 }
 
 void RenderLayer::updateScrollInfoAfterLayout()
@@ -5344,17 +5346,17 @@ void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
 
 int RenderLayer::scrollXOffset() const
 {
-    return m_scrollableArea->scrollXOffset();
+    return m_scrollableArea ? m_scrollableArea->scrollXOffset() : 0;
 }
 
 int RenderLayer::scrollYOffset() const
 {
-    return m_scrollableArea->scrollYOffset();
+    return m_scrollableArea ? m_scrollableArea->scrollYOffset() : 0;
 }
 
 IntSize RenderLayer::scrolledContentOffset() const
 {
-    return m_scrollableArea->scrollOffset();
+    return m_scrollableArea ? m_scrollableArea->scrollOffset() : IntSize();
 }
 
 bool RenderLayer::hasOverlayScrollbars() const
