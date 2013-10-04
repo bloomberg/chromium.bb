@@ -18,28 +18,29 @@
         if (window.testRunner) {
             testRunner.dumpAsText();
             var body = document.body;
+            var documentElement = document.documentElement;
             log("scrollHeight: " + body.scrollHeight);
             log("scrollWidth: " + body.scrollWidth);
 
             log("\nScrolling right to 50");
             body.scrollLeft = 50;
-            log("scrollLeft: " + body.scrollLeft);
+            log("scrollLeft: " + documentElement.scrollLeft);
 
             log("\nZooming in");
             eventSender.zoomPageIn();
             log("scrollHeight: " + body.scrollHeight);
             log("scrollWidth: " + body.scrollWidth);
-            log("scrollTop: " + body.scrollTop);
-            log("scrollLeft: " + body.scrollLeft);
+            log("scrollTop: " + documentElement.scrollTop);
+            log("scrollLeft: " + documentElement.scrollLeft);
 
             log("\nScrolling down to 100");
             body.scrollTop = 100;
-            log("scrollTop: " + body.scrollTop);
+            log("scrollTop: " + documentElement.scrollTop);
 
             log("\nZooming back out");
             eventSender.zoomPageOut();
-            log("scrollTop: " + body.scrollTop);
-            log("scrollLeft: " + body.scrollLeft);
+            log("scrollTop: " + documentElement.scrollTop);
+            log("scrollLeft: " + documentElement.scrollLeft);
         }
     </script>
 </body>
