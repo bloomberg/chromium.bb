@@ -264,6 +264,7 @@ void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect
 
     const SkBitmap& bitmap = *m_context->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
+    image->setSpaceSize(spaceSize());
     image->drawPattern(context, srcRect, scale, phase, op, destRect, blendMode);
 }
 

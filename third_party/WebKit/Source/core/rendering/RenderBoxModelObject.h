@@ -224,6 +224,12 @@ protected:
             m_tileSize = tileSize;
         }
 
+        IntSize spaceSize() const { return m_space; }
+        void setSpaceSize(const IntSize& space)
+        {
+            m_space = space;
+        }
+
         void setPhaseX(int x) { m_phase.setX(x); }
         void setPhaseY(int y) { m_phase.setY(y); }
 
@@ -238,6 +244,7 @@ protected:
         IntPoint m_destOrigin;
         IntPoint m_phase;
         IntSize m_tileSize;
+        IntSize m_space;
     };
 
     LayoutPoint adjustedPositionRelativeToOffsetParent(const LayoutPoint&) const;

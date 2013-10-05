@@ -118,6 +118,14 @@ public:
     virtual bool notSolidColor() { return true; }
 #endif
 
+    // Space-size represents extra width and height that may be added to the image
+    // if used as a pattern with repeat: space
+    IntSize spaceSize() const { return m_space; }
+    void setSpaceSize(const IntSize& space)
+    {
+        m_space = space;
+    }
+
 protected:
     Image(ImageObserver* = 0);
 
@@ -137,6 +145,7 @@ protected:
 private:
     RefPtr<SharedBuffer> m_encodedImageData;
     ImageObserver* m_imageObserver;
+    IntSize m_space;
 };
 
 }

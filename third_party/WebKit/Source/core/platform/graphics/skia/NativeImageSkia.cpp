@@ -385,6 +385,20 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     context->didDrawRect(destRect, paint, &bitmap());
 }
 
+static SkBitmap createBitmapWithSpace(const SkBitmap& bitmap, int spaceWidth, int spaceHeight)
+{
+    SkBitmap result;
+    result.setConfig(bitmap.getConfig(),
+        bitmap.width() + spaceWidth,
+        bitmap.height() + spaceHeight);
+    result.allocPixels();
+
+    result.eraseColor(SK_ColorTRANSPARENT);
+    bitmap.copyPixelsTo(reinterpret_cast<uint8_t*>(result.getPixels()), result.rowBytes() * result.height(), result.rowBytes());
+
+    return result;
+}
+
 void NativeImageSkia::drawPattern(
     GraphicsContext* context,
     const FloatRect& floatSrcRect,
@@ -440,7 +454,13 @@ void NativeImageSkia::drawPattern(
         // fragment is slightly larger to align to integer
         // boundaries.
         SkBitmap resampled = extractScaledImageFragment(normSrcRect, scaleX, scaleY, &scaledSrcRect);
-        shader = adoptRef(SkShader::CreateBitmapShader(resampled, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+        if (spaceSize().isZero()) {
+            shader = adoptRef(SkShader::CreateBitmapShader(resampled, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+        } else {
+            shader = adoptRef(SkShader::CreateBitmapShader(
+                createBitmapWithSpace(resampled, spaceSize().width() * ctmScaleX, spaceSize().height() * ctmScaleY),
+                SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+        }
 
         // Since we just resized the bitmap, we need to remove the scale
         // applied to the pixels in the bitmap shader. This means we need
@@ -453,7 +473,14 @@ void NativeImageSkia::drawPattern(
         // No need to resample before drawing.
         SkBitmap srcSubset;
         bitmap().extractSubset(&srcSubset, enclosingIntRect(normSrcRect));
-        shader = adoptRef(SkShader::CreateBitmapShader(srcSubset, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+        if (spaceSize().isZero()) {
+            shader = adoptRef(SkShader::CreateBitmapShader(srcSubset, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+        } else {
+            shader = adoptRef(SkShader::CreateBitmapShader(
+                createBitmapWithSpace(srcSubset, spaceSize().width() * ctmScaleX, spaceSize().height() * ctmScaleY),
+                SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+        }
+
         // Because no resizing occurred, the shader transform should be
         // set to the pattern's transform, which just includes scale.
         shaderTransform.setScale(scale.width(), scale.height());

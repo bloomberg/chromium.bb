@@ -743,6 +743,8 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
             RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.tileSize());
             bool useLowQualityScaling = shouldPaintAtLowQuality(context, image.get(), bgLayer, geometry.tileSize());
             context->setDrawLuminanceMask(bgLayer->maskSourceType() == MaskLuminance);
+            if (image.get())
+                image->setSpaceSize(geometry.spaceSize());
             context->drawTiledImage(image.get(), geometry.destRect(), geometry.relativePhase(), geometry.tileSize(),
                 compositeOp, useLowQualityScaling, bgLayer->blendMode());
         }
@@ -989,6 +991,17 @@ bool RenderBoxModelObject::fixedBackgroundPaintsInLocalCoordinates() const
     return rootLayer->compositedLayerMapping()->backgroundLayerPaintsFixedRootBackground();
 }
 
+static inline int getSpace(int areaSize, int tileSize)
+{
+    int numberOfTiles = areaSize / tileSize;
+    int space = -1;
+
+    if (numberOfTiles > 1)
+        space = lroundf((float)(areaSize - numberOfTiles * tileSize) / (numberOfTiles - 1));
+
+    return space;
+}
+
 void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fillLayer, const LayoutRect& paintRect,
     BackgroundImageGeometry& geometry, RenderObject* backgroundObject)
 {
@@ -1072,6 +1085,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
         fillTileSize.setWidth(positioningAreaSize.width() / nrTiles);
         geometry.setTileSize(fillTileSize);
         geometry.setPhaseX(geometry.tileSize().width() ? geometry.tileSize().width() - roundToInt(computedXPosition + left) % geometry.tileSize().width() : 0);
+        geometry.setSpaceSize(IntSize());
     }
 
     LayoutUnit computedYPosition = minimumValueForLength(fillLayer->yPosition(), availableHeight, renderView, true);
@@ -1085,19 +1099,49 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
         fillTileSize.setHeight(positioningAreaSize.height() / nrTiles);
         geometry.setTileSize(fillTileSize);
         geometry.setPhaseY(geometry.tileSize().height() ? geometry.tileSize().height() - roundToInt(computedYPosition + top) % geometry.tileSize().height() : 0);
+        geometry.setSpaceSize(IntSize());
     }
 
     if (backgroundRepeatX == RepeatFill) {
         geometry.setPhaseX(geometry.tileSize().width() ? geometry.tileSize().width() - roundToInt(computedXPosition + left) % geometry.tileSize().width() : 0);
-    } else if (backgroundRepeatX == NoRepeatFill) {
+        geometry.setSpaceSize(IntSize());
+    } else if (backgroundRepeatX == SpaceFill && fillTileSize.width() > 0) {
+        int space = getSpace(positioningAreaSize.width(), geometry.tileSize().width());
+        int actualWidth = geometry.tileSize().width() + space;
+
+        if (space >= 0) {
+            computedXPosition = minimumValueForLength(Length(), availableWidth, renderView, true);
+            geometry.setSpaceSize(IntSize(space, 0));
+            geometry.setPhaseX(actualWidth ? actualWidth - roundToInt(computedXPosition + left) % actualWidth : 0);
+        } else {
+            backgroundRepeatX = NoRepeatFill;
+        }
+    }
+    if (backgroundRepeatX == NoRepeatFill) {
         int xOffset = fillLayer->backgroundXOrigin() == RightEdge ? availableWidth - computedXPosition : computedXPosition;
         geometry.setNoRepeatX(left + xOffset);
+        geometry.setSpaceSize(IntSize(0, geometry.spaceSize().height()));
     }
+
     if (backgroundRepeatY == RepeatFill) {
         geometry.setPhaseY(geometry.tileSize().height() ? geometry.tileSize().height() - roundToInt(computedYPosition + top) % geometry.tileSize().height() : 0);
-    } else if (backgroundRepeatY == NoRepeatFill) {
+        geometry.setSpaceSize(IntSize(geometry.spaceSize().width(), 0));
+    } else if (backgroundRepeatY == SpaceFill && fillTileSize.height() > 0) {
+        int space = getSpace(positioningAreaSize.height(), geometry.tileSize().height());
+        int actualHeight = geometry.tileSize().height() + space;
+
+        if (space >= 0) {
+            computedYPosition = minimumValueForLength(Length(), availableHeight, renderView, true);
+            geometry.setSpaceSize(IntSize(geometry.spaceSize().width(), space));
+            geometry.setPhaseY(actualHeight ? actualHeight - roundToInt(computedYPosition + top) % actualHeight : 0);
+        } else {
+            backgroundRepeatY = NoRepeatFill;
+        }
+    }
+    if (backgroundRepeatY == NoRepeatFill) {
         int yOffset = fillLayer->backgroundYOrigin() == BottomEdge ? availableHeight - computedYPosition : computedYPosition;
         geometry.setNoRepeatY(top + yOffset);
+        geometry.setSpaceSize(IntSize(geometry.spaceSize().width(), 0));
     }
 
     if (fixedAttachment)

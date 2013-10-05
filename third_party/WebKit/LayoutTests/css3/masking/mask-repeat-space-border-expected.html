@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <style>
+            #back {
+                width: 1000px;
+                height: 600px;
+                background-color: green;
+            }
+            #front {
+                width: 800px;
+                height: 400px;
+                background-color: red;
+                border: 50px solid blue;
+                padding: 50px;
+            }
+        </style>
+        <script>
+            var sizeX = 121, sizeY = 70, spaceX = 0, spaceY = 6, width = 1000, height = 600;
+
+            var urls = Array(), size = Array(), position = Array(), repeat = Array(),
+                origin = Array(), clip = Array();
+
+            function addMasks() {
+                for (var x = 0; x < width; x += sizeX + spaceX) {
+                    for (var y = 0; y < height; y += sizeY + spaceY) {
+                        urls.push("linear-gradient(45deg, black, transparent 100%)");
+                        size.push(sizeX + "px " + sizeY + "px");
+                        position.push(x + "px " + y + "px");
+                    }
+                }
+
+                div = document.getElementById("front");
+
+                div.style.cssText += "-webkit-mask-image: " + urls.join(", ") + ";" +
+                                     "-webkit-mask-size: " + size.join(", ")  + ";" +
+                                     "-webkit-mask-position: " + position.join(", ") + ";" +
+                                     "-webkit-mask-repeat: no-repeat;" +
+                                     "-webkit-mask-origin: border-box;" +
+                                     "-webkit-mask-clip: border-box;";
+           }
+       </script>
+    </head>
+
+    <body onload="addMasks()">
+        <div id="back">
+            <div id="front" />
+        </div>
+    </body>
+</html>
+

@@ -142,9 +142,10 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
     FloatSize scale(scaledTileSize.width() / intrinsicTileSize.width(),
                     scaledTileSize.height() / intrinsicTileSize.height());
 
+    FloatSize actualTileSize(scaledTileSize.width() + spaceSize().width(), scaledTileSize.height() + spaceSize().height());
     FloatRect oneTileRect;
-    oneTileRect.setX(destRect.x() + fmodf(fmodf(-srcPoint.x(), scaledTileSize.width()) - scaledTileSize.width(), scaledTileSize.width()));
-    oneTileRect.setY(destRect.y() + fmodf(fmodf(-srcPoint.y(), scaledTileSize.height()) - scaledTileSize.height(), scaledTileSize.height()));
+    oneTileRect.setX(destRect.x() + fmodf(fmodf(-srcPoint.x(), actualTileSize.width()) - actualTileSize.width(), actualTileSize.width()));
+    oneTileRect.setY(destRect.y() + fmodf(fmodf(-srcPoint.y(), actualTileSize.height()) - actualTileSize.height(), actualTileSize.height()));
     oneTileRect.setSize(scaledTileSize);
 
     // Check and see if a single draw of the image can cover the entire area we are supposed to tile.
@@ -227,8 +228,10 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
     const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode)
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
-    if (RefPtr<NativeImageSkia> bitmap = nativeImageForCurrentFrame())
+    if (RefPtr<NativeImageSkia> bitmap = nativeImageForCurrentFrame()) {
+        bitmap->setSpaceSize(spaceSize());
         bitmap->drawPattern(context, adjustForNegativeSize(floatSrcRect), scale, phase, compositeOp, destRect, blendMode);
+    }
 }
 
 void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
