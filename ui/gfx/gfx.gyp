@@ -358,6 +358,15 @@
           ],
         }],
       ],
+      'target_conditions': [
+        # Need 'target_conditions' to override default filename_rules to include
+        # the file on iOS.
+        ['OS == "ios"', {
+          'sources/': [
+            ['include', '^scoped_cg_context_save_gstate_mac\\.h$'],
+          ],
+        }],
+      ],
     }
   ],
   'conditions': [
