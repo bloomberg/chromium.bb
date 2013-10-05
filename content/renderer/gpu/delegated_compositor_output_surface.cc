@@ -17,7 +17,6 @@ DelegatedCompositorOutputSurface::DelegatedCompositorOutputSurface(
                               software.Pass(),
                               true) {
   capabilities_.delegated_rendering = true;
-  capabilities_.max_frames_pending = 1;
 }
 
 }  // namespace content
