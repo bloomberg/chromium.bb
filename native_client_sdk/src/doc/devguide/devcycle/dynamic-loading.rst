@@ -10,6 +10,14 @@ Dynamic Linking and Loading with glibc
 Introduction
 ============
 
+.. Note::
+  :class: caution
+
+  Portable Native Client currently only supports static linking, and the
+  only C library available for it is newlib. This page is only valid for
+  Native Client, though PNaCl will eventually support some form of
+  dynamic linking.
+
 This document describes how to create and deploy dynamically linked and loaded
 applications with the glibc library in the Native Client SDK. Before reading
 this document, we recommend reading :doc:`Building Native Client Modules
