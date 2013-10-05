@@ -99,6 +99,8 @@ class WebglConformance(test_module.Test):
 
     for test in tests:
       pages.append({
+        'name': 'WebglConformance.%s' %
+            test.replace('/', '_').replace('-', '_').rpartition('.')[0],
         'url': 'file:///' + test,
         'script_to_evaluate_on_commit': conformance_harness_script,
         'navigate_steps': [
