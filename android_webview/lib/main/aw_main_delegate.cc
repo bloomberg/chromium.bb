@@ -75,6 +75,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Enable D-PAD navigation for application compatibility.
   cl->AppendSwitch(switches::kEnableSpatialNavigation);
 
+  // Disable WebRTC.
+  cl->AppendSwitch(switches::kDisableWebRTC);
+
   return false;
 }
 
