@@ -91,6 +91,8 @@
       'geometry/LayoutSize.h',
       'geometry/RoundedRect.cpp',
       'geometry/RoundedRect.h',
+      'graphics/angle/ANGLEPlatformBridge.cpp',
+      'graphics/angle/ANGLEPlatformBridge.h',
       'network/DNS.cpp',
       'network/DNS.h',
       'network/HTTPHeaderMap.cpp',

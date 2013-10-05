@@ -23,27 +23,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ANGLEWebKitBridge_h
-#define ANGLEWebKitBridge_h
+#ifndef ANGLEPlatformBridge_h
+#define ANGLEPlatformBridge_h
 
+#include "GLSLANG/ShaderLang.h"
+
+#include "platform/PlatformExport.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-#include "ShaderLang.h"
-
 namespace WebCore {
 
-enum ANGLEShaderType {
+enum PLATFORM_EXPORT ANGLEShaderType {
     SHADER_TYPE_VERTEX = SH_VERTEX_SHADER,
     SHADER_TYPE_FRAGMENT = SH_FRAGMENT_SHADER,
 };
 
-enum ANGLEShaderSymbolType {
+enum PLATFORM_EXPORT ANGLEShaderSymbolType {
     SHADER_SYMBOL_TYPE_ATTRIBUTE,
     SHADER_SYMBOL_TYPE_UNIFORM
 };
 
-struct ANGLEShaderSymbol {
+struct PLATFORM_EXPORT ANGLEShaderSymbol {
     ANGLEShaderSymbolType symbolType;
     String name;
     String mappedName;
@@ -65,11 +66,11 @@ struct ANGLEShaderSymbol {
     }
 };
 
-class ANGLEWebKitBridge {
+class PLATFORM_EXPORT ANGLEPlatformBridge {
 public:
 
-    ANGLEWebKitBridge(ShShaderOutput = SH_GLSL_OUTPUT, ShShaderSpec = SH_WEBGL_SPEC);
-    ~ANGLEWebKitBridge();
+    ANGLEPlatformBridge(ShShaderOutput = SH_GLSL_OUTPUT, ShShaderSpec = SH_WEBGL_SPEC);
+    ~ANGLEPlatformBridge();
 
     ShBuiltInResources getResources() { return m_resources; }
     void setResources(ShBuiltInResources);

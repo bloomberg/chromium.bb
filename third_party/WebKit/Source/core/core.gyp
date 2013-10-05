@@ -399,7 +399,7 @@
         'include_dirs': [
           '<@(webcore_include_dirs)',
           '<(DEPTH)/gpu',
-          '<(DEPTH)/third_party/angle_dx11/include/GLSLANG',
+          '<(DEPTH)/third_party/angle_dx11/include',
         ],
         'msvs_disabled_warnings': [
           4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,

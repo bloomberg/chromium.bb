@@ -25,7 +25,8 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/ANGLEWebKitBridge.h"
+#include "platform/graphics/angle/ANGLEPlatformBridge.h"
+
 #include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
@@ -132,7 +133,7 @@ static bool getSymbolInfo(ShHandle compiler, ShShaderInfo symbolType, Vector<ANG
     return true;
 }
 
-ANGLEWebKitBridge::ANGLEWebKitBridge(ShShaderOutput shaderOutput, ShShaderSpec shaderSpec)
+ANGLEPlatformBridge::ANGLEPlatformBridge(ShShaderOutput shaderOutput, ShShaderSpec shaderSpec)
     : builtCompilers(false)
     , m_fragmentCompiler(0)
     , m_vertexCompiler(0)
@@ -143,12 +144,12 @@ ANGLEWebKitBridge::ANGLEWebKitBridge(ShShaderOutput shaderOutput, ShShaderSpec s
     ShInitialize();
 }
 
-ANGLEWebKitBridge::~ANGLEWebKitBridge()
+ANGLEPlatformBridge::~ANGLEPlatformBridge()
 {
     cleanupCompilers();
 }
 
-void ANGLEWebKitBridge::cleanupCompilers()
+void ANGLEPlatformBridge::cleanupCompilers()
 {
     if (m_fragmentCompiler)
         ShDestruct(m_fragmentCompiler);
@@ -160,7 +161,7 @@ void ANGLEWebKitBridge::cleanupCompilers()
     builtCompilers = false;
 }
 
-void ANGLEWebKitBridge::setResources(ShBuiltInResources resources)
+void ANGLEPlatformBridge::setResources(ShBuiltInResources resources)
 {
     // Resources are (possibly) changing - cleanup compilers if we had them already
     cleanupCompilers();
@@ -168,7 +169,7 @@ void ANGLEWebKitBridge::setResources(ShBuiltInResources resources)
     m_resources = resources;
 }
 
-bool ANGLEWebKitBridge::compileShaderSource(const char* shaderSource, ANGLEShaderType shaderType, String& translatedShaderSource, String& shaderValidationLog, Vector<ANGLEShaderSymbol>& symbols, int extraCompileOptions)
+bool ANGLEPlatformBridge::compileShaderSource(const char* shaderSource, ANGLEShaderType shaderType, String& translatedShaderSource, String& shaderValidationLog, Vector<ANGLEShaderSymbol>& symbols, int extraCompileOptions)
 {
     if (!builtCompilers) {
         m_fragmentCompiler = ShConstructCompiler(SH_FRAGMENT_SHADER, m_shaderSpec, m_shaderOutput, &m_resources);

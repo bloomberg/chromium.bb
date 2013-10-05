@@ -46,23 +46,23 @@ CustomFilterGlobalContext::~CustomFilterGlobalContext()
         iter->value->detachFromGlobalContext();
 }
 
-ANGLEWebKitBridge* CustomFilterGlobalContext::webglShaderValidator()
+ANGLEPlatformBridge* CustomFilterGlobalContext::webglShaderValidator()
 {
     if (!m_webglShaderValidator)
         m_webglShaderValidator = createShaderValidator(SH_WEBGL_SPEC);
     return m_webglShaderValidator.get();
 }
 
-ANGLEWebKitBridge* CustomFilterGlobalContext::mixShaderValidator()
+ANGLEPlatformBridge* CustomFilterGlobalContext::mixShaderValidator()
 {
     if (!m_mixShaderValidator)
         m_mixShaderValidator = createShaderValidator(SH_CSS_SHADERS_SPEC);
     return m_mixShaderValidator.get();
 }
 
-PassOwnPtr<ANGLEWebKitBridge> CustomFilterGlobalContext::createShaderValidator(ShShaderSpec shaderSpec)
+PassOwnPtr<ANGLEPlatformBridge> CustomFilterGlobalContext::createShaderValidator(ShShaderSpec shaderSpec)
 {
-    OwnPtr<ANGLEWebKitBridge> validator = adoptPtr(new ANGLEWebKitBridge(SH_ESSL_OUTPUT, shaderSpec));
+    OwnPtr<ANGLEPlatformBridge> validator = adoptPtr(new ANGLEPlatformBridge(SH_ESSL_OUTPUT, shaderSpec));
     ShBuiltInResources resources;
     ShInitBuiltInResources(&resources);
     validator->setResources(resources);

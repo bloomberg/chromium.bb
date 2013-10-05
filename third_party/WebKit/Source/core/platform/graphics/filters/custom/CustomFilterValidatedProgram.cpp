@@ -31,11 +31,11 @@
 
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 
-#include "platform/NotImplemented.h"
-#include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
+#include "platform/NotImplemented.h"
+#include "platform/graphics/angle/ANGLEPlatformBridge.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
@@ -172,7 +172,7 @@ CustomFilterValidatedProgram::CustomFilterValidatedProgram(CustomFilterGlobalCon
 
     // Shaders referenced from the CSS mix function use a different validator than regular WebGL shaders. See core/platform/graphics/filters/custom/CustomFilterGlobalContext.h for more details.
     bool blendsElementTexture = (programInfo.programType() == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE);
-    ANGLEWebKitBridge* validator = blendsElementTexture ? m_globalContext->mixShaderValidator() : m_globalContext->webglShaderValidator();
+    ANGLEPlatformBridge* validator = blendsElementTexture ? m_globalContext->mixShaderValidator() : m_globalContext->webglShaderValidator();
     String vertexShaderLog, fragmentShaderLog;
     Vector<ANGLEShaderSymbol> symbols;
     bool vertexShaderValid = validator->compileShaderSource(originalVertexShader.utf8().data(), SHADER_TYPE_VERTEX, m_validatedVertexShader, vertexShaderLog, symbols);

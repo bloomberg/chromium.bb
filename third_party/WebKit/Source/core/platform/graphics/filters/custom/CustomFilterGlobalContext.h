@@ -30,8 +30,8 @@
 #ifndef CustomFilterGlobalContext_h
 #define CustomFilterGlobalContext_h
 
-#include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
+#include "platform/graphics/angle/ANGLEPlatformBridge.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
 
@@ -51,7 +51,7 @@ public:
 
     // CSS shaders not referenced from the CSS mix function should be validated just like regular WebGL shaders.
     // This ANGLE validator uses the SH_WEBGL_SPEC flag.
-    ANGLEWebKitBridge* webglShaderValidator();
+    ANGLEPlatformBridge* webglShaderValidator();
 
     // CSS shaders referenced from the CSS mix function should be validated slightly differently than WebGL shaders.
     // This ANGLE validator uses the SH_CSS_SHADERS_SPEC flag.
@@ -61,18 +61,18 @@ public:
     // - The "css_" prefix is reserved.
     // - In the translated source that ANGLE returns, ANGLE renames the author's "main" function to "css_main".
     // The complete details are documented in ANGLE/ShaderLang.h.
-    ANGLEWebKitBridge* mixShaderValidator();
+    ANGLEPlatformBridge* mixShaderValidator();
 
     void prepareContextIfNeeded();
 
     PassRefPtr<CustomFilterValidatedProgram> getValidatedProgram(const CustomFilterProgramInfo&);
     void removeValidatedProgram(const CustomFilterValidatedProgram*);
 private:
-    static PassOwnPtr<ANGLEWebKitBridge> createShaderValidator(ShShaderSpec);
+    static PassOwnPtr<ANGLEPlatformBridge> createShaderValidator(ShShaderSpec);
 
     RefPtr<GraphicsContext3D> m_context;
-    OwnPtr<ANGLEWebKitBridge> m_webglShaderValidator;
-    OwnPtr<ANGLEWebKitBridge> m_mixShaderValidator;
+    OwnPtr<ANGLEPlatformBridge> m_webglShaderValidator;
+    OwnPtr<ANGLEPlatformBridge> m_mixShaderValidator;
     CustomFilterValidatedProgramsMap m_programs;
 };
 

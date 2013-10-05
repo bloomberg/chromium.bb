@@ -2779,8 +2779,6 @@
             'platform/chromium/PlatformThemeChromiumDefault.cpp',
             'platform/chromium/PlatformThemeChromiumDefault.h',
             'platform/chromium/PlatformSpeechSynthesizerChromium.cpp',
-            'platform/graphics/ANGLEWebKitBridge.cpp',
-            'platform/graphics/ANGLEWebKitBridge.h',
             'platform/graphics/BitmapImage.cpp',
             'platform/graphics/ContentDecryptionModule.cpp',
             'platform/graphics/ContentDecryptionModule.h',
