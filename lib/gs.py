@@ -132,8 +132,8 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
-  GSUTIL_TAR = 'gsutil-3.10.tar.gz'
-  GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'chromeos-public/%s' % GSUTIL_TAR
+  GSUTIL_TAR = 'gsutil_3.37.tar.gz'
+  GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'pub/%s' % GSUTIL_TAR
 
   @classmethod
   def GetDefaultGSUtilBin(cls):
