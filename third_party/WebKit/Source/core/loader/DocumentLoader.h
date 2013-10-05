@@ -37,10 +37,10 @@
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/NavigationAction.h"
 #include "core/loader/SubstituteData.h"
-#include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "platform/Timer.h"
+#include "platform/network/ResourceError.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 

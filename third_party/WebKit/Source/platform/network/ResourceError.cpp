@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/network/ResourceError.h"
+#include "platform/network/ResourceError.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"

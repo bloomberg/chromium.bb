@@ -32,9 +32,9 @@
 
 #include "core/platform/CrossThreadCopier.h"
 
-#include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceError.h"
 #include "weborigin/KURL.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"

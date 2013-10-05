@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebURLError.h"
 
-#include "core/platform/network/ResourceError.h"
+#include "platform/network/ResourceError.h"
 #include "weborigin/KURL.h"
 #include "wtf/text/CString.h"
 
@@ -46,9 +46,9 @@ WebURLError::WebURLError(const ResourceError& error)
 
 WebURLError& WebURLError::operator=(const ResourceError& error)
 {
-    if (error.isNull())
+    if (error.isNull()) {
         *this = WebURLError();
-    else {
+    } else {
         domain = error.domain();
         reason = error.errorCode();
         unreachableURL = KURL(ParsedURLString, error.failingURL());
@@ -63,10 +63,7 @@ WebURLError::operator ResourceError() const
     if (!reason)
         return ResourceError();
     CString spec = unreachableURL.spec();
-    ResourceError resourceError = ResourceError(domain, reason,
-                                                String::fromUTF8(spec.data(),
-                                                spec.length()),
-                                                localizedDescription);
+    ResourceError resourceError = ResourceError(domain, reason, String::fromUTF8(spec.data(), spec.length()), localizedDescription);
     resourceError.setIsCancellation(isCancellation);
     return resourceError;
 }

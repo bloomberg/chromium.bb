@@ -47,9 +47,9 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceError.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 

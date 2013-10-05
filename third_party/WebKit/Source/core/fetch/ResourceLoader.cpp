@@ -37,7 +37,7 @@
 #include "platform/SharedBuffer.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
-#include "core/platform/network/ResourceError.h"
+#include "platform/network/ResourceError.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebURLError.h"

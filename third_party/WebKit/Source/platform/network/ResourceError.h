@@ -27,13 +27,14 @@
 #ifndef ResourceError_h
 #define ResourceError_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-extern const char* const errorDomainWebKitInternal; // Used for errors that won't be exposed to clients.
+PLATFORM_EXPORT extern const char* const errorDomainWebKitInternal; // Used for errors that won't be exposed to clients.
 
-class ResourceError {
+class PLATFORM_EXPORT ResourceError {
 public:
     static ResourceError cancelledError(const String& failingURL);
 
