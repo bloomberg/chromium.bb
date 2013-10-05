@@ -3532,6 +3532,13 @@ bool HTMLMediaElement::hasPendingActivity() const
     return (hasAudio() && isPlaying()) || m_asyncEventQueue->hasPendingEvents();
 }
 
+void HTMLMediaElement::contextDestroyed()
+{
+    if (m_mediaController)
+        m_mediaController->clearScriptExecutionContext();
+    ActiveDOMObject::contextDestroyed();
+}
+
 bool HTMLMediaElement::isFullscreen() const
 {
     return FullscreenElementStack::isActiveFullScreenElement(this);

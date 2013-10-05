@@ -103,6 +103,8 @@ public:
 
     bool isBlocked() const;
 
+    void clearScriptExecutionContext() { m_scriptExecutionContext = 0; }
+
     // EventTarget
     using RefCounted<MediaController>::ref;
     using RefCounted<MediaController>::deref;

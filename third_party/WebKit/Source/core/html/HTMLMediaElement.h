@@ -273,6 +273,7 @@ public:
     bool isPlaying() const { return m_playing; }
 
     virtual bool hasPendingActivity() const;
+    virtual void contextDestroyed() OVERRIDE;
 
 #if ENABLE(WEB_AUDIO)
     MediaElementAudioSourceNode* audioSourceNode() { return m_audioSourceNode; }
