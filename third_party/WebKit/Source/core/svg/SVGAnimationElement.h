@@ -25,11 +25,11 @@
 #ifndef SVGAnimationElement_h
 #define SVGAnimationElement_h
 
-#include "core/platform/graphics/UnitBezier.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/animation/SVGSMILElement.h"
+#include "platform/animation/UnitBezier.h"
 
 namespace WebCore {
 

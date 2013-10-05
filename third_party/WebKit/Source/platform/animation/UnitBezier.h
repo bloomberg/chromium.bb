@@ -26,12 +26,13 @@
 #ifndef UnitBezier_h
 #define UnitBezier_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
 #include <math.h>
 
 namespace WebCore {
 
-struct UnitBezier {
+struct PLATFORM_EXPORT UnitBezier {
     UnitBezier(double p1x, double p1y, double p2x, double p2y)
     {
         // Calculate the polynomial coefficients, implicit first and last control points are (0,0) and (1,1).

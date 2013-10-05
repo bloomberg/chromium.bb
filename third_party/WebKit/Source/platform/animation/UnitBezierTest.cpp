@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/UnitBezier.h"
+#include "platform/animation/UnitBezier.h"
 
 #include <gtest/gtest.h>
 

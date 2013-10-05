@@ -57,6 +57,7 @@
       'URLPatternMatcher.h',
       'UUID.cpp',
       'UUID.h',
+      'animation/UnitBezier.h',
       'clipboard/ClipboardMimeTypes.cpp',
       'clipboard/ClipboardMimeTypes.h',
       'clipboard/ClipboardUtilities.cpp',
@@ -146,6 +147,7 @@
       'transforms/TransformationMatrix.h',
     ],
     'platform_test_files': [
+      'animation/UnitBezierTest.cpp',
       'clipboard/ClipboardUtilitiesTest.cpp',
       'geometry/RoundedRectTest.cpp',
       'text/DateTimeFormatTest.cpp',

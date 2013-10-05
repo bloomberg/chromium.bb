@@ -27,7 +27,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/animation/AnimationUtilities.h" // For blend()
-#include "core/platform/graphics/UnitBezier.h"
+#include "platform/animation/UnitBezier.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
