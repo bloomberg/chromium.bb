@@ -391,3 +391,33 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
   ASSERT_TRUE(observer.GetDetailsFor(notification_source.map_key(), &details));
   EXPECT_TRUE(details.number_of_matches() > 0);
 }
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(FindInPageTest, CtrlEnter) {
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("data:text/html,This is some text with a "
+                                    "<a href=\"about:blank\">link</a>."));
+
+  browser()->GetFindBarController()->Show();
+
+  // Search for "link".
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_L, false, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_I, false, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_N, false, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_K, false, false, false, false));
+  EXPECT_EQ(ASCIIToUTF16("link"), GetFindBarText());
+
+  ui_test_utils::UrlLoadObserver observer(
+      GURL("about:blank"), content::NotificationService::AllSources());
+
+  // Send Ctrl-Enter, should cause navigation to about:blank.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_RETURN, true, false, false, false));
+
+  observer.Wait();
+}
+#endif

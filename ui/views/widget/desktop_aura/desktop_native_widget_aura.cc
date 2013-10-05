@@ -369,6 +369,12 @@ void DesktopNativeWidgetAura::InitNativeWidget(
         content_window_container_);
   }
 
+  if (params.type == Widget::InitParams::TYPE_WINDOW) {
+    FocusManager* focus_manager =
+        native_widget_delegate_->AsWidget()->GetFocusManager();
+    root_window_->AddPreTargetHandler(focus_manager->GetEventHandler());
+  }
+
   window_->Show();
   desktop_root_window_host_->InitFocus(window_);
 

@@ -303,12 +303,7 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
       break;
   }
 
-  bool handled = views::Textfield::OnKeyPressed(event);
-#if !defined(OS_WIN) || defined(USE_AURA)
-  // TODO(msw): Avoid this complexity, consolidate cross-platform behavior.
-  handled |= SkipDefaultKeyEventProcessing(event);
-#endif
-  return handled;
+  return views::Textfield::OnKeyPressed(event) || HandleEarlyTabActions(event);
 }
 
 bool OmniboxViewViews::OnKeyReleased(const ui::KeyEvent& event) {
@@ -320,8 +315,17 @@ bool OmniboxViewViews::OnKeyReleased(const ui::KeyEvent& event) {
 
 bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
     const ui::KeyEvent& event) {
-  // Handle keyword hint tab-to-search and tabbing through dropdown results.
+  if (views::FocusManager::IsTabTraversalKeyEvent(event) &&
+      ((model()->is_keyword_hint() && !event.IsShiftDown()) ||
+       model()->popup_model()->IsOpen())) {
+    return true;
+  }
+  return Textfield::SkipDefaultKeyEventProcessing(event);
+}
+
+bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   // This must run before acclerator handling invokes a focus change on tab.
+  // Note the parallel with SkipDefaultKeyEventProcessing above.
   if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
     if (model()->is_keyword_hint() && !event.IsShiftDown()) {
       model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
@@ -339,7 +343,7 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
     }
   }
 
-  return Textfield::SkipDefaultKeyEventProcessing(event);
+  return false;
 }
 
 void OmniboxViewViews::OnFocus() {

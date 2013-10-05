@@ -163,6 +163,9 @@ class OmniboxViewViews
   // that after invoking this OnAfterPossibleChange() is invoked.
   void OnPaste();
 
+  // Handle keyword hint tab-to-search and tabbing through dropdown results.
+  bool HandleEarlyTabActions(const ui::KeyEvent& event);
+
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.
   bool popup_window_mode_;

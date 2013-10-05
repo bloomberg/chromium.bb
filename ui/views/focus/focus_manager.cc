@@ -24,6 +24,24 @@
 
 namespace views {
 
+namespace {
+
+class FocusManagerEventHandler : public ui::EventHandler {
+ public:
+  FocusManagerEventHandler(FocusManager* parent) : focus_manager_(parent) {}
+
+  // Implementation of ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    if (!focus_manager_->OnKeyEvent(*event))
+      event->SetHandled();
+  }
+
+ private:
+  FocusManager* focus_manager_;
+};
+
+}  // namespace
+
 bool FocusManager::shortcut_handling_suspended_ = false;
 bool FocusManager::arrow_key_traversal_enabled_ = false;
 
@@ -62,7 +80,7 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
   accelerator.set_type(event.type());
 
   if (event.type() == ui::ET_KEY_PRESSED) {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     // If the focused view wants to process the key event as is, let it be.
     // This is not used for linux/aura.
     if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event) &&
@@ -510,6 +528,12 @@ bool FocusManager::HasPriorityHandler(
 // static
 bool FocusManager::IsTabTraversalKeyEvent(const ui::KeyEvent& key_event) {
   return key_event.key_code() == ui::VKEY_TAB && !key_event.IsControlDown();
+}
+
+ui::EventHandler* FocusManager::GetEventHandler() {
+  if (!event_handler_)
+    event_handler_.reset(new FocusManagerEventHandler(this));
+  return event_handler_.get();
 }
 
 void FocusManager::ViewRemoved(View* removed) {
