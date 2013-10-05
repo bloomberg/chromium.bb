@@ -470,7 +470,7 @@ TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
 #if defined(OS_WIN)
   // http://crbug.com/304544
   if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return true;
+    return;
 #endif
 
   scoped_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
