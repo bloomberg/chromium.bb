@@ -2549,8 +2549,12 @@ public class AwSettingsTest extends AwTestBase {
         }
     }
 
+    /*
     @LargeTest
     @Feature({"AndroidWebView", "Preferences"})
+    http://crbug.com/304549
+    */
+    @DisabledTest
     public void testMediaPlaybackWithoutUserGesture() throws Throwable {
         assertTrue(runVideoTest(false, -1));
     }
