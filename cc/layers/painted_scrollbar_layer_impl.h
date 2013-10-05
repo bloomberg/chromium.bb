@@ -33,8 +33,6 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
 
-  virtual void DidLoseOutputSurface() OVERRIDE;
-
   void SetThumbThickness(int thumb_thickness);
   void SetThumbLength(int thumb_length);
   void SetTrackStart(int track_start);

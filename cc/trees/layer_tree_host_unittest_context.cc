@@ -1103,7 +1103,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLayersNotified);
 class LayerTreeHostContextTestDontUseLostResources
     : public LayerTreeHostContextTest {
  public:
-  LayerTreeHostContextTestDontUseLostResources() {
+  LayerTreeHostContextTestDontUseLostResources() : lost_context_(false) {
     context_should_support_io_surface_ = true;
   }
 
@@ -1294,31 +1294,38 @@ class LayerTreeHostContextTestDontUseLostResources
     if (host_impl->active_tree()->source_frame_number() == 2) {
       // Lose the context during draw on the second commit. This will cause
       // a third commit to recover.
-      context3d_->set_times_bind_texture_succeeds(4);
+      context3d_->set_times_bind_texture_succeeds(0);
     }
     return true;
   }
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(
       bool fallback) OVERRIDE {
-    if (layer_tree_host())
+    if (layer_tree_host()) {
+      lost_context_ = true;
       EXPECT_EQ(layer_tree_host()->source_frame_number(), 3);
+    }
     return LayerTreeHostContextTest::CreateOutputSurface(fallback);
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     ASSERT_TRUE(layer_tree_host()->hud_layer());
     // End the test once we know the 3nd frame drew.
-    if (layer_tree_host()->source_frame_number() < 4)
+    if (layer_tree_host()->source_frame_number() < 4) {
       layer_tree_host()->root_layer()->SetNeedsDisplay();
-    else
+      layer_tree_host()->SetNeedsCommit();
+    } else {
       EndTest();
+    }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_TRUE(lost_context_);
+  }
 
  private:
   FakeContentLayerClient client_;
+  bool lost_context_;
 
   scoped_refptr<VideoFrame> color_video_frame_;
   scoped_refptr<VideoFrame> hw_video_frame_;

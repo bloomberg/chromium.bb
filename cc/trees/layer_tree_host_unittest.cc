@@ -3708,13 +3708,13 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     child_ = PushPropertiesCountingLayer::Create();
     child2_ = PushPropertiesCountingLayer::Create();
     grandchild_ = PushPropertiesCountingLayer::Create();
-    leaf_scrollbar_layer_ =
-        FakePaintedScrollbarLayer::Create(false, false, root_->id());
+    leaf_always_pushing_layer_ = PushPropertiesCountingLayer::Create();
+    leaf_always_pushing_layer_->set_persist_needs_push_properties(true);
 
     root_->AddChild(child_);
     root_->AddChild(child2_);
     child_->AddChild(grandchild_);
-    child2_->AddChild(leaf_scrollbar_layer_);
+    child2_->AddChild(leaf_always_pushing_layer_);
 
     other_root_ = PushPropertiesCountingLayer::Create();
 
@@ -3734,7 +3734,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     EXPECT_EQ(expected_push_properties_other_root_,
               other_root_->push_properties_count());
     EXPECT_EQ(expected_push_properties_leaf_layer_,
-              leaf_scrollbar_layer_->push_properties_count());
+              leaf_always_pushing_layer_->push_properties_count());
 
     // The scrollbar layer always needs to be pushed.
     if (root_->layer_tree_host()) {
@@ -3745,9 +3745,10 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
       EXPECT_TRUE(child2_->descendant_needs_push_properties());
       EXPECT_FALSE(child2_->needs_push_properties());
     }
-    if (leaf_scrollbar_layer_->layer_tree_host()) {
-      EXPECT_FALSE(leaf_scrollbar_layer_->descendant_needs_push_properties());
-      EXPECT_TRUE(leaf_scrollbar_layer_->needs_push_properties());
+    if (leaf_always_pushing_layer_->layer_tree_host()) {
+      EXPECT_FALSE(
+          leaf_always_pushing_layer_->descendant_needs_push_properties());
+      EXPECT_TRUE(leaf_always_pushing_layer_->needs_push_properties());
     }
 
     // child_ and grandchild_ don't persist their need to push properties.
@@ -3856,9 +3857,8 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
         break;
     }
 
-    // Content/Picture layers require PushProperties every commit that they are
-    // in the tree.
-    if (leaf_scrollbar_layer_->layer_tree_host())
+    // The leaf layer always pushes.
+    if (leaf_always_pushing_layer_->layer_tree_host())
       ++expected_push_properties_leaf_layer_;
   }
 
@@ -3871,7 +3871,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
   scoped_refptr<PushPropertiesCountingLayer> child2_;
   scoped_refptr<PushPropertiesCountingLayer> grandchild_;
   scoped_refptr<PushPropertiesCountingLayer> other_root_;
-  scoped_refptr<FakePaintedScrollbarLayer> leaf_scrollbar_layer_;
+  scoped_refptr<PushPropertiesCountingLayer> leaf_always_pushing_layer_;
   size_t expected_push_properties_root_;
   size_t expected_push_properties_child_;
   size_t expected_push_properties_child2_;

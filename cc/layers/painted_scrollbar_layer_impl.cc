@@ -125,11 +125,6 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   }
 }
 
-void PaintedScrollbarLayerImpl::DidLoseOutputSurface() {
-  track_ui_resource_id_ = 0;
-  thumb_ui_resource_id_ = 0;
-}
-
 void PaintedScrollbarLayerImpl::SetThumbThickness(int thumb_thickness) {
   if (thumb_thickness_ == thumb_thickness)
     return;

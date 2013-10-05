@@ -65,6 +65,13 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   gfx::Rect ScrollbarLayerRectToContentRect(gfx::Rect layer_rect) const;
   gfx::Rect OriginThumbRect() const;
 
+  template<typename T> void UpdateProperty(T value, T* prop) {
+    if (*prop == value)
+      return;
+    *prop = value;
+    SetNeedsPushProperties();
+  }
+
   int MaxTextureSize();
   float ClampScaleToMaxTextureSize(float scale);
 
@@ -80,6 +87,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   int thumb_length_;
   gfx::Point location_;
   gfx::Rect track_rect_;
+  bool is_overlay_;
+  bool has_thumb_;
 
   scoped_ptr<ScopedUIResource> track_resource_;
   scoped_ptr<ScopedUIResource> thumb_resource_;

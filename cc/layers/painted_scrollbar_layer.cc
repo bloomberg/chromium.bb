@@ -39,7 +39,9 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(
     : scrollbar_(scrollbar.Pass()),
       scroll_layer_id_(scroll_layer_id),
       thumb_thickness_(scrollbar_->ThumbThickness()),
-      thumb_length_(scrollbar_->ThumbLength()) {
+      thumb_length_(scrollbar_->ThumbLength()),
+      is_overlay_(scrollbar_->IsOverlay()),
+      has_thumb_(scrollbar_->HasThumb()) {
   if (!scrollbar_->IsOverlay())
     SetShouldScrollOnMainThread(true);
 }
@@ -127,10 +129,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   if (thumb_resource_.get())
     scrollbar_layer->set_thumb_ui_resource_id(thumb_resource_->id());
 
-  scrollbar_layer->set_is_overlay_scrollbar(scrollbar_->IsOverlay());
-
-  // PaintedScrollbarLayer must push properties every frame. crbug.com/259095
-  needs_push_properties_ = true;
+  scrollbar_layer->set_is_overlay_scrollbar(is_overlay_);
 }
 
 ScrollbarLayerInterface* PaintedScrollbarLayer::ToScrollbarLayer() {
@@ -174,11 +173,13 @@ gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
 }
 
 void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
-  track_rect_ = scrollbar_->TrackRect();
-  location_ = scrollbar_->Location();
-  if (scrollbar_->HasThumb()) {
-    thumb_thickness_ = scrollbar_->ThumbThickness();
-    thumb_length_ = scrollbar_->ThumbLength();
+  UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
+  UpdateProperty(scrollbar_->Location(), &location_);
+  UpdateProperty(scrollbar_->IsOverlay(), &is_overlay_);
+  UpdateProperty(scrollbar_->HasThumb(), &has_thumb_);
+  if (has_thumb_) {
+    UpdateProperty(scrollbar_->ThumbThickness(), &thumb_thickness_);
+    UpdateProperty(scrollbar_->ThumbLength(), &thumb_length_);
   }
 }
 
@@ -198,15 +199,20 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
     ContentsScalingLayer::Update(queue, occlusion);
   }
 
+  if (update_rect_.IsEmpty() && track_resource_)
+    return false;
+
   track_resource_ = ScopedUIResource::Create(
       layer_tree_host(), RasterizeScrollbarPart(scaled_track_rect, TRACK));
-  gfx::Rect thumb_rect = OriginThumbRect();
 
-  if (scrollbar_->HasThumb() && !thumb_rect.IsEmpty()) {
+  gfx::Rect thumb_rect = OriginThumbRect();
+  if (has_thumb_ && !thumb_rect.IsEmpty()) {
     thumb_resource_ = ScopedUIResource::Create(
         layer_tree_host(), RasterizeScrollbarPart(thumb_rect, THUMB));
   }
 
+  // UI resources changed so push properties is needed.
+  SetNeedsPushProperties();
   return true;
 }
 
