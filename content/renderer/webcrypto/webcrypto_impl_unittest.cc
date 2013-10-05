@@ -180,9 +180,6 @@ class WebCryptoImplTest : public testing::Test {
   WebCryptoImpl crypto_;
 };
 
-// TODO(padolph) Enable these tests for OpenSSL once matching impl is available
-#if !defined(USE_OPENSSL)
-
 TEST_F(WebCryptoImplTest, DigestSampleSets) {
   // The results are stored here in hex format for readability.
   //
@@ -264,7 +261,8 @@ TEST_F(WebCryptoImplTest, DigestSampleSets) {
   }
 }
 
-#endif // #if !defined(USE_OPENSSL)
+// TODO(padolph) Enable these tests for OpenSSL once matching impl is available
+#if !defined(USE_OPENSSL)
 
 TEST_F(WebCryptoImplTest, HMACSampleSets) {
   struct TestCase {
@@ -404,9 +402,6 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
     EXPECT_FALSE(signature_match);
   }
 }
-
-// TODO(padolph) Enable these tests for OpenSSL once matching impl is available
-#if !defined(USE_OPENSSL)
 
 TEST_F(WebCryptoImplTest, AesCbcFailures) {
   WebKit::WebCryptoKey key = ImportSecretKeyFromRawHexString(

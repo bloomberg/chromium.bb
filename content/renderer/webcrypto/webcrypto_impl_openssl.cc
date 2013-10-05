@@ -5,6 +5,7 @@
 #include "content/renderer/webcrypto/webcrypto_impl.h"
 
 #include <vector>
+#include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 
@@ -53,17 +54,69 @@ bool WebCryptoImpl::DecryptInternal(
     const unsigned char* data,
     unsigned data_size,
     WebKit::WebArrayBuffer* buffer) {
-  return false;
-}
-
-bool WebCryptoImpl::DigestInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const unsigned char* data,
-    unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
   // TODO(padolph): Placeholder for OpenSSL implementation.
   // Issue http://crbug.com/267888.
   return false;
+}
+
+bool WebCryptoImpl::DigestInternal(const WebKit::WebCryptoAlgorithm& algorithm,
+                                   const unsigned char* data,
+                                   unsigned data_size,
+                                   WebKit::WebArrayBuffer* buffer) {
+
+  crypto::OpenSSLErrStackTracer(FROM_HERE);
+
+  const EVP_MD* digest_algorithm;
+  switch (algorithm.id()) {
+    case WebKit::WebCryptoAlgorithmIdSha1:
+      digest_algorithm = EVP_sha1();
+      break;
+    case WebKit::WebCryptoAlgorithmIdSha224:
+      digest_algorithm = EVP_sha224();
+      break;
+    case WebKit::WebCryptoAlgorithmIdSha256:
+      digest_algorithm = EVP_sha256();
+      break;
+    case WebKit::WebCryptoAlgorithmIdSha384:
+      digest_algorithm = EVP_sha384();
+      break;
+    case WebKit::WebCryptoAlgorithmIdSha512:
+      digest_algorithm = EVP_sha512();
+      break;
+    default:
+      // Not a digest algorithm.
+      return false;
+  }
+
+  crypto::ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> digest_context(
+      EVP_MD_CTX_create());
+  if (!digest_context.get()) {
+    return false;
+  }
+
+  if (!EVP_DigestInit_ex(digest_context.get(), digest_algorithm, NULL) ||
+      !EVP_DigestUpdate(digest_context.get(), data, data_size)) {
+    return false;
+  }
+
+  const int hash_expected_size = EVP_MD_CTX_size(digest_context.get());
+  if (hash_expected_size <= 0) {
+    return false;
+  }
+  DCHECK_LE(hash_expected_size, EVP_MAX_MD_SIZE);
+
+  *buffer = WebKit::WebArrayBuffer::create(hash_expected_size, 1);
+  unsigned char* const hash_buffer =
+      reinterpret_cast<unsigned char* const>(buffer->data());
+
+  unsigned hash_size = 0;
+  if (!EVP_DigestFinal_ex(digest_context.get(), hash_buffer, &hash_size) ||
+      static_cast<int>(hash_size) != hash_expected_size) {
+    buffer->reset();
+    return false;
+  }
+
+  return true;
 }
 
 bool WebCryptoImpl::ImportKeyInternal(
