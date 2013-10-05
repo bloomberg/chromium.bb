@@ -567,6 +567,9 @@ const char kEnableBatchedShutdown[]         = "enable-batched-shutdown";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
+// Enables client hints, which adds hints about browser state to HTTP requests.
+const char kEnableClientHints[]             = "enable-client-hints";
+
 // Enables pushing cloud policy to Chrome using an invalidation service.
 const char kEnableCloudPolicyPush[]         = "enable-cloud-policy-push";
 
