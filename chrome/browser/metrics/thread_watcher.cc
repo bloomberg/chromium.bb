@@ -429,6 +429,8 @@ ThreadWatcherList::CrashDataThresholds::CrashDataThresholds()
 
 // static
 void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
+  // TODO(rtenneti): Enable ThreadWatcher.
+#if 0
   uint32 unresponsive_threshold;
   CrashOnHangThreadMap crash_on_hang_threads;
   ParseCommandLine(command_line,
@@ -444,12 +446,16 @@ void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
                  unresponsive_threshold,
                  crash_on_hang_threads),
       base::TimeDelta::FromSeconds(120));
+#endif  // 0
 }
 
 // static
 void ThreadWatcherList::StopWatchingAll() {
+  // TODO(rtenneti): Enable ThreadWatcher.
+#if 0
   ThreadWatcherObserver::RemoveNotifications();
   DeleteAll();
+#endif  // 0
 }
 
 // static
@@ -901,8 +907,11 @@ StartupTimeBomb::~StartupTimeBomb() {
 void StartupTimeBomb::Arm(const base::TimeDelta& duration) {
   DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   DCHECK(!startup_watchdog_);
+  // TODO(rtenneti): Enable StartupWatchDog.
+#if 0
   startup_watchdog_ = new StartupWatchDogThread(duration);
   startup_watchdog_->Arm();
+#endif  // 0
   return;
 }
 
@@ -976,6 +985,9 @@ void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
     actual_duration *= 2;
 #endif
 
+  // TODO(rtenneti): Enable ShutdownWatchDog.
+#if 0
   shutdown_watchdog_ = new ShutdownWatchDogThread(actual_duration);
   shutdown_watchdog_->Arm();
+#endif  // 0
 }
