@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # For tests, it's fine to include utility process code.
+  'test_service_discovery_client\.cc': [
+    "+chrome/utility/local_discovery/service_discovery_client_impl.h"
+   ],
+}

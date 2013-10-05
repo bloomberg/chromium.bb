@@ -113,7 +113,7 @@ LocalDiscoveryUI::LocalDiscoveryUI(content::WebUI* web_ui)
 
   // TODO(gene): Use LocalDiscoveryUIHandler to send updated to the devices
   // page. For example
-  web_ui->AddMessageHandler(local_discovery::LocalDiscoveryUIHandler::Create());
+  web_ui->AddMessageHandler(new local_discovery::LocalDiscoveryUIHandler());
   web_ui->AddMessageHandler(new MetricsHandler());
 }
 

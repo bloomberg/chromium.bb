@@ -1907,6 +1907,8 @@
         }],
         ['enable_mdns==1', {
           'sources' : [
+            'browser/local_discovery/test_service_discovery_client.cc',
+            'browser/local_discovery/test_service_discovery_client.h',
             'browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc',
           ]
         }],

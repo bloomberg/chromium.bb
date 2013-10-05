@@ -61,7 +61,6 @@ const int kInitialRequeryTimeSeconds = 1;
 const int kMaxRequeryTimeSeconds = 2; // Time for last requery
 const int kRequeryExpontentialGrowthBase = 2;
 
-LocalDiscoveryUIHandler::Factory* g_factory = NULL;
 int g_num_visible = 0;
 
 }  // namespace
@@ -83,25 +82,9 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() : is_visible_(false) {
 #endif  // !defined(OS_MACOSX)
 }
 
-LocalDiscoveryUIHandler::LocalDiscoveryUIHandler(
-    scoped_ptr<PrivetDeviceLister> privet_lister) : is_visible_(false) {
-  privet_lister.swap(privet_lister_);
-}
-
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
   ResetCurrentRegistration();
   SetIsVisible(false);
-}
-
-// static
-LocalDiscoveryUIHandler* LocalDiscoveryUIHandler::Create() {
-  if (g_factory) return g_factory->CreateLocalDiscoveryUIHandler();
-  return new LocalDiscoveryUIHandler();
-}
-
-// static
-void LocalDiscoveryUIHandler::SetFactory(Factory* factory) {
-  g_factory = factory;
 }
 
 // static

@@ -40,20 +40,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
                                 public CloudPrintPrinterList::Delegate,
                                 content::NotificationObserver {
  public:
-  class Factory {
-   public:
-    virtual ~Factory() {}
-    virtual LocalDiscoveryUIHandler* CreateLocalDiscoveryUIHandler() = 0;
-  };
-
   LocalDiscoveryUIHandler();
-  // This constructor should only used by tests.
-  explicit LocalDiscoveryUIHandler(
-      scoped_ptr<PrivetDeviceLister> privet_lister);
   virtual ~LocalDiscoveryUIHandler();
 
-  static LocalDiscoveryUIHandler* Create();
-  static void SetFactory(Factory* factory);
   static bool GetHasVisible();
 
   // WebUIMessageHandler implementation.
