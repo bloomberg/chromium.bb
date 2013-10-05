@@ -3157,7 +3157,6 @@
             'platform/text/PlatformLocale.cpp',
             'platform/text/PlatformLocale.h',
             'platform/text/RegularExpression.cpp',
-            'platform/text/SegmentedString.cpp',
             'platform/text/SuffixTree.h',
             'platform/text/TextBoundaries.cpp',
             'platform/text/TextEncodingDetector.h',

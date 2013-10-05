@@ -20,6 +20,7 @@
 #ifndef SegmentedString_h
 #define SegmentedString_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Deque.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
@@ -29,7 +30,7 @@ namespace WebCore {
 
 class SegmentedString;
 
-class SegmentedSubstring {
+class PLATFORM_EXPORT SegmentedSubstring {
 public:
     SegmentedSubstring()
         : m_length(0)
@@ -52,8 +53,9 @@ public:
                 m_is8Bit = false;
                 m_data.string16Ptr = m_string.characters16();
             }
-        } else
+        } else {
             m_is8Bit = false;
+        }
     }
 
     void clear() { m_length = 0; m_data.string16Ptr = 0; m_is8Bit = false;}
@@ -74,8 +76,9 @@ public:
         if (!offset) {
             if (m_length)
                 builder.append(m_string);
-        } else
+        } else {
             builder.append(m_string.substring(offset, m_length));
+        }
     }
 
     UChar getCurrentChar8()
@@ -135,7 +138,7 @@ private:
     String m_string;
 };
 
-class SegmentedString {
+class PLATFORM_EXPORT SegmentedString {
 public:
     SegmentedString()
         : m_pushedChar1(0)
@@ -351,8 +354,9 @@ private:
                 if (m_currentString.doNotExcludeLineNumbers()) {
                     m_advanceAndUpdateLineNumberFunc = &SegmentedString::advanceAndUpdateLineNumber8;
                     m_fastPathFlags |= Use8BitAdvanceAndUpdateLineNumbers;
-                } else
+                } else {
                     m_advanceAndUpdateLineNumberFunc = &SegmentedString::advance8;
+                }
                 return;
             }
 

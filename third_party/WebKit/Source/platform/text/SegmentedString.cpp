@@ -18,7 +18,7 @@
 */
 
 #include "config.h"
-#include "core/platform/text/SegmentedString.h"
+#include "platform/text/SegmentedString.h"
 
 namespace WebCore {
 
@@ -125,8 +125,9 @@ void SegmentedString::append(const SegmentedSubstring& s)
         m_numberOfCharactersConsumedPriorToCurrentString += m_currentString.numberOfCharactersConsumed();
         m_currentString = s;
         updateAdvanceFunctionPointers();
-    } else
+    } else {
         m_substrings.append(s);
+    }
     m_empty = false;
 }
 
@@ -138,8 +139,8 @@ void SegmentedString::prepend(const SegmentedSubstring& s)
         return;
 
     // FIXME: We're assuming that the prepend were originally consumed by
-    //        this SegmentedString.  We're also ASSERTing that s is a fresh
-    //        SegmentedSubstring.  These assumptions are sufficient for our
+    //        this SegmentedString. We're also ASSERTing that s is a fresh
+    //        SegmentedSubstring. These assumptions are sufficient for our
     //        current use, but we might need to handle the more elaborate
     //        cases in the future.
     m_numberOfCharactersConsumedPriorToCurrentString += m_currentString.numberOfCharactersConsumed();
@@ -288,7 +289,7 @@ void SegmentedString::advanceSlowCase()
 
         updateAdvanceFunctionPointers();
     } else if (m_currentString.m_length) {
-        if (--m_currentString.m_length == 0)
+        if (!--m_currentString.m_length)
             advanceSubstring();
     } else if (!isComposite()) {
         m_currentString.clear();
@@ -318,7 +319,7 @@ void SegmentedString::advanceAndUpdateLineNumberSlowCase()
             // Plus 1 because numberOfCharactersConsumed value hasn't incremented yet; it does with m_length decrement below.
             m_numberOfCharactersConsumedPriorToCurrentLine = numberOfCharactersConsumed() + 1;
         }
-        if (--m_currentString.m_length == 0)
+        if (!--m_currentString.m_length)
             advanceSubstring();
         else
             m_currentString.incrementAndGetCurrentChar(); // Only need the ++

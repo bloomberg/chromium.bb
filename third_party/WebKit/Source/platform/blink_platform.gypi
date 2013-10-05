@@ -109,6 +109,8 @@
       'text/LineEnding.h',
       'text/QuotedPrintable.cpp',
       'text/QuotedPrintable.h',
+      'text/SegmentedString.cpp',
+      'text/SegmentedString.h',
       'text/TextBreakIterator.cpp',
       'text/TextBreakIterator.h',
       'text/TextBreakIteratorICU.cpp',

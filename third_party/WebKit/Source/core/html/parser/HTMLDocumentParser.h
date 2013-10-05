@@ -41,7 +41,7 @@
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
-#include "core/platform/text/SegmentedString.h"
+#include "platform/text/SegmentedString.h"
 #include "wtf/Deque.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/WeakPtr.h"

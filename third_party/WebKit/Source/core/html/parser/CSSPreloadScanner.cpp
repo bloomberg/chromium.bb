@@ -31,7 +31,7 @@
 #include "FetchInitiatorTypeNames.h"
 #include "core/html/parser/HTMLIdentifier.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/platform/text/SegmentedString.h"
+#include "platform/text/SegmentedString.h"
 
 namespace WebCore {
 
