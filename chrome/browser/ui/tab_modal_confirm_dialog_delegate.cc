@@ -49,16 +49,6 @@ void TabModalConfirmDialogDelegate::Accept() {
   CloseDialog();
 }
 
-void TabModalConfirmDialogDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  if (closing_)
-    return;
-  // Make sure we won't do anything when another action occurs.
-  closing_ = true;
-  OnLinkClicked(disposition);
-  CloseDialog();
-}
-
 void TabModalConfirmDialogDelegate::Observe(
     int type,
     const content::NotificationSource& source,
@@ -77,6 +67,13 @@ void TabModalConfirmDialogDelegate::Close() {
   closing_ = true;
   OnClosed();
   CloseDialog();
+}
+
+void TabModalConfirmDialogDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  if (closing_)
+    return;
+  OnLinkClicked(disposition);
 }
 
 gfx::Image* TabModalConfirmDialogDelegate::GetIcon() {

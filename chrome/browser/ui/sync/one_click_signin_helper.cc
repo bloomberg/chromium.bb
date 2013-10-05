@@ -178,13 +178,18 @@ class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
   virtual string16 GetMessage() OVERRIDE;
   virtual string16 GetAcceptButtonTitle() OVERRIDE;
   virtual string16 GetCancelButtonTitle() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
   virtual void OnClosed() OVERRIDE;
+  virtual void OnLinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   std::string last_email_;
   std::string email_;
   Callback callback_;
+
+  // Web contents from which the "Learn more" link should be opened.
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmEmailDialogDelegate);
 };
@@ -208,7 +213,8 @@ ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
   : TabModalConfirmDialogDelegate(contents),
     last_email_(last_email),
     email_(email),
-    callback_(callback) {
+    callback_(callback),
+    web_contents_(contents) {
 }
 
 ConfirmEmailDialogDelegate::~ConfirmEmailDialogDelegate() {
@@ -235,6 +241,10 @@ string16 ConfirmEmailDialogDelegate::GetCancelButtonTitle() {
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
 }
 
+string16 ConfirmEmailDialogDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
 void ConfirmEmailDialogDelegate::OnAccepted() {
   base::ResetAndReturn(&callback_).Run(CREATE_NEW_USER);
 }
@@ -245,6 +255,20 @@ void ConfirmEmailDialogDelegate::OnCanceled() {
 
 void ConfirmEmailDialogDelegate::OnClosed() {
   base::ResetAndReturn(&callback_).Run(CLOSE);
+}
+
+void ConfirmEmailDialogDelegate::OnLinkClicked(
+    WindowOpenDisposition disposition) {
+  content::OpenURLParams params(
+      GURL(chrome::kChromeSyncMergeTroubleshootingURL),
+      content::Referrer(),
+      NEW_POPUP,
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      false);
+  // It is guaranteed that |web_contents_| is valid here because when it's
+  // deleted, the dialog is immediately closed and no further action can be
+  // performed.
+  web_contents_->OpenURL(params);
 }
 
 

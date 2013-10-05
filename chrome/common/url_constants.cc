@@ -379,12 +379,13 @@ const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromeos/?p=accessibility_menu";
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
 const char kChromeSyncLearnMoreURL[] =
-#if defined(OS_CHROMEOS)
-    "http://support.google.com/chromeos/bin/answer.py?answer=165139";
-#else
     "http://support.google.com/chrome/bin/answer.py?answer=165139";
-#endif
+
+const char kChromeSyncMergeTroubleshootingURL[] =
+    "https://support.google.com/chrome/answer/1181420#merge";
+#endif  // defined(ENABLE_ONE_CLICK_SIGNIN)
 
 const char kChromeEnterpriseSignInLearnMoreURL[] =
   "http://support.google.com/chromeos/bin/answer.py?hl=en&answer=1331549";

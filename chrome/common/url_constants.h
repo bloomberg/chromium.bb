@@ -334,8 +334,14 @@ extern const char kChromeHelpViaWebUIURL[];
 extern const char kChromeAccessibilityHelpURL[];
 #endif
 
+#if defined (ENABLE_ONE_CLICK_SIGNIN)
 // "Learn more" URL for the one click signin infobar.
 extern const char kChromeSyncLearnMoreURL[];
+
+// "Learn more" URL for the "Sign in with a different account" confirmation
+// dialog.
+extern const char kChromeSyncMergeTroubleshootingURL[];
+#endif
 
 // "Learn more" URL for the enterprise sign-in confirmation dialog.
 extern const char kChromeEnterpriseSignInLearnMoreURL[];

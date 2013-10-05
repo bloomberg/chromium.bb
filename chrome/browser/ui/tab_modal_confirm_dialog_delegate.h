@@ -42,31 +42,32 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
     close_delegate_ = close_delegate;
   }
 
-  // Accepts the confirmation prompt and calls |OnAccepted| if no other call
-  // to |Accept|, |Cancel|, |LinkClicked| or |Close| has been made before.
-  // This method is safe to call even from an |OnAccepted| or |OnCanceled|
-  // callback.
+  // Accepts the confirmation prompt and calls OnAccepted() if no other call
+  // to Accept(), Cancel() or Close() has been made before.
+  // This method is safe to call even from an OnAccepted(), OnCanceled(),
+  // OnClosed() or OnLinkClicked() callback.
   void Accept();
 
-  // Cancels the confirmation prompt and calls |OnCanceled| if no other call
-  // to |Accept|, |Cancel|, |LinkClicked| or |Close| has been made before.
-  // This method is safe to call even from an |OnAccepted| or |OnCanceled|
-  // callback.
+  // Cancels the confirmation prompt and calls OnCanceled() if no other call
+  // to Accept(), Cancel() or Close() has been made before.
+  // This method is safe to call even from an OnAccepted(), OnCanceled(),
+  // OnClosed() or OnLinkClicked() callback.
   void Cancel();
-
-  // Called when the link (if any) is clicked. Calls |OnLinkClicked| and closes
-  // the dialog if no other call to |Accept|, |Cancel|, |LinkClicked| or
-  // |Close| has been made before. The |disposition| specifies how the
-  // resulting document should be loaded (based on the event flags present when
-  // the link was clicked).
-  void LinkClicked(WindowOpenDisposition disposition);
 
   // Called when the dialog is closed without selecting an option, e.g. by
   // pressing the close button on the dialog, using a window manager gesture,
   // closing the parent tab or navigating in the parent tab.
-  // Calls |OnClosed| and closes the dialog if no other call to |Accept|,
-  // |Cancel|, |LinkClicked| or |Close| has been made before.
+  // Calls OnClosed() and closes the dialog if no other call to Accept(),
+  // Cancel() or Close() has been made before.
+  // This method is safe to call even from an OnAccepted(), OnCanceled(),
+  // OnClosed() or OnLinkClicked() callback.
   void Close();
+
+  // Called when the link is clicked. Calls OnLinkClicked() if the dialog is
+  // not in the process of closing. The |disposition| specifies how the
+  // resulting document should be loaded (based on the event flags present when
+  // the link was clicked).
+  void LinkClicked(WindowOpenDisposition disposition);
 
   // The title of the dialog. Note that the title is not shown on all platforms.
   virtual string16 GetTitle() = 0;
@@ -105,24 +106,28 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
  private:
-  // It is guaranteed that exactly one of the |On...| methods is eventually
-  // called. These method are private to enforce this guarantee. Access to them
-  // is  controlled by |Accept|, |Cancel|, |LinkClicked| and |Close|.
+  // It is guaranteed that exactly one of OnAccepted(), OnCanceled() or
+  // OnClosed() is eventually called. These method are private to enforce this
+  // guarantee. Access to them is controlled by Accept(), Cancel() and Close().
 
   // Called when the user accepts or cancels the dialog, respectively.
   virtual void OnAccepted();
   virtual void OnCanceled();
 
-  // Called when the user clicks on the link (if any).
-  virtual void OnLinkClicked(WindowOpenDisposition disposition);
-
   // Called when the dialog is closed.
   virtual void OnClosed();
+
+  // Called when the link is clicked. Acces to the method is controlled by
+  // LinkClicked(), which checks that the dialog is not in the process of
+  // closing. It's correct to close the dialog by calling Accept(), Cancel()
+  // or Close() from this callback.
+  virtual void OnLinkClicked(WindowOpenDisposition disposition);
 
   // Close the dialog.
   void CloseDialog();
 
   TabModalConfirmDialogCloseDelegate* close_delegate_;
+
   // True iff we are in the process of closing, to avoid running callbacks
   // multiple times.
   bool closing_;
