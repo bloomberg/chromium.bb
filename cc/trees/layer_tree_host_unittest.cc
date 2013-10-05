@@ -2116,7 +2116,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
     EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
 
-    EXPECT_EQ(0u, host.settings().max_partial_texture_updates);
+    EXPECT_EQ(0u, host.MaxPartialTextureUpdates());
   }
 
   // When partial updates are allowed,
@@ -2134,7 +2134,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
     EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
 
-    EXPECT_EQ(5u, host.settings().max_partial_texture_updates);
+    EXPECT_EQ(5u, host.MaxPartialTextureUpdates());
   }
 
   // When partial updates are allowed,
@@ -2152,7 +2152,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
     EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
 
-    EXPECT_EQ(10u, host.settings().max_partial_texture_updates);
+    EXPECT_EQ(10u, host.MaxPartialTextureUpdates());
   }
 }
 
@@ -2189,7 +2189,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
   scoped_ptr<LayerTreeHost> host =
       LayerTreeHost::Create(&client, settings, NULL);
   EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
-  EXPECT_EQ(0u, host->settings().max_partial_texture_updates);
+  EXPECT_EQ(0u, host->MaxPartialTextureUpdates());
 }
 
 TEST(LayerTreeHostTest,
@@ -2202,7 +2202,7 @@ TEST(LayerTreeHostTest,
   scoped_ptr<LayerTreeHost> host =
       LayerTreeHost::Create(&client, settings, NULL);
   EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
-  EXPECT_EQ(0u, host->settings().max_partial_texture_updates);
+  EXPECT_EQ(0u, host->MaxPartialTextureUpdates());
 }
 
 class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted

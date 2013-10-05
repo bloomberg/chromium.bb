@@ -273,6 +273,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   virtual void RateLimit() OVERRIDE;
 
   bool AlwaysUsePartialTextureUpdates();
+  size_t MaxPartialTextureUpdates() const;
   bool RequestPartialTextureUpdate();
 
   void SetDeviceScaleFactor(float device_scale_factor);
@@ -386,7 +387,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   base::WeakPtr<InputHandler> input_handler_weak_ptr_;
   base::WeakPtr<TopControlsManager> top_controls_manager_weak_ptr_;
 
-  LayerTreeSettings settings_;
+  const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
 
   gfx::Size device_viewport_size_;

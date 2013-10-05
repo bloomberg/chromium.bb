@@ -205,16 +205,6 @@ LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
   if (success) {
     output_surface_lost_ = false;
 
-    // Update settings_ based on partial update capability.
-    size_t max_partial_texture_updates = 0;
-    if (proxy_->GetRendererCapabilities().allow_partial_texture_updates &&
-        !settings_.impl_side_painting) {
-      max_partial_texture_updates = std::min(
-          settings_.max_partial_texture_updates,
-          proxy_->MaxPartialTextureUpdates());
-    }
-    settings_.max_partial_texture_updates = max_partial_texture_updates;
-
     if (!contents_texture_manager_ &&
         (!settings_.impl_side_painting || !settings_.solid_color_scrollbars)) {
       contents_texture_manager_ =
@@ -1124,8 +1114,19 @@ bool LayerTreeHost::AlwaysUsePartialTextureUpdates() {
   return !proxy_->HasImplThread();
 }
 
+size_t LayerTreeHost::MaxPartialTextureUpdates() const {
+  size_t max_partial_texture_updates = 0;
+  if (proxy_->GetRendererCapabilities().allow_partial_texture_updates &&
+      !settings_.impl_side_painting) {
+    max_partial_texture_updates =
+        std::min(settings_.max_partial_texture_updates,
+                 proxy_->MaxPartialTextureUpdates());
+  }
+  return max_partial_texture_updates;
+}
+
 bool LayerTreeHost::RequestPartialTextureUpdate() {
-  if (partial_texture_update_requests_ >= settings_.max_partial_texture_updates)
+  if (partial_texture_update_requests_ >= MaxPartialTextureUpdates())
     return false;
 
   partial_texture_update_requests_++;
