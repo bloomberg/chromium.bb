@@ -60,8 +60,6 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
     vertex_opacity_[3] = vertex_opacity[3];
   }
 
-  virtual bool CanClipSelf() const OVERRIDE;
-
   void SetTextureMailbox(const TextureMailbox& mailbox,
                          scoped_ptr<SingleReleaseCallback> release_callback);
 

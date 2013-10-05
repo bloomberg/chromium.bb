@@ -589,7 +589,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
   bool layer_clips_external_content =
       LayerClipsSubtree(layer) || layer->HasDelegatedContent();
   if (layer_clips_external_content && !axis_aligned_with_respect_to_parent &&
-      !layer->draw_properties().descendants_can_clip_selves) {
+      num_descendants_that_draw_content > 0) {
     TRACE_EVENT_INSTANT0(
         "cc",
         "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface clipping",
@@ -1036,7 +1036,6 @@ static void PreCalculateMetaInformation(
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   bool has_delegated_content = layer->HasDelegatedContent();
   int num_descendants_that_draw_content = 0;
-  bool descendants_can_clip_selves = true;
 
   if (has_delegated_content) {
     // Layers with delegated content need to be treated as if they have as
@@ -1044,7 +1043,6 @@ static void PreCalculateMetaInformation(
     // Since we don't know this number right now, we choose one that acts like
     // infinity for our purposes.
     num_descendants_that_draw_content = 1000;
-    descendants_can_clip_selves = false;
   }
 
   if (layer->clip_parent())
@@ -1057,20 +1055,9 @@ static void PreCalculateMetaInformation(
     PreCalculateMetaInformationRecursiveData data_for_child;
     PreCalculateMetaInformation(child_layer, &data_for_child);
 
-    if (!has_delegated_content) {
-      bool sublayer_transform_prevents_clip =
-          !layer->sublayer_transform().IsPositiveScaleOrTranslation();
-
-      num_descendants_that_draw_content += child_layer->DrawsContent() ? 1 : 0;
-      num_descendants_that_draw_content +=
-          child_layer->draw_properties().num_descendants_that_draw_content;
-
-      if ((child_layer->DrawsContent() && !child_layer->CanClipSelf()) ||
-          !child_layer->draw_properties().descendants_can_clip_selves ||
-          sublayer_transform_prevents_clip ||
-          !child_layer->transform().IsPositiveScaleOrTranslation())
-        descendants_can_clip_selves = false;
-    }
+    num_descendants_that_draw_content += child_layer->DrawsContent() ? 1 : 0;
+    num_descendants_that_draw_content +=
+        child_layer->draw_properties().num_descendants_that_draw_content;
 
     recursive_data->Merge(data_for_child);
   }
@@ -1088,8 +1075,6 @@ static void PreCalculateMetaInformation(
       num_descendants_that_draw_content;
   layer->draw_properties().num_unclipped_descendants =
       recursive_data->num_unclipped_descendants;
-  layer->draw_properties().descendants_can_clip_selves =
-      descendants_can_clip_selves;
   layer->draw_properties().layer_or_descendant_has_copy_request =
       recursive_data->layer_or_descendant_has_copy_request;
 }

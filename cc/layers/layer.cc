@@ -206,10 +206,6 @@ skia::RefPtr<SkPicture> Layer::GetPicture() const {
   return skia::RefPtr<SkPicture>();
 }
 
-bool Layer::CanClipSelf() const {
-  return false;
-}
-
 void Layer::SetParent(Layer* layer) {
   DCHECK(!layer || !layer->HasAncestor(this));
 

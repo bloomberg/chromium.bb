@@ -143,8 +143,6 @@ class CC_EXPORT TextureLayer : public Layer {
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
 
-  virtual bool CanClipSelf() const OVERRIDE;
-
  protected:
   TextureLayer(TextureLayerClient* client, bool uses_mailbox);
   virtual ~TextureLayer();

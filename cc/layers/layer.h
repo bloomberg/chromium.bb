@@ -397,8 +397,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual skia::RefPtr<SkPicture> GetPicture() const;
 
-  virtual bool CanClipSelf() const;
-
   // Constructs a LayerImpl of the correct runtime type for this Layer type.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
 

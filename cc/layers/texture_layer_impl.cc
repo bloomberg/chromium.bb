@@ -183,12 +183,7 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
                bg_color,
                vertex_opacity_,
                flipped_);
-
-  // Perform explicit clipping on a quad to avoid setting a scissor later.
-  if (shared_quad_state->is_clipped && quad->PerformClipping())
-    shared_quad_state->is_clipped = false;
-  if (!quad->rect.IsEmpty())
-    quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
 void TextureLayerImpl::DidDraw(ResourceProvider* resource_provider) {
@@ -227,10 +222,6 @@ void TextureLayerImpl::DidLoseOutputSurface() {
 
 const char* TextureLayerImpl::LayerTypeAsString() const {
   return "cc::TextureLayerImpl";
-}
-
-bool TextureLayerImpl::CanClipSelf() const {
-  return true;
 }
 
 void TextureLayerImpl::FreeTextureMailbox() {

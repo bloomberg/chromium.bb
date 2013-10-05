@@ -53,8 +53,6 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
 
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);
 
-  bool PerformClipping();
-
  private:
   TextureDrawQuad();
   virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;

@@ -28,7 +28,6 @@ struct CC_EXPORT DrawProperties {
         contents_scale_y(1.f),
         num_descendants_that_draw_content(0),
         num_unclipped_descendants(0),
-        descendants_can_clip_selves(false),
         can_draw_directly_to_backbuffer(false),
         layer_or_descendant_has_copy_request(false) {}
 
@@ -92,10 +91,6 @@ struct CC_EXPORT DrawProperties {
   // Number of descendants with a clip parent that is our ancestor. NB - this
   // does not include our clip children because they are clipped by us.
   int num_unclipped_descendants;
-
-  // If true, every descendant in the sub-tree can clip itself without the
-  // need to use hardware sissoring or a new render target.
-  bool descendants_can_clip_selves;
 
   bool can_draw_directly_to_backbuffer;
 

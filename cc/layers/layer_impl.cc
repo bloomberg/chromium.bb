@@ -472,10 +472,6 @@ skia::RefPtr<SkPicture> LayerImpl::GetPicture() {
   return skia::RefPtr<SkPicture>();
 }
 
-bool LayerImpl::CanClipSelf() const {
-  return false;
-}
-
 bool LayerImpl::AreVisibleResourcesReady() const {
   return true;
 }

@@ -992,46 +992,6 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerOutsideViewport) {
                                      "green_with_blue_corner.png")));
 }
 
-// TextureLayers are clipped differently than SolidColorLayers, verify they
-// also can be copied when outside of the viewport.
-TEST_F(LayerTreeHostReadbackPixelTest,
-       ReadbackNonRootTextureLayerOutsideViewport) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
-
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
-  bitmap.allocPixels();
-  bitmap.eraseColor(SK_ColorGREEN);
-  {
-    SkBitmapDevice device(bitmap);
-    skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(&device));
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(SK_ColorBLUE);
-    canvas->drawRect(SkRect::MakeXYWH(150, 150, 50, 50), paint);
-  }
-
-  scoped_refptr<TextureLayer> texture = CreateTextureLayer(
-      gfx::Rect(200, 200), bitmap);
-
-  // Tests with solid color layers verify correctness when CanClipSelf is false.
-  EXPECT_FALSE(background->CanClipSelf());
-  // This test verifies correctness when CanClipSelf is true.
-  EXPECT_TRUE(texture->CanClipSelf());
-
-  // Only the top left quarter of the layer is inside the viewport, so the
-  // blue corner is entirely outside.
-  texture->SetPosition(gfx::Point(100, 100));
-  background->AddChild(texture);
-
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 texture.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_with_blue_corner.png")));
-}
-
 }  // namespace
 }  // namespace cc
 

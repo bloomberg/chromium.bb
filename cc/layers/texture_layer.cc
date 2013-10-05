@@ -268,10 +268,6 @@ Region TextureLayer::VisibleContentOpaqueRegion() const {
   return Region();
 }
 
-bool TextureLayer::CanClipSelf() const {
-  return true;
-}
-
 TextureLayer::MailboxHolder::MainThreadReference::MainThreadReference(
     MailboxHolder* holder)
     : holder_(holder) {
