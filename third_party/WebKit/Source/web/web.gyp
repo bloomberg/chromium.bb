@@ -49,6 +49,7 @@
                 '../core/core.gyp:webcore',
                 '../modules/modules.gyp:modules',
                 '<(DEPTH)/skia/skia.gyp:skia',
+                '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
@@ -74,15 +75,6 @@
                 '<@(web_files)',
             ],
             'conditions': [
-                ['use_angle_translator==1', {
-                    'dependencies': [
-                        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
-                    ],
-                }, {
-                    'dependencies': [
-                        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
-                    ],
-                }],
                 ['component=="shared_library"', {
                     'dependencies': [
                         '../core/core.gyp:webcore_derived',

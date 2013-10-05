@@ -356,6 +356,7 @@
         '../weborigin/weborigin.gyp:weborigin',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
@@ -375,6 +376,7 @@
         '../config.gyp:config',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
@@ -417,21 +419,6 @@
                'USING_V8_SHARED',
             ],
           },
-        }],
-        ['use_angle_translator == 1', {
-          'dependencies': [
-            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
-          ],
-          'export_dependent_settings': [
-            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
-          ],
-        }, {
-          'dependencies': [
-            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
-          ],
-          'export_dependent_settings': [
-            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
-          ],
         }],
         ['use_x11 == 1', {
           'dependencies': [
