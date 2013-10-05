@@ -27,9 +27,9 @@
 #include "core/html/track/InbandTextTrack.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/html/track/TextTrackCueGeneric.h"
-#include "platform/Logging.h"
+#include "core/html/track/TextTrackCue.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
+#include "platform/Logging.h"
 #include "wtf/UnusedParam.h"
 #include <math.h>
 
@@ -136,46 +136,6 @@ void InbandTextTrack::trackRemoved()
     m_private->setClient(0);
     m_private = 0;
     clearClient();
-}
-
-void InbandTextTrack::addGenericCue(InbandTextTrackPrivate* trackPrivate, GenericCueData* cueData)
-{
-    UNUSED_PARAM(trackPrivate);
-    ASSERT(trackPrivate == m_private);
-
-    RefPtr<TextTrackCueGeneric> cue = TextTrackCueGeneric::create(scriptExecutionContext(), cueData->startTime(), cueData->endTime(), cueData->content());
-
-    cue->setId(cueData->id());
-    cue->setBaseFontSizeRelativeToVideoHeight(cueData->baseFontSize());
-    cue->setFontSizeMultiplier(cueData->relativeFontSize());
-    cue->setFontName(cueData->fontName());
-
-    if (cueData->position() > 0)
-        cue->setPosition(lround(cueData->position()), IGNORE_EXCEPTION);
-    if (cueData->line() > 0)
-        cue->setLine(lround(cueData->line()), IGNORE_EXCEPTION);
-    if (cueData->size() > 0)
-        cue->setSize(lround(cueData->size()), IGNORE_EXCEPTION);
-    if (cueData->backgroundColor().isValid())
-        cue->setBackgroundColor(cueData->backgroundColor().rgb());
-    if (cueData->foregroundColor().isValid())
-        cue->setForegroundColor(cueData->foregroundColor().rgb());
-
-    if (cueData->align() == GenericCueData::Start)
-        cue->setAlign("start", IGNORE_EXCEPTION);
-    else if (cueData->align() == GenericCueData::Middle)
-        cue->setAlign("middle", IGNORE_EXCEPTION);
-    else if (cueData->align() == GenericCueData::End)
-        cue->setAlign("end", IGNORE_EXCEPTION);
-    cue->setSnapToLines(false);
-
-    if (hasCue(cue.get())) {
-        LOG(Media, "InbandTextTrack::addGenericCue ignoring already added cue: start=%.2f, end=%.2f, content=\"%s\"\n",
-            cueData->startTime(), cueData->endTime(), cueData->content().utf8().data());
-        return;
-    }
-
-    addCue(cue);
 }
 
 void InbandTextTrack::addWebVTTCue(InbandTextTrackPrivate* trackPrivate, double start, double end, const String& id, const String& content, const String& settings)

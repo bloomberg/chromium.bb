@@ -28,7 +28,6 @@
 #include "core/rendering/RenderTextTrackCue.h"
 
 #include "core/html/track/TextTrackCue.h"
-#include "core/html/track/TextTrackCueGeneric.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -54,13 +53,12 @@ void RenderTextTrackCue::layout()
 
     LayoutStateMaintainer statePusher(view(), this, locationOffset(), hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode());
 
-    if (m_cue->cueType()== TextTrackCue::WebVTT) {
+    if (m_cue->cueType() == TextTrackCue::WebVTT) {
         if (m_cue->snapToLines())
             repositionCueSnapToLinesSet();
         else
             repositionCueSnapToLinesNotSet();
-    } else
-        repositionGenericCue();
+    }
 
     statePusher.pop();
 }
@@ -264,24 +262,6 @@ void RenderTextTrackCue::repositionCueSnapToLinesSet()
         if (adjustment)
             setY(y() + adjustment);
     }
-}
-
-void RenderTextTrackCue::repositionGenericCue()
-{
-    TextTrackCueGeneric* cue = static_cast<TextTrackCueGeneric*>(m_cue);
-    if (!cue->useDefaultPosition())
-        return;
-
-    ASSERT(firstChild());
-
-    InlineFlowBox* firstLineBox;
-    if (!findFirstLineBox(firstLineBox))
-        return;
-
-    LayoutUnit parentWidth = containingBlock()->logicalWidth();
-    LayoutUnit width = firstLineBox->width();
-    LayoutUnit right = (parentWidth / 2) - (width / 2);
-    setX(right);
 }
 
 void RenderTextTrackCue::repositionCueSnapToLinesNotSet()

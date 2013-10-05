@@ -53,7 +53,6 @@ public:
 private:
     InbandTextTrack(ScriptExecutionContext*, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
 
-    virtual void addGenericCue(InbandTextTrackPrivate*, GenericCueData*) OVERRIDE;
     virtual void addWebVTTCue(InbandTextTrackPrivate*, double, double, const String&, const String&, const String&) OVERRIDE;
 
     RefPtr<InbandTextTrackPrivate> m_private;

@@ -54,7 +54,6 @@ private:
     void placeBoxInDefaultPosition(LayoutUnit, bool&);
     void repositionCueSnapToLinesSet();
     void repositionCueSnapToLinesNotSet();
-    void repositionGenericCue();
 
     TextTrackCue* m_cue;
     FloatPoint m_fallbackPosition;
