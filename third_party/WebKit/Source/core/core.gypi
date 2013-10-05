@@ -2665,8 +2665,6 @@
             'platform/ScrollbarThemeOverlay.h',
             'platform/ScrollbarThemeWin.cpp',
             'platform/ScrollbarThemeWin.h',
-            'platform/SecureTextInput.cpp',
-            'platform/SecureTextInput.h',
             'platform/SerializedResource.h',
             'platform/Task.h',
             'platform/Theme.cpp',

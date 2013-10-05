@@ -77,6 +77,13 @@
       '<@(platform_files)',
     ],
     'conditions': [
+      ['OS=="mac"', {
+        'link_settings': {
+          'libraries': [
+            '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+          ]
+        },
+      }],
       ['OS=="win"', {
         'sources/': [
           ['exclude', 'Posix\\.cpp$'],

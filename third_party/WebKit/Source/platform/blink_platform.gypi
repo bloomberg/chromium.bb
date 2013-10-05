@@ -35,6 +35,8 @@
       'PlatformThreadData.h',
       'PurgeableBuffer.cpp',
       'PurgeableBuffer.h',
+      'SecureTextInput.cpp',
+      'SecureTextInput.h',
       'SharedBuffer.cpp',
       'SharedBuffer.h',
       'SharedBufferChunkReader.cpp',

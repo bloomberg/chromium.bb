@@ -31,14 +31,16 @@
 #ifndef SecureTextInput_h
 #define SecureTextInput_h
 
+#include "platform/PlatformExport.h"
+
 namespace WebCore {
 
+#if OS(MACOSX)
 // Once enableSecureTextInput is called, secure text input mode is set until
 // disableSecureTextInput has been called.
-void enableSecureTextInput();
-void disableSecureTextInput();
-
-#if !OS(MACOSX)
+PLATFORM_EXPORT void enableSecureTextInput();
+PLATFORM_EXPORT void disableSecureTextInput();
+#else
 inline void enableSecureTextInput() { }
 inline void disableSecureTextInput() { }
 #endif

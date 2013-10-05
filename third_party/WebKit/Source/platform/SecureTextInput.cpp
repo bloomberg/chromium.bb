@@ -25,9 +25,8 @@
 
 #include "config.h"
 
-// FIXME: This should be moved to WebKit, because browser process needs to track secure input state anyway to manipulate input contexts.
 #if OS(MACOSX)
-#include "core/platform/SecureTextInput.h"
+#include "platform/SecureTextInput.h"
 
 #import <Carbon/Carbon.h>
 
