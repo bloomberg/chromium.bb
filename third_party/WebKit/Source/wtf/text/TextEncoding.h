@@ -41,7 +41,6 @@ public:
 
     bool isValid() const { return m_name; }
     const char* name() const { return m_name; }
-    const char* domName() const; // name exposed via DOM
     bool usesVisualOrdering() const;
     bool isJapanese() const;
 
