@@ -469,7 +469,7 @@ TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
 
 #if defined(OS_WIN)
   // http://crbug.com/304544
-  if (win::GetVersion() >= win::VERSION_WIN8)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
     return true;
 #endif
 
