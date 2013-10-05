@@ -957,9 +957,11 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
 
 WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
     createSharedOffscreenGraphicsContext3DProvider() {
-  WebKit::WebGraphicsContext3D::Attributes attr;
-  return new webkit::gpu::WebGraphicsContext3DProviderImpl(
-      RenderThreadImpl::current()->SharedMainThreadContextProvider());
+  scoped_refptr<cc::ContextProvider> provider =
+      RenderThreadImpl::current()->SharedMainThreadContextProvider();
+  if (!provider)
+    return NULL;
+  return new webkit::gpu::WebGraphicsContext3DProviderImpl(provider);
 }
 
 //------------------------------------------------------------------------------
