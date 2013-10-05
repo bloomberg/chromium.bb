@@ -136,9 +136,6 @@ public:
     void setCSSCustomFilterEnabled(bool enabled) { m_isCSSCustomFilterEnabled = enabled; }
     bool isCSSCustomFilterEnabled() const { return m_isCSSCustomFilterEnabled; }
 
-    void setCSSStickyPositionEnabled(bool enabled) { m_cssStickyPositionEnabled = enabled; }
-    bool cssStickyPositionEnabled() const { return m_cssStickyPositionEnabled; }
-
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
 
@@ -184,7 +181,6 @@ private:
     bool m_arePluginsEnabled : 1;
     bool m_isScriptEnabled : 1;
     bool m_isCSSCustomFilterEnabled : 1;
-    bool m_cssStickyPositionEnabled : 1;
     bool m_dnsPrefetchingEnabled : 1;
 
     bool m_touchEventEmulationEnabled : 1;

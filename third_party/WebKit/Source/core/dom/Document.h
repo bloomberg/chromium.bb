@@ -323,7 +323,6 @@ public:
     PassRefPtr<Element> createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionState&);
     PassRefPtr<Element> createElement(const QualifiedName&, bool createdByParser);
 
-    bool cssStickyPositionEnabled() const;
     bool cssCompositingEnabled() const;
     PassRefPtr<DOMNamedFlowCollection> webkitGetNamedFlows();
 

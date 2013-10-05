@@ -103,7 +103,6 @@ public:
     virtual void setEnableTouchAdjustment(bool) = 0;
     virtual void setExperimentalCSSCustomFilterEnabled(bool) = 0;
     virtual void setRegionBasedColumnsEnabled(bool) = 0;
-    virtual void setCSSStickyPositionEnabled(bool) = 0;
     virtual void setExperimentalWebGLEnabled(bool) = 0;
     virtual void setExperimentalWebSocketEnabled(bool) = 0;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
@@ -194,6 +193,7 @@ public:
     void setApplyDefaultDeviceScaleFactorInCompositor(bool enabled) { }
     void setFixedElementsLayoutRelativeToFrame(bool) { }
     void setInitializeAtMinimumPageScale(bool enabled) { setLoadWithOverviewMode(enabled); }
+    void setCSSStickyPositionEnabled(bool) { }
 
 protected:
     ~WebSettings() { }

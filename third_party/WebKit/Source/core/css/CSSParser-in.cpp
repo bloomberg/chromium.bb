@@ -206,7 +206,6 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     , mode(mode)
     , isHTMLDocument(false)
     , isCSSCustomFilterEnabled(false)
-    , isCSSStickyPositionEnabled(false)
     , needsSiteSpecificQuirks(false)
     , useLegacyBackgroundSizeShorthandBehavior(false)
 {
@@ -218,7 +217,6 @@ CSSParserContext::CSSParserContext(const Document& document, const KURL& baseURL
     , mode(document.inQuirksMode() ? CSSQuirksMode : CSSStrictMode)
     , isHTMLDocument(document.isHTMLDocument())
     , isCSSCustomFilterEnabled(document.settings() ? document.settings()->isCSSCustomFilterEnabled() : false)
-    , isCSSStickyPositionEnabled(document.cssStickyPositionEnabled())
     , needsSiteSpecificQuirks(document.settings() ? document.settings()->needsSiteSpecificQuirks() : false)
     , useLegacyBackgroundSizeShorthandBehavior(document.settings() ? document.settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
 {
@@ -231,7 +229,6 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.mode == b.mode
         && a.isHTMLDocument == b.isHTMLDocument
         && a.isCSSCustomFilterEnabled == b.isCSSCustomFilterEnabled
-        && a.isCSSStickyPositionEnabled == b.isCSSStickyPositionEnabled
         && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks
         && a.useLegacyBackgroundSizeShorthandBehavior == b.useLegacyBackgroundSizeShorthandBehavior;
 }
@@ -694,7 +691,7 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         break;
     case CSSPropertyPosition: // static | relative | absolute | fixed | sticky | inherit
         if (valueID == CSSValueStatic || valueID == CSSValueRelative || valueID == CSSValueAbsolute || valueID == CSSValueFixed
-            || (parserContext.isCSSStickyPositionEnabled && valueID == CSSValueSticky))
+            || (RuntimeEnabledFeatures::cssStickyPositionEnabled() && valueID == CSSValueSticky))
             return true;
         break;
     case CSSPropertyResize: // none | both | horizontal | vertical | auto

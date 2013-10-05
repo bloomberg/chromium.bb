@@ -380,11 +380,6 @@ void WebSettingsImpl::setExperimentalWebSocketEnabled(bool enabled)
     m_settings->setExperimentalWebSocketEnabled(enabled);
 }
 
-void WebSettingsImpl::setCSSStickyPositionEnabled(bool enabled)
-{
-    m_settings->setCSSStickyPositionEnabled(enabled);
-}
-
 void WebSettingsImpl::setRegionBasedColumnsEnabled(bool enabled)
 {
     m_settings->setRegionBasedColumnsEnabled(enabled);

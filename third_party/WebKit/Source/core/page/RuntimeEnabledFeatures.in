@@ -26,6 +26,7 @@ CSSGridLayout status=experimental
 CSSMaskSourceType status=experimental
 CSSRegions status=experimental
 CSSShapes status=experimental
+CSSStickyPosition status=experimental
 CSSTouchAction status=test
 CSSVariables status=experimental
 CSSViewport status=experimental
