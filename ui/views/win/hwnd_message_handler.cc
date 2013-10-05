@@ -1517,10 +1517,18 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
 #if defined(USE_AURA)
-  // We handle touch events on Windows Aura. Ignore synthesized mouse messages
-  // from Windows.
-  if (!touch_ids_.empty() || ui::IsMouseEventFromTouch(message))
+  if (!touch_ids_.empty())
     return 0;
+  // We handle touch events on Windows Aura. Windows generates synthesized
+  // mouse messages in response to touch which we should ignore. However touch
+  // messages are only received for the client area. We need to ignore the
+  // synthesized mouse messages for all points in the client area and places
+  // which return HTNOWHERE.
+  if (ui::IsMouseEventFromTouch(message)) {
+    LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param);
+    if (hittest == HTCLIENT || hittest == HTNOWHERE)
+      return 0;
+  }
 #endif
   if (message == WM_RBUTTONUP && is_right_mouse_pressed_on_caption_) {
     is_right_mouse_pressed_on_caption_ = false;
