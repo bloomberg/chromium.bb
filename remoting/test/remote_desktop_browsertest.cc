@@ -405,6 +405,27 @@ void RemoteDesktopBrowserTest::ConnectToLocalHost() {
   WaitForConnection();
 }
 
+void RemoteDesktopBrowserTest::ConnectToRemoteHost(
+    const std::string& host_name) {
+  std::string host_id = ExecuteScriptAndExtractString(
+      "remoting.hostList.getHostIdForName('" + host_name + "')");
+
+  EXPECT_FALSE(host_id.empty());
+  std::string element_id = "host_" + host_id;
+
+  // Verify the host is online.
+  std::string host_div_class = ExecuteScriptAndExtractString(
+      "document.getElementById('" + element_id + "').parentNode.className");
+  EXPECT_NE(std::string::npos, host_div_class.find("host-online"));
+
+  ClickOnControl(element_id);
+
+  // Enter the pin # passed in from the command line.
+  EnterPin(me2me_pin());
+
+  WaitForConnection();
+}
+
 void RemoteDesktopBrowserTest::EnableDNSLookupForThisTest(
     net::RuleBasedHostResolverProc* host_resolver) {
   // mock_host_resolver_override_ takes ownership of the resolver.
@@ -449,6 +470,7 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
   username_ = command_line->GetSwitchValueASCII(kUsername);
   password_ = command_line->GetSwitchValueASCII(kkPassword);
   me2me_pin_ = command_line->GetSwitchValueASCII(kMe2MePin);
+  remote_host_name_ = command_line->GetSwitchValueASCII(kRemoteHostName);
 
   no_cleanup_ = command_line->HasSwitch(kNoCleanup);
   no_install_ = command_line->HasSwitch(kNoInstall);

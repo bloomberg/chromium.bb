@@ -16,7 +16,7 @@ class Me2MeBrowserTest : public RemoteDesktopBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
-                       MANUAL_Me2Me_Connect_Localhost) {
+                       MANUAL_Me2Me_Connect_Local_Host) {
   VerifyInternetAccess();
 
   Install();
@@ -33,6 +33,30 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
   TestKeyboardInput();
 
   TestMouseInput();
+
+  DisconnectMe2Me();
+
+  Cleanup();
+}
+
+IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
+                       MANUAL_Me2Me_Connect_Remote_Host) {
+  VerifyInternetAccess();
+
+  Install();
+
+  LaunchChromotingApp();
+
+  // Authorize, Authenticate, and Approve.
+  Auth();
+
+  StartMe2Me();
+
+  ConnectToRemoteHost(remote_host_name());
+
+  // TODO(weitaosu): Find a way to verify keyboard input injection.
+  // We cannot use TestKeyboardInput because it assumes
+  // that the client and the host are on the same machine.
 
   DisconnectMe2Me();
 

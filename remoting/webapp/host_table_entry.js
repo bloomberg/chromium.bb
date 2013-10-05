@@ -72,6 +72,7 @@ remoting.HostTableEntry.prototype.createDom = function() {
   // Create the host name cell.
   var hostNameCell = /** @type {HTMLElement} */ document.createElement('div');
   hostNameCell.classList.add('box-spacer');
+  hostNameCell.id = 'host_' + this.host.hostId;
   tableRow.appendChild(hostNameCell);
   // Create the host rename cell.
   var editButton = /** @type {HTMLElement} */ document.createElement('span');

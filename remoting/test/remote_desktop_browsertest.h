@@ -22,6 +22,7 @@ const char kWebAppCrx[] = "webapp-crx";
 const char kUsername[] = "username";
 const char kkPassword[] = "password";
 const char kMe2MePin[] = "me2me-pin";
+const char kRemoteHostName[] = "remote-host-name";
 
 // ASSERT_TRUE can only be used in void returning functions. This version
 // should be used in non-void-returning functions.
@@ -121,11 +122,17 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Connect to the local host through Me2Me.
   void ConnectToLocalHost();
 
+  // Connect to a remote host through Me2Me.
+  void ConnectToRemoteHost(const std::string& host_name);
+
   // Enter the pin number and connect.
   void EnterPin(const std::string& name);
 
   // Helper to get the pin number used for me2me authentication.
   std::string me2me_pin() { return me2me_pin_; }
+
+  // Helper to get the name of the remote host to connect to.
+  std::string remote_host_name() { return remote_host_name_; }
 
  private:
   // Change behavior of the default host resolver to allow DNS lookup
@@ -275,6 +282,7 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   std::string username_;
   std::string password_;
   std::string me2me_pin_;
+  std::string remote_host_name_;
 };
 
 }  // namespace remoting

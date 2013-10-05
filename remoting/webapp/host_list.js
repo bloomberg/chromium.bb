@@ -141,6 +141,21 @@ remoting.HostList.prototype.getHostForId = function(hostId) {
 };
 
 /**
+ * Get the host id corresponding to the specified host name.
+ *
+ * @param {string} hostName The name of the host.
+ * @return {string?} The host id, if a host with the given name exists.
+ */
+remoting.HostList.prototype.getHostIdForName = function(hostName) {
+  for (var i = 0; i < this.hosts_.length; ++i) {
+    if (this.hosts_[i].hostName == hostName) {
+      return this.hosts_[i].hostId;
+    }
+  }
+  return null;
+};
+
+/**
  * Query the Remoting Directory for the user's list of hosts.
  *
  * @param {function(boolean):void} onDone Callback invoked with true on success
