@@ -1272,10 +1272,6 @@ crbug.com/267888 [ Android ] crypto [ Skip ]
 # Transient. Removes as https://codereview.chromium.org/23597036/ lands.
 crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ ImageOnlyFailure ]
 
-crbug.com/263310 ietestcenter/css3/bordersbackgrounds/background_repeat_space_border_box.htm [ NeedsRebaseline ]
-crbug.com/263310 ietestcenter/css3/bordersbackgrounds/background_repeat_space_content_box.htm [ NeedsRebaseline ]
-crbug.com/263310 ietestcenter/css3/bordersbackgrounds/background-repeat-space-padding-box.htm [ NeedsRebaseline ]
-
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
