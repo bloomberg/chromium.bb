@@ -338,8 +338,15 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   if (![inputs_ isHidden]) {
     fields = [inputs_ subviews];
   } else if (section_ == autofill::SECTION_CC) {
-    fields = @[[suggestContainer_ inputField]];
+    fields = @[ [suggestContainer_ inputField] ];
   }
+
+  // Ensure only editable fields are validated.
+  fields = [fields filteredArrayUsingPredicate:
+      [NSPredicate predicateWithBlock:
+          ^BOOL(NSControl<AutofillInputField>* field, NSDictionary* bindings) {
+              return [field isEnabled];
+          }]];
 
   autofill::DetailOutputMap detailOutputs;
   [self fillDetailOutputs:&detailOutputs fromControls:fields];
