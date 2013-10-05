@@ -96,7 +96,8 @@ class SpellCheckTest : public testing::Test {
     EXPECT_EQ(results.size(), expected.size());
     size_t size = std::min(results.size(), expected.size());
     for (size_t j = 0; j < size; ++j) {
-      EXPECT_EQ(results[j].type, WebKit::WebTextCheckingTypeSpelling);
+      EXPECT_EQ(static_cast<WebKit::WebTextCheckingType>(results[j].type),
+                WebKit::WebTextCheckingTypeSpelling);
       EXPECT_EQ(results[j].location, expected[j].location);
       EXPECT_EQ(results[j].length, expected[j].length);
     }
@@ -1130,7 +1131,9 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
                                              spellcheck_results,
                                              &textcheck_results);
     EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
-    EXPECT_EQ(WebKit::WebTextCheckingTypeSpelling, textcheck_results[0].type);
+    EXPECT_EQ(
+        WebKit::WebTextCheckingTypeSpelling,
+        static_cast<WebKit::WebTextCheckingType>(textcheck_results[0].type));
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
     EXPECT_EQ(spellcheck_results[0].length, textcheck_results[0].length);
   }
@@ -1149,7 +1152,9 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
                                              spellcheck_results,
                                              &textcheck_results);
     EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
-    EXPECT_EQ(WebKit::WebTextCheckingTypeGrammar, textcheck_results[0].type);
+    EXPECT_EQ(
+        WebKit::WebTextCheckingTypeGrammar,
+        static_cast<WebKit::WebTextCheckingType>(textcheck_results[0].type));
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
     EXPECT_EQ(spellcheck_results[0].length, textcheck_results[0].length);
   }
