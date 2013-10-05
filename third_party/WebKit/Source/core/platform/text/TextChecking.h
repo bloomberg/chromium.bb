@@ -31,6 +31,7 @@
 #ifndef TextChecking_h
 #define TextChecking_h
 
+#include "core/platform/text/TextDecoration.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -38,10 +39,9 @@
 namespace WebCore {
 
 enum TextCheckingType {
-    TextCheckingTypeNone                         = 0,
-    TextCheckingTypeSpelling                     = 1 << 1,
-    TextCheckingTypeGrammar                      = 1 << 2,
-    TextCheckingTypeInCustomSpellcheckDictionary = 1 << 3,
+    TextCheckingTypeNone     = 0,
+    TextCheckingTypeSpelling = 1 << 1,
+    TextCheckingTypeGrammar  = 1 << 2,
 };
 
 typedef unsigned TextCheckingTypeMask;
@@ -59,7 +59,7 @@ struct GrammarDetail {
 };
 
 struct TextCheckingResult {
-    TextCheckingType type;
+    TextDecorationType decoration;
     int location;
     int length;
     Vector<GrammarDetail> details;

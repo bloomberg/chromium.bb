@@ -28,32 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WebTextCheckingResult.h"
-
-#include "core/platform/text/TextCheckerClient.h"
-
-using namespace WebCore;
+#ifndef WebTextDecorationType_h
+#define WebTextDecorationType_h
 
 namespace WebKit {
 
-WebTextCheckingResult::operator TextCheckingResult() const
-{
-    TextCheckingResult result;
-    result.decoration = static_cast<TextDecorationType>(type);
-    result.location = location;
-    result.length = length;
-    result.replacement = replacement;
-    result.hash = hash;
-    if (result.decoration == TextDecorationTypeGrammar) {
-        GrammarDetail detail;
-        detail.location = 0;
-        detail.length = length;
-        detail.userDescription = replacement;
-        result.details.append(detail);
-    }
-
-    return result;
-}
+enum WebTextDecorationType {
+    WebTextDecorationTypeSpelling                     = 1 << 1,
+    WebTextDecorationTypeGrammar                      = 1 << 2,
+    WebTextDecorationTypeInCustomSpellcheckDictionary = 1 << 3,
+};
 
 } // namespace WebKit
+
+#endif

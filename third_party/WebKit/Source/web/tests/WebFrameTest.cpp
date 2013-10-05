@@ -3783,7 +3783,7 @@ public:
         Vector<WebTextCheckingResult> results;
         const int misspellingStartOffset = 1;
         const int misspellingLength = 8;
-        results.append(WebTextCheckingResult(WebTextCheckingTypeSpelling, misspellingStartOffset, misspellingLength, WebString(), m_hash));
+        results.append(WebTextCheckingResult(WebTextDecorationTypeSpelling, misspellingStartOffset, misspellingLength, WebString(), m_hash));
         completion->didFinishCheckingText(results);
     }
     int numberOfTimesChecked() const { return m_numberOfTimesChecked; }
@@ -3894,26 +3894,26 @@ public:
 
     void kickNoResults()
     {
-        kick(-1, -1, WebTextCheckingTypeSpelling);
+        kick(-1, -1, WebTextDecorationTypeSpelling);
     }
 
     void kick()
     {
-        kick(1, 8, WebTextCheckingTypeSpelling);
+        kick(1, 8, WebTextDecorationTypeSpelling);
     }
 
     void kickGrammar()
     {
-        kick(1, 8, WebTextCheckingTypeGrammar);
+        kick(1, 8, WebTextDecorationTypeGrammar);
     }
 
     void kickInCustomSpellcheckDictionary()
     {
-        kick(1, 8, WebTextCheckingTypeInCustomSpellcheckDictionary);
+        kick(1, 8, WebTextDecorationTypeInCustomSpellcheckDictionary);
     }
 
 private:
-    void kick(int misspellingStartOffset, int misspellingLength, WebTextCheckingType type)
+    void kick(int misspellingStartOffset, int misspellingLength, WebTextDecorationType type)
     {
         if (!m_completion)
             return;

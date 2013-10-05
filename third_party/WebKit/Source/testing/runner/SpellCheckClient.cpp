@@ -92,7 +92,7 @@ void SpellCheckClient::checkTextOfParagraph(const WebString& text, WebTextChecki
             if (!misspelledLength)
                 break;
             WebTextCheckingResult result;
-            result.type = WebTextCheckingTypeSpelling;
+            result.type = WebTextDecorationTypeSpelling;
             result.location = offset + misspelledPosition;
             result.length = misspelledLength;
             results.push_back(result);
