@@ -75,6 +75,11 @@ void GpuControlService::SignalSyncPoint(uint32 sync_point,
   NOTREACHED();
 }
 
+void GpuControlService::SignalQuery(uint32 query,
+                                    const base::Closure& callback) {
+  NOTREACHED();
+}
+
 bool GpuControlService::RegisterGpuMemoryBuffer(
     int32 id,
     gfx::GpuMemoryBufferHandle buffer,

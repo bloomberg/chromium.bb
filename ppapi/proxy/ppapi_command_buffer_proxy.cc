@@ -208,6 +208,11 @@ void PpapiCommandBufferProxy::SignalSyncPoint(uint32 sync_point,
   NOTREACHED();
 }
 
+void PpapiCommandBufferProxy::SignalQuery(uint32 query,
+                                          const base::Closure& callback) {
+  NOTREACHED();
+}
+
 bool PpapiCommandBufferProxy::SupportsGpuMemoryBuffer() {
   return false;
 }

@@ -111,6 +111,9 @@ class CommandBufferProxyImpl
   virtual uint32 InsertSyncPoint() OVERRIDE;
   virtual void SignalSyncPoint(uint32 sync_point,
                                const base::Closure& callback) OVERRIDE;
+  virtual void SignalQuery(uint32 query,
+                           const base::Closure& callback) OVERRIDE;
+
 
   int GetRouteID() const;
   bool Echo(const base::Closure& callback);
@@ -126,11 +129,6 @@ class CommandBufferProxyImpl
 
   bool DiscardBackbuffer();
   bool EnsureBackbuffer();
-
-  // Makes this command buffer invoke a task when a query is completed, or
-  // the command buffer that inserted that sync point is destroyed or the
-  // query was deleted. Should be invoked after endQuery.
-  bool SignalQuery(unsigned query, const base::Closure& callback);
 
   // Sends an IPC message with the new state of surface visibility.
   bool SetSurfaceVisible(bool visible);

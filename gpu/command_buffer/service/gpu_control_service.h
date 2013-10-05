@@ -40,6 +40,8 @@ class GPU_EXPORT GpuControlService : public GpuControl {
   virtual uint32 InsertSyncPoint() OVERRIDE;
   virtual void SignalSyncPoint(uint32 sync_point,
                                const base::Closure& callback) OVERRIDE;
+  virtual void SignalQuery(uint32 query,
+                           const base::Closure& callback) OVERRIDE;
 
   // Register an existing gpu memory buffer and get an ID that can be used
   // to identify it in the command buffer.

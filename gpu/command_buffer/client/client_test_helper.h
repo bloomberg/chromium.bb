@@ -99,6 +99,8 @@ class MockClientGpuControl : public GpuControl {
   MOCK_METHOD2(SignalSyncPoint, void(uint32 id,
                                      const base::Closure& callback));
 
+  MOCK_METHOD2(SignalQuery, void(uint32 query, const base::Closure& callback));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);
 };

@@ -59,6 +59,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy
   virtual uint32 InsertSyncPoint() OVERRIDE;
   virtual void SignalSyncPoint(uint32 sync_point,
                                const base::Closure& callback) OVERRIDE;
+  virtual void SignalQuery(uint32 query,
+                           const base::Closure& callback) OVERRIDE;
 
  private:
   bool Send(IPC::Message* msg);

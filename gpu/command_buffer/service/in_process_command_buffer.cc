@@ -684,6 +684,11 @@ void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
   QueueTask(WrapCallback(callback));
 }
 
+void InProcessCommandBuffer::SignalQuery(unsigned query,
+                                         const base::Closure& callback) {
+  NOTREACHED();
+}
+
 gpu::error::Error InProcessCommandBuffer::GetLastError() {
   CheckSequencedThread();
   return last_state_.error;
