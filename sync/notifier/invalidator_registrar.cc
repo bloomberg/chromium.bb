@@ -5,6 +5,7 @@
 #include "sync/notifier/invalidator_registrar.h"
 
 #include <cstddef>
+#include <iterator>
 #include <utility>
 
 #include "base/logging.h"
@@ -45,7 +46,8 @@ void InvalidatorRegistrar::UpdateRegisteredIds(
     std::set_intersection(
         it->second.begin(), it->second.end(),
         ids.begin(), ids.end(),
-        intersection.begin(), ObjectIdLessThan());
+        std::inserter(intersection, intersection.end()),
+        ObjectIdLessThan());
     CHECK(intersection.empty())
         << "Duplicate registration: trying to register "
         << ObjectIdToString(*intersection.begin()) << " for "
