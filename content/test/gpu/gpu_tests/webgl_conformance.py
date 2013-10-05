@@ -82,8 +82,6 @@ class WebglConformance(test_module.Test):
     group.add_option('--webgl-conformance-version',
         help='Version of the WebGL conformance tests to run.',
         default='1.0.1')
-    group.add_option('--gtest_output',
-        help='Ignored argument for compatibility with runtest.py harness')
     parser.add_option_group(group)
 
   def CreatePageSet(self, options):
