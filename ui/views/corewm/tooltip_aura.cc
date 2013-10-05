@@ -25,7 +25,6 @@ const int kTooltipHorizontalPadding = 3;
 const int kTooltipMaxWidthPixels = 400;
 
 const size_t kMaxLines = 10;
-const size_t kMaxTooltipLength = 1024;
 
 // TODO(derat): This padding is needed on Chrome OS devices but seems excessive
 // when running the same binary on a Linux workstation; presumably there's a
@@ -90,9 +89,6 @@ void TooltipAura::TrimTooltipToFit(int max_width,
                                    int* line_count) {
   *width = 0;
   *line_count = 0;
-
-  if (text->length() > kMaxTooltipLength)
-    *text = text->substr(0, kMaxTooltipLength);
 
   // Determine the available width for the tooltip.
   int available_width = std::min(kTooltipMaxWidthPixels, max_width);

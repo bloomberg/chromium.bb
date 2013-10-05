@@ -27,6 +27,7 @@
 #include "ui/views/corewm/cursor_manager.h"
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/views/corewm/tooltip_win.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
@@ -62,7 +63,8 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
       content_window_(NULL),
       should_animate_window_close_(false),
       pending_close_(false),
-      has_non_client_view_(false) {
+      has_non_client_view_(false),
+      tooltip_(NULL) {
 }
 
 DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
@@ -170,6 +172,12 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
 
 void DesktopRootWindowHostWin::InitFocus(aura::Window* window) {
   focus_client_->FocusWindow(window);
+}
+
+scoped_ptr<corewm::Tooltip> DesktopRootWindowHostWin::CreateTooltip() {
+  DCHECK(!tooltip_);
+  tooltip_ = new corewm::TooltipWin(GetAcceleratedWidget());
+  return scoped_ptr<corewm::Tooltip>(tooltip_);
 }
 
 void DesktopRootWindowHostWin::Close() {
@@ -816,12 +824,14 @@ void DesktopRootWindowHostWin::HandlePaint(gfx::Canvas* canvas) {
 bool DesktopRootWindowHostWin::HandleTooltipNotify(int w_param,
                                                    NMHDR* l_param,
                                                    LRESULT* l_result) {
-  return false;
+  return tooltip_ && tooltip_->HandleNotify(w_param, l_param, l_result);
 }
 
 void DesktopRootWindowHostWin::HandleTooltipMouseMove(UINT message,
                                                       WPARAM w_param,
                                                       LPARAM l_param) {
+  // TooltipWin implementation doesn't need this.
+  // TODO(sky): remove from HWNDMessageHandler once non-aura path nuked.
 }
 
 bool DesktopRootWindowHostWin::PreHandleMSG(UINT message,

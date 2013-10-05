@@ -30,6 +30,7 @@ class CompoundEventFilter;
 class InputMethodEventFilter;
 class ScopedCaptureClient;
 class ShadowController;
+class TooltipController;
 class VisibilityController;
 class WindowModalityController;
 }
@@ -37,7 +38,6 @@ class WindowModalityController;
 class DesktopRootWindowHost;
 class DropHelper;
 class NativeWidgetAuraWindowObserver;
-class ScopedTooltipClient;
 class TooltipManagerAura;
 class WindowReorderer;
 
@@ -272,7 +272,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
 
-  scoped_ptr<ScopedTooltipClient> scoped_tooltip_client_;
+  scoped_ptr<corewm::TooltipController> tooltip_controller_;
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
 
   scoped_ptr<views::corewm::VisibilityController> visibility_controller_;

@@ -100,6 +100,7 @@
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/shadow_controller.h"
+#include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/corewm/window_modality_controller.h"
@@ -811,8 +812,10 @@ void Shell::Init() {
   window_cycle_controller_.reset(new WindowCycleController());
   window_selector_controller_.reset(new WindowSelectorController());
 
-  tooltip_controller_.reset(new views::corewm::TooltipController(
-                                gfx::SCREEN_TYPE_ALTERNATE));
+  tooltip_controller_.reset(
+      new views::corewm::TooltipController(
+          scoped_ptr<views::corewm::Tooltip>(
+              new views::corewm::TooltipAura(gfx::SCREEN_TYPE_ALTERNATE))));
   AddPreTargetHandler(tooltip_controller_.get());
 
   event_client_.reset(new internal::EventClientImpl);

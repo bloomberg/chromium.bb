@@ -16,7 +16,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/screen_type_delegate.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -66,7 +68,9 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
 #if defined(OS_CHROMEOS)
-    controller_.reset(new TooltipController(gfx::SCREEN_TYPE_ALTERNATE));
+    controller_.reset(new TooltipController(
+          scoped_ptr<views::corewm::Tooltip>(
+              new views::corewm::TooltipAura(gfx::SCREEN_TYPE_ALTERNATE))));
     root_window()->AddPreTargetHandler(controller_.get());
     SetTooltipClient(root_window(), controller_.get());
 #endif

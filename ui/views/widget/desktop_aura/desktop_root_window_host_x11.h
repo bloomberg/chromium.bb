@@ -78,6 +78,7 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) OVERRIDE;
   virtual void InitFocus(aura::Window* window) OVERRIDE;
+  virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
   virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;

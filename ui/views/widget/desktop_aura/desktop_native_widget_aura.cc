@@ -29,13 +29,14 @@
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/shadow_controller.h"
 #include "ui/views/corewm/shadow_types.h"
+#include "ui/views/corewm/tooltip.h"
+#include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/corewm/window_modality_controller.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
-#include "ui/views/widget/desktop_aura/scoped_tooltip_client.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
@@ -227,7 +228,9 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   // references. Make sure we destroy ShadowController early on.
   shadow_controller_.reset();
   tooltip_manager_.reset();
-  scoped_tooltip_client_.reset();
+  root_window_->RemovePreTargetHandler(tooltip_controller_.get());
+  aura::client::SetTooltipClient(root_window_.get(), NULL);
+  tooltip_controller_.reset();
 
   root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
 
@@ -357,7 +360,11 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   tooltip_manager_.reset(new views::TooltipManagerAura(window_, GetWidget()));
 
-  scoped_tooltip_client_.reset(new ScopedTooltipClient(root_window_.get()));
+  tooltip_controller_.reset(
+      new corewm::TooltipController(
+          desktop_root_window_host_->CreateTooltip()));
+  aura::client::SetTooltipClient(root_window_.get(), tooltip_controller_.get());
+  root_window_->AddPreTargetHandler(tooltip_controller_.get());
 
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
     visibility_controller_.reset(new views::corewm::VisibilityController);

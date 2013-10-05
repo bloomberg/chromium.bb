@@ -15,7 +15,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/corewm/tooltip.h"
-#include "ui/views/corewm/tooltip_aura.h"
+#include "ui/views/widget/tooltip_manager.h"
 
 namespace {
 
@@ -30,11 +30,11 @@ namespace corewm {
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipController public:
 
-TooltipController::TooltipController(gfx::ScreenType screen_type)
-    : screen_type_(screen_type),
-      tooltip_window_(NULL),
+TooltipController::TooltipController(scoped_ptr<Tooltip> tooltip)
+    : tooltip_window_(NULL),
       tooltip_window_at_mouse_press_(NULL),
       mouse_pressed_(false),
+      tooltip_(tooltip.Pass()),
       tooltips_enabled_(true) {
   tooltip_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
@@ -48,7 +48,7 @@ TooltipController::~TooltipController() {
 
 void TooltipController::UpdateTooltip(aura::Window* target) {
   // If tooltip is visible, we may want to hide it. If it is not, we are ok.
-  if (tooltip_window_ == target && GetTooltip()->IsVisible())
+  if (tooltip_window_ == target && tooltip_->IsVisible())
     UpdateIfRequired();
 
   // If we had stopped the tooltip timer for some reason, we must restart it if
@@ -104,7 +104,7 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
       if (tooltip_timer_.IsRunning())
         tooltip_timer_.Reset();
 
-      if (GetTooltip()->IsVisible())
+      if (tooltip_->IsVisible())
         UpdateIfRequired();
       break;
     case ui::ET_MOUSE_PRESSED:
@@ -115,7 +115,7 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
         if (target)
           tooltip_text_at_mouse_press_ = aura::client::GetTooltipText(target);
       }
-      GetTooltip()->Hide();
+      tooltip_->Hide();
       break;
     case ui::ET_MOUSE_RELEASED:
       mouse_pressed_ = false;
@@ -125,8 +125,8 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
       mouse_pressed_ = false;
     case ui::ET_MOUSEWHEEL:
       // Hide the tooltip for click, release, drag, wheel events.
-      if (GetTooltip()->IsVisible())
-        GetTooltip()->Hide();
+      if (tooltip_->IsVisible())
+        tooltip_->Hide();
       break;
     default:
       break;
@@ -137,20 +137,19 @@ void TooltipController::OnTouchEvent(ui::TouchEvent* event) {
   // TODO(varunjain): need to properly implement tooltips for
   // touch events.
   // Hide the tooltip for touch events.
-  GetTooltip()->Hide();
+  tooltip_->Hide();
   if (tooltip_window_)
     tooltip_window_->RemoveObserver(this);
   tooltip_window_ = NULL;
 }
 
 void TooltipController::OnCancelMode(ui::CancelModeEvent* event) {
-  if (tooltip_.get())
-    tooltip_->Hide();
+  tooltip_->Hide();
 }
 
 void TooltipController::OnWindowDestroyed(aura::Window* window) {
   if (tooltip_window_ == window) {
-    GetTooltip()->Hide();
+    tooltip_->Hide();
     tooltip_shown_timeout_map_.erase(tooltip_window_);
     tooltip_window_->RemoveObserver(this);
     tooltip_window_ = NULL;
@@ -165,7 +164,7 @@ void TooltipController::TooltipTimerFired() {
 }
 
 void TooltipController::TooltipShownTimerFired() {
-  GetTooltip()->Hide();
+  tooltip_->Hide();
 
   // Since the user presumably no longer needs the tooltip, we also stop the
   // tooltip timer so that tooltip does not pop back up. We will restart this
@@ -176,7 +175,7 @@ void TooltipController::TooltipShownTimerFired() {
 void TooltipController::UpdateIfRequired() {
   if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress() ||
       !IsCursorVisible()) {
-    GetTooltip()->Hide();
+    tooltip_->Hide();
     return;
   }
 
@@ -189,27 +188,29 @@ void TooltipController::UpdateIfRequired() {
   if (tooltip_window_at_mouse_press_) {
     if (tooltip_window_ == tooltip_window_at_mouse_press_ &&
         tooltip_text == tooltip_text_at_mouse_press_) {
-      GetTooltip()->Hide();
+      tooltip_->Hide();
       return;
     }
     tooltip_window_at_mouse_press_ = NULL;
   }
 
-  // We add the !GetTooltip()->IsVisible() below because when we come here from
+  // We add the !tooltip_->IsVisible() below because when we come here from
   // TooltipTimerFired(), the tooltip_text may not have changed but we still
   // want to update the tooltip because the timer has fired.
   // If we come here from UpdateTooltip(), we have already checked for tooltip
   // visibility and this check below will have no effect.
-  if (tooltip_text_ != tooltip_text || !GetTooltip()->IsVisible()) {
+  if (tooltip_text_ != tooltip_text || !tooltip_->IsVisible()) {
     tooltip_shown_timer_.Stop();
     tooltip_text_ = tooltip_text;
     if (tooltip_text_.empty()) {
-      GetTooltip()->Hide();
+      tooltip_->Hide();
     } else {
+      base::string16 trimmed_text(tooltip_text_);
+      views::TooltipManager::TrimTooltipText(&trimmed_text);
       gfx::Point widget_loc = curr_mouse_loc_ +
           tooltip_window_->GetBoundsInScreen().OffsetFromOrigin();
-      GetTooltip()->SetText(tooltip_window_, tooltip_text_, widget_loc);
-      GetTooltip()->Show();
+      tooltip_->SetText(tooltip_window_, trimmed_text, widget_loc);
+      tooltip_->Show();
       int timeout = GetTooltipShownTimeout();
       if (timeout > 0) {
         tooltip_shown_timer_.Start(FROM_HERE,
@@ -221,7 +222,7 @@ void TooltipController::UpdateIfRequired() {
 }
 
 bool TooltipController::IsTooltipVisible() {
-  return GetTooltip()->IsVisible();
+  return tooltip_->IsVisible();
 }
 
 bool TooltipController::IsDragDropInProgress() {
@@ -230,12 +231,6 @@ bool TooltipController::IsDragDropInProgress() {
   aura::client::DragDropClient* client =
       aura::client::GetDragDropClient(tooltip_window_->GetRootWindow());
   return client && client->IsDragDropInProgress();
-}
-
-Tooltip* TooltipController::GetTooltip() {
-  if (!tooltip_.get())
-    tooltip_.reset(new TooltipAura(screen_type_));
-  return tooltip_.get();
 }
 
 bool TooltipController::IsCursorVisible() {

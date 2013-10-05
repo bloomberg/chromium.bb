@@ -26,6 +26,7 @@ class HWNDMessageHandler;
 
 namespace corewm {
 class CursorManager;
+class TooltipWin;
 }
 
 class VIEWS_EXPORT DesktopRootWindowHostWin
@@ -48,6 +49,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) OVERRIDE;
   virtual void InitFocus(aura::Window* window) OVERRIDE;
+  virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
   virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
@@ -259,6 +261,10 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   // rather than asking the Widget for the non_client_view so that we know at
   // Init time, before the Widget has created the NonClientView.
   bool has_non_client_view_;
+
+  // Owned by TooltipController, but we need to forward events to it so we keep
+  // a reference.
+  corewm::TooltipWin* tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };

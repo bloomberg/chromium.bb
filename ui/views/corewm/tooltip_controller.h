@@ -14,7 +14,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/point.h"
-#include "ui/gfx/screen_type_delegate.h"
 #include "ui/views/views_export.h"
 
 namespace aura {
@@ -30,12 +29,12 @@ namespace test {
 class TooltipControllerTestHelper;
 }  // namespace test
 
-// TooltipController provides tooltip functionality for aura shell.
+// TooltipController provides tooltip functionality for aura.
 class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
                                        public ui::EventHandler,
                                        public aura::WindowObserver {
  public:
-  explicit TooltipController(gfx::ScreenType screen_type);
+  explicit TooltipController(scoped_ptr<Tooltip> tooltip);
   virtual ~TooltipController();
 
   // Overridden from aura::client::TooltipClient.
@@ -70,16 +69,10 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
 
   bool IsDragDropInProgress();
 
-  // This lazily creates the Tooltip instance so that the tooltip window will
-  // be initialized with appropriate drop shadows.
-  Tooltip* GetTooltip();
-
   // Returns true if the cursor is visible.
   bool IsCursorVisible();
 
   int GetTooltipShownTimeout();
-
-  const gfx::ScreenType screen_type_;
 
   aura::Window* tooltip_window_;
   base::string16 tooltip_text_;

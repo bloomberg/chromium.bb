@@ -13,6 +13,7 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
+class Display;
 class FontList;
 }  // namespace gfx
 
@@ -36,6 +37,9 @@ class VIEWS_EXPORT TooltipManager {
   // the tooltip is to be displayed on in screen coordinates. |context| is
   // used to determine which gfx::Screen should be used.
   static int GetMaxWidth(int x, int y, gfx::NativeView context);
+
+  // Same as GetMaxWidth(), but takes a Display.
+  static int GetMaxWidth(const gfx::Display& display);
 
   // If necessary trims the text of a tooltip to ensure we don't try to display
   // a mega-tooltip.

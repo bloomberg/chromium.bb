@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
@@ -24,10 +25,13 @@ class NativeTheme;
 }
 
 namespace views {
-class DesktopNativeWidgetAura;
+namespace corewm {
+class Tooltip;
+}
 namespace internal {
 class NativeWidgetDelegate;
 }
+class DesktopNativeWidgetAura;
 
 class VIEWS_EXPORT DesktopRootWindowHost {
  public:
@@ -46,6 +50,11 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) = 0;
   virtual void InitFocus(aura::Window* window) = 0;
+
+  // Creates and returns the Tooltip implementation to use. Return value is
+  // owned by DesktopNativeWidgetAura and lives as long as
+  // DesktopRootWindowHost.
+  virtual scoped_ptr<corewm::Tooltip> CreateTooltip() = 0;
 
   virtual void Close() = 0;
   virtual void CloseNow() = 0;

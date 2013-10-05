@@ -262,6 +262,8 @@
         'corewm/tooltip_aura.h',
         'corewm/tooltip_controller.cc',
         'corewm/tooltip_controller.h',
+        'corewm/tooltip_win.cc',
+        'corewm/tooltip_win.h',
         'corewm/visibility_controller.cc',
         'corewm/visibility_controller.h',
         'corewm/window_animations.cc',
@@ -392,8 +394,6 @@
         'widget/desktop_aura/desktop_screen_win.h',
         'widget/desktop_aura/desktop_screen_x11.cc',
         'widget/desktop_aura/desktop_screen_x11.h',
-        'widget/desktop_aura/scoped_tooltip_client.cc',
-        'widget/desktop_aura/scoped_tooltip_client.h',
         'widget/desktop_aura/x11_desktop_handler.cc',
         'widget/desktop_aura/x11_desktop_handler.h',
         'widget/desktop_aura/x11_desktop_window_move_client.cc',
@@ -494,6 +494,8 @@
                 ['include', 'controls/menu/menu_insertion_delegate_win.h'],
                 ['include', 'controls/menu/native_menu_win.cc'],
                 ['include', 'controls/menu/native_menu_win.h'],
+                ['include', 'corewm/tooltip_win.cc'],
+                ['include', 'corewm/tooltip_win.h'],
                 ['include', 'widget/desktop_aura/desktop_screen_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_drag_drop_client_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_drop_target_win.cc'],
@@ -788,6 +790,7 @@
             'libraries': [
               '-limm32.lib',
               '-loleacc.lib',
+              '-lcomctl32.lib',
             ]
           },
           'include_dirs': [
@@ -827,6 +830,12 @@
         ['use_ozone==1', {
           'sources!': [
             'corewm/capture_controller_unittest.cc',
+          ],
+        }],
+        # Native tooltip class doesn't run well from unit tests.
+        ['use_aura==1 and OS=="win"', {
+          'sources!': [
+            'corewm/tooltip_controller_unittest.cc',
           ],
         }],
       ],
