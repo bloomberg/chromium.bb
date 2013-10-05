@@ -1,0 +1,6 @@
+EXPECTED (document.webkitIsFullScreen == 'false') OK
+EXPECTED (document.webkitCurrentFullScreenElement == 'undefined') OK
+EXPECTED (document.webkitIsFullScreen == 'false') OK
+EXPECTED (document.webkitCurrentFullScreenElement == 'undefined') OK
+END OF TEST
+

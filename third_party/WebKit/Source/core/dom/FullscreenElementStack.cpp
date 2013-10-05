@@ -186,6 +186,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         //   - the event listener for a trusted click event is being handled.
         if (!UserGestureIndicator::processingUserGesture() && (!element->isMediaElement() || document()->page()->settings().mediaFullscreenRequiresUserGesture()))
             break;
+        UserGestureIndicator::consumeUserGesture();
 
         // There is a previously-established user preference, security risk, or platform limitation.
         if (!document()->page() || !document()->page()->settings().fullScreenEnabled())
