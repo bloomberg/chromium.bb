@@ -5,11 +5,13 @@
 #include "chrome/browser/component_updater/test/component_updater_service_unittest.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/test/test_installer.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "libxml/globals.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -48,7 +50,7 @@ int TestConfigurator::NextCheckDelay() {
   // time to break from the test messageloop Run() method so the test can
   // finish.
   if (--times_ <= 0) {
-    base::MessageLoop::current()->Quit();
+    quit_closure_.Run();
     return 0;
   }
 
@@ -129,11 +131,13 @@ void TestConfigurator::SetComponentUpdateService(ComponentUpdateService* cus) {
   cus_ = cus;
 }
 
+void TestConfigurator::SetQuitClosure(const base::Closure& quit_closure) {
+  quit_closure_ = quit_closure;
+}
+
 ComponentUpdaterTest::ComponentUpdaterTest()
     : test_config_(NULL),
-      ui_thread_(BrowserThread::UI, &message_loop_),
-      file_thread_(BrowserThread::FILE),
-      io_thread_(BrowserThread::IO) {
+      thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   // The component updater instance under test.
   test_config_ = new TestConfigurator;
   component_updater_.reset(ComponentUpdateServiceFactory(test_config_));
@@ -144,9 +148,6 @@ ComponentUpdaterTest::ComponentUpdaterTest()
   test_data_dir_ = test_data_dir_.AppendASCII("components");
 
   net::URLFetcher::SetEnableInterceptionForTests(true);
-
-  io_thread_.StartIOThread();
-  file_thread_.Start();
 }
 
 ComponentUpdaterTest::~ComponentUpdaterTest() {
@@ -188,6 +189,16 @@ ComponentUpdateService::Status ComponentUpdaterTest::RegisterComponent(
   com->version = version;
   com->installer = installer;
   return component_updater_->RegisterComponent(*com);
+}
+
+void ComponentUpdaterTest::RunThreads() {
+  base::RunLoop runloop;
+  test_configurator()->SetQuitClosure(runloop.QuitClosure());
+  runloop.Run();
+}
+
+void ComponentUpdaterTest::RunThreadsUntilIdle() {
+  base::RunLoop().RunUntilIdle();
 }
 
 PingChecker::PingChecker(const std::map<std::string, std::string>& attributes)
@@ -253,7 +264,7 @@ TEST_F(ComponentUpdaterTest, VerifyFixture) {
 // start-shutdown situation. Failure of this test will be a crash.
 TEST_F(ComponentUpdaterTest, StartStop) {
   component_updater()->Start();
-  message_loop_.RunUntilIdle();
+  RunThreadsUntilIdle();
   component_updater()->Stop();
 }
 
@@ -292,7 +303,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   EXPECT_CALL(observer,
               OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
               .Times(2);
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(2, interceptor.GetHitCount());
 
@@ -317,7 +328,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   EXPECT_CALL(observer,
               OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
               .Times(2);
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(4, interceptor.GetHitCount());
 
@@ -403,7 +414,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   test_configurator()->SetLoopCount(2);
 
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
   EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
@@ -441,7 +452,7 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
 
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(0, ping_checker.NumHits()) << ping_checker.GetPings();
   EXPECT_EQ(0, ping_checker.NumMisses()) << ping_checker.GetPings();
@@ -533,7 +544,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   test_configurator()->SetLoopCount(2);
   test_configurator()->AddComponentToCheck(&com2, 1);
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->install_count());
@@ -586,7 +597,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   EXPECT_EQ(ComponentUpdateService::kOk,
             component_updater()->CheckForUpdateSoon(GetCrxComponentID(com2)));
 
-  message_loop_.Run();
+  RunThreads();
 
   component_updater()->Stop();
 
@@ -619,7 +630,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   EXPECT_EQ(ComponentUpdateService::kOk,
             component_updater()->CheckForUpdateSoon(GetCrxComponentID(com2)));
 
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(1, ping_checker.NumHits()) << ping_checker.GetPings();
   EXPECT_EQ(0, ping_checker.NumMisses()) << ping_checker.GetPings();
@@ -706,7 +717,7 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   test_configurator()->SetLoopCount(2);
 
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
   EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
@@ -762,7 +773,7 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   // Loop once just to notice the check happening with the re-register version.
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(4, interceptor.GetHitCount());
 
@@ -828,7 +839,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
   test_configurator()->SetLoopCount(3);
 
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
@@ -895,7 +906,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
   test_configurator()->SetLoopCount(2);
 
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   // A failed differential update does not count as a failed install.
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
@@ -948,7 +959,7 @@ TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
   // and (2), which should retry with 0.9.
   test_configurator()->SetLoopCount(2);
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   // Loop once more, but expect no ping because a noupdate response is issued.
   // This is necessary to clear out the fire-and-forget ping from the previous
@@ -957,7 +968,7 @@ TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
                           test_file("updatecheck_reply_noupdate.xml"));
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
@@ -1017,17 +1028,18 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
   interceptor.SetResponse(expected_crx_url_2,
                           test_file("ihfokbkgjpifnbbojhneepfflplebdkc_2.crx"));
 
-  test_configurator()->SetLoopCount(3);
+  test_configurator()->SetLoopCount(2);
 
   component_updater()->Start();
-  message_loop_.Run();
+  RunThreads();
+  component_updater()->Stop();
+  // There may still be pings in the queue.
+  RunThreadsUntilIdle();
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
 
   EXPECT_EQ(1, ping_checker.NumHits()) << ping_checker.GetPings();
   EXPECT_EQ(1, ping_checker.NumMisses()) << ping_checker.GetPings();
-  EXPECT_EQ(6, interceptor.GetHitCount());
-
-  component_updater()->Stop();
+  EXPECT_EQ(5, interceptor.GetHitCount());
 }
