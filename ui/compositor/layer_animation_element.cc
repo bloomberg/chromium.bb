@@ -63,7 +63,7 @@ class TransformTransition : public LayerAnimationElement {
 
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetTransformFromAnimation(
-        gfx::Tween::ValueBetween(t, start_, target_));
+        gfx::Tween::TransformValueBetween(t, start_, target_));
     return true;
   }
 
@@ -142,7 +142,7 @@ class BoundsTransition : public LayerAnimationElement {
 
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetBoundsFromAnimation(
-        gfx::Tween::ValueBetween(t, start_, target_));
+        gfx::Tween::RectValueBetween(t, start_, target_));
     return true;
   }
 
@@ -183,7 +183,7 @@ class OpacityTransition : public LayerAnimationElement {
 
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetOpacityFromAnimation(
-        gfx::Tween::ValueBetween(t, start_, target_));
+        gfx::Tween::FloatValueBetween(t, start_, target_));
     return true;
   }
 
@@ -264,7 +264,7 @@ class BrightnessTransition : public LayerAnimationElement {
 
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetBrightnessFromAnimation(
-        gfx::Tween::ValueBetween(t, start_, target_));
+        gfx::Tween::FloatValueBetween(t, start_, target_));
     return true;
   }
 
@@ -305,7 +305,7 @@ class GrayscaleTransition : public LayerAnimationElement {
 
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetGrayscaleFromAnimation(
-        gfx::Tween::ValueBetween(t, start_, target_));
+        gfx::Tween::FloatValueBetween(t, start_, target_));
     return true;
   }
 
@@ -345,20 +345,19 @@ class ColorTransition : public LayerAnimationElement {
   }
 
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
-    delegate->SetColorFromAnimation(
-        SkColorSetARGB(
-            gfx::Tween::ValueBetween(t,
-                                     static_cast<int>(SkColorGetA(start_)),
-                                     static_cast<int>(SkColorGetA(target_))),
-            gfx::Tween::ValueBetween(t,
-                                     static_cast<int>(SkColorGetR(start_)),
-                                     static_cast<int>(SkColorGetR(target_))),
-            gfx::Tween::ValueBetween(t,
-                                     static_cast<int>(SkColorGetG(start_)),
-                                     static_cast<int>(SkColorGetG(target_))),
-            gfx::Tween::ValueBetween(t,
-                                     static_cast<int>(SkColorGetB(start_)),
-                                     static_cast<int>(SkColorGetB(target_)))));
+    delegate->SetColorFromAnimation(SkColorSetARGB(
+        gfx::Tween::IntValueBetween(t,
+                                    static_cast<int>(SkColorGetA(start_)),
+                                    static_cast<int>(SkColorGetA(target_))),
+        gfx::Tween::IntValueBetween(t,
+                                    static_cast<int>(SkColorGetR(start_)),
+                                    static_cast<int>(SkColorGetR(target_))),
+        gfx::Tween::IntValueBetween(t,
+                                    static_cast<int>(SkColorGetG(start_)),
+                                    static_cast<int>(SkColorGetG(target_))),
+        gfx::Tween::IntValueBetween(t,
+                                    static_cast<int>(SkColorGetB(start_)),
+                                    static_cast<int>(SkColorGetB(target_)))));
     return true;
   }
 
@@ -459,7 +458,7 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
     if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
-      delegate->SetOpacityFromAnimation(gfx::Tween::ValueBetween(
+      delegate->SetOpacityFromAnimation(gfx::Tween::FloatValueBetween(
           gfx::Tween::CalculateValue(tween_type(), last_progressed_fraction()),
               start_,
               target_));
@@ -525,7 +524,7 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
     if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
-      delegate->SetTransformFromAnimation(gfx::Tween::ValueBetween(
+      delegate->SetTransformFromAnimation(gfx::Tween::TransformValueBetween(
           gfx::Tween::CalculateValue(tween_type(), last_progressed_fraction()),
           start_,
           target_));
@@ -647,7 +646,7 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
 
  private:
   gfx::Transform ComputeCurrentTransform() const {
-    gfx::Transform base_current = gfx::Tween::ValueBetween(
+    gfx::Transform base_current = gfx::Tween::TransformValueBetween(
         gfx::Tween::CalculateValue(tween_type(), last_progressed_fraction()),
         base_transform_,
         base_target_);

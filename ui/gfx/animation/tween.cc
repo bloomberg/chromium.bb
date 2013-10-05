@@ -56,12 +56,17 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 }
 
 // static
-double Tween::ValueBetween(double value, double start, double target) {
+double Tween::DoubleValueBetween(double value, double start, double target) {
   return start + (target - start) * value;
 }
 
 // static
-int Tween::ValueBetween(double value, int start, int target) {
+float Tween::FloatValueBetween(double value, float start, float target) {
+  return static_cast<float>(start + (target - start) * value);
+}
+
+// static
+int Tween::IntValueBetween(double value, int start, int target) {
   if (start == target)
     return start;
   double delta = static_cast<double>(target - start);
@@ -77,21 +82,21 @@ int Tween::ValueBetween(double value, int start, int target) {
 }
 
 // static
-gfx::Rect Tween::ValueBetween(double value,
-                              const gfx::Rect& start_bounds,
-                              const gfx::Rect& target_bounds) {
-  return gfx::Rect(ValueBetween(value, start_bounds.x(), target_bounds.x()),
-                   ValueBetween(value, start_bounds.y(), target_bounds.y()),
-                   ValueBetween(value, start_bounds.width(),
-                                target_bounds.width()),
-                   ValueBetween(value, start_bounds.height(),
-                                target_bounds.height()));
+gfx::Rect Tween::RectValueBetween(double value,
+                                  const gfx::Rect& start_bounds,
+                                  const gfx::Rect& target_bounds) {
+  return gfx::Rect(
+      IntValueBetween(value, start_bounds.x(), target_bounds.x()),
+      IntValueBetween(value, start_bounds.y(), target_bounds.y()),
+      IntValueBetween(value, start_bounds.width(), target_bounds.width()),
+      IntValueBetween(value, start_bounds.height(), target_bounds.height()));
 }
 
 // static
-gfx::Transform Tween::ValueBetween(double value,
-                                   const gfx::Transform& start_transform,
-                                   const gfx::Transform& end_transform) {
+gfx::Transform Tween::TransformValueBetween(
+    double value,
+    const gfx::Transform& start_transform,
+    const gfx::Transform& end_transform) {
   if (value >= 1.0)
     return end_transform;
   if (value <= 0.0)

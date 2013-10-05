@@ -36,7 +36,7 @@ float FloatAnimationCurveAdapter::GetValue(double t) const {
   if (t <= 0.0)
     return initial_value_;
   double progress = t / duration_.InSecondsF();
-  return gfx::Tween::ValueBetween(
+  return gfx::Tween::FloatValueBetween(
       gfx::Tween::CalculateValue(tween_type_, progress),
       initial_value_,
       target_value_);

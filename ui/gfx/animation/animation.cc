@@ -62,16 +62,17 @@ void Animation::Stop() {
 }
 
 double Animation::CurrentValueBetween(double start, double target) const {
-  return Tween::ValueBetween(GetCurrentValue(), start, target);
+  return Tween::DoubleValueBetween(GetCurrentValue(), start, target);
 }
 
 int Animation::CurrentValueBetween(int start, int target) const {
-  return Tween::ValueBetween(GetCurrentValue(), start, target);
+  return Tween::IntValueBetween(GetCurrentValue(), start, target);
 }
 
 gfx::Rect Animation::CurrentValueBetween(const gfx::Rect& start_bounds,
                                          const gfx::Rect& target_bounds) const {
-  return Tween::ValueBetween(GetCurrentValue(), start_bounds, target_bounds);
+  return Tween::RectValueBetween(
+      GetCurrentValue(), start_bounds, target_bounds);
 }
 
 void Animation::SetContainer(AnimationContainer* container) {

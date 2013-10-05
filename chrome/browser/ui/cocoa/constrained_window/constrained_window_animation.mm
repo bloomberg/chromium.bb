@@ -288,9 +288,9 @@ void UpdateWindowShowHideAnimationState(NSWindow* window, CGFloat value) {
     if (value >= frames[i].value) {
       CGFloat delta = frames[i + 1].value - frames[i].value;
       CGFloat frame_progress = (value - frames[i].value) / delta;
-      scale = gfx::Tween::ValueBetween(frame_progress,
-                                       frames[i].scale,
-                                       frames[i + 1].scale);
+      scale = gfx::Tween::FloatValueBetween(frame_progress,
+                                            frames[i].scale,
+                                            frames[i + 1].scale);
       break;
     }
   }

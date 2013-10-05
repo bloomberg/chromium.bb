@@ -126,7 +126,7 @@ inline float InterpolatedTransform::ValueBetween(float time,
 
   float t = (time - start_time_) / (end_time_ - start_time_);
   return static_cast<float>(
-      gfx::Tween::ValueBetween(t, start_value, end_value));
+      gfx::Tween::DoubleValueBetween(t, start_value, end_value));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

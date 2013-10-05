@@ -30,14 +30,16 @@ class GFX_EXPORT Tween {
   static double CalculateValue(Type type, double state);
 
   // Conveniences for getting a value between a start and end point.
-  static double ValueBetween(double value, double start, double target);
-  static int ValueBetween(double value, int start, int target);
-  static gfx::Rect ValueBetween(double value,
-                                const gfx::Rect& start_bounds,
-                                const gfx::Rect& target_bounds);
-  static gfx::Transform ValueBetween(double value,
-                                const gfx::Transform& start_transform,
-                                const gfx::Transform& target_transform);
+  static double DoubleValueBetween(double value, double start, double target);
+  static float FloatValueBetween(double value, float start, float target);
+  static int IntValueBetween(double value, int start, int target);
+  static gfx::Rect RectValueBetween(double value,
+                                    const gfx::Rect& start_bounds,
+                                    const gfx::Rect& target_bounds);
+  static gfx::Transform TransformValueBetween(
+      double value,
+      const gfx::Transform& start_transform,
+      const gfx::Transform& target_transform);
 
  private:
   Tween();
