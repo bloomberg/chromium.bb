@@ -19,6 +19,7 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
+#include "base/win/windows_version.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/hit_test.h"
@@ -465,6 +466,11 @@ TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
 // Tests that panels can have transient children of different types.
 // The transient children should be reparented in sync with the panel.
 TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
+
+  // http://crbug.com/304544
+  if (win::GetVersion() >= win::VERSION_WIN8)
+    return true;
+
   scoped_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   scoped_ptr<aura::Window> child(CreateTestWindowInShellWithDelegateAndType(
       NULL, transient_window_type_, 0, gfx::Rect(20, 20, 150, 40)));
