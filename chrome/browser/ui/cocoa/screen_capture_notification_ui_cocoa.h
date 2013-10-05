@@ -7,31 +7,39 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 
 // Controller for the screen capture notification window which allows the user
 // to quickly stop screen capturing.
-@interface ScreenCaptureNotificationController : NSWindowController {
+@interface ScreenCaptureNotificationController
+    : NSWindowController<NSWindowDelegate> {
  @private
   base::Closure stop_callback_;
-  string16 text_;
-  IBOutlet NSTextField* statusField_;
-  IBOutlet NSButton* stopButton_;
+  base::scoped_nsobject<NSButton> stopButton_;
 }
 
 - (id)initWithCallback:(const base::Closure&)stop_callback
                   text:(const string16&)text;
-- (IBAction)stopSharing:(id)sender;
+- (void)stopSharing:(id)sender;
+
 @end
 
-// A floating window with a custom border. The custom border and background
-// content is defined by DisconnectView. Declared here so that it can be
-// instantiated via a xib.
-@interface ScreenCaptureNotificationWindow : NSWindow
-@end
+class ScreenCaptureNotificationUICocoa : public ScreenCaptureNotificationUI {
+ public:
+  explicit ScreenCaptureNotificationUICocoa(const string16& text);
+  virtual ~ScreenCaptureNotificationUICocoa();
 
-// The custom background/border for the ScreenCaptureNotificationWindow.
-// Declared here so that it can be instantiated via a xib.
-@interface ScreenCaptureNotificationView : NSView
-@end
+  // ScreenCaptureNotificationUI interface.
+  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
+
+ private:
+  friend class ScreenCaptureNotificationUICocoaTest;
+
+  const string16 text_;
+  base::scoped_nsobject<ScreenCaptureNotificationController> windowController_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUICocoa);
+};

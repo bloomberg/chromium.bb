@@ -2,60 +2,65 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-
 #include "chrome/browser/ui/cocoa/screen_capture_notification_ui_cocoa.h"
+
+#import <Cocoa/Cocoa.h>
 
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
-#include "base/mac/bundle_locations.h"
+#include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
+#import "ui/base/cocoa/controls/blue_label_button.h"
+#include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/text_elider.h"
+#include "ui/native_theme/native_theme.h"
+
+const CGFloat kMinimumWidth = 460;
+const CGFloat kMaximumWidth = 1000;
+const CGFloat kHorizontalMargin = 10;
+const CGFloat kPadding = 5;
+const CGFloat kPaddingLeft = 10;
+const CGFloat kWindowCornerRadius = 2;
 
 @interface ScreenCaptureNotificationController()
-- (void)Hide;
+- (void)hide;
+- (void)populateWithText:(const string16&)text;
 @end
 
-class ScreenCaptureNotificationUICocoa : public ScreenCaptureNotificationUI {
- public:
-  explicit ScreenCaptureNotificationUICocoa(const string16& text);
-  virtual ~ScreenCaptureNotificationUICocoa();
+@interface ScreenCaptureNotificationView : NSView
+@end
 
-  // ScreenCaptureNotificationUI interface.
-  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
+@interface WindowGripView : NSImageView
+- (WindowGripView*)init;
+@end
 
- private:
-  const string16 text_;
-  ScreenCaptureNotificationController* window_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUICocoa);
-};
 
 ScreenCaptureNotificationUICocoa::ScreenCaptureNotificationUICocoa(
     const string16& text)
-    : text_(text),
-      window_controller_(nil) {
+    : text_(text) {
 }
 
-ScreenCaptureNotificationUICocoa::~ScreenCaptureNotificationUICocoa() {
-  // ScreenCaptureNotificationController is responsible for releasing itself in
-  // its windowWillClose: method.
-  [window_controller_ Hide];
-  window_controller_ = nil;
-}
+ScreenCaptureNotificationUICocoa::~ScreenCaptureNotificationUICocoa() {}
 
 void ScreenCaptureNotificationUICocoa::OnStarted(
     const base::Closure& stop_callback) {
   DCHECK(!stop_callback.is_null());
-  DCHECK(window_controller_ == nil);
+  DCHECK(!windowController_);
 
-  window_controller_ =
-      [[ScreenCaptureNotificationController alloc]
-          initWithCallback:stop_callback
-                     text:text_];
-  [window_controller_ showWindow:nil];
+  windowController_.reset([[ScreenCaptureNotificationController alloc]
+      initWithCallback:stop_callback
+                  text:text_]);
+  [windowController_ showWindow:nil];
 }
 
 scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
@@ -67,191 +72,159 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
 @implementation ScreenCaptureNotificationController
 - (id)initWithCallback:(const base::Closure&)stop_callback
                   text:(const string16&)text {
-  NSString* nibpath =
-      [base::mac::FrameworkBundle() pathForResource:@"ScreenCaptureNotification"
-                                             ofType:@"nib"];
-  self = [super initWithWindowNibPath:nibpath owner:self];
+  base::scoped_nsobject<NSWindow> window(
+      [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO]);
+  [window setReleasedWhenClosed:NO];
+  [window setBackgroundColor:[NSColor clearColor]];
+  [window setOpaque:NO];
+  [window setHasShadow:YES];
+  [window setLevel:NSStatusWindowLevel];
+  [window setMovableByWindowBackground:YES];
+  [window setDelegate:self];
+
+  self = [super initWithWindow:window];
   if (self) {
     stop_callback_ = stop_callback;
-    text_ = text;
+    [self populateWithText:text];
+
+    // Center the window at the bottom of the screen, above the dock (if
+    // present).
+    NSRect desktopRect = [[NSScreen mainScreen] visibleFrame];
+    NSRect contentRect = [[window contentView] frame];
+    NSRect windowRect =
+        NSMakeRect((NSWidth(desktopRect) - NSWidth(contentRect)) / 2,
+                   NSMinY(desktopRect),
+                   NSWidth(contentRect),
+                   NSHeight(contentRect));
+    [window setFrame:windowRect display:YES];
   }
   return self;
 }
 
-- (void)dealloc {
-  [super dealloc];
-}
-
-- (IBAction)stopSharing:(id)sender {
+- (void)stopSharing:(id)sender {
   if (!stop_callback_.is_null()) {
-    stop_callback_.Run();
+    base::Closure callback = stop_callback_;
+    stop_callback_.Reset();
+    callback.Run();  // Deletes |self|.
   }
 }
 
-- (void)Hide {
+- (void)hide {
   stop_callback_.Reset();
   [self close];
 }
 
-- (void)windowDidLoad {
-  [statusField_ setStringValue:base::SysUTF16ToNSString(text_)];
+- (void)populateWithText:(const string16&)text {
+  base::scoped_nsobject<ScreenCaptureNotificationView> content(
+      [[ScreenCaptureNotificationView alloc]
+          initWithFrame:ui::kWindowSizeDeterminedLater]);
+  [[self window] setContentView:content];
 
-  string16 button_label =
-      l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP);
-  [stopButton_ setTitle:base::SysUTF16ToNSString(button_label)];
-
-  // Resize the window dynamically based on the content.
-  CGFloat oldConnectedWidth = NSWidth([statusField_ bounds]);
-  [statusField_ sizeToFit];
-  NSRect statusFrame = [statusField_ frame];
-  CGFloat newConnectedWidth = NSWidth(statusFrame);
-
-  // Set a max width for the connected to text field.
-  const int kMaximumStatusWidth = 400;
-  if (newConnectedWidth > kMaximumStatusWidth) {
-    newConnectedWidth = kMaximumStatusWidth;
-    statusFrame.size.width = newConnectedWidth;
-    [statusField_ setFrame:statusFrame];
-  }
-
-  CGFloat oldstopWidth = NSWidth([stopButton_ bounds]);
+  // Create button.
+  stopButton_.reset([[BlueLabelButton alloc] initWithFrame:NSZeroRect]);
+  [stopButton_ setTitle:l10n_util::GetNSString(
+                  IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP)];
+  [stopButton_ setTarget:self];
+  [stopButton_ setAction:@selector(stopSharing:)];
   [stopButton_ sizeToFit];
-  NSRect stopFrame = [stopButton_ frame];
-  CGFloat newStopWidth = NSWidth(stopFrame);
+  [content addSubview:stopButton_];
 
-  // Move the stop button appropriately.
-  stopFrame.origin.x += newConnectedWidth - oldConnectedWidth;
-  [stopButton_ setFrame:stopFrame];
+  CGFloat buttonWidth = NSWidth([stopButton_ frame]);
+  CGFloat totalHeight = kPadding + NSHeight([stopButton_ frame]) + kPadding;
 
-  // Then resize the window appropriately.
-  NSWindow *window = [self window];
-  NSRect windowFrame = [window frame];
-  windowFrame.size.width += (newConnectedWidth - oldConnectedWidth +
-                             newStopWidth - oldstopWidth);
-  [window setFrame:windowFrame display:NO];
+  // Create grip icon.
+  base::scoped_nsobject<WindowGripView> gripView([[WindowGripView alloc] init]);
+  [content addSubview:gripView];
+  CGFloat gripWidth = NSWidth([gripView frame]);
+  CGFloat gripHeight = NSHeight([gripView frame]);
+  [gripView
+      setFrameOrigin:NSMakePoint(kPaddingLeft, (totalHeight - gripHeight) / 2)];
+
+  // Create text label.
+  int maximumWidth =
+      std::min(kMaximumWidth, NSWidth([[NSScreen mainScreen] visibleFrame]));
+  int maxLabelWidth = maximumWidth - kPaddingLeft - kPadding -
+                      kHorizontalMargin * 2 - gripWidth - buttonWidth;
+  gfx::Font font(ui::ResourceBundle::GetSharedInstance()
+                     .GetFont(ui::ResourceBundle::BaseFont)
+                     .GetNativeFont());
+  string16 elidedText =
+      ElideText(text, font, maxLabelWidth, gfx::ELIDE_IN_MIDDLE);
+  NSString* statusText = base::SysUTF16ToNSString(elidedText);
+  base::scoped_nsobject<NSTextField> statusTextField(
+      [[NSTextField alloc] initWithFrame:ui::kWindowSizeDeterminedLater]);
+  [statusTextField setEditable:NO];
+  [statusTextField setSelectable:NO];
+  [statusTextField setDrawsBackground:NO];
+  [statusTextField setBezeled:NO];
+  [statusTextField setStringValue:statusText];
+  [statusTextField setFont:font.GetNativeFont()];
+  [statusTextField sizeToFit];
+  [statusTextField setFrameOrigin:NSMakePoint(
+                       kPaddingLeft + kHorizontalMargin + gripWidth,
+                       (totalHeight - NSHeight([statusTextField frame])) / 2)];
+  [content addSubview:statusTextField];
+
+  // Resize content view to fit controls.
+  CGFloat minimumLableWidth = kMinimumWidth - kPaddingLeft - kPadding -
+                              kHorizontalMargin * 2 - gripWidth - buttonWidth;
+  CGFloat lableWidth =
+      std::max(NSWidth([statusTextField frame]), minimumLableWidth);
+  CGFloat totalWidth = kPaddingLeft + kPadding + kHorizontalMargin * 2 +
+                       gripWidth + lableWidth + buttonWidth;
+  [content setFrame:NSMakeRect(0, 0, totalWidth, totalHeight)];
+
+  // Move the button to the right place.
+  NSPoint buttonOrigin =
+      NSMakePoint(totalWidth - kPadding - buttonWidth, kPadding);
+  [stopButton_ setFrameOrigin:buttonOrigin];
 
   if (base::i18n::IsRTL()) {
-    // Handle right to left case
-    CGFloat buttonInset = NSWidth(windowFrame) - NSMaxX(stopFrame);
-    CGFloat buttonTextSpacing
-        = NSMinX(stopFrame) - NSMaxX(statusFrame);
-    stopFrame.origin.x = buttonInset;
-    statusFrame.origin.x = NSMaxX(stopFrame) + buttonTextSpacing;
-    [statusField_ setFrame:statusFrame];
-    [stopButton_ setFrame:stopFrame];
+    [stopButton_
+        setFrameOrigin:NSMakePoint(totalWidth - NSMaxX([stopButton_ frame]),
+                                   NSMinY([stopButton_ frame]))];
+    [statusTextField
+        setFrameOrigin:NSMakePoint(totalWidth - NSMaxX([statusTextField frame]),
+                                   NSMinY([statusTextField frame]))];
+    [gripView setFrameOrigin:NSMakePoint(totalWidth - NSMaxX([gripView frame]),
+                                         NSMinY([gripView frame]))];
   }
-
-  // Center the window at the bottom of the screen, above the dock (if present).
-  NSRect desktopRect = [[NSScreen mainScreen] visibleFrame];
-  NSRect windowRect = [[self window] frame];
-  CGFloat x = (NSWidth(desktopRect) - NSWidth(windowRect)) / 2;
-  CGFloat y = NSMinY(desktopRect);
-  [[self window] setFrameOrigin:NSMakePoint(x, y)];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  [self stopSharing:self];
-  [self autorelease];
+  [self stopSharing:nil];
 }
 
-@end
-
-
-@implementation ScreenCaptureNotificationWindow
-- (id)initWithContentRect:(NSRect)contentRect
-                styleMask:(NSUInteger)aStyle
-                  backing:(NSBackingStoreType)bufferingType
-                    defer:(BOOL)flag {
-  // Pass NSBorderlessWindowMask for the styleMask to remove the title bar.
-  self = [super initWithContentRect:contentRect
-                          styleMask:NSBorderlessWindowMask
-                            backing:bufferingType
-                              defer:flag];
-
-  if (self) {
-    // Set window to be clear and non-opaque so we can see through it.
-    [self setBackgroundColor:[NSColor clearColor]];
-    [self setOpaque:NO];
-    [self setMovableByWindowBackground:YES];
-
-    // Pull the window up to Status Level so that it always displays.
-    [self setLevel:NSStatusWindowLevel];
-  }
-  return self;
-}
 @end
 
 @implementation ScreenCaptureNotificationView
-- (void)drawRect:(NSRect)rect {
-  // All magic numbers taken from screen shots provided by UX.
-  NSRect bounds = NSInsetRect([self bounds], 1, 1);
 
-  NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:bounds
-                                                       xRadius:5
-                                                       yRadius:5];
-  NSColor *gray = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
-  [gray setFill];
-  [path fill];
-  [path setLineWidth:4];
-  NSColor *green = [NSColor colorWithCalibratedRed:0.13
-                                             green:0.69
-                                              blue:0.11
-                                             alpha:1.0];
-  [green setStroke];
-  [path stroke];
-
-
-  // Draw drag handle on proper side
-  const CGFloat kHeight = 21.0;
-  const CGFloat kBaseInset = 12.0;
-  const CGFloat kDragHandleWidth = 5.0;
-
-  NSColor *dark = [NSColor colorWithCalibratedWhite:0.70 alpha:1.0];
-  NSColor *light = [NSColor colorWithCalibratedWhite:0.97 alpha:1.0];
-
-  // Turn off aliasing so it's nice and crisp.
-  NSGraphicsContext *context = [NSGraphicsContext currentContext];
-  BOOL alias = [context shouldAntialias];
-  [context setShouldAntialias:NO];
-
-  // Handle bidirectional locales properly.
-  CGFloat inset = base::i18n::IsRTL() ?
-      NSMaxX(bounds) - kBaseInset - kDragHandleWidth : kBaseInset;
-
-  NSPoint top = NSMakePoint(inset, NSMidY(bounds) - kHeight / 2.0);
-  NSPoint bottom = NSMakePoint(inset, top.y + kHeight);
-
-  path = [NSBezierPath bezierPath];
-  [path moveToPoint:top];
-  [path lineToPoint:bottom];
-  [dark setStroke];
-  [path stroke];
-
-  top.x += 1;
-  bottom.x += 1;
-  path = [NSBezierPath bezierPath];
-  [path moveToPoint:top];
-  [path lineToPoint:bottom];
-  [light setStroke];
-  [path stroke];
-
-  top.x += 2;
-  bottom.x += 2;
-  path = [NSBezierPath bezierPath];
-  [path moveToPoint:top];
-  [path lineToPoint:bottom];
-  [dark setStroke];
-  [path stroke];
-
-  top.x += 1;
-  bottom.x += 1;
-  path = [NSBezierPath bezierPath];
-  [path moveToPoint:top];
-  [path lineToPoint:bottom];
-  [light setStroke];
-  [path stroke];
-
-  [context setShouldAntialias:alias];
+- (void)drawRect:(NSRect)dirtyRect {
+  [gfx::SkColorToSRGBNSColor(ui::NativeTheme::instance()->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogBackground)) set];
+  [[NSBezierPath bezierPathWithRoundedRect:[self bounds]
+                                   xRadius:kWindowCornerRadius
+                                   yRadius:kWindowCornerRadius] fill];
 }
 
+@end
+
+@implementation WindowGripView
+- (WindowGripView*)init {
+  gfx::Image gripImage =
+      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_SCREEN_CAPTURE_NOTIFICATION_GRIP,
+          ui::ResourceBundle::RTL_DISABLED);
+  self = [super
+      initWithFrame:NSMakeRect(0, 0, gripImage.Width(), gripImage.Height())];
+  [self setImage:gripImage.ToNSImage()];
+  return self;
+}
+
+- (BOOL)mouseDownCanMoveWindow {
+  return YES;
+}
 @end

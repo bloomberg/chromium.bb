@@ -24,7 +24,7 @@
       'app/nibs/ContentBlockedPlugins.xib',
       'app/nibs/ContentBlockedPopups.xib',
       'app/nibs/ContentBlockedGeolocation.xib',
-      'app/nibs/ContentBlockedSavePassword.xib',      
+      'app/nibs/ContentBlockedSavePassword.xib',
       'app/nibs/ContentBlockedSimple.xib',
       'app/nibs/ContentProtocolHandlers.xib',
       'app/nibs/CookieDetailsView.xib',
@@ -63,7 +63,6 @@
       'app/nibs/InfoBar.xib',
       'app/nibs/Notification.xib',
       'app/nibs/Panel.xib',
-      'app/nibs/ScreenCaptureNotification.xib',
     ],  # mac_untranslated_xibs
     'mac_all_xibs': [
       '<@(mac_translated_xibs)',
