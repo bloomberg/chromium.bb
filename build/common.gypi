@@ -75,16 +75,6 @@
               'use_aura%': 1,
             }],
 
-            # For now, Windows builds that |use_aura| should also imply using
-            # ash. This rule should be removed for the future when Windows is
-            # using the aura windows without the ash interface.
-            ['use_aura==1 and OS=="win"', {
-              'use_ash%': 1,
-            }],
-            ['use_ash==1', {
-              'use_aura%': 1,
-            }],
-
             # Whether we're a traditional desktop unix.
             ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and chromeos==0', {
               'desktop_linux%': 1,
@@ -137,6 +127,11 @@
         'arm_version%': 7,
 
         'conditions': [
+          # Ash needs Aura.
+          ['use_aura==0', {
+            'use_ash%': 0,
+          }],
+
           # Set default value of toolkit_views based on OS.
           ['OS=="win" or chromeos==1 or use_aura==1', {
             'toolkit_views%': 1,
