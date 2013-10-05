@@ -128,6 +128,8 @@ maxZoom
 minHeight
 minWidth
 minZoom
+objectFit
+objectPosition
 opacity
 order
 orientation

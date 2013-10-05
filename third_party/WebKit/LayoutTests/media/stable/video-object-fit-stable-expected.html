@@ -14,10 +14,10 @@
       }
 
       .group > * > * { display: block; }
-      .group > *:nth-child(1) > * { width:100%; margin-top:15px; }
+      .group > *:nth-child(1) > * { width:100%; height:100%; }
       .group > *:nth-child(2) > * { width:100%; margin-top:15px; }
-      .group > *:nth-child(3) > * { width:100%; margin-top:15px; }
-      .group > *:nth-child(4) > * { width:100%; margin-top:15px; }
+      .group > *:nth-child(3) > * { height:100%; margin-left:-20px; }
+      .group > *:nth-child(4) > * { margin-left:-100px; margin-top:-60px; }
       .group > *:nth-child(5) > * { width:100%; margin-top:15px; }
     </style>
     <script src=../media-file.js></script>
@@ -43,7 +43,11 @@
   </head>
   <body onload="init();">
     <div class="group">
-      <div><video></video></div>
+      <!-- Note about the first video here: There's no way to unlock a video from its
+	   aspect ratio without using object-fit:fill, so we have to use it here as well
+	   as in the test file. In order to actually being able to detect failures, use a
+	   different background color. -->
+      <div style="background:salmon;"><video style="object-fit:fill;"></video></div>
       <div><video></video></div>
       <div><video></video></div>
       <div><video></video></div>
