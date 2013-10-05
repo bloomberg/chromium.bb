@@ -4,6 +4,8 @@
 
 #include "ui/views/corewm/capture_controller.h"
 
+#include "base/auto_reset.h"
+#include "base/debug/alias.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
@@ -39,6 +41,12 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
   aura::Window* old_capture_window = capture_window_;
   aura::RootWindow* old_capture_root = old_capture_window ?
       old_capture_window->GetRootWindow() : NULL;
+
+  base::debug::Alias(&old_capture_root);
+  base::debug::Alias(&old_capture_window);
+  base::debug::Alias(&new_capture_window);
+  CHECK(!updating_capture_);
+  base::AutoReset<bool> capture_reset(&updating_capture_, true);
 
   // Copy the list in case it's modified out from under us.
   RootWindows root_windows(root_windows_);
@@ -88,7 +96,8 @@ aura::Window* CaptureController::GetCaptureWindow() {
 // CaptureController, private:
 
 CaptureController::CaptureController()
-    : capture_window_(NULL) {
+    : capture_window_(NULL),
+      updating_capture_(false) {
 }
 
 CaptureController::~CaptureController() {
