@@ -672,10 +672,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // It's important not to allocate the ports for processes which don't
     // register with the power monitor - see crbug.com/88867.
     if (process_type.empty() ||
-        process_type == switches::kPluginProcess ||
-        process_type == switches::kRendererProcess ||
-        process_type == switches::kUtilityProcess ||
-        process_type == switches::kWorkerProcess ||
         (delegate &&
          delegate->ProcessRegistersWithSystemProcess(process_type))) {
       base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
