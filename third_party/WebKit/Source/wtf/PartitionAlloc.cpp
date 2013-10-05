@@ -403,7 +403,7 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t newSize)
         oldIndex = root->numBuckets;
     }
 
-    size_t newIndex = partitionAllocRoundup(newSize) >> kBucketShift;
+    size_t newIndex = QuantizedAllocation::quantizedSize(newSize) >> kBucketShift;
     if (newIndex > root->numBuckets)
         newIndex = root->numBuckets;
 

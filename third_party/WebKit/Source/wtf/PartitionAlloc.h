@@ -89,6 +89,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/PageAllocator.h"
+#include "wtf/QuantizedAllocation.h"
 #include "wtf/SpinLock.h"
 #include "wtf/UnusedParam.h"
 
@@ -322,8 +323,8 @@ ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
     return result;
 #else
     ASSERT(root->initialized);
+    size = QuantizedAllocation::quantizedSize(size);
     if (LIKELY(size <= root->maxAllocation)) {
-        size = partitionAllocRoundup(size);
         spinLockLock(&root->lock);
         void* ret = partitionAlloc(root, size);
         spinLockUnlock(&root->lock);

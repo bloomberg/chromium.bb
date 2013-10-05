@@ -377,11 +377,11 @@ TEST(WTF_PartitionAlloc, GenericAlloc)
     EXPECT_EQ(ptr, newPtr);
     newPtr = partitionReallocGeneric(allocator.root(), ptr, 1);
     EXPECT_EQ(ptr, newPtr);
-    newPtr = partitionReallocGeneric(allocator.root(), ptr, WTF::kAllocationGranularity);
+    newPtr = partitionReallocGeneric(allocator.root(), ptr, WTF::QuantizedAllocation::kMinRounding);
     EXPECT_EQ(ptr, newPtr);
 
     // Change the size of the realloc, switching buckets.
-    newPtr = partitionReallocGeneric(allocator.root(), ptr, WTF::kAllocationGranularity + 1);
+    newPtr = partitionReallocGeneric(allocator.root(), ptr, WTF::QuantizedAllocation::kMinRounding + 1);
     EXPECT_NE(newPtr, ptr);
     // Check that the realloc copied correctly.
     char* newCharPtr = static_cast<char*>(newPtr);

@@ -52,12 +52,12 @@ public:
     static const size_t kMaxAllocation = 32768;
     static const size_t kMaxRounding = 4096;
 
-    // This is the minimum granularity of allocation, currently 16 bytes.
-    static const size_t kMinRounding = 16;
+    // This is the minimum granularity of allocation, currently 8 bytes.
+    static const size_t kMinRounding = 8;
 
-    // After 256 bytes, the granularity doubles, and proceeds to double again
+    // After 128 bytes, the granularity doubles, and proceeds to double again
     // as the allocation size further doubles.
-    static const size_t kMinRoundingLimit = 256;
+    static const size_t kMinRoundingLimit = 128;
     static const size_t kTableSize = kMaxAllocation / kMinRoundingLimit;
 
     // Using "unsigned" is not a limitation because Chromium's max malloc() is
