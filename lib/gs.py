@@ -119,7 +119,7 @@ class GSContext(object):
   """A class to wrap common google storage operations."""
 
   # Error messages that indicate an invalid BOTO config.
-  AUTHORIZATION_ERRORS = ('no configured credentials', 'detail=Authorization')
+  AUTHORIZATION_ERRORS = ('no configured', 'detail=Authorization')
 
   DEFAULT_BOTO_FILE = os.path.expanduser('~/.boto')
   # This is set for ease of testing.
@@ -308,8 +308,9 @@ class GSContext(object):
           if 'code=NoSuchKey' in error:
             raise GSNoSuchKey(e)
         # If the file does not exist, one of the following errors occurs.
-        if (error.startswith('InvalidUriError:') or
-            error.startswith('CommandException: No URIs matched')):
+        if ('InvalidUriError:' in error or
+            'CommandException: No URIs matched' in error or
+            'CommandException: One or more URIs matched no objects' in error):
           raise GSNoSuchKey(e)
       raise
 
