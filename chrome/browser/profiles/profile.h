@@ -298,6 +298,9 @@ class Profile : public content::BrowserContext {
 
   // Initializes Chrome OS's preferences.
   virtual void InitChromeOSPreferences() = 0;
+
+  // True if the profile is for login session.
+  virtual bool IsLoginProfile() = 0;
 #endif  // defined(OS_CHROMEOS)
 
   // Returns the helper object that provides the proxy configuration service

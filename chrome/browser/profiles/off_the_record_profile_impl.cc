@@ -387,18 +387,20 @@ Profile::ExitType OffTheRecordProfileImpl::GetLastSessionExitType() {
 }
 
 #if defined(OS_CHROMEOS)
-void OffTheRecordProfileImpl::InitChromeOSPreferences() {
-  // The incognito profile shouldn't have Chrome OS's preferences.
-  // The preferences are associated with the regular user profile.
-}
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
 void OffTheRecordProfileImpl::ChangeAppLocale(const std::string& locale,
                                               AppLocaleChangedVia) {
 }
 
 void OffTheRecordProfileImpl::OnLogin() {
+}
+
+void OffTheRecordProfileImpl::InitChromeOSPreferences() {
+  // The incognito profile shouldn't have Chrome OS's preferences.
+  // The preferences are associated with the regular user profile.
+}
+
+bool OffTheRecordProfileImpl::IsLoginProfile() {
+  return false;
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -167,6 +167,9 @@ void FakeProfile::ChangeAppLocale(
     const std::string& locale, AppLocaleChangedVia via) {}
 void FakeProfile::OnLogin() {}
 void FakeProfile::InitChromeOSPreferences() {}
+bool FakeProfile::IsLoginProfile() {
+  return false;
+}
 #endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* FakeProfile::GetProxyConfigTracker() {

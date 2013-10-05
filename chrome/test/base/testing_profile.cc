@@ -824,9 +824,16 @@ bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
 bool TestingProfile::IsGuestSession() const {
   return false;
 }
+
 Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
+
+#if defined(OS_CHROMEOS)
+bool TestingProfile::IsLoginProfile() {
+  return false;
+}
+#endif
 
 TestingProfile::Builder::Builder()
     : build_called_(false),

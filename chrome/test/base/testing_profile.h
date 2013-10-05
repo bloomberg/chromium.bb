@@ -285,13 +285,14 @@ class TestingProfile : public Profile {
   virtual void SetExitType(ExitType exit_type) OVERRIDE {}
   virtual ExitType GetLastSessionExitType() OVERRIDE;
 #if defined(OS_CHROMEOS)
-  virtual void InitChromeOSPreferences() OVERRIDE {
-  }
   virtual void ChangeAppLocale(const std::string&,
                                AppLocaleChangedVia) OVERRIDE {
   }
   virtual void OnLogin() OVERRIDE {
   }
+  virtual void InitChromeOSPreferences() OVERRIDE {
+  }
+  virtual bool IsLoginProfile() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;

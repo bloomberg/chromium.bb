@@ -379,6 +379,9 @@ ProfileImpl::ProfileImpl(
       host_content_settings_map_(NULL),
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(Time::Now()),
+#if defined(OS_CHROMEOS)
+      is_login_profile_(false),
+#endif
       delegate_(delegate),
       predictor_(NULL) {
   TRACE_EVENT0("browser", "ProfileImpl::ctor")
@@ -421,7 +424,8 @@ ProfileImpl::ProfileImpl(
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(this))
+  is_login_profile_ = chromeos::ProfileHelper::IsSigninProfile(this);
+  if (is_login_profile_)
     chrome::RegisterLoginProfilePrefs(pref_registry_.get());
   else
 #endif
@@ -804,6 +808,10 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
 }
 
 void ProfileImpl::SetExitType(ExitType exit_type) {
+#if defined(OS_CHROMEOS)
+  if (is_login_profile_)
+    return;
+#endif
   if (!prefs_)
     return;
   ExitType current_exit_type = SessionTypePrefValueToExitType(
@@ -1099,6 +1107,11 @@ void ProfileImpl::InitChromeOSPreferences() {
   chromeos_preferences_.reset(new chromeos::Preferences());
   chromeos_preferences_->Init(PrefServiceSyncable::FromProfile(this));
 }
+
+bool ProfileImpl::IsLoginProfile() {
+  return is_login_profile_;
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {

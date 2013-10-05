@@ -135,7 +135,7 @@ class Predictor {
 
   static void set_max_parallel_resolves(size_t max_parallel_resolves);
 
-  virtual void ShutdownOnUIThread(PrefService* user_prefs);
+  virtual void ShutdownOnUIThread();
 
   // ------------- End UI thread methods.
 
@@ -546,7 +546,7 @@ class SimplePredictor : public Predictor {
       PrefService* local_state,
       IOThread* io_thread,
       net::URLRequestContextGetter* getter) OVERRIDE;
-  virtual void ShutdownOnUIThread(PrefService* user_prefs) OVERRIDE;
+  virtual void ShutdownOnUIThread() OVERRIDE;
 };
 
 }  // namespace chrome_browser_net

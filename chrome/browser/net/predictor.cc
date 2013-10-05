@@ -488,11 +488,8 @@ void Predictor::set_max_parallel_resolves(size_t max_parallel_resolves) {
   g_max_parallel_resolves = max_parallel_resolves;
 }
 
-void Predictor::ShutdownOnUIThread(PrefService* user_prefs) {
+void Predictor::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  SaveStateForNextStartupAndTrim(user_prefs);
-
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -1378,7 +1375,7 @@ void SimplePredictor::InitNetworkPredictor(
   // Empty function for unittests.
 }
 
-void SimplePredictor::ShutdownOnUIThread(PrefService* user_prefs) {
+void SimplePredictor::ShutdownOnUIThread() {
   SetShutdown(true);
 }
 

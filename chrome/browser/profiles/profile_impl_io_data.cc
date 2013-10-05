@@ -87,8 +87,15 @@ ProfileImplIOData::Handle::~Handle() {
   if (io_data_->predictor_ != NULL) {
     // io_data_->predictor_ might be NULL if Init() was never called
     // (i.e. we shut down before ProfileImpl::DoFinalInit() got called).
-    PrefService* user_prefs = profile_->GetPrefs();
-    io_data_->predictor_->ShutdownOnUIThread(user_prefs);
+    bool save_prefs = true;
+#if defined(OS_CHROMEOS)
+    save_prefs = !profile_->IsLoginProfile();
+#endif
+    if (save_prefs) {
+      io_data_->predictor_->SaveStateForNextStartupAndTrim(
+          profile_->GetPrefs());
+    }
+    io_data_->predictor_->ShutdownOnUIThread();
   }
 
   if (io_data_->http_server_properties_manager_)
