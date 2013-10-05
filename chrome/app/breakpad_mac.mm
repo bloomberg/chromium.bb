@@ -25,7 +25,6 @@
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "content/public/common/content_switches.h"
 #include "components/breakpad/breakpad_client.h"
-#include "policy/policy_constants.h"
 
 namespace {
 
@@ -165,15 +164,9 @@ void InitCrashReporter() {
   if (is_browser) {
     // Since the configuration management infrastructure is possibly not
     // initialized when this code runs, read the policy preference directly.
-    base::ScopedCFTypeRef<CFStringRef> key(
-        base::SysUTF8ToCFStringRef(policy::key::kMetricsReportingEnabled));
-    Boolean key_valid;
-    Boolean metrics_reporting_enabled = CFPreferencesGetAppBooleanValue(key,
-        kCFPreferencesCurrentApplication, &key_valid);
-    if (key_valid &&
-        CFPreferencesAppValueIsForced(key, kCFPreferencesCurrentApplication)) {
+    if (breakpad::GetBreakpadClient()->ReportingIsEnforcedByPolicy()) {
       // Controlled by configuration manangement.
-      enable_breakpad = metrics_reporting_enabled;
+      enable_breakpad = true;
     } else {
       // Controlled by the user. The crash reporter may be enabled by
       // preference or through an environment variable, but the kDisableBreakpad

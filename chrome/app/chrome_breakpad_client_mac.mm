@@ -4,8 +4,13 @@
 
 #include "chrome/app/chrome_breakpad_client.h"
 
+#include <CoreFoundation/CoreFoundation.h>
+
 #include "base/command_line.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
+#include "policy/policy_constants.h"
 
 #if !defined(DISABLE_NACL)
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
@@ -35,6 +40,17 @@ void ChromeBreakpadClient::InstallAdditionalFilters(BreakpadRef breakpad) {
     BreakpadSetFilterCallback(breakpad, NaClBreakpadCrashFilter, NULL);
   }
 #endif
+}
+
+bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy() {
+  base::ScopedCFTypeRef<CFStringRef> key(
+      base::SysUTF8ToCFStringRef(policy::key::kMetricsReportingEnabled));
+  Boolean key_valid;
+  Boolean metrics_reporting_enabled = CFPreferencesGetAppBooleanValue(key,
+      kCFPreferencesCurrentApplication, &key_valid);
+  return key_valid &&
+         CFPreferencesAppValueIsForced(key, kCFPreferencesCurrentApplication) &&
+         metrics_reporting_enabled;
 }
 
 }  // namespace chrome

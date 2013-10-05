@@ -62,6 +62,8 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
 
 #if defined(OS_MACOSX)
   virtual void InstallAdditionalFilters(BreakpadRef breakpad) OVERRIDE;
+
+  virtual bool ReportingIsEnforcedByPolicy() OVERRIDE;
 #endif
 
  private:

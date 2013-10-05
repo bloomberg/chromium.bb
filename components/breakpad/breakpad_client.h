@@ -124,6 +124,9 @@ class BreakpadClient {
 #if defined(OS_MACOSX)
   // Install additional breakpad filter callbacks.
   virtual void InstallAdditionalFilters(BreakpadRef breakpad);
+
+  // Returns true if breakpad is enforced via management policies.
+  virtual bool ReportingIsEnforcedByPolicy();
 #endif
 };
 
