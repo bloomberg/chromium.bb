@@ -59,7 +59,7 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
     return false;
 
   AVPacket packet;
-  scoped_ptr_malloc<AVFrame, media::ScopedPtrAVFree> frame(
+  scoped_ptr_malloc<AVFrame, media::ScopedPtrAVFreeFrame> frame(
       avcodec_alloc_frame());
   int result = 0;
 

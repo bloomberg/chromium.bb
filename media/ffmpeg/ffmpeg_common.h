@@ -76,7 +76,7 @@ class ScopedPtrAVFreeFrame {
  public:
   inline void operator()(void* x) const {
     AVFrame* frame = static_cast<AVFrame*>(x);
-    av_frame_free(&frame);
+    avcodec_free_frame(&frame);
   }
 };
 
