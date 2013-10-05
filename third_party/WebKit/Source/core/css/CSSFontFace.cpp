@@ -31,6 +31,7 @@
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFaceSet.h"
 #include "core/dom/Document.h"
+#include "core/page/UseCounter.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
 namespace WebCore {
@@ -94,8 +95,11 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
     fontSelector->fontLoaded();
 
     if (fontSelector->document() && loadStatus() == FontFace::Loading) {
-        if (source->ensureFontData())
+        if (source->ensureFontData()) {
             setLoadStatus(FontFace::Loaded);
+            if (source->isSVGFontFaceSource())
+                UseCounter::count(fontSelector->document(), UseCounter::SVGFontInCSS);
+        }
         else if (!isValid())
             setLoadStatus(FontFace::Error);
     }
