@@ -35,9 +35,6 @@
 #import "core/html/TimeRanges.h"
 #import "core/html/shadow/MediaControlElements.h"
 #import "core/page/FrameView.h"
-#import "platform/LayoutTestSupport.h"
-#import "platform/LocalizedStrings.h"
-#import "platform/SharedBuffer.h"
 #import "core/platform/graphics/BitmapImage.h"
 #import "core/platform/graphics/GraphicsContextStateSaver.h"
 #import "core/platform/graphics/Image.h"
@@ -48,7 +45,6 @@
 #import "core/platform/mac/LocalCurrentGraphicsContext.h"
 #import "core/platform/mac/ThemeMac.h"
 #import "core/platform/mac/WebCoreNSCellExtras.h"
-#import "core/platform/text/PlatformLocale.h"
 #import "core/rendering/PaintInfo.h"
 #import "core/rendering/RenderLayer.h"
 #import "core/rendering/RenderMedia.h"
@@ -57,6 +53,10 @@
 #import "core/rendering/RenderProgress.h"
 #import "core/rendering/RenderSlider.h"
 #import "core/rendering/RenderView.h"
+#import "platform/LayoutTestSupport.h"
+#import "platform/LocalizedStrings.h"
+#import "platform/SharedBuffer.h"
+#import "platform/text/PlatformLocale.h"
 
 #import <AvailabilityMacros.h>
 #import <Carbon/Carbon.h>

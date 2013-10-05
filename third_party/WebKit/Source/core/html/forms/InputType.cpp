@@ -30,10 +30,10 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/events/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/events/ScopedEventQueue.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/KeyboardEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/ButtonInputType.h"
@@ -64,9 +64,9 @@
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/page/Page.h"
 #include "core/platform/network/FormDataList.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/LocalizedStrings.h"
+#include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace WebCore {

@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/html/forms/NumberInputType.h"
 
+#include <limits>
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -39,11 +40,10 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTextControl.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"
-#include <limits>
 
 namespace WebCore {
 

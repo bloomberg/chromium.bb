@@ -28,9 +28,9 @@
 
 #include "modules/webaudio/AsyncAudioDecoder.h"
 
-#include "core/platform/Task.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
+#include "platform/Task.h"
 #include "public/platform/Platform.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/MainThread.h"

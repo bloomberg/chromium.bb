@@ -29,8 +29,10 @@
  */
 
 #include "config.h"
-#include "core/platform/text/LocaleWin.h"
+#include "platform/text/LocaleWin.h"
 
+#include <windows.h>
+#include <limits>
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "platform/LayoutTestSupport.h"
@@ -44,8 +46,6 @@
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
-#include <limits>
-#include <windows.h>
 
 using namespace std;
 

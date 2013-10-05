@@ -34,8 +34,8 @@
 
 #include "CSSValueKeywords.h"
 #include "RuntimeEnabledFeatures.h"
-#include "core/events/KeyboardEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -45,11 +45,11 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
 #include "platform/LocalizedStrings.h"
 #include "platform/text/DateTimeFormat.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/DateMath.h"
 
 namespace WebCore {

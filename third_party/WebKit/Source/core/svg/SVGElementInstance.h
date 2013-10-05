@@ -22,8 +22,8 @@
 #define SVGElementInstance_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/TreeShared.h"
 #include "core/events/EventTarget.h"
-#include "core/platform/TreeShared.h"
 
 namespace WebCore {
 

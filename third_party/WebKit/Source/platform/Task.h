@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,29 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/platform/SSLKeyGenerator.h"
+#ifndef Task_h
+#define Task_h
 
-#include "core/platform/text/PlatformLocale.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "wtf/text/WTFString.h"
+#include "public/platform/WebThread.h"
+#include "wtf/Functional.h"
 
 namespace WebCore {
 
-void getSupportedKeySizes(Locale& locale, Vector<String>& sizes)
-{
-    sizes.resize(2);
-    sizes[0] = locale.queryString(WebKit::WebLocalizedString::KeygenMenuHighGradeKeySize);
-    sizes[1] = locale.queryString(WebKit::WebLocalizedString::KeygenMenuMediumGradeKeySize);
-}
+class Task : public WebKit::WebThread::Task {
+public:
+    explicit Task(const Closure& closure)
+        : m_closure(closure)
+    {
+    }
 
-String signedPublicKeyAndChallengeString(unsigned keySizeIndex, const String& challengeString, const KURL& url)
-{
-    return WebKit::Platform::current()->signedPublicKeyAndChallengeString(keySizeIndex,
-                                                                          WebKit::WebString(challengeString),
-                                                                          WebKit::WebURL(url));
-}
+    virtual void run() OVERRIDE
+    {
+        m_closure();
+    }
+
+private:
+    Closure m_closure;
+};
 
 } // namespace WebCore
+
+#endif // Task_h

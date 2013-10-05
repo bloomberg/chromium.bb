@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/html/parser/HTMLParserThread.h"
 
-#include "core/platform/Task.h"
-#include "wtf/PassOwnPtr.h"
+#include "platform/Task.h"
 #include "public/platform/Platform.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

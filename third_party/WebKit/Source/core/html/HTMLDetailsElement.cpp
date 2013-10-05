@@ -27,8 +27,8 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLSummaryElement.h"
 #include "core/html/shadow/HTMLContentElement.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderBlockFlow.h"
+#include "platform/text/PlatformLocale.h"
 
 namespace WebCore {
 

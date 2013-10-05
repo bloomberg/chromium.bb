@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,15 +29,26 @@
  */
 
 #include "config.h"
-#include "core/platform/StatsCounter.h"
+#include "platform/SSLKeyGenerator.h"
 
+#include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-void StatsCounter::incrementStatsCounter(const char* counterName)
+void getSupportedKeySizes(Locale& locale, Vector<String>& sizes)
 {
-    WebKit::Platform::current()->incrementStatsCounter(counterName);
+    sizes.resize(2);
+    sizes[0] = locale.queryString(WebKit::WebLocalizedString::KeygenMenuHighGradeKeySize);
+    sizes[1] = locale.queryString(WebKit::WebLocalizedString::KeygenMenuMediumGradeKeySize);
+}
+
+String signedPublicKeyAndChallengeString(unsigned keySizeIndex, const String& challengeString, const KURL& url)
+{
+    return WebKit::Platform::current()->signedPublicKeyAndChallengeString(keySizeIndex, WebKit::WebString(challengeString), WebKit::WebURL(url));
 }
 
 } // namespace WebCore

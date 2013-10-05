@@ -34,10 +34,10 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/events/EventNames.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
-#include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -49,10 +49,10 @@
 #include "core/page/SpatialNavigation.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/network/FormDataList.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/text/PlatformLocale.h"
 
 using namespace std;
 using namespace WTF::Unicode;

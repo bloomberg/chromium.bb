@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/LocaleICU.h"
+#include "platform/text/LocaleICU.h"
 
 #include <unicode/udatpg.h>
 #include <unicode/uloc.h>

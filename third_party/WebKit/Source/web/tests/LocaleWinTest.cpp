@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/LocaleWin.h"
+#include "platform/text/LocaleWin.h"
 
 #include <gtest/gtest.h>
 #include "platform/DateComponents.h"

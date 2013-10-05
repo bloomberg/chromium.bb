@@ -46,8 +46,8 @@
 #include "core/html/parser/HTMLStackItem.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "platform/NotImplemented.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/MainThread.h"
 #include "wtf/unicode/CharacterNames.h"
 

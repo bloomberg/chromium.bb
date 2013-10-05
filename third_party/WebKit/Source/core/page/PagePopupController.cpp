@@ -33,7 +33,7 @@
 
 #include "core/page/PagePopupClient.h"
 #include "core/platform/HistogramSupport.h"
-#include "core/platform/text/PlatformLocale.h"
+#include "platform/text/PlatformLocale.h"
 
 namespace WebCore {
 

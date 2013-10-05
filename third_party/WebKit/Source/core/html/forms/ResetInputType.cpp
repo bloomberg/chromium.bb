@@ -36,7 +36,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
-#include "core/platform/text/PlatformLocale.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

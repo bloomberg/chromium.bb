@@ -28,29 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LocaleWin_h
-#define LocaleWin_h
+#ifndef LocaleMac_h
+#define LocaleMac_h
 
-#include "core/platform/text/PlatformLocale.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/Forward.h"
+#include "wtf/RetainPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
-#include <windows.h>
+
+OBJC_CLASS NSCalendar;
+OBJC_CLASS NSDateFormatter;
+OBJC_CLASS NSLocale;
 
 namespace WebCore {
 
 class DateComponents;
-struct DateFormatToken;
 
-class LocaleWin : public Locale {
+class PLATFORM_EXPORT LocaleMac : public Locale {
 public:
-    static PassOwnPtr<LocaleWin> create(LCID, bool defaultsForLocale);
-    ~LocaleWin();
+    static PassOwnPtr<LocaleMac> create(const String&);
+    static PassOwnPtr<LocaleMac> create(NSLocale*);
+    ~LocaleMac();
+
 #if ENABLE(CALENDAR_PICKER)
     virtual const Vector<String>& weekDayShortLabels() OVERRIDE;
     virtual unsigned firstDayOfWeek() OVERRIDE;
     virtual bool isRTL() OVERRIDE;
 #endif
+
     virtual String dateFormat() OVERRIDE;
     virtual String monthFormat() OVERRIDE;
     virtual String shortMonthFormat() OVERRIDE;
@@ -64,23 +70,22 @@ public:
     virtual const Vector<String>& shortStandAloneMonthLabels() OVERRIDE;
     virtual const Vector<String>& timeAMPMLabels() OVERRIDE;
 
-    static String dateFormat(const String&);
-
 private:
-    explicit LocaleWin(LCID, bool defaultsForLocale);
-    String getLocaleInfoString(LCTYPE);
-    void getLocaleInfo(LCTYPE, DWORD&);
-    void ensureShortMonthLabels();
-    void ensureMonthLabels();
-#if ENABLE(CALENDAR_PICKER)
-    void ensureWeekDayShortLabels();
-#endif
-    // Locale function:
+    explicit LocaleMac(NSLocale*);
+    RetainPtr<NSDateFormatter> shortDateFormatter();
     virtual void initializeLocaleData() OVERRIDE;
 
-    LCID m_lcid;
-    Vector<String> m_shortMonthLabels;
+    RetainPtr<NSLocale> m_locale;
+    RetainPtr<NSCalendar> m_gregorianCalendar;
+#if ENABLE(CALENDAR_PICKER)
+    Vector<String> m_weekDayShortLabels;
+#endif
     Vector<String> m_monthLabels;
+    RetainPtr<NSDateFormatter> timeFormatter();
+    RetainPtr<NSDateFormatter> shortTimeFormatter();
+    RetainPtr<NSDateFormatter> dateTimeFormatterWithSeconds();
+    RetainPtr<NSDateFormatter> dateTimeFormatterWithoutSeconds();
+
     String m_dateFormat;
     String m_monthFormat;
     String m_shortMonthFormat;
@@ -88,13 +93,11 @@ private:
     String m_timeFormatWithoutSeconds;
     String m_dateTimeFormatWithSeconds;
     String m_dateTimeFormatWithoutSeconds;
+    Vector<String> m_shortMonthLabels;
+    Vector<String> m_standAloneMonthLabels;
+    Vector<String> m_shortStandAloneMonthLabels;
     Vector<String> m_timeAMPMLabels;
-#if ENABLE(CALENDAR_PICKER)
-    Vector<String> m_weekDayShortLabels;
-    unsigned m_firstDayOfWeek;
-#endif
     bool m_didInitializeNumberData;
-    bool m_defaultsForLocale;
 };
 
 } // namespace WebCore

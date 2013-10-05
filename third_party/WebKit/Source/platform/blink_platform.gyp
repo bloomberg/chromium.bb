@@ -83,10 +83,20 @@
             '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
           ]
         },
+        'sources/': [
+          # We use LocaleMac.mm instead of LocaleICU.cpp
+          ['exclude', 'LocaleICU\\.(cpp|h)$'],
+        ],
+      }, { # OS!="mac"
+        'sources/': [
+          ['exclude', 'Mac\\.mm$'],
+        ],
       }],
       ['OS=="win"', {
         'sources/': [
           ['exclude', 'Posix\\.cpp$'],
+          # We use LocaleWin.cpp instead of LocaleICU.cpp
+          ['exclude', 'LocaleICU\\.(cpp|h)$'],
         ],
       }, { # OS!="win"
         'sources/': [

@@ -32,8 +32,8 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/platform/SSLKeyGenerator.h"
 #include "core/platform/network/FormDataList.h"
+#include "platform/SSLKeyGenerator.h"
 #include "wtf/StdLibExtras.h"
 
 using namespace WebCore;

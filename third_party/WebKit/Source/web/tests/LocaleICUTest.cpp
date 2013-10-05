@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/LocaleICU.h"
+#include "platform/text/LocaleICU.h"
 
 #include <gtest/gtest.h>
 #include "wtf/PassOwnPtr.h"

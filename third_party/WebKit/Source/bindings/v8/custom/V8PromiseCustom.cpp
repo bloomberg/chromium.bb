@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/custom/V8PromiseCustom.h"
 
+#include <v8.h>
 #include "V8Promise.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptFunctionCall.h"
@@ -42,13 +43,12 @@
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
 #include "core/page/DOMWindow.h"
-#include "core/platform/Task.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/Task.h"
 #include "wtf/Deque.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
-#include <v8.h>
 
 namespace WebCore {
 

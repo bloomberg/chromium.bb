@@ -29,17 +29,17 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/events/MouseEvent.h"
 #include "core/dom/Text.h"
+#include "core/events/MouseEvent.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/shadow/DateTimeFieldElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "platform/DateComponents.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "platform/DateComponents.h"
 #include "platform/text/DateTimeFormat.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/DateMath.h"
 
 namespace WebCore {

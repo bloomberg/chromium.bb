@@ -34,9 +34,8 @@
 
 namespace WebCore {
 
-class Locale {
+class PLATFORM_EXPORT Locale {
     WTF_MAKE_NONCOPYABLE(Locale);
-
 public:
     static PassOwnPtr<Locale> create(const AtomicString& localeIdentifier);
     // Never returns 0.

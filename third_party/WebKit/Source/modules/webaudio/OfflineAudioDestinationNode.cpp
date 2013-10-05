@@ -28,12 +28,12 @@
 
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 
-#include "core/platform/Task.h"
+#include <algorithm>
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/HRTFDatabaseLoader.h"
 #include "modules/webaudio/AudioContext.h"
+#include "platform/Task.h"
 #include "public/platform/Platform.h"
-#include <algorithm>
 #include "wtf/MainThread.h"
 
 using namespace std;

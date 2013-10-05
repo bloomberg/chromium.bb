@@ -692,12 +692,6 @@
             # Use USE_NEW_THEME on Mac.
             ['include', 'platform/Theme\\.cpp$'],
 
-            # We use LocaleMac.mm instead of LocaleICU.cpp in order to
-            # apply system locales.
-            ['exclude', 'platform/text/LocaleICU\\.cpp$'],
-            ['exclude', 'platform/text/LocaleICU\\.h$'],
-            ['include', 'platform/text/LocaleMac\\.mm$'],
-
             # The Mac uses platform/mac/KillRingMac.mm instead of the dummy
             # implementation.
             ['exclude', 'platform/KillRingNone\\.cpp$'],
@@ -754,11 +748,6 @@
 
             # SystemInfo.cpp is useful and we don't want to copy it.
             ['include', 'platform/win/SystemInfo\\.cpp$'],
-
-            ['exclude', 'platform/text/LocaleICU\\.cpp$'],
-            ['exclude', 'platform/text/LocaleICU\\.h$'],
-            ['include', 'platform/text/LocaleWin\.cpp$'],
-            ['include', 'platform/text/LocaleWin\.h$'],
           ],
           'conditions': [
             ['"ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines', {

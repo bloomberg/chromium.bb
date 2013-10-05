@@ -24,17 +24,17 @@
 #include "config.h"
 #include "core/html/forms/EmailInputType.h"
 
+#include <unicode/uidna.h>
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "core/platform/text/RegularExpression.h"
+#include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
-#include <unicode/uidna.h>
 
 namespace WebCore {
 

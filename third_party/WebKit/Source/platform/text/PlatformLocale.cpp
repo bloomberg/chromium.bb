@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/PlatformLocale.h"
+#include "platform/text/PlatformLocale.h"
 
 #include "platform/LocalizedStrings.h"
 #include "platform/text/DateTimeFormat.h"
@@ -44,7 +44,6 @@ using WebKit::WebLocalizedString;
 
 class DateTimeStringBuilder : private DateTimeFormat::TokenHandler {
     WTF_MAKE_NONCOPYABLE(DateTimeStringBuilder);
-
 public:
     // The argument objects must be alive until this object dies.
     DateTimeStringBuilder(Locale&, const DateComponents&);
@@ -103,21 +102,21 @@ void DateTimeStringBuilder::visitField(DateTimeFormat::FieldType fieldType, int 
         appendNumber(m_date.fullYear(), 4);
         return;
     case DateTimeFormat::FieldTypeMonth:
-        if (numberOfPatternCharacters == 3)
+        if (numberOfPatternCharacters == 3) {
             m_builder.append(m_localizer.shortMonthLabels()[m_date.month()]);
-        else if (numberOfPatternCharacters == 4)
+        } else if (numberOfPatternCharacters == 4) {
             m_builder.append(m_localizer.monthLabels()[m_date.month()]);
-        else {
+        } else {
             // Always use padding width of 2 so it matches DateTimeEditElement.
             appendNumber(m_date.month() + 1, 2);
         }
         return;
     case DateTimeFormat::FieldTypeMonthStandAlone:
-        if (numberOfPatternCharacters == 3)
+        if (numberOfPatternCharacters == 3) {
             m_builder.append(m_localizer.shortStandAloneMonthLabels()[m_date.month()]);
-        else if (numberOfPatternCharacters == 4)
+        } else if (numberOfPatternCharacters == 4) {
             m_builder.append(m_localizer.standAloneMonthLabels()[m_date.month()]);
-        else {
+        } else {
             // Always use padding width of 2 so it matches DateTimeEditElement.
             appendNumber(m_date.month() + 1, 2);
         }
@@ -157,9 +156,9 @@ void DateTimeStringBuilder::visitField(DateTimeFormat::FieldType fieldType, int 
         appendNumber(m_date.minute(), numberOfPatternCharacters);
         return;
     case DateTimeFormat::FieldTypeSecond:
-        if (!m_date.millisecond())
+        if (!m_date.millisecond()) {
             appendNumber(m_date.second(), numberOfPatternCharacters);
-        else {
+        } else {
             double second = m_date.second() + m_date.millisecond() / 1000.0;
             String zeroPaddedSecondString = zeroPadString(String::format("%.03f", second), numberOfPatternCharacters + 4);
             m_builder.append(m_localizer.convertToLocalizedNumber(zeroPaddedSecondString));
@@ -265,8 +264,9 @@ String Locale::convertToLocalizedNumber(const String& input)
         ++i;
         isNegative = true;
         builder.append(m_negativePrefix);
-    } else
+    } else {
         builder.append(m_positivePrefix);
+    }
 
     for (; i < input.length(); ++i) {
         switch (input[i]) {
@@ -317,8 +317,9 @@ bool Locale::detectSignAndGetDigitRange(const String& input, bool& isNegative, u
             isNegative = false;
             startIndex = m_positivePrefix.length();
             endIndex -= m_positiveSuffix.length();
-        } else
+        } else {
             isNegative = true;
+        }
     } else {
         if (input.startsWith(m_negativePrefix) && input.endsWith(m_negativeSuffix)) {
             isNegative = true;
@@ -329,8 +330,9 @@ bool Locale::detectSignAndGetDigitRange(const String& input, bool& isNegative, u
             if (input.startsWith(m_positivePrefix) && input.endsWith(m_positiveSuffix)) {
                 startIndex = m_positivePrefix.length();
                 endIndex -= m_positiveSuffix.length();
-            } else
+            } else {
                 return false;
+            }
         }
     }
     return true;

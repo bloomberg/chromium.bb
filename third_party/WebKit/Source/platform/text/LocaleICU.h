@@ -34,7 +34,7 @@
 #include <unicode/udat.h>
 #include <unicode/unum.h>
 #include "platform/DateComponents.h"
-#include "core/platform/text/PlatformLocale.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/CString.h"
@@ -44,7 +44,7 @@ namespace WebCore {
 
 // We should use this class only for LocalizedNumberICU.cpp, LocalizedDateICU.cpp,
 // and LocalizedNumberICUTest.cpp.
-class LocaleICU : public Locale {
+class PLATFORM_EXPORT LocaleICU : public Locale {
 public:
     static PassOwnPtr<LocaleICU> create(const char* localeString);
     virtual ~LocaleICU();
