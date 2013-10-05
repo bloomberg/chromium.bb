@@ -55,11 +55,9 @@ const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
 OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
                                      Profile* profile)
     : omnibox_edit_model_(omnibox_edit_model),
-      profile_(profile) {
-  autocomplete_controller_.reset(new AutocompleteController(profile, this,
-      chrome::IsInstantExtendedAPIEnabled() ?
-          AutocompleteClassifier::kInstantExtendedOmniboxProviders :
-          AutocompleteClassifier::kDefaultOmniboxProviders));
+      profile_(profile),
+      autocomplete_controller_(new AutocompleteController(profile, this,
+          AutocompleteClassifier::kDefaultOmniboxProviders)) {
 }
 
 OmniboxController::~OmniboxController() {
