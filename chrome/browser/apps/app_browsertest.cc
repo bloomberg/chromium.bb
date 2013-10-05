@@ -641,9 +641,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 // geometry when opening new windows.
 // Originally disabled due to flakiness (see http://crbug.com/155459)
 // but now because a regression breaks the test (http://crbug.com/160343).
-//
-// TODO(erg): Now a linux_aura asan regression too: http://crbug.com/304555
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_GTK)
 #define MAYBE_ShellWindowRestorePosition DISABLED_ShellWindowRestorePosition
 #else
 #define MAYBE_ShellWindowRestorePosition ShellWindowRestorePosition

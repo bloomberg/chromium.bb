@@ -57,8 +57,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, CustomTheme) {
 
 // TCM ID - 3599303.
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
-// TODO(erg): Fails on linux_aura. See http://crbug.com/304554
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DISABLED_NativeTheme) {
 #else
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeTheme) {
@@ -107,8 +106,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DefaultTheme) {
 
 // TCM ID - 7292065.
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
-// TODO(erg): Fails on linux_aura. See http://crbug.com/304554
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DISABLED_NativeDefaultRace) {
 #else
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeDefaultRace) {
