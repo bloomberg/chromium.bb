@@ -44,6 +44,11 @@ public interface InfoBarView {
     public String getSecondaryButtonText(Context context);
 
     /**
+     * Take some action related to the link being clicked.
+     */
+    public void onLinkClicked();
+
+    /**
      * Take some action related to the close button being clicked.
      */
     public void onCloseButtonClicked();

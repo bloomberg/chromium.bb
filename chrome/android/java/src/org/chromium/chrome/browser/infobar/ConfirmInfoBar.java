@@ -5,6 +5,11 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.style.ClickableSpan;
+import android.view.View;
 
 /**
  * An infobar that presents the user with 2 buttons (typically OK, Cancel).
@@ -12,6 +17,9 @@ import android.content.Context;
 public class ConfirmInfoBar extends TwoButtonInfoBar {
     // Message to prompt the user.
     private final String mMessage;
+
+    // Link text shown to the user, in addition to the message.
+    private final String mLinkText;
 
     // Typically set to "OK", or some other positive action.
     private final String mPrimaryButtonText;
@@ -25,15 +33,23 @@ public class ConfirmInfoBar extends TwoButtonInfoBar {
     public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int backgroundType,
             int iconDrawableId, String message, String primaryButtonText,
             String secondaryButtonText) {
-        this(0, confirmListener, backgroundType, iconDrawableId, message, primaryButtonText,
+        this(confirmListener, backgroundType, iconDrawableId, message, null, primaryButtonText,
                 secondaryButtonText);
     }
 
-    public ConfirmInfoBar(int nativeInfoBar, InfoBarListeners.Confirm confirmListener,
-            int backgroundType, int iconDrawableId, String message, String primaryButtonText,
+    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int backgroundType,
+            int iconDrawableId, String message, String linkText, String primaryButtonText,
             String secondaryButtonText) {
+        this(0, confirmListener, backgroundType, iconDrawableId, message, linkText,
+                primaryButtonText, secondaryButtonText);
+    }
+
+    public ConfirmInfoBar(int nativeInfoBar, InfoBarListeners.Confirm confirmListener,
+            int backgroundType, int iconDrawableId, String message, String linkText,
+            String primaryButtonText, String secondaryButtonText) {
         super(confirmListener, backgroundType, iconDrawableId);
         mMessage = message;
+        mLinkText = linkText;
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;
         mConfirmListener = confirmListener;
@@ -42,7 +58,24 @@ public class ConfirmInfoBar extends TwoButtonInfoBar {
 
     @Override
     public CharSequence getMessageText(Context context) {
-        return mMessage;
+        // Construct text to be displayed on the infobar.
+        SpannableStringBuilder infobarMessage = new SpannableStringBuilder(mMessage);
+
+        // If we have a link text to display, append it.
+        if (!TextUtils.isEmpty(mLinkText)) {
+            SpannableStringBuilder spannableLinkText = new SpannableStringBuilder(mLinkText);
+            ClickableSpan onLinkClicked = new ClickableSpan() {
+                @Override
+                public void onClick(View view) {
+                    onLinkClicked();
+                }
+            };
+            spannableLinkText.setSpan(onLinkClicked, 0, spannableLinkText.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            infobarMessage.append(" ");
+            infobarMessage.append(spannableLinkText);
+        }
+        return infobarMessage;
     }
 
     @Override

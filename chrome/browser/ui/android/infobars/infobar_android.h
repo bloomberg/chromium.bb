@@ -45,6 +45,7 @@ class InfoBarAndroid : public InfoBar {
   // InfoBar instead of this one.
   void ReassignJavaInfoBar(InfoBarAndroid* replacement);
 
+  virtual void OnLinkClicked(JNIEnv* env, jobject obj) {}
   void OnButtonClicked(JNIEnv* env,
                        jobject obj,
                        jint action,

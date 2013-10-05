@@ -27,18 +27,20 @@ public class ConfirmInfoBarDelegate {
      *                         The ID must have been mapped using the ResourceMapper class before
      *                         passing it to this function.
      * @param message Message to display to the user indicating what the InfoBar is for.
+     * @param linkText Link text to display in addition to the message.
      * @param buttonOk String to display on the OK button.
      * @param buttonCancel String to display on the Cancel button.
      */
     @CalledByNative
     InfoBar showConfirmInfoBar(int nativeInfoBar, int enumeratedIconId, String message,
-            String buttonOk, String buttonCancel) {
+            String linkText, String buttonOk, String buttonCancel) {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
 
         // Apparently, yellow was the popular choice at the time these InfoBars were implemented
         // because they stuck out more (hence the BACKGROUND_TYPE_WARNING) default.
         ConfirmInfoBar infoBar = new ConfirmInfoBar(nativeInfoBar, null,
-                InfoBar.BACKGROUND_TYPE_WARNING, drawableId, message, buttonOk, buttonCancel);
+                InfoBar.BACKGROUND_TYPE_WARNING, drawableId, message, linkText, buttonOk,
+                buttonCancel);
         return infoBar;
     }
 }

@@ -19,6 +19,7 @@ class ConfirmInfoBar : public InfoBarAndroid {
   // InfoBarAndroid:
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) OVERRIDE;
+  virtual void OnLinkClicked(JNIEnv* env, jobject obj) OVERRIDE;
   virtual void ProcessButton(int action,
                              const std::string& action_value) OVERRIDE;
 

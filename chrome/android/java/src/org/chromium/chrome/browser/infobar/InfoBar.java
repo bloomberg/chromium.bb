@@ -223,6 +223,11 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     @Override
+    public void onLinkClicked() {
+        nativeOnLinkClicked(mNativeInfoBarPtr);
+    }
+
+    @Override
     public void onCloseButtonClicked() {
         dismiss();
     }
@@ -258,6 +263,7 @@ public abstract class InfoBar implements InfoBarView {
         mListener = listener;
     }
 
+    protected native void nativeOnLinkClicked(int nativeInfoBarAndroid);
     protected native void nativeOnInfoBarClosed(int nativeInfoBarAndroid);
     protected native void nativeOnButtonClicked(
             int nativeInfoBarAndroid, int action, String actionValue);
