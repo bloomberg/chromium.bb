@@ -17,6 +17,8 @@
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 
+namespace content {
+
 class MockWebClipboardImpl : public WebKit::WebClipboard {
  public:
   MockWebClipboardImpl();
@@ -56,5 +58,7 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
   std::map<base::string16, base::string16> m_customData;
   bool m_writeSmartPaste;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_MOCK_WEBCLIPBOARD_IMPL_H_

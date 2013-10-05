@@ -19,10 +19,12 @@ namespace WebKit {
 class WebLayerTreeView;
 }
 
+namespace content {
+
 // An implementation of WebKitPlatformSupport for tests.
-class TestWebKitPlatformSupport :
-    public WebKit::WebUnitTestSupport,
-    public webkit_glue::WebKitPlatformSupportChildImpl {
+class TestWebKitPlatformSupport
+    : public WebKit::WebUnitTestSupport,
+      public webkit_glue::WebKitPlatformSupportChildImpl {
  public:
   TestWebKitPlatformSupport();
   virtual ~TestWebKitPlatformSupport();
@@ -107,5 +109,7 @@ class TestWebKitPlatformSupport :
 #endif
   DISALLOW_COPY_AND_ASSIGN(TestWebKitPlatformSupport);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_TEST_WEBKIT_PLATFORM_SUPPORT_H_

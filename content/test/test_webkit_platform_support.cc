@@ -46,6 +46,8 @@
 using WebKit::WebScriptController;
 using webkit::WebLayerTreeViewImplForTesting;
 
+namespace content {
+
 TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   url_loader_factory_.reset(new WebURLLoaderMockFactory());
   mock_clipboard_.reset(new MockWebClipboardImpl());
@@ -183,7 +185,8 @@ WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
 }
 
 WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
-    WebKit::WebLocalizedString::Name name, const WebKit::WebString& value) {
+    WebKit::WebLocalizedString::Name name,
+    const WebKit::WebString& value) {
   if (name == WebKit::WebLocalizedString::ValidationRangeUnderflow)
     return ASCIIToUTF16("range underflow");
   if (name == WebKit::WebLocalizedString::ValidationRangeOverflow)
@@ -217,8 +220,7 @@ WebKit::WebThemeEngine* TestWebKitPlatformSupport::themeEngine() {
 }
 #endif
 
-WebKit::WebCompositorSupport*
-TestWebKitPlatformSupport::compositorSupport() {
+WebKit::WebCompositorSupport* TestWebKitPlatformSupport::compositorSupport() {
   return &compositor_support_;
 }
 
@@ -296,9 +298,8 @@ WebKit::WebString TestWebKitPlatformSupport::webKitRootDir() {
   return WebKit::WebString::fromUTF8(path_ascii.c_str());
 }
 
-
 WebKit::WebLayerTreeView*
-    TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
+TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
   scoped_ptr<WebLayerTreeViewImplForTesting> view(
       new WebLayerTreeViewImplForTesting());
 
@@ -308,8 +309,7 @@ WebKit::WebLayerTreeView*
 }
 
 WebKit::WebLayerTreeView*
-    TestWebKitPlatformSupport::createLayerTreeViewForTesting(
-        TestViewType type) {
+TestWebKitPlatformSupport::createLayerTreeViewForTesting(TestViewType type) {
   DCHECK_EQ(TestViewTypeUnitTest, type);
   return createLayerTreeViewForTesting();
 }
@@ -323,3 +323,5 @@ WebKit::WebData TestWebKitPlatformSupport::readFromFile(
 
   return WebKit::WebData(buffer.data(), buffer.size());
 }
+
+}  // namespace content

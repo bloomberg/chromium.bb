@@ -20,10 +20,9 @@ namespace WebTestRunner {
 class WebTestProxyBase;
 }
 
-class MockWebClipboardImpl;
-
 namespace content {
 
+class MockWebClipboardImpl;
 class ShellRenderProcessObserver;
 
 class ShellContentRendererClient : public ContentRendererClient {

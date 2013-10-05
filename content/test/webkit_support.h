@@ -6,12 +6,12 @@
 #define CONTENT_TEST_WEBKIT_SUPPORT_H_
 
 // This package provides functions used by webkit_unit_tests.
-namespace webkit_support {
+namespace content {
 
 // Initializes or terminates a test environment for unit tests.
 void SetUpTestEnvironmentForUnitTests();
 void TearDownTestEnvironment();
 
-}  // namespace webkit_support
+}  // namespace content
 
 #endif  // CONTENT_TEST_WEBKIT_SUPPORT_H_

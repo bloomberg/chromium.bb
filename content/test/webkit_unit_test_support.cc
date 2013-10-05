@@ -9,11 +9,11 @@
 namespace content {
 
 void SetUpTestEnvironmentForWebKitUnitTests() {
-  webkit_support::SetUpTestEnvironmentForUnitTests();
+  SetUpTestEnvironmentForUnitTests();
 }
 
 void TearDownEnvironmentForWebKitUnitTests() {
-  webkit_support::TearDownTestEnvironment();
+  TearDownTestEnvironment();
 }
 
-}
+}  // namespace content

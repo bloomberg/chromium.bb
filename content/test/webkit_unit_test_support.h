@@ -10,6 +10,6 @@ namespace content {
 void SetUpTestEnvironmentForWebKitUnitTests();
 void TearDownEnvironmentForWebKitUnitTests();
 
-}
+}  // namespace content
 
 #endif  // CONTENT_TEST_WEBKIT_UNIT_TEST_SUPPORT_H_

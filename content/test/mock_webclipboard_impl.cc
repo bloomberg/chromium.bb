@@ -25,11 +25,11 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
-MockWebClipboardImpl::MockWebClipboardImpl() {
-}
+namespace content {
 
-MockWebClipboardImpl::~MockWebClipboardImpl() {
-}
+MockWebClipboardImpl::MockWebClipboardImpl() {}
+
+MockWebClipboardImpl::~MockWebClipboardImpl() {}
 
 bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   switch (format) {
@@ -63,7 +63,8 @@ bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
 }
 
 WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(
-    Buffer buffer, bool* containsFilenames) {
+    Buffer buffer,
+    bool* containsFilenames) {
   *containsFilenames = false;
   std::vector<WebString> results;
   if (!m_plainText.isEmpty()) {
@@ -92,8 +93,10 @@ WebKit::WebString MockWebClipboardImpl::readPlainText(
 
 // TODO(wtc): set output argument *url.
 WebKit::WebString MockWebClipboardImpl::readHTML(
-    WebKit::WebClipboard::Buffer buffer, WebKit::WebURL* url,
-    unsigned* fragmentStart, unsigned* fragmentEnd) {
+    WebKit::WebClipboard::Buffer buffer,
+    WebKit::WebURL* url,
+    unsigned* fragmentStart,
+    unsigned* fragmentEnd) {
   *fragmentStart = 0;
   *fragmentEnd = static_cast<unsigned>(m_htmlText.length());
   return m_htmlText;
@@ -133,9 +136,10 @@ WebKit::WebString MockWebClipboardImpl::readCustomData(
   return WebKit::WebString();
 }
 
-void MockWebClipboardImpl::writeHTML(
-    const WebKit::WebString& htmlText, const WebKit::WebURL& url,
-    const WebKit::WebString& plainText, bool writeSmartPaste) {
+void MockWebClipboardImpl::writeHTML(const WebKit::WebString& htmlText,
+                                     const WebKit::WebURL& url,
+                                     const WebKit::WebString& plainText,
+                                     bool writeSmartPaste) {
   clear();
 
   m_htmlText = htmlText;
@@ -153,7 +157,7 @@ void MockWebClipboardImpl::writeURL(const WebKit::WebURL& url,
                                     const WebKit::WebString& title) {
   clear();
 
-  m_htmlText = WebString::fromUTF8(content::URLToMarkup(url, title));
+  m_htmlText = WebString::fromUTF8(URLToMarkup(url, title));
   m_plainText = url.spec().utf16();
 }
 
@@ -164,7 +168,7 @@ void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
     clear();
 
     m_plainText = m_htmlText;
-    m_htmlText = WebString::fromUTF8(content::URLToImageMarkup(url, title));
+    m_htmlText = WebString::fromUTF8(URLToImageMarkup(url, title));
     m_image = image;
   }
 }
@@ -202,3 +206,5 @@ void MockWebClipboardImpl::clear() {
   m_customData.clear();
   m_writeSmartPaste = false;
 }
+
+}  // namespace content
