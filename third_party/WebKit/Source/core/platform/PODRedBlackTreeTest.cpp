@@ -28,8 +28,8 @@
 #include "config.h"
 #include "core/platform/PODRedBlackTree.h"
 
-#include "ArenaTestHelpers.h"
-#include "TreeTestHelpers.h"
+#include "core/tests/ArenaTestHelpers.h"
+#include "core/tests/TreeTestHelpers.h"
 #include "wtf/Vector.h"
 
 #include <gtest/gtest.h>

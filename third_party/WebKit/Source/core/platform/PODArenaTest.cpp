@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/PODArena.h"
 
-#include "ArenaTestHelpers.h"
+#include "core/tests/ArenaTestHelpers.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

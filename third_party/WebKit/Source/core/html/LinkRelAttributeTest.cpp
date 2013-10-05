@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
+#include "core/html/LinkRelAttribute.h"
 
 #include <gtest/gtest.h>
-#include "core/html/LinkRelAttribute.h"
 
 using namespace WebCore;
 

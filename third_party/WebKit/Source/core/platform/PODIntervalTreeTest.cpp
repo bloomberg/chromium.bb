@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/platform/PODIntervalTree.h"
 
-#include "TreeTestHelpers.h"
+#include "core/tests/TreeTestHelpers.h"
 #include "platform/Logging.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
