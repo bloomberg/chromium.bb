@@ -21,7 +21,6 @@
 #include "core/rendering/RootInlineBox.h"
 
 #include "core/dom/Document.h"
-#include "core/platform/text/BidiResolver.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
@@ -30,6 +29,7 @@
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/VerticalPositionCache.h"
+#include "platform/text/BidiResolver.h"
 #include "wtf/unicode/Unicode.h"
 
 using namespace std;

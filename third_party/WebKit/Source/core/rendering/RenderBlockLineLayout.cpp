@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#include "core/platform/text/BidiResolver.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/LineWidth.h"
@@ -41,6 +40,7 @@
 #include "core/rendering/shapes/ShapeInsideInfo.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
+#include "platform/text/BidiResolver.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"

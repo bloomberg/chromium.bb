@@ -22,8 +22,8 @@
 #ifndef BidiResolver_h
 #define BidiResolver_h
 
-#include "core/platform/text/BidiRunList.h"
 #include "platform/text/BidiContext.h"
+#include "platform/text/BidiRunList.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -46,7 +46,7 @@ template <class Iterator> struct MidpointState {
 
     // The goal is to reuse the line state across multiple
     // lines so we just keep an array around for midpoints and never clear it across multiple
-    // lines.  We track the number of items and position using the two other variables.
+    // lines. We track the number of items and position using the two other variables.
     Vector<Iterator> midpoints;
     unsigned numMidpoints;
     unsigned currentMidpoint;
@@ -629,11 +629,11 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         } else {
             dirCurrent = m_current.direction();
             if (context()->override()
-                    && dirCurrent != RightToLeftEmbedding
-                    && dirCurrent != LeftToRightEmbedding
-                    && dirCurrent != RightToLeftOverride
-                    && dirCurrent != LeftToRightOverride
-                    && dirCurrent != PopDirectionalFormat)
+                && dirCurrent != RightToLeftEmbedding
+                && dirCurrent != LeftToRightEmbedding
+                && dirCurrent != RightToLeftOverride
+                && dirCurrent != LeftToRightOverride
+                && dirCurrent != PopDirectionalFormat)
                 dirCurrent = context()->dir();
             else if (dirCurrent == NonSpacingMark)
                 dirCurrent = m_status.last;
@@ -659,39 +659,28 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
 
         // strong types
         case LeftToRight:
-            switch(m_status.last) {
-                case RightToLeft:
-                case RightToLeftArabic:
-                case EuropeanNumber:
-                case ArabicNumber:
-                    if (m_status.last != EuropeanNumber || m_status.lastStrong != LeftToRight)
-                        appendRun();
-                    break;
-                case LeftToRight:
-                    break;
-                case EuropeanNumberSeparator:
-                case EuropeanNumberTerminator:
-                case CommonNumberSeparator:
-                case BoundaryNeutral:
-                case BlockSeparator:
-                case SegmentSeparator:
-                case WhiteSpaceNeutral:
-                case OtherNeutral:
-                    if (m_status.eor == EuropeanNumber) {
-                        if (m_status.lastStrong != LeftToRight) {
-                            // the numbers need to be on a higher embedding level, so let's close that run
-                            m_direction = EuropeanNumber;
-                            appendRun();
-                            if (context()->dir() != LeftToRight) {
-                                // the neutrals take the embedding direction, which is R
-                                m_eor = m_last;
-                                m_direction = RightToLeft;
-                                appendRun();
-                            }
-                        }
-                    } else if (m_status.eor == ArabicNumber) {
-                        // Arabic numbers are always on a higher embedding level, so let's close that run
-                        m_direction = ArabicNumber;
+            switch (m_status.last) {
+            case RightToLeft:
+            case RightToLeftArabic:
+            case EuropeanNumber:
+            case ArabicNumber:
+                if (m_status.last != EuropeanNumber || m_status.lastStrong != LeftToRight)
+                    appendRun();
+                break;
+            case LeftToRight:
+                break;
+            case EuropeanNumberSeparator:
+            case EuropeanNumberTerminator:
+            case CommonNumberSeparator:
+            case BoundaryNeutral:
+            case BlockSeparator:
+            case SegmentSeparator:
+            case WhiteSpaceNeutral:
+            case OtherNeutral:
+                if (m_status.eor == EuropeanNumber) {
+                    if (m_status.lastStrong != LeftToRight) {
+                        // the numbers need to be on a higher embedding level, so let's close that run
+                        m_direction = EuropeanNumber;
                         appendRun();
                         if (context()->dir() != LeftToRight) {
                             // the neutrals take the embedding direction, which is R
@@ -699,16 +688,27 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                             m_direction = RightToLeft;
                             appendRun();
                         }
-                    } else if (m_status.lastStrong != LeftToRight) {
-                        //last stuff takes embedding dir
-                        if (context()->dir() == RightToLeft) {
-                            m_eor = m_last;
-                            m_direction = RightToLeft;
-                        }
+                    }
+                } else if (m_status.eor == ArabicNumber) {
+                    // Arabic numbers are always on a higher embedding level, so let's close that run
+                    m_direction = ArabicNumber;
+                    appendRun();
+                    if (context()->dir() != LeftToRight) {
+                        // the neutrals take the embedding direction, which is R
+                        m_eor = m_last;
+                        m_direction = RightToLeft;
                         appendRun();
                     }
-                default:
-                    break;
+                } else if (m_status.lastStrong != LeftToRight) {
+                    // last stuff takes embedding dir
+                    if (context()->dir() == RightToLeft) {
+                        m_eor = m_last;
+                        m_direction = RightToLeft;
+                    }
+                    appendRun();
+                }
+            default:
+                break;
             }
             m_eor = m_current;
             m_status.eor = LeftToRight;
@@ -718,34 +718,34 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         case RightToLeftArabic:
         case RightToLeft:
             switch (m_status.last) {
-                case LeftToRight:
-                case EuropeanNumber:
-                case ArabicNumber:
+            case LeftToRight:
+            case EuropeanNumber:
+            case ArabicNumber:
+                appendRun();
+            case RightToLeft:
+            case RightToLeftArabic:
+                break;
+            case EuropeanNumberSeparator:
+            case EuropeanNumberTerminator:
+            case CommonNumberSeparator:
+            case BoundaryNeutral:
+            case BlockSeparator:
+            case SegmentSeparator:
+            case WhiteSpaceNeutral:
+            case OtherNeutral:
+                if (m_status.eor == EuropeanNumber) {
+                    if (m_status.lastStrong == LeftToRight && context()->dir() == LeftToRight)
+                        m_eor = m_last;
                     appendRun();
-                case RightToLeft:
-                case RightToLeftArabic:
-                    break;
-                case EuropeanNumberSeparator:
-                case EuropeanNumberTerminator:
-                case CommonNumberSeparator:
-                case BoundaryNeutral:
-                case BlockSeparator:
-                case SegmentSeparator:
-                case WhiteSpaceNeutral:
-                case OtherNeutral:
-                    if (m_status.eor == EuropeanNumber) {
-                        if (m_status.lastStrong == LeftToRight && context()->dir() == LeftToRight)
-                            m_eor = m_last;
-                        appendRun();
-                    } else if (m_status.eor == ArabicNumber)
-                        appendRun();
-                    else if (m_status.lastStrong == LeftToRight) {
-                        if (context()->dir() == LeftToRight)
-                            m_eor = m_last;
-                        appendRun();
-                    }
-                default:
-                    break;
+                } else if (m_status.eor == ArabicNumber) {
+                    appendRun();
+                } else if (m_status.lastStrong == LeftToRight) {
+                    if (context()->dir() == LeftToRight)
+                        m_eor = m_last;
+                    appendRun();
+                }
+            default:
+                break;
             }
             m_eor = m_current;
             m_status.eor = RightToLeft;
@@ -759,59 +759,59 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             if (m_status.lastStrong != RightToLeftArabic) {
                 // if last strong was AL change EN to AN
                 switch (m_status.last) {
-                    case EuropeanNumber:
-                    case LeftToRight:
+                case EuropeanNumber:
+                case LeftToRight:
+                    break;
+                case RightToLeft:
+                case RightToLeftArabic:
+                case ArabicNumber:
+                    m_eor = m_last;
+                    appendRun();
+                    m_direction = EuropeanNumber;
+                    break;
+                case EuropeanNumberSeparator:
+                case CommonNumberSeparator:
+                    if (m_status.eor == EuropeanNumber)
                         break;
-                    case RightToLeft:
-                    case RightToLeftArabic:
-                    case ArabicNumber:
-                        m_eor = m_last;
-                        appendRun();
-                        m_direction = EuropeanNumber;
-                        break;
-                    case EuropeanNumberSeparator:
-                    case CommonNumberSeparator:
-                        if (m_status.eor == EuropeanNumber)
-                            break;
-                    case EuropeanNumberTerminator:
-                    case BoundaryNeutral:
-                    case BlockSeparator:
-                    case SegmentSeparator:
-                    case WhiteSpaceNeutral:
-                    case OtherNeutral:
-                        if (m_status.eor == EuropeanNumber) {
-                            if (m_status.lastStrong == RightToLeft) {
-                                // ENs on both sides behave like Rs, so the neutrals should be R.
-                                // Terminate the EN run.
-                                appendRun();
-                                // Make an R run.
-                                m_eor = m_status.last == EuropeanNumberTerminator ? m_lastBeforeET : m_last;
-                                m_direction = RightToLeft;
-                                appendRun();
-                                // Begin a new EN run.
-                                m_direction = EuropeanNumber;
-                            }
-                        } else if (m_status.eor == ArabicNumber) {
-                            // Terminate the AN run.
+                case EuropeanNumberTerminator:
+                case BoundaryNeutral:
+                case BlockSeparator:
+                case SegmentSeparator:
+                case WhiteSpaceNeutral:
+                case OtherNeutral:
+                    if (m_status.eor == EuropeanNumber) {
+                        if (m_status.lastStrong == RightToLeft) {
+                            // ENs on both sides behave like Rs, so the neutrals should be R.
+                            // Terminate the EN run.
                             appendRun();
-                            if (m_status.lastStrong == RightToLeft || context()->dir() == RightToLeft) {
-                                // Make an R run.
-                                m_eor = m_status.last == EuropeanNumberTerminator ? m_lastBeforeET : m_last;
-                                m_direction = RightToLeft;
-                                appendRun();
-                                // Begin a new EN run.
-                                m_direction = EuropeanNumber;
-                            }
-                        } else if (m_status.lastStrong == RightToLeft) {
-                            // Extend the R run to include the neutrals.
+                            // Make an R run.
                             m_eor = m_status.last == EuropeanNumberTerminator ? m_lastBeforeET : m_last;
                             m_direction = RightToLeft;
                             appendRun();
                             // Begin a new EN run.
                             m_direction = EuropeanNumber;
                         }
-                    default:
-                        break;
+                    } else if (m_status.eor == ArabicNumber) {
+                        // Terminate the AN run.
+                        appendRun();
+                        if (m_status.lastStrong == RightToLeft || context()->dir() == RightToLeft) {
+                            // Make an R run.
+                            m_eor = m_status.last == EuropeanNumberTerminator ? m_lastBeforeET : m_last;
+                            m_direction = RightToLeft;
+                            appendRun();
+                            // Begin a new EN run.
+                            m_direction = EuropeanNumber;
+                        }
+                    } else if (m_status.lastStrong == RightToLeft) {
+                        // Extend the R run to include the neutrals.
+                        m_eor = m_status.last == EuropeanNumberTerminator ? m_lastBeforeET : m_last;
+                        m_direction = RightToLeft;
+                        appendRun();
+                        // Begin a new EN run.
+                        m_direction = EuropeanNumber;
+                    }
+                default:
+                    break;
                 }
                 m_eor = m_current;
                 m_status.eor = EuropeanNumber;
@@ -822,41 +822,42 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         case ArabicNumber:
             dirCurrent = ArabicNumber;
             switch (m_status.last) {
-                case LeftToRight:
-                    if (context()->dir() == LeftToRight)
-                        appendRun();
-                    break;
-                case ArabicNumber:
-                    break;
-                case RightToLeft:
-                case RightToLeftArabic:
-                case EuropeanNumber:
-                    m_eor = m_last;
+            case LeftToRight:
+                if (context()->dir() == LeftToRight)
                     appendRun();
+                break;
+            case ArabicNumber:
+                break;
+            case RightToLeft:
+            case RightToLeftArabic:
+            case EuropeanNumber:
+                m_eor = m_last;
+                appendRun();
+                break;
+            case CommonNumberSeparator:
+                if (m_status.eor == ArabicNumber)
                     break;
-                case CommonNumberSeparator:
-                    if (m_status.eor == ArabicNumber)
-                        break;
-                case EuropeanNumberSeparator:
-                case EuropeanNumberTerminator:
-                case BoundaryNeutral:
-                case BlockSeparator:
-                case SegmentSeparator:
-                case WhiteSpaceNeutral:
-                case OtherNeutral:
-                    if (m_status.eor == ArabicNumber
-                        || (m_status.eor == EuropeanNumber && (m_status.lastStrong == RightToLeft || context()->dir() == RightToLeft))
-                        || (m_status.eor != EuropeanNumber && m_status.lastStrong == LeftToRight && context()->dir() == RightToLeft)) {
-                        // Terminate the run before the neutrals.
-                        appendRun();
-                        // Begin an R run for the neutrals.
-                        m_direction = RightToLeft;
-                    } else if (m_direction == OtherNeutral)
-                        m_direction = m_status.lastStrong == LeftToRight ? LeftToRight : RightToLeft;
-                    m_eor = m_last;
+            case EuropeanNumberSeparator:
+            case EuropeanNumberTerminator:
+            case BoundaryNeutral:
+            case BlockSeparator:
+            case SegmentSeparator:
+            case WhiteSpaceNeutral:
+            case OtherNeutral:
+                if (m_status.eor == ArabicNumber
+                    || (m_status.eor == EuropeanNumber && (m_status.lastStrong == RightToLeft || context()->dir() == RightToLeft))
+                    || (m_status.eor != EuropeanNumber && m_status.lastStrong == LeftToRight && context()->dir() == RightToLeft)) {
+                    // Terminate the run before the neutrals.
                     appendRun();
-                default:
-                    break;
+                    // Begin an R run for the neutrals.
+                    m_direction = RightToLeft;
+                } else if (m_direction == OtherNeutral) {
+                    m_direction = m_status.lastStrong == LeftToRight ? LeftToRight : RightToLeft;
+                }
+                m_eor = m_last;
+                appendRun();
+            default:
+                break;
             }
             m_eor = m_current;
             m_status.eor = ArabicNumber;
@@ -871,8 +872,9 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                 dirCurrent = EuropeanNumber;
                 m_eor = m_current;
                 m_status.eor = dirCurrent;
-            } else if (m_status.last != EuropeanNumberTerminator)
+            } else if (m_status.last != EuropeanNumberTerminator) {
                 m_lastBeforeET = m_emptyRun ? m_eor : m_last;
+            }
             break;
 
         // boundary neutrals should be ignored
@@ -899,16 +901,16 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             if (!m_reachedEndOfLine) {
                 m_eor = endOfLine;
                 switch (m_status.eor) {
-                    case LeftToRight:
-                    case RightToLeft:
-                    case ArabicNumber:
-                        m_direction = m_status.eor;
-                        break;
-                    case EuropeanNumber:
-                        m_direction = m_status.lastStrong == LeftToRight ? LeftToRight : EuropeanNumber;
-                        break;
-                    default:
-                        ASSERT_NOT_REACHED();
+                case LeftToRight:
+                case RightToLeft:
+                case ArabicNumber:
+                    m_direction = m_status.eor;
+                    break;
+                case EuropeanNumber:
+                    m_direction = m_status.lastStrong == LeftToRight ? LeftToRight : EuropeanNumber;
+                    break;
+                default:
+                    ASSERT_NOT_REACHED();
                 }
                 appendRun();
             }

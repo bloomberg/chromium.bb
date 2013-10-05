@@ -53,8 +53,8 @@
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/TextRunIterator.h"
-#include "core/platform/text/BidiResolver.h"
 #include "core/rendering/RenderWordBreak.h"
+#include "platform/text/BidiResolver.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 

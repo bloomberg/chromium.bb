@@ -109,6 +109,8 @@
       'network/SocketStreamHandleInternal.h',
       'text/BidiContext.cpp',
       'text/BidiContext.h',
+      'text/BidiResolver.h',
+      'text/BidiRunList.h',
       'text/DateTimeFormat.cpp',
       'text/DateTimeFormat.h',
       'text/LineEnding.cpp',

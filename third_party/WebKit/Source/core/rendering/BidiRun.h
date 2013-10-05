@@ -24,8 +24,8 @@
 #ifndef BidiRun_h
 #define BidiRun_h
 
-#include "core/platform/text/BidiResolver.h"
 #include "core/rendering/RenderText.h"
+#include "platform/text/BidiResolver.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {
