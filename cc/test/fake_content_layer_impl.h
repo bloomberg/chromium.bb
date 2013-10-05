@@ -30,10 +30,19 @@ class FakeContentLayerImpl : public TiledLayerImpl {
 
   virtual void DidLoseOutputSurface() OVERRIDE;
 
+  size_t append_quads_count() const {
+    return append_quads_count_;
+  }
+  void reset_append_quads_count() { append_quads_count_ = 0; }
+
+  virtual void AppendQuads(QuadSink* quad_sink,
+                           AppendQuadsData* append_quads_data) OVERRIDE;
+
  private:
   explicit FakeContentLayerImpl(LayerTreeImpl* tree_impl, int id);
 
   size_t lost_output_surface_count_;
+  size_t append_quads_count_;
 };
 
 }  // namespace cc

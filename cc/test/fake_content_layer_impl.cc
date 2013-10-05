@@ -8,7 +8,8 @@ namespace cc {
 
 FakeContentLayerImpl::FakeContentLayerImpl(LayerTreeImpl* tree_impl, int id)
     : TiledLayerImpl(tree_impl, id),
-      lost_output_surface_count_(0) {
+      lost_output_surface_count_(0),
+      append_quads_count_(0) {
 }
 
 FakeContentLayerImpl::~FakeContentLayerImpl() {}
@@ -26,5 +27,12 @@ void FakeContentLayerImpl::DidLoseOutputSurface() {
   TiledLayerImpl::DidLoseOutputSurface();
   ++lost_output_surface_count_;
 }
+
+void FakeContentLayerImpl::AppendQuads(QuadSink* quad_sink,
+    AppendQuadsData* append_quads_data) {
+  TiledLayerImpl::AppendQuads(quad_sink, append_quads_data);
+  ++append_quads_count_;
+}
+
 
 }  // namespace cc

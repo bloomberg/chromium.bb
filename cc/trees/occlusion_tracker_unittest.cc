@@ -30,9 +30,10 @@ namespace {
 
 class TestContentLayer : public Layer {
  public:
-  TestContentLayer() : Layer(), override_opaque_contents_rect_(false) {}
+  TestContentLayer() : Layer(), override_opaque_contents_rect_(false) {
+    SetIsDrawable(true);
+  }
 
-  virtual bool DrawsContent() const OVERRIDE { return true; }
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE {
     if (override_opaque_contents_rect_)
       return gfx::IntersectRects(opaque_contents_rect_, visible_content_rect());
@@ -340,6 +341,14 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
     layer_iterator_ = layer_iterator_begin_ =
         Types::TestLayerIterator::Begin(render_surface_layer_list_.get());
+  }
+
+  void SetDrawsContent(LayerImpl* layer_impl, bool draws_content) {
+    layer_impl->SetDrawsContent(draws_content);
+  }
+
+  void SetDrawsContent(Layer* layer, bool draws_content) {
+    layer->SetIsDrawable(draws_content);
   }
 
   void EnterLayer(typename Types::LayerType* layer,
@@ -3964,6 +3973,38 @@ class OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude
 };
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude)
+
+template <class Types>
+class OcclusionTrackerTestEmptyEventLayerDoesNotOcclude
+    : public OcclusionTrackerTest<Types> {
+ protected:
+  explicit OcclusionTrackerTestEmptyEventLayerDoesNotOcclude(
+      bool opaque_layers)
+      : OcclusionTrackerTest<Types>(opaque_layers) {}
+  void RunMyTest() {
+    typename Types::ContentLayerType* root = this->CreateRoot(
+        this->identity_matrix, gfx::Point(), gfx::Size(400, 400));
+    typename Types::ContentLayerType* empty_layer = this->CreateDrawingLayer(
+        root, this->identity_matrix, gfx::Point(), gfx::Size(200, 200), true);
+    this->SetDrawsContent(empty_layer, false);
+    empty_layer->SetTouchEventHandlerRegion(gfx::Rect(10, 10, 10, 10));
+
+    this->CalcDrawEtc(root);
+
+    TestOcclusionTrackerWithClip<typename Types::LayerType,
+                                 typename Types::RenderSurfaceType> occlusion(
+        gfx::Rect(0, 0, 1000, 1000), false);
+
+    this->VisitLayer(empty_layer, &occlusion);
+
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestEmptyEventLayerDoesNotOcclude)
 
 }  // namespace
 }  // namespace cc

@@ -60,6 +60,7 @@ class QuadCullerTest : public testing::Test {
     tiler->SetBounds(layer_rect.size());
     layer->SetTilingData(*tiler);
     layer->set_skips_draw(false);
+    layer->SetDrawsContent(true);
     layer->draw_properties().target_space_transform = draw_transform;
     layer->draw_properties().screen_space_transform = draw_transform;
     layer->draw_properties().visible_content_rect = layer_rect;

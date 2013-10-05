@@ -5454,6 +5454,121 @@ TEST_F(LayerTreeHostCommonTest, HitTestingForMultipleLayerLists) {
   EXPECT_EQ(4, result_layer->id());
 }
 
+TEST_F(LayerTreeHostCommonTest, HitTestingForEmptyLayers) {
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+
+  // Layer 1 - root
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  gfx::Transform identity_matrix;
+  gfx::PointF anchor;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               anchor,
+                               position,
+                               bounds,
+                               false);
+  root->SetDrawsContent(true);
+
+  {
+    // Layer 2 - empty: drawsContent=false
+    gfx::PointF position(10.f, 10.f);
+    gfx::Size bounds(30, 30);
+    scoped_ptr<LayerImpl> empty_layer =
+        LayerImpl::Create(host_impl.active_tree(), 2);
+    SetLayerPropertiesForTesting(empty_layer.get(),
+                                 identity_matrix,
+                                 identity_matrix,
+                                 anchor,
+                                 position,
+                                 bounds,
+                                 false);
+
+    empty_layer->SetDrawsContent(false);
+    root->AddChild(empty_layer.Pass());
+  }
+
+  {
+    // Layer 3 - empty, but has touch handler
+    gfx::PointF position(10.f, 60.f);
+    gfx::Size bounds(30, 30);
+    scoped_ptr<LayerImpl> test_layer =
+        LayerImpl::Create(host_impl.active_tree(), 3);
+    SetLayerPropertiesForTesting(test_layer.get(),
+                                 identity_matrix,
+                                 identity_matrix,
+                                 anchor,
+                                 position,
+                                 bounds,
+                                 false);
+
+    test_layer->SetDrawsContent(false);
+    Region touch_handler_region(gfx::Rect(10, 10, 10, 10));
+    test_layer->SetTouchEventHandlerRegion(touch_handler_region);
+    root->AddChild(test_layer.Pass());
+  }
+
+  {
+    // Layer 4 - empty, but has mousewheel handler
+    gfx::PointF position(60.f, 60.f);
+    gfx::Size bounds(30, 30);
+    scoped_ptr<LayerImpl> test_layer =
+        LayerImpl::Create(host_impl.active_tree(), 4);
+    SetLayerPropertiesForTesting(test_layer.get(),
+                                 identity_matrix,
+                                 identity_matrix,
+                                 anchor,
+                                 position,
+                                 bounds,
+                                 false);
+
+    test_layer->SetDrawsContent(false);
+    test_layer->SetHaveWheelEventHandlers(true);
+    root->AddChild(test_layer.Pass());
+  }
+
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root.get(), root->bounds(), &render_surface_layer_list);
+  inputs.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  // Verify that the root layer and empty layers with touch/wheel handlers
+  // (but not the empty layer without a touch handler) are in the RSSL.
+  ASSERT_EQ(1u, render_surface_layer_list.size());
+  EXPECT_EQ(1, render_surface_layer_list[0]->id());
+  ASSERT_EQ(3u, root->render_surface()->layer_list().size());
+  EXPECT_EQ(1, root->render_surface()->layer_list().at(0)->id());
+  EXPECT_EQ(3, root->render_surface()->layer_list().at(1)->id());
+  EXPECT_EQ(4, root->render_surface()->layer_list().at(2)->id());
+
+  // Hit testing for a point inside the empty no-handlers layer should return
+  // the root layer.
+  gfx::Point test_point = gfx::Point(15, 15);
+  LayerImpl* result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
+      test_point, render_surface_layer_list);
+  ASSERT_TRUE(result_layer);
+  EXPECT_EQ(1, result_layer->id());
+
+  // Hit testing for a point inside the touch handler layer should return it.
+  test_point = gfx::Point(15, 75);
+  result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
+          test_point, render_surface_layer_list);
+  ASSERT_TRUE(result_layer);
+  EXPECT_EQ(3, result_layer->id());
+
+  // Hit testing for a point inside the mousewheel layer should return it.
+  test_point = gfx::Point(75, 75);
+  result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
+          test_point, render_surface_layer_list);
+  ASSERT_TRUE(result_layer);
+  EXPECT_EQ(4, result_layer->id());
+}
+
 TEST_F(LayerTreeHostCommonTest,
        HitCheckingTouchHandlerRegionsForEmptyLayerList) {
   // Hit checking on an empty render_surface_layer_list should return a null

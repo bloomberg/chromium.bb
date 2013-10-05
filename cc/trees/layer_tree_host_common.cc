@@ -418,10 +418,10 @@ static bool LayerShouldBeSkipped(LayerType* layer,
                                  bool layer_is_visible) {
   // Layers can be skipped if any of these conditions are met.
   //   - is not visible due to it or one of its ancestors being hidden.
-  //   - does not draw content.
-  //   - is transparent
   //   - has empty bounds
   //   - the layer is not double-sided, but its back face is visible.
+  //   - is transparent
+  //   - does not draw content and does not participate in hit testing.
   //
   // Some additional conditions need to be computed at a later point after the
   // recursion is finished.
@@ -435,7 +435,7 @@ static bool LayerShouldBeSkipped(LayerType* layer,
   if (!layer_is_visible)
     return true;
 
-  if (!layer->DrawsContent() || layer->bounds().IsEmpty())
+  if (layer->bounds().IsEmpty())
     return true;
 
   LayerType* backface_test_layer = layer;
@@ -450,6 +450,13 @@ static bool LayerShouldBeSkipped(LayerType* layer,
   if (!backface_test_layer->double_sided() &&
       TransformToScreenIsKnown(backface_test_layer) &&
       IsLayerBackFaceVisible(backface_test_layer))
+    return true;
+
+  // The layer is visible to events.  If it's subject to hit testing, then
+  // we can't skip it.
+  bool can_accept_input = !layer->touch_event_handler_region().IsEmpty() ||
+      layer->have_wheel_event_handlers();
+  if (!layer->DrawsContent() && !can_accept_input)
     return true;
 
   return false;
@@ -475,6 +482,7 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   // The opacity of a layer always applies to its children (either implicitly
   // via a render surface or explicitly if the parent preserves 3D), so the
   // entire subtree can be skipped if this layer is fully transparent.
+  // TODO(sad): Don't skip layers used for hit testing crbug.com/295295.
   return !layer->opacity();
 }
 
@@ -495,6 +503,7 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
   // In particular, it should not cause the subtree to be skipped.
   // Similarly, for layers that might animate opacity using an impl-only
   // animation, their subtree should also not be skipped.
+  // TODO(sad): Don't skip layers used for hit testing crbug.com/295295.
   return !layer->opacity() && !layer->OpacityIsAnimating() &&
          !layer->OpacityCanAnimateOnImplThread();
 }
