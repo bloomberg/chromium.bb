@@ -26,7 +26,7 @@
 #ifndef PlatformWheelEvent_h
 #define PlatformWheelEvent_h
 
-#include "core/platform/PlatformEvent.h"
+#include "platform/PlatformEvent.h"
 #include "platform/geometry/IntPoint.h"
 
 namespace WebCore {

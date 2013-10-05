@@ -72,7 +72,6 @@
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
 #include "core/platform/Cursor.h"
-#include "core/platform/PlatformEvent.h"
 #include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/PlatformTouchEvent.h"

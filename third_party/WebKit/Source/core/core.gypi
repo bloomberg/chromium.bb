@@ -2623,8 +2623,6 @@
             'platform/ParsingUtilities.h',
             'platform/Pasteboard.cpp',
             'platform/Pasteboard.h',
-            'platform/PlatformEvent.cpp',
-            'platform/PlatformEvent.h',
             'platform/PlatformInstrumentation.cpp',
             'platform/PlatformInstrumentation.h',
             'platform/PlatformSpeechSynthesisUtterance.cpp',

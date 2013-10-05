@@ -37,7 +37,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/platform/PlatformEvent.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformTouchEvent.h"

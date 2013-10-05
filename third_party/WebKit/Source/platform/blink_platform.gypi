@@ -31,6 +31,7 @@
       'NotImplemented.h',
       'Partitions.cpp',
       'Partitions.h',
+      'PlatformEvent.h',
       'PlatformThreadData.cpp',
       'PlatformThreadData.h',
       'PurgeableBuffer.cpp',
