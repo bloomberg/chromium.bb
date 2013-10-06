@@ -45,12 +45,16 @@ class PatchServletTest(unittest.TestCase):
                          _RenderServletDelegate()).Get()
 
   def _RenderAndCheck(self, path, issue, expected_equal):
+    '''Renders |path| with |issue| patched in and asserts that the result is
+    the same as |expected_equal| modulo any links that get rewritten to
+    "_patch/issue".
+    '''
     patched_response = self._RenderWithPatch(path, issue)
     unpatched_response = self._RenderWithoutPatch(path)
     patched_response.headers.pop('cache-control', None)
     unpatched_response.headers.pop('cache-control', None)
     patched_content = patched_response.content.ToString().replace(
-        '/_patch/%s/' % issue, '/')
+        '/_patch/%s' % issue, '')
     unpatched_content = unpatched_response.content.ToString()
 
     self.assertEqual(patched_response.status, unpatched_response.status)

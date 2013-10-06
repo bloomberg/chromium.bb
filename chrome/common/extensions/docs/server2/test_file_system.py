@@ -5,6 +5,20 @@
 from file_system import FileSystem, FileNotFoundError, StatInfo
 from future import Future
 
+
+def _MoveTo(base, obj):
+  '''Returns an object as |obj| moved to |base|. That is,
+  _MoveTo('foo/bar', {'a': 'b'}) -> {'foo': {'bar': {'a': 'b'}}}
+  '''
+  result = {}
+  leaf = result
+  for k in base.split('/'):
+    leaf[k] = {}
+    leaf = leaf[k]
+  leaf.update(obj)
+  return result
+
+
 class TestFileSystem(FileSystem):
   '''A FileSystem backed by an object. Create with an object representing file
   paths such that {'a': {'b': 'hello'}} will resolve Read('a/b') as 'hello',
@@ -12,24 +26,9 @@ class TestFileSystem(FileSystem):
   IncrementStat.
   '''
 
-  # TODO(kalman): this method would be unnecessary if we injected paths properly
-  # in ServerInstance.
-  @staticmethod
-  def MoveTo(base, obj):
-    '''Returns an object as |obj| moved to |base|. That is,
-    MoveTo('foo/bar', {'a': 'b'}) -> {'foo': {'bar': {'a': 'b'}}}
-    '''
-    result = {}
-    leaf = result
-    for k in base.split('/'):
-      leaf[k] = {}
-      leaf = leaf[k]
-    leaf.update(obj)
-    return result
-
-  def __init__(self, obj):
+  def __init__(self, obj, relative_to=None):
     assert obj is not None
-    self._obj = obj
+    self._obj = obj if relative_to is None else _MoveTo(relative_to, obj)
     self._path_stats = {}
     self._global_stat = 0
 

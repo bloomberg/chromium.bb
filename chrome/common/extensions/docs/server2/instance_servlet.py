@@ -46,7 +46,6 @@ class OfflineRenderServletDelegate(RenderServlet.Delegate):
     return ServerInstance(object_store_creator,
                           host_file_system,
                           app_samples_file_system,
-                          '',
                           compiled_host_fs_factory,
                           branch_utility,
                           host_file_system_creator)

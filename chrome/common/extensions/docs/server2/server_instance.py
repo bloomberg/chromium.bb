@@ -30,10 +30,32 @@ class ServerInstance(object):
                object_store_creator,
                host_file_system,
                app_samples_file_system,
-               base_path,
                compiled_fs_factory,
                branch_utility,
-               host_file_system_creator):
+               host_file_system_creator,
+               base_path='/'):
+    '''
+    |object_store_creator|
+        The ObjectStoreCreator used to create almost all caches.
+    |host_file_system|
+        The main FileSystem instance which hosts the server, its templates, and
+        most App/Extension content. Probably a SubversionFileSystem.
+    |app_samples_file_system|
+        The FileSystem instance which hosts the App samples.
+    |compiled_fs_factory|
+        Factory used to create CompiledFileSystems, a higher-level cache type
+        than ObjectStores. This can usually be derived from
+        |object_store_creator| and |host_file_system| but under special
+        circumstances a different implementation needs to be passed in.
+    |branch_utility|
+        Has knowledge of Chrome branches, channels, and versions.
+    |host_file_system_creator|
+        Creates FileSystem instances which host the server at alternative
+        revisions.
+    |base_path|
+        The path which all HTML is generated relative to. Usually this is /
+        but some servlets need to override this.
+    '''
     self.object_store_creator = object_store_creator
 
     self.host_file_system = host_file_system
@@ -43,6 +65,9 @@ class ServerInstance(object):
     self.compiled_host_fs_factory = compiled_fs_factory
 
     self.host_file_system_creator = host_file_system_creator
+
+    assert base_path.startswith('/') and base_path.endswith('/')
+    self.base_path = base_path
 
     self.host_file_system_iterator = HostFileSystemIterator(
         host_file_system_creator,
@@ -120,7 +145,6 @@ class ServerInstance(object):
         svn_constants.PUBLIC_TEMPLATE_PATH)
 
     self.strings_json_path = svn_constants.STRINGS_JSON_PATH
-    self.sidenav_json_base_path = svn_constants.JSON_PATH
     self.manifest_json_path = svn_constants.MANIFEST_JSON_PATH
     self.manifest_features_path = svn_constants.MANIFEST_FEATURES_PATH
 
@@ -142,17 +166,17 @@ class ServerInstance(object):
         self.template_data_source_factory)
 
   @staticmethod
-  def ForTest(file_system):
+  def ForTest(file_system, base_path='/'):
     object_store_creator = ObjectStoreCreator.ForTest()
     return ServerInstance(object_store_creator,
                           file_system,
                           EmptyDirFileSystem(),
-                          '',
                           CompiledFileSystem.Factory(file_system,
                                                      object_store_creator),
                           TestBranchUtility.CreateWithCannedData(),
                           HostFileSystemCreator.ForTest(file_system,
-                                                        object_store_creator))
+                                                        object_store_creator),
+                          base_path=base_path)
 
   @staticmethod
   def ForLocal():
@@ -165,7 +189,6 @@ class ServerInstance(object):
         object_store_creator,
         trunk_file_system,
         EmptyDirFileSystem(),
-        '',
         CompiledFileSystem.Factory(trunk_file_system, object_store_creator),
         TestBranchUtility.CreateWithCannedData(),
         host_file_system_creator)

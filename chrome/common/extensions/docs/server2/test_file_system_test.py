@@ -5,8 +5,9 @@
 
 from copy import deepcopy
 from file_system import FileNotFoundError, StatInfo
-from test_file_system import TestFileSystem
+from test_file_system import TestFileSystem, _MoveTo
 import unittest
+
 
 _TEST_DATA = {
   '404.html': '404.html contents',
@@ -23,10 +24,12 @@ _TEST_DATA = {
   }
 }
 
+
 def _Get(fn):
   '''Returns a function which calls Future.Get on the result of |fn|.
   '''
   return lambda *args: fn(*args).Get()
+
 
 class TestFileSystemTest(unittest.TestCase):
   def testEmptyFileSystem(self):
@@ -114,11 +117,12 @@ class TestFileSystemTest(unittest.TestCase):
 
   def testMoveTo(self):
     self.assertEqual({'foo': {'a': 'b', 'c': 'd'}},
-                    TestFileSystem.MoveTo('foo', {'a': 'b', 'c': 'd'}))
+                     _MoveTo('foo', {'a': 'b', 'c': 'd'}))
     self.assertEqual({'foo': {'bar': {'a': 'b', 'c': 'd'}}},
-                    TestFileSystem.MoveTo('foo/bar', {'a': 'b', 'c': 'd'}))
+                     _MoveTo('foo/bar', {'a': 'b', 'c': 'd'}))
     self.assertEqual({'foo': {'bar': {'baz': {'a': 'b'}}}},
-                    TestFileSystem.MoveTo('foo/bar/baz', {'a': 'b'}))
+                     _MoveTo('foo/bar/baz', {'a': 'b'}))
+
 
 if __name__ == '__main__':
   unittest.main()

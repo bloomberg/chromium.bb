@@ -7,6 +7,7 @@ import logging
 
 from data_source import DataSource
 from third_party.json_schema_compiler.json_parse import Parse
+from svn_constants import JSON_PATH
 
 
 def _AddLevels(items, level):
@@ -25,7 +26,7 @@ def _AddSelected(items, path):
   True if an item was marked 'selected'.
   '''
   for item in items:
-    if item.get('href', '') == '/' + path:
+    if item.get('href', '') == path:
       item['selected'] = True
       return True
     if 'items' in item:
@@ -36,47 +37,47 @@ def _AddSelected(items, path):
   return False
 
 
-def _QualifyHrefs(items):
-  '''Force hrefs in |items| to either be absolute (http://...) or qualified
-  (begins with a slash (/)). Other hrefs emit a warning and should be updated.
-  '''
-  for item in items:
-    if 'items' in item:
-      _QualifyHrefs(item['items'])
-
-    href = item.get('href')
-    if href is not None and not href.startswith(('http://', 'https://')):
-      if not href.startswith('/'):
-        logging.warn('Paths in sidenav must be qualified. %s is not.' % href)
-        href = '/' + href
-      item['href'] = href
-
-
-def _CreateSidenavDict(_, content):
-  items = Parse(content)
-  # Start at level 2, the top <ul> element is level 1.
-  _AddLevels(items, level=2)
-  _QualifyHrefs(items)
-  return items
-
-
 class SidenavDataSource(DataSource):
   '''Provides templates with access to JSON files used to create the side
   navigation bar.
   '''
   def __init__(self, server_instance, request):
     self._cache = server_instance.compiled_host_fs_factory.Create(
-        _CreateSidenavDict, SidenavDataSource)
-    self._json_path = server_instance.sidenav_json_base_path
+        self._CreateSidenavDict, SidenavDataSource)
+    self._server_instance = server_instance
     self._request = request
 
+  def _CreateSidenavDict(self, _, content):
+    items = Parse(content)
+    # Start at level 2, the top <ul> element is level 1.
+    _AddLevels(items, level=2)
+    self._QualifyHrefs(items)
+    return items
+
+  def _QualifyHrefs(self, items):
+    '''Force hrefs in |items| to either be absolute (http://...) or qualified
+    (beginning with /, in which case it will be moved relative to |base_path|).
+    Relative hrefs emit a warning and should be updated.
+    '''
+    for item in items:
+      if 'items' in item:
+        self._QualifyHrefs(item['items'])
+
+      href = item.get('href')
+      if href is not None and not href.startswith(('http://', 'https://')):
+        if not href.startswith('/'):
+          logging.warn('Paths in sidenav must be qualified. %s is not.' % href)
+        else:
+          href = href.lstrip('/')
+        item['href'] = self._server_instance.base_path + href
+
   def Cron(self):
-    for platform in ['apps', 'extensions']:
+    for platform in ('apps', 'extensions'):
       self._cache.GetFromFile(
-          '%s/%s_sidenav.json' % (self._json_path, platform))
+          '%s/%s_sidenav.json' % (JSON_PATH, platform))
 
   def get(self, key):
     sidenav = copy.deepcopy(self._cache.GetFromFile(
-        '%s/%s_sidenav.json' % (self._json_path, key)))
-    _AddSelected(sidenav, self._request.path)
+        '%s/%s_sidenav.json' % (JSON_PATH, key)))
+    _AddSelected(sidenav, self._server_instance.base_path + self._request.path)
     return sidenav

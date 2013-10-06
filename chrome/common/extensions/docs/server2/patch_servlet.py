@@ -60,10 +60,10 @@ class _PatchServletDelegate(RenderServlet.Delegate):
                           patched_file_system,
                           self._delegate.CreateAppSamplesFileSystem(
                               object_store_creator),
-                          '/_patch/%s' % self._issue,
                           compiled_fs_factory,
                           branch_utility,
-                          host_file_system_creator)
+                          host_file_system_creator,
+                          base_path='/_patch/%s/' % self._issue)
 
 class PatchServlet(Servlet):
   '''Servlet which renders patched docs.
