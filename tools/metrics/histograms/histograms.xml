@@ -28020,6 +28020,15 @@ other types of suffix sets.
   <affected-histogram name="Instant.SessionsStorageNamespace"/>
 </fieldtrial>
 
+<fieldtrial name="Interval_20ms_plus_and_minus" separator="_">
+  <group name="Interval_20ms_Minus"
+      label="Interval between two consecutive connects is less than 20ms."/>
+  <group name="Interval_20ms_Plus"
+      label="Interval between two consecutive connects is greater than or
+             equal to 20ms."/>
+  <affected-histogram name="Net.TCP_Connection_Latency"/>
+</fieldtrial>
+
 <fieldtrial name="IPv6_Probe">
   <group name="IPv6_probe_skipped"
       label="with IPv6 not probed, and default OS settings used"/>
