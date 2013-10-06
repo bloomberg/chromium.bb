@@ -1390,7 +1390,7 @@ void Element::unregisterNamedFlowContentNode()
 
 void Element::detach(const AttachContext& context)
 {
-    WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
+    RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     unregisterNamedFlowContentNode();
     cancelFocusAppearanceUpdate();
     if (RenderStyle* style = renderStyle()) {

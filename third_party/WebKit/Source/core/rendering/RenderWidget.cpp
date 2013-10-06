@@ -31,47 +31,58 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "wtf/HashMap.h"
 
 using namespace std;
 
 namespace WebCore {
 
-unsigned WidgetHierarchyUpdatesSuspensionScope::s_widgetHierarchyUpdateSuspendCount = 0;
-
-WidgetHierarchyUpdatesSuspensionScope::WidgetToParentMap& WidgetHierarchyUpdatesSuspensionScope::widgetNewParentMap()
+typedef HashMap<RefPtr<Widget>, FrameView*> WidgetToParentMap;
+static WidgetToParentMap& widgetNewParentMap()
 {
     DEFINE_STATIC_LOCAL(WidgetToParentMap, map, ());
     return map;
 }
 
-void WidgetHierarchyUpdatesSuspensionScope::moveWidgets()
+static unsigned s_updateSuspendCount = 0;
+
+RenderWidget::UpdateSuspendScope::UpdateSuspendScope()
 {
-    WidgetToParentMap map;
-    widgetNewParentMap().swap(map);
-    WidgetToParentMap::iterator end = map.end();
-    for (WidgetToParentMap::iterator it = map.begin(); it != end; ++it) {
-        Widget* child = it->key.get();
-        ScrollView* currentParent = child->parent();
-        FrameView* newParent = it->value;
-        if (newParent != currentParent) {
-            if (currentParent)
-                currentParent->removeChild(child);
-            if (newParent)
-                newParent->addChild(child);
+    ++s_updateSuspendCount;
+}
+
+RenderWidget::UpdateSuspendScope::~UpdateSuspendScope()
+{
+    ASSERT(s_updateSuspendCount > 0);
+    if (s_updateSuspendCount == 1) {
+        WidgetToParentMap map;
+        widgetNewParentMap().swap(map);
+        WidgetToParentMap::iterator end = map.end();
+        for (WidgetToParentMap::iterator it = map.begin(); it != end; ++it) {
+            Widget* child = it->key.get();
+            ScrollView* currentParent = child->parent();
+            FrameView* newParent = it->value;
+            if (newParent != currentParent) {
+                if (currentParent)
+                    currentParent->removeChild(child);
+                if (newParent)
+                    newParent->addChild(child);
+            }
         }
     }
+    --s_updateSuspendCount;
 }
 
 static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
 {
-    if (!WidgetHierarchyUpdatesSuspensionScope::isSuspended()) {
+    if (!s_updateSuspendCount) {
         if (parent)
             parent->addChild(child);
         else
             child->removeFromParent();
         return;
     }
-    WidgetHierarchyUpdatesSuspensionScope::scheduleWidgetToMove(child, parent);
+    widgetNewParentMap().set(child, parent);
 }
 
 RenderWidget::RenderWidget(Element* element)

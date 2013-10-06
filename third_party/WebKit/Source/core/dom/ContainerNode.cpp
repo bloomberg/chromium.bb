@@ -459,7 +459,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
     }
 
     {
-        WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
+        RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
 
         Node* prev = child->previousSibling();
         Node* next = child->nextSibling();
@@ -548,7 +548,7 @@ void ContainerNode::removeChildren()
 
     NodeVector removedChildren;
     {
-        WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
+        RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
         {
             NoEventDispatchAssertion assertNoEventDispatch;
             removedChildren.reserveInitialCapacity(childNodeCount());
