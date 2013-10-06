@@ -679,9 +679,6 @@ const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
 // Enables |NetworkTimeService| to convert local time to network time.
 const char kEnableNetworkTime[]             = "enable-network-time";
 
-// Enables NPN and SPDY. In case server supports SPDY, browser will use SPDY.
-const char kEnableNpn[]                     = "enable-npn";
-
 // Enables NPN with HTTP. It means NPN is enabled but SPDY won't be used.
 // HTTP is still used for all requests.
 const char kEnableNpnHttpOnly[]             = "enable-npn-http";
@@ -742,6 +739,10 @@ const char kEnableStickyKeys[]              = "enable-sticky-keys";
 
 // Disables support of sticky keys.
 const char kDisableStickyKeys[]              = "disable-sticky-keys";
+
+// Enable SPDY/2. This is a temporary testing flag. See
+// http://crbug.com/303957 .
+const char kEnableSpdy2[]                   = "enable-spdy2";
 
 // Disable SPDY/3.1. This is a temporary testing flag.
 const char kDisableSpdy31[]                 = "disable-spdy31";

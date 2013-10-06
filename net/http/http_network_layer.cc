@@ -42,7 +42,7 @@ HttpTransactionFactory* HttpNetworkLayer::CreateFactory(
 void HttpNetworkLayer::ForceAlternateProtocol() {
   PortAlternateProtocolPair pair;
   pair.port = 443;
-  pair.protocol = NPN_SPDY_2;
+  pair.protocol = NPN_SPDY_3;
   HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
 }
 

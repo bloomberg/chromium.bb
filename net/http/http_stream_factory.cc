@@ -157,16 +157,6 @@ bool HttpStreamFactory::HasSpdyExclusion(const HostPortPair& endpoint) {
 }
 
 // static
-void HttpStreamFactory::EnableNpnSpdy() {
-  set_use_alternate_protocols(true);
-  std::vector<NextProto> next_protos;
-  next_protos.push_back(kProtoHTTP11);
-  next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoSPDY2);
-  SetNextProtos(next_protos);
-}
-
-// static
 void HttpStreamFactory::EnableNpnHttpOnly() {
   // Avoid alternate protocol in this case. Otherwise, browser will try SSL
   // and then fallback to http. This introduces extra load.
@@ -182,7 +172,6 @@ void HttpStreamFactory::EnableNpnSpdy3() {
   std::vector<NextProto> next_protos;
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoSPDY2);
   next_protos.push_back(kProtoSPDY3);
   SetNextProtos(next_protos);
 }
@@ -193,7 +182,18 @@ void HttpStreamFactory::EnableNpnSpdy31() {
   std::vector<NextProto> next_protos;
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoSPDY2);
+  next_protos.push_back(kProtoSPDY3);
+  next_protos.push_back(kProtoSPDY31);
+  SetNextProtos(next_protos);
+}
+
+// static
+void HttpStreamFactory::EnableNpnSpdy31WithSpdy2() {
+  set_use_alternate_protocols(true);
+  std::vector<NextProto> next_protos;
+  next_protos.push_back(kProtoHTTP11);
+  next_protos.push_back(kProtoQUIC1SPDY3);
+  next_protos.push_back(kProtoDeprecatedSPDY2);
   next_protos.push_back(kProtoSPDY3);
   next_protos.push_back(kProtoSPDY31);
   SetNextProtos(next_protos);
@@ -205,7 +205,6 @@ void HttpStreamFactory::EnableNpnSpdy4a2() {
   std::vector<NextProto> next_protos;
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoSPDY2);
   next_protos.push_back(kProtoSPDY3);
   next_protos.push_back(kProtoSPDY31);
   next_protos.push_back(kProtoSPDY4a2);
@@ -218,7 +217,6 @@ void HttpStreamFactory::EnableNpnHttp2Draft04() {
   std::vector<NextProto> next_protos;
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoSPDY2);
   next_protos.push_back(kProtoSPDY3);
   next_protos.push_back(kProtoSPDY31);
   next_protos.push_back(kProtoSPDY4a2);

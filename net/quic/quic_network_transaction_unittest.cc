@@ -456,7 +456,7 @@ TEST_F(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
 }
 
 TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
@@ -509,7 +509,7 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
   params_.origin_to_force_quic_on =
       HostPortPair::FromString("www.google.com:443");
   params_.enable_quic_https = true;
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
@@ -559,7 +559,7 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
 }
 
 TEST_F(QuicNetworkTransactionTest, HungAlternateProtocol) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
 
@@ -618,7 +618,7 @@ TEST_F(QuicNetworkTransactionTest, HungAlternateProtocol) {
 }
 
 TEST_F(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
   scoped_ptr<QuicEncryptedPacket> req(
       ConstructDataPacket(1, 3, true, true, 0,
@@ -655,7 +655,7 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
 }
 
 TEST_F(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
   scoped_ptr<QuicEncryptedPacket> req(
       ConstructDataPacket(1, 3, true, true, 0,
@@ -702,7 +702,7 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
 }
 
 TEST_F(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
   scoped_ptr<QuicEncryptedPacket> req(
       ConstructDataPacket(1, 3, true, true, 0,
@@ -761,7 +761,7 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 }
 
 TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
   // Alternate-protocol job
   scoped_ptr<QuicEncryptedPacket> close(ConstructConnectionClosePacket(1));
@@ -792,7 +792,7 @@ TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
 }
 
 TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
   // Alternate-protocol job
   MockRead quic_reads[] = {
@@ -822,7 +822,7 @@ TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
 }
 
 TEST_F(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
   // Alternate-protocol job
   MockRead quic_reads[] = {

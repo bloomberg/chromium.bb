@@ -112,7 +112,7 @@ void ChromeNetBenchmarkingMessageFilter::OnEnableSpdy(bool enable) {
     return;
   }
   if (enable) {
-    net::HttpStreamFactory::EnableNpnSpdy();
+    net::HttpStreamFactory::EnableNpnSpdy3();
     net::HttpNetworkLayer::ForceAlternateProtocol();
   } else {
     net::HttpStreamFactory::EnableNpnHttpOnly();

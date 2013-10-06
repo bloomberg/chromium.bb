@@ -386,7 +386,8 @@ class HttpNetworkTransactionTest
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     HttpNetworkTransactionTest,
-    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
+    testing::Values(kProtoDeprecatedSPDY2,
+                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
                     kProtoHTTP2Draft04));
 
 namespace {

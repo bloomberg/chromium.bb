@@ -287,7 +287,8 @@ class SpdyWebSocketStreamTest
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdyWebSocketStreamTest,
-    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
+    testing::Values(kProtoDeprecatedSPDY2,
+                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
                     kProtoHTTP2Draft04));
 
 // TODO(toyoshim): Replace old framing data to new one, then use HEADERS and

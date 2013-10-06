@@ -16,8 +16,8 @@ enum NextProto {
   kProtoHTTP11,
   kProtoMinimumVersion = kProtoHTTP11,
 
-  kProtoSPDY2,
-  kProtoSPDYMinimumVersion = kProtoSPDY2,
+  kProtoDeprecatedSPDY2,
+  kProtoSPDYMinimumVersion = kProtoDeprecatedSPDY2,
   kProtoSPDY3,
   kProtoSPDY31,
   kProtoSPDY4a2,

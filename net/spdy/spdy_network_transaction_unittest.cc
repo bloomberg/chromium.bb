@@ -49,7 +49,7 @@ enum SpdyNetworkTransactionTestSSLType {
 
 struct SpdyNetworkTransactionTestParams {
   SpdyNetworkTransactionTestParams()
-      : protocol(kProtoSPDY2),
+      : protocol(kProtoSPDY3),
         ssl_type(SPDYNPN) {}
 
   SpdyNetworkTransactionTestParams(
@@ -653,9 +653,9 @@ INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionTest,
     ::testing::Values(
-        SpdyNetworkTransactionTestParams(kProtoSPDY2, SPDYNOSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY2, SPDYSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY2, SPDYNPN),
+        SpdyNetworkTransactionTestParams(kProtoDeprecatedSPDY2, SPDYNOSSL),
+        SpdyNetworkTransactionTestParams(kProtoDeprecatedSPDY2, SPDYSSL),
+        SpdyNetworkTransactionTestParams(kProtoDeprecatedSPDY2, SPDYNPN),
         SpdyNetworkTransactionTestParams(kProtoSPDY3, SPDYNOSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY3, SPDYSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY3, SPDYNPN),

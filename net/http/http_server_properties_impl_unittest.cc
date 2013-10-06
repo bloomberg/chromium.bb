@@ -189,12 +189,12 @@ typedef HttpServerPropertiesImplTest AlternateProtocolServerPropertiesTest;
 TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
   HostPortPair test_host_port_pair("foo", 80);
   EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
-  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_2);
+  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_3);
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
   const PortAlternateProtocolPair alternate =
       impl_.GetAlternateProtocol(test_host_port_pair);
   EXPECT_EQ(443, alternate.port);
-  EXPECT_EQ(NPN_SPDY_2, alternate.protocol);
+  EXPECT_EQ(NPN_SPDY_3, alternate.protocol);
 
   impl_.Clear();
   EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
@@ -204,12 +204,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   HostPortPair test_host_port_pair1("foo1", 80);
   impl_.SetBrokenAlternateProtocol(test_host_port_pair1);
   HostPortPair test_host_port_pair2("foo2", 80);
-  impl_.SetAlternateProtocol(test_host_port_pair2, 443, NPN_SPDY_2);
+  impl_.SetAlternateProtocol(test_host_port_pair2, 443, NPN_SPDY_3);
 
   AlternateProtocolMap alternate_protocol_map;
   PortAlternateProtocolPair port_alternate_protocol_pair;
   port_alternate_protocol_pair.port = 123;
-  port_alternate_protocol_pair.protocol = NPN_SPDY_2;
+  port_alternate_protocol_pair.protocol = NPN_SPDY_3;
   alternate_protocol_map[test_host_port_pair2] = port_alternate_protocol_pair;
   impl_.InitializeAlternateProtocolServers(&alternate_protocol_map);
 
@@ -221,7 +221,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   port_alternate_protocol_pair =
       impl_.GetAlternateProtocol(test_host_port_pair2);
   EXPECT_EQ(123, port_alternate_protocol_pair.port);
-  EXPECT_EQ(NPN_SPDY_2, port_alternate_protocol_pair.protocol);
+  EXPECT_EQ(NPN_SPDY_3, port_alternate_protocol_pair.protocol);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
@@ -235,7 +235,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   impl_.SetAlternateProtocol(
       test_host_port_pair,
       1234,
-      NPN_SPDY_2);
+      NPN_SPDY_3);
   alternate = impl_.GetAlternateProtocol(test_host_port_pair);
   EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol)
       << "Second attempt should be ignored.";
@@ -246,7 +246,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Forced) {
 
   PortAlternateProtocolPair default_protocol;
   default_protocol.port = 1234;
-  default_protocol.protocol = NPN_SPDY_2;
+  default_protocol.protocol = NPN_SPDY_3;
   HttpServerPropertiesImpl::ForceAlternateProtocol(default_protocol);
 
   // Verify the forced protocol.
@@ -258,11 +258,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, Forced) {
   EXPECT_EQ(default_protocol.protocol, alternate.protocol);
 
   // Verify the real protocol overrides the forced protocol.
-  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_2);
+  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_3);
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
   alternate = impl_.GetAlternateProtocol(test_host_port_pair);
   EXPECT_EQ(443, alternate.port);
-  EXPECT_EQ(NPN_SPDY_2, alternate.protocol);
+  EXPECT_EQ(NPN_SPDY_3, alternate.protocol);
 
   // Turn off the static, forced alternate protocol so that tests don't
   // have this state.

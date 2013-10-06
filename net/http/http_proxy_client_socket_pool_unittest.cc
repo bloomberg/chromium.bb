@@ -41,7 +41,7 @@ enum HttpProxyType {
 struct HttpProxyClientSocketPoolTestParams {
   HttpProxyClientSocketPoolTestParams()
       : proxy_type(HTTP),
-        protocol(kProtoSPDY2) {}
+        protocol(kProtoSPDY3) {}
 
   HttpProxyClientSocketPoolTestParams(
       HttpProxyType proxy_type,
@@ -238,9 +238,9 @@ INSTANTIATE_TEST_CASE_P(
     HttpProxyClientSocketPoolTests,
     HttpProxyClientSocketPoolTest,
     ::testing::Values(
-        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY2),
-        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY2),
-        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY2),
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoDeprecatedSPDY2),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoDeprecatedSPDY2),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoDeprecatedSPDY2),
         HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY3),
         HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY3),
         HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY3),

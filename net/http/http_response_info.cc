@@ -331,8 +331,8 @@ void HttpResponseInfo::Persist(Pickle* pickle,
 HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
     NextProto next_proto) {
   switch (next_proto) {
-    case kProtoSPDY2:
-      return CONNECTION_INFO_SPDY2;
+    case kProtoDeprecatedSPDY2:
+      return CONNECTION_INFO_DEPRECATED_SPDY2;
     case kProtoSPDY3:
     case kProtoSPDY31:
       return CONNECTION_INFO_SPDY3;
@@ -360,7 +360,7 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "unknown";
     case CONNECTION_INFO_HTTP1:
       return "http/1";
-    case CONNECTION_INFO_SPDY2:
+    case CONNECTION_INFO_DEPRECATED_SPDY2:
       return "spdy/2";
     case CONNECTION_INFO_SPDY3:
       return "spdy/3";

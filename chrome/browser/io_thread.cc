@@ -734,8 +734,8 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
       net::HttpStreamFactory::EnableNpnSpdy4a2();
     } else if (command_line.HasSwitch(switches::kDisableSpdy31)) {
       net::HttpStreamFactory::EnableNpnSpdy3();
-    } else if (command_line.HasSwitch(switches::kEnableNpn)) {
-      net::HttpStreamFactory::EnableNpnSpdy();
+    } else if (command_line.HasSwitch(switches::kEnableSpdy2)) {
+      net::HttpStreamFactory::EnableNpnSpdy31WithSpdy2();
     } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
       net::HttpStreamFactory::EnableNpnHttpOnly();
     } else {
@@ -786,11 +786,11 @@ void IOThread::EnableSpdy(const std::string& mode) {
     if (option == kOff) {
       net::HttpStreamFactory::set_spdy_enabled(false);
     } else if (option == kDisableSSL) {
-      globals_->spdy_default_protocol.set(net::kProtoSPDY2);
+      globals_->spdy_default_protocol.set(net::kProtoSPDY3);
       net::HttpStreamFactory::set_force_spdy_over_ssl(false);
       net::HttpStreamFactory::set_force_spdy_always(true);
     } else if (option == kSSL) {
-      globals_->spdy_default_protocol.set(net::kProtoSPDY2);
+      globals_->spdy_default_protocol.set(net::kProtoSPDY3);
       net::HttpStreamFactory::set_force_spdy_over_ssl(true);
       net::HttpStreamFactory::set_force_spdy_always(true);
     } else if (option == kDisablePing) {
@@ -804,7 +804,7 @@ void IOThread::EnableSpdy(const std::string& mode) {
     } else if (option == kForceAltProtocols) {
       net::PortAlternateProtocolPair pair;
       pair.port = 443;
-      pair.protocol = net::NPN_SPDY_2;
+      pair.protocol = net::NPN_SPDY_3;
       net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
     } else if (option == kSingleDomain) {
       DLOG(INFO) << "FORCING SINGLE DOMAIN";

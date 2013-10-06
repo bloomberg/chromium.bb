@@ -38,7 +38,7 @@ bool IsAlternateProtocolValid(AlternateProtocol protocol) {
 
 const char* AlternateProtocolToString(AlternateProtocol protocol) {
   switch (protocol) {
-    case NPN_SPDY_2:
+    case DEPRECATED_NPN_SPDY_2:
     case NPN_SPDY_3:
     case NPN_SPDY_3_1:
     case NPN_SPDY_4A2:
@@ -70,8 +70,8 @@ AlternateProtocol AlternateProtocolFromString(const std::string& str) {
 
 AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
   switch (next_proto) {
-    case kProtoSPDY2:
-      return NPN_SPDY_2;
+    case kProtoDeprecatedSPDY2:
+      return DEPRECATED_NPN_SPDY_2;
     case kProtoSPDY3:
       return NPN_SPDY_3;
     case kProtoSPDY31:

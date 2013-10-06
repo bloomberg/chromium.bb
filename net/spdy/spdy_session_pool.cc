@@ -54,11 +54,10 @@ SpdySessionPool::SpdySessionPool(
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
       // TODO(akalin): Force callers to have a valid value of
-      // |default_protocol_|. Or at least make the default be
-      // kProtoSPDY3.
+      // |default_protocol_|.
       default_protocol_(
           (default_protocol == kProtoUnknown) ?
-          kProtoSPDY2 : default_protocol),
+          kProtoSPDY3 : default_protocol),
       stream_initial_recv_window_size_(stream_initial_recv_window_size),
       initial_max_concurrent_streams_(initial_max_concurrent_streams),
       max_concurrent_streams_limit_(max_concurrent_streams_limit),

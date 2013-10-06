@@ -181,7 +181,8 @@ class SpdySessionTest : public PlatformTest,
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdySessionTest,
-    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
+    testing::Values(kProtoDeprecatedSPDY2,
+                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
                     kProtoHTTP2Draft04));
 
 // Try to create a SPDY session that will fail during
@@ -2705,7 +2706,7 @@ TEST_P(SpdySessionTest, ProtocolNegotiation) {
 
   EXPECT_EQ(spdy_util_.spdy_version(),
             session->buffered_spdy_framer_->protocol_version());
-  if (GetParam() == kProtoSPDY2) {
+  if (GetParam() == kProtoDeprecatedSPDY2) {
     EXPECT_EQ(SpdySession::FLOW_CONTROL_NONE, session->flow_control_state());
     EXPECT_EQ(0, session->session_send_window_size_);
     EXPECT_EQ(0, session->session_recv_window_size_);

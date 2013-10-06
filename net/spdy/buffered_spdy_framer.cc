@@ -10,7 +10,7 @@ namespace net {
 
 SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
   switch (next_proto) {
-    case kProtoSPDY2:
+    case kProtoDeprecatedSPDY2:
       return SPDY2;
     case kProtoSPDY3:
     case kProtoSPDY31:
