@@ -172,11 +172,6 @@ namespace WTF {
         return RefPtr<T>(static_cast<T*>(p.get()));
     }
 
-    template<typename T> inline RefPtr<T> const_pointer_cast(const RefPtr<T>& p)
-    {
-        return RefPtr<T>(const_cast<T*>(p.get()));
-    }
-
     template<typename T> inline T* getPtr(const RefPtr<T>& p)
     {
         return p.get();
@@ -186,6 +181,5 @@ namespace WTF {
 
 using WTF::RefPtr;
 using WTF::static_pointer_cast;
-using WTF::const_pointer_cast;
 
 #endif // WTF_RefPtr_h

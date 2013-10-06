@@ -148,11 +148,6 @@ template<typename T, typename U> inline PassOwnArrayPtr<T> static_pointer_cast(c
     return adoptArrayPtr(static_cast<T*>(p.leakPtr()));
 }
 
-template<typename T, typename U> inline PassOwnArrayPtr<T> const_pointer_cast(const PassOwnArrayPtr<U>& p)
-{
-    return adoptArrayPtr(const_cast<T*>(p.leakPtr()));
-}
-
 template<typename T> inline T* getPtr(const PassOwnArrayPtr<T>& p)
 {
     return p.get();
@@ -162,7 +157,6 @@ template<typename T> inline T* getPtr(const PassOwnArrayPtr<T>& p)
 
 using WTF::PassOwnArrayPtr;
 using WTF::adoptArrayPtr;
-using WTF::const_pointer_cast;
 using WTF::static_pointer_cast;
 
 #endif // WTF_PassOwnArrayPtr_h
