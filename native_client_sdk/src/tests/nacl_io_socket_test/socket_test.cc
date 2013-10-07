@@ -46,11 +46,13 @@ void IP4ToSockAddr(uint32_t ip, uint16_t port, struct sockaddr_in* addr) {
 
 class SocketTest : public ::testing::Test {
  public:
-  SocketTest() : sock1(0), sock2(0) {}
+  SocketTest() : sock1(-1), sock2(-1) {}
 
   void TearDown() {
-    EXPECT_EQ(0, close(sock1));
-    EXPECT_EQ(0, close(sock2));
+    if (sock1 != -1)
+      EXPECT_EQ(0, close(sock1));
+    if (sock2 != -1)
+      EXPECT_EQ(0, close(sock2));
   }
 
   int Bind(int fd, uint32_t ip, uint16_t port) {
@@ -58,7 +60,7 @@ class SocketTest : public ::testing::Test {
     socklen_t addrlen = sizeof(addr);
 
     IP4ToSockAddr(ip, port, &addr);
-    int err = bind(fd, (sockaddr*) &addr, addrlen);
+    int err = bind(fd, (sockaddr*)&addr, addrlen);
 
     if (err == -1)
       return errno;
@@ -77,6 +79,19 @@ class SocketTestUDP : public SocketTest {
   void SetUp() {
     sock1 = socket(AF_INET, SOCK_DGRAM, 0);
     sock2 = socket(AF_INET, SOCK_DGRAM, 0);
+
+    EXPECT_GT(sock1, -1);
+    EXPECT_GT(sock2, -1);
+  }
+};
+
+class SocketTestTCP : public SocketTest {
+ public:
+  SocketTestTCP() {}
+
+  void SetUp() {
+    sock1 = socket(AF_INET, SOCK_STREAM, 0);
+    sock2 = socket(AF_INET, SOCK_STREAM, 0);
 
     EXPECT_GT(sock1, -1);
     EXPECT_GT(sock2, -1);
@@ -257,7 +272,7 @@ TEST_F(SocketTestWithServer, TCPConnect) {
 
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
 
-  EXPECT_EQ(0, connect(sock, (sockaddr*) &addr, addrlen))
+  EXPECT_EQ(0, connect(sock, (sockaddr*)&addr, addrlen))
     << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   // Send two different messages to the echo server and verify the
@@ -277,32 +292,92 @@ TEST_F(SocketTestWithServer, TCPConnect) {
   ASSERT_EQ(0, close(sock));
 }
 
-TEST_F(SocketTest, Setsockopt) {
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
-  EXPECT_GT(sock, -1);
+TEST_F(SocketTest, Getsockopt) {
+  sock1 = socket(AF_INET, SOCK_STREAM, 0);
+  EXPECT_GT(sock1, -1);
   int socket_error = 99;
   socklen_t len = sizeof(socket_error);
 
   // Test for valid option (SO_ERROR) which should be 0 when a socket
   // is first created.
-  ASSERT_EQ(0, getsockopt(sock, SOL_SOCKET, SO_ERROR, &socket_error, &len));
+  ASSERT_EQ(0, getsockopt(sock1, SOL_SOCKET, SO_ERROR, &socket_error, &len));
   ASSERT_EQ(0, socket_error);
   ASSERT_EQ(sizeof(socket_error), len);
 
+  int reuse = 0;
+  len = sizeof(reuse);
+  ASSERT_EQ(0, getsockopt(sock1, SOL_SOCKET, SO_REUSEADDR, &reuse, &len));
+  ASSERT_EQ(1, reuse);
+
   // Test for an invalid option (-1)
-  ASSERT_EQ(-1, getsockopt(sock, SOL_SOCKET, -1, &socket_error, &len));
+  ASSERT_EQ(-1, getsockopt(sock1, SOL_SOCKET, -1, &socket_error, &len));
   ASSERT_EQ(ENOPROTOOPT, errno);
 }
 
-TEST_F(SocketTest, Getsockopt) {
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
-  EXPECT_GT(sock, -1);
+TEST_F(SocketTest, Setsockopt) {
+  sock1 = socket(AF_INET, SOCK_STREAM, 0);
+  EXPECT_GT(sock1, -1);
 
   // It should not be possible to set SO_ERROR using setsockopt.
   int socket_error = 10;
   socklen_t len = sizeof(socket_error);
-  ASSERT_EQ(-1, setsockopt(sock, SOL_SOCKET, SO_ERROR, &socket_error, len));
+  ASSERT_EQ(-1, setsockopt(sock1, SOL_SOCKET, SO_ERROR, &socket_error, len));
   ASSERT_EQ(ENOPROTOOPT, errno);
+
+  int reuse = 1;
+  len = sizeof(reuse);
+  ASSERT_EQ(0, setsockopt(sock1, SOL_SOCKET, SO_REUSEADDR, &reuse, len));
+}
+
+TEST_F(SocketTestUDP, Listen) {
+  EXPECT_EQ(-1, listen(sock1, 10));
+  EXPECT_EQ(errno, ENOTSUP);
+}
+
+TEST_F(SocketTestTCP, Listen) {
+  // Accept should fail when socket not listening
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  int server_sock = sock1;
+
+  // Accept before listen should fail
+  ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
+
+  // Listen should fail on unbound socket
+  ASSERT_EQ(-1, listen(server_sock, 10));
+
+  // bind and listen
+  ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
+  ASSERT_EQ(0, listen(server_sock, 10))
+    << "listen failed with: " << strerror(errno);
+
+  // Connect to listening socket
+  int client_sock = sock2;
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+  addrlen = sizeof(addr);
+  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+
+  ASSERT_EQ(5, send(client_sock, "hello", 5, 0));
+
+  // Pass in addrlen that is larger than our actual address to make
+  // sure that it is correctly set back to sizeof(sockaddr_in)
+  addrlen = sizeof(addr) + 10;
+  int new_socket = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  ASSERT_GT(new_socket, -1)
+    << "accept failed with " << errno << ": " << strerror(errno) << "\n";
+
+  // Verify addr and addrlen were set correctly
+  ASSERT_EQ(addrlen, sizeof(sockaddr_in));
+  sockaddr_in client_addr;
+  ASSERT_EQ(0, getsockname(client_sock, (sockaddr*)&client_addr, &addrlen));
+  ASSERT_EQ(client_addr.sin_family, addr.sin_family);
+  ASSERT_EQ(client_addr.sin_port, addr.sin_port);
+  ASSERT_EQ(client_addr.sin_addr.s_addr, addr.sin_addr.s_addr);
+
+  char inbuf[512];
+  ASSERT_EQ(5, recv(new_socket, inbuf, 5, 0));
 }
 
 #endif  // PROVIDES_SOCKET_API

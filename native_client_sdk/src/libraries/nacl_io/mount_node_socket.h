@@ -28,6 +28,7 @@ class MountStream;
 class MountNodeSocket : public MountNodeStream {
  public:
   explicit MountNodeSocket(Mount* mount);
+  MountNodeSocket(Mount* mount, PP_Resource socket);
 
  protected:
   virtual void Destroy();
@@ -48,8 +49,6 @@ class MountNodeSocket : public MountNodeStream {
                            socklen_t len);
 
   // Unsupported Functions
-  virtual Error Accept(const struct sockaddr* addr, socklen_t len);
-  virtual Error Listen(int backlog);
   virtual Error Shutdown(int how);
   virtual Error MMap(void* addr,
                      size_t length,
@@ -59,8 +58,12 @@ class MountNodeSocket : public MountNodeStream {
                      void** out_addr);
 
   // Socket Functions.
+  virtual Error Accept(PP_Resource* new_sock,
+                       struct sockaddr* addr,
+                       socklen_t* len);
   virtual Error Bind(const struct sockaddr* addr, socklen_t len);
   virtual Error Connect(const struct sockaddr* addr, socklen_t len);
+  virtual Error Listen(int backlog);
   virtual Error Recv(void* buf, size_t len, int flags, int* out_len);
   virtual Error RecvFrom(void* buf,
                          size_t len,

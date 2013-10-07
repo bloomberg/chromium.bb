@@ -1025,8 +1025,27 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  PP_Resource new_sock = 0;
+  Error err = handle->socket_node()->Accept(&new_sock, addr, len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  MountNodeSocket* sock = new MountNodeTCP(stream_mount_.get(), new_sock);
+
+  // The MountNodeSocket now holds a reference to the new socket
+  // so we release ours.
+  ppapi_->ReleaseResource(new_sock);
+  err = sock->Init(S_IREAD | S_IWRITE);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  ScopedMountNode node(sock);
+  ScopedKernelHandle new_handle(new KernelHandle(stream_mount_, node));
+  return AllocateFD(new_handle);
 }
 
 int KernelProxy::bind(int fd, const struct sockaddr* addr, socklen_t len) {
@@ -1137,8 +1156,13 @@ int KernelProxy::listen(int fd, int backlog) {
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EOPNOTSUPP;
-  return -1;
+  Error err = handle->socket_node()->Listen(backlog);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return 0;
 }
 
 ssize_t KernelProxy::recv(int fd,

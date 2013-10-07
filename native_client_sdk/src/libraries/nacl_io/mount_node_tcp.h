@@ -20,6 +20,7 @@ namespace nacl_io {
 class MountNodeTCP : public MountNodeSocket {
  public:
   explicit MountNodeTCP(Mount* mount);
+  MountNodeTCP(Mount* mount, PP_Resource socket);
 
  protected:
   virtual Error Init(int flags);
@@ -31,10 +32,15 @@ class MountNodeTCP : public MountNodeSocket {
   virtual void QueueInput();
   virtual void QueueOutput();
 
+  virtual Error Accept(PP_Resource* out_sock,
+                       struct sockaddr* addr,
+                       socklen_t* len);
   virtual Error Bind(const struct sockaddr* addr, socklen_t len);
+  virtual Error Listen(int backlog);
   virtual Error Connect(const struct sockaddr* addr, socklen_t len);
 
  protected:
+  void ConnectDone();
   virtual Error Recv_Locked(void* buf,
                             size_t len,
                             PP_Resource* out_addr,

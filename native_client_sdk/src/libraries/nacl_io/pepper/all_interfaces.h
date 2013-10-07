@@ -115,6 +115,7 @@ BEGIN_INTERFACE(NetAddressInterface, PPB_NetAddress_1_0,
           struct PP_NetAddress_IPv4*)
   METHOD2(NetAddressInterface, PP_Bool, DescribeAsIPv6Address, PP_Resource,
           struct PP_NetAddress_IPv6*)
+  METHOD2(NetAddressInterface, PP_Var, DescribeAsString, PP_Resource, PP_Bool)
 END_INTERFACE(NetAddressInterface, PPB_NetAddress_1_0)
 
 BEGIN_INTERFACE(URLLoaderInterface, PPB_URLLoader_1_0,
@@ -141,9 +142,15 @@ BEGIN_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo_1_0,
           PP_URLResponseProperty)
 END_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo_1_0)
 
-BEGIN_INTERFACE(TCPSocketInterface, PPB_TCPSocket_1_0,
-                PPB_TCPSOCKET_INTERFACE_1_0)
+BEGIN_INTERFACE(TCPSocketInterface, PPB_TCPSocket_1_1,
+                PPB_TCPSOCKET_INTERFACE_1_1)
   METHOD1(TCPSocketInterface, PP_Resource, Create, PP_Instance)
+  METHOD3(TCPSocketInterface, int32_t, Bind, PP_Resource, PP_Resource,
+          PP_CompletionCallback)
+  METHOD3(TCPSocketInterface, int32_t, Listen, PP_Resource, int32_t,
+          PP_CompletionCallback)
+  METHOD3(TCPSocketInterface, int32_t, Accept, PP_Resource, PP_Resource*,
+          PP_CompletionCallback)
   METHOD1(TCPSocketInterface, PP_Bool, IsTCPSocket, PP_Resource)
   METHOD3(TCPSocketInterface, int32_t, Connect, PP_Resource, PP_Resource,
           PP_CompletionCallback)
@@ -156,7 +163,7 @@ BEGIN_INTERFACE(TCPSocketInterface, PPB_TCPSocket_1_0,
   METHOD1(TCPSocketInterface, void, Close, PP_Resource)
   METHOD4(TCPSocketInterface, int32_t, SetOption, PP_Resource,
           PP_TCPSocket_Option, PP_Var, PP_CompletionCallback)
-END_INTERFACE(TCPSocketInterface, PPB_TCPSocket_1_0)
+END_INTERFACE(TCPSocketInterface, PPB_TCPSocket_1_1)
 
 BEGIN_INTERFACE(UDPSocketInterface, PPB_UDPSocket_1_0,
                 PPB_UDPSOCKET_INTERFACE_1_0)

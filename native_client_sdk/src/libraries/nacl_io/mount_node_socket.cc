@@ -28,6 +28,17 @@ MountNodeSocket::MountNodeSocket(Mount* mount)
   stat_.st_mode |= S_IFSOCK;
 }
 
+MountNodeSocket::MountNodeSocket(Mount* mount, PP_Resource socket)
+    : MountNodeStream(mount),
+      socket_resource_(socket),
+      local_addr_(0),
+      remote_addr_(0),
+      socket_flags_(0),
+      last_errno_(0) {
+  stat_.st_mode |= S_IFSOCK;
+  mount_->ppapi()->AddRefResource(socket_resource_);
+}
+
 void MountNodeSocket::Destroy() {
   if (socket_resource_)
     mount_->ppapi()->ReleaseResource(socket_resource_);
@@ -181,8 +192,8 @@ bool MountNodeSocket::IsEquivalentAddress(PP_Resource addr1,
   return memcmp(saddr1, saddr2, len1) == 0;
 }
 
-
-Error MountNodeSocket::Accept(const struct sockaddr* addr, socklen_t len) {
+Error MountNodeSocket::Accept(PP_Resource* new_sock, struct sockaddr* addr,
+                              socklen_t* len) {
   return ENOSYS;
 }
 
@@ -208,6 +219,15 @@ Error MountNodeSocket::GetSockOpt(int lvl,
     return ENOPROTOOPT;
 
   switch (optname) {
+    case SO_REUSEADDR: {
+      // SO_REUSEADDR is effectivly always on since we can't
+      // disable it with PPAPI sockets.
+      int value = 1;
+      int copy_bytes = std::min(sizeof(int), *len);
+      memcpy(optval, &value, copy_bytes);
+      *len = sizeof(int);
+      return 0;
+    }
     case SO_ERROR: {
       int copy_bytes = std::min(sizeof(int), *len);
       memcpy(optval, &last_errno_, copy_bytes);
@@ -224,13 +244,24 @@ Error MountNodeSocket::SetSockOpt(int lvl,
                                   int optname,
                                   const void* optval,
                                   socklen_t len) {
+  if (lvl != SOL_SOCKET)
+    return ENOPROTOOPT;
+
+  switch (optname) {
+    case SO_REUSEADDR: {
+      // SO_REUSEADDR is effectivly always on since we can't
+      // disable it with PPAPI sockets. Just return success
+      // here regardless.
+      return 0;
+    }
+  }
+
   return ENOPROTOOPT;
 }
 
 Error MountNodeSocket::Bind(const struct sockaddr* addr, socklen_t len) {
   return EINVAL;
 }
-
 
 Error MountNodeSocket::Recv(void* buf, size_t len, int flags, int* out_len) {
   return RecvFrom(buf, len, flags, NULL, 0, out_len);
@@ -285,7 +316,6 @@ Error MountNodeSocket::RecvHelper(void* buf,
     QueueInput();
   return err;
 }
-
 
 Error MountNodeSocket::Send(const void* buf,
                               size_t len,

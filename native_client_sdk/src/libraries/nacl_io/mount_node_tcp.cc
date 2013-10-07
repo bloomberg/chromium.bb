@@ -42,7 +42,6 @@ class TCPWork : public MountStream::Work {
   char* data_;
 };
 
-
 class TCPSendWork : public TCPWork {
  public:
   explicit TCPSendWork(const ScopedEventEmitterTCP& emitter)
@@ -153,9 +152,14 @@ class TCPRecvWork : public TCPWork {
   }
 };
 
-
 MountNodeTCP::MountNodeTCP(Mount* mount)
     : MountNodeSocket(mount),
+      emitter_(new EventEmitterTCP(kDefaultFifoSize, kDefaultFifoSize)) {
+  emitter_->AttachStream(this);
+}
+
+MountNodeTCP::MountNodeTCP(Mount* mount, PP_Resource socket)
+    : MountNodeSocket(mount, socket),
       emitter_(new EventEmitterTCP(kDefaultFifoSize, kDefaultFifoSize)) {
   emitter_->AttachStream(this);
 }
@@ -169,9 +173,17 @@ Error MountNodeTCP::Init(int flags) {
   if (TCPInterface() == NULL)
     return EACCES;
 
-  socket_resource_ = TCPInterface()->Create(mount_->ppapi()->GetInstance());
-  if (0 == socket_resource_)
-    return EACCES;
+  if (socket_resource_ != 0) {
+    // TCP sockets that are contructed with an existing socket_resource_
+    // are those that generated from calls to Accept() and therefore are
+    // already connected.
+    remote_addr_ = TCPInterface()->GetRemoteAddress(socket_resource_);
+    ConnectDone();
+  } else {
+    socket_resource_ = TCPInterface()->Create(mount_->ppapi()->GetInstance());
+    if (0 == socket_resource_)
+      return EACCES;
+  }
 
   return 0;
 }
@@ -190,6 +202,22 @@ void MountNodeTCP::QueueOutput() {
   mount_stream()->EnqueueWork(work);
 }
 
+Error MountNodeTCP::Accept(PP_Resource* out_sock,
+                           struct sockaddr* addr,
+                           socklen_t* len) {
+  AUTO_LOCK(node_lock_);
+  int err = TCPInterface()->Accept(socket_resource_,
+                                   out_sock,
+                                   PP_BlockUntilComplete());
+
+  if (err != PP_OK)
+    return PPErrorToErrno(err);
+
+  PP_Resource remote_addr = TCPInterface()->GetRemoteAddress(*out_sock);
+  *len = ResourceToSockAddr(remote_addr, *len, addr);
+  mount_->ppapi()->ReleaseResource(remote_addr);
+  return 0;
+}
 
 // We can not bind a client socket with PPAPI.  For now we ignore the
 // bind but report the correct address later, just in case someone is
@@ -198,22 +226,27 @@ void MountNodeTCP::QueueOutput() {
 Error MountNodeTCP::Bind(const struct sockaddr* addr, socklen_t len) {
   AUTO_LOCK(node_lock_);
 
-  if (0 == socket_resource_)
-    return EBADF;
-
   /* Only bind once. */
   if (local_addr_ != 0)
     return EINVAL;
 
-  /* Lie, we won't know until we connect. */
+  local_addr_ = SockAddrToResource(addr, len);
+  int err = TCPInterface()->Bind(socket_resource_,
+                                 local_addr_,
+                                 PP_BlockUntilComplete());
+
+  // If we fail, release the local addr resource
+  if (err != PP_OK) {
+    mount_->ppapi()->ReleaseResource(local_addr_);
+    local_addr_ = 0;
+    return PPErrorToErrno(err);
+  }
+
   return 0;
 }
 
 Error MountNodeTCP::Connect(const struct sockaddr* addr, socklen_t len) {
   AUTO_LOCK(node_lock_);
-
-  if (0 == socket_resource_)
-    return EBADF;
 
   if (remote_addr_ != 0)
     return EISCONN;
@@ -233,17 +266,29 @@ Error MountNodeTCP::Connect(const struct sockaddr* addr, socklen_t len) {
     return PPErrorToErrno(err);
   }
 
+  ConnectDone();
+  return 0;
+}
+
+void MountNodeTCP::ConnectDone() {
   local_addr_ = TCPInterface()->GetLocalAddress(socket_resource_);
-  mount_->ppapi()->AddRefResource(local_addr_);
 
   // Now that we are connected, we can start sending and receiving.
   SetStreamFlags(SSF_CAN_SEND | SSF_CAN_RECV);
 
   // Begin the input pump
   QueueInput();
-  return 0;
 }
 
+Error MountNodeTCP::Listen(int backlog) {
+  int err = TCPInterface()->Listen(socket_resource_,
+                                   backlog,
+                                   PP_BlockUntilComplete());
+  if (err != PP_OK)
+    return PPErrorToErrno(err);
+
+  return 0;
+}
 
 Error MountNodeTCP::Recv_Locked(void* buf,
                                 size_t len,
