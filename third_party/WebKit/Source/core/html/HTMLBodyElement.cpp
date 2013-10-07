@@ -268,6 +268,9 @@ int HTMLBodyElement::scrollLeft()
 
 void HTMLBodyElement::setScrollLeft(int scrollLeft)
 {
+    if (!document().inQuirksMode())
+        return;
+
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
     Frame* frame = document.frame();
@@ -296,6 +299,9 @@ int HTMLBodyElement::scrollTop()
 
 void HTMLBodyElement::setScrollTop(int scrollTop)
 {
+    if (!document().inQuirksMode())
+        return;
+
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
     Frame* frame = document.frame();

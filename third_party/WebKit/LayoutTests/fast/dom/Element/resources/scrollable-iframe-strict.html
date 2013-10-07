@@ -8,7 +8,15 @@
     </style>
     <script>
         function scroll() {
-          window.scrollTo(4000,5000);
+          document.documentElement.scrollTop = 5000;
+          document.documentElement.scrollLeft = 4000;
+
+          // The calls below should not take effect, given
+          // that setting scrollTop/Left on the body node
+          // is no-op in strict-mode.
+          document.body.scrollTop = 1;
+          document.body.scrollLeft = 1;
+
           parent.verifyTest()
         }
     </script>

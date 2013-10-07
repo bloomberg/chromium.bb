@@ -725,6 +725,27 @@ int Element::scrollTop()
 void Element::setScrollLeft(int newLeft)
 {
     document().updateLayoutIgnorePendingStylesheets();
+
+    if (document().documentElement() == this) {
+        if (document().inQuirksMode())
+            return;
+
+        Frame* frame = document().frame();
+        if (!frame)
+            return;
+        FrameView* view = frame->view();
+        if (!view)
+            return;
+
+        // WHATWG spec says [1]: "If the element is the root element invoke scroll()
+        // with x as first argument and zero as second". Blink intentionally matches
+        // other engine's behaviors here, instead, where the 'y' scroll position is
+        // preversed. See [2].
+        // [1] http://dev.w3.org/csswg/cssom-view/#dom-element-scrollleft
+        // [2] https://www.w3.org/Bugs/Public/show_bug.cgi?id=23448
+        view->setScrollPosition(IntPoint(static_cast<int>(newLeft * frame->pageZoomFactor()), view->scrollY()));
+    }
+
     if (RenderBox* rend = renderBox())
         rend->setScrollLeft(static_cast<int>(newLeft * rend->style()->effectiveZoom()));
 }
@@ -732,6 +753,27 @@ void Element::setScrollLeft(int newLeft)
 void Element::setScrollTop(int newTop)
 {
     document().updateLayoutIgnorePendingStylesheets();
+
+    if (document().documentElement() == this) {
+        if (document().inQuirksMode())
+            return;
+
+        Frame* frame = document().frame();
+        if (!frame)
+            return;
+        FrameView* view = frame->view();
+        if (!view)
+            return;
+
+        // WHATWG spec says [1]: "If the element is the root element invoke scroll()
+        // with zero as first argument and y as second". Blink intentionally
+        // matches other engine's behaviors here, instead, where the 'x' scroll
+        // position is preversed. See [2].
+        // [1] http://dev.w3.org/csswg/cssom-view/#dom-element-scrolltop
+        // [2] https://www.w3.org/Bugs/Public/show_bug.cgi?id=23448
+        view->setScrollPosition(IntPoint(view->scrollX(), static_cast<int>(newTop * frame->pageZoomFactor())));
+    }
+
     if (RenderBox* rend = renderBox())
         rend->setScrollTop(static_cast<int>(newTop * rend->style()->effectiveZoom()));
 }

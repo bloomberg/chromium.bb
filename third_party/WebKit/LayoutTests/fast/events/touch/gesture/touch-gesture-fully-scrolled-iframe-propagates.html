@@ -73,7 +73,7 @@ function firstGestureScroll()
     
     var amountToScroll = iframeBody.scrollHeight - iframe.clientHeight;
 
-    iframeBody.scrollTop = amountToScroll;
+    iframeDocumentElement.scrollTop = amountToScroll;
 
     // Sanity - make sure the iframe is actually fully scrolled scrolled
     shouldBe('iframeBody.scrollHeight - iframeDocumentElement.scrollTop', 'iframe.clientHeight');

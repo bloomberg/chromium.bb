@@ -19,11 +19,15 @@
         shouldBe("iframeStrict.contentDocument.documentElement.scrollLeft", "4000");
         shouldBe("iframeStrict.contentDocument.body.scrollTop", "0");
         shouldBe("iframeStrict.contentDocument.body.scrollLeft", "0");
+        shouldBe("iframeStrict.contentWindow.pageYOffset", "5000");
+        shouldBe("iframeStrict.contentWindow.pageXOffset", "4000");
 
         shouldBe("iframeQuirks.contentDocument.documentElement.scrollTop", "0");
         shouldBe("iframeQuirks.contentDocument.documentElement.scrollLeft", "0");
         shouldBe("iframeQuirks.contentDocument.body.scrollTop", "5000");
         shouldBe("iframeQuirks.contentDocument.body.scrollLeft", "4000");
+        shouldBe("iframeQuirks.contentWindow.pageYOffset", "5000");
+        shouldBe("iframeQuirks.contentWindow.pageXOffset", "4000");
         finishJSTest();
       }
       var jsTestIsAsync = true;

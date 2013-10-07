@@ -51,7 +51,7 @@
                 return;
 
             // Scroll the page first to test that resize works with scrolled page.
-            document.body.scrollTop = 50;
+            document.documentElement.scrollTop = 50;
 
             // 1. Touch scrolling starting at outside of the object, e.g. offset (6, 7)
             //    to bottom right corner of the object, won't do the resize.
@@ -68,7 +68,7 @@
             resize("textarea1", -20, -20, 20, 10, "resize");
 
             // Scroll the page again
-            document.body.scrollTop += 100;
+            document.documentElement.scrollTop += 100;
 
             resize("iframe1", -6, -7, 20, 10, "resize");
             resize("iframe1", -20, -20, 20, 10, "noresize");

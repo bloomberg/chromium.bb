@@ -7,10 +7,14 @@ PASS iframeStrict.contentDocument.documentElement.scrollTop is 5000
 PASS iframeStrict.contentDocument.documentElement.scrollLeft is 4000
 PASS iframeStrict.contentDocument.body.scrollTop is 0
 PASS iframeStrict.contentDocument.body.scrollLeft is 0
+PASS iframeStrict.contentWindow.pageYOffset is 5000
+PASS iframeStrict.contentWindow.pageXOffset is 4000
 PASS iframeQuirks.contentDocument.documentElement.scrollTop is 0
 PASS iframeQuirks.contentDocument.documentElement.scrollLeft is 0
 PASS iframeQuirks.contentDocument.body.scrollTop is 5000
 PASS iframeQuirks.contentDocument.body.scrollLeft is 4000
+PASS iframeQuirks.contentWindow.pageYOffset is 5000
+PASS iframeQuirks.contentWindow.pageXOffset is 4000
 PASS successfullyParsed is true
 
 TEST COMPLETE
