@@ -1010,27 +1010,25 @@ IntRect RenderView::documentRect() const
     return IntRect(overflowRect);
 }
 
-int RenderView::viewHeight(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion) const
+int RenderView::viewHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion) const
 {
     int height = 0;
-    if (!shouldUsePrintingLayout() && m_frameView) {
-        height = m_frameView->layoutHeight(scrollbarInclusion);
-        height = m_frameView->useFixedLayout() ? ceilf(style()->effectiveZoom() * float(height)) : height;
-    }
+    if (!shouldUsePrintingLayout() && m_frameView)
+        height = m_frameView->layoutSize(scrollbarInclusion).height();
+
     return height;
 }
 
-int RenderView::viewWidth(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion) const
+int RenderView::viewWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion) const
 {
     int width = 0;
-    if (!shouldUsePrintingLayout() && m_frameView) {
-        width = m_frameView->layoutWidth(scrollbarInclusion);
-        width = m_frameView->useFixedLayout() ? ceilf(style()->effectiveZoom() * float(width)) : width;
-    }
+    if (!shouldUsePrintingLayout() && m_frameView)
+        width = m_frameView->layoutSize(scrollbarInclusion).width();
+
     return width;
 }
 
-int RenderView::viewLogicalHeight(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion) const
+int RenderView::viewLogicalHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion) const
 {
     int height = style()->isHorizontalWritingMode() ? viewHeight(scrollbarInclusion) : viewWidth(scrollbarInclusion);
 

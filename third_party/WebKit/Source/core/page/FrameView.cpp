@@ -54,6 +54,7 @@
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ScrollAnimator.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/CompositedLayerMapping.h"
@@ -190,6 +191,7 @@ FrameView::FrameView(Frame* frame)
     , m_hasSoftwareFilters(false)
     , m_visibleContentScaleFactor(1)
     , m_partialLayout()
+    , m_layoutSizeFixedToFrameSize(true)
 {
     ASSERT(m_frame);
     init();
@@ -212,6 +214,8 @@ PassRefPtr<FrameView> FrameView::create(Frame* frame, const IntSize& initialSize
 {
     RefPtr<FrameView> view = adoptRef(new FrameView(frame));
     view->Widget::setFrameRect(IntRect(view->location(), initialSize));
+    view->setLayoutSizeInternal(initialSize);
+
     view->show();
     return view.release();
 }
@@ -1062,7 +1066,7 @@ void FrameView::layout(bool allowSubtree)
 
             LayoutSize oldSize = m_size;
 
-            m_size = LayoutSize(layoutWidth(), layoutHeight());
+            m_size = LayoutSize(layoutSize().width(), layoutSize().height());
 
             if (oldSize != m_size) {
                 m_doFullRepaint = true;
@@ -1119,7 +1123,7 @@ void FrameView::layout(bool allowSubtree)
     updateCanBlitOnScrollRecursively();
 
     if (document->hasListenerType(Document::OVERFLOWCHANGED_LISTENER))
-        updateOverflowStatus(layoutWidth() < contentsWidth(), layoutHeight() < contentsHeight());
+        updateOverflowStatus(layoutSize().width() < contentsWidth(), layoutSize().height() < contentsHeight());
 
     scheduleOrPerformPostLayoutTasks();
 
@@ -1619,6 +1623,17 @@ void FrameView::setViewportConstrainedObjectsNeedLayout()
     }
 }
 
+IntSize FrameView::layoutSize(IncludeScrollbarsInRect scrollbarInclusion) const
+{
+    return scrollbarInclusion == ExcludeScrollbars ? excludeScrollbars(m_layoutSize) : m_layoutSize;
+}
+
+void FrameView::setLayoutSize(const IntSize& size)
+{
+    ASSERT(!layoutSizeFixedToFrameSize());
+
+    setLayoutSizeInternal(size);
+}
 
 void FrameView::scrollPositionChanged()
 {
@@ -1735,7 +1750,7 @@ void FrameView::contentsResized()
     setNeedsLayout();
 }
 
-void FrameView::visibleContentsResized()
+void FrameView::scrollbarExistenceDidChange()
 {
     // We check to make sure the view is attached to a frame() as this method can
     // be triggered before the view is attached by Frame::createView(...) setting
@@ -1744,12 +1759,16 @@ void FrameView::visibleContentsResized()
     if (!frame().view())
         return;
 
-    if (!useFixedLayout() && needsLayout())
+    bool useOverlayScrollbars = ScrollbarTheme::theme()->usesOverlayScrollbars();
+
+    if (!useOverlayScrollbars && needsLayout())
         layout();
 
-    if (RenderView* renderView = this->renderView()) {
-        if (renderView->usesCompositing())
-            renderView->compositor()->frameViewDidChangeSize();
+    if (renderView() && renderView()->usesCompositing()) {
+        renderView()->compositor()->frameViewScrollbarsExistenceDidChange();
+
+        if (!useOverlayScrollbars)
+            renderView()->compositor()->frameViewDidChangeSize();
     }
 }
 
@@ -2406,6 +2425,7 @@ void FrameView::autoSizeIfEnabled()
             break;
 
         resize(newSize.width(), newSize.height());
+        setLayoutSize(newSize);
         // Force the scrollbar state to avoid the scrollbar code adding them and causing them to be needed. For example,
         // a vertical scrollbar may cause text to wrap and thus increase the height (which is the only reason the scollbar is needed).
         setVerticalScrollbarLock(false);
@@ -3410,6 +3430,23 @@ AXObjectCache* FrameView::axObjectCache() const
 bool FrameView::isMainFrame() const
 {
     return m_frame->page() && m_frame->page()->mainFrame() == m_frame;
+}
+
+void FrameView::frameRectsChanged()
+{
+    if (layoutSizeFixedToFrameSize())
+        setLayoutSizeInternal(frameRect().size());
+
+    ScrollView::frameRectsChanged();
+}
+
+void FrameView::setLayoutSizeInternal(const IntSize& size)
+{
+    if (m_layoutSize == size)
+        return;
+
+    m_layoutSize = size;
+    contentsResized();
 }
 
 } // namespace WebCore

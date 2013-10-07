@@ -1074,7 +1074,6 @@ crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pa
 crbug.com/253619 fast/loader/subresource-load-failed-crash.html [ Skip ]
 
 crbug.com/255359 [ Debug ] fast/events/resize-events-count.html [ Pass Failure ]
-crbug.com/255359 [ Debug ] fast/events/resize-events-fixed-layout.html [ Pass Failure ]
 
 crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
 
@@ -1154,6 +1153,10 @@ crbug.com/282496 [ Debug ] css3/filters/custom/composited/custom-filter-blend-mo
 crbug.com/282496 [ Linux Release ] css3/filters/custom/composited/custom-filter-blend-modes.html [ ImageOnlyFailure Pass ]
 
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
+
+crbug.com/285397 fast/dynamic/window-resize-scrollbars-test.html [ NeedsRebaseline ]
+crbug.com/285397 virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ NeedsRebaseline ]
+crbug.com/285397 virtual/android/fullscreen/full-screen-with-flex-item.html [ NeedsRebaseline ]
 
 # Pre-landing "binary" file (actually UTF-16) - enable with http://crrev.com/23532016
 Bug(jsbell) fast/encoding/utf-16-odd-byte.html [ Skip ]

@@ -49,7 +49,6 @@ ScrollView::ScrollView()
     , m_inUpdateScrollbars(false)
     , m_updateScrollbarsPass(0)
     , m_drawPanScrollIcon(false)
-    , m_useFixedLayout(false)
     , m_paintsEntireContents(false)
     , m_clipsRepaints(true)
 {
@@ -186,61 +185,31 @@ void ScrollView::setClipsRepaints(bool clipsRepaints)
     m_clipsRepaints = clipsRepaints;
 }
 
-IntSize ScrollView::unscaledVisibleContentSize(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
+IntSize ScrollView::unscaledVisibleContentSize(IncludeScrollbarsInRect scrollbarInclusion) const
+{
+    return scrollbarInclusion == ExcludeScrollbars ? excludeScrollbars(frameRect().size()) : frameRect().size();
+}
+
+IntSize ScrollView::excludeScrollbars(const IntSize& size) const
 {
     int verticalScrollbarWidth = 0;
     int horizontalScrollbarHeight = 0;
 
-    if (scrollbarInclusion == ExcludeScrollbars) {
-        if (Scrollbar* verticalBar = verticalScrollbar())
-            verticalScrollbarWidth = !verticalBar->isOverlayScrollbar() ? verticalBar->width() : 0;
-        if (Scrollbar* horizontalBar = horizontalScrollbar())
-            horizontalScrollbarHeight = !horizontalBar->isOverlayScrollbar() ? horizontalBar->height() : 0;
-    }
+    if (Scrollbar* verticalBar = verticalScrollbar())
+        verticalScrollbarWidth = !verticalBar->isOverlayScrollbar() ? verticalBar->width() : 0;
+    if (Scrollbar* horizontalBar = horizontalScrollbar())
+        horizontalScrollbarHeight = !horizontalBar->isOverlayScrollbar() ? horizontalBar->height() : 0;
 
-    return IntSize(max(0, width() - verticalScrollbarWidth),
-                   max(0, height() - horizontalScrollbarHeight));
+    return IntSize(max(0, size.width() - verticalScrollbarWidth),
+        max(0, size.height() - horizontalScrollbarHeight));
+
 }
 
-IntRect ScrollView::visibleContentRect(VisibleContentRectIncludesScrollbars scollbarInclusion) const
+IntRect ScrollView::visibleContentRect(IncludeScrollbarsInRect scollbarInclusion) const
 {
     FloatSize visibleContentSize = unscaledVisibleContentSize(scollbarInclusion);
     visibleContentSize.scale(1 / visibleContentScaleFactor());
     return IntRect(IntPoint(m_scrollOffset), expandedIntSize(visibleContentSize));
-}
-
-IntSize ScrollView::layoutSize(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
-{
-    return m_fixedLayoutSize.isZero() || !m_useFixedLayout ? unscaledVisibleContentSize(scrollbarInclusion) : m_fixedLayoutSize;
-}
-
-IntSize ScrollView::fixedLayoutSize() const
-{
-    return m_fixedLayoutSize;
-}
-
-void ScrollView::setFixedLayoutSize(const IntSize& newSize)
-{
-    if (fixedLayoutSize() == newSize)
-        return;
-    m_fixedLayoutSize = newSize;
-    updateScrollbars(scrollOffset());
-    if (m_useFixedLayout)
-        contentsResized();
-}
-
-bool ScrollView::useFixedLayout() const
-{
-    return m_useFixedLayout;
-}
-
-void ScrollView::setUseFixedLayout(bool enable)
-{
-    if (useFixedLayout() == enable)
-        return;
-    m_useFixedLayout = enable;
-    updateScrollbars(scrollOffset());
-    contentsResized();
 }
 
 IntSize ScrollView::contentsSize() const
@@ -368,7 +337,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     // This layout will not re-enter updateScrollbars and does not count towards our max layout pass total.
     if (!m_scrollbarsSuppressed) {
         m_inUpdateScrollbars = true;
-        visibleContentsResized();
+        scrollbarExistenceDidChange();
         m_inUpdateScrollbars = false;
     }
 
@@ -443,12 +412,12 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
             if (scrollbarsAreOverlay) {
                 // Synchronize status of scrollbar layers if necessary.
                 m_inUpdateScrollbars = true;
-                visibleContentsResized();
+                scrollbarExistenceDidChange();
                 m_inUpdateScrollbars = false;
             } else if (m_updateScrollbarsPass < cMaxUpdateScrollbarsPass) {
                 m_updateScrollbarsPass++;
                 contentsResized();
-                visibleContentsResized();
+                scrollbarExistenceDidChange();
                 IntSize newDocSize = contentsSize();
                 if (newDocSize == docSize) {
                     // The layout with the new scroll state had no impact on
@@ -739,12 +708,9 @@ void ScrollView::setFrameRect(const IntRect& newRect)
 
     Widget::setFrameRect(newRect);
 
-    frameRectsChanged();
-
     updateScrollbars(scrollOffset());
 
-    if (!m_useFixedLayout && oldRect.size() != newRect.size())
-        contentsResized();
+    frameRectsChanged();
 }
 
 void ScrollView::frameRectsChanged()
