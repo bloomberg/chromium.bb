@@ -108,7 +108,8 @@ bool TracingControllerImpl::DisableRecording(
     result_file_ = file_util::OpenFile(*result_file_path_, "w");
     result_file_has_at_least_one_result_ = false;
     const char* preamble = "{\"traceEvents\": [";
-    fwrite(preamble, strlen(preamble), 1, result_file_);
+    size_t written_bytes = fwrite(preamble, strlen(preamble), 1, result_file_);
+    DCHECK(written_bytes == strlen(preamble));
   }
 
   // There could be a case where there are no child processes and filters_
@@ -201,7 +202,8 @@ void TracingControllerImpl::CaptureMonitoringSnapshot(
   result_file_ = file_util::OpenFile(*result_file_path_, "w");
   result_file_has_at_least_one_result_ = false;
   const char* preamble = "{\"traceEvents\": [";
-  fwrite(preamble, strlen(preamble), 1, result_file_);
+  size_t written_bytes = fwrite(preamble, strlen(preamble), 1, result_file_);
+  DCHECK(written_bytes == strlen(preamble));
 
   // There could be a case where there are no child processes and filters_
   // is empty. In that case we can immediately tell the subscriber that tracing
@@ -289,7 +291,8 @@ void TracingControllerImpl::OnDisableRecordingAcked(
     pending_get_categories_done_callback_.Reset();
   } else if (!pending_disable_recording_done_callback_.is_null()) {
     const char* trailout = "]}";
-    fwrite(trailout, strlen(trailout), 1, result_file_);
+    size_t written_bytes = fwrite(trailout, strlen(trailout), 1, result_file_);
+    DCHECK(written_bytes == strlen(trailout));
     file_util::CloseFile(result_file_);
     result_file_ = 0;
     pending_disable_recording_done_callback_.Run(result_file_path_.Pass());
@@ -322,7 +325,8 @@ void TracingControllerImpl::OnCaptureMonitoringSnapshotAcked() {
 
   if (!pending_capture_monitoring_snapshot_done_callback_.is_null()) {
     const char* trailout = "]}";
-    fwrite(trailout, strlen(trailout), 1, result_file_);
+    size_t written_bytes = fwrite(trailout, strlen(trailout), 1, result_file_);
+    DCHECK(written_bytes == strlen(trailout));
     file_util::CloseFile(result_file_);
     result_file_ = 0;
     pending_capture_monitoring_snapshot_done_callback_.Run(
@@ -349,12 +353,15 @@ void TracingControllerImpl::OnTraceDataCollected(
   // If there is already a result in the file, then put a commma
   // before the next batch of results.
   if (result_file_has_at_least_one_result_) {
-    fwrite(",", 1, 1, result_file_);
+    size_t written_bytes = fwrite(",", 1, 1, result_file_);
+    DCHECK(written_bytes == 1);
   } else {
     result_file_has_at_least_one_result_ = true;
   }
-  fwrite(events_str_ptr->data().c_str(), events_str_ptr->data().size(), 1,
-         result_file_);
+  size_t written_bytes = fwrite(events_str_ptr->data().c_str(),
+                                events_str_ptr->data().size(), 1,
+                                result_file_);
+  DCHECK(written_bytes == events_str_ptr->data().size());
 }
 
 void TracingControllerImpl::OnLocalTraceDataCollected(
