@@ -182,9 +182,6 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Returns the radius of the header's top corners.
   int GetHeaderCornerRadius() const;
 
-  // Adjust frame operations for left / right maximized modes.
-  int AdjustFrameHitCodeForMaximizedModes(int hit_code);
-
   // Returns true if |window_->GetRootWindow()| should be drawing transparent
   // window headers.
   bool UseSoloWindowHeader() const;
@@ -202,6 +199,10 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // changes it schedules paints as necessary.
   static void UpdateSoloWindowInRoot(aura::RootWindow* root_window,
                                      aura::Window* ignore_window);
+
+  // Updates the size of the region inside of |window_| in which the resize
+  // handles are shown based on |window_|'s show type.
+  void UpdateHitTestBoundsOverrideInner();
 
   // Schedules a paint for the header. Used when transitioning from no header to
   // a header (or other way around).

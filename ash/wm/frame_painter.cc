@@ -256,16 +256,17 @@ void FramePainter::Init(
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToImageSkia();
 
   window_ = frame->GetNativeWindow();
-  gfx::Insets mouse_insets = gfx::Insets(-kResizeOutsideBoundsSize,
-                                         -kResizeOutsideBoundsSize,
-                                         -kResizeOutsideBoundsSize,
-                                         -kResizeOutsideBoundsSize);
-  gfx::Insets touch_insets = mouse_insets.Scale(
+  gfx::Insets mouse_outer_insets(-kResizeOutsideBoundsSize,
+                                 -kResizeOutsideBoundsSize,
+                                 -kResizeOutsideBoundsSize,
+                                 -kResizeOutsideBoundsSize);
+  gfx::Insets touch_outer_insets = mouse_outer_insets.Scale(
       kResizeOutsideBoundsScaleForTouch);
   // Ensure we get resize cursors for a few pixels outside our bounds.
-  window_->SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
+  window_->SetHitTestBoundsOverrideOuter(mouse_outer_insets,
+                                         touch_outer_insets);
   // Ensure we get resize cursors just inside our bounds as well.
-  window_->set_hit_test_bounds_override_inner(mouse_insets);
+  UpdateHitTestBoundsOverrideInner();
 
   // Watch for maximize/restore/fullscreen state changes.  Observer removes
   // itself in OnWindowDestroying() below, or in the destructor if we go away
@@ -627,16 +628,7 @@ void FramePainter::OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
 
 void FramePainter::OnWindowShowTypeChanged(wm::WindowState* window_state,
                                            wm::WindowShowType old_type) {
-  // Maximized and fullscreen windows don't want resize handles overlapping the
-  // content area, because when the user moves the cursor to the right screen
-  // edge we want them to be able to hit the scroll bar.
-  if (window_state->IsMaximizedOrFullscreen()) {
-    window_state->window()->set_hit_test_bounds_override_inner(gfx::Insets());
-  } else {
-    window_state->window()->set_hit_test_bounds_override_inner(
-        gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
-                    kResizeInsideBoundsSize, kResizeInsideBoundsSize));
-  }
+  UpdateHitTestBoundsOverrideInner();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -815,6 +807,19 @@ void FramePainter::UpdateSoloWindowInRoot(RootWindow* root,
     Widget* widget = Widget::GetWidgetForNativeWindow(*it);
     if (widget && widget->non_client_view())
       widget->non_client_view()->SchedulePaint();
+  }
+}
+
+void FramePainter::UpdateHitTestBoundsOverrideInner() {
+  // Maximized and fullscreen windows don't want resize handles overlapping the
+  // content area, because when the user moves the cursor to the right screen
+  // edge we want them to be able to hit the scroll bar.
+  if (wm::GetWindowState(window_)->IsMaximizedOrFullscreen()) {
+    window_->set_hit_test_bounds_override_inner(gfx::Insets());
+  } else {
+    window_->set_hit_test_bounds_override_inner(
+        gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
+                    kResizeInsideBoundsSize, kResizeInsideBoundsSize));
   }
 }
 

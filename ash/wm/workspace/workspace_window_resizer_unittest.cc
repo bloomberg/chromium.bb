@@ -190,15 +190,19 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     touch_resize_window_.reset(
         CreateTestWindowInShellWithDelegate(&touch_resize_delegate_, 0,
                                             bounds));
-    gfx::Insets mouse_insets = gfx::Insets(-ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize);
-    gfx::Insets touch_insets = mouse_insets.Scale(
+    gfx::Insets mouse_outer_insets = gfx::Insets(-ash::kResizeOutsideBoundsSize,
+                                                 -ash::kResizeOutsideBoundsSize,
+                                                 -ash::kResizeOutsideBoundsSize,
+                                                -ash::kResizeOutsideBoundsSize);
+    gfx::Insets touch_outer_insets = mouse_outer_insets.Scale(
         ash::kResizeOutsideBoundsScaleForTouch);
-    touch_resize_window_->SetHitTestBoundsOverrideOuter(mouse_insets,
-                                                        touch_insets);
-    touch_resize_window_->set_hit_test_bounds_override_inner(mouse_insets);
+    touch_resize_window_->SetHitTestBoundsOverrideOuter(mouse_outer_insets,
+                                                        touch_outer_insets);
+    touch_resize_window_->set_hit_test_bounds_override_inner(
+        gfx::Insets(ash::kResizeInsideBoundsSize,
+                    ash::kResizeInsideBoundsSize,
+                    ash::kResizeInsideBoundsSize,
+                    ash::kResizeInsideBoundsSize));
   }
 
   // Simulate running the animation.

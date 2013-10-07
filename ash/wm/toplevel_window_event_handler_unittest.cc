@@ -703,14 +703,26 @@ class ToplevelWindowEventHandlerResizeTest
     target_.reset(CreateTestWindowInShellWithDelegate(
         delegate_, 0, gfx::Rect(0, 0, 100, 100)));
 
-    gfx::Insets mouse_insets = gfx::Insets(-ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize);
-    gfx::Insets touch_insets =
-        mouse_insets.Scale(ash::kResizeOutsideBoundsScaleForTouch);
-    target_->SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
-    target_->set_hit_test_bounds_override_inner(mouse_insets);
+    // Add a child window to |target_| in order to properly test that the resize
+    // shadows are shown when the mouse is ash::kResizeInsideBoundsSize inside
+    // |target_|'s edges.
+    aura::Window* child = CreateTestWindowInShell(
+        SK_ColorWHITE, 0, gfx::Rect(0, 10, 100, 90));
+    target_->AddChild(child);
+
+    gfx::Insets mouse_outer_insets(-ash::kResizeOutsideBoundsSize,
+                                   -ash::kResizeOutsideBoundsSize,
+                                   -ash::kResizeOutsideBoundsSize,
+                                   -ash::kResizeOutsideBoundsSize);
+    gfx::Insets touch_outer_insets =
+        mouse_outer_insets.Scale(ash::kResizeOutsideBoundsScaleForTouch);
+    target_->SetHitTestBoundsOverrideOuter(mouse_outer_insets,
+                                           touch_outer_insets);
+    target_->set_hit_test_bounds_override_inner(
+        gfx::Insets(ash::kResizeInsideBoundsSize,
+                    ash::kResizeInsideBoundsSize,
+                    ash::kResizeInsideBoundsSize,
+                    ash::kResizeInsideBoundsSize));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -805,6 +817,18 @@ TEST_F(ToplevelWindowEventHandlerResizeTest, MouseResizeShadows) {
   // Move mouse over the bottom order. Shadows should reappear.
   SetHittestCode(HTBOTTOM);
   generator.MoveMouseTo(50, 100);
+  ASSERT_TRUE(HasResizeShadow());
+  EXPECT_EQ(HTBOTTOM, ResizeShadowLastHitTest());
+
+  // Move the mouse outside the bottom border but still within the window's
+  // resize area.
+  generator.MoveMouseTo(50, 100 + ash::kResizeOutsideBoundsSize - 1);
+  ASSERT_TRUE(HasResizeShadow());
+  EXPECT_EQ(HTBOTTOM, ResizeShadowLastHitTest());
+
+  // Move the mouse above the bottom border but still within the window's
+  // resize area.
+  generator.MoveMouseTo(50, 100 - ash::kResizeInsideBoundsSize);
   ASSERT_TRUE(HasResizeShadow());
   EXPECT_EQ(HTBOTTOM, ResizeShadowLastHitTest());
 
