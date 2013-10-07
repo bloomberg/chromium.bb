@@ -34,9 +34,6 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
         if not match:
           return None
         triple = match.group(1)
-        # llvm-dis will print the fake pnacl triple
-        if triple == 'armv7-none-linux-gnueabi':
-          return 'le32'
         return driver_tools.ParseTriple(triple)
 
   def test_bc_objects(self):
