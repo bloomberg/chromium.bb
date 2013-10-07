@@ -195,9 +195,10 @@ void HTMLFormElement::submitImplicitly(Event* event, bool fromImplicitSubmission
         prepareForSubmission(event);
 }
 
+// FIXME: Consolidate this and similar code in FormSubmission.cpp.
 static inline HTMLFormControlElement* submitElementFromEvent(const Event* event)
 {
-    for (Node* node = event->target()->toNode(); node; node = node->parentNode()) {
+    for (Node* node = event->target()->toNode(); node; node = node->parentOrShadowHostNode()) {
         if (node->isElementNode() && toElement(node)->isFormControlElement())
             return toHTMLFormControlElement(node);
     }
