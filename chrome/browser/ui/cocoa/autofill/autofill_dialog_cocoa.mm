@@ -46,6 +46,9 @@ AutofillDialogCocoa::AutofillDialogCocoa(AutofillDialogViewDelegate* delegate)
 }
 
 AutofillDialogCocoa::~AutofillDialogCocoa() {
+  // Cancel potential relayout requests, since the AutofillDialogController
+  // is about to go away, but relayout requests assume it will still exist.
+  [sheet_delegate_ cancelRelayout];
 }
 
 void AutofillDialogCocoa::Show() {
@@ -336,12 +339,15 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   [self requestRelayout];
 }
 
-- (void)requestRelayout {
-  SEL sel = @selector(performLayout);
+- (void)cancelRelayout {
   [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:sel
+                                           selector:@selector(performLayout)
                                              object:nil];
-  [self performSelector:sel withObject:nil afterDelay:0.0];
+}
+
+- (void)requestRelayout {
+  [self cancelRelayout];
+  [self performSelector:@selector(performLayout) withObject:nil afterDelay:0.0];
 }
 
 - (NSSize)preferredSize {
@@ -389,6 +395,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   clientRect.origin.y = chrome_style::kClientBottomPadding;
   clientRect.size.height -= chrome_style::kTitleTopPadding +
                             chrome_style::kClientBottomPadding;
+
+  [titleTextField_ setStringValue:
+      base::SysUTF16ToNSString(autofillDialog_->delegate()->DialogTitle())];
+  [titleTextField_ sizeToFit];
 
   NSRect headerRect, mainRect, titleRect, dummyRect;
   NSDivideRect(clientRect, &headerRect, &mainRect,

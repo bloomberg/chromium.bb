@@ -124,6 +124,9 @@ class AutofillDialogCocoa : public AutofillDialogView,
 // A child view request re-layouting.
 - (void)requestRelayout;
 
+// Cancels all previous requests to re-layout.
+- (void)cancelRelayout;
+
 // Validate data. If it is valid, notify the delegate that the user would
 // like to use the data.
 - (IBAction)accept:(id)sender;
