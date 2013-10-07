@@ -28,8 +28,8 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
-#include "core/platform/text/TextChecking.h"
 #include "platform/Timer.h"
+#include "platform/text/TextChecking.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"

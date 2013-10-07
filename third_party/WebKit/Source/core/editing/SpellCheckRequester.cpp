@@ -35,7 +35,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/text/TextCheckerClient.h"
+#include "platform/text/TextCheckerClient.h"
 
 namespace WebCore {
 

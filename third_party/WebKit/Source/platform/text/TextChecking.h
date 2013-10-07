@@ -31,7 +31,7 @@
 #ifndef TextChecking_h
 #define TextChecking_h
 
-#include "core/platform/text/TextDecoration.h"
+#include "platform/text/TextDecoration.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"

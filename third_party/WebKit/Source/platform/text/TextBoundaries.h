@@ -26,20 +26,21 @@
 #ifndef TextBoundaries_h
 #define TextBoundaries_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 
-    inline bool requiresContextForWordBoundary(UChar32 ch)
-    {
-        return WTF::Unicode::hasLineBreakingPropertyComplexContext(ch);
-    }
+inline bool requiresContextForWordBoundary(UChar32 ch)
+{
+    return WTF::Unicode::hasLineBreakingPropertyComplexContext(ch);
+}
 
-    int endOfFirstWordBoundaryContext(const UChar* characters, int length);
-    int startOfLastWordBoundaryContext(const UChar* characters, int length);
+PLATFORM_EXPORT int endOfFirstWordBoundaryContext(const UChar* characters, int length);
+PLATFORM_EXPORT int startOfLastWordBoundaryContext(const UChar* characters, int length);
 
-    void findWordBoundary(const UChar*, int len, int position, int* start, int* end);
-    int findNextWordFromIndex(const UChar*, int len, int position, bool forward);
+PLATFORM_EXPORT void findWordBoundary(const UChar*, int len, int position, int* start, int* end);
+PLATFORM_EXPORT int findNextWordFromIndex(const UChar*, int len, int position, bool forward);
 
 }
 

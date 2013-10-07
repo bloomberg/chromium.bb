@@ -76,10 +76,10 @@
 #include "core/platform/KillRing.h"
 #include "core/platform/Pasteboard.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/text/TextCheckerClient.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderTextControl.h"
+#include "platform/text/TextCheckerClient.h"
 #include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {

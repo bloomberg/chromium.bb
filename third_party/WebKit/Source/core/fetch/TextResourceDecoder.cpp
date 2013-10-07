@@ -26,7 +26,7 @@
 #include "HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/html/parser/HTMLMetaCharsetParser.h"
-#include "core/platform/text/TextEncodingDetector.h"
+#include "platform/text/TextEncodingDetector.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"

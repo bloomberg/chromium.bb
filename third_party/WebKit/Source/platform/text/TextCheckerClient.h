@@ -28,7 +28,7 @@
 #ifndef TextCheckerClient_h
 #define TextCheckerClient_h
 
-#include "core/platform/text/TextChecking.h"
+#include "platform/text/TextChecking.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -38,7 +38,7 @@ namespace WebCore {
 
 class TextCheckerClient {
 public:
-    virtual ~TextCheckerClient() {}
+    virtual ~TextCheckerClient() { }
 
     virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const = 0;
     virtual void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) = 0;

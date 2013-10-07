@@ -22,14 +22,90 @@
 #include "config.h"
 #include "platform/text/TextBreakIterator.h"
 
-#include "core/platform/text/LineBreakIteratorPoolICU.h"
+#include "platform/text/TextBreakIteratorInternalICU.h"
+#include "wtf/Assertions.h"
+#include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/ThreadSpecific.h"
 #include "wtf/ThreadingPrimitives.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <unicode/ubrk.h>
 
 using namespace WTF;
 using namespace std;
 
 namespace WebCore {
+
+class LineBreakIteratorPool {
+    WTF_MAKE_NONCOPYABLE(LineBreakIteratorPool);
+public:
+    static LineBreakIteratorPool& sharedPool()
+    {
+        static WTF::ThreadSpecific<LineBreakIteratorPool>* pool = new WTF::ThreadSpecific<LineBreakIteratorPool>;
+        return **pool;
+    }
+
+    static PassOwnPtr<LineBreakIteratorPool> create() { return adoptPtr(new LineBreakIteratorPool); }
+
+    UBreakIterator* take(const AtomicString& locale)
+    {
+        UBreakIterator* iterator = 0;
+        for (size_t i = 0; i < m_pool.size(); ++i) {
+            if (m_pool[i].first == locale) {
+                iterator = m_pool[i].second;
+                m_pool.remove(i);
+                break;
+            }
+        }
+
+        if (!iterator) {
+            UErrorCode openStatus = U_ZERO_ERROR;
+            bool localeIsEmpty = locale.isEmpty();
+            iterator = ubrk_open(UBRK_LINE, localeIsEmpty ? currentTextBreakLocaleID() : locale.string().utf8().data(), 0, 0, &openStatus);
+            // locale comes from a web page and it can be invalid, leading ICU
+            // to fail, in which case we fall back to the default locale.
+            if (!localeIsEmpty && U_FAILURE(openStatus)) {
+                openStatus = U_ZERO_ERROR;
+                iterator = ubrk_open(UBRK_LINE, currentTextBreakLocaleID(), 0, 0, &openStatus);
+            }
+
+            if (U_FAILURE(openStatus)) {
+                LOG_ERROR("ubrk_open failed with status %d", openStatus);
+                return 0;
+            }
+        }
+
+        ASSERT(!m_vendedIterators.contains(iterator));
+        m_vendedIterators.set(iterator, locale);
+        return iterator;
+    }
+
+    void put(UBreakIterator* iterator)
+    {
+        ASSERT_ARG(iterator, m_vendedIterators.contains(iterator));
+
+        if (m_pool.size() == capacity) {
+            ubrk_close(m_pool[0].second);
+            m_pool.remove(0);
+        }
+
+        m_pool.append(Entry(m_vendedIterators.take(iterator), iterator));
+    }
+
+private:
+    LineBreakIteratorPool() { }
+
+    static const size_t capacity = 4;
+
+    typedef pair<AtomicString, UBreakIterator*> Entry;
+    typedef Vector<Entry, capacity> Pool;
+    Pool m_pool;
+    HashMap<UBreakIterator*, AtomicString> m_vendedIterators;
+
+    friend WTF::ThreadSpecific<LineBreakIteratorPool>::operator LineBreakIteratorPool*();
+};
 
 static TextBreakIterator* ensureIterator(bool& createdIterator, TextBreakIterator*& iterator, UBreakIteratorType type)
 {

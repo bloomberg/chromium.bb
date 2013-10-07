@@ -22,7 +22,7 @@
 #ifndef SVGParserUtilities_h
 #define SVGParserUtilities_h
 
-#include "core/platform/text/ParserUtilities.h"
+#include "platform/text/ParserUtilities.h"
 #include "wtf/HashSet.h"
 
 typedef pair<unsigned, unsigned> UnicodeRange;

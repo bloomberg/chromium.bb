@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/text/TextEncodingDetector.h"
+#include "platform/text/TextEncodingDetector.h"
 
 #include "wtf/text/TextEncoding.h"
 #include <unicode/ucnv.h>
@@ -37,9 +37,8 @@
 
 namespace WebCore {
 
-bool detectTextEncoding(const char* data, size_t len,
-                        const char* hintEncodingName,
-                        WTF::TextEncoding* detectedEncoding)
+bool detectTextEncoding(const char* data, size_t length,
+    const char* hintEncodingName, WTF::TextEncoding* detectedEncoding)
 {
     *detectedEncoding = WTF::TextEncoding();
     int matchesCount = 0;
@@ -48,7 +47,7 @@ bool detectTextEncoding(const char* data, size_t len,
     if (U_FAILURE(status))
         return false;
     ucsdet_enableInputFilter(detector, true);
-    ucsdet_setText(detector, data, static_cast<int32_t>(len), &status);
+    ucsdet_setText(detector, data, static_cast<int32_t>(length), &status);
     if (U_FAILURE(status))
         return false;
 

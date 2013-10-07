@@ -28,7 +28,7 @@
 
 #include "core/html/parser/HTMLToken.h"
 #include "core/platform/network/HTTPParsers.h"
-#include "core/platform/text/SuffixTree.h"
+#include "platform/text/SuffixTree.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextEncoding.h"

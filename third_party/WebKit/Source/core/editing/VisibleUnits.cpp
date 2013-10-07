@@ -39,10 +39,10 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/htmlediting.h"
-#include "core/platform/text/TextBoundaries.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/text/TextBoundaries.h"
 
 namespace WebCore {
 

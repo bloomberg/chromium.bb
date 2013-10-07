@@ -38,7 +38,7 @@
 #include "core/editing/WritingDirection.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/platform/chromium/PasteMode.h"
-#include "core/platform/text/TextChecking.h"
+#include "platform/text/TextChecking.h"
 
 namespace WebCore {
 

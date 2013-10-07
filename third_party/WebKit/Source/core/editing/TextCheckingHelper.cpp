@@ -37,8 +37,8 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/text/TextCheckerClient.h"
 #include "platform/text/TextBreakIterator.h"
+#include "platform/text/TextCheckerClient.h"
 
 namespace WebCore {
 

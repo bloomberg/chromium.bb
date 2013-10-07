@@ -32,7 +32,7 @@
 #define WebTextCheckingCompletionImpl_h
 
 #include "WebTextCheckingCompletion.h"
-#include "core/platform/text/TextChecking.h"
+#include "platform/text/TextChecking.h"
 #include "wtf/RefPtr.h"
 
 namespace WebKit {
