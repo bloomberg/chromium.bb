@@ -1254,6 +1254,8 @@ crbug.com/304952 fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
 # Flaky.
 crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Pass ]
 
+crbug.com/304993 fast/regions/autoheight-regions-mark.html [ Failure Pass ]
+
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
