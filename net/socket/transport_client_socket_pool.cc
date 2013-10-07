@@ -7,12 +7,10 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
@@ -47,13 +45,6 @@ bool AddressListOnlyContainsIPv6(const AddressList& list) {
 }
 
 }  // namespace
-
-// This lock protects |g_last_connect_time|.
-static base::LazyInstance<base::Lock>::Leaky
-    g_last_connect_time_lock = LAZY_INSTANCE_INITIALIZER;
-
-// |g_last_connect_time| has the last time a connect() call is made.
-static base::TimeTicks g_last_connect_time;
 
 TransportSocketParams::TransportSocketParams(
     const HostPortPair& host_port_pair,
@@ -94,8 +85,7 @@ TransportConnectJob::TransportConnectJob(
       params_(params),
       client_socket_factory_(client_socket_factory),
       resolver_(host_resolver),
-      next_state_(STATE_NONE),
-      less_than_20ms_since_connect_(true) {
+      next_state_(STATE_NONE) {
 }
 
 TransportConnectJob::~TransportConnectJob() {
@@ -196,20 +186,6 @@ int TransportConnectJob::DoResolveHostComplete(int result) {
 }
 
 int TransportConnectJob::DoTransportConnect() {
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks last_connect_time;
-  {
-    base::AutoLock lock(g_last_connect_time_lock.Get());
-    last_connect_time = g_last_connect_time;
-    g_last_connect_time = now;
-  }
-  if (last_connect_time.is_null() ||
-      (now - last_connect_time).InMilliseconds() < 20) {
-    less_than_20ms_since_connect_ = true;
-  } else {
-    less_than_20ms_since_connect_ = false;
-  }
-
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_socket_ = client_socket_factory_->CreateTransportClientSocket(
         addresses_, net_log().net_log(), net_log().source());
@@ -245,22 +221,6 @@ int TransportConnectJob::DoTransportConnectComplete(int result) {
         base::TimeDelta::FromMilliseconds(1),
         base::TimeDelta::FromMinutes(10),
         100);
-
-    if (less_than_20ms_since_connect_) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Net.TCP_Connection_Latency_Interval_20ms_Minus",
-          connect_duration,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMinutes(10),
-          100);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Net.TCP_Connection_Latency_Interval_20ms_Plus",
-          connect_duration,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMinutes(10),
-          100);
-    }
 
     if (is_ipv4) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.TCP_Connection_Latency_IPv4_No_Race",
