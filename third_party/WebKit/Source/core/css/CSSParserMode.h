@@ -71,9 +71,6 @@ public:
     CSSParserMode mode;
     bool isHTMLDocument;
     bool isCSSCustomFilterEnabled;
-    bool isCSSStickyPositionEnabled;
-    bool isCSSCompositingEnabled;
-    bool isCSSTouchActionEnabled;
     bool needsSiteSpecificQuirks;
     // This quirk is to maintain compatibility with Android apps built on
     // the Android SDK prior to and including version 18. Presumably, this
