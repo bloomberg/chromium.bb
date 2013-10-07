@@ -1278,6 +1278,7 @@ crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
+crbug.com/304952 fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
 
 # Flaky.
 crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Pass ]
