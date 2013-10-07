@@ -254,34 +254,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     dm.addEventListener('rescan-completed',
                         this.refreshCurrentDirectoryMetadata_.bind(this));
 
-    /**
-     * If |item| in |parentView| is behind the preview panel, scrolls up the
-     * parent view and make the item visible.
-     *
-     * @param {HTMLElement} item Item to be visible in the parent.
-     * @param {HTMLElement} parentView View contains |selectedItem|.
-     */
-    var ensureItemNotBehindPreviewPanel = function(item, parentView) {
-      var itemRect = item.getBoundingClientRect();
-      if (!itemRect)
-        return;
-      var itemBottom = itemRect.bottom;
-
-      var previewPanel = this.dialogDom_.querySelector('.preview-panel');
-      var previewPanelRects = previewPanel.getBoundingClientRect();
-      var panelHeight = previewPanelRects ? previewPanelRects.height : 0;
-
-      var listRect = parentView.getBoundingClientRect();
-      if (!listRect)
-        return;
-      var listBottom = listRect.bottom - panelHeight;
-
-      if (itemBottom > listBottom) {
-        var scrollOffset = itemBottom - listBottom;
-        parentView.scrollTop += scrollOffset;
-      }
-    }.bind(this);
-
     var sm = this.directoryModel_.getFileListSelection();
     sm.addEventListener('change', function() {
       if (sm.selectedIndexes.length != 1)
@@ -291,7 +263,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var selectedItem = view.getListItemByIndex(sm.selectedIndex);
       if (!selectedItem)
         return;
-      ensureItemNotBehindPreviewPanel(selectedItem, view);
+      this.ensureItemNotBehindPreviewPanel_(selectedItem, view);
     }.bind(this));
 
     this.directoryTree_.addEventListener('change', function() {
@@ -299,7 +271,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       if (!selectedSubTree)
         return;
       var selectedItem = selectedSubTree.rowElement;
-      ensureItemNotBehindPreviewPanel(selectedItem, this.directoryTree_);
+      this.ensureItemNotBehindPreviewPanel_(selectedItem, this.directoryTree_);
     }.bind(this));
 
     var stateChangeHandler =
@@ -338,6 +310,39 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.grid_.endBatchUpdates();
 
     callback();
+  };
+
+  /**
+   * If |item| in |parentView| is behind the preview panel, scrolls up the
+   * parent view and make the item visible. This should be called when:
+   *  - the selected item is changed.
+   *  - the visibility of the the preview panel is changed.
+   *
+   * @param {HTMLElement} item Item to be visible in the parent.
+   * @param {HTMLElement} parentView View contains |selectedItem|.
+   * @private
+   */
+  FileManager.prototype.ensureItemNotBehindPreviewPanel_ =
+      function(item, parentView) {
+    var itemRect = item.getBoundingClientRect();
+    if (!itemRect)
+      return;
+
+    var listRect = parentView.getBoundingClientRect();
+    if (!listRect)
+      return;
+
+    var previewPanel = this.dialogDom_.querySelector('.preview-panel');
+    var previewPanelRect = previewPanel.getBoundingClientRect();
+    var panelHeight = previewPanelRect ? previewPanelRect.height : 0;
+
+    var itemBottom = itemRect.bottom;
+    var listBottom = listRect.bottom - panelHeight;
+
+    if (itemBottom > listBottom) {
+      var scrollOffset = itemBottom - listBottom;
+      parentView.scrollTop += scrollOffset;
+    }
   };
 
   /**
@@ -1433,6 +1438,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onPreviewPanelVisibilityChange_ = function() {
+    // This method may be called on initialization. Some object may not be
+    // initialized.
+
     var panelHeight = this.previewPanel_.visible ?
         this.previewPanel_.height : 0;
     if (this.grid_)
@@ -1441,6 +1449,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.table_.setBottomMarginForPanel(panelHeight);
     if (this.directoryTree_)
       this.directoryTree_.setBottomMarginForPanel(panelHeight);
+
+    // Make sure that the selected item is not behind the preview panel.
+    if (this.directoryModel_) {
+      var sm = this.directoryModel_.getFileListSelection();
+      var view = (this.listType_ == FileManager.ListType.DETAIL) ?
+          this.table_.list : this.grid_;
+      var selectedItem = view.getListItemByIndex(sm.selectedIndex);
+      if (!selectedItem)
+        return;
+      this.ensureItemNotBehindPreviewPanel_(selectedItem, view);
+    }
   };
 
   /**
