@@ -15,7 +15,6 @@ from host_file_system_iterator import HostFileSystemIterator
 from intro_data_source import IntroDataSource
 from object_store_creator import ObjectStoreCreator
 from path_canonicalizer import PathCanonicalizer
-from permissions_data_source import PermissionsDataSource
 from redirector import Redirector
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
@@ -130,8 +129,6 @@ class ServerInstance(object):
         self.ref_resolver_factory,
         [svn_constants.INTRO_PATH, svn_constants.ARTICLE_PATH])
 
-    self.permissions_data_source = PermissionsDataSource(self)
-
     self.example_zipper = ExampleZipper(
         self.compiled_host_fs_factory,
         self.host_file_system,
@@ -155,14 +152,11 @@ class ServerInstance(object):
         self.samples_data_source_factory,
         self.compiled_host_fs_factory,
         self.ref_resolver_factory,
-        self.permissions_data_source,
         svn_constants.PUBLIC_TEMPLATE_PATH,
         svn_constants.PRIVATE_TEMPLATE_PATH,
         base_path)
 
     self.api_data_source_factory.SetTemplateDataSource(
-        self.template_data_source_factory)
-    self.permissions_data_source.SetTemplateDataSource(
         self.template_data_source_factory)
 
   @staticmethod

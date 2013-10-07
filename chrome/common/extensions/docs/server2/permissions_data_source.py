@@ -5,6 +5,7 @@
 from itertools import ifilter
 from operator import itemgetter
 
+from data_source import DataSource
 import features_utility as features
 from third_party.json_schema_compiler.json_parse import Parse
 
@@ -35,23 +36,17 @@ def _AddDependencyDescriptions(permissions, api_features):
           has_deps = True
 
     if has_deps:
-      permission['partial'] = 'permissions/generic_description'
+      permission['partial'] = 'permissions/generic_description.html'
 
-class PermissionsDataSource(object):
-  '''Load and format permissions features to be used by templates. Requries a
-  template data source be set before use.
+class PermissionsDataSource(DataSource):
+  '''Load and format permissions features to be used by templates.
   '''
-  def __init__(self, server_instance):
+  def __init__(self, server_instance, request):
     self._features_bundle = server_instance.features_bundle
     self._object_store = server_instance.object_store_creator.Create(
         PermissionsDataSource)
-
-  def SetTemplateDataSource(self, template_data_source_factory):
-    '''Initialize a template data source to be used to render partial templates
-    into descriptions for permissions. Must be called before .get
-    '''
-    self._template_data_source = template_data_source_factory.Create(
-        None, {})
+    self._template_data_source = (
+        server_instance.template_data_source_factory.Create(None, {}))
 
   def _CreatePermissionsData(self):
     api_features = self._features_bundle.GetAPIFeatures()
@@ -82,6 +77,10 @@ class PermissionsDataSource(object):
       data = self._CreatePermissionsData()
       self._object_store.Set('permissions_data', data)
     return data
+
+  def Cron(self):
+    # TODO(kalman): Implement this.
+    pass
 
   def get(self, key):
     return self._GetCachedPermissionsData().get(key)

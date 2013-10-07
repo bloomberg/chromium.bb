@@ -2,15 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from data_source import DataSource
 from manifest_data_source import ManifestDataSource
+from permissions_data_source import PermissionsDataSource
 from sidenav_data_source import SidenavDataSource
 from strings_data_source import StringsDataSource
 
 _all_data_sources = {
   'manifest_source': ManifestDataSource,
+  'permissions': PermissionsDataSource,
   'sidenavs': SidenavDataSource,
   'strings': StringsDataSource
 }
+
+assert all(issubclass(cls, DataSource)
+           for cls in _all_data_sources.itervalues())
 
 def CreateDataSources(server_instance, request=None):
   '''Create a dictionary of initialized DataSources. DataSources are
@@ -20,8 +26,5 @@ def CreateDataSources(server_instance, request=None):
   The key of each DataSource is the name the template system will use to access
   the DataSource.
   '''
-  data_sources = {}
-  for name, cls in _all_data_sources.iteritems():
-    data_sources[name] = cls(server_instance, request)
-
-  return data_sources
+  return dict((name, cls(server_instance, request))
+              for name, cls in _all_data_sources.iteritems())

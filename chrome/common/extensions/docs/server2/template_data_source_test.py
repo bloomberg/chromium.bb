@@ -13,7 +13,6 @@ from features_bundle import FeaturesBundle
 from compiled_file_system import CompiledFileSystem
 from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
-from permissions_data_source import PermissionsDataSource
 from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
 from test_branch_utility import TestBranchUtility
@@ -54,7 +53,6 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._fake_api_list_data_source_factory = _FakeFactory()
     self._fake_intro_data_source_factory = _FakeFactory()
     self._fake_samples_data_source_factory = _FakeFactory()
-    self._permissions_data_source = PermissionsDataSource(_FakeServerInstance())
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -91,7 +89,6 @@ class TemplateDataSourceTest(unittest.TestCase):
         self._fake_samples_data_source_factory,
         compiled_fs_factory,
         reference_resolver_factory,
-        self._permissions_data_source,
         '.',
         '.',
         ''))
