@@ -296,6 +296,13 @@ vc_dispmanx_snapshot(DISPMANX_DISPLAY_HANDLE_T display,
 	return -1;
 }
 
+struct wl_resource;
+static inline DISPMANX_RESOURCE_HANDLE_T
+vc_dispmanx_get_handle_from_wl_buffer(struct wl_resource *_buffer)
+{
+	return DISPMANX_NO_HANDLE;
+}
+
 /* from /opt/vc/include/EGL/eglplatform.h */
 
 typedef struct {

@@ -35,6 +35,12 @@
 #include "compositor.h"
 #include "rpi-renderer.h"
 
+#ifdef ENABLE_EGL
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include "weston-egl-ext.h"
+#endif
+
 /*
  * Dispmanx API offers alpha-blended overlays for hardware compositing.
  * The final composite consists of dispmanx elements, and their contents:
@@ -84,6 +90,17 @@ struct rpi_resource {
 
 struct rpir_output;
 
+struct rpir_egl_buffer {
+	struct weston_buffer_reference buffer_ref;
+	DISPMANX_RESOURCE_HANDLE_T resource_handle;
+};
+
+enum buffer_type {
+	BUFFER_TYPE_NULL,
+	BUFFER_TYPE_SHM,
+	BUFFER_TYPE_EGL
+};
+
 struct rpir_surface {
 	struct weston_surface *surface;
 
@@ -102,7 +119,12 @@ struct rpir_surface {
 	struct rpi_resource *back;
 	pixman_region32_t prev_damage;
 
+	struct rpir_egl_buffer *egl_front;
+	struct rpir_egl_buffer *egl_back;
+	struct rpir_egl_buffer *egl_old_front;
+
 	struct weston_buffer_reference buffer_ref;
+	enum buffer_type buffer_type;
 };
 
 struct rpir_output {
@@ -125,6 +147,15 @@ struct rpi_renderer {
 	struct weston_renderer base;
 
 	int single_buffer;
+
+#ifdef ENABLE_EGL
+	EGLDisplay egl_display;
+
+	PFNEGLBINDWAYLANDDISPLAYWL bind_display;
+	PFNEGLUNBINDWAYLANDDISPLAYWL unbind_display;
+	PFNEGLQUERYWAYLANDBUFFERWL query_buffer;
+#endif
+	int has_bind_display;
 };
 
 static inline struct rpir_surface *
@@ -335,6 +366,7 @@ rpir_surface_create(struct rpi_renderer *renderer)
 		surface->back = &surface->resources[0];
 	else
 		surface->back = &surface->resources[1];
+	surface->buffer_type = BUFFER_TYPE_NULL;
 
 	pixman_region32_init(&surface->prev_damage);
 
@@ -353,6 +385,24 @@ rpir_surface_destroy(struct rpir_surface *surface)
 	rpi_resource_release(&surface->resources[0]);
 	rpi_resource_release(&surface->resources[1]);
 	DBG("rpir_surface %p destroyed (%u)\n", surface, surface->handle);
+
+	if (surface->egl_back != NULL) {
+		weston_buffer_reference(&surface->egl_back->buffer_ref, NULL);
+		free(surface->egl_back);
+		surface->egl_back = NULL;
+	}
+
+	if (surface->egl_front != NULL) {
+		weston_buffer_reference(&surface->egl_front->buffer_ref, NULL);
+		free(surface->egl_front);
+		surface->egl_front = NULL;
+	}
+
+	if (surface->egl_old_front != NULL) {
+		weston_buffer_reference(&surface->egl_old_front->buffer_ref, NULL);
+		free(surface->egl_old_front);
+		surface->egl_old_front = NULL;
+	}
 
 	free(surface);
 }
@@ -472,8 +522,16 @@ rpir_surface_compute_rects(struct rpir_surface *surface,
 
 	src_x = 0 << 16;
 	src_y = 0 << 16;
-	src_width = surface->front->width << 16;
-	src_height = surface->front->height << 16;
+
+	if (surface->buffer_type == BUFFER_TYPE_EGL) {
+		struct weston_buffer *buffer = surface->egl_front->buffer_ref.buffer;
+
+		src_width = buffer->width << 16;
+		src_height = buffer->height << 16;
+	} else {
+		src_width = surface->front->width << 16;
+		src_height = surface->front->height << 16;
+	}
 
 	weston_matrix_multiply(&matrix, &output->matrix);
 
@@ -647,6 +705,10 @@ rpir_surface_compute_rects(struct rpir_surface *surface,
 		return -1;
 	}
 
+	/* EGL buffers will be upside-down related to what DispmanX expects */
+	if (surface->buffer_type == BUFFER_TYPE_EGL)
+		flipt ^= TRANSFORM_VFLIP;
+
 	vc_dispmanx_rect_set(src_rect, src_x, src_y, src_width, src_height);
 	vc_dispmanx_rect_set(dst_rect, dst_x, dst_y, dst_width, dst_height);
 	*flipmask = flipt;
@@ -681,6 +743,22 @@ vc_image2dispmanx_transform(VC_IMAGE_TRANSFORM_T t)
 	}
 }
 
+
+static DISPMANX_RESOURCE_HANDLE_T
+rpir_surface_get_resource(struct rpir_surface *surface)
+{
+	switch (surface->buffer_type) {
+	case BUFFER_TYPE_SHM:
+	case BUFFER_TYPE_NULL:
+		return surface->front->handle;
+	case BUFFER_TYPE_EGL:
+		if (surface->egl_front != NULL)
+			return surface->egl_front->resource_handle;
+	default:
+		return DISPMANX_NO_HANDLE;
+	}
+}
+
 static int
 rpir_surface_dmx_add(struct rpir_surface *surface, struct rpir_output *output,
 		    DISPMANX_UPDATE_HANDLE_T update, int layer)
@@ -700,6 +778,13 @@ rpir_surface_dmx_add(struct rpir_surface *surface, struct rpir_output *output,
 	VC_RECT_T src_rect;
 	VC_IMAGE_TRANSFORM_T flipmask;
 	int ret;
+	DISPMANX_RESOURCE_HANDLE_T resource_handle;
+
+	resource_handle = rpir_surface_get_resource(surface);
+	if (resource_handle == DISPMANX_NO_HANDLE) {
+		weston_log("%s: no buffer yet, aborting\n", __func__);
+		return 0;
+	}
 
 	ret = rpir_surface_compute_rects(surface, &src_rect, &dst_rect,
 					 &flipmask);
@@ -711,17 +796,14 @@ rpir_surface_dmx_add(struct rpir_surface *surface, struct rpir_output *output,
 		output->display,
 		layer,
 		&dst_rect,
-		surface->front->handle,
+		resource_handle,
 		&src_rect,
 		DISPMANX_PROTECTION_NONE,
 		&alphasetup,
 		NULL /* clamp */,
 		vc_image2dispmanx_transform(flipmask));
-	DBG("rpir_surface %p add %u, alpha %f\n", surface, surface->handle,
-	    surface->surface->alpha);
-
-	if (surface->handle == DISPMANX_NO_HANDLE)
-		return -1;
+	DBG("rpir_surface %p add %u, alpha %f resource %d\n", surface,
+	    surface->handle, surface->surface->alpha, resource_handle);
 
 	return 1;
 }
@@ -757,6 +839,20 @@ rpir_surface_dmx_move(struct rpir_surface *surface,
 	int ret;
 
 	/* XXX: return early, if all attributes stay the same */
+
+	if (surface->buffer_type == BUFFER_TYPE_EGL) {
+		DISPMANX_RESOURCE_HANDLE_T resource_handle;
+
+		resource_handle = rpir_surface_get_resource(surface);
+		if (resource_handle == DISPMANX_NO_HANDLE) {
+			weston_log("%s: no buffer yet, aborting\n", __func__);
+			return 0;
+		}
+
+		vc_dispmanx_element_change_source(update,
+						  surface->handle,
+						  resource_handle);
+	}
 
 	ret = rpir_surface_compute_rects(surface, &src_rect, &dst_rect,
 					 &flipmask);
@@ -835,8 +931,31 @@ rpir_surface_update(struct rpir_surface *surface, struct rpir_output *output,
 	int ret;
 	int obscured;
 
-	if (need_swap)
-		rpir_surface_swap_pointers(surface);
+	if (surface->buffer_type == BUFFER_TYPE_EGL) {
+		if (surface->egl_back != NULL) {
+			assert(surface->egl_old_front == NULL);
+			surface->egl_old_front = surface->egl_front;
+			surface->egl_front = surface->egl_back;
+			surface->egl_back = NULL;
+		}
+		if (surface->egl_front->buffer_ref.buffer == NULL) {
+			weston_log("warning: client unreffed current front buffer\n");
+
+			wl_list_remove(&surface->link);
+			if (surface->handle == DISPMANX_NO_HANDLE) {
+				wl_list_init(&surface->link);
+			} else {
+				rpir_surface_dmx_remove(surface, update);
+				wl_list_insert(&output->surface_cleanup_list,
+						   &surface->link);
+			}
+
+			goto out;
+		}
+	} else {
+		if (need_swap)
+			rpir_surface_swap_pointers(surface);
+	}
 
 	obscured = is_surface_not_visible(surface->surface);
 	if (obscured) {
@@ -1133,40 +1252,72 @@ static void
 rpi_renderer_attach(struct weston_surface *base, struct weston_buffer *buffer)
 {
 	/* Called every time a client commits an attach. */
-	static int warned;
 	struct rpir_surface *surface = to_rpir_surface(base);
 
 	assert(surface);
 	if (!surface)
 		return;
 
-	if (buffer && !wl_shm_buffer_get(buffer->resource) && !warned) {
-		weston_log("Error: non-wl_shm buffers not supported.\n");
-		warned = 1;
-		return;
+	if (surface->buffer_type == BUFFER_TYPE_SHM) {
+		if (!surface->single_buffer)
+			/* XXX: need to check if in middle of update */
+			rpi_resource_release(surface->back);
+
+		if (surface->handle == DISPMANX_NO_HANDLE)
+			/* XXX: cannot do this, if middle of an update */
+			rpi_resource_release(surface->front);
+
+		weston_buffer_reference(&surface->buffer_ref, NULL);
 	}
-
-	if (wl_shm_buffer_get(buffer->resource)) {
-		buffer->shm_buffer = wl_shm_buffer_get(buffer->resource);
-		buffer->width = wl_shm_buffer_get_width(buffer->shm_buffer);
-		buffer->height = wl_shm_buffer_get_height(buffer->shm_buffer);
-	}
-
-	weston_buffer_reference(&surface->buffer_ref, buffer);
-
-	/* XXX: need to check if in middle of update
-	if (!buffer && !surface->single_buffer)
-		rpi_resource_release(surface->back); */
-
-	/* XXX: cannot do this, if middle of an update
-	if (surface->handle == DISPMANX_NO_HANDLE)
-		rpi_resource_release(surface->front); */
 
 	/* If buffer is NULL, Weston core unmaps the surface, the surface
 	 * will not appear in repaint list, and so rpi_renderer_repaint_output
-	 * will remove the DispmanX element. Later, also the front buffer
-	 * will be released in the cleanup_list processing.
+	 * will remove the DispmanX element. Later, for SHM, also the front
+	 * buffer will be released in the cleanup_list processing.
 	 */
+	if (!buffer)
+		return;
+
+	if (wl_shm_buffer_get(buffer->resource)) {
+		surface->buffer_type = BUFFER_TYPE_SHM;
+		buffer->shm_buffer = wl_shm_buffer_get(buffer->resource);
+		buffer->width = wl_shm_buffer_get_width(buffer->shm_buffer);
+		buffer->height = wl_shm_buffer_get_height(buffer->shm_buffer);
+
+		weston_buffer_reference(&surface->buffer_ref, buffer);
+	} else {
+#if ENABLE_EGL
+		struct rpi_renderer *renderer = to_rpi_renderer(base->compositor);
+		struct wl_resource *wl_resource =
+			(struct wl_resource *)buffer->resource;
+
+		if (!renderer->has_bind_display ||
+		    !renderer->query_buffer(renderer->egl_display,
+					    wl_resource,
+					    EGL_WIDTH, &buffer->width)) {
+			weston_log("unhandled buffer type!\n");
+			weston_buffer_reference(&surface->buffer_ref, NULL);
+			surface->buffer_type = BUFFER_TYPE_NULL;
+		}
+
+		renderer->query_buffer(renderer->egl_display,
+				       wl_resource,
+				       EGL_HEIGHT, &buffer->height);
+
+		surface->buffer_type = BUFFER_TYPE_EGL;
+
+		if(surface->egl_back == NULL)
+			surface->egl_back = calloc(1, sizeof *surface->egl_back);
+
+		weston_buffer_reference(&surface->egl_back->buffer_ref, buffer);
+		surface->egl_back->resource_handle =
+			vc_dispmanx_get_handle_from_wl_buffer(wl_resource);
+#else
+		weston_log("unhandled buffer type!\n");
+		weston_buffer_reference(&surface->buffer_ref, NULL);
+		surface->buffer_type = BUFFER_TYPE_NULL;
+#endif
+	}
 }
 
 static int
@@ -1256,6 +1407,12 @@ rpi_renderer_destroy(struct weston_compositor *compositor)
 {
 	struct rpi_renderer *renderer = to_rpi_renderer(compositor);
 
+#if ENABLE_EGL
+	if (renderer->has_bind_display)
+		renderer->unbind_display(renderer->egl_display,
+		                         compositor->wl_display);
+#endif
+
 	free(renderer);
 	compositor->renderer = NULL;
 }
@@ -1265,6 +1422,11 @@ rpi_renderer_create(struct weston_compositor *compositor,
 		    const struct rpi_renderer_parameters *params)
 {
 	struct rpi_renderer *renderer;
+#if ENABLE_EGL
+	const char *extensions;
+	EGLBoolean ret;
+	EGLint major, minor;
+#endif
 
 	weston_log("Initializing the DispmanX compositing renderer\n");
 
@@ -1282,6 +1444,43 @@ rpi_renderer_create(struct weston_compositor *compositor,
 	renderer->base.surface_set_color = rpi_renderer_surface_set_color;
 	renderer->base.destroy_surface = rpi_renderer_destroy_surface;
 	renderer->base.destroy = rpi_renderer_destroy;
+
+#ifdef ENABLE_EGL
+	renderer->egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if (renderer->egl_display == EGL_NO_DISPLAY) {
+		weston_log("failed to create EGL display\n");
+		return -1;
+	}
+
+	if (!eglInitialize(renderer->egl_display, &major, &minor)) {
+		weston_log("failed to initialize EGL display\n");
+		return -1;
+	}
+
+	renderer->bind_display =
+		(void *) eglGetProcAddress("eglBindWaylandDisplayWL");
+	renderer->unbind_display =
+		(void *) eglGetProcAddress("eglUnbindWaylandDisplayWL");
+	renderer->query_buffer =
+		(void *) eglGetProcAddress("eglQueryWaylandBufferWL");
+
+	extensions = (const char *) eglQueryString(renderer->egl_display,
+						   EGL_EXTENSIONS);
+	if (!extensions) {
+		weston_log("Retrieving EGL extension string failed.\n");
+		return -1;
+	}
+
+	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
+		renderer->has_bind_display = 1;
+
+	if (renderer->has_bind_display) {
+		ret = renderer->bind_display(renderer->egl_display,
+					     compositor->wl_display);
+		if (!ret)
+			renderer->has_bind_display = 0;
+	}
+#endif
 
 	compositor->renderer = &renderer->base;
 	compositor->read_format = PIXMAN_a8r8g8b8;
@@ -1354,6 +1553,8 @@ WL_EXPORT void
 rpi_renderer_finish_frame(struct weston_output *base)
 {
 	struct rpir_output *output = to_rpir_output(base);
+	struct weston_compositor *compositor = base->compositor;
+	struct weston_surface *ws;
 	struct rpir_surface *surface;
 
 	while (!wl_list_empty(&output->surface_cleanup_list)) {
@@ -1374,6 +1575,20 @@ rpi_renderer_finish_frame(struct weston_output *base)
 		} else {
 			rpir_surface_destroy(surface);
 		}
+	}
+
+	wl_list_for_each(ws, &compositor->surface_list, link) {
+		surface = to_rpir_surface(ws);
+
+		if (surface->buffer_type != BUFFER_TYPE_EGL)
+			continue;
+
+		if(surface->egl_old_front == NULL)
+			continue;
+
+		weston_buffer_reference(&surface->egl_old_front->buffer_ref, NULL);
+		free(surface->egl_old_front);
+		surface->egl_old_front = NULL;
 	}
 
 	wl_signal_emit(&base->frame_signal, base);
