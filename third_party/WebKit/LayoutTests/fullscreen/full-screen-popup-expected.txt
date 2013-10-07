@@ -1,0 +1,3 @@
+EXPECTED (window.open('about:blank') == 'null') OK
+END OF TEST
+
