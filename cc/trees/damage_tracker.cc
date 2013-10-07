@@ -242,17 +242,6 @@ gfx::RectF DamageTracker::TrackDamageFromLeftoverRects() {
   return damage_rect;
 }
 
-static bool LayerNeedsToRedrawOntoItsTargetSurface(LayerImpl* layer) {
-  // If the layer does NOT own a surface but has SurfacePropertyChanged,
-  // this means that its target surface is affected and needs to be redrawn.
-  // However, if the layer DOES own a surface, then the SurfacePropertyChanged
-  // flag should not be used here, because that flag represents whether the
-  // layer's surface has changed.
-  if (layer->render_surface())
-    return layer->LayerPropertyChanged();
-  return layer->LayerPropertyChanged() || layer->LayerSurfacePropertyChanged();
-}
-
 void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
                                          gfx::RectF* target_damage_rect) {
   // There are two ways that a layer can damage a region of the target surface:
@@ -282,7 +271,7 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
       gfx::RectF(gfx::PointF(), layer->content_bounds()));
   SaveRectForNextFrame(layer->id(), rect_in_target_space);
 
-  if (layer_is_new || LayerNeedsToRedrawOntoItsTargetSurface(layer)) {
+  if (layer_is_new || layer->LayerPropertyChanged()) {
     // If a layer is new or has changed, then its entire layer rect affects the
     // target surface.
     target_damage_rect->Union(rect_in_target_space);
@@ -330,9 +319,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
   SaveRectForNextFrame(layer->id(), surface_rect_in_target_space);
 
   gfx::RectF damage_rect_in_local_space;
-  if (surface_is_new ||
-      render_surface->SurfacePropertyChanged() ||
-      layer->LayerSurfacePropertyChanged()) {
+  if (surface_is_new || render_surface->SurfacePropertyChanged()) {
     // The entire surface contributes damage.
     damage_rect_in_local_space = render_surface->content_rect();
 

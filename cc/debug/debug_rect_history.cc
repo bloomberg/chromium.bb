@@ -105,8 +105,7 @@ void DebugRectHistory::SavePropertyChangedRects(
       if (layer->LayerIsAlwaysDamaged())
         continue;
 
-      if (layer->LayerPropertyChanged() ||
-          layer->LayerSurfacePropertyChanged()) {
+      if (layer->LayerPropertyChanged()) {
         debug_rects_.push_back(
             DebugRect(PROPERTY_CHANGED_RECT_TYPE,
                       MathUtil::MapClippedRect(

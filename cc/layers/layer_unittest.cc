@@ -607,7 +607,7 @@ TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
                        impl_layer->update_rect());
 }
 
-TEST_F(LayerTest, PushPropertiesCausesSurfacePropertyChangedForTransform) {
+TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForTransform) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -619,14 +619,14 @@ TEST_F(LayerTest, PushPropertiesCausesSurfacePropertyChangedForTransform) {
   transform.Rotate(45.0);
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(transform));
 
-  EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
 
   test_layer->PushPropertiesTo(impl_layer.get());
 
-  EXPECT_TRUE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
 }
 
-TEST_F(LayerTest, PushPropertiesCausesSurfacePropertyChangedForOpacity) {
+TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -636,15 +636,15 @@ TEST_F(LayerTest, PushPropertiesCausesSurfacePropertyChangedForOpacity) {
 
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
 
-  EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
 
   test_layer->PushPropertiesTo(impl_layer.get());
 
-  EXPECT_TRUE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
 }
 
 TEST_F(LayerTest,
-       PushPropsDoesntCauseSurfacePropertyChangedDuringImplOnlyTransformAnim) {
+       PushPropsDoesntCauseLayerPropertyChangedDuringImplOnlyTransformAnim) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -665,9 +665,9 @@ TEST_F(LayerTest,
   transform.Rotate(45.0);
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(transform));
 
-  EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
   test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_TRUE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
 
   impl_layer->ResetAllChangeTrackingForSubtree();
   AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
@@ -679,13 +679,13 @@ TEST_F(LayerTest,
   transform.Rotate(45.0);
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(transform));
 
-  EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
   test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
 }
 
 TEST_F(LayerTest,
-       PushPropsDoesntCauseSurfacePropertyChangedDuringImplOnlyOpacityAnim) {
+       PushPropsDoesntCauseLayerPropertyChangedDuringImplOnlyOpacityAnim) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -705,9 +705,9 @@ TEST_F(LayerTest,
 
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
 
-  EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
   test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_TRUE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
 
   impl_layer->ResetAllChangeTrackingForSubtree();
   AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
@@ -719,9 +719,9 @@ TEST_F(LayerTest,
       set_is_impl_only(true);
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.75f));
 
-  EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
   test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_FALSE(impl_layer->LayerSurfacePropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
 }
 
 TEST_F(LayerTest,

@@ -46,7 +46,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       stacking_order_changed_(false),
       double_sided_(true),
       layer_property_changed_(false),
-      layer_surface_property_changed_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
       opacity_(1.0),
@@ -609,30 +608,6 @@ void LayerImpl::SetStackingOrderChanged(bool stacking_order_changed) {
   }
 }
 
-bool LayerImpl::LayerSurfacePropertyChanged() const {
-  if (layer_surface_property_changed_)
-    return true;
-
-  // If this layer's surface property hasn't changed, we want to see if
-  // some layer above us has changed this property. This is done for the
-  // case when such parent layer does not draw content, and therefore will
-  // not be traversed by the damage tracker. We need to make sure that
-  // property change on such layer will be caught by its descendants.
-  LayerImpl* current = this->parent_;
-  while (current && !current->draw_properties_.render_surface) {
-    if (current->layer_surface_property_changed_)
-      return true;
-    current = current->parent_;
-  }
-
-  return false;
-}
-
-void LayerImpl::NoteLayerSurfacePropertyChanged() {
-  layer_surface_property_changed_ = true;
-  layer_tree_impl()->set_needs_update_draw_properties();
-}
-
 void LayerImpl::NoteLayerPropertyChanged() {
   layer_property_changed_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
@@ -655,7 +630,6 @@ const char* LayerImpl::LayerTypeAsString() const {
 
 void LayerImpl::ResetAllChangeTrackingForSubtree() {
   layer_property_changed_ = false;
-  layer_surface_property_changed_ = false;
 
   update_rect_ = gfx::RectF();
 
@@ -861,7 +835,7 @@ void LayerImpl::SetOpacity(float opacity) {
     return;
 
   opacity_ = opacity;
-  NoteLayerSurfacePropertyChanged();
+  NoteLayerPropertyChangedForSubtree();
 }
 
 bool LayerImpl::OpacityIsAnimating() const {
@@ -905,7 +879,7 @@ void LayerImpl::SetTransform(const gfx::Transform& transform) {
     return;
 
   transform_ = transform;
-  NoteLayerSurfacePropertyChanged();
+  NoteLayerPropertyChangedForSubtree();
 }
 
 bool LayerImpl::TransformIsAnimating() const {

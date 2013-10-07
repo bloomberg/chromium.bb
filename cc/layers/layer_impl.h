@@ -427,7 +427,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   bool LayerPropertyChanged() const {
     return layer_property_changed_ || LayerIsAlwaysDamaged();
   }
-  bool LayerSurfacePropertyChanged() const;
 
   void ResetAllChangeTrackingForSubtree();
 
@@ -495,7 +494,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   virtual void AsValueInto(base::DictionaryValue* dict) const;
 
-  void NoteLayerSurfacePropertyChanged();
   void NoteLayerPropertyChanged();
   void NoteLayerPropertyChangedForSubtree();
 
@@ -550,13 +548,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   // Tracks if drawing-related properties have changed since last redraw.
   bool layer_property_changed_;
-
-  // Indicates that a property has changed on this layer that would not
-  // affect the pixels on its target surface, but would require redrawing
-  // the target_surface onto its ancestor target_surface.
-  // For layers that do not own a surface this flag acts as
-  // layer_property_changed_.
-  bool layer_surface_property_changed_;
 
   bool masks_to_bounds_;
   bool contents_opaque_;
