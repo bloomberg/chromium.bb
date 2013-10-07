@@ -466,12 +466,8 @@ TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
 // Tests that panels can have transient children of different types.
 // The transient children should be reparented in sync with the panel.
 TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
-
-#if defined(OS_WIN)
-  // http://crbug.com/304544
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (!SupportsHostWindowResize())
     return;
-#endif
 
   scoped_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   scoped_ptr<aura::Window> child(CreateTestWindowInShellWithDelegateAndType(
