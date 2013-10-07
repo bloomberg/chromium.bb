@@ -136,10 +136,6 @@ base::LazyInstance<WebKit::WebDeviceOrientationData>::Leaky
 class RendererWebKitPlatformSupportImpl::MimeRegistry
     : public webkit_glue::SimpleWebMimeRegistryImpl {
  public:
-  // TODO(ddorwin): Remove after http://webk.it/82983 lands.
-  virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
-      const WebKit::WebString& mime_type,
-      const WebKit::WebString& codecs);
   virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
       const WebKit::WebString& mime_type,
       const WebKit::WebString& codecs,
@@ -379,13 +375,6 @@ WebFileSystem* RendererWebKitPlatformSupportImpl::fileSystem() {
 }
 
 //------------------------------------------------------------------------------
-
-WebMimeRegistry::SupportsType
-RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
-    const WebString& mime_type,
-    const WebString& codecs) {
-  return supportsMediaMIMEType(mime_type, codecs, WebString());
-}
 
 WebMimeRegistry::SupportsType
 RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(

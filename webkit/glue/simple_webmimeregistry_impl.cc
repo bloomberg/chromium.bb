@@ -43,12 +43,6 @@ WebMimeRegistry::SupportsType
 // When debugging layout tests failures in the test shell,
 // see TestShellWebMimeRegistryImpl.
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
-    const WebString& mime_type, const WebString& codecs) {
-  // Media features are only supported at the content/ layer.
-  return IsNotSupported;
-}
-
-WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
     const WebString& mime_type,
     const WebString& codecs,
     const WebString& key_system) {
