@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "sql/connection.h"
+#include "sql/recovery.h"  // For FullRecoverySupported().
 #include "sql/statement.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
@@ -839,6 +840,15 @@ TEST_F(ThumbnailDatabaseTest, Version7) {
 }
 
 TEST_F(ThumbnailDatabaseTest, Recovery) {
+  // This code tests the recovery module in concert with Chromium's
+  // custom recover virtual table.  Under USE_SYSTEM_SQLITE, this is
+  // not available.  This is detected dynamically because corrupt
+  // databases still need to be handled, perhaps by Raze(), and the
+  // recovery module is an obvious layer to abstract that to.
+  // TODO(shess): Handle that case for real!
+  if (!sql::Recovery::FullRecoverySupported())
+    return;
+
   chrome::FaviconID id1, id2;
   GURL page_url1("http://www.google.com");
   GURL page_url2("http://news.google.com");

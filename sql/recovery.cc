@@ -13,6 +13,16 @@
 namespace sql {
 
 // static
+bool Recovery::FullRecoverySupported() {
+  // TODO(shess): See comment in Init().
+#if defined(USE_SYSTEM_SQLITE)
+  return false;
+#else
+  return true;
+#endif
+}
+
+// static
 scoped_ptr<Recovery> Recovery::Begin(
     Connection* connection,
     const base::FilePath& db_path) {
