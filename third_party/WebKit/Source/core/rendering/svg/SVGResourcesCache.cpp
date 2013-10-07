@@ -122,6 +122,9 @@ static inline bool rendererCanHaveResources(RenderObject* renderer)
 void SVGResourcesCache::clientStyleChanged(RenderObject* renderer, StyleDifference diff, const RenderStyle* newStyle)
 {
     ASSERT(renderer);
+    ASSERT(renderer->node());
+    ASSERT(renderer->node()->isSVGElement());
+
     if (diff == StyleDifferenceEqual || !renderer->parent())
         return;
 
@@ -139,12 +142,6 @@ void SVGResourcesCache::clientStyleChanged(RenderObject* renderer, StyleDifferen
     }
 
     RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer, false);
-
-    // FIXME: This doesn't look right, we often go through here in styleDidChange which means
-    // we're changing the needsStyleRecalc bits in the middle of recalcStyle on ourself which
-    // makes no sense. It's also not clear why we'd go through here for non-SVG elements.
-    if (renderer->node() && !renderer->node()->isSVGElement())
-        renderer->node()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
 }
 
 void SVGResourcesCache::clientWasAddedToTree(RenderObject* renderer, const RenderStyle* newStyle)
