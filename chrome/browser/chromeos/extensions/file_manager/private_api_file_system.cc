@@ -37,6 +37,7 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -291,50 +292,6 @@ void CancelCopyOnIOThread(
 
 }  // namespace
 
-void FileBrowserPrivateRequestFileSystemFunction::DidOpenFileSystem(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
-    base::PlatformFileError result,
-    const std::string& name,
-    const GURL& root_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (result != base::PLATFORM_FILE_OK) {
-    DidFail(result);
-    return;
-  }
-
-  // RenderViewHost may have gone while the task is posted asynchronously.
-  if (!render_view_host()) {
-    DidFail(base::PLATFORM_FILE_ERROR_FAILED);
-    return;
-  }
-
-  // Set up file permission access.
-  const int child_id = render_view_host()->GetProcess()->GetID();
-  if (!SetupFileSystemAccessPermissions(file_system_context,
-                                        child_id,
-                                        GetExtension())) {
-    DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
-    return;
-  }
-
-  // Set permissions for the Drive mount point immediately when we kick of
-  // first instance of file manager. The actual mount event will be sent to
-  // UI only when we perform proper authentication.
-  //
-  // Note that we call this function even when Drive is disabled by the
-  // setting. Otherwise, we need to call this when the setting is changed at
-  // a later time, which complicates the code.
-  SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
-
-  DictionaryValue* dict = new DictionaryValue();
-  SetResult(dict);
-  dict->SetString("name", name);
-  dict->SetString("root_url", root_url.spec());
-  dict->SetInteger("error", drive::FILE_ERROR_OK);
-  SendResponse(true);
-}
-
 void FileBrowserPrivateRequestFileSystemFunction::DidFail(
     base::PlatformFileError error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -397,15 +354,33 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
       file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
-  const GURL origin_url = source_url_.GetOrigin();
-  file_system_context->OpenFileSystem(
-      origin_url,
-      fileapi::kFileSystemTypeExternal,
-      fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&FileBrowserPrivateRequestFileSystemFunction::
-                     DidOpenFileSystem,
-                 this,
-                 file_system_context));
+  // Set up file permission access.
+  const int child_id = render_view_host()->GetProcess()->GetID();
+  if (!SetupFileSystemAccessPermissions(file_system_context,
+                                        child_id,
+                                        GetExtension())) {
+    DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    return false;
+  }
+
+  // Set permissions for the Drive mount point immediately when we kick of
+  // first instance of file manager. The actual mount event will be sent to
+  // UI only when we perform proper authentication.
+  //
+  // Note that we call this function even when Drive is disabled by the
+  // setting. Otherwise, we need to call this when the setting is changed at
+  // a later time, which complicates the code.
+  SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
+
+  fileapi::FileSystemInfo info =
+      fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
+
+  DictionaryValue* dict = new DictionaryValue();
+  SetResult(dict);
+  dict->SetString("name", info.name);
+  dict->SetString("root_url", info.root_url.spec());
+  dict->SetInteger("error", drive::FILE_ERROR_OK);
+  SendResponse(true);
   return true;
 }
 

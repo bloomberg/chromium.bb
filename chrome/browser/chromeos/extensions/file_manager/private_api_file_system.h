@@ -43,13 +43,6 @@ class FileBrowserPrivateRequestFileSystemFunction
                                 const GURL& root_url);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);
 
-  // Called when FileSystemContext::OpenFileSystem() is done.
-  void DidOpenFileSystem(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
-      base::PlatformFileError result,
-      const std::string& name,
-      const GURL& root_url);
-
   // Called when something goes wrong. Records the error to |error_| per the
   // error code and reports that the private API function failed.
   void DidFail(base::PlatformFileError error_code);

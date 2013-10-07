@@ -279,6 +279,12 @@ void FileSystemContext::OpenFileSystem(
     const OpenFileSystemCallback& callback) {
   DCHECK(!callback.is_null());
 
+  if (!FileSystemContext::IsSandboxFileSystem(type)) {
+    // Disallow opening a non-sandboxed filesystem.
+    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, std::string(), GURL());
+    return;
+  }
+
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend) {
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, std::string(), GURL());
@@ -294,6 +300,22 @@ void FileSystemContext::ResolveURL(
     const ResolveURLCallback& callback) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!callback.is_null());
+
+  if (!FileSystemContext::IsSandboxFileSystem(url.type())) {
+#ifdef OS_CHROMEOS
+    // Do not have to open a non-sandboxed filesystem.
+    // TODO(nhiroki): For now we assume this path is called only on ChromeOS,
+    // but this assumption may be broken in the future and we should handle
+    // more generally. http://crbug.com/304062.
+    FileSystemInfo info = GetFileSystemInfoForChromeOS(url.origin());
+    DidOpenFileSystemForResolveURL(
+        url, callback, info.root_url, info.name, base::PLATFORM_FILE_OK);
+    return;
+#endif
+    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
+                 FileSystemInfo(), base::FilePath(), false);
+    return;
+  }
 
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend) {

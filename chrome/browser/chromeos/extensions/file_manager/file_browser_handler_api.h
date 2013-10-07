@@ -108,17 +108,6 @@ class FileBrowserHandlerInternalSelectFileFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Called when the external file system is opened for the extension function
-  // caller in the browser context. It saves opened file system's parameters.
-  // The file system is needed to create FileEntry object for the selection
-  // result.
-  // |success| Whether the file system has been opened successfully.
-  // |file_system_name| The file system's name.
-  // |file_system_root| The file system's root url.
-  void OnFileSystemOpened(bool success,
-                          const std::string& file_system_name,
-                          const GURL& file_system_root);
-
   // Grants file access permissions for the created file to the caller.
   // Inside this method, |virtual_path_| value is set.
   void GrantPermissions();

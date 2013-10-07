@@ -12,6 +12,7 @@
 #include "base/platform_file.h"
 #include "third_party/WebKit/public/platform/WebFileError.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
+#include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
 #include "webkit/common/webkit_storage_common_export.h"
@@ -161,6 +162,15 @@ WEBKIT_STORAGE_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
 // Translates the net::Error to base::PlatformFileError.
 WEBKIT_STORAGE_COMMON_EXPORT base::PlatformFileError
 NetErrorToPlatformFileError(int error);
+
+#if defined(OS_CHROMEOS)
+// Returns the filesystem info that can be specified by |origin_url|.
+// TODO(nhiroki): This should be deprecated and use
+// GetExternalFileSystemRootURIString() to get separate file systems for each
+// mount type. http://crbug.com/284963.
+WEBKIT_STORAGE_COMMON_EXPORT FileSystemInfo
+GetFileSystemInfoForChromeOS(const GURL& origin_url);
+#endif
 
 }  // namespace fileapi
 

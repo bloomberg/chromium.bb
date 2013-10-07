@@ -109,14 +109,10 @@ void FileSystemBackend::OpenFileSystem(
     fileapi::FileSystemType type,
     fileapi::OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
-  DCHECK(CanHandleType(type));
-  // TODO(nhiroki): Avoid this hard-coded mount type to support multiple
-  // filesystems (http://crbug.com/297412).
-  fileapi::FileSystemType mount_type = fileapi::kFileSystemTypeExternal;
-  // Nothing to validate for external filesystem.
-  callback.Run(GetFileSystemRootURI(origin_url, mount_type),
-               GetFileSystemName(origin_url, mount_type),
-               base::PLATFORM_FILE_OK);
+  // TODO(nhiroki): Deprecate OpenFileSystem for non-sandboxed filesystem.
+  // (http://crbug.com/297412)
+  NOTREACHED();
+  callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
 fileapi::FileSystemQuotaUtil* FileSystemBackend::GetQuotaUtil() {

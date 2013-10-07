@@ -30,6 +30,8 @@
 #include "net/base/escape.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/common/fileapi/file_system_info.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
@@ -188,15 +190,8 @@ class FileBrowserHandlerExecutor {
       const scoped_refptr<const Extension>& handler_extension,
       const std::vector<FileSystemURL>& file_urls);
 
-  void DidOpenFileSystem(const std::vector<FileSystemURL>& file_urls,
-                         base::PlatformFileError result,
-                         const std::string& file_system_name,
-                         const GURL& file_system_root);
-
   void ExecuteDoneOnUIThread(bool success);
-  void ExecuteFileActionsOnUIThread(const std::string& file_system_name,
-                                    const GURL& file_system_root,
-                                    const FileDefinitionList& file_list);
+  void ExecuteFileActionsOnUIThread(const FileDefinitionList& file_list);
   void SetupPermissionsAndDispatchEvent(const std::string& file_system_name,
                                         const GURL& file_system_root,
                                         const FileDefinitionList& file_list,
@@ -300,29 +295,10 @@ void FileBrowserHandlerExecutor::Execute(
   // Get file system context for the extension to which onExecute event will be
   // sent. The file access permissions will be granted to the extension in the
   // file system context for the files in |file_urls|.
-  util::GetFileSystemContextForExtensionId(
-      profile_, extension_->id())->OpenFileSystem(
-          Extension::GetBaseURLFromExtensionId(extension_->id()).GetOrigin(),
-          fileapi::kFileSystemTypeExternal,
-          fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-          base::Bind(&FileBrowserHandlerExecutor::DidOpenFileSystem,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     file_urls));
-}
-
-void FileBrowserHandlerExecutor::DidOpenFileSystem(
-    const std::vector<FileSystemURL>& file_urls,
-    base::PlatformFileError result,
-    const std::string& file_system_name,
-    const GURL& file_system_root) {
-  if (result != base::PLATFORM_FILE_OK) {
-    ExecuteDoneOnUIThread(false);
-    return;
-  }
-
   scoped_refptr<fileapi::FileSystemContext> file_system_context(
       util::GetFileSystemContextForExtensionId(
           profile_, extension_->id()));
+
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
@@ -331,9 +307,7 @@ void FileBrowserHandlerExecutor::DidOpenFileSystem(
                  extension_,
                  file_urls),
       base::Bind(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_system_name,
-                 file_system_root));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
@@ -344,8 +318,6 @@ void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
 }
 
 void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
-    const std::string& file_system_name,
-    const GURL& file_system_root,
     const FileDefinitionList& file_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -361,8 +333,12 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
     return;
   }
 
+  fileapi::FileSystemInfo info =
+      fileapi::GetFileSystemInfoForChromeOS(
+          Extension::GetBaseURLFromExtensionId(extension_->id()).GetOrigin());
+
   if (handler_pid > 0) {
-    SetupPermissionsAndDispatchEvent(file_system_name, file_system_root,
+    SetupPermissionsAndDispatchEvent(info.name, info.root_url,
                                      file_list, handler_pid, NULL);
   } else {
     // We have to wake the handler background page before we proceed.
@@ -378,10 +354,7 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
         base::Bind(
             &FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent,
             weak_ptr_factory_.GetWeakPtr(),
-            file_system_name,
-            file_system_root,
-            file_list,
-            handler_pid));
+            info.name, info.root_url, file_list, handler_pid));
   }
 }
 

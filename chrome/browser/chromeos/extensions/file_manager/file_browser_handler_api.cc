@@ -50,6 +50,8 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/common/fileapi/file_system_info.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -264,22 +266,6 @@ class FileSelectorFactoryImpl : public FileSelectorFactory {
   DISALLOW_COPY_AND_ASSIGN(FileSelectorFactoryImpl);
 };
 
-typedef base::Callback<void (bool success,
-                             const std::string& file_system_name,
-                             const GURL& file_system_root)>
-    FileSystemOpenCallback;
-
-// Relays callback from file system open operation by translating file error
-// returned by the operation to success boolean.
-void RunOpenFileSystemCallback(
-    const FileSystemOpenCallback& callback,
-    base::PlatformFileError error,
-    const std::string& file_system_name,
-    const GURL& file_system_root) {
-  bool success = (error == base::PLATFORM_FILE_OK);
-  callback.Run(success, file_system_name, file_system_root);
-}
-
 }  // namespace
 
 FileBrowserHandlerInternalSelectFileFunction::
@@ -324,32 +310,6 @@ bool FileBrowserHandlerInternalSelectFileFunction::RunImpl() {
 void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
     bool success,
     const base::FilePath& full_path) {
-  if (!success) {
-    Respond(false);
-    return;
-  }
-
-  full_path_ = full_path;
-
-  // We have to open file system in order to create a FileEntry object for the
-  // selected file path.
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile_, render_view_host());
-  file_system_context->OpenFileSystem(
-          source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal,
-          fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-          base::Bind(
-              &RunOpenFileSystemCallback,
-              base::Bind(&FileBrowserHandlerInternalSelectFileFunction::
-                             OnFileSystemOpened,
-                         this)));
-};
-
-void FileBrowserHandlerInternalSelectFileFunction::OnFileSystemOpened(
-    bool success,
-    const std::string& file_system_name,
-    const GURL& file_system_root) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!success) {
@@ -357,9 +317,12 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFileSystemOpened(
     return;
   }
 
-  // Remember opened file system's parameters.
-  file_system_name_ = file_system_name;
-  file_system_root_ = file_system_root;
+  full_path_ = full_path;
+
+  fileapi::FileSystemInfo info =
+      fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
+  file_system_name_ = info.name;
+  file_system_root_ = info.root_url;
 
   GrantPermissions();
 
