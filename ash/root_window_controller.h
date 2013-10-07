@@ -64,7 +64,7 @@ class TouchHudDebug;
 class TouchHudProjection;
 class WorkspaceController;
 
-#if defined(USE_X11)
+#if defined(OS_CHROMEOS)
 class BootSplashScreen;
 #endif
 
@@ -259,7 +259,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   PanelLayoutManager* panel_layout_manager_;
 
   scoped_ptr<SystemBackgroundController> system_background_;
-#if defined(USE_X11)
+#if defined(OS_CHROMEOS)
   scoped_ptr<BootSplashScreen> boot_splash_screen_;
 #endif
 
