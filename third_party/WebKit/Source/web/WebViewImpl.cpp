@@ -1238,35 +1238,31 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     HitTestResult result = m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent | HitTestRequest::DisallowShadowContent);
     bestTouchNode = result.targetNode();
 
-    Node* originalTouchNode = bestTouchNode;
+    Node* firstUncontainedNode = 0;
 
-    // Check if we're in the subtree of a node with a hand cursor, our heuristic to choose the appropriate target.
-    while (bestTouchNode && !invokesHandCursor(bestTouchNode, false, m_page->mainFrame()))
+    // FIXME: http://crbug.com/289764 - Instead of stopping early on isContainedInParentBoundingBox, LinkHighlight
+    // should calculate the appropriate rects (currently it just uses the linebox)
+
+    // Check if we're in the subtree of a node with a hand cursor
+    // this is the heuristic we use to determine if we show a highlight on tap
+    while (bestTouchNode && !invokesHandCursor(bestTouchNode, false, m_page->mainFrame())) {
+        if (!firstUncontainedNode && !bestTouchNode->renderer()->isContainedInParentBoundingBox())
+            firstUncontainedNode = bestTouchNode;
+
         bestTouchNode = bestTouchNode->parentNode();
+    }
 
     if (!bestTouchNode)
         return 0;
 
-    // FIXME: http://crbug.com/289764 - Instead of stopping early on isContainedInParentBoundingBox, LinkHighlight
-    // should calculate the appropriate rects (currently it just uses the linebox)
-    // FIXME: Remove check for isLayerModelObject once LinkHighlight is fixed to use RenderObject
-
-    // We now walk up the tree as before except we stop early if the node isn't contained in its parent's rect.
-    bestTouchNode = originalTouchNode;
-
-    // FIXME: Refactor this to use renderer rather than node. All these loops can probably be merged into something cleaner
-    while (bestTouchNode && !invokesHandCursor(bestTouchNode, false, m_page->mainFrame())
-        && bestTouchNode->renderer() && (!bestTouchNode->renderer()->isLayerModelObject() || bestTouchNode->renderer()->isContainedInParentBoundingBox()))
-        bestTouchNode = bestTouchNode->parentNode();
+    if (firstUncontainedNode)
+        return firstUncontainedNode;
 
     // We should pick the largest enclosing node with hand cursor set.
-    while (bestTouchNode && bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), false, m_page->mainFrame())
-        && bestTouchNode->renderer() && (!bestTouchNode->renderer()->isLayerModelObject() || bestTouchNode->renderer()->isContainedInParentBoundingBox()))
+    while (bestTouchNode->parentNode()
+        && invokesHandCursor(bestTouchNode->parentNode(), false, m_page->mainFrame())
+        && bestTouchNode->renderer()->isContainedInParentBoundingBox())
         bestTouchNode = bestTouchNode->parentNode();
-
-    // FIXME: Remove check for isLayerModelObject once LinkHighlight is fixed to use RenderObject
-    if (!bestTouchNode || !bestTouchNode->renderer() || !bestTouchNode->renderer()->isLayerModelObject())
-        return 0;
 
     return bestTouchNode;
 }
