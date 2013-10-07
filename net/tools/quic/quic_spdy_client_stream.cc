@@ -91,6 +91,7 @@ int QuicSpdyClientStream::ParseResponseHeaders() {
     Close(QUIC_BAD_APPLICATION_PAYLOAD);
     return -1;
   }
+  response_headers_received_ = true;
 
   size_t delta = read_buf_len - len;
   if (delta > 0) {

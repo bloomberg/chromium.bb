@@ -5,6 +5,8 @@
 // A binary wrapper for QuicServer.  It listens forever on --port
 // (default 6121) until it's killed or ctrl-cd to death.
 
+#include <iostream>
+
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -20,6 +22,19 @@ int32 FLAGS_port = 6121;
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   CommandLine* line = CommandLine::ForCurrentProcess();
+  if (line->HasSwitch("h") || line->HasSwitch("help")) {
+    const char* help_str =
+        "Usage: quic_server [options]\n"
+        "\n"
+        "Options:\n"
+        "-h, --help                  show this help message and exit\n"
+        "--port=<port>               specify the port to listen on\n"
+        "--quic_in_memory_cache_dir  directory containing response data\n"
+        "                            to load\n";
+    std::cout << help_str;
+    exit(0);
+  }
+
   if (line->HasSwitch("quic_in_memory_cache_dir")) {
     net::tools::FLAGS_quic_in_memory_cache_dir =
         line->GetSwitchValueASCII("quic_in_memory_cache_dir");
