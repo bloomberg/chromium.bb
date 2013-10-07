@@ -339,6 +339,15 @@ class BuilderStatus(object):
     else:
       return cls.STATUS_FAILED
 
+  def AsDict(self):
+    """Returns a flat json-able representation of this builder status.
+
+    Returns: A dictionary of the form {'status' : status, 'message' : message}
+             where status and message are guaranteed to be strings.
+    """
+    return {'status' : str(self.status),
+            'message' : str(self.message)}
+
 
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""

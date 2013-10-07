@@ -232,7 +232,8 @@ class ArchivingStage(BoardSpecificBuilderStage):
       # Treat gsutil flake as a warning if it's the only problem.
       self._HandleExceptionAsWarning(e)
 
-  def GetMetadata(self, stage=None, final_status=None, sync_instance=None):
+  def GetMetadata(self, stage=None, final_status=None, sync_instance=None,
+                  completion_instance=None):
     """Constructs the metadata json object.
 
     Args:
@@ -242,6 +243,10 @@ class ArchivingStage(BoardSpecificBuilderStage):
       sync_instance: The stage instance that was used for syncing the source
         code. This should be a derivative of SyncStage. If None, the list of
         commit queue patches will not be included in the metadata.
+      completion_instance: The stage instance that was used to wait for slave
+        completion. Used to add slave build information to master builder's
+        metadata. If None, no such status information will be included. It not
+        None, this should be a derivative of LKGMCandidateSyncCompletionStage.
     """
     config = self._build_config
 
@@ -325,6 +330,19 @@ class ArchivingStage(BoardSpecificBuilderStage):
             details['%s%s' % (prefix, status.lower())] = count
         changes.append(details)
       metadata['changes'] = changes
+
+    # If we were a CQ master, then include a summary of the status of slave cq
+    # builders in metadata
+    if config['master']:
+      if (completion_instance and
+          isinstance(completion_instance, LKGMCandidateSyncCompletionStage)):
+        statuses = completion_instance.GetSlaveStatuses()
+        if not statuses:
+          logging.warning('completion_instance did not have any statuses '
+                          'to report. Will not add slave status to metadata.')
+        metadata['slave_targets'] = {}
+        for builder, status in statuses.iteritems():
+          metadata['slave_targets'][builder] = status.AsDict()
 
     return metadata
 
@@ -1126,7 +1144,12 @@ class ImportantBuilderFailedException(results_lib.StepFailure):
 class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
-  def _GetSlavesStatus(self):
+  def __init__(self, *args, **kwargs):
+    super(LKGMCandidateSyncCompletionStage, self).__init__(*args, **kwargs)
+    self._slave_statuses = {}
+
+  def _FetchSlaveStatuses(self):
+    """Fetch and return build status for this build and any of its slaves."""
     if self._options.debug:
       # In debug mode, nothing is uploaded to Google Storage, so we bypass
       # the extra hop and just look at what we have locally.
@@ -1213,7 +1236,8 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         if len(tracebacks) != 1 or tracebacks[0] != 'HWTest':
           self._AbortCQHWTests()
 
-      statuses = self._GetSlavesStatus()
+      statuses = self._FetchSlaveStatuses()
+      self._slave_statuses = statuses
       failing_build_dict, inflight_build_dict = {}, {}
       for builder, status in statuses.iteritems():
         if status.Failed():
@@ -1232,6 +1256,17 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         raise ImportantBuilderFailedException()
       else:
         self.HandleSuccess()
+
+  def GetSlaveStatuses(self):
+    """Returns cached slave status results.
+
+    Cached results are populated during PerformStage, so this function
+    should only be called after PerformStage has returned.
+
+    Returns: A dictionary from build names to manifest_version.BuilderStatus
+             builder status objects.
+    """
+    return self._slave_statuses
 
 
 class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
@@ -3082,11 +3117,12 @@ class ReportStage(bs.BuilderStage):
 <h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
 
   def __init__(self, options, build_config, archive_stages, version,
-               sync_instance):
+               sync_instance, completion_instance=None):
     bs.BuilderStage.__init__(self, options, build_config)
     self._archive_stages = archive_stages
     self._version = version if version else ''
     self._sync_instance = sync_instance
+    self._completion_instance = completion_instance
 
   def PerformStage(self):
     acl = ArchivingStage.GetUploadACL(self._build_config)
@@ -3111,7 +3147,9 @@ class ReportStage(bs.BuilderStage):
       else:
         final_status = 'failed'
       archive_stage.UploadMetadata(final_status=final_status,
-                                   sync_instance=self._sync_instance)
+                                   sync_instance=self._sync_instance,
+                                   completion_instance=
+                                   self._completion_instance)
 
       # Generate the index page needed for public reading.
       uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)

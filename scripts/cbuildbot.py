@@ -203,6 +203,15 @@ class Builder(object):
     """
     raise NotImplementedError()
 
+  def GetCompletionInstance(self):
+    """Returns the LKGMCandidateSyncCompletionStage for this build.
+
+    Subclasses may override this method.
+
+    Returns: None
+    """
+    return None
+
   def RunStages(self):
     """Subclasses must override this method.  Runs the appropriate code."""
     raise NotImplementedError()
@@ -342,8 +351,9 @@ class Builder(object):
     finally:
       if print_report:
         results_lib.WriteCheckpoint(self.options.buildroot)
+        completion_instance = self.GetCompletionInstance()
         self._RunStage(stages.ReportStage, self.archive_stages,
-                       self.release_tag, sync_instance)
+                       self.release_tag, sync_instance, completion_instance)
         success = results_lib.Results.BuildSucceededSoFar()
         if exception_thrown and success:
           success = False
@@ -546,6 +556,7 @@ class DistributedBuilder(SimpleBuilder):
     super(DistributedBuilder, self).__init__(*args, **kwargs)
     self.completion_stage_class = None
     self.sync_stage = None
+    self._completion_stage = None
 
   def GetSyncInstance(self):
     """Syncs the tree using one of the distributed sync logic paths.
@@ -572,11 +583,20 @@ class DistributedBuilder(SimpleBuilder):
     self.sync_stage = sync_stage
     return self.sync_stage
 
+  def GetCompletionInstance(self):
+    """Returns the completion_stage_class instance that was used for this build.
+
+    Returns None if the completion_stage instance was not yet created (this
+    occurs during Publish).
+    """
+    return self._completion_stage
+
   def Publish(self, was_build_successful):
     """Completes build by publishing any required information."""
     completion_stage = self._GetStageInstance(self.completion_stage_class,
                                               self.sync_stage,
                                               was_build_successful)
+    self._completion_stage = completion_stage
     completion_stage.Run()
     name = completion_stage.name
     if (self.build_config['pre_cq'] or self.options.pre_cq or
