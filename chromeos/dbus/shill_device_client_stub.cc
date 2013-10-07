@@ -22,9 +22,11 @@ namespace chromeos {
 
 namespace {
 
-void ErrorFunction(const std::string& error_name,
+void ErrorFunction(const std::string& device_path,
+                   const std::string& error_name,
                    const std::string& error_message) {
-  LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
+  LOG(ERROR) << "Shill Error for: " << device_path
+             << ": " << error_name << " : " << error_message;
 }
 
 }  // namespace
@@ -212,7 +214,7 @@ void ShillDeviceClientStub::SetDeviceProperty(const std::string& device_path,
           << ": " << name << " = " << value;
   SetProperty(dbus::ObjectPath(device_path), name, value,
               base::Bind(&base::DoNothing),
-              base::Bind(&ErrorFunction));
+              base::Bind(&ErrorFunction, device_path));
 }
 
 std::string ShillDeviceClientStub::GetDevicePathForType(

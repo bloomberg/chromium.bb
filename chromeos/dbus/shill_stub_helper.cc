@@ -77,7 +77,7 @@ void SetupDefaultEnvironment() {
   // Add a cellular device. Used in SMS stub.
   devices->AddDevice(
       kDevicePathCellular, shill::kTypeCellular, "stub_cellular_device1");
-  devices->SetDeviceProperty("stub_cellular_device1",
+  devices->SetDeviceProperty(kDevicePathCellular,
                              shill::kCarrierProperty,
                              base::StringValue(shill::kCarrierSprint));
 
