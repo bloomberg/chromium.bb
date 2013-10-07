@@ -286,6 +286,9 @@
         # Generated from CSSParser-in.cpp
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
 
+        # Generated from HTMLMetaElement-in.cpp
+        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',
+
         # Additional .cpp files from the make_derived_sources rules.
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/XPathGrammar.cpp',

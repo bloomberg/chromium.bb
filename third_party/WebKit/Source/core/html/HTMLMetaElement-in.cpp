@@ -30,6 +30,20 @@
 
 namespace WebCore {
 
+#define DEFINE_ARRAY_FOR_MATCHING(name, source, maxMatchLength) \
+const UChar* name; \
+const unsigned uMaxMatchLength = maxMatchLength; \
+UChar characterBuffer[uMaxMatchLength]; \
+if (!source.is8Bit()) { \
+    name = source.characters16(); \
+} else { \
+    unsigned bufferLength = std::min(uMaxMatchLength, source.length()); \
+    const LChar* characters8 = source.characters8(); \
+    for (unsigned i = 0; i < bufferLength; ++i) \
+        characterBuffer[i] = characters8[i]; \
+    name = characterBuffer; \
+}
+
 using namespace HTMLNames;
 
 inline HTMLMetaElement::HTMLMetaElement(const QualifiedName& tagName, Document& document)
@@ -166,10 +180,16 @@ Length HTMLMetaElement::parseViewportValueAsLength(const String& keyString, cons
     // 3) device-width and device-height are used as keywords.
     // 4) Other keywords and unknown values translate to 0.0.
 
-    if (equalIgnoringCase(valueString, "device-width"))
-        return Length(100, ViewportPercentageWidth);
-    if (equalIgnoringCase(valueString, "device-height"))
-        return Length(100, ViewportPercentageHeight);
+    unsigned length = valueString.length();
+    DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 13);
+    SWITCH(characters, length) {
+        CASE("device-width") {
+            return Length(100, ViewportPercentageWidth);
+        }
+        CASE("device-height") {
+            return Length(100, ViewportPercentageHeight);
+        }
+    }
 
     float value = parsePositiveNumber(keyString, valueString);
 
@@ -194,14 +214,22 @@ float HTMLMetaElement::parseViewportValueAsZoom(const String& keyString, const S
     // 4) device-width and device-height are translated to 10.0.
     // 5) no and unknown values are translated to 0.0
 
-    if (equalIgnoringCase(valueString, "yes"))
-        return 1;
-    if (equalIgnoringCase(valueString, "no"))
-        return 0;
-    if (equalIgnoringCase(valueString, "device-width"))
-        return 10;
-    if (equalIgnoringCase(valueString, "device-height"))
-        return 10;
+    unsigned length = valueString.length();
+    DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 13);
+    SWITCH(characters, length) {
+        CASE("yes") {
+            return 1;
+        }
+        CASE("no") {
+            return 0;
+        }
+        CASE("device-width") {
+            return 10;
+        }
+        CASE("device-height") {
+            return 10;
+        }
+    }
 
     float value = parsePositiveNumber(keyString, valueString);
 
@@ -223,17 +251,24 @@ float HTMLMetaElement::parseViewportValueAsUserZoom(const String& keyString, con
     // Numbers >= 1, numbers <= -1, device-width and device-height are mapped to yes.
     // Numbers in the range <-1, 1>, and unknown values, are mapped to no.
 
-    if (equalIgnoringCase(valueString, "yes"))
-        return 1;
-    if (equalIgnoringCase(valueString, "no"))
-        return 0;
-    if (equalIgnoringCase(valueString, "device-width"))
-        return 1;
-    if (equalIgnoringCase(valueString, "device-height"))
-        return 1;
+    unsigned length = valueString.length();
+    DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 13);
+    SWITCH(characters, length) {
+        CASE("yes") {
+            return 1;
+        }
+        CASE("no") {
+            return 0;
+        }
+        CASE("device-width") {
+            return 1;
+        }
+        CASE("device-height") {
+            return 1;
+        }
+    }
 
     float value = parsePositiveNumber(keyString, valueString);
-
     if (fabs(value) < 1)
         return 0;
 
@@ -242,14 +277,22 @@ float HTMLMetaElement::parseViewportValueAsUserZoom(const String& keyString, con
 
 float HTMLMetaElement::parseViewportValueAsDPI(const String& keyString, const String& valueString)
 {
-    if (equalIgnoringCase(valueString, "device-dpi"))
-        return ViewportDescription::ValueDeviceDPI;
-    if (equalIgnoringCase(valueString, "low-dpi"))
-        return ViewportDescription::ValueLowDPI;
-    if (equalIgnoringCase(valueString, "medium-dpi"))
-        return ViewportDescription::ValueMediumDPI;
-    if (equalIgnoringCase(valueString, "high-dpi"))
-        return ViewportDescription::ValueHighDPI;
+    unsigned length = valueString.length();
+    DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 10);
+    SWITCH(characters, length) {
+        CASE("device-dpi") {
+            return ViewportDescription::ValueDeviceDPI;
+        }
+        CASE("low-dpi") {
+            return ViewportDescription::ValueLowDPI;
+        }
+        CASE("medium-dpi") {
+            return ViewportDescription::ValueMediumDPI;
+        }
+        CASE("high-dpi") {
+            return ViewportDescription::ValueHighDPI;
+        }
+    }
 
     bool ok;
     float value = parsePositiveNumber(keyString, valueString, &ok);
@@ -263,32 +306,49 @@ void HTMLMetaElement::processViewportKeyValuePair(const String& keyString, const
 {
     ViewportDescription* description = static_cast<ViewportDescription*>(data);
 
-    if (keyString == "width") {
-        const Length& width = parseViewportValueAsLength(keyString, valueString);
-        if (!width.isAuto()) {
+    unsigned length = keyString.length();
+
+    DEFINE_ARRAY_FOR_MATCHING(characters, keyString, 17);
+    SWITCH(characters, length) {
+        CASE("width") {
+            const Length& width = parseViewportValueAsLength(keyString, valueString);
+            if (width.isAuto())
+                return;
             description->minWidth = Length(ExtendToZoom);
             description->maxWidth = width;
+            return;
         }
-    } else if (keyString == "height") {
-        const Length& height = parseViewportValueAsLength(keyString, valueString);
-        if (!height.isAuto()) {
+        CASE("height") {
+            const Length& height = parseViewportValueAsLength(keyString, valueString);
+            if (height.isAuto())
+                return;
             description->minHeight = Length(ExtendToZoom);
             description->maxHeight = height;
+            return;
         }
-    } else if (keyString == "initial-scale") {
-        description->zoom = parseViewportValueAsZoom(keyString, valueString);
-    } else if (keyString == "minimum-scale") {
-        description->minZoom = parseViewportValueAsZoom(keyString, valueString);
-    } else if (keyString == "maximum-scale") {
-        description->maxZoom = parseViewportValueAsZoom(keyString, valueString);
-    } else if (keyString == "user-scalable") {
-        description->userZoom = parseViewportValueAsUserZoom(keyString, valueString);
-    } else if (keyString == "target-densitydpi") {
-        description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(keyString, valueString);
-        reportViewportWarning(TargetDensityDpiUnsupported, String(), String());
-    } else {
-        reportViewportWarning(UnrecognizedViewportArgumentKeyError, keyString, String());
+        CASE("initial-scale") {
+            description->zoom = parseViewportValueAsZoom(keyString, valueString);
+            return;
+        }
+        CASE("minimum-scale") {
+            description->minZoom = parseViewportValueAsZoom(keyString, valueString);
+            return;
+        }
+        CASE("maximum-scale") {
+            description->maxZoom = parseViewportValueAsZoom(keyString, valueString);
+            return;
+        }
+        CASE("user-scalable") {
+            description->userZoom = parseViewportValueAsUserZoom(keyString, valueString);
+            return;
+        }
+        CASE("target-densitydpi") {
+            description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(keyString, valueString);
+            reportViewportWarning(TargetDensityDpiUnsupported, String(), String());
+            return;
+        }
     }
+    reportViewportWarning(UnrecognizedViewportArgumentKeyError, keyString, String());
 }
 
 static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode)
@@ -371,13 +431,12 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
 
 void HTMLMetaElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == http_equivAttr)
+    if (name == http_equivAttr || name == contentAttr) {
         process();
-    else if (name == contentAttr)
-        process();
-    else if (name == nameAttr) {
-        // Do nothing
-    } else
+        return;
+    }
+
+    if (name != nameAttr)
         HTMLElement::parseAttribute(name, value);
 }
 
@@ -403,7 +462,7 @@ void HTMLMetaElement::process()
     if (nameValue.isNull()) {
         // Get the document to process the tag, but only if we're actually part of DOM
         // tree (changing a meta tag while it's not in the tree shouldn't have any effect
-        // on the document)
+        // on the document).
         const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
         if (!httpEquivValue.isNull())
             document().processHttpEquiv(httpEquivValue, contentValue);

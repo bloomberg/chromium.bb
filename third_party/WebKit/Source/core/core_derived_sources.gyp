@@ -606,6 +606,23 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
           ],
         },
+        {
+          'action_name': 'MakeTokenMatcherForViewport',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../core/scripts/make_token_matcher.py',
+            '../core/html/HTMLMetaElement-in.cpp',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',
+          ],
+          'action': [
+            'python',
+            '../core/scripts/make_token_matcher.py',
+            '../core/html/HTMLMetaElement-in.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',
+          ],
+        },
       ],
       'rules': [
         {

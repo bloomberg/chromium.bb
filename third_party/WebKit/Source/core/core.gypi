@@ -2172,7 +2172,6 @@
             'html/HTMLMediaElement.cpp',
             'html/HTMLMenuElement.cpp',
             'html/HTMLMenuElement.h',
-            'html/HTMLMetaElement.cpp',
             'html/HTMLMetaElement.h',
             'html/HTMLMeterElement.cpp',
             'html/HTMLMeterElement.h',
