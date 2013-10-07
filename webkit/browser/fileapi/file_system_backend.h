@@ -98,10 +98,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   // This method itself does *not* check if the given path exists and is a
   // regular file.
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
-    const FileSystemURL& url,
-    int64 offset,
-    const base::Time& expected_modification_time,
-    FileSystemContext* context) const = 0;
+      const FileSystemURL& url,
+      int64 offset,
+      const base::Time& expected_modification_time,
+      FileSystemContext* context) const = 0;
 
   // Creates a new file stream writer for a given filesystem URL |url| with an
   // offset |offset|.

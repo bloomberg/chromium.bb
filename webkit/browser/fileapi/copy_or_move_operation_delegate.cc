@@ -26,8 +26,11 @@ class CopyOrMoveOperationDelegate::CopyOrMoveImpl {
   virtual void Run(
       const CopyOrMoveOperationDelegate::StatusCallback& callback) = 0;
   virtual void Cancel() = 0;
+
  protected:
   CopyOrMoveImpl() {}
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(CopyOrMoveImpl);
 };
 

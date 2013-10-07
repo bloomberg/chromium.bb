@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_COPY_OR_MOVE_OPERATION_DELEGATE_H_
 #define WEBKIT_BROWSER_FILEAPI_COPY_OR_MOVE_OPERATION_DELEGATE_H_
 
+#include <set>
 #include <stack>
 
 #include "base/memory/ref_counted.h"

@@ -287,7 +287,9 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
 
   // Try native local which is not cracked.
   FileSystemURL native_local = mount_points->CreateCrackedFileSystemURL(
-      kTestOrigin, fileapi::kFileSystemTypeNativeLocal, base::FilePath(FPL("c")));
+      kTestOrigin,
+      fileapi::kFileSystemTypeNativeLocal,
+      base::FilePath(FPL("c")));
   EXPECT_FALSE(native_local.is_valid());
 
   struct TestCase {
@@ -355,8 +357,8 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
         << "Test case index: " << i;
     EXPECT_EQ(kTestCases[i].expect_type, cracked.type())
         << "Test case index: " << i;
-    EXPECT_EQ(base::FilePath(kTestCases[i].expect_path).NormalizePathSeparators(),
-                       cracked.path())
+    EXPECT_EQ(base::FilePath(
+        kTestCases[i].expect_path).NormalizePathSeparators(), cracked.path())
         << "Test case index: " << i;
     EXPECT_EQ(base::FilePath(kTestCases[i].path).NormalizePathSeparators(),
                        cracked.virtual_path())
@@ -450,8 +452,8 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
 
     EXPECT_EQ(kTestCases[i].expect_type, cracked_type)
         << "Test case index: " << i;
-    EXPECT_EQ(base::FilePath(kTestCases[i].expect_path).NormalizePathSeparators(),
-                       cracked_path)
+    EXPECT_EQ(base::FilePath(
+        kTestCases[i].expect_path).NormalizePathSeparators(), cracked_path)
         << "Test case index: " << i;
     EXPECT_EQ(kTestCases[i].expect_name, cracked_name)
         << "Test case index: " << i;

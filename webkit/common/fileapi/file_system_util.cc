@@ -153,24 +153,24 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
 
   std::string url = "filesystem:" + origin_url.GetWithEmptyPath().spec();
   switch (type) {
-  case kFileSystemTypeTemporary:
-    url += (kTemporaryDir + 1);  // We don't want the leading slash.
-    return GURL(url + "/");
-  case kFileSystemTypePersistent:
-    url += (kPersistentDir + 1);  // We don't want the leading slash.
-    return GURL(url + "/");
-  case kFileSystemTypeExternal:
-    url += (kExternalDir + 1);  // We don't want the leading slash.
-    return GURL(url + "/");
-  case kFileSystemTypeIsolated:
-    url += (kIsolatedDir + 1);  // We don't want the leading slash.
-    return GURL(url + "/");
-  case kFileSystemTypeTest:
-    url += (kTestDir + 1);  // We don't want the leading slash.
-    return GURL(url + "/");
-  // Internal types are always pointed via isolated or external URLs.
-  default:
-    NOTREACHED();
+    case kFileSystemTypeTemporary:
+      url += (kTemporaryDir + 1);  // We don't want the leading slash.
+      return GURL(url + "/");
+    case kFileSystemTypePersistent:
+      url += (kPersistentDir + 1);  // We don't want the leading slash.
+      return GURL(url + "/");
+    case kFileSystemTypeExternal:
+      url += (kExternalDir + 1);  // We don't want the leading slash.
+      return GURL(url + "/");
+    case kFileSystemTypeIsolated:
+      url += (kIsolatedDir + 1);  // We don't want the leading slash.
+      return GURL(url + "/");
+    case kFileSystemTypeTest:
+      url += (kTestDir + 1);  // We don't want the leading slash.
+      return GURL(url + "/");
+      // Internal types are always pointed via isolated or external URLs.
+    default:
+      NOTREACHED();
   }
   NOTREACHED();
   return GURL();
@@ -308,8 +308,7 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
 
 bool GetFileSystemPublicType(
     const std::string type_string,
-    WebKit::WebFileSystemType* type
-) {
+    WebKit::WebFileSystemType* type) {
   DCHECK(type);
   if (type_string == "Temporary") {
     *type = WebKit::WebFileSystemTypeTemporary;
@@ -333,8 +332,8 @@ bool GetFileSystemPublicType(
 
 std::string GetIsolatedFileSystemName(const GURL& origin_url,
                                       const std::string& filesystem_id) {
-  std::string name(fileapi::GetFileSystemName(origin_url,
-      fileapi::kFileSystemTypeIsolated));
+  std::string name(fileapi::GetFileSystemName(
+      origin_url, fileapi::kFileSystemTypeIsolated));
   name.append("_");
   name.append(filesystem_id);
   return name;

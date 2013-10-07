@@ -29,7 +29,8 @@ extern const size_t kRegularTestCaseSize;
 size_t GetRegularTestCaseSize();
 
 // Creates one file or directory specified by |record|.
-void SetUpOneTestCase(const base::FilePath& root_path, const TestCaseRecord& record);
+void SetUpOneTestCase(const base::FilePath& root_path,
+                      const TestCaseRecord& record);
 
 // Creates the files and directories specified in kRegularTestCases.
 void SetUpRegularTestCases(const base::FilePath& root_path);

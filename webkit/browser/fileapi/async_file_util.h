@@ -5,6 +5,8 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_ASYNC_FILE_UTIL_H_
 #define WEBKIT_BROWSER_FILEAPI_ASYNC_FILE_UTIL_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_util_proxy.h"
@@ -74,8 +76,8 @@ class AsyncFileUtil {
       void(base::PlatformFileError result,
            const base::PlatformFileInfo& file_info,
            const base::FilePath& platform_path,
-           const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref
-           )> CreateSnapshotFileCallback;
+           const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
+      CreateSnapshotFileCallback;
 
 
   typedef base::Callback<void(int64 size)> CopyFileProgressCallback;

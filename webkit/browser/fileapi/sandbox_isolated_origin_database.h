@@ -5,6 +5,9 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_ISOLATED_ORIGIN_DATABASE_H_
 #define WEBKIT_BROWSER_FILEAPI_SANDBOX_ISOLATED_ORIGIN_DATABASE_H_
 
+#include <string>
+#include <vector>
+
 #include "webkit/browser/fileapi/sandbox_origin_database_interface.h"
 
 namespace fileapi {

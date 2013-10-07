@@ -75,7 +75,7 @@ class WEBKIT_STORAGE_COMMON_EXPORT VirtualPath {
 //
 // |type| needs to be public type as the returned URI is given to the renderer.
 WEBKIT_STORAGE_COMMON_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
-                                         FileSystemType type);
+                                                       FileSystemType type);
 
 // Returns the name for the filesystem that is specified by a pair of
 // |origin_url| and |type|.

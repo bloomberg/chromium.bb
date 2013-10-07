@@ -94,7 +94,6 @@ void DeleteDatabaseFile(const base::FilePath& db_path,
       // We may have multiple files for the same type, so don't break here.
     }
   }
-
 }
 
 }  // namespace fileapi

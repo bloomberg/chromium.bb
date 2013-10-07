@@ -26,8 +26,8 @@ base::FilePath::StringType GetRegisterNameForPath(const base::FilePath& path) {
 #if defined(FILE_PATH_USES_DRIVE_LETTERS)
   base::FilePath::StringType name;
   for (size_t i = 0;
-        i < path.value().size() && !base::FilePath::IsSeparator(path.value()[i]);
-        ++i) {
+       i < path.value().size() && !base::FilePath::IsSeparator(path.value()[i]);
+       ++i) {
     if (path.value()[i] == L':') {
       name.append(L"_drive");
       break;
@@ -78,8 +78,10 @@ bool IsolatedContext::FileInfoSet::AddPath(
       fileset_.insert(MountPointInfo(utf8name, normalized_path)).second;
   if (!inserted) {
     int suffix = 1;
-    std::string basepart = base::FilePath(name).RemoveExtension().AsUTF8Unsafe();
-    std::string ext = base::FilePath(base::FilePath(name).Extension()).AsUTF8Unsafe();
+    std::string basepart =
+        base::FilePath(name).RemoveExtension().AsUTF8Unsafe();
+    std::string ext =
+        base::FilePath(base::FilePath(name).Extension()).AsUTF8Unsafe();
     while (!inserted) {
       utf8name = base::StringPrintf("%s (%d)", basepart.c_str(), suffix++);
       if (!ext.empty())

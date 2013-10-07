@@ -5,6 +5,8 @@
 #ifndef WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_INFO_H_
 #define WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_INFO_H_
 
+#include <string>
+
 #include "url/gurl.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/webkit_storage_common_export.h"

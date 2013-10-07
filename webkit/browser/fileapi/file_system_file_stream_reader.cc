@@ -32,7 +32,7 @@ FileStreamReader* FileStreamReader::CreateForFileSystemFile(
       expected_modification_time);
 }
 
-}  // webkit_blob
+}  // namespace webkit_blob
 
 namespace fileapi {
 

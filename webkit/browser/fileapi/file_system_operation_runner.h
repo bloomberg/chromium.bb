@@ -6,6 +6,8 @@
 #define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_RUNNER_H_
 
 #include <map>
+#include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/id_map.h"

@@ -186,8 +186,9 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(relatives); ++j) {
       SCOPED_TRACE(testing::Message() << "Testing "
                    << kTestPaths[i].value() << " " << relatives[j].path);
-      base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
-          .AppendASCII(names_[i]).Append(relatives[j].path);
+      base::FilePath virtual_path =
+          isolated_context()->CreateVirtualRootPath(id_).AppendASCII(
+              names_[i]).Append(relatives[j].path);
       std::string cracked_id;
       base::FilePath cracked_path;
       FileSystemType cracked_type;
@@ -230,8 +231,9 @@ TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(relatives); ++j) {
       SCOPED_TRACE(testing::Message() << "Testing "
                    << kTestPaths[i].value() << " " << relatives[j].path);
-      base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
-          .AppendASCII(names_[i]).Append(relatives[j].path);
+      base::FilePath virtual_path =
+          isolated_context()->CreateVirtualRootPath(id_).AppendASCII(
+              names_[i]).Append(relatives[j].path);
 
       FileSystemURL cracked = isolated_context()->CreateCrackedFileSystemURL(
           GURL("http://chromium.org"), kFileSystemTypeIsolated, virtual_path);

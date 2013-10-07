@@ -117,7 +117,8 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   if (data_.empty()) {
     base::FilePath relative_path = url_.path();
 #if defined(OS_POSIX)
-    relative_path = base::FilePath(FILE_PATH_LITERAL("/") + relative_path.value());
+    relative_path =
+        base::FilePath(FILE_PATH_LITERAL("/") + relative_path.value());
 #endif
     const base::string16& title = relative_path.LossyDisplayName();
     data_.append(net::GetDirectoryListingHeader(title));

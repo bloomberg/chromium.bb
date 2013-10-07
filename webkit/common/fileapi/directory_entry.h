@@ -5,6 +5,8 @@
 #ifndef WEBKIT_COMMON_FILEAPI_DIRECTORY_ENTRY_H_
 #define WEBKIT_COMMON_FILEAPI_DIRECTORY_ENTRY_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
@@ -31,6 +33,6 @@ struct WEBKIT_STORAGE_COMMON_EXPORT DirectoryEntry {
   base::Time last_modified_time;
 };
 
-}
+}  // namespace fileapi
 
 #endif  // WEBKIT_COMMON_FILEAPI_DIRECTORY_ENTRY_H_

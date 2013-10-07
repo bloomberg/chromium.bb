@@ -60,9 +60,9 @@ void InitFileInfo(
 
 // Costs computed as per crbug.com/86114, based on the LevelDB implementation of
 // path storage under Linux.  It's not clear if that will differ on Windows, on
-// which base::FilePath uses wide chars [since they're converted to UTF-8 for storage
-// anyway], but as long as the cost is high enough that one can't cheat on quota
-// by storing data in paths, it doesn't need to be all that accurate.
+// which base::FilePath uses wide chars [since they're converted to UTF-8 for
+// storage anyway], but as long as the cost is high enough that one can't cheat
+// on quota by storing data in paths, it doesn't need to be all that accurate.
 const int64 kPathCreationQuotaCost = 146;  // Bytes per inode, basically.
 const int64 kPathByteQuotaCost = 2;  // Bytes per byte of path length in UTF-8.
 
@@ -96,9 +96,12 @@ void TouchDirectory(SandboxDirectoryDatabase* db, FileId dir_id) {
     NOTREACHED();
 }
 
-const base::FilePath::CharType kTemporaryDirectoryName[] = FILE_PATH_LITERAL("t");
-const base::FilePath::CharType kPersistentDirectoryName[] = FILE_PATH_LITERAL("p");
-const base::FilePath::CharType kSyncableDirectoryName[] = FILE_PATH_LITERAL("s");
+const base::FilePath::CharType kTemporaryDirectoryName[] =
+    FILE_PATH_LITERAL("t");
+const base::FilePath::CharType kPersistentDirectoryName[] =
+    FILE_PATH_LITERAL("p");
+const base::FilePath::CharType kSyncableDirectoryName[] =
+    FILE_PATH_LITERAL("s");
 
 enum IsolatedOriginStatus {
   kIsolatedOriginMatch,
@@ -265,7 +268,7 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
     base::SequencedTaskRunner* file_task_runner)
     : special_storage_policy_(special_storage_policy),
       file_system_directory_(file_system_directory),
-      db_flush_delay_seconds_(10 * 60), // 10 mins.
+      db_flush_delay_seconds_(10 * 60),  // 10 mins.
       file_task_runner_(file_task_runner) {
 }
 

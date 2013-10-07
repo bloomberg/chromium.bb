@@ -141,6 +141,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
   base::ScopedTempDir base_;
   scoped_ptr<SandboxDirectoryDatabase> db_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SandboxDirectoryDatabaseTest);
 };
 

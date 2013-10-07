@@ -4,6 +4,8 @@
 
 #include "webkit/browser/fileapi/upload_file_system_file_element_reader.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "net/base/net_errors.h"
 #include "webkit/browser/blob/file_stream_reader.h"

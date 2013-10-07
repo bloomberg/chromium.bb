@@ -222,5 +222,5 @@ TEST_F(FileSystemUtilTest, RejectBadIsolatedFileSystemName) {
   EXPECT_FALSE(CrackIsolatedFileSystemName("foo:Isolated_", &fsid));
 }
 
-}  // namespace (anonymous)
+}  // namespace
 }  // namespace fileapi
