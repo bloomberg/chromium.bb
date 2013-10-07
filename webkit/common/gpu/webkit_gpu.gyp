@@ -23,6 +23,7 @@
             '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
             '<(DEPTH)/skia/skia.gyp:skia',
             '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
+            '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
             '<(DEPTH)/ui/gl/gl.gyp:gl',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
             '<(DEPTH)/ui/ui.gyp:ui',
@@ -46,17 +47,6 @@
           ],
           'defines': [
             'WEBKIT_GPU_IMPLEMENTATION',
-          ],
-          'conditions': [
-            ['use_angle_translator==1', {
-              'dependencies': [
-                '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
-              ],
-            }, {
-              'dependencies': [
-                '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
-              ],
-            }],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],

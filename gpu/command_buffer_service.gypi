@@ -18,6 +18,7 @@
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gl/gl.gyp:gl',
     '../ui/ui.gyp:ui',
+    '../third_party/angle_dx11/src/build_angle.gyp:translator',
     '../third_party/khronos/khronos.gyp:khronos_headers',
     '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/smhasher/smhasher.gyp:cityhash',
@@ -138,15 +139,6 @@
     ['ui_compositor_image_transport==1', {
       'include_dirs': [
         '../third_party/khronos',
-      ],
-    }],
-    ['use_angle_translator==1', {
-      'dependencies': [
-        '../third_party/angle_dx11/src/build_angle.gyp:translator',
-      ],
-    }, {
-      'dependencies': [
-        '../third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
       ],
     }],
     ['OS in ("win", "android") or (OS == "linux" and use_x11 == 1)', {
