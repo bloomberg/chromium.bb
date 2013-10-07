@@ -103,3 +103,99 @@ Publications
        <http://nativeclient.googlecode.com/svn/data/site/pnacl.pdf>`_
      - Alan Donovan, Robert Muth, Brad Chen, David Sehr
      - February 2010
+
+External Publications
+---------------------
+
+In these articles outside developers and Google engineers describe their
+experience porting libraries and applications to Native Client and
+Portable Native Client. They share their insights and provide some tips
+and instructions for how to port your own code.
+
+Porting Nebula3 to Portable Native Client
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Andre Weissflog ported his Nebula3 engine to Portable Native Client (see
+`his demos <http://www.flohofwoe.net/demos.html>`__). He discusses
+`build systems
+<http://flohofwoe.blogspot.de/2013/08/emscripten-and-pnacl-build-systems.html>`__
+and `app entry
+<http://flohofwoe.blogspot.de/2013/09/emscripten-and-pnacl-app-entry-in-pnacl.html>`__.
+
+Porting Go Home Dinosaurs
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Fire Hose Games <http://firehosegames.com>`_ developed a new webgame
+`Go Home Dinosaurs
+<https://chrome.google.com/webstore/detail/icefnknicgejiphafapflechfoeelbeo>`_.
+It features tower defense, dinosaurs, and good old fashioned BBQ. This
+article explains their experiences developing for Native Client
+including useful lessons learned to help you get started.
+
+`Read more <http://www.gamasutra.com/view/feature/175210/the_ins_and_outs_of_native_client.php>`__
+
+Porting Zombie Track Meat
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Fuzzycube Software <http://www.fuzzycubesoftware.com>`_, traditionally
+a mobile game development studio, talks about their adventure into the
+web, porting the undead decathlon `Zombie Track Meat
+<https://chrome.google.com/webstore/detail/jmfhnfnjfdoplkgbkmibfkdjolnemfdk/reviews>`_
+from Objective C to Native Client.
+
+`Read more <http://fuzzycube.blogspot.com/2012/04/zombie-track-meat-post-mortem.html>`__
+
+Porting AirMech
+^^^^^^^^^^^^^^^
+
+`Carbon Games <http://carbongames.com/>`_ chose Native Client as a
+solution for cross-platform delivery of their PC game `AirMech
+<https://chrome.google.com/webstore/detail/hdahlabpinmfcemhcbcfoijcpoalfgdn>`_
+to Linux and Macintosh in lieu of native ports. They describe the
+porting process on their blog.
+
+`Read more <http://carbongames.com/2012/01/Native-Client>`__
+
+Porting XaoS
+^^^^^^^^^^^^
+
+Google engineers ported `XaoS
+<http://wmi.math.u-szeged.hu/xaos/doku.php>`_, an interactive graphical
+exploration tool for fractals, to Native Client. Many of the porting
+problems they encountered are quite common, and the techniques described
+here should help with similar porting efforts. Some of the background
+information might also benefit those who are writing new Native Client
+applications.
+
+`Read more
+<https://developers.google.com/native-client/community/porting/xaos>`__
+
+.. TODO Fix link once it is ReST-ified.
+
+Porting MAME
+^^^^^^^^^^^^
+
+Multiple Arcade Machine Emulator (`MAME <http://mamedev.org>`_) is an
+emulator for a large number of classic arcade games. Google engineers
+ported it to Native Client. This article discusses the overall porting
+strategy, dealing with ``newlib`` incompatibilities, and handling
+binaries that are built and run as part of the build process.
+
+`Read more
+<https://developers.google.com/native-client/community/porting/MAME>`__
+
+.. TODO Fix link once it is ReST-ified.
+
+How to Port SDL Games
+^^^^^^^^^^^^^^^^^^^^^
+
+`Simple Directmedia Layer <http://www.libsdl.org>`_ (SDL) is a popular
+library that many games and applications use to access sound and video
+capabilities on end-user machines. Native Client bindings for SDL are
+available on naclports, making it possible to port SDL-based games to
+Native Client. This article by Google engineers describes how to
+complete such a port, focusing on writing the glue code for fusing your
+game with the Pepper APIs.
+
+`Read more
+<https://developers.google.com/native-client/community/porting/SDLgames>`__
