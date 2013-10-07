@@ -22,8 +22,8 @@
 #ifndef PseudoStyleRequest_h
 #define PseudoStyleRequest_h
 
-#include "core/platform/ScrollTypes.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "platform/scroll/ScrollTypes.h"
 
 namespace WebCore {
 

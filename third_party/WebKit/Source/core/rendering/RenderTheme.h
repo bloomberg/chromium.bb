@@ -23,7 +23,6 @@
 #ifndef RenderTheme_h
 #define RenderTheme_h
 
-#include "core/platform/ScrollTypes.h"
 #if USE(NEW_THEME)
 #include "core/platform/Theme.h"
 #else
@@ -31,6 +30,7 @@
 #endif
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/CachedUAStyle.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

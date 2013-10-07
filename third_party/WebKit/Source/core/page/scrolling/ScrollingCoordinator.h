@@ -27,9 +27,9 @@
 #define ScrollingCoordinator_h
 
 #include "core/platform/PlatformWheelEvent.h"
-#include "core/platform/ScrollTypes.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebKit {

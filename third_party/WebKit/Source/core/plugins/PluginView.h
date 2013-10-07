@@ -26,8 +26,8 @@
 #ifndef PluginView_h
 #define PluginView_h
 
-#include "core/platform/ScrollTypes.h"
 #include "core/platform/Widget.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "wtf/text/WTFString.h"
 
 struct NPObject;

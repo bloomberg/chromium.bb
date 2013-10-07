@@ -28,9 +28,9 @@
 
 #if USE(RUBBER_BANDING)
 
-#include "core/platform/ScrollTypes.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {

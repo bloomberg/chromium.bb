@@ -33,8 +33,8 @@
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/CollectionType.h"
 #include "core/page/FocusDirection.h"
-#include "core/platform/ScrollTypes.h"
 #include "core/rendering/RegionOversetState.h"
+#include "platform/scroll/ScrollTypes.h"
 
 namespace WebCore {
 

@@ -32,8 +32,8 @@
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/AdjustViewSizeOrNot.h"
 #include "core/page/FrameTree.h"
-#include "core/platform/ScrollTypes.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 

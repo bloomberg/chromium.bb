@@ -116,6 +116,7 @@
       'network/SocketStreamHandle.h',
       'network/SocketStreamHandleClient.h',
       'network/SocketStreamHandleInternal.h',
+      'scroll/ScrollTypes.h',
       'text/BidiContext.cpp',
       'text/BidiContext.h',
       'text/BidiResolver.h',
