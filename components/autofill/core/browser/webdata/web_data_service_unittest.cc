@@ -114,7 +114,10 @@ class WebDataServiceTest : public testing::Test {
     wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(
-        wdbs_, WebDataServiceBase::ProfileErrorCallback());
+        wdbs_,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 

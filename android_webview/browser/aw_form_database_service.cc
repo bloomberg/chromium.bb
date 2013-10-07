@@ -36,7 +36,10 @@ AwFormDatabaseService::AwFormDatabaseService(const base::FilePath path) {
   web_database_->LoadDatabase();
 
   autofill_data_ = new autofill::AutofillWebDataService(
-      web_database_, base::Bind(&DatabaseErrorCallback));
+      web_database_,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      base::Bind(&DatabaseErrorCallback));
   autofill_data_->Init();
 }
 

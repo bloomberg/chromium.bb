@@ -57,7 +57,9 @@ class NoOpAutofillBackend : public AutofillWebDataBackend {
 class FakeWebDataService : public AutofillWebDataService {
  public:
   FakeWebDataService()
-      : AutofillWebDataService(),
+      : AutofillWebDataService(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)),
         is_database_loaded_(false),
         db_loaded_callback_(base::Callback<void(void)>()){}
 

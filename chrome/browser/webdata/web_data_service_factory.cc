@@ -69,9 +69,11 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath profile_path = profile->GetPath();
   base::FilePath path = profile_path.Append(kWebDataFilename);
 
-  web_database_ = new WebDatabaseService(path,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+  scoped_refptr<base::MessageLoopProxy> ui_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  scoped_refptr<base::MessageLoopProxy> db_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB);
+  web_database_ = new WebDatabaseService(path, ui_thread, db_thread);
 
   // All tables objects that participate in managing the database must
   // be added here.
@@ -97,7 +99,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   web_database_->LoadDatabase();
 
   autofill_web_data_ = new AutofillWebDataService(
-      web_database_, base::Bind(&ProfileErrorCallback));
+      web_database_, ui_thread, db_thread, base::Bind(&ProfileErrorCallback));
   autofill_web_data_->Init();
 
   token_web_data_ = new TokenWebData(

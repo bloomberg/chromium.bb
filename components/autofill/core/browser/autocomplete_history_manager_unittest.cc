@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -37,7 +38,8 @@ namespace {
 class MockWebDataService : public AutofillWebDataService {
  public:
   MockWebDataService()
-      : AutofillWebDataService() {
+      : AutofillWebDataService(base::MessageLoopProxy::current(),
+                               base::MessageLoopProxy::current()) {
     current_mock_web_data_service_ = this;
   }
 
