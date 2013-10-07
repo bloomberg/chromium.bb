@@ -3,14 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
 import datetime
-import json
 import optparse
 import os
 import re
 import sys
-import urllib2
 import urlparse
 
 import breakpad  # pylint: disable=W0611
@@ -29,10 +26,6 @@ Valid parameters:
 [Merge from trunk to branch]
 --merge <revision> --branch <branch_num>
 Example: %(app)s --merge 12345 --branch 187
-
-[Merge from trunk to milestone]
---merge <revision> --milestone <milestone_num>
-Example: %(app)s --merge 12345 --milestone 16
 
 [Merge from trunk to local copy]
 --merge <revision> --local
@@ -370,53 +363,6 @@ def getAllFilesInRevision(files_info):
   return ['%s/%s' % (f[2], f[3]) for f in files_info]
 
 
-def getBranchForMilestone(milestone):
-  """Queries omahaproxy.appspot.com for the branch number given |milestone|.
-  """
-  OMAHA_PROXY_URL = "https://omahaproxy.appspot.com/all?json=1"
-  try:
-    response = urllib2.urlopen(OMAHA_PROXY_URL)
-  except urllib2.HTTPError, e:
-    print "Failed to query %s: %d" % (OMAHA_PROXY_URL, e.code)
-    return None
-
-  # Response is in the form of:
-  # [{ os: "os_name", versions: [{ channel: "canary", true_branch: "1490" }] }]
-  os_versions = json.load(response)
-
-  branches = collections.defaultdict(list)
-  for os_version in os_versions:
-    for version in os_version['versions']:
-      if not version['true_branch'] or not version['version']:
-        continue
-      branch = version['true_branch']
-      mstone = version['version'].split('.')
-      if not branch[0].isdigit() or mstone[0] != str(milestone):
-        continue
-      branches[branch] += [os_version['os']]
-
-  if not branches:
-    return None
-
-  if len(branches) == 1:
-    return branches.keys()[0]
-
-  choices = ('-(%s): %s' % (b, ', '.join(o)) for b, o in branches.iteritems())
-  print >> sys.stderr, ("\nNot all platforms have same branch number for M%d.\n"
-                        "\nHere's a list of platforms on each branch:\n"
-                        "%s") % (milestone, '\n'.join(choices))
-
-  errors = 0
-  while errors < 3:
-    user_input = raw_input("Which branch? ('q' to cancel) ").strip().lower()
-    if user_input in branches:
-      return user_input
-    if user_input.startswith('q'):
-      break
-    errors += 1
-
-  return None
-
 def getSVNAuthInfo(folder=None):
   """Fetches SVN authorization information in the subversion auth folder and
   returns it as a dictionary of dictionaries."""
@@ -486,12 +432,6 @@ def drover(options, args):
   SKIP_CHECK_WORKING = True
   PROMPT_FOR_AUTHOR = False
   NO_ALT_URLS = options.no_alt_urls
-
-  # Translate a given milestone to the appropriate branch number.
-  if options.milestone:
-    options.branch = getBranchForMilestone(options.milestone)
-    if not options.branch:
-      return 1
 
   DEFAULT_WORKING = "drover_" + str(revision)
   if options.branch:
@@ -665,8 +605,6 @@ def main():
                            help='Revision to merge from trunk to branch')
   option_parser.add_option('-b', '--branch',
                            help='Branch to revert or merge from')
-  option_parser.add_option('-M', '--milestone', type="int",
-                           help='Milestone to revert or merge from')
   option_parser.add_option('-l', '--local', action='store_true',
                            help='Local working copy to merge to')
   option_parser.add_option('-s', '--sbranch',
@@ -692,19 +630,12 @@ def main():
     option_parser.error("You need at least --merge or --revert")
     return 1
 
-  if options.merge and not (options.branch or options.milestone or
-                            options.local):
-    option_parser.error("--merge requires either --branch "
-                        "or --milestone or --local")
+  if options.merge and not (options.branch or options.local):
+    option_parser.error("--merge requires --branch or --local")
     return 1
 
-  if options.local and (options.revert or options.branch or options.milestone):
-    option_parser.error("--local cannot be used with --revert "
-                        "or --branch or --milestone")
-    return 1
-
-  if options.branch and options.milestone:
-    option_parser.error("--branch cannot be used with --milestone")
+  if options.local and (options.revert or options.branch):
+    option_parser.error("--local cannot be used with --revert or --branch")
     return 1
 
   return drover(options, args)
