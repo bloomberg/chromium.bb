@@ -24,20 +24,20 @@
  */
 
 #include "config.h"
-#include "core/css/FontFeatureValue.h"
+#include "core/css/CSSFontFeatureValue.h"
 
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-FontFeatureValue::FontFeatureValue(const String& tag, int value)
+CSSFontFeatureValue::CSSFontFeatureValue(const String& tag, int value)
     : CSSValue(FontFeatureClass)
     , m_tag(tag)
     , m_value(value)
 {
 }
 
-String FontFeatureValue::customCssText() const
+String CSSFontFeatureValue::customCssText() const
 {
     StringBuilder builder;
     builder.append('\'');
@@ -47,7 +47,7 @@ String FontFeatureValue::customCssText() const
     return builder.toString();
 }
 
-bool FontFeatureValue::equals(const FontFeatureValue& other) const
+bool CSSFontFeatureValue::equals(const CSSFontFeatureValue& other) const
 {
     return m_tag == other.m_tag && m_value == other.m_value;
 }

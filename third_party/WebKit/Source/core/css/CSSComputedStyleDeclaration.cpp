@@ -34,6 +34,8 @@
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSFilterValue.h"
+#include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
@@ -47,8 +49,6 @@
 #include "core/css/CSSTransformValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/FontFeatureValue.h"
-#include "core/css/FontValue.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/ShadowValue.h"
@@ -1998,7 +1998,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return cssValuePool().createValue(style->floating());
         case CSSPropertyFont: {
-            RefPtr<FontValue> computedFont = FontValue::create();
+            RefPtr<CSSFontValue> computedFont = CSSFontValue::create();
             computedFont->style = valueForFontStyle(style.get());
             computedFont->variant = valueForFontVariant(style.get());
             computedFont->weight = valueForFontWeight(style.get());
@@ -2030,7 +2030,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             for (unsigned i = 0; i < featureSettings->size(); ++i) {
                 const FontFeature& feature = featureSettings->at(i);
-                RefPtr<FontFeatureValue> featureValue = FontFeatureValue::create(feature.tag(), feature.value());
+                RefPtr<CSSFontFeatureValue> featureValue = CSSFontFeatureValue::create(feature.tag(), feature.value());
                 list->append(featureValue.release());
             }
             return list.release();

@@ -38,6 +38,7 @@
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateValue.h"
@@ -63,7 +64,6 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/Counter.h"
-#include "core/css/FontFeatureValue.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryExp.h"
 #include "core/css/Pair.h"
@@ -9325,7 +9325,7 @@ bool CSSParser::parseFontFeatureTag(CSSValueList* settings)
             m_valueList->next();
         }
     }
-    settings->append(FontFeatureValue::create(tag, tagValue));
+    settings->append(CSSFontFeatureValue::create(tag, tagValue));
     return true;
 }
 

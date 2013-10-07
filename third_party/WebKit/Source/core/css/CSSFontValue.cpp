@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 #include "config.h"
-#include "core/css/FontValue.h"
+#include "core/css/CSSFontValue.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-String FontValue::customCssText() const
+String CSSFontValue::customCssText() const
 {
     // font variant weight size / line-height family
 
@@ -64,7 +64,7 @@ String FontValue::customCssText() const
     return result.toString();
 }
 
-bool FontValue::equals(const FontValue& other) const
+bool CSSFontValue::equals(const CSSFontValue& other) const
 {
     return compareCSSValuePtr(style, other.style)
         && compareCSSValuePtr(variant, other.variant)

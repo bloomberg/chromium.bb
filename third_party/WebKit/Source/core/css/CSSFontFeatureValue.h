@@ -23,33 +23,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontFeatureValue_h
-#define FontFeatureValue_h
+#ifndef CSSFontFeatureValue_h
+#define CSSFontFeatureValue_h
 
 #include "core/css/CSSValue.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class FontFeatureValue : public CSSValue {
+class CSSFontFeatureValue : public CSSValue {
 public:
-    static PassRefPtr<FontFeatureValue> create(const String& tag, int value)
+    static PassRefPtr<CSSFontFeatureValue> create(const String& tag, int value)
     {
-        return adoptRef(new FontFeatureValue(tag, value));
+        return adoptRef(new CSSFontFeatureValue(tag, value));
     }
 
     const String& tag() const { return m_tag; }
     int value() const { return m_value; }
     String customCssText() const;
 
-    bool equals(const FontFeatureValue&) const;
+    bool equals(const CSSFontFeatureValue&) const;
 
 private:
-    FontFeatureValue(const String&, int);
+    CSSFontFeatureValue(const String&, int);
 
     String m_tag;
     const int m_value;
 };
+
+DEFINE_CSS_VALUE_TYPE_CASTS(FontFeatureValue);
 
 } // namespace
 

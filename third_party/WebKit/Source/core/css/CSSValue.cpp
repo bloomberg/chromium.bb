@@ -36,6 +36,8 @@
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFilterValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateValue.h"
@@ -54,8 +56,6 @@
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableValue.h"
-#include "core/css/FontFeatureValue.h"
-#include "core/css/FontValue.h"
 #include "core/css/ShadowValue.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
@@ -161,11 +161,11 @@ bool CSSValue::equals(const CSSValue& other) const
         case CursorImageClass:
             return compareCSSValues<CSSCursorImageValue>(*this, other);
         case FontClass:
-            return compareCSSValues<FontValue>(*this, other);
+            return compareCSSValues<CSSFontValue>(*this, other);
         case FontFaceSrcClass:
             return compareCSSValues<CSSFontFaceSrcValue>(*this, other);
         case FontFeatureClass:
-            return compareCSSValues<FontFeatureValue>(*this, other);
+            return compareCSSValues<CSSFontFeatureValue>(*this, other);
         case FunctionClass:
             return compareCSSValues<CSSFunctionValue>(*this, other);
         case LinearGradientClass:
@@ -249,11 +249,11 @@ String CSSValue::cssText() const
     case CursorImageClass:
         return static_cast<const CSSCursorImageValue*>(this)->customCssText();
     case FontClass:
-        return static_cast<const FontValue*>(this)->customCssText();
+        return toCSSFontValue(this)->customCssText();
     case FontFaceSrcClass:
         return static_cast<const CSSFontFaceSrcValue*>(this)->customCssText();
     case FontFeatureClass:
-        return static_cast<const FontFeatureValue*>(this)->customCssText();
+        return toCSSFontFeatureValue(this)->customCssText();
     case FunctionClass:
         return static_cast<const CSSFunctionValue*>(this)->customCssText();
     case LinearGradientClass:
@@ -352,13 +352,13 @@ void CSSValue::destroy()
         delete toCSSCursorImageValue(this);
         return;
     case FontClass:
-        delete static_cast<FontValue*>(this);
+        delete toCSSFontValue(this);
         return;
     case FontFaceSrcClass:
         delete toCSSFontFaceSrcValue(this);
         return;
     case FontFeatureClass:
-        delete static_cast<FontFeatureValue*>(this);
+        delete toCSSFontFeatureValue(this);
         return;
     case FunctionClass:
         delete toCSSFunctionValue(this);

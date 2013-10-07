@@ -24,7 +24,7 @@
 #include "core/css/resolver/FontBuilder.h"
 
 #include "core/css/CSSCalculationValue.h"
-#include "core/css/FontFeatureValue.h"
+#include "core/css/CSSFontFeatureValue.h"
 #include "core/css/FontSize.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
@@ -505,7 +505,7 @@ void FontBuilder::setFeatureSettingsValue(CSSValue* value)
         CSSValue* item = list->itemWithoutBoundsCheck(i);
         if (!item->isFontFeatureValue())
             continue;
-        FontFeatureValue* feature = static_cast<FontFeatureValue*>(item);
+        CSSFontFeatureValue* feature = toCSSFontFeatureValue(item);
         settings->append(FontFeature(feature->tag(), feature->value()));
     }
     scope.fontDescription().setFeatureSettings(settings.release());
