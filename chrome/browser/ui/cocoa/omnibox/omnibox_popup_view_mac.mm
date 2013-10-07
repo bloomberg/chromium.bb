@@ -25,6 +25,8 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/text_elider.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
 
@@ -35,8 +37,15 @@ const CGFloat kCellHeightAdjust = 6.0;
 // Padding between matrix and the top and bottom of the popup window.
 const CGFloat kPopupPaddingVertical = 5.0;
 
+// How far to offset the text column from the left.
+const CGFloat kTextXOffset = 28.0;
+
 // Animation duration when animating the popup window smaller.
 const NSTimeInterval kShrinkAnimationDuration = 0.1;
+
+// Maximum fraction of the popup width that can be used to display match
+// contents.
+const CGFloat kMaxContentsFraction = 0.7;
 
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
@@ -118,20 +127,7 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
     OmniboxPopupCell* cell = [matrix_ cellAtRow:ii column:0];
     const AutocompleteMatch& match = GetResult().match_at(ii + start_match);
     [cell setImage:ImageForMatch(match)];
-    [cell setContentText:DecorateMatchedString(match.contents,
-                                               match.contents_class,
-                                               ContentTextColor(),
-                                               DimContentTextColor(),
-                                               result_font)];
-    if (match.description.empty()) {
-      [cell setDescriptionText:nil];
-    } else {
-      [cell setDescriptionText:DecorateMatchedString(match.description,
-                                                     match.description_class,
-                                                     DimContentTextColor(),
-                                                     DimContentTextColor(),
-                                                     result_font)];
-    }
+    [cell setAttributedTitle:MatchText(match, result_font, matrix_width)];
   }
 
   // Set the cell size to fit a line of text in the cell's font.  All
@@ -188,6 +184,64 @@ void OmniboxPopupViewMac::OnMatrixRowClicked(OmniboxPopupMatrix* matrix,
 void OmniboxPopupViewMac::OnMatrixRowMiddleClicked(OmniboxPopupMatrix* matrix,
                                                    size_t row) {
   OpenURLForRow(row, NEW_BACKGROUND_TAB);
+}
+
+// Return the text to show for the match, based on the match's
+// contents and description.  Result will be in |font|, with the
+// boldfaced version used for matches.
+NSAttributedString* OmniboxPopupViewMac::MatchText(
+    const AutocompleteMatch& match,
+    gfx::Font& font,
+    float cell_width) {
+  NSMutableAttributedString *as =
+      DecorateMatchedString(match.contents,
+                            match.contents_class,
+                            ContentTextColor(),
+                            DimContentTextColor(),
+                            font);
+
+  // If there is a description, append it, separated from the contents
+  // with an en dash, and decorated with a distinct color.
+  if (!match.description.empty()) {
+    // Make sure the current string fits w/in kMaxContentsFraction of
+    // the cell to make sure the description will be at least
+    // partially visible.
+    // TODO(shess): Consider revising our NSCell subclass to have two
+    // bits and just draw them right, rather than truncating here.
+    const float text_width = cell_width - kTextXOffset;
+    as = ElideString(as, match.contents, font,
+                     text_width * kMaxContentsFraction);
+
+    NSDictionary* attributes = @{
+        NSFontAttributeName :  font.GetNativeFont(),
+        NSForegroundColorAttributeName : ContentTextColor()
+    };
+    NSString* raw_en_dash = @" \u2013 ";
+    NSAttributedString* en_dash =
+        [[[NSAttributedString alloc] initWithString:raw_en_dash
+                                         attributes:attributes] autorelease];
+
+    // In Windows, a boolean force_dim is passed as true for the
+    // description.  Here, we pass the dim text color for both normal and dim,
+    // to accomplish the same thing.
+    NSAttributedString* description =
+        DecorateMatchedString(match.description, match.description_class,
+                              DimContentTextColor(),
+                              DimContentTextColor(),
+                              font);
+
+    [as appendAttributedString:en_dash];
+    [as appendAttributedString:description];
+  }
+
+  NSMutableParagraphStyle* style =
+      [[[NSMutableParagraphStyle alloc] init] autorelease];
+  [style setLineBreakMode:NSLineBreakByTruncatingTail];
+  [style setTighteningFactorForTruncation:0.0];
+  [as addAttribute:NSParagraphStyleAttributeName value:style
+             range:NSMakeRange(0, [as length])];
+
+  return as;
 }
 
 // static
@@ -253,6 +307,42 @@ NSMutableAttributedString* OmniboxPopupViewMac::DecorateMatchedString(
   }
 
   return as;
+}
+
+NSMutableAttributedString* OmniboxPopupViewMac::ElideString(
+    NSMutableAttributedString* a_string,
+    const string16& original_string,
+    const gfx::Font& font,
+    const float width) {
+  // If it already fits, nothing to be done.
+  if ([a_string size].width <= width) {
+    return a_string;
+  }
+
+  // If ElideText() decides to do nothing, nothing to be done.
+  const string16 elided =
+      gfx::ElideText(original_string, font, width, gfx::ELIDE_AT_END);
+  if (0 == elided.compare(original_string)) {
+    return a_string;
+  }
+
+  // If everything was elided away, clear the string.
+  if (elided.empty()) {
+    [a_string deleteCharactersInRange:NSMakeRange(0, [a_string length])];
+    return a_string;
+  }
+
+  // The ellipses should be the last character, and everything before
+  // that should match the original string.
+  const size_t i(elided.length() - 1);
+  DCHECK_NE(0, elided.compare(0, i, original_string));
+
+  // Replace the end of |aString| with the ellipses from |elided|.
+  NSString* s = base::SysUTF16ToNSString(elided.substr(i));
+  [a_string replaceCharactersInRange:NSMakeRange(i, [a_string length] - i)
+                          withString:s];
+
+  return a_string;
 }
 
 const AutocompleteResult& OmniboxPopupViewMac::GetResult() const {

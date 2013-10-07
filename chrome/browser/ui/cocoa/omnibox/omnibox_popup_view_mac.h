@@ -50,6 +50,13 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
 
   OmniboxPopupMatrix* matrix() { return matrix_; }
 
+  // Return the text to show for the match, based on the match's
+  // contents and description.  Result will be in |font|, with the
+  // boldfaced version used for matches.
+  static NSAttributedString* MatchText(const AutocompleteMatch& match,
+                                       gfx::Font& font,
+                                       float cell_width);
+
   // Applies the given font and colors to the match string based on
   // classifications.
   static NSMutableAttributedString* DecorateMatchedString(
@@ -58,6 +65,18 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
       NSColor* text_color,
       NSColor* dim_text_color,
       gfx::Font& font);
+
+  // Helper for MatchText() to elide a marked-up string using
+  // gfx::ElideText() as a model.  Modifies |a_string| in place.
+  // TODO(shess): Consider breaking AutocompleteButtonCell out of this
+  // code, and modifying it to have something like -setMatch:, so that
+  // these convolutions to expose internals for testing can be
+  // cleaner.
+  static NSMutableAttributedString* ElideString(
+      NSMutableAttributedString* a_string,
+      const string16& original_string,
+      const gfx::Font& font,
+      const float cell_width);
 
  protected:
   // Gets the autocomplete results. This is virtual so that it can be overriden

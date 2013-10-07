@@ -4,10 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
 
-#include <algorithm>
 #include <cmath>
-
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
 
@@ -17,45 +14,14 @@ const CGFloat kImageXOffset = 5.0;
 // How far to offset the text column from the left.
 const CGFloat kTextXOffset = 28.0;
 
-// Maximum fraction of the popup width that can be used to display match
-// contents.
-const CGFloat kMinDescriptionFraction = 0.7;
-
 // Rounding radius of selection and hover background on popup items.
 const CGFloat kCellRoundingRadius = 2.0;
 
-void DrawFadeTruncatingTitle(NSAttributedString* title,
-                             NSRect titleRect,
-                             NSColor* backgroundColor) {
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-  NSRectClip(titleRect);
-
-  // Draw the entire text.
-  NSSize textSize = [title size];
-  NSPoint textOrigin = titleRect.origin;
-  textOrigin.y += roundf((NSHeight(titleRect) - textSize.height) / 2.0) - 1.0;
-  [title drawAtPoint:textOrigin];
-
-  // Empirically, Cocoa will draw an extra 2 pixels past NSWidth(titleRect)
-  // before it clips the text.
-  const CGFloat kOverflowBeforeClip = 2.0;
-  CGFloat clipped_width = NSWidth(titleRect) + kOverflowBeforeClip;
-  if (textSize.width <= clipped_width)
-    return;
-
-  // The gradient width is the same as the line height.
-  CGFloat gradientWidth = std::min(textSize.height, NSWidth(titleRect) / 4);
-
-  // Draw the gradient part.
-  NSColor *alphaColor = [backgroundColor colorWithAlphaComponent:0.0];
-  base::scoped_nsobject<NSGradient> mask(
-      [[NSGradient alloc] initWithStartingColor:alphaColor
-                                    endingColor:backgroundColor]);
-  [mask drawFromPoint:NSMakePoint(NSMaxX(titleRect) - gradientWidth,
-                                  NSMinY(titleRect))
-              toPoint:NSMakePoint(NSMaxX(titleRect),
-                                  NSMinY(titleRect))
-              options:NSGradientDrawsBeforeStartingLocation];
+NSColor* SelectedBackgroundColor() {
+  return [NSColor selectedControlColor];
+}
+NSColor* HoveredBackgroundColor() {
+  return [NSColor controlHighlightColor];
 }
 
 }  // namespace
@@ -63,7 +29,8 @@ void DrawFadeTruncatingTitle(NSAttributedString* title,
 @implementation OmniboxPopupCell
 
 - (id)init {
-  if ((self = [super init])) {
+  self = [super init];
+  if (self) {
     [self setImagePosition:NSImageLeft];
     [self setBordered:NO];
     [self setButtonType:NSRadioButton];
@@ -74,35 +41,15 @@ void DrawFadeTruncatingTitle(NSAttributedString* title,
   return self;
 }
 
-- (void)setContentText:(NSAttributedString*)contentText {
-  [[self controlView] setNeedsDisplay:YES];
-  contentText_.reset([contentText retain]);
-}
-
-- (void)setDescriptionText:(NSAttributedString*)descriptionText {
-  [[self controlView] setNeedsDisplay:YES];
-  if (![descriptionText length]) {
-    descriptionText_.reset();
-    return;
-  }
-
-  base::scoped_nsobject<NSMutableAttributedString> dashDescriptionText(
-      [[NSMutableAttributedString alloc]
-          initWithAttributedString:descriptionText]);
-  NSString* rawEnDash = @" \u2013 ";
-  [dashDescriptionText replaceCharactersInRange:NSMakeRange(0, 0)
-                                     withString:rawEnDash];
-  descriptionText_.reset(dashDescriptionText.release());
-}
-
+// The default NSButtonCell drawing leaves the image flush left and
+// the title next to the image.  This spaces things out to line up
+// with the star button and autocomplete field.
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
-  NSColor* backgroundColor = [NSColor controlBackgroundColor];
   if ([self state] == NSOnState || [self isHighlighted]) {
     if ([self state] == NSOnState)
-      backgroundColor = [NSColor selectedControlColor];
+      [SelectedBackgroundColor() set];
     else
-      backgroundColor = [NSColor controlHighlightColor];
-    [backgroundColor set];
+      [HoveredBackgroundColor() set];
     NSBezierPath* path =
         [NSBezierPath bezierPathWithRoundedRect:cellFrame
                                         xRadius:kCellRoundingRadius
@@ -127,27 +74,12 @@ void DrawFadeTruncatingTitle(NSAttributedString* title,
   }
 
   // Adjust the title position to be lined up under the field's text.
-  if ([contentText_ length]) {
-    NSRect availRect = cellFrame;
-    availRect.size.width = NSWidth(cellFrame) - kTextXOffset;
-    availRect.origin.x += kTextXOffset;
-    CGFloat availWidth = NSWidth(availRect);
-    CGFloat contentWidth = [contentText_ size].width;
-    CGFloat descWidth =
-        [descriptionText_ length] ? [descriptionText_ size].width : 0;
-
-    CGFloat tempDescWidth =
-        std::min(descWidth, kMinDescriptionFraction * availWidth);
-    contentWidth = std::min(contentWidth, availWidth - tempDescWidth);
-
-    NSRect contentRect;
-    NSRect descRect;
-    NSDivideRect(
-        availRect, &contentRect, &descRect, contentWidth, NSMinXEdge);
-
-    DrawFadeTruncatingTitle(contentText_, contentRect, backgroundColor);
-    if ([descriptionText_ length])
-      DrawFadeTruncatingTitle(descriptionText_, descRect, backgroundColor);
+  NSAttributedString* title = [self attributedTitle];
+  if (title && [title length]) {
+    NSRect titleRect = cellFrame;
+    titleRect.size.width -= kTextXOffset;
+    titleRect.origin.x += kTextXOffset;
+    [self drawTitle:title withFrame:titleRect inView:controlView];
   }
 }
 

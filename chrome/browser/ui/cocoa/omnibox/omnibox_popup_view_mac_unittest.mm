@@ -15,6 +15,8 @@
 
 namespace {
 
+const float kLargeWidth = 10000;
+
 // Returns the length of the run starting at |location| for which
 // |attributeName| remains the same.
 NSUInteger RunLengthForAttribute(NSAttributedString* string,
@@ -325,6 +327,233 @@ TEST_F(OmniboxPopupViewMacTest, DecorateMatchedStringURLMatch) {
                                   NSFontAttributeName), run_length_3);
   EXPECT_FALSE(RunHasFontTrait(decorated, run_length_1 + run_length_2,
                                NSBoldFontMask));
+}
+
+// Check that matches with both contents and description come back
+// with contents at the beginning, description at the end, and
+// something separating them.  Not being specific about the separator
+// on purpose, in case it changes.
+TEST_F(OmniboxPopupViewMacTest, MatchText) {
+  NSString* const contents = @"contents";
+  NSString* const description = @"description";
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
+                                  base::SysNSStringToUTF16(description));
+
+  NSAttributedString* decorated =
+      OmniboxPopupViewMac::MatchText(m, font_, kLargeWidth);
+
+  // Result contains the characters of the input in the right places.
+  EXPECT_GT([decorated length], [contents length] + [description length]);
+  EXPECT_TRUE([[decorated string] hasPrefix:contents]);
+  EXPECT_TRUE([[decorated string] hasSuffix:description]);
+
+  // Check that the description is a different color from the
+  // contents.
+  const NSUInteger descriptionLocation =
+      [decorated length] - [description length];
+  EXPECT_EQ(RunLengthForAttribute(decorated, 0U,
+                                  NSForegroundColorAttributeName),
+            descriptionLocation);
+  EXPECT_EQ(RunLengthForAttribute(decorated, descriptionLocation,
+                                  NSForegroundColorAttributeName),
+            [description length]);
+
+  // Same font all the way through, nothing bold.
+  EXPECT_EQ(RunLengthForAttribute(decorated, 0U,
+                                  NSFontAttributeName), [decorated length]);
+  EXPECT_FALSE(RunHasFontTrait(decorated, 0, NSBoldFontMask));
+}
+
+// Check that MatchText() styles content matches as expected.
+TEST_F(OmniboxPopupViewMacTest, MatchTextContentsMatch) {
+  NSString* const contents = @"This is a test";
+  // Match "is".
+  const NSUInteger run_length_1 = 5, run_length_2 = 2, run_length_3 = 7;
+  // Make sure nobody messed up the inputs.
+  EXPECT_EQ(run_length_1 + run_length_2 + run_length_3, [contents length]);
+
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
+                                  string16());
+
+  // Push each run onto contents classifications.
+  m.contents_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::NONE));
+  m.contents_class.push_back(
+      ACMatchClassification(run_length_1, ACMatchClassification::MATCH));
+  m.contents_class.push_back(
+      ACMatchClassification(run_length_1 + run_length_2,
+                            ACMatchClassification::NONE));
+
+  NSAttributedString* decorated =
+      OmniboxPopupViewMac::MatchText(m, font_, kLargeWidth);
+
+  // Result has same characters as the input.
+  EXPECT_EQ([decorated length], [contents length]);
+  EXPECT_TRUE([[decorated string] isEqualToString:contents]);
+
+  // Result is all one color.
+  EXPECT_EQ(RunLengthForAttribute(decorated, 0U,
+                                  NSForegroundColorAttributeName),
+            [contents length]);
+
+  // Should have three font runs, not bold, bold, then not bold again.
+  EXPECT_EQ(RunLengthForAttribute(decorated, 0U,
+                                  NSFontAttributeName), run_length_1);
+  EXPECT_FALSE(RunHasFontTrait(decorated, 0U, NSBoldFontMask));
+
+  EXPECT_EQ(RunLengthForAttribute(decorated, run_length_1,
+                                  NSFontAttributeName), run_length_2);
+  EXPECT_TRUE(RunHasFontTrait(decorated, run_length_1, NSBoldFontMask));
+
+  EXPECT_EQ(RunLengthForAttribute(decorated, run_length_1 + run_length_2,
+                                  NSFontAttributeName), run_length_3);
+  EXPECT_FALSE(RunHasFontTrait(decorated, run_length_1 + run_length_2,
+                               NSBoldFontMask));
+}
+
+// Check that MatchText() styles description matches as expected.
+TEST_F(OmniboxPopupViewMacTest, MatchTextDescriptionMatch) {
+  NSString* const contents = @"This is a test";
+  NSString* const description = @"That was a test";
+  // Match "That was".
+  const NSUInteger run_length_1 = 8, run_length_2 = 7;
+  // Make sure nobody messed up the inputs.
+  EXPECT_EQ(run_length_1 + run_length_2, [description length]);
+
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
+                                  base::SysNSStringToUTF16(description));
+
+  // Push each run onto contents classifications.
+  m.description_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::MATCH));
+  m.description_class.push_back(
+      ACMatchClassification(run_length_1, ACMatchClassification::NONE));
+
+  NSAttributedString* decorated =
+      OmniboxPopupViewMac::MatchText(m, font_, kLargeWidth);
+
+  // Result contains the characters of the input.
+  EXPECT_GT([decorated length], [contents length] + [description length]);
+  EXPECT_TRUE([[decorated string] hasPrefix:contents]);
+  EXPECT_TRUE([[decorated string] hasSuffix:description]);
+
+  // Check that the description is a different color from the
+  // contents.
+  const NSUInteger descriptionLocation =
+      [decorated length] - [description length];
+  EXPECT_EQ(RunLengthForAttribute(decorated, 0U,
+                                  NSForegroundColorAttributeName),
+            descriptionLocation);
+  EXPECT_EQ(RunLengthForAttribute(decorated, descriptionLocation,
+                                  NSForegroundColorAttributeName),
+            [description length]);
+
+  // Should have three font runs, not bold, bold, then not bold again.
+  // The first run is the contents and the separator, the second run
+  // is the first run of the description.
+  EXPECT_EQ(RunLengthForAttribute(decorated, 0U,
+                                  NSFontAttributeName), descriptionLocation);
+  EXPECT_FALSE(RunHasFontTrait(decorated, 0U, NSBoldFontMask));
+
+  EXPECT_EQ(RunLengthForAttribute(decorated, descriptionLocation,
+                                  NSFontAttributeName), run_length_1);
+  EXPECT_TRUE(RunHasFontTrait(decorated, descriptionLocation, NSBoldFontMask));
+
+  EXPECT_EQ(RunLengthForAttribute(decorated, descriptionLocation + run_length_1,
+                                  NSFontAttributeName), run_length_2);
+  EXPECT_FALSE(RunHasFontTrait(decorated, descriptionLocation + run_length_1,
+                               NSBoldFontMask));
+}
+
+TEST_F(OmniboxPopupViewMacTest, ElideString) {
+  NSString* const contents = @"This is a test with long contents";
+  const string16 contents16(base::SysNSStringToUTF16(contents));
+
+  const float kWide = 1000.0;
+  const float kNarrow = 20.0;
+
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:font_.GetNativeFont()
+                                  forKey:NSFontAttributeName];
+  base::scoped_nsobject<NSMutableAttributedString> as(
+      [[NSMutableAttributedString alloc] initWithString:contents
+                                             attributes:attributes]);
+
+  // Nothing happens if the space is really wide.
+  NSMutableAttributedString* ret =
+      OmniboxPopupViewMac::ElideString(as, contents16, font_, kWide);
+  EXPECT_TRUE(ret == as);
+  EXPECT_TRUE([[as string] isEqualToString:contents]);
+
+  // When elided, result is the same as ElideText().
+  ret = OmniboxPopupViewMac::ElideString(as, contents16, font_, kNarrow);
+  string16 elided =
+      gfx::ElideText(contents16, font_, kNarrow, gfx::ELIDE_AT_END);
+  EXPECT_TRUE(ret == as);
+  EXPECT_FALSE([[as string] isEqualToString:contents]);
+  EXPECT_TRUE([[as string] isEqualToString:base::SysUTF16ToNSString(elided)]);
+
+  // When elided, result is the same as ElideText().
+  ret = OmniboxPopupViewMac::ElideString(as, contents16, font_, 0.0);
+  elided = gfx::ElideText(contents16, font_, 0.0, gfx::ELIDE_AT_END);
+  EXPECT_TRUE(ret == as);
+  EXPECT_FALSE([[as string] isEqualToString:contents]);
+  EXPECT_TRUE([[as string] isEqualToString:base::SysUTF16ToNSString(elided)]);
+}
+
+TEST_F(OmniboxPopupViewMacTest, MatchTextElide) {
+  NSString* const contents = @"This is a test with long contents";
+  NSString* const description = @"That was a test";
+  // Match "long".
+  const NSUInteger run_length_1 = 20, run_length_2 = 4, run_length_3 = 9;
+  // Make sure nobody messed up the inputs.
+  EXPECT_EQ(run_length_1 + run_length_2 + run_length_3, [contents length]);
+
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
+                                  base::SysNSStringToUTF16(description));
+
+  // Push each run onto contents classifications.
+  m.contents_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::NONE));
+  m.contents_class.push_back(
+      ACMatchClassification(run_length_1, ACMatchClassification::MATCH));
+  m.contents_class.push_back(
+      ACMatchClassification(run_length_1 + run_length_2,
+                            ACMatchClassification::URL));
+
+  // Figure out the width of the contents.
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:font_.GetNativeFont()
+                                  forKey:NSFontAttributeName];
+  const float contentsWidth = [contents sizeWithAttributes:attributes].width;
+
+  // After accounting for the width of the image, this will force us
+  // to elide the contents.
+  float cellWidth = ceil(contentsWidth / 0.7);
+
+  NSAttributedString* decorated =
+      OmniboxPopupViewMac::MatchText(m, font_, cellWidth);
+
+  // Results contain a prefix of the contents and all of description.
+  NSString* commonPrefix =
+      [[decorated string] commonPrefixWithString:contents options:0];
+  EXPECT_GT([commonPrefix length], 0U);
+  EXPECT_LT([commonPrefix length], [contents length]);
+  EXPECT_TRUE([[decorated string] hasSuffix:description]);
+
+  // At one point the code had a bug where elided text was being
+  // marked up using pre-elided offsets, resulting in out-of-range
+  // values being passed to NSAttributedString.  Push the ellipsis
+  // through part of each run to verify that we don't continue to see
+  // such things.
+  while([commonPrefix length] > run_length_1 - 3) {
+    EXPECT_GT(cellWidth, 0.0);
+    cellWidth -= 1.0;
+    decorated = OmniboxPopupViewMac::MatchText(m, font_, cellWidth);
+    commonPrefix =
+        [[decorated string] commonPrefixWithString:contents options:0];
+    ASSERT_GT([commonPrefix length], 0U);
+  }
 }
 
 TEST_F(OmniboxPopupViewMacTest, UpdatePopupAppearance) {
