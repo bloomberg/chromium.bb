@@ -26,6 +26,7 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD1(close, int(int));
   MOCK_METHOD1(dup, int(int));
   MOCK_METHOD2(dup2, int(int, int));
+  MOCK_METHOD2(fchmod, int(int, int));
   MOCK_METHOD3(fchown, int(int, uid_t, gid_t));
   MOCK_METHOD3(fcntl, int(int, int, char*));
   MOCK_METHOD2(ftruncate, int(int, off_t));
@@ -44,15 +45,16 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD6(mmap, void*(void*, size_t, int, int, int, size_t));
   MOCK_METHOD5(mount, int(const char*, const char*, const char*, unsigned long,
                           const void*));
+  MOCK_METHOD2(munmap, int(void*, size_t));
   MOCK_METHOD2(open, int(const char*, int));
   MOCK_METHOD1(pipe, int(int[2]));
   MOCK_METHOD3(read, ssize_t(int, void*, size_t));
   MOCK_METHOD1(remove, int(const char*));
   MOCK_METHOD1(rmdir, int(const char*));
-  MOCK_METHOD2(signal, sighandler_t(int, sighandler_t));
   MOCK_METHOD2(sigset, sighandler_t(int, sighandler_t));
   MOCK_METHOD2(stat, int(const char*, struct stat*));
   MOCK_METHOD2(symlink, int(const char*, const char*));
+  MOCK_METHOD2(tcflush, int(int, int));
   MOCK_METHOD2(tcgetattr, int(int, struct termios*));
   MOCK_METHOD3(tcsetattr, int(int, int, const struct termios*));
   MOCK_METHOD1(umount, int(const char*));

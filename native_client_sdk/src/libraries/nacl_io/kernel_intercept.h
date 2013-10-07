@@ -37,6 +37,7 @@ char* ki_getwd(char* buf);
 int ki_dup(int oldfd);
 int ki_dup2(int oldfd, int newfd);
 int ki_chmod(const char* path, mode_t mode);
+int ki_fchmod(int fd, mode_t mode);
 int ki_stat(const char* path, struct stat* buf);
 int ki_mkdir(const char* path, mode_t mode);
 int ki_rmdir(const char* path);

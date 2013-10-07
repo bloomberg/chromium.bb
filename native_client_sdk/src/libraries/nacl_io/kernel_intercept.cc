@@ -100,6 +100,11 @@ int ki_chmod(const char *path, mode_t mode) {
   return s_kp->chmod(path, mode);
 }
 
+int ki_fchmod(int fd, mode_t mode) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->fchmod(fd, mode);
+}
+
 int ki_stat(const char *path, struct stat *buf) {
   ON_NOSYS_RETURN(-1);
   return s_kp->stat(path, buf);
