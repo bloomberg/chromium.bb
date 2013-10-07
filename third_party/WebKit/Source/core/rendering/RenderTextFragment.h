@@ -43,9 +43,11 @@ public:
 
     unsigned start() const { return m_start; }
     unsigned end() const { return m_end; }
+    virtual unsigned textStartOffset() const OVERRIDE { return start(); }
 
     RenderObject* firstLetter() const { return m_firstLetter; }
     void setFirstLetter(RenderObject* firstLetter) { m_firstLetter = firstLetter; }
+    RenderText* firstRenderTextInFirstLetter() const;
 
     StringImpl* contentString() const { return m_contentString.get(); }
     virtual PassRefPtr<StringImpl> originalText() const;
@@ -62,6 +64,7 @@ private:
 
     virtual UChar previousCharacter() const;
     RenderBlock* blockForAccompanyingFirstLetter() const;
+    virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&) OVERRIDE;
 
     unsigned m_start;
     unsigned m_end;

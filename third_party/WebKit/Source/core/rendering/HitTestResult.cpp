@@ -43,6 +43,7 @@
 #include "core/platform/Scrollbar.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderTextFragment.h"
 
 namespace WebCore {
 
@@ -51,6 +52,7 @@ using namespace HTMLNames;
 HitTestResult::HitTestResult()
     : m_isOverWidget(false)
     , m_allowPseudoElements(false)
+    , m_isFirstLetter(false)
 {
 }
 
@@ -59,12 +61,14 @@ HitTestResult::HitTestResult(const LayoutPoint& point)
     , m_pointInInnerNodeFrame(point)
     , m_isOverWidget(false)
     , m_allowPseudoElements(false)
+    , m_isFirstLetter(false)
 {
 }
 
 HitTestResult::HitTestResult(const LayoutPoint& centerPoint, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding)
     : m_hitTestLocation(centerPoint, topPadding, rightPadding, bottomPadding, leftPadding)
     , m_pointInInnerNodeFrame(centerPoint)
+    , m_isFirstLetter(false)
     , m_isOverWidget(false)
     , m_allowPseudoElements(false)
 {
@@ -73,6 +77,7 @@ HitTestResult::HitTestResult(const LayoutPoint& centerPoint, unsigned topPadding
 HitTestResult::HitTestResult(const HitTestLocation& other)
     : m_hitTestLocation(other)
     , m_pointInInnerNodeFrame(m_hitTestLocation.point())
+    , m_isFirstLetter(false)
     , m_isOverWidget(false)
     , m_allowPseudoElements(false)
 {
@@ -86,6 +91,7 @@ HitTestResult::HitTestResult(const HitTestResult& other)
     , m_localPoint(other.localPoint())
     , m_innerURLElement(other.URLElement())
     , m_scrollbar(other.scrollbar())
+    , m_isFirstLetter(other.m_isFirstLetter)
     , m_isOverWidget(other.isOverWidget())
     , m_allowPseudoElements(other.m_allowPseudoElements)
 {
@@ -106,6 +112,7 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
     m_localPoint = other.localPoint();
     m_innerURLElement = other.URLElement();
     m_scrollbar = other.scrollbar();
+    m_isFirstLetter = other.m_isFirstLetter;
     m_isOverWidget = other.isOverWidget();
     m_allowPseudoElements |= other.m_allowPseudoElements; // Do not lose the pseudo element tracking if allowed.
 
@@ -113,6 +120,16 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
     m_rectBasedTestResult = adoptPtr(other.m_rectBasedTestResult ? new NodeSet(*other.m_rectBasedTestResult) : 0);
 
     return *this;
+}
+
+RenderObject* HitTestResult::renderer() const
+{
+    if (!m_innerNode)
+        return 0;
+    RenderObject* renderer = m_innerNode->renderer();
+    if (!m_isFirstLetter || !renderer || !renderer->isText() || !toRenderText(renderer)->isTextFragment())
+        return renderer;
+    return toRenderTextFragment(renderer)->firstRenderTextInFirstLetter();
 }
 
 void HitTestResult::setToNodesInDocumentTreeScope()

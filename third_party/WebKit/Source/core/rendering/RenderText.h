@@ -53,6 +53,7 @@ public:
 
     const String& text() const { return m_text; }
     String textWithoutTranscoding() const;
+    virtual unsigned textStartOffset() const { return 0; }
 
     InlineTextBox* createInlineTextBox();
     void dirtyLineBoxes(bool fullLayout);

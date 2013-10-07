@@ -24,6 +24,7 @@
 #include "core/rendering/RenderTextFragment.h"
 
 #include "core/dom/Text.h"
+#include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
@@ -47,6 +48,15 @@ RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str)
 
 RenderTextFragment::~RenderTextFragment()
 {
+}
+
+RenderText* RenderTextFragment::firstRenderTextInFirstLetter() const
+{
+    for (RenderObject* current = m_firstLetter; current; current = current->nextInPreOrder(m_firstLetter)) {
+        if (current->isText())
+            return toRenderText(current);
+    }
+    return 0;
 }
 
 PassRefPtr<StringImpl> RenderTextFragment::originalText() const
@@ -120,6 +130,22 @@ RenderBlock* RenderTextFragment::blockForAccompanyingFirstLetter() const
             return toRenderBlock(block);
     }
     return 0;
+}
+
+void RenderTextFragment::updateHitTestResult(HitTestResult& result, const LayoutPoint& point)
+{
+    if (result.innerNode())
+        return;
+
+    RenderObject::updateHitTestResult(result, point);
+    if (m_firstLetter || !node())
+        return;
+    RenderObject* nodeRenderer = node()->renderer();
+    if (!nodeRenderer || !nodeRenderer->isText() || !toRenderText(nodeRenderer)->isTextFragment())
+        return;
+
+    if (isDescendantOf(toRenderTextFragment(nodeRenderer)->m_firstLetter))
+        result.setIsFirstLetter(true);
 }
 
 } // namespace WebCore

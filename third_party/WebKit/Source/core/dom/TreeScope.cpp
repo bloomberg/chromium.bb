@@ -214,7 +214,7 @@ HTMLMapElement* TreeScope::getImageMap(const String& url) const
     return toHTMLMapElement(m_imageMapsByName->getElementByMapName(AtomicString(name).impl(), this));
 }
 
-Node* nodeFromPoint(Document* document, int x, int y, LayoutPoint* localPoint)
+RenderObject* rendererFromPoint(Document* document, int x, int y, LayoutPoint* localPoint)
 {
     Frame* frame = document->frame();
 
@@ -237,14 +237,19 @@ Node* nodeFromPoint(Document* document, int x, int y, LayoutPoint* localPoint)
     if (localPoint)
         *localPoint = result.localPoint();
 
-    return result.innerNode();
+    return result.renderer();
 }
 
 Element* TreeScope::elementFromPoint(int x, int y) const
 {
-    Node* node = nodeFromPoint(&rootNode()->document(), x, y);
-    if (node && node->isTextNode())
-        node = node->parentNode();
+    RenderObject* renderer = rendererFromPoint(&rootNode()->document(), x, y);
+    if (!renderer)
+        return 0;
+    Node* node = renderer->node();
+    if (!node)
+        return 0;
+    if (node->isPseudoElement() || node->isTextNode())
+        node = node->parentOrShadowHostNode();
     ASSERT(!node || node->isElementNode() || node->isShadowRoot());
     node = ancestorInThisScope(node);
     if (!node || !node->isElementNode())

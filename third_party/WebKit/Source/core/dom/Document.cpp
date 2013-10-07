@@ -1204,10 +1204,11 @@ PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
     if (!renderer())
         return 0;
     LayoutPoint localPoint;
-    Node* node = nodeFromPoint(this, x, y, &localPoint);
-    if (!node)
+    RenderObject* renderer = rendererFromPoint(this, x, y, &localPoint);
+    if (!renderer)
         return 0;
 
+    Node* node = renderer->node();
     Node* shadowAncestorNode = ancestorInThisScope(node);
     if (shadowAncestorNode != node) {
         unsigned offset = shadowAncestorNode->nodeIndex();
@@ -1215,9 +1216,6 @@ PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
         return Range::create(*this, container, offset, container, offset);
     }
 
-    RenderObject* renderer = node->renderer();
-    if (!renderer)
-        return 0;
     PositionWithAffinity positionWithAffinity = renderer->positionForPoint(localPoint);
     if (positionWithAffinity.position().isNull())
         return 0;

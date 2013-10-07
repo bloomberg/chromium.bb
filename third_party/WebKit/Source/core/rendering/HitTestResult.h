@@ -41,6 +41,7 @@ class HTMLMediaElement;
 class Image;
 class KURL;
 class Node;
+class RenderObject;
 class RenderRegion;
 class Scrollbar;
 
@@ -81,6 +82,8 @@ public:
     void setLocalPoint(const LayoutPoint& p) { m_localPoint = p; }
 
     void allowPseudoElements() { m_allowPseudoElements = true; }
+    RenderObject* renderer() const;
+
     void setToNodesInDocumentTreeScope();
     void setToShadowHostIfInUserAgentShadowRoot();
 
@@ -90,6 +93,7 @@ public:
     void setInnerNonSharedNode(Node*);
     void setURLElement(Element*);
     void setScrollbar(Scrollbar*);
+    void setIsFirstLetter(bool b) { m_isFirstLetter = b; }
     void setIsOverWidget(bool b) { m_isOverWidget = b; }
 
     Frame* targetFrame() const;
@@ -136,6 +140,7 @@ private:
     RefPtr<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a RenderWidget for example).
     bool m_allowPseudoElements;
+    bool m_isFirstLetter;
 
     mutable OwnPtr<NodeSet> m_rectBasedTestResult;
 };

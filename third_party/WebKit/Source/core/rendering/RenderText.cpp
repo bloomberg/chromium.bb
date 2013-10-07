@@ -532,7 +532,8 @@ static PositionWithAffinity createPositionWithAffinityForBox(const InlineBox* bo
         affinity = offset > box->caretMinOffset() ? VP_UPSTREAM_IF_POSSIBLE : DOWNSTREAM;
         break;
     }
-    return box->renderer()->createPositionWithAffinity(offset, affinity);
+    int textStartOffset = box->renderer()->isText() ? toRenderText(box->renderer())->textStartOffset() : 0;
+    return box->renderer()->createPositionWithAffinity(offset + textStartOffset, affinity);
 }
 
 static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(const InlineTextBox* box, int offset, ShouldAffinityBeDownstream shouldAffinityBeDownstream)

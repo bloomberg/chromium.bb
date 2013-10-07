@@ -42,6 +42,7 @@ class HTMLMapElement;
 class LayoutPoint;
 class IdTargetObserverRegistry;
 class Node;
+class RenderObject;
 
 // A class which inherits both Node and TreeScope must call clearRareData() in its destructor
 // so that the Node destructor no longer does problematic NodeList cache manipulation in
@@ -186,7 +187,7 @@ inline bool TreeScope::containsMultipleElementsWithId(const AtomicString& id) co
     return m_elementsById && m_elementsById->containsMultiple(id.impl());
 }
 
-Node* nodeFromPoint(Document*, int x, int y, LayoutPoint* localPoint = 0);
+RenderObject* rendererFromPoint(Document*, int x, int y, LayoutPoint* localPoint = 0);
 TreeScope* commonTreeScope(Node*, Node*);
 
 } // namespace WebCore
