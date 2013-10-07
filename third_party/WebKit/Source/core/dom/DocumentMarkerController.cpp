@@ -51,8 +51,8 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(DocumentMarker::MarkerTy
         return DocumentMarker::GramarMarkerIndex;
     case DocumentMarker::TextMatch:
         return DocumentMarker::TextMatchMarkerIndex;
-    case DocumentMarker::InCustomSpellcheckDictionary:
-        return DocumentMarker::InCustomSpellcheckDictionaryMarkerIndex;
+    case DocumentMarker::InvisibleSpellcheck:
+        return DocumentMarker::InvisibleSpellcheckMarkerIndex;
     }
 
     ASSERT_NOT_REACHED();

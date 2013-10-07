@@ -34,9 +34,9 @@
 namespace WebCore {
 
 enum TextDecorationType {
-    TextDecorationTypeSpelling                     = 1 << 1,
-    TextDecorationTypeGrammar                      = 1 << 2,
-    TextDecorationTypeInCustomSpellcheckDictionary = 1 << 3,
+    TextDecorationTypeSpelling            = 1 << 1,
+    TextDecorationTypeGrammar             = 1 << 2,
+    TextDecorationTypeInvisibleSpellcheck = 1 << 3,
 };
 
 }

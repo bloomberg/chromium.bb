@@ -3887,9 +3887,9 @@ public:
         kick(1, 8, WebTextDecorationTypeGrammar);
     }
 
-    void kickInCustomSpellcheckDictionary()
+    void kickInvisibleSpellcheck()
     {
-        kick(1, 8, WebTextDecorationTypeInCustomSpellcheckDictionary);
+        kick(1, 8, WebTextDecorationTypeInvisibleSpellcheck);
     }
 
 private:
@@ -3981,7 +3981,7 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers)
     document->execCommand("InsertText", false, "welcome ");
     document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Spelling);
     document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Grammar);
-    document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::InCustomSpellcheckDictionary);
+    document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::InvisibleSpellcheck);
     EXPECT_EQ(3U, document->markers()->markers().size());
 
     spellcheck.kickNoResults();
@@ -4023,10 +4023,10 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument)
 
     document->execCommand("InsertText", false, "wellcome ");
 
-    spellcheck.kickInCustomSpellcheckDictionary();
+    spellcheck.kickInvisibleSpellcheck();
     ASSERT_EQ(1U, document->markers()->markers().size());
     ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers()->markers()[0]);
-    EXPECT_EQ(DocumentMarker::InCustomSpellcheckDictionary, document->markers()->markers()[0]->type());
+    EXPECT_EQ(DocumentMarker::InvisibleSpellcheck, document->markers()->markers()[0]->type());
 }
 
 class TestAccessInitialDocumentWebFrameClient : public WebFrameClient {

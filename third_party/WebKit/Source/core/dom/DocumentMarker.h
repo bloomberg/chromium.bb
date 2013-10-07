@@ -42,7 +42,7 @@ public:
         SpellingMarkerIndex = 0,
         GramarMarkerIndex,
         TextMatchMarkerIndex,
-        InCustomSpellcheckDictionaryMarkerIndex,
+        InvisibleSpellcheckMarkerIndex,
         MarkerTypeIndexesCount
     };
 
@@ -50,7 +50,7 @@ public:
         Spelling = 1 << SpellingMarkerIndex,
         Grammar = 1 << GramarMarkerIndex,
         TextMatch = 1 << TextMatchMarkerIndex,
-        InCustomSpellcheckDictionary = 1 << InCustomSpellcheckDictionaryMarkerIndex
+        InvisibleSpellcheck = 1 << InvisibleSpellcheckMarkerIndex
     };
 
     class MarkerTypes {
@@ -72,7 +72,7 @@ public:
     class AllMarkers : public MarkerTypes {
     public:
         AllMarkers()
-            : MarkerTypes(Spelling | Grammar | TextMatch | InCustomSpellcheckDictionary)
+            : MarkerTypes(Spelling | Grammar | TextMatch | InvisibleSpellcheck)
         {
         }
     };
@@ -88,7 +88,7 @@ public:
     class SpellCheckClientMarkers : public MarkerTypes {
     public:
         SpellCheckClientMarkers()
-            : MarkerTypes(Spelling | Grammar | InCustomSpellcheckDictionary)
+            : MarkerTypes(Spelling | Grammar | InvisibleSpellcheck)
         {
         }
     };
