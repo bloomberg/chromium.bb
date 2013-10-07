@@ -424,7 +424,7 @@ interface InspectorInstrumentation {
     void didReceiveWebSocketFrameError(Document*, unsigned long identifier, const String& errorMessage);
 
     [ApplicationCache, Inline=FastReturn]
-    void networkStateChanged(Page*);
+    void networkStateChanged(Page*, bool online);
 
     [ApplicationCache, Inline=FastReturn]
     void updateApplicationCacheStatus([Keep] Frame*);

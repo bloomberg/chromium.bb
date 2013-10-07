@@ -235,6 +235,8 @@ public:
 
     void didCommitLoad(Frame*);
 
+    static void networkStateChanged(bool online);
+
 protected:
     PageLifecycleNotifier* lifecycleNotifier();
 

@@ -50,7 +50,6 @@
 #include "core/page/Settings.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/platform/network/NetworkStateNotifier.h"
 #include "core/plugins/PluginData.h"
 #include "core/rendering/RenderView.h"
 #include "core/storage/StorageNamespace.h"
@@ -65,7 +64,7 @@ static HashSet<Page*>* allPages;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, pageCounter, ("Page"));
 
-static void networkStateChanged()
+void Page::networkStateChanged(bool online)
 {
     Vector<RefPtr<Frame> > frames;
 
@@ -74,10 +73,10 @@ static void networkStateChanged()
     for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it) {
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext())
             frames.append(frame);
-        InspectorInstrumentation::networkStateChanged(*it);
+        InspectorInstrumentation::networkStateChanged(*it, online);
     }
 
-    AtomicString eventName = networkStateNotifier().onLine() ? eventNames().onlineEvent : eventNames().offlineEvent;
+    AtomicString eventName = online ? eventNames().onlineEvent : eventNames().offlineEvent;
     for (unsigned i = 0; i < frames.size(); i++)
         frames[i]->document()->dispatchWindowEvent(Event::create(eventName));
 }
@@ -124,11 +123,8 @@ Page::Page(PageClients& pageClients)
 {
     ASSERT(m_editorClient);
 
-    if (!allPages) {
+    if (!allPages)
         allPages = new HashSet<Page*>;
-
-        networkStateNotifier().setNetworkStateChangedFunction(networkStateChanged);
-    }
 
     ASSERT(!allPages->contains(this));
     allPages->add(this);

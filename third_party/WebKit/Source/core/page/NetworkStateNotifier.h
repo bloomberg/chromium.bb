@@ -28,32 +28,28 @@
 
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
 
 class NetworkStateNotifier {
     WTF_MAKE_NONCOPYABLE(NetworkStateNotifier); WTF_MAKE_FAST_ALLOCATED;
 public:
-    NetworkStateNotifier();
-    void setNetworkStateChangedFunction(void (*)());
+    NetworkStateNotifier()
+        : m_isOnLine(true) { }
 
-    bool onLine() const { return m_isOnLine; }
+    bool onLine() const
+    {
+        MutexLocker locker(m_mutex);
+        return m_isOnLine;
+    }
+
     void setOnLine(bool);
 
 private:
+    mutable Mutex m_mutex;
     bool m_isOnLine;
-    void (*m_networkStateChangedFunction)();
-
-    void updateState();
 };
-
-inline NetworkStateNotifier::NetworkStateNotifier()
-    : m_isOnLine(true)
-    , m_networkStateChangedFunction(0)
-{
-}
-
-inline void NetworkStateNotifier::updateState() { }
 
 NetworkStateNotifier& networkStateNotifier();
 

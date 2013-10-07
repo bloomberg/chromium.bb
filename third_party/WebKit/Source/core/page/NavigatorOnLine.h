@@ -31,7 +31,7 @@
 #ifndef NavigatorOnLine_h
 #define NavigatorOnLine_h
 
-#include "core/platform/network/NetworkStateNotifier.h"
+#include "core/page/NetworkStateNotifier.h"
 
 namespace WebCore {
 

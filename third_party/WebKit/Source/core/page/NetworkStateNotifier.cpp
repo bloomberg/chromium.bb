@@ -24,9 +24,11 @@
  */
 
 #include "config.h"
-#include "core/platform/network/NetworkStateNotifier.h"
+#include "core/page/NetworkStateNotifier.h"
 
+#include "core/page/Page.h"
 #include "wtf/Assertions.h"
+#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 
@@ -35,26 +37,22 @@ namespace WebCore {
 NetworkStateNotifier& networkStateNotifier()
 {
     AtomicallyInitializedStatic(NetworkStateNotifier*, networkStateNotifier = new NetworkStateNotifier);
-
     return *networkStateNotifier;
-}
-
-void NetworkStateNotifier::setNetworkStateChangedFunction(void(*function)())
-{
-    ASSERT(!m_networkStateChangedFunction);
-
-    m_networkStateChangedFunction = function;
 }
 
 void NetworkStateNotifier::setOnLine(bool onLine)
 {
-    if (m_isOnLine == onLine)
-        return;
+    ASSERT(isMainThread());
 
-    m_isOnLine = onLine;
+    {
+        MutexLocker locker(m_mutex);
+        if (m_isOnLine == onLine)
+            return;
 
-    if (m_networkStateChangedFunction)
-        m_networkStateChangedFunction();
+        m_isOnLine = onLine;
+    }
+
+    Page::networkStateChanged(onLine);
 }
 
 }
