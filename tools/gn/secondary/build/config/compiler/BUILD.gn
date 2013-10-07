@@ -7,8 +7,10 @@ config("compiler") {
   includes = [ "//" ]
   if (is_win) {
     cflags = [
-      # TODO(brettw) these probably need to be refactored.
-      "/Od", "/WX", "/Zi", "/Gy", "/GS", "/RTC1", "/EHsc",
+      "/Gy",  # Enable function-level linking.
+      "/GS",  # Enable buffer security checking.
+      "/EHsc",  # Assume C functions can't throw exceptions and don't catch
+                # structured exceptions (only C++ ones).
     ]
   } else {
     # Common GCC compiler flags setup.
@@ -16,7 +18,6 @@ config("compiler") {
     cflags = [
       "-fno-strict-aliasing",  # See http://crbug.com/32204
       "-fvisibility=hidden",
-      "-g",  # Debug symbols.
     ]
     cflags_c = [
     ]
@@ -27,15 +28,6 @@ config("compiler") {
     ]
     ldflags = [
     ]
-
-    # Optimization.
-    if (is_debug) {
-      cflags += [
-        "-O0"  # No optimization.
-      ]
-    } else {
-      # TODO(brettw) release optimization.
-    }
 
     # Stack protection.
     # TODO(brettw) why do we have different values for all of these cases?
@@ -188,6 +180,7 @@ config("chromium_code") {
   if (is_win) {
     cflags = [
       "/W4",  # Warning level 4.
+      "/WX",  # Treat warnings as errors.
     ]
   } else {
     cflags = [
@@ -335,5 +328,67 @@ config("default_warnings") {
         "-Wstring-conversion",
       ]
     }
+  }
+}
+
+# Optimization -----------------------------------------------------------------
+
+config("optimize") {
+  if (is_win) {
+    cflags = [
+      "/O2",
+      "/Ob2",  # Both explicit and auto inlining.
+      "/Oy-",  # Disable omitting frame pointers, must be after /O2.
+    ]
+  } else {
+    if (is_ios) {
+      cflags = [ "-Os" ]
+    } else {
+      cflags = [ "-O2" ]
+    }
+  }
+}
+
+config("no_optimize") {
+  if (is_win) {
+    cflags = [
+      "/Od",  # Disable optimization.
+      "/Ob0",  # Disable all inlining (on by default).
+      "/RTC1",  # Runtime checks for stack frame and uninitialized variables.
+    ]
+  } else {
+    cflags = [ "-O0" ]
+  }
+}
+
+# Symbols ----------------------------------------------------------------------
+
+# TODO(brettw) Since this sets ldflags on Windows which is inherited across
+# static library boundaries, if you want to remove the default symbol config
+# and set a different one on a target, you also have to do it for all static
+# libraries that go into that target, which is messed up. Either we need a
+# more flexible system for defining linker flags, or we need to separate this
+# out into a "symbols_linker" config that is only applied to DLLs and EXEs.
+config("symbols") {
+  if (is_win) {
+    cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
+    ldflags = [ "/DEBUG" ]
+  } else {
+    cflags = [ "-g2" ]
+  }
+}
+
+config("minimal_symbols") {
+  if (is_win) {
+    # Linker symbols for backtraces only.
+    ldflags = [ "/DEBUG" ]
+  } else {
+    cflags = [ "-g1" ]
+  }
+}
+
+config("no_symbols") {
+  if (!is_win) {
+    cflags = [ "-g0" ]
   }
 }

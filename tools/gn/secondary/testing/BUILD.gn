@@ -6,6 +6,9 @@
 config("gtest_config") {
   defines = [ "UNIT_TEST" ]
   includes = [ "gtest/include" ]  # Gtest headers need to be able to find themselves.
+  if (is_win) {
+    cflags = [ "/wd4800" ]  # Unused variable warning.
+  }
 }
 
 # TODO(brettw) move to testing/gtest/BUILD.gn

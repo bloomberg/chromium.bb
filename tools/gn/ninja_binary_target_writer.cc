@@ -190,7 +190,6 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   if (settings_->IsWin()) {
     out_ << " /MANIFEST /ManifestFile:";
     path_output_.WriteFile(out_, windows_manifest);
-    out_ << " /DEBUG /MACHINE:X86 /LIBPATH:\"C:\\Program Files (x86)\\Windows Kits\\8.0\\Lib\\win8\\um\\x86\" /DELAYLOAD:dbghelp.dll /DELAYLOAD:dwmapi.dll /DELAYLOAD:shell32.dll /DELAYLOAD:uxtheme.dll /safeseh /dynamicbase /ignore:4199 /ignore:4221 /nxcompat /SUBSYSTEM:CONSOLE /INCREMENTAL /FIXED:NO /DYNAMICBASE:NO wininet.lib dnsapi.lib version.lib msimg32.lib ws2_32.lib usp10.lib psapi.lib dbghelp.lib winmm.lib shlwapi.lib kernel32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib user32.lib uuid.lib odbc32.lib odbccp32.lib delayimp.lib /NXCOMPAT";
   }
   out_ << std::endl;
 

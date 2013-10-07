@@ -48,8 +48,15 @@ SourceFile SourceDir::ResolveRelativeFile(
     return ret;
   } else if (IsPathAbsolute(p)) {
     if (source_root.empty() ||
-        !MakeAbsolutePathRelativeIfPossible(source_root, p, &ret.value_))
-      ret.value_.assign(p.data(), p.size());
+        !MakeAbsolutePathRelativeIfPossible(source_root, p, &ret.value_)) {
+#if defined(OS_WIN)
+      // On Windows we'll accept "C:\foo" as an absolute path, which we want
+      // to convert to "/C:..." here.
+      if (p[0] != '/')
+        ret.value_ = "/";
+#endif
+      ret.value_.append(p.data(), p.size());
+    }
     NormalizePath(&ret.value_);
     return ret;
   }
@@ -78,12 +85,17 @@ SourceDir SourceDir::ResolveRelativeDir(
     return ret;
   } else if (IsPathAbsolute(p)) {
     if (source_root.empty() ||
-        !MakeAbsolutePathRelativeIfPossible(source_root, p, &ret.value_))
-      ret.value_.assign(p.data(), p.size());
+        !MakeAbsolutePathRelativeIfPossible(source_root, p, &ret.value_)) {
+#if defined(OS_WIN)
+      if (p[0] != '/')  // See the file case for why we do this check.
+        ret.value_ = "/";
+#endif
+      ret.value_.append(p.data(), p.size());
+    }
     NormalizePath(&ret.value_);
     if (!EndsWithSlash(ret.value_))
       ret.value_.push_back('/');
-    return SourceDir(p);
+    return ret;
   }
 
   ret.value_.reserve(value_.size() + p.size());

@@ -955,7 +955,7 @@ static_library("test_support_base") {
     "//base:base_i18n",
     "//testing:gmock",
     "//testing:gtest",
-    "//third_party/libxml:libxml2",
+    "//third_party/libxml"
   ]
 
   if (!is_posix) {

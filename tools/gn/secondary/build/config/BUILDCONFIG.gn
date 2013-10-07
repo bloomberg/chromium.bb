@@ -17,6 +17,13 @@
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
 declare_args() {
+  # How many symbols to include in the build. This affects the performance of
+  # the build since the symbols are large and dealing with them is slow.
+  #   2 means regular build with symbols.
+  #   1 means minimal symbols, usually enough for backtraces only.
+  #   0 means no symbols.
+  symbol_level = 2
+
   # Set to build the Android version.
   is_android = false
   # Component build.
@@ -181,22 +188,65 @@ native_compiler_configs = [
   "//build/config/compiler:runtime_library",
 ]
 if (is_win) {
-  native_compiler_configs += "//build/config/win:sdk"
-} else if (is_mac) {
-  # TODO(brettw) this should be in an if (is_clang) block instead but I haven't
-  # written an is_clang flag yet.
+  native_compiler_configs += [
+    "//build/config/win:sdk",
+  ]
+} else if (is_clang) {
   native_compiler_configs += "//build/config/clang:find_bad_constructs"
 }
 
+# Optimizations and debug checking.
 if (is_debug) {
   native_compiler_configs += "//build/config:debug"
+  default_optimization_config = "//build/config/compiler:no_optimize"
 } else {
   native_compiler_configs += "//build/config:release"
+  default_optimization_config = "//build/config/compiler:optimize"
+}
+native_compiler_configs += default_optimization_config
+
+# Symbol setup.
+if (is_clang && (is_linux || is_android)) {
+  # Clang creates chubby debug information, which makes linking very slow.
+  # For now, don't create debug information with clang.
+  # See http://crbug.com/70000
+  # TODO(brettw) This just copies GYP. Why not do this on Mac as well?
+  default_symbols_config = "//build/config/compiler:no_symbols"
+} else if (symbol_level == 2) {
+  default_symbols_config = "//build/config/compiler:symbols"
+} else if (symbol_level == 1) {
+  default_symbols_config = "//build/config/compiler:minimal_symbols"
+} else if (symbol_level == 0) {
+  default_symbols_config = "//build/config/compiler:no_symbols"
+} else {
+  assert(false, "Bad value for symbol_level.")
+}
+native_compiler_configs += default_symbols_config
+
+# Windows linker setup for EXEs and DLLs.
+if (is_win) {
+  if (is_debug) {
+    default_incremental_linking_config =
+      "//build/config/win:incremental_linking"
+  } else {
+    default_incremental_linking_config =
+      "//build/config/win:no_incremental_linking"
+  }
+  windows_linker_configs = [
+    default_incremental_linking_config,
+    "//build/config/win:sdk_link",
+    "//build/config/win:common_linker_setup",
+    # Default to console-mode apps. Most of our targets are tests and such
+    # that shouldn't use the windows subsystem.
+    "//build/config/win:console",
+  ]
 }
 
 set_defaults("executable") {
   configs = native_compiler_configs
-  if (is_mac) {
+  if (is_win) {
+    configs += windows_linker_configs
+  } else if (is_mac) {
     configs += "//build/config/mac:mac_dynamic_flags"
   } else if (is_linux) {
     configs += "//build/config/linux:executable_ldconfig"
@@ -209,7 +259,9 @@ set_defaults("static_library") {
 
 set_defaults("shared_library") {
   configs = native_compiler_configs
-  if (is_mac) {
+  if (is_win) {
+    configs += windows_linker_configs
+  } else if (is_mac) {
     configs += "//build/config/mac:mac_dynamic_flags"
   }
 }
