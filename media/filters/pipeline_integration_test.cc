@@ -566,7 +566,8 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest, MediaSource_Opus_Seeking_WebM) {
+// Flaky. http://crbug.com/304776
+TEST_F(PipelineIntegrationTest, DISABLED_MediaSource_Opus_Seeking_WebM) {
   EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
   MockMediaSource source("bear-opus-end-trimming.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile);
