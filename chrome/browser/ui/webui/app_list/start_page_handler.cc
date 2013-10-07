@@ -82,7 +82,11 @@ void StartPageHandler::SendRecommendedApps() {
 
 void StartPageHandler::HandleInitialize(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  recommended_apps_ = StartPageService::Get(profile)->recommended_apps();
+  StartPageService* service = StartPageService::Get(profile);
+  if (!service)
+    return;
+
+  recommended_apps_ = service->recommended_apps();
   recommended_apps_->AddObserver(this);
 
   SendRecommendedApps();
