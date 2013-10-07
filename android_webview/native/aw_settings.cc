@@ -175,6 +175,11 @@ void AwSettings::WebContentsDestroyed(content::WebContents* web_contents) {
   delete this;
 }
 
+// static
+void AwSettings::PopulateFixedPreferences(WebPreferences* web_prefs) {
+  web_prefs->shrinks_standalone_images_to_fit = false;
+}
+
 void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
@@ -185,6 +190,8 @@ void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
   ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
   jobject obj = scoped_obj.obj();
   if (!obj) return;
+
+  PopulateFixedPreferences(web_prefs);
 
   web_prefs->text_autosizing_enabled =
       Java_AwSettings_getTextAutosizingEnabledLocked(env, obj);

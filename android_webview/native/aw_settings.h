@@ -41,6 +41,9 @@ class AwSettings : public content::WebContentsObserver {
   AwRenderViewHostExt* GetAwRenderViewHostExt();
   void UpdateEverything();
 
+  // Fixed WebPreferences for Android WebView.
+  static void PopulateFixedPreferences(WebPreferences* web_prefs);
+
   // WebContentsObserver overrides:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
