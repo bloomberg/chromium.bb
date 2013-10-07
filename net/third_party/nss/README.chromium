@@ -125,6 +125,12 @@ Patches:
     https://bugzilla.mozilla.org/show_bug.cgi?id=919677
     patches/ciphersuiteversion.patch
 
+  * Don't use record versions greater than 0x0301 in resumption ClientHello
+    records either.
+    https://bugzilla.mozilla.org/show_bug.cgi?id=923696
+    https://code.google.com/p/chromium/issues/detail?id=303398
+    patches/resumeclienthelloversion.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
