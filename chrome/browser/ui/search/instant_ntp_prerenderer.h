@@ -134,9 +134,6 @@ class InstantNTPPrerenderer
                              bool is_search_type) OVERRIDE;
   virtual void PasteIntoOmnibox(const content::WebContents* contents,
                                 const string16& text) OVERRIDE;
-  virtual void DeleteMostVisitedItem(const GURL& url) OVERRIDE;
-  virtual void UndoMostVisitedDeletion(const GURL& url) OVERRIDE;
-  virtual void UndoAllMostVisitedDeletions() OVERRIDE;
   virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;
 
   // Overridden from InstantServiceObserver:

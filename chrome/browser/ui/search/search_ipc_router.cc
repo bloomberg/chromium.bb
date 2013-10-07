@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/search/search_ipc_router.h"
 
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/web_contents.h"
 
@@ -81,6 +82,12 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
                         OnInstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetVoiceSearchSupported,
                         OnVoiceSearchSupportDetermined)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
+                        OnDeleteMostVisitedItem);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
+                        OnUndoMostVisitedDeletion);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
+                        OnUndoAllMostVisitedDeletions);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -102,6 +109,41 @@ void SearchIPCRouter::OnVoiceSearchSupportDetermined(
     return;
 
   delegate_->OnSetVoiceSearchSupport(supports_voice_search);
+}
+
+void SearchIPCRouter::OnDeleteMostVisitedItem(int page_id,
+                                              const GURL& url) const {
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
+  if (!policy_->ShouldProcessDeleteMostVisitedItem())
+    return;
+
+  delegate_->OnDeleteMostVisitedItem(url);
+}
+
+void SearchIPCRouter::OnUndoMostVisitedDeletion(int page_id,
+                                                const GURL& url) const {
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
+  if (!policy_->ShouldProcessUndoMostVisitedDeletion())
+    return;
+
+  delegate_->OnUndoMostVisitedDeletion(url);
+}
+
+void SearchIPCRouter::OnUndoAllMostVisitedDeletions(int page_id) const {
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
+  if (!policy_->ShouldProcessUndoAllMostVisitedDeletions())
+    return;
+
+  delegate_->OnUndoAllMostVisitedDeletions();
 }
 
 void SearchIPCRouter::set_delegate(Delegate* delegate) {

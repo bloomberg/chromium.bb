@@ -36,6 +36,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
+#include "url/gurl.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/widget/widget.h"
@@ -243,32 +244,6 @@ void InstantController::LogDebugEvent(const std::string& info) const {
 
 void InstantController::ClearDebugEvents() {
   debug_events_.clear();
-}
-
-void InstantController::DeleteMostVisitedItem(const GURL& url) {
-  DCHECK(!url.is_empty());
-  InstantService* instant_service = GetInstantService();
-  if (!instant_service)
-    return;
-
-  instant_service->DeleteMostVisitedItem(url);
-}
-
-void InstantController::UndoMostVisitedDeletion(const GURL& url) {
-  DCHECK(!url.is_empty());
-  InstantService* instant_service = GetInstantService();
-  if (!instant_service)
-    return;
-
-  instant_service->UndoMostVisitedDeletion(url);
-}
-
-void InstantController::UndoAllMostVisitedDeletions() {
-  InstantService* instant_service = GetInstantService();
-  if (!instant_service)
-    return;
-
-  instant_service->UndoAllMostVisitedDeletions();
 }
 
 Profile* InstantController::profile() const {

@@ -228,18 +228,6 @@ void InstantNTPPrerenderer::PasteIntoOmnibox(
   NOTREACHED();
 }
 
-void InstantNTPPrerenderer::DeleteMostVisitedItem(const GURL& /* url */) {
-  NOTREACHED();
-}
-
-void InstantNTPPrerenderer::UndoMostVisitedDeletion(const GURL& /* url */) {
-  NOTREACHED();
-}
-
-void InstantNTPPrerenderer::UndoAllMostVisitedDeletions() {
-  NOTREACHED();
-}
-
 void InstantNTPPrerenderer::InstantPageLoadFailed(
     content::WebContents* contents) {
   DCHECK(ntp() && ntp()->contents() == contents);

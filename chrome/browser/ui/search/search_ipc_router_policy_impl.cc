@@ -45,6 +45,18 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessSetVoiceSearchSupport() {
   return true;
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteMostVisitedItem() {
+  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessUndoMostVisitedDeletion() {
+  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessUndoAllMostVisitedDeletions() {
+  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldSendSetPromoInformation() {
   return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }

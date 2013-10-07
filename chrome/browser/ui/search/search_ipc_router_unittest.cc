@@ -34,6 +34,9 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
 
   MOCK_METHOD1(OnInstantSupportDetermined, void(bool supports_instant));
   MOCK_METHOD1(OnSetVoiceSearchSupport, void(bool supports_voice_search));
+  MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
+  MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
+  MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
 };
 
 class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
@@ -41,6 +44,9 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   virtual ~MockSearchIPCRouterPolicy() {}
 
   MOCK_METHOD0(ShouldProcessSetVoiceSearchSupport, bool());
+  MOCK_METHOD0(ShouldProcessDeleteMostVisitedItem, bool());
+  MOCK_METHOD0(ShouldProcessUndoMostVisitedDeletion, bool());
+  MOCK_METHOD0(ShouldProcessUndoAllMostVisitedDeletions, bool());
   MOCK_METHOD0(ShouldSendSetPromoInformation, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
@@ -132,6 +138,154 @@ TEST_F(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg) {
           web_contents()->GetRoutingID(),
           web_contents()->GetController().GetVisibleEntry()->GetPageID(),
           true));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, ProcessDeleteMostVisitedItemMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+
+  GURL item_url("www.foo.com");
+  EXPECT_CALL(*mock_delegate(), OnDeleteMostVisitedItem(item_url)).Times(1);
+  EXPECT_CALL(*policy, ShouldProcessDeleteMostVisitedItem()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  scoped_ptr<IPC::Message> message(
+      new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
+          web_contents()->GetRoutingID(),
+          web_contents()->GetController().GetVisibleEntry()->GetPageID(),
+          item_url));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreDeleteMostVisitedItemMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+
+  GURL item_url("www.foo.com");
+  EXPECT_CALL(*mock_delegate(), OnDeleteMostVisitedItem(item_url)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessDeleteMostVisitedItem()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  scoped_ptr<IPC::Message> message(
+      new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
+          web_contents()->GetRoutingID(),
+          web_contents()->GetController().GetVisibleEntry()->GetPageID(),
+          item_url));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, ProcessUndoMostVisitedDeletionMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  GURL item_url("www.foo.com");
+  EXPECT_CALL(*mock_delegate(), OnUndoMostVisitedDeletion(item_url)).Times(1);
+  EXPECT_CALL(*policy, ShouldProcessUndoMostVisitedDeletion()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  scoped_ptr<IPC::Message> message(
+      new ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
+          web_contents()->GetRoutingID(),
+          web_contents()->GetController().GetVisibleEntry()->GetPageID(),
+          item_url));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreUndoMostVisitedDeletionMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  GURL item_url("www.foo.com");
+  EXPECT_CALL(*mock_delegate(), OnUndoMostVisitedDeletion(item_url)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessUndoMostVisitedDeletion()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  scoped_ptr<IPC::Message> message(
+      new ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
+          web_contents()->GetRoutingID(),
+          web_contents()->GetController().GetVisibleEntry()->GetPageID(),
+          item_url));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, ProcessUndoAllMostVisitedDeletionsMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*mock_delegate(), OnUndoAllMostVisitedDeletions()).Times(1);
+  EXPECT_CALL(*policy, ShouldProcessUndoAllMostVisitedDeletions()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  scoped_ptr<IPC::Message> message(
+      new ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
+          web_contents()->GetRoutingID(),
+          web_contents()->GetController().GetVisibleEntry()->GetPageID()));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreUndoAllMostVisitedDeletionsMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*mock_delegate(), OnUndoAllMostVisitedDeletions()).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessUndoAllMostVisitedDeletions()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  scoped_ptr<IPC::Message> message(
+      new ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
+          web_contents()->GetRoutingID(),
+          web_contents()->GetController().GetVisibleEntry()->GetPageID()));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+
+  int invalid_page_id = 1000;
+  GURL item_url("www.foo.com");
+  EXPECT_CALL(*mock_delegate(), OnDeleteMostVisitedItem(item_url)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessDeleteMostVisitedItem()).Times(0);
+  scoped_ptr<IPC::Message> message(
+      new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
+          web_contents()->GetRoutingID(), invalid_page_id, item_url));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+
+  EXPECT_CALL(*mock_delegate(), OnUndoMostVisitedDeletion(item_url)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessUndoMostVisitedDeletion()).Times(0);
+  message.reset(new ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
+      web_contents()->GetRoutingID(), invalid_page_id, item_url));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+
+  EXPECT_CALL(*mock_delegate(), OnUndoAllMostVisitedDeletions()).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessUndoAllMostVisitedDeletions()).Times(0);
+  message.reset(new ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
+      web_contents()->GetRoutingID(), invalid_page_id));
   GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
 }
 

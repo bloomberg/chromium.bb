@@ -50,6 +50,43 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendSetPromoInformation) {
       ShouldSendSetPromoInformation());
 }
 
+TEST_F(SearchIPCRouterPolicyTest, ProcessDeleteMostVisitedItem) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessDeleteMostVisitedItem());
+}
+
+TEST_F(SearchIPCRouterPolicyTest, ProcessUndoMostVisitedDeletion) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessUndoMostVisitedDeletion());
+}
+
+TEST_F(SearchIPCRouterPolicyTest, ProcessUndoAllMostVisitedDeletions) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessUndoAllMostVisitedDeletions());
+}
+
+TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SearchTabHelper* search_tab_helper = GetSearchTabHelper();
+  SearchIPCRouterPolicyImpl* policy =
+      static_cast<SearchIPCRouterPolicyImpl*>(
+          search_tab_helper->ipc_router().policy());
+  policy->set_is_incognito(true);
+
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessDeleteMostVisitedItem());
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessUndoMostVisitedDeletion());
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessUndoAllMostVisitedDeletions());
+}
+
 TEST_F(SearchIPCRouterPolicyTest, SendSetDisplayInstantResults) {
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->

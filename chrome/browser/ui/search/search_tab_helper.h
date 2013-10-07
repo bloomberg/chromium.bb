@@ -25,6 +25,7 @@ class WebContents;
 
 class InstantPageTest;
 class InstantService;
+class Profile;
 class SearchIPCRouterTest;
 
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
@@ -102,11 +103,33 @@ class SearchTabHelper : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            AppropriateMessagesSentToIncognitoPages);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SubmitQuery);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           ProcessDeleteMostVisitedItem);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           ProcessUndoMostVisitedDeletion);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           ProcessUndoAllMostVisitedDeletions);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotProcessMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            DoNotSendSetPromoInformationMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           ProcessDeleteMostVisitedItemMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           IgnoreDeleteMostVisitedItemMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           ProcessUndoMostVisitedDeletionMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           IgnoreUndoMostVisitedDeletionMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           ProcessUndoAllMostVisitedDeletionsMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           IgnoreUndoAllMostVisitedDeletionsMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            SendSetDisplayInstantResultsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
@@ -155,6 +178,9 @@ class SearchTabHelper : public content::NotificationObserver,
   // Overridden from SearchIPCRouter::Delegate:
   virtual void OnInstantSupportDetermined(bool supports_instant) OVERRIDE;
   virtual void OnSetVoiceSearchSupport(bool supports_voice_search) OVERRIDE;
+  virtual void OnDeleteMostVisitedItem(const GURL& url) OVERRIDE;
+  virtual void OnUndoMostVisitedDeletion(const GURL& url) OVERRIDE;
+  virtual void OnUndoAllMostVisitedDeletions() OVERRIDE;
 
   // Overridden from InstantServiceObserver:
   virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;
@@ -180,6 +206,8 @@ class SearchTabHelper : public content::NotificationObserver,
 
   // Used by unit tests.
   SearchIPCRouter& ipc_router() { return ipc_router_; }
+
+  Profile* profile() const;
 
   // Helper function to navigate the given contents to the local fallback
   // Instant URL and trim the history correctly.

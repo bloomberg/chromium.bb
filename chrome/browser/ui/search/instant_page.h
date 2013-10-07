@@ -74,15 +74,6 @@ class InstantPage : public content::WebContentsObserver,
     virtual void PasteIntoOmnibox(const content::WebContents* contents,
                                   const string16& text) = 0;
 
-    // Called when the SearchBox wants to delete a Most Visited item.
-    virtual void DeleteMostVisitedItem(const GURL& url) = 0;
-
-    // Called when the SearchBox wants to undo a Most Visited deletion.
-    virtual void UndoMostVisitedDeletion(const GURL& url) = 0;
-
-    // Called when the SearchBox wants to undo all Most Visited deletions.
-    virtual void UndoAllMostVisitedDeletions() = 0;
-
     // Called when the page fails to load for whatever reason.
     virtual void InstantPageLoadFailed(content::WebContents* contents) = 0;
 
@@ -132,23 +123,18 @@ class InstantPage : public content::WebContentsObserver,
   virtual bool ShouldProcessFocusOmnibox();
   virtual bool ShouldProcessNavigateToURL();
   virtual bool ShouldProcessPasteIntoOmnibox();
-  virtual bool ShouldProcessDeleteMostVisitedItem();
-  virtual bool ShouldProcessUndoMostVisitedDeletion();
-  virtual bool ShouldProcessUndoAllMostVisitedDeletions();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest, IsLocal);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
-                           DispatchRequestToDeleteMostVisitedItem);
+                           DetermineIfPageSupportsInstant_Local);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
-                           DispatchRequestToUndoMostVisitedDeletion);
+                           DetermineIfPageSupportsInstant_NonLocal);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
-                           DispatchRequestToUndoAllMostVisitedDeletions);
+                           PageURLDoesntBelongToInstantRenderer);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest, PageSupportsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
-                           IgnoreMessageIfThePageIsNotActive);
-  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
-                           IgnoreMessageReceivedFromThePage);
-  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
-                           IgnoreMessageReceivedFromIncognitoPage);
+                           AppropriateMessagesSentToIncognitoPages);
 
   // Overridden from content::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -184,9 +170,6 @@ class InstantPage : public content::WebContentsObserver,
                            bool is_search_type);
   void OnSearchBoxPaste(int page_id, const string16& text);
   void OnLogEvent(int page_id, NTPLoggingEventType event);
-  void OnDeleteMostVisitedItem(int page_id, const GURL& url);
-  void OnUndoMostVisitedDeletion(int page_id, const GURL& url);
-  void OnUndoAllMostVisitedDeletions(int page_id);
 
   void ClearContents();
 

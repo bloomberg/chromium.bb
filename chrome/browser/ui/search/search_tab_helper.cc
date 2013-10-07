@@ -33,6 +33,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchTabHelper);
 
@@ -83,6 +84,9 @@ bool IsLocal(const content::WebContents* contents) {
 // Returns true if |contents| are rendered inside an Instant process.
 bool InInstantProcess(Profile* profile,
                       const content::WebContents* contents) {
+  if (!profile || !contents)
+    return false;
+
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile);
   return instant_service &&
@@ -206,10 +210,8 @@ void SearchTabHelper::Observe(
 
   // TODO(kmadhusu): Set the page initial states (such as omnibox margin, etc)
   // from here. Please refer to crbug.com/247517 for more details.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   if (chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
-                                               profile)) {
+                                               profile())) {
     ipc_router_.SetDisplayInstantResults();
   }
 
@@ -358,6 +360,23 @@ void SearchTabHelper::MaybeRemoveMostVisitedItems(
 #endif
 }
 
+void SearchTabHelper::OnDeleteMostVisitedItem(const GURL& url) {
+  DCHECK(!url.is_empty());
+  if (instant_service_)
+    instant_service_->DeleteMostVisitedItem(url);
+}
+
+void SearchTabHelper::OnUndoMostVisitedDeletion(const GURL& url) {
+  DCHECK(!url.is_empty());
+  if (instant_service_)
+    instant_service_->UndoMostVisitedDeletion(url);
+}
+
+void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
+  if (instant_service_)
+    instant_service_->UndoAllMostVisitedDeletions();
+}
+
 void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
   SearchMode::Type type = SearchMode::MODE_DEFAULT;
   SearchMode::Origin origin = SearchMode::ORIGIN_DEFAULT;
@@ -376,9 +395,7 @@ void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
 }
 
 void SearchTabHelper::DetermineIfPageSupportsInstant() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  if (!InInstantProcess(profile, web_contents_)) {
+  if (!InInstantProcess(profile(), web_contents_)) {
     // The page is not in the Instant process. This page does not support
     // instant. If we send an IPC message to a page that is not in the Instant
     // process, it will never receive it and will never respond. Therefore,
@@ -390,6 +407,10 @@ void SearchTabHelper::DetermineIfPageSupportsInstant() {
   } else {
     ipc_router_.DetermineIfPageSupportsInstant();
   }
+}
+
+Profile* SearchTabHelper::profile() const {
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 void SearchTabHelper::RedirectToLocalNTP() {

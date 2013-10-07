@@ -82,18 +82,6 @@ bool InstantPage::ShouldProcessPasteIntoOmnibox() {
   return false;
 }
 
-bool InstantPage::ShouldProcessDeleteMostVisitedItem() {
-  return false;
-}
-
-bool InstantPage::ShouldProcessUndoMostVisitedDeletion() {
-  return false;
-}
-
-bool InstantPage::ShouldProcessUndoAllMostVisitedDeletions() {
-  return false;
-}
-
 bool InstantPage::OnMessageReceived(const IPC::Message& message) {
   if (is_incognito_)
     return false;
@@ -106,12 +94,6 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
                         OnSearchBoxPaste);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_LogEvent, OnLogEvent);
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
-                        OnDeleteMostVisitedItem);
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
-                        OnUndoMostVisitedDeletion);
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
-                        OnUndoAllMostVisitedDeletions);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -205,39 +187,6 @@ void InstantPage::OnLogEvent(int page_id, NTPLoggingEventType event) {
     return;
 
   InstantTab::LogEvent(contents(), event);
-}
-
-void InstantPage::OnDeleteMostVisitedItem(int page_id, const GURL& url) {
-  if (!contents()->IsActiveEntry(page_id))
-    return;
-
-  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
-  if (!ShouldProcessDeleteMostVisitedItem())
-    return;
-
-  delegate_->DeleteMostVisitedItem(url);
-}
-
-void InstantPage::OnUndoMostVisitedDeletion(int page_id, const GURL& url) {
-  if (!contents()->IsActiveEntry(page_id))
-    return;
-
-  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
-  if (!ShouldProcessUndoMostVisitedDeletion())
-    return;
-
-  delegate_->UndoMostVisitedDeletion(url);
-}
-
-void InstantPage::OnUndoAllMostVisitedDeletions(int page_id) {
-  if (!contents()->IsActiveEntry(page_id))
-    return;
-
-  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
-  if (!ShouldProcessUndoAllMostVisitedDeletions())
-    return;
-
-  delegate_->UndoAllMostVisitedDeletions();
 }
 
 void InstantPage::ClearContents() {

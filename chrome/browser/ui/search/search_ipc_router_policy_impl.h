@@ -27,9 +27,14 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
                            DoNotSendSetMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            AppropriateMessagesSentToIncognitoPages);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotProcessMessagesForIncognitoPage);
 
   // Overridden from SearchIPCRouter::Policy:
   virtual bool ShouldProcessSetVoiceSearchSupport() OVERRIDE;
+  virtual bool ShouldProcessDeleteMostVisitedItem() OVERRIDE;
+  virtual bool ShouldProcessUndoMostVisitedDeletion() OVERRIDE;
+  virtual bool ShouldProcessUndoAllMostVisitedDeletions() OVERRIDE;
   virtual bool ShouldSendSetPromoInformation() OVERRIDE;
   virtual bool ShouldSendSetDisplayInstantResults() OVERRIDE;
   virtual bool ShouldSendSetSuggestionToPrefetch() OVERRIDE;
