@@ -39,21 +39,6 @@ public class ContentShellActivity extends Activity {
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
-    /**
-     * Sending an intent with this action will simulate a memory pressure signal at a critical
-     * level.
-     */
-    private static final String ACTION_LOW_MEMORY =
-            "org.chromium.content_shell.action.ACTION_LOW_MEMORY";
-
-    /**
-     * Sending an intent with this action will simulate a memory pressure signal at a moderate
-     * level.
-     */
-    private static final String ACTION_TRIM_MEMORY_MODERATE =
-            "org.chromium.content_shell.action.ACTION_TRIM_MEMORY_MODERATE";
-
-
     private ShellManager mShellManager;
     private WindowAndroid mWindowAndroid;
     private TracingControllerAndroid mTracingController;
@@ -195,13 +180,7 @@ public class ContentShellActivity extends Activity {
             Log.i(TAG, "Ignoring command line params: can only be set when creating the activity.");
         }
 
-        if (ACTION_LOW_MEMORY.equals(intent.getAction())) {
-            MemoryPressureListener.simulateMemoryPressureSignal(TRIM_MEMORY_COMPLETE);
-            return;
-        } else if (ACTION_TRIM_MEMORY_MODERATE.equals(intent.getAction())) {
-            MemoryPressureListener.simulateMemoryPressureSignal(TRIM_MEMORY_MODERATE);
-            return;
-        }
+        if (MemoryPressureListener.handleDebugIntent(this, intent.getAction())) return;
 
         String url = getUrlFromIntent(intent);
         if (!TextUtils.isEmpty(url)) {
