@@ -709,7 +709,8 @@ webkit.org/b/78830 [ Win Linux ] svg/repaint/image-with-clip-path.svg [ ImageOnl
 
 webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ ImageOnlyFailure ]
 
-webkit.org/b/100806 [ Win7 ] fast/css/font-face-download-error.html [ Failure Pass ]
+# Always fails on Win7 due to webkit.org/b/100806 and is a flaky timeout everywhere.
+crbug.com/304953 webkit.org/b/100806 fast/css/font-face-download-error.html [ Failure Pass Timeout ]
 
 webkit.org/b/102131 fast/workers/worker-exception-during-navigation.html [ Crash Pass ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
