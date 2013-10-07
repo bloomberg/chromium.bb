@@ -1385,7 +1385,7 @@ void Element::attach(const AttachContext& context)
 
     // We've already been through detach when doing a lazyAttach, but we might
     // need to clear any state that's been added since then.
-    if (hasRareData() && styleChangeType() == LazyAttachStyleChange) {
+    if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
         ElementRareData* data = elementRareData();
         data->clearComputedStyle();
         data->resetDynamicRestyleObservations();

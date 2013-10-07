@@ -103,7 +103,7 @@ void ElementShadow::attach(const Node::AttachContext& context)
     childrenContext.resolvedStyle = 0;
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (!root->confusingAndOftenMisusedAttached())
+        if (root->needsAttach())
             root->attach(childrenContext);
     }
 }

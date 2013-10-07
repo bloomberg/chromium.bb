@@ -90,7 +90,7 @@ enum StyleChangeType {
     NoStyleChange = 0,
     LocalStyleChange = 1 << nodeStyleChangeShift,
     SubtreeStyleChange = 2 << nodeStyleChangeShift,
-    LazyAttachStyleChange = 3 << nodeStyleChangeShift,
+    NeedsReattachStyleChange = 3 << nodeStyleChangeShift,
 };
 
 // If the style change is from the renderer then we'll call setStyle on the
@@ -365,6 +365,9 @@ public:
     bool hovered() const { return isUserActionElement() && isUserActionElementHovered(); }
     bool focused() const { return isUserActionElement() && isUserActionElementFocused(); }
 
+    // FIXME: Don't let InsertionPoints attach out of order and remove
+    // childAttachedAllowedWhenAttachingChildren and child->needsAttach() checks.
+    bool needsAttach() const { return !getFlag(IsAttachedFlag) || styleChangeType() == NeedsReattachStyleChange; }
     bool confusingAndOftenMisusedAttached() const { return getFlag(IsAttachedFlag); }
     void setAttached() { setFlag(IsAttachedFlag); }
     bool needsStyleRecalc() const { return styleChangeType() != NoStyleChange; }
@@ -831,9 +834,6 @@ private:
 
     void setStyleChange(StyleChangeType);
 
-    void detachNode(Node*, const AttachContext&);
-    void clearAttached() { clearFlag(IsAttachedFlag); }
-
     // Used to share code between lazyAttach and setNeedsStyleRecalc.
     void markAncestorsWithChildNeedsStyleRecalc();
 
@@ -911,7 +911,7 @@ inline void Node::lazyReattachIfAttached()
 
 inline void Node::lazyReattach()
 {
-    if (styleChangeType() == LazyAttachStyleChange)
+    if (styleChangeType() == NeedsReattachStyleChange)
         return;
 
     AttachContext context;

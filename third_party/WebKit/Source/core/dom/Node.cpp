@@ -749,7 +749,7 @@ void Node::lazyAttach()
     markAncestorsWithChildNeedsStyleRecalc();
     for (Node* node = this; node; node = NodeTraversal::next(node, this)) {
         node->setAttached();
-        node->setStyleChange(LazyAttachStyleChange);
+        node->setStyleChange(NeedsReattachStyleChange);
         if (node->isContainerNode())
             node->setChildNeedsStyleRecalc();
         for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
@@ -942,43 +942,21 @@ bool Node::containsIncludingHostElements(const Node* node) const
     return false;
 }
 
-inline void Node::detachNode(Node* root, const AttachContext& context)
-{
-    Node* node = root;
-    while (node) {
-        if (node->styleChangeType() == LazyAttachStyleChange) {
-            // FIXME: This is needed because Node::lazyAttach marks nodes as being attached even
-            // though they've never been through attach(). This allows us to avoid doing all the
-            // virtual calls to detach() and other associated work.
-            node->clearAttached();
-            node->clearChildNeedsStyleRecalc();
-
-            for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
-                detachNode(shadowRoot, context);
-
-            node = NodeTraversal::next(node, root);
-            continue;
-        }
-        // Handle normal reattaches from style recalc (ex. display type changes)
-        if (node->confusingAndOftenMisusedAttached())
-            node->detach(context);
-        node = NodeTraversal::nextSkippingChildren(node, root);
-    }
-}
-
 void Node::reattach(const AttachContext& context)
 {
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;
 
-    detachNode(this, reattachContext);
+    // We only need to detach if the node has already been through attach().
+    if (styleChangeType() < NeedsReattachStyleChange)
+        detach(reattachContext);
     attach(reattachContext);
 }
 
 void Node::attach(const AttachContext&)
 {
     ASSERT(document().inStyleRecalc() || isDocumentNode());
-    ASSERT(!confusingAndOftenMisusedAttached());
+    ASSERT(needsAttach());
     ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isRenderView())));
 
     setAttached();
@@ -1023,7 +1001,7 @@ void Node::detach(const AttachContext& context)
         }
     }
 
-    clearAttached();
+    clearFlag(IsAttachedFlag);
 
 #ifndef NDEBUG
     detachingNode = 0;

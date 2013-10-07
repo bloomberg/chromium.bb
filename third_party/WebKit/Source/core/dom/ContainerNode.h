@@ -190,8 +190,8 @@ inline void ContainerNode::attachChildren(const AttachContext& context)
     childrenContext.resolvedStyle = 0;
 
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        ASSERT(!child->confusingAndOftenMisusedAttached() || childAttachedAllowedWhenAttachingChildren(this));
-        if (!child->confusingAndOftenMisusedAttached())
+        ASSERT(child->needsAttach() || childAttachedAllowedWhenAttachingChildren(this));
+        if (child->needsAttach())
             child->attach(childrenContext);
     }
 }
