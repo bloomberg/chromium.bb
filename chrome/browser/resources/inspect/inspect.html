@@ -23,13 +23,15 @@ found in the LICENSE file.
   <div id="content">
     <div id="devices">
       <div class="content-header">Devices</div>
-      <div id="port-forwarding-settings">
-        <label for="port-forwarding-enable">
-          <input id="port-forwarding-enable" type="checkbox" disabled/>
-          <span>Enable port forwarding</span>
+      <div id="device-settings">
+        <label for="discover-usb-devices-enable"
+            title="Enable Remote Debugging of Chrome for Android over raw USB
+                   interface (no need to install / run Android Debug Bridge).">
+          <input id="discover-usb-devices-enable" type="checkbox" disabled/>
+          <span>Discover USB devices</span>
         </label>
         <button id="port-forwarding-config-open" disabled>
-          Configure port forwarding</button>
+          Port forwarding...</button>
       </div>
       <div id="devices-list"></div>
     </div>
@@ -62,6 +64,10 @@ found in the LICENSE file.
     <div id="port-forwarding-config-list">
     </div>
     <div id="port-forwarding-config-buttons">
+      <label for="port-forwarding-enable">
+        <input id="port-forwarding-enable" type="checkbox" disabled/>
+        <span>Enable port forwarding</span>
+      </label>
       <button id="port-forwarding-config-done">Done</button>
     </div>
   </div>

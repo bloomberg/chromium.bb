@@ -78,6 +78,8 @@ const char kTerminateCommand[]  = "terminate";
 const char kReloadCommand[]  = "reload";
 const char kOpenCommand[]  = "open";
 
+const char kDiscoverUsbDevicesEnabledCommand[] =
+    "set-discover-usb-devices-enabled";
 const char kPortForwardingEnabledCommand[] =
     "set-port-forwarding-enabled";
 const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
@@ -208,7 +210,8 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void HandleTerminateCommand(const ListValue* args);
   void HandleReloadCommand(const ListValue* args);
   void HandleOpenCommand(const ListValue* args);
-  void HandlePortForwardingEnabledCommand(const ListValue* args);
+  void HandleBooleanPrefChanged(const char* pref_name,
+                                const ListValue* args);
   void HandlePortForwardingConfigCommand(const ListValue* args);
 
   static bool GetProcessAndRouteId(const ListValue* args,
@@ -235,9 +238,14 @@ void InspectMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kTerminateCommand,
       base::Bind(&InspectMessageHandler::HandleTerminateCommand,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kDiscoverUsbDevicesEnabledCommand,
+      base::Bind(&InspectMessageHandler::HandleBooleanPrefChanged,
+                  base::Unretained(this),
+                  &prefs::kDevToolsDiscoverUsbDevicesEnabled[0]));
   web_ui()->RegisterMessageCallback(kPortForwardingEnabledCommand,
-      base::Bind(&InspectMessageHandler::HandlePortForwardingEnabledCommand,
-                 base::Unretained(this)));
+      base::Bind(&InspectMessageHandler::HandleBooleanPrefChanged,
+                 base::Unretained(this),
+                 &prefs::kDevToolsPortForwardingEnabled[0]));
   web_ui()->RegisterMessageCallback(kPortForwardingConfigCommand,
       base::Bind(&InspectMessageHandler::HandlePortForwardingConfigCommand,
                  base::Unretained(this)));
@@ -339,17 +347,16 @@ bool InspectMessageHandler::GetProcessAndRouteId(const ListValue* args,
   return false;
 }
 
-void InspectMessageHandler::HandlePortForwardingEnabledCommand(
+void InspectMessageHandler::HandleBooleanPrefChanged(
+    const char* pref_name,
     const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
     return;
 
   bool enabled;
-  if (args->GetSize() == 1 && args->GetBoolean(0, &enabled)) {
-    profile->GetPrefs()->SetBoolean(
-        prefs::kDevToolsPortForwardingEnabled, enabled);
-  }
+  if (args->GetSize() == 1 && args->GetBoolean(0, &enabled))
+    profile->GetPrefs()->SetBoolean(pref_name, enabled);
 }
 
 void InspectMessageHandler::HandlePortForwardingConfigCommand(
@@ -502,6 +509,7 @@ void InspectUI::InitUI() {
   SetPortForwardingDefaults();
   StartListeningNotifications();
   PopulateLists();
+  UpdateDiscoverUsbDevicesEnabled();
   UpdatePortForwardingEnabled();
   UpdatePortForwardingConfig();
   observer_->UpdateUI();
@@ -629,6 +637,9 @@ void InspectUI::StartListeningNotifications() {
                               content::NotificationService::AllSources());
 
   pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(prefs::kDevToolsDiscoverUsbDevicesEnabled,
+      base::Bind(&InspectUI::UpdateDiscoverUsbDevicesEnabled,
+                 base::Unretained(this)));
   pref_change_registrar_.Add(prefs::kDevToolsPortForwardingEnabled,
       base::Bind(&InspectUI::UpdatePortForwardingEnabled,
                  base::Unretained(this)));
@@ -751,6 +762,21 @@ void InspectUI::RemoteDevicesChanged(
     device_list.Append(device_data);
   }
   web_ui()->CallJavascriptFunction("populateDeviceLists", device_list);
+}
+
+void InspectUI::UpdateDiscoverUsbDevicesEnabled() {
+  const Value* value = GetPrefValue(prefs::kDevToolsDiscoverUsbDevicesEnabled);
+  web_ui()->CallJavascriptFunction("updateDiscoverUsbDevicesEnabled", *value);
+
+  // Configure adb bridge.
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DevToolsAdbBridge* adb_bridge =
+      DevToolsAdbBridge::Factory::GetForProfile(profile);
+  if (adb_bridge) {
+    bool enabled = false;
+    value->GetAsBoolean(&enabled);
+    adb_bridge->set_discover_usb_devices(enabled);
+  }
 }
 
 void InspectUI::UpdatePortForwardingEnabled() {

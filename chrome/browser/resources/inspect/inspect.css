@@ -70,7 +70,7 @@ img {
 .content-header {
   border-bottom: 1px solid #eee;
   font-size: 150%;
-  padding-bottom: 4px;
+  padding-bottom: 10px;
 }
 
 .device-header {
@@ -233,15 +233,17 @@ a.disabled {
   line-height: 13px;
 }
 
-#port-forwarding-settings {
-  position: absolute;
-  right: 20px;
-  top: 15px;
+#device-settings {
+  border-bottom: 1px solid #eee;
+  padding: 5px 0;
 }
 
-#port-forwarding-settings input {
-  position: relative;
-  top: 2px;
+#device-settings input {
+  vertical-align: middle;
+}
+
+#device-settings button {
+  margin-left: 15px;
 }
 
 #port-forwarding-overlay {
@@ -265,7 +267,7 @@ a.disabled {
   background: white;
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);
   color: #333;
-  padding: 17px;
+  padding: 17px 17px 12px;
   position: relative;
 }
 
@@ -352,6 +354,15 @@ a.disabled {
   opacity: 0.5;
 }
 
+#port-forwarding-enable {
+  vertical-align: middle;
+}
+
 #port-forwarding-config-buttons > button {
   float: right;
+}
+
+#port-forwarding-config-buttons > label {
+  position: relative;
+  top: 5px;
 }

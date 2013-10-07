@@ -1727,6 +1727,11 @@ const char kDevToolsAdbKey[] = "devtools.adb_key";
 
 const char kDevToolsDisabled[] = "devtools.disabled";
 
+// Determines whether devtools should be discovering usb devices for
+// remote debugging at chrome://inspect.
+const char kDevToolsDiscoverUsbDevicesEnabled[] =
+    "devtools.discover_usb_devices";
+
 // A string specifying the dock location (either 'bottom' or 'right').
 const char kDevToolsDockSide[] = "devtools.dock_side";
 

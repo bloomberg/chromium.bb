@@ -1233,9 +1233,6 @@ const char kRecordMode[]                    = "record-mode";
 // Uses custom front-end URL for the remote debugging.
 const char kRemoteDebuggingFrontend[]       = "remote-debugging-frontend";
 
-// Enables remote debugging of Chrome for Android via raw USB.
-const char kRemoteDebuggingRawUSB[]       = "remote-debugging-raw-usb";
-
 // Enables print preview in the renderer. This flag is generated internally by
 // Chrome and does nothing when directly passed to the browser.
 const char kRendererPrintPreview[]          = "renderer-print-preview";

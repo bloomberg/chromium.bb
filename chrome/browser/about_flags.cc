@@ -914,13 +914,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableDevToolsExperiments)
   },
   {
-    "remote-debugging-raw-usb",
-    IDS_FLAGS_REMOTE_DEBUGGING_RAW_USB_NAME,
-    IDS_FLAGS_REMOTE_DEBUGGING_RAW_USB_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kRemoteDebuggingRawUSB)
-  },
-  {
     "silent-debugger-extension-api",
     IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_NAME,
     IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_DESCRIPTION,

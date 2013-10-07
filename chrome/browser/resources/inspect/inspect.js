@@ -48,7 +48,7 @@ function onload() {
   }
   var selectedTabName = window.location.hash.slice(1) || 'devices';
   selectTab(selectedTabName);
-  initPortForwarding();
+  initSettings();
   chrome.send('init-ui');
 }
 
@@ -488,15 +488,21 @@ function addActionLink(row, text, handler, opt_disabled) {
 }
 
 
-function initPortForwarding() {
-  $('port-forwarding-enable').addEventListener('change', enablePortForwarding);
+function initSettings() {
+  $('discover-usb-devices-enable').addEventListener('change',
+                                                    enableDiscoverUsbDevices);
 
+  $('port-forwarding-enable').addEventListener('change', enablePortForwarding);
   $('port-forwarding-config-open').addEventListener(
       'click', openPortForwardingConfig);
   $('port-forwarding-config-close').addEventListener(
       'click', closePortForwardingConfig);
   $('port-forwarding-config-done').addEventListener(
       'click', commitPortForwardingConfig);
+}
+
+function enableDiscoverUsbDevices(event) {
+  chrome.send('set-discover-usb-devices-enabled', [event.target.checked]);
 }
 
 function enablePortForwarding(event) {
@@ -571,6 +577,12 @@ function commitPortForwardingConfig() {
       config[portInput.value] = locationInput.value;
   }
   chrome.send('set-port-forwarding-config', [config]);
+}
+
+function updateDiscoverUsbDevicesEnabled(enabled) {
+  var checkbox = $('discover-usb-devices-enable');
+  checkbox.checked = !!enabled;
+  checkbox.disabled = false;
 }
 
 function updatePortForwardingEnabled(enabled) {

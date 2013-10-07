@@ -27,7 +27,6 @@
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
@@ -179,14 +178,13 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
 
   AdbPagesCommand(
       scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
-      crypto::RSAPrivateKey* rsa_key,
+      crypto::RSAPrivateKey* rsa_key, bool discover_usb,
       const Callback& callback)
     : adb_thread_(adb_thread),
       callback_(callback) {
     remote_devices_.reset(new DevToolsAdbBridge::RemoteDevices());
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kRemoteDebuggingRawUSB)) {
+    if (discover_usb) {
       AndroidUsbDevice::Enumerate(rsa_key,
           base::Bind(&AdbPagesCommand::ReceivedUsbDevices, this));
     } else {
@@ -947,7 +945,8 @@ DevToolsAdbBridge::RefCountedAdbThread::~RefCountedAdbThread() {
 
 DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
     : adb_thread_(RefCountedAdbThread::GetInstance()),
-      has_message_loop_(adb_thread_->message_loop() != NULL) {
+      has_message_loop_(adb_thread_->message_loop() != NULL),
+      discover_usb_devices_(false) {
   rsa_key_.reset(AndroidRSAPrivateKey(profile));
 }
 
@@ -975,9 +974,8 @@ void DevToolsAdbBridge::RequestRemoteDevices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!has_message_loop_)
     return;
-
   new AdbPagesCommand(
-      adb_thread_, rsa_key_.get(),
+      adb_thread_, rsa_key_.get(), discover_usb_devices_,
       base::Bind(&DevToolsAdbBridge::ReceivedRemoteDevices, this));
 }
 

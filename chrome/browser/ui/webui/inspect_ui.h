@@ -53,6 +53,7 @@ class InspectUI : public content::WebUIController,
   virtual void RemoteDevicesChanged(
       DevToolsAdbBridge::RemoteDevices* devices) OVERRIDE;
 
+  void UpdateDiscoverUsbDevicesEnabled();
   void UpdatePortForwardingEnabled();
   void UpdatePortForwardingConfig();
 

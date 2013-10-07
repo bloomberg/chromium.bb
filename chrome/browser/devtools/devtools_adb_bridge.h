@@ -265,6 +265,9 @@ class DevToolsAdbBridge
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
+  void set_discover_usb_devices(bool enabled) {
+    discover_usb_devices_ = enabled;
+  }
 
   class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
    public:
@@ -297,6 +300,7 @@ class DevToolsAdbBridge
   scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
   typedef std::vector<Listener*> Listeners;
   Listeners listeners_;
+  bool discover_usb_devices_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
 };
 

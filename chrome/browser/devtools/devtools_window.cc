@@ -290,6 +290,10 @@ void DevToolsWindow::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterBooleanPref(
+      prefs::kDevToolsDiscoverUsbDevicesEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kDevToolsPortForwardingEnabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
