@@ -422,13 +422,16 @@ RendererOverridesHandler::PageCaptureScreenshot(
 
   RenderViewHost* host = agent_->GetRenderViewHost();
   gfx::Rect view_bounds = host->GetView()->GetViewBounds();
+  gfx::Size snapshot_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(view_bounds.size(), scale));
 
   // Grab screen pixels if available for current platform.
   // TODO(pfeldman): support format, scale and quality in ui::GrabViewSnapshot.
   std::vector<unsigned char> png;
   bool is_unscaled_png = scale == 1 && format == kPng;
   if (is_unscaled_png && ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
-                                              &png, view_bounds)) {
+                                              &png,
+                                              gfx::Rect(snapshot_size))) {
     std::string base64_data;
     bool success = base::Base64Encode(
         base::StringPiece(reinterpret_cast<char*>(&*png.begin()), png.size()),
@@ -446,8 +449,6 @@ RendererOverridesHandler::PageCaptureScreenshot(
   RenderWidgetHostViewPort* view_port =
       RenderWidgetHostViewPort::FromRWHV(host->GetView());
 
-  gfx::Size snapshot_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(view_bounds.size(), scale));
   view_port->CopyFromCompositingSurface(
       view_bounds, snapshot_size,
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
