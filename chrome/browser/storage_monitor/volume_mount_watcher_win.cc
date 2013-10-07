@@ -486,10 +486,10 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
 
   device_metadata_[device_path] = info;
 
-  DeviceCheckComplete(device_path);
-
   if (notifications_)
     notifications_->ProcessAttach(info);
+
+  DeviceCheckComplete(device_path);
 }
 
 void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(
