@@ -428,7 +428,7 @@ void TokenService::LoadSingleTokenIntoMemory(
   if (!in_memory_tokens->count(service) && db_tokens.count(service)) {
     std::string db_token = db_tokens.find(service)->second;
     if (!db_token.empty()) {
-      VLOG(1) << "Loading " << service << " token from DB: " << db_token;
+      VLOG(1) << "Loading " << service << " token from DB";
       (*in_memory_tokens)[service] = db_token;
       FireTokenAvailableNotification(service, db_token);
       // Failures are only for network errors.
