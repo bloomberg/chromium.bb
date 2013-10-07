@@ -18,7 +18,7 @@ namespace content {
 class TraceSubscriber {
  public:
   // Called once after TraceController::EndTracingAsync.
-  virtual void OnEndTracingComplete() {}
+  virtual void OnEndTracingComplete() = 0;
 
   // Called 0 or more times between TraceController::BeginTracing and
   // OnEndTracingComplete. Use base::debug::TraceResultBuffer to convert one or

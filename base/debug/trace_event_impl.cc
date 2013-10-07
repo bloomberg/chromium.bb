@@ -61,8 +61,6 @@ const size_t kTraceEventRingBufferSize = kTraceEventVectorBufferSize / 4;
 const size_t kTraceEventThreadLocalBufferSize = 64;
 const size_t kTraceEventBatchSize = 1000;
 const size_t kTraceEventInitialBufferSize = 1024;
-// Can store results for 30 seconds with 1 ms sampling interval.
-const size_t kMonitorTraceEventBufferSize = 30000;
 
 const int kThreadFlushTimeoutMs = 1000;
 
@@ -99,7 +97,6 @@ LazyInstance<ThreadLocalPointer<const char> >::Leaky
 const char kRecordUntilFull[] = "record-until-full";
 const char kRecordContinuously[] = "record-continuously";
 const char kEnableSampling[] = "enable-sampling";
-const char kMonitorSampling[] = "monitor-sampling";
 
 TimeTicks ThreadNow() {
   return TimeTicks::IsThreadNowSupported() ?
@@ -108,11 +105,10 @@ TimeTicks ThreadNow() {
 
 class TraceBufferRingBuffer : public TraceBuffer {
  public:
-  TraceBufferRingBuffer(size_t buffer_size)
+  TraceBufferRingBuffer()
       : unused_event_index_(0),
-        oldest_event_index_(0),
-        buffer_size_(buffer_size) {
-    logged_events_.reserve(buffer_size_);
+        oldest_event_index_(0) {
+    logged_events_.reserve(kTraceEventInitialBufferSize);
   }
 
   virtual ~TraceBufferRingBuffer() {}
@@ -123,10 +119,9 @@ class TraceBufferRingBuffer : public TraceBuffer {
     else
       logged_events_.push_back(event);
 
-    unused_event_index_ = NextIndex(unused_event_index_, buffer_size_);
+    unused_event_index_ = NextIndex(unused_event_index_);
     if (unused_event_index_ == oldest_event_index_) {
-      oldest_event_index_ = NextIndex(
-          oldest_event_index_, buffer_size_);
+      oldest_event_index_ = NextIndex(oldest_event_index_);
     }
   }
 
@@ -138,7 +133,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
     DCHECK(HasMoreEvents());
 
     size_t next = oldest_event_index_;
-    oldest_event_index_ = NextIndex(oldest_event_index_, buffer_size_);
+    oldest_event_index_ = NextIndex(oldest_event_index_);
     return GetEventAt(next);
   }
 
@@ -157,7 +152,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
           strcmp(event_name.c_str(), event.name()) == 0) {
         ++notify_count;
       }
-      index = NextIndex(index, buffer_size_);
+      index = NextIndex(index);
     }
     return notify_count;
   }
@@ -175,29 +170,16 @@ class TraceBufferRingBuffer : public TraceBuffer {
     return kTraceEventRingBufferSize;
   }
 
-  virtual TraceBuffer* Clone() const OVERRIDE {
-    TraceBufferRingBuffer* clonedBuffer =
-        new TraceBufferRingBuffer(buffer_size_);
-    size_t index = oldest_event_index_;
-    while (index != unused_event_index_) {
-      const TraceEvent& event = GetEventAt(index);
-      clonedBuffer->AddEvent(event);
-      index = NextIndex(index, buffer_size_);
-    }
-    return clonedBuffer;
-  }
-
  private:
-  static size_t NextIndex(size_t index, size_t buffer_size) {
+  static size_t NextIndex(size_t index) {
     index++;
-    if (index >= buffer_size)
+    if (index >= kTraceEventRingBufferSize)
       index = 0;
     return index;
   }
 
   size_t unused_event_index_;
   size_t oldest_event_index_;
-  size_t buffer_size_;
   std::vector<TraceEvent> logged_events_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceBufferRingBuffer);
@@ -264,11 +246,6 @@ class TraceBufferVector : public TraceBuffer {
     return kTraceEventVectorBufferSize;
   }
 
-  virtual TraceBuffer* Clone() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
-
  private:
   size_t current_iteration_index_;
   std::vector<TraceEvent> logged_events_;
@@ -304,11 +281,6 @@ class TraceBufferDiscardsEvents : public TraceBuffer {
   virtual const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
     NOTREACHED();
     return *static_cast<TraceEvent*>(NULL);
-  }
-
-  virtual TraceBuffer* Clone() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
   }
 };
 
@@ -697,7 +669,7 @@ class TraceSamplingThread : public PlatformThread::Delegate {
   // Implementation of PlatformThread::Delegate:
   virtual void ThreadMain() OVERRIDE;
 
-  static void DefaultSamplingCallback(TraceBucketData* bucekt_data);
+  static void DefaultSampleCallback(TraceBucketData* bucekt_data);
 
   void Stop();
   void InstallWaitableEventForSamplingTesting(WaitableEvent* waitable_event);
@@ -744,8 +716,7 @@ void TraceSamplingThread::ThreadMain() {
 }
 
 // static
-void TraceSamplingThread::DefaultSamplingCallback(
-    TraceBucketData* bucket_data) {
+void TraceSamplingThread::DefaultSampleCallback(TraceBucketData* bucket_data) {
   TRACE_EVENT_API_ATOMIC_WORD category_and_name =
       TRACE_EVENT_API_ATOMIC_LOAD(*bucket_data->bucket);
   if (!category_and_name)
@@ -791,6 +762,7 @@ void TraceSamplingThread::InstallWaitableEventForSamplingTesting(
     WaitableEvent* waitable_event) {
   waitable_event_for_testing_.reset(waitable_event);
 }
+
 
 TraceBucketData::TraceBucketData(base::subtle::AtomicWord* bucket,
                                  const char* name,
@@ -985,8 +957,6 @@ TraceLog::Options TraceLog::TraceOptionsFromString(const std::string& options) {
       ret |= RECORD_CONTINUOUSLY;
     } else if (*iter == kEnableSampling) {
       ret |= ENABLE_SAMPLING;
-    } else if (*iter == kMonitorSampling) {
-      ret |= MONITOR_SAMPLING;
     } else {
       NOTREACHED();  // Unknown option provided.
     }
@@ -1190,20 +1160,20 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     category_filter_ = CategoryFilter(category_filter);
     UpdateCategoryGroupEnabledFlags();
 
-    if ((options & ENABLE_SAMPLING) || (options & MONITOR_SAMPLING)) {
+    if (options & ENABLE_SAMPLING) {
       sampling_thread_.reset(new TraceSamplingThread);
       sampling_thread_->RegisterSampleBucket(
           &g_trace_state[0],
           "bucket0",
-          Bind(&TraceSamplingThread::DefaultSamplingCallback));
+          Bind(&TraceSamplingThread::DefaultSampleCallback));
       sampling_thread_->RegisterSampleBucket(
           &g_trace_state[1],
           "bucket1",
-          Bind(&TraceSamplingThread::DefaultSamplingCallback));
+          Bind(&TraceSamplingThread::DefaultSampleCallback));
       sampling_thread_->RegisterSampleBucket(
           &g_trace_state[2],
           "bucket2",
-          Bind(&TraceSamplingThread::DefaultSamplingCallback));
+          Bind(&TraceSamplingThread::DefaultSampleCallback));
       if (!PlatformThread::Create(
             0, sampling_thread_.get(), &sampling_thread_handle_)) {
         DCHECK(false) << "failed to create thread";
@@ -1317,9 +1287,7 @@ void TraceLog::SetNotificationCallback(
 TraceBuffer* TraceLog::GetTraceBuffer() {
   Options options = trace_options();
   if (options & RECORD_CONTINUOUSLY)
-    return new TraceBufferRingBuffer(kTraceEventRingBufferSize);
-  else if (options & MONITOR_SAMPLING)
-    return new TraceBufferRingBuffer(kMonitorTraceEventBufferSize);
+    return new TraceBufferRingBuffer();
   else if (options & ECHO_TO_CONSOLE)
     return new TraceBufferDiscardsEvents();
   return new TraceBufferVector();
@@ -1398,33 +1366,6 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
   FinishFlush(flush_count);
 }
 
-void TraceLog::ConvertTraceEventsToTraceFormat(
-    scoped_ptr<TraceBuffer> logged_events,
-    const TraceLog::OutputCallback& flush_output_callback) {
-  if (flush_output_callback.is_null())
-    return;
-
-  bool has_more_events = logged_events->HasMoreEvents();
-  // The callback need to be called at least once even if there is no events
-  // to let the caller know the completion of flush.
-  do {
-    scoped_refptr<RefCountedString> json_events_str_ptr =
-        new RefCountedString();
-
-    for (size_t i = 0; has_more_events && i < kTraceEventBatchSize; ++i) {
-      if (i > 0)
-        *(&(json_events_str_ptr->data())) += ",";
-
-      logged_events->NextEvent().AppendAsJSON(
-          &(json_events_str_ptr->data()));
-
-      has_more_events = logged_events->HasMoreEvents();
-    }
-
-    flush_output_callback.Run(json_events_str_ptr, has_more_events);
-  } while (has_more_events);
-}
-
 void TraceLog::FinishFlush(int flush_count) {
   scoped_ptr<TraceBuffer> previous_logged_events;
   OutputCallback flush_output_callback;
@@ -1442,8 +1383,28 @@ void TraceLog::FinishFlush(int flush_count) {
     flush_output_callback_.Reset();
   }
 
-  ConvertTraceEventsToTraceFormat(previous_logged_events.Pass(),
-                                  flush_output_callback);
+  if (flush_output_callback.is_null())
+    return;
+
+  bool has_more_events = previous_logged_events->HasMoreEvents();
+  // The callback need to be called at least once even if there is no events
+  // to let the caller know the completion of flush.
+  do {
+    scoped_refptr<RefCountedString> json_events_str_ptr =
+        new RefCountedString();
+
+    for (size_t i = 0; has_more_events && i < kTraceEventBatchSize; ++i) {
+      if (i > 0)
+        *(&(json_events_str_ptr->data())) += ",";
+
+      previous_logged_events->NextEvent().AppendAsJSON(
+          &(json_events_str_ptr->data()));
+
+      has_more_events = previous_logged_events->HasMoreEvents();
+    }
+
+    flush_output_callback.Run(json_events_str_ptr, has_more_events);
+  } while (has_more_events);
 }
 
 // Run in each thread holding a local event buffer.
@@ -1482,22 +1443,6 @@ void TraceLog::OnFlushTimeout(int flush_count) {
                  << " flush in time. Discarding remaining events of them";
   }
   FinishFlush(flush_count);
-}
-
-void TraceLog::FlushButLeaveBufferIntact(
-    const TraceLog::OutputCallback& flush_output_callback) {
-  if (!sampling_thread_)
-      return;
-
-  scoped_ptr<TraceBuffer> previous_logged_events;
-  {
-    AutoLock lock(lock_);
-    AddMetadataEvents();
-    previous_logged_events.reset(logged_events_->Clone());
-  }  // release lock
-
-  ConvertTraceEventsToTraceFormat(previous_logged_events.Pass(),
-                                  flush_output_callback);
 }
 
 void TraceLog::AddTraceEvent(
@@ -1798,7 +1743,6 @@ void TraceLog::AddMetadataEvents() {
       it++) {
     if (it->second.empty())
       continue;
-
     AddMetadataEventToBuffer(logged_events_.get(),
                              it->first,
                              "thread_name", "name",
@@ -1808,8 +1752,6 @@ void TraceLog::AddMetadataEvents() {
 
 void TraceLog::InstallWaitableEventForSamplingTesting(
     WaitableEvent* waitable_event) {
-  if (!sampling_thread_)
-    return;
   sampling_thread_->InstallWaitableEventForSamplingTesting(waitable_event);
 }
 
@@ -1849,7 +1791,7 @@ void TraceLog::UpdateProcessLabel(
 void TraceLog::RemoveProcessLabel(int label_id) {
   AutoLock lock(lock_);
   base::hash_map<int, std::string>::iterator it = process_labels_.find(
-      label_id);
+        label_id);
   if (it == process_labels_.end())
     return;
 
@@ -2045,7 +1987,7 @@ ScopedTrace::ScopedTrace(
     name_ = name;
     TRACE_EVENT_API_ADD_TRACE_EVENT(
         TRACE_EVENT_PHASE_BEGIN,    // phase
-        category_group_enabled_,    // category enabled
+        category_group_enabled_,          // category enabled
         name,                       // name
         0,                          // id
         0,                          // num_args
