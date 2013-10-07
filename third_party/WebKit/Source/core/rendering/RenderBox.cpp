@@ -410,7 +410,12 @@ int RenderBox::pixelSnappedOffsetHeight() const
 
 bool RenderBox::canDetermineWidthWithoutLayout() const
 {
-    // THIS OPTIMIZATION IS INCORRECT AS WRITTEN.
+    // FIXME: This optimization is incorrect as written.
+    // We need to be able to opt-in to this behavior only when
+    // it's guarentted correct.
+    // Until then disabling this optimization to be safe.
+    return false;
+
     // FIXME: There are likely many subclasses of RenderBlockFlow which
     // cannot determine their layout just from style!
     // Perhaps we should create a "PlainRenderBlockFlow"
