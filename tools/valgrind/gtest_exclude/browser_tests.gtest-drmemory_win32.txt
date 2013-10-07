@@ -48,3 +48,6 @@ W*
 # X*: 0    tests
 # Y*: 0    tests
 # Z*: 0    tests
+
+# http://crbug.com/302993
+InstantNTPURLRewriteTest.UberURLHandler_InstantExtendedNewTabPage
