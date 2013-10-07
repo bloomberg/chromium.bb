@@ -64,10 +64,10 @@ private:
 
 class ClassRootNodeList : public SimpleNodeList {
 public:
-    explicit ClassRootNodeList(Node* rootNode, const AtomicString& className)
+    ClassRootNodeList(Node* rootNode, const AtomicString& className)
         : m_className(className)
         , m_rootNode(rootNode)
-        , m_currentElement(nextInternal(ElementTraversal::firstWithin(rootNode))) { }
+        , m_currentElement(nextInternal(rootNode && rootNode->isElementNode() ? toElement(rootNode) : ElementTraversal::firstWithin(rootNode))) { }
 
     bool isEmpty() const { return !m_currentElement; }
 
@@ -96,7 +96,7 @@ private:
 
 class ClassElementList : public SimpleNodeList {
 public:
-    explicit ClassElementList(Node* rootNode, const AtomicString& className)
+    ClassElementList(Node* rootNode, const AtomicString& className)
         : m_className(className)
         , m_rootNode(rootNode)
         , m_currentElement(nextInternal(ElementTraversal::firstWithin(rootNode))) { }
