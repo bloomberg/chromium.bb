@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<head>
+<link id="staticImportLink" rel="import" href="resources/hello.html">
+</head>
+<body>
+<script>
+description("This tests 'element removed flag' behavior defined in https://dvcs.w3.org/hg/webcomponents/raw-file/tip/spec/imports/index.html#dfn-element-removed-flag.");
+window.jsTestIsAsync = true;
+
+function testStaticImport()
+{
+    // element-removed flag is not set at start
+    staticImport = window.staticImportLink;
+    shouldBeNonNull("staticImport.import");
+
+    // element-removed flag is set when the element removed.
+    staticImport.remove();
+    shouldBeNull("staticImport.import");
+
+    // And never comes back even after re-insertion.
+    document.head.appendChild(staticImport);
+    shouldBeNull("staticImport.import");
+}
+
+function testDynamicImport()
+{
+    function check()
+    {
+        shouldBeNonNull("dynamicImport.import");
+        dynamicImport.remove();
+        shouldBeNull("dynamicImport.import");
+        document.head.appendChild(dynamicImport);
+        shouldBeNull("dynamicImport.import");
+
+        testDynamicImportRemovingEagerly();
+    };
+
+    dynamicImport = document.createElement("link");
+    dynamicImport.setAttribute("rel", "import");
+    dynamicImport.setAttribute("href", "resources/bye.html");
+    dynamicImport.addEventListener("load", check);
+    document.head.appendChild(dynamicImport);
+}
+
+function testDynamicImportRemovingEagerly()
+{
+    dynamicImportEager = document.createElement("link");
+    dynamicImportEager.setAttribute("rel", "import");
+    dynamicImportEager.setAttribute("href", "resources/setting-greet-var.html");
+    dynamicImportEager.addEventListener("load", check);
+    document.head.appendChild(dynamicImportEager);
+
+    // Reoving <link> just after appending it.
+    // This should start import loading, but shouldn't make .import visible.
+    dynamicImportEager.remove();
+    
+    function check()
+    {
+        if (window.greet != "Hello") {
+            window.setTimeout(check, 0);
+            return;
+        }
+
+        shouldBeNull("dynamicImportEager.import");
+        document.head.appendChild(dynamicImportEager);
+        shouldBeNull("dynamicImportEager.import");
+
+        finishJSTest();
+    }
+
+    window.setTimeout(check, 0);
+}
+
+testStaticImport();
+testDynamicImport();
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>
