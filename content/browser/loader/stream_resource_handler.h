@@ -51,7 +51,7 @@ class StreamResourceHandler : public StreamWriteObserver,
 
   // Create a new buffer to store received data.
   virtual bool OnWillRead(int request_id,
-                          net::IOBuffer** buf,
+                          scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) OVERRIDE;
 
@@ -72,7 +72,6 @@ class StreamResourceHandler : public StreamWriteObserver,
   virtual void OnSpaceAvailable(Stream* stream) OVERRIDE;
   virtual void OnClose(Stream* stream) OVERRIDE;
 
-  net::URLRequest* request_;
   scoped_refptr<Stream> stream_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   DISALLOW_COPY_AND_ASSIGN(StreamResourceHandler);

@@ -47,7 +47,7 @@ class SyncResourceHandler : public ResourceHandler {
                            const GURL& url,
                            bool* defer) OVERRIDE;
   virtual bool OnWillRead(int request_id,
-                          net::IOBuffer** buf,
+                          scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) OVERRIDE;
   virtual bool OnReadCompleted(int request_id,
@@ -64,7 +64,6 @@ class SyncResourceHandler : public ResourceHandler {
   scoped_refptr<net::IOBuffer> read_buffer_;
 
   SyncLoadResult result_;
-  net::URLRequest* request_;
   IPC::Message* result_message_;
   ResourceDispatcherHostImpl* rdh_;
 };

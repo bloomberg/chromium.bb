@@ -9,13 +9,18 @@
 #include "content/browser/loader/resource_handler.h"
 #include "content/common/content_export.h"
 
+namespace net {
+class URLRequest;
+}  // namespace net
+
 namespace content {
 
 // A ResourceHandler that simply delegates all calls to a next handler.  This
 // class is intended to be subclassed.
 class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
  public:
-  explicit LayeredResourceHandler(scoped_ptr<ResourceHandler> next_handler);
+  LayeredResourceHandler(net::URLRequest* request,
+                         scoped_ptr<ResourceHandler> next_handler);
   virtual ~LayeredResourceHandler();
 
   // ResourceHandler implementation:
@@ -30,7 +35,9 @@ class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
                                  bool* defer) OVERRIDE;
   virtual bool OnWillStart(int request_id, const GURL& url,
                            bool* defer) OVERRIDE;
-  virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
+  virtual bool OnWillRead(int request_id,
+                          scoped_refptr<net::IOBuffer>* buf,
+                          int* buf_size,
                           int min_size) OVERRIDE;
   virtual bool OnReadCompleted(int request_id, int bytes_read,
                                bool* defer) OVERRIDE;
