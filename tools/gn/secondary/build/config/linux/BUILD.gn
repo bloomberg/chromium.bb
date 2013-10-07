@@ -18,22 +18,24 @@ config("executable_ldconfig") {
 pkg_script = "pkg-config.py"
 
 config("fontconfig") {
-  ldflags = [ "-lfontconfig" ]
+  libs = [ "fontconfig" ]
 }
 
 config("freetype2") {
   pkgresult = exec_script(pkg_script, [ "freetype2" ], "value")
-  includes = pkgresult[0]
+  include_dirs = pkgresult[0]
   cflags = pkgresult[1]
-  ldflags = pkgresult[2]
+  libs = pkgresult[2]
+  lib_dirs = pkgresult[3]
 }
 
 config("glib") {
   pkgresult = exec_script(pkg_script,
     [ "glib-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0" ], "value" )
-  includes = pkgresult[0]
+  include_dirs = pkgresult[0]
   cflags = pkgresult[1]
-  ldflags = pkgresult[2]
+  libs = pkgresult[2]
+  lib_dirs = pkgresult[3]
 }
 
 config("gtk") {
@@ -41,41 +43,44 @@ config("gtk") {
   # misconfigured systems.
   pkgresult = exec_script(pkg_script,
     [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ], "value" )
-  includes = pkgresult[0]
+  include_dirs = pkgresult[0]
   cflags = pkgresult[1]
-  ldflags = pkgresult[2]
+  libs = pkgresult[2]
+  lib_dirs = pkgresult[3]
 
   defines = [ "TOOLKIT_GTK" ]
 }
 
 config("pangocairo") {
   pkgresult = exec_script(pkg_script, [ "pangocairo" ], "value" )
-  includes = pkgresult[0]
+  include_dirs = pkgresult[0]
   cflags = pkgresult[1]
-  ldflags = pkgresult[2]
+  libs = pkgresult[2]
+  lib_dirs = pkgresult[3]
 }
 
 config("udev") {
   pkgresult = exec_script(pkg_script, [ "libudev" ], "value" )
-  includes = pkgresult[0]
+  include_dirs = pkgresult[0]
   cflags = pkgresult[1]
-  ldflags = pkgresult[2]
+  libs = pkgresult[2]
+  lib_dirs = pkgresult[3]
 }
 
 config("x11") {
   # Don't bother running pkg-config for these X related libraries since it just
   # returns the same libs, and forking pkg-config is slow.
   defines = [ "USE_X11" ]
-  ldflags = [
-    "-lX11",
-    "-lXcomposite",
-    "-lXcursor",
-    "-lXdamage",
-    "-lXext",
-    "-lXfixes",
-    "-lXi",
-    "-lXrender",
-    "-lXss",
-    "-lXtst",
+  libs = [
+    "X11",
+    "Xcomposite",
+    "Xcursor",
+    "Xdamage",
+    "Xext",
+    "Xfixes",
+    "Xi",
+    "Xrender",
+    "Xss",
+    "Xtst",
   ]
 }

@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("crssl_config") {
-  includes = [
+config("ssl_config") {
+  include_dirs = [
     "//net/third_party/nss/ssl",
   ]
 }
@@ -70,7 +70,7 @@ component("ssl") {
   configs -= "//build/config/compiler:chromium_code"
   configs += "//build/config/compiler:no_chromium_code"
 
-  direct_dependent_configs = [ ":crssl_config" ]
+  direct_dependent_configs = [ ":ssl_config" ]
 
   if (is_win) {
     sources -= [
@@ -85,7 +85,7 @@ component("ssl") {
   }
 
   if (is_linux) {
-    includes = [ "bodge" ]
+    include_dirs = [ "bodge" ]
     configs += "//third_party/nss:nss_linux_config"
   }
   if (is_mac) {

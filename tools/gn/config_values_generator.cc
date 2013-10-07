@@ -17,7 +17,7 @@ void GetStringList(
     Scope* scope,
     const char* var_name,
     ConfigValues* config_values,
-    void (ConfigValues::* swapper_inner)(std::vector<std::string>*),
+    std::vector<std::string>& (ConfigValues::* accessor)(),
     Err* err) {
   const Value* value = scope->GetValue(var_name, true);
   if (!value)
@@ -25,7 +25,24 @@ void GetStringList(
 
   std::vector<std::string> result;
   ExtractListOfStringValues(*value, &result, err);
-  (config_values->*swapper_inner)(&result);
+  (config_values->*accessor)().swap(result);
+}
+
+void GetDirList(
+    Scope* scope,
+    const char* var_name,
+    ConfigValues* config_values,
+    const SourceDir input_dir,
+    std::vector<SourceDir>& (ConfigValues::* accessor)(),
+    Err* err) {
+  const Value* value = scope->GetValue(var_name, true);
+  if (!value)
+    return;  // No value, empty input and succeed.
+
+  std::vector<SourceDir> result;
+  ExtractListOfRelativeDirs(scope->settings()->build_settings(),
+                            *value, input_dir, &result, err);
+  (config_values->*accessor)().swap(result);
 }
 
 }  // namespace
@@ -46,31 +63,23 @@ ConfigValuesGenerator::~ConfigValuesGenerator() {
 }
 
 void ConfigValuesGenerator::Run() {
-  FillIncludes();
+#define FILL_STRING_CONFIG_VALUE(name) \
+    GetStringList(scope_, #name, config_values_, &ConfigValues::name, err_);
+#define FILL_DIR_CONFIG_VALUE(name) \
+    GetDirList(scope_, #name, config_values_, input_dir_, \
+               &ConfigValues::name, err_);
 
-#define FILL_CONFIG_VALUE(name) \
-    GetStringList(scope_, #name, config_values_, \
-                  &ConfigValues::swap_in_##name, err_);
+  FILL_STRING_CONFIG_VALUE(cflags)
+  FILL_STRING_CONFIG_VALUE(cflags_c)
+  FILL_STRING_CONFIG_VALUE(cflags_cc)
+  FILL_STRING_CONFIG_VALUE(cflags_objc)
+  FILL_STRING_CONFIG_VALUE(cflags_objcc)
+  FILL_STRING_CONFIG_VALUE(defines)
+  FILL_DIR_CONFIG_VALUE(   include_dirs)
+  FILL_STRING_CONFIG_VALUE(ldflags)
+  FILL_DIR_CONFIG_VALUE(   lib_dirs)
+  FILL_STRING_CONFIG_VALUE(libs)
 
-  FILL_CONFIG_VALUE(defines)
-  FILL_CONFIG_VALUE(cflags)
-  FILL_CONFIG_VALUE(cflags_c)
-  FILL_CONFIG_VALUE(cflags_cc)
-  FILL_CONFIG_VALUE(cflags_objc)
-  FILL_CONFIG_VALUE(cflags_objcc)
-  FILL_CONFIG_VALUE(ldflags)
-
-#undef FILL_CONFIG_VALUE
-}
-
-void ConfigValuesGenerator::FillIncludes() {
-  const Value* value = scope_->GetValue(variables::kIncludes, true);
-  if (!value)
-    return;  // No value, empty input and succeed.
-
-  std::vector<SourceDir> includes;
-  if (!ExtractListOfRelativeDirs(scope_->settings()->build_settings(),
-                                 *value, input_dir_, &includes, err_))
-    return;
-  config_values_->swap_in_includes(&includes);
+#undef FILL_STRING_CONFIG_VALUE
+#undef FILL_DIR_CONFIG_VALUE
 }

@@ -18,7 +18,7 @@ config("libxml_config") {
   # GCC. ("defines" does "-DFOO" which defines the macro FOO as 1.)
   cflags = [ "-DLIBXML_STATIC=" ]
 
-  includes = [
+  include_dirs = [
     "src/include",
     "$os_include/include",
   ]
@@ -157,7 +157,7 @@ static_library("libxml") {
     ]
   } else if (is_linux) {
     # We need dl for dlopen() and friends.
-    ldflags = [ "-ldl" ]
+    libs = [ "dl" ]
   } else if (is_mac || is_android) {
     # http://www.xmlsoft.org/threads.html says that this is required when using
     # libxml from several threads, which can possibly happen in chrome. On
@@ -181,7 +181,7 @@ static_library("libxml") {
     ]
   }
 
-  includes = [
+  include_dirs = [
     "$os_include",
   ]
 }

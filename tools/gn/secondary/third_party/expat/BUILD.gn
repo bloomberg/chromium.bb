@@ -4,7 +4,7 @@
 
 if (is_linux) {
   config("expat_config") {
-    ldflags = [ "-lexpat" ]
+    libs = [ "expat" ]
   }
 
   group("expat") {
@@ -15,7 +15,7 @@ if (is_linux) {
   # <android_src>/external/expat/lib
 } else {
   config("expat_config") {
-    includes = [ "files/lib" ]
+    include_dirs = [ "files/lib" ]
     defines = [ "XML_STATIC" ]
   }
 

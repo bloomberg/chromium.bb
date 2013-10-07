@@ -5,7 +5,7 @@
 # TODO(brettw) move to testing/gtest/BUILD.gn
 config("gtest_config") {
   defines = [ "UNIT_TEST" ]
-  includes = [ "gtest/include" ]  # Gtest headers need to be able to find themselves.
+  include_dirs = [ "gtest/include" ]  # Gtest headers need to be able to find themselves.
   if (is_win) {
     cflags = [ "/wd4800" ]  # Unused variable warning.
   }
@@ -48,14 +48,14 @@ static_library("gtest") {
     "platform_test.h",
   ]
 
-  includes = [ "gtest" ]
+  include_dirs = [ "gtest" ]
   direct_dependent_configs = [ ":gtest_config" ]
 }
 
 # TODO(brettw) move to testing/gmock/BUILD.gn
 config("gmock_config") {
   # Gmock headers need to be able to find themselves.
-  includes = [ "gmock/include" ]
+  include_dirs = [ "gmock/include" ]
 }
 
 # TODO(brettw) move to testing/gmock/BUILD.gn
@@ -85,7 +85,7 @@ static_library("gmock") {
   ]
 
   # This project includes some stuff form gtest's guts.
-  includes = [ "gtest/include" ]
+  include_dirs = [ "gtest/include" ]
 
   direct_dependent_configs = [
     ":gmock_config",

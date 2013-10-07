@@ -7,6 +7,10 @@ cxx = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang++", ".", r
 ld = cxx
 
 toolchain("clang") {
+  # Make these apply to all tools below.
+  lib_prefix = "-l"
+  lib_dir_prefix="-L"
+
   tool("cc") {
     command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c \$cflags_pch_c -c \$in -o \$out"
     description = "CC \$out"

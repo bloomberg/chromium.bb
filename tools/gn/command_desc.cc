@@ -108,19 +108,31 @@ void PrintDeps(const Target* target, bool display_header) {
     OutputString("  " + deps[i].GetUserVisibleName(toolchain_label) + "\n");
 }
 
-// Ldflags are special in that they're inherited. We don't currently implement
-// a blame feature for this since the bottom-up inheritance makes this
-// difficult.
-void PrintLdflags(const Target* target, bool display_header) {
-  const OrderedSet<std::string>& ldflags = target->all_ldflags();
-  if (ldflags.empty())
+// libs and lib_dirs are special in that they're inherited. We don't currently
+// implement a blame feature for this since the bottom-up inheritance makes
+// this difficult.
+void PrintLibDirs(const Target* target, bool display_header) {
+  const OrderedSet<SourceDir>& lib_dirs = target->all_lib_dirs();
+  if (lib_dirs.empty())
     return;
 
   if (display_header)
-    OutputString("ldflags\n");
+    OutputString("\nlib_dirs\n");
 
-  for (size_t i = 0; i < ldflags.size(); i++)
-    OutputString("  " + ldflags[i] + "\n");
+  for (size_t i = 0; i < lib_dirs.size(); i++)
+    OutputString("    " + lib_dirs[i].value() + "\n");
+}
+
+void PrintLibs(const Target* target, bool display_header) {
+  const OrderedSet<std::string>& libs = target->all_libs();
+  if (libs.empty())
+    return;
+
+  if (display_header)
+    OutputString("\nlibs\n");
+
+  for (size_t i = 0; i < libs.size(); i++)
+    OutputString("    " + libs[i] + "\n");
 }
 
 void PrintConfigs(const Target* target, bool display_header) {
@@ -223,29 +235,6 @@ template<typename T> void OutputRecursiveTargetConfig(
     ConfigValuesToStream(iter.cur(), getter, writer, out);
   }
 
-  // First write the values from the config itself.
-  if (!(target->config_values().*getter)().empty()) {
-    if (display_blame)
-      out << "  From " << target->label().GetUserVisibleName(false) << "\n";
-    ConfigValuesToStream(target->config_values(), getter, writer, out);
-  }
-
-  // TODO(brettw) annotate where forced config includes came from!
-
-  // Then write the configs in order.
-  for (size_t i = 0; i < target->configs().size(); i++) {
-    const Config* config = target->configs()[i];
-    const ConfigValues& values = config->config_values();
-
-    if (!(values.*getter)().empty()) {
-      if (display_blame) {
-        out << "  From " << config->label().GetUserVisibleName(false) << "\n";
-        OutputSourceOfDep(target, config->label(), out);
-      }
-      ConfigValuesToStream(values, getter, writer, out);
-    }
-  }
-
   std::string out_str = out.str();
   if (!out_str.empty()) {
     OutputString("\n" + std::string(header_name) + "\n");
@@ -283,18 +272,22 @@ const char kDesc_Help[] =
     "      in a tree format.  Otherwise, they will be sorted alphabetically.\n"
     "      Both \"deps\" and \"datadeps\" will be included.\n"
     "\n"
-    "  defines    [--blame]\n"
-    "  includes   [--blame]\n"
-    "  cflags     [--blame]\n"
-    "  cflags_cc  [--blame]\n"
-    "  cflags_cxx [--blame]\n"
-    "  ldflags    [--blame]\n"
+    "  defines       [--blame]\n"
+    "  include_dirs  [--blame]\n"
+    "  cflags        [--blame]\n"
+    "  cflags_cc     [--blame]\n"
+    "  cflags_cxx    [--blame]\n"
+    "  ldflags       [--blame]\n"
+    "  lib_dirs\n"
+    "  libs\n"
     "      Shows the given values taken from the target and all configs\n"
     "      applying. See \"--blame\" below.\n"
     "\n"
     "  --blame\n"
     "      Used with any value specified by a config, this will name\n"
-    "      the config that specified the value.\n"
+    "      the config that specified the value. This doesn't currently work\n"
+    "      for libs and lib_dirs because those are inherited and are more\n"
+    "      complicated to figure out the blame (patches welcome).\n"
     "\n"
     "Note:\n"
     "  This command will show the full name of directories and source files,\n"
@@ -341,16 +334,19 @@ int RunDesc(const std::vector<std::string>& args) {
       PrintSources(target, false);
     } else if (what == "deps") {
       PrintDeps(target, false);
-    } else if (what == "ldflags") {
-      PrintLdflags(target, false);
+    } else if (what == "lib_dirs") {
+      PrintLibDirs(target, false);
+    } else if (what == "libs") {
+      PrintLibs(target, false);
 
     CONFIG_VALUE_HANDLER(defines, std::string)
-    CONFIG_VALUE_HANDLER(includes, SourceDir)
+    CONFIG_VALUE_HANDLER(include_dirs, SourceDir)
     CONFIG_VALUE_HANDLER(cflags, std::string)
     CONFIG_VALUE_HANDLER(cflags_c, std::string)
     CONFIG_VALUE_HANDLER(cflags_cc, std::string)
     CONFIG_VALUE_HANDLER(cflags_objc, std::string)
     CONFIG_VALUE_HANDLER(cflags_objcc, std::string)
+    CONFIG_VALUE_HANDLER(ldflags, std::string)
 
     } else {
       OutputString("Don't know how to display \"" + what + "\".\n");
@@ -381,13 +377,15 @@ int RunDesc(const std::vector<std::string>& args) {
   PrintConfigs(target, true);
 
   OUTPUT_CONFIG_VALUE(defines, std::string)
-  OUTPUT_CONFIG_VALUE(includes, SourceDir)
+  OUTPUT_CONFIG_VALUE(include_dirs, SourceDir)
   OUTPUT_CONFIG_VALUE(cflags, std::string)
   OUTPUT_CONFIG_VALUE(cflags_c, std::string)
   OUTPUT_CONFIG_VALUE(cflags_cc, std::string)
   OUTPUT_CONFIG_VALUE(cflags_objc, std::string)
   OUTPUT_CONFIG_VALUE(cflags_objcc, std::string)
-  PrintLdflags(target, true);
+  OUTPUT_CONFIG_VALUE(ldflags, std::string)
+  PrintLibs(target, true);
+  PrintLibDirs(target, true);
 
   PrintDeps(target, true);
 

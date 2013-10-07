@@ -58,16 +58,12 @@ class Toolchain : public Item {
     Tool();
     ~Tool();
 
-    bool empty() const {
-      return command.empty() && depfile.empty() && deps.empty() &&
-             description.empty() && pool.empty() && restat.empty() &&
-             rspfile.empty() && rspfile_content.empty();
-    }
-
     std::string command;
     std::string depfile;
     std::string deps;
     std::string description;
+    std::string lib_dir_prefix;
+    std::string lib_prefix;
     std::string pool;
     std::string restat;
     std::string rspfile;

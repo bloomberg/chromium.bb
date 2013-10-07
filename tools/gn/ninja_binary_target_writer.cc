@@ -70,11 +70,26 @@ struct IncludeWriter {
   bool old_inhibit_quoting_;  // So we can put the PathOutput back.
 };
 
+Toolchain::ToolType GetToolTypeForTarget(const Target* target) {
+  switch (target->output_type()) {
+    case Target::STATIC_LIBRARY:
+      return Toolchain::TYPE_ALINK;
+    case Target::SHARED_LIBRARY:
+      return Toolchain::TYPE_SOLINK;
+    case Target::EXECUTABLE:
+      return Toolchain::TYPE_LINK;
+    default:
+      NOTREACHED();
+      return Toolchain::TYPE_NONE;
+  }
+}
+
 }  // namespace
 
 NinjaBinaryTargetWriter::NinjaBinaryTargetWriter(const Target* target,
                                                  std::ostream& out)
-    : NinjaTargetWriter(target, out) {
+    : NinjaTargetWriter(target, out),
+      tool_type_(GetToolTypeForTarget(target)){
 }
 
 NinjaBinaryTargetWriter::~NinjaBinaryTargetWriter() {
@@ -98,9 +113,9 @@ void NinjaBinaryTargetWriter::WriteCompilerVars() {
                                              DefineWriter(), out_);
   out_ << std::endl;
 
-  // Includes.
+  // Include directories.
   out_ << "includes =";
-  RecursiveTargetConfigToStream<SourceDir>(target_, &ConfigValues::includes,
+  RecursiveTargetConfigToStream<SourceDir>(target_, &ConfigValues::include_dirs,
                                            IncludeWriter(path_output_, helper_),
                                            out_);
 
@@ -173,17 +188,7 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
     out_ << std::endl;
   }
 
-  EscapeOptions flag_options = GetFlagOptions();
-
-  // Linker flags. The linker flags will already be collected in all_ldflags
-  // for the target from all child targets, and configs, but they still need
-  // to be uniquified.
-  out_ << "ldflags =";
-  const OrderedSet<std::string> all_ldflags = target_->all_ldflags();
-  for (size_t i = 0; i < all_ldflags.size(); i++) {
-    out_ << " ";
-    EscapeStringToStream(out_, all_ldflags[i], flag_options);
-  }
+  WriteLinkerFlags();
 
   // Append manifest flag on Windows to reference our file.
   // HACK ERASEME BRETTW FIXME
@@ -252,6 +257,44 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   out_ << std::endl;
 }
 
+void NinjaBinaryTargetWriter::WriteLinkerFlags() {
+  out_ << "ldflags =";
+
+  // First the ldflags from the target and its config.
+  EscapeOptions flag_options = GetFlagOptions();
+  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags,
+                                       flag_options, out_);
+
+  const Toolchain* toolchain = GetToolchain();
+  const Toolchain::Tool& tool = toolchain->GetTool(tool_type_);
+
+  // Followed by library search paths that have been recursively pushed
+  // through the dependency tree.
+  const OrderedSet<SourceDir> all_lib_dirs = target_->all_lib_dirs();
+  if (!all_lib_dirs.empty()) {
+    // Since we're passing these on the command line to the linker and not
+    // to Ninja, we need to do shell escaping.
+    PathOutput lib_path_output(path_output_.current_dir(), ESCAPE_NINJA_SHELL,
+                               true);
+    for (size_t i = 0; i < all_lib_dirs.size(); i++) {
+      out_ << " " << tool.lib_dir_prefix;
+      lib_path_output.WriteDir(out_, all_lib_dirs[i],
+                               PathOutput::DIR_NO_LAST_SLASH);
+    }
+  }
+
+  // Followed by libraries that have been recursively pushed through the
+  // dependency tree.
+  EscapeOptions lib_escape_opts;
+  lib_escape_opts.mode = ESCAPE_NINJA_SHELL;
+  const OrderedSet<std::string> all_libs = target_->all_libs();
+  for (size_t i = 0; i < all_libs.size(); i++) {
+    out_ << " " << tool.lib_prefix;
+    EscapeStringToStream(out_, all_libs[i], lib_escape_opts);
+    out_ << "";
+  }
+}
+
 void NinjaBinaryTargetWriter::WriteLinkCommand(
     const OutputFile& external_output_file,
     const OutputFile& internal_output_file,
@@ -263,7 +306,8 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
     path_output_.WriteFile(out_, external_output_file);
   }
   out_ << ": "
-       << helper_.GetRuleForTargetType(GetToolchain(), target_->output_type());
+       << helper_.GetRulePrefix(GetToolchain())
+       << Toolchain::ToolTypeToName(tool_type_);
 
   // Object files.
   for (size_t i = 0; i < object_files.size(); i++) {

@@ -26,15 +26,15 @@ static_library("libevent") {
   defines = [ "HAVE_CONFIG_H" ]
 
   if (is_linux) {
-    ldflags = [ "-lrt" ]
+    libs = [ "rt" ]
   } else {
     sources -= [ "epoll.c", "epoll_sub.c" ]
   }
 
   if (is_mac) {
-    includes = [ "mac" ]
+    include_dirs = [ "mac" ]
   } else if (is_linux) {
-    includes = [ "linux" ]
+    include_dirs = [ "linux" ]
     sources -= [ "kqueue.c" ]
   }
 

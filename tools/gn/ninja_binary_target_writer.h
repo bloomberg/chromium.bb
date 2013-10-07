@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "tools/gn/ninja_target_writer.h"
+#include "tools/gn/toolchain.h"
 
 // Writes a .ninja file for a binary target type (an executable, a shared
 // library, or a static library).
@@ -21,11 +22,14 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   void WriteCompilerVars();
   void WriteSources(std::vector<OutputFile>* object_files);
   void WriteLinkerStuff(const std::vector<OutputFile>& object_files);
+  void WriteLinkerFlags();
 
   // Writes the build line for linking the target. Includes newline.
   void WriteLinkCommand(const OutputFile& external_output_file,
                         const OutputFile& internal_output_file,
                         const std::vector<OutputFile>& object_files);
+
+  Toolchain::ToolType tool_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NinjaBinaryTargetWriter);
 };

@@ -71,7 +71,7 @@ void NinjaToolchainWriter::WriteRules() {
   for (int i = Toolchain::TYPE_NONE + 1; i < Toolchain::TYPE_NUMTYPES; i++) {
     Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(i);
     const Toolchain::Tool& tool = tc->GetTool(tool_type);
-    if (tool.empty())
+    if (tool.command.empty())
       continue;
 
     out_ << "rule " << rule_prefix << Toolchain::ToolTypeToName(tool_type)

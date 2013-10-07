@@ -7,6 +7,10 @@ cxx = "g++"
 ld = cxx
 
 toolchain("gcc") {
+  # Make these apply to all tools below.
+  lib_prefix = "-l"
+  lib_dir_prefix="-L"
+
   tool("cc") {
     # cflags_pch_c
     command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c -c \$in -o \$out"

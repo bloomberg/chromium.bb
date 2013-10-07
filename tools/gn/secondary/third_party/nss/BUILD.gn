@@ -8,8 +8,9 @@ if (is_linux) {
 
   config("nss_linux_config") {
     pkgresult = exec_script(pkg_script, [ "nss" ], "value")
-    includes = pkgresult[0]
+    include_dirs = pkgresult[0]
     cflags = pkgresult[1]
-    ldflags = pkgresult[2]
+    libs = pkgresult[2]
+    lib_dirs = pkgresult[3]
   }
 }

@@ -41,6 +41,8 @@ class PathOutput {
   // Read-only since inverse_current_dir_ is computed depending on this.
   EscapingMode escaping_mode() const { return options_.mode; }
 
+  const SourceDir& current_dir() const { return current_dir_; }
+
   // When true, converts slashes to the system-type path separators (on
   // Windows, this is a backslash, this is a NOP otherwise).
   //

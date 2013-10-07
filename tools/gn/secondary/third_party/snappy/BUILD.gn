@@ -3,18 +3,18 @@
 # found in the LICENSE file.
 
 config("snappy_config") {
-  includes = [
+  include_dirs = [
     "src",
   ]
 
   # These OS-specific generated headers were made by running the configure
   # script offline.
   if (is_win) {
-    includes += "win32"
+    include_dirs += "win32"
   } else if (is_mac) {
-    includes += "mac"
+    include_dirs += "mac"
   } else {
-    includes += "linux"
+    include_dirs += "linux"
   }
 }
 

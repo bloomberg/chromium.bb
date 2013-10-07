@@ -11,8 +11,8 @@ from optparse import OptionParser
 # This script runs pkg-config, optionally filtering out some results, and
 # returns the result.
 #
-# The result will be [ <includes>, <cflags>, <ldflags> ] where each member is
-# itself a list of strings.
+# The result will be [ <includes>, <cflags>, <libs>, <lib_dirs> ] where each
+# member is itself a list of strings.
 #
 # You can filter out matches using "-v <regexp>" where all results from
 # pkgconfig matching the given regular expression will be ignored. You can
@@ -49,6 +49,7 @@ except:
 includes = []
 cflags = []
 libs = []
+lib_dirs = []
 
 def MatchesAnyRegexp(flag, list_of_regexps):
   for regexp in list_of_regexps:
@@ -61,7 +62,9 @@ for flag in all_flags[:]:
     continue;
 
   if flag[:2] == '-l':
-    libs.append(flag)
+    libs.append(flag[2:])
+  if flag[:2] == '-L':
+    lib_dirs.append(flag[2:])
   elif flag[:2] == '-I':
     includes.append(flag[2:])
   else:
@@ -70,4 +73,4 @@ for flag in all_flags[:]:
 # Output a GN array, the first one is the cflags, the second are the libs. The
 # JSON formatter prints GN compatible lists when everything is a list of
 # strings.
-print json.dumps([includes, cflags, libs])
+print json.dumps([includes, cflags, libs, lib_dirs])

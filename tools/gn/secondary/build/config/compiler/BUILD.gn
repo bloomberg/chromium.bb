@@ -4,7 +4,7 @@
 
 # Base compiler configuration.
 config("compiler") {
-  includes = [ "//" ]
+  include_dirs = [ "//" ]
   if (is_win) {
     cflags = [
       "/Gy",  # Enable function-level linking.

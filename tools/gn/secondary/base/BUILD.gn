@@ -4,7 +4,7 @@
 
 config("base_libs") {
   if (!is_win) {
-    ldflags = [ "-ldl" ]
+    libs = [ "dl" ]
   }
 }
 
@@ -700,7 +700,6 @@ component("base") {
   # So we can append below without worrying about whether it has been
   # previously defined or not.
   all_dependent_configs = [ ":base_libs" ]
-  ldflags = []
 
   if (!is_chromeos) {
     sources -= [
@@ -881,6 +880,13 @@ static_library("test_support_base") {
     "test/expectations/parser.h",
     "test/gtest_xml_util.cc",
     "test/gtest_xml_util.h",
+    "test/launcher/parallel_test_launcher.cc",
+    "test/launcher/parallel_test_launcher.h",
+    "test/launcher/test_launcher.cc",
+    "test/launcher/test_launcher.h",
+    "test/launcher/unit_test_launcher.cc",
+    "test/launcher/unit_test_launcher.h",
+    "test/launcher/unit_test_launcher_ios.cc",
     "test/mock_chrome_application_mac.h",
     "test/mock_chrome_application_mac.mm",
     "test/mock_devices_changed_observer.cc",
@@ -892,8 +898,6 @@ static_library("test_support_base") {
     "test/multiprocess_test_android.cc",
     "test/null_task_runner.cc",
     "test/null_task_runner.h",
-    "test/parallel_test_launcher.cc",
-    "test/parallel_test_launcher.h",
     "test/perf_test_suite.cc",
     "test/perf_test_suite.h",
     "test/scoped_locale.cc",
@@ -915,8 +919,6 @@ static_library("test_support_base") {
     "test/test_file_util_mac.cc",
     "test/test_file_util_posix.cc",
     "test/test_file_util_win.cc",
-    "test/test_launcher.cc",
-    "test/test_launcher.h",
     "test/test_listener_ios.h",
     "test/test_listener_ios.mm",
     "test/test_pending_task.cc",
@@ -943,9 +945,6 @@ static_library("test_support_base") {
     "test/thread_test_helper.h",
     "test/trace_event_analyzer.cc",
     "test/trace_event_analyzer.h",
-    "test/unit_test_launcher.cc",
-    "test/unit_test_launcher.h",
-    "test/unit_test_launcher_ios.cc",
     "test/values_test_util.cc",
     "test/values_test_util.h",
   ]
@@ -965,6 +964,9 @@ static_library("test_support_base") {
     ]
   }
   if (is_ios) {
+    # iOS uses its own unit test launcher.
+    sources -= "test/launcher/unit_test_launcher.cc"
+
     # Pull in specific Mac files for iOS (which have been filtered out
     # by file name rules).
     set_sources_assignment_filter([])

@@ -9,13 +9,13 @@ use_snappy = true
 defines = [ "LEVELDB_PLATFORM_CHROMIUM=1" ]
 
 config("leveldatabase_config") {
-  includes = [
+  include_dirs = [
     ".",
     "src",
     "src/include",
   ]
   if (is_win) {
-    includes += "src/port/win"
+    include_dirs += "src/port/win"
   }
 }
 

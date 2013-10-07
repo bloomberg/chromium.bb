@@ -21,6 +21,10 @@ msvc_config = [["foo"]]
 # 32-bit toolchain -------------------------------------------------------------
 
 toolchain("32") {
+  # Make these apply to all tools below.
+  lib_prefix = ""
+  lib_dir_prefix="/LIBPATH:"
+
   tool("cc") {
     command = "ninja -t msvc -e \$arch -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out /Fd\$pdbname"
     description = "CC \$out"

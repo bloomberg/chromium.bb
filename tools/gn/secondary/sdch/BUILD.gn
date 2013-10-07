@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 config("sdch_config") {
-  includes = [ "open-vcdiff/src" ]
+  include_dirs = [ "open-vcdiff/src" ]
 }
 
 static_library("sdch") {
@@ -43,13 +43,13 @@ static_library("sdch") {
   direct_dependent_configs = [ ":sdch_config" ]
 
   if (is_linux || is_android) {
-    includes = [ "linux" ]
+    include_dirs = [ "linux" ]
   } else if (is_ios) {
-    includes = [ "ios" ]
+    include_dirs = [ "ios" ]
   } else if (is_mac) {
-    includes = [ "mac" ]
+    include_dirs = [ "mac" ]
   } else if (is_win) {
-    includes = [ "win" ]
+    include_dirs = [ "win" ]
   }
 
   deps = [ "//third_party/zlib" ]

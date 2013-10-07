@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 config("wtl_includes") {
-  includes = [ "include" ]
+  include_dirs = [ "include" ]
 }
 
 # WTL is only header files so we use a "group" target type which doesn't

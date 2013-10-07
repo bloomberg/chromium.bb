@@ -11,40 +11,46 @@
 #include "base/basictypes.h"
 #include "tools/gn/source_dir.h"
 
-// Holds the values (includes, defines, compiler flags, etc.) for a given
+// Holds the values (include_dirs, defines, compiler flags, etc.) for a given
 // config or target.
 class ConfigValues {
  public:
   ConfigValues();
   ~ConfigValues();
 
-  const std::vector<SourceDir>& includes() const { return includes_; }
-  void swap_in_includes(std::vector<SourceDir>* lo) { includes_.swap(*lo); }
-
-#define VALUES_ACCESSOR(name) \
+#define STRING_VALUES_ACCESSOR(name) \
     const std::vector<std::string>& name() const { return name##_; } \
-    std::vector<std::string>& name() { return name##_; } \
-    void swap_in_##name(std::vector<std::string>* v) { name##_.swap(*v); }
+    std::vector<std::string>& name() { return name##_; }
+#define DIR_VALUES_ACCESSOR(name) \
+    const std::vector<SourceDir>& name() const { return name##_; } \
+    std::vector<SourceDir>& name() { return name##_; }
 
-  VALUES_ACCESSOR(cflags)
-  VALUES_ACCESSOR(cflags_c)
-  VALUES_ACCESSOR(cflags_cc)
-  VALUES_ACCESSOR(cflags_objc)
-  VALUES_ACCESSOR(cflags_objcc)
-  VALUES_ACCESSOR(defines)
-  VALUES_ACCESSOR(ldflags)
+  STRING_VALUES_ACCESSOR(cflags)
+  STRING_VALUES_ACCESSOR(cflags_c)
+  STRING_VALUES_ACCESSOR(cflags_cc)
+  STRING_VALUES_ACCESSOR(cflags_objc)
+  STRING_VALUES_ACCESSOR(cflags_objcc)
+  STRING_VALUES_ACCESSOR(defines)
+  DIR_VALUES_ACCESSOR   (include_dirs)
+  STRING_VALUES_ACCESSOR(ldflags)
+  DIR_VALUES_ACCESSOR   (lib_dirs)
+  STRING_VALUES_ACCESSOR(libs)
 
-#undef VALUES_ACCESSOR
+#undef STRING_VALUES_ACCESSOR
+#undef DIR_VALUES_ACCESSOR
 
  private:
-  std::vector<SourceDir> includes_;
   std::vector<std::string> cflags_;
   std::vector<std::string> cflags_c_;
   std::vector<std::string> cflags_cc_;
   std::vector<std::string> cflags_objc_;
   std::vector<std::string> cflags_objcc_;
   std::vector<std::string> defines_;
+  std::vector<SourceDir>   include_dirs_;
   std::vector<std::string> ldflags_;
+  std::vector<SourceDir>   lib_dirs_;
+  std::vector<std::string> libs_;
+
 
   DISALLOW_COPY_AND_ASSIGN(ConfigValues);
 };

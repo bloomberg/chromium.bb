@@ -7,7 +7,7 @@ win_sdk_dir = "C:\Program Files (x86)\Windows Kits\8.0"
 # Compiler setup for the Windows SDK. Applied to all targets.
 config("sdk") {
   # The include path is the stuff returned by the script.
-  #includes = msvc_config[0]  TODO(brettw) make this work.
+  #include_dirs = msvc_config[0]  TODO(brettw) make this work.
 
   defines = [
     "_ATL_NO_OPENGL",
@@ -23,7 +23,7 @@ config("sdk") {
     "WINVER=0x0602",
   ]
 
-  includes = [
+  include_dirs = [
     "$win_sdk_dir\Include\shared",
     "$win_sdk_dir\Include\um",
     "$win_sdk_dir\Include\winrt",
@@ -36,16 +36,14 @@ config("sdk_link") {
   is_64bit = false
 
   if (is_64bit) {
-    ldflags = [
-      "/MACHINE:X64",
-      "/LIBPATH:\"$win_sdk_dir\Lib\win8\um\x64\"",
-    ]
+    ldflags = [ "/MACHINE:X64" ]
+    libs = [ "$win_sdk_dir\Lib\win8\um\x64" ]
   } else {
     ldflags = [
       "/MACHINE:X86",
-      "/LIBPATH:\"$win_sdk_dir\Lib\win8\um\x86\"",
-      "/safeseh",  # Not compatible with x64.
+      "/SAFESEH",  # Not compatible with x64 so use only for x86.
     ]
+    lib_dirs = [ "$win_sdk_dir\Lib\win8\um\x86" ]
 
     #if (!is_asan) {  TODO(brettw) Address Sanitizer
     #  ldflags += "/largeaddressaware"
@@ -77,7 +75,7 @@ config("common_linker_setup") {
   }
 
   # Common libraries.
-  ldflags += [
+  libs = [
     "advapi32.lib",
     "comdlg32.lib",
     "dbghelp.lib",

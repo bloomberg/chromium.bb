@@ -289,10 +289,10 @@ const char kConfigs_Help[] =
     "\n"
     "  A list of config labels.\n"
     "\n"
-    "  The includes, defines, etc. in each config are appended in the order\n"
-    "  they appear to the compile command for each file in the target. They\n"
-    "  will appear after the includes, defines, etc. that the target sets\n"
-    "  directly.\n"
+    "  The include_dirs, defines, etc. in each config are appended in the\n"
+    "  order they appear to the compile command for each file in the target.\n"
+    "  They will appear after the include_dirs, defines, etc. that the target\n"
+    "  sets directly.\n"
     "\n"
     "  The build configuration script will generally set up the default\n"
     "  configs applying to a given target type (see \"set_defaults\").\n"
@@ -491,11 +491,11 @@ const char kHardDep_Help[] =
     "    outputs = \"$target_gen_dir/myresource.h\"\n"
     "  }\n";
 
-const char kIncludes[] = "includes";
-const char kIncludes_HelpShort[] =
-    "includes: [directory list] Additional include directories.";
-const char kIncludes_Help[] =
-    "includes: Additional include directories.\n"
+const char kIncludeDirs[] = "include_dirs";
+const char kIncludeDirs_HelpShort[] =
+    "include_dirs: [directory list] Additional include directories.";
+const char kIncludeDirs_Help[] =
+    "include_dirs: Additional include directories.\n"
     "\n"
     "  A list of source directories.\n"
     "\n"
@@ -503,7 +503,7 @@ const char kIncludes_Help[] =
     "  the files in the affected target.\n"
     "\n"
     "Example:\n"
-    "  includes = [ \"src/includes\", \"//third_party/foo\" ]\n";
+    "  include_dirs = [ \"src/include\", \"//third_party/foo\" ]\n";
 
 const char kLdflags[] = "ldflags";
 const char kLdflags_HelpShort[] =
@@ -514,21 +514,62 @@ const char kLdflags_Help[] =
     "  A list of strings.\n"
     "\n"
     "  These flags are passed on the command-line to the linker and generally\n"
-    "  specify additional system libraries to link or the library search\n"
-    "  path.\n"
-    "\n"
-    "  Ldflags work differently than other flags in several respects. First,\n"
-    "  then are inherited across static library boundaries until a shared\n"
-    "  library or executable target is reached. Second, they are uniquified\n"
-    "  so each flag is only passed once (the first instance of any specific\n"
-    "  flag will be the one used).\n"
-    "\n"
-    "  The order that ldflags apply is:\n"
-    "    1. Flags set on the target itself.\n"
-    "    2. Flags from the configs applying to the target.\n"
-    "    3. Flags from deps of the target, in order (recursively following\n"
-    "       these rules).\n"
+    "  specify various linking options. Most targets will not need these and\n"
+    "  will use \"libs\" and \"lib_dirs\" instead.\n"
     COMMON_FLAGS_HELP;
+
+#define COMMON_LIB_INHERITANCE_HELP \
+    "\n" \
+    "  libs and lib_dirs work differently than other flags in two respects.\n" \
+    "  First, then are inherited across static library boundaries until a\n" \
+    "  shared library or executable target is reached. Second, they are\n" \
+    "  uniquified so each one is only passed once (the first instance of it\n" \
+    "  will be the one used).\n" \
+    "\n" \
+    "  The order that libs/lib_dirs apply is:\n" \
+    "    1. Ones set on the target itself.\n" \
+    "    2. Ones from the configs applying to the target.\n" \
+    "    3. Ones from deps of the target, in order (recursively following\n" \
+    "       these rules).\n"
+
+const char kLibDirs[] = "lib_dirs";
+const char kLibDirs_HelpShort[] =
+    "lib_dirs: [directory list] Additional library directories.";
+const char kLibDirs_Help[] =
+    "lib_dirs: Additional library directories.\n"
+    "\n"
+    "  A list of directories.\n"
+    "\n"
+    "  Specifies additional directories passed to the linker for searching\n"
+    "  for the required libraries. If an item is not an absolute path, it\n"
+    "  will be treated as being relative to the current build file.\n"
+    COMMON_LIB_INHERITANCE_HELP
+    "\n"
+    "Example:\n"
+    "  lib_dirs = [ \"/usr/lib/foo\", \"lib/doom_melon\" ]\n";
+
+const char kLibs[] = "libs";
+const char kLibs_HelpShort[] =
+    "libs: [string list] Additional libraries to link.";
+const char kLibs_Help[] =
+    "libs: Additional libraries to link.\n"
+    "\n"
+    "  A list of strings.\n"
+    "\n"
+    "  These files will be passed to the linker, which will generally search\n"
+    "  the library include path. Unlike a normal list of files, they will be\n"
+    "  passed to the linker unmodified rather than being treated as file\n"
+    "  names relative to the current build file. Generally you would set\n"
+    "  the \"lib_dirs\" so your library is found. If you need to specify\n"
+    "  a path, you can use \"rebase_path\" to convert a path to be relative\n"
+    "  to the build directory.\n"
+    COMMON_LIB_INHERITANCE_HELP
+    "\n"
+    "Examples:\n"
+    "  On Windows:\n"
+    "    libs = [ \"ctl3d.lib\" ]\n"
+    "  On Linux:\n"
+    "    libs = [ \"ld\" ]\n";
 
 const char kOutputName[] = "output_name";
 const char kOutputName_HelpShort[] =
@@ -686,8 +727,10 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(External)
     INSERT_VARIABLE(ForwardDependentConfigsFrom)
     INSERT_VARIABLE(HardDep)
-    INSERT_VARIABLE(Includes)
+    INSERT_VARIABLE(IncludeDirs)
     INSERT_VARIABLE(Ldflags)
+    INSERT_VARIABLE(Libs)
+    INSERT_VARIABLE(LibDirs)
     INSERT_VARIABLE(OutputName)
     INSERT_VARIABLE(Outputs)
     INSERT_VARIABLE(Script)

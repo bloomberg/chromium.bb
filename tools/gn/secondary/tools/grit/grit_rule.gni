@@ -52,7 +52,7 @@ template("grit") {
   # (like "mycomponent/foo.h"). This config sets up the include path.
   grit_config = target_name + "_grit_config"
   config(grit_config) {
-    includes = [ target_gen_dir ]
+    include_dirs = [ target_gen_dir ]
   }
 
   grit_custom_target = target_name + "_grit"

@@ -59,8 +59,6 @@ class NinjaHelper {
   std::string GetRuleForSourceType(const Settings* settings,
                                    const Toolchain* toolchain,
                                    SourceFileType type) const;
-  std::string GetRuleForTargetType(const Toolchain* toolchain,
-                                   Target::OutputType target_type) const;
 
   // Returns the relative directory in either slashes or the system separator
   // from the ninja directory (e.g. "out/Debug") to the source root (e.g.

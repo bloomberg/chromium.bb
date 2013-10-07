@@ -152,11 +152,20 @@ const char kTool_Help[] =
     "  they work. Don't forget to backslash-escape $ required by Ninja to\n"
     "  prevent GN from doing variable expansion.\n"
     "\n"
-    "  command, depfile, deps, description, pool, restat, rspfile,\n"
-    "  rspfile_content\n"
+    "    command, depfile, deps, description, pool, restat, rspfile,\n"
+    "    rspfile_content\n"
+    "\n"
+    "  Additionally, lib_prefix and lib_dir_prefix may be used for the link\n"
+    "  tools. These strings will be prepended to the libraries and library\n"
+    "  search directories, respectively, because linkers differ on how to\n"
+    "  specify them.\n"
     "\n"
     "Example:\n"
     "  toolchain(\"my_toolchain\") {\n"
+    "    # Put these at the top to apply to all tools below.\n"
+    "    lib_prefix = \"-l\"\n"
+    "    lib_dir_prefix = \"-L\"\n"
+    "\n"
     "    tool(\"cc\") {\n"
     "      command = \"gcc \\$in -o \\$out\"\n"
     "      description = \"GCC \\$in\"\n"
@@ -204,6 +213,8 @@ Value RunTool(Scope* scope,
       !ReadString(block_scope, "depfile", &t.depfile, err) ||
       !ReadString(block_scope, "deps", &t.deps, err) ||
       !ReadString(block_scope, "description", &t.description, err) ||
+      !ReadString(block_scope, "lib_dir_prefix", &t.lib_dir_prefix, err) ||
+      !ReadString(block_scope, "lib_prefix", &t.lib_prefix, err) ||
       !ReadString(block_scope, "pool", &t.pool, err) ||
       !ReadString(block_scope, "restat", &t.restat, err) ||
       !ReadString(block_scope, "rspfile", &t.rspfile, err) ||
