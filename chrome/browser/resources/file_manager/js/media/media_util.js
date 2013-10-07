@@ -27,6 +27,7 @@ function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType,
   this.loaderType_ = opt_loaderType || ThumbnailLoader.LoaderType.IMAGE;
   this.metadata_ = opt_metadata;
   this.priority_ = (opt_priority !== undefined) ? opt_priority : 2;
+  this.transform_ = null;
 
   if (!opt_metadata) {
     this.thumbnailUrl_ = url;  // Use the URL directly.
@@ -35,17 +36,28 @@ function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType,
 
   this.fallbackUrl_ = null;
   this.thumbnailUrl_ = null;
-  if (opt_metadata.drive && opt_metadata.drive.customIconUrl) {
+  if (opt_metadata.drive && opt_metadata.drive.customIconUrl)
     this.fallbackUrl_ = opt_metadata.drive.customIconUrl;
+
+  // Fetch the rotation from the Drive metadata (if available).
+  var driveTransform;
+  if (opt_metadata.drive && opt_metadata.drive.imageRotation !== undefined) {
+    driveTransform = {
+      scaleX: 1,
+      scaleY: 1,
+      rotate90: opt_metadata.drive.imageRotation / 90
+    };
   }
 
   if (opt_metadata.thumbnail && opt_metadata.thumbnail.url &&
       opt_useEmbedded == ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
     this.thumbnailUrl_ = opt_metadata.thumbnail.url;
-    this.transform_ = opt_metadata.thumbnail.transform;
+    this.transform_ = driveTransform !== undefined ? driveTransform :
+        opt_metadata.thumbnail.transform;
   } else if (FileType.isImage(url)) {
     this.thumbnailUrl_ = url;
-    this.transform_ = opt_metadata.media && opt_metadata.media.imageTransform;
+    this.transform_ = driveTransform !== undefined ? driveTransform :
+        opt_metadata.media && opt_metadata.media.imageTransform;
   } else if (this.fallbackUrl_) {
     // Use fallback as the primary thumbnail.
     this.thumbnailUrl_ = this.fallbackUrl_;
@@ -156,7 +168,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
                           this.mediaType_,
                           undefined,  // Default value for use-embedded.
                           this.priority_).
-          load(box, fillMode, opt_onSuccess);
+          load(box, fillMode, opt_optimizationMode, opt_onSuccess);
     } else {
       box.setAttribute('generic-thumbnail', this.mediaType_);
     }
@@ -299,6 +311,7 @@ ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
   }
 
   util.applyTransform(container, this.transform_);
+
   ThumbnailLoader.centerImage_(
       container, attachableMedia, fillMode, this.isRotated_());
   if (attachableMedia.parentNode != container) {

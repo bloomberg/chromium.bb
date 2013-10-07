@@ -96,7 +96,7 @@ Gallery.MOSAIC_BACKGROUND_INIT_DELAY = 1000;
  * @const
  * @type {string}
  */
-Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|streaming';
+Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|streaming|drive';
 
 /**
  * Initialize listeners.
