@@ -7237,3 +7237,10 @@
    fun:_ZN8SkCanvas10readPixelsEP8SkBitmapiiNS_10Config8888E
    fun:_ZN7WebCore15GraphicsContext10readPixelsEP8SkBitmapiiN8SkCanvas10Config8888E
 }
+{
+   bug_304970
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions3api12cast_channel14TestCastSocketC1EPNS1_22MockCastSocketDelegateE
+   fun:_ZN10extensions3api12cast_channel14CastSocketTest5SetUpEv
+}
