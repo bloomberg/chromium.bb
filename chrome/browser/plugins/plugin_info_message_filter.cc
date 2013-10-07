@@ -255,7 +255,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
       uses_default_content_setting &&
       plugin_policy != PluginPrefs::POLICY_ENABLED &&
       group_policy != PluginPrefs::POLICY_ENABLED) {
-    status->value = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
+    status->value = ChromeViewHostMsg_GetPluginInfo_Status::kBlocked;
     return;
   }
 
