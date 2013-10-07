@@ -19,6 +19,13 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     {% endif %}
     {# Special cases #}
+    {% if attribute.is_check_security_for_node %}
+    {# FIXME: consider using a local variable to not call getter twice #}
+    if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}})) {
+        v8SetReturnValueNull(info);
+        return;
+    }
+    {% endif %}
     {% if attribute.is_nullable %}
     bool isNull = false;
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
@@ -28,6 +35,7 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     }
     {% elif attribute.idl_type == 'EventHandler' or
             attribute.cached_attribute_validation_method %}
+    {# FIXME: consider merging all these assign to local variable statements #}
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}

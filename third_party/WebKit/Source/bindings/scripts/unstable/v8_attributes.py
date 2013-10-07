@@ -106,8 +106,15 @@ def generate_attribute_and_includes(interface, attribute):
         attribute.name == 'onerror'):
             includes.add('bindings/v8/V8ErrorHandler.h')
 
-    # ActivityLog
-    contents['is_activity_logging_getter'] = v8_utilities.has_activity_logging(attribute, includes, 'Getter')
+    # CheckSecurityForNode
+    is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
+    if is_check_security_for_node:
+        includes.add('bindings/v8/BindingSecurity.h')
+
+    contents.update({
+        'is_activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # ActivityLog=Access|Getter
+        'is_check_security_for_node': is_check_security_for_node,
+    })
 
     return contents, includes
 

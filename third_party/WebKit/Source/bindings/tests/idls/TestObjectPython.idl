@@ -91,5 +91,6 @@ interface TestObjectPython {
     [ActivityLog=Getter] readonly attribute long activityLogGetterReadonlyLongAttribute;
     [CachedAttribute=isValueDirty] readonly attribute any cachedAttributeReadonlyAnyAttribute;
     [CallWith=ScriptExecutionContext] readonly attribute any callWithScriptExecutionContextReadonlyAnyAttribute;
+    [CheckSecurityForNode] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
 };
