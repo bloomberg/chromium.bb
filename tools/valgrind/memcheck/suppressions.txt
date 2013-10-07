@@ -7237,17 +7237,3 @@
    fun:_ZN8SkCanvas10readPixelsEP8SkBitmapiiNS_10Config8888E
    fun:_ZN7WebCore15GraphicsContext10readPixelsEP8SkBitmapiiN8SkCanvas10Config8888E
 }
-{
-   bug_303546
-   Memcheck:Leak
-   ...
-   fun:_ZN16SkDeferredCanvas6CreateEP9SkSurface
-   fun:_ZN7WebCore19Canvas2DLayerBridge6createEN3WTF10PassRefPtrINS_17GraphicsContext3DEEERKNS_7IntSizeENS0_11OpacityModeE
-   fun:_ZN7WebCoreL23createAcceleratedCanvasERKNS_7IntSizeEPNS_22Canvas2DLayerBridgePtrENS_11OpacityModeE
-   fun:_ZN7WebCore11ImageBufferC1ERKNS_7IntSizeEfNS_13RenderingModeENS_11OpacityModeERb
-   fun:_ZN7WebCore11ImageBuffer6createERKNS_7IntSizeEfNS_13RenderingModeENS_11OpacityModeE
-   fun:_ZN7WebCore17HTMLCanvasElement17createImageBufferEv
-   fun:_ZNK7WebCore17HTMLCanvasElement6bufferEv
-   fun:_ZNK7WebCore17HTMLCanvasElement14drawingContextEv
-   fun:_ZNK7WebCore24CanvasRenderingContext2D14drawingContextEv
-}
