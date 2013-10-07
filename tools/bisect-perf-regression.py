@@ -434,7 +434,7 @@ class AndroidBuilder(Builder):
     Returns:
         True if build was successful.
     """
-    targets = ['chromium_testshell', 'forwarder2', 'md5sum']
+    targets = ['chromium_testshell', 'cc_perftests_apk', 'forwarder2', 'md5sum']
 
     threads = None
     if opts.use_goma:
