@@ -166,8 +166,8 @@ class WebstoreProviderTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebstoreProviderTest);
 };
 
-// Flaky on Windows: http://crbug.com/246136.
-#if defined(OS_WIN)
+// Flaky on CrOS and Windows: http://crbug.com/246136.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic
@@ -224,7 +224,13 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForShortQueries) {
   EXPECT_EQ("app1 name", RunQuery("abc", kOneResult));
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, SearchCache) {
+// Flaky on CrOS and Windows: http://crbug.com/246136.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#define MAYBE_SearchCache DISABLED_SearchCache
+#else
+#define MAYBE_SearchCache SearchCache
+#endif
+IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, MAYBE_SearchCache) {
   EXPECT_EQ("app1 name", RunQuery("foo", kOneResult));
 
   // No result is provided but the provider gets the result from the cache.
