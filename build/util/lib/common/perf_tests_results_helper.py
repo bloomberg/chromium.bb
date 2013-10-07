@@ -25,12 +25,12 @@ def _EscapePerfResult(s):
   return re.sub('[\:|=/#&,]', '_', s)
 
 
-def _Flatten(values):
+def FlattenList(values):
   """Returns a simple list without sub-lists."""
   ret = []
   for entry in values:
     if isinstance(entry, list):
-      ret.extend(_Flatten(entry))
+      ret.extend(FlattenList(entry))
     else:
       ret.append(entry)
   return ret
@@ -120,9 +120,10 @@ def PrintPerfResult(measurement, trace, values, units,
       result_type == perf_result_data_type.DEFAULT or
       result_type == perf_result_data_type.INFORMATIONAL):
     assert isinstance(values, list)
-    assert len(values)
     assert '/' not in measurement
-    value, avg, sd = _MeanAndStdDevFromList(_Flatten(values))
+    flattened_values = FlattenList(values)
+    assert len(flattened_values)
+    value, avg, sd = _MeanAndStdDevFromList(flattened_values)
     output = '%s%s: %s%s%s %s' % (
         RESULT_TYPES[result_type],
         _EscapePerfResult(measurement),
