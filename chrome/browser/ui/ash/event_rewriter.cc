@@ -25,6 +25,7 @@
 // Get rid of a macro from Xlib.h that conflicts with OwnershipService class.
 #undef Status
 
+#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/keyboard_driven_event_rewriter.h"
@@ -37,6 +38,7 @@
 #include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/views/corewm/window_util.h"
 #endif
 
 namespace {
@@ -133,7 +135,22 @@ bool IsMod3UsedByCurrentInputMethod() {
   return manager->GetCurrentInputMethod().id() == kNeo2LayoutId ||
       manager->GetCurrentInputMethod().id() == kCaMultixLayoutId;
 }
-#endif
+
+// Returns true if the target for |event| would prefer to receive raw function
+// keys instead of having them rewritten into back, forward, brightness, volume,
+// etc. Web apps (v2 apps) can request this behavior via a permission so users
+// can use unmodified top-row keypresses to send function keys for things like
+// ssh and remote desktop.
+bool TopRowKeysAreFunctionKeys(ui::KeyEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  if (!target)
+    return false;
+  aura::Window* top_level = views::corewm::GetToplevelWindow(target);
+  return top_level &&
+      ash::wm::GetWindowState(top_level)->top_row_keys_are_function_keys();
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 const PrefService* GetPrefService() {
   Profile* profile = ProfileManager::GetDefaultProfile();
@@ -840,7 +857,12 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
   ui::KeyboardCode remapped_keycode = ui::VKEY_UNKNOWN;
   unsigned int remapped_mods = 0;
 
-  if (xkey->state & Mod4Mask) {
+  // By default the top row (F1-F12) keys are special keys for back, forward,
+  // brightness, volume, etc. However, windows for v2 apps can optionally
+  // request raw function keys for these keys.
+  bool top_row_keys_are_special_keys = !TopRowKeysAreFunctionKeys(event);
+
+  if ((xkey->state & Mod4Mask) && top_row_keys_are_special_keys) {
     // Allow Search to avoid rewriting F1-F12.
     static const KeyboardRemapping kFkeysToFkeys[] = {
       { XK_F1, 0, Mod4Mask, XK_F1, ui::VKEY_F1, },
@@ -869,7 +891,6 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
   }
 
   if (remapped_keycode == ui::VKEY_UNKNOWN) {
-    // Rewrite the actual F1-F12 keys on a Chromebook keyboard to special keys.
     static const KeyboardRemapping kFkeysToSpecialKeys[] = {
       { XK_F1, 0, 0, XF86XK_Back, ui::VKEY_BROWSER_BACK, 0, 0 },
       { XK_F2, 0, 0, XF86XK_Forward, ui::VKEY_BROWSER_FORWARD, 0, 0 },
@@ -883,15 +904,29 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
       { XK_F10, 0, 0, XF86XK_AudioRaiseVolume, ui::VKEY_VOLUME_UP, 0, 0 },
     };
 
-    RewriteWithKeyboardRemappingsByKeySym(kFkeysToSpecialKeys,
-                                          arraysize(kFkeysToSpecialKeys),
-                                          keysym,
-                                          xkey->state,
-                                          event->flags(),
-                                          &remapped_native_keysym,
-                                          &remapped_native_mods,
-                                          &remapped_keycode,
-                                          &remapped_mods);
+    if (top_row_keys_are_special_keys) {
+      // Rewrite the F1-F12 keys on a Chromebook keyboard to special keys.
+      RewriteWithKeyboardRemappingsByKeySym(kFkeysToSpecialKeys,
+                                            arraysize(kFkeysToSpecialKeys),
+                                            keysym,
+                                            xkey->state,
+                                            event->flags(),
+                                            &remapped_native_keysym,
+                                            &remapped_native_mods,
+                                            &remapped_keycode,
+                                            &remapped_mods);
+    } else if (xkey->state & Mod4Mask) {
+      // Use Search + F1-F12 for the special keys.
+      RewriteWithKeyboardRemappingsByKeySym(kFkeysToSpecialKeys,
+                                            arraysize(kFkeysToSpecialKeys),
+                                            keysym,
+                                            xkey->state & !Mod4Mask,
+                                            event->flags(),
+                                            &remapped_native_keysym,
+                                            &remapped_native_mods,
+                                            &remapped_keycode,
+                                            &remapped_mods);
+    }
   }
 
   if (remapped_keycode == ui::VKEY_UNKNOWN && xkey->state & Mod4Mask) {

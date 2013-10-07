@@ -77,6 +77,8 @@ class EventRewriter : public ash::EventRewriterDelegate,
   static DeviceType GetDeviceType(const std::string& device_name);
 
  private:
+  friend class EventRewriterAshTest;
+
   // ash::EventRewriterDelegate overrides:
   virtual ash::EventRewriterDelegate::Action RewriteOrFilterKeyEvent(
       ui::KeyEvent* event) OVERRIDE;

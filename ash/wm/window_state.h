@@ -186,6 +186,15 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     can_consume_system_keys_ = can_consume_system_keys;
   }
 
+  // True if this window has requested that the top-row keys (back, forward,
+  // brightness, volume) should be treated as function keys.
+  bool top_row_keys_are_function_keys() const {
+    return top_row_keys_are_function_keys_;
+  }
+  void set_top_row_keys_are_function_keys(bool value) {
+    top_row_keys_are_function_keys_ = value;
+  }
+
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -207,6 +216,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool continue_drag_after_reparent_;
   bool ignored_by_shelf_;
   bool can_consume_system_keys_;
+  bool top_row_keys_are_function_keys_;
 
   bool always_restores_to_restore_bounds_;
 
