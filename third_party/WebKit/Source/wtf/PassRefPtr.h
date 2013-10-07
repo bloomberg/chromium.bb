@@ -33,10 +33,21 @@ namespace WTF {
 
     inline void adopted(const void*) { }
 
+    // requireAdoption() is not overloaded for WTF::RefCounted, which has a
+    // built-in assumption that adoption is required. requireAdoption() is
+    // for bootstrapping alternate reference count classes that are compatible
+    // with ReftPtr/PassRefPtr but cannot have adoption checks enabled
+    // by default, such as skia's SkRefCnt. The purpose of requireAdoption()
+    // is to enable adoption checks only once it is known that the object will
+    // be used with RefPtr/PassRefPtr.
+    inline void requireAdoption(const void*) { }
+
     template<typename T> ALWAYS_INLINE void refIfNotNull(T* ptr)
     {
-        if (LIKELY(ptr != 0))
+        if (LIKELY(ptr != 0)) {
+            requireAdoption(ptr);
             ptr->ref();
+        }
     }
 
     template<typename T> ALWAYS_INLINE void derefIfNotNull(T* ptr)
