@@ -2,29 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-NaClAMModule = null;
 aM = null;
-statusText = 'NO-STATUS';
-
-startTimes = [];
-endTimes = [];
-
-function moduleLoadStart() {
-  startTimes.push(new Date().getTime());
-}
 
 function moduleLoad() {
-  var bar = document.getElementById('progress');
-  bar.value = 100;
-  bar.max = 100;
-  var bar_div = document.getElementById('progress_div');
-  bar_div.innerHTML = 'Loaded!';
+  hideStatus();
+  init();
+  animate();
+  NaClAMBulletInit();
+  loadJenga20();
 
-  endTimes.push(new Date().getTime());
-  console.log('loaded in ' + getLastLoadTime());
+  document.querySelector('#curtain').classList.add('lift');
+}
+
+function moduleLoadError() {
+  updateStatus('Load failed.');
 }
 
 function moduleLoadProgress(event) {
+  $('progress').style.display = 'block';
+
   var loadPercent = 0.0;
   var bar = document.getElementById('progress');
   if (event.lengthComputable && event.total > 0) {
@@ -37,23 +33,50 @@ function moduleLoadProgress(event) {
   }
 }
 
-function getLastLoadTime() {
-  return endTimes[endTimes.length - 1] - startTimes[startTimes.length - 1];
+function moduleCrash(event) {
+  if (naclModule.exitStatus == -1) {
+    updateStatus('CRASHED');
+  } else {
+    updateStatus('EXITED [' + naclModule.exitStatus + ']');
+  }
+}
+
+function updateStatus(opt_message) {
+  document.querySelector('#curtain').classList.remove('lift');
+
+  var statusField = $('statusField');
+  if (statusField) {
+    statusField.style.display = 'block';
+    statusField.textContent = opt_message;
+  }
+}
+
+function hideStatus() {
+  $('statusField').style.display = 'none';
+  $('progress').style.display = 'none';
 }
 
 function pageDidLoad() {
+  updateStatus('Loading...');
   console.log('started');
 
   aM = new NaClAM('NaClAM');
   aM.enable();
-  var AMDiv = document.getElementById('NaClAM');
-  AMDiv.addEventListener("loadstart", moduleLoadStart, false);
-  AMDiv.addEventListener("progress", moduleLoadProgress, false);
-  AMDiv.addEventListener("load", moduleLoad, false);
-  init();
-  animate();
-  NaClAMBulletInit();
-  NaClAMBulletLoadScene(sceneDescription);
+
+  var embedWrap = document.createElement('div');
+  embedWrap.addEventListener('load', moduleLoad, true);
+  embedWrap.addEventListener('error', moduleLoadError, true);
+  embedWrap.addEventListener('progress', moduleLoadProgress, true);
+  embedWrap.addEventListener('crash', moduleCrash, true);
+  document.body.appendChild(embedWrap);
+
+  var embed = document.createElement('embed');
+  embed.setAttribute('id', 'NaClAM');
+  embed.setAttribute('width', '0');
+  embed.setAttribute('height', '0');
+  embed.setAttribute('type', 'application/x-pnacl');
+  embed.setAttribute('src', 'http://commondatastorage.googleapis.com/gonacl/pnacl-demo-bullet/NaClAMBullet.portable.nmf');
+  embedWrap.appendChild(embed);
 }
 
 window.addEventListener("load", pageDidLoad, false);

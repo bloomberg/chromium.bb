@@ -5,22 +5,84 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 <head>
-  <title>NaCl AM Bullet</title>
+  <title>Bullet Physics</title>
   <script type="text/javascript" src="NaClAM.js"></script>
   <script type="text/javascript" src="NaClAMBullet.js"></script>
   <script type="text/javascript" src="http://commondatastorage.googleapis.com/gonacl/pnacl-demo-bullet/three.min.js"></script>
   <script type="text/javascript" src="scene.js"></script>
   <script type="text/javascript" src="world.js"></script>
   <script type="text/javascript" src="scenes.js"></script>
+  <link href="/static/common.css" rel="stylesheet" type="text/css">
+  <style>
+    .main {
+      background-color: #fff;
+    }
+    #curtain {
+      background-color: rgba(0, 0, 0, 1.0);
+    }
+    #curtain.lift {
+      -webkit-transition: background-color 1s;
+      background-color: rgba(0, 0, 0, 0);
+      pointer-events: none;
+    }
+    .no-pointer-events {
+      pointer-events: none;
+    }
+    button {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-  <div id="progress_div">
-    Load Progress:
-    <progress id="progress"></progress>
+  <div class="absolute-fill">
+    <div class="flex-container">
+      <div class="main absolute-fill-parent">
+        <div id="rendererContainer" class="absolute-fill"></div>
+        <div id="curtain" class="absolute-fill"></div>
+        <div class="absolute-fill no-pointer-events">
+          <div class="flex-container flex-column flex-justify-center">
+            <div id="message">
+              <div id="statusField"></div>
+              <progress id="progress"></progress>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <h1>Bullet Physics</h1>
+        <div id="config">
+          <button id="jenga10">Block Tower (10 blocks)</button>
+          <button id="jenga20">Block Tower (20 blocks)</button>
+          <button id="randomShapes">Random Shapes</button>
+          <button id="randomCube250">Random Cubes (250)</button>
+          <button id="randomCylinder500">Random Cylinders (500)</button>
+          <button id="randomCube1000">Random Cubes (1000)</button>
+          <button id="randomCube2000">Random Cubes (2000)</button>
+          <button id="reload">Reload Scene</button>
+        </div>
+        <ul>
+          <li>Hold "h" to pick up an object</li>
+          <li>Click and drag to rotate the camera</li>
+          <li>Use the mousewheel to zoom in/out</li>
+        </ul>
+        <p class="small">
+          More info about Bullet Physics can be found at <a
+          href="http://bulletphysics.org/">http://bulletphysics.org</a>.
+        </p>
+        <p class="small">
+          This demo was implemented by <a
+            href="http://www.johnmccutchan.com">John McCutchan</a>.  Read his
+          blog post about Native Client acceleration modules <a
+            href="http://www.johnmccutchan.com/2012/10/bullet-native-client-acceleration-module.html">here</a>,
+          and see the source for this demo <a
+            href="https://github.com/johnmccutchan/NaClAMBase">here</a>.
+        </p>
+        <p class="small">
+          Simulation time: <span id="simulationTime">0</span>&mu;s.
+        </p>
+      </div>
+    </div>
   </div>
-  <embed name="nacl_module" id="NaClAM" width=1 height=1
-      src="http://commondatastorage.googleapis.com/gonacl/pnacl-demo-bullet/NaClAMBullet.portable.nmf"
-      type="application/x-pnacl" />
 </body>
 <script type="text/javascript" src="main.js"></script>
 </html>

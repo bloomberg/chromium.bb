@@ -142,17 +142,20 @@ function reloadScene() {
     loadWorld(lastSceneDescription);
 }
 
+function $(id) {
+  return document.getElementById(id);
+}
+
 function init() {
-  container = document.createElement( 'div' );
-  document.body.appendChild( container );
+  var rendererContainer = $('rendererContainer');
+  var rcW = rendererContainer.clientWidth;
+  var rcH = rendererContainer.clientHeight;
 
   camera = new THREE.PerspectiveCamera(
       70,
-      window.innerWidth / window.innerHeight, 1, 10000);
+      rcW / rcH, 1, 10000);
   camera.position.y = 20.0;
   camera.position.z = 40;
-
-
 
   scene = new THREE.Scene();
 
@@ -182,121 +185,53 @@ function init() {
 
   renderer = new THREE.WebGLRenderer( { antialias: true } );
   renderer.sortObjects = false;
-  renderer.setSize( window.innerWidth, window.innerHeight );
+  renderer.setSize( rcW, rcH );
+  lastRendererWidth = rcW;
+  lastRendererWidth = rcH;
 
   renderer.shadowMapEnabled = true;
   renderer.shadowMapSoft = true;
 
-  container.appendChild( renderer.domElement );
+  rendererContainer.appendChild(renderer.domElement);
 
-  /*
-     controls = new THREE.TrackballControls( camera );
-     controls.rotateSpeed = 1.0;
-     controls.zoomSpeed = 5.0;
-     controls.panSpeed = 0.8;
-     controls.noZoom = false;
-     controls.noPan = false;
-     controls.staticMoving = true;
-     controls.dynamicDampingFactor = 0.3;
-     controls.handleResize();
-     */
-  controls = new THREE.OrbitControls (camera, container);
+  controls = new THREE.OrbitControls (camera, rendererContainer);
 
-  var infoBar = document.createElement ('div');
-  infoBar.style.position = 'absolute';
-  infoBar.style.top = '10px';
-  infoBar.style.width = '100%';
-  infoBar.style.textAlign = 'center';
-  container.appendChild( infoBar );
+  var idFuncHash = {
+    jenga10: loadJenga10,
+    jenga20: loadJenga20,
+    randomShapes: loadRandomShapes,
+    randomCube250: load250RandomCubes,
+    randomCylinder500: load500RandomCylinders,
+    randomCube1000: load1000RandomCubes,
+    randomCube2000: load2000RandomCubes
+  };
 
-  var info = document.createElement('div');
-  info.innerHTML = '<a href="https://github.com/johnmccutchan/NaClAMBase" target="_blank">NaClAMBase</a> NaClAM - Bullet<p>Hold "h" to pick up an object</p>';
-  infoBar.appendChild(info);
+  for (var id in idFuncHash) {
+    var func = idFuncHash[id];
+    $(id).addEventListener('click', func, false);
+  }
 
-  var info = document.createElement('div');
-  var innerInfoBar = document.createElement('div');
-  info.innerHTML = '<a href="http://www.johnmccutchan.com/2012/10/bullet-native-client-acceleration-module.html">What am I looking at?</a>';
-  innerInfoBar.appendChild(info);
-  infoBar.appendChild(innerInfoBar);
-
-  var info = document.createElement('div');
-  info.setAttribute("id", "simulationTime");
-  info.innerHTML = '<p>Simulation time: 0 microseconds</p>';
-  infoBar.appendChild(info);
-
-  info = document.createElement ( 'div' );
-  infoBar.appendChild(info);
-
-  demoButton = document.createElement ('button');
-  demoButton.innerHTML = 'Jenga 10';
-  demoButton.addEventListener('click', loadJenga10, false);
-  info.appendChild(demoButton);
-
-  demoButton = document.createElement ('button');
-  demoButton.innerHTML = 'Jenga 20';
-  demoButton.addEventListener('click', loadJenga20, false);
-  info.appendChild(demoButton);
-
-  demoButton = document.createElement ('button');
-  demoButton.innerHTML = 'Random Shapes';
-  demoButton.addEventListener('click', loadRandomShapes, false);
-  info.appendChild(demoButton);
-
-  demoButton = document.createElement ('button');
-  demoButton.innerHTML = '250 Random Cubes';
-  demoButton.addEventListener('click', load250RandomCubes, false);
-  info.appendChild(demoButton);
-
-  demoButton = document.createElement ('button');
-  demoButton.innerHTML = '500 Random Cylinders';
-  demoButton.addEventListener('click', load500RandomCylinders, false);
-  info.appendChild(demoButton);
-
-  demoButton = document.createElement ('button');
-  demoButton.innerHTML = '1000 Random Cubes';
-  demoButton.addEventListener('click', load1000RandomCubes, false);
-  info.appendChild(demoButton);
-
-  demoButton = document.createElement ('button');
-  demoButton.innerHTML = '2000 Random Cubes';
-  demoButton.addEventListener('click', load2000RandomCubes, false);
-  info.appendChild(demoButton);
-
-  demoButton = document.createElement('input');
-  demoButton.innerHTML = 'Upload Scene';
-  demoButton.setAttribute("type", "file");
-  demoButton.setAttribute("id", "UploadButton");
-  var uploadButton = demoButton;
-  demoButton.addEventListener('change', function(evt) {
-    var files = evt.target.files;
-    if (evt.target.files.length <= 0) {
-      return;
-    }
-    var f = files[0];
-    var reader = new FileReader();
-    reader.addEventListener('load', loadTextScene);
-    reader.readAsText(f, "UTF-8");
-    uploadButton.setAttribute("value", "");
-  });
-  info.appendChild(demoButton);
-
-  demoButton = document.createElement ('button');
-  demoButton.innerHTML = 'Reload Scene';
-  demoButton.addEventListener('click', reloadScene, false);
-  info.appendChild(demoButton);
+  $('reload').addEventListener('click', reloadScene, false);
 
   renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false );
-  window.addEventListener('resize', onWindowResize, false );
   window.addEventListener('keydown', onDocumentKeyDown, false);
   window.addEventListener('keyup', onDocumentKeyUp, false);
+
+  window.setInterval(pollForRendererResize, 10);
 }
 
-function onWindowResize() {
-  console.log('onWindowResize w: ' + window.innerWidth + ' h: ' + window.innerHeight);
-  camera.aspect = window.innerWidth / window.innerHeight;
+function pollForRendererResize() {
+  var rendererContainer = $('rendererContainer');
+  var w = rendererContainer.clientWidth;
+  var h = rendererContainer.clientHeight;
+  if (w == lastRendererWidth && h == lastRendererHeight)
+    return;
+
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  //controls.handleResize();
+  renderer.setSize( w, h );
+  lastRendererWidth = w;
+  lastRendererHeight = h;
 }
 
 function onDocumentKeyDown(event) {
@@ -329,8 +264,13 @@ function onDocumentKeyUp(event) {
 
 function onDocumentMouseMove( event ) {
   event.preventDefault();
-  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+  var rendererContainer = $('rendererContainer');
+  var w = rendererContainer.clientWidth;
+  var h = rendererContainer.clientHeight;
+
+  mouse.x = ( event.clientX / w ) * 2 - 1;
+  mouse.y = - ( event.clientY / h ) * 2 + 1;
   var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
   projector.unprojectVector( vector, camera );
   offset.x = vector.x;

@@ -36,7 +36,7 @@ function NaClAMBulletStepSceneHandler(msg) {
       return;
     }
     var simTime = msg.header.simtime;
-    document.getElementById('simulationTime').innerHTML = '<p>Simulation time: ' + simTime + ' microseconds</p>';
+    document.getElementById('simulationTime').textContent = simTime;
     TransformBuffer = new Float32Array(msg.frames[0]);
     numTransforms = TransformBuffer.length/16;
     for (i = 0; i < numTransforms; i++) {
