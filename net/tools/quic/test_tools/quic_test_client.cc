@@ -98,7 +98,7 @@ class QuicEpollClient : public QuicClient {
   QuicEpollClient(IPEndPoint server_address,
              const string& server_hostname,
              const QuicVersion version)
-      : Super(server_address, server_hostname, version, false) {
+      : Super(server_address, server_hostname, version) {
   }
 
   QuicEpollClient(IPEndPoint server_address,

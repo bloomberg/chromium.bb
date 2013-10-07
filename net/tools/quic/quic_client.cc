@@ -32,8 +32,7 @@ const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
 QuicClient::QuicClient(IPEndPoint server_address,
                        const string& server_hostname,
-                       const QuicVersion version,
-                       bool print_response)
+                       const QuicVersion version)
     : server_address_(server_address),
       server_hostname_(server_hostname),
       local_port_(0),
@@ -41,8 +40,7 @@ QuicClient::QuicClient(IPEndPoint server_address,
       initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false),
-      version_(version),
-      print_response_(print_response) {
+      version_(version) {
   config_.SetDefaults();
 }
 
@@ -58,8 +56,7 @@ QuicClient::QuicClient(IPEndPoint server_address,
       initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false),
-      version_(version),
-      print_response_(false) {
+      version_(version) {
 }
 
 QuicClient::~QuicClient() {
@@ -181,12 +178,10 @@ void QuicClient::Disconnect() {
 
 void QuicClient::SendRequestsAndWaitForResponse(
     const CommandLine::StringVector& args) {
-  for (size_t i = 0; i < args.size(); i++) {
+  for (uint32_t i = 0; i < args.size(); i++) {
     BalsaHeaders headers;
     headers.SetRequestFirstlineFromStringPieces("GET", args[i], "HTTP/1.1");
-    QuicReliableClientStream* stream = CreateReliableClientStream();
-    stream->SendRequest(headers, "", true);
-    stream->set_visitor(this);
+    CreateReliableClientStream()->SendRequest(headers, "", true);
   }
 
   while (WaitForEvents()) { }
@@ -236,24 +231,6 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
   if (event->in_events & EPOLLERR) {
     DLOG(INFO) << "Epollerr";
   }
-}
-
-void QuicClient::OnClose(ReliableQuicStream* stream) {
-  if (!print_response_) {
-    return;
-  }
-
-  QuicReliableClientStream* client_stream =
-      static_cast<QuicReliableClientStream*>(stream);
-  const BalsaHeaders& headers = client_stream->headers();
-  printf("%s\n", headers.first_line().as_string().c_str());
-  for (BalsaHeaders::const_header_lines_iterator i =
-           headers.header_lines_begin();
-       i != headers.header_lines_end(); ++i) {
-    printf("%s: %s\n", i->first.as_string().c_str(),
-           i->second.as_string().c_str());
-  }
-  printf("%s\n", client_stream->data().c_str());
 }
 
 QuicPacketCreator::Options* QuicClient::options() {

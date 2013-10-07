@@ -66,7 +66,7 @@ TEST_F(QuicClientStreamTest, TestFramingOnePacket) {
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_F(QuicClientStreamTest, DISABLED_TestFramingExtraData) {
+TEST_F(QuicClientStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -93,3 +93,4 @@ TEST_F(QuicClientStreamTest, TestNoBidirectionalStreaming) {
 }  // namespace test
 }  // namespace tools
 }  // namespace net
+
