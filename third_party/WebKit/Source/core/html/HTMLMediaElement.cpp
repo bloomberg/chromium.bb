@@ -369,9 +369,14 @@ void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
     LOG(Media, "HTMLMediaElement::didMoveToNewDocument");
 
     if (m_shouldDelayLoadEvent) {
-        if (oldDocument)
-            oldDocument->decrementLoadEventDelayCount();
         document().incrementLoadEventDelayCount();
+        // Note: Keeping the load event delay count increment on oldDocument that was added
+        // when m_shouldDelayLoadEvent was set so that destruction of m_player can not
+        // cause load event dispatching in oldDocument.
+    } else if (oldDocument) {
+        // Incrementing the load event delay count so that destruction of m_player can not
+        // cause load event dispatching in oldDocument.
+        oldDocument->incrementLoadEventDelayCount();
     }
 
     if (oldDocument)
@@ -385,6 +390,11 @@ void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
     // object to refresh the MediaPlayer's Frame and FrameLoader references on
     // document changes so that playback can be resumed properly.
     userCancelledLoad();
+
+    // Decrement the load event delay count on oldDocument now that m_player has been destroyed
+    // and there is no risk of dispatching a load event from within the destructor.
+    if (oldDocument)
+        oldDocument->decrementLoadEventDelayCount();
 
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
