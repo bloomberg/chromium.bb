@@ -475,12 +475,11 @@ def main():
                     # TODO(thakis): Remove --build_dir once bots don't pass it.
                     "--build_dir",
                     help="the location of the output of the compiler output")
-  parser.add_option("-t", "--test", action="append",
-                    help="which test to run")
-  parser.add_option("", "--gtest_filter",
+  parser.add_option("--target", help="Debug or Release")
+  parser.add_option("-t", "--test", action="append", help="which test to run")
+  parser.add_option("--gtest_filter",
                     help="additional arguments to --gtest_filter")
-  parser.add_option("", "--gtest_repeat",
-                    help="argument for --gtest_repeat")
+  parser.add_option("--gtest_repeat", help="argument for --gtest_repeat")
   parser.add_option("-v", "--verbose", action="store_true", default=False,
                     help="verbose output - enable debug log messages")
   # My machine can do about 120 layout tests/hour in release mode.
@@ -491,6 +490,12 @@ def main():
                     help="for layout tests: # of subtests per run.  0 for all.")
 
   options, args = parser.parse_args()
+
+  # target used to be a part of build_dir, so only add it if it's not there.
+  # TODO(thakis): Always do this once the memory master no longer passes
+  # the target as part of build_dir.
+  if options.target and options.target not in options.build_dir:
+    options.build_dir = os.path.join(options.build_dir, options.target)
 
   if options.verbose:
     logging_utils.config_root(logging.DEBUG)

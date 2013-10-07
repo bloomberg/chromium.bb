@@ -568,28 +568,28 @@ def _main():
                                  "[-t <test> ...]")
   parser.disable_interspersed_args()
 
-  parser.add_option("", "--help-tests", dest="help_tests", action="store_true",
+  parser.add_option("--help-tests", dest="help_tests", action="store_true",
                     default=False, help="List all available tests")
   parser.add_option("-b", "--build-dir",
                     # TODO(thakis): Remove --build_dir once bots don't pass it.
                     "--build_dir",
                     help="the location of the compiler output")
+  parser.add_option("--target", help="Debug or Release")
   parser.add_option("-t", "--test", action="append", default=[],
                     help="which test to run, supports test:gtest_filter format "
                          "as well.")
-  parser.add_option("", "--baseline", action="store_true", default=False,
+  parser.add_option("--baseline", action="store_true", default=False,
                     help="generate baseline data instead of validating")
-  parser.add_option("", "--gtest_filter",
+  parser.add_option("--gtest_filter",
                     help="additional arguments to --gtest_filter")
-  parser.add_option("", "--gtest_repeat",
-                    help="argument for --gtest_repeat")
+  parser.add_option("--gtest_repeat", help="argument for --gtest_repeat")
   parser.add_option("-v", "--verbose", action="store_true", default=False,
                     help="verbose output - enable debug log messages")
-  parser.add_option("", "--tool", dest="valgrind_tool", default="memcheck",
+  parser.add_option("--tool", dest="valgrind_tool", default="memcheck",
                     help="specify a valgrind tool to run the tests under")
-  parser.add_option("", "--tool_flags", dest="valgrind_tool_flags", default="",
+  parser.add_option("--tool_flags", dest="valgrind_tool_flags", default="",
                     help="specify custom flags for the selected valgrind tool")
-  parser.add_option("", "--keep_logs", action="store_true", default=False,
+  parser.add_option("--keep_logs", action="store_true", default=False,
                     help="store memory tool logs in the <tool>.logs directory "
                          "instead of /tmp.\nThis can be useful for tool "
                          "developers/maintainers.\nPlease note that the <tool>"
@@ -598,10 +598,16 @@ def _main():
                     default=ChromeTests.LAYOUT_TESTS_DEFAULT_CHUNK_SIZE,
                     help="for layout tests: # of subtests per run.  0 for all.")
   # TODO(thestig) Remove this if we can.
-  parser.add_option("", "--gtest_color", dest="gtest_color", default="no",
+  parser.add_option("--gtest_color", dest="gtest_color", default="no",
                     help="dummy compatibility flag for sharding_supervisor.")
 
   options, args = parser.parse_args()
+
+  # target used to be a part of build_dir, so only add it if it's not there.
+  # TODO(thakis): Always do this once the memory master no longer passes
+  # the target as part of build_dir.
+  if options.target and options.target not in options.build_dir:
+    options.build_dir = os.path.join(options.build_dir, options.target)
 
   if options.verbose:
     logging_utils.config_root(logging.DEBUG)
