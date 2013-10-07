@@ -34,6 +34,7 @@
 #include "V8HTMLOptionElement.h"
 #include "V8Node.h"
 #include "V8NodeList.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
@@ -86,7 +87,7 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
         bool ok;
         V8TRYCATCH_VOID(int, index, toInt32(args[1], ok));
         if (!ok)
-            es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+            es.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("add", "HTMLOptionsCollection", "The index provided could not be interpreted as an integer."));
         else
             imp->add(option, index, es);
     }
@@ -102,7 +103,7 @@ void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::String> 
     ExceptionState es(info.GetIsolate());
     if (!std::isnan(v) && !std::isinf(v)) {
         if (v < 0.0)
-            es.throwUninformativeAndGenericDOMException(IndexSizeError);
+            es.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("length", "HTMLOptionsCollection", "The value provided (" + String::number(v) + ") is negative. Lengths must be greater than or equal to 0."));
         else if (v > static_cast<double>(UINT_MAX))
             newLength = UINT_MAX;
         else
