@@ -47,8 +47,6 @@ crbug.com/255183 http/tests/cache/cancel-image-via-src-change.html [ Failure Pas
 
 crbug.com/24182 [ Debug ] fast/js/toString-and-valueOf-override.html [ Timeout ]
 
-crbug.com/249707 [ Debug ] fast/dom/StyleSheet/gc-rule-children-wrappers.html [ Timeout Pass ]
-
 crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout ]
 
 crbug.com/260129 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failure Pass ]
