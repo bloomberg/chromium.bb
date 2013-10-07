@@ -174,7 +174,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
         added_includes.append([f.LocalPath(), changed_lines])
 
     deps_checker = checkdeps.DepsChecker(
-        input_api.os_path.join(input_api.PresubmitLocalPath(), 'Source'))
+        input_api.os_path.join(input_api.PresubmitLocalPath()))
 
     error_descriptions = []
     warning_descriptions = []

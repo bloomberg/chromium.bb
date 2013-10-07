@@ -4,6 +4,7 @@
 include_rules = [
     "-core",
     "+core/platform",
+    "+core/tests", # Remove after https://codereview.chromium.org/26227002/
     "+dl",
     "+skia",
     "+third_party",
@@ -21,4 +22,5 @@ include_rules = [
     "!core/page",
     "!core/plugins",
     "!core/rendering",
+    "!core/events/EventNames.h",
 ]

@@ -26,11 +26,10 @@
 #ifndef ANGLEPlatformBridge_h
 #define ANGLEPlatformBridge_h
 
-#include "GLSLANG/ShaderLang.h"
-
 #include "platform/PlatformExport.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <GLSLANG/ShaderLang.h>
 
 namespace WebCore {
 
