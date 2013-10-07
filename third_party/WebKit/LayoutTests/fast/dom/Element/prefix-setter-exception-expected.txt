@@ -3,23 +3,24 @@ Test for the implementation of DOM Level 3 Core API on Node Interface: prefix se
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS prefixedElem.prefix = "." threw exception InvalidCharacterError: The string contains invalid characters..
+PASS prefixedElem.prefix = "." threw exception InvalidCharacterError: Failed to set the 'prefix' property on 'Node': The prefix '.' is not a valid name..
 PASS prefixedElem.prefix is "before"
 PASS prefixedElem.prefix = "x." is "x."
 PASS prefixedElem.prefix is "x."
-PASS prefixedElem.prefix = "0a" threw exception InvalidCharacterError: The string contains invalid characters..
+PASS prefixedElem.prefix = "0a" threw exception InvalidCharacterError: Failed to set the 'prefix' property on 'Node': The prefix '0a' is not a valid name..
 PASS prefixedElem.prefix is "before"
 PASS prefixedElem.prefix = "a0" is "a0"
 PASS prefixedElem.prefix is "a0"
 PASS prefixedElem.prefix = "_0" is "_0"
 PASS prefixedElem.prefix is "_0"
-PASS prefixedElem.prefix = "×" threw exception InvalidCharacterError: The string contains invalid characters..
+PASS prefixedElem.prefix = "×" threw exception InvalidCharacterError: Failed to set the 'prefix' property on 'Node': The prefix '×' is not a valid name..
 PASS prefixedElem.prefix is "before"
-PASS prefixedElem.prefix = "·" threw exception InvalidCharacterError: The string contains invalid characters..
+PASS prefixedElem.prefix = "·" threw exception InvalidCharacterError: Failed to set the 'prefix' property on 'Node': The prefix '·' is not a valid name..
 PASS prefixedElem.prefix is "before"
 PASS prefixedElem.prefix = "aa" is "aa"
 PASS prefixedElem.prefix is "aa"
-PASS prefixedElem.prefix = "\n" threw exception InvalidCharacterError: The string contains invalid characters..
+PASS prefixedElem.prefix = "\n" threw exception InvalidCharacterError: Failed to set the 'prefix' property on 'Node': The prefix '
+' is not a valid name..
 PASS prefixedElem.prefix is "before"
 PASS successfullyParsed is true
 

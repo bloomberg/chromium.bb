@@ -5,11 +5,11 @@
 <![CDATA[
 description("Test that appropriate exceptions are thrown when adding children to a ProcessingInstruction.");
 var pi = document.createProcessingInstruction('target', 'data');
-shouldThrow("pi.appendChild(null)", "'HierarchyRequestError: A Node was inserted somewhere it doesn\\'t belong.'");
+shouldThrow("pi.appendChild(null)", '"HierarchyRequestError: Failed to execute \'appendChild\' on \'Node\': This node type does not support this method."');
 var div = document.createElement('div');
-shouldThrow("pi.appendChild(div)", "'HierarchyRequestError: A Node was inserted somewhere it doesn\\'t belong.'");
+shouldThrow("pi.appendChild(div)", '"HierarchyRequestError: Failed to execute \'appendChild\' on \'Node\': This node type does not support this method."');
 var textNode = document.createTextNode('sometext');
-shouldThrow("pi.appendChild(textNode)", "'HierarchyRequestError: A Node was inserted somewhere it doesn\\'t belong.'");
+shouldThrow("pi.appendChild(textNode)", '"HierarchyRequestError: Failed to execute \'appendChild\' on \'Node\': This node type does not support this method."');
 ]]>
 </script>
 <script src="../js/resources/js-test-post.js"></script>
