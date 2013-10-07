@@ -44,14 +44,13 @@ enum PlatformFileFlags {
   PLATFORM_FILE_DELETE_ON_CLOSE = 1 << 13,
 
   PLATFORM_FILE_WRITE_ATTRIBUTES = 1 << 14,  // Used on Windows only
-  PLATFORM_FILE_ENUMERATE = 1 << 15,         // May enumerate directory
 
-  PLATFORM_FILE_SHARE_DELETE = 1 << 16,      // Used on Windows only
+  PLATFORM_FILE_SHARE_DELETE = 1 << 15,      // Used on Windows only
 
-  PLATFORM_FILE_TERMINAL_DEVICE = 1 << 17,   // Serial port flags
-  PLATFORM_FILE_BACKUP_SEMANTICS = 1 << 18,  // Used on Windows only
+  PLATFORM_FILE_TERMINAL_DEVICE = 1 << 16,   // Serial port flags
+  PLATFORM_FILE_BACKUP_SEMANTICS = 1 << 17,  // Used on Windows only
 
-  PLATFORM_FILE_EXECUTE = 1 << 19,           // Used on Windows only
+  PLATFORM_FILE_EXECUTE = 1 << 18,           // Used on Windows only
 };
 
 // PLATFORM_FILE_ERROR_ACCESS_DENIED is returned when a call fails because of

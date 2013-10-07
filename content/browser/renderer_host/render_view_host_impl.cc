@@ -627,12 +627,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
     // directories, but dragging a file would cause the read/write access to be
     // overwritten with read-only access, making them impossible to delete or
     // rename until the renderer was killed.
-    if (!policy->CanReadFile(renderer_id, path)) {
+    if (!policy->CanReadFile(renderer_id, path))
       policy->GrantReadFile(renderer_id, path);
-      // Allow dragged directories to be enumerated by the child process.
-      // Note that we can't tell a file from a directory at this point.
-      policy->GrantReadDirectory(renderer_id, path);
-    }
   }
 
   fileapi::IsolatedContext* isolated_context =

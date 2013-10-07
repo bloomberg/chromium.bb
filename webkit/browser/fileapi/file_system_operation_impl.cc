@@ -204,9 +204,8 @@ void FileSystemOperationImpl::OpenFile(const FileSystemURL& url,
   DCHECK(SetPendingOperationType(kOperationOpenFile));
   peer_handle_ = peer_handle;
 
-  if (file_flags & (
-      (base::PLATFORM_FILE_ENUMERATE | base::PLATFORM_FILE_TEMPORARY |
-       base::PLATFORM_FILE_HIDDEN))) {
+  if (file_flags &
+      (base::PLATFORM_FILE_TEMPORARY | base::PLATFORM_FILE_HIDDEN)) {
     callback.Run(base::PLATFORM_FILE_ERROR_FAILED,
                  base::kInvalidPlatformFileValue,
                  base::Closure(),

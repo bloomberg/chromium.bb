@@ -49,10 +49,6 @@ const int kWriteFilePermissions =
 const int kCreateNewFilePermissions =
     base::PLATFORM_FILE_CREATE;
 
-const int kEnumerateDirectoryPermissions =
-    kReadFilePermissions |
-    base::PLATFORM_FILE_ENUMERATE;
-
 const int kCreateOverwriteFilePermissions =
     base::PLATFORM_FILE_OPEN_ALWAYS |
     base::PLATFORM_FILE_CREATE_ALWAYS;
@@ -438,11 +434,6 @@ void ChildProcessSecurityPolicyImpl::GrantCreateReadWriteFile(
   GrantPermissionsForFile(child_id, file, kCreateReadWriteFilePermissions);
 }
 
-void ChildProcessSecurityPolicyImpl::GrantReadDirectory(
-    int child_id, const base::FilePath& directory) {
-  GrantPermissionsForFile(child_id, directory, kEnumerateDirectoryPermissions);
-}
-
 void ChildProcessSecurityPolicyImpl::GrantPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
@@ -619,13 +610,6 @@ bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile(
     int child_id,
     const base::FilePath& file) {
   return HasPermissionsForFile(child_id, file, kCreateReadWriteFilePermissions);
-}
-
-bool ChildProcessSecurityPolicyImpl::CanReadDirectory(
-    int child_id, const base::FilePath& directory) {
-  return HasPermissionsForFile(child_id,
-                               directory,
-                               kEnumerateDirectoryPermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadFileSystem(

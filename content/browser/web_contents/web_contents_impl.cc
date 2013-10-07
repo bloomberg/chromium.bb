@@ -2452,7 +2452,7 @@ void WebContentsImpl::OnEnumerateDirectory(int request_id,
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->CanReadDirectory(GetRenderProcessHost()->GetID(), path))
+  if (policy->CanReadFile(GetRenderProcessHost()->GetID(), path))
     delegate_->EnumerateDirectory(this, request_id, path);
 }
 

@@ -448,40 +448,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   p->Remove(kRendererID);
 }
 
-TEST_F(ChildProcessSecurityPolicyTest, CanReadDirectories) {
-  ChildProcessSecurityPolicyImpl* p =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  p->Add(kRendererID);
-
-  EXPECT_FALSE(p->CanReadDirectory(kRendererID,
-                                   base::FilePath(TEST_PATH("/etc/"))));
-  p->GrantReadDirectory(kRendererID,
-                        base::FilePath(TEST_PATH("/etc/")));
-  EXPECT_TRUE(p->CanReadDirectory(kRendererID,
-                                  base::FilePath(TEST_PATH("/etc/"))));
-  EXPECT_TRUE(p->CanReadFile(kRendererID,
-                             base::FilePath(TEST_PATH("/etc/passwd"))));
-
-  p->Remove(kRendererID);
-  p->Add(kRendererID);
-
-  EXPECT_FALSE(p->CanReadDirectory(kRendererID,
-                                   base::FilePath(TEST_PATH("/etc/"))));
-  EXPECT_FALSE(p->CanReadFile(kRendererID,
-                              base::FilePath(TEST_PATH("/etc/passwd"))));
-
-  // Just granting read permission as a file doesn't imply reading as a
-  // directory.
-  p->GrantReadFile(kRendererID, base::FilePath(TEST_PATH("/etc/")));
-  EXPECT_TRUE(p->CanReadFile(kRendererID,
-                             base::FilePath(TEST_PATH("/etc/passwd"))));
-  EXPECT_FALSE(p->CanReadDirectory(kRendererID,
-                                   base::FilePath(TEST_PATH("/etc/"))));
-
-  p->Remove(kRendererID);
-}
-
 TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
   base::FilePath granted_file = base::FilePath(TEST_PATH("/home/joe"));
   base::FilePath sibling_file = base::FilePath(TEST_PATH("/home/bob"));

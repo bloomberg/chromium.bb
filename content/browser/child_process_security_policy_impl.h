@@ -102,10 +102,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // file:// URL, but not all urls of the file:// scheme.
   void GrantRequestSpecificFileURL(int child_id, const GURL& url);
 
-  // Grants the child process permission to enumerate all the files in
-  // this directory and read those files.
-  void GrantReadDirectory(int child_id, const base::FilePath& directory);
-
   // Revokes all permissions granted to the given file.
   void RevokeAllPermissionsForFile(int child_id, const base::FilePath& file);
 
@@ -132,10 +128,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanLoadPage(int child_id,
                    const GURL& url,
                    ResourceType::Type resource_type);
-
-  // Before servicing a child process's request to enumerate a directory
-  // the browser should call this method to check for the capability.
-  bool CanReadDirectory(int child_id, const base::FilePath& directory);
 
   // Explicit permissions checks for FileSystemURL specified files.
   bool CanReadFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
