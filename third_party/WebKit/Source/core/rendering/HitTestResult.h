@@ -112,6 +112,7 @@ public:
     bool isMisspelled() const;
     bool isContentEditable() const;
 
+    bool isOverLink() const;
     // Returns true if it is rect-based hit test and needs to continue until the rect is fully
     // enclosed by the boundaries of a node.
     bool addNodeToRectBasedTestResult(Node*, const HitTestRequest&, const HitTestLocation& pointInContainer, const LayoutRect& = LayoutRect());

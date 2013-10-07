@@ -264,6 +264,7 @@ public:
     static void setRepaintThrottlingDeferredRepaintDelayIncrementDuringLoading(double p);
 
     virtual IntPoint lastKnownMousePosition() const;
+    bool shouldSetCursor() const;
 
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
 

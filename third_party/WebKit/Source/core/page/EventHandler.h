@@ -124,6 +124,7 @@ public:
     void updateDragStateAfterEditDragIfNeeded(Element* rootEditableElement);
 
     void scheduleHoverStateUpdate();
+    void scheduleCursorUpdate();
 
     void setResizingFrameSet(HTMLFrameSetElement*);
 
@@ -195,6 +196,7 @@ public:
     bool handleTouchEvent(const PlatformTouchEvent&);
 
     bool useHandCursor(Node*, bool isOverLink, bool shiftKey);
+    void updateCursor();
 
 private:
     static DragState& dragState();
@@ -217,8 +219,10 @@ private:
     bool handleMouseDraggedEvent(const MouseEventWithHitTestResults&);
     bool handleMouseReleaseEvent(const MouseEventWithHitTestResults&);
 
-    OptionalCursor selectCursor(const MouseEventWithHitTestResults&, Scrollbar*);
+    OptionalCursor selectCursor(const HitTestResult&, bool shiftKey);
+
     void hoverTimerFired(Timer<EventHandler>*);
+    void cursorUpdateTimerFired(Timer<EventHandler>*);
 
     bool logicalScrollOverflow(ScrollLogicalDirection, ScrollGranularity, Node* startingNode = 0);
 
@@ -321,6 +325,7 @@ private:
     bool m_panScrollButtonPressed;
 
     Timer<EventHandler> m_hoverTimer;
+    Timer<EventHandler> m_cursorUpdateTimer;
 
     bool m_mouseDownMayStartAutoscroll;
     bool m_mouseDownWasInSubframe;

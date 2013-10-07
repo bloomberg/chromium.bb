@@ -379,6 +379,11 @@ bool HitTestResult::isMisspelled() const
         makeRange(pos, pos).get(), DocumentMarker::MisspellingMarkers()).size() > 0;
 }
 
+bool HitTestResult::isOverLink() const
+{
+    return m_innerURLElement && m_innerURLElement->isLink();
+}
+
 String HitTestResult::titleDisplayString() const
 {
     if (!m_innerURLElement)

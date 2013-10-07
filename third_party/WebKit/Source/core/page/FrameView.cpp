@@ -1344,6 +1344,12 @@ IntPoint FrameView::lastKnownMousePosition() const
     return m_frame->eventHandler()->lastKnownMousePosition();
 }
 
+bool FrameView::shouldSetCursor() const
+{
+    Page* page = frame().page();
+    return page && page->visibilityState() != PageVisibilityStateHidden && page->focusController().isActive();
+}
+
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
 {
     if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
