@@ -390,36 +390,7 @@ void WorkerProcessHost::RelayMessage(
     const IPC::Message& message,
     WorkerMessageFilter* filter,
     int route_id) {
-  if (message.type() == WorkerMsg_PostMessage::ID) {
-    // We want to send the receiver a routing id for the new channel, so
-    // crack the message first.
-    string16 msg;
-    std::vector<int> sent_message_port_ids;
-    std::vector<int> new_routing_ids;
-    if (!WorkerMsg_PostMessage::Read(
-            &message, &msg, &sent_message_port_ids, &new_routing_ids)) {
-      return;
-    }
-    if (sent_message_port_ids.size() != new_routing_ids.size())
-      return;
-
-    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      new_routing_ids[i] = filter->GetNextRoutingID();
-      MessagePortService::GetInstance()->UpdateMessagePort(
-          sent_message_port_ids[i], filter, new_routing_ids[i]);
-    }
-
-    filter->Send(new WorkerMsg_PostMessage(
-        route_id, msg, sent_message_port_ids, new_routing_ids));
-
-    // Send any queued messages to the sent message ports.  We can only do this
-    // after sending the above message, since it's the one that sets up the
-    // message port route which the queued messages are sent to.
-    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      MessagePortService::GetInstance()->
-          SendQueuedMessagesIfPossible(sent_message_port_ids[i]);
-    }
-  } else if (message.type() == WorkerMsg_Connect::ID) {
+  if (message.type() == WorkerMsg_Connect::ID) {
     // Crack the SharedWorker Connect message to setup routing for the port.
     int sent_message_port_id;
     int new_routing_id;

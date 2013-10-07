@@ -50,19 +50,8 @@ WebSharedWorkerClientProxy::~WebSharedWorkerClientProxy() {
 void WebSharedWorkerClientProxy::postMessageToWorkerObject(
     const WebString& message,
     const WebMessagePortChannelArray& channels) {
-  std::vector<int> message_port_ids(channels.size());
-  std::vector<int> routing_ids(channels.size());
-  for (size_t i = 0; i < channels.size(); ++i) {
-    WebMessagePortChannelImpl* webchannel =
-        static_cast<WebMessagePortChannelImpl*>(channels[i]);
-    message_port_ids[i] = webchannel->message_port_id();
-    webchannel->QueueMessages();
-    DCHECK(message_port_ids[i] != MSG_ROUTING_NONE);
-    routing_ids[i] = MSG_ROUTING_NONE;
-  }
-
-  Send(new WorkerMsg_PostMessage(
-      route_id_, message, message_port_ids, routing_ids));
+  // TODO(marja): Clean up the interface; this function doesn't need to exist.
+  NOTREACHED();
 }
 
 void WebSharedWorkerClientProxy::postExceptionToWorkerObject(
