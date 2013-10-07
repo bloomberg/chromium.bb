@@ -145,9 +145,10 @@ bool Manifest::ValidateManifest(
   // TODO(aa): Consider having an error here in the case of strict error
   // checking to let developers know when they screw up.
 
-  FeatureProvider* provider = FeatureProvider::GetByName("manifest");
+  FeatureProvider* manifest_feature_provider =
+      FeatureProvider::GetManifestFeatures();
   const std::vector<std::string>& feature_names =
-      provider->GetAllFeatureNames();
+      manifest_feature_provider->GetAllFeatureNames();
   for (std::vector<std::string>::const_iterator feature_name =
            feature_names.begin();
        feature_name != feature_names.end(); ++feature_name) {
@@ -155,7 +156,7 @@ bool Manifest::ValidateManifest(
     if (!value_->Get(*feature_name, NULL))
       continue;
 
-    Feature* feature = provider->GetFeature(*feature_name);
+    Feature* feature = manifest_feature_provider->GetFeature(*feature_name);
     Feature::Availability result = feature->IsAvailableToManifest(
         extension_id_, type_, Feature::ConvertLocation(location_),
         GetManifestVersion());
@@ -166,7 +167,7 @@ bool Manifest::ValidateManifest(
   // Also generate warnings for keys that are not features.
   for (base::DictionaryValue::Iterator it(*value_); !it.IsAtEnd();
        it.Advance()) {
-    if (!provider->GetFeature(it.key())) {
+    if (!manifest_feature_provider->GetFeature(it.key())) {
       warnings->push_back(InstallWarning(
           ErrorUtils::FormatErrorMessage(
               manifest_errors::kUnrecognizedManifestKey, it.key()),
@@ -253,7 +254,7 @@ bool Manifest::CanAccessPath(const std::string& path) const {
 }
 
 bool Manifest::CanAccessKey(const std::string& key) const {
-  Feature* feature = FeatureProvider::GetByName("manifest")->GetFeature(key);
+  Feature* feature = FeatureProvider::GetManifestFeatures()->GetFeature(key);
   if (!feature)
     return true;
 

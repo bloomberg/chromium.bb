@@ -679,13 +679,13 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
     case Feature::CONTENT_SCRIPT_CONTEXT: {
       // Extension context; iterate through all the APIs and bind the available
       // ones.
-      FeatureProvider* feature_provider = FeatureProvider::GetByName("api");
+      FeatureProvider* api_feature_provider = FeatureProvider::GetAPIFeatures();
       const std::vector<std::string>& apis =
-          feature_provider->GetAllFeatureNames();
+          api_feature_provider->GetAllFeatureNames();
       for (std::vector<std::string>::const_iterator it = apis.begin();
           it != apis.end(); ++it) {
         const std::string& api_name = *it;
-        Feature* feature = feature_provider->GetFeature(api_name);
+        Feature* feature = api_feature_provider->GetFeature(api_name);
         DCHECK(feature);
 
         // Internal APIs are included via require(api_name) from internal code
@@ -696,8 +696,8 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
         // If this API name has parent features, then this must be a function or
         // event, so we should not register.
         bool parent_feature_available = false;
-        for (Feature* parent = feature_provider->GetParent(feature);
-             parent != NULL; parent = feature_provider->GetParent(parent)) {
+        for (Feature* parent = api_feature_provider->GetParent(feature);
+             parent != NULL; parent = api_feature_provider->GetParent(parent)) {
           if (context->IsAnyFeatureAvailableToContext(parent->name())) {
             parent_feature_available = true;
             break;
@@ -733,13 +733,13 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
   //  If app is available and app.window is not, just install app.
   //  If app.window is available and app is not, delete app and install
   //  app.window on a new object so app does not have to be loaded.
-  FeatureProvider* feature_provider = FeatureProvider::GetByName("api");
+  FeatureProvider* api_feature_provider = FeatureProvider::GetAPIFeatures();
   std::string ancestor_name;
   bool only_ancestor_available = false;
 
   for (size_t i = 0; i < split.size() - 1; ++i) {
     ancestor_name += (i ? ".": "") + split[i];
-    if (feature_provider->GetFeature(ancestor_name) &&
+    if (api_feature_provider->GetFeature(ancestor_name) &&
         context->GetAvailability(ancestor_name).is_available() &&
         !context->GetAvailability(api_name).is_available()) {
       only_ancestor_available = true;

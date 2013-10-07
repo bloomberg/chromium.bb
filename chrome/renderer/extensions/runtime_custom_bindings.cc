@@ -68,7 +68,7 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Verify that the extension has permission to use native messaging.
   Feature::Availability availability =
-      FeatureProvider::GetByName("permission")->
+      FeatureProvider::GetPermissionFeatures()->
           GetFeature("nativeMessaging")->IsAvailableToContext(
               GetExtensionForRenderView(),
               context()->context_type(),

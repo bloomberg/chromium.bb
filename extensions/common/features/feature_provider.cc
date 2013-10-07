@@ -9,8 +9,24 @@
 
 namespace extensions {
 
+// static
 FeatureProvider* FeatureProvider::GetByName(const std::string& name) {
   return ExtensionsClient::Get()->GetFeatureProviderByName(name);
+}
+
+// static
+FeatureProvider* FeatureProvider::GetAPIFeatures() {
+  return GetByName("api");
+}
+
+// static
+FeatureProvider* FeatureProvider::GetManifestFeatures() {
+  return GetByName("manifest");
+}
+
+// static
+FeatureProvider* FeatureProvider::GetPermissionFeatures() {
+  return GetByName("permission");
 }
 
 }  // namespace extensions

@@ -29,6 +29,11 @@ class FeatureProvider {
 
   // Gets a feature provider for a specific feature type, like "permission".
   static FeatureProvider* GetByName(const std::string& name);
+
+  // Directly access the common feature types.
+  static FeatureProvider* GetAPIFeatures();
+  static FeatureProvider* GetManifestFeatures();
+  static FeatureProvider* GetPermissionFeatures();
 };
 
 }  // namespace extensions

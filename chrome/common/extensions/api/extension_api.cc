@@ -224,12 +224,9 @@ ExtensionAPI::~ExtensionAPI() {
 }
 
 void ExtensionAPI::InitDefaultConfiguration() {
-  RegisterDependencyProvider(
-      "api", FeatureProvider::GetByName("api"));
-  RegisterDependencyProvider(
-      "manifest", FeatureProvider::GetByName("manifest"));
-  RegisterDependencyProvider(
-      "permission", FeatureProvider::GetByName("permission"));
+  const char* names[] = {"api", "manifest", "permission"};
+  for (size_t i = 0; i < arraysize(names); ++i)
+    RegisterDependencyProvider(names[i], FeatureProvider::GetByName(names[i]));
 
   // Schemas to be loaded from resources.
   CHECK(unloaded_schemas_.empty());

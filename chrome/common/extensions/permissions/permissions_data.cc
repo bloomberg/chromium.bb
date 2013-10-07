@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -21,6 +20,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_constants.h"
@@ -119,7 +119,7 @@ bool ParseHelper(Extension* extension,
   // Verify feature availability of permissions.
   std::vector<APIPermission::ID> to_remove;
   FeatureProvider* permission_features =
-      BaseFeatureProvider::GetByName("permission");
+      FeatureProvider::GetPermissionFeatures();
   for (APIPermissionSet::const_iterator iter = api_permissions->begin();
        iter != api_permissions->end(); ++iter) {
     Feature* feature = permission_features->GetFeature(iter->name());
