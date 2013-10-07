@@ -184,6 +184,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return AnimatableSVGPaint::create(style->svgStyle()->fillPaintType(), style->svgStyle()->fillPaintColor(), style->svgStyle()->fillPaintUri());
     case CSSPropertyHeight:
         return createFromLength(style->height(), style);
+    case CSSPropertyKerning:
+        return AnimatableSVGLength::create(style->kerning());
     case CSSPropertyListStyleImage:
         return AnimatableImage::create(style->listStyleImage());
     case CSSPropertyLeft:
