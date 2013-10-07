@@ -84,22 +84,18 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
                 continue;
         }
 
-        // A number of these aliases are handled in Chrome's copy of ICU, but
-        // Chromium can be compiled with the system ICU.
-
         // 1. Treat GB2312 encoding as GBK (its more modern superset), to match other browsers.
         // 2. On the Web, GB2312 is encoded as EUC-CN or HZ, while ICU provides a native encoding
         //    for encoding GB_2312-80 and several others. So, we need to override this behavior, too.
-        if (!strcmp(standardName, "GB2312") || !strcmp(standardName, "GB_2312-80"))
+        if (strcmp(standardName, "GB2312") == 0 || strcmp(standardName, "GB_2312-80") == 0)
             standardName = "GBK";
-        // Similarly, EUC-KR encodings all map to an extended version, but
-        // per HTML5, the canonical name still should be EUC-KR.
-        else if (!strcmp(standardName, "EUC-KR") || !strcmp(standardName, "KSC_5601") || !strcmp(standardName, "cp1363"))
-            standardName = "EUC-KR";
+        // Similarly, EUC-KR encodings all map to an extended version.
+        else if (strcmp(standardName, "KSC_5601") == 0 || strcmp(standardName, "EUC-KR") == 0 || strcmp(standardName, "cp1363") == 0)
+            standardName = "windows-949";
         // And so on.
-        else if (!strcasecmp(standardName, "iso-8859-9")) // This name is returned in different case by ICU 3.2 and 3.6.
+        else if (strcasecmp(standardName, "iso-8859-9") == 0) // This name is returned in different case by ICU 3.2 and 3.6.
             standardName = "windows-1254";
-        else if (!strcmp(standardName, "TIS-620"))
+        else if (strcmp(standardName, "TIS-620") == 0)
             standardName = "windows-874";
 
         registrar(standardName, standardName);
@@ -151,9 +147,9 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("x-cp1250", "windows-1250");
     registrar("x-cp1251", "windows-1251");
     registrar("x-euc", "EUC-JP");
-    registrar("x-windows-949", "EUC-KR");
-    registrar("KSC5601", "EUC-KR");
-    registrar("x-uhc", "EUC-KR");
+    registrar("x-windows-949", "windows-949");
+    registrar("KSC5601", "KSC_5601");
+    registrar("x-uhc", "windows-949");
     registrar("shift-jis", "Shift_JIS");
 
     // These aliases are present in modern versions of ICU, but use different codecs, and have no standard names.
@@ -337,7 +333,7 @@ String TextCodecICU::decode(const char* bytes, size_t length, bool flush, bool s
 
     // <http://bugs.webkit.org/show_bug.cgi?id=17014>
     // Simplified Chinese pages use the code A3A0 to mean "full-width space", but ICU decodes it as U+E5E5.
-    if (!strcmp(m_encoding.name(), "GBK") || !strcasecmp(m_encoding.name(), "gb18030"))
+    if (strcmp(m_encoding.name(), "GBK") == 0 || strcasecmp(m_encoding.name(), "gb18030") == 0)
         resultString.replace(0xE5E5, ideographicSpace);
 
     return resultString;

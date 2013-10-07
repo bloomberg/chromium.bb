@@ -75,7 +75,7 @@ PASS new TextDecoder("iso-2022-jp").encoding is "iso-2022-jp"
 PASS new TextEncoder("iso-2022-jp").encoding threw exception TypeError: Type error.
 PASS new TextDecoder("shift_jis").encoding is "shift_jis"
 PASS new TextEncoder("shift_jis").encoding threw exception TypeError: Type error.
-PASS new TextDecoder("euc-kr").encoding is "euc-kr"
+FAIL new TextDecoder("euc-kr").encoding should be euc-kr. Was windows-949.
 PASS new TextEncoder("euc-kr").encoding threw exception TypeError: Type error.
 PASS new TextDecoder("iso-2022-kr").encoding is "iso-2022-kr"
 PASS new TextEncoder("iso-2022-kr").encoding threw exception TypeError: Type error.

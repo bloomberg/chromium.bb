@@ -275,16 +275,16 @@ PASS new TextDecoder("windows-31j").encoding is "shift_jis"
 PASS new TextDecoder("x-sjis").encoding is "shift_jis"
 
 name = "euc-kr"
-PASS new TextDecoder("cseuckr").encoding is "euc-kr"
-PASS new TextDecoder("csksc56011987").encoding is "euc-kr"
-PASS new TextDecoder("euc-kr").encoding is "euc-kr"
-PASS new TextDecoder("iso-ir-149").encoding is "euc-kr"
-PASS new TextDecoder("korean").encoding is "euc-kr"
-PASS new TextDecoder("ks_c_5601-1987").encoding is "euc-kr"
-PASS new TextDecoder("ks_c_5601-1989").encoding is "euc-kr"
-PASS new TextDecoder("ksc5601").encoding is "euc-kr"
-PASS new TextDecoder("ksc_5601").encoding is "euc-kr"
-PASS new TextDecoder("windows-949").encoding is "euc-kr"
+FAIL new TextDecoder("cseuckr").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("csksc56011987").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("euc-kr").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("iso-ir-149").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("korean").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("ks_c_5601-1987").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("ks_c_5601-1989").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("ksc5601").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("ksc_5601").encoding should be euc-kr. Was windows-949.
+FAIL new TextDecoder("windows-949").encoding should be euc-kr. Was windows-949.
 
 name = "iso-2022-kr"
 PASS new TextDecoder("csiso2022kr").encoding is "iso-2022-kr"
