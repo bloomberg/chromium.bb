@@ -123,10 +123,6 @@ testCases.push({
 });
 
 testCases.push({
-  // TODO(karenlees): disabled as logging on windows is not consistent between
-  // runs and between different windows builds. Enable when crbug.com/292252
-  // is fixed.
-  disabled: {win: true},
   func: function triggerWebRequest() {
     chrome.runtime.sendMessage(FRIEND_EXTENSION_ID,
                                'webrequest', function response() { });
@@ -144,28 +140,9 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.remove'
   ],
-  // TODO(karenlees): the logging from windows is different.
-  // Figure out why this is (crbug.com/292252).
-  expected_activity_win: [
-    'webRequestInternal.addEventListener',
-    'webRequestInternal.addEventListener',
-    'webRequest.onBeforeSendHeaders/1',
-    'webRequestInternal.eventHandled',
-    'webRequest.onBeforeSendHeaders',
-    'webRequest.onBeforeSendHeaders/1',
-    'webRequestInternal.eventHandled',
-    'webRequest.onBeforeSendHeaders',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.remove'
-  ]
 });
 
 testCases.push({
-  // TODO(karenlees): disabled as logging on windows is not consistent between
-  // runs and between different windows builds. Enable when crbug.com/292252
-  // is fixed.
-  disabled: {win: true},
   func: function triggerWebRequestIncognito() {
     chrome.runtime.sendMessage(FRIEND_EXTENSION_ID,
                                'webrequest_incognito', function response() { });
@@ -181,17 +158,6 @@ testCases.push({
     'webRequest.onHeadersReceived/4',
     'webRequestInternal.eventHandled',
     'webRequest.onHeadersReceived',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.remove'
-  ],
-  expected_activity_win: [
-    'webRequestInternal.addEventListener',
-    'webRequestInternal.addEventListener',
-    'windows.create',
-    'webRequest.onBeforeSendHeaders/3',
-    'webRequestInternal.eventHandled',
-    'webRequest.onBeforeSendHeaders',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.remove'
@@ -323,7 +289,7 @@ testCases.push({
 });
 
 testCases.push({
-  func: function triggerDOMChangesOnTabsUpdated() {
+  func: function triggerDOMChangesOnTabsUpdatedIncognito() {
     chrome.runtime.sendMessage(FRIEND_EXTENSION_ID,
                                'dom_tab_updated_incognito',
                                function response() { });
