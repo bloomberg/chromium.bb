@@ -41,11 +41,15 @@ import re
 import v8_types
 
 ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
-extended_attribute_value_separator_re = re.compile('[|&]')
 
 
 def cpp_implemented_as_name(definition_or_member):
     return definition_or_member.extended_attributes.get('ImplementedAs', definition_or_member.name)
+
+
+def has_extended_attribute_value(extended_attributes, key, value):
+    return (key in extended_attributes and
+            value in re.split('[|&]', extended_attributes[key]))
 
 
 def uncapitalize(name):
@@ -65,19 +69,6 @@ def v8_class_name(interface):
     return v8_types.v8_type(interface.name)
 
 
-def has_extended_attribute_value(extended_attributes, key, value):
-    return key in extended_attributes and value in extended_attribute_values(extended_attributes, key)
-
-
-def extended_attribute_values(extended_attributes, key):
-    if key not in extended_attributes:
-        return None
-    values_string = extended_attributes[key]
-    if not values_string:
-        return []
-    return extended_attribute_value_separator_re.split(values_string)
-
-
 # ActivityLog
 def has_activity_logging(member, includes, access_type=None):
     """Returns whether a definition member has activity logging of specified access type.
@@ -95,6 +86,37 @@ def has_activity_logging(member, includes, access_type=None):
                          'bindings/v8/V8DOMActivityLogger.h',
                          'wtf/Vector.h'])
     return has_logging
+
+
+# CallWith
+CALL_WITH_ARGUMENTS = {
+    'ScriptState': '&state',
+    'ScriptExecutionContext': 'scriptContext',
+    'ScriptArguments': 'scriptArguments.release()',
+    'ActiveWindow': 'activeDOMWindow()',
+    'FirstWindow': 'firstDOMWindow()',
+}
+# List because key order matters, as we want arguments in deterministic order
+CALL_WITH_VALUES = [
+    'ScriptState',
+    'ScriptExecutionContext',
+    'ScriptArguments',
+    'ActiveWindow',
+    'FirstWindow',
+]
+
+
+def call_with_arguments(member, contents):
+    extended_attributes = member.extended_attributes
+    if 'CallWith' not in extended_attributes:
+        return []
+
+    # FIXME: Implement other template values for setters and functions
+    contents['is_call_with_script_execution_context'] = has_extended_attribute_value(extended_attributes, 'CallWith', 'ScriptExecutionContext')
+
+    return [CALL_WITH_ARGUMENTS[value]
+            for value in CALL_WITH_VALUES
+            if has_extended_attribute_value(extended_attributes, 'CallWith', value)]
 
 
 # Conditional

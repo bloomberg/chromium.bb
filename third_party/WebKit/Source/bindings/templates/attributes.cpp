@@ -15,6 +15,9 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     {% elif not attribute.is_static %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
+    {% if attribute.is_call_with_script_execution_context %}
+    ScriptExecutionContext* scriptContext = getScriptExecutionContext();
+    {% endif %}
     {# Special cases #}
     {% if attribute.is_nullable %}
     bool isNull = false;

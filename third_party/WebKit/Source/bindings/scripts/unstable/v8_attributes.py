@@ -79,7 +79,7 @@ def generate_attribute_and_includes(interface, attribute):
         'v8_type': v8_types.v8_type(idl_type),
     }
 
-    cpp_value = getter_expression(interface, attribute)
+    cpp_value = getter_expression(interface, attribute, contents)
     # Normally we can inline the function call into the return statement to
     # avoid the overhead of using a Ref<> temporary, but for some cases
     # (nullable types, EventHandler, CachedAttribute, or if there are
@@ -112,9 +112,9 @@ def generate_attribute_and_includes(interface, attribute):
     return contents, includes
 
 
-def getter_expression(interface, attribute):
+def getter_expression(interface, attribute, contents):
     this_getter_name = getter_name(interface, attribute)
-    arguments = []
+    arguments = v8_utilities.call_with_arguments(attribute, contents)
     if attribute.is_nullable:
         arguments.append('isNull')
     if attribute.data_type == 'EventHandler':
