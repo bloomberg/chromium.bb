@@ -189,9 +189,9 @@ void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
 
 void FrameMaximizeButton::OnWidgetActivationChanged(views::Widget* widget,
                                                     bool active) {
-  // Upon losing focus, the control bubble should hide.
-  if (!active && maximizer_)
-    maximizer_.reset();
+  // Upon losing focus, the bubble menu and the phantom window should hide.
+  if (!active)
+    Cancel(false);
 }
 
 bool FrameMaximizeButton::OnMousePressed(const ui::MouseEvent& event) {
@@ -239,7 +239,7 @@ void FrameMaximizeButton::OnMouseExited(const ui::MouseEvent& event) {
       }
     } else {
       // The maximize dialog does not show up immediately after creating the
-      // |mazimizer_|. Destroy the dialog therefore before it shows up.
+      // |maximizer_|. Destroy the dialog therefore before it shows up.
       maximizer_.reset();
     }
   }

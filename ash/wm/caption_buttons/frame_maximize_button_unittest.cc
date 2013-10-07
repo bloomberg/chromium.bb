@@ -823,5 +823,47 @@ TEST_F(FrameMaximizeButtonTest, MaximizeButtonDragLeftEscapeExits) {
   EXPECT_FALSE(maximize_button->phantom_window_open());
 }
 
+// Test that hovering over a button in the maximizer bubble and switching
+// activation without moving the mouse properly aborts.
+TEST_F(FrameMaximizeButtonTest, LossOfActivationWhileMaximizeBubbleOpenAborts) {
+  aura::Window* window = widget()->GetNativeWindow();
+  ash::FrameMaximizeButton* maximize_button =
+      FrameMaximizeButtonTest::maximize_button();
+  maximize_button->set_bubble_appearance_delay_ms(0);
+
+  gfx::Rect initial_bounds = window->GetBoundsInScreen();
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_TRUE(widget()->IsActive());
+
+  // Move the mouse over the maximize button in order to bring up the maximizer
+  // bubble.
+  gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
+  gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
+  aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
+  generator.MoveMouseTo(button_pos);
+  EXPECT_TRUE(maximize_button->maximizer());
+
+  // Hover the mouse over the left maximize button in the maximizer bubble to
+  // show the phantom window.
+  gfx::Point left_max_pos = maximize_button->maximizer()->
+      GetButtonForUnitTest(SNAP_LEFT)->GetBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(left_max_pos);
+  EXPECT_TRUE(maximize_button->phantom_window_open());
+
+  // Change activation by creating a new window. This could be done via an
+  // accelerator. The root window takes ownership of |just_created|.
+  views::Widget* just_created = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, widget()->GetNativeWindow(), gfx::Rect(100, 100));
+  just_created->Show();
+  just_created->Activate();
+  EXPECT_FALSE(widget()->IsActive());
+
+  // Test that we have properly reset the state of the now inactive window.
+  EXPECT_FALSE(maximize_button->maximizer());
+  EXPECT_FALSE(maximize_button->phantom_window_open());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_EQ(initial_bounds.ToString(), window->GetBoundsInScreen().ToString());
+}
+
 }  // namespace test
 }  // namespace ash
