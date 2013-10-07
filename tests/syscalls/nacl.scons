@@ -3,11 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import atexit
 import multiprocessing
 import os
-import shutil
-import tempfile
 
 Import('env')
 
@@ -217,28 +214,8 @@ env.AddNodeToTestSuite(node,
 # infrastructure doesn't like empty files as a patch, so try jobs
 # would always fail.
 
-def MakeTempFile():
-  temporary = tempfile.mktemp()
-  def Cleanup():
-    try:
-      os.unlink(temporary)
-    except OSError:
-      pass
-  atexit.register(Cleanup)
-  return temporary
-
-def MakeTempDir():
-  temporary_dir = tempfile.mkdtemp()
-  def Cleanup():
-    try:
-      shutil.rmtree(temporary_dir)
-    except OSError:
-      pass
-  atexit.register(Cleanup)
-  return temporary_dir
-
-temporary_file = MakeTempFile()
-os.close(os.open(temporary_file, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0600))
+file_handle, file_path = env.MakeTempFile(prefix='tmp_syscalls')
+os.close(file_handle)
 
 sysconf_nprocessors_nexe = env.ComponentProgram('sysconf_nprocessors_test',
                                                 ['sysconf_nprocessors.c'],
@@ -249,7 +226,7 @@ node = env.CommandSelLdrTestNacl(
     sysconf_nprocessors_nexe,
     filter_regex='"= ' + str(multiprocessing.cpu_count()) + ' processors"',
     filter_inverse=True,
-    stdout_golden=temporary_file)
+    stdout_golden=file_path)
 
 # TODO(jfb): Remove the conditional.  The OSX coverage bots are
 # failing due to library versioning issues.  See
@@ -269,7 +246,7 @@ filepos_nexe = env.ComponentProgram('filepos_test',
 node = env.CommandSelLdrTestNacl(
   'filepos_test.out',
   filepos_nexe,
-  ['-t', MakeTempDir()],
+  ['-t', env.MakeTempDir(prefix='tmp_syscalls')],
   sel_ldr_flags=['-a'])
 
 env.AddNodeToTestSuite(node,

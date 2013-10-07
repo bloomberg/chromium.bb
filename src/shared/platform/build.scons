@@ -5,11 +5,8 @@
 # found in the LICENSE file.
 
 
-import atexit
 import os
 import platform
-import tempfile
-import shutil
 import sys
 
 Import('env')
@@ -151,28 +148,12 @@ nacl_host_dir_test_exe = env.ComponentProgram('nacl_host_dir_test',
 # works for Files, but possibly not for Dir -- and apparently it does
 # not, since the path that results is OBJ_DIR relative.
 
-# We need a temporary directory, since it is impossible to check a
-# file the name of which is exactly 255 characters into subversion.
-# (Actually, it has to be 255-9=246 characters or less, since svn
-# wants to create a file the name of which is the original with
-# '.svn-base' appended.
-
-def MakeTempDir(dir=None):
-  temporary_dir = tempfile.mkdtemp(dir=dir)
-  def Cleanup():
-    try:
-      shutil.rmtree(temporary_dir)
-    except OSError:
-      pass
-  atexit.register(Cleanup)
-  return temporary_dir
-
 node = env.CommandTest('nacl_host_dir_test.out',
                        [nacl_host_dir_test_exe,
                         '-f',
                         env.File('testdata/sample_dir1_expected.txt'),
                         '-d',
-                        MakeTempDir()])
+                        env.MakeTempDir(prefix='tmp_platform')])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_dir_test')
 
 
@@ -213,7 +194,8 @@ nacl_host_desc_mmap_test_exe = env.ComponentProgram(
 
 
 node = env.CommandTest('nacl_host_desc_mmap_test.out',
-                       [nacl_host_desc_mmap_test_exe, '-t', MakeTempDir()])
+                       [nacl_host_desc_mmap_test_exe, '-t',
+                        env.MakeTempDir(prefix='tmp_platform')])
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_desc_mmap_test',
                        is_broken=env.UsingEmulator())
@@ -227,7 +209,7 @@ if env.Bit('windows'):
 
   node = env.CommandTest('nacl_host_desc_mmap_win_test.out',
                          [nacl_host_desc_mmap_win_test_exe,
-                          '-t', MakeTempDir()])
+                          '-t', env.MakeTempDir(prefix='tmp_platform')])
 
   env.AddNodeToTestSuite(node, ['small_tests'],
                          'run_nacl_host_desc_mmap_win_test')
@@ -239,7 +221,7 @@ nacl_host_desc_pread_pwrite_test_exe = env.ComponentProgram(
 
 node = env.CommandTest('nacl_host_desc_pread_pwrite_test.out',
                        [nacl_host_desc_pread_pwrite_test_exe,
-                        '-t', MakeTempDir()])
+                        '-t', env.MakeTempDir(prefix='tmp_platform')])
 
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_nacl_host_desc_pread_pwrite_test')
@@ -270,7 +252,8 @@ else:
 
 node = env.CommandTest(
   'nacl_host_desc_big_file_test.out',
-  [nacl_host_desc_big_file_nexe, '-t', MakeTempDir(dir=d)],
+  [nacl_host_desc_big_file_nexe, '-t',
+   env.MakeTempDir(prefix='tmp_platform', dir=d)],
   size=test_size)
 
 env.AddNodeToTestSuite(node,

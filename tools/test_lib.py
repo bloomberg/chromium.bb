@@ -7,12 +7,15 @@
 
 """
 
+import atexit
 import difflib
-import re
 import os
+import re
+import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 
 
 
@@ -268,3 +271,34 @@ def RegexpFilterLines(regexp, inverse, group_only, lines):
       result.append(line)
 
   return '\n'.join(result)
+
+
+def MakeTempDir(env, **kwargs):
+  """Create a temporary directory and arrange to clean it up on exit.
+
+  Passes arguments through to tempfile.mkdtemp
+  """
+  temporary_dir = tempfile.mkdtemp(**kwargs)
+  def Cleanup():
+    try:
+      shutil.rmtree(temporary_dir)
+    except BaseException as e:
+      sys.stderr.write('Unable to delete dir %s on exit: %s\n' % (
+        temporary_dir, e))
+  atexit.register(Cleanup)
+  return temporary_dir
+
+def MakeTempFile(env, **kwargs):
+  """Create a temporary file and arrange to clean it up on exit.
+
+  Passes arguments through to tempfile.mkstemp
+  """
+  handle, path = tempfile.mkstemp()
+  def Cleanup():
+    try:
+      os.unlink(path)
+    except BaseException as e:
+      sys.stderr.write('Unable to delete file %s on exit: %s\n' % (
+        path, e))
+  atexit.register(Cleanup)
+  return handle, path

@@ -559,6 +559,9 @@ def EnsureRequiredBuildWarnings(env):
 
 pre_base_env.AddMethod(EnsureRequiredBuildWarnings)
 
+# Expose MakeTempDir and MakeTempFile to scons scripts
+pre_base_env.AddMethod(test_lib.MakeTempDir)
+pre_base_env.AddMethod(test_lib.MakeTempFile)
 
 # Method to add target suffix to name.
 def NaClTargetArchSuffix(env, name):

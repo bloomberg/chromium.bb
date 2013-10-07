@@ -3,10 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import atexit
-import shutil
-import tempfile
-
 Import('env')
 
 if 'TRUSTED_ENV' not in env:
@@ -20,17 +16,6 @@ if env.Bit('host_mac'):
 env.Append(CPPDEFINES = [['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}'],
                          ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}'],
                          ])
-
-def MakeTempDir():
-  temporary_dir = tempfile.mkdtemp()
-  def Cleanup():
-    try:
-      shutil.rmtree(temporary_dir)
-    except OSError:
-      pass
-  atexit.register(Cleanup)
-  return temporary_dir
-
 
 if not env.AllowNonStableBitcode():
   Return()
@@ -61,7 +46,7 @@ nexe = env.ComponentProgram('mmap_prot_exec',
 node = env.CommandSelLdrTestNacl(
     'mmap_prot_exec.out',
     nexe,
-    nexe_command_line + ['-t', MakeTempDir()],
+    nexe_command_line + ['-t', env.MakeTempDir(prefix='tmp_mmap_prot')],
     sel_ldr_flags=['-a'],
     osenv=['NACL_FAULT_INJECTION=' +
            'MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GPF/100:' +
@@ -81,7 +66,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_prot_exec_test',
 disabled_syscall_node = env.CommandSelLdrTestNacl(
     'mmap_prot_exec_disabled.out',
     nexe,
-    nexe_command_line + ['-t', MakeTempDir(), '-d'],
+    nexe_command_line + ['-t', env.MakeTempDir(prefix='tmp_mmap_prot'), '-d'],
     sel_ldr_flags=['-a'],
     osenv=['NACL_FAULT_INJECTION=' +
            'MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GP1F/100:' +
