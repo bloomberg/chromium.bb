@@ -14,6 +14,7 @@
       # have the same dependencies. Once browser_extensions is untangled from
       # browser, then we can clean up these dependencies.
       'dependencies': [
+        'cast_channel_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -148,6 +149,10 @@
         'browser/extensions/api/braille_display_private/brlapi_connection.h',
         'browser/extensions/api/browsing_data/browsing_data_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.h',
+        'browser/extensions/api/cast_channel/cast_channel_api.cc',
+        'browser/extensions/api/cast_channel/cast_channel_api.h',
+        'browser/extensions/api/cast_channel/cast_socket.cc',
+        'browser/extensions/api/cast_channel/cast_socket.h',
         'browser/extensions/api/cloud_print_private/cloud_print_private_api.cc',
         'browser/extensions/api/cloud_print_private/cloud_print_private_api.h',
         'browser/extensions/api/command_line_private/command_line_private_api.cc',
@@ -1101,6 +1106,17 @@
           ],
         }],
       ],
+    },
+    {
+      # Protobuf compiler / generator for chrome.cast.channel-related protocol buffers.
+      'target_name': 'cast_channel_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/extensions/api/cast_channel/cast_channel.proto' ],
+      'variables': {
+          'proto_in_dir': 'browser/extensions/api/cast_channel',
+          'proto_out_dir': 'chrome/browser/extensions/api/cast_channel',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
   ],
   'conditions': [

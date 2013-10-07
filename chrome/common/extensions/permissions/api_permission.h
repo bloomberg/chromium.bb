@@ -51,6 +51,7 @@ class APIPermission {
     kBookmarkManagerPrivate,
     kBrailleDisplayPrivate,
     kBrowsingData,
+    kCast,
     kChromeosInfoPrivate,
     kClipboardRead,
     kClipboardWrite,

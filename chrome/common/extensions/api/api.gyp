@@ -32,6 +32,7 @@
           'bookmarks.json',
           'braille_display_private.idl',
           'browsing_data.json',
+          'cast_channel.idl',
           'chromeos_info_private.json',
           'cloud_print_private.json',
           'command_line_private.json',

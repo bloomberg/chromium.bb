@@ -1,0 +1,119 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// API for communicating with a Google Cast device over an authenticated
+// channel.
+namespace cast.channel {
+
+  // The state of the channel.
+  enum ReadyState {
+    // The channel is connecting.
+    connecting,
+    // The channel is open and available for messaging.
+    open,
+    // The channel is closing.
+    closing,
+    // The channel is closed.
+    closed
+  };
+
+  // Error conditions that the channel may encounter.  All error conditions
+  // are terminal.  When an error condition is encountered the API will:
+  // (1) Transition the channel to readyState == 'closed'.
+  // (2) Set ChannelInfo.lastError to the error condition.
+  // (3) Fire an onError event with the error condition.
+  // (4) Fire an onClose event.
+  enum ChannelError {
+    // cast.channel.send() was called when ChannelInfo.readyState != 'open'.
+    channel_not_open,
+    // Authentication was requested and the receiver could not be
+    // authenticated (invalid signature, invalid handhake, TLS error, etc.)
+    authentication_error,
+    // A new channel could not be created for reasons unrelated to
+    // authentication (e.g., there is already an open channel to the same URL).
+    connect_error,
+    // There was an error writing or reading from the underlying socket.
+    socket_error,
+    // A transport level occurred (like an unparseable message).
+    transport_error,
+    // The client attempted to send an unsupported message type through the
+    // channel.
+    invalid_message,
+    // An invalid channel id was passed.
+    invalid_channel_id,
+    // Unspecified error.
+    unknown
+  };
+
+  // Describes the state of a channel to a Cast receiver.
+  dictionary ChannelInfo {
+    // Id for the channel.
+    long channelId;
+
+    // The URL to the receiver.  The URL should be of the form:
+    // cast://<IP>:<port> (for an unauthenticated channel) or
+    // casts://<IP>:<port> (for an authenticated channel).  Name resolution is
+    // not currently supported for cast:// URLs, but may be added in the future.
+    DOMString url;
+
+    // The current state of the channel.
+    ReadyState readyState;
+      
+    // If set, the last error condition encountered by the channel.
+    ChannelError? errorState;
+  };
+
+  // Describes a message sent or received over the channel.  Currently only
+  // string messages are supported, although ArrayBuffer and Blob types may be
+  // supported in the future.
+  dictionary MessageInfo {
+    // The message namespace.  A namespace is a URN of the form
+    // urn:cast-x:<namespace> that is used to interpret and route Cast messages.
+    DOMString namespace_;
+
+    // The content of the message.  Must be either a string or an ArrayBuffer.
+    any data;
+  };
+
+  // Callback holding the result of a channel operation.
+  callback ChannelInfoCallback = void (ChannelInfo result);
+
+  interface Functions {
+    // Opens a new channel to the Cast receiver specified by the URL.  Only one
+    // channel may be connected to the same URL from the same extension at a
+    // time.  If the open request is successful, the callback will be invoked
+    // with a ChannelInfo with readyState == 'connecting'.  If unsuccessful, the
+    // callback will be invoked with a ChannelInfo with channel.readyState ==
+    // 'closed' and channel.errorState will be set to the error condition.
+    static void open(DOMString url,
+                     ChannelInfoCallback callback);
+
+    // Sends a message on the channel and invokes callback with the resulting
+    // channel status.  The channel must be in readyState == 'open'.  If
+    // unsuccessful, channel.readyState will be set to 'closed',
+    // channel.errorState will be set to the error condition.
+    static void send(ChannelInfo channel,
+                     MessageInfo message,
+                     ChannelInfoCallback callback);
+
+    // Requests that the channel be closed and invokes callback with the
+    // resulting channel status.  The channel must be in readyState == 'open' or
+    // 'connecting'.  If successful, onClose will be fired with readyState ==
+    // 'closed'.  If unsuccessful, channel.readyState will be set to 'closed',
+    // and channel.errorState will be set to the error condition.
+    static void close(ChannelInfo channel,
+                      ChannelInfoCallback callback);
+  };
+
+  // Events on the channel.
+  interface Events {
+    // Fired when a message is received on an open channel.
+    static void onMessage(ChannelInfo channel,
+                          MessageInfo message);
+
+    // Fired when an error occurs as a result of a channel method or a network
+    // event.
+    static void onError(ChannelInfo channel);
+  };
+};

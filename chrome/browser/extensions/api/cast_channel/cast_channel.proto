@@ -1,0 +1,36 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package extensions.api.cast_channel;
+
+message CastMessage {
+  // Always pass a version of the protocol for future compatibility
+  // requirements.
+  enum ProtocolVersion {
+    CASTV2_1_0 = 0;
+  }
+  required ProtocolVersion protocol_version = 1;
+
+  // This is the core multiplexing key.
+  required string namespace = 2;
+
+  // Encoding and payload info follows.
+
+  // What type of data do we have in this message.
+  enum PayloadType {
+    STRING = 0;
+    BINARY = 1;  // Could add ping/pong or keep alive of some sort here.
+  }
+  required PayloadType payload_type = 3;
+
+  // Depending on payloadType,
+  // payload data will one of the following optional fields.
+  optional string payload_utf8 = 4;
+  optional bytes payload_binary = 5;
+}
+

@@ -104,6 +104,10 @@
     "dependencies": ["permission:browsingData"],
     "contexts": ["blessed_extension"]
   },
+  "cast.channel": {
+    "dependencies": ["permission:cast"],
+    "contexts": ["blessed_extension"]
+  },
   "chromeosInfoPrivate": {
     "platform": "chromeos",
     "dependencies": ["permission:chromeosInfoPrivate"],

@@ -172,6 +172,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kBookmarkManagerPrivate, "bookmarkManagerPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kCast, "cast",
+      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kCommandLinePrivate, "commandLinePrivate",
