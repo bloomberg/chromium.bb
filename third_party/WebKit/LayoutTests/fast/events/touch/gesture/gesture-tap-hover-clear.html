@@ -55,17 +55,17 @@ function runTests()
         return;
     }
 
-    if (!eventSender.gestureTapDown || !eventSender.gestureTap || !eventSender.mouseMoveTo) {
-        debug('GestureTapDown, GestureTap, or MouseMoveTo is not supported by this platform');
+    if (!eventSender.gestureShowPress || !eventSender.gestureTap || !eventSender.mouseMoveTo) {
+        debug('GestureShowPress, GestureTap, or MouseMoveTo is not supported by this platform');
         return;
     }
 
     debug("The Don't Click Me div should not be visible.");
     shouldBe("dontClickMe.offsetTop", "0");
 
-    debug("The Don't Click Me div should be visible after a GestureTapDown on the Hover Over Me div.");
+    debug("The Don't Click Me div should be visible after a GestureShowPress on the Hover Over Me div.");
     shouldBe(document.elementFromPoint(50, 50).id, "hoverme");
-    eventSender.gestureTapDown(50, 50);
+    eventSender.gestureShowPress(50, 50);
     shouldBe("dontClickMe.offsetTop", "100");
 
     debug("The Don't Click Me div should not be visible after a GestureTap on the Click Me div.");
@@ -73,9 +73,9 @@ function runTests()
     eventSender.gestureTap(250, 250);
     shouldBe("dontClickMe.offsetTop", "0");
 
-    debug("The Don't Click Me div should be visible after a GestureTapDown on the Hover Over Me div.");
+    debug("The Don't Click Me div should be visible after a GestureShowPress on the Hover Over Me div.");
     shouldBe(document.elementFromPoint(50, 50).id, "hoverme");
-    eventSender.gestureTapDown(50, 50);
+    eventSender.gestureShowPress(50, 50);
     shouldBe("dontClickMe.offsetTop", "100");
 
     debug("The Don't Click Me div should not be visible after a mouse move to below the Click Me div.");

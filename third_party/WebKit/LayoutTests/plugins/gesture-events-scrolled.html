@@ -26,8 +26,8 @@
         window.scroll(0, 400);
 
         // These events should not reach the plugin since it's futher down on the page.
-        eventSender.gestureTapDown(30, 30);
-        eventSender.gestureTapDown(30, 530);
+        eventSender.gestureShowPress(30, 30);
+        eventSender.gestureShowPress(30, 530);
 
         // Send some gesture events to the plugin.
         var positionX = 30;

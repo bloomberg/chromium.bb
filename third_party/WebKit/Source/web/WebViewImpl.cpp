@@ -667,8 +667,14 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     bool eventSwallowed = false;
     bool eventCancelled = false; // for disambiguation
 
+    // TODO - once chrome passes GestureShowPress and GestureTapDown events correctly,
+    // don't retype tap down events. See crbug.com/302752.
+    WebInputEvent::Type eventType = event.type;
+    if (eventType == WebInputEvent::GestureTapDown)
+        eventType = WebInputEvent::GestureShowPress;
+
     // Special handling for slow-path fling gestures, which have no PlatformGestureEvent equivalent.
-    switch (event.type) {
+    switch (eventType) {
     case WebInputEvent::GestureFlingStart: {
         if (mainFrameImpl()->frame()->eventHandler()->isScrollbarHandlingGestures()) {
             m_client->didHandleGestureEvent(event, eventCancelled);
@@ -705,8 +711,8 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
     // Handle link highlighting outside the main switch to avoid getting lost in the
     // complicated set of cases handled below.
-    switch (event.type) {
-    case WebInputEvent::GestureTapDown:
+    switch (eventType) {
+    case WebInputEvent::GestureShowPress:
         // Queue a highlight animation, then hand off to regular handler.
 #if OS(LINUX) || OS(ANDROID)
         if (settingsImpl()->gestureTapHighlightEnabled())
@@ -723,7 +729,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         break;
     }
 
-    switch (event.type) {
+    switch (eventType) {
     case WebInputEvent::GestureTap: {
         m_client->cancelScheduledContentIntents();
         if (detectContentOnTouch(platformEvent.position())) {
@@ -789,7 +795,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
         break;
     }
-    case WebInputEvent::GestureTapDown: {
+    case WebInputEvent::GestureShowPress: {
         m_client->cancelScheduledContentIntents();
         eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
         break;

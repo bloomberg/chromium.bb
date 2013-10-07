@@ -21,7 +21,7 @@ function runTest() {
     }
 
     if (window.eventSender) {
-        eventSender.gestureTapDown(x, y);
+        eventSender.gestureShowPress(x, y);
         document.getElementById("targetFrame").contentWindow.scrollTo(0, 90);
         window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
     } else {

@@ -186,6 +186,17 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     {
         WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureShowPress;
+        webGestureEvent.data.tapDown.width = 10;
+        webGestureEvent.data.tapDown.height = 10;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(5, platformGestureBuilder.area().width());
+        EXPECT_EQ(5, platformGestureBuilder.area().height());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureLongPress;
         webGestureEvent.data.longPress.width = 10;
         webGestureEvent.data.longPress.height = 10;

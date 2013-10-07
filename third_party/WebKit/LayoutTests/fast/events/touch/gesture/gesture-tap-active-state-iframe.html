@@ -33,8 +33,8 @@ function runTests(ba)
         return;
     }
 
-    if (!eventSender.gestureTapDown) {
-        debug('GestureTapDown is not supported by this platform');
+    if (!eventSender.gestureShowPress) {
+        debug('GestureShowPress is not supported by this platform');
         return;
     }
     
@@ -45,7 +45,7 @@ function runTests(ba)
     shouldBeFalse("isBoxActive()");
 
     debug("Verify tapdown,tap sets and clears active");
-    eventSender.gestureTapDown(450, 50);
+    eventSender.gestureShowPress(450, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.gestureTap(450, 50);
     shouldBeFalse("isBoxActive()");

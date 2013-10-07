@@ -12,7 +12,7 @@ This test is successful if no link highlight appears (in particular, the entire 
 should be white and not grey).
 </div>
 <script>
-// This test makes sure a previous highlight does not survive beyond the next GestureTapDown, even
+// This test makes sure a previous highlight does not survive beyond the next GestureShowPress, even
 // if the new event fails to produce a valid target for highlighting.
 function runTest() {
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
@@ -25,11 +25,11 @@ function runTest() {
 
     if (window.eventSender) {
         // Generate valid link highlight.
-        eventSender.gestureTapDown(x, y);
+        eventSender.gestureShowPress(x, y);
         window.testRunner.display();
 
         // Generate tap in region with no valid target ... this should cancel the first tap.
-        eventSender.gestureTapDown(150, 150);
+        eventSender.gestureShowPress(150, 150);
         window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
     } else {
         debug("This test requires DumpRenderTree.");

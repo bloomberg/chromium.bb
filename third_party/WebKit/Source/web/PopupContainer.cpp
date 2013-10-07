@@ -306,6 +306,7 @@ bool PopupContainer::handleGestureEvent(const PlatformGestureEvent& gestureEvent
     case PlatformEvent::GestureScrollBegin:
     case PlatformEvent::GestureScrollEnd:
     case PlatformEvent::GestureTapDown:
+    case PlatformEvent::GestureShowPress:
         break;
     default:
         ASSERT_NOT_REACHED();

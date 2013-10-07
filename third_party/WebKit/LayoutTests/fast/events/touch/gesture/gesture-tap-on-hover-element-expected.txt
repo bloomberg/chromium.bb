@@ -10,7 +10,7 @@ See https://bugs.webkit.org/show_bug.cgi?id=103283 for details.
 
 The Click Me div should not be visible.
 PASS clickMe.offsetTop is 0
-The Click Me div should be visible after a GestureTapDown on the Hover Over Me div.
+The Click Me div should be visible after a GestureShowPress on the Hover Over Me div.
 PASS hoverme is hoverme
 PASS clickMe.offsetTop is 100
 Tapping on the Click Me div should dispatch a click to the Click Me div and not to the Don't Click Me div and the Click Me div should still be visible.

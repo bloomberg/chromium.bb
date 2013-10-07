@@ -47,8 +47,8 @@ function runTests()
         return;
     }
 
-    if (!eventSender.gestureTapDown) {
-        debug('GestureTapDown is not supported by this platform');
+    if (!eventSender.gestureShowPress) {
+        debug('GestureShowPress is not supported by this platform');
         return;
     }
 
@@ -56,25 +56,25 @@ function runTests()
     shouldBeFalse("isBoxActive()");
 
     debug("Verify tapdown,tap sets and clears active");
-    eventSender.gestureTapDown(50, 50);
+    eventSender.gestureShowPress(50, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.gestureTap(50, 50);
     shouldBeFalse("isBoxActive()");
 
     debug("Verify tapdown,tapcancel on the element sets and clears active");
-    eventSender.gestureTapDown(50, 50);
+    eventSender.gestureShowPress(50, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.gestureTapCancel(50, 50);
     shouldBeFalse("isBoxActive()");
 
     debug("Verify tap elsewhere still clears active");
-    eventSender.gestureTapDown(50, 50);
+    eventSender.gestureShowPress(50, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.gestureTap(400, 250);
     shouldBeFalse("isBoxActive()");
 
     debug("Verify tapCancel elsewhere still clears active");
-    eventSender.gestureTapDown(50, 50);
+    eventSender.gestureShowPress(50, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.gestureTapCancel(400, 250);
     shouldBeFalse("isBoxActive()");
@@ -87,7 +87,7 @@ function runTests()
     eventSender.touchEnd();
 
     debug("Verify that touchstart/touchend doesn't cancel active");
-    eventSender.gestureTapDown(50, 50);
+    eventSender.gestureShowPress(50, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.addTouchPoint(50, 50);
     eventSender.touchStart();

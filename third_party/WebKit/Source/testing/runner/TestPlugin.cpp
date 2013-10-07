@@ -520,6 +520,7 @@ bool TestPlugin::handleInputEvent(const WebInputEvent& event, WebCursorInfo& inf
     case WebInputEvent::GestureTapUnconfirmed:
                                              eventName = "GestureTapUnconfirmed"; break;
     case WebInputEvent::GestureTapDown:      eventName = "GestureTapDown"; break;
+    case WebInputEvent::GestureShowPress:    eventName = "GestureShowPress"; break;
     case WebInputEvent::GestureTapCancel:    eventName = "GestureTapCancel"; break;
     case WebInputEvent::GestureDoubleTap:    eventName = "GestureDoubleTap"; break;
     case WebInputEvent::GestureTwoFingerTap: eventName = "GestureTwoFingerTap"; break;

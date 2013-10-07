@@ -295,7 +295,7 @@ private:
 
     bool isKeyEventAllowedInFullScreen(FullscreenElementStack*, const PlatformKeyboardEvent&) const;
 
-    bool handleGestureTapDown();
+    bool handleGestureShowPress();
 
     bool handleScrollGestureOnResizer(Node*, const PlatformGestureEvent&);
 

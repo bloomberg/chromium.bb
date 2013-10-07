@@ -58,6 +58,7 @@ public:
         GestureTap,
         GestureTapUnconfirmed,
         GestureTapDown,
+        GestureShowPress,
         GestureTapDownCancel,
         GestureTwoFingerTap,
         GestureLongPress,

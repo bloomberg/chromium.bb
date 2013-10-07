@@ -9,13 +9,13 @@ See https://bugs.webkit.org/show_bug.cgi?id=103283 for details.
 
 The Don't Click Me div should not be visible.
 PASS dontClickMe.offsetTop is 0
-The Don't Click Me div should be visible after a GestureTapDown on the Hover Over Me div.
+The Don't Click Me div should be visible after a GestureShowPress on the Hover Over Me div.
 PASS hoverme is hoverme
 PASS dontClickMe.offsetTop is 100
 The Don't Click Me div should not be visible after a GestureTap on the Click Me div.
 PASS clickme is clickme
 PASS dontClickMe.offsetTop is 0
-The Don't Click Me div should be visible after a GestureTapDown on the Hover Over Me div.
+The Don't Click Me div should be visible after a GestureShowPress on the Hover Over Me div.
 PASS hoverme is hoverme
 PASS dontClickMe.offsetTop is 100
 The Don't Click Me div should not be visible after a mouse move to below the Click Me div.

@@ -21,7 +21,7 @@ function runTest() {
     }
 
     if (window.eventSender && window.testRunner) {
-        eventSender.gestureTapDown(x, y);
+        eventSender.gestureShowPress(x, y);
         window.testRunner.display();
 
         document.getElementById("targetFrame").contentDocument.getElementById('divToControlCompositing').style.webkitTransform = "";

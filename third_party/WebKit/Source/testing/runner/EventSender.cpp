@@ -304,6 +304,7 @@ EventSender::EventSender(TestInterfaces* interfaces)
     bindMethod("gestureScrollUpdateWithoutPropagation", &EventSender::gestureScrollUpdateWithoutPropagation);
     bindMethod("gestureTap", &EventSender::gestureTap);
     bindMethod("gestureTapDown", &EventSender::gestureTapDown);
+    bindMethod("gestureShowPress", &EventSender::gestureShowPress);
     bindMethod("gestureTapCancel", &EventSender::gestureTapCancel);
     bindMethod("gestureLongPress", &EventSender::gestureLongPress);
     bindMethod("gestureLongTap", &EventSender::gestureLongTap);
@@ -1242,6 +1243,12 @@ void EventSender::gestureTapDown(const CppArgumentList& arguments, CppVariant* r
     gestureEvent(WebInputEvent::GestureTapDown, arguments);
 }
 
+void EventSender::gestureShowPress(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+    gestureEvent(WebInputEvent::GestureShowPress, arguments);
+}
+
 void EventSender::gestureTapCancel(const CppArgumentList& arguments, CppVariant* result)
 {
     result->setNull();
@@ -1323,6 +1330,14 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
         event.y = point.y;
         break;
     case WebInputEvent::GestureTapDown:
+        event.x = point.x;
+        event.y = point.y;
+        if (arguments.size() >= 4) {
+            event.data.tapDown.width = static_cast<float>(arguments[2].toDouble());
+            event.data.tapDown.height = static_cast<float>(arguments[3].toDouble());
+        }
+        break;
+    case WebInputEvent::GestureShowPress:
         event.x = point.x;
         event.y = point.y;
         if (arguments.size() >= 4) {

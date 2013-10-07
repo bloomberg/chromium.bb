@@ -33,7 +33,7 @@ function runTest() {
     // be displayed correctly after all these operations.
     if (window.eventSender && window.testRunner) {
 
-        eventSender.gestureTapDown(x, y);
+        eventSender.gestureShowPress(x, y);
         window.testRunner.display();
 
         document.getElementById('divToForceCompositedLayer').style.webkitTransform = 'translateZ(0)';

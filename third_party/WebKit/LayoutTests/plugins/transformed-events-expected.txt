@@ -22,7 +22,7 @@ Plugin received event: MouseMove
 * 10, 10
 Plugin received event: MouseWheel
 * 10, 10
-Plugin received event: GestureTapDown
+Plugin received event: GestureShowPress
 * 10, 10
 Plugin received event: GestureTap
 * 10, 10

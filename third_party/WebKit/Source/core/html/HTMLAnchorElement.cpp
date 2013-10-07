@@ -92,7 +92,7 @@ private:
     void handleMouseOut(Event* event);
     void handleLeftMouseDown(Event* event);
     void handleGestureTapUnconfirmed(Event*);
-    void handleGestureTapDown(Event*);
+    void handleGestureShowPress(Event*);
     void handleClick(Event* event);
 
     bool shouldPrefetch(const KURL&);
@@ -720,8 +720,8 @@ void HTMLAnchorElement::PrefetchEventHandler::handleEvent(Event* event)
         handleMouseOut(event);
     else if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton)
         handleLeftMouseDown(event);
-    else if (event->type() == eventNames().gesturetapdownEvent)
-        handleGestureTapDown(event);
+    else if (event->type() == eventNames().gestureshowpressEvent)
+        handleGestureShowPress(event);
     else if (event->type() == eventNames().gesturetapunconfirmedEvent)
         handleGestureTapUnconfirmed(event);
     else if (isLinkClick(event))
@@ -767,7 +767,7 @@ void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapUnconfirmed(Event*
     prefetch(WebKit::WebPreconnectMotivationLinkTapUnconfirmed);
 }
 
-void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapDown(Event* event)
+void HTMLAnchorElement::PrefetchEventHandler::handleGestureShowPress(Event* event)
 {
     m_tapDownTimestamp = event->timeStamp();
 

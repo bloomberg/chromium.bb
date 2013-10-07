@@ -76,6 +76,7 @@ namespace WebCore {
     macro(gesturetap) \
     macro(gesturetapunconfirmed) \
     macro(gesturetapdown) \
+    macro(gestureshowpress) \
     macro(gesturescrollstart) \
     macro(gesturescrollend) \
     macro(gesturescrollupdate) \
@@ -311,6 +312,7 @@ namespace WebCore {
             return eventType == gesturetapEvent
                 || eventType == gesturetapunconfirmedEvent
                 || eventType == gesturetapdownEvent
+                || eventType == gestureshowpressEvent
                 || eventType == gesturescrollstartEvent
                 || eventType == gesturescrollendEvent
                 || eventType == gesturescrollupdateEvent;

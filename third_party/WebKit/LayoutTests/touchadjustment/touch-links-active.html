@@ -57,7 +57,7 @@
     {
         curElement = element;
         if (isLinkActive()) testFailed('Link unexpectedly active on entry');
-        eventSender.gestureTapDown(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+        eventSender.gestureShowPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
         shouldBeTrue("isLinkActive()");
         eventSender.gestureTapCancel(touchpoint.x, touchpoint.y);
         if (isLinkActive()) testFailed('Link unexpectedly active on exit');
@@ -114,8 +114,8 @@
             debug('This test requires DumpRenderTree');
             return;
         }
-        if (!window.eventSender.gestureTapDown) {
-            debug('GestureTapDown not supported by this platform');
+        if (!window.eventSender.gestureShowPress) {
+            debug('GestureShowPress not supported by this platform');
             return;
         } 
           

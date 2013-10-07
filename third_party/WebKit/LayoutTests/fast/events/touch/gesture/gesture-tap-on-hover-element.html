@@ -57,8 +57,8 @@ function runTests()
         return;
     }
 
-    if (!eventSender.gestureTapDown || !eventSender.gestureTap) {
-        debug('GestureTapDown or GestureTap is not supported by this platform');
+    if (!eventSender.gestureShowPress || !eventSender.gestureTap) {
+        debug('GestureShowPress or GestureTap is not supported by this platform');
         return;
     }
 
@@ -68,9 +68,9 @@ function runTests()
     debug("The Click Me div should not be visible.");
     shouldBe("clickMe.offsetTop", "0");
 
-    debug("The Click Me div should be visible after a GestureTapDown on the Hover Over Me div.");
+    debug("The Click Me div should be visible after a GestureShowPress on the Hover Over Me div.");
     shouldBe(document.elementFromPoint(50, 50).id, "hoverme");
-    eventSender.gestureTapDown(50, 50);
+    eventSender.gestureShowPress(50, 50);
     shouldBe("clickMe.offsetTop", "100");
 
     debug("Tapping on the Click Me div should dispatch a click to the Click Me div and not to the Don't Click Me div and the Click Me div should still be visible.");

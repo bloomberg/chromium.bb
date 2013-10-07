@@ -340,7 +340,7 @@ bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
 {
     bool handled = false;
     switch (evt.type()) {
-    case PlatformEvent::GestureTapDown:
+    case PlatformEvent::GestureShowPress:
         setPressedPart(theme()->hitTest(this, evt.position()));
         m_pressedPos = (orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y());
         return true;

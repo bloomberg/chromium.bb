@@ -47,7 +47,7 @@ function verticalScrollTest() {
     var scrollbarY = movingDiv.offsetTop + scrollThumbSafeOffset;
 
     shouldBe('movingDiv.scrollTop', '0');
-    eventSender.gestureTapDown(scrollbarX, scrollbarY);
+    eventSender.gestureShowPress(scrollbarX, scrollbarY);
     eventSender.gestureScrollBegin(scrollbarX, scrollbarY);
     eventSender.gestureScrollUpdate(0, 20);
     eventSender.gestureScrollEnd(0, 0);

@@ -24,7 +24,7 @@ function runTest() {
     }
 
     if (window.eventSender) {
-        eventSender.gestureTapDown(x, y);
+        eventSender.gestureShowPress(x, y);
         // Force display of highlight before navigating to second page.
         window.testRunner.display();
         window.location = 'resources/gesture-tapHighlight-simple-navigate-destination.html';

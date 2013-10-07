@@ -22,7 +22,7 @@ function runTest() {
     }
 
     if (window.eventSender && window.testRunner) {
-        eventSender.gestureTapDown(x, y);
+        eventSender.gestureShowPress(x, y);
         window.testRunner.display();
 
         targetFrame.style.webkitTransform = "translateZ(0)";

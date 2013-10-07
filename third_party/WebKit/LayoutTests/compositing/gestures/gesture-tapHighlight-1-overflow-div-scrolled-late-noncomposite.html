@@ -32,7 +32,7 @@ function runTest() {
     // then scrolls that div, then exits. If everything is working correctly, the link highlight will still
     // be displayed correctly after all these operations.
     if (window.eventSender && window.testRunner) {
-        eventSender.gestureTapDown(x, y);
+        eventSender.gestureShowPress(x, y);
         window.testRunner.display();
 
         document.getElementById('divToControlCompositedLayer').style.webkitTransform = "";

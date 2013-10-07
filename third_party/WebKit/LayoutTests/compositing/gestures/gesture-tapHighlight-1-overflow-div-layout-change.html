@@ -29,7 +29,7 @@ function runTest() {
     // In this test a link highlight is commenced, then a new node is inserted before the highlight
     // target, forcing a layout change that moves the target node mid-animation.
     if (window.eventSender) {
-        eventSender.gestureTapDown(x, y);
+        eventSender.gestureShowPress(x, y);
         var newLink = document.createElement('a');
         newLink.setAttribute('href', '');
         newLink.innerHTML = 'Link 3';

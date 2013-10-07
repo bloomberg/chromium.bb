@@ -121,6 +121,7 @@ public:
     void gestureScrollUpdateWithoutPropagation(const CppArgumentList&, CppVariant*);
     void gestureTap(const CppArgumentList&, CppVariant*);
     void gestureTapDown(const CppArgumentList&, CppVariant*);
+    void gestureShowPress(const CppArgumentList&, CppVariant*);
     void gestureTapCancel(const CppArgumentList&, CppVariant*);
     void gestureLongPress(const CppArgumentList&, CppVariant*);
     void gestureLongTap(const CppArgumentList&, CppVariant*);

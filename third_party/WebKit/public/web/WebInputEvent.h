@@ -118,6 +118,7 @@ public:
         GestureScrollUpdateWithoutPropagation,
         GestureFlingStart,
         GestureFlingCancel,
+        GestureShowPress,
         GestureTap,
         GestureTapUnconfirmed,
         GestureTapDown,
@@ -234,6 +235,7 @@ public:
             || type == GestureTapUnconfirmed
             || type == GestureTapDown
             || type == GestureTapCancel
+            || type == GestureShowPress
             || type == GestureDoubleTap
             || type == GestureTwoFingerTap
             || type == GestureLongPress

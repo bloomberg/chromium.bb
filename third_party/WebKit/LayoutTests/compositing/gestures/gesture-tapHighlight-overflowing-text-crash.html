@@ -8,7 +8,7 @@
       x = (clientRect.left + clientRect.right) / 2;
       y = (clientRect.top +  clientRect.bottom) / 2;
       if (window.testRunner) {
-          eventSender.gestureTapDown(x, y);
+          eventSender.gestureShowPress(x, y);
           testRunner.dumpAsText();
       }
   }

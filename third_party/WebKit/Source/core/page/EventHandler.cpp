@@ -264,7 +264,7 @@ static inline bool scrollNode(float delta, ScrollGranularity granularity, Scroll
 
 static inline bool shouldGesturesTriggerActive()
 {
-    // If the platform we're on supports GestureTapDown and GestureTapCancel then we'll
+    // If the platform we're on supports GestureShowPress and GestureTapCancel then we'll
     // rely on them to set the active state. Unfortunately there's no generic way to
     // know in advance what event types are supported.
     return true;
@@ -2245,7 +2245,7 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
         m_previousWheelScrolledNode = stopNode;
 }
 
-bool EventHandler::handleGestureTapDown()
+bool EventHandler::handleGestureShowPress()
 {
     FrameView* view = m_frame->view();
     if (!view)
@@ -2277,8 +2277,8 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 
     IntPoint adjustedPoint = gestureEvent.position();
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent;
-    if (gestureEvent.type() == PlatformEvent::GestureTapDown ||
-        gestureEvent.type() == PlatformEvent::GestureTapUnconfirmed) {
+    if (gestureEvent.type() == PlatformEvent::GestureShowPress
+        || gestureEvent.type() == PlatformEvent::GestureTapUnconfirmed) {
         adjustGesturePosition(gestureEvent, adjustedPoint);
         hitType |= HitTestRequest::Active;
     } else if (gestureEvent.type() == PlatformEvent::GestureTapDownCancel)
@@ -2346,8 +2346,8 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
         return handleGestureScrollEnd(gestureEvent);
     case PlatformEvent::GestureTap:
         return handleGestureTap(gestureEvent);
-    case PlatformEvent::GestureTapDown:
-        return handleGestureTapDown();
+    case PlatformEvent::GestureShowPress:
+        return handleGestureShowPress();
     case PlatformEvent::GestureLongPress:
         return handleGestureLongPress(gestureEvent);
     case PlatformEvent::GestureLongTap:
@@ -2719,6 +2719,7 @@ bool EventHandler::adjustGesturePosition(const PlatformGestureEvent& gestureEven
     case PlatformEvent::GestureTap:
     case PlatformEvent::GestureTapUnconfirmed:
     case PlatformEvent::GestureTapDown:
+    case PlatformEvent::GestureShowPress:
         bestClickableNodeForTouchPoint(gestureEvent.position(), IntSize(gestureEvent.area().width() / 2, gestureEvent.area().height() / 2), adjustedPoint, targetNode);
         break;
     case PlatformEvent::GestureLongPress:
