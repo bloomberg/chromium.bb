@@ -265,13 +265,13 @@ bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
                                        options);
   ObjectProxyTable::iterator iter = object_proxy_table_.find(key);
   if (iter != object_proxy_table_.end()) {
+    scoped_refptr<ObjectProxy> object_proxy = iter->second;
+    object_proxy_table_.erase(iter);
     // Object is present. Remove it now and Detach in the DBus thread.
     GetDBusTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&Bus::RemoveObjectProxyInternal,
-                   this, iter->second, callback));
-
-    object_proxy_table_.erase(iter);
+                   this, object_proxy, callback));
     return true;
   }
   return false;

@@ -70,7 +70,7 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
     // There is no helper for the profile, create it.
     dbus::ObjectProxy* object_proxy =
         bus_->GetObjectProxy(shill::kFlimflamServiceName, ipconfig_path);
-    ShillClientHelper* helper = new ShillClientHelper(bus_, object_proxy);
+    ShillClientHelper* helper = new ShillClientHelper(object_proxy);
     helper->MonitorPropertyChanged(shill::kFlimflamIPConfigInterface);
     helpers_.insert(HelperMap::value_type(ipconfig_path.value(), helper));
     return helper;

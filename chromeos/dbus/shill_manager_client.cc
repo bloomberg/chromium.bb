@@ -219,7 +219,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
   virtual void Init(dbus::Bus* bus) OVERRIDE {
     proxy_ = bus->GetObjectProxy(shill::kFlimflamServiceName,
                                  dbus::ObjectPath(shill::kFlimflamServicePath));
-    helper_.reset(new ShillClientHelper(bus, proxy_));
+    helper_.reset(new ShillClientHelper(proxy_));
     helper_->MonitorPropertyChanged(shill::kFlimflamManagerInterface);
   }
 
