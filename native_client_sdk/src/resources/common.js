@@ -433,8 +433,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
       var tc = toolchains.indexOf(searchVars.tc) !== -1 ?
           searchVars.tc : toolchains[0];
-      var config = configs.indexOf(searchVars.config) !== -1 ?
-          searchVars.config : configs[0];
+
+      // If the config value is included in the search vars, use that.
+      // Otherwise default to Release if it is valid, or the first value if
+      // Release is not valid.
+      if (configs.indexOf(searchVars.config) !== -1)
+        var config = searchVars.config;
+      else if (configs.indexOf('Release') !== -1)
+        var config = 'Release';
+      else
+        var config = configs[0];
+
       var pathFormat = body.dataset.path;
       var path = pathFormat.replace('{tc}', tc).replace('{config}', config);
 
