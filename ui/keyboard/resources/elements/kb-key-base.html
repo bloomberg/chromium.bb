@@ -118,6 +118,7 @@
         this.longPressTimer = this.generateLongPressTimer();
       },
       out: function(event) {
+        this.classList.remove('active');
         clearTimeout(this.longPressTimer);
       },
       up: function(event) {
