@@ -566,7 +566,7 @@ void TitleWatcher::DidStopLoading(RenderViewHost* render_view_host) {
   TestTitle();
 }
 
-void TitleWatcher::TitleWasSet(bool explicit_set) {
+void TitleWatcher::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
   TestTitle();
 }
 

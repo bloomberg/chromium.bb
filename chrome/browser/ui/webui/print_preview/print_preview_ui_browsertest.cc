@@ -10,8 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 
@@ -28,11 +27,11 @@ class PrintPreviewTest : public InProcessBrowserTest {
 #endif
 
   void Print() {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-        content::NotificationService::AllSources());
+    content::TestNavigationObserver nav_observer(NULL);
+    nav_observer.StartWatchingNewWebContents();
     chrome::ExecuteCommand(browser(), IDC_PRINT);
-    observer.Wait();
+    nav_observer.Wait();
+    nav_observer.StopWatchingNewWebContents();
   }
 };
 

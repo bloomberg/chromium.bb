@@ -619,9 +619,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // 3) Post a message from the foo window to the opener.  The opener will
   // reply, causing the foo window to update its own title.
-  WindowedNotificationObserver title_observer(
-      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-      Source<WebContents>(foo_contents));
+  base::string16 expected_title = ASCIIToUTF16("msg");
+  TitleWatcher title_watcher(foo_contents, expected_title);
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       foo_contents,
       "window.domAutomationController.send(postToOpener('msg','*'));",
@@ -629,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_TRUE(success);
   ASSERT_FALSE(
       opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
-  title_observer.Wait();
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // We should have received only 1 message in the opener and "foo" tabs,
   // and updated the title.
@@ -649,16 +648,14 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // 4) Now post a message from the _blank window to the foo window.  The
   // foo window will update its title and will not reply.
-  WindowedNotificationObserver title_observer2(
-      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-      Source<WebContents>(foo_contents));
+  expected_title = ASCIIToUTF16("msg2");
+  TitleWatcher title_watcher2(foo_contents, expected_title);
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       new_contents,
       "window.domAutomationController.send(postToFoo('msg2'));",
       &success));
   EXPECT_TRUE(success);
-  title_observer2.Wait();
-  EXPECT_EQ(ASCIIToUTF16("msg2"), foo_contents->GetTitle());
+  ASSERT_EQ(expected_title, title_watcher2.WaitAndGetTitle());
 
   // This postMessage should have created a swapped out RVH for the new
   // SiteInstance in the target=_blank window.
@@ -900,17 +897,15 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ShowLoadingURLUntilSpoof) {
 
   // Now modify the contents of the new window from the opener.  This will also
   // modify the title of the document to give us something to listen for.
-  WindowedNotificationObserver title_observer(
-      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-      Source<WebContents>(contents));
+  base::string16 expected_title = ASCIIToUTF16("Modified Title");
+  TitleWatcher title_watcher(contents, expected_title);
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       orig_contents,
       "window.domAutomationController.send(modifyNewWindow());",
       &success));
   EXPECT_TRUE(success);
-  title_observer.Wait();
-  EXPECT_EQ(ASCIIToUTF16("Modified Title"), contents->GetTitle());
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // At this point, we should no longer be showing the destination URL.
   // The visible entry should be null, resulting in about:blank in the address

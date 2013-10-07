@@ -15,9 +15,6 @@
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -61,7 +58,8 @@ class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
 };
 
 Shell::Shell(WebContents* web_contents)
-    : devtools_frontend_(NULL),
+    : WebContentsObserver(web_contents),
+      devtools_frontend_(NULL),
       is_fullscreen_(false),
       window_(NULL),
       url_edit_view_(NULL),
@@ -72,8 +70,6 @@ Shell::Shell(WebContents* web_contents)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDumpRenderTree))
     headless_ = true;
-  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-      Source<WebContents>(web_contents));
   windows_.push_back(this);
 
   if (!shell_created_callback_.is_null()) {
@@ -344,20 +340,9 @@ void Shell::WorkerCrashed(WebContents* source) {
   WebKitTestController::Get()->WorkerCrashed();
 }
 
-void Shell::Observe(int type,
-                    const NotificationSource& source,
-                    const NotificationDetails& details) {
-  if (type == NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED) {
-    std::pair<NavigationEntry*, bool>* title =
-        Details<std::pair<NavigationEntry*, bool> >(details).ptr();
-
-    if (title->first) {
-      string16 text = title->first->GetTitle();
-      PlatformSetTitle(text);
-    }
-  } else {
-    NOTREACHED();
-  }
+void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
+  if (entry)
+    PlatformSetTitle(entry->GetTitle());
 }
 
 void Shell::OnDevToolsWebContentsDestroyed() {

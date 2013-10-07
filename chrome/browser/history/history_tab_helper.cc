@@ -18,9 +18,6 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -38,8 +35,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(HistoryTabHelper);
 HistoryTabHelper::HistoryTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       received_page_title_(false) {
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-                 content::Source<WebContents>(web_contents));
 }
 
 HistoryTabHelper::~HistoryTabHelper() {
@@ -148,20 +143,13 @@ void HistoryTabHelper::DidNavigateAnyFrame(
   UpdateHistoryForNavigation(add_page_args);
 }
 
-void HistoryTabHelper::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED);
-  std::pair<content::NavigationEntry*, bool>* title =
-      content::Details<std::pair<content::NavigationEntry*, bool> >(
-          details).ptr();
-
+void HistoryTabHelper::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
   if (received_page_title_)
     return;
 
-  if (title->first) {
-    UpdateHistoryPageTitle(*title->first);
-    received_page_title_ = title->second;
+  if (entry) {
+    UpdateHistoryPageTitle(*entry);
+    received_page_title_ = explicit_set;
   }
 }
 

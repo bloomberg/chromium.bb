@@ -2812,7 +2812,7 @@ bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
   view_->SetPageTitle(final_title);
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    TitleWasSet(explicit_set));
+                    TitleWasSet(entry, explicit_set));
 
   // TODO(avi): Remove. http://crbug.com/170921
   std::pair<NavigationEntry*, bool> details =

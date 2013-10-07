@@ -210,7 +210,7 @@ class TitleWatcher : public WebContentsObserver {
  private:
   // Overridden WebContentsObserver methods.
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void TitleWasSet(bool explicit_set) OVERRIDE;
+  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) OVERRIDE;
 
   void TestTitle();
 

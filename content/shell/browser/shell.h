@@ -11,9 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ipc/ipc_channel.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -49,7 +48,7 @@ class WebContents;
 // This represents one window of the Content Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
 class Shell : public WebContentsDelegate,
-              public NotificationObserver {
+              public WebContentsObserver {
  public:
   static const int kDefaultTestWindowWidthDip;
   static const int kDefaultTestWindowHeightDip;
@@ -193,10 +192,8 @@ class Shell : public WebContentsDelegate,
 
   gfx::NativeView GetContentView();
 
-  // NotificationObserver
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // WebContentsObserver
+  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) OVERRIDE;
 
   void OnDevToolsWebContentsDestroyed();
 
@@ -233,9 +230,6 @@ class Shell : public WebContentsDelegate,
 
   gfx::NativeWindow window_;
   gfx::NativeEditView url_edit_view_;
-
-  // Notification manager
-  NotificationRegistrar registrar_;
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   WNDPROC default_edit_wnd_proc_;
