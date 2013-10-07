@@ -1272,6 +1272,7 @@ const char kGetFeedbackLogs[] = "GetFeedbackLogs";
 const char kTestICMP[] = "TestICMP";
 const char kTestICMPWithOptions[] = "TestICMPWithOptions";
 const char kLogKernelTaskStates[] = "LogKernelTaskStates";
+const char kUploadCrashes[] = "UploadCrashes";
 }  // namespace debugd
 
 namespace permission_broker {
