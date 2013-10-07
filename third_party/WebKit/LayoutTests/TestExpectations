@@ -618,10 +618,6 @@ webkit.org/b/87175 [ Win Linux ] fast/regions/overflow-in-uniform-regions.html [
 # See http://crbug.com/244285 for the crash instance.
 webkit.org/b/87321 fast/history/history-subframe-with-name.html [ Failure Pass Timeout Crash ]
 
-# a:enabled and area:enabled are not correctly implemented yet.
-webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-anchor.html [ ImageOnlyFailure ]
-webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-area.html [ ImageOnlyFailure ]
-
 # Requires setUseDeferredFrameLoading() API from LayoutTestController.
 webkit.org/b/87652 http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Skip ]
 
