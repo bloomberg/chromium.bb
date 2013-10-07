@@ -174,7 +174,13 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 // Below 2 test will make a complete PeerConnection-based call between pc1 and
 // pc2, and then use the remote stream to setup a call between pc3 and pc4, and
 // then verify that video is received on pc3 and pc4.
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CanForwardRemoteStream) {
+// Flaky on win xp. http://crbug.com/304775
+#if defined(OS_WIN)
+#define MAYBE_CanForwardRemoteStream DISABLED_CanForwardRemoteStream
+#else
+#define MAYBE_CanForwardRemoteStream CanForwardRemoteStream
+#endif
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanForwardRemoteStream) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
