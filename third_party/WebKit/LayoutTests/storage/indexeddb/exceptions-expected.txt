@@ -451,13 +451,13 @@ Expecting exception from cursor.advance(1)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor is being iterated or has iterated past its end.
+Exception message: Failed to execute 'advance' on 'IDBCursor': The cursor is being iterated or has iterated past its end.
 The transaction this IDBCursor belongs to is not active.
 Expecting exception from cursorFromInactiveTransaction.advance(1)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
-Exception message: The transaction has finished.
+Exception message: Failed to execute 'advance' on 'IDBCursor': The transaction has finished.
 
 IDBCursor.continue()
 The parameter is not a valid key.
@@ -465,32 +465,32 @@ Expecting exception from cursor.continue({})
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'DataError'
-Exception message: The parameter is not a valid key.
+Exception message: Failed to execute 'continue' on 'IDBCursor': The parameter is not a valid key.
 The parameter is less than or equal to this cursor's position and this cursor's direction is "next" or "nextunique".
 Expecting exception from cursor.continue(-Infinity)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'DataError'
-Exception message: The parameter is less than or equal to this cursor's position.
+Exception message: Failed to execute 'continue' on 'IDBCursor': The parameter is less than or equal to this cursor's position.
 The parameter is greater than or equal to this cursor's position and this cursor's direction is "prev" or "prevunique".
 Expecting exception from reverseCursor.continue(100)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'DataError'
-Exception message: The parameter is greater than or equal to this cursor's position.
+Exception message: Failed to execute 'continue' on 'IDBCursor': The parameter is greater than or equal to this cursor's position.
 Calling this method more than once before new cursor data has been loaded is not allowed and results in a DOMException of type InvalidStateError being thrown.
 cursor.continue()
 Expecting exception from cursor.continue()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor is being iterated or has iterated past its end.
+Exception message: Failed to execute 'continue' on 'IDBCursor': The cursor is being iterated or has iterated past its end.
 The transaction this IDBCursor belongs to is not active.
 Expecting exception from cursorFromInactiveTransaction.continue()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
-Exception message: The transaction has finished.
+Exception message: Failed to execute 'continue' on 'IDBCursor': The transaction has finished.
 
 IDBCursor.delete()
 If this cursor's got value flag is false, or if this cursor was created using openKeyCursor a DOMException of type InvalidStateError is thrown.
@@ -498,13 +498,13 @@ Expecting exception from keyCursor.delete()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor is a key cursor.
+Exception message: Failed to execute 'delete' on 'IDBCursor': The cursor is a key cursor.
 The transaction this IDBCursor belongs to is not active.
 Expecting exception from cursorFromInactiveTransaction.delete()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
-Exception message: The transaction has finished.
+Exception message: Failed to execute 'delete' on 'IDBCursor': The transaction has finished.
 
 IDBCursor.update()
 If this cursor's got value flag is false or if this cursor was created using openKeyCursor. This method throws a DOMException of type InvalidStateError.
@@ -512,13 +512,13 @@ Expecting exception from keyCursor.update({})
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor is a key cursor.
+Exception message: Failed to execute 'update' on 'IDBCursor': The cursor is a key cursor.
 If the effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key, this method throws a DOMException of type DataError.
 Expecting exception from inlineCursor.update({id: 1})
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'DataError'
-Exception message: The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.
+Exception message: Failed to execute 'update' on 'IDBCursor': The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.
 If the structured clone algorithm throws an exception, that exception is rethrown.
 Expecting exception from cursor.update(self)
 PASS Exception was thrown.
@@ -529,7 +529,7 @@ Expecting exception from cursorFromInactiveTransaction.update({})
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
-Exception message: The transaction has finished.
+Exception message: Failed to execute 'update' on 'IDBCursor': The transaction has finished.
 readOnlyTransaction = db.transaction('store', 'readonly')
 request = readOnlyTransaction.objectStore('store').openCursor()
 cursorFromReadOnlyTransaction = request.result
@@ -540,7 +540,7 @@ Expecting exception from cursorFromReadOnlyTransaction.delete()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'ReadOnlyError'
-Exception message: A write operation was attempted in a read-only transaction.
+Exception message: Failed to execute 'delete' on 'IDBCursor': The record may not be deleted inside a read-only transaction.
 
 One more IDBCursor.update() test:
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBCursor belongs to has its mode set to "readonly".
@@ -548,7 +548,7 @@ Expecting exception from cursorFromReadOnlyTransaction.update({})
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'ReadOnlyError'
-Exception message: A write operation was attempted in a read-only transaction.
+Exception message: Failed to execute 'update' on 'IDBCursor': The record may not be updated inside a read-only transaction.
 
 3.2.8 Transaction
 

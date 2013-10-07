@@ -323,22 +323,22 @@ Expecting exception from cursor.delete()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'delete' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.update(1)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'update' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.continue()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'continue' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.advance(1)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'advance' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 
 testIndexCursor():
 store.put({id: 123}, 0)
@@ -352,22 +352,22 @@ Expecting exception from cursor.delete()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'delete' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.update(1)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'update' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.continue()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'continue' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.advance(1)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'advance' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 
 testIndexOfDeletedStoreCursor():
 deletedStore = connection.createObjectStore('deletedStore')
@@ -382,22 +382,22 @@ Expecting exception from cursor.delete()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'delete' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.update(1)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'update' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.continue()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'continue' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 Expecting exception from cursor.advance(1)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
-Exception message: The cursor's source or effective object store has been deleted.
+Exception message: Failed to execute 'advance' on 'IDBCursor': The cursor's source or effective object store has been deleted.
 PASS successfullyParsed is true
 
 TEST COMPLETE
