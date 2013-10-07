@@ -981,7 +981,7 @@ static v8::Handle<v8::Object> create${JSInterfaceName}Wrapper($parameters{namesp
 {
     Settings* settings = element->document().settings();
     if (!RuntimeEnabledFeatures::mediaEnabled() || (settings && !settings->mediaEnabled()))
-        return createV8$parameters{namespace}DirectWrapper(element, creationContext, isolate);
+        return createV8$parameters{namespace}FallbackWrapper(to$parameters{fallbackInterfaceName}(element), creationContext, isolate);
     return wrap(static_cast<${JSInterfaceName}*>(element), creationContext, isolate);
 }
 
