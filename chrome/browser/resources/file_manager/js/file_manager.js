@@ -114,10 +114,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   var DOUBLE_CLICK_TIMEOUT = 200;
 
-  var removeChildren = function(element) {
-    element.textContent = '';
-  };
-
   /**
    * Update the element to display the information about remaining space for
    * the storage.
@@ -431,20 +427,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'menuitem, hr';
     cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
 
-    if (this.dialogType == DialogType.FULL_PAGE) {
-      // This is to prevent the buttons from stealing focus on mouse down.
-      var preventFocus = function(event) {
-        event.preventDefault();
-      };
-
-      var maximizeButton = this.dialogDom_.querySelector('#maximize-button');
-      maximizeButton.addEventListener('click', this.onMaximize.bind(this));
-      maximizeButton.addEventListener('mousedown', preventFocus);
-
-      var closeButton = this.dialogDom_.querySelector('#close-button');
-      closeButton.addEventListener('click', this.onClose.bind(this));
-      closeButton.addEventListener('mousedown', preventFocus);
-    }
+    this.ui_.initWindowButtons();
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
@@ -458,26 +441,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         e.stopPropagation();
       });
     }
-  };
-
-  FileManager.prototype.onMaximize = function() {
-    // Do not maximize when running via chrome://files in a browser.
-    if (util.platform.runningInBrowser())
-      return;
-
-    var appWindow = chrome.app.window.current();
-    if (appWindow.isMaximized())
-      appWindow.restore();
-    else
-      appWindow.maximize();
-  };
-
-  FileManager.prototype.onClose = function() {
-    // Do not close when running via chrome://files in a browser.
-    if (util.platform.runningInBrowser())
-      return;
-
-    window.close();
   };
 
   /**
@@ -692,7 +655,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.initDialogType_();
 
     // Create the root view of FileManager.
-    this.ui_ = new FileManagerUI(this.dialogDom_);
+    this.ui_ = new FileManagerUI(this.dialogDom_, this.dialogType);
 
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE &&

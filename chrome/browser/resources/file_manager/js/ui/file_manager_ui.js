@@ -8,15 +8,23 @@
  * The root of the file manager's view managing the DOM of Files.app.
  *
  * @param {HTMLElement} element Top level element of Files.app.
+ * @param {DialogType} dialogType Dialog type.
  * @constructor.
  */
-var FileManagerUI = function(element) {
+var FileManagerUI = function(element, dialogType) {
   /**
    * Top level element of Files.app.
    * @type {HTMLElement}
    * @private
    */
   this.element_ = element;
+
+  /**
+   * Dialog type.
+   * @type {DialogType}
+   * @private
+   */
+  this.dialogType_ = dialogType;
 
   /**
    * Error dialog.
@@ -64,7 +72,7 @@ var FileManagerUI = function(element) {
 };
 
 /**
- * Initialize the dialogs.
+ * Initializes the dialogs.
  */
 FileManagerUI.prototype.initDialogs = function() {
   // Initialize the dialog label.
@@ -83,4 +91,51 @@ FileManagerUI.prototype.initDialogs = function() {
       new cr.filebrowser.DefaultActionDialog(this.element_);
   this.suggestAppsDialog = new SuggestAppsDialog(
       this.element_, appState.suggestAppsDialogState || {});
+};
+
+/**
+ * Initializes the window buttons.
+ */
+FileManagerUI.prototype.initWindowButtons = function() {
+  // Do not maximize/close when running via chrome://files in a browser.
+  if (this.dialogType_ !== DialogType.FULL_PAGE ||
+      util.platform.runningInBrowser())
+    return;
+
+  // This is to prevent the buttons from stealing focus on mouse down.
+  var preventFocus = function(event) {
+    event.preventDefault();
+  };
+
+  var maximizeButton = this.element_.querySelector('#maximize-button');
+  maximizeButton.addEventListener('click', this.onMaximize_.bind(this));
+  maximizeButton.addEventListener('mousedown', preventFocus);
+
+  var closeButton = this.element_.querySelector('#close-button');
+  closeButton.addEventListener('click', this.onClose_.bind(this));
+  closeButton.addEventListener('mousedown', preventFocus);
+};
+
+/**
+ * Handles maximize button click.
+ * @private
+ */
+FileManagerUI.prototype.onMaximize_ = function() {
+  var appWindow = chrome.app.window.current();
+  if (appWindow.isMaximized())
+    appWindow.restore();
+  else
+    appWindow.maximize();
+};
+
+/**
+ * Hanldes close button click.
+ * @private
+ */
+FileManagerUI.prototype.onClose_ = function() {
+  // Do not close when running via chrome://files in a browser.
+  if (util.platform.runningInBrowser())
+    return;
+
+  window.close();
 };
