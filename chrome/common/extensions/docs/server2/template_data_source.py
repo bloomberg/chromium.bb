@@ -112,7 +112,7 @@ class TemplateDataSource(object):
       'samples': self._samples_data_source,
       'apps_samples_url': url_constants.GITHUB_BASE,
       'extensions_samples_url': url_constants.EXTENSIONS_SAMPLES,
-      'static': self._base_path + '/static',
+      'static': self._base_path + 'static',
       'true': True,
       'false': False
     }
