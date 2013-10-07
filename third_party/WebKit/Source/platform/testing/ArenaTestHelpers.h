@@ -23,38 +23,58 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "TreeTestHelpers.h"
+#ifndef ArenaTestHelpers_h
+#define ArenaTestHelpers_h
 
-#include "wtf/CurrentTime.h"
+#include "platform/PODArena.h"
+#include "wtf/NotFound.h"
+#include "wtf/Vector.h"
 
-#include <cstdlib>
+#include <gtest/gtest.h>
 
 namespace WebCore {
-namespace TreeTestHelpers {
+namespace ArenaTestHelpers {
 
-int32_t generateSeed()
-{
-    // A seed of 1 has the special behavior of resetting the random
-    // number generator. Assume that if we call this routine that we
-    // don't want this behavior.
-    int32_t seed;
-    do {
-        seed = static_cast<int32_t>(currentTime());
-    } while (seed <= 1);
-    return seed;
-}
+// An allocator for the PODArena which tracks the regions which have
+// been allocated.
+class TrackedAllocator : public PODArena::FastMallocAllocator {
+public:
+    static PassRefPtr<TrackedAllocator> create()
+    {
+        return adoptRef(new TrackedAllocator);
+    }
 
-void initRandom(const int32_t seed)
-{
-    srand(seed);
-}
+    virtual void* allocate(size_t size)
+    {
+        void* result = PODArena::FastMallocAllocator::allocate(size);
+        m_allocatedRegions.append(result);
+        return result;
+    }
 
-int32_t nextRandom(const int32_t maximumValue)
-{
-    // rand_r is not available on Windows
-    return rand() % maximumValue;
-}
+    virtual void free(void* ptr)
+    {
+        size_t slot = m_allocatedRegions.find(ptr);
+        ASSERT_NE(slot, kNotFound);
+        m_allocatedRegions.remove(slot);
+        PODArena::FastMallocAllocator::free(ptr);
+    }
 
-} // namespace TreeTestHelpers
+    bool isEmpty() const
+    {
+        return !numRegions();
+    }
+
+    int numRegions() const
+    {
+        return m_allocatedRegions.size();
+    }
+
+private:
+    TrackedAllocator() { }
+    Vector<void*> m_allocatedRegions;
+};
+
+} // namespace ArenaTestHelpers
 } // namespace WebCore
+
+#endif // ArenaTestHelpers_h

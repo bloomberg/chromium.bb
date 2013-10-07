@@ -127,9 +127,7 @@ public:
     // including comparison of the user data.
     bool operator==(const PODInterval& other) const
     {
-        return (low() == other.low()
-                && high() == other.high()
-                && data() == other.data());
+        return (low() == other.low() && high() == other.high() && data() == other.data());
     }
 
     const T& maxHigh() const { return m_maxHigh; }

@@ -3696,10 +3696,6 @@
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
             'page/ImageBitmapTest.cpp',
-            'platform/PODArenaTest.cpp',
-            'platform/PODFreeListArenaTest.cpp',
-            'platform/PODIntervalTreeTest.cpp',
-            'platform/PODRedBlackTreeTest.cpp',
             'platform/animation/AnimationTranslationUtilTest.cpp',
             'platform/graphics/BitmapImageTest.cpp',
             'platform/graphics/FontTest.cpp',
@@ -3719,9 +3715,6 @@
             'platform/image-decoders/webp/WEBPImageDecoderTest.cpp',
             'platform/testing/FakeWebGraphicsContext3D.h',
             'rendering/RenderOverflowTest.cpp',
-            'tests/ArenaTestHelpers.h',
-            'tests/TreeTestHelpers.cpp',
-            'tests/TreeTestHelpers.h',
         ],
         'scripts_for_in_files': [
             # jinja2/__init__.py contains version string, so sufficient as

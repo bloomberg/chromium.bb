@@ -26,10 +26,10 @@
 // Tests for the red-black tree class.
 
 #include "config.h"
-#include "core/platform/PODRedBlackTree.h"
+#include "platform/PODRedBlackTree.h"
 
-#include "core/tests/ArenaTestHelpers.h"
-#include "core/tests/TreeTestHelpers.h"
+#include "platform/testing/ArenaTestHelpers.h"
+#include "platform/testing/TreeTestHelpers.h"
 #include "wtf/Vector.h"
 
 #include <gtest/gtest.h>
@@ -37,7 +37,6 @@
 namespace WebCore {
 
 using ArenaTestHelpers::TrackedAllocator;
-using TreeTestHelpers::generateSeed;
 using TreeTestHelpers::initRandom;
 using TreeTestHelpers::nextRandom;
 
@@ -204,11 +203,6 @@ void InsertionAndDeletionTest(const int32_t seed, const int treeSize)
 TEST(PODRedBlackTreeTest, RandomDeletionAndInsertionRegressionTest1)
 {
     InsertionAndDeletionTest(12311, 100);
-}
-
-TEST(PODRedBlackTreeTest, TestRandomDeletionAndInsertion)
-{
-    InsertionAndDeletionTest(generateSeed(), 100);
 }
 
 } // namespace WebCore

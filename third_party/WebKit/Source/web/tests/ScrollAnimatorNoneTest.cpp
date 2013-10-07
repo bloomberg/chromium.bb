@@ -36,7 +36,6 @@
 #include "core/platform/ScrollableArea.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntRect.h"
-#include "core/tests/TreeTestHelpers.h"
 
 using namespace std;
 using namespace WebCore;

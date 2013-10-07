@@ -72,7 +72,7 @@
 #ifndef PODRedBlackTree_h
 #define PODRedBlackTree_h
 
-#include "core/platform/PODFreeListArena.h"
+#include "platform/PODFreeListArena.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -373,9 +373,9 @@ private:
                 x = x->right();
         }
         z->setParent(y);
-        if (!y)
+        if (!y) {
             m_root = z;
-        else {
+        } else {
             if (z->data() < y->data())
                 y->setLeft(z);
             else
@@ -434,9 +434,9 @@ private:
 
         // Link x's parent to y.
         y->setParent(x->parent());
-        if (!x->parent())
+        if (!x->parent()) {
             m_root = y;
-        else {
+        } else {
             if (x == x->parent()->left())
                 x->parent()->setLeft(y);
             else
@@ -467,9 +467,9 @@ private:
 
         // Link y's parent to x.
         x->setParent(y->parent());
-        if (!y->parent())
+        if (!y->parent()) {
             m_root = x;
-        else {
+        } else {
             if (y == y->parent()->left())
                 y->parent()->setLeft(x);
             else
@@ -675,11 +675,12 @@ private:
         if (x) {
             x->setParent(y->parent());
             xParent = x->parent();
-        } else
+        } else {
             xParent = y->parent();
-        if (!y->parent())
+        }
+        if (!y->parent()) {
             m_root = x;
-        else {
+        } else {
             if (y == y->parent()->left())
                 y->parent()->setLeft(x);
             else

@@ -32,7 +32,6 @@
 #include "core/rendering/RenderFlowThread.h"
 
 #include "core/dom/Node.h"
-#include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/HitTestRequest.h"
@@ -43,6 +42,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderView.h"
+#include "platform/PODIntervalTree.h"
 
 namespace WebCore {
 

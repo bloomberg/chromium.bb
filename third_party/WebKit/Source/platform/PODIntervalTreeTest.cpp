@@ -26,10 +26,10 @@
 // Tests for the interval tree class.
 
 #include "config.h"
-#include "core/platform/PODIntervalTree.h"
+#include "platform/PODIntervalTree.h"
 
-#include "core/tests/TreeTestHelpers.h"
 #include "platform/Logging.h"
+#include "platform/testing/TreeTestHelpers.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -37,7 +37,6 @@
 
 namespace WebCore {
 
-using TreeTestHelpers::generateSeed;
 using TreeTestHelpers::initRandom;
 using TreeTestHelpers::nextRandom;
 
@@ -346,11 +345,6 @@ TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest4)
     ASSERT_TRUE(tree.checkInvariants());
     tree.remove(tree.createInterval(4, 12));
     ASSERT_TRUE(tree.checkInvariants());
-}
-
-TEST(PODIntervalTreeTest, TestRandomDeletionAndInsertion)
-{
-    InsertionAndDeletionTest(generateSeed(), 1000);
 }
 
 } // namespace WebCore

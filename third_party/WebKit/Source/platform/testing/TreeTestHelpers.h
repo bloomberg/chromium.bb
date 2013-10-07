@@ -23,58 +23,28 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArenaTestHelpers_h
-#define ArenaTestHelpers_h
+// Simple pseudorandom number generator helper functions, used by the
+// red-black and interval tree tests.
+//
+// These are **not** thread safe!
 
-#include "core/platform/PODArena.h"
-#include "wtf/NotFound.h"
-#include "wtf/Vector.h"
+#ifndef TreeTestHelpers_h
+#define TreeTestHelpers_h
 
-#include <gtest/gtest.h>
+#include <stdint.h>
 
 namespace WebCore {
-namespace ArenaTestHelpers {
+namespace TreeTestHelpers {
 
-// An allocator for the PODArena which tracks the regions which have
-// been allocated.
-class TrackedAllocator : public PODArena::FastMallocAllocator {
-public:
-    static PassRefPtr<TrackedAllocator> create()
-    {
-        return adoptRef(new TrackedAllocator);
-    }
+// Initializes the pseudo-random number generator with a specific seed.
+void initRandom(const int32_t seed);
 
-    virtual void* allocate(size_t size)
-    {
-        void* result = PODArena::FastMallocAllocator::allocate(size);
-        m_allocatedRegions.append(result);
-        return result;
-    }
+// Produces the next pseudo-random number in the sequence, in the
+// range from [0..maximumValue). Negative numbers are not allowed and will
+// produce undefined results.
+int32_t nextRandom(const int32_t maximumValue);
 
-    virtual void free(void* ptr)
-    {
-        size_t slot = m_allocatedRegions.find(ptr);
-        ASSERT_NE(slot, kNotFound);
-        m_allocatedRegions.remove(slot);
-        PODArena::FastMallocAllocator::free(ptr);
-    }
-
-    bool isEmpty() const
-    {
-        return !numRegions();
-    }
-
-    int numRegions() const
-    {
-        return m_allocatedRegions.size();
-    }
-
-private:
-    TrackedAllocator() { }
-    Vector<void*> m_allocatedRegions;
-};
-
-} // namespace ArenaTestHelpers
+} // namespace TreeTestHelpers
 } // namespace WebCore
 
-#endif // ArenaTestHelpers_h
+#endif // TreeTestHelpers_h

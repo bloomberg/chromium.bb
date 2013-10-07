@@ -32,8 +32,8 @@
 #include "core/html/MediaControllerInterface.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCue.h"
-#include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/MediaPlayer.h"
+#include "platform/PODIntervalTree.h"
 #include "public/platform/WebMimeRegistry.h"
 
 namespace WebKit { class WebLayer; }

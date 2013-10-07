@@ -26,7 +26,7 @@
 #ifndef PODFreeListArena_h
 #define PODFreeListArena_h
 
-#include "core/platform/PODArena.h"
+#include "platform/PODArena.h"
 
 namespace WebCore {
 

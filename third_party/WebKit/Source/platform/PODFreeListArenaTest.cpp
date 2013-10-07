@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,14 +24,13 @@
  */
 
 #include "config.h"
-#include "core/platform/PODArena.h"
+#include "platform/PODFreeListArena.h"
 
-#include "core/tests/ArenaTestHelpers.h"
+#include "platform/testing/ArenaTestHelpers.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-#include <algorithm>
 #include <gtest/gtest.h>
 
 namespace WebCore {
@@ -50,56 +49,93 @@ struct TestClass1 {
 
 struct TestClass2 {
     TestClass2()
-        : a(1), b(2), c(3), d(4) { }
-
-    float a, b, c, d;
+        : padding(0)
+    {
+        static int TestIds = 0;
+        id = TestIds++;
+    }
+    int id;
+    int padding;
 };
 
 } // anonymous namespace
 
-class PODArenaTest : public testing::Test {
+class PODFreeListArenaTest : public testing::Test {
+protected:
+    int getFreeListSize(const PassRefPtr<PODFreeListArena<TestClass1> > arena) const
+    {
+        return arena->getFreeListSizeForTesting();
+    }
 };
 
 // Make sure the arena can successfully allocate from more than one
 // region.
-TEST_F(PODArenaTest, CanAllocateFromMoreThanOneRegion)
+TEST_F(PODFreeListArenaTest, CanAllocateFromMoreThanOneRegion)
 {
     RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
-    RefPtr<PODArena> arena = PODArena::create(allocator);
+    RefPtr<PODFreeListArena<TestClass1> > arena = PODFreeListArena<TestClass1>::create(allocator);
     int numIterations = 10 * PODArena::DefaultChunkSize / sizeof(TestClass1);
     for (int i = 0; i < numIterations; ++i)
-        arena->allocateObject<TestClass1>();
+        arena->allocateObject();
     EXPECT_GT(allocator->numRegions(), 1);
 }
 
 // Make sure the arena frees all allocated regions during destruction.
-TEST_F(PODArenaTest, FreesAllAllocatedRegions)
+TEST_F(PODFreeListArenaTest, FreesAllAllocatedRegions)
 {
     RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
     {
-        RefPtr<PODArena> arena = PODArena::create(allocator);
+        RefPtr<PODFreeListArena<TestClass1> > arena = PODFreeListArena<TestClass1>::create(allocator);
         for (int i = 0; i < 3; i++)
-            arena->allocateObject<TestClass1>();
+            arena->allocateObject();
         EXPECT_GT(allocator->numRegions(), 0);
     }
     EXPECT_TRUE(allocator->isEmpty());
 }
 
 // Make sure the arena runs constructors of the objects allocated within.
-TEST_F(PODArenaTest, RunsConstructors)
+TEST_F(PODFreeListArenaTest, RunsConstructors)
 {
-    RefPtr<PODArena> arena = PODArena::create();
+    RefPtr<PODFreeListArena<TestClass1> > arena = PODFreeListArena<TestClass1>::create();
     for (int i = 0; i < 10000; i++) {
-        TestClass1* tc1 = arena->allocateObject<TestClass1>();
+        TestClass1* tc1 = arena->allocateObject();
         EXPECT_EQ(0, tc1->x);
         EXPECT_EQ(0, tc1->y);
         EXPECT_EQ(0, tc1->z);
         EXPECT_EQ(1, tc1->w);
-        TestClass2* tc2 = arena->allocateObject<TestClass2>();
-        EXPECT_EQ(1, tc2->a);
-        EXPECT_EQ(2, tc2->b);
-        EXPECT_EQ(3, tc2->c);
-        EXPECT_EQ(4, tc2->d);
+    }
+}
+
+// Make sure freeObject puts the object in the free list.
+TEST_F(PODFreeListArenaTest, AddsFreedObjectsToFreedList)
+{
+    std::vector<TestClass1*> objects;
+    RefPtr<PODFreeListArena<TestClass1> > arena = PODFreeListArena<TestClass1>::create();
+    for (int i = 0; i < 100; i++) {
+        objects.push_back(arena->allocateObject());
+    }
+    for (std::vector<TestClass1*>::iterator it = objects.begin(); it != objects.end(); ++it) {
+        arena->freeObject(*it);
+    }
+    EXPECT_EQ(100, getFreeListSize(arena));
+}
+
+// Make sure allocations use previously freed memory.
+TEST_F(PODFreeListArenaTest, ReusesPreviouslyFreedObjects)
+{
+    std::set<TestClass2*> objects;
+    RefPtr<PODFreeListArena<TestClass2> > arena = PODFreeListArena<TestClass2>::create();
+    for (int i = 0; i < 100; i++) {
+        objects.insert(arena->allocateObject());
+    }
+    for (std::set<TestClass2*>::iterator it = objects.begin(); it != objects.end(); ++it) {
+        arena->freeObject(*it);
+    }
+    for (int i = 0; i < 100; i++) {
+        TestClass2* cur = arena->allocateObject();
+        EXPECT_TRUE(objects.find(cur) != objects.end());
+        EXPECT_TRUE(cur->id >= 100 && cur->id < 200);
+        objects.erase(cur);
     }
 }
 

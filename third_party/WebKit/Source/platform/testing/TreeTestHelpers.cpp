@@ -23,31 +23,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Simple pseudorandom number generator helper functions, used by the
-// red-black and interval tree tests.
-//
-// These are **not** thread safe!
+#include "config.h"
+#include "platform/testing/TreeTestHelpers.h"
 
-#ifndef TreeTestHelpers_h
-#define TreeTestHelpers_h
-
-#include <stdint.h>
+#include <cstdlib>
 
 namespace WebCore {
 namespace TreeTestHelpers {
 
-// Generates a seed value to be passed to initRandom().
-int32_t generateSeed();
+void initRandom(const int32_t seed)
+{
+    srand(seed);
+}
 
-// Initializes the pseudo-random number generator with a specific seed.
-void initRandom(const int32_t seed);
-
-// Produces the next pseudo-random number in the sequence, in the
-// range from [0..maximumValue). Negative numbers are not allowed and will
-// produce undefined results.
-int32_t nextRandom(const int32_t maximumValue);
+int32_t nextRandom(const int32_t maximumValue)
+{
+    // rand_r is not available on Windows
+    return rand() % maximumValue;
+}
 
 } // namespace TreeTestHelpers
 } // namespace WebCore
-
-#endif // TreeTestHelpers_h

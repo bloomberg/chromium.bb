@@ -24,9 +24,9 @@
 #ifndef FloatingObjects_h
 #define FloatingObjects_h
 
-#include "core/platform/PODFreeListArena.h"
-#include "core/platform/PODIntervalTree.h"
 #include "core/rendering/RootInlineBox.h"
+#include "platform/PODFreeListArena.h"
+#include "platform/PODIntervalTree.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 

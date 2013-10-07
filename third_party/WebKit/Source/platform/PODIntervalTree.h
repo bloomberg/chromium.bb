@@ -26,9 +26,9 @@
 #ifndef PODIntervalTree_h
 #define PODIntervalTree_h
 
-#include "core/platform/PODArena.h"
-#include "core/platform/PODInterval.h"
-#include "core/platform/PODRedBlackTree.h"
+#include "platform/PODArena.h"
+#include "platform/PODInterval.h"
+#include "platform/PODRedBlackTree.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -232,15 +232,16 @@ private:
                 localMaxValue = leftMaxValue;
             else
                 localMaxValue = rightMaxValue;
-        } else
+        } else {
             localMaxValue = (leftMaxValue < rightMaxValue) ? rightMaxValue : leftMaxValue;
+        }
         if (localMaxValue < node->data().high())
             localMaxValue = node->data().high();
         if (!(localMaxValue == node->data().maxHigh())) {
 #ifndef NDEBUG
             String localMaxValueString = ValueToString<T>::string(localMaxValue);
             LOG_ERROR("PODIntervalTree verification failed at node 0x%p: localMaxValue=%s and data=%s",
-                      node, localMaxValueString.utf8().data(), node->data().toString().utf8().data());
+                node, localMaxValueString.utf8().data(), node->data().toString().utf8().data());
 #endif
             return false;
         }
