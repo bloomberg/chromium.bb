@@ -74,7 +74,8 @@ void ProtectedMediaIdentifierPermissionContext::
     return;
   }
 
-  DecidePermission(id, requesting_frame, embedder, callback);
+  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
+  DecidePermission(id, requesting_frame, embedder, rvh, callback);
 }
 
 void ProtectedMediaIdentifierPermissionContext::
@@ -90,6 +91,7 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
+    content::RenderViewHost* rvh,
     const base::Callback<void(bool)>& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -126,6 +128,7 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
                      id,
                      requesting_frame,
                      callback));
+      rvh->DisableFullscreenEncryptedMediaPlayback();
       break;
     default:
       NOTREACHED();

@@ -13,6 +13,10 @@
 class PermissionRequestID;
 class Profile;
 
+namespace content {
+class RenderViewHost;
+}
+
 // Manages protected media identifier permissions flow, and delegates UI
 // handling via PermissionQueueController.
 class ProtectedMediaIdentifierPermissionContext
@@ -60,6 +64,7 @@ class ProtectedMediaIdentifierPermissionContext
   void DecidePermission(const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         const GURL& embedder,
+                        content::RenderViewHost* rvh,
                         const base::Callback<void(bool)>& callback);
 
   // Called when permission is granted without interactively asking

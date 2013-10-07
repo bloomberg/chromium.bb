@@ -83,6 +83,7 @@ BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
       fullscreen_player_id_(-1),
+      pending_fullscreen_player_id_(-1),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)),
       weak_ptr_factory_(this) {
 }
@@ -310,11 +311,20 @@ void BrowserMediaPlayerManager::DestroyAllMediaPlayers() {
 void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
   if (fullscreen_player_id_ == player_id)
     return;
+
   if (fullscreen_player_id_ != -1) {
     // TODO(qinmin): Determine the correct error code we should report to WMPA.
     OnError(player_id, MediaPlayerAndroid::MEDIA_ERROR_DECODE);
     return;
   }
+
+  // If the player is pending approval, wait for the approval to happen.
+  if (media_keys_ids_pending_approval_.end() !=
+      media_keys_ids_pending_approval_.find(player_id)) {
+    pending_fullscreen_player_id_ = player_id;
+    return;
+  }
+
   OnEnterFullscreen(player_id);
 }
 
@@ -368,6 +378,20 @@ void BrowserMediaPlayerManager::OnNotifyExternalSurface(
     view->NotifyExternalSurface(player_id, is_request, rect);
 }
 #endif
+
+void BrowserMediaPlayerManager::DisableFullscreenEncryptedMediaPlayback() {
+  if (fullscreen_player_id_ == -1)
+    return;
+
+  // If the fullscreen player is not playing back encrypted video, do nothing.
+  MediaDrmBridge* drm_bridge = GetDrmBridge(fullscreen_player_id_);
+  if (!drm_bridge)
+    return;
+
+  // Exit fullscreen.
+  pending_fullscreen_player_id_ = fullscreen_player_id_;
+  OnExitFullscreen(fullscreen_player_id_);
+}
 
 void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   DCHECK_EQ(fullscreen_player_id_, -1);
@@ -494,6 +518,10 @@ void BrowserMediaPlayerManager::OnGenerateKeyRequest(
     return;
   }
 
+  if (media_keys_ids_approved_.find(media_keys_id) ==
+      media_keys_ids_approved_.end()) {
+    media_keys_ids_pending_approval_.insert(media_keys_id);
+  }
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host());
   web_contents->GetDelegate()->RequestProtectedMediaIdentifierPermission(
@@ -629,8 +657,19 @@ void BrowserMediaPlayerManager::GenerateKeyIfAllowed(
     OnKeyError(media_keys_id, "", media::MediaKeys::kUnknownError, 0);
     return;
   }
-
+  media_keys_ids_pending_approval_.erase(media_keys_id);
+  media_keys_ids_approved_.insert(media_keys_id);
   drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
+
+  // TODO(qinmin): currently |media_keys_id| and player ID are identical.
+  // This might not be true in the future.
+  if (pending_fullscreen_player_id_ != media_keys_id)
+    return;
+
+  pending_fullscreen_player_id_ = -1;
+  MediaPlayerAndroid* player = GetPlayer(media_keys_id);
+  if (player->IsPlaying())
+    OnProtectedSurfaceRequested(media_keys_id);
 }
 
 }  // namespace content

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -105,6 +106,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void DetachExternalVideoSurface(int player_id);
 #endif
 
+  // Called to disble the current fullscreen playback if the video is encrypted.
+  // TODO(qinmin): remove this once we have the new fullscreen mode.
+  void DisableFullscreenEncryptedMediaPlayback();
+
  protected:
   // Clients must use Create() or subclass constructor.
   explicit BrowserMediaPlayerManager(RenderViewHost* render_view_host);
@@ -193,12 +198,22 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // An array of managed media DRM bridges.
   ScopedVector<media::MediaDrmBridge> drm_bridges_;
 
+  // a set of media keys IDs that are pending approval or approved to access
+  // device DRM credentials.
+  // These 2 sets does not cover all the EME videos. If a video only streams
+  // clear data, it will not be included in either set.
+  std::set<int> media_keys_ids_pending_approval_;
+  std::set<int> media_keys_ids_approved_;
+
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.
   scoped_ptr<ContentVideoView> video_view_;
 
   // Player ID of the fullscreen media player.
   int fullscreen_player_id_;
+
+  // The player ID pending to enter fullscreen.
+  int pending_fullscreen_player_id_;
 
   WebContents* web_contents_;
 

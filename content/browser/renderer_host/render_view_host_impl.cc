@@ -578,6 +578,10 @@ void RenderViewHostImpl::ActivateNearestFindResult(int request_id,
 void RenderViewHostImpl::RequestFindMatchRects(int current_version) {
   Send(new ViewMsg_FindMatchRects(GetRoutingID(), current_version));
 }
+
+void RenderViewHostImpl::DisableFullscreenEncryptedMediaPlayback() {
+  media_player_manager_->DisableFullscreenEncryptedMediaPlayback();
+}
 #endif
 
 void RenderViewHostImpl::DragTargetDragEnter(
