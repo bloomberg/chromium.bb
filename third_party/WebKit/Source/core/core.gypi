@@ -1240,8 +1240,6 @@
             'page/PagePopupClient.h',
             'page/PageScaleConstraints.cpp',
             'page/PageScaleConstraints.h',
-            'page/PageScaleConstraintsSet.cpp',
-            'page/PageScaleConstraintsSet.h',
             'page/PageSerializer.cpp',
             'page/PageVisibilityState.cpp',
             'page/Performance.cpp',

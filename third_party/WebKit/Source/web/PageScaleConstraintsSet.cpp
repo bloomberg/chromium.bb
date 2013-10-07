@@ -29,11 +29,13 @@
  */
 
 #include "config.h"
-#include "core/page/PageScaleConstraintsSet.h"
+#include "PageScaleConstraintsSet.h"
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+using namespace WebCore;
+
+namespace WebKit {
 
 static const float defaultMinimumScale = 0.25f;
 static const float defaultMaximumScale = 5.0f;

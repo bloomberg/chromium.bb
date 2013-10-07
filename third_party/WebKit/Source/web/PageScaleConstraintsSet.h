@@ -31,11 +31,11 @@
 #ifndef PageScaleConstraintsSet_h
 #define PageScaleConstraintsSet_h
 
-#include "PageScaleConstraints.h"
 #include "core/dom/ViewportDescription.h"
+#include "core/page/PageScaleConstraints.h"
 #include "platform/geometry/IntSize.h"
 
-namespace WebCore {
+namespace WebKit {
 
 // This class harmonizes the viewport (particularly page scale) constraints from
 // the meta viewport tag and other sources.
@@ -43,26 +43,26 @@ class PageScaleConstraintsSet {
 public:
     PageScaleConstraintsSet();
 
-    PageScaleConstraints defaultConstraints() const;
+    WebCore::PageScaleConstraints defaultConstraints() const;
 
     // Settings defined in the website's viewport tag, if viewport tag support
     // is enabled.
-    const PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
-    void updatePageDefinedConstraints(const ViewportDescription&, IntSize viewSize);
-    void adjustForAndroidWebViewQuirks(const ViewportDescription&, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode);
+    const WebCore::PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
+    void updatePageDefinedConstraints(const WebCore::ViewportDescription&, WebCore::IntSize viewSize);
+    void adjustForAndroidWebViewQuirks(const WebCore::ViewportDescription&, WebCore::IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode);
 
     // Constraints may also be set from Chromium -- this overrides any
     // page-defined values.
-    const PageScaleConstraints& userAgentConstraints() const { return m_userAgentConstraints; }
-    void setUserAgentConstraints(const PageScaleConstraints&);
+    const WebCore::PageScaleConstraints& userAgentConstraints() const { return m_userAgentConstraints; }
+    void setUserAgentConstraints(const WebCore::PageScaleConstraints&);
 
     // Actual computed values, taking into account the above plus the current
     // viewport size and document width.
-    const PageScaleConstraints& finalConstraints() const { return m_finalConstraints; }
+    const WebCore::PageScaleConstraints& finalConstraints() const { return m_finalConstraints; }
     void computeFinalConstraints();
-    void adjustFinalConstraintsToContentsSize(IntSize viewSize, IntSize contentsSize, int nonOverlayScrollbarWidth);
+    void adjustFinalConstraintsToContentsSize(WebCore::IntSize viewSize, WebCore::IntSize contentsSize, int nonOverlayScrollbarWidth);
 
-    void didChangeContentsSize(IntSize contentsSize, float pageScaleFactor);
+    void didChangeContentsSize(WebCore::IntSize contentsSize, float pageScaleFactor);
 
     // This should be set to true on each page load to note that the page scale
     // factor needs to be reset to its initial value.
@@ -73,9 +73,9 @@ public:
     bool constraintsDirty() const { return m_constraintsDirty; }
 
 private:
-    PageScaleConstraints m_pageDefinedConstraints;
-    PageScaleConstraints m_userAgentConstraints;
-    PageScaleConstraints m_finalConstraints;
+    WebCore::PageScaleConstraints m_pageDefinedConstraints;
+    WebCore::PageScaleConstraints m_userAgentConstraints;
+    WebCore::PageScaleConstraints m_finalConstraints;
 
     int m_lastContentsWidth;
 

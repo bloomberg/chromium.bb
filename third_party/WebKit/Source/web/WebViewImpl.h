@@ -39,13 +39,13 @@
 #include "InspectorClientImpl.h"
 #include "NotificationPresenterImpl.h"
 #include "PageOverlayList.h"
+#include "PageScaleConstraintsSet.h"
 #include "PageWidgetDelegate.h"
 #include "UserMediaClientImpl.h"
 #include "WebInputEvent.h"
 #include "WebNavigationPolicy.h"
 #include "WebView.h"
 #include "core/page/PagePopupDriver.h"
-#include "core/page/PageScaleConstraintsSet.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "platform/Timer.h"
@@ -706,7 +706,7 @@ private:
 
     double m_maximumZoomLevel;
 
-    WebCore::PageScaleConstraintsSet m_pageScaleConstraintsSet;
+    PageScaleConstraintsSet m_pageScaleConstraintsSet;
 
     // Saved page scale state.
     float m_savedPageScaleFactor; // 0 means that no page scale factor is saved.
