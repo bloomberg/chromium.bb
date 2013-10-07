@@ -803,8 +803,6 @@ crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ F
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
-crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
-
 crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure ]
 
 crbug.com/234758 [ Debug ] jquery/traversing.html [ Pass Timeout ]

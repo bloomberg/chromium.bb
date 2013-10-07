@@ -5,7 +5,7 @@
         description('<a href="https://bugs.webkit.org/show_bug.cgi?id=98474">Bug 98474</a>: Throttle DOM timers on hidden pages.');
 
         var jsTestIsAsync = true;
-        var previousTime = new Date().getTime();
+        var previousTime = 0;
         var timerCount = 0;
         var firstTimerWhileHidden = true;
         var isPageVisible = true;
@@ -15,8 +15,7 @@
 
         function testTimer()
         {
-            var date = new Date();
-            var time = date.getTime();
+            var time = Date.now();
             if (!isPageVisible) {
                 if (firstTimerWhileHidden) {
                     firstTimerIntervalWhilePageHidden = time - previousTime;
@@ -47,6 +46,7 @@
                 finishJSTest();
                 return;
             }
+            previousTime = Date.now();
             setTimeout(testTimer, timeoutInterval);
         }
 
@@ -64,6 +64,7 @@
             document.getElementById('alignmentInterval').innerText = timerAlignmentInterval / 1000;
 
             testRunner.dumpAsText();
+            previousTime = Date.now();
             setTimeout(testTimer, timeoutInterval);
         }
     </script>
