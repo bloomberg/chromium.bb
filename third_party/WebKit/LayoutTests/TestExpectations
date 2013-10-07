@@ -330,8 +330,6 @@ crbug.com/250935 [ Win ] fast/multicol/shrink-to-column-height-for-pagination.ht
 
 webkit.org/b/111141 fast/regions/seamless-iframe-flowed-into-regions.html [ ImageOnlyFailure ]
 
-crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Pass Timeout ]
-
 # Unexpected gray
 crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ Failure ImageOnlyFailure ]
 
@@ -372,8 +370,6 @@ webkit.org/b/85463 editing/inserting/typing-space-to-trigger-smart-link.html [ S
 # As of Oct 7, 2010, times out on all platforms when doing DEBUG costing 13 seconds on average. Skipping.
 # As of Aug 31, 2012, now times out in release. Marking flaky everywhere.
 crbug.com/32308 fast/frames/cached-frame-counter.html [ Pass Timeout ]
-
-crbug.com/33293 [ Mac Debug ] fast/media/lifetime.html [ Pass Timeout ]
 
 # Chromium DumpRenderTree does not have support for visited links.
 # It always return false in response to isLinkVisited().
@@ -487,8 +483,6 @@ crbug.com/82881 http/tests/appcache/interrupted-update.html [ Failure Pass ]
 # Random timeouts and failures going back a week.
 crbug.com/83290 [ Win ] http/tests/misc/link-rel-prefetch-and-subresource.html [ Pass Timeout ]
 
-webkit.org/b/98906 fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Timeout ]
-
 # CSS Regions tests for region styling and scoped styles
 webkit.org/b/49142 fast/regions/style-scoped-in-flow-override-region-styling-multiple-regions.html [ ImageOnlyFailure ]
 
@@ -501,13 +495,9 @@ webkit.org/b/66419 http/tests/misc/authentication-redirect-1/authentication-sent
 webkit.org/b/66419 http/tests/misc/authentication-redirect-2/authentication-sent-to-redirect-same-origin.html [ Failure Timeout ]
 webkit.org/b/66419 http/tests/misc/authentication-redirect-3/authentication-sent-to-redirect-same-origin-with-location-credentials.html [ Failure Timeout ]
 
-webkit.org/b/66974 [ Debug ] fast/events/keydown-1.html [ Pass Timeout ]
-
 # SVG painting in high DPI mode is broken in DRT.
 webkit.org/b/92511 svg/as-image/animated-svg-repaints-completely-in-hidpi.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/111023 fast/loader/unload-hyperlink-targeted.html [ Pass Timeout ]
-webkit.org/b/111023 fast/dom/Window/Location/set-location-after-close.html [ Pass Timeout ]
 # These tests time out 50% of the time.
 crbug.com/259546 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Skip ]
 crbug.com/259546 fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html [ Skip ]
@@ -606,8 +596,6 @@ webkit.org/b/85949 http/tests/loading/post-in-iframe-with-back-navigation.html [
 webkit.org/b/86114 [ Debug ] animations/combo-transform-translate+scale.html [ Failure Pass ]
 
 webkit.org/b/92279 http/tests/inspector/resource-har-pages.html [ Failure Pass ]
-
-webkit.org/b/86674 [ Debug ] fast/dom/HTMLObjectElement/beforeload-set-text-crash.xhtml [ Pass Timeout ]
 
 # Ref-tests can't have platform specific results.
 webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ ImageOnlyFailure ]
@@ -768,8 +756,6 @@ crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.ht
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
-
-webkit.org/b/111524 [ Debug ] fast/dom/HTMLDocument/document-special-properties.html [ Pass Timeout ]
 
 webkit.org/b/112193 fast/dom/Window/window-postmessage-clone.html [ Failure Pass ]
 
@@ -978,7 +964,6 @@ crbug.com/243736 storage/websql/quota-tracking.html [ Failure Pass ]
 crbug.com/243738 [ Win ] http/tests/loading/preload-append-scan.php [ Timeout Pass ]
 crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
-crbug.com/243782 [ Mac ] fast/dom/HTMLProgressElement/progress-writing-mode.html [ Pass Timeout ]
 crbug.com/243894 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 crbug.com/244111 svg/filters/feMorphology-crash.html [ Pass Timeout ]
 crbug.com/244123 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ Failure Pass ]
