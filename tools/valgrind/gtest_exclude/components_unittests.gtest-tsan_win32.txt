@@ -1,0 +1,6 @@
+# Fails http://crbug.com/304963
+TranslateMetricsTest.ReportContentLanguage
+TranslateMetricsTest.ReportHtmlLang
+TranslateMetricsTest.ReportLanguageDetectionTime
+TranslateMetricsTest.ReportLanguageVerification
+TranslateMetricsTest.ReportSimilarLanguageMatch
