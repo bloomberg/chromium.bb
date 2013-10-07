@@ -25,7 +25,7 @@
 #include "core/loader/NavigationPolicy.h"
 #include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
-#include "core/platform/HostWindow.h"
+#include "platform/HostWindow.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

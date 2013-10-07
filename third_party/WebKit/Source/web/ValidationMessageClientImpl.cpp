@@ -31,12 +31,12 @@
 #include "WebViewImpl.h"
 #include "core/dom/Element.h"
 #include "core/page/FrameView.h"
-#include "core/platform/HostWindow.h"
 #include "core/rendering/RenderObject.h"
-#include "wtf/CurrentTime.h"
+#include "platform/HostWindow.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebViewClient.h"
+#include "wtf/CurrentTime.h"
 
 using namespace WebCore;
 

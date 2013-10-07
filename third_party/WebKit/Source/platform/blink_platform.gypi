@@ -14,6 +14,7 @@
       'FileChooser.cpp',
       'FileChooser.h',
       'FloatConversion.h',
+      'HostWindow.h',
       'JSONValues.cpp',
       'JSONValues.h',
       'Language.cpp',

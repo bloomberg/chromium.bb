@@ -31,7 +31,7 @@
 #ifndef FramelessScrollViewClient_h
 #define FramelessScrollViewClient_h
 
-#include "core/platform/HostWindow.h"
+#include "platform/HostWindow.h"
 
 namespace WebCore {
     class FramelessScrollView;

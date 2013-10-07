@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/platform/PlatformScreen.h"
 
-#include "core/platform/HostWindow.h"
 #include "core/platform/ScrollView.h"
+#include "platform/HostWindow.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"

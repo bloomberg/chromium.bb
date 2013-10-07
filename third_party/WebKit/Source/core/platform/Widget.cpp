@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/platform/Widget.h"
 
-#include "core/platform/HostWindow.h"
 #include "core/platform/ScrollView.h"
+#include "platform/HostWindow.h"
 #include "platform/geometry/IntRect.h"
 
 #include "wtf/Assertions.h"

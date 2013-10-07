@@ -27,11 +27,11 @@
 #include "core/platform/ScrollView.h"
 
 #include "core/accessibility/AXObjectCache.h"
-#include "core/platform/HostWindow.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "platform/HostWindow.h"
 #include "wtf/StdLibExtras.h"
 
 using namespace std;
