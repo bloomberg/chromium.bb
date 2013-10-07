@@ -239,6 +239,7 @@
             'text/StringBuilderTest.cpp',
             'text/StringImplTest.cpp',
             'text/StringOperatorsTest.cpp',
+            'text/TextCodecUTF8Test.cpp',
             'text/WTFStringTest.cpp',
         ],
     },
