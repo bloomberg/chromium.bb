@@ -38,6 +38,7 @@
 #include "core/platform/audio/HRTFPanner.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
+#include "wtf/text/StringHash.h"
 
 using namespace std;
 

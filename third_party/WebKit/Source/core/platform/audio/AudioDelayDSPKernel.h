@@ -22,54 +22,48 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef AudioDelayDSPKernel_h
+#define AudioDelayDSPKernel_h
 
-#if ENABLE(WEB_AUDIO)
-
-#include "modules/webaudio/DelayDSPKernel.h"
-
-#include "core/platform/audio/AudioUtilities.h"
-#include <algorithm>
-
-using namespace std;
+#include "core/platform/audio/AudioArray.h"
+#include "core/platform/audio/AudioDSPKernel.h"
 
 namespace WebCore {
 
-const float SmoothingTimeConstant = 0.020f; // 20ms
+class AudioDelayDSPKernel : public AudioDSPKernel {
+public:
+    AudioDelayDSPKernel(double maxDelayTime, float sampleRate);
 
-DelayDSPKernel::DelayDSPKernel(DelayProcessor* processor)
-    : AudioDelayDSPKernel(processor, AudioNode::ProcessingSizeInFrames)
-{
-    ASSERT(processor && processor->sampleRate() > 0);
-    if (!(processor && processor->sampleRate() > 0))
-        return;
+    virtual void process(const float* source, float* destination, size_t framesToProcess);
+    virtual void reset();
 
-    m_maxDelayTime = processor->maxDelayTime();
-    ASSERT(m_maxDelayTime >= 0);
-    if (m_maxDelayTime < 0)
-        return;
+    double maxDelayTime() const { return m_maxDelayTime; }
 
-    m_buffer.allocate(bufferLengthForDelay(m_maxDelayTime, processor->sampleRate()));
-    m_buffer.zero();
+    void setDelayFrames(double numberOfFrames) { m_desiredDelayFrames = numberOfFrames; }
 
-    m_smoothingRate = AudioUtilities::discreteTimeConstantForSampleRate(SmoothingTimeConstant, processor->sampleRate());
-}
+    virtual double tailTime() const OVERRIDE;
+    virtual double latencyTime() const OVERRIDE;
 
-bool DelayDSPKernel::hasSampleAccurateValues()
-{
-    return delayProcessor()->delayTime()->hasSampleAccurateValues();
-}
+protected:
+    AudioDelayDSPKernel(AudioDSPKernelProcessor*, size_t processingSizeInFrames);
 
-void DelayDSPKernel::calculateSampleAccurateValues(float* delayTimes, size_t framesToProcess)
-{
-    delayProcessor()->delayTime()->calculateSampleAccurateValues(delayTimes, framesToProcess);
-}
+    virtual bool hasSampleAccurateValues();
+    virtual void calculateSampleAccurateValues(float* delayTimes, size_t framesToProcess);
+    virtual double delayTime(float sampleRate);
 
-double DelayDSPKernel::delayTime(float)
-{
-    return delayProcessor()->delayTime()->finalValue();
-}
+    AudioFloatArray m_buffer;
+    double m_maxDelayTime;
+    int m_writeIndex;
+    double m_currentDelayTime;
+    double m_smoothingRate;
+    bool m_firstTime;
+    double m_desiredDelayFrames;
+
+    AudioFloatArray m_delayTimes;
+
+    size_t bufferLengthForDelay(double delayTime, double sampleRate) const;
+};
 
 } // namespace WebCore
 
-#endif // ENABLE(WEB_AUDIO)
+#endif // AudioDelayDSPKernel_h

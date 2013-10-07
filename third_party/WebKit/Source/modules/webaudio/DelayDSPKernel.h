@@ -25,42 +25,24 @@
 #ifndef DelayDSPKernel_h
 #define DelayDSPKernel_h
 
-#include "core/platform/audio/AudioArray.h"
-#include "core/platform/audio/AudioDSPKernel.h"
+#include "core/platform/audio/AudioDelayDSPKernel.h"
 #include "modules/webaudio/DelayProcessor.h"
 
 namespace WebCore {
 
 class DelayProcessor;
 
-class DelayDSPKernel : public AudioDSPKernel {
+class DelayDSPKernel : public AudioDelayDSPKernel {
 public:
     explicit DelayDSPKernel(DelayProcessor*);
-    DelayDSPKernel(double maxDelayTime, float sampleRate);
 
-    virtual void process(const float* source, float* destination, size_t framesToProcess);
-    virtual void reset();
-
-    double maxDelayTime() const { return m_maxDelayTime; }
-
-    void setDelayFrames(double numberOfFrames) { m_desiredDelayFrames = numberOfFrames; }
-
-    virtual double tailTime() const OVERRIDE;
-    virtual double latencyTime() const OVERRIDE;
+protected:
+    virtual bool hasSampleAccurateValues() OVERRIDE;
+    virtual void calculateSampleAccurateValues(float* delayTimes, size_t framesToProcess) OVERRIDE;
+    virtual double delayTime(float sampleRate) OVERRIDE;
 
 private:
-    AudioFloatArray m_buffer;
-    double m_maxDelayTime;
-    int m_writeIndex;
-    double m_currentDelayTime;
-    double m_smoothingRate;
-    bool m_firstTime;
-    double m_desiredDelayFrames;
-
-    AudioFloatArray m_delayTimes;
-
     DelayProcessor* delayProcessor() { return static_cast<DelayProcessor*>(processor()); }
-    size_t bufferLengthForDelay(double delayTime, double sampleRate) const;
 };
 
 } // namespace WebCore

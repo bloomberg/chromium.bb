@@ -2680,6 +2680,8 @@
             'platform/audio/AudioDSPKernel.h',
             'platform/audio/AudioDSPKernelProcessor.cpp',
             'platform/audio/AudioDSPKernelProcessor.h',
+            'platform/audio/AudioDelayDSPKernel.cpp',
+            'platform/audio/AudioDelayDSPKernel.h',
             'platform/audio/AudioDestination.h',
             'platform/audio/AudioFIFO.cpp',
             'platform/audio/AudioFIFO.h',

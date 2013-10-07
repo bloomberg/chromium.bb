@@ -25,10 +25,10 @@
 #ifndef HRTFPanner_h
 #define HRTFPanner_h
 
+#include "core/platform/audio/AudioDelayDSPKernel.h"
 #include "core/platform/audio/FFTConvolver.h"
 #include "core/platform/audio/HRTFDatabaseLoader.h"
 #include "core/platform/audio/Panner.h"
-#include "modules/webaudio/DelayDSPKernel.h"
 
 namespace WebCore {
 
@@ -95,8 +95,8 @@ private:
     FFTConvolver m_convolverL2;
     FFTConvolver m_convolverR2;
 
-    DelayDSPKernel m_delayLineL;
-    DelayDSPKernel m_delayLineR;
+    AudioDelayDSPKernel m_delayLineL;
+    AudioDelayDSPKernel m_delayLineR;
 
     AudioFloatArray m_tempL1;
     AudioFloatArray m_tempR1;
