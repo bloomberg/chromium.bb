@@ -547,7 +547,7 @@ ANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN%/}
 # Find host GDB client binary
 if [ -z "$GDB" ]; then
   GDB=$(which $ANDROID_TOOLCHAIN/*-$GDBEXEPOSTFIX 2>/dev/null | head -1)
-  if [ -z "$GDBSERVER" ]; then
+  if [ -z "$GDB" ]; then
     panic "Can't find Android gdb client in your path, check your \
 --toolchain or --gdb path."
   fi
