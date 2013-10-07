@@ -384,6 +384,11 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   extensions::TabCaptureRegistry* tab_capture_registry =
       extensions::TabCaptureRegistry::Get(profile);
+  if (!tab_capture_registry) {
+    NOTREACHED();
+    callback.Run(devices, ui.Pass());
+    return;
+  }
   bool tab_capture_allowed =
       tab_capture_registry->VerifyRequest(request.render_process_id,
                                           request.render_view_id);

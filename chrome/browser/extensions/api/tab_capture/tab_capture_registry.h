@@ -67,7 +67,7 @@ class TabCaptureRegistry : public ProfileKeyedAPI,
   }
 
   static const bool kServiceIsCreatedWithBrowserContext = false;
-  static const bool kServiceRedirectedInIncognito = false;
+  static const bool kServiceRedirectedInIncognito = true;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
