@@ -457,8 +457,6 @@ webkit.org/b/52061 [ Linux Release ] transitions/change-values-during-transition
 webkit.org/b/49629 compositing/lots-of-img-layers.html [ Skip ]
 webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Skip ]
 
-crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout ]
-
 # Has been timing out, initiated at:
 # Webkit patches in range [r81976, r81981]
 # Chromium patches in range [r79428, r79442]
@@ -852,9 +850,6 @@ crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
-
-crbug.com/240515 [ Mac ] fast/dom/HTMLMeterElement/meter-styles.html [ ImageOnlyFailure Pass ]
-
 crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Skip ]
 
 crbug.com/241576 [ Win ] http/tests/appcache [ Pass Timeout ]
@@ -957,8 +952,6 @@ crbug.com/243683 [ Linux Mac Win ] http/tests/css/link-css-disabled-value-with-s
 crbug.com/243353 animations/play-state-suspend.html [ Failure Pass ]
 crbug.com/243353 animations/play-state.html [ Failure Pass ]
 crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
-crbug.com/243730 [ Mac ] fast/dom/HTMLMeterElement/meter-optimums.html [ Timeout ImageOnlyFailure Pass ]
-crbug.com/243730 [ Linux Mac Win ] fast/dom/HTMLMeterElement/meter-element.html [ Timeout Pass ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure Pass ]
 crbug.com/243736 storage/websql/quota-tracking.html [ Failure Pass ]
 crbug.com/243738 [ Win ] http/tests/loading/preload-append-scan.php [ Timeout Pass ]
