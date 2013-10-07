@@ -58,3 +58,6 @@ leak:StatusIconGtk::UpdatePlatformContextMenu
 leak:GlobalMenuBar::GlobalMenuBar
 leak:BookmarkBubbleGtk::InitFolderComboModel
 leak:TranslateInfoBarBase::CreateLanguageCombobox
+
+# Cast leaks. http://crbug.com/304970
+leak:extensions::api::cast_channel::CastSocketTest::SetUp
