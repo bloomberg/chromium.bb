@@ -967,7 +967,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
   This stage handles syncing to a manifest, passing around that manifest to
   other builders and finding the Gerrit Reviews ready to be committed and
-  applying them into its out checkout.
+  applying them into its own checkout.
   """
 
   def __init__(self, options, build_config):
