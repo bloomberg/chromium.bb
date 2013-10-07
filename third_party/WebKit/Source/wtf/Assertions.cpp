@@ -70,7 +70,7 @@
 #endif
 
 #if OS(ANDROID)
-#include "android/log.h"
+#include <android/log.h>
 #endif
 
 extern "C" {
