@@ -159,6 +159,7 @@
       'transforms/TransformationMatrix.h',
     ],
     'platform_test_files': [
+      'animation/UnitBezierTest.cpp',
       'clipboard/ClipboardUtilitiesTest.cpp',
       'geometry/RoundedRectTest.cpp',
       'text/DateTimeFormatTest.cpp',
