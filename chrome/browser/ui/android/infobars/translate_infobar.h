@@ -10,17 +10,12 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 
-namespace gfx {
-class Image;
-}
-
-// Implementation of InfoBar for translate.
 class TranslateInfoBar : public InfoBarAndroid {
  public:
   TranslateInfoBar(InfoBarService* owner, TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBar();
 
-  // JNI methods specific to translate
+  // JNI methods specific to translate.
   void ApplyTranslateOptions(JNIEnv* env,
                              jobject obj,
                              int source_language_index,
@@ -30,17 +25,17 @@ class TranslateInfoBar : public InfoBarAndroid {
                              bool never_translate_site);
 
  private:
-  // InfoBar overrides.
+  // InfoBarAndroid:
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) OVERRIDE;
   virtual void ProcessButton(int action,
                              const std::string& action_value) OVERRIDE;
   virtual void PassJavaInfoBar(InfoBarAndroid* source) OVERRIDE;
-  bool ShouldDisplayNeverInfoBarOnNope();
 
-  void SetJavaDelegate(jobject delegate);
   void TransferOwnership(TranslateInfoBar* destination,
                          TranslateInfoBarDelegate::Type new_type);
+  void SetJavaDelegate(jobject delegate);
+  bool ShouldDisplayNeverTranslateInfoBarOnCancel();
 
   TranslateInfoBarDelegate* delegate_;
   base::android::ScopedJavaGlobalRef<jobject> java_translate_delegate_;
@@ -48,7 +43,7 @@ class TranslateInfoBar : public InfoBarAndroid {
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBar);
 };
 
-// Registers native methods
+// Registers the native methods through JNI.
 bool RegisterTranslateInfoBarDelegate(JNIEnv* env);
 
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_TRANSLATE_INFOBAR_H_
