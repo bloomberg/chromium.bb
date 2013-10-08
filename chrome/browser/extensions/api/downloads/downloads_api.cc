@@ -58,6 +58,7 @@
 #include "chrome/common/extensions/api/downloads.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
@@ -70,6 +71,8 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
@@ -1252,16 +1255,38 @@ bool DownloadsAcceptDangerFunction::RunImpl() {
   scoped_ptr<downloads::AcceptDanger::Params> params(
       downloads::AcceptDanger::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  PromptOrWait(params->download_id, 10);
+  return true;
+}
+
+void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
   DownloadItem* download_item = GetDownload(
-      profile(), include_incognito(), params->download_id);
+      profile(), include_incognito(), download_id);
   content::WebContents* web_contents =
       dispatcher()->delegate()->GetVisibleWebContents();
   if (InvalidId(download_item, &error_) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
             errors::kNotInProgress, &error_) ||
       Fault(!download_item->IsDangerous(), errors::kNotDangerous, &error_) ||
-      Fault(!web_contents, errors::kInvisibleContext, &error_))
-    return false;
+      Fault(!web_contents, errors::kInvisibleContext, &error_)) {
+    SendResponse(error_.empty());
+    return;
+  }
+  bool visible = platform_util::IsVisible(
+      web_contents->GetView()->GetNativeView());
+  if (!visible) {
+    if (retries > 0) {
+      base::MessageLoopForUI::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&DownloadsAcceptDangerFunction::PromptOrWait,
+                     this, download_id, retries - 1),
+          base::TimeDelta::FromMilliseconds(100));
+      return;
+    }
+    error_ = errors::kInvisibleContext;
+    SendResponse(error_.empty());
+    return;
+  }
   RecordApiFunctions(DOWNLOADS_FUNCTION_ACCEPT_DANGER);
   // DownloadDangerPrompt displays a modal dialog using native widgets that the
   // user must either accept or cancel. It cannot be scripted.
@@ -1270,11 +1295,11 @@ bool DownloadsAcceptDangerFunction::RunImpl() {
       web_contents,
       true,
       base::Bind(&DownloadsAcceptDangerFunction::DangerPromptCallback,
-                 this, params->download_id));
+                 this, download_id));
   // DownloadDangerPrompt deletes itself
   if (on_prompt_created_ && !on_prompt_created_->is_null())
     on_prompt_created_->Run(prompt);
-  return true;
+  SendResponse(error_.empty());
 }
 
 void DownloadsAcceptDangerFunction::DangerPromptCallback(

@@ -505,6 +505,8 @@ DownloadItem.prototype.maybeAccept = function() {
   // considered "visible". Prompts will not be displayed over an invisible
   // window, so the popup will become stuck. Just wait a little bit for the
   // window to finish animating in. http://crbug.com/280107
+  // This has been fixed, so this setTimeout can be removed when the fix has
+  // been released to stable, and minimum_chrome_version can be set.
   var id = this.id;
   setTimeout(function() {
     chrome.downloads.acceptDanger(id, function() {

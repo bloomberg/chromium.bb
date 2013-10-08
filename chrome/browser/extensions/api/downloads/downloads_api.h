@@ -207,6 +207,8 @@ class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
                             DownloadDangerPrompt::Action action);
 
  private:
+  void PromptOrWait(int download_id, int retries);
+
   static OnPromptCreatedCallback* on_prompt_created_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
 };
