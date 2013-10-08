@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,49 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioDSPKernel_h
-#define AudioDSPKernel_h
-
-#include "platform/audio/AudioDSPKernelProcessor.h"
+#include "config.h"
+#include "platform/audio/AudioDSPKernel.h"
 
 namespace WebCore {
 
-// AudioDSPKernel does the processing for one channel of an AudioDSPKernelProcessor.
+AudioDSPKernel::~AudioDSPKernel()
+{
+}
 
-class PLATFORM_EXPORT AudioDSPKernel {
-public:
-    AudioDSPKernel(AudioDSPKernelProcessor* kernelProcessor)
-        : m_kernelProcessor(kernelProcessor)
-        , m_sampleRate(kernelProcessor->sampleRate())
-    {
-    }
-
-    AudioDSPKernel(float sampleRate)
-        : m_kernelProcessor(0)
-        , m_sampleRate(sampleRate)
-    {
-    }
-
-    virtual ~AudioDSPKernel();
-
-    // Subclasses must override process() to do the processing and reset() to reset DSP state.
-    virtual void process(const float* source, float* destination, size_t framesToProcess) = 0;
-    virtual void reset() = 0;
-
-    float sampleRate() const { return m_sampleRate; }
-    double nyquist() const { return 0.5 * sampleRate(); }
-
-    AudioDSPKernelProcessor* processor() { return m_kernelProcessor; }
-    const AudioDSPKernelProcessor* processor() const { return m_kernelProcessor; }
-
-    virtual double tailTime() const = 0;
-    virtual double latencyTime() const = 0;
-
-protected:
-    AudioDSPKernelProcessor* m_kernelProcessor;
-    float m_sampleRate;
-};
-
-} // namespace WebCore
-
-#endif // AudioDSPKernel_h
+}
