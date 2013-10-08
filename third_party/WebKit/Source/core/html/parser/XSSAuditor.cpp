@@ -214,7 +214,7 @@ void XSSAuditor::initForFragment()
 {
     ASSERT(isMainThread());
     ASSERT(m_state == Uninitialized);
-    m_state = Initialized;
+    m_state = FilteringTokens;
     // When parsing a fragment, we don't enable the XSS auditor because it's
     // too much overhead.
     ASSERT(!m_isEnabled);
@@ -226,10 +226,9 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
     const int suffixTreeDepth = 5;
 
     ASSERT(isMainThread());
-    if (m_state == Initialized)
+    if (m_state != Uninitialized)
         return;
-    ASSERT(m_state == Uninitialized);
-    m_state = Initialized;
+    m_state = FilteringTokens;
 
     if (Settings* settings = document->settings())
         m_isEnabled = settings->xssAuditorEnabled();
@@ -315,7 +314,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
 
 PassOwnPtr<XSSInfo> XSSAuditor::filterToken(const FilterTokenRequest& request)
 {
-    ASSERT(m_state == Initialized);
+    ASSERT(m_state != Uninitialized);
     if (!m_isEnabled || m_xssProtection == AllowReflectedXSS)
         return nullptr;
 
@@ -339,6 +338,7 @@ PassOwnPtr<XSSInfo> XSSAuditor::filterToken(const FilterTokenRequest& request)
 
 bool XSSAuditor::filterStartToken(const FilterTokenRequest& request)
 {
+    m_state = FilteringTokens;
     bool didBlockScript = eraseDangerousAttributesIfInjected(request);
 
     if (hasName(request.token, scriptTag)) {
@@ -372,6 +372,7 @@ bool XSSAuditor::filterStartToken(const FilterTokenRequest& request)
 void XSSAuditor::filterEndToken(const FilterTokenRequest& request)
 {
     ASSERT(m_scriptTagNestingLevel);
+    m_state = FilteringTokens;
     if (hasName(request.token, scriptTag)) {
         m_scriptTagNestingLevel--;
         ASSERT(request.shouldAllowCDATA || !m_scriptTagNestingLevel);
@@ -381,11 +382,19 @@ void XSSAuditor::filterEndToken(const FilterTokenRequest& request)
 bool XSSAuditor::filterCharacterToken(const FilterTokenRequest& request)
 {
     ASSERT(m_scriptTagNestingLevel);
-    if (m_scriptTagFoundInRequest && isContainedInRequest(decodedSnippetForJavaScript(request))) {
+    ASSERT(m_state != Uninitialized);
+    if (m_state == PermittingAdjacentCharacterTokens)
+        return false;
+
+    if ((m_state == SuppressingAdjacentCharacterTokens)
+        || (m_scriptTagFoundInRequest && isContainedInRequest(decodedSnippetForJavaScript(request)))) {
         request.token.eraseCharacters();
         request.token.appendToCharacter(' '); // Technically, character tokens can't be empty.
+        m_state = SuppressingAdjacentCharacterTokens;
         return true;
     }
+
+    m_state = PermittingAdjacentCharacterTokens;
     return false;
 }
 

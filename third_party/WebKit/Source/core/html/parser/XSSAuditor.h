@@ -69,7 +69,9 @@ private:
 
     enum State {
         Uninitialized,
-        Initialized
+        FilteringTokens,
+        PermittingAdjacentCharacterTokens,
+        SuppressingAdjacentCharacterTokens
     };
 
     enum AttributeKind {
