@@ -27,6 +27,26 @@ scoped_ptr<LayerImpl> PictureImageLayerImpl::CreateLayerImpl(
   return PictureImageLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
+void PictureImageLayerImpl::CalculateContentsScale(
+    float ideal_contents_scale,
+    float device_scale_factor,
+    float page_scale_factor,
+    bool animating_transform_to_screen,
+    float* contents_scale_x,
+    float* contents_scale_y,
+    gfx::Size* content_bounds) {
+  // CalculateRasterContentsScale always returns 1.f, so make that the ideal
+  // scale.
+  ideal_contents_scale = 1.f;
+  PictureLayerImpl::CalculateContentsScale(ideal_contents_scale,
+                                           device_scale_factor,
+                                           page_scale_factor,
+                                           animating_transform_to_screen,
+                                           contents_scale_x,
+                                           contents_scale_y,
+                                           content_bounds);
+}
+
 void PictureImageLayerImpl::GetDebugBorderProperties(
     SkColor* color, float* width) const {
   *color = DebugColors::ImageLayerBorderColor();
