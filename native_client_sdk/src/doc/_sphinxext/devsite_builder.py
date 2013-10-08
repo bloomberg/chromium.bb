@@ -143,7 +143,7 @@ class DevsiteHTMLTranslator(HTMLTranslator):
     # Paths to images in .rst sources should be absolute. This visitor does the
     # required transformation for the path to be correct in the final HTML.
     if self.builder.devsite_production_mode:
-      node['uri'] = self.builder.get_prodution_url(node['uri'])
+      node['uri'] = self.builder.get_production_url(node['uri'])
     HTMLTranslator.visit_image(self, node)
 
   def visit_reference(self, node):
@@ -284,7 +284,7 @@ class DevsiteBuilder(StandaloneHTMLBuilder):
     if not self.devsite_production_mode:
       super(DevsiteBuilder, self).dump_inventory()
 
-  def get_prodution_url(self, url):
+  def get_production_url(self, url):
     if not self.devsite_production_mode:
       return url
 
@@ -295,7 +295,7 @@ class DevsiteBuilder(StandaloneHTMLBuilder):
 
   def get_target_uri(self, docname, typ=None):
     if self.devsite_production_mode:
-      return self.get_prodution_url(docname)
+      return self.get_production_url(docname)
     else:
       return docname + self.link_suffix
 
@@ -376,4 +376,4 @@ def setup(app):
   # "Production mode" for local testing vs. on-server documentation.
   app.add_config_value('devsite_production_mode', default='1', rebuild='html')
   app.add_config_value('kill_internal_links', default='0', rebuild='html')
-  app.add_config_value('devsite_foldername', default='dev', rebuild='html')
+  app.add_config_value('devsite_foldername', default=None, rebuild='html')

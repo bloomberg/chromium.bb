@@ -45,6 +45,12 @@ The ``devsite-staging`` target is exactly the same except that the html pages
 are all rooted under a folder called $USER, which allows each user to stage his
 own copy of the docs.
 
+When building in production mode you can specify the name of the subfolder in
+which the docs are rooted by specifying ``SPHINXOPTS=-Ddevsite_foldername=``.
+For example::
+
+  make devsite-prod SPHINXOPTS=-Ddevsite_foldername=pepper_32
+
 Local HTTP server to view the docs
 ----------------------------------
 
