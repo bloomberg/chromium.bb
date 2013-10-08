@@ -32,15 +32,15 @@ interface HTMLAnchorElement : HTMLElement {
     [Reflect] attribute DOMString target;
     [Reflect] attribute DOMString type;
 
-    [TreatNullAs=NullString] attribute DOMString hash;
-    [TreatNullAs=NullString] attribute DOMString host;
-    [TreatNullAs=NullString] attribute DOMString hostname;
-    [TreatNullAs=NullString] attribute DOMString pathname;
-    [TreatNullAs=NullString] attribute DOMString port;
-    [TreatNullAs=NullString] attribute DOMString protocol;
-    [TreatNullAs=NullString] attribute DOMString search;
+    attribute DOMString hash;
+    attribute DOMString host;
+    attribute DOMString hostname;
+    attribute DOMString pathname;
+    attribute DOMString port;
+    attribute DOMString protocol;
+    attribute DOMString search;
 
-    [TreatNullAs=NullString] readonly attribute DOMString origin;
+    readonly attribute DOMString origin;
 
     readonly attribute DOMString text;
 
