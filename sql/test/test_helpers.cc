@@ -55,6 +55,20 @@ size_t CountTableColumns(sql::Connection* db, const char* table) {
   return rows;
 }
 
+bool CountTableRows(sql::Connection* db, const char* table, size_t* count) {
+  // TODO(shess): Table should probably be quoted with [] or "".  See
+  // http://www.sqlite.org/lang_keywords.html .  Meanwhile, odd names
+  // will throw an error.
+  std::string sql = "SELECT COUNT(*) FROM ";
+  sql += table;
+  sql::Statement s(db->GetUniqueStatement(sql.c_str()));
+  if (!s.Step())
+    return false;
+
+  *count = s.ColumnInt64(0);
+  return true;
+}
+
 bool CreateDatabaseFromSQL(const base::FilePath& db_path,
                            const base::FilePath& sql_path) {
   if (base::PathExists(db_path) || !base::PathExists(sql_path))

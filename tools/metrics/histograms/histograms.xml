@@ -17448,6 +17448,13 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite the websqldb tracker db.</summary>
 </histogram>
 
+<histogram name="Sqlite.DeprecationVersionResult"
+    enum="SqliteVersionDeprecation">
+  <summary>
+    Annotations for which bits of sql::MetaTable::CheckDeprecated() fire.
+  </summary>
+</histogram>
+
 <histogram name="Sqlite.DomainBoundCerts.Error" enum="SqliteErrorCode">
   <summary>
     Error codes returned by sqlite for the domain-bound certs db.
@@ -26652,6 +26659,24 @@ other types of suffix sets.
     Error in stat while mmapping file
   </int>
   <int value="20" label="SQLITE_IOERR_SHMLOCK">Unused</int>
+</enum>
+
+<enum name="SqliteVersionDeprecation" type="int">
+  <summary>Sqlite database version deprecation status</summary>
+  <int value="0" label="DEPRECATION_DATABASE_NOT_EMPTY">
+    Database has tables, but no meta table.
+  </int>
+  <int value="1" label="DEPRECATION_DATABASE_UNKNOWN">
+    Failure figuring out if database has tables.
+  </int>
+  <int value="2" label="DEPRECATION_FAILED_VERSION">
+    Failed querying meta table.
+  </int>
+  <int value="3" label="DEPRECATION_NO_VERSION">
+    No version row in meta table.
+  </int>
+  <int value="4" label="DEPRECATION_RAZED">Raze succeeded.</int>
+  <int value="5" label="DEPRECATION_RAZE_FAILED">Raze failed.</int>
 </enum>
 
 <enum name="SSLCipherSuite" type="int">

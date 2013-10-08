@@ -37,8 +37,7 @@ class ThumbnailDatabase {
 
   // Must be called after creation but before any other methods are called.
   // When not INIT_OK, no other functions should be called.
-  sql::InitStatus Init(const base::FilePath& db_name,
-                       URLDatabase* url_database);
+  sql::InitStatus Init(const base::FilePath& db_name);
 
   // Open database on a given filename. If the file does not exist,
   // it is created.
@@ -252,24 +251,11 @@ class ThumbnailDatabase {
   // Helper function to handle cleanup on upgrade failures.
   sql::InitStatus CantUpgradeToVersion(int cur_version);
 
-  // Adds support for the new metadata on web page thumbnails.
-  bool UpgradeToVersion3();
-
-  // Adds support for the icon_type in favicon table.
-  bool UpgradeToVersion4();
-
-  // Adds support for sizes in favicon table.
-  bool UpgradeToVersion5();
-
   // Adds support for size in favicons table.
   bool UpgradeToVersion6();
 
   // Removes sizes column.
   bool UpgradeToVersion7();
-
-  // Migrates the icon mapping data from URL database to Thumbnail database.
-  // Return whether the migration succeeds.
-  bool MigrateIconMappingData(URLDatabase* url_db);
 
   // Returns true if the |favicons| database is missing a column.
   bool IsFaviconDBStructureIncorrect();

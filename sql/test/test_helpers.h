@@ -32,6 +32,10 @@ size_t CountSQLIndices(sql::Connection* db) WARN_UNUSED_RESULT;
 size_t CountTableColumns(sql::Connection* db, const char* table)
     WARN_UNUSED_RESULT;
 
+// Sets |*count| to the number of rows in |table|.  Returns false in
+// case of error, such as the table not existing.
+bool CountTableRows(sql::Connection* db, const char* table, size_t* count);
+
 // Creates a SQLite database at |db_path| from the sqlite .dump output
 // at |sql_path|.  Returns false if |db_path| already exists, or if
 // sql_path does not exist or cannot be read, or if there is an error

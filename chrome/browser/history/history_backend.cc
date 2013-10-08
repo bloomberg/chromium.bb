@@ -633,8 +633,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // renaming "thumbnail" references to "favicons" or something of the
   // sort.
   thumbnail_db_.reset(new ThumbnailDatabase());
-  if (thumbnail_db_->Init(thumbnail_name,
-                          db_.get()) != sql::INIT_OK) {
+  if (thumbnail_db_->Init(thumbnail_name) != sql::INIT_OK) {
     // Unlike the main database, we don't error out when the database is too
     // new because this error is much less severe. Generally, this shouldn't
     // happen since the thumbnail and main database versions should be in sync.

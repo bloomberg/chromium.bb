@@ -172,9 +172,6 @@ class HistoryDatabase : public DownloadDatabase,
 #endif
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
-  // This thumbnail migration test sidesteps full Init() to directly
-  // open |db_|.
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version3);
 
   // Overridden from URLDatabase:
   virtual sql::Connection& GetDB() OVERRIDE;

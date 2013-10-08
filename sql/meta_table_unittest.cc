@@ -41,6 +41,53 @@ TEST_F(SQLMetaTableTest, DoesTableExist) {
   EXPECT_TRUE(sql::MetaTable::DoesTableExist(&db()));
 }
 
+TEST_F(SQLMetaTableTest, RazeIfDeprecated) {
+  const int kDeprecatedVersion = 1;
+  const int kVersion = 2;
+
+  // Setup a current database.
+  {
+    sql::MetaTable meta_table;
+    EXPECT_TRUE(meta_table.Init(&db(), kVersion, kVersion));
+    EXPECT_TRUE(db().Execute("CREATE TABLE t(c)"));
+    EXPECT_TRUE(db().DoesTableExist("t"));
+  }
+
+  // Table should should still exist if the database version is new enough.
+  sql::MetaTable::RazeIfDeprecated(&db(), kDeprecatedVersion);
+  EXPECT_TRUE(db().DoesTableExist("t"));
+
+  // TODO(shess): It may make sense to Raze() if meta isn't present or
+  // version isn't present.  See meta_table.h TODO on RazeIfDeprecated().
+
+  // Table should still exist if the version is not available.
+  EXPECT_TRUE(db().Execute("DELETE FROM meta WHERE key = 'version'"));
+  {
+    sql::MetaTable meta_table;
+    EXPECT_TRUE(meta_table.Init(&db(), kVersion, kVersion));
+    EXPECT_EQ(0, meta_table.GetVersionNumber());
+  }
+  sql::MetaTable::RazeIfDeprecated(&db(), kDeprecatedVersion);
+  EXPECT_TRUE(db().DoesTableExist("t"));
+
+  // Table should still exist if meta table is missing.
+  EXPECT_TRUE(db().Execute("DROP TABLE meta"));
+  sql::MetaTable::RazeIfDeprecated(&db(), kDeprecatedVersion);
+  EXPECT_TRUE(db().DoesTableExist("t"));
+
+  // Setup meta with deprecated version.
+  {
+    sql::MetaTable meta_table;
+    EXPECT_TRUE(meta_table.Init(&db(), kDeprecatedVersion, kDeprecatedVersion));
+  }
+
+  // Deprecation check should remove the table.
+  EXPECT_TRUE(db().DoesTableExist("t"));
+  sql::MetaTable::RazeIfDeprecated(&db(), kDeprecatedVersion);
+  EXPECT_FALSE(sql::MetaTable::DoesTableExist(&db()));
+  EXPECT_FALSE(db().DoesTableExist("t"));
+}
+
 TEST_F(SQLMetaTableTest, VersionNumber) {
   // Compatibility versions one less than the main versions to make
   // sure the values aren't being crossed with each other.

@@ -270,8 +270,7 @@ bool InitTables(sql::Connection* db) {
       "("
       "id INTEGER PRIMARY KEY,"
       "url LONGVARCHAR NOT NULL,"
-      // Set the default icon_type as FAVICON to be consistent with
-      // table upgrade in UpgradeToVersion4().
+      // default icon_type FAVICON to be consistent with past migration.
       "icon_type INTEGER DEFAULT 1"
       ")";
   if (!db->Execute(kFaviconsSql))
@@ -616,17 +615,26 @@ void DatabaseErrorCallback(sql::Connection* db,
 
 namespace history {
 
+// For this database, schema migrations are deprecated after two
+// years.  This means that the oldest non-deprecated version should be
+// two years old or greater (thus the migrations to get there are
+// older).  Databases containing deprecated versions will be cleared
+// at startup.  Since this database is a cache, losing old data is not
+// fatal (in fact, very old data may be expired immediately at startup
+// anyhow).
+
 // Version 7: 911a634d/r209424 by qsr@chromium.org on 2013-07-01
 // Version 6: 610f923b/r152367 by pkotwicz@chromium.org on 2012-08-20
 // Version 5: e2ee8ae9/r105004 by groby@chromium.org on 2011-10-12
-// Version 4: 5f104d76/r77288 by sky@chromium.org on 2011-03-08
-// Version 3: 09911bf3/r15 by initial.commit on 2008-07-26
+// Version 4: 5f104d76/r77288 by sky@chromium.org on 2011-03-08 (deprecated)
+// Version 3: 09911bf3/r15 by initial.commit on 2008-07-26 (deprecated)
 
 // Version number of the database.
 // NOTE(shess): When changing the version, add a new golden file for
 // the new version and a test to verify that Init() works with it.
 static const int kCurrentVersionNumber = 7;
 static const int kCompatibleVersionNumber = 7;
+static const int kDeprecatedVersionNumber = 4;  // and earlier.
 
 ThumbnailDatabase::IconMappingEnumerator::IconMappingEnumerator() {
 }
@@ -656,12 +664,19 @@ ThumbnailDatabase::~ThumbnailDatabase() {
   // The DBCloseScoper will delete the DB and the cache.
 }
 
-sql::InitStatus ThumbnailDatabase::Init(
-    const base::FilePath& db_name,
-    URLDatabase* url_db) {
+sql::InitStatus ThumbnailDatabase::Init(const base::FilePath& db_name) {
   sql::InitStatus status = OpenDatabase(&db_, db_name);
   if (status != sql::INIT_OK)
     return status;
+
+  // Clear databases which are too old to process.
+  DCHECK_LT(kDeprecatedVersionNumber, kCurrentVersionNumber);
+  sql::MetaTable::RazeIfDeprecated(&db_, kDeprecatedVersionNumber);
+
+  // TODO(shess): Sqlite.Version.Thumbnail shows versions 22, 23, and
+  // 25.  Future versions are not destroyed because that could lead to
+  // data loss if the profile is opened by a later channel, but
+  // perhaps a heuristic like >kCurrentVersionNumber+3 could be used.
 
   // Scope initialization in a transaction so we can't be partially initialized.
   sql::Transaction transaction(&db_);
@@ -693,17 +708,6 @@ sql::InitStatus ThumbnailDatabase::Init(
   }
 
   int cur_version = meta_table_.GetVersionNumber();
-  if (cur_version == 2) {
-    ++cur_version;
-    if (!UpgradeToVersion3())
-      return CantUpgradeToVersion(cur_version);
-  }
-
-  if (cur_version == 3) {
-    ++cur_version;
-    if (!UpgradeToVersion4() || !MigrateIconMappingData(url_db))
-      return CantUpgradeToVersion(cur_version);
-  }
 
   if (!db_.DoesColumnExist("favicons", "icon_type")) {
     LOG(ERROR) << "Raze because of missing favicon.icon_type";
@@ -711,12 +715,6 @@ sql::InitStatus ThumbnailDatabase::Init(
 
     db_.RazeAndClose();
     return sql::INIT_FAILURE;
-  }
-
-  if (cur_version == 4) {
-    ++cur_version;
-    if (!UpgradeToVersion5())
-      return CantUpgradeToVersion(cur_version);
   }
 
   if (cur_version < 7 && !db_.DoesColumnExist("favicons", "sizes")) {
@@ -797,13 +795,6 @@ void ThumbnailDatabase::ComputeDatabaseMetrics() {
   UMA_HISTOGRAM_COUNTS_10000(
       "History.NumFaviconsInDB",
       favicon_count.Step() ? favicon_count.ColumnInt(0) : 0);
-}
-
-bool ThumbnailDatabase::UpgradeToVersion3() {
-  // Version 3 migrated table thumbnails, which is obsolete.
-  meta_table_.SetVersionNumber(3);
-  meta_table_.SetCompatibleVersionNumber(std::min(3, kCompatibleVersionNumber));
-  return true;
 }
 
 bool ThumbnailDatabase::IsFaviconDBStructureIncorrect() {
@@ -1193,20 +1184,6 @@ bool ThumbnailDatabase::InitIconMappingEnumerator(
   return enumerator->statement_.is_valid();
 }
 
-bool ThumbnailDatabase::MigrateIconMappingData(URLDatabase* url_db) {
-  URLDatabase::IconMappingEnumerator e;
-  if (!url_db->InitIconMappingEnumeratorForEverything(&e))
-    return false;
-
-  IconMapping info;
-  while (e.GetNextIconMapping(&info)) {
-    // TODO: Using bulk insert to improve the performance.
-    if (!AddIconMapping(info.page_url, info.icon_id))
-      return false;
-  }
-  return true;
-}
-
 bool ThumbnailDatabase::RetainDataForPageUrls(
     const std::vector<GURL>& urls_to_keep) {
   sql::Transaction transaction(&db_);
@@ -1329,27 +1306,8 @@ bool ThumbnailDatabase::IsLatestVersion() {
   return meta_table_.GetVersionNumber() == kCurrentVersionNumber;
 }
 
-bool ThumbnailDatabase::UpgradeToVersion4() {
-  // Set the default icon type as favicon, so the current data are set
-  // correctly.
-  if (!db_.Execute("ALTER TABLE favicons ADD icon_type INTEGER DEFAULT 1")) {
-    return false;
-  }
-  meta_table_.SetVersionNumber(4);
-  meta_table_.SetCompatibleVersionNumber(std::min(4, kCompatibleVersionNumber));
-  return true;
-}
-
-bool ThumbnailDatabase::UpgradeToVersion5() {
-  if (!db_.Execute("ALTER TABLE favicons ADD sizes LONGVARCHAR")) {
-    return false;
-  }
-  meta_table_.SetVersionNumber(5);
-  meta_table_.SetCompatibleVersionNumber(std::min(5, kCompatibleVersionNumber));
-  return true;
-}
-
 bool ThumbnailDatabase::UpgradeToVersion6() {
+  // Move bitmap data from favicons to favicon_bitmaps.
   bool success =
       db_.Execute("INSERT INTO favicon_bitmaps (icon_id, last_updated, "
                   "image_data, width, height)"
@@ -1358,8 +1316,8 @@ bool ThumbnailDatabase::UpgradeToVersion6() {
                   "id INTEGER PRIMARY KEY,"
                   "url LONGVARCHAR NOT NULL,"
                   "icon_type INTEGER DEFAULT 1,"
-                  // Set the default icon_type as FAVICON to be consistent with
-                  // table upgrade in UpgradeToVersion4().
+                  // default icon_type FAVICON to be consistent with
+                  // past migration.
                   "sizes LONGVARCHAR)") &&
       db_.Execute("INSERT INTO temp_favicons (id, url, icon_type) "
                   "SELECT id, url, icon_type FROM favicons") &&
@@ -1374,10 +1332,13 @@ bool ThumbnailDatabase::UpgradeToVersion6() {
 }
 
 bool ThumbnailDatabase::UpgradeToVersion7() {
+  // Sizes column was never used, remove it.
   bool success =
       db_.Execute("CREATE TABLE temp_favicons ("
                   "id INTEGER PRIMARY KEY,"
                   "url LONGVARCHAR NOT NULL,"
+                  // default icon_type FAVICON to be consistent with
+                  // past migration.
                   "icon_type INTEGER DEFAULT 1)") &&
       db_.Execute("INSERT INTO temp_favicons (id, url, icon_type) "
                   "SELECT id, url, icon_type FROM favicons") &&

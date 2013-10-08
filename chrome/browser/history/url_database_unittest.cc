@@ -220,52 +220,6 @@ TEST_F(URLDatabaseTest, EnumeratorForSignificant) {
   EXPECT_EQ(3, row_count);
 }
 
-TEST_F(URLDatabaseTest, IconMappingEnumerator) {
-  const GURL url1("http://www.google.com/");
-  URLRow url_info1(url1);
-  url_info1.set_title(UTF8ToUTF16("Google"));
-  url_info1.set_visit_count(4);
-  url_info1.set_typed_count(2);
-  url_info1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
-  url_info1.set_hidden(false);
-
-  // Insert a row with favicon
-  URLID url_id1 = AddURL(url_info1);
-  ASSERT_NE(0, url_id1);
-
-  chrome::FaviconID icon_id = 1;
-  sql::Statement statement(GetDB().GetCachedStatement(
-      SQL_FROM_HERE,
-      "UPDATE urls SET favicon_id =? WHERE id=?"));
-
-  ASSERT_TRUE(statement.is_valid());
-
-  statement.BindInt64(0, icon_id);
-  statement.BindInt64(1, url_id1);
-  ASSERT_TRUE(statement.Run());
-
-  // Insert another row without favicon
-  const GURL url2("http://www.google.com/no_icon");
-  URLRow url_info2(url2);
-  url_info2.set_title(UTF8ToUTF16("Google"));
-  url_info2.set_visit_count(4);
-  url_info2.set_typed_count(2);
-  url_info2.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
-  url_info2.set_hidden(false);
-
-  // Insert a row with favicon
-  URLID url_id2 = AddURL(url_info2);
-  ASSERT_NE(0, url_id2);
-
-  IconMappingEnumerator e;
-  InitIconMappingEnumeratorForEverything(&e);
-  IconMapping icon_mapping;
-  ASSERT_TRUE(e.GetNextIconMapping(&icon_mapping));
-  ASSERT_EQ(url1, icon_mapping.page_url);
-  ASSERT_EQ(icon_id, icon_mapping.icon_id);
-  ASSERT_FALSE(e.GetNextIconMapping(&icon_mapping));
-}
-
 // Test GetKeywordSearchTermRows and DeleteSearchTerm
 TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
   URLRow url_info1(GURL("http://www.google.com/"));

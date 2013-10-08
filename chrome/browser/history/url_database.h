@@ -138,19 +138,6 @@ class URLDatabase {
     DISALLOW_COPY_AND_ASSIGN(URLEnumerator);
   };
 
-  // A basic enumerator to enumerate icon mapping, it is only used for icon
-  // mapping migration.
-  class IconMappingEnumerator : public URLEnumeratorBase {
-   public:
-    IconMappingEnumerator();
-
-    // Retreives the next url. Returns false if no more urls are available
-    bool GetNextIconMapping(IconMapping* r);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(IconMappingEnumerator);
-  };
-
   // Initializes the given enumerator to enumerator all URLs in the database.
   bool InitURLEnumeratorForEverything(URLEnumerator* enumerator);
 
@@ -233,11 +220,6 @@ class URLDatabase {
   // about:blank to have no icon or title. Returns true on success, false if
   // the favicon couldn't be updated.
   bool MigrateFromVersion11ToVersion12();
-
-  // Initializes the given enumerator to enumerator all URL and icon mappings
-  // in the database. Only used for icon mapping migration.
-  bool InitIconMappingEnumeratorForEverything(
-      IconMappingEnumerator* enumerator);
 
  protected:
   friend class VisitDatabase;

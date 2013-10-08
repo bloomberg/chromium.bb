@@ -32,24 +32,12 @@ URLDatabase::URLEnumeratorBase::~URLEnumeratorBase() {
 URLDatabase::URLEnumerator::URLEnumerator() {
 }
 
-URLDatabase::IconMappingEnumerator::IconMappingEnumerator() {
-}
-
 bool URLDatabase::URLEnumerator::GetNextURL(URLRow* r) {
   if (statement_.Step()) {
     FillURLRow(statement_, r);
     return true;
   }
   return false;
-}
-
-bool URLDatabase::IconMappingEnumerator::GetNextIconMapping(IconMapping* r) {
-  if (!statement_.Step())
-    return false;
-
-  r->page_url = GURL(statement_.ColumnString(0));
-  r->icon_id =  statement_.ColumnInt64(1);
-  return true;
 }
 
 URLDatabase::URLDatabase()
@@ -251,15 +239,6 @@ bool URLDatabase::InitURLEnumeratorForSignificant(URLEnumerator* enumerator) {
       0, AutocompleteAgeThreshold().ToInternalValue());
   enumerator->statement_.BindInt(1, kLowQualityMatchVisitLimit);
   enumerator->statement_.BindInt(2, kLowQualityMatchTypedLimit);
-  enumerator->initialized_ = enumerator->statement_.is_valid();
-  return enumerator->statement_.is_valid();
-}
-
-bool URLDatabase::InitIconMappingEnumeratorForEverything(
-    IconMappingEnumerator* enumerator) {
-  DCHECK(!enumerator->initialized_);
-  enumerator->statement_.Assign(GetDB().GetUniqueStatement(
-      "SELECT url, favicon_id FROM urls WHERE favicon_id <> 0"));
   enumerator->initialized_ = enumerator->statement_.is_valid();
   return enumerator->statement_.is_valid();
 }

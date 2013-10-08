@@ -504,7 +504,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, RemoveVisitsSource);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, RemoveVisitsTransitions);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationVisitSource);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconMappingsForPageAndRedirects);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
