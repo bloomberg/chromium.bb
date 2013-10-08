@@ -44,6 +44,9 @@ ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableDockedWindows[];
+#if defined(OS_CHROMEOS)
+ASH_EXPORT extern const char kAshEnableFullMultiProfileMode[];
+#endif
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreen[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
@@ -86,6 +89,9 @@ ASH_EXPORT bool UseDragOffShelf();
 
 // Returns true if side shelf alignment is enabled.
 ASH_EXPORT bool ShowShelfAlignmentMenu();
+
+// Returns true if the full MultiProfile mode (M-31 version) is used.
+ASH_EXPORT bool UseFullMultiProfileMode();
 
 // Returns true if the MultiProfile shelf menu should be shown.
 ASH_EXPORT bool ShowMultiProfileShelfMenu();

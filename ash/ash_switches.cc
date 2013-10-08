@@ -101,6 +101,12 @@ const char kAshEnableDockedWindows[] = "ash-enable-docked-windows";
 // Disable dragging items off the shelf to unpin them.
 const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
 
+#if defined(OS_CHROMEOS)
+// Enables the "full multi profile mode" - as it was in M-31.
+const char kAshEnableFullMultiProfileMode[] =
+    "ash-enable-full-multi-profile-mode";
+#endif
+
 // Enable immersive fullscreen mode, regardless of default setting.
 const char kAshEnableImmersiveFullscreen[] = "ash-enable-immersive-fullscreen";
 
@@ -216,6 +222,16 @@ bool UseDragOffShelf() {
 bool ShowShelfAlignmentMenu() {
   return !CommandLine::ForCurrentProcess()->
       HasSwitch(kHideShelfAlignmentMenu);
+}
+
+// Returns true if the full multi profile mode (M-31 version) is active.
+bool UseFullMultiProfileMode() {
+#if defined(OS_CHROMEOS)
+  return CommandLine::ForCurrentProcess()->
+      HasSwitch(kAshEnableFullMultiProfileMode);
+#else
+  return false;
+#endif
 }
 
 // Returns true if the MultiProfile shelf menu should be shown.
