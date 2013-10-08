@@ -64,6 +64,11 @@ protected:
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
     virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&);
 
+    // We need to override this function because we don't want overflow:hidden on an <input>
+    // to affect the baseline calculation. This is necessary because we are an inline-block
+    // element as an implementation detail which would normally be affected by this.
+    virtual int inlineBlockBaseline(LineDirectionMode direction) const OVERRIDE { return lastLineBoxBaseline(direction); }
+
 private:
     virtual const char* renderName() const { return "RenderTextControl"; }
     virtual bool isTextControl() const { return true; }
