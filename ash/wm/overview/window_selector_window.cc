@@ -52,7 +52,7 @@ void WindowSelectorWindow::SetItemBounds(aura::RootWindow* root_window,
   gfx::Rect bounding_rect = transform_window_.window()->GetBoundsInScreen();
   transform_window_.SetTransform(root_window,
       ScopedTransformOverviewWindow::GetTransformForRectPreservingAspectRatio(
-          transform_window_.window()->GetBoundsInScreen(), target_bounds),
+          transform_window_.GetBoundsInScreen(), target_bounds),
       animate);
 }
 

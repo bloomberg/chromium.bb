@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/rect.h"
 
@@ -76,8 +77,8 @@ class WindowOverview : public ui::EventHandler {
   // no overview window was found for |window|.
   aura::Window* GetTargetedWindow(aura::Window* window);
 
-  // Sets the opacity of all windows not in the overview to |opacity|.
-  void SetOpacityOfNonOverviewWindows(float opacity);
+  // Hide and track all hidden windows not in overview.
+  void HideAndTrackNonOverviewWindows();
 
   // Position all of the windows based on the current selection mode.
   void PositionWindows();
@@ -118,6 +119,10 @@ class WindowOverview : public ui::EventHandler {
 
   // The cursor client used to lock the current cursor during overview.
   aura::client::CursorClient* cursor_client_;
+
+  // Tracks windows which were hidden because they were not part of the
+  // overview.
+  aura::WindowTracker hidden_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOverview);
 };

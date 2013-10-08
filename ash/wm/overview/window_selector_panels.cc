@@ -152,10 +152,7 @@ void WindowSelectorPanels::SetItemBounds(aura::RootWindow* root_window,
   gfx::Rect bounding_rect;
   for (WindowList::iterator iter = transform_windows_.begin();
        iter != transform_windows_.end(); ++iter) {
-    aura::Window* panel = (*iter)->window();
-    gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(
-        panel->parent(), panel->GetTargetBounds());
-    bounding_rect.Union(bounds);
+    bounding_rect.Union((*iter)->GetBoundsInScreen());
   }
   gfx::Transform bounding_transform =
       ScopedTransformOverviewWindow::GetTransformForRectPreservingAspectRatio(
@@ -163,9 +160,7 @@ void WindowSelectorPanels::SetItemBounds(aura::RootWindow* root_window,
   for (WindowList::iterator iter = transform_windows_.begin();
        iter != transform_windows_.end(); ++iter) {
     gfx::Transform transform;
-    aura::Window* panel = (*iter)->window();
-    gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(
-        panel->parent(), panel->GetTargetBounds());
+    gfx::Rect bounds = (*iter)->GetBoundsInScreen();
     transform.Translate(bounding_rect.x() - bounds.x(),
                         bounding_rect.y() - bounds.y());
     transform.PreconcatTransform(bounding_transform);

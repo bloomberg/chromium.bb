@@ -510,12 +510,58 @@ TEST_F(WindowSelectorTest, NonActivatableWindowsHidden) {
   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
   scoped_ptr<aura::Window> window2(CreateWindow(bounds));
   scoped_ptr<aura::Window> non_activatable_window(
-      CreateNonActivatableWindow(bounds));
-  EXPECT_EQ(1.0f, non_activatable_window->layer()->GetTargetOpacity());
+      CreateNonActivatableWindow(Shell::GetPrimaryRootWindow()->bounds()));
+  EXPECT_TRUE(non_activatable_window->IsVisible());
   ToggleOverview();
-  EXPECT_EQ(0.0f, non_activatable_window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(non_activatable_window->IsVisible());
   ToggleOverview();
-  EXPECT_EQ(1.0f, non_activatable_window->layer()->GetTargetOpacity());
+  EXPECT_TRUE(non_activatable_window->IsVisible());
+
+  // Test that a window behind the fullscreen non-activatable window can be
+  // clicked.
+  non_activatable_window->parent()->StackChildAtTop(
+      non_activatable_window.get());
+  ToggleOverview();
+  ClickWindow(window1.get());
+  EXPECT_FALSE(IsSelecting());
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+}
+
+// Tests that windows with modal child windows are transformed with the modal
+// child even though not activatable themselves.
+TEST_F(WindowSelectorTest, ModalChild) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> child1(CreateWindow(bounds));
+  child1->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  window1->AddTransientChild(child1.get());
+  EXPECT_EQ(window1->parent(), child1->parent());
+  ToggleOverview();
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(child1->IsVisible());
+  EXPECT_EQ(ToEnclosingRect(GetTransformedTargetBounds(child1.get())),
+      ToEnclosingRect(GetTransformedTargetBounds(window1.get())));
+  ToggleOverview();
+}
+
+// Tests that clicking a modal window's parent activates the modal window in
+// overview.
+TEST_F(WindowSelectorTest, ClickModalWindowParent) {
+  scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 180, 180)));
+  scoped_ptr<aura::Window> child1(CreateWindow(gfx::Rect(200, 0, 180, 180)));
+  child1->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  window1->AddTransientChild(child1.get());
+  EXPECT_FALSE(WindowsOverlapping(window1.get(), child1.get()));
+  EXPECT_EQ(window1->parent(), child1->parent());
+  ToggleOverview();
+  // Given that their relative positions are preserved, the windows should still
+  // not overlap.
+  EXPECT_FALSE(WindowsOverlapping(window1.get(), child1.get()));
+  ClickWindow(window1.get());
+  EXPECT_FALSE(IsSelecting());
+
+  // Clicking on window1 should activate child1.
+  EXPECT_TRUE(wm::IsActiveWindow(child1.get()));
 }
 
 // Tests that windows remain on the display they are currently on in overview

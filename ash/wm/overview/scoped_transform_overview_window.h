@@ -46,6 +46,9 @@ class ScopedTransformOverviewWindow {
   // used to determine if an event targetted this window.
   bool Contains(const aura::Window* target) const;
 
+  // Returns the original bounds of all transformed windows.
+  gfx::Rect GetBoundsInScreen() const;
+
   // Restores the window if it was minimized.
   void RestoreWindow();
 
