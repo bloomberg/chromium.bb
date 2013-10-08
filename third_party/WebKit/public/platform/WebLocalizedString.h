@@ -95,6 +95,7 @@ struct WebLocalizedString {
         AXWebAreaText, // Deprecated.
         AXWeekOfYearFieldText,
         AXYearFieldText,
+        BlockedPluginText,
         CalendarClear,
         CalendarToday,
         DateFormatDayInMonthLabel,

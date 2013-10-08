@@ -155,8 +155,7 @@ String missingPluginText()
 
 String blockedPluginByContentSecurityPolicyText()
 {
-    notImplemented();
-    return String();
+    return query(WebLocalizedString::BlockedPluginText);
 }
 
 String localizedMediaTimeDescription(float /*time*/)
