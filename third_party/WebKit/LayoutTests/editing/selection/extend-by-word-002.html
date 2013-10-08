@@ -30,20 +30,10 @@ ul.menu li { padding: 3px; padding-left: 1.6em; padding-right:5px; text-indent: 
 ul.menu li:first-letter { font-size:20px;line-height:10px; }
 
 </style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function editingTest() {
-    for (i = 0; i < 6; i++)
-        extendSelectionForwardByWordCommand();    
-}
-
-</script>
-
 <title>Editing Test</title> 
 </head> 
 <body>
+<div id="container">
 <div contenteditable id="root" class="editing" style="width:120px;">
 <ul class="menu" id="test">
 <li>&middot; <a href="detail.asp?cat=7">Appetizers</a></li>
@@ -54,17 +44,31 @@ function editingTest() {
 <li>&middot; <a href="detail.asp?cat=17">Combos</a></li>
 </ul>
 </div>
-
+</div>
 <!-- 
     Specifically checks test case in bug:
     <rdar://problem/4244976> reproducible hang at ocharleys.com in VisiblePosition::initDownstream
 -->
-
+<script src="../../fast/js/resources/js-test-pre.js"></script>
 <script>
+function $(id) { return document.getElementById(id); }
 if (window.internals)
     internals.settings.setEditingBehavior('mac');
-runEditingTest();
+var range = document.createRange();
+range.setStart($("test").querySelectorAll("li")[0], 0);
+var selection = window.getSelection();
+selection.removeAllRanges();
+selection.addRange(range);
+for (var i = 0; i < 6; ++i)
+    selection.modify('extend', 'forward', 'word');
+shouldBeEqualToString('selection.type', 'Range');
+shouldBe('selection.anchorNode', '$("test").querySelectorAll("li")[0].childNodes[1].firstChild');
+shouldBe('selection.anchorOffset', '0');
+shouldBe('selection.focusNode', '$("test").querySelectorAll("li a")[3].firstChild');
+shouldBe('selection.focusOffset', '5');
+if (window.testRunner)
+    $('container').outerHTML = '';
 </script>
-
+<script src="../../fast/js/resources/js-test-post.js"></script>
 </body>
 </html>
