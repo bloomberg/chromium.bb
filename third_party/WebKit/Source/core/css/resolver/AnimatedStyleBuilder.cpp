@@ -180,6 +180,15 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
             style->accessSVGStyle()->setFillPaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri());
         }
         return;
+    case CSSPropertyFlexGrow:
+        style->setFlexGrow(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0));
+        return;
+    case CSSPropertyFlexShrink:
+        style->setFlexShrink(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0));
+        return;
+    case CSSPropertyFlexBasis:
+        style->setFlexBasis(animatableValueToLength(value, state, NonNegativeValues));
+        return;
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state));
         return;

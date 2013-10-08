@@ -92,9 +92,9 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
     return 0;
 }
 
-inline static PassRefPtr<AnimatableValue> createFromDouble(double value)
+inline static PassRefPtr<AnimatableValue> createFromDouble(double value, AnimatableDouble::Constraint constraint = AnimatableDouble::Unconstrained)
 {
-    return AnimatableDouble::create(value);
+    return AnimatableDouble::create(value, constraint);
 }
 
 inline static PassRefPtr<AnimatableValue> createFromLengthBox(const LengthBox lengthBox, const RenderStyle* style)
@@ -182,6 +182,12 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->fillOpacity());
     case CSSPropertyFill:
         return AnimatableSVGPaint::create(style->svgStyle()->fillPaintType(), style->svgStyle()->fillPaintColor(), style->svgStyle()->fillPaintUri());
+    case CSSPropertyFlexGrow:
+        return createFromDouble(style->flexGrow(), AnimatableDouble::InterpolationIsNonContinuousWithZero);
+    case CSSPropertyFlexShrink:
+        return createFromDouble(style->flexShrink(), AnimatableDouble::InterpolationIsNonContinuousWithZero);
+    case CSSPropertyFlexBasis:
+        return createFromLength(style->flexBasis(), style);
     case CSSPropertyHeight:
         return createFromLength(style->height(), style);
     case CSSPropertyKerning:

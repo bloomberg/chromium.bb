@@ -318,7 +318,13 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyColor:
     case CSSPropertyFill:
     case CSSPropertyFillOpacity:
+    // FIXME: Shorthands should not be present in this list, but
+    // CSSPropertyAnimation implements animation of flex directly and
+    // makes use of this method.
     case CSSPropertyFlex:
+    case CSSPropertyFlexBasis:
+    case CSSPropertyFlexGrow:
+    case CSSPropertyFlexShrink:
     case CSSPropertyFloodColor:
     case CSSPropertyFloodOpacity:
     case CSSPropertyFontSize:

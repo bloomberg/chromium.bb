@@ -40,9 +40,14 @@ class AnimatableDouble : public AnimatableValue {
 public:
     virtual ~AnimatableDouble() { }
 
-    static PassRefPtr<AnimatableDouble> create(double number)
+    enum Constraint {
+        Unconstrained,
+        InterpolationIsNonContinuousWithZero,
+    };
+
+    static PassRefPtr<AnimatableDouble> create(double number, Constraint constraint = Unconstrained)
     {
-        return adoptRef(new AnimatableDouble(number));
+        return adoptRef(new AnimatableDouble(number, constraint));
     }
 
     PassRefPtr<CSSValue> toCSSValue() const;
@@ -53,13 +58,15 @@ protected:
     virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableDouble(double number)
+    AnimatableDouble(double number, Constraint constraint)
         : m_number(number)
+        , m_constraint(constraint)
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeDouble; }
 
     double m_number;
+    Constraint m_constraint;
 };
 
 inline const AnimatableDouble* toAnimatableDouble(const AnimatableValue* value)

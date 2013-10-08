@@ -45,6 +45,9 @@ PassRefPtr<CSSValue> AnimatableDouble::toCSSValue() const
 PassRefPtr<AnimatableValue> AnimatableDouble::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableDouble* other = toAnimatableDouble(value);
+    ASSERT(m_constraint == other->m_constraint);
+    if ((m_constraint == InterpolationIsNonContinuousWithZero) && (!m_number || !other->m_number))
+        return defaultInterpolateTo(this, value, fraction);
     return AnimatableDouble::create(blend(m_number, other->m_number, fraction));
 }
 
