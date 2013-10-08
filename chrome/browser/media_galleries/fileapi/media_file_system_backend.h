@@ -74,6 +74,9 @@ class MediaFileSystemBackend : public fileapi::FileSystemBackend {
   scoped_ptr<fileapi::AsyncFileUtil> picasa_file_util_;
   scoped_ptr<fileapi::AsyncFileUtil> itunes_file_util_;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+  scoped_ptr<fileapi::AsyncFileUtil> iphoto_file_util_;
+#endif  // defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemBackend);
 };

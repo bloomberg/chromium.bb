@@ -34,6 +34,10 @@
 #include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/media_galleries/fileapi/iphoto_file_util.h"
+#endif  // defined(OS_MACOSX)
+
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
 
@@ -56,6 +60,10 @@ MediaFileSystemBackend::MediaFileSystemBackend(
       picasa_file_util_(new picasa::PicasaFileUtil(media_path_filter_.get())),
       itunes_file_util_(new itunes::ITunesFileUtil(media_path_filter_.get()))
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+      ,
+      iphoto_file_util_(new iphoto::IPhotoFileUtil(media_path_filter_.get()))
+#endif  // defined(OS_MACOSX)
 {
 }
 
@@ -88,6 +96,9 @@ bool MediaFileSystemBackend::CanHandleType(
     case fileapi::kFileSystemTypePicasa:
     case fileapi::kFileSystemTypeItunes:
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+    case fileapi::kFileSystemTypeIphoto:
+#endif  // defined(OS_MACOSX)
       return true;
     default:
       return false;
@@ -124,6 +135,10 @@ fileapi::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
     case fileapi::kFileSystemTypePicasa:
       return picasa_file_util_.get();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+    case fileapi::kFileSystemTypeIphoto:
+      return iphoto_file_util_.get();
+#endif  // defined(OS_MACOSX)
     default:
       NOTREACHED();
   }
@@ -138,6 +153,7 @@ MediaFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
     case fileapi::kFileSystemTypeDeviceMedia:
+    case fileapi::kFileSystemTypeIphoto:
     case fileapi::kFileSystemTypeItunes:
       if (!media_copy_or_move_file_validator_factory_) {
         *error_code = base::PLATFORM_FILE_ERROR_SECURITY;

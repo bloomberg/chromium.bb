@@ -2694,6 +2694,8 @@
           'sources': [
             'browser/media_galleries/fileapi/iphoto_data_provider.cc',
             'browser/media_galleries/fileapi/iphoto_data_provider.h',
+            'browser/media_galleries/fileapi/iphoto_file_util.cc',
+            'browser/media_galleries/fileapi/iphoto_file_util.h',
           ],
         }],
         ['enable_extensions==1', {
