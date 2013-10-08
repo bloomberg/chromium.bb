@@ -560,7 +560,7 @@ inline static PassRefPtr<CSSPrimitiveValue> zoomAdjustedNumberValue(double value
     return cssValuePool().createValue(value / style->effectiveZoom(), CSSPrimitiveValue::CSS_NUMBER);
 }
 
-static PassRefPtr<CSSValue> zoomAdjustedPixelValueForLength(const Length& length, const RenderStyle* style)
+static PassRefPtr<CSSPrimitiveValue> zoomAdjustedPixelValueForLength(const Length& length, const RenderStyle* style)
 {
     if (length.isFixed())
         return zoomAdjustedPixelValue(length.value(), style);
