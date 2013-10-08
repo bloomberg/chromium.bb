@@ -910,6 +910,7 @@
             'browser/webkit_browsertest.cc',
             'browser/worker_host/test/worker_browsertest.cc',
             'child/site_isolation_policy_browsertest.cc',
+            'common/gpu/client/context_provider_command_buffer_browsertest.cc',
             'renderer/accessibility/renderer_accessibility_browsertest.cc',
             'renderer/browser_plugin/browser_plugin_browsertest.cc',
             'renderer/browser_plugin/browser_plugin_browsertest.h',

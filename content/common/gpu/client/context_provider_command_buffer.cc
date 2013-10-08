@@ -108,6 +108,12 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
          context_thread_checker_.CalledOnValidThread());
 
   base::AutoLock lock(main_thread_lock_);
+
+  // Destroy references to the context3d_ before leaking it.
+  memory_allocation_callback_proxy_.reset();
+  swap_buffers_complete_callback_proxy_.reset();
+  lost_context_callback_proxy_.reset();
+
   if (leak_on_destroy_) {
     WebGraphicsContext3DCommandBufferImpl* context3d ALLOW_UNUSED =
         context3d_.release();
