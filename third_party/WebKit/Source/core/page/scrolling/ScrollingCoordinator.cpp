@@ -159,7 +159,7 @@ static void clearPositionConstraintExceptForLayer(GraphicsLayer* layer, Graphics
 
 static WebLayerPositionConstraint computePositionConstraint(const RenderLayer* layer)
 {
-    ASSERT(layer->isComposited());
+    ASSERT(layer->compositedLayerMapping());
     do {
         if (layer->renderer()->style()->position() == FixedPosition) {
             const RenderObject* fixedPositionObject = layer->renderer();
@@ -169,7 +169,10 @@ static WebLayerPositionConstraint computePositionConstraint(const RenderLayer* l
         }
 
         layer = layer->parent();
-    } while (layer && !layer->isComposited());
+
+        // Composited layers that inherit a fixed position state will be positioned with respect to the nearest compositedLayerMapping's GraphicsLayer.
+        // So, once we find a layer that has its own compositedLayerMapping, we can stop searching for a fixed position RenderObject.
+    } while (layer && layer->compositedLayerMapping());
     return WebLayerPositionConstraint();
 }
 
@@ -806,12 +809,12 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
             return true;
         RenderLayer* layer = toRenderBoxModelObject(viewportConstrainedObject)->layer();
         // Any explicit reason that a fixed position element is not composited shouldn't cause slow scrolling.
-        if (!layer->isComposited() && layer->viewportConstrainedNotCompositedReason() == RenderLayer::NoNotCompositedReason)
+        if (layer->compositingState() != PaintsIntoOwnBacking && layer->viewportConstrainedNotCompositedReason() == RenderLayer::NoNotCompositedReason)
             return true;
 
         // Composited layers that actually paint into their enclosing ancestor
         // must also force main thread scrolling.
-        if (layer->isComposited() && layer->compositedLayerMapping()->paintsIntoCompositedAncestor())
+        if (layer->compositingState() == HasOwnBackingButPaintsIntoAncestor)
             return true;
     }
     return false;

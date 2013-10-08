@@ -30,6 +30,7 @@
 #include "core/dom/Position.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/ImageResourceClient.h"
+#include "core/rendering/CompositingState.h"
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"
@@ -698,7 +699,7 @@ public:
     virtual void addAnnotatedRegions(Vector<AnnotatedRegionValue>&);
     void collectAnnotatedRegions(Vector<AnnotatedRegionValue>&);
 
-    bool isComposited() const;
+    CompositingState compositingState() const;
 
     bool hitTest(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter = HitTestAll);
     virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&);

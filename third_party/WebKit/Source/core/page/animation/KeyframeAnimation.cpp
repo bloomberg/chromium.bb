@@ -239,7 +239,7 @@ bool KeyframeAnimation::hasAnimationForProperty(CSSPropertyID property) const
 
 void KeyframeAnimation::startAnimation(double timeOffset)
 {
-    if (m_object && m_object->isComposited())
+    if (m_object && m_object->compositingState() == PaintsIntoOwnBacking)
         m_isAccelerated = toRenderBoxModelObject(m_object)->startAnimation(timeOffset, m_animation.get(), m_keyframes);
 }
 
@@ -248,7 +248,7 @@ void KeyframeAnimation::pauseAnimation(double timeOffset)
     if (!m_object)
         return;
 
-    if (m_object && m_object->isComposited() && isAccelerated())
+    if (m_object && m_object->compositingState() == PaintsIntoOwnBacking && isAccelerated())
         toRenderBoxModelObject(m_object)->animationPaused(timeOffset, m_keyframes.animationName());
 
     // Restore the original (unanimated) style
@@ -261,7 +261,7 @@ void KeyframeAnimation::endAnimation()
     if (!m_object)
         return;
 
-    if (m_object && m_object->isComposited() && isAccelerated())
+    if (m_object && m_object->compositingState() == PaintsIntoOwnBacking && isAccelerated())
         toRenderBoxModelObject(m_object)->animationFinished(m_keyframes.animationName());
     m_isAccelerated = false;
 
