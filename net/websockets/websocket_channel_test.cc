@@ -633,12 +633,12 @@ class WebSocketChannelTest : public ::testing::Test {
   // Creates a new WebSocketChannel and connects it, using the settings stored
   // in |connect_data_|.
   void CreateChannelAndConnect() {
-    channel_.reset(
-        new WebSocketChannel(connect_data_.url, CreateEventInterface()));
+    channel_.reset(new WebSocketChannel(CreateEventInterface(),
+                                        &connect_data_.url_request_context));
     channel_->SendAddChannelRequestForTesting(
+        connect_data_.url,
         connect_data_.requested_subprotocols,
         connect_data_.origin,
-        &connect_data_.url_request_context,
         base::Bind(&ArgumentCopyingWebSocketFactory::Factory,
                    base::Unretained(&connect_data_.factory)));
   }

@@ -82,10 +82,10 @@ class WebSocketChannel::ConnectDelegate
 };
 
 WebSocketChannel::WebSocketChannel(
-    const GURL& socket_url,
-    scoped_ptr<WebSocketEventInterface> event_interface)
-    : socket_url_(socket_url),
-      event_interface_(event_interface.Pass()),
+    scoped_ptr<WebSocketEventInterface> event_interface,
+    URLRequestContext* url_request_context)
+    : event_interface_(event_interface.Pass()),
+      url_request_context_(url_request_context),
       send_quota_low_water_mark_(kDefaultSendQuotaLowWaterMark),
       send_quota_high_water_mark_(kDefaultSendQuotaHighWaterMark),
       current_send_quota_(0),
@@ -99,14 +99,14 @@ WebSocketChannel::~WebSocketChannel() {
 }
 
 void WebSocketChannel::SendAddChannelRequest(
+    const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
-    const GURL& origin,
-    URLRequestContext* url_request_context) {
+    const GURL& origin) {
   // Delegate to the tested version.
   SendAddChannelRequestWithFactory(
+      socket_url,
       requested_subprotocols,
       origin,
-      url_request_context,
       base::Bind(&WebSocketStream::CreateAndConnectStream));
 }
 
@@ -186,26 +186,29 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
 }
 
 void WebSocketChannel::SendAddChannelRequestForTesting(
+    const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const GURL& origin,
-    URLRequestContext* url_request_context,
     const WebSocketStreamFactory& factory) {
-  SendAddChannelRequestWithFactory(
-      requested_subprotocols, origin, url_request_context, factory);
+  SendAddChannelRequestWithFactory(socket_url,
+                                   requested_subprotocols,
+                                   origin,
+                                   factory);
 }
 
 void WebSocketChannel::SendAddChannelRequestWithFactory(
+    const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const GURL& origin,
-    URLRequestContext* url_request_context,
     const WebSocketStreamFactory& factory) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
+  socket_url_ = socket_url;
   scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
       new ConnectDelegate(this));
   stream_request_ = factory.Run(socket_url_,
                                 requested_subprotocols,
                                 origin,
-                                url_request_context,
+                                url_request_context_,
                                 BoundNetLog(),
                                 connect_delegate.Pass());
   state_ = CONNECTING;

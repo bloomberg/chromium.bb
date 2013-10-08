@@ -41,18 +41,18 @@ class NET_EXPORT WebSocketChannel {
       const BoundNetLog&,
       scoped_ptr<WebSocketStream::ConnectDelegate>)> WebSocketStreamFactory;
 
-  // Creates a new WebSocketChannel with the specified parameters.
+  // Creates a new WebSocketChannel in an idle state.
   // SendAddChannelRequest() must be called immediately afterwards to start the
   // connection process.
-  WebSocketChannel(const GURL& socket_url,
-                   scoped_ptr<WebSocketEventInterface> event_interface);
+  WebSocketChannel(scoped_ptr<WebSocketEventInterface> event_interface,
+                   URLRequestContext* url_request_context);
   virtual ~WebSocketChannel();
 
   // Starts the connection process.
   void SendAddChannelRequest(
+      const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
-      const GURL& origin,
-      URLRequestContext* url_request_context);
+      const GURL& origin);
 
   // Sends a data frame to the remote side. The frame should usually be no
   // larger than 32KB to prevent the time required to copy the buffers from from
@@ -88,9 +88,9 @@ class NET_EXPORT WebSocketChannel {
   // Starts the connection process, using a specified factory function rather
   // than the default. This is exposed for testing.
   void SendAddChannelRequestForTesting(
+      const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
       const GURL& origin,
-      URLRequestContext* url_request_context,
       const WebSocketStreamFactory& factory);
 
  private:
@@ -129,9 +129,9 @@ class NET_EXPORT WebSocketChannel {
 
   // Starts the connection progress, using a specified factory function.
   void SendAddChannelRequestWithFactory(
+      const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
       const GURL& origin,
-      URLRequestContext* url_request_context,
       const WebSocketStreamFactory& factory);
 
   // Success callback from WebSocketStream::CreateAndConnectStream(). Reports
@@ -210,10 +210,13 @@ class NET_EXPORT WebSocketChannel {
                   std::string* reason);
 
   // The URL of the remote server.
-  const GURL socket_url_;
+  GURL socket_url_;
 
   // The object receiving events.
   const scoped_ptr<WebSocketEventInterface> event_interface_;
+
+  // The URLRequestContext to pass to the WebSocketStream factory.
+  URLRequestContext* const url_request_context_;
 
   // The WebSocketStream on which to send and receive data.
   scoped_ptr<WebSocketStream> stream_;
