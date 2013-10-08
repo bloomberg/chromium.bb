@@ -298,41 +298,20 @@ namespace WebCore {
         EVENT_INTERFACES_FOR_EACH(EVENT_INTERFACE_DECLARE)
         EVENT_TARGET_INTERFACES_FOR_EACH(EVENT_INTERFACE_DECLARE)
         #undef EVENT_INTERFACE_DECLARE
-
-        inline bool isTouchEventType(const AtomicString& eventType) const
-        {
-            return eventType == touchstartEvent
-                || eventType == touchmoveEvent
-                || eventType == touchendEvent
-                || eventType == touchcancelEvent;
-        }
-
-        inline bool isGestureEventType(const AtomicString& eventType) const
-        {
-            return eventType == gesturetapEvent
-                || eventType == gesturetapunconfirmedEvent
-                || eventType == gesturetapdownEvent
-                || eventType == gestureshowpressEvent
-                || eventType == gesturescrollstartEvent
-                || eventType == gesturescrollendEvent
-                || eventType == gesturescrollupdateEvent;
-        }
-
-        Vector<AtomicString> touchEventNames() const
-        {
-            Vector<AtomicString> names;
-            names.reserveCapacity(4);
-            names.append(touchstartEvent);
-            names.append(touchmoveEvent);
-            names.append(touchendEvent);
-            names.append(touchcancelEvent);
-            return names;
-        }
     };
 
     inline EventNames& eventNames()
     {
         return threadGlobalData().eventNames();
+    }
+
+    inline bool isTouchEventType(const AtomicString& eventType)
+    {
+        EventNames& names = eventNames();
+        return eventType == names.touchstartEvent
+            || eventType == names.touchmoveEvent
+            || eventType == names.touchendEvent
+            || eventType == names.touchcancelEvent;
     }
 
 }

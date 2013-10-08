@@ -1422,7 +1422,7 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
 
     if (Document* document = this->document()) {
         document->addListenerTypeIfNeeded(eventType);
-        if (eventNames().isTouchEventType(eventType))
+        if (isTouchEventType(eventType))
             document->didAddTouchEventHandler(document);
         else if (eventType == eventNames().storageEvent)
             didAddStorageEventListener(this);
@@ -1456,7 +1456,7 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
         return false;
 
     if (Document* document = this->document()) {
-        if (eventNames().isTouchEventType(eventType))
+        if (isTouchEventType(eventType))
             document->didRemoveTouchEventHandler(document);
     }
 

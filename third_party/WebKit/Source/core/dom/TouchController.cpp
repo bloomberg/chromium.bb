@@ -119,7 +119,7 @@ void TouchController::didRemoveEventTargetNode(Document* document, Node* handler
 
 void TouchController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventNames().isTouchEventType(eventType)) {
+    if (isTouchEventType(eventType)) {
         Document* document = window->document();
         didAddTouchEventHandler(document, document);
     }
@@ -127,7 +127,7 @@ void TouchController::didAddEventListener(DOMWindow* window, const AtomicString&
 
 void TouchController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventNames().isTouchEventType(eventType)) {
+    if (isTouchEventType(eventType)) {
         Document* document = window->document();
         didRemoveTouchEventHandler(document, document);
     }

@@ -2059,7 +2059,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
     document.addListenerTypeIfNeeded(eventType);
     if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
         WheelController::from(&document)->didAddWheelEventHandler(&document);
-    else if (eventNames().isTouchEventType(eventType))
+    else if (isTouchEventType(eventType))
         document.didAddTouchEventHandler(targetNode);
 
     return true;
@@ -2080,7 +2080,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
     Document& document = targetNode->document();
     if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
         WheelController::from(&document)->didAddWheelEventHandler(&document);
-    else if (eventNames().isTouchEventType(eventType))
+    else if (isTouchEventType(eventType))
         document.didRemoveTouchEventHandler(targetNode);
 
     return true;

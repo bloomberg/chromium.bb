@@ -117,7 +117,7 @@ private:
         }
         virtual void onEventCondition(const TimedItem*, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration) OVERRIDE;
     private:
-        void maybeDispatch(Document::ListenerType, AtomicString& eventName, double elapsedTime);
+        void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
         Element* m_target;
         const AtomicString m_name;
     };

@@ -248,7 +248,7 @@ void CSSAnimations::cancel()
     m_pendingUpdate = nullptr;
 }
 
-void CSSAnimations::EventDelegate::maybeDispatch(Document::ListenerType listenerType, AtomicString& eventName, double elapsedTime)
+void CSSAnimations::EventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)
 {
     if (m_target->document().hasListenerType(listenerType))
         m_target->document().timeline()->addEventToDispatch(m_target, WebKitAnimationEvent::create(eventName, m_name, elapsedTime));
