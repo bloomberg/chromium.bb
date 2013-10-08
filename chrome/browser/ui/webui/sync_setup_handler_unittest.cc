@@ -899,7 +899,7 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
   mock_signin_->SetAuthenticatedUsername(kTestUser);
   FakeAuthStatusProvider provider(
       SigninGlobalError::GetForProfile(profile_.get()));
-  provider.SetAuthError(error_);
+  provider.SetAuthError(kTestUser, error_);
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())

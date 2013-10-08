@@ -357,9 +357,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual bool IsPassphraseRequired() const OVERRIDE;
   virtual syncer::ModelTypeSet GetEncryptedDataTypes() const OVERRIDE;
 
-  // Update the last auth error and notify observers of error state.
-  void UpdateAuthErrorState(const GoogleServiceAuthError& error);
-
   // Called when a user chooses which data types to sync as part of the sync
   // setup wizard.  |sync_everything| represents whether they chose the
   // "keep everything synced" option; if true, |chosen_types| will be ignored
@@ -458,6 +455,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual bool IsManaged() const;
 
   // SigninGlobalError::AuthStatusProvider implementation.
+  virtual std::string GetAccountId() const OVERRIDE;
   virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
   // syncer::UnrecoverableErrorHandler implementation.
@@ -725,6 +723,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   friend class SyncTest;
   friend class TestProfileSyncService;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
+
+  // Update the last auth error and notify observers of error state.
+  void UpdateAuthErrorState(const GoogleServiceAuthError& error);
 
   // Detects and attempts to recover from a previous improper datatype
   // configuration where Keep Everything Synced and the preferred types were

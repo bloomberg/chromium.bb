@@ -29,6 +29,8 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -505,6 +507,13 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
   // The manager is waiting for the refresh token, and hasn't started any
   // fetchers.
   EXPECT_FALSE(test_url_fetcher_factory_.GetFetcherByID(0));
+
+  // Set a fake user in signin manager.  This can be removed once TokenService
+  // is removed.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  ASSERT_TRUE(signin_manager);
+  signin_manager->SetAuthenticatedUsername("user@gmail.com");
 
   // Set a fake refresh token at the TokenService.
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);

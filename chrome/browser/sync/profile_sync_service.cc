@@ -31,6 +31,7 @@
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -1107,7 +1108,7 @@ void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {
   // Fan the notification out to interested UI-thread components. Notify the
   // SigninGlobalError first so it reflects the latest auth state before we
   // notify observers.
-  if (profile_)
+  if (profile_ && !use_oauth2_token_)
     SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
 
   NotifyObservers();
@@ -1457,6 +1458,11 @@ bool ProfileSyncService::QueryDetailedSyncStatus(
 
 const AuthError& ProfileSyncService::GetAuthError() const {
   return last_auth_error_;
+}
+
+std::string ProfileSyncService::GetAccountId() const {
+  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+      GetPrimaryAccountId();
 }
 
 GoogleServiceAuthError ProfileSyncService::GetAuthStatus() const {

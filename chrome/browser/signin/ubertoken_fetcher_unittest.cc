@@ -6,7 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -48,6 +50,7 @@ class UbertokenFetcherTest : public TokenServiceTestHarness {
     TokenServiceTestHarness::SetUp();
     UpdateCredentialsOnService();
     fetcher_.reset(new UbertokenFetcher(profile(), &consumer_));
+    CreateSigninManager("test@gmail.com");
   }
 
   virtual scoped_ptr<TestingProfile> CreateProfile() OVERRIDE {

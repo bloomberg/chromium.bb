@@ -274,6 +274,7 @@ class IdentityAPI : public ProfileKeyedAPI,
   static ProfileKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
 
   // AuthStatusProvider implementation.
+  virtual std::string GetAccountId() const OVERRIDE;
   virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
   // OAuth2TokenService::Observer implementation:
