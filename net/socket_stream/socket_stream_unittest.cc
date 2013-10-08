@@ -310,8 +310,8 @@ class SocketStreamTest : public PlatformTest {
   }
 
   virtual void DoCloseFlushPendingWriteTestWithSetContextNull(
-      SocketStream* socket_stream, SocketStreamEvent* event) {
-    socket_stream->set_context(NULL);
+      SocketStreamEvent* event) {
+    event->socket->set_context(NULL);
     // handshake response received.
     for (size_t i = 0; i < messages_.size(); i++) {
       std::vector<char> frame;
@@ -990,8 +990,7 @@ TEST_F(SocketStreamTest, NullContextSocketStreamShouldNotCrash) {
       &SocketStreamTest::DoSendWebSocketHandshake, base::Unretained(this)));
   delegate->SetOnReceivedData(base::Bind(
       &SocketStreamTest::DoCloseFlushPendingWriteTestWithSetContextNull,
-      base::Unretained(this),
-      base::Unretained(socket_stream.get())));
+      base::Unretained(this)));
   delegate->SetOnStartOpenConnection(base::Bind(
       &SocketStreamTest::DoIOPending, base::Unretained(this)));
 
@@ -999,13 +998,9 @@ TEST_F(SocketStreamTest, NullContextSocketStreamShouldNotCrash) {
 
   MockWrite data_writes[] = {
     MockWrite(SocketStreamTest::kWebSocketHandshakeRequest),
-    MockWrite(ASYNC, ERR_ABORTED),
-    MockWrite(ASYNC, ERR_ABORTED),
   };
   MockRead data_reads[] = {
     MockRead(SocketStreamTest::kWebSocketHandshakeResponse),
-    // Server doesn't close the connection after handshake.
-    MockRead(ASYNC, ERR_ABORTED),
   };
   AddWebSocketMessage("message1");
   AddWebSocketMessage("message2");
@@ -1022,6 +1017,8 @@ TEST_F(SocketStreamTest, NullContextSocketStreamShouldNotCrash) {
   io_test_callback_.WaitForResult();
   delegate->CompleteConnection(OK);
   EXPECT_EQ(OK, test_callback.WaitForResult());
+  EXPECT_TRUE(data_provider.at_read_eof());
+  EXPECT_TRUE(data_provider.at_write_eof());
 }
 
 }  // namespace net
