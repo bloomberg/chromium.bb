@@ -98,6 +98,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebViewImpl* webViewImpl = toWebViewImpl(webViewHelper.initializeAndLoad(baseURL + fileName, true));
+    webViewImpl->enableFixedLayoutMode(true);
     webViewImpl->settings()->setViewportEnabled(true);
     int pageWidth = 640;
     int pageHeight = 480;

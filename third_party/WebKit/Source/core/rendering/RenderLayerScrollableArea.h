@@ -95,7 +95,7 @@ public:
     virtual IntPoint scrollPosition() const OVERRIDE;
     virtual IntPoint minimumScrollPosition() const OVERRIDE;
     virtual IntPoint maximumScrollPosition() const OVERRIDE;
-    virtual IntRect visibleContentRect(IncludeScrollbarsInRect) const OVERRIDE;
+    virtual IntRect visibleContentRect(VisibleContentRectIncludesScrollbars) const OVERRIDE;
     virtual int visibleHeight() const OVERRIDE;
     virtual int visibleWidth() const OVERRIDE;
     virtual IntSize contentsSize() const OVERRIDE;

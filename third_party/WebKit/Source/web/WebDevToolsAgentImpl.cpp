@@ -332,13 +332,8 @@ private:
         int overrideWidth = effectiveEmulatedSize.width + scrollbarDimensions.width;
         int overrideHeight = effectiveEmulatedSize.height + scrollbarDimensions.height;
 
-        if (IntSize(overrideWidth, overrideHeight) != frameView->size()) {
+        if (IntSize(overrideWidth, overrideHeight) != frameView->size())
             frameView->resize(overrideWidth, overrideHeight);
-
-            // Since we're resizing the main-frame, we need to resize its layout size too since
-            // main frames' layout sizes are manually managed by WebViewImpl
-            frameView->setLayoutSize(IntSize(overrideWidth, overrideHeight));
-        }
 
         Document* doc = frameView->frame().document();
         doc->styleResolverChanged(RecalcStyleImmediately);

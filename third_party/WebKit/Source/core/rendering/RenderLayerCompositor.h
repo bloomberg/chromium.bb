@@ -172,7 +172,6 @@ public:
     void frameViewDidChangeSize();
     void frameViewDidScroll();
     void frameViewDidLayout();
-    void frameViewScrollbarsExistenceDidChange();
     void rootFixedBackgroundsChanged();
 
     bool scrollingLayerDidChange(RenderLayer*);

@@ -379,7 +379,7 @@ void ScrollableArea::serviceScrollAnimations()
         scrollAnimator->serviceScrollAnimations();
 }
 
-IntRect ScrollableArea::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
+IntRect ScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
     int verticalScrollbarWidth = 0;
     int horizontalScrollbarHeight = 0;

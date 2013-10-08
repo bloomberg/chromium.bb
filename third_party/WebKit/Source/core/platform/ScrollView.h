@@ -120,15 +120,25 @@ public:
     // The visible content rect has a location that is the scrolled offset of the document. The width and height are the viewport width
     // and height. By default the scrollbars themselves are excluded from this rectangle, but an optional boolean argument allows them to be
     // included.
-    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
+    virtual IntRect visibleContentRect(VisibleContentRectIncludesScrollbars = ExcludeScrollbars) const OVERRIDE;
     IntSize visibleSize() const { return visibleContentRect().size(); }
     virtual int visibleWidth() const OVERRIDE { return visibleContentRect().width(); }
     virtual int visibleHeight() const OVERRIDE { return visibleContentRect().height(); }
 
     // visibleContentRect().size() is computed from unscaledVisibleContentSize() divided by the value of visibleContentScaleFactor.
     // For the main frame, visibleContentScaleFactor is equal to the page's pageScaleFactor; it's 1 otherwise.
-    IntSize unscaledVisibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+    IntSize unscaledVisibleContentSize(VisibleContentRectIncludesScrollbars = ExcludeScrollbars) const;
     virtual float visibleContentScaleFactor() const { return 1; }
+
+    // Functions for getting/setting the size webkit should use to layout the contents. By default this is the same as the visible
+    // content size. Explicitly setting a layout size value will cause webkit to layout the contents using this size instead.
+    IntSize layoutSize(VisibleContentRectIncludesScrollbars = ExcludeScrollbars) const;
+    int layoutWidth(VisibleContentRectIncludesScrollbars scrollbarInclusion = ExcludeScrollbars) const { return layoutSize(scrollbarInclusion).width(); }
+    int layoutHeight(VisibleContentRectIncludesScrollbars scrollbarInclusion = ExcludeScrollbars) const { return layoutSize(scrollbarInclusion).height(); }
+    IntSize fixedLayoutSize() const;
+    void setFixedLayoutSize(const IntSize&);
+    bool useFixedLayout() const;
+    void setUseFixedLayout(bool enable);
 
     // Functions for getting/setting the size of the document contained inside the ScrollView (as an IntSize or as individual width and height
     // values).
@@ -265,7 +275,7 @@ protected:
 
     virtual void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
 
-    virtual void scrollbarExistenceDidChange() = 0;
+    virtual void visibleContentsResized() = 0;
     // These functions are used to create/destroy scrollbars.
     void setHasHorizontalScrollbar(bool);
     void setHasVerticalScrollbar(bool);
@@ -287,8 +297,6 @@ protected:
     // Called to update the scrollbars to accurately reflect the state of the view.
     void updateScrollbars(const IntSize& desiredOffset);
 
-    IntSize excludeScrollbars(const IntSize&) const;
-
 private:
     RefPtr<Scrollbar> m_horizontalScrollbar;
     RefPtr<Scrollbar> m_verticalScrollbar;
@@ -306,6 +314,7 @@ private:
 
     IntSize m_scrollOffset; // FIXME: Would rather store this as a position, but we will wait to make this change until more code is shared.
     IntPoint m_cachedScrollPosition;
+    IntSize m_fixedLayoutSize;
     IntSize m_contentsSize;
 
     int m_scrollbarsAvoidingResizer;
@@ -316,6 +325,7 @@ private:
 
     IntPoint m_panScrollIconPoint;
     bool m_drawPanScrollIcon;
+    bool m_useFixedLayout;
 
     bool m_paintsEntireContents;
     bool m_clipsRepaints;

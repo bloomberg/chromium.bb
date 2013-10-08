@@ -433,7 +433,7 @@ PassRefPtr<Range> Frame::rangeForPoint(const IntPoint& framePoint)
 }
 
 void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor, bool transparent,
-    ScrollbarMode horizontalScrollbarMode, bool horizontalLock,
+    const IntSize& fixedLayoutSize, bool useFixedLayout, ScrollbarMode horizontalScrollbarMode, bool horizontalLock,
     ScrollbarMode verticalScrollbarMode, bool verticalLock)
 {
     ASSERT(this);
@@ -449,9 +449,8 @@ void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor
     RefPtr<FrameView> frameView;
     if (isMainFrame) {
         frameView = FrameView::create(this, viewportSize);
-
-        // The layout size is set by WebViewImpl to support @viewport
-        frameView->setLayoutSizeFixedToFrameSize(false);
+        frameView->setFixedLayoutSize(fixedLayoutSize);
+        frameView->setUseFixedLayout(useFixedLayout);
     } else
         frameView = FrameView::create(this);
 
