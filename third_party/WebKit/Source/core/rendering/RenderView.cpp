@@ -438,11 +438,6 @@ void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     paintObject(paintInfo, paintOffset);
 }
 
-static inline bool isComposited(RenderObject* object)
-{
-    return object->hasLayer() && toRenderLayerModelObject(object)->layer()->isComposited();
-}
-
 static inline bool rendererObscuresBackground(RenderObject* rootObject)
 {
     if (!rootObject)
@@ -454,7 +449,7 @@ static inline bool rendererObscuresBackground(RenderObject* rootObject)
         || style->hasTransform())
         return false;
 
-    if (isComposited(rootObject))
+    if (rootObject->compositingState() == PaintsIntoOwnBacking)
         return false;
 
     const RenderObject* rootRenderer = rootObject->rendererForRootBackground();

@@ -865,7 +865,7 @@ void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFr
     if (m_resizer)
         m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));
 
-    if (m_box->isComposited())
+    if (m_box->compositedLayerMapping())
         layer()->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
 }
 

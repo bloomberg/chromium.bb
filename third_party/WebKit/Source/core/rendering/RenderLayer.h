@@ -464,12 +464,21 @@ public:
     // Only safe to call from RenderLayerModelObject::destroyLayer()
     void operator delete(void*);
 
-    bool isComposited() const { return m_compositedLayerMapping; }
-    bool hasCompositedMask() const;
-    bool hasCompositedClippingMask() const;
-    CompositedLayerMapping* compositedLayerMapping() const { return m_compositedLayerMapping.get(); }
+    CompositingState compositingState() const;
+
+    CompositedLayerMapping* compositedLayerMapping() const
+    {
+        // NOTE: Checking whether backing exists is equivalent to asking if you are in one of these two compositing states.
+        //       If this is why you are using compositedLayerMapping(), consider using compositingState() instead.
+        ASSERT(compositingState() == HasOwnBackingButPaintsIntoAncestor || compositingState() == PaintsIntoOwnBacking);
+        return m_compositedLayerMapping.get();
+    }
+
     CompositedLayerMapping* ensureCompositedLayerMapping();
     void clearCompositedLayerMapping(bool layerBeingDestroyed = false);
+
+    bool hasCompositedMask() const;
+    bool hasCompositedClippingMask() const;
     bool needsCompositedScrolling() const;
     bool needsToBeStackingContainer() const;
 
@@ -482,7 +491,7 @@ public:
 
     bool paintsWithTransparency(PaintBehavior paintBehavior) const
     {
-        return isTransparent() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || !isComposited());
+        return isTransparent() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
     }
 
     bool paintsWithTransform(PaintBehavior) const;
