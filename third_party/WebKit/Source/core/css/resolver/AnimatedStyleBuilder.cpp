@@ -250,6 +250,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyStopOpacity:
         style->setStopOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
+    case CSSPropertyStrokeDashoffset:
+        style->setStrokeDashOffset(toAnimatableSVGLength(value)->toSVGLength());
+        return;
     case CSSPropertyStrokeOpacity:
         style->setStrokeOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
