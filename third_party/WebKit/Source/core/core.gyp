@@ -265,6 +265,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/Event.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventHeaders.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetHeaders.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetInterfaces.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',

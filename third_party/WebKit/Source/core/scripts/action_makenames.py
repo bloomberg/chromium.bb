@@ -126,8 +126,7 @@ def main(args):
         elif inputBasename.endswith('AttributeNames.in') or inputBasename.endswith('attrs.in'):
             assert attrInput == None
             attrInput = inputAbsPosix
-        elif (inputBasename.endswith('EventTargetFactory.in') or inputBasename.endswith('EventNames.in')
-            or inputBasename.endswith('DOMExceptions.in') or inputBasename.endswith('Settings.in')):
+        elif (inputBasename.endswith('EventTargetFactory.in') or inputBasename.endswith('DOMExceptions.in') or inputBasename.endswith('Settings.in')):
             eventsInput = inputAbsPosix
         elif inputBasename.endswith('Names.in'):
             options.append(inputAbsPosix)
@@ -137,7 +136,7 @@ def main(args):
             assert False
 
     assert makeNamesInput != None
-    assert tagInput != None or attrInput != None or eventsInput != None or ('--fonts' in options) or ('--resourceTypes' in options)
+    assert tagInput != None or attrInput != None or eventsInput != None or ('--fonts' in options) or ('--resourceTypes' in options) or ('--eventNames' in options)
 
     # scriptsPath is a Perl include directory, located relative to
     # makeNamesInput.

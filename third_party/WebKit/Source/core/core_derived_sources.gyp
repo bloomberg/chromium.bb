@@ -503,6 +503,29 @@
           'msvs_cygwin_shell': 1,
         },
         {
+          'action_name': 'EventNames',
+          'inputs': [
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'events/EventNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.h',
+          ],
+          'action': [
+            'python',
+            'scripts/action_makenames.py',
+            '<@(_outputs)',
+            '--',
+            '<@(_inputs)',
+            '--',
+            '--eventNames',
+          ],
+          'msvs_cygwin_shell': 1,
+        },
+        {
           'action_name': 'XLinkNames',
           'inputs': [
             'scripts/Hasher.pm',

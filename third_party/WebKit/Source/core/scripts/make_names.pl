@@ -45,6 +45,7 @@ sub readAttrs($$);
 my $printFactory = 0;
 my $fontNamesIn = "";
 my $resourceTypesIn = "";
+my $eventNamesIn = "";
 my $tagsFile = "";
 my $attrsFile = "";
 my $outputDir = ".";
@@ -80,7 +81,8 @@ GetOptions(
     'extraDefines=s' => \$extraDefines,
     'preprocessor=s' => \$preprocessor,
     'fonts=s' => \$fontNamesIn,
-    'resourceTypes=s' => \$resourceTypesIn
+    'resourceTypes=s' => \$resourceTypesIn,
+    'eventNames=s' => \$eventNamesIn
 );
 
 mkpath($outputDir);
@@ -95,6 +97,12 @@ if (length($resourceTypesIn)) {
     my $baseName = "FetchInitiatorType";
     my $basePrefix = "Loader_Cache";
     createGenericNamesFile($resourceTypesIn, $baseName, $basePrefix);
+}
+
+if (length($eventNamesIn)) {
+    my $baseName = "Event";
+    my $basePrefix = "DOM";
+    createGenericNamesFile($eventNamesIn, $baseName, $basePrefix);
 }
 
 die "You must specify at least one of --tags <file> or --attrs <file>" unless (length($tagsFile) || length($attrsFile));
