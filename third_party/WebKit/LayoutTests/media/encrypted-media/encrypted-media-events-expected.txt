@@ -73,7 +73,7 @@ EXPECTED (String(event.sessionId) == String(parseInt(event.sessionId)) == 'true'
 Implementations should avoid sessionIds of 0.
 EXPECTED (event.sessionId > '0') OK
 The sessionsId should be different from the first run.
-EXPECTED (event.sessionId != '1') OK
+EXPECTED (event.sessionId != firstRunKeyMessageSessionId == 'true') OK
 EXPECTED (event.initData === 'null') OK
 EXPECTED (event.message.length == '3') OK
 EXPECTED (event.message[0] == '65') OK

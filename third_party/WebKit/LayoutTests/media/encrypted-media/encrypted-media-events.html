@@ -113,7 +113,7 @@
                     firstRunKeyMessageSessionId = keyMessageSessionId;
                 else {
                     consoleWrite("The sessionsId should be different from the first run.");
-                    testExpected("event.sessionId", firstRunKeyMessageSessionId, "!=");
+                    testExpected("event.sessionId != firstRunKeyMessageSessionId", true);
                 }
 
                 // initData is not used for this event.
