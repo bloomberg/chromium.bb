@@ -251,7 +251,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   // software mirroring.
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
-  display_manager->UpdateDisplays(display_info_list);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_TRUE(display_manager->IsMirrored());
   EXPECT_EQ(external_id, display_manager->mirrored_display().id());
@@ -260,7 +260,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   display_info_list.clear();
   display_info_list.push_back(external_display_info);
   display_manager->SetSoftwareMirroring(true);
-  display_manager->UpdateDisplays(display_info_list);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_FALSE(display_manager->IsMirrored());
 
@@ -269,7 +269,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager->SetSoftwareMirroring(true);
-  display_manager->UpdateDisplays(display_info_list);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_TRUE(display_manager->IsMirrored());
   EXPECT_EQ(external_id, display_manager->mirrored_display().id());
