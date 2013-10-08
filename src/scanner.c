@@ -1178,6 +1178,8 @@ int main(int argc, char *argv[])
 		mode = SERVER_HEADER;
 	else if (strcmp(argv[1], "code") == 0)
 		mode = CODE;
+	else
+		usage(EXIT_FAILURE);
 
 	wl_list_init(&protocol.interface_list);
 	protocol.type_index = 0;
@@ -1210,7 +1212,7 @@ int main(int argc, char *argv[])
 
 	XML_ParserFree(ctx.parser);
 
-	switch(mode) {
+	switch (mode) {
 		case CLIENT_HEADER:
 			emit_header(&protocol, 0);
 			break;
