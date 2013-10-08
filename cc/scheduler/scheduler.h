@@ -134,7 +134,6 @@ class CC_EXPORT Scheduler {
   const SchedulerSettings settings_;
   SchedulerClient* client_;
 
-  base::WeakPtrFactory<Scheduler> weak_factory_;
   bool last_set_needs_begin_frame_;
   BeginFrameArgs last_begin_frame_args_;
   base::CancelableClosure begin_frame_deadline_closure_;
@@ -143,6 +142,8 @@ class CC_EXPORT Scheduler {
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_;
   SchedulerStateMachine::Action inside_action_;
+
+  base::WeakPtrFactory<Scheduler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Scheduler);
 };

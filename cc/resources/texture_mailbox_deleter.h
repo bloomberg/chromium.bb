@@ -37,8 +37,8 @@ class CC_EXPORT TextureMailboxDeleter {
       unsigned sync_point,
       bool is_lost);
 
-  base::WeakPtrFactory<TextureMailboxDeleter> weak_ptr_factory_;
   ScopedPtrVector<SingleReleaseCallback> impl_callbacks_;
+  base::WeakPtrFactory<TextureMailboxDeleter> weak_ptr_factory_;
 };
 
 }  // namespace cc

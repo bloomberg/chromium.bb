@@ -79,8 +79,8 @@ class CC_EXPORT ResourceUpdateController {
   size_t texture_updates_per_tick_;
   bool first_update_attempt_;
   base::SingleThreadTaskRunner* task_runner_;
-  base::WeakPtrFactory<ResourceUpdateController> weak_factory_;
   bool task_posted_;
+  base::WeakPtrFactory<ResourceUpdateController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceUpdateController);
 };

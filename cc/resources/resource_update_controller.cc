@@ -49,8 +49,8 @@ ResourceUpdateController::ResourceUpdateController(
       texture_updates_per_tick_(MaxFullUpdatesPerTick(resource_provider)),
       first_update_attempt_(true),
       task_runner_(task_runner),
-      weak_factory_(this),
-      task_posted_(false) {}
+      task_posted_(false),
+      weak_factory_(this) {}
 
 ResourceUpdateController::~ResourceUpdateController() {}
 

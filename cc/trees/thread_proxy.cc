@@ -71,8 +71,6 @@ ThreadProxy::ThreadProxy(
       manage_tiles_pending_(false),
       commit_waits_for_activation_(false),
       inside_commit_(false),
-      weak_factory_on_impl_thread_(this),
-      weak_factory_(this),
       begin_frame_sent_to_main_thread_completion_event_on_impl_thread_(NULL),
       readback_request_on_impl_thread_(NULL),
       commit_completion_event_on_impl_thread_(NULL),
@@ -92,7 +90,9 @@ ThreadProxy::ThreadProxy(
       renew_tree_priority_on_impl_thread_pending_(false),
       draw_duration_history_(kDurationHistorySize),
       begin_frame_to_commit_duration_history_(kDurationHistorySize),
-      commit_to_activate_duration_history_(kDurationHistorySize) {
+      commit_to_activate_duration_history_(kDurationHistorySize),
+      weak_factory_on_impl_thread_(this),
+      weak_factory_(this) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host_);

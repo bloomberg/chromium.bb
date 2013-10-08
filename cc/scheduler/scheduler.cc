@@ -16,11 +16,11 @@ Scheduler::Scheduler(SchedulerClient* client,
                      const SchedulerSettings& scheduler_settings)
     : settings_(scheduler_settings),
       client_(client),
-      weak_factory_(this),
       last_set_needs_begin_frame_(false),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false),
-      inside_action_(SchedulerStateMachine::ACTION_NONE) {
+      inside_action_(SchedulerStateMachine::ACTION_NONE),
+      weak_factory_(this) {
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeededByImplThread());
 }

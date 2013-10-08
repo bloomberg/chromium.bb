@@ -219,11 +219,6 @@ class ThreadProxy : public Proxy,
   bool commit_waits_for_activation_;
   bool inside_commit_;
 
-  base::WeakPtrFactory<ThreadProxy> weak_factory_on_impl_thread_;
-
-  base::WeakPtr<ThreadProxy> main_thread_weak_ptr_;
-  base::WeakPtrFactory<ThreadProxy> weak_factory_;
-
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
 
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
@@ -276,6 +271,10 @@ class ThreadProxy : public Proxy,
   // activation_duration_history_.
   base::TimeTicks begin_frame_sent_to_main_thread_time_;
   base::TimeTicks commit_complete_time_;
+
+  base::WeakPtr<ThreadProxy> main_thread_weak_ptr_;
+  base::WeakPtrFactory<ThreadProxy> weak_factory_on_impl_thread_;
+  base::WeakPtrFactory<ThreadProxy> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadProxy);
 };

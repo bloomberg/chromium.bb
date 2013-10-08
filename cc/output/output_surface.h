@@ -151,7 +151,6 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   bool has_swap_buffers_complete_callback_;
   gfx::Size surface_size_;
   float device_scale_factor_;
-  base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 
   // The FrameRateController is deprecated.
   // Platforms should move to native BeginFrames instead.
@@ -202,6 +201,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   bool check_for_retroactive_begin_frame_pending_;
 
   bool external_stencil_test_enabled_;
+
+  base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };

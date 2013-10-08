@@ -43,8 +43,8 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
       time_source_(timer),
       active_(false),
       is_time_source_throttling_(true),
-      weak_factory_(this),
-      task_runner_(NULL) {
+      task_runner_(NULL),
+      weak_factory_(this) {
   time_source_client_adapter_ =
       FrameRateControllerTimeSourceAdapter::Create(this);
   time_source_->SetClient(time_source_client_adapter_.get());
@@ -58,8 +58,8 @@ FrameRateController::FrameRateController(
       interval_(BeginFrameArgs::DefaultInterval()),
       active_(false),
       is_time_source_throttling_(false),
-      weak_factory_(this),
-      task_runner_(task_runner) {}
+      task_runner_(task_runner),
+      weak_factory_(this) {}
 
 FrameRateController::~FrameRateController() {
   if (is_time_source_throttling_)

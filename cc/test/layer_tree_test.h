@@ -185,9 +185,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_ptr<base::Thread> impl_thread_;
   base::CancelableClosure timeout_;
+  scoped_refptr<TestContextProvider> compositor_contexts_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;
   base::WeakPtrFactory<LayerTreeTest> weak_factory_;
-  scoped_refptr<TestContextProvider> compositor_contexts_;
 };
 
 }  // namespace cc

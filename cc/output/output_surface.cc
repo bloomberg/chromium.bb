@@ -37,14 +37,14 @@ OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
       has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
-      weak_ptr_factory_(this),
       max_frames_pending_(0),
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
       client_ready_for_begin_frame_(true),
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
-      external_stencil_test_enabled_(false) {}
+      external_stencil_test_enabled_(false),
+      weak_ptr_factory_(this) {}
 
 OutputSurface::OutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
@@ -52,14 +52,14 @@ OutputSurface::OutputSurface(
       has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
-      weak_ptr_factory_(this),
       max_frames_pending_(0),
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
       client_ready_for_begin_frame_(true),
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
-      external_stencil_test_enabled_(false) {}
+      external_stencil_test_enabled_(false),
+      weak_ptr_factory_(this) {}
 
 OutputSurface::OutputSurface(
     scoped_refptr<ContextProvider> context_provider,
@@ -69,14 +69,14 @@ OutputSurface::OutputSurface(
       has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
-      weak_ptr_factory_(this),
       max_frames_pending_(0),
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
       client_ready_for_begin_frame_(true),
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
-      external_stencil_test_enabled_(false) {}
+      external_stencil_test_enabled_(false),
+      weak_ptr_factory_(this) {}
 
 void OutputSurface::InitializeBeginFrameEmulation(
     base::SingleThreadTaskRunner* task_runner,

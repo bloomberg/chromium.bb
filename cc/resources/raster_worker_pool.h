@@ -273,10 +273,10 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   RasterTask::Queue::TaskVector raster_tasks_;
   RasterTask::Queue::TaskSet raster_tasks_required_for_activation_;
 
-  base::WeakPtrFactory<RasterWorkerPool> weak_ptr_factory_;
   scoped_refptr<internal::WorkerPoolTask> raster_finished_task_;
   scoped_refptr<internal::WorkerPoolTask>
       raster_required_for_activation_finished_task_;
+  base::WeakPtrFactory<RasterWorkerPool> weak_ptr_factory_;
 };
 
 }  // namespace cc
