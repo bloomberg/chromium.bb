@@ -195,7 +195,7 @@ class LayerTreeHostImplTest : public testing::Test,
       times_encountered++;
     }
 
-    ASSERT_EQ(times_encountered, 1);
+    ASSERT_EQ(1, times_encountered);
   }
 
   static void ExpectNone(const ScrollAndScaleSet& scroll_info, int id) {
@@ -5304,6 +5304,82 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   // released, and the texture deleted.
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(0u, context_provider->TestContext3d()->NumTextures());
+}
+
+TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {
+  // When flinging via touch, only the child should scroll (we should not
+  // bubble).
+  gfx::Size surface_size(10, 10);
+  gfx::Size content_size(20, 20);
+  scoped_ptr<LayerImpl> root = CreateScrollableLayer(1, content_size);
+  scoped_ptr<LayerImpl> child = CreateScrollableLayer(2, content_size);
+
+  root->AddChild(child.Pass());
+
+  host_impl_->SetViewportSize(surface_size);
+  host_impl_->active_tree()->SetRootLayer(root.Pass());
+  host_impl_->active_tree()->DidBecomeActive();
+  InitializeRendererAndDrawFrame();
+  {
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->ScrollBegin(gfx::Point(),
+                                      InputHandler::Gesture));
+
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->FlingScrollBegin());
+
+    gfx::Vector2d scroll_delta(0, 100);
+    host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+    host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+
+    host_impl_->ScrollEnd();
+
+    scoped_ptr<ScrollAndScaleSet> scroll_info =
+        host_impl_->ProcessScrollDeltas();
+
+    // Only the child should have scrolled.
+    ASSERT_EQ(1u, scroll_info->scrolls.size());
+    ExpectNone(*scroll_info.get(),
+               host_impl_->active_tree()->root_layer()->id());
+  }
+}
+
+TEST_F(LayerTreeHostImplTest, WheelFlingShouldBubble) {
+  // When flinging via wheel, the root should eventually scroll (we should
+  // bubble).
+  gfx::Size surface_size(10, 10);
+  gfx::Size content_size(20, 20);
+  scoped_ptr<LayerImpl> root = CreateScrollableLayer(1, content_size);
+  scoped_ptr<LayerImpl> child = CreateScrollableLayer(2, content_size);
+
+  root->AddChild(child.Pass());
+
+  host_impl_->SetViewportSize(surface_size);
+  host_impl_->active_tree()->SetRootLayer(root.Pass());
+  host_impl_->active_tree()->DidBecomeActive();
+  InitializeRendererAndDrawFrame();
+  {
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->FlingScrollBegin());
+
+    gfx::Vector2d scroll_delta(0, 100);
+    host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+    host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+
+    host_impl_->ScrollEnd();
+
+    scoped_ptr<ScrollAndScaleSet> scroll_info =
+        host_impl_->ProcessScrollDeltas();
+
+    // Only the root should have scrolled.
+    ASSERT_EQ(2u, scroll_info->scrolls.size());
+    ExpectContains(*scroll_info.get(),
+                   host_impl_->active_tree()->root_layer()->id(),
+                   gfx::Vector2d(0, 10));
+  }
 }
 
 }  // namespace

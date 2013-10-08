@@ -2267,6 +2267,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
     return ScrollIgnored;
   }
 
+  if (!wheel_scrolling_)
+    should_bubble_scrolls_ = false;
+
   return ScrollStarted;
 }
 
