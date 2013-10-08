@@ -48,6 +48,17 @@ InspectorTest.sendCommand = function(method, params, handler)
 }
 
 /**
+ * @param {string} command
+ * @param {function({object} messageObject)=} handler
+ */
+InspectorTest.sendRawCommand = function(command, handler)
+{
+    this._dispatchTable[++this._requestId] = handler;
+    InspectorFrontendHost.sendMessageToBackend(command);
+    return this._requestId;
+}
+
+/**
  * @param {object} messageObject
  */
 InspectorFrontendAPI.dispatchMessageAsync = function(messageObject)
@@ -140,6 +151,16 @@ InspectorTest.debugLog = function(message)
 InspectorTest.completeTest = function()
 {
     this.sendCommand("Runtime.evaluate", { "expression": "closeTest();"} );
+}
+
+InspectorTest.completeTestIfError = function(messageObject)
+{
+    if (messageObject.error) {
+        InspectorTest.log(messageObject.error.message);
+        InspectorTest.completeTest();
+        return true;
+    }
+    return false;
 }
 
 InspectorTest.checkExpectation = function(fail, name, messageObject)
