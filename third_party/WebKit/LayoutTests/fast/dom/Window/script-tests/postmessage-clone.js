@@ -48,7 +48,7 @@ if (window.eventSender) {
     var fileRect = fileInput.getClientRects()[0];
     var targetX = fileRect.left + fileRect.width / 2;
     var targetY = fileRect.top + fileRect.height / 2;
-    eventSender.beginDragWithFiles(['got-file-upload.html', 'got-file-upload-2.html']);
+    eventSender.beginDragWithFiles(['resources/blank.html', 'resources/child.html']);
     eventSender.mouseMoveTo(targetX, targetY);
     eventSender.mouseUp();
 }
