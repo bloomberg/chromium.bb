@@ -954,6 +954,7 @@
         'browser/importer/firefox_profile_lock_unittest.cc',
         'browser/importer/profile_writer_unittest.cc',
         'browser/internal_auth_unittest.cc',
+        'browser/install_module_verifier_unittest_win.cc',
         'browser/invalidation/invalidation_service_android_unittest.cc',
         'browser/invalidation/invalidation_service_test_template.cc',
         'browser/invalidation/invalidation_service_test_template.h',

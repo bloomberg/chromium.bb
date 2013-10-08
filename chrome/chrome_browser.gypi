@@ -904,6 +904,8 @@
         'browser/infobars/insecure_content_infobar_delegate.h',
         'browser/infobars/simple_alert_infobar_delegate.cc',
         'browser/infobars/simple_alert_infobar_delegate.h',
+        'browser/install_module_verifier_win.cc',
+        'browser/install_module_verifier_win.h',
         'browser/internal_auth.cc',
         'browser/internal_auth.h',
         'browser/intranet_redirect_detector.cc',
