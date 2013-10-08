@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cookies/cookie_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -29,18 +28,19 @@
 #include "url/gurl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
-using content::BrowserThread;
-
 // This class is designed to be shared between any calling threads and the
-// database thread. It batches operations and commits them on a timer.
+// background task runner. It batches operations and commits them on a timer.
 class SQLiteServerBoundCertStore::Backend
     : public base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend> {
  public:
-  Backend(const base::FilePath& path,
-          quota::SpecialStoragePolicy* special_storage_policy)
+  Backend(
+      const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+      quota::SpecialStoragePolicy* special_storage_policy)
       : path_(path),
         num_pending_(0),
         force_keep_session_state_(false),
+        background_task_runner_(background_task_runner),
         special_storage_policy_(special_storage_policy),
         corruption_detected_(false) {}
 
@@ -62,9 +62,8 @@ class SQLiteServerBoundCertStore::Backend
   void SetForceKeepSessionState();
 
  private:
-  void LoadOnDBThreadAndNotify(const LoadedCallback& loaded_callback);
   void LoadOnDBThread(
-      std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs);
+      ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs);
 
   friend class base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend>;
 
@@ -129,6 +128,8 @@ class SQLiteServerBoundCertStore::Backend
   // Cache of origins we have certificates stored for.
   std::set<std::string> cert_origins_;
 
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   // Indicates if the kill-database callback has been scheduled.
@@ -168,29 +169,21 @@ void SQLiteServerBoundCertStore::Backend::Load(
     const LoadedCallback& loaded_callback) {
   // This function should be called only once per instance.
   DCHECK(!db_.get());
-
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&Backend::LoadOnDBThreadAndNotify, this, loaded_callback));
-}
-
-void SQLiteServerBoundCertStore::Backend::LoadOnDBThreadAndNotify(
-    const LoadedCallback& loaded_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   scoped_ptr<ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> >
       certs(new ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>(
           ));
+  ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs_ptr =
+      certs.get();
 
-  LoadOnDBThread(&certs->get());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  background_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&Backend::LoadOnDBThread, this, certs_ptr),
       base::Bind(loaded_callback, base::Passed(&certs)));
 }
 
 void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
-    std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs) {
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   // This method should be called only once per instance.
   DCHECK(!db_.get());
@@ -406,7 +399,7 @@ bool SQLiteServerBoundCertStore::Backend::EnsureDatabaseVersion() {
 void SQLiteServerBoundCertStore::Backend::DatabaseErrorCallback(
     int error,
     sql::Statement* stmt) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (!sql::IsErrorCatastrophic(error))
     return;
@@ -421,12 +414,12 @@ void SQLiteServerBoundCertStore::Backend::DatabaseErrorCallback(
   // TODO(shess): Consider just calling RazeAndClose() immediately.
   // db_ may not be safe to reset at this point, but RazeAndClose()
   // would cause the stack to unwind safely with errors.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                          base::Bind(&Backend::KillDatabase, this));
+  background_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(&Backend::KillDatabase, this));
 }
 
 void SQLiteServerBoundCertStore::Backend::KillDatabase() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (db_) {
     // This Backend will now be in-memory only. In a future run the database
@@ -468,20 +461,19 @@ void SQLiteServerBoundCertStore::Backend::BatchOperation(
 
   if (num_pending == 1) {
     // We've gotten our first entry for this batch, fire off the timer.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::DB, FROM_HERE,
+    background_task_runner_->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&Backend::Commit, this),
         base::TimeDelta::FromMilliseconds(kCommitIntervalMs));
   } else if (num_pending == kCommitAfterBatchSize) {
     // We've reached a big enough batch, fire off a commit now.
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
-        base::Bind(&Backend::Commit, this));
+    background_task_runner_->PostTask(FROM_HERE,
+                                      base::Bind(&Backend::Commit, this));
   }
 }
 
 void SQLiteServerBoundCertStore::Backend::Commit() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   PendingOperationsList ops;
   {
@@ -550,13 +542,12 @@ void SQLiteServerBoundCertStore::Backend::Commit() {
 // this fires we will already have been cleaned up and it will be ignored.
 void SQLiteServerBoundCertStore::Backend::Close() {
   // Must close the backend on the background thread.
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&Backend::InternalBackgroundClose, this));
+  background_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Backend::InternalBackgroundClose, this));
 }
 
 void SQLiteServerBoundCertStore::Backend::InternalBackgroundClose() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
   // Commit any pending operations
   Commit();
 
@@ -570,7 +561,7 @@ void SQLiteServerBoundCertStore::Backend::InternalBackgroundClose() {
 }
 
 void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (!db_.get())
     return;
@@ -616,9 +607,11 @@ void SQLiteServerBoundCertStore::Backend::SetForceKeepSessionState() {
 
 SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(
     const base::FilePath& path,
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     quota::SpecialStoragePolicy* special_storage_policy)
-    : backend_(new Backend(path, special_storage_policy)) {
-}
+    : backend_(new Backend(path,
+                           background_task_runner,
+                           special_storage_policy)) {}
 
 void SQLiteServerBoundCertStore::Load(
     const LoadedCallback& loaded_callback) {

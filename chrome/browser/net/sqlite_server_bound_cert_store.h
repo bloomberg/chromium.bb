@@ -12,6 +12,7 @@
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace quota {
@@ -29,6 +30,7 @@ class SQLiteServerBoundCertStore
  public:
   SQLiteServerBoundCertStore(
       const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       quota::SpecialStoragePolicy* special_storage_policy);
 
   // net::DefaultServerBoundCertStore::PersistentStore:

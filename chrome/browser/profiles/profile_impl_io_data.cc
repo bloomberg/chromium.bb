@@ -407,6 +407,7 @@ void ProfileImplIOData::InitializeInternal(
     scoped_refptr<SQLiteServerBoundCertStore> server_bound_cert_db =
         new SQLiteServerBoundCertStore(
             lazy_params_->server_bound_cert_path,
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
             lazy_params_->special_storage_policy.get());
     server_bound_cert_service = new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(server_bound_cert_db.get()),

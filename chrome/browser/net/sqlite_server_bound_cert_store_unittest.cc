@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_data_directory.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -21,13 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
-using content::BrowserThread;
-
 class SQLiteServerBoundCertStoreTest : public testing::Test {
  public:
-  SQLiteServerBoundCertStoreTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-
   void Load(
       ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs) {
     base::RunLoop run_loop;
@@ -82,7 +76,9 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLiteServerBoundCertStore(
-        temp_dir_.path().Append(chrome::kOBCertFilename), NULL);
+        temp_dir_.path().Append(chrome::kOBCertFilename),
+        base::MessageLoopProxy::current(),
+        NULL);
     ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
     Load(&certs);
     ASSERT_EQ(0u, certs.size());
@@ -118,7 +114,9 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
   store_ = new SQLiteServerBoundCertStore(
-      temp_dir_.path().Append(chrome::kOBCertFilename), NULL);
+      temp_dir_.path().Append(chrome::kOBCertFilename),
+      base::MessageLoopProxy::current(),
+      NULL);
 
   // Reload and test for persistence
   Load(&certs);
@@ -151,7 +149,9 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
   base::RunLoop().RunUntilIdle();
   certs.clear();
   store_ = new SQLiteServerBoundCertStore(
-      temp_dir_.path().Append(chrome::kOBCertFilename), NULL);
+      temp_dir_.path().Append(chrome::kOBCertFilename),
+      base::MessageLoopProxy::current(),
+      NULL);
 
   // Reload and check if the cert has been removed.
   Load(&certs);
@@ -202,7 +202,8 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV1) {
     SCOPED_TRACE(i);
 
     ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-    store_ = new SQLiteServerBoundCertStore(v1_db_path, NULL);
+    store_ = new SQLiteServerBoundCertStore(
+        v1_db_path, base::MessageLoopProxy::current(), NULL);
 
     // Load the database. Because the existing v1 certs are implicitly of type
     // RSA, which is unsupported, they're discarded.
@@ -273,7 +274,8 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
     SCOPED_TRACE(i);
 
     ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-    store_ = new SQLiteServerBoundCertStore(v2_db_path, NULL);
+    store_ = new SQLiteServerBoundCertStore(
+        v2_db_path, base::MessageLoopProxy::current(), NULL);
 
     // Load the database and ensure the certs can be read.
     Load(&certs);
@@ -358,7 +360,8 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
     SCOPED_TRACE(i);
 
     ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-    store_ = new SQLiteServerBoundCertStore(v3_db_path, NULL);
+    store_ = new SQLiteServerBoundCertStore(
+        v3_db_path, base::MessageLoopProxy::current(), NULL);
 
     // Load the database and ensure the certs can be read.
     Load(&certs);
@@ -450,7 +453,8 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestRSADiscarded) {
   }
 
   ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-  store_ = new SQLiteServerBoundCertStore(v4_db_path, NULL);
+  store_ = new SQLiteServerBoundCertStore(
+      v4_db_path, base::MessageLoopProxy::current(), NULL);
 
   // Load the database and ensure the certs can be read.
   Load(&certs);
