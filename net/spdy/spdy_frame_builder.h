@@ -111,9 +111,6 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // with the correct version for the frame being written.
   bool OverwriteLength(const SpdyFramer& framer, size_t length);
 
- protected:
-  const char* end_of_payload() const { return buffer_.get() + length_; }
-
  private:
   // Checks to make sure that there is an appropriate amount of space for a
   // write of given size, in bytes.

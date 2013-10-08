@@ -624,8 +624,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Set the error code and moves the framer into the error state.
   void set_error(SpdyError error);
 
-  size_t GoAwaySize() const;
-
   // The maximum size of the control frames that we support.
   // This limit is arbitrary. We can enforce it here or at the application
   // layer. We chose the framing layer, but this can be changed (or removed)

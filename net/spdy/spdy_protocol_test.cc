@@ -30,8 +30,6 @@ class SpdyProtocolTest
     spdy_version_ = GetParam();
   }
 
-  bool IsSpdy2() { return spdy_version_ == SPDY2; }
-
   // Version of SPDY protocol to be used.
   int spdy_version_;
 };
