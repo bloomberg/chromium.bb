@@ -404,6 +404,12 @@ tc-test-bot() {
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
+  # llvm-test-suite below requires the SDK libraries to be installed.
+  # torture_tests above do this as a side effect, but we do it
+  # explicitly here for cases in which torture_tests are not run.
+  echo "@@@BUILD_STEP install sdk libraries @@@"
+  ${PNACL_BUILD} sdk
+
   local optset
   optset[1]="--opt O3f --opt O2b"
   for arch in ${archset}; do
