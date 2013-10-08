@@ -417,8 +417,8 @@ crbug.com/58257 [ Win ] http/tests/misc/last-modified-parsing.html [ Pass Timeou
 crbug.com/58735 http/tests/misc/prefetch-purpose.html [ Pass Timeout ]
 
 # Vertical text needs to be implemented in platforms other than OS X.
-crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure Pass ]
-crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure Pass ]
+crbug.com/65877 [ Linux ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure Pass ]
+crbug.com/65877 [ Linux ] fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure Pass ]
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-horizontal-bt.html [ Failure Pass ]
 
 # Added in WK r71424
