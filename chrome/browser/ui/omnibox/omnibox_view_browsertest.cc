@@ -1612,11 +1612,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
   EXPECT_TRUE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
 
-  // The Mac is the only platform which doesn't write html.
-#if !defined(OS_MACOSX)
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
+  // Make sure HTML format isn't written. See
+  // BookmarkNodeData::WriteToClipboard() for details.
+  EXPECT_FALSE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetHtmlFormatType(), ui::Clipboard::BUFFER_STANDARD));
-#endif
 
   // These platforms should read bookmark format.
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
@@ -1659,11 +1658,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutURLToClipboard) {
   EXPECT_TRUE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
 
-  // The Mac is the only platform which doesn't write html.
-#if !defined(OS_MACOSX)
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
+  // Make sure HTML format isn't written. See
+  // BookmarkNodeData::WriteToClipboard() for details.
+  EXPECT_FALSE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetHtmlFormatType(), ui::Clipboard::BUFFER_STANDARD));
-#endif
 
   // These platforms should read bookmark format.
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)

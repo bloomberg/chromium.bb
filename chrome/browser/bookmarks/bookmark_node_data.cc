@@ -143,7 +143,10 @@ void BookmarkNodeData::WriteToClipboard() const {
     const std::string url = elements[0].url.spec();
 
     scw.WriteBookmark(title, url);
-    scw.WriteHyperlink(title, url);
+
+    // Don't call scw.WriteHyperlink() here, since some rich text editors will
+    // change fonts when such data is pasted in; besides, most such editors
+    // auto-linkify at some point anyway.
 
     // Also write the URL to the clipboard as text so that it can be pasted
     // into text fields. We use WriteText instead of WriteURL because we don't
