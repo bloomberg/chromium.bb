@@ -55,6 +55,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/HistogramSupport.h"
+#include "platform/TraceEvent.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnArrayPtr.h"
@@ -183,6 +184,8 @@ bool V8WindowShell::initializeIfNeeded()
 {
     if (!m_context.isEmpty())
         return true;
+
+    TRACE_EVENT0("v8", "V8WindowShell::initializeIfNeeded");
 
     v8::HandleScope handleScope(m_isolate);
 
