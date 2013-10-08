@@ -4,11 +4,13 @@
 
 #include "ash/wm/window_positioner.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
@@ -16,9 +18,24 @@
 
 namespace ash {
 
-// statics
+// When a window gets opened in default mode and the screen is less than or
+// equal to this width, the window will get opened in maximized mode. This value
+// can be reduced to a "tame" number if the feature is disabled.
+const int kForceMaximizeWidthLimit = 1366;
+const int kForceMaximizeWidthLimitDisabled = 640;
 
 const int WindowPositioner::kMinimumWindowOffset = 32;
+
+// static
+int WindowPositioner::GetForceMaximizedWidthLimit() {
+  static int maximum_limit = 0;
+  if (!maximum_limit) {
+    maximum_limit = CommandLine::ForCurrentProcess()->HasSwitch(
+                        ash::switches::kAshDisableAutoMaximizing) ?
+        kForceMaximizeWidthLimitDisabled : kForceMaximizeWidthLimit;
+  }
+  return maximum_limit;
+}
 
 WindowPositioner::WindowPositioner()
     : pop_position_offset_increment_x(0),

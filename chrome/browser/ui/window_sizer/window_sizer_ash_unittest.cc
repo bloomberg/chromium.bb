@@ -6,6 +6,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "base/compiler_specific.h"
@@ -756,7 +757,7 @@ TEST_F(WindowSizerAshTest, TestShowState) {
 
   // In smaller screen resolutions we default to maximized if there is no other
   // window visible.
-  int min_size = WindowSizer::GetForceMaximizedWidthLimit() / 2;
+  int min_size = ash::WindowPositioner::GetForceMaximizedWidthLimit() / 2;
   if (min_size > 0) {
     const gfx::Rect tiny_screen(0, 0, min_size, min_size);
     EXPECT_EQ(ui::SHOW_STATE_DEFAULT,

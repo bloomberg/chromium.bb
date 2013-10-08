@@ -4,13 +4,12 @@
 
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/auto_window_management.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -21,12 +20,6 @@
 #include "ui/gfx/screen.h"
 
 namespace {
-
-// When a window gets opened in default mode and the screen is less than or
-// equal to this width, the window will get opened in maximized mode. This value
-// can be reduced to a "tame" number if the feature is disabled.
-const int kForceMaximizeWidthLimit = 1366;
-const int kForceMaximizeWidthLimitDisabled = 640;
 
 // Check if the given browser is 'valid': It is a tabbed, non minimized
 // window, which intersects with the |bounds_in_screen| area of a given screen.
@@ -76,23 +69,12 @@ bool MoveRect(const gfx::Rect& work_area,
 
 }  // namespace
 
-// static
-int WindowSizer::GetForceMaximizedWidthLimit() {
-  static int maximum_limit = 0;
-  if (!maximum_limit) {
-    maximum_limit = CommandLine::ForCurrentProcess()->HasSwitch(
-                        ash::switches::kAshDisableAutoMaximizing) ?
-        kForceMaximizeWidthLimitDisabled : kForceMaximizeWidthLimit;
-  }
-  return maximum_limit;
-}
-
 void WindowSizer::GetTabbedBrowserBoundsAsh(
     gfx::Rect* bounds_in_screen,
     ui::WindowShowState* show_state) const {
   DCHECK(show_state);
   DCHECK(bounds_in_screen);
-  DCHECK(!browser_ || browser_->is_type_tabbed());
+  DCHECK(browser_->is_type_tabbed());
 
   bounds_in_screen->SetRect(0, 0, 0, 0);
 
@@ -105,6 +87,16 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
   if (!GetSavedWindowBounds(bounds_in_screen, show_state)) {
     has_saved_bounds = false;
     GetDefaultWindowBoundsAsh(bounds_in_screen);
+  }
+
+  if (browser_->is_session_restore()) {
+    // Use saved bounds to find the destination work area when
+    // restoring the session. If the dispay has been removed,
+    // this will fallback to the primary display's work area.
+    gfx::Rect work_area =
+        screen_->GetDisplayMatching(*bounds_in_screen).work_area();
+    bounds_in_screen->AdjustToFit(work_area);
+    return;
   }
 
   aura::RootWindow* target = ash::Shell::GetTargetRootWindow();
@@ -130,8 +122,8 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
 
     // When using "small screens" we want to always open in full screen mode.
     if (passed_show_state == ui::SHOW_STATE_DEFAULT &&
-        !browser_->is_session_restore() &&
-        work_area.width() <= GetForceMaximizedWidthLimit() &&
+        work_area.width() <=
+        ash::WindowPositioner::GetForceMaximizedWidthLimit() &&
         (!browser_->window() || !browser_->window()->IsFullscreen()))
       *show_state = ui::SHOW_STATE_MAXIMIZED;
     return;

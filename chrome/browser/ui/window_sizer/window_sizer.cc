@@ -200,9 +200,8 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
     } else if (chrome::ShouldOpenAshOnStartup() &&
                browser_ && browser_->host_desktop_type() ==
                chrome::HOST_DESKTOP_TYPE_ASH) {
-      // Saved bounds's show state takes precedence over one in last
-      // bounds in ash.  If you have a question or an issue, please
-      // contact oshima@chromium.org.
+      // In ash, saved show state takes precidence.  If you have a
+      // question or an issue, please contact oshima@chromium.org.
       GetSavedWindowBounds(bounds, show_state);
     }
 #endif

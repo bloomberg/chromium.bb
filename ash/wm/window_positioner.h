@@ -23,6 +23,10 @@ class WindowPositionerTest;
 // a usable position on the closest work area (of the active window).
 class ASH_EXPORT WindowPositioner {
  public:
+  // When the screen resolution width is smaller then this size, The algorithm
+  // will default to maximized.
+  static int GetForceMaximizedWidthLimit();
+
   WindowPositioner();
   ~WindowPositioner();
 
