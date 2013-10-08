@@ -1199,28 +1199,7 @@ crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
-crbug.com/304952 fast/forms/placeholder-position.html [ NeedsRebaseline ]
-crbug.com/304952 fast/forms/input-baseline.html [ NeedsRebaseline ]
-crbug.com/304952 fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
 crbug.com/304952 svg/batik/text/smallFonts.svg [ NeedsManualRebaseline ]
-crbug.com/304952 svg/custom/use-referencing-nonexisting-symbol.svg [ NeedsRebaseline ]
-crbug.com/304952 compositing/shadows/shadow-drawing.html [ NeedsRebaseline ]
-crbug.com/304952 fast/forms/input-placeholder-paint-order.html [ NeedsRebaseline ]
-crbug.com/304952 fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
-crbug.com/304952 fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
-crbug.com/304952 fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
-crbug.com/304952 fast/writing-mode/border-vertical-lr.html [ NeedsRebaseline ]
-crbug.com/304952 fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline ]
-crbug.com/304952 fast/writing-mode/japanese-lr-text.html [ NeedsRebaseline ]
-crbug.com/304952 fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
-crbug.com/304952 fast/writing-mode/japanese-rl-text.html [ NeedsRebaseline ]
-crbug.com/304952 media/video-zoom-controls.html [ NeedsRebaseline ]
-crbug.com/304952 svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsRebaseline ]
-crbug.com/304952 svg/custom/js-late-clipPath-creation.svg [ NeedsRebaseline ]
-crbug.com/304952 svg/custom/js-late-gradient-creation.svg [ NeedsRebaseline ]
-crbug.com/304952 svg/custom/js-late-pattern-creation.svg [ NeedsRebaseline ]
-crbug.com/304952 virtual/softwarecompositing/shadows/shadow-drawing.html [ NeedsRebaseline ]
-crbug.com/304952 css3/zoom-coords.xhtml [ NeedsRebaseline ]
 
 
 # Flaky.
