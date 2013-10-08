@@ -196,7 +196,7 @@ void AudioRendererHost::DoCompleteCreation(int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!PeerHandle()) {
-    NOTREACHED() << "Renderer process handle is invalid.";
+    DLOG(WARNING) << "Renderer process handle is invalid.";
     ReportErrorAndClose(stream_id);
     return;
   }
