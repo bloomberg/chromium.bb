@@ -50,5 +50,10 @@ PassRefPtr<AnimatableValue> AnimatableTransform::addWith(const AnimatableValue* 
     return AnimatableTransform::create(m_transform.add(transform->m_transform));
 }
 
+bool AnimatableTransform::equalTo(const AnimatableValue* value) const
+{
+    return m_transform == toAnimatableTransform(value)->m_transform;
+}
+
 } // namespace WebCore
 

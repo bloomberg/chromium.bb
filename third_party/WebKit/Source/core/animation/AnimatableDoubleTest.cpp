@@ -45,6 +45,12 @@ TEST(AnimatableDoubleTest, Create)
     EXPECT_TRUE(static_cast<bool>(AnimatableDouble::create(10).get()));
 }
 
+TEST(AnimatableDoubleTest, Equal)
+{
+    EXPECT_TRUE(AnimatableDouble::create(10)->equals(AnimatableDouble::create(10).get()));
+    EXPECT_FALSE(AnimatableDouble::create(5)->equals(AnimatableDouble::create(10).get()));
+}
+
 TEST(AnimatableDoubleTest, ToCSSValue)
 {
     RefPtr<CSSValue> cssValue5 = CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_NUMBER);

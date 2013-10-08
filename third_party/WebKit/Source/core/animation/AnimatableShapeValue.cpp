@@ -49,4 +49,10 @@ PassRefPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(const Animatable
     return AnimatableShapeValue::create(ShapeValue::createShapeValue(toShape->blend(fromShape, fraction)).get());
 }
 
+bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const
+{
+    const ShapeValue* shape = toAnimatableShapeValue(value)->m_shape.get();
+    return m_shape == shape || (m_shape && shape && *m_shape == *shape);
+}
+
 }

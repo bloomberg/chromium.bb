@@ -43,6 +43,7 @@ public:
     Color toColor() const;
     AnimatableColorImpl interpolateTo(const AnimatableColorImpl&, double fraction) const;
     AnimatableColorImpl addWith(const AnimatableColorImpl&) const;
+    bool operator==(const AnimatableColorImpl&) const;
 
 private:
     float m_alpha;
@@ -68,6 +69,7 @@ private:
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeColor; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
     const AnimatableColorImpl m_color;
     const AnimatableColorImpl m_visitedLinkColor;
 };

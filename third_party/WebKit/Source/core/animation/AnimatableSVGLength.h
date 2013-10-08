@@ -61,6 +61,7 @@ private:
     }
 
     virtual AnimatableType type() const { return TypeSVGLength; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     SVGLength m_length;
 };

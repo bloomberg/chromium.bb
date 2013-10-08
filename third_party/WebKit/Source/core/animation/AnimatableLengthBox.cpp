@@ -53,4 +53,13 @@ PassRefPtr<AnimatableValue> AnimatableLengthBox::addWith(const AnimatableValue* 
         AnimatableValue::add(this->bottom(), lengthBox->bottom()));
 }
 
+bool AnimatableLengthBox::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableLengthBox* lengthBox = toAnimatableLengthBox(value);
+    return left()->equals(lengthBox->left())
+        && right()->equals(lengthBox->right())
+        && top()->equals(lengthBox->top())
+        && bottom()->equals(lengthBox->bottom());
+}
+
 }

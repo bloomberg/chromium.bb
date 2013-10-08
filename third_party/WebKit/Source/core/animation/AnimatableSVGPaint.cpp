@@ -53,4 +53,12 @@ PassRefPtr<AnimatableValue> AnimatableSVGPaint::addWith(const AnimatableValue* v
     return defaultAddWith(this, value);
 }
 
+bool AnimatableSVGPaint::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
+    return paintType() == svgPaint->paintType()
+        && color() == svgPaint->color()
+        && uri() == svgPaint->uri();
+}
+
 }

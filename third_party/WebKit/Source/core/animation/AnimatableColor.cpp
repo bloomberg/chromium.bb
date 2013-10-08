@@ -75,6 +75,14 @@ AnimatableColorImpl AnimatableColorImpl::addWith(const AnimatableColorImpl& adde
         m_alpha + addend.m_alpha);
 }
 
+bool AnimatableColorImpl::operator==(const AnimatableColorImpl& other) const
+{
+    return m_red == other.m_red
+        && m_green == other.m_green
+        && m_blue == other.m_blue
+        && m_alpha == other.m_alpha;
+}
+
 PassRefPtr<AnimatableColor> AnimatableColor::create(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)
 {
     return adoptRef(new AnimatableColor(color, visitedLinkColor));
@@ -92,6 +100,12 @@ PassRefPtr<AnimatableValue> AnimatableColor::addWith(const AnimatableValue* valu
     const AnimatableColor* color = toAnimatableColor(value);
     return create(m_color.addWith(color->m_color),
         m_visitedLinkColor.addWith(color->m_visitedLinkColor));
+}
+
+bool AnimatableColor::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableColor* color = toAnimatableColor(value);
+    return m_color == color->m_color && m_visitedLinkColor == color->m_visitedLinkColor;
 }
 
 } // namespace WebCore

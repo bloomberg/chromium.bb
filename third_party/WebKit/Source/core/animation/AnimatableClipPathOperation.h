@@ -54,6 +54,7 @@ private:
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeClipPathOperation; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     RefPtr<ClipPathOperation> m_operation;
 };

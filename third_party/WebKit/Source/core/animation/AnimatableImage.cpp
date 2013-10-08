@@ -65,4 +65,9 @@ PassRefPtr<AnimatableValue> AnimatableImage::addWith(const AnimatableValue* valu
     return defaultAddWith(this, value);
 }
 
+bool AnimatableImage::equalTo(const AnimatableValue* value) const
+{
+    return StyleImage::imagesEquivalent(m_image.get(), toAnimatableImage(value)->m_image.get());
+}
+
 }

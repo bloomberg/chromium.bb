@@ -64,6 +64,7 @@ private:
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeDouble; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     double m_number;
     Constraint m_constraint;

@@ -59,6 +59,7 @@ private:
         ASSERT(m_value);
     }
     virtual AnimatableType type() const OVERRIDE { return TypeUnknown; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     const RefPtr<CSSValue> m_value;
 };
@@ -67,6 +68,12 @@ inline const AnimatableUnknown* toAnimatableUnknown(const AnimatableValue* value
 {
     ASSERT_WITH_SECURITY_IMPLICATION(value && value->isUnknown());
     return static_cast<const AnimatableUnknown*>(value);
+}
+
+inline bool AnimatableUnknown::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableUnknown* unknown = toAnimatableUnknown(value);
+    return m_value == unknown->m_value || m_value->equals(*unknown->m_value);
 }
 
 } // namespace WebCore

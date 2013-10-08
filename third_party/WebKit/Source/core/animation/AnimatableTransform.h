@@ -55,6 +55,7 @@ private:
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeTransform; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
     const TransformOperations m_transform;
 };
 

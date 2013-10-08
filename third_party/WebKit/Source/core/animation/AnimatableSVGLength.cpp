@@ -46,4 +46,9 @@ PassRefPtr<AnimatableValue> AnimatableSVGLength::addWith(const AnimatableValue* 
     return 0;
 }
 
+bool AnimatableSVGLength::equalTo(const AnimatableValue* value) const
+{
+    return m_length == toAnimatableSVGLength(value)->m_length;
+}
+
 } // namespace WebCore

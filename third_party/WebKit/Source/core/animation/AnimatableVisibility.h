@@ -55,6 +55,7 @@ private:
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeVisibility; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
     const EVisibility m_visibility;
 };
 

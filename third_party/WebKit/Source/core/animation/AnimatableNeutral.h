@@ -50,6 +50,11 @@ protected:
 private:
     friend class AnimatableValue;
     virtual AnimatableType type() const OVERRIDE { return TypeNeutral; }
+    virtual bool equalTo(const AnimatableValue* value) const OVERRIDE
+    {
+        ASSERT_NOT_REACHED();
+        return true;
+    }
 };
 
 } // namespace WebCore

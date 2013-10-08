@@ -56,6 +56,7 @@ private:
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeLengthSize; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     RefPtr<AnimatableValue> m_width;
     RefPtr<AnimatableValue> m_height;

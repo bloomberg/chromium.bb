@@ -63,4 +63,9 @@ PassRefPtr<AnimatableValue> AnimatableDouble::addWith(const AnimatableValue* val
     return AnimatableDouble::create(m_number + other->m_number);
 }
 
+bool AnimatableDouble::equalTo(const AnimatableValue* value) const
+{
+    return m_number == toAnimatableDouble(value)->m_number;
+}
+
 } // namespace WebCore

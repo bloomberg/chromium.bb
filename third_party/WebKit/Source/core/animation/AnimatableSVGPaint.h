@@ -64,6 +64,7 @@ private:
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeSVGPaint; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     SVGPaint::SVGPaintType m_type;
     AnimatableColorImpl m_color;

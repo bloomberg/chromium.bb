@@ -49,4 +49,10 @@ PassRefPtr<AnimatableValue> AnimatableClipPathOperation::interpolateTo(const Ani
     return AnimatableClipPathOperation::create(ShapeClipPathOperation::create(toShape->blend(fromShape, fraction)).get());
 }
 
+bool AnimatableClipPathOperation::equalTo(const AnimatableValue* value) const
+{
+    const ClipPathOperation* operation = toAnimatableClipPathOperation(value)->m_operation.get();
+    return m_operation == operation || (m_operation && operation && *m_operation == *operation);
+}
+
 }

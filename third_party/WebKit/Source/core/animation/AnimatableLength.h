@@ -92,6 +92,7 @@ private:
         ASSERT(m_calcExpression);
     }
     virtual AnimatableType type() const OVERRIDE { return TypeLength; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     static PassRefPtr<AnimatableLength> create(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {

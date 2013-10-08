@@ -109,6 +109,16 @@ PassRefPtr<AnimatableValue> AnimatableLength::addWith(const AnimatableValue* val
     return AnimatableLength::create(this, length);
 }
 
+bool AnimatableLength::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableLength* length = toAnimatableLength(value);
+    if (m_isCalc != length->m_isCalc)
+        return false;
+    if (m_isCalc && length->m_isCalc)
+        return m_calcExpression == length->m_calcExpression || m_calcExpression->equals(*length->m_calcExpression);
+    return m_number == length->m_number && m_unitType == length->m_unitType;
+}
+
 PassRefPtr<CSSCalcExpressionNode> AnimatableLength::toCSSCalcExpressionNode() const
 {
     if (m_isCalc)

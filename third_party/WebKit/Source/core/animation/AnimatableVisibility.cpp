@@ -46,4 +46,9 @@ PassRefPtr<AnimatableValue> AnimatableVisibility::interpolateTo(const Animatable
     return takeConstRef(from == VISIBLE ? this : value);
 }
 
+bool AnimatableVisibility::equalTo(const AnimatableValue* value) const
+{
+    return m_visibility == toAnimatableVisibility(value)->m_visibility;
+}
+
 } // namespace WebCore

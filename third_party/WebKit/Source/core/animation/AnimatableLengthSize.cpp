@@ -49,4 +49,10 @@ PassRefPtr<AnimatableValue> AnimatableLengthSize::addWith(const AnimatableValue*
         AnimatableValue::add(this->height(), lengthSize->height()));
 }
 
+bool AnimatableLengthSize::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableLengthSize* lengthSize = toAnimatableLengthSize(value);
+    return width()->equals(lengthSize->width()) && height()->equals(lengthSize->height());
+}
+
 }

@@ -46,6 +46,11 @@ public:
     // For noncommutative values read add(A, B) to mean the value A with B composed onto it.
     static PassRefPtr<AnimatableValue> add(const AnimatableValue*, const AnimatableValue*);
 
+    bool equals(const AnimatableValue* value) const
+    {
+        return isSameType(value) && equalTo(value);
+    }
+
     bool isClipPathOperation() const { return type() == TypeClipPathOperation; }
     bool isColor() const { return type() == TypeColor; }
     bool isDouble() const { return type() == TypeDouble; }
@@ -97,6 +102,8 @@ protected:
 
 private:
     virtual AnimatableType type() const = 0;
+    // Implementations can assume that the object being compared has the same type as the object this is called on
+    virtual bool equalTo(const AnimatableValue*) const = 0;
 };
 
 } // namespace WebCore

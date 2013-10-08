@@ -54,6 +54,7 @@ private:
     {
     }
     virtual AnimatableType type() const OVERRIDE { return TypeShapeValue; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     RefPtr<ShapeValue> m_shape;
 };

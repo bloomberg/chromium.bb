@@ -58,6 +58,7 @@ private:
         ASSERT(m_image);
     }
     virtual AnimatableType type() const OVERRIDE { return TypeImage; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     const RefPtr<StyleImage> m_image;
 };
