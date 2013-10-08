@@ -117,7 +117,7 @@ content::WebContents* AvatarMenuActionsDesktop::BeginSignOut() {
 
   std::string landing_url = signin::GetLandingURL("close", 1).spec();
   GURL logout_url(GaiaUrls::GetInstance()->service_logout_url());
-  logout_url = net::AppendQueryParameter(logout_url, "?continue=", landing_url);
+  logout_url = net::AppendQueryParameter(logout_url, "continue", landing_url);
   if (!logout_override_.empty()) {
     // We're testing...
     landing_url = logout_override_;
@@ -128,13 +128,12 @@ content::WebContents* AvatarMenuActionsDesktop::BeginSignOut() {
   create_params.site_instance =
       content::SiteInstance::CreateForURL(current_profile, logout_url);
   content::WebContents* contents = content::WebContents::Create(create_params);
-  contents->GetController().LoadURL(
-    logout_url, content::Referrer(),
-    content::PAGE_TRANSITION_GENERATED, std::string());
-
   // This object may be destructed when the menu closes but we need something
   // around to finish the sign-out process and close the profile windows.
   new SignoutTracker(current_profile, GURL(landing_url), contents);
+  contents->GetController().LoadURL(
+    logout_url, content::Referrer(),
+    content::PAGE_TRANSITION_GENERATED, std::string());
 
   return contents;  // returned for testing purposes
 }
