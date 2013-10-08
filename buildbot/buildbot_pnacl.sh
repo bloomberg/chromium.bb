@@ -157,6 +157,12 @@ tc-build-all() {
 
   clobber
   tc-clobber ${label} ${build_translator}
+
+  # Run checkdeps so that the PNaCl toolchain trybots catch mistakes
+  # that would cause the normal NaCl bots to fail.
+  echo "@@@BUILD_STEP checkdeps @@@"
+  python tools/checkdeps/checkdeps.py
+
   tc-show-config
   # For now only linux64 (which also builds the translator) builds a fat
   # toolchain, so just use build_translator to control fat toolchain build
