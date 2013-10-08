@@ -2,9 +2,9 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<script src="../../../media/media-file.js"></script>
-<script src="../../../media/video-test.js"></script>
-<script src="../../../media/media-controls.js"></script>
+<script src="../media-file.js"></script>
+<script src="../video-test.js"></script>
+<script src="../media-controls.js"></script>
 <style>
 video::cue(.red, .red2) { color:red }
 video::cue(.green) { color:green }
@@ -45,9 +45,9 @@ function loaded()
     consoleWrite("Test that the cue is not styled when video is in a shadow tree and style is in a document.");
     var host = document.getElementById('host');
     var shadowRoot = host.createShadowRoot();
-    shadowRoot.innerHTML = '<video controls ><track src="../../../media/track/captions-webvtt/styling-lifetime.vtt" kind="captions" default></video>';
+    shadowRoot.innerHTML = '<video controls ><track src="captions-webvtt/styling-lifetime.vtt" kind="captions" default></video>';
     video = shadowRoot.getElementsByTagName('video')[0];
-    video.src = findMediaFile('video', '../../../media/content/test');
+    video.src = findMediaFile('video', '../content/test');
     video.id = "testvideo";
     waitForEvent('seeked', seeked);
     waitForEventOnce('canplaythrough', function() { video.currentTime = initialTime; });
