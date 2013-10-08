@@ -6,6 +6,7 @@
 
 import random
 
+from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 
@@ -13,9 +14,11 @@ from pylib.base import base_test_runner
 class TestRunner(base_test_runner.BaseTestRunner):
   """A TestRunner instance runs a monkey test on a single device."""
 
-  def __init__(self, test_options, device, shard_index):
+  def __init__(self, test_options, device, _):
     super(TestRunner, self).__init__(device, None)
-    self.options = test_options
+    self._options = test_options
+    self._package = constants.PACKAGE_INFO[self._options.package].package
+    self._activity = constants.PACKAGE_INFO[self._options.package].activity
 
   def _LaunchMonkeyTest(self):
     """Runs monkey test for a given package.
@@ -24,18 +27,18 @@ class TestRunner(base_test_runner.BaseTestRunner):
       Output from the monkey command on the device.
     """
 
-    timeout_ms = self.options.event_count * self.options.throttle * 1.5
+    timeout_ms = self._options.event_count * self._options.throttle * 1.5
 
     cmd = ['monkey',
-           '-p %s' % self.options.package_name,
-           ' '.join(['-c %s' % c for c in self.options.category]),
-           '--throttle %d' % self.options.throttle,
-           '-s %d' % (self.options.seed or random.randint(1, 100)),
-           '-v ' * self.options.verbose_count,
+           '-p %s' % self._package,
+           ' '.join(['-c %s' % c for c in self._options.category]),
+           '--throttle %d' % self._options.throttle,
+           '-s %d' % (self._options.seed or random.randint(1, 100)),
+           '-v ' * self._options.verbose_count,
            '--monitor-native-crashes',
            '--kill-process-after-error',
-           self.options.extra_args,
-           '%d' % self.options.event_count]
+           self._options.extra_args,
+           '%d' % self._options.event_count]
     return self.adb.RunShellCommand(' '.join(cmd), timeout_time=timeout_ms)
 
   def RunTest(self, test_name):
@@ -47,27 +50,27 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       A tuple of (TestRunResults, retry).
     """
-    self.adb.StartActivity(self.options.package_name,
-                           self.options.activity_name,
+    self.adb.StartActivity(self._package,
+                           self._activity,
                            wait_for_completion=True,
                            action='android.intent.action.MAIN',
                            force_stop=True)
 
     # Chrome crashes are not always caught by Monkey test runner.
     # Verify Chrome has the same PID before and after the test.
-    before_pids = self.adb.ExtractPid(self.options.package_name)
+    before_pids = self.adb.ExtractPid(self._package)
 
     # Run the test.
     output = ''
     if before_pids:
       output = '\n'.join(self._LaunchMonkeyTest())
-      after_pids = self.adb.ExtractPid(self.options.package_name)
+      after_pids = self.adb.ExtractPid(self._package)
 
     crashed = (not before_pids or not after_pids
                or after_pids[0] != before_pids[0])
 
     results = base_test_result.TestRunResults()
-    success_pattern = 'Events injected: %d' % self.options.event_count
+    success_pattern = 'Events injected: %d' % self._options.event_count
     if success_pattern in output and not crashed:
       result = base_test_result.BaseTestResult(
           test_name, base_test_result.ResultType.PASS, log=output)

@@ -300,10 +300,11 @@ def AddUIAutomatorTestOptions(option_parser):
   option_parser.commands_dict = {}
   option_parser.example = (
       '%prog uiautomator --test-jar=chromium_testshell_uiautomator_tests'
-      ' --package-name=org.chromium.chrome.testshell')
+      ' --package=chromium_test_shell')
   option_parser.add_option(
-      '--package-name',
-      help='The package name used by the apk containing the application.')
+      '--package',
+      help=('Package under test. Possible values: %s' %
+            constants.PACKAGE_INFO.keys()))
   option_parser.add_option(
       '--test-jar', dest='test_jar',
       help=('The name of the dexed jar containing the tests (without the '
@@ -328,8 +329,11 @@ def ProcessUIAutomatorOptions(options, error_func):
 
   ProcessJavaTestOptions(options, error_func)
 
-  if not options.package_name:
-    error_func('--package-name must be specified.')
+  if not options.package:
+    error_func('--package is required.')
+
+  if options.package not in constants.PACKAGE_INFO:
+    error_func('Invalid package.')
 
   if not options.test_jar:
     error_func('--test-jar must be specified.')
@@ -358,7 +362,7 @@ def ProcessUIAutomatorOptions(options, error_func):
       options.screenshot_failures,
       options.uiautomator_jar,
       options.uiautomator_info_jar,
-      options.package_name)
+      options.package)
 
 
 def AddMonkeyTestOptions(option_parser):
@@ -367,12 +371,12 @@ def AddMonkeyTestOptions(option_parser):
   option_parser.usage = '%prog monkey [options]'
   option_parser.commands_dict = {}
   option_parser.example = (
-      '%prog monkey --package-name=org.chromium.content_shell_apk'
-      ' --activity-name=.ContentShellActivity')
+      '%prog monkey --package=chromium_test_shell')
 
-  option_parser.add_option('--package-name', help='Allowed package.')
   option_parser.add_option(
-      '--activity-name', help='Name of the activity to start.')
+      '--package',
+      help=('Package under test. Possible values: %s' %
+            constants.PACKAGE_INFO.keys()))
   option_parser.add_option(
       '--event-count', default=10000, type='int',
       help='Number of events to generate [default: %default].')
@@ -405,8 +409,11 @@ def ProcessMonkeyTestOptions(options, error_func):
     A MonkeyOptions named tuple which contains all options relevant to
     monkey tests.
   """
-  if not options.package_name:
-    error_func('Package name is required.')
+  if not options.package:
+    error_func('--package is required.')
+
+  if options.package not in constants.PACKAGE_INFO:
+    error_func('Invalid package.')
 
   category = options.category
   if category:
@@ -414,8 +421,7 @@ def ProcessMonkeyTestOptions(options, error_func):
 
   return monkey_test_options.MonkeyOptions(
       options.verbose_count,
-      options.package_name,
-      options.activity_name,
+      options.package,
       options.event_count,
       category,
       options.throttle,

@@ -18,4 +18,4 @@ UIAutomatorOptions = collections.namedtuple('UIAutomatorOptions', [
     'screenshot_failures',
     'uiautomator_jar',
     'uiautomator_info_jar',
-    'package_name'])
+    'package'])

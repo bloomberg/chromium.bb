@@ -4,6 +4,7 @@
 
 """Class for running uiautomator tests on a single device."""
 
+from pylib import constants
 from pylib.instrumentation import test_options as instr_test_options
 from pylib.instrumentation import test_runner as instr_test_runner
 
@@ -42,7 +43,8 @@ class TestRunner(instr_test_runner.TestRunner):
     super(TestRunner, self).__init__(instrumentation_options, device,
                                      shard_index, test_pkg, ports_to_forward)
 
-    self.package_name = test_options.package_name
+    self._package = constants.PACKAGE_INFO[test_options.package].package
+    self._activity = constants.PACKAGE_INFO[test_options.package].activity
 
   #override
   def InstallTestPackage(self):
@@ -54,10 +56,15 @@ class TestRunner(instr_test_runner.TestRunner):
 
   #override
   def _RunTest(self, test, timeout):
-    self.adb.ClearApplicationState(self.package_name)
+    self.adb.ClearApplicationState(self._package)
     if 'Feature:FirstRunExperience' in self.test_pkg.GetTestAnnotations(test):
       self.flags.RemoveFlags(['--disable-fre'])
     else:
       self.flags.AddFlags(['--disable-fre'])
+    self.adb.StartActivity(self._package,
+                           self._activity,
+                           wait_for_completion=True,
+                           action='android.intent.action.MAIN',
+                           force_stop=True)
     return self.adb.RunUIAutomatorTest(
         test, self.test_pkg.GetPackageName(), timeout)
