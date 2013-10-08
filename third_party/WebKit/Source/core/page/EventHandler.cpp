@@ -2076,10 +2076,12 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
     if (m_nodeUnderMouse)
         element = m_nodeUnderMouse->isElementNode() ? toElement(m_nodeUnderMouse.get()) : m_nodeUnderMouse->parentOrShadowHostElement();
     for (; element; element = element->parentOrShadowHostElement()) {
-        if (element->isFocusable())
+        if (element->isFocusable() && element->focused())
+            return !swallowEvent;
+        if (element->isMouseFocusable())
             break;
     }
-    ASSERT(!element || element->isFocusable());
+    ASSERT(!element || element->isMouseFocusable());
 
     // To fix <rdar://problem/4895428> Can't drag selected ToDo, we don't focus
     // a node on mouse down if it's selected and inside a focused node. It will
@@ -2092,21 +2094,19 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
         && element->isDescendantOf(m_frame->document()->focusedElement()))
         return true;
 
-    bool elementIsMouseFocusable = element && element->isMouseFocusable();
-
     // Only change the focus when clicking scrollbars if it can transfered to a
     // mouse focusable node.
-    if (!elementIsMouseFocusable && isInsideScrollbar(mouseEvent.position()))
+    if (!element && isInsideScrollbar(mouseEvent.position()))
         return false;
 
     if (Page* page = m_frame->page()) {
         // If focus shift is blocked, we eat the event. Note we should never
         // clear swallowEvent if the page already set it (e.g., by canceling
         // default behavior).
-        if (elementIsMouseFocusable) {
+        if (element) {
             if (!page->focusController().setFocusedElement(element, m_frame, FocusDirectionMouse))
                 swallowEvent = true;
-        } else if (!element || !element->focused()) {
+        } else {
             // We call setFocusedElement even with !element in order to blur
             // current focus element when a link is clicked; this is expected by
             // some sites that rely on onChange handlers running from form

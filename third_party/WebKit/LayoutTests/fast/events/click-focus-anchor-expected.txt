@@ -1,10 +1,14 @@
-This test ensures that we can click to focus an a element. Click on the element below.
+This test ensures that we can click to focus an a element.
 
-The expected result is platform specific. GTK, QT and EFL allows all links to be mouse focusable.
-
-Result
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 a1 received focus (focusable)
 a4 received focus (focusable)
 a5 received focus (focusable)
+p6 received focus (focusable)
+p7 received focus (focusable)
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
