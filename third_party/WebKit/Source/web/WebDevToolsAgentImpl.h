@@ -129,6 +129,7 @@ private:
     WebDevToolsAgentClient* m_client;
     WebViewImpl* m_webViewImpl;
     bool m_attached;
+    bool m_generatingEvent;
     bool m_deviceMetricsEnabled;
     bool m_isOverlayScrollbarsEnabled;
 };

@@ -196,6 +196,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_client(client)
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
+    , m_generatingEvent(false)
     , m_deviceMetricsEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
 {
@@ -288,7 +289,7 @@ void WebDevToolsAgentImpl::webViewResized(const WebSize& size)
 
 bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputEvent& inputEvent)
 {
-    if (!m_attached)
+    if (!m_attached && !m_generatingEvent)
         return false;
 
     InspectorController* ic = inspectorController();
@@ -433,20 +434,20 @@ void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventCallback callback)
 
 void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 {
-    // Emulate attach for protocol tests.
-    m_attached = true;
+    m_generatingEvent = true;
     WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
     if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
         webEvent.setKeyIdentifierFromWindowsKeyCode();
     m_webViewImpl->handleInputEvent(webEvent);
+    m_generatingEvent = false;
 }
 
 void WebDevToolsAgentImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
 {
-    // Emulate attach for protocol tests.
-    m_attached = true;
+    m_generatingEvent = true;
     WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
     m_webViewImpl->handleInputEvent(webEvent);
+    m_generatingEvent = false;
 }
 
 void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
