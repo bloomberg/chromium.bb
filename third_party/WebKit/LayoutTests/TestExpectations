@@ -542,8 +542,8 @@ crbug.com/108832 fast/js/array-splice.html [ Crash ]
 # New reftest failing on Win7.
 webkit.org/b/76050 [ Win7 ] fast/text/font-kerning.html [ ImageOnlyFailure ]
 
-webkit.org/b/76727 fast/multicol/span/span-as-immediate-child-property-removal.html [ Failure ImageOnlyFailure Pass ]
-webkit.org/b/76727 fast/multicol/span/span-as-immediate-columns-child-removal.html [ Failure ImageOnlyFailure Pass ]
+webkit.org/b/76727 fast/multicol/span/span-as-immediate-child-property-removal.html [ NeedsRebaseline ]
+webkit.org/b/76727 fast/multicol/span/span-as-immediate-columns-child-removal.html [ NeedsRebaseline ]
 
 # Transform (rotation) seems to be flakily applied.
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transform.html [ ImageOnlyFailure Pass ]

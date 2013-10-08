@@ -127,9 +127,10 @@ Suspendisse hendrerit quam nec felis. Sed varius turpis vitae pede. Lorem ipsum 
 <script>
 var six = document.getElementById('six');
 six.insertBefore(document.getElementById('base').cloneNode(true), document.getElementById('beforefour'));
-</script>
 
-<script>
+// FIXME: This is only necessary because we don't always clean up the anonymous block span renderers crbug.com/305036
+document.body.offsetHeight;
+
 spanners = document.getElementsByTagName('h2');
 for (i = 0; i < spanners.length; i++) {
     spanners[i].style.webkitColumnSpan = 1;
