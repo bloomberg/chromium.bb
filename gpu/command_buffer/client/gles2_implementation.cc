@@ -666,6 +666,13 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
         return true;
       }
       return false;
+    case GL_TEXTURE_BINDING_EXTERNAL_OES:
+      if (share_group_->bind_generates_resource()) {
+        *params =
+            texture_units_[active_texture_unit_].bound_texture_external_oes;
+        return true;
+      }
+      return false;
     case GL_FRAMEBUFFER_BINDING:
       if (share_group_->bind_generates_resource()) {
         *params = bound_framebuffer_;
@@ -2459,6 +2466,12 @@ bool GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
         changed = true;
       }
       break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      if (unit.bound_texture_external_oes != texture) {
+        unit.bound_texture_external_oes = texture;
+        changed = true;
+      }
+      break;
     default:
       changed = true;
       break;
@@ -2585,6 +2598,9 @@ void GLES2Implementation::DeleteTexturesHelper(
       }
       if (textures[ii] == unit.bound_texture_cube_map) {
         unit.bound_texture_cube_map = 0;
+      }
+      if (textures[ii] == unit.bound_texture_external_oes) {
+        unit.bound_texture_external_oes = 0;
       }
     }
   }

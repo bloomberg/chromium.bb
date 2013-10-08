@@ -44,6 +44,9 @@ ScopedTextureBinder::ScopedTextureBinder(unsigned int target, unsigned int id)
       case GL_TEXTURE_CUBE_MAP:
         target_getter = GL_TEXTURE_BINDING_CUBE_MAP;
         break;
+      case GL_TEXTURE_EXTERNAL_OES:
+        target_getter = GL_TEXTURE_BINDING_EXTERNAL_OES;
+        break;
       default:
         NOTIMPLEMENTED() << "Target not part of OpenGL ES 2.0 spec.";
     }
