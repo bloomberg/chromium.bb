@@ -120,3 +120,12 @@ class FileSystem(object):
 
     for walkinfo in walk(root):
       yield walkinfo
+
+  def GetDebugString(self):
+    return ''
+
+  def __repr__(self):
+    return '<%s%s>' % (self.__class__.__name__, self.GetDebugString())
+
+  def __str__(self):
+    return repr(self)

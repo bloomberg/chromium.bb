@@ -10,8 +10,7 @@ from zipfile import ZipFile
 
 from caching_file_system import CachingFileSystem
 from file_system import FileNotFoundError, StatInfo
-from functools import partial
-from future import Future
+from fake_url_fetcher import FakeURLFSFetcher
 from local_file_system import LocalFileSystem
 from new_github_file_system import GithubFileSystem
 from object_store_creator import ObjectStoreCreator
@@ -31,31 +30,9 @@ def _ZipFromFiles(file_dict):
   return string.getvalue()
 
 
-class _FakeURLFetcher(object):
-  class _Response(object):
-    def __init__(self, content):
-      self.content = content
-
-  @staticmethod
-  def Create(file_system=None):
-    return partial(_FakeURLFetcher, file_system or LocalFileSystem(''))
-
-  def __init__(self, file_system, base_path):
-    self._base_path = base_path
-    self._file_system = file_system
-
-  def FetchAsync(self, url, **kwargs):
-    return Future(value=self.Fetch(url))
-
-  def Fetch(self, url, **kwargs):
-    response = self._Response(
-        self._file_system.ReadSingle(self._base_path + '/' + url, binary=True))
-    return response
-
-
 class TestGithubFileSystem(unittest.TestCase):
   def setUp(self):
-    self._gfs = GithubFileSystem.ForTest('repo', _FakeURLFetcher.Create())
+    self._gfs = GithubFileSystem.ForTest('repo', FakeURLFSFetcher.CreateLocal())
     # Start and finish the repository load.
     self._cgfs = CachingFileSystem(
         self._gfs, ObjectStoreCreator.ForTest())
@@ -86,8 +63,8 @@ class TestGithubFileSystem(unittest.TestCase):
   def testReads(self):
     self._gfs.Refresh().Get()
     expected = {
-      '/src/': sorted(['hello.notpy', '__init__.notpy']),
-      '/': sorted(['requirements.txt', '.gitignore', 'README.md', 'src/'])
+        '/src/': sorted(['hello.notpy', '__init__.notpy']),
+        '/': sorted(['requirements.txt', '.gitignore', 'README.md', 'src/'])
     }
 
     read = self._gfs.Read(['/', '/src/']).Get()
@@ -168,7 +145,7 @@ class TestGithubFileSystem(unittest.TestCase):
     test_file_system = TestFileSystem(test_files)
 
     gfs = GithubFileSystem.ForTest(
-        'changing-repo', _FakeURLFetcher.Create(test_file_system), path='')
+        'changing-repo', FakeURLFSFetcher.Create(test_file_system), path='')
 
     gfs.Refresh().Get()
     initial_dir_read = sorted(gfs.ReadSingle('/'))

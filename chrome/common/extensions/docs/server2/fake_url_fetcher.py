@@ -2,15 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from functools import partial
 import os
 
 from future import Future
+from local_file_system import LocalFileSystem
+
 
 class _Response(object):
-  def __init__(self):
-    self.content = ''
+  def __init__(self, content=''):
+    self.content = content
     self.headers = { 'content-type': 'none' }
     self.status_code = 200
+
 
 class FakeUrlFetcher(object):
   def __init__(self, base_path):
@@ -49,3 +53,27 @@ class FakeUrlFetcher(object):
     else:
       result.content = self._ReadFile(url)
     return result
+
+
+class FakeURLFSFetcher(object):
+  '''Use a file_system to resolve fake fetches. Mimics the interface of Google
+  Appengine's urlfetch.
+  '''
+  @staticmethod
+  def Create(file_system):
+    return partial(FakeURLFSFetcher, file_system)
+
+  @staticmethod
+  def CreateLocal():
+    return partial(FakeURLFSFetcher, LocalFileSystem(''))
+
+  def __init__(self, file_system, base_path):
+    self._base_path = base_path
+    self._file_system = file_system
+
+  def FetchAsync(self, url, **kwargs):
+    return Future(value=self.Fetch(url))
+
+  def Fetch(self, url, **kwargs):
+    return _Response(
+        self._file_system.ReadSingle(self._base_path + '/' + url, binary=True))

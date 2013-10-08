@@ -6,6 +6,17 @@ import sys
 
 _no_value = object()
 
+
+class Gettable(object):
+  '''Allows a Future to accept a callable as a delegate. Wraps |f| in a .Get
+  interface required by Future.
+  '''
+  def __init__(self, f, *args):
+    self._g = lambda: f(*args)
+  def Get(self):
+    return self._g()
+
+
 class Future(object):
   '''Stores a value, error, or delegate to be used later.
   '''
