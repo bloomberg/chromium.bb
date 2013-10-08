@@ -5,17 +5,14 @@
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 
 #include "base/lazy_instance.h"
-#include "base/memory/singleton.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/android/device_display_info.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace content {
 
@@ -33,52 +30,7 @@ class GLContextLostListener
 
 namespace {
 
-using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-
 static ImageTransportFactoryAndroid* g_factory = NULL;
-
-class DirectGLImageTransportFactory : public ImageTransportFactoryAndroid {
- public:
-  DirectGLImageTransportFactory();
-  virtual ~DirectGLImageTransportFactory();
-
-  virtual uint32_t InsertSyncPoint() OVERRIDE { return 0; }
-  virtual void WaitSyncPoint(uint32_t sync_point) OVERRIDE {}
-  virtual uint32_t CreateTexture() OVERRIDE {
-    return context_->createTexture();
-  }
-  virtual void DeleteTexture(uint32_t id) OVERRIDE {
-    context_->deleteTexture(id);
-  }
-  virtual void AcquireTexture(
-      uint32 texture_id, const signed char* mailbox_name) OVERRIDE {}
-  virtual WebKit::WebGraphicsContext3D* GetContext3D() OVERRIDE {
-    return context_.get();
-  }
-  virtual GLHelper* GetGLHelper() OVERRIDE { return NULL; }
-
- private:
-  scoped_ptr<WebKit::WebGraphicsContext3D> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(DirectGLImageTransportFactory);
-};
-
-DirectGLImageTransportFactory::DirectGLImageTransportFactory() {
-  WebKit::WebGraphicsContext3D::Attributes attrs;
-  attrs.shareResources = true;
-  attrs.noAutomaticFlushes = true;
-  context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
-      CreateViewContext(attrs, NULL);
-  context_->setContextLostCallback(context_lost_listener_.get());
-  if (context_->makeContextCurrent())
-    context_->pushGroupMarkerEXT(
-        base::StringPrintf("DirectGLImageTransportFactory-%p",
-                           context_.get()).c_str());
-}
-
-DirectGLImageTransportFactory::~DirectGLImageTransportFactory() {
-  context_->setContextLostCallback(NULL);
-}
 
 class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
  public:
@@ -196,12 +148,8 @@ GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {
 
 // static
 ImageTransportFactoryAndroid* ImageTransportFactoryAndroid::GetInstance() {
-  if (!g_factory) {
-    if (CompositorImpl::UsesDirectGL())
-      g_factory = new DirectGLImageTransportFactory();
-    else
-      g_factory = new CmdBufferImageTransportFactory();
-  }
+  if (!g_factory)
+    g_factory = new CmdBufferImageTransportFactory();
 
   return g_factory;
 }

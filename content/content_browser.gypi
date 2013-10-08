@@ -1028,8 +1028,6 @@
     'browser/renderer_host/socket_stream_dispatcher_host.h',
     'browser/renderer_host/socket_stream_host.cc',
     'browser/renderer_host/socket_stream_host.h',
-    'browser/renderer_host/surface_texture_transport_client_android.cc',
-    'browser/renderer_host/surface_texture_transport_client_android.h',
     'browser/renderer_host/text_input_client_mac.h',
     'browser/renderer_host/text_input_client_mac.mm',
     'browser/renderer_host/text_input_client_message_filter.h',

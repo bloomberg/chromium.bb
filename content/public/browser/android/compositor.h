@@ -35,19 +35,6 @@ class CONTENT_EXPORT Compositor {
   // instance can be used. This should be called only once.
   static void Initialize();
 
-  enum CompositorFlags {
-    // Creates a direct GL context on the thread that draws
-    // (i.e. main or impl thread).
-    DIRECT_CONTEXT_ON_DRAW_THREAD = 1,
-
-    // Runs the compositor in threaded mode.
-    ENABLE_COMPOSITOR_THREAD = 1 << 1,
-  };
-
-  // Initialize with flags. This should only be called once instead
-  // of Initialize().
-  static void InitializeWithFlags(uint32 flags);
-
   // Creates and returns a compositor instance.
   static Compositor* Create(CompositorClient* client);
 

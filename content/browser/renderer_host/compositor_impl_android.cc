@@ -91,7 +91,6 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
 
 static bool g_initialized = false;
 static base::Thread* g_impl_thread = NULL;
-static bool g_use_direct_gl = false;
 
 } // anonymous namespace
 
@@ -115,18 +114,6 @@ void Compositor::Initialize() {
 }
 
 // static
-void Compositor::InitializeWithFlags(uint32 flags) {
-  g_use_direct_gl = flags & DIRECT_CONTEXT_ON_DRAW_THREAD;
-  if (flags & ENABLE_COMPOSITOR_THREAD) {
-    TRACE_EVENT_INSTANT0("test_gpu", "ThreadedCompositingInitialization",
-                         TRACE_EVENT_SCOPE_THREAD);
-    g_impl_thread = new base::Thread("Browser Compositor");
-    g_impl_thread->Start();
-  }
-  Compositor::Initialize();
-}
-
-// static
 bool CompositorImpl::IsInitialized() {
   return g_initialized;
 }
@@ -134,11 +121,6 @@ bool CompositorImpl::IsInitialized() {
 // static
 bool CompositorImpl::IsThreadingEnabled() {
   return g_impl_thread;
-}
-
-// static
-bool CompositorImpl::UsesDirectGL() {
-  return g_use_direct_gl;
 }
 
 // static
@@ -242,11 +224,6 @@ void CompositorImpl::SetVisible(bool visible) {
     settings.top_controls_height = 0.f;
     settings.use_memory_management = false;
     settings.highp_threshold_min = 2048;
-
-    // Do not clear the framebuffer when rendering into external GL contexts
-    // like Android View System's.
-    if (UsesDirectGL())
-      settings.should_clear_root_render_pass = false;
 
     scoped_refptr<base::SingleThreadTaskRunner> impl_thread_task_runner =
         g_impl_thread ? g_impl_thread->message_loop()->message_loop_proxy()
@@ -422,23 +399,6 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
-
-  if (g_use_direct_gl) {
-    using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-    scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d =
-        WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
-            attrs, window_);
-    scoped_refptr<webkit::gpu::ContextProviderInProcess> context_provider =
-        webkit::gpu::ContextProviderInProcess::Create(context3d.Pass(),
-                                                      "BrowserCompositor");
-
-    scoped_ptr<cc::OutputSurface> output_surface;
-    if (!window_)
-      output_surface.reset(new DirectOutputSurface(context_provider));
-    else
-      output_surface.reset(new cc::OutputSurface(context_provider));
-    return output_surface.Pass();
-  }
 
   DCHECK(window_);
   DCHECK(surface_id_);

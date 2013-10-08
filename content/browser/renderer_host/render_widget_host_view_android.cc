@@ -33,7 +33,6 @@
 #include "content/browser/renderer_host/generic_touch_gesture_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/surface_texture_transport_client_android.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
@@ -116,19 +115,13 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       weak_ptr_factory_(this),
       overscroll_effect_enabled_(true),
       flush_input_requested_(false) {
-  if (CompositorImpl::UsesDirectGL()) {
-    surface_texture_transport_.reset(new SurfaceTextureTransportClient());
-    layer_ = surface_texture_transport_->Initialize();
-    layer_->SetIsDrawable(true);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDelegatedRenderer)) {
+    delegated_renderer_layer_ = cc::DelegatedRendererLayer::Create(this);
+    layer_ = delegated_renderer_layer_;
   } else {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableDelegatedRenderer)) {
-      delegated_renderer_layer_ = cc::DelegatedRendererLayer::Create(this);
-      layer_ = delegated_renderer_layer_;
-    } else {
-      texture_layer_ = cc::TextureLayer::Create(this);
-      layer_ = texture_layer_;
-    }
+    texture_layer_ = cc::TextureLayer::Create(this);
+    layer_ = texture_layer_;
   }
 
   layer_->SetContentsOpaque(true);
@@ -216,10 +209,6 @@ void RenderWidgetHostViewAndroid::WasHidden() {
 }
 
 void RenderWidgetHostViewAndroid::WasResized() {
-  if (surface_texture_transport_.get() && content_view_core_)
-    surface_texture_transport_->SetSize(
-        content_view_core_->GetPhysicalBackingSize());
-
   host_->WasResized();
 }
 
@@ -932,12 +921,7 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
-  if (surface_texture_transport_) {
-    return surface_texture_transport_->GetCompositingSurface(
-        host_->surface_id());
-  } else {
-    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
-  }
+  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
 }
 
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(

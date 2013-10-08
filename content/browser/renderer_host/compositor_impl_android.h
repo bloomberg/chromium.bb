@@ -45,9 +45,6 @@ class CONTENT_EXPORT CompositorImpl
   static bool IsInitialized();
   static bool IsThreadingEnabled();
 
-  // Returns true if initialized with DIRECT_CONTEXT_ON_DRAW_THREAD.
-  static bool UsesDirectGL();
-
   // Returns the Java Surface object for a given view surface id.
   static jobject GetSurface(int surface_id);
 

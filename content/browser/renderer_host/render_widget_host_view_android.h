@@ -51,7 +51,6 @@ class ContentViewCoreImpl;
 class OverscrollGlow;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
-class SurfaceTextureTransportClient;
 struct NativeWebKeyboardEvent;
 
 // -----------------------------------------------------------------------------
@@ -313,9 +312,6 @@ class RenderWidgetHostViewAndroid
 
   // The most recent content size that was pushed to the texture layer.
   gfx::Size content_size_in_layer_;
-
-  // Used for image transport when needing to share resources across threads.
-  scoped_ptr<SurfaceTextureTransportClient> surface_texture_transport_;
 
   // The mailbox of the previously received frame.
   gpu::Mailbox current_mailbox_;
