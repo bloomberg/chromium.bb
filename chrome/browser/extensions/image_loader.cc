@@ -7,7 +7,6 @@
 #include <map>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -16,26 +15,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/image_loader_factory.h"
-#include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_constants.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/component_extension_resources_map.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/size.h"
-#include "ui/gfx/skbitmap_operations.h"
 
 #if defined(USE_AURA)
 #include "ui/keyboard/keyboard_util.h"
@@ -126,54 +115,6 @@ void AddComponentResourceEntries(
   }
 }
 
-// Returns a PNG image data URL of a given image.
-GURL GetImageDataURL(const gfx::Image& image) {
-  if (image.IsEmpty())
-    return GURL();
-
-  scoped_refptr<base::RefCountedMemory> mem =
-      ImageLoader::BitmapToMemory(image.ToSkBitmap());
-  std::string contents_base64;
-  // TODO(dvh): contents_base64 calculation of the result of the function is
-  // sub-optimal: it's a concatenation of 3 strings and |contents_base64| can
-  // be huge. Additionally, the GURL is returned by copy.
-  // crbug/304759.
-  if (!base::Base64Encode(
-          std::string(reinterpret_cast<const char*>(mem->front()), mem->size()),
-          &contents_base64))
-    return GURL();
-
-  const char kDataURLPrefix[] = ":image/png;base64,";
-  return GURL(std::string(chrome::kDataScheme) + kDataURLPrefix +
-              contents_base64);
-}
-
-// Converts the image to grayscale.
-SkBitmap DesaturateImage(const SkBitmap* image) {
-  color_utils::HSL shift = {-1, 0, 0.6};
-  return SkBitmapOperations::CreateHSLShiftedBitmap(*image, shift);
-}
-
-// Creates an image from PNG data.
-SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
-  SkBitmap* decoded = new SkBitmap();
-  bool success = gfx::PNGCodec::Decode(data, size, decoded);
-  DCHECK(success);
-  return decoded;
-}
-
-// Load an image from a resource given its identifier |resource_id|.
-SkBitmap* GetImageByResourceId(int resource_id) {
-  std::string contents = ResourceBundle::GetSharedInstance()
-      .GetRawDataResourceForScale(resource_id,
-                                  ui::SCALE_FACTOR_100P).as_string();
-
-  // Convert and return it.
-  const unsigned char* data =
-      reinterpret_cast<const unsigned char*>(contents.data());
-  return ToBitmap(data, contents.length());
-}
-
 }  // namespace
 
 namespace extensions {
@@ -224,8 +165,8 @@ ImageLoader::LoadResult::~LoadResult() {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoader
 
-ImageLoader::ImageLoader(Profile* profile)
-    : weak_ptr_factory_(this), profile_(profile) {
+ImageLoader::ImageLoader()
+    : weak_ptr_factory_(this) {
 }
 
 ImageLoader::~ImageLoader() {
@@ -404,275 +345,6 @@ void ImageLoader::ReplyBack(
   }
 
   callback.Run(image);
-}
-
-void ImageLoader::LoadExtensionIconAsync(
-    const extensions::Extension* extension,
-    int icon_size,
-    ExtensionIconSet::MatchType match,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  // |extension| can be NULL when the default icon is requested. In this case,
-  // fail the icon loading, which will result in the default icon being loaded.
-  if (extension == NULL) {
-    LoadIconFailed(extension, icon_size, grayscale, callback);
-    return;
-  }
-
-  ExtensionResource resource = IconsInfo::GetIconResource(
-      extension, icon_size, match);
-  LoadImageAsync(extension,
-                 resource,
-                 gfx::Size(icon_size, icon_size),
-                 base::Bind(&ImageLoader::LoadExtensionIconDone,
-                            base::Unretained(this),
-                            extension,
-                            icon_size,
-                            grayscale,
-                            callback));
-}
-
-void ImageLoader::LoadExtensionIconDone(
-    const extensions::Extension* extension,
-    int icon_size,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback,
-    const gfx::Image& image) {
-  if (image.IsEmpty())
-    LoadIconFailed(extension, icon_size, grayscale, callback);
-  else
-    FinalizeImage(image, grayscale, callback);
-}
-
-void ImageLoader::LoadIconFailed(
-    const extensions::Extension* extension,
-    int icon_size,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  if ((extension != NULL) &&
-      (icon_size == extension_misc::EXTENSION_ICON_BITTY))
-    LoadFaviconImage(extension, icon_size, grayscale, callback);
-  else
-    LoadDefaultImage(extension, icon_size, grayscale, callback);
-}
-
-void ImageLoader::LoadFaviconImage(
-    const extensions::Extension* extension,
-    int icon_size,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  FaviconService* favicon_service = NULL;
-  if (profile_ != NULL)
-    favicon_service = FaviconServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
-  // Fall back to the default icons if the service isn't available.
-  if (favicon_service == NULL) {
-    LoadDefaultImage(extension, icon_size, grayscale, callback);
-    return;
-  }
-
-  GURL favicon_url = AppLaunchInfo::GetFullLaunchURL(extension);
-  favicon_service->GetRawFaviconForURL(
-      FaviconService::FaviconForURLParams(
-          profile_, favicon_url, chrome::FAVICON, gfx::kFaviconSize),
-      ui::SCALE_FACTOR_100P,
-      base::Bind(&ImageLoader::OnFaviconDataAvailable,
-                 base::Unretained(this),
-                 extension,
-                 icon_size,
-                 grayscale,
-                 callback),
-      &cancelable_task_tracker_);
-}
-
-void ImageLoader::OnFaviconDataAvailable(
-    const extensions::Extension* extension,
-    int icon_size,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback,
-    const chrome::FaviconBitmapResult& bitmap_result) {
-  // Fallback to the default icon if there wasn't a favicon.
-  if (!bitmap_result.is_valid()) {
-    LoadDefaultImage(extension, icon_size, grayscale, callback);
-    return;
-  }
-
-  gfx::Image image = gfx::Image::CreateFrom1xBitmap(*ToBitmap(
-      bitmap_result.bitmap_data->front(), bitmap_result.bitmap_data->size()));
-  FinalizeImage(image, grayscale, callback);
-}
-
-void ImageLoader::LoadDefaultImage(
-    const extensions::Extension* extension,
-    int icon_size,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&ImageLoader::LoadDefaultImageOnFileThread,
-                 base::Unretained(this),
-                 extension,
-                 icon_size,
-                 grayscale,
-                 callback));
-}
-
-void ImageLoader::LoadDefaultImageOnFileThread(
-    const extensions::Extension* extension,
-    int icon_size,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  const SkBitmap* default_image = NULL;
-  if ((extension == NULL) || (extension->is_app()))
-    default_image = GetDefaultAppImage();
-  else
-    default_image = GetDefaultExtensionImage();
-
-  SkBitmap result_image;
-  if (icon_size == -1) {
-    // If a specific size was not requested.
-    result_image = *default_image;
-  } else {
-    SkBitmap resized_image(
-        skia::ImageOperations::Resize(*default_image,
-                                      skia::ImageOperations::RESIZE_LANCZOS3,
-                                      icon_size,
-                                      icon_size));
-    // There are cases where Resize returns an empty bitmap, for example if you
-    // ask for an image too large. In this case it is better to return the
-    // default image than returning nothing at all.
-    if (resized_image.empty())
-      resized_image = *default_image;
-    result_image = resized_image;
-  }
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ImageLoader::LoadDefaultImageDone,
-                 base::Unretained(this),
-                 gfx::Image::CreateFrom1xBitmap(result_image),
-                 grayscale,
-                 callback));
-}
-
-void ImageLoader::LoadDefaultImageDone(
-    const gfx::Image image,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  FinalizeImage(image, grayscale, callback);
-}
-
-void ImageLoader::FinalizeImage(
-    const gfx::Image& image,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&ImageLoader::FinalizeImageOnFileThread,
-                 base::Unretained(this),
-                 image,
-                 grayscale,
-                 callback));
-}
-
-void ImageLoader::FinalizeImageOnFileThread(
-    const gfx::Image image,
-    bool grayscale,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  SkBitmap bitmap;
-  if (grayscale)
-    bitmap = DesaturateImage(image.ToSkBitmap());
-  else
-    bitmap = *image.ToSkBitmap();
-
-  gfx::Image modifiedImage = gfx::Image::CreateFrom1xBitmap(bitmap);
-  content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                   FROM_HERE,
-                                   base::Bind(&ImageLoader::FinalizeImageDone,
-                                              base::Unretained(this),
-                                              modifiedImage,
-                                              callback));
-}
-
-void ImageLoader::FinalizeImageDone(
-    const gfx::Image image,
-    const base::Callback<void(const gfx::Image&)>& callback) {
-  callback.Run(image);
-}
-
-void ImageLoader::LoadExtensionIconDataURLAsync(
-    const extensions::Extension* extension,
-    int icon_size,
-    ExtensionIconSet::MatchType match,
-    bool grayscale,
-    const base::Callback<void(const GURL&)>& callback) {
-  LoadExtensionIconAsync(extension,
-                         icon_size,
-                         match,
-                         grayscale,
-                         base::Bind(&ImageLoader::OnIconAvailable,
-                                    base::Unretained(this),
-                                    callback));
-}
-
-void ImageLoader::OnIconAvailable(
-    const base::Callback<void(const GURL&)>& callback,
-    const gfx::Image& image) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&ImageLoader::ConvertIconToURLOnFileThread,
-                 base::Unretained(this),
-                 image,
-                 callback));
-}
-
-void ImageLoader::ConvertIconToURLOnFileThread(
-    const gfx::Image image,
-    const base::Callback<void(const GURL&)>& callback) {
-  GURL url = GetImageDataURL(image);
-  // TODO(dvh): |url| can be huge and it's passed by copy to
-  // OnIconConvertedToURL(). It can be optimized.
-  // crbug/304759.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ImageLoader::OnIconConvertedToURL,
-                 base::Unretained(this),
-                 url,
-                 callback));
-}
-
-void ImageLoader::OnIconConvertedToURL(
-    const GURL url,
-    const base::Callback<void(const GURL&)>& callback) {
-  callback.Run(url);
-}
-
-const SkBitmap* ImageLoader::GetDefaultAppImage() {
-  if (!default_app_icon_.get())
-    default_app_icon_.reset(GetImageByResourceId(IDR_APP_DEFAULT_ICON));
-
-  return default_app_icon_.get();
-}
-
-const SkBitmap* ImageLoader::GetDefaultExtensionImage() {
-  if (!default_extension_icon_.get()) {
-    default_extension_icon_.reset(
-        GetImageByResourceId(IDR_EXTENSION_DEFAULT_ICON));
-  }
-
-  return default_extension_icon_.get();
-}
-
-scoped_refptr<base::RefCountedMemory> ImageLoader::BitmapToMemory(
-    const SkBitmap* image) {
-  base::RefCountedBytes* image_bytes = new base::RefCountedBytes;
-  gfx::PNGCodec::EncodeBGRASkBitmap(*image, false, &image_bytes->data());
-  return image_bytes;
 }
 
 }  // namespace extensions

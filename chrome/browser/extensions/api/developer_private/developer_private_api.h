@@ -133,8 +133,6 @@ class DeveloperPrivateGetItemsInfoFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("developerPrivate.getItemsInfo",
                              DEVELOPERPRIVATE_GETITEMSINFO)
 
-  DeveloperPrivateGetItemsInfoFunction();
-
  protected:
   virtual ~DeveloperPrivateGetItemsInfoFunction();
 
@@ -142,18 +140,14 @@ class DeveloperPrivateGetItemsInfoFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // List of extensions/apps items to return. This list will be populated in a
-  // first step. Then, it will be used to keep track of items that need to be
-  // filled with icons.
-  ItemInfoList item_list_;
-
-  // Index of the extension/app in |item_list_| for which we need to load the
-  // icon.
-  int icon_to_load_;
 
   scoped_ptr<developer::ItemInfo> CreateItemInfo(
       const extensions::Extension& item,
       bool item_is_enabled);
+
+  void GetIconsOnFileThread(
+      ItemInfoList item_list,
+      std::map<std::string, ExtensionResource> itemIdToIconResourceMap);
 
   // Helper that lists the current inspectable html pages for the extension.
   void GetInspectablePagesForExtensionProcess(
@@ -175,14 +169,6 @@ class DeveloperPrivateGetItemsInfoFunction : public AsyncExtensionFunction {
       int render_view_id,
       bool incognito,
       bool generated_background_page);
-
-  // Request the icon of the extension/app at the index |icon_to_load_| in
-  // |item_list_|.
-  void RequestNextIcon();
-
-  // Called when each icon has been loaded by RequestNextIcon(). |url| is the
-  // data url containing the icon.
-  void LoadIconFinished(const GURL& url);
 };
 
 class DeveloperPrivateInspectFunction : public SyncExtensionFunction {
