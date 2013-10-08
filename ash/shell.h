@@ -129,12 +129,9 @@ class ScopedTargetRootWindow;
 class ScreenPositionController;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
-class SuspendObserver;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class TouchObserverHUD;
-class UserActivityNotifier;
-class VideoActivityNotifier;
 }
 
 namespace shell {
@@ -625,11 +622,7 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::LocaleNotificationController>
       locale_notification_controller_;
 
-#if defined(OS_CHROMEOS)
-  scoped_ptr<internal::SuspendObserver> suspend_observer_;
-  scoped_ptr<internal::UserActivityNotifier> user_activity_notifier_;
-  scoped_ptr<internal::VideoActivityNotifier> video_activity_notifier_;
-#if defined(USE_X11)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
   scoped_ptr<internal::OutputConfiguratorAnimation>
@@ -638,8 +631,7 @@ class ASH_EXPORT Shell
 
   // Listens for output changes and updates the display manager.
   scoped_ptr<internal::DisplayChangeObserver> display_change_observer_;
-#endif  // defined(USE_X11)
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
 
   scoped_ptr<internal::ResolutionNotificationController>
       resolution_notification_controller_;

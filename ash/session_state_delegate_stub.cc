@@ -37,10 +37,6 @@ bool SessionStateDelegateStub::IsScreenLocked() const {
   return screen_locked_;
 }
 
-bool SessionStateDelegateStub::ShouldLockScreenBeforeSuspending() const {
-  return false;
-}
-
 void SessionStateDelegateStub::LockScreen() {
   shell::CreateLockScreen();
   screen_locked_ = true;

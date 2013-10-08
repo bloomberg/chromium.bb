@@ -7,14 +7,10 @@
 #include "ash/session_state_observer.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -46,11 +42,6 @@ bool SessionStateDelegateChromeos::CanLockScreen() const {
 bool SessionStateDelegateChromeos::IsScreenLocked() const {
   return chromeos::ScreenLocker::default_screen_locker() &&
          chromeos::ScreenLocker::default_screen_locker()->locked();
-}
-
-bool SessionStateDelegateChromeos::ShouldLockScreenBeforeSuspending() const {
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  return profile && profile->GetPrefs()->GetBoolean(prefs::kEnableScreenLock);
 }
 
 void SessionStateDelegateChromeos::LockScreen() {

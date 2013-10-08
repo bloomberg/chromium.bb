@@ -58,6 +58,9 @@
 #include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
+#include "chrome/browser/chromeos/power/suspend_observer.h"
+#include "chrome/browser/chromeos/power/user_activity_notifier.h"
+#include "chrome/browser/chromeos/power/video_activity_notifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/screensaver/screensaver_controller.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
@@ -603,6 +606,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       switches::kEnableScreensaverExtensions)) {
     screensaver_controller_.reset(new ScreensaverController());
   }
+  suspend_observer_.reset(new SuspendObserver());
   if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
     retail_mode_power_save_blocker_ = content::PowerSaveBlocker::Create(
         content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
@@ -671,6 +675,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new PowerButtonObserver);
+  user_activity_notifier_.reset(new UserActivityNotifier);
+  video_activity_notifier_.reset(new VideoActivityNotifier);
   data_promo_notification_.reset(new DataPromoNotification()),
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
@@ -712,6 +718,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   screen_lock_observer_.reset();
+  suspend_observer_.reset();
   resume_observer_.reset();
   brightness_observer_.reset();
   retail_mode_power_save_blocker_.reset();
@@ -734,6 +741,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Let classes unregister themselves as observers of the ash::Shell singleton
   // before the shell is destroyed.
+  user_activity_notifier_.reset();
+  video_activity_notifier_.reset();
   display_configuration_observer_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.

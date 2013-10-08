@@ -40,10 +40,6 @@ bool SessionStateDelegate::IsScreenLocked() const {
   return false;
 }
 
-bool SessionStateDelegate::ShouldLockScreenBeforeSuspending() const {
-  return false;
-}
-
 void SessionStateDelegate::LockScreen() {
 }
 
