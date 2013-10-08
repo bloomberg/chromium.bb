@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
 #include "platform/NotImplemented.h"
@@ -167,7 +168,9 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
 
     FontPlatformData* result = new FontPlatformData(tf,
         name.data(),
-        fontDescription.computedSize(),
+        (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+            ? fontDescription.computedSize()
+            : fontDescription.computedPixelSize(),
         fontDescription.weight() >= FontWeightBold && !tf->isBold(),
         fontDescription.italic() && !tf->isItalic(),
         fontDescription.orientation());
