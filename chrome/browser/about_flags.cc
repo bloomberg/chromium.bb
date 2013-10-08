@@ -780,6 +780,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableWebKitMediaSource)
   },
   {
+    "disable-unprefixed-media-source",
+    IDS_FLAGS_DISABLE_UNPREFIXED_MEDIA_SOURCE_NAME,
+    IDS_FLAGS_DISABLE_UNPREFIXED_MEDIA_SOURCE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableUnprefixedMediaSource)
+  },
+  {
     "enable-encrypted-media",
     IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME,
     IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_DESCRIPTION,

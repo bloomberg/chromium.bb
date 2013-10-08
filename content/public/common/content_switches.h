@@ -97,6 +97,7 @@ CONTENT_EXPORT extern const char kDisableThreadedCompositing[];
 CONTENT_EXPORT extern const char kDisableThreadedHTMLParser[];
 CONTENT_EXPORT extern const char kDisableWebAudio[];
 extern const char kDisableWebKitMediaSource[];
+extern const char kDisableUnprefixedMediaSource[];
 CONTENT_EXPORT extern const char kDisableWebSecurity[];
 extern const char kDisableXSLT[];
 extern const char kDisableXSSAuditor[];

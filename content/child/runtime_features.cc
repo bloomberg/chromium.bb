@@ -24,6 +24,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   // in JellyBrean.
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
     WebRuntimeFeatures::enableWebKitMediaSource(false);
+    WebRuntimeFeatures::enableMediaSource(false);
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
   }
 #endif  // !defined(GOOGLE_TV)
@@ -76,6 +77,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kDisableWebKitMediaSource))
     WebRuntimeFeatures::enableWebKitMediaSource(false);
+
+  if (command_line.HasSwitch(switches::kDisableUnprefixedMediaSource))
+    WebRuntimeFeatures::enableMediaSource(false);
 
 #if defined(OS_ANDROID)
   if (command_line.HasSwitch(switches::kDisableWebRTC)) {
