@@ -67,8 +67,7 @@ public:
     String effectAllowed() const { return m_effectAllowed; }
     void setEffectAllowed(const String&);
 
-    void clearData(const String& type);
-    void clearAllData();
+    void clearData(const String& type = String());
     String getData(const String& type) const;
     bool setData(const String& type, const String& data);
 

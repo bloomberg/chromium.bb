@@ -155,15 +155,10 @@ void Clipboard::clearData(const String& type)
     if (!canWriteData())
         return;
 
-    m_dataObject->clearData(normalizeType(type));
-}
-
-void Clipboard::clearAllData()
-{
-    if (!canWriteData())
-        return;
-
-    m_dataObject->clearAll();
+    if (type.isNull())
+        m_dataObject->clearAll();
+    else
+        m_dataObject->clearData(normalizeType(type));
 }
 
 String Clipboard::getData(const String& type) const

@@ -42,24 +42,6 @@
 
 namespace WebCore {
 
-void V8Clipboard::clearDataMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    Clipboard* clipboard = V8Clipboard::toNative(args.Holder());
-
-    if (!args.Length()) {
-        clipboard->clearAllData();
-        return;
-    }
-
-    if (args.Length() != 1) {
-        throwError(v8SyntaxError, "clearData: Invalid number of arguments", args.GetIsolate());
-        return;
-    }
-
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
-    clipboard->clearData(type);
-}
-
 void V8Clipboard::setDragImageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     Clipboard* clipboard = V8Clipboard::toNative(args.Holder());

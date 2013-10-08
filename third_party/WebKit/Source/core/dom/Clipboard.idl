@@ -33,7 +33,7 @@
     readonly attribute DOMString[] types;
     readonly attribute FileList files;
 
-    [Custom, RaisesException] void clearData(optional DOMString type);
+    void clearData(optional DOMString type);
     DOMString getData(DOMString type);
     boolean setData(DOMString type, DOMString data);
     [Custom, RaisesException] void setDragImage(HTMLImageElement image, long x, long y);
