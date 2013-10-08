@@ -598,8 +598,6 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
       MathUtil::MapClippedRect(draw_transform, gfx::RectF(content_rect)));
   unoccluded_region_in_target_surface.Subtract(
       stack_.back().occlusion_from_inside_target);
-  gfx::RectF unoccluded_rect_in_target_surface_without_outside_occlusion =
-      unoccluded_region_in_target_surface.bounds();
   unoccluded_region_in_target_surface.Subtract(
       stack_.back().occlusion_from_outside_target);
 
@@ -667,8 +665,6 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
     unoccluded_region_in_target_surface.Subtract(
         second_last.occlusion_from_inside_target);
   }
-  gfx::RectF unoccluded_rect_in_target_surface_without_outside_occlusion =
-      unoccluded_region_in_target_surface.bounds();
   if (has_occlusion) {
     const StackObject& second_last = stack_[stack_.size() - 2];
     unoccluded_region_in_target_surface.Subtract(
