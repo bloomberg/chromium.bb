@@ -663,6 +663,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kSystemStorage);
   skip.insert(APIPermission::kTts);
   skip.insert(APIPermission::kUnlimitedStorage);
+  skip.insert(APIPermission::kWebRtc);
   skip.insert(APIPermission::kWebView);
 
   // TODO(erikkay) add a string for this permission.

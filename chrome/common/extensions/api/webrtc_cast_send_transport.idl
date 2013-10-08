@@ -1,0 +1,144 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The <code>chrome.webrtc.castSendTransport</code> API takes a track as
+// a source of media, and sends that media on the inner transport according to
+// the given RtpParams.
+namespace webrtc.castSendTransport {
+  // Params for audio and video codec.
+  dictionary CodecSpecificParam {
+    DOMString key;
+    DOMString value;
+  };
+
+  // RTP payload param.
+  dictionary RtpPayloadParam {
+    long payloadType;
+
+    DOMString codecName;
+
+    // Synchronization source identifier.
+    long? ssrc;
+
+    long? clockRate;
+
+    long? minBitrate;
+
+    long? maxBitrate;
+
+    // The number of channels.
+    long? channels;
+
+    // Video width in pixels.
+    long? width;
+
+    // Video height in pixels.
+    long? height;
+
+    // A list of codec specific params.
+    CodecSpecificParam[] codecSpecficParams;
+  };
+
+  // Cast transport capabilities
+  dictionary CastTransportCaps {
+    // RTP payload params.
+    RtpPayloadParam[] payloads;
+
+    DOMString[] rtcpFeatures;
+
+    DOMString[] fecMechanisms;
+  };
+
+  // Cast transport params.
+  dictionary CastTransportParams {
+    // RTP payload params.
+    RtpPayloadParam[] payloads;
+
+    DOMString[] rtcpFeatures;
+
+    DOMString[] fecMechanisms;
+  };
+
+  // Result of <code>create</code> call.
+  dictionary CreateInfo {
+    // The ID of the newly created transport.
+    long id;
+  };
+
+  // Callback from the <code>create</code> method.
+  // |id| : The transport id.
+  // A null value indicates an error.
+  callback CreateCallback = void (CreateInfo id);
+
+  // Callback from the <code>createParams</code> method.
+  // |params| : The cast transport params.
+  // A null value indicates an error.
+  callback CreateParamsCallback = void (CastTransportParams params);
+
+  interface Functions {
+    // Creates a cast send transport.
+    // |innerTransportId| : the ID of the inner transport. The transport to be
+    //   created will send data on the inner transport.
+    // |callback| : Called when the transport has been created.
+    [nocompile] static void create(long innerTransportId,
+        CreateCallback callback);
+
+    // Creates suitable params given the capabilities.
+    // |caps| : the capabilities.
+    // |callback| : Called when the params has been created.
+    [nocompile] static void createParams(CastTransportCaps caps,
+        CreateParamsCallback callback);
+
+    // Set the source of media.
+    // |transportId| : the transport ID.
+    // |track| : A media stream track.
+    [nocompile] static void setTrack(long transportId,
+        [instanceOf=MediaStreamTrack] object track);
+
+    // Starts to use the transport by providing remote params info.
+    // |transportId| : The transport ID.
+    // |remoteParams| : The remote params.
+    [nocompile] static void start(long transportId,
+        CastTransportParams remoteParams);
+
+    // Stops using the transport.
+    // |transportId| : The transport ID.
+    [nocompile] static void stop(long transportId);
+
+    // Mutes the media track.
+    // |transportId| : The transport ID.
+    [nocompile] static void mute(long transportId);
+
+    // Unmute the media track.
+    // |transportId| : The transport ID.
+    [nocompile] static void unmute(long transportId);
+  };
+
+  interface Events {
+    // Event fired when a cast send transport has started.
+    // |transportId| : The ID of the transport.
+    static void onStarted(long transportId);
+
+    // Event fired when a cast send transport has connected.
+    // After this event, the transport is ready to send the track.
+    // |transportId| : The ID of the transport.
+    static void onConnected(long transportId);
+
+    // Event fired when a cast send transport has stopped.
+    // |transportId| : The ID of the transport.
+    static void onStopped(long transportId);
+
+    // Event fired when a cast send transport has timeout.
+    // This happens when network has been congested for a while, or one side
+    // left.
+    // |transportId| : The ID of the transport.
+    static void onTimeout(long transportId);
+
+    // Event fired when a cast send transport has error.
+    // |transportId| : The ID of the transport.
+    // |errorString| : The error info.
+    static void onError(long transportId, DOMString errorString);
+  };
+};
+

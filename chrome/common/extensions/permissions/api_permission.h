@@ -153,6 +153,7 @@ class APIPermission {
     kWebRequest,
     kWebRequestBlocking,
     kWebRequestInternal,
+    kWebRtc,
     kWebrtcLoggingPrivate,
     kWebstorePrivate,
     kWebView,

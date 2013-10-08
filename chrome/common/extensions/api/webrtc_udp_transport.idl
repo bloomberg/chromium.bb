@@ -1,0 +1,44 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The <code>chrome.webrtc.udpTransport</code> API creates a UDP transport
+// for outer transport to send and receive data. This API is not useful when
+// standalone since it does not have send and receive methods. It should be
+// used as an inner transport for other transports such as castSendTransport.
+namespace webrtc.udpTransport {
+  // The UDP socket address and port.
+  dictionary UdpParams {
+    DOMString address;
+    long port;
+  };
+
+  // Result of <code>create</code> call.
+  dictionary CreateInfo {
+    // The ID of the newly created UDP transport.
+    long id;
+
+    // The transport params.
+    UdpParams params;
+  };
+
+  // Callback from the <code>create</code> method.
+  // |createInfo| : The transport info.
+  // A null value indicates an error.
+  callback CreateCallback = void (CreateInfo createInfo);
+
+  interface Functions {
+    // Creates a UDP transport.
+    // |callback| : Called when the transport has been created.
+    [nocompile] static void create(CreateCallback callback);
+
+    // Starts to use the transport by providing remote UDP info.
+    // |transportId| : The transport ID.
+    // |remoteParams| : The address and port to send packets to.
+    [nocompile] static void start(long transportId, UdpParams remoteParams);
+
+    // Stops using the transport.
+    // |transportId| : The transport ID.
+    [nocompile] static void stop(long transportId);
+  };
+};
