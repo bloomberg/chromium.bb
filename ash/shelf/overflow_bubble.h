@@ -39,6 +39,10 @@ class OverflowBubble : public ui::EventHandler,
 
   void Hide();
 
+  // This method as name indicates will hide bubble and schedule paint
+  // for overflow button.
+  void HideBubbleAndRefreshButton();
+
   bool IsShowing() const { return !!bubble_; }
   LauncherView* launcher_view() { return launcher_view_; }
 

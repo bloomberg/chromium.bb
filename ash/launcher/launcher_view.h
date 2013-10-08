@@ -86,6 +86,12 @@ class ASH_EXPORT LauncherView : public views::View,
   // Returns true if overflow bubble is shown.
   bool IsShowingOverflowBubble() const;
 
+  // Sets owner overflow bubble instance from which this launcher view pops
+  // out as overflow.
+  void set_owner_overflow_bubble(OverflowBubble* owner) {
+    owner_overflow_bubble_ = owner;
+  }
+
   views::View* GetAppListButtonView() const;
 
   // Returns true if the mouse cursor exits the area for launcher tooltip.
@@ -321,6 +327,8 @@ class ASH_EXPORT LauncherView : public views::View,
   OverflowButton* overflow_button_;
 
   scoped_ptr<OverflowBubble> overflow_bubble_;
+
+  OverflowBubble* owner_overflow_bubble_;
 
   scoped_ptr<LauncherTooltipManager> tooltip_;
 

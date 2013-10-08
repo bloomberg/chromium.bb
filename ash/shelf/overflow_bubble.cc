@@ -284,18 +284,23 @@ void OverflowBubble::Hide() {
   launcher_view_ = NULL;
 }
 
+void OverflowBubble::HideBubbleAndRefreshButton() {
+  views::View* anchor = anchor_;
+  Hide();
+  // Update overflow button (|anchor|) status when overflow bubble is hidden
+  // by outside event of overflow button.
+  anchor->SchedulePaint();
+}
+
 void OverflowBubble::ProcessPressedEvent(ui::LocatedEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   gfx::Point event_location_in_screen = event->location();
   aura::client::GetScreenPositionClient(target->GetRootWindow())->
       ConvertPointToScreen(target, &event_location_in_screen);
-  if (!bubble_->GetBoundsInScreen().Contains(event_location_in_screen) &&
+  if (!launcher_view_->IsShowingMenu() &&
+      !bubble_->GetBoundsInScreen().Contains(event_location_in_screen) &&
       !anchor_->GetBoundsInScreen().Contains(event_location_in_screen)) {
-    views::View* anchor = anchor_;
-    Hide();
-    // Update overflow button (|anchor|) status when overflow bubble is hidden
-    // by outside event of overflow button.
-    anchor->SchedulePaint();
+    HideBubbleAndRefreshButton();
   }
 }
 

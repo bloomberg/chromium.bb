@@ -400,6 +400,7 @@ LauncherView::LauncherView(LauncherModel* model,
       first_visible_index_(0),
       last_visible_index_(-1),
       overflow_button_(NULL),
+      owner_overflow_bubble_(NULL),
       drag_pointer_(NONE),
       drag_view_(NULL),
       drag_offset_(0),
@@ -1240,6 +1241,7 @@ void LauncherView::ToggleOverflowBubble() {
   LauncherView* overflow_view = new LauncherView(
       model_, delegate_, tooltip_->shelf_layout_manager());
   overflow_view->Init();
+  overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
   overflow_view->OnShelfAlignmentChanged();
   UpdateOverflowRange(overflow_view);
 
@@ -1805,6 +1807,11 @@ void LauncherView::ShowMenu(
   }
   got_deleted_ = NULL;
   shelf->ForceUndimming(false);
+
+  // If it is a context menu and we are showing overflow bubble
+  // we want to hide overflow bubble.
+  if (owner_overflow_bubble_)
+    owner_overflow_bubble_->HideBubbleAndRefreshButton();
 
   // Unpinning an item will reset the |launcher_menu_runner_| before coming
   // here.
