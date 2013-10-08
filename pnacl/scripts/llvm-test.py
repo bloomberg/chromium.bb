@@ -236,8 +236,9 @@ def LlvmRegression(env, options):
   """
   with remember_cwd():
     os.chdir(env['TC_BUILD_LLVM'])
-    make_pipe = subprocess.Popen(['make', 'check-all', 'VERBOSE=1'],
-                                 stdout=subprocess.PIPE)
+    maker = 'ninja' if os.path.isfile('./build.ninja') else 'make'
+    cmd = [maker, 'check-all', '-v' if maker == 'ninja' else 'VERBOSE=1']
+    make_pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     lines = []
     # When run by a buildbot, we need to incrementally tee the 'make'
     # stdout to our stdout, rather than collect its entire stdout and
@@ -256,9 +257,10 @@ def LlvmRegression(env, options):
         print str(datetime.datetime.now()) + ' ' + line,
       lines.append(line)
     print (str(datetime.datetime.now()) + ' ' +
-           "Waiting for 'make check-all' to complete.")
+           "Waiting for '%s check-all' to complete." % maker)
     make_pipe.wait()
     make_stdout = ''.join(lines)
+
     parse_options = vars(options)
     parse_options['lit'] = True
     parse_options['excludes'].append(env['LIT_KNOWN_FAILURES'])
