@@ -88,6 +88,10 @@
     'sources': [
       '<@(platform_files)',
     ],
+    # Disable c4267 warnings until we fix size_t to int truncations.
+    # Disable c4724 warnings which is generated in VS2012 due to improper
+    # compiler optimizations, see crbug.com/237063
+    'msvs_disabled_warnings': [ 4267, 4334, 4724 ],
     'conditions': [
       ['OS=="mac"', {
         'link_settings': {
