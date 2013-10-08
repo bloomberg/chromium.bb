@@ -7,6 +7,7 @@
     {
       'target_name': 'system_icu',
       'type': 'none',
+      'toolsets': ['host', 'target'],
       'direct_dependent_settings': {
         'defines': [
           'U_USING_ICU_NAMESPACE=0',
@@ -30,6 +31,7 @@
     {
       'target_name': 'icui18n',
       'type': 'none',
+      'toolsets': ['host', 'target'],
       'dependencies': ['system_icu'],
       'export_dependent_settings': ['system_icu'],
       'variables': {
@@ -116,6 +118,7 @@
     {
       'target_name': 'icuuc',
       'type': 'none',
+      'toolsets': ['host', 'target'],
       'dependencies': ['system_icu'],
       'export_dependent_settings': ['system_icu'],
       'variables': {
