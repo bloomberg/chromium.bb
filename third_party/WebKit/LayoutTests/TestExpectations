@@ -1186,9 +1186,6 @@ crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throw
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
-# Flaky on most bots, but linux debug particularly.
-crbug.com/295789 fast/html/imports/import-in-iframe.html [ Failure Pass ]
-
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]

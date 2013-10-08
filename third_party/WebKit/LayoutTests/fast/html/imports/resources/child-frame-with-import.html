@@ -7,26 +7,27 @@ var callbackCount = 0;
 function finishJSTestIfNeeded()
 {
     callbackCount++;
-    if (2 == callbackCount)
+    if (2 == callbackCount) {
+        importError();
+        importLoaded();
         window.parent.finishJSTest();
+    }
 }
 
 function importLoaded()
 {
     window.parent.headlineText = target.import.querySelector('h1').innerHTML;
     window.parent.shouldBe('headlineText', '"Hello"');
-    finishJSTestIfNeeded();
 }
 
 function importError()
 {
     window.parent.wrongImport = wrong.import;
     window.parent.shouldBeNull('wrongImport');
-    finishJSTestIfNeeded();
 }
 </script>
-<link id="target" rel="import" href="hello.html" onload="importLoaded()">
-<link id="wrong" rel="import" href="nosuch.html" onerror="importError()">
+<link id="target" rel="import" href="hello.html" onload="finishJSTestIfNeeded()">
+<link id="wrong" rel="import" href="nosuch.html" onerror="finishJSTestIfNeeded()">
 </head>
 <body>
 </body>
