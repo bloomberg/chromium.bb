@@ -116,6 +116,8 @@ class ChangeListProcessor {
  private:
   typedef std::map<std::string /* resource_id */, ResourceEntry>
       ResourceEntryMap;
+  typedef std::map<std::string /* resource_id */,
+                   std::string /* parent_resource_id*/> ParentResourceIdMap;
 
   // Applies the pre-processed metadata from entry_map_ onto the resource
   // metadata. If this is not delta update (i.e. |is_delta_update| is false),
@@ -134,6 +136,7 @@ class ChangeListProcessor {
   ResourceMetadata* resource_metadata_;  // Not owned.
 
   ResourceEntryMap entry_map_;
+  ParentResourceIdMap parent_resource_id_map_;
   std::set<base::FilePath> changed_dirs_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeListProcessor);

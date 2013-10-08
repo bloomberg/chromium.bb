@@ -125,10 +125,8 @@ FileError ChangeListProcessor::Apply(
         if (entry->shared_with_me())
           uma_stats.IncrementNumSharedWithMeEntries();
       }
-
-      // TODO(hashimoto): Stop using resource ID as local ID. crbug.com/260514
-      entry->set_parent_local_id(change_list->parent_resource_ids()[i]);
-
+      parent_resource_id_map_[entry->resource_id()] =
+          change_list->parent_resource_ids()[i];
       entry_map_[entry->resource_id()].Swap(entry);
       LOG_IF(WARNING, !entry->resource_id().empty())
           << "Found duplicated file: " << entry->base_name();
@@ -188,7 +186,8 @@ FileError ChangeListProcessor::ApplyEntryMap(
     changed_dirs_.insert(util::GetDriveMyDriveRootPath());
 
     // Add the My Drive root directory.
-    error = ApplyEntry(root);
+    std::string local_id;
+    error = resource_metadata_->AddEntry(root, &local_id);
     if (error != FILE_ERROR_OK)
       return error;
   } else {
@@ -244,26 +243,41 @@ FileError ChangeListProcessor::ApplyEntryMap(
     // - The new parent entry is not a descendant of the moved entry.
     // - The new parent and its ancestors will no longer move during this apply.
     std::vector<ResourceEntryMap::iterator> entries;
-    entries.push_back(entry_map_.begin());
-    for (std::string parent_id = entries.back()->second.parent_local_id();
-         !parent_id.empty();) {
-      ResourceEntryMap::iterator it_parent = entry_map_.find(parent_id);
-      if (it_parent != entry_map_.end()) {
-        // This entry is going to be updated, get the parent from the new data.
-        entries.push_back(it_parent);
-        parent_id = it_parent->second.parent_local_id();
-      } else {
-        // This entry is already updated or not going to be updated, get the
-        // parent from the current tree.
-        ResourceEntry parent_entry;
-        FileError error =
-            resource_metadata_->GetResourceEntryById(parent_id, &parent_entry);
+    for (ResourceEntryMap::iterator it = entry_map_.begin();
+         it != entry_map_.end();) {
+      entries.push_back(it);
+
+      const std::string& parent_resource_id =
+          parent_resource_id_map_[it->first];
+      DCHECK(!parent_resource_id.empty()) << it->first;
+
+      ResourceEntryMap::iterator it_parent =
+          entry_map_.find(parent_resource_id);
+      if (it_parent == entry_map_.end()) {
+        // Current entry's parent is already updated or not going to be updated,
+        // get the parent from the local tree.
+        std::string parent_local_id;
+        FileError error = resource_metadata_->GetIdByResourceId(
+            parent_resource_id, &parent_local_id);
         if (error != FILE_ERROR_OK) {
-          LOG(ERROR) << "Cannot get the parent: " << FileErrorToString(error);
+          LOG(ERROR) << "Failed to get local ID: " << parent_resource_id
+                     << ", error = " << FileErrorToString(error);
           break;
         }
-        parent_id = parent_entry.parent_local_id();
+        ResourceEntry parent_entry;
+        while (it_parent == entry_map_.end() && !parent_local_id.empty()) {
+          error = resource_metadata_->GetResourceEntryById(
+              parent_local_id, &parent_entry);
+          if (error != FILE_ERROR_OK) {
+            LOG(ERROR) << "Failed to get local entry: "
+                       << FileErrorToString(error);
+            break;
+          }
+          it_parent = entry_map_.find(parent_entry.resource_id());
+          parent_local_id = parent_entry.parent_local_id();
+        }
       }
+      it = it_parent;
     }
 
     // Apply the parent first.
@@ -297,29 +311,55 @@ FileError ChangeListProcessor::ApplyEntryMap(
 
 FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
   // Lookup the entry.
+  std::string local_id;
+  FileError error = resource_metadata_->GetIdByResourceId(entry.resource_id(),
+                                                          &local_id);
   ResourceEntry existing_entry;
-  FileError error = resource_metadata_->GetResourceEntryById(
-      entry.resource_id(), &existing_entry);
+  if (error == FILE_ERROR_OK)
+    error = resource_metadata_->GetResourceEntryById(local_id, &existing_entry);
 
-  if (error == FILE_ERROR_OK) {
-    if (entry.deleted()) {
-      // Deleted file/directory.
-      error = resource_metadata_->RemoveEntry(entry.resource_id());
-    } else {
-      // Entry exists and needs to be refreshed.
-      ResourceEntry new_entry(entry);
-      new_entry.set_local_id(existing_entry.local_id());
-      error = resource_metadata_->RefreshEntry(new_entry);
-      if (error == FILE_ERROR_OK)
-        UpdateChangedDirs(new_entry);
+  const FileError get_existing_entry_result = error;
+  if (entry.deleted()) {
+    // Deleted file/directory.
+    switch (get_existing_entry_result) {
+      case FILE_ERROR_OK:
+        error = resource_metadata_->RemoveEntry(local_id);
+        break;
+      case FILE_ERROR_NOT_FOUND:  // Already deleted.
+        error = FILE_ERROR_OK;
+        break;
+      default:
+        error = get_existing_entry_result;
     }
-  } else if (error == FILE_ERROR_NOT_FOUND && !entry.deleted()) {
-    // Adding a new entry.
-    std::string local_id;
-    error = resource_metadata_->AddEntry(entry, &local_id);
+  } else {
+    const std::string& parent_resource_id =
+        parent_resource_id_map_[entry.resource_id()];
+    DCHECK(!parent_resource_id.empty()) << entry.resource_id();
 
-    if (error == FILE_ERROR_OK)
-      UpdateChangedDirs(entry);
+    std::string parent_local_id;
+    error = resource_metadata_->GetIdByResourceId(
+        parent_resource_id, &parent_local_id);
+    if (error == FILE_ERROR_OK) {
+      ResourceEntry new_entry(entry);
+      new_entry.set_parent_local_id(parent_local_id);
+
+      switch (get_existing_entry_result) {
+        case FILE_ERROR_OK:  // Entry exists and needs to be refreshed.
+          new_entry.set_local_id(local_id);
+          error = resource_metadata_->RefreshEntry(new_entry);
+          break;
+        case FILE_ERROR_NOT_FOUND: {  // Adding a new entry.
+          std::string local_id;
+          error = resource_metadata_->AddEntry(new_entry, &local_id);
+          break;
+        }
+        default:
+          error = get_existing_entry_result;
+      }
+
+      if (error == FILE_ERROR_OK)
+        UpdateChangedDirs(entry);
+    }
   }
 
   return error;
@@ -397,8 +437,13 @@ FileError ChangeListProcessor::RefreshDirectory(
 }
 
 void ChangeListProcessor::UpdateChangedDirs(const ResourceEntry& entry) {
-  base::FilePath file_path =
-      resource_metadata_->GetFilePath(entry.resource_id());
+  DCHECK(!entry.resource_id().empty());
+
+  std::string local_id;
+  base::FilePath file_path;
+  if (resource_metadata_->GetIdByResourceId(
+          entry.resource_id(), &local_id) == FILE_ERROR_OK)
+    file_path = resource_metadata_->GetFilePath(local_id);
 
   if (!file_path.empty()) {
     // Notify parent.
@@ -411,7 +456,7 @@ void ChangeListProcessor::UpdateChangedDirs(const ResourceEntry& entry) {
       // Notify all descendants if it is a directory deletion.
       if (entry.deleted()) {
         std::set<base::FilePath> sub_directories;
-        resource_metadata_->GetSubDirectoriesRecursively(entry.resource_id(),
+        resource_metadata_->GetSubDirectoriesRecursively(local_id,
                                                          &sub_directories);
         changed_dirs_.insert(sub_directories.begin(), sub_directories.end());
       }
