@@ -11,10 +11,15 @@
     {
       'target_name': 'cast_receiver_impl',
       'type': 'static_library',
+      'include_dirs': [
+        '<(DEPTH)/',
+        '<(DEPTH)/third_party/',
+        '<(DEPTH)/third_party/webrtc/',
+      ],
       'sources': [
         'cast_receiver.h',
-#       'cast_receiver_impl.cc',
-#       'cast_receiver_impl.h',
+        'cast_receiver_impl.cc',
+        'cast_receiver_impl.h',
       ], # source
       'dependencies': [
         'rtp_receiver/rtp_receiver.gyp:*',

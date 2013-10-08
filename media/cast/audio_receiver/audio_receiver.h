@@ -46,24 +46,17 @@ class AudioReceiver : public base::NonThreadSafe,
   // Actual decoding will be preformed on a designated audio_decoder thread.
   void GetRawAudioFrame(int number_of_10ms_blocks,
                         int desired_frequency,
-                        const AudioFrameDecodedCallback callback);
+                        const AudioFrameDecodedCallback& callback);
 
   // Extract an encoded audio frame from the cast receiver.
-  bool GetEncodedAudioFrame(EncodedAudioFrame* audio_frame,
-                            base::TimeTicks* playout_time);
-
-  // Release frame - should be called following a GetCodedAudioFrame call.
-  // Should only be called from the main cast thread.
-  void ReleaseFrame(uint8 frame_id);
+  void GetEncodedAudioFrame(const AudioFrameEncodedCallback& callback);
 
   // Should only be called from the main cast thread.
-  void IncomingPacket(const uint8* packet, int length);
+  void IncomingPacket(const uint8* packet, int length,
+                      const base::Closure callback);
 
   // Only used for testing.
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-    rtcp_->set_clock(clock);
-  }
+  void set_clock(base::TickClock* clock);
 
  protected:
   void IncomingParsedRtpPacket(const uint8* payload_data,
@@ -75,6 +68,15 @@ class AudioReceiver : public base::NonThreadSafe,
 
   void CastFeedback(const RtcpCastMessage& cast_message);
 
+  // Time to pull out the audio even though we are missing data.
+  void PlayoutTimeout();
+
+  void PostEncodedAudioFrame(bool on_wait_event_put_first_in_queue,
+                             const AudioFrameEncodedCallback& callback,
+                             uint32 rtp_timestamp,
+                             bool next_frame,
+                             scoped_ptr<EncodedAudioFrame>* encoded_frame);
+
   // Actual decoding implementation - should be called under the audio decoder
   // thread.
   void DecodeAudioFrameThread(int number_of_10ms_blocks,
@@ -82,8 +84,7 @@ class AudioReceiver : public base::NonThreadSafe,
                               const AudioFrameDecodedCallback callback);
 
   // Return the playout time based on the current time and rtp timestamp.
-  base::TimeTicks GetPlayoutTime(base::TimeTicks now,
-                                uint32 rtp_timestamp);
+  base::TimeTicks GetPlayoutTime(base::TimeTicks now, uint32 rtp_timestamp);
 
   // Schedule the next RTCP report.
   void ScheduleNextRtcpReport();
@@ -106,6 +107,8 @@ class AudioReceiver : public base::NonThreadSafe,
   scoped_ptr<Rtcp> rtcp_;
   scoped_ptr<RtpReceiverStatistics> rtp_audio_receiver_statistics_;
   base::TimeDelta time_offset_;
+
+  std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
 
   scoped_ptr<base::TickClock> default_tick_clock_;
   base::TickClock* clock_;

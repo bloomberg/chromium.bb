@@ -11,11 +11,9 @@
 namespace media {
 namespace cast {
 
-AudioDecoder::AudioDecoder(scoped_refptr<CastThread> cast_thread,
-                           const AudioReceiverConfig& audio_config)
+AudioDecoder::AudioDecoder(const AudioReceiverConfig& audio_config)
     : audio_decoder_(webrtc::AudioCodingModule::Create(0)),
-      have_received_packets_(false),
-      cast_thread_(cast_thread) {
+      have_received_packets_(false) {
   audio_decoder_->InitializeReceiver();
 
   webrtc::CodecInst receive_codec;
@@ -48,15 +46,15 @@ AudioDecoder::AudioDecoder(scoped_refptr<CastThread> cast_thread,
   audio_decoder_->SetPlayoutMode(webrtc::streaming);
 }
 
-AudioDecoder::~AudioDecoder() {
-}
+AudioDecoder::~AudioDecoder() {}
 
 bool AudioDecoder::GetRawAudioFrame(int number_of_10ms_blocks,
                                     int desired_frequency,
                                     PcmAudioFrame* audio_frame,
                                     uint32* rtp_timestamp) {
-  DCHECK(cast_thread_->CurrentlyOn(CastThread::AUDIO_DECODER));
   if (!have_received_packets_) return false;
+
+  audio_frame->samples.clear();
 
   for (int i = 0; i < number_of_10ms_blocks; ++i) {
     webrtc::AudioFrame webrtc_audio_frame;
@@ -91,8 +89,8 @@ bool AudioDecoder::GetRawAudioFrame(int number_of_10ms_blocks,
 void AudioDecoder::IncomingParsedRtpPacket(const uint8* payload_data,
                                            int payload_size,
                                            const RtpCastHeader& rtp_header) {
-  have_received_packets_ = true;
   audio_decoder_->IncomingPacket(payload_data, payload_size, rtp_header.webrtc);
+  have_received_packets_ = true;
 }
 
 }  // namespace cast

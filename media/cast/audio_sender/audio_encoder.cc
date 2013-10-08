@@ -109,8 +109,7 @@ AudioEncoder::AudioEncoder(scoped_refptr<CastThread> cast_thread,
   }
 }
 
-AudioEncoder::~AudioEncoder() {
-}
+AudioEncoder::~AudioEncoder() {}
 
 // Called from main cast thread.
 void AudioEncoder::InsertRawAudioFrame(
@@ -167,5 +166,5 @@ void AudioEncoder::EncodeAudioFrameThread(
   }
 }
 
-}  // namespace media
 }  // namespace cast
+}  // namespace media

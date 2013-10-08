@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_thread.h"
 #include "media/cast/rtp_common/rtp_defines.h"
 
 namespace webrtc {
@@ -19,20 +18,21 @@ namespace media {
 namespace cast {
 
 // Thread safe class.
-// It should be called from the main cast thread; however that is not required.
 class AudioDecoder : public base::RefCountedThreadSafe<AudioDecoder> {
  public:
-  explicit AudioDecoder(scoped_refptr<CastThread> cast_thread,
-                        const AudioReceiverConfig& audio_config);
+  explicit AudioDecoder(const AudioReceiverConfig& audio_config);
 
   // Extract a raw audio frame from the decoder.
   // Set the number of desired 10ms blocks and frequency.
+  // Should be called from the cast audio decoder thread; however that is not
+  // required.
   bool GetRawAudioFrame(int number_of_10ms_blocks,
                         int desired_frequency,
                         PcmAudioFrame* audio_frame,
                         uint32* rtp_timestamp);
 
   // Insert an RTP packet to the decoder.
+  // Should be called from the main cast thread; however that is not required.
   void IncomingParsedRtpPacket(const uint8* payload_data,
                                int payload_size,
                                const RtpCastHeader& rtp_header);
@@ -45,7 +45,6 @@ class AudioDecoder : public base::RefCountedThreadSafe<AudioDecoder> {
 
   scoped_ptr<webrtc::AudioCodingModule> audio_decoder_;
   bool have_received_packets_;
-  scoped_refptr<CastThread> cast_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDecoder);
 };

@@ -17,7 +17,34 @@ namespace media {
 namespace cast {
 
 static const int kPacketSize = 1500;
-static const int64 kStartMillisecond = 123456789;
+
+class TestAudioEncoderCallback :
+    public base::RefCountedThreadSafe<TestAudioEncoderCallback>  {
+ public:
+  TestAudioEncoderCallback()
+      : num_called_(0) {}
+
+  void SetExpectedResult(uint8 expected_frame_id,
+                         const base::TimeTicks& expected_playout_time) {
+    expected_frame_id_ = expected_frame_id;
+    expected_playout_time_ = expected_playout_time;
+  }
+
+  void DeliverEncodedAudioFrame(scoped_ptr<EncodedAudioFrame> audio_frame,
+                                const base::TimeTicks& playout_time) {
+    EXPECT_EQ(0, audio_frame->frame_id);
+    EXPECT_EQ(kPcm16, audio_frame->codec);
+    EXPECT_EQ(expected_playout_time_, playout_time);
+    num_called_++;
+  }
+
+  int number_times_called() { return num_called_;}
+
+ private:
+  int num_called_;
+  uint8 expected_frame_id_;
+  base::TimeTicks expected_playout_time_;
+};
 
 class PeerAudioReceiver : public AudioReceiver {
  public:
@@ -38,17 +65,16 @@ class AudioReceiverTest : public ::testing::Test {
     audio_config_.channels = 1;
     audio_config_.codec = kPcm16;
     audio_config_.use_external_decoder = false;
-    testing_clock_.Advance(
-        base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
-                                  NULL, NULL);
+                                  task_runner_, task_runner_);
+    test_audio_encoder_callback_ = new TestAudioEncoderCallback();
   }
 
   void Configure(bool use_external_decoder) {
     audio_config_.use_external_decoder = use_external_decoder;
-    receiver_.reset(new
-        PeerAudioReceiver(cast_thread_, audio_config_, &mock_transport_));
+    receiver_.reset(
+        new PeerAudioReceiver(cast_thread_, audio_config_, &mock_transport_));
     receiver_->set_clock(&testing_clock_);
   }
 
@@ -56,23 +82,24 @@ class AudioReceiverTest : public ::testing::Test {
 
   virtual void SetUp() {
     payload_.assign(kPacketSize, 0);
-    // Always start with a key frame.
     rtp_header_.is_key_frame = true;
     rtp_header_.frame_id = 0;
     rtp_header_.packet_id = 0;
     rtp_header_.max_packet_id = 0;
     rtp_header_.is_reference = false;
     rtp_header_.reference_frame_id = 0;
+    rtp_header_.webrtc.header.timestamp = 0;
   }
 
   AudioReceiverConfig audio_config_;
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
+  base::SimpleTestTickClock testing_clock_;
   MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PeerAudioReceiver> receiver_;
   scoped_refptr<CastThread> cast_thread_;
-  base::SimpleTestTickClock testing_clock_;
+  scoped_refptr<TestAudioEncoderCallback> test_audio_encoder_callback_;
 };
 
 TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
@@ -81,10 +108,15 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
       payload_.data(), payload_.size(), rtp_header_);
   EncodedAudioFrame audio_frame;
   base::TimeTicks playout_time;
-  EXPECT_TRUE(receiver_->GetEncodedAudioFrame(&audio_frame, &playout_time));
-  EXPECT_EQ(0, audio_frame.frame_id);
-  EXPECT_EQ(kPcm16, audio_frame.codec);
+  test_audio_encoder_callback_->SetExpectedResult(0, testing_clock_.NowTicks());
+
+  AudioFrameEncodedCallback frame_encoded_callback =
+      base::Bind(&TestAudioEncoderCallback::DeliverEncodedAudioFrame,
+                 test_audio_encoder_callback_.get());
+
+  receiver_->GetEncodedAudioFrame(frame_encoded_callback);
   task_runner_->RunTasks();
+  EXPECT_EQ(1, test_audio_encoder_callback_->number_times_called());
 }
 
 // TODO(mikhal): Add encoded frames.

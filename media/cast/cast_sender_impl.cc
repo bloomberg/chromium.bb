@@ -99,11 +99,11 @@ class LocalCastSenderPacketReceiver : public PacketReceiver {
                                 base::WeakPtr<VideoSender> video_sender,
                                 uint32 ssrc_of_audio_sender,
                                 uint32 ssrc_of_video_sender)
-     : cast_thread_(cast_thread),
-       audio_sender_(audio_sender),
-       video_sender_(video_sender),
-       ssrc_of_audio_sender_(ssrc_of_audio_sender),
-       ssrc_of_video_sender_(ssrc_of_video_sender) {}
+      : cast_thread_(cast_thread),
+        audio_sender_(audio_sender),
+        video_sender_(video_sender),
+        ssrc_of_audio_sender_(ssrc_of_audio_sender),
+        ssrc_of_video_sender_(ssrc_of_video_sender) {}
 
   virtual void ReceivedPacket(const uint8* packet,
                               int length,
@@ -144,8 +144,8 @@ class LocalCastSenderPacketReceiver : public PacketReceiver {
   scoped_refptr<CastThread> cast_thread_;
   base::WeakPtr<AudioSender> audio_sender_;
   base::WeakPtr<VideoSender> video_sender_;
-  uint32 ssrc_of_audio_sender_;
-  uint32 ssrc_of_video_sender_;
+  const uint32 ssrc_of_audio_sender_;
+  const uint32 ssrc_of_video_sender_;
 };
 
 CastSender* CastSender::CreateCastSender(

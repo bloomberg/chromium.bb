@@ -35,6 +35,8 @@ class RtpReceiver {
               RtpData* incoming_payload_callback);
   ~RtpReceiver();
 
+  static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, int length);
+
   bool ReceivedPacket(const uint8* packet, int length);
 
   void GetStatistics(uint8* fraction_lost,

@@ -18,34 +18,38 @@
 
 namespace media {
 namespace cast {
-// Callback in which the raw audio frame and render time will be returned
+// Callback in which the raw audio frame and play-out time will be returned
 // once decoding is complete.
-typedef base::Callback<void(scoped_ptr<PcmAudioFrame>,
-    const base::TimeTicks)> AudioFrameDecodedCallback;
+typedef base::Callback<void(scoped_ptr<PcmAudioFrame>, const base::TimeTicks&)>
+    AudioFrameDecodedCallback;
+
+// Callback in which the encoded audio frame and play-out time will be returned.
+typedef base::Callback<void(scoped_ptr<EncodedAudioFrame>,
+    const base::TimeTicks&)> AudioFrameEncodedCallback;
 
 // Callback in which the raw frame and render time will be returned once
 // decoding is complete.
-typedef base::Callback<void(scoped_ptr<I420VideoFrame>,
-    const base::TimeTicks)> VideoFrameDecodedCallback;
+typedef base::Callback<void(scoped_ptr<I420VideoFrame>, const base::TimeTicks&)>
+    VideoFrameDecodedCallback;
+
+// Callback in which the encoded video frame and render time will be returned.
+typedef base::Callback<void(scoped_ptr<EncodedVideoFrame>,
+    const base::TimeTicks&)> VideoFrameEncodedCallback;
 
 // This Class is thread safe.
 class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver>{
  public:
-  virtual bool GetRawVideoFrame(const VideoFrameDecodedCallback& callback) = 0;
-
-  virtual bool GetEncodedVideoFrame(EncodedVideoFrame* video_frame,
-                                    base::TimeTicks* render_time) = 0;
-
-  virtual void ReleaseEncodedVideoFrame(uint8 frame_id) = 0;
-
-  virtual bool GetRawAudioFrame(int number_of_10ms_blocks,
+  virtual void GetRawAudioFrame(int number_of_10ms_blocks,
                                 int desired_frequency,
-                                const AudioFrameDecodedCallback callback) = 0;
+                                const AudioFrameDecodedCallback& callback) = 0;
 
-  virtual bool GetCodedAudioFrame(EncodedAudioFrame* audio_frame,
-                                  base::TimeTicks* playout_time) = 0;
+  virtual void GetCodedAudioFrame(
+      const AudioFrameEncodedCallback& callback) = 0;
 
-  virtual void ReleaseCodedAudioFrame(uint8 frame_id) = 0;
+  virtual void GetRawVideoFrame(const VideoFrameDecodedCallback& callback) = 0;
+
+  virtual void GetEncodedVideoFrame(
+    const VideoFrameEncodedCallback& callback) = 0;
 
  protected:
   virtual ~FrameReceiver() {}
@@ -70,7 +74,7 @@ class CastReceiver {
   // Polling interface to get audio and video frames from the CastReceiver.
   virtual scoped_refptr<FrameReceiver> frame_receiver() = 0;
 
-  virtual ~CastReceiver() {};
+  virtual ~CastReceiver() {}
 };
 
 }  // namespace cast

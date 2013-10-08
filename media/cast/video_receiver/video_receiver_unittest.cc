@@ -26,12 +26,21 @@ class TestVideoReceiverCallback :
     public base::RefCountedThreadSafe<TestVideoReceiverCallback> {
  public:
   TestVideoReceiverCallback()
-      :num_called_(0) {}
+      : num_called_(0) {}
+
   // TODO(mikhal): Set and check expectations.
-  void DecodeComplete(scoped_ptr<I420VideoFrame> frame,
-      const base::TimeTicks render_time) {
+  void DecodeComplete(scoped_ptr<I420VideoFrame> video_frame,
+      const base::TimeTicks& render_time) {
     ++num_called_;
   }
+
+  void FrameToDecode(scoped_ptr<EncodedVideoFrame> video_frame,
+      const base::TimeTicks& render_time) {
+    EXPECT_TRUE(video_frame->key_frame);
+    EXPECT_EQ(kVp8, video_frame->codec);
+    ++num_called_;
+  }
+
   int number_times_called() { return num_called_;}
 
  protected:
@@ -101,12 +110,14 @@ TEST_F(VideoReceiverTest, GetOnePacketEncodedframe) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).WillRepeatedly(
       testing::Return(true));
   receiver_->IncomingRtpPacket(payload_.data(), payload_.size(), rtp_header_);
-  EncodedVideoFrame video_frame;
-  base::TimeTicks render_time;
-  EXPECT_TRUE(receiver_->GetEncodedVideoFrame(&video_frame, &render_time));
-  EXPECT_TRUE(video_frame.key_frame);
-  EXPECT_EQ(kVp8, video_frame.codec);
+
+  VideoFrameEncodedCallback frame_to_decode_callback =
+      base::Bind(&TestVideoReceiverCallback::FrameToDecode,
+                 video_receiver_callback_);
+
+  receiver_->GetEncodedVideoFrame(frame_to_decode_callback);
   task_runner_->RunTasks();
+  EXPECT_EQ(video_receiver_callback_->number_times_called(), 1);
 }
 
 TEST_F(VideoReceiverTest, MultiplePackets) {
@@ -119,13 +130,17 @@ TEST_F(VideoReceiverTest, MultiplePackets) {
   receiver_->IncomingRtpPacket(payload_.data(), payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
   receiver_->IncomingRtpPacket(payload_.data(), payload_.size(), rtp_header_);
-  EncodedVideoFrame video_frame;
-  base::TimeTicks render_time;
-  EXPECT_TRUE(receiver_->GetEncodedVideoFrame(&video_frame, &render_time));
+
+  VideoFrameEncodedCallback frame_to_decode_callback =
+      base::Bind(&TestVideoReceiverCallback::FrameToDecode,
+                 video_receiver_callback_);
+
+  receiver_->GetEncodedVideoFrame(frame_to_decode_callback);
+
   task_runner_->RunTasks();
+  EXPECT_EQ(video_receiver_callback_->number_times_called(), 1);
 }
 
-// TODO(pwestin): add encoded frames.
 TEST_F(VideoReceiverTest, GetOnePacketRawframe) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).WillRepeatedly(
       testing::Return(true));
@@ -136,7 +151,10 @@ TEST_F(VideoReceiverTest, GetOnePacketRawframe) {
                  video_receiver_callback_);
   receiver_->GetRawVideoFrame(frame_decoded_callback);
   task_runner_->RunTasks();
+  EXPECT_EQ(video_receiver_callback_->number_times_called(), 0);
 }
+
+// TODO(pwestin): add encoded frames.
 
 }  // namespace cast
 }  // namespace media

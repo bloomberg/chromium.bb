@@ -12,10 +12,8 @@
 namespace media {
 namespace cast {
 
-VideoDecoder::VideoDecoder(scoped_refptr<CastThread> cast_thread,
-                           const VideoReceiverConfig& video_config)
-    : cast_thread_(cast_thread),
-      codec_(video_config.codec),
+VideoDecoder::VideoDecoder(const VideoReceiverConfig& video_config)
+    : codec_(video_config.codec),
       vp8_decoder_() {
   switch (video_config.codec) {
     case kVp8:
@@ -33,35 +31,13 @@ VideoDecoder::VideoDecoder(scoped_refptr<CastThread> cast_thread,
 
 VideoDecoder::~VideoDecoder() {}
 
-void VideoDecoder::DecodeVideoFrame(
+bool VideoDecoder::DecodeVideoFrame(
     const EncodedVideoFrame* encoded_frame,
     const base::TimeTicks render_time,
-    const VideoFrameDecodedCallback& frame_decoded_callback,
-    base::Closure frame_release_callback) {
-  DecodeFrame(encoded_frame, render_time, frame_decoded_callback);
-  // Done with the frame -> release.
-  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, frame_release_callback);
-}
-
-void VideoDecoder::DecodeFrame(
-    const EncodedVideoFrame* encoded_frame,
-    const base::TimeTicks render_time,
-    const VideoFrameDecodedCallback& frame_decoded_callback) {
-  DCHECK(cast_thread_->CurrentlyOn(CastThread::VIDEO_DECODER));
+    I420VideoFrame* video_frame) {
   DCHECK(encoded_frame->codec == codec_) << "Invalid codec";
-
-  // TODO(mikhal): Allow the application to allocate this memory.
-  scoped_ptr<I420VideoFrame> video_frame(new I420VideoFrame());
-
-  if (encoded_frame->data.size() > 0) {
-    bool success = vp8_decoder_->Decode(*encoded_frame, video_frame.get());
-    // Frame decoded - return frame to the user via callback.
-    if (success) {
-      cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
-          base::Bind(frame_decoded_callback,
-                      base::Passed(&video_frame), render_time));
-    }
-  }
+  DCHECK_GT(encoded_frame->data.size(), GG_UINT64_C(0)) << "Empty video frame";
+  return vp8_decoder_->Decode(*encoded_frame, video_frame);
 }
 
 }  // namespace cast
