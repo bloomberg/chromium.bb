@@ -515,8 +515,8 @@ bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
 }
 
 void MediaGalleriesPreferences::OnStorageMonitorInit(
-    bool need_to_add_default_galleries) {
-  if (need_to_add_default_galleries)
+    bool add_default_galleries) {
+  if (add_default_galleries)
     AddDefaultGalleries();
   OnInitializationCallbackReturned();
 }
