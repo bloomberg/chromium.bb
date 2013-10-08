@@ -102,21 +102,39 @@ const char kCryptohomeAsyncTpmAttestationCreateCertRequestByProfile[] =
     "AsyncTpmAttestationCreateCertRequestByProfile";
 const char kCryptohomeAsyncTpmAttestationFinishCertRequest[] =
     "AsyncTpmAttestationFinishCertRequest";
+const char kCryptohomeAsyncTpmAttestationFinishCertRequestOld[] =
+    "AsyncTpmAttestationFinishCertRequestOld";
 const char kCryptohomeTpmAttestationDoesKeyExist[] =
     "TpmAttestationDoesKeyExist";
+const char kCryptohomeTpmAttestationDoesKeyExistOld[] =
+    "TpmAttestationDoesKeyExistOld";
 const char kCryptohomeTpmAttestationGetCertificate[] =
     "TpmAttestationGetCertificate";
+const char kCryptohomeTpmAttestationGetCertificateOld[] =
+    "TpmAttestationGetCertificateOld";
 const char kCryptohomeTpmAttestationGetPublicKey[] =
     "TpmAttestationGetPublicKey";
+const char kCryptohomeTpmAttestationGetPublicKeyOld[] =
+    "TpmAttestationGetPublicKeyOld";
 const char kCryptohomeTpmAttestationRegisterKey[] = "TpmAttestationRegisterKey";
+const char kCryptohomeTpmAttestationRegisterKeyOld[] =
+    "TpmAttestationRegisterKeyOld";
 const char kCryptohomeTpmAttestationSignEnterpriseChallenge[] =
     "TpmAttestationSignEnterpriseChallenge";
+const char kCryptohomeTpmAttestationSignEnterpriseChallengeOld[] =
+    "TpmAttestationSignEnterpriseChallengeOld";
 const char kCryptohomeTpmAttestationSignSimpleChallenge[] =
     "TpmAttestationSignSimpleChallenge";
+const char kCryptohomeTpmAttestationSignSimpleChallengeOld[] =
+    "TpmAttestationSignSimpleChallengeOld";
 const char kCryptohomeTpmAttestationGetKeyPayload[] =
     "TpmAttestationGetKeyPayload";
+const char kCryptohomeTpmAttestationGetKeyPayloadOld[] =
+    "TpmAttestationGetKeyPayloadOld";
 const char kCryptohomeTpmAttestationSetKeyPayload[] =
     "TpmAttestationSetKeyPayload";
+const char kCryptohomeTpmAttestationSetKeyPayloadOld[] =
+    "TpmAttestationSetKeyPayloadOld";
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
 const char kSignalAsyncCallStatusWithData[] = "AsyncCallStatusWithData";
