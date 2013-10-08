@@ -73,10 +73,10 @@ struct WebLocalizedString {
         AXMediaSeekForwardButtonHelp,
         AXMediaShowClosedCaptionsButton,
         AXMediaShowClosedCaptionsButtonHelp,
-        AXMediaSlider,
+        AXMediaSlider, // Deprecated.
         AXMediaSliderHelp,
-        AXMediaSliderThumb,
-        AXMediaSliderThumbHelp,
+        AXMediaSliderThumb, // Deprecated.
+        AXMediaSliderThumbHelp, // Deprecated.
         AXMediaStatusDisplay,
         AXMediaStatusDisplayHelp,
         AXMediaTimeRemainingDisplay,

@@ -60,8 +60,6 @@ PLATFORM_EXPORT String AXYearFieldText();
 PLATFORM_EXPORT String missingPluginText();
 PLATFORM_EXPORT String blockedPluginByContentSecurityPolicyText();
 
-PLATFORM_EXPORT String localizedMediaControlElementString(const String&);
-PLATFORM_EXPORT String localizedMediaControlElementHelpText(const String&);
 PLATFORM_EXPORT String localizedMediaTimeDescription(float);
 
 } // namespace WebCore
