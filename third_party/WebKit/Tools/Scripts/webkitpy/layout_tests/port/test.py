@@ -51,6 +51,7 @@ class TestInstance(object):
         self.error = ''
         self.timeout = False
         self.is_reftest = False
+        self.device_offline = False
 
         # The values of each field are treated as raw byte strings. They
         # will be converted to unicode strings where appropriate using
@@ -98,10 +99,10 @@ class TestList(object):
         return self.tests[item]
 
 #
-# These numbers may need to be updated whenever we add or delete tests.
+# These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 105
-TOTAL_SKIPS = 25
+TOTAL_TESTS = 107
+TOTAL_SKIPS = 27
 
 UNEXPECTED_PASSES = 1
 UNEXPECTED_FAILURES = 23
@@ -110,6 +111,7 @@ def unit_test_list():
     tests = TestList()
     tests.add('failures/expected/crash.html', crash=True)
     tests.add('failures/expected/exception.html', exception=True)
+    tests.add('failures/expected/device_offline.html', device_offline=True)
     tests.add('failures/expected/timeout.html', timeout=True)
     tests.add('failures/expected/missing_text.html', expected_text=None)
     tests.add('failures/expected/needsrebaseline.html', actual_text='needsrebaseline text')
@@ -290,6 +292,7 @@ Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/timeout.html [ Timeout ]
 Bug(test) failures/expected/keyboard.html [ WontFix ]
 Bug(test) failures/expected/exception.html [ WontFix ]
+Bug(test) failures/expected/device_offline.html [ WontFix ]
 Bug(test) failures/unexpected/pass.html [ Failure ]
 Bug(test) passes/skipped/skip.html [ Skip ]
 Bug(test) passes/text.html [ Pass ]
@@ -615,7 +618,8 @@ class TestDriver(Driver):
         return DriverOutput(actual_text, image, test.actual_checksum, audio,
             crash=test.crash or test.web_process_crash, crashed_process_name=crashed_process_name,
             crashed_pid=crashed_pid, crash_log=crash_log,
-            test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid)
+            test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid,
+            device_offline=test.device_offline)
 
     def stop(self):
         self.started = False

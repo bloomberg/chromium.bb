@@ -122,7 +122,8 @@ class SingleTestRunner(object):
         # FIXME: It the test crashed or timed out, it might be better to avoid
         # to write new baselines.
         self._overwrite_baselines(driver_output)
-        return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(), pid=driver_output.pid)
+        return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
+                          pid=driver_output.pid, device_offline=driver_output.device_offline)
 
     _render_tree_dump_pattern = re.compile(r"^layer at \(\d+,\d+\) size \d+x\d+\n")
 
@@ -215,13 +216,15 @@ class SingleTestRunner(object):
         if driver_output.crash:
             # Don't continue any more if we already have a crash.
             # In case of timeouts, we continue since we still want to see the text and image output.
-            return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(), pid=driver_output.pid)
+            return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
+                              pid=driver_output.pid, device_offline=driver_output.device_offline)
 
         failures.extend(self._compare_text(expected_driver_output.text, driver_output.text))
         failures.extend(self._compare_audio(expected_driver_output.audio, driver_output.audio))
         if self._should_run_pixel_test:
             failures.extend(self._compare_image(expected_driver_output, driver_output))
-        return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(), pid=driver_output.pid)
+        return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
+                          pid=driver_output.pid, device_offline=driver_output.device_offline)
 
     def _compare_text(self, expected_text, actual_text):
         failures = []
@@ -313,19 +316,23 @@ class SingleTestRunner(object):
         # FIXME: We don't really deal with a mix of reftest types properly. We pass in a set() to reftest_type
         # and only really handle the first of the references in the result.
         reftest_type = list(set([reference_file[0] for reference_file in self._reference_files]))
-        return TestResult(self._test_name, test_result.failures, total_test_time + test_result.test_run_time, test_result.has_stderr, reftest_type=reftest_type, pid=test_result.pid, references=reference_test_names)
+        return TestResult(self._test_name, test_result.failures, total_test_time + test_result.test_run_time,
+                          test_result.has_stderr, reftest_type=reftest_type, pid=test_result.pid,
+                          references=reference_test_names, device_offline=reference_output.device_offline)
 
     def _compare_output_with_reference(self, reference_driver_output, actual_driver_output, reference_filename, mismatch):
         total_test_time = reference_driver_output.test_time + actual_driver_output.test_time
         has_stderr = reference_driver_output.has_stderr() or actual_driver_output.has_stderr()
         failures = []
         failures.extend(self._handle_error(actual_driver_output))
-        if failures:
+        if failures or actual_driver_output.device_offline:
             # Don't continue any more if we already have crash or timeout.
-            return TestResult(self._test_name, failures, total_test_time, has_stderr)
+            return TestResult(self._test_name, failures, total_test_time, has_stderr,
+                              device_offline=actual_driver_output.device_offline)
         failures.extend(self._handle_error(reference_driver_output, reference_filename=reference_filename))
-        if failures:
-            return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid)
+        if failures or reference_driver_output.device_offline:
+            return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid,
+                              device_offline=reference_driver_output.device_offline)
 
         if not reference_driver_output.image_hash and not actual_driver_output.image_hash:
             failures.append(test_failures.FailureReftestNoImagesGenerated(reference_filename))
@@ -348,4 +355,5 @@ class SingleTestRunner(object):
             else:
                 _log.warning("  %s -> ref test hashes didn't match but diff passed" % self._test_name)
 
-        return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid)
+        return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid,
+                          device_offline=actual_driver_output.device_offline)

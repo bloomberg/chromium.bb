@@ -209,6 +209,7 @@ class _Worker(multiprocessing.Process):
         self.name = 'worker/%d' % worker_number
         self.log_messages = []
         self.log_level = log_level
+        self._running = False
         self._running_inline = running_inline
         self._manager = manager
 
@@ -245,11 +246,12 @@ class _Worker(multiprocessing.Process):
         worker = self._worker
         exception_msg = ""
         _log.debug("%s starting" % self.name)
+        self._running = True
 
         try:
             if hasattr(worker, 'start'):
                 worker.start()
-            while True:
+            while self._running:
                 message = self._messages_to_worker.get()
                 if message.from_user:
                     worker.handle(message.name, message.src, *message.args)
@@ -272,6 +274,9 @@ class _Worker(multiprocessing.Process):
             finally:
                 self._post(name='done', args=(), from_user=False)
             self._close()
+
+    def stop_running(self):
+        self._running = False
 
     def post(self, name, *args):
         self._post(name, args, from_user=True)

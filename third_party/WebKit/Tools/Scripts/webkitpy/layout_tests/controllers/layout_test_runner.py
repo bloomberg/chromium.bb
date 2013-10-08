@@ -80,6 +80,7 @@ class LayoutTestRunner(object):
         self._expectations = expectations
         self._test_inputs = test_inputs
         self._retrying = retrying
+        self._shards_to_redo = []
 
         # FIXME: rename all variables to test_run_results or some such ...
         run_results = TestRunResults(self._expectations, len(test_inputs) + len(tests_to_skip))
@@ -114,6 +115,12 @@ class LayoutTestRunner(object):
         try:
             with message_pool.get(self, self._worker_factory, num_workers, self._port.worker_startup_delay_secs(), self._port.host) as pool:
                 pool.run(('test_list', shard.name, shard.test_inputs) for shard in all_shards)
+
+            if self._shards_to_redo:
+                num_workers -= len(self._shards_to_redo)
+                if num_workers > 0:
+                    with message_pool.get(self, self._worker_factory, num_workers, self._port.worker_startup_delay_secs(), self._port.host) as pool:
+                        pool.run(('test_list', shard.name, shard.test_inputs) for shard in self._shards_to_redo)
         except TestRunInterruptedException, e:
             _log.warning(e.reason)
             run_results.interrupted = True
@@ -192,6 +199,10 @@ class LayoutTestRunner(object):
     def _handle_finished_test(self, worker_name, result, log_messages=[]):
         self._update_summary_with_result(self._current_run_results, result)
 
+    def _handle_device_offline(self, worker_name, list_name, remaining_tests):
+        _log.warning("%s has gone offline" % worker_name)
+        if remaining_tests:
+            self._shards_to_redo.append(TestShard(list_name, remaining_tests))
 
 class Worker(object):
     def __init__(self, caller, results_directory, options):
@@ -226,8 +237,13 @@ class Worker(object):
 
     def handle(self, name, source, test_list_name, test_inputs):
         assert name == 'test_list'
-        for test_input in test_inputs:
-            self._run_test(test_input, test_list_name)
+        for i, test_input in enumerate(test_inputs):
+            device_offline = self._run_test(test_input, test_list_name)
+            if device_offline:
+                self._caller.post('device_offline', test_list_name, test_inputs[i + 1:])
+                self._caller.stop_running()
+                return
+
         self._caller.post('finished_test_list', test_list_name)
 
     def _update_test_input(self, test_input):
@@ -250,12 +266,20 @@ class Worker(object):
         self._update_test_input(test_input)
         test_timeout_sec = self._timeout(test_input)
         start = time.time()
-        self._caller.post('started_test', test_input, test_timeout_sec)
+        device_offline = False
 
         if self._driver and self._driver.has_crashed():
             self._kill_driver()
         if not self._driver:
             self._driver = self._port.create_driver(self._worker_number)
+
+        if not self._driver:
+            # FIXME: Is this the best way to handle a device crashing in the middle of the test, or should we create
+            # a new failure type?
+            device_offline = True
+            return
+
+        self._caller.post('started_test', test_input, test_timeout_sec)
         result = single_test_runner.run_single_test(self._port, self._options, self._results_directory,
             self._name, self._driver, test_input, stop_when_done)
 
@@ -264,10 +288,10 @@ class Worker(object):
         result.total_run_time = time.time() - start
         result.test_number = self._num_tests
         self._num_tests += 1
-
         self._caller.post('finished_test', result)
-
         self._clean_up_after_test(test_input, result)
+
+        return result.device_offline
 
     def stop(self):
         _log.debug("%s cleaning up" % self._name)
