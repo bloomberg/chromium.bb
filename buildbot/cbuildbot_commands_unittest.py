@@ -513,5 +513,4 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
 
 
 if __name__ == '__main__':
-  gs.GSUTIL_BIN = '/fake/path/to/gsutil'
   cros_test_lib.main()
