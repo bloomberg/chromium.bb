@@ -32,7 +32,7 @@
 #define Metadata_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/FileMetadata.h"
+#include "platform/FileMetadata.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

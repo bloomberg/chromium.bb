@@ -13,6 +13,8 @@
       'EventTracer.h',
       'FileChooser.cpp',
       'FileChooser.h',
+      'FileMetadata.cpp',
+      'FileMetadata.h',
       'FloatConversion.h',
       'HostWindow.h',
       'JSONValues.cpp',

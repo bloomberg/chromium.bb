@@ -23,10 +23,10 @@
 #include "core/platform/network/FormData.h"
 
 #include "core/fileapi/File.h"
-#include "core/platform/FileSystem.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/FormDataBuilder.h"
 #include "core/platform/network/FormDataList.h"
+#include "platform/FileMetadata.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace WebCore {

@@ -26,9 +26,8 @@
 #include "config.h"
 #include "core/fileapi/File.h"
 
-#include "core/platform/FileMetadata.h"
-#include "core/platform/FileSystem.h"
 #include "core/platform/MIMETypeRegistry.h"
+#include "platform/FileMetadata.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileUtilities.h"
 #include "wtf/CurrentTime.h"

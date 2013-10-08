@@ -35,7 +35,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
-#include "core/platform/FileMetadata.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
 #include "modules/filesystem/ErrorCallback.h"
@@ -43,6 +42,7 @@
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/FileWriterSync.h"
+#include "platform/FileMetadata.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
 

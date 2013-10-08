@@ -34,7 +34,6 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
-#include "core/platform/FileMetadata.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/DirectoryEntry.h"
@@ -49,6 +48,7 @@
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "platform/FileMetadata.h"
 #include "public/platform/WebFileWriter.h"
 
 namespace WebCore {

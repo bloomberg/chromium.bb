@@ -33,13 +33,12 @@
 
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/platform/FileMetadata.h"
-#include "core/platform/FileSystem.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileEntry.h"
+#include "platform/FileMetadata.h"
 
 namespace WebCore {
 

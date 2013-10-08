@@ -33,7 +33,6 @@
 
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/File.h"
-#include "core/platform/FileMetadata.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/ErrorCallback.h"
@@ -44,6 +43,7 @@
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/FileWriterCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "platform/FileMetadata.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
 #include "weborigin/DatabaseIdentifier.h"

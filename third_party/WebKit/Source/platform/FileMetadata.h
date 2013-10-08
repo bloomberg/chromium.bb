@@ -31,10 +31,15 @@
 #ifndef FileMetadata_h
 #define FileMetadata_h
 
-#include "core/platform/FileSystem.h"
+#include "platform/PlatformExport.h"
+#include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
+#include <time.h>
 
 namespace WebCore {
+
+inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(); }
+inline bool isValidFileTime(double time) { return std::isfinite(time); }
 
 struct FileMetadata {
     // The last modification time of the file, in seconds.
@@ -56,6 +61,11 @@ struct FileMetadata {
 
     FileMetadata() : modificationTime(invalidFileTime()), length(-1), type(TypeUnknown) { }
 };
+
+PLATFORM_EXPORT bool getFileSize(const String&, long long& result);
+PLATFORM_EXPORT bool getFileModificationTime(const String&, time_t& result);
+PLATFORM_EXPORT bool getFileMetadata(const String&, FileMetadata&);
+PLATFORM_EXPORT String directoryName(const String&);
 
 } // namespace WebCore
 

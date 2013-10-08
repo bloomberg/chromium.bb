@@ -31,7 +31,7 @@
 #ifndef BlobData_h
 #define BlobData_h
 
-#include "core/platform/FileSystem.h"
+#include "platform/FileMetadata.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
