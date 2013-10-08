@@ -250,10 +250,10 @@ bool SpdyUtils::FillBalsaResponseHeaders(
     return false;
   }
 
-  request_headers->SetRequestVersion(version_it->second);
   if (!ParseReasonAndStatus(status_it->second, request_headers)) {
     return false;
   }
+  request_headers->SetResponseVersion(version_it->second);
   for (BlockIt it = header_block.begin(); it != header_block.end(); ++it) {
    if (!IsSpecialSpdyHeader(it, request_headers)) {
      request_headers->AppendHeader(it->first, it->second);

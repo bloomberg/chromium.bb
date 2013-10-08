@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A binary wrapper for QuicClient.  Connects to --hostname or --address on
-// --port and requests URLs specified on the command line.
+// A binary wrapper for QuicClient.  Connects to --hostname via --address
+// on --port and requests URLs specified on the command line.
 //
 // For example:
-//  quic_client --port=6122 /index.html /favicon.ico
+//  quic_client --address=127.0.0.1 --port=6122 --hostname=www.google.com
+//      http://www.google.com/index.html http://www.google.com/favicon.ico
+
+#include <iostream>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -23,6 +26,18 @@ std::string FLAGS_hostname = "localhost";
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   CommandLine* line = CommandLine::ForCurrentProcess();
+  if (line->HasSwitch("h") || line->HasSwitch("help")) {
+    const char* help_str =
+        "Usage: quic_client [options]\n"
+        "\n"
+        "Options:\n"
+        "-h, --help                  show this help message and exit\n"
+        "--port=<port>               specify the port to connect to\n"
+        "--address=<address>         specify the IP address to connect to\n"
+        "--host=<host>               specify the SNI hostname to use\n";
+    std::cout << help_str;
+    exit(0);
+  }
   if (line->HasSwitch("port")) {
     int port;
     if (base::StringToInt(line->GetSwitchValueASCII("port"), &port)) {
@@ -44,8 +59,8 @@ int main(int argc, char *argv[]) {
   net::IPAddressNumber addr;
   CHECK(net::ParseIPLiteralToNumber(FLAGS_address, &addr));
   // TODO(rjshade): Set version on command line.
-  net::tools::QuicClient client(
-      net::IPEndPoint(addr, FLAGS_port), FLAGS_hostname, net::QuicVersionMax());
+  net::tools::QuicClient client(net::IPEndPoint(addr, FLAGS_port),
+                                FLAGS_hostname, net::QuicVersionMax(), true);
 
   client.Initialize();
 
