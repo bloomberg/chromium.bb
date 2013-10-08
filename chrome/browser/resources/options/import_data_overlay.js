@@ -232,7 +232,7 @@ cr.define('options', function() {
     var checkboxes =
         document.querySelectorAll('#import-checkboxes input[type=checkbox]');
     for (var i = 0; i < checkboxes.length; i++)
-        checkboxes[i].setDisabled('Importing', state);
+        checkboxes[i].setDisabled('Importing', importing);
     if (!importing)
       ImportDataOverlay.getInstance().updateCheckboxes_();
     $('import-browsers').disabled = importing;
