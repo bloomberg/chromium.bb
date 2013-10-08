@@ -255,29 +255,29 @@
 	<include name="IDR_AUDIO_SPATIALIZATION_T345_P345" file="..\Source\platform\audio\resources\IRC_Composite_C_R0195_T345_P345.wav" type="BINDATA"/>
       </if>
       <if expr="is_macosx">
-        <include name="IDR_ALIAS_CURSOR" file="../Source/core/Resources/aliasCursor.png" type="BINDATA" />
-        <include name="IDR_CELL_CURSOR" file="../Source/core/Resources/cellCursor.png" type="BINDATA" />
-        <include name="IDR_EAST_RESIZE_CURSOR" file="../Source/core/Resources/eastResizeCursor.png" type="BINDATA" />
-        <include name="IDR_EASTWEST_RESIZE_CURSOR" file="../Source/core/Resources/eastWestResizeCursor.png" type="BINDATA" />
-        <include name="IDR_HELP_CURSOR" file="../Source/core/Resources/helpCursor.png" type="BINDATA" />
-        <include name="IDR_LINK_CURSOR" file="../Source/core/Resources/linkCursor.png" type="BINDATA" />
-        <include name="IDR_MOVE_CURSOR" file="../Source/core/Resources/moveCursor.png" type="BINDATA" />
-        <include name="IDR_NONE_CURSOR" file="../Source/core/Resources/noneCursor.png" type="BINDATA" />
-        <include name="IDR_NORTHEAST_RESIZE_CURSOR" file="../Source/core/Resources/northEastResizeCursor.png" type="BINDATA" />
-        <include name="IDR_NORTHEASTSOUTHWEST_RESIZE_CURSOR" file="../Source/core/Resources/northEastSouthWestResizeCursor.png" type="BINDATA" />
-        <include name="IDR_NORTH_RESIZE_CURSOR" file="../Source/core/Resources/northResizeCursor.png" type="BINDATA" />
-        <include name="IDR_NORTHSOUTH_RESIZE_CURSOR" file="../Source/core/Resources/northSouthResizeCursor.png" type="BINDATA" />
-        <include name="IDR_NORTHWEST_RESIZE_CURSOR" file="../Source/core/Resources/northWestResizeCursor.png" type="BINDATA" />
-        <include name="IDR_NORTHWESTSOUTHEAST_RESIZE_CURSOR" file="../Source/core/Resources/northWestSouthEastResizeCursor.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_CURSOR" file="../Source/core/Resources/progressCursor.png" type="BINDATA" />
-        <include name="IDR_SOUTHEAST_RESIZE_CURSOR" file="../Source/core/Resources/southEastResizeCursor.png" type="BINDATA" />
-        <include name="IDR_SOUTH_RESIZE_CURSOR" file="../Source/core/Resources/southResizeCursor.png" type="BINDATA" />
-        <include name="IDR_SOUTHWEST_RESIZE_CURSOR" file="../Source/core/Resources/southWestResizeCursor.png" type="BINDATA" />
-        <include name="IDR_VERTICALTEXT_CURSOR" file="../Source/core/Resources/verticalTextCursor.png" type="BINDATA" />
-        <include name="IDR_WAIT_CURSOR" file="../Source/core/Resources/waitCursor.png" type="BINDATA" />
-        <include name="IDR_WEST_RESIZE_CURSOR" file="../Source/core/Resources/westResizeCursor.png" type="BINDATA" />
-        <include name="IDR_ZOOMIN_CURSOR" file="../Source/core/Resources/zoomInCursor.png" type="BINDATA" />
-        <include name="IDR_ZOOMOUT_CURSOR" file="../Source/core/Resources/zoomOutCursor.png" type="BINDATA" />
+        <include name="IDR_ALIAS_CURSOR" file="resources/aliasCursor.png" type="BINDATA" />
+        <include name="IDR_CELL_CURSOR" file="resources/cellCursor.png" type="BINDATA" />
+        <include name="IDR_EAST_RESIZE_CURSOR" file="resources/eastResizeCursor.png" type="BINDATA" />
+        <include name="IDR_EASTWEST_RESIZE_CURSOR" file="resources/eastWestResizeCursor.png" type="BINDATA" />
+        <include name="IDR_HELP_CURSOR" file="resources/helpCursor.png" type="BINDATA" />
+        <include name="IDR_LINK_CURSOR" file="resources/linkCursor.png" type="BINDATA" />
+        <include name="IDR_MOVE_CURSOR" file="resources/moveCursor.png" type="BINDATA" />
+        <include name="IDR_NONE_CURSOR" file="resources/noneCursor.png" type="BINDATA" />
+        <include name="IDR_NORTHEAST_RESIZE_CURSOR" file="resources/northEastResizeCursor.png" type="BINDATA" />
+        <include name="IDR_NORTHEASTSOUTHWEST_RESIZE_CURSOR" file="resources/northEastSouthWestResizeCursor.png" type="BINDATA" />
+        <include name="IDR_NORTH_RESIZE_CURSOR" file="resources/northResizeCursor.png" type="BINDATA" />
+        <include name="IDR_NORTHSOUTH_RESIZE_CURSOR" file="resources/northSouthResizeCursor.png" type="BINDATA" />
+        <include name="IDR_NORTHWEST_RESIZE_CURSOR" file="resources/northWestResizeCursor.png" type="BINDATA" />
+        <include name="IDR_NORTHWESTSOUTHEAST_RESIZE_CURSOR" file="resources/northWestSouthEastResizeCursor.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_CURSOR" file="resources/progressCursor.png" type="BINDATA" />
+        <include name="IDR_SOUTHEAST_RESIZE_CURSOR" file="resources/southEastResizeCursor.png" type="BINDATA" />
+        <include name="IDR_SOUTH_RESIZE_CURSOR" file="resources/southResizeCursor.png" type="BINDATA" />
+        <include name="IDR_SOUTHWEST_RESIZE_CURSOR" file="resources/southWestResizeCursor.png" type="BINDATA" />
+        <include name="IDR_VERTICALTEXT_CURSOR" file="resources/verticalTextCursor.png" type="BINDATA" />
+        <include name="IDR_WAIT_CURSOR" file="resources/waitCursor.png" type="BINDATA" />
+        <include name="IDR_WEST_RESIZE_CURSOR" file="resources/westResizeCursor.png" type="BINDATA" />
+        <include name="IDR_ZOOMIN_CURSOR" file="resources/zoomInCursor.png" type="BINDATA" />
+        <include name="IDR_ZOOMOUT_CURSOR" file="resources/zoomOutCursor.png" type="BINDATA" />
       </if>
 
     </includes>
