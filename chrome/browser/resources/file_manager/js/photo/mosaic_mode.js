@@ -1829,8 +1829,6 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
     setDimensions(metadata.drive.imageWidth, metadata.drive.imageHeight);
   } else {
     // No dimensions in metadata, then use the generic dimensions.
-    // TODO(mtomasz): Display a gneric icon instead of a black rectangle for
-    //                broken images.
     setDimensions(Mosaic.Tile.GENERIC_ICON_SIZE,
                   Mosaic.Tile.GENERIC_ICON_SIZE);
   }
@@ -1862,8 +1860,8 @@ Mosaic.Tile.prototype.load = function(loadMode, onImageLoaded) {
         this.wrapper_.classList.add('animated');
       else
         this.wrapper_.classList.remove('animated');
-      loader.attachImage(this.wrapper_, ThumbnailLoader.FillMode.OVER_FILL);
     }
+    loader.attachImage(this.wrapper_, ThumbnailLoader.FillMode.OVER_FILL);
     onImageLoaded(success);
     switch (mode) {
       case Mosaic.Tile.LoadMode.LOW_DPI:
