@@ -9,8 +9,6 @@
 
 #include <stdint.h>
 
-#include "mojo/public/system/system_export.h"
-
 // Types -----------------------------------------------------------------------
 
 // TODO(vtl): Notes: Use of undefined flags will lead to undefined behavior
@@ -192,7 +190,7 @@ extern "C" {
 // happen before the close, be cancelled with result |MOJO_RESULT_CANCELLED| if
 // they properly overlap (this is likely the case with |MojoWait()|, etc.), or
 // fail with |MOJO_RESULT_INVALID_ARGUMENT| if they happen after.
-MOJO_SYSTEM_EXPORT MojoResult MojoClose(MojoHandle handle);
+MojoResult MojoClose(MojoHandle handle);
 
 // Waits on the given handle until the state indicated by |flags| is satisfied
 // or until |deadline| has passed.
@@ -210,9 +208,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoClose(MojoHandle handle);
 // If there are multiple waiters (on different threads, obviously) waiting on
 // the same handle and flag and that flag becomes set, all waiters will be
 // awoken.
-MOJO_SYSTEM_EXPORT MojoResult MojoWait(MojoHandle handle,
-                                       MojoWaitFlags flags,
-                                       MojoDeadline deadline);
+MojoResult MojoWait(MojoHandle handle,
+                    MojoWaitFlags flags,
+                    MojoDeadline deadline);
 
 // Waits on |handles[0]|, ..., |handles[num_handles-1]| for at least one of them
 // to satisfy the state indicated by |flags[0]|, ..., |flags[num_handles-1]|,
@@ -227,27 +225,23 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWait(MojoHandle handle,
 //        handles satisfying any of its flags.
 //    |MOJO_RESULT_FAILED_PRECONDITION| if it is or becomes impossible that SOME
 //        |handle[i]| will ever satisfy any of its flags |flags[i]|.
-MOJO_SYSTEM_EXPORT MojoResult MojoWaitMany(const MojoHandle* handles,
-                                           const MojoWaitFlags* flags,
-                                           uint32_t num_handles,
-                                           MojoDeadline deadline);
+MojoResult MojoWaitMany(const MojoHandle* handles,
+                        const MojoWaitFlags* flags,
+                        uint32_t num_handles,
+                        MojoDeadline deadline);
 
 // TODO(vtl): flags? other params (e.g., queue sizes, max message sizes?)
-MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(MojoHandle* handle_0,
-                                                    MojoHandle* handle_1);
+MojoResult MojoCreateMessagePipe(MojoHandle* handle_0, MojoHandle* handle_1);
 
-MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(
-    MojoHandle handle,
-    const void* bytes, uint32_t num_bytes,
-    const MojoHandle* handles,
-    uint32_t num_handles,
-    MojoWriteMessageFlags flags);
+MojoResult MojoWriteMessage(MojoHandle handle,
+                            const void* bytes, uint32_t num_bytes,
+                            const MojoHandle* handles, uint32_t num_handles,
+                            MojoWriteMessageFlags flags);
 
-MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle handle,
-                                              void* bytes, uint32_t* num_bytes,
-                                              MojoHandle* handles,
-                                              uint32_t* num_handles,
-                                              MojoReadMessageFlags flags);
+MojoResult MojoReadMessage(MojoHandle handle,
+                           void* bytes, uint32_t* num_bytes,
+                           MojoHandle* handles, uint32_t* num_handles,
+                           MojoReadMessageFlags flags);
 
 #ifdef __cplusplus
 }  // extern "C"
