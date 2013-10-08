@@ -589,6 +589,8 @@
             'host/setup/daemon_installer_win.h',
             'host/setup/host_starter.cc',
             'host/setup/host_starter.h',
+            'host/setup/native_messaging_channel.cc',
+            'host/setup/native_messaging_channel.h',
             'host/setup/native_messaging_host.cc',
             'host/setup/native_messaging_host.h',
             'host/setup/native_messaging_reader.cc',
