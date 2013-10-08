@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_converter.h"
+#include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebAudioSourceProvider.h"
 
 namespace media {
 class AudioBus;
