@@ -104,17 +104,9 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 #endif
 };
 
-using ::testing::Combine;
-using ::testing::Values;
-
-#if !defined(OS_ANDROID)
-// Encrypted media playback with SRC is not supported on Android.
-INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem), Values(SRC)));
-#endif  // defined(OS_ANDROID)
-
-INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem), Values(MSE)));
+INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
+    ::testing::Combine(
+        ::testing::Values(kClearKeyKeySystem), ::testing::Values(SRC, MSE)));
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly);
@@ -151,7 +143,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
   RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
-                        kWebMAudioOnly, "com.example.foo", MSE,
+                        kWebMAudioOnly, "com.example.foo", SRC,
                         kEmeGkrException);
 }
 
