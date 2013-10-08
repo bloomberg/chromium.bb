@@ -104,7 +104,7 @@ void ImplicitAnimation::getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle)
 
 void ImplicitAnimation::startAnimation(double timeOffset)
 {
-    if (m_object && m_object->isComposited())
+    if (m_object && m_object->compositingState() == PaintsIntoOwnBacking)
         m_isAccelerated = toRenderBoxModelObject(m_object)->startTransition(timeOffset, m_animatingProperty, m_fromStyle.get(), m_toStyle.get());
 }
 
@@ -113,7 +113,7 @@ void ImplicitAnimation::pauseAnimation(double timeOffset)
     if (!m_object)
         return;
 
-    if (m_object && m_object->isComposited() && isAccelerated())
+    if (m_object && m_object->compositingState() == PaintsIntoOwnBacking && isAccelerated())
         toRenderBoxModelObject(m_object)->transitionPaused(timeOffset, m_animatingProperty);
 
     // Restore the original (unanimated) style
@@ -123,7 +123,7 @@ void ImplicitAnimation::pauseAnimation(double timeOffset)
 
 void ImplicitAnimation::endAnimation()
 {
-    if (m_object && m_object->isComposited() && isAccelerated())
+    if (m_object && m_object->compositingState() == PaintsIntoOwnBacking && isAccelerated())
         toRenderBoxModelObject(m_object)->transitionFinished(m_animatingProperty);
     m_isAccelerated = false;
 }

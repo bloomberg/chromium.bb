@@ -1257,7 +1257,8 @@ static bool isCandidateForOpaquenessTest(RenderBox* childBox)
     if (!childBox->width() || !childBox->height())
         return false;
     if (RenderLayer* childLayer = childBox->layer()) {
-        if (childLayer->isComposited())
+        // FIXME: perhaps this could be less conservative?
+        if (childLayer->compositingState() != NotComposited)
             return false;
         // FIXME: Deal with z-index.
         if (!childStyle->hasAutoZIndex())
@@ -1352,8 +1353,12 @@ void RenderBox::paintClippingMask(PaintInfo& paintInfo, const LayoutPoint& paint
     if (!paintInfo.shouldPaintWithinRoot(this) || style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseClippingMask || paintInfo.context->paintingDisabled())
         return;
 
-    if (!layer() || !layer()->isComposited())
+    if (!layer() || layer()->compositingState() != PaintsIntoOwnBacking)
         return;
+
+    // We should never have this state in this function. A layer with a mask
+    // should have always created its own backing if it became composited.
+    ASSERT(layer()->compositingState() != HasOwnBackingButPaintsIntoAncestor);
 
     LayoutRect paintRect = LayoutRect(paintOffset, size());
     paintInfo.context->fillRect(pixelSnappedIntRect(paintRect), Color::black);

@@ -1392,7 +1392,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
     RenderView* v = view();
     if (repaintContainer->isRenderView()) {
         ASSERT(repaintContainer == v);
-        bool viewHasCompositedLayer = v->hasLayer() && v->layer()->isComposited();
+        bool viewHasCompositedLayer = v->hasLayer() && v->layer()->compositingState() == PaintsIntoOwnBacking;
         if (!viewHasCompositedLayer) {
             IntRect repaintRectangle = r;
             if (viewHasCompositedLayer &&  v->layer()->transform())
@@ -1403,7 +1403,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
     }
 
     if (v->usesCompositing()) {
-        ASSERT(repaintContainer->hasLayer() && repaintContainer->layer()->isComposited());
+        ASSERT(repaintContainer->hasLayer() && repaintContainer->layer()->compositingState() == PaintsIntoOwnBacking);
         repaintContainer->layer()->setBackingNeedsRepaintInRect(r);
     }
 }
@@ -1768,12 +1768,15 @@ void RenderObject::setAnimatableStyle(PassRefPtr<RenderStyle> style)
 
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
 {
-    // If transform changed, and we are not composited, need to do a layout.
+    // If transform changed, and the layer does not paint into its own separate backing, then we need to do a layout.
+    // FIXME: The comment above is what the code does, but it is technically not following spec. This means we will
+    // not to layout for 3d transforms, but we should be invoking a simplified relayout. Is it possible we are avoiding
+    // doing this for some performance reason at this time?
     if (contextSensitiveProperties & ContextSensitivePropertyTransform) {
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
         // FIXME: when transforms are taken into account for overflow, we will need to do a layout.
-        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->isComposited())) {
+        if (!isText() && (!hasLayer() || toRenderLayerModelObject(this)->layer()->compositingState() != PaintsIntoOwnBacking)) {
             // We need to set at least SimplifiedLayout, but if PositionedMovementOnly is already set
             // then we actually need SimplifiedLayoutAndPositionedMovement.
             if (!hasLayer())
@@ -1786,18 +1789,17 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
             diff = StyleDifferenceRecompositeLayer;
     }
 
-    // If opacity changed, and we are not composited, need to repaint (also
+    // If opacity or filters changed, and the layer does not paint into its own separate backing, then we need to repaint (also
     // ignoring text nodes)
     if (contextSensitiveProperties & ContextSensitivePropertyOpacity) {
-        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->isComposited()))
+        if (!isText() && (!hasLayer() || toRenderLayerModelObject(this)->layer()->compositingState() != PaintsIntoOwnBacking))
             diff = StyleDifferenceRepaintLayer;
         else if (diff < StyleDifferenceRecompositeLayer)
             diff = StyleDifferenceRecompositeLayer;
     }
-
     if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer()) {
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
-        if (!layer->isComposited() || layer->paintsWithFilters())
+        if (layer->compositingState() != PaintsIntoOwnBacking || layer->paintsWithFilters())
             diff = StyleDifferenceRepaintLayer;
         else if (diff < StyleDifferenceRecompositeLayer)
             diff = StyleDifferenceRecompositeLayer;
@@ -2758,9 +2760,9 @@ void RenderObject::updateDragState(bool dragOn)
         curr->updateDragState(dragOn);
 }
 
-bool RenderObject::isComposited() const
+CompositingState RenderObject::compositingState() const
 {
-    return hasLayer() && toRenderLayerModelObject(this)->layer()->isComposited();
+    return hasLayer() ? toRenderLayerModelObject(this)->layer()->compositingState() : NotComposited;
 }
 
 bool RenderObject::hitTest(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter hitTestFilter)

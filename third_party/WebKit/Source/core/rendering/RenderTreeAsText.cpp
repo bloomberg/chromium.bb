@@ -580,7 +580,7 @@ static void write(TextStream& ts, RenderLayer& l,
         ts << " layerType: foreground only";
 
     if (behavior & RenderAsTextShowCompositedLayers) {
-        if (l.isComposited()) {
+        if (l.compositedLayerMapping()) {
             ts << " (composited, bounds="
                 << l.compositedLayerMapping()->compositedBounds()
                 << ", drawsContent="
