@@ -1312,7 +1312,7 @@ sub GenerateNormalAttributeGetterCallback
 
     my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
-    $code .= "#if ${conditionalString}\n\n" if $conditionalString;
+    $code .= "#if ${conditionalString}\n" if $conditionalString;
 
     $code .= "static void ${attrName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
@@ -1328,8 +1328,9 @@ sub GenerateNormalAttributeGetterCallback
         $code .= "    ${implClassName}V8Internal::${attrName}AttributeGetter${forMainWorldSuffix}(name, info);\n";
     }
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
-    $code .= "}\n\n";
-    $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+    $code .= "}\n";
+    $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+    $code .= "\n";
 
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -1368,7 +1369,7 @@ sub GenerateNormalAttributeGetter
 
     my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
-    $code .= "#if ${conditionalString}\n\n" if $conditionalString;
+    $code .= "#if ${conditionalString}\n" if $conditionalString;
     $code .= <<END;
 static void ${attrName}AttributeGetter${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -1410,8 +1411,9 @@ END
             my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
             $code .= "    v8SetReturnValueString(info, imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate());\n";
-            $code .= "}\n\n";
-            $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+            $code .= "}\n";
+            $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+            $code .= "\n";
             $implementation{nameSpaceInternal}->add($code);
             return;
             # Skip the rest of the function!
@@ -1552,8 +1554,9 @@ END
         $code .= "        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), \"${attrName}\", wrapper);\n";
         $code .= "        v8SetReturnValue(info, wrapper);\n";
         $code .= "    }\n";
-        $code .= "}\n\n";
-        $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+        $code .= "}\n";
+        $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+        $code .= "\n";
         $implementation{nameSpaceInternal}->add($code);
         return;
     }
@@ -1628,8 +1631,9 @@ END
         $code .= "${nativeValue}\n";
     }
 
-    $code .= "}\n\n";  # end of getter
-    $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+    $code .= "}\n";  # end of getter
+    $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+    $code .= "\n";
     $implementation{nameSpaceInternal}->add($code);
 }
 

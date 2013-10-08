@@ -122,9 +122,9 @@ def call_with_arguments(member, contents):
 # Conditional
 def generate_conditional_string(definition_or_member):
     if 'Conditional' not in definition_or_member.extended_attributes:
-        return ''
+        return None
     conditional = definition_or_member.extended_attributes['Conditional']
-    for operator in ['&', '|']:
+    for operator in '&|':
         if operator in conditional:
             conditions = set(conditional.split(operator))
             operator_separator = ' %s%s ' % (operator, operator)

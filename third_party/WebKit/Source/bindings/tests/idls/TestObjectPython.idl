@@ -92,5 +92,8 @@ interface TestObjectPython {
     [CachedAttribute=isValueDirty] readonly attribute any cachedAttributeReadonlyAnyAttribute;
     [CallWith=ScriptExecutionContext] readonly attribute any callWithScriptExecutionContextReadonlyAnyAttribute;
     [CheckSecurityForNode] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;
+    [Conditional=Condition1] readonly attribute long conditionalReadonlyLongAttribute;
+    [Conditional=Condition1&Condition2] readonly attribute long conditionalAndReadonlyLongAttribute;
+    [Conditional=Condition1|Condition2] readonly attribute long conditionalOrReadonlyLongAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
 };

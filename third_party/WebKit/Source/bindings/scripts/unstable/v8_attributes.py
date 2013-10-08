@@ -69,7 +69,6 @@ def generate_attribute_and_includes(interface, attribute):
     contents = {
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.generate_conditional_string(attribute),
-        'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
         'idl_type': idl_type,
         'is_keep_alive_for_gc': this_is_keep_alive_for_gc,

@@ -1,5 +1,6 @@
 {##############################################################################}
 {% macro attribute_getter(attribute) %}
+{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {% if attribute.cached_attribute_validation_method %}
@@ -55,11 +56,13 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     {{attribute.return_v8_value_statement}}
     {% endif %}
 }
+{% endfilter %}
 {% endmacro %}
 
 
 {##############################################################################}
 {% macro attribute_getter_callback(attribute) %}
+{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
@@ -71,4 +74,5 @@ static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name
     {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
+{% endfilter %}
 {% endmacro %}

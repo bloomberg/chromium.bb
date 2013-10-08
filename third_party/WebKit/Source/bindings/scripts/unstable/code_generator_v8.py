@@ -84,6 +84,7 @@ class CodeGeneratorV8:
             keep_trailing_newline=True,  # newline-terminate generated files
             lstrip_blocks=True,  # so can indent control flow tags
             trim_blocks=True)
+        jinja_env.filters['conditional'] = conditional_if_endif
         self.header_template = jinja_env.get_template(header_template_filename)
         self.cpp_template = jinja_env.get_template(cpp_template_filename)
 
@@ -128,3 +129,13 @@ class CodeGeneratorV8:
         filename = os.path.join(self.output_directory, basename)
         with open(filename, 'w') as output_file:
             output_file.write(file_text)
+
+
+# Conditional
+def conditional_if_endif(code, conditional_string):
+    # Jinja2 filter to generate if/endif directive blocks
+    if not conditional_string:
+        return code
+    return ('#if %s\n' % conditional_string +
+            code +
+            '#endif // %s\n' % conditional_string)
