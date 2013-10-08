@@ -69,7 +69,6 @@ def AddIntrinsicTest(test_env, src, exit_status,
 
 
 # Test various intrinsics.
-AddIntrinsicTest(env, 'setlongjmp.c', '55')
 AddIntrinsicTest(env, 'intrinsics.cc', '55'),
 AddIntrinsicTest(env, 'float2.c', '0', golden_file=env.File('float2.stdout'))
 AddIntrinsicTest(env, 'memcpy_move_set.c', '0',
