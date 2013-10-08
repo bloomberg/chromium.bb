@@ -1229,3 +1229,13 @@ crbug.com/303444 virtual/threaded/animations/unsigned-underflow.html [ Timeout ]
 # WebLot Win7 (dbg)
 crbug.com/305101 [ Win7 Debug ] fast/encoding/api/basics.html [ Crash ]
 crbug.com/305101 [ Win7 Debug ] fast/encoding/api/byte-order-marks.html [ Crash ]
+
+# Win has no support for overlay scrollbars required for this test to pass.
+crbug.com/304841 [ Win ] inspector/styles/override-screen-size.html [ Failure ]
+
+Bug(dgozman) compositing/culling/filter-occlusion-blur-large.html [ NeedsRebaseline ]
+Bug(dgozman) compositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
+Bug(dgozman) compositing/masks/masked-ancestor.html [ NeedsRebaseline ]
+Bug(dgozman) virtual/softwarecompositing/culling/filter-occlusion-blur-large.html [ NeedsRebaseline ]
+Bug(dgozman) virtual/softwarecompositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
+Bug(dgozman) virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ NeedsRebaseline ]

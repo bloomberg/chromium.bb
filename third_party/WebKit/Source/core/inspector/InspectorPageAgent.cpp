@@ -317,7 +317,6 @@ InspectorPageAgent::InspectorPageAgent(InstrumentingAgents* instrumentingAgents,
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
-    , m_isFirstLayoutAfterOnLoad(false)
     , m_geolocationOverridden(false)
     , m_ignoreScriptsEnabledNotification(false)
     , m_didForceCompositingMode(false)
@@ -718,16 +717,19 @@ void InspectorPageAgent::setShowDebugBorders(ErrorString*, bool show)
 
 void InspectorPageAgent::setShowFPSCounter(ErrorString*, bool show)
 {
+    // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
+    bool viewMetricsOverride = m_state->getLong(PageAgentState::pageAgentScreenWidthOverride);
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
-    m_client->setShowFPSCounter(show);
+    m_client->setShowFPSCounter(show && !viewMetricsOverride);
 
     updateOverridesTopOffset();
 }
 
 void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString*, bool enabled)
 {
+    bool viewMetricsOverride = m_state->getLong(PageAgentState::pageAgentScreenWidthOverride);
     m_state->setBoolean(PageAgentState::pageAgentContinuousPaintingEnabled, enabled);
-    m_client->setContinuousPaintingEnabled(enabled);
+    m_client->setContinuousPaintingEnabled(enabled && !viewMetricsOverride);
 
     updateOverridesTopOffset();
 }
@@ -803,7 +805,6 @@ void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)
     if (frame->page()->mainFrame() != frame)
         return;
 
-    m_isFirstLayoutAfterOnLoad = true;
     m_frontend->domContentEventFired(currentTime());
     if (m_state->getBoolean(PageAgentState::forceCompositingMode))
         setForceCompositingMode(0, true);
@@ -972,34 +973,6 @@ void InspectorPageAgent::didRunJavaScriptDialog()
     m_frontend->javascriptDialogClosed();
 }
 
-void InspectorPageAgent::applyScreenWidthOverride(long* width)
-{
-    long widthOverride = m_state->getLong(PageAgentState::pageAgentScreenWidthOverride);
-    if (widthOverride)
-        *width = widthOverride;
-}
-
-bool InspectorPageAgent::shouldApplyScreenWidthOverride()
-{
-    long width = 0;
-    applyScreenWidthOverride(&width);
-    return !!width;
-}
-
-void InspectorPageAgent::applyScreenHeightOverride(long* height)
-{
-    long heightOverride = m_state->getLong(PageAgentState::pageAgentScreenHeightOverride);
-    if (heightOverride)
-        *height = heightOverride;
-}
-
-bool InspectorPageAgent::shouldApplyScreenHeightOverride()
-{
-    long height = 0;
-    applyScreenHeightOverride(&height);
-    return !!height;
-}
-
 void InspectorPageAgent::didPaint(RenderObject*, GraphicsContext* context, const LayoutRect& rect)
 {
     if (!m_enabled || m_client->overridesShowPaintRects() || !m_state->getBoolean(PageAgentState::pageAgentShowPaintRects))
@@ -1019,20 +992,8 @@ void InspectorPageAgent::didPaint(RenderObject*, GraphicsContext* context, const
 
 void InspectorPageAgent::didLayout(RenderObject*)
 {
-    bool isFirstLayout = m_isFirstLayoutAfterOnLoad;
-    if (isFirstLayout)
-        m_isFirstLayoutAfterOnLoad = false;
-
     if (!m_enabled)
         return;
-
-    if (isFirstLayout) {
-        int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
-        int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
-
-        if (currentWidth && currentHeight)
-            m_client->autoZoomPageToFitWidth();
-    }
     m_overlay->update();
 }
 
@@ -1125,6 +1086,12 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double fontSca
         document->styleResolverChanged(RecalcStyleImmediately);
     InspectorInstrumentation::mediaQueryResultChanged(document);
     m_overlay->setOverride(InspectorOverlay::DeviceMetricsOverride, width && height);
+
+    // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
+    bool override = width && height;
+    m_client->setShowFPSCounter(m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter) && !override);
+    m_client->setContinuousPaintingEnabled(m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled) && !override);
+    updateOverridesTopOffset();
 }
 
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
@@ -1144,7 +1111,10 @@ void InspectorPageAgent::updateOverridesTopOffset()
         topOffset = continousPaintingGraphHeight;
     else if (m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter))
         topOffset = fpsGraphHeight;
-    m_overlay->setOverridesTopOffset(topOffset);
+    // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
+    bool setOffset = false;
+    if (setOffset)
+        m_overlay->setOverridesTopOffset(topOffset);
 }
 
 void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double* latitude, const double* longitude, const double* accuracy)

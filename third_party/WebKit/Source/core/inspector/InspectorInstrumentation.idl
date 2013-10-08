@@ -242,12 +242,6 @@ interface InspectorInstrumentation {
     void applyUserAgentOverride(Frame*, String* userAgent);
 
     [Page, Inline=FastReturn]
-    void applyScreenWidthOverride(Frame*, long* width);
-
-    [Page, Inline=FastReturn]
-    void applyScreenHeightOverride(Frame*, long* height);
-
-    [Page, Inline=FastReturn]
     void applyEmulatedMedia(Frame*, String* media);
 
     [Timeline, Resource]
@@ -490,12 +484,6 @@ interface InspectorDatabaseInstrumentation {
 interface InspectorOverrides {
     [CSS, Inline=FastReturn]
     bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
-
-    [Page, Inline=FastReturn]
-    bool shouldApplyScreenWidthOverride(Frame* frame);
-
-    [Page, Inline=FastReturn]
-    bool shouldApplyScreenHeightOverride(Frame* frame);
 
     [Worker, Inline=FastReturn]
     bool shouldPauseDedicatedWorkerOnStart(ScriptExecutionContext* context);

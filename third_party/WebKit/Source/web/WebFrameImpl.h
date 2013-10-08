@@ -302,6 +302,8 @@ public:
     WebFrameClient* client() const { return m_client; }
     void setClient(WebFrameClient* client) { m_client = client; }
 
+    void setInputEventsScaleFactorForEmulation(float);
+
     static void selectWordAroundPosition(WebCore::Frame*, WebCore::VisiblePosition);
 
 private:
@@ -499,6 +501,9 @@ private:
     // Ensure we don't overwrite valid history data during same document loads
     // from HistoryItems
     bool m_inSameDocumentHistoryLoad;
+
+    // Stores the additional input evetns scale when device metrics emulation is enabled.
+    float m_inputEventsScaleFactorForEmulation;
 };
 
 inline WebFrameImpl* toWebFrameImpl(WebFrame* webFrame)

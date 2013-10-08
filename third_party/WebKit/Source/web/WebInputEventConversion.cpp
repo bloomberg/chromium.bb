@@ -54,7 +54,7 @@ namespace WebKit {
 
 static const double millisPerSecond = 1000.0;
 
-static float widgetScaleFactor(const Widget* widget)
+static float widgetInputEventsScaleFactor(const Widget* widget)
 {
     if (!widget)
         return 1;
@@ -63,14 +63,14 @@ static float widgetScaleFactor(const Widget* widget)
     if (!rootView)
         return 1;
 
-    return rootView->visibleContentScaleFactor();
+    return rootView->inputEventsScaleFactor();
 }
 
 // MakePlatformMouseEvent -----------------------------------------------------
 
 PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMouseEvent& e)
 {
-    float scale = widgetScaleFactor(widget);
+    float scale = widgetInputEventsScaleFactor(widget);
     // FIXME: Widget is always toplevel, unless it's a popup. We may be able
     // to get rid of this once we abstract popups into a WebKit API.
     m_position = widget->convertFromContainingWindow(IntPoint(e.x / scale, e.y / scale));
@@ -115,7 +115,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
 
 PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMouseWheelEvent& e)
 {
-    float scale = widgetScaleFactor(widget);
+    float scale = widgetInputEventsScaleFactor(widget);
     m_position = widget->convertFromContainingWindow(IntPoint(e.x / scale, e.y / scale));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_deltaX = e.deltaX;
@@ -152,7 +152,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 
 PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const WebGestureEvent& e)
 {
-    float scale = widgetScaleFactor(widget);
+    float scale = widgetInputEventsScaleFactor(widget);
     switch (e.type) {
     case WebInputEvent::GestureScrollBegin:
         m_type = PlatformEvent::GestureScrollBegin;
@@ -383,7 +383,7 @@ inline WebTouchPoint::State toWebTouchPointState(const AtomicString& type)
 
 PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTouchPoint& point)
 {
-    float scale = widgetScaleFactor(widget);
+    float scale = widgetInputEventsScaleFactor(widget);
     m_id = point.id;
     m_state = toPlatformTouchPointState(point.state);
     m_pos = widget->convertFromContainingWindow(IntPoint(point.position.x / scale, point.position.y / scale));
@@ -566,7 +566,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const WebCore::Widget* widget, const 
     // FIXME: Widget is always toplevel, unless it's a popup. We may be able
     // to get rid of this once we abstract popups into a WebKit API.
     IntPoint position = widget->convertToContainingWindow(event.position());
-    float scale = widgetScaleFactor(widget);
+    float scale = widgetInputEventsScaleFactor(widget);
     position.scale(scale, scale);
     x = position.x();
     y = position.y();

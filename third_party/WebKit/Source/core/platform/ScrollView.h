@@ -130,6 +130,9 @@ public:
     IntSize unscaledVisibleContentSize(VisibleContentRectIncludesScrollbars = ExcludeScrollbars) const;
     virtual float visibleContentScaleFactor() const { return 1; }
 
+    // Scale used to convert incoming input events. Usually the same as visibleContentScaleFactor(), unless specifically changed.
+    virtual float inputEventsScaleFactor() const { return visibleContentScaleFactor(); }
+
     // Functions for getting/setting the size webkit should use to layout the contents. By default this is the same as the visible
     // content size. Explicitly setting a layout size value will cause webkit to layout the contents using this size instead.
     IntSize layoutSize(VisibleContentRectIncludesScrollbars = ExcludeScrollbars) const;

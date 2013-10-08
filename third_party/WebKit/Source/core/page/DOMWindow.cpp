@@ -1011,9 +1011,7 @@ int DOMWindow::innerHeight() const
     if (Frame* parent = m_frame->tree()->parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
-    // If the device height is overridden, do not include the horizontal scrollbar into the innerHeight (since it is absent on the real device).
-    bool includeScrollbars = !InspectorInstrumentation::shouldApplyScreenHeightOverride(m_frame);
-    return view->mapFromLayoutToCSSUnits(static_cast<int>(view->visibleContentRect(includeScrollbars ? ScrollableArea::IncludeScrollbars : ScrollableArea::ExcludeScrollbars).height()));
+    return view->mapFromLayoutToCSSUnits(static_cast<int>(view->visibleContentRect(ScrollableArea::IncludeScrollbars).height()));
 }
 
 int DOMWindow::innerWidth() const
@@ -1029,9 +1027,7 @@ int DOMWindow::innerWidth() const
     if (Frame* parent = m_frame->tree()->parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
-    // If the device width is overridden, do not include the vertical scrollbar into the innerWidth (since it is absent on the real device).
-    bool includeScrollbars = !InspectorInstrumentation::shouldApplyScreenWidthOverride(m_frame);
-    return view->mapFromLayoutToCSSUnits(static_cast<int>(view->visibleContentRect(includeScrollbars ? ScrollableArea::IncludeScrollbars : ScrollableArea::ExcludeScrollbars).width()));
+    return view->mapFromLayoutToCSSUnits(static_cast<int>(view->visibleContentRect(ScrollableArea::IncludeScrollbars).width()));
 }
 
 int DOMWindow::screenX() const

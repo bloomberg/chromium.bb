@@ -60,7 +60,6 @@ public:
     virtual void clearBrowserCookies();
 
     virtual void overrideDeviceMetrics(int, int, float, bool);
-    virtual void autoZoomPageToFitWidth();
 
     virtual bool overridesShowPaintRects();
     virtual void setShowPaintRects(bool);

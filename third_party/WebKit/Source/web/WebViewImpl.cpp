@@ -413,6 +413,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_contextMenuAllowed(false)
     , m_doingDragAndDrop(false)
     , m_ignoreInputEvents(false)
+    , m_compositorDeviceScaleFactorOverride(0)
+    , m_rootLayerScale(1)
     , m_suppressNextKeypressEvent(false)
     , m_imeAcceptEvents(true)
     , m_operationsAllowed(WebDragOperationNone)
@@ -1723,13 +1725,11 @@ void WebViewImpl::resize(const WebSize& newSize)
     WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
     if (agentPrivate)
         agentPrivate->webViewResized(newSize);
-    if (!agentPrivate || !agentPrivate->metricsOverridden()) {
-        WebFrameImpl* webFrame = mainFrameImpl();
-        if (webFrame->frameView()) {
-            webFrame->frameView()->resize(m_size);
-            if (m_pinchViewports)
-                m_pinchViewports->setViewportSize(m_size);
-        }
+    WebFrameImpl* webFrame = mainFrameImpl();
+    if (webFrame->frameView()) {
+        webFrame->frameView()->resize(m_size);
+        if (m_pinchViewports)
+            m_pinchViewports->setViewportSize(m_size);
     }
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
@@ -2923,7 +2923,7 @@ void WebViewImpl::setDeviceScaleFactor(float scaleFactor)
     page()->setDeviceScaleFactor(scaleFactor);
 
     if (m_layerTreeView)
-        m_layerTreeView->setDeviceScaleFactor(scaleFactor);
+        updateLayerTreeDeviceScaleFactor();
 }
 
 bool WebViewImpl::isFixedLayoutModeEnabled() const
@@ -3482,10 +3482,17 @@ void WebViewImpl::setInspectorSetting(const WebString& key,
 
 void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor)
 {
+    m_compositorDeviceScaleFactorOverride = deviceScaleFactor;
+    if (page() && m_layerTreeView)
+        updateLayerTreeDeviceScaleFactor();
 }
 
 void WebViewImpl::setRootLayerScaleTransform(float rootLayerScale)
 {
+    m_rootLayerScale = rootLayerScale;
+    if (mainFrameImpl())
+        mainFrameImpl()->setInputEventsScaleFactorForEmulation(m_rootLayerScale);
+    updateRootLayerTransform();
 }
 
 WebDevToolsAgent* WebViewImpl::devToolsAgent()
@@ -3890,6 +3897,8 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 
     setIsAcceleratedCompositingActive(layer);
 
+    updateRootLayerTransform();
+
     if (m_layerTreeView) {
         if (m_rootLayer) {
             m_layerTreeView->setRootLayer(*m_rootLayer);
@@ -4012,7 +4021,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 
             bool visible = page()->visibilityState() == PageVisibilityStateVisible;
             m_layerTreeView->setVisible(visible);
-            m_layerTreeView->setDeviceScaleFactor(page()->deviceScaleFactor());
+            updateLayerTreeDeviceScaleFactor();
             m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
             m_layerTreeView->setBackgroundColor(backgroundColor());
             m_layerTreeView->setHasTransparentBackground(isTransparent());
@@ -4095,6 +4104,24 @@ void WebViewImpl::updateLayerTreeViewport()
         return;
 
     m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
+}
+
+void WebViewImpl::updateLayerTreeDeviceScaleFactor()
+{
+    ASSERT(page());
+    ASSERT(m_layerTreeView);
+
+    float deviceScaleFactor = m_compositorDeviceScaleFactorOverride ? m_compositorDeviceScaleFactorOverride : page()->deviceScaleFactor();
+    m_layerTreeView->setDeviceScaleFactor(deviceScaleFactor);
+}
+
+void WebViewImpl::updateRootLayerTransform()
+{
+    if (m_rootGraphicsLayer) {
+        WebCore::TransformationMatrix transform;
+        transform = transform.scale(m_rootLayerScale);
+        m_rootGraphicsLayer->setChildrenTransform(transform);
+    }
 }
 
 void WebViewImpl::selectAutofillSuggestionAtIndex(unsigned listIndex)

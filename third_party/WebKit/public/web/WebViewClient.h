@@ -150,7 +150,6 @@ public:
     // Called by WebHelperPlugin to provide the WebFrameClient interface for the WebFrame.
     virtual void initializeHelperPluginWebFrame(WebHelperPlugin*) { }
 
-
     // Navigational --------------------------------------------------------
 
     // These notifications bracket any loading that occurs in the WebView.

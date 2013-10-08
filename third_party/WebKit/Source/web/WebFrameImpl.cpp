@@ -2114,6 +2114,7 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     , m_findMatchRectsAreValid(false)
     , m_embedderIdentifier(embedderIdentifier)
     , m_inSameDocumentHistoryLoad(false)
+    , m_inputEventsScaleFactorForEmulation(1)
 {
     WebKit::Platform::current()->incrementStatsCounter(webFrameActiveCount);
     frameCount++;
@@ -2244,11 +2245,10 @@ void WebFrameImpl::createFrameView()
     if (webView->shouldAutoResize() && isMainFrame)
         frame()->view()->enableAutoSizeMode(true, webView->minAutoSize(), webView->maxAutoSize());
 
+    frame()->view()->setInputEventsScaleFactorForEmulation(m_inputEventsScaleFactorForEmulation);
+
     if (isMainFrame)
         webView->suppressInvalidations(false);
-
-    if (isMainFrame && webView->devToolsAgentPrivate())
-        webView->devToolsAgentPrivate()->mainFrameViewCreated(this);
 }
 
 WebFrameImpl* WebFrameImpl::fromFrame(Frame* frame)
@@ -2361,6 +2361,13 @@ void WebFrameImpl::didFail(const ResourceError& error, bool wasProvisional)
 void WebFrameImpl::setCanHaveScrollbars(bool canHaveScrollbars)
 {
     frame()->view()->setCanHaveScrollbars(canHaveScrollbars);
+}
+
+void WebFrameImpl::setInputEventsScaleFactorForEmulation(float contentScaleFactor)
+{
+    m_inputEventsScaleFactorForEmulation = contentScaleFactor;
+    if (frame()->view())
+        frame()->view()->setInputEventsScaleFactorForEmulation(m_inputEventsScaleFactorForEmulation);
 }
 
 void WebFrameImpl::invalidateArea(AreaToInvalidate area)

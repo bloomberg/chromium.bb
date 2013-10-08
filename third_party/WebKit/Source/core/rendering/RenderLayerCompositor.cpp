@@ -2426,10 +2426,14 @@ void RenderLayerCompositor::ensureRootLayer()
         // Create a layer to host the clipping layer and the overflow controls layers.
         m_overflowControlsHostLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
 
-        // Create a clipping layer if this is an iframe
+        // Create a clipping layer if this is an iframe or settings require to clip.
         m_containerLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-        if (!isMainFrame())
-            m_containerLayer->setMasksToBounds(true);
+        bool containerMasksToBounds = !isMainFrame();
+        if (Settings* settings = m_renderView->document().settings()) {
+            if (settings->mainFrameClipsContent())
+                containerMasksToBounds = true;
+        }
+        m_containerLayer->setMasksToBounds(containerMasksToBounds);
 
         m_scrollLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())

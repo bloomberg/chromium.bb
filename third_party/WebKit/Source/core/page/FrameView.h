@@ -153,6 +153,9 @@ public:
     virtual float visibleContentScaleFactor() const OVERRIDE { return m_visibleContentScaleFactor; }
     void setVisibleContentScaleFactor(float);
 
+    virtual float inputEventsScaleFactor() const OVERRIDE;
+    void setInputEventsScaleFactorForEmulation(float);
+
     virtual void setScrollPosition(const IntPoint&) OVERRIDE;
     virtual void repaintFixedElementsAfterScrolling();
     virtual void updateFixedElementsAfterScrolling();
@@ -540,6 +543,7 @@ private:
     bool m_hasSoftwareFilters;
 
     float m_visibleContentScaleFactor;
+    float m_inputEventsScaleFactorForEmulation;
 
     PartialLayoutState m_partialLayout;
 };

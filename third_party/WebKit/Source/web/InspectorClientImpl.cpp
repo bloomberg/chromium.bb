@@ -102,12 +102,6 @@ void InspectorClientImpl::overrideDeviceMetrics(int width, int height, float fon
         agent->overrideDeviceMetrics(width, height, fontScaleFactor, fitWindow);
 }
 
-void InspectorClientImpl::autoZoomPageToFitWidth()
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->autoZoomPageToFitWidth();
-}
-
 bool InspectorClientImpl::overridesShowPaintRects()
 {
     return m_inspectedWebView->isAcceleratedCompositingActive();

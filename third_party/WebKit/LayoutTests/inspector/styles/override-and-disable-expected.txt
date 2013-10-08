@@ -1,0 +1,33 @@
+Tests that disabling page agent cancels device metrics override.
+
+Override: 480x800
+Page reloaded.
+Screen from page: 480x800
+Window from page: 480x800
+Body from page: 480x800
+Main style:
+[expanded] 
+element.style  { ()
+
+[expanded] 
+media="screen" (override-and-disable.html)
+@media (max-device-height: 800px) and (max-device-width: 480px) (override-and-disable.html:9 -> override-and-disable.html:9:1)
+#main  { (override-and-disable.html:10 -> override-and-disable.html:10:5)
+background: green;
+
+[expanded] 
+div  { (user agent stylesheet)
+display: block;
+
+======== Inherited from body ========
+[expanded] 
+media="screen" (override-and-disable.html)
+body  { (override-and-disable.html:17 -> override-and-disable.html:17:1)
+font-size: 8px;
+
+
+Disable PageAgent:
+Screen size same as original - OK
+Enable PageAgent:
+Screen size same as original - OK
+

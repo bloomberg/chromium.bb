@@ -189,6 +189,7 @@ FrameView::FrameView(Frame* frame)
     , m_didRunAutosize(false)
     , m_hasSoftwareFilters(false)
     , m_visibleContentScaleFactor(1)
+    , m_inputEventsScaleFactorForEmulation(1)
     , m_partialLayout()
 {
     ASSERT(m_frame);
@@ -2547,6 +2548,19 @@ void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)
 
     m_visibleContentScaleFactor = visibleContentScaleFactor;
     updateScrollbars(scrollOffset());
+}
+
+void FrameView::setInputEventsScaleFactorForEmulation(float contentScaleFactor)
+{
+    if (m_inputEventsScaleFactorForEmulation == contentScaleFactor)
+        return;
+
+    m_inputEventsScaleFactorForEmulation = contentScaleFactor;
+}
+
+float FrameView::inputEventsScaleFactor() const
+{
+    return visibleContentScaleFactor() * m_inputEventsScaleFactorForEmulation;
 }
 
 bool FrameView::scrollbarsCanBeActive() const

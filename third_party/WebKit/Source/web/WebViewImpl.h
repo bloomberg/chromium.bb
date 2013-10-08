@@ -630,6 +630,8 @@ private:
     void doPixelReadbackToCanvas(WebCanvas*, const WebCore::IntRect&);
     void reallocateRenderer();
     void updateLayerTreeViewport();
+    void updateRootLayerTransform();
+    void updateLayerTreeDeviceScaleFactor();
 
     // Helper function: Widens the width of |source| by the specified margins
     // while keeping it smaller than page width.
@@ -728,6 +730,9 @@ private:
     bool m_doingDragAndDrop;
 
     bool m_ignoreInputEvents;
+
+    float m_compositorDeviceScaleFactorOverride;
+    float m_rootLayerScale;
 
     // Webkit expects keyPress events to be suppressed if the associated keyDown
     // event was handled. Safari implements this behavior by peeking out the

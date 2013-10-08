@@ -52,7 +52,6 @@ public:
     virtual void setTraceEventCallback(TraceEventCallback) { }
 
     virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*fontScaleFactor*/, bool /*fitWindow*/) { }
-    virtual void autoZoomPageToFitWidth() { }
 
     virtual bool overridesShowPaintRects() { return false; }
     virtual void setShowPaintRects(bool) { }
