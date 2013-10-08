@@ -36,18 +36,37 @@ SVGAnimatedProperty::SVGAnimatedProperty(SVGElement* contextElement, const Quali
 
 SVGAnimatedProperty::~SVGAnimatedProperty()
 {
-    // Remove wrapper from cache.
+    // Assure that animationEnded() was called, if animationStarted() was called before.
+    ASSERT(!m_isAnimating);
+}
+
+void SVGAnimatedProperty::detachAnimatedPropertiesWrappersForElement(SVGElement* element)
+{
     Cache* cache = animatedPropertyCache();
     const Cache::const_iterator end = cache->end();
     for (Cache::const_iterator it = cache->begin(); it != end; ++it) {
-        if (it->value == this) {
-            cache->remove(it->key);
-            break;
+        if (it->key.m_element == element)
+            it->value->detachWrappers();
+    }
+}
+
+void SVGAnimatedProperty::detachAnimatedPropertiesForElement(SVGElement* element)
+{
+    // Remove wrappers from cache.
+    Cache* cache = animatedPropertyCache();
+
+    Vector<SVGAnimatedPropertyDescription> keysToRemove;
+
+    const Cache::const_iterator end = cache->end();
+    for (Cache::const_iterator it = cache->begin(); it != end; ++it) {
+        if (it->key.m_element == element) {
+            it->value->resetContextElement();
+            keysToRemove.append(it->key);
         }
     }
 
-    // Assure that animationEnded() was called, if animationStarted() was called before.
-    ASSERT(!m_isAnimating);
+    for (Vector<SVGAnimatedPropertyDescription>::const_iterator it = keysToRemove.begin(); it != keysToRemove.end(); ++it)
+        cache->remove(*it);
 }
 
 void SVGAnimatedProperty::commitChange()

@@ -4064,6 +4064,24 @@ v8::Handle<v8::Object> wrap($implClassName* impl, v8::Handle<v8::Object> creatio
 END
     }
 
+    # Add strong reference from TearOff to SVGElement, so that SVGElement would never get GC-ed while the TearOff is alive. We do this in V8-side to avoid circular reference on Blink side.
+    if (SVGTypeNeedsToHoldContextElement($interface->name)) {
+        # below include needed for SVGPathSegListPropertyTearOff
+        AddToImplIncludes("V8SVGPathElement.h");
+        $implementation{nameSpaceWebCore}->add(<<END);
+v8::Handle<v8::Object> wrap($nativeType* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl, isolate));
+    v8::Handle<v8::Object> wrapper = ${v8ClassName}::createWrapper(impl, creationContext, isolate);
+    if (impl->contextElement())
+        V8HiddenPropertyName::setNamedHiddenReference(wrapper, "contextElement", toV8(impl->contextElement(), creationContext, isolate));
+    return wrapper;
+}
+
+END
+    }
+
     my @enabledPerContextFunctions;
     my @normalFunctions;
     my $needsDomainSafeFunctionSetter = 0;
@@ -5879,6 +5897,13 @@ sub IsSVGAnimatedType
     return $type =~ /^SVGAnimated/;
 }
 
+sub SVGTypeNeedsToHoldContextElement
+{
+    my $type = shift;
+
+    return IsSVGTypeNeedingTearOff($type) || IsSVGAnimatedType($type);
+}
+
 sub GetSequenceType
 {
     my $type = shift;
@@ -6158,6 +6183,7 @@ sub NeedsSpecialWrap
     return 1 if $interface->extendedAttributes->{"CustomToV8"};
     return 1 if $interface->extendedAttributes->{"SpecialWrapFor"};
     return 1 if InheritsInterface($interface, "Document");
+    return 1 if SVGTypeNeedsToHoldContextElement($interface->name);
 
     return 0;
 }

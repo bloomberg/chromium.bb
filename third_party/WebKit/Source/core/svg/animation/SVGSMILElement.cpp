@@ -551,6 +551,8 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
     else if (attrName.matches(XLinkNames::hrefAttr)) {
         SVGElementInstance::InvalidationGuard invalidationGuard(this);
         buildPendingResource();
+        if (m_targetElement)
+            clearAnimatedType(m_targetElement);
     } else if (inDocument()) {
         if (attrName == SVGNames::beginAttr)
             beginListChanged(elapsed());
