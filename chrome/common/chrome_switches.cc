@@ -299,6 +299,10 @@ const char kDisableBackgroundMode[]         = "disable-background-mode";
 // measurements.
 const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 
+// Disables running all beforeunload handlers before closing any browser windows
+// on shutdown.
+const char kDisableBatchedShutdown[]        = "disable-batched-shutdown";
+
 // Disables the bundled PPAPI version of Flash.
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 
@@ -565,10 +569,6 @@ const char kEnablePasswordAutofillPublicSuffixDomainMatching[] =
 // browser's cookie jar is pre-filled with GAIA cookies. When the user visits a
 // GAIA login page, an info bar can help the user login.
 const char kEnableAutologin[]               = "enable-autologin";
-
-// Enables running all beforeunload handlers before closing any browser windows
-// on shutdown.
-const char kEnableBatchedShutdown[]         = "enable-batched-shutdown";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";

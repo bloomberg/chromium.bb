@@ -119,10 +119,10 @@ void JavaScriptAppModalDialog::Invalidate() {
 void JavaScriptAppModalDialog::OnCancel(bool suppress_js_messages) {
   // If we are shutting down and this is an onbeforeunload dialog, cancel the
   // shutdown.
-  // TODO(sammc): Remove this when kEnableBatchedShutdown becomes mandatory.
+  // TODO(sammc): Remove this when kDisableBatchedShutdown is removed.
   if (is_before_unload_dialog_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBatchedShutdown)) {
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBatchedShutdown)) {
     browser_shutdown::SetTryingToQuit(false);
   }
 

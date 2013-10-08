@@ -30,8 +30,8 @@ void BrowserCloseManager::StartClosingBrowsers() {
   // wait for beforeunload dialogs; in the latter, the windows will manage
   // showing their own dialogs.
   if (browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBatchedShutdown)) {
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBatchedShutdown)) {
     CloseBrowsers();
     return;
   }

@@ -175,7 +175,6 @@ class BrowserCloseManagerBrowserTest
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kEnableBatchedShutdown);
     if (GetParam())
       command_line->AppendSwitch(switches::kEnableFastUnload);
   }
