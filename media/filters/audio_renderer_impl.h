@@ -97,6 +97,16 @@ class MEDIA_EXPORT AudioRendererImpl
  private:
   friend class AudioRendererImplTest;
 
+  enum State {
+    kUninitialized,
+    kPaused,
+    kPrerolling,
+    kPlaying,
+    kStopped,
+    kUnderflow,
+    kRebuffering,
+  };
+
   // Callback from the audio decoder delivering decoded audio samples.
   void DecodedAudioReady(AudioDecoder::Status status,
                          const scoped_refptr<AudioBuffer>& buffer);
@@ -135,8 +145,8 @@ class MEDIA_EXPORT AudioRendererImpl
                                     const base::TimeDelta& playback_delay,
                                     const base::TimeTicks& time_now);
 
-  void DoPlay();
-  void DoPause();
+  void DoPlay_Locked();
+  void DoPause_Locked();
 
   // AudioRendererSink::RenderCallback implementation.
   //
@@ -152,6 +162,7 @@ class MEDIA_EXPORT AudioRendererImpl
   void AttemptRead();
   void AttemptRead_Locked();
   bool CanRead_Locked();
+  void ChangeState_Locked(State new_state);
 
   // Returns true if the data in the buffer is all before
   // |preroll_timestamp_|. This can only return true while
@@ -215,15 +226,6 @@ class MEDIA_EXPORT AudioRendererImpl
   scoped_ptr<AudioRendererAlgorithm> algorithm_;
 
   // Simple state tracking variable.
-  enum State {
-    kUninitialized,
-    kPaused,
-    kPrerolling,
-    kPlaying,
-    kStopped,
-    kUnderflow,
-    kRebuffering,
-  };
   State state_;
 
   // Keep track of whether or not the sink is playing.
