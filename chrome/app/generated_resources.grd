@@ -6774,6 +6774,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           If enabled, overlay tutorial will be shown after first login.
         </message>
       </if>
+      <message name="IDS_FLAGS_HIDPI_NAME" desc="Name of flag to enable/disable HiDPI Support.">
+        HiDPI Support
+      </message>
+      <message name="IDS_FLAGS_HIDPI_DESCRIPTION" desc="Description of flag to enable/disable HiDPI Support.">
+        If enabled, application size and layout will adapt to the operating system's DPI settings.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -6796,12 +6802,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_CRASHES_DISABLED_HEADER" desc="The header for chrome://crashes when crash reporting is disabled">
         Crash reporting is disabled.
-      </message>
-      <message name="IDS_FLAGS_HIDPI_NAME" desc="Name of flag to enable/disable HiDPI Support.">
-        HiDPI Support
-      </message>
-      <message name="IDS_FLAGS_HIDPI_DESCRIPTION" desc="Description of flag to enable/disable HiDPI Support.">
-        If enabled, application size and layout will adapt to the operating system's DPI settings.
       </message>
 
       <!-- WebRTC logs -->
