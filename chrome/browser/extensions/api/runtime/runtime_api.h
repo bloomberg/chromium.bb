@@ -109,6 +109,15 @@ class RuntimeRequestUpdateCheckFunction : public AsyncExtensionFunction,
   bool did_reply_;
 };
 
+class RuntimeRestartFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("runtime.restart", RUNTIME_RESTART)
+
+ protected:
+  virtual ~RuntimeRestartFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class RuntimeGetPlatformInfoFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getPlatformInfo",

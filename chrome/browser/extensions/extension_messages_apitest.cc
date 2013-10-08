@@ -200,6 +200,7 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
         "getURL",
         "reload",
         "requestUpdateCheck",
+        "restart",
         "connectNative",
         "sendNativeMessage",
         "onStartup",

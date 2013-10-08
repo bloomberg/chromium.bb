@@ -646,6 +646,7 @@ enum HistogramValue {
   CAST_CHANNEL_OPEN,
   CAST_CHANNEL_SEND,
   CAST_CHANNEL_CLOSE,
+  RUNTIME_RESTART,
   ENUM_BOUNDARY // Last entry: Add new entries above.
 };
 

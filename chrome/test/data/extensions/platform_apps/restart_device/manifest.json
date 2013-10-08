@@ -1,0 +1,10 @@
+{
+  "name": "Platform App Test: runtime.restart API",
+  "version": "1",
+  "kiosk_enabled": true,
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

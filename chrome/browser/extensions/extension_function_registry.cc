@@ -48,6 +48,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::RuntimeSetUninstallUrlFunction>();
   RegisterFunction<extensions::RuntimeReloadFunction>();
   RegisterFunction<extensions::RuntimeRequestUpdateCheckFunction>();
+  RegisterFunction<extensions::RuntimeRestartFunction>();
 
   // ExperimentalIdentity.
   RegisterFunction<extensions::ExperimentalIdentityGetAuthTokenFunction>();

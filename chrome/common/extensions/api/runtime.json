@@ -162,6 +162,13 @@
         ]
       },
       {
+        "name": "restart",
+        "description": "Restart the ChromeOS device when the app runs in kiosk mode. Otherwise, it's no-op.",
+        "type": "function",
+        "nocompile": true,
+        "parameters": []
+      },
+      {
         "name": "connect",
         "type": "function",
         "nocompile": true,

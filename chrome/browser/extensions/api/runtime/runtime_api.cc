@@ -35,6 +35,12 @@
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
+#endif
+
 namespace GetPlatformInfo = extensions::api::runtime::GetPlatformInfo;
 
 namespace extensions {
@@ -354,6 +360,19 @@ void RuntimeRequestUpdateCheckFunction::ReplyUpdateFound(
   results_->Append(details);
   details->SetString("version", version);
   SendResponse(true);
+}
+
+bool RuntimeRestartFunction::RunImpl() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::Get()->IsLoggedInAsKioskApp()) {
+    chromeos::DBusThreadManager::Get()
+        ->GetPowerManagerClient()
+        ->RequestRestart();
+    return true;
+  }
+#endif
+  SetError("Function available only for ChromeOS kiosk mode.");
+  return false;
 }
 
 bool RuntimeGetPlatformInfoFunction::RunImpl() {

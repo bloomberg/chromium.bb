@@ -46,6 +46,15 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#endif
+
 using apps::ShellWindow;
 using apps::ShellWindowRegistry;
 using content::WebContents;
@@ -1138,6 +1147,76 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest, IncognitoComponentApp) {
   while (!ContainsKey(opener_app_ids_, file_manager->id())) {
     content::RunAllPendingInMessageLoop();
   }
+}
+
+class RestartDeviceTest : public PlatformAppBrowserTest {
+ public:
+  RestartDeviceTest()
+      : power_manager_client_(NULL),
+        mock_user_manager_(NULL) {}
+  virtual ~RestartDeviceTest() {}
+
+  // PlatformAppBrowserTest overrides
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    chromeos::MockDBusThreadManagerWithoutGMock* dbus_manager =
+        new chromeos::MockDBusThreadManagerWithoutGMock;
+    chromeos::DBusThreadManager::InitializeForTesting(dbus_manager);
+    power_manager_client_ = dbus_manager->fake_power_manager_client();
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    PlatformAppBrowserTest::SetUpOnMainThread();
+
+    mock_user_manager_ = new chromeos::MockUserManager;
+    user_manager_enabler_.reset(
+        new chromeos::ScopedUserManagerEnabler(mock_user_manager_));
+
+    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
+        .WillRepeatedly(testing::Return(true));
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsKioskApp())
+        .WillRepeatedly(testing::Return(true));
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    user_manager_enabler_.reset();
+    PlatformAppBrowserTest::CleanUpOnMainThread();
+  }
+
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    chromeos::DBusThreadManager::Shutdown();
+    PlatformAppBrowserTest::TearDownInProcessBrowserTestFixture();
+  }
+
+  int request_restart_call_count() const {
+    return power_manager_client_->request_restart_call_count();
+  }
+
+ private:
+  chromeos::FakePowerManagerClient* power_manager_client_;
+  chromeos::MockUserManager* mock_user_manager_;
+  scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+
+  DISALLOW_COPY_AND_ASSIGN(RestartDeviceTest);
+};
+
+// Tests that chrome.runtime.restart would request device restart in
+// ChromeOS kiosk mode.
+IN_PROC_BROWSER_TEST_F(RestartDeviceTest, Restart) {
+  ASSERT_EQ(0, request_restart_call_count());
+
+  ExtensionTestMessageListener launched_listener("Launched", true);
+  const Extension* extension = LoadAndLaunchPlatformApp("restart_device");
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  launched_listener.Reply("restart");
+  ExtensionTestMessageListener restart_requested_listener("restartRequested",
+                                                          false);
+  ASSERT_TRUE(restart_requested_listener.WaitUntilSatisfied());
+
+  EXPECT_EQ(1, request_restart_call_count());
 }
 
 #endif  // defined(OS_CHROMEOS)
