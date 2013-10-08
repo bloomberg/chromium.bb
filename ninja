@@ -20,12 +20,18 @@ EOF
 
 case "$OS" in
   Linux)
-    MACHINE=$(getconf LONG_BIT)
+    MACHINE=$(uname -m)
     case "$MACHINE" in
-      32|64)  exec "${THIS_DIR}/ninja-linux${MACHINE}" "$@";;
-      *)      echo Unknown architecture \($MACHINE\) -- unable to run ninja.
-              print_help
-              exit 1;;
+      i?86|x86_64)
+        LONG_BIT=$(getconf LONG_BIT)
+        # We know we are on x86 but we need to use getconf to determine
+        # bittage of the userspace install (e.g. when runing 32-bit userspace
+        # on x86_64 kernel)
+        exec "${THIS_DIR}/ninja-linux${LONG_BIT}" "$@";;
+      *)
+        echo Unknown architecture \($MACHINE\) -- unable to run ninja.
+        print_help
+        exit 1;;
     esac
     ;;
   Darwin)    exec "${THIS_DIR}/ninja-mac" "$@";;
