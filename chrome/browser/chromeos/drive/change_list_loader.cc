@@ -287,15 +287,14 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
   // since currently we always use WAPI for fast fetch, regardless of the flag.
   void FixResourceIdInChangeList(ChangeList* change_list) {
     std::vector<ResourceEntry>* entries = change_list->mutable_entries();
+    std::vector<std::string>* parent_resource_ids =
+        change_list->mutable_parent_resource_ids();
     for (size_t i = 0; i < entries->size(); ++i) {
       ResourceEntry* entry = &(*entries)[i];
       if (entry->has_resource_id())
         entry->set_resource_id(FixResourceId(entry->resource_id()));
 
-      // Currently parent local id is the parent's resource id.
-      // It will be replaced by actual local id. (crbug.com/260514).
-      if (entry->has_parent_local_id())
-        entry->set_parent_local_id(FixResourceId(entry->parent_local_id()));
+      (*parent_resource_ids)[i] = FixResourceId((*parent_resource_ids)[i]);
     }
   }
 
