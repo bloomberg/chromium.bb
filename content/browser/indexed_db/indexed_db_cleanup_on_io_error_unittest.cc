@@ -79,6 +79,8 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
                                   &mock_leveldb_factory);
 }
 
+// TODO(dgrogan): Remove expect_destroy if we end up not using it again. It is
+// currently set to false in all 4 calls below.
 template <class T>
 class MockErrorLevelDBFactory : public LevelDBFactory {
  public:
@@ -138,7 +140,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &disk_full,
                                   &mock_leveldb_factory2);
 
-  MockErrorLevelDBFactory<int> mock_leveldb_factory3(EIO, true);
+  MockErrorLevelDBFactory<int> mock_leveldb_factory3(EIO, false);
   scoped_refptr<IndexedDBBackingStore> backing_store3 =
       IndexedDBBackingStore::Open(origin_identifier,
                                   path,
@@ -148,7 +150,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &mock_leveldb_factory3);
 
   MockErrorLevelDBFactory<base::PlatformFileError> mock_leveldb_factory4(
-      base::PLATFORM_FILE_ERROR_FAILED, true);
+      base::PLATFORM_FILE_ERROR_FAILED, false);
   scoped_refptr<IndexedDBBackingStore> backing_store4 =
       IndexedDBBackingStore::Open(origin_identifier,
                                   path,

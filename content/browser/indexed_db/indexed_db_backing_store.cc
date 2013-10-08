@@ -396,47 +396,11 @@ enum IndexedDBBackingStoreOpenResult {
   INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_ERR,
   INDEXED_DB_BACKING_STORE_OPEN_MEMORY_FAILED,
   INDEXED_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
-  INDEXED_DB_BACKING_STORE_OPEN_DISK_FULL,
+  INDEXED_DB_BACKING_STORE_OPEN_DISK_FULL_DEPRECATED,
   INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
   INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
   INDEXED_DB_BACKING_STORE_OPEN_MAX,
 };
-
-// TODO(dgrogan): Move to leveldb_env.
-bool RecoveryCouldBeFruitful(leveldb::Status status) {
-  leveldb_env::MethodID method;
-  int error = -1;
-  leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
-      status.ToString().c_str(), &method, &error);
-  switch (result) {
-    case leveldb_env::NONE:
-      return true;
-    case leveldb_env::METHOD_AND_PFE: {
-      base::PlatformFileError pfe = static_cast<base::PlatformFileError>(error);
-      switch (pfe) {
-        case base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED:
-        case base::PLATFORM_FILE_ERROR_NO_MEMORY:
-        case base::PLATFORM_FILE_ERROR_NO_SPACE:
-          return false;
-        default:
-          return true;
-      }
-    }
-    case leveldb_env::METHOD_AND_ERRNO: {
-      switch (error) {
-        case EMFILE:
-        case ENOMEM:
-        case ENOSPC:
-          return false;
-        default:
-          return true;
-      }
-    }
-    default:
-      return true;
-  }
-  return true;
-}
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const std::string& origin_identifier,
@@ -551,14 +515,10 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
   if (db) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_SUCCESS);
-  } else if (!RecoveryCouldBeFruitful(status)) {
+  } else if (leveldb_env::IsIOError(status)) {
     LOG(ERROR) << "Unable to open backing store, not trying to recover - "
                << status.ToString();
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY);
-    return scoped_refptr<IndexedDBBackingStore>();
-  } else if (*is_disk_full) {
-    LOG(ERROR) << "Unable to open backing store - disk is full.";
-    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_DISK_FULL);
     return scoped_refptr<IndexedDBBackingStore>();
   } else {
     LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";

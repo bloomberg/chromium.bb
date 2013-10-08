@@ -392,6 +392,14 @@ bool IndicatesDiskFull(leveldb::Status status) {
          (result == leveldb_env::METHOD_AND_ERRNO && error == ENOSPC);
 }
 
+bool IsIOError(leveldb::Status status) {
+  leveldb_env::MethodID method;
+  int error = -1;
+  leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
+      status.ToString().c_str(), &method, &error);
+  return result != leveldb_env::NONE;
+}
+
 std::string FilePathToString(const base::FilePath& file_path) {
 #if defined(OS_WIN)
   return UTF16ToUTF8(file_path.value());
