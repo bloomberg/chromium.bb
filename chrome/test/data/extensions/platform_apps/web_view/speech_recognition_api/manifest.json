@@ -1,0 +1,13 @@
+{
+  "name": "<webview> Web Speech API.",
+  "version": "1",
+  "permissions": [
+    "audioCapture",
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

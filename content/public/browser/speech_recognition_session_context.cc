@@ -4,12 +4,16 @@
 
 #include "content/public/browser/speech_recognition_session_context.h"
 
+#include "ipc/ipc_message.h"
+
 namespace content {
 
 SpeechRecognitionSessionContext::SpeechRecognitionSessionContext()
     : render_process_id(0),
       render_view_id(0),
-      guest_render_view_id(0),
+      guest_render_view_id(MSG_ROUTING_NONE),
+      embedder_render_process_id(0),
+      embedder_render_view_id(MSG_ROUTING_NONE),
       request_id(0),
       requested_by_page_element(true) {
 }

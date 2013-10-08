@@ -642,7 +642,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       IsGuest(), GetID(), storage_partition_impl_->GetURLRequestContext()));
 #endif
   AddFilter(new SpeechRecognitionDispatcherHost(
-      GetID(), storage_partition_impl_->GetURLRequestContext()));
+      IsGuest(), GetID(), storage_partition_impl_->GetURLRequestContext()));
   AddFilter(new FileAPIMessageFilter(
       GetID(),
       storage_partition_impl_->GetURLRequestContext(),

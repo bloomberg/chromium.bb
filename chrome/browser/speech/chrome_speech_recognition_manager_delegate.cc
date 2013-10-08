@@ -357,13 +357,22 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
   // |render_process_id| field, which is needed later to retrieve the profile.
   DCHECK_NE(context.render_process_id, 0);
 
+  int render_process_id = context.render_process_id;
+  int render_view_id = context.render_view_id;
+  if (context.embedder_render_process_id) {
+    // If this is a request originated from a guest, we need to re-route the
+    // permission check through the embedder (app).
+    render_process_id = context.embedder_render_process_id;
+    render_view_id = context.embedder_render_view_id;
+  }
+
   // Check that the render view type is appropriate, and whether or not we
   // need to request permission from the user.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&CheckRenderViewType,
                                      callback,
-                                     context.render_process_id,
-                                     context.render_view_id,
+                                     render_process_id,
+                                     render_view_id,
                                      !context.requested_by_page_element));
 }
 
@@ -383,6 +392,7 @@ bool ChromeSpeechRecognitionManagerDelegate::FilterProfanities(
       GetBoolean(prefs::kSpeechRecognitionFilterProfanities);
 }
 
+// static.
 void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
     base::Callback<void(bool ask_user, bool is_allowed)> callback,
     int render_process_id,

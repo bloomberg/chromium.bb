@@ -27,6 +27,7 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
       public SpeechRecognitionEventListener {
  public:
   SpeechRecognitionDispatcherHost(
+      bool is_guest,
       int render_process_id,
       net::URLRequestContextGetter* context_getter);
 
@@ -61,11 +62,14 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
   void OnStartRequest(
       const SpeechRecognitionHostMsg_StartRequest_Params& params);
   void OnStartRequestOnIO(
+      int embedder_render_process_id,
+      int embedder_render_view_id,
       const SpeechRecognitionHostMsg_StartRequest_Params& params,
       bool filter_profanities);
   void OnAbortRequest(int render_view_id, int request_id);
   void OnStopCaptureRequest(int render_view_id, int request_id);
 
+  bool is_guest_;
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
 

@@ -26,9 +26,24 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
 
   int render_process_id;
   int render_view_id;
+
   // Browser plugin guest's render view id, if this context represents a speech
-  // recognition request from an embedder on behalf of the guest.
+  // recognition request from an embedder on behalf of the guest. This is used
+  // for input tag where speech bubble is to be shown.
+  //
+  // TODO(lazyboy): Right now showing bubble from guest does not work, we fall
+  // back to embedder instead, fix this and use
+  // embedder_render_process_id/embedder_render_view_id similar to Web Speech
+  // API below.
   int guest_render_view_id;
+
+  // The pair (|embedder_render_process_id|, |embedder_render_view_id|)
+  // represents a Browser plugin guest's embedder. This is filled in if the
+  // session is from a guest Web Speech API. We use these to check if the
+  // embedder (app) is permitted to use audio.
+  int embedder_render_process_id;
+  int embedder_render_view_id;
+
   int request_id;
 
   // Determines whether recognition was requested by a page element (in which

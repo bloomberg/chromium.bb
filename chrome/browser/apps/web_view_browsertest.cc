@@ -230,11 +230,8 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
 class WebViewTest : public extensions::PlatformAppBrowserTest {
  protected:
   virtual void SetUp() OVERRIDE {
-    const testing::TestInfo* const test_info =
-        testing::UnitTest::GetInstance()->current_test_info();
-
-    // SpeechRecognition test specific SetUp.
-    if (!strcmp(test_info->name(), "SpeechRecognition")) {
+    if (UsesFakeSpeech()) {
+      // SpeechRecognition test specific SetUp.
       fake_speech_recognition_manager_.reset(
           new content::FakeSpeechRecognitionManager());
       fake_speech_recognition_manager_->set_should_send_fake_response(true);
@@ -251,11 +248,10 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   virtual void TearDown() OVERRIDE {
-    // SpeechRecognition test specific TearDown.
-    const testing::TestInfo* const test_info =
-        testing::UnitTest::GetInstance()->current_test_info();
-    if (!strcmp(test_info->name(), "SpeechRecognition"))
+    if (UsesFakeSpeech()) {
+      // SpeechRecognition test specific TearDown.
       content::SpeechRecognitionManager::SetManagerForTesting(NULL);
+    }
 
     extensions::PlatformAppBrowserTest::TearDown();
   }
@@ -577,6 +573,16 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
  private:
+  bool UsesFakeSpeech() {
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+
+    // SpeechRecognition test specific SetUp.
+    return !strcmp(test_info->name(), "SpeechRecognition") ||
+           !strcmp(test_info->name(),
+                   "SpeechRecognitionAPI_HasPermissionAllow");
+  }
+
   scoped_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
 };
@@ -1752,6 +1758,27 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentReady) {
 IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentInteractive) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_interactive"))
                   << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognitionAPI_HasPermissionAllow) {
+  ASSERT_TRUE(
+      RunPlatformAppTestWithArg("platform_apps/web_view/speech_recognition_api",
+                                "allowTest"))
+          << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognitionAPI_HasPermissionDeny) {
+  ASSERT_TRUE(
+      RunPlatformAppTestWithArg("platform_apps/web_view/speech_recognition_api",
+                                "denyTest"))
+          << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognitionAPI_NoPermission) {
+  ASSERT_TRUE(
+      RunPlatformAppTestWithArg("platform_apps/web_view/common",
+                                "speech_recognition_api_no_permission"))
+          << message_;
 }
 
 // Tests overriding user agent.

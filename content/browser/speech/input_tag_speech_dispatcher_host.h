@@ -66,12 +66,12 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   void OnStopRecording(int render_view_id, int request_id);
 
   void StartRecognitionOnIO(
-      int render_process_id,
-      int guest_render_view_id,
+      int embedder_render_process_id,
+      int embedder_render_view_id,
       const InputTagSpeechHostMsg_StartRecognition_Params& params,
       bool filter_profanities);
 
-  bool guest_;
+  bool is_guest_;
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 

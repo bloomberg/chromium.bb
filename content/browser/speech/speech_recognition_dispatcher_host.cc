@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"
@@ -17,9 +20,11 @@
 namespace content {
 
 SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
+    bool is_guest,
     int render_process_id,
     net::URLRequestContextGetter* context_getter)
-    : render_process_id_(render_process_id),
+    : is_guest_(is_guest),
+      render_process_id_(render_process_id),
       context_getter_(context_getter) {
   // Do not add any non-trivial initialization here, instead do it lazily when
   // required (e.g. see the method |SpeechRecognitionManager::GetInstance()|) or
@@ -55,6 +60,30 @@ void SpeechRecognitionDispatcherHost::OverrideThreadForMessage(
 
 void SpeechRecognitionDispatcherHost::OnStartRequest(
     const SpeechRecognitionHostMsg_StartRequest_Params& params) {
+  SpeechRecognitionHostMsg_StartRequest_Params input_params(params);
+
+  int embedder_render_process_id = 0;
+  int embedder_render_view_id = MSG_ROUTING_NONE;
+  if (is_guest_) {
+    // If the speech API request was from a guest, save the context of the
+    // embedder since we will use it to decide permission.
+    RenderViewHostImpl* render_view_host =
+        RenderViewHostImpl::FromID(render_process_id_, params.render_view_id);
+    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+        WebContents::FromRenderViewHost(render_view_host));
+    BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
+
+    embedder_render_process_id =
+        guest->embedder_web_contents()->GetRenderProcessHost()->GetID();
+    DCHECK_NE(embedder_render_process_id, 0);
+    embedder_render_view_id =
+        guest->embedder_web_contents()->GetRenderViewHost()->GetRoutingID();
+    DCHECK_NE(embedder_render_view_id, MSG_ROUTING_NONE);
+  }
+
+  // TODO(lazyboy): Check if filter_profanities should use |render_process_id|
+  // instead of |render_process_id_|. We are also using the same value in
+  // input_tag_dispatcher_host.cc
   bool filter_profanities =
       SpeechRecognitionManagerImpl::GetInstance() &&
       SpeechRecognitionManagerImpl::GetInstance()->delegate() &&
@@ -65,16 +94,26 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&SpeechRecognitionDispatcherHost::OnStartRequestOnIO,
-                 this, params, filter_profanities));
+                 this,
+                 embedder_render_process_id,
+                 embedder_render_view_id,
+                 input_params,
+                 filter_profanities));
 }
 
 void SpeechRecognitionDispatcherHost::OnStartRequestOnIO(
+    int embedder_render_process_id,
+    int embedder_render_view_id,
     const SpeechRecognitionHostMsg_StartRequest_Params& params,
     bool filter_profanities) {
   SpeechRecognitionSessionContext context;
   context.context_name = params.origin_url;
   context.render_process_id = render_process_id_;
   context.render_view_id = params.render_view_id;
+  context.embedder_render_process_id = embedder_render_process_id;
+  context.embedder_render_view_id = embedder_render_view_id;
+  if (embedder_render_process_id)
+    context.guest_render_view_id = params.render_view_id;
   context.request_id = params.request_id;
   context.requested_by_page_element = false;
 
