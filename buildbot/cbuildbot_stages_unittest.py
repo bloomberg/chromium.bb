@@ -97,6 +97,14 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     for item in to_patch:
       self.PatchObject(*item, autospec=True)
 
+  def GetHWTestSuite(self):
+    """Get the HW test suite for the current bot."""
+    hw_tests = self.build_config['hw_tests']
+    if not hw_tests:
+      # TODO(milleral): Add HWTests back to lumpy-chrome-perf.
+      raise unittest.SkipTest('Missing HWTest for %s' % (self.bot_id,))
+    return hw_tests[0]
+
 
 class AbstractStageTest(StageTest):
   """Base class for tests that test a particular build stage.
@@ -623,7 +631,7 @@ class HWTestStageTest(AbstractStageTest):
     self.options.log_dir = '/b/cbuild/mylogdir'
     self.build_config = config.config[self.bot_id].copy()
     self.StartPatcher(ArchiveStageMock())
-    self.suite_config = self.build_config['hw_tests'][0]
+    self.suite_config = self.GetHWTestSuite()
     self.suite = self.suite_config.suite
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                              self._current_board, '')
@@ -713,7 +721,7 @@ class HWTestStageTest(AbstractStageTest):
     """Test if run correctly with a critical timeout."""
     self.bot_id = 'alex-paladin'
     self.build_config = config.config['alex-paladin'].copy()
-    self.suite_config = self.build_config['hw_tests'][0]
+    self.suite_config = self.GetHWTestSuite()
     self._RunHWTestSuite(timeout=True)
 
   def testWithSuiteWithInfrastructureFailure(self):
@@ -729,11 +737,7 @@ class HWTestStageTest(AbstractStageTest):
     self.suite = 'perf_v2'
     self.bot_id = 'lumpy-chrome-perf'
     self.build_config = config.config['lumpy-chrome-perf'].copy()
-    hw_tests = self.build_config['hw_tests']
-    if not hw_tests:
-      # TODO(milleral): Add HWTests back to lumpy-chrome-perf.
-      raise unittest.SkipTest('Missing HWTest for lumpy-chrome-perf')
-    self.suite_config = hw_tests[0]
+    self.suite_config = self.GetHWTestSuite()
     self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
 
     results_file = 'perf_v2.results'
@@ -770,7 +774,7 @@ class AUTestStageTest(AbstractStageTest,
     self.PatchObject(lab_status, 'CheckLabStatus', autospec=True)
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                              self._current_board, '0.0.1')
-    self.suite_config = self.build_config['hw_tests'][0]
+    self.suite_config = self.GetHWTestSuite()
     self.suite = self.suite_config.suite
 
   def ConstructStage(self):
