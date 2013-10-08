@@ -281,6 +281,17 @@ void Settings::setMediaTypeOverride(const String& mediaTypeOverride)
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
+void Settings::resetFontFamilies()
+{
+    m_standardFontFamilyMap.clear();
+    m_serifFontFamilyMap.clear();
+    m_fixedFontFamilyMap.clear();
+    m_sansSerifFontFamilyMap.clear();
+    m_cursiveFontFamilyMap.clear();
+    m_fantasyFontFamilyMap.clear();
+    m_pictographFontFamilyMap.clear();
+}
+
 void Settings::setLoadsImagesAutomatically(bool loadsImagesAutomatically)
 {
     m_loadsImagesAutomatically = loadsImagesAutomatically;

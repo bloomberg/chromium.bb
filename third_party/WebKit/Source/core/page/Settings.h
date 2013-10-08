@@ -105,6 +105,9 @@ public:
     void setMediaTypeOverride(const String&);
     const String& mediaTypeOverride() const { return m_mediaTypeOverride; }
 
+    // Only called by InternalSettings to clear font family maps.
+    void resetFontFamilies();
+
     // Unlike areImagesEnabled, this only suppresses the network load of
     // the image URL.  A cached image will still be rendered if requested.
     void setLoadsImagesAutomatically(bool);

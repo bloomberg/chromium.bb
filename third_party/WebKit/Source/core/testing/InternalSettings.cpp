@@ -98,6 +98,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setShouldDisplayTextDescriptions(m_shouldDisplayTextDescriptions);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->setCompositorDrivenAcceleratedScrollingEnabled(m_originalCompositorDrivenAcceleratedScrollEnabled);
+    settings->resetFontFamilies();
 }
 
 // We can't use RefCountedSupplement because that would try to make InternalSettings RefCounted
