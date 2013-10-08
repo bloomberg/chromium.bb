@@ -159,6 +159,12 @@
   "vm_private_dirty_final_total": {
     "description": "Private Dirty is basically the amount of RAM inside the process that can not be paged to disk (it is not backed by the same data on disk), and is not shared with any other processes. Another way to look at this is the RAM that will become available to the system when that process goes away (and probably quickly subsumed into caches and other uses of it)."
   },
+  "vm_shared_dirty_final_browser": {
+    "description": "Shared Dirty is the amount of RAM outside the process that can not be paged to disk, and is shared with other processes."
+  },
+  "vm_shared_dirty_final_renderer": {
+    "description": "Shared Dirty is the amount of RAM outside the process that can not be paged to disk, and is shared with other processes."
+  },
   "vm_proportional_set_size_final_browser": {
     "description": "The PSS number is a metric the kernel computes that takes into account memory sharing -- basically each page of RAM in a process is scaled by a ratio of the number of other processes also using that page. This way you can (in theory) add up the pss across all processes to see the total RAM they are using, and compare pss between processes to get a rough idea of their relative weight."
   },
