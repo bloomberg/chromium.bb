@@ -35,12 +35,28 @@ using namespace Unicode;
 COMPILE_ASSERT(sizeof(AtomicString) == sizeof(String), atomic_string_and_string_must_be_same_size);
 
 class AtomicStringTable {
+    WTF_MAKE_NONCOPYABLE(AtomicStringTable);
 public:
     static AtomicStringTable* create(WTFThreadData& data)
     {
         data.m_atomicStringTable = new AtomicStringTable;
         data.m_atomicStringTableDestructor = AtomicStringTable::destroy;
+        data.m_atomicStringTable->addStaticStrings();
         return data.m_atomicStringTable;
+    }
+
+    StringImpl* addStringImpl(StringImpl* string)
+    {
+        if (!string->length())
+            return StringImpl::empty();
+
+        StringImpl* result = *m_table.add(string).iterator;
+
+        if (!result->isAtomic())
+            result->setIsAtomic(true);
+
+        ASSERT(!string->isStatic() || result->isStatic());
+        return result;
     }
 
     HashSet<StringImpl*>& table()
@@ -49,31 +65,53 @@ public:
     }
 
 private:
+    AtomicStringTable() { }
+
+    void addStaticStrings()
+    {
+        const Vector<StringImpl*>& staticStrings = StringImpl::allStaticStrings();
+
+        Vector<StringImpl*>::const_iterator it = staticStrings.begin();
+        for (; it != staticStrings.end(); ++it) {
+            addStringImpl(*it);
+        }
+    }
+
     static void destroy(AtomicStringTable* table)
     {
         HashSet<StringImpl*>::iterator end = table->m_table.end();
-        for (HashSet<StringImpl*>::iterator iter = table->m_table.begin(); iter != end; ++iter)
-            (*iter)->setIsAtomic(false);
+        for (HashSet<StringImpl*>::iterator iter = table->m_table.begin(); iter != end; ++iter) {
+            StringImpl* string = *iter;
+            if (!string->isStatic()) {
+                ASSERT(string->isAtomic());
+                string->setIsAtomic(false);
+            }
+        }
         delete table;
     }
 
     HashSet<StringImpl*> m_table;
 };
 
-static inline HashSet<StringImpl*>& stringTable()
+static inline AtomicStringTable& atomicStringTable()
 {
     // Once possible we should make this non-lazy (constructed in WTFThreadData's constructor).
     WTFThreadData& data = wtfThreadData();
     AtomicStringTable* table = data.atomicStringTable();
     if (UNLIKELY(!table))
         table = AtomicStringTable::create(data);
-    return table->table();
+    return *table;
+}
+
+static inline HashSet<StringImpl*>& atomicStrings()
+{
+    return atomicStringTable().table();
 }
 
 template<typename T, typename HashTranslator>
 static inline PassRefPtr<StringImpl> addToStringTable(const T& value)
 {
-    HashSet<StringImpl*>::AddResult addResult = stringTable().add<HashTranslator>(value);
+    HashSet<StringImpl*>::AddResult addResult = atomicStrings().add<HashTranslator>(value);
 
     // If the string is newly-translated, then we need to adopt it.
     // The boolean in the pair tells us if that is so.
@@ -382,23 +420,16 @@ PassRefPtr<StringImpl> AtomicString::addFromLiteralData(const char* characters, 
     return addToStringTable<CharBuffer, CharBufferFromLiteralDataTranslator>(buffer);
 }
 
-PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* r)
+PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* string)
 {
-    if (!r->length())
-        return StringImpl::empty();
-
-    StringImpl* result = *stringTable().add(r).iterator;
-    if (result == r)
-        r->setIsAtomic(true);
-    ASSERT(!r->isStatic() || result->isStatic());
-    return result;
+    return atomicStringTable().addStringImpl(string);
 }
 
 template<typename CharacterType>
 static inline HashSet<StringImpl*>::iterator findString(const StringImpl* stringImpl)
 {
     HashAndCharacters<CharacterType> buffer = { stringImpl->existingHash(), stringImpl->getCharacters<CharacterType>(), stringImpl->length() };
-    return stringTable().find<HashAndCharactersTranslator<CharacterType> >(buffer);
+    return atomicStrings().find<HashAndCharactersTranslator<CharacterType> >(buffer);
 }
 
 StringImpl* AtomicString::find(const StringImpl* stringImpl)
@@ -414,7 +445,7 @@ StringImpl* AtomicString::find(const StringImpl* stringImpl)
         iterator = findString<LChar>(stringImpl);
     else
         iterator = findString<UChar>(stringImpl);
-    if (iterator == stringTable().end())
+    if (iterator == atomicStrings().end())
         return 0;
     return *iterator;
 }
@@ -426,8 +457,8 @@ void AtomicString::remove(StringImpl* r)
         iterator = findString<LChar>(r);
     else
         iterator = findString<UChar>(r);
-    RELEASE_ASSERT(iterator != stringTable().end());
-    stringTable().remove(iterator);
+    RELEASE_ASSERT(iterator != atomicStrings().end());
+    atomicStrings().remove(iterator);
 }
 
 AtomicString AtomicString::lower() const

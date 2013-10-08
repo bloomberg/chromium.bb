@@ -174,6 +174,8 @@ public:
     ~StringImpl();
 
     static StringImpl* createStatic(const char* string, unsigned length, unsigned hash);
+    static void freezeStaticStrings();
+    static const Vector<StringImpl*>& allStaticStrings();
 
     static PassRefPtr<StringImpl> create(const UChar*, unsigned length);
     static PassRefPtr<StringImpl> create(const LChar*, unsigned length);

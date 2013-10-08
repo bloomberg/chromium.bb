@@ -26,6 +26,7 @@
 #include "wtf/text/StringImpl.h"
 
 #include "wtf/LeakAnnotations.h"
+#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuffer.h"
@@ -342,8 +343,35 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
     return adoptRef(new (NotNull, string) StringImpl(length));
 }
 
+static Vector<StringImpl*>& staticStrings()
+{
+    DEFINE_STATIC_LOCAL(Vector<StringImpl*>, staticStrings, ());
+    return staticStrings;
+}
+
+#ifndef NDEBUG
+static bool s_allowCreationOfStaticStrings = true;
+#endif
+
+const Vector<StringImpl*>& StringImpl::allStaticStrings()
+{
+    return staticStrings();
+}
+
+void StringImpl::freezeStaticStrings()
+{
+    ASSERT(isMainThread());
+
+#ifndef NDEBUG
+    s_allowCreationOfStaticStrings = false;
+#endif
+
+    staticStrings().shrinkToFit();
+}
+
 StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsigned hash)
 {
+    ASSERT(s_allowCreationOfStaticStrings);
     ASSERT(string);
     ASSERT(length);
 
@@ -361,6 +389,10 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
 #ifndef NDEBUG
     impl->assertHashIsCorrect();
 #endif
+
+    ASSERT(isMainThread());
+    staticStrings().append(impl);
+
     return impl;
 }
 

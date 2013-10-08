@@ -69,6 +69,8 @@ void init()
     QualifiedName::init();
     Partitions::init();
     EventTracer::initialize();
+
+    StringImpl::freezeStaticStrings();
 }
 
 void shutdown()
