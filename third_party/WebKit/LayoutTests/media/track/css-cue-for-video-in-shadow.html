@@ -16,26 +16,16 @@ var step = 0.4;
 var initialTime = 0.6;
 var endTime = 3.0
 
-function skipNonElements(root)
-{
-    nextElementSibling = root;
-    while (nextElementSibling.nodeType != 1) {
-        nextElementSibling = nextElementSibling.nextSibling;
-    }
-    return nextElementSibling;
-}
-
 function seeked()
 {
     if (testEnded)
         return;
 
-    cueNode = skipNonElements(textTrackDisplayElement(video, 'cue').firstChild);
-    skipNonElements(cueNode);
+    cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
     testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)", "!=");
-    cueNode = skipNonElements(cueNode.nextSibling);
+    cueNode = cueNode.nextElementSibling;
     testExpected("getComputedStyle(cueNode).color", "rgb(0, 128, 0)", "!=");
-    cueNode = skipNonElements(cueNode.nextSibling);
+    cueNode = cueNode.nextElementSibling;
     testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)", "!=");
     endTest();
 }
