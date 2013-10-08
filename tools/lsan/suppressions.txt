@@ -41,7 +41,7 @@ leak:FontConfigTypeface::LegacyCreateTypeface
 leak:GrGpuGL::flushGraphicsState
 
 #### Actual bugs in Chromium code ####
-# Please do not add new suppressions to this section. Instead, commits that
+# PLEASE DO NOT ADD NEW SUPPRESSIONS TO THIS SECTION. Instead, commits that
 # introduce memory leaks should be reverted.
 
 # Small test-only leak in ppapi_unittests. http://crbug.com/258113
@@ -67,3 +67,5 @@ leak:TranslateInfoBarBase::CreateLanguageCombobox
 
 # Cast leaks. http://crbug.com/304970
 leak:extensions::api::cast_channel::CastSocketTest::SetUp
+
+# PLEASE DO NOT ADD NEW SUPPRESSIONS HERE. See the comment above.
