@@ -35,6 +35,7 @@
 #include "platform/audio/AudioSourceProvider.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebVector.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
@@ -44,6 +45,7 @@ class AudioPullFIFO;
 // An AudioDestination using Chromium's audio system
 
 class PLATFORM_EXPORT AudioDestinationChromium : public AudioDestination, public WebKit::WebAudioDevice::RenderCallback, public AudioSourceProvider {
+    WTF_MAKE_NONCOPYABLE(AudioDestinationChromium);
 public:
     AudioDestinationChromium(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate);
     virtual ~AudioDestinationChromium();
