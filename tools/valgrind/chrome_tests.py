@@ -603,10 +603,11 @@ def _main():
 
   options, args = parser.parse_args()
 
-  # TODO(thakis): This is temporary debugging code to figure out what's
-  # happening on the DrMemory bots. Remove this within 2h.
-  print sys.argv
-  print options
+  if not options.build_dir and not options.target:
+    # Currently happens on Windows, not sure why. TODO(thakis): Figure out and
+    # remove within 24h.
+    options.build_dir = 'src/out'
+    options.target = 'Debug'
 
   # target used to be a part of build_dir, so only add it if it's not there.
   # TODO(thakis): Always do this once the memory master no longer passes
