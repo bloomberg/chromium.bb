@@ -339,19 +339,15 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
     if (!rootRenderLayer() || !rootRenderLayer()->acceleratedCompositingForOverflowScrollEnabled())
         return;
 
-    const bool compositorDrivenAcceleratedScrollingEnabled = rootRenderLayer()->compositorDrivenAcceleratedScrollingEnabled();
-
-    const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView->frameView()->scrollableAreas();
-    if (!compositorDrivenAcceleratedScrollingEnabled && !scrollableAreas)
-        return;
-
     for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)
         (*it)->updateHasUnclippedDescendant();
 
-    if (!compositorDrivenAcceleratedScrollingEnabled) {
-        for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
-            (*it)->updateNeedsCompositedScrolling();
-    }
+    const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView->frameView()->scrollableAreas();
+    if (!scrollableAreas)
+        return;
+
+    for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
+        (*it)->updateNeedsCompositedScrolling();
 }
 
 static RenderVideo* findFullscreenVideoRenderer(Document* document)

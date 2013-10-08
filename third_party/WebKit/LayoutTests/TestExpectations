@@ -615,6 +615,16 @@ webkit.org/b/91183 http/tests/w3c/webperf/approved/HighResolutionTime/test_cross
 # Flakes also on the V8 waterfall on Win7.
 Bug(senorblanco) [ Win ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-dedicated-basic.html [ Failure Pass ]
 
+Bug(hartmanng) compositing/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/gpu/compositedscrolling/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/softwarecompositing/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
+
+Bug(hartmanng) virtual/gpu/compositedscrolling/overflow/content-loses-scrollbars.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/gpu/compositedscrolling/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/gpu/compositedscrolling/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/gpu/compositedscrolling/overflow/nested-render-surfaces.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/gpu/compositedscrolling/overflow/overflow-scroll.html [ NeedsRebaseline ]
+
 # Fails since creation in 122663
 webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
 
