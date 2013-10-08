@@ -476,6 +476,11 @@ class TestConnection : public QuicConnection {
         QuicConnectionPeer::GetSendAlarm(this));
   }
 
+  TestConnectionHelper::TestAlarm* GetResumeWritesAlarm() {
+    return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
+        QuicConnectionPeer::GetResumeWritesAlarm(this));
+  }
+
   TestConnectionHelper::TestAlarm* GetTimeoutAlarm() {
     return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
         QuicConnectionPeer::GetTimeoutAlarm(this));
@@ -1697,6 +1702,18 @@ TEST_P(QuicConnectionTest, QueueAfterTwoRTOs) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(10);
   connection_.GetRetransmissionAlarm()->Fire();
   connection_.OnCanWrite();
+}
+
+TEST_P(QuicConnectionTest, ResumptionAlarmThenWriteBlocked) {
+  // Set the send and resumption alarm, then block the connection.
+  connection_.GetResumeWritesAlarm()->Set(clock_.ApproximateNow());
+  connection_.GetSendAlarm()->Set(clock_.ApproximateNow());
+  QuicConnectionPeer::SetIsWriteBlocked(&connection_, true);
+
+  // Fire the alarms and ensure the connection is still write blocked.
+  connection_.GetResumeWritesAlarm()->Fire();
+  connection_.GetSendAlarm()->Fire();
+  EXPECT_TRUE(QuicConnectionPeer::IsWriteBlocked(&connection_));
 }
 
 TEST_P(QuicConnectionTest, LimitPacketsPerNack) {

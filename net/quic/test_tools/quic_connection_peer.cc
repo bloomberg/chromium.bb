@@ -109,6 +109,17 @@ QuicPacketEntropyHash QuicConnectionPeer::ReceivedEntropyHash(
 }
 
 // static
+bool QuicConnectionPeer::IsWriteBlocked(QuicConnection* connection) {
+  return connection->write_blocked_;
+}
+
+// static
+void QuicConnectionPeer::SetIsWriteBlocked(QuicConnection* connection,
+                                           bool write_blocked) {
+  connection->write_blocked_ = write_blocked;
+}
+
+// static
 bool QuicConnectionPeer::IsServer(QuicConnection* connection) {
   return connection->is_server_;
 }
@@ -169,6 +180,12 @@ QuicAlarm* QuicConnectionPeer::GetRetransmissionAlarm(
 // static
 QuicAlarm* QuicConnectionPeer::GetSendAlarm(QuicConnection* connection) {
   return connection->send_alarm_.get();
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetResumeWritesAlarm(
+    QuicConnection* connection) {
+  return connection->resume_writes_alarm_.get();
 }
 
 // static

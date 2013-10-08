@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
-#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_utils.h"
 
@@ -137,7 +136,7 @@ class SendAlarm : public QuicAlarm::Delegate {
   }
 
   virtual QuicTime OnAlarm() OVERRIDE {
-    connection_->OnCanWrite();
+    connection_->WriteIfNotBlocked();
     // Never reschedule the alarm, since OnCanWrite does that.
     return QuicTime::Zero();
   }
@@ -221,6 +220,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
       abandon_fec_alarm_(helper->CreateAlarm(new AbandonFecAlarm(this))),
       send_alarm_(helper->CreateAlarm(new SendAlarm(this))),
+      resume_writes_alarm_(helper->CreateAlarm(new SendAlarm(this))),
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
       debug_visitor_(NULL),
       packet_creator_(guid_, &framer_, random_generator_, is_server),
@@ -231,6 +231,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       creation_time_(clock_->ApproximateNow()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_packet_(clock_->ApproximateNow()),
+      sequence_number_of_last_inorder_packet_(0),
       congestion_manager_(clock_, kTCP),
       sent_packet_manager_(is_server, this),
       version_negotiation_state_(START_NEGOTIATION),
@@ -522,9 +523,6 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   sent_packet_manager_.OnIncomingAck(
       incoming_ack.received_info, received_truncated_ack_, &acked_packets);
   if (acked_packets.size() > 0) {
-    // The AckNotifierManager should be informed of every ACKed sequence number.
-    ack_notifier_manager_.OnIncomingAck(acked_packets);
-
     // Reset the RTO timeout for each packet when an ack is received.
     if (retransmission_alarm_->IsSet()) {
       retransmission_alarm_->Cancel();
@@ -918,12 +916,7 @@ QuicConsumedData QuicConnection::SendvStreamDataAndNotifyWhenAcked(
   QuicConsumedData consumed_data =
       SendvStreamDataInner(id, iov, iov_count, offset, fin, notifier);
 
-  if (consumed_data.bytes_consumed > 0) {
-    // If some data was consumed, then the delegate should be registered for
-    // notification when the data is ACKed.
-    ack_notifier_manager_.AddAckNotifier(notifier);
-    DLOG(INFO) << "Registered AckNotifier.";
-  } else {
+  if (consumed_data.bytes_consumed == 0) {
     // No data was consumed, delete the notifier.
     delete notifier;
   }
@@ -1027,14 +1020,13 @@ bool QuicConnection::DoWrite() {
     // blocked or the congestion manager to prohibit sending, so check again.
     pending_handshake = visitor_->HasPendingHandshake() ? IS_HANDSHAKE
                                                         : NOT_HANDSHAKE;
-    if (!write_blocked_ && !all_bytes_written &&
+    if (!all_bytes_written && !resume_writes_alarm_->IsSet() &&
         CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
                  pending_handshake)) {
       // We're not write blocked, but some stream didn't write out all of its
       // bytes.  Register for 'immediate' resumption so we'll keep writing after
       // other quic connections have had a chance to use the socket.
-      send_alarm_->Cancel();
-      send_alarm_->Set(clock_->ApproximateNow());
+      resume_writes_alarm_->Set(clock_->ApproximateNow());
     }
   }
 
@@ -1099,11 +1091,6 @@ void QuicConnection::WritePendingRetransmissions() {
     SerializedPacket serialized_packet = packet_creator_.ReserializeAllFrames(
         pending.retransmittable_frames.frames(),
         pending.sequence_number_length);
-
-    // A notifier may be waiting to hear about ACKs for the original sequence
-    // number. Inform them that the sequence number has changed.
-    ack_notifier_manager_.UpdateSequenceNumber(
-        pending.sequence_number, serialized_packet.sequence_number);
 
     DLOG(INFO) << ENDPOINT << "Retransmitting " << pending.sequence_number
                << " as " << serialized_packet.sequence_number;
@@ -1186,8 +1173,8 @@ bool QuicConnection::ShouldGeneratePacket(
 bool QuicConnection::CanWrite(TransmissionType transmission_type,
                               HasRetransmittableData retransmittable,
                               IsHandshake handshake) {
-  // TODO(ianswett): If the packet is a retransmit, the current send alarm may
-  // be too long.
+  // This check assumes that if the send alarm is set, it applies equally to all
+  // types of transmissions.
   if (write_blocked_ || send_alarm_->IsSet()) {
     return false;
   }
@@ -1318,6 +1305,16 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     return false;
   }
 
+  // Some encryption algorithms require the packet sequence numbers not be
+  // repeated.
+  DCHECK_LE(sequence_number_of_last_inorder_packet_, sequence_number);
+  // Only increase this when packets have not been queued.  Once they're queued
+  // due to a write block, there is the chance of sending forced and other
+  // higher priority packets out of order.
+  if (queued_packets_.empty()) {
+    sequence_number_of_last_inorder_packet_ = sequence_number;
+  }
+
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(level, sequence_number, *packet));
   if (encrypted.get() == NULL) {
@@ -1416,8 +1413,6 @@ int QuicConnection::WritePacketToWire(QuicPacketSequenceNumber sequence_number,
 
 bool QuicConnection::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
-  ack_notifier_manager_.OnSerializedPacket(serialized_packet);
-
   if (serialized_packet.retransmittable_frames) {
     serialized_packet.retransmittable_frames->
         set_encryption_level(encryption_level_);

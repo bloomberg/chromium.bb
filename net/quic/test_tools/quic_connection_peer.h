@@ -73,6 +73,10 @@ class QuicConnectionPeer {
       QuicConnection* connection,
       QuicPacketSequenceNumber sequence_number);
 
+  static bool IsWriteBlocked(QuicConnection* connection);
+
+  static void SetIsWriteBlocked(QuicConnection* connection, bool write_blocked);
+
   static bool IsServer(QuicConnection* connection);
 
   static void SetIsServer(QuicConnection* connection, bool is_server);
@@ -95,6 +99,7 @@ class QuicConnectionPeer {
   static QuicAlarm* GetAckAlarm(QuicConnection* connection);
   static QuicAlarm* GetRetransmissionAlarm(QuicConnection* connection);
   static QuicAlarm* GetSendAlarm(QuicConnection* connection);
+  static QuicAlarm* GetResumeWritesAlarm(QuicConnection* connection);
   static QuicAlarm* GetTimeoutAlarm(QuicConnection* connection);
 
  private:
