@@ -36,7 +36,7 @@
 // name (BREAK_SPACE) implied.
 //
 // Under BREAK_NEWLINE mode, all characters are included in the returned
-// string, breking only when a newline-equivalent character is encountered
+// string, breaking only when a newline-equivalent character is encountered
 // (eg. in the UTF-16 equivalent of the string "foo\nbar!\n\n", the line
 // breaks are at the periods in ".foo\n.bar\n.\n.").
 //
@@ -85,11 +85,11 @@ class BASE_I18N_EXPORT BreakIterator {
   // Under BREAK_WORD mode, returns true if the break we just hit is the
   // end of a word. (Otherwise, the break iterator just skipped over e.g.
   // whitespace or punctuation.)  Under BREAK_LINE and BREAK_NEWLINE modes,
-  // this distinction doesn't apply and it always retuns false.
+  // this distinction doesn't apply and it always returns false.
   bool IsWord() const;
 
   // Under BREAK_WORD mode, returns true if |position| is at the end of word or
-  // at the start of word. It always retuns false under BREAK_LINE and
+  // at the start of word. It always returns false under BREAK_LINE and
   // BREAK_NEWLINE modes.
   bool IsEndOfWord(size_t position) const;
   bool IsStartOfWord(size_t position) const;
