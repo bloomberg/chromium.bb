@@ -44,7 +44,7 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
                            const GURL& url,
                            bool* defer) OVERRIDE;
   virtual bool OnWillRead(int request_id,
-                          scoped_refptr<net::IOBuffer>* buf,
+                          net::IOBuffer** buf,
                           int* buf_size,
                           int min_size) OVERRIDE;
   virtual bool OnReadCompleted(int request_id,
@@ -66,6 +66,7 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
   base::WeakPtrFactory<RedirectToFileResourceHandler> weak_factory_;
 
   ResourceDispatcherHostImpl* host_;
+  net::URLRequest* request_;
 
   // We allocate a single, fixed-size IO buffer (buf_) used to read from the
   // network (buf_write_pending_ is true while the system is copying data into

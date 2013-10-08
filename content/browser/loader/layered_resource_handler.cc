@@ -9,10 +9,8 @@
 namespace content {
 
 LayeredResourceHandler::LayeredResourceHandler(
-    net::URLRequest* request,
     scoped_ptr<ResourceHandler> next_handler)
-    : ResourceHandler(request),
-      next_handler_(next_handler.Pass()) {
+    : next_handler_(next_handler.Pass()) {
 }
 
 LayeredResourceHandler::~LayeredResourceHandler() {
@@ -56,10 +54,8 @@ bool LayeredResourceHandler::OnWillStart(int request_id, const GURL& url,
   return next_handler_->OnWillStart(request_id, url, defer);
 }
 
-bool LayeredResourceHandler::OnWillRead(int request_id,
-                                        scoped_refptr<net::IOBuffer>* buf,
-                                        int* buf_size,
-                                        int min_size) {
+bool LayeredResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
+                                        int* buf_size, int min_size) {
   DCHECK(next_handler_.get());
   return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
 }

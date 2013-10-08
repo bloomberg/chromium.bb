@@ -597,10 +597,7 @@ void ResourceLoader::ReadMore(int* bytes_read) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
   DCHECK(!is_deferred());
 
-  // Make sure we track the buffer in at least one place.  This ensures it gets
-  // deleted even in the case the request has already finished its job and
-  // doesn't use the buffer.
-  scoped_refptr<net::IOBuffer> buf;
+  net::IOBuffer* buf;
   int buf_size;
   if (!handler_->OnWillRead(info->GetRequestID(), &buf, &buf_size, -1)) {
     Cancel();
@@ -610,7 +607,12 @@ void ResourceLoader::ReadMore(int* bytes_read) {
   DCHECK(buf);
   DCHECK(buf_size > 0);
 
-  request_->Read(buf.get(), buf_size, bytes_read);
+  // Make sure we track the buffer in at least one place.  This ensures it gets
+  // deleted even in the case the request has already finished its job and
+  // doesn't use the buffer.
+  scoped_refptr<net::IOBuffer> tracked_buf(buf);
+
+  request_->Read(tracked_buf.get(), buf_size, bytes_read);
 
   // No need to check the return value here as we'll detect errors by
   // inspecting the URLRequest's status.

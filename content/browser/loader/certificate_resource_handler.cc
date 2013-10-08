@@ -19,7 +19,7 @@ namespace content {
 
 CertificateResourceHandler::CertificateResourceHandler(
     net::URLRequest* request)
-    : ResourceHandler(request),
+    : request_(request),
       content_length_(0),
       read_buffer_(NULL),
       resource_buffer_(NULL),
@@ -57,7 +57,7 @@ bool CertificateResourceHandler::OnWillStart(int request_id,
 }
 
 bool CertificateResourceHandler::OnWillRead(int request_id,
-                                           scoped_refptr<net::IOBuffer>* buf,
+                                           net::IOBuffer** buf,
                                            int* buf_size,
                                            int min_size) {
   static const int kReadBufSize = 32768;
@@ -108,9 +108,9 @@ bool CertificateResourceHandler::OnResponseCompleted(
 
   // Note that it's up to the browser to verify that the certificate
   // data is well-formed.
-  const ResourceRequestInfo* info = GetRequestInfo();
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   GetContentClient()->browser()->AddCertificate(
-      request(), cert_type_, content_bytes, content_length_,
+      request_, cert_type_, content_bytes, content_length_,
       info->GetChildID(), info->GetRouteID());
 
   return true;

@@ -49,7 +49,8 @@ void OnCrossSiteResponseHelper(int render_process_id,
 CrossSiteResourceHandler::CrossSiteResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
     net::URLRequest* request)
-    : LayeredResourceHandler(request, next_handler.Pass()),
+    : LayeredResourceHandler(next_handler.Pass()),
+      request_(request),
       has_started_response_(false),
       in_cross_site_transition_(false),
       completed_during_transition_(false),
@@ -60,7 +61,7 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
 
 CrossSiteResourceHandler::~CrossSiteResourceHandler() {
   // Cleanup back-pointer stored on the request info.
-  GetRequestInfo()->set_cross_site_handler(NULL);
+  ResourceRequestInfoImpl::ForRequest(request_)->set_cross_site_handler(NULL);
 }
 
 bool CrossSiteResourceHandler::OnRequestRedirected(
@@ -85,7 +86,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   DCHECK(!in_cross_site_transition_);
   has_started_response_ = true;
 
-  ResourceRequestInfoImpl* info = GetRequestInfo();
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request_);
 
   // We will need to swap processes if either (1) a redirect that requires a
   // transfer occurred before we got here, or (2) a pending cross-site request
@@ -93,7 +94,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   // transferred back into the original process due to a redirect.
   bool should_transfer =
       GetContentClient()->browser()->ShouldSwapProcessesForRedirect(
-          info->GetContext(), request()->original_url(), request()->url());
+          info->GetContext(), request_->original_url(), request_->url());
   bool swap_needed = should_transfer ||
       CrossSiteRequestManager::GetInstance()->
           HasPendingCrossSiteRequest(info->GetChildID(), info->GetRouteID());
@@ -138,7 +139,8 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info) {
   if (!in_cross_site_transition_) {
-    ResourceRequestInfoImpl* info = GetRequestInfo();
+    ResourceRequestInfoImpl* info =
+        ResourceRequestInfoImpl::ForRequest(request_);
     // If we've already completed the transition, or we're canceling the
     // request, or an error occurred with no cross-process navigation in
     // progress, then we should just pass this through.
@@ -171,10 +173,11 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
 // We can now send the response to the new renderer, which will cause
 // WebContentsImpl to swap in the new renderer and destroy the old one.
 void CrossSiteResourceHandler::ResumeResponse() {
-  DCHECK(request());
+  DCHECK(request_);
   DCHECK(in_cross_site_transition_);
   in_cross_site_transition_ = false;
-  ResourceRequestInfoImpl* info = GetRequestInfo();
+  ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
 
   if (has_started_response_) {
     // Send OnResponseStarted to the new renderer.
@@ -215,7 +218,8 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
 
   // Store this handler on the ExtraRequestInfo, so that RDH can call our
   // ResumeResponse method when we are ready to resume.
-  ResourceRequestInfoImpl* info = GetRequestInfo();
+  ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
   info->set_cross_site_handler(this);
 
   DCHECK_EQ(request_id, info->GetRequestID());
@@ -229,8 +233,8 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   Referrer referrer;
   int frame_id = -1;
   if (should_transfer) {
-    transfer_url = request()->url();
-    referrer = Referrer(GURL(request()->referrer()), info->GetReferrerPolicy());
+    transfer_url = request_->url();
+    referrer = Referrer(GURL(request_->referrer()), info->GetReferrerPolicy());
     frame_id = info->GetFrameID();
 
     ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(

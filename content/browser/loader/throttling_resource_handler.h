@@ -59,6 +59,8 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   };
   DeferredStage deferred_stage_;
 
+  net::URLRequest* request_;
+
   ScopedVector<ResourceThrottle> throttles_;
   size_t index_;
 

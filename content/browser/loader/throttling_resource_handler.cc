@@ -4,7 +4,7 @@
 
 #include "content/browser/loader/throttling_resource_handler.h"
 
-#include "content/browser/loader/resource_request_info_impl.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
 
@@ -14,8 +14,9 @@ ThrottlingResourceHandler::ThrottlingResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
     net::URLRequest* request,
     ScopedVector<ResourceThrottle> throttles)
-    : LayeredResourceHandler(request, next_handler.Pass()),
+    : LayeredResourceHandler(next_handler.Pass()),
       deferred_stage_(DEFERRED_NONE),
+      request_(request),
       throttles_(throttles.Pass()),
       index_(0),
       cancelled_by_resource_throttle_(false) {
@@ -140,7 +141,8 @@ void ThrottlingResourceHandler::ResumeStart() {
   deferred_url_ = GURL();
 
   bool defer = false;
-  if (!OnWillStart(GetRequestID(), url, &defer)) {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  if (!OnWillStart(info->GetRequestID(), url, &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();
@@ -156,7 +158,9 @@ void ThrottlingResourceHandler::ResumeRedirect() {
   deferred_response_.swap(response);
 
   bool defer = false;
-  if (!OnRequestRedirected(GetRequestID(), new_url, response.get(), &defer)) {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  if (!OnRequestRedirected(info->GetRequestID(), new_url, response.get(),
+                           &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();
@@ -170,7 +174,8 @@ void ThrottlingResourceHandler::ResumeResponse() {
   deferred_response_.swap(response);
 
   bool defer = false;
-  if (!OnResponseStarted(GetRequestID(), response.get(), &defer)) {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  if (!OnResponseStarted(info->GetRequestID(), response.get(), &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();
