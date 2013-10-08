@@ -155,6 +155,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool pinch_virtual_viewport_enabled;
   int pinch_overlay_scrollbar_thickness;
   bool use_solid_color_scrollbars;
+  bool compositor_touch_hit_testing;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly

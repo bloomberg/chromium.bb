@@ -426,6 +426,8 @@ void LayerTreeHostImpl::ScheduleAnimation() {
 }
 
 bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
+  if (!settings_.touch_hit_testing)
+    return true;
   if (!EnsureRenderSurfaceLayerList())
     return false;
 

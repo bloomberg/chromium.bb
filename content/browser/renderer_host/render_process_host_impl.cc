@@ -992,6 +992,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
     cc::switches::kCompositeToMailbox,
     cc::switches::kDisableCompositedAntialiasing,
+    cc::switches::kDisableCompositorTouchHitTesting,
     cc::switches::kDisableImplSidePainting,
     cc::switches::kDisableLCDText,
     cc::switches::kDisableMapImage,

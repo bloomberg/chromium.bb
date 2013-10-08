@@ -144,6 +144,10 @@ const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 // Disable textures using RGBA_4444 layout.
 const char kDisable4444Textures[] = "disable-4444-textures";
 
+// Disable touch hit testing in the compositor.
+const char kDisableCompositorTouchHitTesting[] =
+    "disable-compositor-touch-hit-testing";
+
 bool IsLCDTextEnabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(cc::switches::kDisableLCDText))

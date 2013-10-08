@@ -111,6 +111,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
   settings.force_direct_layer_drawing =
       cmd->HasSwitch(cc::switches::kForceDirectLayerDrawing);
+  settings.touch_hit_testing =
+      !cmd->HasSwitch(cc::switches::kDisableCompositorTouchHitTesting);
 
   int default_tile_width = settings.default_tile_size.width();
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {

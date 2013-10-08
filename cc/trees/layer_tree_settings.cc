@@ -58,7 +58,8 @@ LayerTreeSettings::LayerTreeSettings()
       use_map_image(false),
       ignore_root_layer_flings(false),
       use_rgba_4444_textures(false),
-      always_overscroll(false) {
+      always_overscroll(false),
+      touch_hit_testing(true) {
 }
 
 LayerTreeSettings::~LayerTreeSettings() {}

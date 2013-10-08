@@ -1750,6 +1750,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableFirstRunUI)
   },
 #endif
+  {
+    "disable-compositor-touch-hit-testing",
+    IDS_FLAGS_DISABLE_COMPOSITOR_TOUCH_HIT_TESTING_NAME,
+    IDS_FLAGS_DISABLE_COMPOSITOR_TOUCH_HIT_TESTING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(cc::switches::kDisableCompositorTouchHitTesting),
+  },
 };
 
 const Experiment* experiments = kExperiments;

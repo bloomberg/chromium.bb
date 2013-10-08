@@ -69,6 +69,7 @@ class CC_EXPORT LayerTreeSettings {
   bool ignore_root_layer_flings;
   bool use_rgba_4444_textures;
   bool always_overscroll;
+  bool touch_hit_testing;
 
   LayerTreeDebugState initial_debug_state;
 };
