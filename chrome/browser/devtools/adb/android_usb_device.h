@@ -69,6 +69,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   static void Enumerate(crypto::RSAPrivateKey* rsa_key,
                         const AndroidUsbDevicesCallback& callback);
 
+  static void CountDevices(const base::Callback<void(int)>& callback);
+
   AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
                    scoped_refptr<UsbDeviceHandle> device,
                    const std::string& serial,

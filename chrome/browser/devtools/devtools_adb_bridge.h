@@ -261,14 +261,6 @@ class DevToolsAdbBridge
     virtual ~Listener() {}
   };
 
-  explicit DevToolsAdbBridge(Profile* profile);
-
-  void AddListener(Listener* listener);
-  void RemoveListener(Listener* listener);
-  void set_discover_usb_devices(bool enabled) {
-    discover_usb_devices_ = enabled;
-  }
-
   class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
    public:
     static scoped_refptr<RefCountedAdbThread> GetInstance();
@@ -283,6 +275,14 @@ class DevToolsAdbBridge
     virtual ~RefCountedAdbThread();
     base::Thread* thread_;
   };
+
+  explicit DevToolsAdbBridge(Profile* profile);
+  void AddListener(Listener* listener);
+  void RemoveListener(Listener* listener);
+  void CountDevices(const base::Callback<void(int)>& callback);
+  void set_discover_usb_devices(bool enabled) {
+    discover_usb_devices_ = enabled;
+  }
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<

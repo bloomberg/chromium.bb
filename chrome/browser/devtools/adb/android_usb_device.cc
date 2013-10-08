@@ -160,6 +160,12 @@ AdbMessage::AdbMessage(uint32 command,
 AdbMessage::~AdbMessage() {
 }
 
+static void RespondWithCountOnUIThread(base::Callback<void(int)> callback,
+                                       int count) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  callback.Run(count);
+}
+
 static void RespondOnUIThread(const AndroidUsbDevicesCallback& callback,
                               const AndroidUsbDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -195,6 +201,28 @@ static void OpenAndroidDevicesOnFileThread(
     }
   }
   barrier.Run();
+}
+
+static void CountOnFileThread(
+    const base::Callback<void(int)>& callback) {
+  UsbService* service = UsbService::GetInstance();
+  UsbDevices usb_devices;
+  service->GetDevices(&usb_devices);
+  int device_count = 0;
+  for (UsbDevices::iterator it = usb_devices.begin(); it != usb_devices.end();
+       ++it) {
+    scoped_refptr<UsbConfigDescriptor> config = (*it)->ListInterfaces();
+    if (!config)
+      continue;
+
+    for (size_t j = 0; j < config->GetNumInterfaces(); ++j) {
+      if (IsAndroidInterface(config->GetInterface(j)))
+        ++device_count;
+    }
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&RespondWithCountOnUIThread, callback,
+                                     device_count));
 }
 
 static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
@@ -264,6 +292,14 @@ static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
     if (!has_android_interface)
       barrier.Run();
   }
+}
+
+// static
+void AndroidUsbDevice::CountDevices(
+    const base::Callback<void(int)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&CountOnFileThread, callback));
 }
 
 // static
