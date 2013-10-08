@@ -1144,6 +1144,7 @@ void HTMLTreeBuilder::processStartTag(AtomicHTMLToken* token)
             || token->name() == noframesTag
             || token->name() == scriptTag
             || token->name() == styleTag
+            || token->name() == templateTag
             || token->name() == titleTag) {
             parseError(token);
             ASSERT(m_tree.head());
@@ -1604,9 +1605,9 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
     while (1) {
         RefPtr<HTMLStackItem> item = nodeRecord->stackItem();
         if (item->node() == m_tree.openElements()->rootNode()) {
-            ASSERT(isParsingFragment());
             last = true;
-            item = HTMLStackItem::create(m_fragmentContext.contextElement(), HTMLStackItem::ItemForContextElement);
+            if (isParsingFragment())
+                item = HTMLStackItem::create(m_fragmentContext.contextElement(), HTMLStackItem::ItemForContextElement);
         }
         if (item->hasTagName(templateTag))
             return setInsertionMode(m_templateInsertionModes.last());
@@ -1645,6 +1646,9 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
             return setInsertionMode(InFramesetMode);
         }
         if (isHTMLHtmlElement(item->node())) {
+            if (m_tree.headStackItem())
+                return setInsertionMode(AfterHeadMode);
+
             ASSERT(isParsingFragment());
             return setInsertionMode(BeforeHeadMode);
         }

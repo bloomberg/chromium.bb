@@ -1297,3 +1297,24 @@
 |   <body>
 |     <template>
 |       content
+
+#data
+<head></head><template>
+#errors
+#document
+| <html>
+|   <head>
+|     <template>
+|       content
+|   <body>
+
+#data
+<head></head><template>Foo</template>
+#errors
+#document
+| <html>
+|   <head>
+|     <template>
+|       content
+|         "Foo"
+|   <body>
