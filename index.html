@@ -166,12 +166,16 @@ contenteditable.  However, a proper fix would be to make the last line scroll
 completely, taking the padding into account.  We haven't gotten around to this
 yet.</p>
 
-<h3><a name="bugfix-deleteBackspace">bugfix/deleteBackspace</a> (Shezan Baig; D32947240)</h3>
+<h3><a name="bugfix-deleteBackspace">bugfix/deleteBackspace</a> (Shezan Baig; D32947240, D38514960)</h3>
 <p>This branch consists of multiple fixes that were merged together:</p>
 <ul><li><b>backspaceIntoTable (D32947240)</b><br>
     Open <a href="repros/backspaceIntoTable.html">this link</a> in Chrome, and
     put the cursor between 'T' and 'e' in "Testing", and hit backspace twice.  The
     rest of the text will go into the last cell.
+    </li>
+    <li><b>backspaceOutOfLIInCell (D38514960)</b><br>
+    Open <a href="repros/backspaceOutOfLIInCell.html">this link</a> in Chrome, and
+    try to backspace out of the list-item inside the table cell.
     </li>
     <li><b>nonemptycellbackspace</b><br>
     Open <a href="repros/nonemptycellbackspace.html">this link</a> in Chrome,
