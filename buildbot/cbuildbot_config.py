@@ -1221,7 +1221,7 @@ internal_paladin.add_config('mario-paladin',
 internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='alex paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(timeout=60 * 60, num=8),
+  hw_tests=[],
   upload_hw_test_artifacts=True,
 )
 
@@ -1281,7 +1281,7 @@ internal_paladin.add_config('lumpy-paladin',
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(),
+  hw_tests=[],
   upload_hw_test_artifacts=True,
 )
 
@@ -1335,7 +1335,7 @@ internal_paladin.add_config('stout32-paladin',
 internal_paladin.add_config('stumpy-paladin',
   boards=['stumpy'],
   paladin_builder_name='stumpy paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(),
+  hw_tests=[],
   upload_hw_test_artifacts=True,
 )
 
