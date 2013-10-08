@@ -27,7 +27,6 @@
 #include "core/platform/ScrollView.h"
 
 #include "core/accessibility/AXObjectCache.h"
-#include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/GraphicsLayer.h"
