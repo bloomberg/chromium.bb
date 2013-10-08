@@ -29,6 +29,7 @@
 #ifndef WebAudioDevice_h
 #define WebAudioDevice_h
 
+#include "WebCommon.h"
 #include "WebVector.h"
 
 namespace WebKit {
@@ -37,12 +38,12 @@ namespace WebKit {
 
 class WebAudioDevice {
 public:
-    class RenderCallback {
+    class BLINK_PLATFORM_EXPORT RenderCallback {
     public:
-        virtual void render(const WebVector<float*>& sourceData, const WebVector<float*>& destinationData, size_t numberOfFrames) { };
+        virtual void render(const WebVector<float*>& sourceData, const WebVector<float*>& destinationData, size_t numberOfFrames);
 
     protected:
-        virtual ~RenderCallback() { }
+        virtual ~RenderCallback();
     };
 
     virtual ~WebAudioDevice() { }

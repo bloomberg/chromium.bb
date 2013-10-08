@@ -31,13 +31,14 @@
 #ifndef AudioDestinationConsumer_h
 #define AudioDestinationConsumer_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class AudioBus;
 
-class AudioDestinationConsumer : public RefCounted<AudioDestinationConsumer> {
+class PLATFORM_EXPORT AudioDestinationConsumer : public RefCounted<AudioDestinationConsumer> {
 public:
     virtual ~AudioDestinationConsumer() { }
 

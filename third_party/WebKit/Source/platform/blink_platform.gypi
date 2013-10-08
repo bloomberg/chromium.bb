@@ -159,6 +159,7 @@
       'clipboard/ClipboardUtilitiesWin.cpp',
       'exported/Platform.cpp',
       'exported/WebAudioBus.cpp',
+      'exported/WebAudioDevice.cpp',
       'exported/WebData.cpp',
       'exported/WebSocketStreamError.cpp',
       'exported/WebURL.cpp',

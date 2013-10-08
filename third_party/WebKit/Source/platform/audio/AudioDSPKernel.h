@@ -37,7 +37,7 @@ namespace WebCore {
 
 // AudioDSPKernel does the processing for one channel of an AudioDSPKernelProcessor.
 
-class AudioDSPKernel {
+class PLATFORM_EXPORT AudioDSPKernel {
 public:
     AudioDSPKernel(AudioDSPKernelProcessor* kernelProcessor)
         : m_kernelProcessor(kernelProcessor)
