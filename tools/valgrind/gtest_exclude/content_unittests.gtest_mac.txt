@@ -57,3 +57,4 @@ DesktopCaptureDeviceTest.Capture
 
 # http://crbug.com/303709
 GamepadProviderTest.PollingAccess
+GamepadProviderTest.UserGesture
