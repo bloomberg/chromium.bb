@@ -3049,8 +3049,6 @@
             'platform/text/RegularExpression.cpp',
             'platform/text/transcoder/FontTranscoder.cpp',
             'platform/text/transcoder/FontTranscoder.h',
-            'platform/win/SystemInfo.cpp',
-            'platform/win/SystemInfo.h',
         ],
         'webcore_platform_geometry_files': [
             'platform/graphics/FloatPolygon.cpp',

@@ -106,6 +106,7 @@
         ],
       }, { # OS!="mac"
         'sources/': [
+          ['exclude', 'mac/'],
           ['exclude', 'Mac\\.mm$'],
         ],
       }],
@@ -117,6 +118,7 @@
         ],
       }, { # OS!="win"
         'sources/': [
+          ['exclude', 'win/'],
           ['exclude', 'Win\\.cpp$'],
         ],
       }],

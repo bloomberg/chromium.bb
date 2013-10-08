@@ -37,8 +37,8 @@
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
 #include "core/platform/graphics/chromium/UniscribeHelperTextRun.h"
-#include "core/platform/win/HWndDC.h"
-#include "core/platform/win/SystemInfo.h"
+#include "platform/win/HWndDC.h"
+#include "platform/win/SystemInfo.h"
 
 namespace WebCore {
 

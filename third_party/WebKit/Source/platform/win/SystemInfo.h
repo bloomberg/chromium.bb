@@ -26,6 +26,7 @@
 #ifndef SystemInfo_h
 #define SystemInfo_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -61,7 +62,7 @@ enum WindowsVersion {
 
 // If supplied, |major| and |minor| are set to the OSVERSIONINFO::dwMajorVersion
 // and dwMinorVersion field values, respectively.
-WindowsVersion windowsVersion(int* major = 0, int* minor = 0);
+PLATFORM_EXPORT WindowsVersion windowsVersion(int* major = 0, int* minor = 0);
 
 } // namespace WebCore
 

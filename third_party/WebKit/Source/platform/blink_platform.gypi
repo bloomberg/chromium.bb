@@ -258,6 +258,9 @@
       'transforms/AffineTransform.h',
       'transforms/TransformationMatrix.cpp',
       'transforms/TransformationMatrix.h',
+      'win/HWndDC.h',
+      'win/SystemInfo.cpp',
+      'win/SystemInfo.h',
     ],
     'platform_test_files': [
       'ClockTest.cpp',

@@ -30,8 +30,8 @@
 
 #include "CSSValueKeywords.h"
 #include "core/platform/graphics/FontDescription.h"
-#include "core/platform/win/HWndDC.h"
-#include "core/platform/win/SystemInfo.h"
+#include "platform/win/HWndDC.h"
+#include "platform/win/SystemInfo.h"
 #include "wtf/text/WTFString.h"
 
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(structName, member) \

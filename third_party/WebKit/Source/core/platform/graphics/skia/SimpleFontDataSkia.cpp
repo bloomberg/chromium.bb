@@ -42,7 +42,7 @@
 #include "wtf/unicode/Unicode.h"
 
 #if OS(WIN)
-#include "core/platform/win/HWndDC.h"
+#include "platform/win/HWndDC.h"
 #endif
 
 namespace WebCore {

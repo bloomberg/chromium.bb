@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/win/SystemInfo.h"
+#include "platform/win/SystemInfo.h"
 
 #include <windows.h>
 
@@ -45,9 +45,9 @@ WindowsVersion windowsVersion(int* major, int* minor)
         majorVersion = versionInfo.dwMajorVersion;
         minorVersion = versionInfo.dwMinorVersion;
 
-        if (versionInfo.dwPlatformId == VER_PLATFORM_WIN32s)
+        if (versionInfo.dwPlatformId == VER_PLATFORM_WIN32s) {
             version = Windows3_1;
-        else if (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) {
+        } else if (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) {
             if (!minorVersion)
                 version = Windows95;
             else
@@ -63,8 +63,9 @@ WindowsVersion windowsVersion(int* major, int* minor)
                     version = (majorVersion == 6 && !minorVersion) ? WindowsVista : Windows7;
                 else
                     version = WindowsServer2008;
-            } else
+            } else {
                 version = (majorVersion == 4) ? WindowsNT4 : WindowsNT3;
+            }
         }
     }
 
