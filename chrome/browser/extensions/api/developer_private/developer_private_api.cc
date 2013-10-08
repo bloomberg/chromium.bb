@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -83,45 +84,6 @@ const base::FilePath::CharType kUnpackedAppsFolder[]
 
 ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
     return profile->GetExtensionService()->updater();
-}
-
-GURL GetImageURLFromData(std::string contents) {
-  std::string contents_base64;
-  if (!base::Base64Encode(contents, &contents_base64))
-    return GURL();
-
-  // TODO(dvh): make use of chrome::kDataScheme. Filed as crbug/297301.
-  const char kDataURLPrefix[] = "data:image;base64,";
-  return GURL(kDataURLPrefix + contents_base64);
-}
-
-GURL GetDefaultImageURL(developer_private::ItemType type) {
-  int icon_resource_id;
-  switch (type) {
-    case developer::ITEM_TYPE_LEGACY_PACKAGED_APP:
-    case developer::ITEM_TYPE_HOSTED_APP:
-    case developer::ITEM_TYPE_PACKAGED_APP:
-      icon_resource_id = IDR_APP_DEFAULT_ICON;
-      break;
-    default:
-      icon_resource_id = IDR_EXTENSION_DEFAULT_ICON;
-      break;
-  }
-
-  return GetImageURLFromData(
-      ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-          icon_resource_id, ui::SCALE_FACTOR_100P).as_string());
-}
-
-// TODO(dvh): This code should be refactored and moved to
-// extensions::ImageLoader. Also a resize should be performed to avoid
-// potential huge URLs: crbug/297298.
-GURL ToDataURL(const base::FilePath& path, developer_private::ItemType type) {
-  std::string contents;
-  if (path.empty() || !base::ReadFileToString(path, &contents))
-    return GetDefaultImageURL(type);
-
-  return GetImageURLFromData(contents);
 }
 
 std::vector<base::FilePath> ListFolder(const base::FilePath path) {
@@ -374,27 +336,6 @@ scoped_ptr<developer::ItemInfo>
   return info.Pass();
 }
 
-void DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread(
-    ItemInfoList item_list,
-    const std::map<std::string, ExtensionResource> idToIcon) {
-  for (ItemInfoList::iterator iter = item_list.begin();
-       iter != item_list.end(); ++iter) {
-    developer_private::ItemInfo* info = iter->get();
-    std::map<std::string, ExtensionResource>::const_iterator resource_ptr
-        = idToIcon.find(info->id);
-    if (resource_ptr != idToIcon.end()) {
-      info->icon_url =
-          ToDataURL(resource_ptr->second.GetFilePath(), info->type).spec();
-    }
-  }
-
-  results_ = developer::GetItemsInfo::Results::Create(item_list);
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&DeveloperPrivateGetItemsInfoFunction::SendResponse,
-                 this,
-                 true));
-}
-
 void DeveloperPrivateGetItemsInfoFunction::
     GetInspectablePagesForExtensionProcess(
         const Extension* extension,
@@ -554,35 +495,53 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
     items.InsertAll(*service->terminated_extensions());
   }
 
-  std::map<std::string, ExtensionResource> id_to_icon;
-  ItemInfoList item_list;
-
   for (ExtensionSet::const_iterator iter = items.begin();
        iter != items.end(); ++iter) {
     const Extension& item = *iter->get();
-
-    ExtensionResource item_resource =
-        IconsInfo::GetIconResource(&item,
-                                   extension_misc::EXTENSION_ICON_MEDIUM,
-                                   ExtensionIconSet::MATCH_BIGGER);
-    id_to_icon[item.id()] = item_resource;
 
     // Don't show component extensions and invisible apps.
     if (item.ShouldNotBeVisible())
       continue;
 
-    item_list.push_back(make_linked_ptr<developer::ItemInfo>(
+    item_list_.push_back(make_linked_ptr<developer::ItemInfo>(
         CreateItemInfo(
             item, service->IsExtensionEnabled(item.id())).release()));
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread,
-                 this,
-                 item_list,
-                 id_to_icon));
+  // Iterate over |item_list_| to request all the icons.
+  RequestNextIcon();
 
   return true;
+}
+
+void DeveloperPrivateGetItemsInfoFunction::RequestNextIcon() {
+  developer::ItemInfo* info = item_list_[icon_to_load_].get();
+  ExtensionService* service = profile()->GetExtensionService();
+  ImageLoader::Get(profile())->LoadExtensionIconDataURLAsync(
+      service->GetExtensionById(info->id, true),
+      extension_misc::EXTENSION_ICON_MEDIUM,
+      ExtensionIconSet::MATCH_BIGGER,
+      false,
+      base::Bind(&DeveloperPrivateGetItemsInfoFunction::LoadIconFinished,
+                 this));
+}
+
+void DeveloperPrivateGetItemsInfoFunction::LoadIconFinished(const GURL& url) {
+  // Store the result.
+  developer::ItemInfo* info = item_list_[icon_to_load_].get();
+  info->icon_url = url.spec();
+  ++icon_to_load_;
+  if (icon_to_load_ < static_cast<int>(item_list_.size())) {
+    RequestNextIcon();
+  } else {
+    // All icons have been loaded: send the result.
+    results_ = developer::GetItemsInfo::Results::Create(item_list_);
+    SendResponse(true);
+  }
+}
+
+DeveloperPrivateGetItemsInfoFunction::DeveloperPrivateGetItemsInfoFunction()
+    : icon_to_load_(0) {
 }
 
 DeveloperPrivateGetItemsInfoFunction::~DeveloperPrivateGetItemsInfoFunction() {}
