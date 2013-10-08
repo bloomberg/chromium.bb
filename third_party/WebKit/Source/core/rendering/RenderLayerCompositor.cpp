@@ -1664,7 +1664,6 @@ bool RenderLayerCompositor::requiresOwnBackingStore(const RenderLayer* layer, co
         || requiresCompositingForAnimation(renderer)
         || requiresCompositingForTransition(renderer)
         || requiresCompositingForFilters(renderer)
-        || requiresCompositingForBlending(renderer)
         || requiresCompositingForPosition(renderer, layer)
         || requiresCompositingForOverflowScrolling(layer)
         || requiresCompositingForOverflowScrollingParent(layer)
@@ -1722,9 +1721,6 @@ CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const Rend
 
     if (requiresCompositingForOverflowScrolling(layer))
         directReasons |= CompositingReasonOverflowScrollingTouch;
-
-    if (requiresCompositingForBlending(renderer))
-        directReasons |= CompositingReasonBlending;
 
     if (requiresCompositingForOverflowScrollingParent(layer))
         directReasons |= CompositingReasonOverflowScrollingParent;
@@ -2052,11 +2048,6 @@ bool RenderLayerCompositor::requiresCompositingForFilters(RenderObject* renderer
         return false;
 
     return renderer->hasFilter();
-}
-
-bool RenderLayerCompositor::requiresCompositingForBlending(RenderObject* renderer) const
-{
-    return renderer->hasBlendMode();
 }
 
 bool RenderLayerCompositor::requiresCompositingForOverflowScrollingParent(const RenderLayer* layer) const

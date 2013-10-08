@@ -53,6 +53,14 @@ crbug.com/260129 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failu
 
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Timeout ]
 
+# CSS Blending: mix-blend-mode using the software path.
+crbug.com/288655 css3/compositing/mix-blend-mode-simple.html [ NeedsRebaseline ]
+crbug.com/288655 css3/compositing/mix-blend-mode-simple-text.html [ NeedsRebaseline ]
+crbug.com/288655 css3/compositing/mix-blend-mode-isolated-group-1.html [ NeedsRebaseline ]
+crbug.com/288655 css3/compositing/mix-blend-mode-isolated-group-2.html [ NeedsRebaseline ]
+crbug.com/288655 css3/compositing/mix-blend-mode-isolated-group-3.html [ NeedsRebaseline ]
+crbug.com/288655 fast/repaint/mix-blend-mode-separate-stacking-context.html [ NeedsRebaseline ]
+
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Skip ]
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Skip ]
 
