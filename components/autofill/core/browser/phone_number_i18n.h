@@ -73,15 +73,15 @@ class PhoneObject {
   PhoneObject();
   ~PhoneObject();
 
-  std::string region() const { return region_; }
+  const std::string& region() const { return region_; }
 
-  base::string16 country_code() const { return country_code_; }
-  base::string16 city_code() const { return city_code_; }
-  base::string16 number() const { return number_; }
+  const base::string16& country_code() const { return country_code_; }
+  const base::string16& city_code() const { return city_code_; }
+  const base::string16& number() const { return number_; }
 
-  base::string16 GetFormattedNumber() const;
+  const base::string16& GetFormattedNumber() const;
   base::string16 GetNationallyFormattedNumber() const;
-  base::string16 GetWholeNumber() const;
+  const base::string16& GetWholeNumber() const;
 
   PhoneObject& operator=(const PhoneObject& other);
 

@@ -255,7 +255,7 @@ PhoneObject::PhoneObject() {}
 
 PhoneObject::~PhoneObject() {}
 
-base::string16 PhoneObject::GetFormattedNumber() const {
+const base::string16& PhoneObject::GetFormattedNumber() const {
   if (i18n_number_ && formatted_number_.empty()) {
     FormatValidatedNumber(*i18n_number_, country_code_, &formatted_number_,
                           &whole_number_);
@@ -272,7 +272,7 @@ base::string16 PhoneObject::GetNationallyFormattedNumber() const {
   return formatted;
 }
 
-base::string16 PhoneObject::GetWholeNumber() const {
+const base::string16& PhoneObject::GetWholeNumber() const {
   if (i18n_number_ && whole_number_.empty()) {
     FormatValidatedNumber(*i18n_number_, country_code_, &formatted_number_,
                           &whole_number_);
