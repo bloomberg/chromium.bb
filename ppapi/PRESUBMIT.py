@@ -43,7 +43,8 @@ def RunUnittests(input_api, output_api):
 # Verify that the files do not contain a 'TODO' in them.
 RE_TODO = re.compile(r'\WTODO\W', flags=re.I)
 def CheckTODO(input_api, output_api):
-  files = input_api.LocalPaths()
+  live_files = input_api.AffectedFiles(include_deletes=False)
+  files = [f.LocalPath() for f in live_files]
   todo = []
 
   for filename in files:
@@ -81,7 +82,8 @@ def CheckTODO(input_api, output_api):
 # Verify that no CPP wrappers use un-versioned PPB interface name macros.
 RE_UNVERSIONED_PPB = re.compile(r'\bPPB_\w+_INTERFACE\b')
 def CheckUnversionedPPB(input_api, output_api):
-  files = input_api.LocalPaths()
+  live_files = input_api.AffectedFiles(include_deletes=False)
+  files = [f.LocalPath() for f in live_files]
   todo = []
 
   for filename in files:
