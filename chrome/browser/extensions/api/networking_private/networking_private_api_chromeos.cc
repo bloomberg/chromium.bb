@@ -20,12 +20,12 @@
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
+#include "components/onc/onc_constants.h"
 
 namespace api = extensions::api::networking_private;
-namespace onc = chromeos::onc;
+
 using chromeos::DBusThreadManager;
 using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkHandler;
@@ -171,8 +171,8 @@ bool NetworkingPrivateGetStateFunction::RunImpl() {
   scoped_ptr<base::DictionaryValue> result_dict(new base::DictionaryValue);
   state->GetProperties(result_dict.get());
   scoped_ptr<base::DictionaryValue> onc_network_part =
-      onc::TranslateShillServiceToONCPart(*result_dict,
-                                          &onc::kNetworkWithStateSignature);
+      chromeos::onc::TranslateShillServiceToONCPart(*result_dict,
+          &chromeos::onc::kNetworkWithStateSignature);
   SetResult(onc_network_part.release());
   SendResponse(true);
 
@@ -285,8 +285,8 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
     (*it)->GetProperties(&shill_dictionary);
 
     scoped_ptr<base::DictionaryValue> onc_network_part =
-        onc::TranslateShillServiceToONCPart(shill_dictionary,
-                                            &onc::kNetworkWithStateSignature);
+        chromeos::onc::TranslateShillServiceToONCPart(shill_dictionary,
+            &chromeos::onc::kNetworkWithStateSignature);
 
     std::string onc_type;
     onc_network_part->GetStringWithoutPathExpansion(onc::network_config::kType,

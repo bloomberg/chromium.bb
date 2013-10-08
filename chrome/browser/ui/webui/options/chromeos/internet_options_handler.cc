@@ -62,8 +62,8 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/shill_property_util.h"
+#include "components/onc/onc_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -635,7 +635,7 @@ void PopulateVPNDetails(const NetworkState* vpn,
   }
   dictionary->SetString(kTagUsername, username);
 
-  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
       onc::FindPolicyForActiveUser(vpn->guid(), &onc_source);
 
@@ -643,7 +643,8 @@ void PopulateVPNDetails(const NetworkState* vpn,
   hostname_ui_data.ParseOncProperty(
       onc_source,
       onc,
-      base::StringPrintf("%s.%s", onc::network_config::kVPN, onc::vpn::kHost));
+      base::StringPrintf("%s.%s", ::onc::network_config::kVPN,
+                         ::onc::vpn::kHost));
   std::string provider_host;
   provider_properties->GetStringWithoutPathExpansion(
       shill::kHostProperty, &provider_host);
@@ -1489,7 +1490,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
 
   details_path_ = service_path;
 
-  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
       onc::FindPolicyForActiveUser(network->guid(), &onc_source);
   const NetworkPropertyUIData property_ui_data(onc_source);
@@ -1572,13 +1573,13 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   if (type == shill::kTypeWifi) {
     onc_path_to_auto_connect = base::StringPrintf(
         "%s.%s",
-        onc::network_config::kWiFi,
-        onc::wifi::kAutoConnect);
+        ::onc::network_config::kWiFi,
+        ::onc::wifi::kAutoConnect);
   } else if (type == shill::kTypeVPN) {
     onc_path_to_auto_connect = base::StringPrintf(
         "%s.%s",
-        onc::network_config::kVPN,
-        onc::vpn::kAutoConnect);
+        ::onc::network_config::kVPN,
+        ::onc::vpn::kAutoConnect);
   }
   if (!onc_path_to_auto_connect.empty()) {
     auto_connect_ui_data.ParseOncProperty(

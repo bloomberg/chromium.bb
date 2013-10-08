@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -45,7 +45,7 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
   // CertificateImporter overrides
   virtual bool ImportCertificates(
       const base::ListValue& certificates,
-      onc::ONCSource source,
+      ::onc::ONCSource source,
       net::CertificateList* onc_trusted_certificates) OVERRIDE;
 
   // This implements ImportCertificates. Additionally, if

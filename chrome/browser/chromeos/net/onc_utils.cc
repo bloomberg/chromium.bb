@@ -42,12 +42,12 @@ net::ProxyServer ConvertOncProxyLocationToHostPort(
     net::ProxyServer::Scheme default_proxy_scheme,
     const base::DictionaryValue& onc_proxy_location) {
   std::string host;
-  onc_proxy_location.GetStringWithoutPathExpansion(onc::proxy::kHost, &host);
+  onc_proxy_location.GetStringWithoutPathExpansion(::onc::proxy::kHost, &host);
   // Parse |host| according to the format [<scheme>"://"]<server>[":"<port>].
   net::ProxyServer proxy_server =
       net::ProxyServer::FromURI(host, default_proxy_scheme);
   int port = 0;
-  onc_proxy_location.GetIntegerWithoutPathExpansion(onc::proxy::kPort, &port);
+  onc_proxy_location.GetIntegerWithoutPathExpansion(::onc::proxy::kPort, &port);
 
   // Replace the port parsed from |host| by the provided |port|.
   return net::ProxyServer(
@@ -68,13 +68,13 @@ void AppendProxyServerForScheme(
 
   net::ProxyServer::Scheme default_proxy_scheme = net::ProxyServer::SCHEME_HTTP;
   std::string url_scheme;
-  if (onc_scheme == proxy::kFtp) {
+  if (onc_scheme == ::onc::proxy::kFtp) {
     url_scheme = "ftp";
-  } else if (onc_scheme == proxy::kHttp) {
+  } else if (onc_scheme == ::onc::proxy::kHttp) {
     url_scheme = "http";
-  } else if (onc_scheme == proxy::kHttps) {
+  } else if (onc_scheme == ::onc::proxy::kHttps) {
     url_scheme = "https";
-  } else if (onc_scheme == proxy::kSocks) {
+  } else if (onc_scheme == ::onc::proxy::kSocks) {
     default_proxy_scheme = net::ProxyServer::SCHEME_SOCKS4;
     url_scheme = "socks";
   } else {
@@ -104,35 +104,38 @@ net::ProxyBypassRules ConvertOncExcludeDomainsToBypassRules(
 scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
     const base::DictionaryValue& onc_proxy_settings) {
   std::string type;
-  onc_proxy_settings.GetStringWithoutPathExpansion(proxy::kType, &type);
+  onc_proxy_settings.GetStringWithoutPathExpansion(::onc::proxy::kType, &type);
   scoped_ptr<DictionaryValue> proxy_dict;
 
-  if (type == proxy::kDirect) {
+  if (type == ::onc::proxy::kDirect) {
     proxy_dict.reset(ProxyConfigDictionary::CreateDirect());
-  } else if (type == proxy::kWPAD) {
+  } else if (type == ::onc::proxy::kWPAD) {
     proxy_dict.reset(ProxyConfigDictionary::CreateAutoDetect());
-  } else if (type == proxy::kPAC) {
+  } else if (type == ::onc::proxy::kPAC) {
     std::string pac_url;
-    onc_proxy_settings.GetStringWithoutPathExpansion(proxy::kPAC, &pac_url);
+    onc_proxy_settings.GetStringWithoutPathExpansion(::onc::proxy::kPAC,
+                                                     &pac_url);
     GURL url(pac_url);
     DCHECK(url.is_valid())
         << "PAC field is invalid for this ProxySettings.Type";
     proxy_dict.reset(ProxyConfigDictionary::CreatePacScript(url.spec(),
                                                             false));
-  } else if (type == proxy::kManual) {
+  } else if (type == ::onc::proxy::kManual) {
     const base::DictionaryValue* manual_dict = NULL;
-    onc_proxy_settings.GetDictionaryWithoutPathExpansion(proxy::kManual,
+    onc_proxy_settings.GetDictionaryWithoutPathExpansion(::onc::proxy::kManual,
                                                          &manual_dict);
     std::string manual_spec;
-    AppendProxyServerForScheme(*manual_dict, proxy::kFtp, &manual_spec);
-    AppendProxyServerForScheme(*manual_dict, proxy::kHttp, &manual_spec);
-    AppendProxyServerForScheme(*manual_dict, proxy::kSocks, &manual_spec);
-    AppendProxyServerForScheme(*manual_dict, proxy::kHttps, &manual_spec);
+    AppendProxyServerForScheme(*manual_dict, ::onc::proxy::kFtp, &manual_spec);
+    AppendProxyServerForScheme(*manual_dict, ::onc::proxy::kHttp, &manual_spec);
+    AppendProxyServerForScheme(*manual_dict, ::onc::proxy::kSocks,
+                               &manual_spec);
+    AppendProxyServerForScheme(*manual_dict, ::onc::proxy::kHttps,
+                               &manual_spec);
 
     const base::ListValue* exclude_domains = NULL;
     net::ProxyBypassRules bypass_rules;
-    if (onc_proxy_settings.GetListWithoutPathExpansion(proxy::kExcludeDomains,
-                                                       &exclude_domains)) {
+    if (onc_proxy_settings.GetListWithoutPathExpansion(
+            ::onc::proxy::kExcludeDomains, &exclude_domains)) {
       bypass_rules.AssignFrom(
           ConvertOncExcludeDomainsToBypassRules(*exclude_domains));
     }
@@ -155,9 +158,9 @@ class UserStringSubstitution : public chromeos::onc::StringSubstitution {
 
   virtual bool GetSubstitute(const std::string& placeholder,
                              std::string* substitute) const OVERRIDE {
-    if (placeholder == chromeos::onc::substitutes::kLoginIDField)
+    if (placeholder == ::onc::substitutes::kLoginIDField)
       *substitute = user_->GetAccountName(false);
-    else if (placeholder == chromeos::onc::substitutes::kEmailField)
+    else if (placeholder == ::onc::substitutes::kEmailField)
       *substitute = user_->email();
     else
       return false;
@@ -218,7 +221,7 @@ void ImportNetworksForUser(const chromeos::User* user,
                                        *normalized_network);
 
     scoped_ptr<NetworkUIData> ui_data = NetworkUIData::CreateFromONC(
-        onc::ONC_SOURCE_USER_IMPORT, *normalized_network);
+        ::onc::ONC_SOURCE_USER_IMPORT, *normalized_network);
     base::DictionaryValue ui_data_dict;
     ui_data->FillDictionary(&ui_data_dict);
     std::string ui_data_json;
@@ -238,7 +241,7 @@ void ImportNetworksForUser(const chromeos::User* user,
 
 const base::DictionaryValue* FindPolicyForActiveUser(
     const std::string& guid,
-    onc::ONCSource* onc_source) {
+    ::onc::ONCSource* onc_source) {
   const User* user = UserManager::Get()->GetActiveUser();
   std::string username_hash = user ? user->username_hash() : std::string();
   return NetworkHandler::Get()->managed_network_configuration_handler()->
@@ -257,7 +260,7 @@ const base::DictionaryValue* GetNetworkConfigByGUID(
     DCHECK(network);
 
     std::string current_guid;
-    network->GetStringWithoutPathExpansion(onc::network_config::kGUID,
+    network->GetStringWithoutPathExpansion(::onc::network_config::kGUID,
                                            &current_guid);
     if (current_guid == guid)
       return network;
@@ -275,18 +278,18 @@ const base::DictionaryValue* GetNetworkConfigForEthernetWithoutEAP(
     DCHECK(network);
 
     std::string type;
-    network->GetStringWithoutPathExpansion(onc::network_config::kType, &type);
-    if (type != onc::network_type::kEthernet)
+    network->GetStringWithoutPathExpansion(::onc::network_config::kType, &type);
+    if (type != ::onc::network_type::kEthernet)
       continue;
 
     const base::DictionaryValue* ethernet = NULL;
-    network->GetDictionaryWithoutPathExpansion(onc::network_config::kEthernet,
+    network->GetDictionaryWithoutPathExpansion(::onc::network_config::kEthernet,
                                                &ethernet);
 
     std::string auth;
-    ethernet->GetStringWithoutPathExpansion(onc::ethernet::kAuthentication,
+    ethernet->GetStringWithoutPathExpansion(::onc::ethernet::kAuthentication,
                                             &auth);
-    if (auth == onc::ethernet::kNone)
+    if (auth == ::onc::ethernet::kNone)
       return network;
   }
   return NULL;
@@ -368,22 +371,22 @@ const base::DictionaryValue* GetPolicyForFavoriteNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
     const FavoriteState& favorite,
-    onc::ONCSource* onc_source) {
+    ::onc::ONCSource* onc_source) {
   VLOG(2) << "GetPolicyForFavoriteNetwork: " << favorite.path();
-  *onc_source = onc::ONC_SOURCE_NONE;
+  *onc_source = ::onc::ONC_SOURCE_NONE;
 
   const base::DictionaryValue* network_policy = GetPolicyForNetworkFromPref(
       profile_prefs, prefs::kOpenNetworkConfiguration, favorite);
   if (network_policy) {
     VLOG(1) << "Network " << favorite.path() << " is managed by user policy.";
-    *onc_source = onc::ONC_SOURCE_USER_POLICY;
+    *onc_source = ::onc::ONC_SOURCE_USER_POLICY;
     return network_policy;
   }
   network_policy = GetPolicyForNetworkFromPref(
       local_state_prefs, prefs::kDeviceOpenNetworkConfiguration, favorite);
   if (network_policy) {
     VLOG(1) << "Network " << favorite.path() << " is managed by device policy.";
-    *onc_source = onc::ONC_SOURCE_DEVICE_POLICY;
+    *onc_source = ::onc::ONC_SOURCE_DEVICE_POLICY;
     return network_policy;
   }
   VLOG(2) << "Network " << favorite.path() << " is unmanaged.";
@@ -393,7 +396,7 @@ const base::DictionaryValue* GetPolicyForFavoriteNetwork(
 bool HasPolicyForFavoriteNetwork(const PrefService* profile_prefs,
                                  const PrefService* local_state_prefs,
                                  const FavoriteState& network) {
-  onc::ONCSource ignored_onc_source;
+  ::onc::ONCSource ignored_onc_source;
   const base::DictionaryValue* policy = onc::GetPolicyForFavoriteNetwork(
       profile_prefs, local_state_prefs, network, &ignored_onc_source);
   return policy != NULL;

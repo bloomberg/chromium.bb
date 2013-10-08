@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 #include "net/cert/x509_certificate.h"
 
 namespace base {
@@ -31,7 +31,7 @@ class CHROMEOS_EXPORT CertificateImporter {
   // successfully.
   virtual bool ImportCertificates(
       const base::ListValue& certificates,
-      onc::ONCSource source,
+      ::onc::ONCSource source,
       net::CertificateList* onc_trusted_certificates) = 0;
 
  private:

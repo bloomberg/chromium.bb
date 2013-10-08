@@ -24,7 +24,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
 
@@ -100,7 +100,7 @@ struct NetworkAndCertPattern {
 // A unary predicate that returns true if the given CertAndIssuer matches the
 // certificate pattern of the NetworkAndCertPattern.
 struct MatchCertWithPattern {
-  MatchCertWithPattern(const NetworkAndCertPattern& pattern)
+  explicit MatchCertWithPattern(const NetworkAndCertPattern& pattern)
       : net_and_pattern(pattern) {}
 
   bool operator()(const CertAndIssuer& cert_and_issuer) {
@@ -192,7 +192,7 @@ void FindCertificateMatches(const net::CertificateList& certs,
 // pattern within an EAP, IPsec or OpenVPN configuration.
 client_cert::ConfigType OncToClientCertConfigurationType(
     const base::DictionaryValue& network_config) {
-  using namespace ::chromeos::onc;
+  using namespace ::onc;
 
   const base::DictionaryValue* wifi = NULL;
   network_config.GetDictionaryWithoutPathExpansion(network_config::kWiFi,
@@ -247,7 +247,7 @@ void LogError(const std::string& service_path,
 }
 
 bool ClientCertificatesLoaded() {
-  if(!CertLoader::Get()->certificates_loaded()) {
+  if (!CertLoader::Get()->certificates_loaded()) {
     VLOG(1) << "Certificates not loaded yet.";
     return false;
   }

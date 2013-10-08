@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class Value;
@@ -55,7 +55,7 @@ class NetworkConfigurationUpdater : public PolicyService::Observer {
 
  protected:
   NetworkConfigurationUpdater(
-      chromeos::onc::ONCSource onc_source,
+      onc::ONCSource onc_source,
       std::string policy_key,
       scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
       PolicyService* policy_service,
@@ -71,7 +71,7 @@ class NetworkConfigurationUpdater : public PolicyService::Observer {
   // modify |network_configs_onc| before the actual application.
   virtual void ApplyNetworkPolicy(base::ListValue* network_configs_onc);
 
-  chromeos::onc::ONCSource onc_source_;
+  onc::ONCSource onc_source_;
 
   // Pointer to the global singleton or a test instance.
   chromeos::ManagedNetworkConfigurationHandler* network_config_handler_;

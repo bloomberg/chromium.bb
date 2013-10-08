@@ -17,9 +17,9 @@
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chromeos/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/network/onc/mock_certificate_importer.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/onc/onc_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/test_data_directory.h"
@@ -36,8 +36,6 @@ using testing::Ne;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
-
-namespace onc = ::chromeos::onc;
 
 namespace policy {
 
@@ -120,7 +118,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     empty_certificates_.reset(new base::ListValue);
 
     scoped_ptr<base::DictionaryValue> fake_toplevel_onc =
-        onc::ReadDictionaryFromJson(kFakeONC);
+        chromeos::onc::ReadDictionaryFromJson(kFakeONC);
 
     scoped_ptr<base::Value> network_configs_value;
     base::ListValue* network_configs = NULL;
@@ -136,7 +134,8 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     certs_value.release()->GetAsList(&certs);
     fake_certificates_.reset(certs);
 
-    certificate_importer_ = new StrictMock<onc::MockCertificateImporter>();
+    certificate_importer_ =
+        new StrictMock<chromeos::onc::MockCertificateImporter>();
     certificate_importer_owned_.reset(certificate_importer_);
   }
 
@@ -184,8 +183,8 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   // NetworkConfigurationUpdater. When that happens, |certificate_importer_|
   // continues to point to that instance but |certificate_importer_owned_| is
   // released.
-  StrictMock<onc::MockCertificateImporter>* certificate_importer_;
-  scoped_ptr<onc::CertificateImporter> certificate_importer_owned_;
+  StrictMock<chromeos::onc::MockCertificateImporter>* certificate_importer_;
+  scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer_owned_;
 
   StrictMock<MockConfigurationPolicyProvider> provider_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
@@ -197,10 +196,10 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
 
 TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
   std::string onc_policy =
-      onc::test_utils::ReadTestData("toplevel_partially_invalid.onc");
+      chromeos::onc::test_utils::ReadTestData("toplevel_partially_invalid.onc");
 
   scoped_ptr<base::DictionaryValue> onc_repaired =
-      onc::test_utils::ReadTestDictionary(
+      chromeos::onc::test_utils::ReadTestDictionary(
           "repaired_toplevel_partially_invalid.onc");
 
   base::ListValue* network_configs_repaired = NULL;

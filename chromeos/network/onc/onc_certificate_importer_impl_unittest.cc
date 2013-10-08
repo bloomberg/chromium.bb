@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_test_utils.h"
+#include "components/onc/onc_constants.h"
 #include "crypto/nss_util.h"
 #include "net/base/crypto_module.h"
 #include "net/cert/cert_type.h"
@@ -82,7 +82,7 @@ class ONCCertificateImporterImplTest : public testing::Test {
         test_utils::ReadTestDictionary(filename);
     scoped_ptr<base::Value> certificates_value;
     base::ListValue* certificates = NULL;
-    onc->RemoveWithoutPathExpansion(toplevel_config::kCertificates,
+    onc->RemoveWithoutPathExpansion(::onc::toplevel_config::kCertificates,
                                     &certificates_value);
     certificates_value.release()->GetAsList(&certificates);
     onc_certificates_.reset(certificates);
@@ -114,7 +114,7 @@ class ONCCertificateImporterImplTest : public testing::Test {
 
     base::DictionaryValue* certificate = NULL;
     onc_certificates_->GetDictionary(0, &certificate);
-    certificate->GetStringWithoutPathExpansion(certificate::kGUID, guid);
+    certificate->GetStringWithoutPathExpansion(::onc::certificate::kGUID, guid);
 
     if (expected_type == net::SERVER_CERT || expected_type == net::CA_CERT) {
       EXPECT_EQ(1u, imported_server_and_ca_certs_.size());

@@ -833,10 +833,10 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
   }
 
   void VerifyCurrentProxyServer(const std::string& expected_server,
-                                chromeos::onc::ONCSource expected_source) {
+                                onc::ONCSource expected_source) {
     const chromeos::FavoriteState* network = GetDefaultFavoriteNetwork();
     ASSERT_TRUE(network);
-    chromeos::onc::ONCSource actual_source;
+    onc::ONCSource actual_source;
     scoped_ptr<ProxyConfigDictionary> proxy_dict =
         chromeos::proxy_config::GetProxyConfigForFavoriteNetwork(
             pref_service_,
@@ -969,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSSetProxy) {
   SetProxyPref(chromeos::kProxySingleHttp, base::StringValue("www.adomain.xy"));
 
   VerifyCurrentProxyServer("www.adomain.xy:123",
-                           chromeos::onc::ONC_SOURCE_NONE);
+                           onc::ONC_SOURCE_NONE);
 }
 
 // Verify that default proxy ports are used and that ports can be updated
@@ -989,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSProxyDefaultPorts) {
   // Verify default ports.
   VerifyCurrentProxyServer(
       "http=a.com:80;https=4.3.2.1:80;ftp=c.com:80;socks=socks4://d.com:1080",
-      chromeos::onc::ONC_SOURCE_NONE);
+      onc::ONC_SOURCE_NONE);
 
   // Set and verify the ports.
   SetProxyPref(chromeos::kProxyHttpPort, base::FundamentalValue(1));
@@ -999,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSProxyDefaultPorts) {
 
   VerifyCurrentProxyServer(
       "http=a.com:1;https=4.3.2.1:2;ftp=c.com:3;socks=socks4://d.com:4",
-      chromeos::onc::ONC_SOURCE_NONE);
+      onc::ONC_SOURCE_NONE);
 }
 
 #endif

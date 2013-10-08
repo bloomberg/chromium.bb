@@ -14,7 +14,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -107,7 +107,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   // to Shill's profiles and enforced in future configurations until the policy
   // associated with |onc_source| is changed again with this function. For
   // device policies, |userhash| must be empty.
-  virtual void SetPolicy(onc::ONCSource onc_source,
+  virtual void SetPolicy(::onc::ONCSource onc_source,
                          const std::string& userhash,
                          const base::ListValue& network_configs_onc) = 0;
 
@@ -117,7 +117,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   virtual const base::DictionaryValue* FindPolicyByGUID(
       const std::string userhash,
       const std::string& guid,
-      onc::ONCSource* onc_source) const = 0;
+      ::onc::ONCSource* onc_source) const = 0;
 
   // Returns the policy with |guid| for profile |profile_path|. If such
   // doesn't exist, returns NULL.

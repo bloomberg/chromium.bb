@@ -14,11 +14,11 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/policy_util.h"
 #include "chromeos/network/shill_property_util.h"
+#include "components/onc/onc_constants.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -110,7 +110,7 @@ void PolicyApplicator::GetEntryCallback(
                                           &onc::kNetworkWithStateSignature));
 
   std::string old_guid;
-  if (!onc_part->GetStringWithoutPathExpansion(onc::network_config::kGUID,
+  if (!onc_part->GetStringWithoutPathExpansion(::onc::network_config::kGUID,
                                                &old_guid)) {
     VLOG(1) << "Entry " << entry << " of profile " << profile_.ToDebugString()
             << " doesn't contain a GUID.";
@@ -130,8 +130,9 @@ void PolicyApplicator::GetEntryCallback(
   }
 
   bool was_managed = !old_guid.empty() && ui_data &&
-                     (ui_data->onc_source() == onc::ONC_SOURCE_DEVICE_POLICY ||
-                      ui_data->onc_source() == onc::ONC_SOURCE_USER_POLICY);
+                     (ui_data->onc_source() ==
+                          ::onc::ONC_SOURCE_DEVICE_POLICY ||
+                      ui_data->onc_source() == ::onc::ONC_SOURCE_USER_POLICY);
 
   const base::DictionaryValue* new_policy = NULL;
   if (was_managed) {
@@ -148,7 +149,7 @@ void PolicyApplicator::GetEntryCallback(
 
   if (new_policy) {
     std::string new_guid;
-    new_policy->GetStringWithoutPathExpansion(onc::network_config::kGUID,
+    new_policy->GetStringWithoutPathExpansion(::onc::network_config::kGUID,
                                               &new_guid);
 
     VLOG_IF(1, was_managed && old_guid != new_guid)
@@ -212,16 +213,16 @@ void PolicyApplicator::CreateAndWriteNewShillConfiguration(
   // Ethernet (non EAP) settings, like GUID or UIData, cannot be stored per
   // user. Abort in that case.
   std::string type;
-  policy.GetStringWithoutPathExpansion(onc::network_config::kType, &type);
-  if (type == onc::network_type::kEthernet &&
+  policy.GetStringWithoutPathExpansion(::onc::network_config::kType, &type);
+  if (type == ::onc::network_type::kEthernet &&
       profile_.type() == NetworkProfile::TYPE_USER) {
     const base::DictionaryValue* ethernet = NULL;
-    policy.GetDictionaryWithoutPathExpansion(onc::network_config::kEthernet,
+    policy.GetDictionaryWithoutPathExpansion(::onc::network_config::kEthernet,
                                              &ethernet);
     std::string auth;
-    ethernet->GetStringWithoutPathExpansion(onc::ethernet::kAuthentication,
+    ethernet->GetStringWithoutPathExpansion(::onc::ethernet::kAuthentication,
                                             &auth);
-    if (auth == onc::ethernet::kNone)
+    if (auth == ::onc::ethernet::kNone)
       return;
   }
 

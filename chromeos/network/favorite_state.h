@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 

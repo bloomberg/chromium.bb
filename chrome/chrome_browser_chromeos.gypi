@@ -50,6 +50,7 @@
         # browser_chromeos #includes power_supply_properties.pb.h directly.
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',
+        '../components/components.gyp:onc_component',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to
         # be generated before code in this target can start building.

@@ -26,6 +26,7 @@
         'debugger',
         'in_memory_url_index_cache_proto',
         'installer_util',
+        '../components/components.gyp:onc_component',
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',

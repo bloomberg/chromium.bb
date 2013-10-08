@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -49,7 +49,7 @@ CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> Decrypt(
     const base::DictionaryValue& onc);
 
 // For logging only: strings not user facing.
-CHROMEOS_EXPORT std::string GetSourceAsString(ONCSource source);
+CHROMEOS_EXPORT std::string GetSourceAsString(::onc::ONCSource source);
 
 // Used for string expansion with function ExpandStringInOncObject(...).
 class CHROMEOS_EXPORT StringSubstitution {
@@ -97,7 +97,7 @@ CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
 // output lists and should be further processed by the caller.
 CHROMEOS_EXPORT bool ParseAndValidateOncForImport(
     const std::string& onc_blob,
-    ONCSource onc_source,
+    ::onc::ONCSource onc_source,
     const std::string& passphrase,
     base::ListValue* network_configs,
     base::ListValue* certificates);

@@ -42,7 +42,7 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForFavoriteNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
     const FavoriteState& network,
-    onc::ONCSource* onc_source) {
+    ::onc::ONCSource* onc_source) {
   const base::DictionaryValue* network_policy =
       onc::GetPolicyForFavoriteNetwork(
           profile_prefs, local_state_prefs, network, onc_source);
@@ -50,7 +50,7 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForFavoriteNetwork(
   if (network_policy) {
     const base::DictionaryValue* proxy_policy = NULL;
     network_policy->GetDictionaryWithoutPathExpansion(
-        onc::network_config::kProxySettings, &proxy_policy);
+        ::onc::network_config::kProxySettings, &proxy_policy);
     if (!proxy_policy) {
       // This policy doesn't set a proxy for this network. Nonetheless, this
       // disallows changes by the user.

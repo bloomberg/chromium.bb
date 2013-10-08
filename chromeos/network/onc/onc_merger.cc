@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 namespace onc {
@@ -25,7 +25,8 @@ typedef scoped_ptr<base::DictionaryValue> DictionaryPtr;
 void MarkRecommendedFieldnames(const base::DictionaryValue& policy,
                                base::DictionaryValue* result) {
   const base::ListValue* recommended_value = NULL;
-  if (!policy.GetListWithoutPathExpansion(kRecommended, &recommended_value))
+  if (!policy.GetListWithoutPathExpansion(::onc::kRecommended,
+                                          &recommended_value))
     return;
   for (base::ListValue::const_iterator it = recommended_value->begin();
        it != recommended_value->end(); ++it) {
@@ -45,7 +46,7 @@ DictionaryPtr GetEditableFlags(const base::DictionaryValue& policy) {
   for (base::DictionaryValue::Iterator it(policy); !it.IsAtEnd();
        it.Advance()) {
     const base::DictionaryValue* child_policy = NULL;
-    if (it.key() == kRecommended ||
+    if (it.key() == ::onc::kRecommended ||
         !it.value().GetAsDictionary(&child_policy)) {
       continue;
     }
@@ -84,7 +85,7 @@ class MergeListOfDictionaries {
       for (base::DictionaryValue::Iterator field(**it_outer); !field.IsAtEnd();
            field.Advance()) {
         const std::string& key = field.key();
-        if (key == kRecommended || !visited.insert(key).second)
+        if (key == ::onc::kRecommended || !visited.insert(key).second)
           continue;
 
         scoped_ptr<base::Value> merged_value;
@@ -253,7 +254,8 @@ class MergeToEffective : public MergeSettingsAndPolicies {
   // settings overwrites shared settings overwrites recommended policy). |which|
   // is set to the respective onc::kAugmentation* constant that indicates which
   // source of settings is effective. Note that this function may return a NULL
-  // pointer and set |which| to kAugmentationUserPolicy, which means that the
+  // pointer and set |which| to ::onc::kAugmentationUserPolicy, which means that
+  // the
   // user policy didn't set a value but also didn't recommend it, thus enforcing
   // the empty value.
   scoped_ptr<base::Value> MergeValues(const std::string& key,
@@ -263,22 +265,22 @@ class MergeToEffective : public MergeSettingsAndPolicies {
     which->clear();
     if (!values.user_editable) {
       result = values.user_policy;
-      *which = kAugmentationUserPolicy;
+      *which = ::onc::kAugmentationUserPolicy;
     } else if (!values.device_editable) {
       result = values.device_policy;
-      *which = kAugmentationDevicePolicy;
+      *which = ::onc::kAugmentationDevicePolicy;
     } else if (values.user_setting) {
       result = values.user_setting;
-      *which = kAugmentationUserSetting;
+      *which = ::onc::kAugmentationUserSetting;
     } else if (values.shared_setting) {
       result = values.shared_setting;
-      *which = kAugmentationSharedSetting;
+      *which = ::onc::kAugmentationSharedSetting;
     } else if (values.user_policy) {
       result = values.user_policy;
-      *which = kAugmentationUserPolicy;
+      *which = ::onc::kAugmentationUserPolicy;
     } else if (values.device_policy) {
       result = values.device_policy;
-      *which = kAugmentationDevicePolicy;
+      *which = ::onc::kAugmentationDevicePolicy;
     } else {
       // Can be reached if the current field is recommended, but none of the
       // dictionaries contained a value for it.
@@ -329,7 +331,7 @@ class MergeToAugmented : public MergeToEffective {
       const ValueParams& values) OVERRIDE {
     scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
     if (values.active_setting) {
-      result->SetWithoutPathExpansion(kAugmentationActiveSetting,
+      result->SetWithoutPathExpansion(::onc::kAugmentationActiveSetting,
                                       values.active_setting->DeepCopy());
     }
 
@@ -343,8 +345,8 @@ class MergeToAugmented : public MergeToEffective {
       std::string which_effective;
       MergeToEffective::MergeValues(key, values, &which_effective).reset();
       if (!which_effective.empty()) {
-        result->SetStringWithoutPathExpansion(kAugmentationEffectiveSetting,
-                                              which_effective);
+        result->SetStringWithoutPathExpansion(
+            ::onc::kAugmentationEffectiveSetting, which_effective);
       }
       bool is_credential = onc::FieldIsCredential(*signature_, key);
 
@@ -353,35 +355,35 @@ class MergeToAugmented : public MergeToEffective {
       // leak here.
       if (!is_credential) {
         if (values.user_policy) {
-          result->SetWithoutPathExpansion(kAugmentationUserPolicy,
+          result->SetWithoutPathExpansion(::onc::kAugmentationUserPolicy,
                                           values.user_policy->DeepCopy());
         }
         if (values.device_policy) {
-          result->SetWithoutPathExpansion(kAugmentationDevicePolicy,
+          result->SetWithoutPathExpansion(::onc::kAugmentationDevicePolicy,
                                           values.device_policy->DeepCopy());
         }
       }
       if (values.user_setting) {
-        result->SetWithoutPathExpansion(kAugmentationUserSetting,
+        result->SetWithoutPathExpansion(::onc::kAugmentationUserSetting,
                                         values.user_setting->DeepCopy());
       }
       if (values.shared_setting) {
-        result->SetWithoutPathExpansion(kAugmentationSharedSetting,
+        result->SetWithoutPathExpansion(::onc::kAugmentationSharedSetting,
                                         values.shared_setting->DeepCopy());
       }
       if (HasUserPolicy() && values.user_editable) {
-        result->SetBooleanWithoutPathExpansion(kAugmentationUserEditable,
+        result->SetBooleanWithoutPathExpansion(::onc::kAugmentationUserEditable,
                                                true);
       }
       if (HasDevicePolicy() && values.device_editable) {
-        result->SetBooleanWithoutPathExpansion(kAugmentationDeviceEditable,
-                                               true);
+        result->SetBooleanWithoutPathExpansion(
+            ::onc::kAugmentationDeviceEditable, true);
       }
     } else {
       // This field is not part of the provided ONCSignature, thus it cannot be
       // controlled by policy.
-      result->SetStringWithoutPathExpansion(kAugmentationEffectiveSetting,
-                                            kAugmentationUnmanaged);
+      result->SetStringWithoutPathExpansion(
+          ::onc::kAugmentationEffectiveSetting, ::onc::kAugmentationUnmanaged);
     }
     if (result->empty())
       result.reset();

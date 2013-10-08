@@ -18,7 +18,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -84,9 +84,9 @@ std::string ProviderTypeIndexToONCDictKey(int provider_type_index) {
   switch (provider_type_index) {
     case PROVIDER_TYPE_INDEX_L2TP_IPSEC_PSK:
     case PROVIDER_TYPE_INDEX_L2TP_IPSEC_USER_CERT:
-      return chromeos::onc::vpn::kIPsec;
+      return onc::vpn::kIPsec;
     case PROVIDER_TYPE_INDEX_OPEN_VPN:
-      return chromeos::onc::vpn::kOpenVPN;
+      return onc::vpn::kOpenVPN;
   }
   NOTREACHED() << "Unhandled provider type index " << provider_type_index;
   return std::string();
@@ -766,27 +766,27 @@ void VPNConfigView::ParseUIProperties(const NetworkState* vpn) {
   std::string type_dict_name =
       ProviderTypeIndexToONCDictKey(provider_type_index_);
   if (provider_type_index_ == PROVIDER_TYPE_INDEX_L2TP_IPSEC_PSK) {
-    ParseVPNUIProperty(vpn, type_dict_name, onc::ipsec::kServerCARef,
+    ParseVPNUIProperty(vpn, type_dict_name, ::onc::ipsec::kServerCARef,
                        &ca_cert_ui_data_);
-    ParseVPNUIProperty(vpn, type_dict_name, onc::ipsec::kPSK,
+    ParseVPNUIProperty(vpn, type_dict_name, ::onc::ipsec::kPSK,
                        &psk_passphrase_ui_data_);
-    ParseVPNUIProperty(vpn, type_dict_name, onc::ipsec::kGroup,
+    ParseVPNUIProperty(vpn, type_dict_name, ::onc::ipsec::kGroup,
                        &group_name_ui_data_);
   } else if (provider_type_index_ == PROVIDER_TYPE_INDEX_OPEN_VPN) {
-    ParseVPNUIProperty(vpn, type_dict_name, onc::openvpn::kServerCARef,
+    ParseVPNUIProperty(vpn, type_dict_name, ::onc::openvpn::kServerCARef,
                        &ca_cert_ui_data_);
   }
-  ParseVPNUIProperty(vpn, type_dict_name, onc::vpn::kClientCertRef,
+  ParseVPNUIProperty(vpn, type_dict_name, ::onc::vpn::kClientCertRef,
                      &user_cert_ui_data_);
 
   const std::string credentials_dict_name(
       provider_type_index_ == PROVIDER_TYPE_INDEX_L2TP_IPSEC_PSK ?
-      onc::vpn::kL2TP : type_dict_name);
-  ParseVPNUIProperty(vpn, credentials_dict_name, onc::vpn::kUsername,
+      ::onc::vpn::kL2TP : type_dict_name);
+  ParseVPNUIProperty(vpn, credentials_dict_name, ::onc::vpn::kUsername,
                      &username_ui_data_);
-  ParseVPNUIProperty(vpn, credentials_dict_name, onc::vpn::kPassword,
+  ParseVPNUIProperty(vpn, credentials_dict_name, ::onc::vpn::kPassword,
                      &user_passphrase_ui_data_);
-  ParseVPNUIProperty(vpn, credentials_dict_name, onc::vpn::kSaveCredentials,
+  ParseVPNUIProperty(vpn, credentials_dict_name, ::onc::vpn::kSaveCredentials,
                      &save_credentials_ui_data_);
 }
 
@@ -1045,7 +1045,7 @@ void VPNConfigView::ParseVPNUIProperty(
     const std::string& dict_key,
     const std::string& key,
     NetworkPropertyUIData* property_ui_data) {
-  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
       onc::FindPolicyForActiveUser(network->guid(), &onc_source);
 
@@ -1054,7 +1054,7 @@ void VPNConfigView::ParseVPNUIProperty(
       onc_source,
       onc,
       base::StringPrintf("%s.%s.%s",
-                         onc::network_config::kVPN,
+                         ::onc::network_config::kVPN,
                          dict_key.c_str(),
                          key.c_str()));
 }

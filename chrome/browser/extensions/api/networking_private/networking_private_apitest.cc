@@ -25,8 +25,8 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/dbus/shill_stub_helper.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/onc/onc_constants.h"
 #include "policy/policy_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif  // OS_CHROMEOS

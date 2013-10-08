@@ -18,6 +18,7 @@
     'dom_distiller.gypi',
     'json_schema.gypi',
     'navigation_interception.gypi',
+    'onc.gypi',
     'policy.gypi',
     'sessions.gypi',
     'startup_metric_utils.gypi',

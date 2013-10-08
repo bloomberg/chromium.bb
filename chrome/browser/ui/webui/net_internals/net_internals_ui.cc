@@ -51,6 +51,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -85,7 +86,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
 #endif
 #if defined(OS_WIN)
@@ -1549,7 +1549,7 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
   std::string error;
   const chromeos::User* user = chromeos::UserManager::Get()->GetActiveUser();
   if (user) {
-    chromeos::onc::ONCSource onc_source = chromeos::onc::ONC_SOURCE_USER_IMPORT;
+    onc::ONCSource onc_source = onc::ONC_SOURCE_USER_IMPORT;
 
     base::ListValue network_configs;
     base::ListValue certificates;

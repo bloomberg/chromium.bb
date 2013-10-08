@@ -24,6 +24,8 @@
 #define ONC_LOG_WARNING(message) NET_LOG_WARNING("ONC", message)
 #define ONC_LOG_ERROR(message) NET_LOG_ERROR("ONC", message)
 
+using namespace ::onc;
+
 namespace chromeos {
 namespace onc {
 

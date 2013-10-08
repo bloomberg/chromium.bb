@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_NET_PROXY_CONFIG_HANDLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 class PrefRegistrySimple;
 class PrefService;

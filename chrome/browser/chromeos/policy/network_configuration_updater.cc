@@ -27,7 +27,7 @@ NetworkConfigurationUpdater::CreateForDevicePolicy(
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler) {
   scoped_ptr<NetworkConfigurationUpdater> updater(
-      new NetworkConfigurationUpdater(chromeos::onc::ONC_SOURCE_DEVICE_POLICY,
+      new NetworkConfigurationUpdater(onc::ONC_SOURCE_DEVICE_POLICY,
                                       key::kDeviceOpenNetworkConfiguration,
                                       certificate_importer.Pass(),
                                       policy_service,
@@ -55,7 +55,7 @@ void NetworkConfigurationUpdater::OnPolicyServiceInitialized(
 }
 
 NetworkConfigurationUpdater::NetworkConfigurationUpdater(
-    chromeos::onc::ONCSource onc_source,
+    onc::ONCSource onc_source,
     std::string policy_key,
     scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
     PolicyService* policy_service,

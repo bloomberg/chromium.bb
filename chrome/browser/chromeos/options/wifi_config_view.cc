@@ -19,7 +19,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -880,24 +880,25 @@ void WifiConfigView::Init(bool show_8021x) {
     DCHECK(wifi->type() == shill::kTypeWifi);
     if (wifi->security() == shill::kSecurity8021x)
       show_8021x = true;
-    ParseWiFiEAPUIProperty(&eap_method_ui_data_, wifi, onc::eap::kOuter);
-    ParseWiFiEAPUIProperty(&phase_2_auth_ui_data_, wifi, onc::eap::kInner);
-    ParseWiFiEAPUIProperty(&user_cert_ui_data_, wifi, onc::eap::kClientCertRef);
+    ParseWiFiEAPUIProperty(&eap_method_ui_data_, wifi, ::onc::eap::kOuter);
+    ParseWiFiEAPUIProperty(&phase_2_auth_ui_data_, wifi, ::onc::eap::kInner);
+    ParseWiFiEAPUIProperty(&user_cert_ui_data_, wifi,
+                           ::onc::eap::kClientCertRef);
     ParseWiFiEAPUIProperty(&server_ca_cert_ui_data_, wifi,
-                           onc::eap::kServerCARef);
+                           ::onc::eap::kServerCARef);
     if (server_ca_cert_ui_data_.IsManaged()) {
       ParseWiFiEAPUIProperty(&server_ca_cert_ui_data_, wifi,
-                             onc::eap::kUseSystemCAs);
+                             ::onc::eap::kUseSystemCAs);
     }
-    ParseWiFiEAPUIProperty(&identity_ui_data_, wifi, onc::eap::kIdentity);
+    ParseWiFiEAPUIProperty(&identity_ui_data_, wifi, ::onc::eap::kIdentity);
     ParseWiFiEAPUIProperty(&identity_anonymous_ui_data_, wifi,
-                           onc::eap::kAnonymousIdentity);
+                           ::onc::eap::kAnonymousIdentity);
     ParseWiFiEAPUIProperty(&save_credentials_ui_data_, wifi,
-                           onc::eap::kSaveCredentials);
+                           ::onc::eap::kSaveCredentials);
     if (show_8021x)
-      ParseWiFiEAPUIProperty(&passphrase_ui_data_, wifi, onc::eap::kPassword);
+      ParseWiFiEAPUIProperty(&passphrase_ui_data_, wifi, ::onc::eap::kPassword);
     else
-      ParseWiFiUIProperty(&passphrase_ui_data_, wifi, onc::wifi::kPassphrase);
+      ParseWiFiUIProperty(&passphrase_ui_data_, wifi, ::onc::wifi::kPassphrase);
   }
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
@@ -1319,14 +1320,14 @@ void WifiConfigView::ParseWiFiUIProperty(
     NetworkPropertyUIData* property_ui_data,
     const NetworkState* network,
     const std::string& key) {
-  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
       onc::FindPolicyForActiveUser(network->guid(), &onc_source);
 
   property_ui_data->ParseOncProperty(
       onc_source,
       onc,
-      base::StringPrintf("%s.%s", onc::network_config::kWiFi, key.c_str()));
+      base::StringPrintf("%s.%s", ::onc::network_config::kWiFi, key.c_str()));
 }
 
 // static
@@ -1336,7 +1337,7 @@ void WifiConfigView::ParseWiFiEAPUIProperty(
     const std::string& key) {
   ParseWiFiUIProperty(
       property_ui_data, network,
-      base::StringPrintf("%s.%s", onc::wifi::kEAP, key.c_str()));
+      base::StringPrintf("%s.%s", ::onc::wifi::kEAP, key.c_str()));
 }
 
 }  // namespace chromeos

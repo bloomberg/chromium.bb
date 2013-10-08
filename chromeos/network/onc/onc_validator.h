@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_mapper.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -73,7 +73,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   // checks:
   // - only the network types Wifi and Ethernet are allowed
   // - client certificate patterns are disallowed
-  void SetOncSource(ONCSource source) {
+  void SetOncSource(::onc::ONCSource source) {
     onc_source_ = source;
   }
 
@@ -224,7 +224,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   const bool error_on_missing_field_;
   const bool managed_onc_;
 
-  ONCSource onc_source_;
+  ::onc::ONCSource onc_source_;
 
   // The path of field names and indices to the current value. Indices
   // are stored as strings in decimal notation.

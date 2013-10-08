@@ -16,9 +16,9 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
+#include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -103,11 +103,11 @@ void LocalTranslator::TranslateFields() {
 
 void LocalTranslator::TranslateEthernet() {
   std::string authentication;
-  onc_object_->GetStringWithoutPathExpansion(ethernet::kAuthentication,
+  onc_object_->GetStringWithoutPathExpansion(::onc::ethernet::kAuthentication,
                                              &authentication);
 
   const char* shill_type = shill::kTypeEthernet;
-  if (authentication == ethernet::k8021X)
+  if (authentication == ::onc::ethernet::k8021X)
     shill_type = shill::kTypeEthernetEap;
   shill_dictionary_->SetStringWithoutPathExpansion(shill::kTypeProperty,
                                                    shill_type);
@@ -120,7 +120,7 @@ void LocalTranslator::TranslateOpenVPN() {
   // Copy only the first entry if existing.
   const base::ListValue* certKUs = NULL;
   std::string certKU;
-  if (onc_object_->GetListWithoutPathExpansion(openvpn::kRemoteCertKU,
+  if (onc_object_->GetListWithoutPathExpansion(::onc::openvpn::kRemoteCertKU,
                                                &certKUs) &&
       certKUs->GetString(0, &certKU)) {
     shill_dictionary_->SetStringWithoutPathExpansion(
@@ -130,9 +130,9 @@ void LocalTranslator::TranslateOpenVPN() {
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
     scoped_ptr<base::Value> translated;
-    if (it.key() == vpn::kSaveCredentials ||
-        it.key() == openvpn::kRemoteCertKU ||
-        it.key() == openvpn::kServerCAPEMs) {
+    if (it.key() == ::onc::vpn::kSaveCredentials ||
+        it.key() == ::onc::openvpn::kRemoteCertKU ||
+        it.key() == ::onc::openvpn::kServerCAPEMs) {
       translated.reset(it.value().DeepCopy());
     } else {
       // Shill wants all Provider/VPN fields to be strings.
@@ -144,7 +144,7 @@ void LocalTranslator::TranslateOpenVPN() {
 
 void LocalTranslator::TranslateVPN() {
   std::string type;
-  onc_object_->GetStringWithoutPathExpansion(vpn::kType, &type);
+  onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kType, &type);
   TranslateWithTableAndSet(type, kVPNTypeTable, shill::kProviderTypeProperty);
 
   CopyFieldsAccordingToSignature();
@@ -152,7 +152,7 @@ void LocalTranslator::TranslateVPN() {
 
 void LocalTranslator::TranslateWiFi() {
   std::string security;
-  onc_object_->GetStringWithoutPathExpansion(wifi::kSecurity, &security);
+  onc_object_->GetStringWithoutPathExpansion(::onc::wifi::kSecurity, &security);
   TranslateWithTableAndSet(security, kWiFiSecurityTable,
                            shill::kSecurityProperty);
 
@@ -164,19 +164,20 @@ void LocalTranslator::TranslateWiFi() {
 
 void LocalTranslator::TranslateEAP() {
   std::string outer;
-  onc_object_->GetStringWithoutPathExpansion(eap::kOuter, &outer);
+  onc_object_->GetStringWithoutPathExpansion(::onc::eap::kOuter, &outer);
   TranslateWithTableAndSet(outer, kEAPOuterTable, shill::kEapMethodProperty);
 
   // Translate the inner protocol only for outer tunneling protocols.
-  if (outer == eap::kPEAP || outer == eap::kEAP_TTLS) {
+  if (outer == ::onc::eap::kPEAP || outer == ::onc::eap::kEAP_TTLS) {
     // In ONC the Inner protocol defaults to "Automatic".
-    std::string inner = eap::kAutomatic;
+    std::string inner = ::onc::eap::kAutomatic;
     // ONC's Inner == "Automatic" translates to omitting the Phase2 property in
     // Shill.
-    onc_object_->GetStringWithoutPathExpansion(eap::kInner, &inner);
-    if (inner != eap::kAutomatic) {
+    onc_object_->GetStringWithoutPathExpansion(::onc::eap::kInner, &inner);
+    if (inner != ::onc::eap::kAutomatic) {
       const StringTranslationEntry* table =
-          outer == eap::kPEAP ? kEAP_PEAP_InnerTable : kEAP_TTLS_InnerTable;
+          outer == ::onc::eap::kPEAP ? kEAP_PEAP_InnerTable :
+                                       kEAP_TTLS_InnerTable;
       TranslateWithTableAndSet(inner, table, shill::kEapPhase2AuthProperty);
     }
   }
@@ -186,16 +187,18 @@ void LocalTranslator::TranslateEAP() {
 
 void LocalTranslator::TranslateNetworkConfiguration() {
   std::string type;
-  onc_object_->GetStringWithoutPathExpansion(network_config::kType, &type);
+  onc_object_->GetStringWithoutPathExpansion(::onc::network_config::kType,
+                                             &type);
 
   // Set the type except for Ethernet which is set in TranslateEthernet.
-  if (type != network_type::kEthernet)
+  if (type != ::onc::network_type::kEthernet)
     TranslateWithTableAndSet(type, kNetworkTypeTable, shill::kTypeProperty);
 
   // Shill doesn't allow setting the name for non-VPN networks.
-  if (type == network_type::kVPN) {
+  if (type == ::onc::network_type::kVPN) {
     std::string name;
-    onc_object_->GetStringWithoutPathExpansion(network_config::kName, &name);
+    onc_object_->GetStringWithoutPathExpansion(::onc::network_config::kName,
+                                               &name);
     shill_dictionary_->SetStringWithoutPathExpansion(shill::kNameProperty,
                                                      name);
   }

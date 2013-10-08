@@ -26,13 +26,13 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_merger.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_validator.h"
 #include "chromeos/network/policy_util.h"
 #include "chromeos/network/shill_property_util.h"
+#include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -58,9 +58,9 @@ const char kUnknownProfilePath[] = "Error.UnknownProfilePath";
 const char kUnknownServicePathMessage[] = "Service path is unknown.";
 const char kUnknownServicePath[] = "Error.UnknownServicePath";
 
-std::string ToDebugString(onc::ONCSource source,
+std::string ToDebugString(::onc::ONCSource source,
                           const std::string& userhash) {
-  return source == onc::ONC_SOURCE_USER_POLICY ?
+  return source == ::onc::ONC_SOURCE_USER_POLICY ?
       ("user policy of " + userhash) : "device policy";
 }
 
@@ -180,7 +180,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedPropertiesCallback(
           &onc::kNetworkWithStateSignature));
 
   std::string guid;
-  active_settings->GetStringWithoutPathExpansion(onc::network_config::kGUID,
+  active_settings->GetStringWithoutPathExpansion(::onc::network_config::kGUID,
                                                  &guid);
 
   const base::DictionaryValue* user_policy = NULL;
@@ -365,14 +365,14 @@ void ManagedNetworkConfigurationHandlerImpl::RemoveConfiguration(
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
-    onc::ONCSource onc_source,
+    ::onc::ONCSource onc_source,
     const std::string& userhash,
     const base::ListValue& network_configs_onc) {
   VLOG(1) << "Setting policies from " << ToDebugString(onc_source, userhash)
           << ".";
 
   // |userhash| must be empty for device policies.
-  DCHECK(onc_source != chromeos::onc::ONC_SOURCE_DEVICE_POLICY ||
+  DCHECK(onc_source != ::onc::ONC_SOURCE_DEVICE_POLICY ||
          userhash.empty());
   GuidToPolicyMap& policies = policies_by_user_[userhash];
 
@@ -389,7 +389,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
     DCHECK(network);
 
     std::string guid;
-    network->GetStringWithoutPathExpansion(onc::network_config::kGUID, &guid);
+    network->GetStringWithoutPathExpansion(::onc::network_config::kGUID, &guid);
     DCHECK(!guid.empty());
 
     if (policies.count(guid) > 0) {
@@ -461,15 +461,15 @@ const base::DictionaryValue*
 ManagedNetworkConfigurationHandlerImpl::FindPolicyByGUID(
     const std::string userhash,
     const std::string& guid,
-    onc::ONCSource* onc_source) const {
-  *onc_source = onc::ONC_SOURCE_NONE;
+    ::onc::ONCSource* onc_source) const {
+  *onc_source = ::onc::ONC_SOURCE_NONE;
 
   if (!userhash.empty()) {
     const GuidToPolicyMap* user_policies = GetPoliciesForUser(userhash);
     if (user_policies) {
       GuidToPolicyMap::const_iterator found = user_policies->find(guid);
       if (found != user_policies->end()) {
-        *onc_source = onc::ONC_SOURCE_USER_POLICY;
+        *onc_source = ::onc::ONC_SOURCE_USER_POLICY;
         return found->second;
       }
     }
@@ -479,7 +479,7 @@ ManagedNetworkConfigurationHandlerImpl::FindPolicyByGUID(
   if (device_policies) {
     GuidToPolicyMap::const_iterator found = device_policies->find(guid);
     if (found != device_policies->end()) {
-      *onc_source = onc::ONC_SOURCE_DEVICE_POLICY;
+      *onc_source = ::onc::ONC_SOURCE_DEVICE_POLICY;
       return found->second;
     }
   }

@@ -12,7 +12,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 

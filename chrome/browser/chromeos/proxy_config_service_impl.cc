@@ -37,7 +37,7 @@ bool GetProxyConfig(const PrefService* profile_prefs,
                     const PrefService* local_state_prefs,
                     const FavoriteState& network,
                     net::ProxyConfig* proxy_config,
-                    onc::ONCSource* onc_source) {
+                    ::onc::ONCSource* onc_source) {
   scoped_ptr<ProxyConfigDictionary> proxy_dict =
       proxy_config::GetProxyConfigForFavoriteNetwork(
           profile_prefs, local_state_prefs, network, onc_source);
@@ -118,7 +118,7 @@ void ProxyConfigServiceImpl::DefaultNetworkChanged(
 // static
 bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
                                          const std::string network_profile_path,
-                                         onc::ONCSource onc_source) {
+                                         ::onc::ONCSource onc_source) {
   if (!profile_prefs) {
     // If the profile preference are not available, this must be the object
     // associated to local state used for system requests or login-profile. Make
@@ -141,7 +141,7 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
     VLOG(1) << "Respect proxy of not-shared networks.";
     return false;
   }
-  if (onc_source == onc::ONC_SOURCE_DEVICE_POLICY) {
+  if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     policy::BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();
     const User* logged_in_user = UserManager::Get()->GetLoggedInUser();
@@ -173,7 +173,7 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
       net::ProxyConfigService::CONFIG_UNSET;
   bool ignore_proxy = true;
   if (network) {
-    onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+    ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
     const bool network_proxy_configured = chromeos::GetProxyConfig(
         prefs(), local_state_prefs_, *network, &network_config, &onc_source);
     ignore_proxy =

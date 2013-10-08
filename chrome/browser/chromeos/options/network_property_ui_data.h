@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -27,25 +27,25 @@ class NetworkPropertyUIData {
   NetworkPropertyUIData();
 
   // Initializes with the given |onc_source| and no default value.
-  explicit NetworkPropertyUIData(onc::ONCSource onc_source);
+  explicit NetworkPropertyUIData(::onc::ONCSource onc_source);
 
   ~NetworkPropertyUIData();
 
   // Update the property object from dictionary, reading the key given by
   // |property_key|.
-  void ParseOncProperty(onc::ONCSource onc_source,
+  void ParseOncProperty(::onc::ONCSource onc_source,
                         const base::DictionaryValue* onc,
                         const std::string& property_key);
 
   const base::Value* default_value() const { return default_value_.get(); }
   bool IsManaged() const {
-    return (onc_source_ == onc::ONC_SOURCE_DEVICE_POLICY ||
-            onc_source_ == onc::ONC_SOURCE_USER_POLICY);
+    return (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY ||
+            onc_source_ == ::onc::ONC_SOURCE_USER_POLICY);
   }
   bool IsEditable() const { return !IsManaged(); }
 
  private:
-  onc::ONCSource onc_source_;
+  ::onc::ONCSource onc_source_;
   scoped_ptr<base::Value> default_value_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPropertyUIData);

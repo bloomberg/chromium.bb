@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/onc/onc_constants.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
@@ -32,12 +32,12 @@ CertificateImporterImpl::CertificateImporterImpl() {
 
 bool CertificateImporterImpl::ImportCertificates(
     const base::ListValue& certificates,
-    onc::ONCSource source,
+    ::onc::ONCSource source,
     net::CertificateList* onc_trusted_certificates) {
   VLOG(2) << "ONC file has " << certificates.GetSize() << " certificates";
 
   // Web trust is only granted to certificates imported by the user.
-  bool allow_trust_imports = source == onc::ONC_SOURCE_USER_IMPORT;
+  bool allow_trust_imports = source == ::onc::ONC_SOURCE_USER_IMPORT;
   if (!ParseAndStoreCertificates(
           allow_trust_imports, certificates, onc_trusted_certificates, NULL)) {
     LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
@@ -140,11 +140,12 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
     CertsByGUID* imported_server_and_ca_certs) {
   // Get out the attributes of the given certificate.
   std::string guid;
-  certificate.GetStringWithoutPathExpansion(certificate::kGUID, &guid);
+  certificate.GetStringWithoutPathExpansion(::onc::certificate::kGUID, &guid);
   DCHECK(!guid.empty());
 
   bool remove = false;
-  if (certificate.GetBooleanWithoutPathExpansion(kRemove, &remove) && remove) {
+  if (certificate.GetBooleanWithoutPathExpansion(::onc::kRemove, &remove) &&
+      remove) {
     if (!DeleteCertAndKeyByNickname(guid)) {
       ONC_LOG_ERROR("Unable to delete certificate");
       return false;
@@ -155,16 +156,17 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
 
   // Not removing, so let's get the data we need to add this certificate.
   std::string cert_type;
-  certificate.GetStringWithoutPathExpansion(certificate::kType, &cert_type);
-  if (cert_type == certificate::kServer ||
-      cert_type == certificate::kAuthority) {
+  certificate.GetStringWithoutPathExpansion(::onc::certificate::kType,
+                                            &cert_type);
+  if (cert_type == ::onc::certificate::kServer ||
+      cert_type == ::onc::certificate::kAuthority) {
     return ParseServerOrCaCertificate(allow_trust_imports,
                                       cert_type,
                                       guid,
                                       certificate,
                                       onc_trusted_certificates,
                                       imported_server_and_ca_certs);
-  } else if (cert_type == certificate::kClient) {
+  } else if (cert_type == ::onc::certificate::kClient) {
     return ParseClientCertificate(guid, certificate);
   }
 
@@ -181,7 +183,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
     CertsByGUID* imported_server_and_ca_certs) {
   bool web_trust_flag = false;
   const base::ListValue* trust_list = NULL;
-  if (certificate.GetListWithoutPathExpansion(certificate::kTrustBits,
+  if (certificate.GetListWithoutPathExpansion(::onc::certificate::kTrustBits,
                                               &trust_list)) {
     for (base::ListValue::const_iterator it = trust_list->begin();
          it != trust_list->end(); ++it) {
@@ -189,7 +191,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
       if (!(*it)->GetAsString(&trust_type))
         NOTREACHED();
 
-      if (trust_type == certificate::kWeb) {
+      if (trust_type == ::onc::certificate::kWeb) {
         // "Web" implies that the certificate is to be trusted for SSL
         // identification.
         web_trust_flag = true;
@@ -211,7 +213,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
   }
 
   std::string x509_data;
-  if (!certificate.GetStringWithoutPathExpansion(certificate::kX509,
+  if (!certificate.GetStringWithoutPathExpansion(::onc::certificate::kX509,
                                                  &x509_data) ||
       x509_data.empty()) {
     ONC_LOG_ERROR(
@@ -235,7 +237,8 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
   net::NSSCertDatabase* cert_database = net::NSSCertDatabase::GetInstance();
   if (x509_cert->os_cert_handle()->isperm) {
     net::CertType net_cert_type =
-        cert_type == certificate::kServer ? net::SERVER_CERT : net::CA_CERT;
+        cert_type == ::onc::certificate::kServer ? net::SERVER_CERT
+                                                 : net::CA_CERT;
     VLOG(1) << "Certificate is already installed.";
     net::NSSCertDatabase::TrustBits missing_trust_bits =
         trust & ~cert_database->GetCertTrust(x509_cert.get(), net_cert_type);
@@ -260,7 +263,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
     cert_list.push_back(x509_cert);
     net::NSSCertDatabase::ImportCertFailureList failures;
     bool success = false;
-    if (cert_type == certificate::kServer)
+    if (cert_type == ::onc::certificate::kServer)
       success = cert_database->ImportServerCert(cert_list, trust, &failures);
     else  // Authority cert
       success = cert_database->ImportCACerts(cert_list, trust, &failures);
@@ -292,7 +295,7 @@ bool CertificateImporterImpl::ParseClientCertificate(
     const std::string& guid,
     const base::DictionaryValue& certificate) {
   std::string pkcs12_data;
-  if (!certificate.GetStringWithoutPathExpansion(certificate::kPKCS12,
+  if (!certificate.GetStringWithoutPathExpansion(::onc::certificate::kPKCS12,
                                                  &pkcs12_data) ||
       pkcs12_data.empty()) {
     ONC_LOG_ERROR("PKCS12 data is missing for client certificate.");

@@ -16,20 +16,20 @@ TEST(NetworkUIDataTest, ONCSource) {
   ui_data_dict.SetString(NetworkUIData::kKeyONCSource, "user_import");
   {
     NetworkUIData ui_data(ui_data_dict);
-    EXPECT_EQ(onc::ONC_SOURCE_USER_IMPORT, ui_data.onc_source());
+    EXPECT_EQ(::onc::ONC_SOURCE_USER_IMPORT, ui_data.onc_source());
     EXPECT_FALSE(ui_data.is_managed());
   }
 
   ui_data_dict.SetString(NetworkUIData::kKeyONCSource, "device_policy");
   {
     NetworkUIData ui_data(ui_data_dict);
-    EXPECT_EQ(onc::ONC_SOURCE_DEVICE_POLICY, ui_data.onc_source());
+    EXPECT_EQ(::onc::ONC_SOURCE_DEVICE_POLICY, ui_data.onc_source());
     EXPECT_TRUE(ui_data.is_managed());
   }
   ui_data_dict.SetString(NetworkUIData::kKeyONCSource, "user_policy");
   {
     NetworkUIData ui_data(ui_data_dict);
-    EXPECT_EQ(onc::ONC_SOURCE_USER_POLICY, ui_data.onc_source());
+    EXPECT_EQ(::onc::ONC_SOURCE_USER_POLICY, ui_data.onc_source());
     EXPECT_TRUE(ui_data.is_managed());
   }
 }
@@ -91,7 +91,7 @@ TEST_P(CreateUIDataTest, CreateUIDataFromONC) {
 
   scoped_ptr<NetworkUIData> actual_uidata =
       NetworkUIData::CreateFromONC(
-          onc::ONC_SOURCE_USER_POLICY, *onc_network);
+          ::onc::ONC_SOURCE_USER_POLICY, *onc_network);
   EXPECT_TRUE(actual_uidata != NULL);
 
   base::DictionaryValue actual_uidata_dict;

@@ -12,8 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 namespace onc {
@@ -54,7 +54,7 @@ Validator::Validator(
       error_on_wrong_recommended_(error_on_wrong_recommended),
       error_on_missing_field_(error_on_missing_field),
       managed_onc_(managed_onc),
-      onc_source_(ONC_SOURCE_NONE) {
+      onc_source_(::onc::ONC_SOURCE_NONE) {
 }
 
 Validator::~Validator() {
@@ -239,7 +239,7 @@ bool Validator::ValidateRecommendedField(
   scoped_ptr<base::ListValue> recommended;
   scoped_ptr<base::Value> recommended_value;
   // This remove passes ownership to |recommended_value|.
-  if (!result->RemoveWithoutPathExpansion(onc::kRecommended,
+  if (!result->RemoveWithoutPathExpansion(::onc::kRecommended,
                                           &recommended_value)) {
     return true;
   }
@@ -251,7 +251,8 @@ bool Validator::ValidateRecommendedField(
 
   if (!managed_onc_) {
     error_or_warning_found_ = true;
-    LOG(WARNING) << MessageHeader() << "Found the field '" << onc::kRecommended
+    LOG(WARNING) << MessageHeader() << "Found the field '"
+                 << ::onc::kRecommended
                  << "' in an unmanaged ONC. Removing it.";
     return true;
   }
@@ -281,7 +282,7 @@ bool Validator::ValidateRecommendedField(
 
     if (found_error) {
       error_or_warning_found_ = true;
-      path_.push_back(onc::kRecommended);
+      path_.push_back(::onc::kRecommended);
       std::string message = MessageHeader() + "The " + error_cause +
           " field '" + field_name + "' cannot be recommended.";
       path_.pop_back();
@@ -297,7 +298,7 @@ bool Validator::ValidateRecommendedField(
     repaired_recommended->Append((*it)->DeepCopy());
   }
 
-  result->Set(onc::kRecommended, repaired_recommended.release());
+  result->Set(::onc::kRecommended, repaired_recommended.release());
   return true;
 }
 
@@ -387,8 +388,8 @@ bool Validator::RequireField(const base::DictionaryValue& dict,
 // Prohibit certificate patterns for device policy ONC so that an unmanaged user
 // won't have a certificate presented for them involuntarily.
 bool Validator::CertPatternInDevicePolicy(const std::string& cert_type) {
-  if (cert_type == certificate::kPattern &&
-      onc_source_ == ONC_SOURCE_DEVICE_POLICY) {
+  if (cert_type == ::onc::certificate::kPattern &&
+      onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     error_or_warning_found_ = true;
     LOG(ERROR) << MessageHeader() << "Client certificate patterns are "
                << "prohibited in ONC device policies.";
@@ -400,7 +401,7 @@ bool Validator::CertPatternInDevicePolicy(const std::string& cert_type) {
 bool Validator::ValidateToplevelConfiguration(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::toplevel_config;
+  using namespace ::onc::toplevel_config;
 
   static const char* kValidTypes[] = { kUnencryptedConfiguration,
                                        kEncryptedConfiguration,
@@ -434,12 +435,12 @@ bool Validator::ValidateToplevelConfiguration(
 bool Validator::ValidateNetworkConfiguration(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::network_config;
+  using namespace ::onc::network_config;
 
-  static const char* kValidTypes[] = { network_type::kEthernet,
-                                       network_type::kVPN,
-                                       network_type::kWiFi,
-                                       network_type::kCellular,
+  static const char* kValidTypes[] = { ::onc::network_type::kEthernet,
+                                       ::onc::network_type::kVPN,
+                                       ::onc::network_type::kWiFi,
+                                       ::onc::network_type::kCellular,
                                        NULL };
   if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypes) ||
       FieldExistsAndIsEmpty(*result, kGUID)) {
@@ -449,7 +450,7 @@ bool Validator::ValidateNetworkConfiguration(
   bool allRequiredExist = RequireField(*result, kGUID);
 
   bool remove = false;
-  result->GetBooleanWithoutPathExpansion(kRemove, &remove);
+  result->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
   if (!remove) {
     allRequiredExist &= RequireField(*result, kName);
     allRequiredExist &= RequireField(*result, kType);
@@ -459,23 +460,25 @@ bool Validator::ValidateNetworkConfiguration(
 
     // Prohibit anything but WiFi and Ethernet for device-level policy (which
     // corresponds to shared networks). See also http://crosbug.com/28741.
-    if (onc_source_ == ONC_SOURCE_DEVICE_POLICY &&
-        type != network_type::kWiFi &&
-        type != network_type::kEthernet) {
+    if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY &&
+        type != ::onc::network_type::kWiFi &&
+        type != ::onc::network_type::kEthernet) {
       error_or_warning_found_ = true;
       LOG(ERROR) << MessageHeader() << "Networks of type '"
                  << type << "' are prohibited in ONC device policies.";
       return false;
     }
 
-    if (type == network_type::kWiFi)
-      allRequiredExist &= RequireField(*result, network_config::kWiFi);
-    else if (type == network_type::kEthernet)
-      allRequiredExist &= RequireField(*result, network_config::kEthernet);
-    else if (type == network_type::kCellular)
-      allRequiredExist &= RequireField(*result, network_config::kCellular);
-    else if (type == network_type::kVPN)
-      allRequiredExist &= RequireField(*result, network_config::kVPN);
+    if (type == ::onc::network_type::kWiFi)
+      allRequiredExist &= RequireField(*result, ::onc::network_config::kWiFi);
+    else if (type == ::onc::network_type::kEthernet)
+      allRequiredExist &= RequireField(*result,
+                                       ::onc::network_config::kEthernet);
+    else if (type == ::onc::network_type::kCellular)
+      allRequiredExist &= RequireField(*result,
+                                       ::onc::network_config::kCellular);
+    else if (type == ::onc::network_type::kVPN)
+      allRequiredExist &= RequireField(*result, ::onc::network_config::kVPN);
     else if (!type.empty())
       NOTREACHED();
   }
@@ -486,7 +489,7 @@ bool Validator::ValidateNetworkConfiguration(
 bool Validator::ValidateEthernet(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::ethernet;
+  using namespace ::onc::ethernet;
 
   static const char* kValidAuthentications[] = { kNone, k8021X, NULL };
   if (FieldExistsAndHasNoValidValue(*result, kAuthentication,
@@ -506,14 +509,15 @@ bool Validator::ValidateEthernet(
 bool Validator::ValidateIPConfig(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::ipconfig;
+  using namespace ::onc::ipconfig;
 
   static const char* kValidTypes[] = { kIPv4, kIPv6, NULL };
-  if (FieldExistsAndHasNoValidValue(*result, ipconfig::kType, kValidTypes))
+  if (FieldExistsAndHasNoValidValue(*result, ::onc::ipconfig::kType,
+                                    kValidTypes))
     return false;
 
   std::string type;
-  result->GetStringWithoutPathExpansion(ipconfig::kType, &type);
+  result->GetStringWithoutPathExpansion(::onc::ipconfig::kType, &type);
   int lower_bound = 1;
   // In case of missing type, choose higher upper_bound.
   int upper_bound = (type == kIPv4) ? 32 : 128;
@@ -524,7 +528,7 @@ bool Validator::ValidateIPConfig(
 
   bool allRequiredExist = RequireField(*result, kIPAddress) &
       RequireField(*result, kRoutingPrefix) &
-      RequireField(*result, ipconfig::kType);
+      RequireField(*result, ::onc::ipconfig::kType);
 
   return !error_on_missing_field_ || allRequiredExist;
 }
@@ -532,7 +536,7 @@ bool Validator::ValidateIPConfig(
 bool Validator::ValidateWiFi(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::wifi;
+  using namespace ::onc::wifi;
 
   static const char* kValidSecurities[] =
       { kNone, kWEP_PSK, kWEP_8021X, kWPA_PSK, kWPA_EAP, NULL };
@@ -555,16 +559,16 @@ bool Validator::ValidateWiFi(
 bool Validator::ValidateVPN(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace vpn;
+  using namespace ::onc::vpn;
 
   static const char* kValidTypes[] =
       { kIPsec, kTypeL2TP_IPsec, kOpenVPN, NULL };
-  if (FieldExistsAndHasNoValidValue(*result, vpn::kType, kValidTypes))
+  if (FieldExistsAndHasNoValidValue(*result, ::onc::vpn::kType, kValidTypes))
     return false;
 
-  bool allRequiredExist = RequireField(*result, vpn::kType);
+  bool allRequiredExist = RequireField(*result, ::onc::vpn::kType);
   std::string type;
-  result->GetStringWithoutPathExpansion(vpn::kType, &type);
+  result->GetStringWithoutPathExpansion(::onc::vpn::kType, &type);
   if (type == kOpenVPN) {
     allRequiredExist &= RequireField(*result, kOpenVPN);
   } else if (type == kIPsec) {
@@ -580,15 +584,15 @@ bool Validator::ValidateVPN(
 bool Validator::ValidateIPsec(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::ipsec;
-  using namespace onc::certificate;
+  using namespace ::onc::ipsec;
+  using namespace ::onc::certificate;
 
   static const char* kValidAuthentications[] = { kPSK, kCert, NULL };
   static const char* kValidCertTypes[] = { kRef, kPattern, NULL };
   // Using strict bit-wise OR to check all conditions.
   if (FieldExistsAndHasNoValidValue(*result, kAuthenticationType,
                                     kValidAuthentications) |
-      FieldExistsAndHasNoValidValue(*result, vpn::kClientCertType,
+      FieldExistsAndHasNoValidValue(*result, ::onc::vpn::kClientCertType,
                                     kValidCertTypes)) {
     return false;
   }
@@ -598,19 +602,20 @@ bool Validator::ValidateIPsec(
   std::string auth;
   result->GetStringWithoutPathExpansion(kAuthenticationType, &auth);
   if (auth == kCert) {
-    allRequiredExist &= RequireField(*result, vpn::kClientCertType) &
+    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertType) &
         RequireField(*result, kServerCARef);
   }
   std::string cert_type;
-  result->GetStringWithoutPathExpansion(vpn::kClientCertType, &cert_type);
+  result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
+                                        &cert_type);
 
   if (CertPatternInDevicePolicy(cert_type))
     return false;
 
   if (cert_type == kPattern)
-    allRequiredExist &= RequireField(*result, vpn::kClientCertPattern);
+    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
   else if (cert_type == kRef)
-    allRequiredExist &= RequireField(*result, vpn::kClientCertRef);
+    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertRef);
 
   return !error_on_missing_field_ || allRequiredExist;
 }
@@ -618,37 +623,38 @@ bool Validator::ValidateIPsec(
 bool Validator::ValidateOpenVPN(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::openvpn;
-  using namespace onc::certificate;
+  using namespace ::onc::openvpn;
+  using namespace ::onc::certificate;
 
   static const char* kValidAuthRetryValues[] =
-      { openvpn::kNone, kInteract, kNoInteract, NULL };
+      { ::onc::openvpn::kNone, kInteract, kNoInteract, NULL };
   static const char* kValidCertTypes[] =
-      { certificate::kNone, kRef, kPattern, NULL };
+      { ::onc::certificate::kNone, kRef, kPattern, NULL };
   static const char* kValidCertTlsValues[] =
-      { openvpn::kNone, openvpn::kServer, NULL };
+      { ::onc::openvpn::kNone, ::onc::openvpn::kServer, NULL };
 
   // Using strict bit-wise OR to check all conditions.
   if (FieldExistsAndHasNoValidValue(*result, kAuthRetry,
                                     kValidAuthRetryValues) |
-      FieldExistsAndHasNoValidValue(*result, vpn::kClientCertType,
+      FieldExistsAndHasNoValidValue(*result, ::onc::vpn::kClientCertType,
                                     kValidCertTypes) |
       FieldExistsAndHasNoValidValue(*result, kRemoteCertTLS,
                                     kValidCertTlsValues)) {
     return false;
   }
 
-  bool allRequiredExist = RequireField(*result, vpn::kClientCertType);
+  bool allRequiredExist = RequireField(*result, ::onc::vpn::kClientCertType);
   std::string cert_type;
-  result->GetStringWithoutPathExpansion(vpn::kClientCertType, &cert_type);
+  result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
+                                        &cert_type);
 
   if (CertPatternInDevicePolicy(cert_type))
     return false;
 
   if (cert_type == kPattern)
-    allRequiredExist &= RequireField(*result, vpn::kClientCertPattern);
+    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
   else if (cert_type == kRef)
-    allRequiredExist &= RequireField(*result, vpn::kClientCertRef);
+    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertRef);
 
   return !error_on_missing_field_ || allRequiredExist;
 }
@@ -656,7 +662,7 @@ bool Validator::ValidateOpenVPN(
 bool Validator::ValidateCertificatePattern(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::certificate;
+  using namespace ::onc::certificate;
 
   bool allRequiredExist = true;
   if (!result->HasKey(kSubject) && !result->HasKey(kIssuer) &&
@@ -677,15 +683,15 @@ bool Validator::ValidateCertificatePattern(
 
 bool Validator::ValidateProxySettings(const base::DictionaryValue& onc_object,
                                       base::DictionaryValue* result) {
-  using namespace onc::proxy;
+  using namespace ::onc::proxy;
 
   static const char* kValidTypes[] = { kDirect, kManual, kPAC, kWPAD, NULL };
-  if (FieldExistsAndHasNoValidValue(*result, proxy::kType, kValidTypes))
+  if (FieldExistsAndHasNoValidValue(*result, ::onc::proxy::kType, kValidTypes))
     return false;
 
-  bool allRequiredExist = RequireField(*result, proxy::kType);
+  bool allRequiredExist = RequireField(*result, ::onc::proxy::kType);
   std::string type;
-  result->GetStringWithoutPathExpansion(proxy::kType, &type);
+  result->GetStringWithoutPathExpansion(::onc::proxy::kType, &type);
   if (type == kManual)
     allRequiredExist &= RequireField(*result, kManual);
   else if (type == kPAC)
@@ -696,7 +702,7 @@ bool Validator::ValidateProxySettings(const base::DictionaryValue& onc_object,
 
 bool Validator::ValidateProxyLocation(const base::DictionaryValue& onc_object,
                                       base::DictionaryValue* result) {
-  using namespace onc::proxy;
+  using namespace ::onc::proxy;
 
   bool allRequiredExist = RequireField(*result, kHost) &
       RequireField(*result, kPort);
@@ -706,8 +712,8 @@ bool Validator::ValidateProxyLocation(const base::DictionaryValue& onc_object,
 
 bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
                             base::DictionaryValue* result) {
-  using namespace onc::eap;
-  using namespace onc::certificate;
+  using namespace ::onc::eap;
+  using namespace ::onc::certificate;
 
   static const char* kValidInnerValues[] =
       { kAutomatic, kMD5, kMSCHAPv2, kPAP, NULL };
@@ -742,7 +748,7 @@ bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
 bool Validator::ValidateCertificate(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::certificate;
+  using namespace ::onc::certificate;
 
   static const char* kValidTypes[] = { kClient, kServer, kAuthority, NULL };
   if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypes) ||
@@ -752,7 +758,7 @@ bool Validator::ValidateCertificate(
 
   std::string type;
   result->GetStringWithoutPathExpansion(kType, &type);
-  if (onc_source_ == ONC_SOURCE_DEVICE_POLICY &&
+  if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY &&
       (type == kServer || type == kAuthority)) {
     error_or_warning_found_ = true;
     LOG(ERROR) << MessageHeader() << "Server and authority certificates are "
@@ -763,7 +769,7 @@ bool Validator::ValidateCertificate(
   bool allRequiredExist = RequireField(*result, kGUID);
 
   bool remove = false;
-  result->GetBooleanWithoutPathExpansion(kRemove, &remove);
+  result->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
   if (!remove) {
     allRequiredExist &= RequireField(*result, kType);
 

@@ -30,6 +30,7 @@
         'safe_browsing_report_proto',
         'feedback_proto',
         '../components/components.gyp:auto_login_parser',
+        '../components/components.gyp:onc_component',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',

@@ -21,14 +21,12 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/power_policy_controller.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/onc/onc_validator.h"
+#include "components/onc/onc_constants.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
-
-namespace onc = chromeos::onc;
 
 namespace policy {
 
@@ -63,7 +61,7 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
     std::string onc_blob;
     value->GetAsString(&onc_blob);
     scoped_ptr<base::DictionaryValue> root_dict =
-        onc::ReadDictionaryFromJson(onc_blob);
+        chromeos::onc::ReadDictionaryFromJson(onc_blob);
     if (root_dict.get() == NULL) {
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
       return false;
@@ -71,19 +69,21 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
 
     // Validate the ONC dictionary. We are liberal and ignore unknown field
     // names and ignore invalid field names in kRecommended arrays.
-    onc::Validator validator(false,  // Ignore unknown fields.
-                             false,  // Ignore invalid recommended field names.
-                             true,  // Fail on missing fields.
-                             true);  // Validate for managed ONC
+    chromeos::onc::Validator validator(
+        false,  // Ignore unknown fields.
+        false,  // Ignore invalid recommended field names.
+        true,   // Fail on missing fields.
+        true);  // Validate for managed ONC
     validator.SetOncSource(onc_source_);
 
     // ONC policies are always unencrypted.
-    onc::Validator::Result validation_result;
+    chromeos::onc::Validator::Result validation_result;
     root_dict = validator.ValidateAndRepairObject(
-        &onc::kToplevelConfigurationSignature, *root_dict, &validation_result);
-    if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
+        &chromeos::onc::kToplevelConfigurationSignature, *root_dict,
+        &validation_result);
+    if (validation_result == chromeos::onc::Validator::VALID_WITH_WARNINGS)
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL);
-    else if (validation_result == onc::Validator::INVALID)
+    else if (validation_result == chromeos::onc::Validator::INVALID)
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED);
 
     // In any case, don't reject the policy as some networks or certificates
@@ -126,7 +126,7 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
 
 NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
     const char* policy_name,
-    chromeos::onc::ONCSource onc_source,
+    onc::ONCSource onc_source,
     const char* pref_path)
     : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_STRING),
       onc_source_(onc_source),
@@ -141,15 +141,15 @@ base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
     return NULL;
 
   scoped_ptr<base::DictionaryValue> toplevel_dict =
-      onc::ReadDictionaryFromJson(json_string);
+      chromeos::onc::ReadDictionaryFromJson(json_string);
   if (!toplevel_dict)
     return NULL;
 
   // Placeholder to insert in place of the filtered setting.
   const char kPlaceholder[] = "********";
 
-  toplevel_dict = onc::MaskCredentialsInOncObject(
-      onc::kToplevelConfigurationSignature,
+  toplevel_dict = chromeos::onc::MaskCredentialsInOncObject(
+      chromeos::onc::kToplevelConfigurationSignature,
       *toplevel_dict,
       kPlaceholder);
 

@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/onc",
   "+cros",
   "+dbus",
   "+device/bluetooth",

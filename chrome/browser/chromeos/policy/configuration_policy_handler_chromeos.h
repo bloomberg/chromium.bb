@@ -7,7 +7,7 @@
 
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -36,7 +36,7 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
  private:
   explicit NetworkConfigurationPolicyHandler(
       const char* policy_name,
-      chromeos::onc::ONCSource onc_source,
+      ::onc::ONCSource onc_source,
       const char* pref_path);
 
   // Takes network policy in Value representation and produces an output Value
@@ -47,7 +47,7 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
 
   // The kind of ONC source that this handler represents. ONCSource
   // distinguishes between user and device policy.
-  const chromeos::onc::ONCSource onc_source_;
+  const ::onc::ONCSource onc_source_;
 
   // The name of the pref to apply the policy to.
   const char* pref_path_;

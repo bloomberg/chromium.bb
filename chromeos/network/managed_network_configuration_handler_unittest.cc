@@ -220,7 +220,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     profiles_stub_.AddEntry(profile_path, entry_path, *entry);
   }
 
-  void SetPolicy(onc::ONCSource onc_source,
+  void SetPolicy(::onc::ONCSource onc_source,
                  const std::string& userhash,
                  const std::string& path_to_onc) {
     scoped_ptr<base::DictionaryValue> policy;
@@ -231,10 +231,10 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
 
     base::ListValue* network_configs = NULL;
     policy->GetListWithoutPathExpansion(
-        onc::toplevel_config::kNetworkConfigurations, &network_configs);
+        ::onc::toplevel_config::kNetworkConfigurations, &network_configs);
 
     managed_handler()->SetPolicy(
-        onc::ONC_SOURCE_USER_POLICY, userhash, *network_configs);
+        ::onc::ONC_SOURCE_USER_POLICY, userhash, *network_configs);
   }
 
   void SetNetworkConfigurationHandlerExpectations() {
@@ -285,7 +285,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, RemoveIrrelevantFields) {
                   IsEqualTo(expected_shill_properties.get()),
                   _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY,
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
             kUser1,
             "policy/policy_wifi1_with_redundant_fields.onc");
   message_loop_.RunUntilIdle();
@@ -306,7 +306,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnconfigured) {
                   IsEqualTo(expected_shill_properties.get()),
                   _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
@@ -347,7 +347,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
                                  _, _));
 
   SetPolicy(
-      onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_ethernet_eap.onc");
+      ::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_ethernet_eap.onc");
   message_loop_.RunUntilIdle();
 }
 
@@ -357,7 +357,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
 
   EXPECT_CALL(mock_manager_client_, ConfigureServiceForProfile(_, _, _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
   VerifyAndClearExpectations();
 
@@ -371,7 +371,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
       mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "some_entry_path", _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
@@ -402,7 +402,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnmanaged) {
                   IsEqualTo(expected_shill_properties.get()),
                   _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
@@ -435,7 +435,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
                   IsEqualTo(expected_shill_properties.get()),
                   _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
@@ -471,7 +471,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
                   IsEqualTo(expected_shill_properties.get()),
                   _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
@@ -503,7 +503,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
                   IsEqualTo(expected_shill_properties.get()),
                   _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
   VerifyAndClearExpectations();
 
@@ -516,7 +516,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
       mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
@@ -539,7 +539,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUnmanageManaged) {
                           "old_entry_path",
                           _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "");
   message_loop_.RunUntilIdle();
 }
 
@@ -557,7 +557,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetEmptyPolicyIgnoreUnmanaged) {
                        "old_entry_path",
                        _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "");
   message_loop_.RunUntilIdle();
 }
 
@@ -584,12 +584,12 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmanaged) {
                   IsEqualTo(expected_shill_properties.get()),
                   _, _));
 
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, LateProfileLoading) {
-  SetPolicy(onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
 
   message_loop_.RunUntilIdle();
   VerifyAndClearExpectations();

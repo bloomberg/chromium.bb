@@ -44,7 +44,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
     scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler)
-    : NetworkConfigurationUpdater(chromeos::onc::ONC_SOURCE_USER_POLICY,
+    : NetworkConfigurationUpdater(onc::ONC_SOURCE_USER_POLICY,
                                   key::kOpenNetworkConfiguration,
                                   certificate_importer.Pass(),
                                   policy_service,

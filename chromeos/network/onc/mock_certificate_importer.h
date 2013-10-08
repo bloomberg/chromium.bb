@@ -19,7 +19,7 @@ class CHROMEOS_EXPORT MockCertificateImporter : public CertificateImporter {
   MockCertificateImporter();
   virtual ~MockCertificateImporter();
   MOCK_METHOD3(ImportCertificates, bool(const base::ListValue&,
-                                        onc::ONCSource,
+                                        ::onc::ONCSource,
                                         net::CertificateList*));
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCertificateImporter);

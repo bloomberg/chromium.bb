@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/options/network_property_ui_data.h"
 
 #include "base/values.h"
-#include "chromeos/network/onc/onc_constants.h"
+#include "components/onc/onc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
