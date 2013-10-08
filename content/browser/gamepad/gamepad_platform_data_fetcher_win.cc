@@ -212,17 +212,9 @@ BOOL CALLBACK DirectInputEnumDevicesCallback(const DIDEVICEINSTANCE* instance,
 GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
     : xinput_dll_(base::FilePath(FILE_PATH_LITERAL("xinput1_3.dll"))),
       xinput_available_(GetXInputDllFunctions()) {
-  // TODO(teravest): http://crbug.com/260187
-  if (base::win::GetVersion() > base::win::VERSION_XP) {
-    directinput_available_ = SUCCEEDED(DirectInput8Create(
-        GetModuleHandle(NULL),
-        DIRECTINPUT_VERSION,
-        IID_IDirectInput8,
-        reinterpret_cast<void**>(&directinput_interface_),
-        NULL));
-  } else {
-    directinput_available_ = false;
-  }
+  // TODO(teravest): http://crbug.com/260187 for Windows XP.
+  // TODO(teravest): http://crbug.com/305267 for later versions of windows.
+  directinput_available_ = false;
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i)
     pad_state_[i].status = DISCONNECTED;
 }
