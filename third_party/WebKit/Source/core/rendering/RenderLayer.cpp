@@ -219,10 +219,11 @@ bool RenderLayer::canRender3DTransforms() const
 
 bool RenderLayer::paintsWithFilters() const
 {
+    // FIXME: Eventually there will be more factors than isComposited() to decide whether or not to render the filter
     if (!renderer()->hasFilter())
         return false;
 
-    if (compositingState() != PaintsIntoOwnBacking)
+    if (!isComposited())
         return true;
 
     if (!m_compositedLayerMapping || !m_compositedLayerMapping->canCompositeFilters())
@@ -309,7 +310,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
 
     // Clear the IsCompositingUpdateRoot flag once we've found the first compositing layer in this update.
     bool isUpdateRoot = (flags & IsCompositingUpdateRoot);
-    if (compositedLayerMapping())
+    if (isComposited())
         flags &= ~IsCompositingUpdateRoot;
 
     if (useRegionBasedColumns() && renderer()->isInFlowRenderFlowThread()) {
@@ -323,7 +324,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->updateLayerPositions(geometryMap, flags);
 
-    if ((flags & UpdateCompositingLayers) && compositedLayerMapping()) {
+    if ((flags & UpdateCompositingLayers) && isComposited()) {
         CompositedLayerMapping::UpdateAfterLayoutFlags updateFlags = CompositedLayerMapping::CompositingChildrenOnly;
         if (flags & NeedsFullRepaintInBacking)
             updateFlags |= CompositedLayerMapping::NeedsFullRepaint;
@@ -842,7 +843,7 @@ void RenderLayer::updatePagination()
     m_isPaginated = false;
     m_enclosingPaginationLayer = 0;
 
-    if (compositedLayerMapping() || !parent())
+    if (isComposited() || !parent())
         return; // FIXME: We will have to deal with paginated compositing layers someday.
                 // FIXME: For now the RenderView can't be paginated.  Eventually printing will move to a model where it is though.
 
@@ -1193,7 +1194,7 @@ bool RenderLayer::updateLayerPosition()
             localPoint += offset;
         }
     } else if (parent()) {
-        if (compositedLayerMapping()) {
+        if (isComposited()) {
             // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
             // They won't split across columns properly.
             LayoutSize columnOffset;
@@ -1325,17 +1326,13 @@ static inline const RenderLayer* compositingContainer(const RenderLayer* layer)
     return layer->isNormalFlowOnly() ? layer->parent() : layer->ancestorStackingContainer();
 }
 
-// FIXME: having two different functions named enclosingCompositingLayer and enclosingCompositingLayerForRepaint
-// is error-prone and misleading for reading code that uses these functions - especially compounded with
-// the includeSelf option. It is very likely that some call sites of this function actually mean to use
-// enclosingCompositingLayerForRepaint().
 RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
 {
-    if (includeSelf && compositedLayerMapping())
+    if (includeSelf && isComposited())
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
-        if (curr->compositedLayerMapping())
+        if (curr->isComposited())
             return const_cast<RenderLayer*>(curr);
     }
 
@@ -1344,11 +1341,11 @@ RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
 
 RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(bool includeSelf) const
 {
-    if (includeSelf && compositingState() == PaintsIntoOwnBacking)
+    if (includeSelf && isComposited() && !compositedLayerMapping()->paintsIntoCompositedAncestor())
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
-        if (curr->compositingState() == PaintsIntoOwnBacking)
+        if (curr->isComposited() && !curr->compositedLayerMapping()->paintsIntoCompositedAncestor())
             return const_cast<RenderLayer*>(curr);
     }
 
@@ -1386,7 +1383,7 @@ RenderLayer* RenderLayer::enclosingFilterLayer(bool includeSelf) const
 RenderLayer* RenderLayer::enclosingFilterRepaintLayer() const
 {
     for (const RenderLayer* curr = this; curr; curr = curr->parent()) {
-        if ((curr != this && curr->requiresFullLayerImageForFilters()) || curr->compositingState() == PaintsIntoOwnBacking || curr->isRootLayer())
+        if ((curr != this && curr->requiresFullLayerImageForFilters()) || curr->isComposited() || curr->isRootLayer())
             return const_cast<RenderLayer*>(curr);
     }
     return 0;
@@ -1417,7 +1414,7 @@ void RenderLayer::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect)
     FloatQuad repaintQuad(rectForRepaint);
     LayoutRect parentLayerRect = renderer()->localToContainerQuad(repaintQuad, parentLayer->renderer()).enclosingBoundingBox();
 
-    if (parentLayer->compositedLayerMapping()) {
+    if (parentLayer->isComposited()) {
         parentLayer->setBackingNeedsRepaintInRect(parentLayerRect);
         return;
     }
@@ -1448,7 +1445,7 @@ bool RenderLayer::hasAncestorWithFilterOutsets() const
 
 RenderLayer* RenderLayer::clippingRootForPainting() const
 {
-    if (compositedLayerMapping())
+    if (isComposited())
         return const_cast<RenderLayer*>(this);
 
     const RenderLayer* current = this;
@@ -1459,7 +1456,7 @@ RenderLayer* RenderLayer::clippingRootForPainting() const
         current = compositingContainer(current);
         ASSERT(current);
         if (current->transform()
-            || (current->compositingState() == PaintsIntoOwnBacking)
+            || (current->isComposited() && !current->compositedLayerMapping()->paintsIntoCompositedAncestor())
         )
             return const_cast<RenderLayer*>(current);
     }
@@ -1494,11 +1491,11 @@ bool RenderLayer::isTransparent() const
 
 RenderLayer* RenderLayer::transparentPaintingAncestor()
 {
-    if (compositedLayerMapping())
+    if (isComposited())
         return 0;
 
     for (RenderLayer* curr = parent(); curr; curr = curr->parent()) {
-        if (curr->compositedLayerMapping())
+        if (curr->isComposited())
             return 0;
         if (curr->isTransparent())
             return curr;
@@ -1947,7 +1944,7 @@ bool RenderLayer::usesCompositedScrolling() const
     if (box && (box->isIntristicallyScrollable(VerticalScrollbar) || box->isIntristicallyScrollable(HorizontalScrollbar)))
         return false;
 
-    return compositedLayerMapping() && compositedLayerMapping()->scrollingLayer();
+    return isComposited() && compositedLayerMapping()->scrollingLayer();
 }
 
 bool RenderLayer::needsCompositedScrolling() const
@@ -2578,7 +2575,7 @@ static bool paintForFixedRootBackground(const RenderLayer* layer, RenderLayer::P
 
 void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
-    if (compositingState() != NotComposited) {
+    if (isComposited()) {
         // The updatingControlTints() painting pass goes through compositing layers,
         // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
         if (context->updatingControlTints() || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)) {
@@ -4384,7 +4381,7 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     const_cast<RenderLayer*>(this)->updateLayerListsIfNeeded();
 
     if (RenderLayer* reflection = reflectionLayer()) {
-        if (!reflection->compositedLayerMapping()) {
+        if (!reflection->isComposited()) {
             IntRect childUnionBounds = reflection->calculateLayerBounds(this, 0, descendantFlags);
             unionBounds.unite(childUnionBounds);
         }
@@ -4396,14 +4393,11 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     LayerListMutationDetector mutationChecker(const_cast<RenderLayer*>(this));
 #endif
 
-    // FIXME: Descendants that are composited should not necessarily be skipped, if they don't paint into their own
-    // separate backing. Instead, they ought to contribute to the bounds of the layer we're trying to compute.
-    // This applies to all z-order lists below.
     if (Vector<RenderLayer*>* negZOrderList = this->negZOrderList()) {
         size_t listSize = negZOrderList->size();
         for (size_t i = 0; i < listSize; ++i) {
             RenderLayer* curLayer = negZOrderList->at(i);
-            if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
+            if (flags & IncludeCompositedDescendants || !curLayer->isComposited()) {
                 IntRect childUnionBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
                 unionBounds.unite(childUnionBounds);
             }
@@ -4414,7 +4408,7 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
         size_t listSize = posZOrderList->size();
         for (size_t i = 0; i < listSize; ++i) {
             RenderLayer* curLayer = posZOrderList->at(i);
-            if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
+            if (flags & IncludeCompositedDescendants || !curLayer->isComposited()) {
                 IntRect childUnionBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
                 unionBounds.unite(childUnionBounds);
             }
@@ -4425,7 +4419,7 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
             RenderLayer* curLayer = normalFlowList->at(i);
-            if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
+            if (flags & IncludeCompositedDescendants || !curLayer->isComposited()) {
                 IntRect curAbsBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
                 unionBounds.unite(curAbsBounds);
             }
@@ -4476,21 +4470,6 @@ void RenderLayer::clearClipRects(ClipRectsType typeToClear)
         m_clipRectsCache->setClipRects(typeToClear, RespectOverflowClip, dummy);
         m_clipRectsCache->setClipRects(typeToClear, IgnoreOverflowClip, dummy);
     }
-}
-
-CompositingState RenderLayer::compositingState() const
-{
-    // This is computed procedurally so there is no redundant state variable that
-    // can get out of sync from the real actual compositing state.
-
-    if (!m_compositedLayerMapping)
-        return NotComposited;
-
-    if (m_compositedLayerMapping && compositedLayerMapping()->paintsIntoCompositedAncestor())
-        return HasOwnBackingButPaintsIntoAncestor;
-
-    ASSERT(m_compositedLayerMapping);
-    return PaintsIntoOwnBacking;
 }
 
 CompositedLayerMapping* RenderLayer::ensureCompositedLayerMapping()
@@ -4554,7 +4533,7 @@ GraphicsLayer* RenderLayer::layerForScrollCorner() const
 
 bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 {
-    return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
+    return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || !isComposited());
 }
 
 bool RenderLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
@@ -4605,7 +4584,7 @@ bool RenderLayer::listBackgroundIsKnownToBeOpaqueInRect(const Vector<RenderLayer
 
     for (Vector<RenderLayer*>::const_reverse_iterator iter = list->rbegin(); iter != list->rend(); ++iter) {
         const RenderLayer* childLayer = *iter;
-        if (childLayer->compositedLayerMapping())
+        if (childLayer->isComposited())
             continue;
 
         if (!childLayer->canUseConvertToLayerCoords())
@@ -4862,7 +4841,7 @@ void RenderLayer::repaintIncludingDescendants()
 
 void RenderLayer::setBackingNeedsRepaint()
 {
-    ASSERT(compositedLayerMapping());
+    ASSERT(isComposited());
     compositedLayerMapping()->setContentsNeedDisplay();
 }
 
@@ -4870,8 +4849,8 @@ void RenderLayer::setBackingNeedsRepaintInRect(const LayoutRect& r)
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
-    ASSERT(compositedLayerMapping());
-    if (!compositedLayerMapping()) {
+    ASSERT(isComposited());
+    if (!isComposited()) {
         // If we're trying to repaint the placeholder document layer, propagate the
         // repaint to the native view system.
         LayoutRect absRect(r);
@@ -5088,7 +5067,7 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForClip(const RenderStyle*
 inline bool RenderLayer::needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
 {
     ASSERT(newStyle);
-    return !compositedLayerMapping() && oldStyle && (oldStyle->overflowX() != newStyle->overflowX()) && ancestorStackingContainer()->hasCompositingDescendant();
+    return !isComposited() && oldStyle && (oldStyle->overflowX() != newStyle->overflowX()) && ancestorStackingContainer()->hasCompositingDescendant();
 }
 
 inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const
@@ -5132,7 +5111,7 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
     updateOrRemoveFilterClients();
     // During an accelerated animation, both WebKit and the compositor animate properties.
     // However, WebKit shouldn't ask the compositor to update its filters if the compositor is performing the animation.
-    bool shouldUpdateFilters = compositedLayerMapping() && !renderer()->animation()->isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter);
+    bool shouldUpdateFilters = isComposited() && !renderer()->animation()->isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter);
     if (shouldUpdateFilters)
         compositedLayerMapping()->updateFilters(renderer()->style());
     updateOrRemoveFilterEffectRenderer();
@@ -5178,7 +5157,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         || needsCompositingLayersRebuiltForOverflow(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle, didPaintWithFilters))
         compositor()->setCompositingLayersNeedRebuild();
-    else if (compositedLayerMapping())
+    else if (isComposited())
         compositedLayerMapping()->updateGraphicsLayerGeometry();
 }
 

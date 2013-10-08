@@ -123,7 +123,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     } while (!repaintContainer);
     RenderLayer* renderLayer = repaintContainer->layer();
 
-    if (!renderLayer || renderLayer->compositingState() == NotComposited)
+    if (!renderLayer || !renderLayer->isComposited())
         return 0;
 
     GraphicsLayer* newGraphicsLayer = renderLayer->compositedLayerMapping()->mainGraphicsLayer();
