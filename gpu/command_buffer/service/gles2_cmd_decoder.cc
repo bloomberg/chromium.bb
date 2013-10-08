@@ -292,11 +292,11 @@ static void EnableDisable(GLenum pname, bool enable) {
 class ScopedGLErrorSuppressor {
  public:
   explicit ScopedGLErrorSuppressor(
-      const char* function_name, GLES2DecoderImpl* decoder);
+      const char* function_name, ErrorState* error_state);
   ~ScopedGLErrorSuppressor();
  private:
   const char* function_name_;
-  GLES2DecoderImpl* decoder_;
+  ErrorState* error_state_;
   DISALLOW_COPY_AND_ASSIGN(ScopedGLErrorSuppressor);
 };
 
@@ -641,7 +641,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
  private:
   friend class ScopedFrameBufferBinder;
-  friend class ScopedGLErrorSuppressor;
   friend class ScopedResolvedFrameBufferBinder;
   friend class BackTexture;
   friend class BackRenderbuffer;
@@ -1684,22 +1683,21 @@ class GLES2DecoderImpl : public GLES2Decoder {
 };
 
 ScopedGLErrorSuppressor::ScopedGLErrorSuppressor(
-    const char* function_name, GLES2DecoderImpl* decoder)
+    const char* function_name, ErrorState* error_state)
     : function_name_(function_name),
-      decoder_(decoder) {
-  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(decoder_->GetErrorState(),
-                                            function_name_);
+      error_state_(error_state) {
+  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state_, function_name_);
 }
 
 ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
-  ERRORSTATE_CLEAR_REAL_GL_ERRORS(decoder_->GetErrorState(), function_name_);
+  ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_, function_name_);
 }
 
 ScopedTexture2DBinder::ScopedTexture2DBinder(GLES2DecoderImpl* decoder,
                                              GLuint id)
     : decoder_(decoder) {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedTexture2DBinder::ctor", decoder_);
+      "ScopedTexture2DBinder::ctor", decoder_->GetErrorState());
 
   // TODO(apatrick): Check if there are any other states that need to be reset
   // before binding a new texture.
@@ -1709,7 +1707,7 @@ ScopedTexture2DBinder::ScopedTexture2DBinder(GLES2DecoderImpl* decoder,
 
 ScopedTexture2DBinder::~ScopedTexture2DBinder() {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedTexture2DBinder::dtor", decoder_);
+      "ScopedTexture2DBinder::dtor", decoder_->GetErrorState());
   decoder_->RestoreCurrentTexture2DBindings();
 }
 
@@ -1717,13 +1715,13 @@ ScopedRenderBufferBinder::ScopedRenderBufferBinder(GLES2DecoderImpl* decoder,
                                                    GLuint id)
     : decoder_(decoder) {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedRenderBufferBinder::ctor", decoder_);
+      "ScopedRenderBufferBinder::ctor", decoder_->GetErrorState());
   glBindRenderbufferEXT(GL_RENDERBUFFER, id);
 }
 
 ScopedRenderBufferBinder::~ScopedRenderBufferBinder() {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedRenderBufferBinder::dtor", decoder_);
+      "ScopedRenderBufferBinder::dtor", decoder_->GetErrorState());
   decoder_->RestoreCurrentRenderbufferBindings();
 }
 
@@ -1731,14 +1729,14 @@ ScopedFrameBufferBinder::ScopedFrameBufferBinder(GLES2DecoderImpl* decoder,
                                                  GLuint id)
     : decoder_(decoder) {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedFrameBufferBinder::ctor", decoder_);
+      "ScopedFrameBufferBinder::ctor", decoder_->GetErrorState());
   glBindFramebufferEXT(GL_FRAMEBUFFER, id);
   decoder->OnFboChanged();
 }
 
 ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedFrameBufferBinder::dtor", decoder_);
+      "ScopedFrameBufferBinder::dtor", decoder_->GetErrorState());
   decoder_->RestoreCurrentFramebufferBindings();
 }
 
@@ -1754,7 +1752,7 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
     return;
 
   ScopedGLErrorSuppressor suppressor(
-      "ScopedResolvedFrameBufferBinder::ctor", decoder_);
+      "ScopedResolvedFrameBufferBinder::ctor", decoder_->GetErrorState());
   glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT,
                        decoder_->offscreen_target_frame_buffer_->id());
   GLuint targetid;
@@ -1803,7 +1801,7 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
     return;
 
   ScopedGLErrorSuppressor suppressor(
-      "ScopedResolvedFrameBufferBinder::dtor", decoder_);
+      "ScopedResolvedFrameBufferBinder::dtor", decoder_->GetErrorState());
   decoder_->RestoreCurrentFramebufferBindings();
   if (decoder_->state_.enable_flags.scissor_test) {
     glEnable(GL_SCISSOR_TEST);
@@ -1825,7 +1823,8 @@ BackTexture::~BackTexture() {
 }
 
 void BackTexture::Create() {
-  ScopedGLErrorSuppressor suppressor("BackTexture::Create", decoder_);
+  ScopedGLErrorSuppressor suppressor("BackTexture::Create",
+                                     decoder_->GetErrorState());
   Destroy();
   glGenTextures(1, &id_);
   ScopedTexture2DBinder binder(decoder_, id_);
@@ -1850,7 +1849,8 @@ void BackTexture::Create() {
 bool BackTexture::AllocateStorage(
     const gfx::Size& size, GLenum format, bool zero) {
   DCHECK_NE(id_, 0u);
-  ScopedGLErrorSuppressor suppressor("BackTexture::AllocateStorage", decoder_);
+  ScopedGLErrorSuppressor suppressor("BackTexture::AllocateStorage",
+                                     decoder_->GetErrorState());
   ScopedTexture2DBinder binder(decoder_, id_);
   uint32 image_size = 0;
   GLES2Util::ComputeImageDataSizes(
@@ -1890,7 +1890,8 @@ bool BackTexture::AllocateStorage(
 
 void BackTexture::Copy(const gfx::Size& size, GLenum format) {
   DCHECK_NE(id_, 0u);
-  ScopedGLErrorSuppressor suppressor("BackTexture::Copy", decoder_);
+  ScopedGLErrorSuppressor suppressor("BackTexture::Copy",
+                                     decoder_->GetErrorState());
   ScopedTexture2DBinder binder(decoder_, id_);
   glCopyTexImage2D(GL_TEXTURE_2D,
                    0,  // level
@@ -1903,7 +1904,8 @@ void BackTexture::Copy(const gfx::Size& size, GLenum format) {
 
 void BackTexture::Destroy() {
   if (id_ != 0) {
-    ScopedGLErrorSuppressor suppressor("BackTexture::Destroy", decoder_);
+    ScopedGLErrorSuppressor suppressor("BackTexture::Destroy",
+                                       decoder_->GetErrorState());
     glDeleteTextures(1, &id_);
     id_ = 0;
   }
@@ -1930,7 +1932,8 @@ BackRenderbuffer::~BackRenderbuffer() {
 }
 
 void BackRenderbuffer::Create() {
-  ScopedGLErrorSuppressor suppressor("BackRenderbuffer::Create", decoder_);
+  ScopedGLErrorSuppressor suppressor("BackRenderbuffer::Create",
+                                     decoder_->GetErrorState());
   Destroy();
   glGenRenderbuffersEXT(1, &id_);
 }
@@ -1938,7 +1941,7 @@ void BackRenderbuffer::Create() {
 bool BackRenderbuffer::AllocateStorage(const gfx::Size& size, GLenum format,
                                        GLsizei samples) {
   ScopedGLErrorSuppressor suppressor(
-      "BackRenderbuffer::AllocateStorage", decoder_);
+      "BackRenderbuffer::AllocateStorage", decoder_->GetErrorState());
   ScopedRenderBufferBinder binder(decoder_, id_);
 
   uint32 estimated_size = 0;
@@ -1982,7 +1985,8 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size, GLenum format,
 
 void BackRenderbuffer::Destroy() {
   if (id_ != 0) {
-    ScopedGLErrorSuppressor suppressor("BackRenderbuffer::Destroy", decoder_);
+    ScopedGLErrorSuppressor suppressor("BackRenderbuffer::Destroy",
+                                       decoder_->GetErrorState());
     glDeleteRenderbuffersEXT(1, &id_);
     id_ = 0;
   }
@@ -2007,7 +2011,8 @@ BackFramebuffer::~BackFramebuffer() {
 }
 
 void BackFramebuffer::Create() {
-  ScopedGLErrorSuppressor suppressor("BackFramebuffer::Create", decoder_);
+  ScopedGLErrorSuppressor suppressor("BackFramebuffer::Create",
+                                     decoder_->GetErrorState());
   Destroy();
   glGenFramebuffersEXT(1, &id_);
 }
@@ -2015,7 +2020,7 @@ void BackFramebuffer::Create() {
 void BackFramebuffer::AttachRenderTexture(BackTexture* texture) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor(
-      "BackFramebuffer::AttachRenderTexture", decoder_);
+      "BackFramebuffer::AttachRenderTexture", decoder_->GetErrorState());
   ScopedFrameBufferBinder binder(decoder_, id_);
   GLuint attach_id = texture ? texture->id() : 0;
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
@@ -2029,7 +2034,7 @@ void BackFramebuffer::AttachRenderBuffer(GLenum target,
                                          BackRenderbuffer* render_buffer) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor(
-      "BackFramebuffer::AttachRenderBuffer", decoder_);
+      "BackFramebuffer::AttachRenderBuffer", decoder_->GetErrorState());
   ScopedFrameBufferBinder binder(decoder_, id_);
   GLuint attach_id = render_buffer ? render_buffer->id() : 0;
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
@@ -2040,7 +2045,8 @@ void BackFramebuffer::AttachRenderBuffer(GLenum target,
 
 void BackFramebuffer::Destroy() {
   if (id_ != 0) {
-    ScopedGLErrorSuppressor suppressor("BackFramebuffer::Destroy", decoder_);
+    ScopedGLErrorSuppressor suppressor("BackFramebuffer::Destroy",
+                                       decoder_->GetErrorState());
     glDeleteFramebuffersEXT(1, &id_);
     id_ = 0;
   }
@@ -2052,7 +2058,8 @@ void BackFramebuffer::Invalidate() {
 
 GLenum BackFramebuffer::CheckStatus() {
   DCHECK_NE(id_, 0u);
-  ScopedGLErrorSuppressor suppressor("BackFramebuffer::CheckStatus", decoder_);
+  ScopedGLErrorSuppressor suppressor("BackFramebuffer::CheckStatus",
+                                     decoder_->GetErrorState());
   ScopedFrameBufferBinder binder(decoder_, id_);
   return glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
 }
@@ -8777,7 +8784,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
     if (offscreen_size_.width() == 0 || offscreen_size_.height() == 0)
       return;
     ScopedGLErrorSuppressor suppressor(
-        "GLES2DecoderImpl::DoSwapBuffers", this);
+        "GLES2DecoderImpl::DoSwapBuffers", GetErrorState());
 
     if (IsOffscreenBufferMultisampled()) {
       // For multisampled buffers, resolve the frame buffer.
@@ -10022,7 +10029,7 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
 
   {
     ScopedGLErrorSuppressor suppressor(
-        "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM", this);
+        "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM", GetErrorState());
     if (!gl_image->BindTexImage()) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION,
@@ -10074,7 +10081,7 @@ void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
 
   {
     ScopedGLErrorSuppressor suppressor(
-        "GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM", this);
+        "GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM", GetErrorState());
     gl_image->ReleaseTexImage();
   }
 
