@@ -25,9 +25,13 @@ class QuotaMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  // Registers { request_id, thread_id } map to the message filter.
+  // Generates a new request_id, registers { request_id, thread_id } map to
+  // the message filter and returns the request_id.
   // This method can be called on any thread.
-  void RegisterRequestID(int request_id, int thread_id);
+  int GenerateRequestID(int thread_id);
+
+  // Clears all requests from the thread_id.
+  void ClearThreadRequests(int thread_id);
 
  protected:
   virtual ~QuotaMessageFilter();
@@ -42,6 +46,7 @@ class QuotaMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   base::Lock request_id_map_lock_;
   RequestIdToThreadId request_id_map_;
+  int next_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaMessageFilter);
 };

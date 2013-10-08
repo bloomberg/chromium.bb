@@ -112,8 +112,8 @@ void QuotaDispatcher::QueryStorageUsageAndQuota(
     StorageType type,
     Callback* callback) {
   DCHECK(callback);
-  int request_id = pending_quota_callbacks_.Add(callback);
-  quota_message_filter_->RegisterRequestID(request_id, CurrentWorkerId());
+  int request_id = quota_message_filter_->GenerateRequestID(CurrentWorkerId());
+  pending_quota_callbacks_.AddWithID(callback, request_id);
   thread_safe_sender_->Send(new QuotaHostMsg_QueryStorageUsageAndQuota(
       request_id, origin_url, type));
 }
@@ -126,8 +126,8 @@ void QuotaDispatcher::RequestStorageQuota(
     Callback* callback) {
   DCHECK(callback);
   DCHECK(CurrentWorkerId() == 0);
-  int request_id = pending_quota_callbacks_.Add(callback);
-  quota_message_filter_->RegisterRequestID(request_id, CurrentWorkerId());
+  int request_id = quota_message_filter_->GenerateRequestID(CurrentWorkerId());
+  pending_quota_callbacks_.AddWithID(callback, request_id);
   thread_safe_sender_->Send(new QuotaHostMsg_RequestStorageQuota(
       render_view_id, request_id, origin_url, type, requested_size));
 }

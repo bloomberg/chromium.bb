@@ -20,7 +20,8 @@ namespace content {
 QuotaMessageFilter::QuotaMessageFilter(
     ThreadSafeSender* thread_safe_sender)
     : main_thread_loop_proxy_(base::MessageLoopProxy::current()),
-      thread_safe_sender_(thread_safe_sender) {
+      thread_safe_sender_(thread_safe_sender),
+      next_request_id_(0) {
 }
 
 bool QuotaMessageFilter::OnMessageReceived(const IPC::Message& msg) {
@@ -48,9 +49,21 @@ bool QuotaMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   return true;
 }
 
-void QuotaMessageFilter::RegisterRequestID(int request_id, int thread_id) {
+int QuotaMessageFilter::GenerateRequestID(int thread_id) {
   base::AutoLock lock(request_id_map_lock_);
-  request_id_map_[request_id] = thread_id;
+  request_id_map_[next_request_id_] = thread_id;
+  return next_request_id_++;
+}
+
+void QuotaMessageFilter::ClearThreadRequests(int thread_id) {
+  base::AutoLock lock(request_id_map_lock_);
+  for (RequestIdToThreadId::iterator iter = request_id_map_.begin();
+       iter != request_id_map_.end();) {
+    if (iter->second == thread_id)
+      request_id_map_.erase(iter++);
+    else
+      iter++;
+  }
 }
 
 QuotaMessageFilter::~QuotaMessageFilter() {}
