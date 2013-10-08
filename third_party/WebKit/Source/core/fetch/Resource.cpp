@@ -182,6 +182,11 @@ void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& optio
         m_fragmentIdentifierForRequest = String();
     }
     m_status = Pending;
+    if (m_loader) {
+        RELEASE_ASSERT(m_options.synchronousPolicy == RequestSynchronously);
+        m_loader->changeToSynchronous();
+        return;
+    }
     m_loader = ResourceLoader::create(fetcher, this, request, options);
     m_loader->start();
 }

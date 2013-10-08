@@ -50,6 +50,7 @@ public:
     virtual ~ResourceLoader();
 
     void start();
+    void changeToSynchronous();
 
     void cancel();
     void cancel(const ResourceError&);

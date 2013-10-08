@@ -154,6 +154,16 @@ void ResourceLoader::start()
     m_loader->loadAsynchronously(wrappedRequest, this);
 }
 
+void ResourceLoader::changeToSynchronous()
+{
+    ASSERT(m_options.synchronousPolicy == RequestAsynchronously);
+    ASSERT(m_loader);
+    m_loader->cancel();
+    m_loader.clear();
+    m_connectionState = ConnectionStateNew;
+    requestSynchronously();
+}
+
 void ResourceLoader::setDefersLoading(bool defers)
 {
     m_defersLoading = defers;

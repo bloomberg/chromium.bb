@@ -514,6 +514,17 @@ bool ResourceFetcher::shouldLoadNewResource() const
     return m_documentLoader == frame()->loader()->activeDocumentLoader();
 }
 
+bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& request, RevalidationPolicy policy)
+{
+    if (FetchRequest::DeferredByClient == request.defer())
+        return false;
+    if (policy != Use)
+        return true;
+    if (resource->stillNeedsLoad())
+        return true;
+    return request.options().synchronousPolicy == RequestSynchronously && resource->isLoading();
+}
+
 ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, FetchRequest& request)
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || type == Resource::Raw);
@@ -568,7 +579,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         }
     }
 
-    if ((policy != Use || resource->stillNeedsLoad()) && FetchRequest::NoDefer == request.defer()) {
+    if (resourceNeedsLoad(resource.get(), request, policy)) {
         if (!shouldLoadNewResource()) {
             if (resource->inCache())
                 memoryCache()->remove(resource.get());

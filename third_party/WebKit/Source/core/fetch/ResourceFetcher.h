@@ -181,6 +181,8 @@ private:
     bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
     bool checkInsecureContent(Resource::Type, const KURL&, MixedContentBlockingTreatment) const;
 
+    static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
+
     void notifyLoadedFromMemoryCache(Resource*);
 
     void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
