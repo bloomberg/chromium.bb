@@ -76,11 +76,11 @@ const char kGPUDeviceID[] = "gpu-devid";
 const char kGPUDriverVersion[] = "gpu-driver";
 const char kGPUPixelShaderVersion[] = "gpu-psver";
 const char kGPUVertexShaderVersion[] = "gpu-vsver";
-#if defined(OS_LINUX)
+#if defined(OS_MACOSX)
+const char kGPUGLVersion[] = "gpu-glver";
+#elif defined(OS_POSIX)
 const char kGPUVendor[] = "gpu-gl-vendor";
 const char kGPURenderer[] = "gpu-gl-renderer";
-#elif defined(OS_MACOSX)
-const char kGPUGLVersion[] = "gpu-glver";
 #endif
 
 const char kPrinterInfo[] = "prn-info-%" PRIuS;
@@ -124,11 +124,11 @@ size_t RegisterChromeCrashKeys() {
     { kGPUDriverVersion, kSmallSize },
     { kGPUPixelShaderVersion, kSmallSize },
     { kGPUVertexShaderVersion, kSmallSize },
-#if defined(OS_LINUX)
+#if defined(OS_MACOSX)
+    { kGPUGLVersion, kSmallSize },
+#elif defined(OS_POSIX)
     { kGPUVendor, kSmallSize },
     { kGPURenderer, kSmallSize },
-#elif defined(OS_MACOSX)
-    { kGPUGLVersion, kSmallSize },
 #endif
 
     // content/:

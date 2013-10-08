@@ -92,11 +92,11 @@ extern const char kGPUDeviceID[];
 extern const char kGPUDriverVersion[];
 extern const char kGPUPixelShaderVersion[];
 extern const char kGPUVertexShaderVersion[];
-#if defined(OS_LINUX)
+#if defined(OS_MACOSX)
+extern const char kGPUGLVersion[];
+#elif defined(OS_POSIX)
 extern const char kGPUVendor[];
 extern const char kGPURenderer[];
-#elif defined(OS_MACOSX)
-extern const char kGPUGLVersion[];
 #endif
 
 // The user's printers, up to kPrinterInfoCount. Should be set with

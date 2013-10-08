@@ -433,11 +433,11 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
       gpu_info.pixel_shader_version);
   base::debug::SetCrashKeyValue(crash_keys::kGPUVertexShaderVersion,
       gpu_info.vertex_shader_version);
-#if defined(OS_LINUX)
+#if defined(OS_MACOSX)
+  base::debug::SetCrashKeyValue(crash_keys::kGPUGLVersion, gpu_info.gl_version);
+#elif defined(OS_POSIX)
   base::debug::SetCrashKeyValue(crash_keys::kGPUVendor, gpu_info.gl_vendor);
   base::debug::SetCrashKeyValue(crash_keys::kGPURenderer, gpu_info.gl_renderer);
-#elif defined(OS_MACOSX)
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLVersion, gpu_info.gl_version);
 #endif
 }
 
