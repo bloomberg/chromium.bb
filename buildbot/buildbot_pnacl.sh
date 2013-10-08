@@ -614,12 +614,6 @@ mode-buildbot-tc-x8632-linux() {
   # For now, just use this bot to test a pure 32 bit build but don't upload
   tc-build-all ${PNACL_TOOLCHAIN_LABEL} true false
   tc-tests-fast "x86-32"
-
-  echo "@@@BUILD_STEP test unsandboxed mode@@@"
-  # Test translation to an unsandboxed executable.
-  # TODO(mseaborn): Run more tests here when they pass.
-  ./scons run_hello_world_test_irt bitcode=1 pnacl_unsandboxed=1 \
-    --mode=nacl_irt_test platform=x86-32 -j8
 }
 
 mode-buildbot-tc-x8632-mac() {

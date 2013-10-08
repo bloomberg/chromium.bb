@@ -12,7 +12,6 @@
 import driver_tools
 import filetype
 import ldtools
-import os
 import pathtools
 import shutil
 from driver_env import env
@@ -98,7 +97,6 @@ EXTRA_ENV = {
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
   'TRIPLE_MIPS32': 'mipsel-none-nacl-gnu',
-  'TRIPLE_LINUX_X8632': 'i686-linux-gnu',
 
   'LLC_FLAGS_COMMON': '${PIC ? -relocation-model=pic} ' +
                       #  -force-tls-non-pic makes the code generator (llc)
@@ -121,11 +119,6 @@ EXTRA_ENV = {
 
   'LLC_FLAGS_MIPS32': '-sfi-load -sfi-store -sfi-stack -sfi-branch -sfi-data',
 
-  # When linking against Linux glibc, don't use %gs:0 to read the
-  # thread pointer because that's not compatible with glibc's use of
-  # %gs.
-  'LLC_FLAGS_LINUX_X8632' : '-mtls-use-call',
-
   # LLC flags which set the target and output type.
   'LLC_FLAGS_TARGET' : '-mtriple=${TRIPLE} -filetype=${outfiletype}',
 
@@ -138,15 +131,16 @@ EXTRA_ENV = {
   'OPT_LEVEL' : '',
 
   # faster translation == slower code
-  'LLC_FLAGS_FAST' : '${LLC_FLAGS_FAST_%ARCH%}'
-                     # This, surprisingly, makes a measurable difference
-                     ' -tail-merge-threshold=20',
+  'LLC_FLAGS_FAST' : '${LLC_FLAGS_FAST_%ARCH%}',
 
-  'LLC_FLAGS_FAST_X8632': '-O0 ',
-  'LLC_FLAGS_FAST_X8664': '-O0 ',
-  'LLC_FLAGS_FAST_ARM':   '-O0 ',
-  'LLC_FLAGS_FAST_MIPS32': '-fast-isel',
-  'LLC_FLAGS_FAST_LINUX_X8632': '-O0',
+  'LLC_FLAGS_FAST_X8632': '-O0 ' +
+                          # This, surprisingly, makes a measurable difference
+                          '-tail-merge-threshold=20',
+  'LLC_FLAGS_FAST_X8664': '-O0 ' +
+                          '-tail-merge-threshold=20',
+  'LLC_FLAGS_FAST_ARM':   '-O0 ' +
+                          '-tail-merge-threshold=20',
+  'LLC_FLAGS_FAST_MIPS32': '-fast-isel -tail-merge-threshold=20',
 
   'LLC_FLAGS': '${LLC_FLAGS_TARGET} ${LLC_FLAGS_COMMON} ${LLC_FLAGS_%ARCH%} ' +
                '${LLC_FLAGS_EXTRA}',
@@ -162,7 +156,6 @@ EXTRA_ENV = {
   'LLC_MCPU_X8632'  : 'pentium4',
   'LLC_MCPU_X8664'  : 'core2',
   'LLC_MCPU_MIPS32' : 'mips32r2',
-  'LLC_MCPU_LINUX_X8632' : '${LLC_MCPU_X8632}',
 
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_PNACL_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
@@ -313,10 +306,7 @@ def main(argv):
     env.set('STATIC', '1')
 
   assert output_type in ('so','nexe')
-  if env.getone('ARCH') == 'LINUX_X8632':
-    RunHostLD(ofile, output)
-  else:
-    RunLD(ofile, output)
+  RunLD(ofile, output)
   return 0
 
 def RunAS(infile, outfile):
@@ -397,13 +387,6 @@ def RunLD(infile, outfile):
     args += env.get('LD_ARGS_ENTRY')
   args += env.get('LD_FLAGS')
   driver_tools.RunDriver('nativeld', args)
-
-def RunHostLD(infile, outfile):
-  driver_tools.Run(['objcopy', '--redefine-sym', '_start=_user_start', infile])
-  lib_dir = env.getone('BASE_LIB_NATIVE') + 'linux-x86-32'
-  driver_tools.Run(['gcc', '-m32', infile,
-                    os.path.join(lib_dir, 'unsandboxed_irt.o'),
-                    '-o', outfile])
 
 def RunLLC(infile, outfile, outfiletype):
   env.push()

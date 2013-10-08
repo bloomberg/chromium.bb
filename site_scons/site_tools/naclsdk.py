@@ -241,8 +241,6 @@ def _SetEnvForPnacl(env, root):
   arch = env['TARGET_FULLARCH']
   assert arch in ['arm', 'arm-thumb2', 'mips32', 'x86-32', 'x86-64']
 
-  if env.Bit('pnacl_unsandboxed'):
-    arch = 'linux-%s' % arch
   arch_flag = ' -arch %s' % arch
   if env.Bit('pnacl_generate_pexe'):
     ld_arch_flag = ''
