@@ -17,8 +17,8 @@ namespace content {
 
 class RenderFrameHostImpl;
 
-// Any page that contains iframes has a tree structure of the frames in the
-// renderer process. We are mirroring this tree in the browser process. This
+// When a page contains iframes, its renderer process maintains a tree structure
+// of those frames. We are mirroring this tree in the browser process. This
 // class represents a node in this tree and is a wrapper for all objects that
 // are frame-specific (as opposed to page-specific).
 class CONTENT_EXPORT FrameTreeNode {
@@ -91,7 +91,7 @@ class CONTENT_EXPORT FrameTreeNode {
   //
   // For the mainframe, the FrameTree does not own the |render_frame_host_|.
   // This is a transitional wart because RenderViewHostManager does not yet
-  // have the bookeeping logic to handle creating a pending RenderFrameHost
+  // have the bookkeeping logic to handle creating a pending RenderFrameHost
   // along with a pending RenderViewHost. Thus, for the main frame, the
   // RenderViewHost currently retains ownership and the FrameTreeNode should
   // not delete it on destruction.

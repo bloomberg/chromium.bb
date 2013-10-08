@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/frame_tree.h"
 
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -17,6 +18,31 @@ namespace content {
 namespace {
 
 class FrameTreeTest : public RenderViewHostTestHarness {
+ protected:
+  // Prints a FrameTree, for easy assertions of the tree hierarchy.
+  std::string GetTreeState(FrameTree* frame_tree) {
+    std::string result;
+    AppendTreeNodeState(frame_tree->GetRootForTesting(), &result);
+    return result;
+  }
+
+ private:
+  void AppendTreeNodeState(FrameTreeNode* node, std::string* result) {
+    result->append(base::Int64ToString(node->frame_id()));
+    if (!node->frame_name().empty()) {
+      result->append(" '");
+      result->append(node->frame_name());
+      result->append("'");
+    }
+    result->append(": [");
+    const char* separator = "";
+    for (size_t i = 0; i < node->child_count(); i++) {
+      result->append(separator);
+      AppendTreeNodeState(node->child_at(i), result);
+      separator = ", ";
+    }
+    result->append("]");
+  }
 };
 
 // The root node never changes during navigation even though its
@@ -83,15 +109,21 @@ TEST_F(FrameTreeTest, Shape) {
   frame_tree.SwapMainFrame(&render_frame_host);
   frame_tree.OnFirstNavigationAfterSwap(5);
 
+  ASSERT_EQ("5: []", GetTreeState(&frame_tree));
+
   // Simulate attaching a series of frames to build the frame tree.
   frame_tree.AddFrame(process()->GetNextRoutingID(), 5, 14, std::string());
   frame_tree.AddFrame(process()->GetNextRoutingID(), 5, 15, std::string());
   frame_tree.AddFrame(process()->GetNextRoutingID(), 5, 16, std::string());
 
   frame_tree.AddFrame(process()->GetNextRoutingID(), 14, 244, std::string());
+  frame_tree.AddFrame(process()->GetNextRoutingID(), 15, 255, no_children_node);
   frame_tree.AddFrame(process()->GetNextRoutingID(), 14, 245, std::string());
 
-  frame_tree.AddFrame(process()->GetNextRoutingID(), 15, 255, no_children_node);
+  ASSERT_EQ("5: [14: [244: [], 245: []], "
+                "15: [255 'no children node': []], "
+                "16: []]",
+            GetTreeState(&frame_tree));
 
   frame_tree.AddFrame(process()->GetNextRoutingID(), 16, 264, std::string());
   frame_tree.AddFrame(process()->GetNextRoutingID(), 16, 265, std::string());
@@ -104,49 +136,37 @@ TEST_F(FrameTreeTest, Shape) {
   frame_tree.AddFrame(process()->GetNextRoutingID(), 455, 555, std::string());
   frame_tree.AddFrame(process()->GetNextRoutingID(), 555, 655, std::string());
 
-  // Now, verify the tree structure is as expected.
-  FrameTreeNode* root = frame_tree.GetRootForTesting();
-  EXPECT_EQ(5, root->frame_id());
-  EXPECT_EQ(3UL, root->child_count());
-
-  EXPECT_EQ(2UL, root->child_at(0)->child_count());
-  EXPECT_EQ(0UL, root->child_at(0)->child_at(0)->child_count());
-  EXPECT_EQ(0UL, root->child_at(0)->child_at(1)->child_count());
-
-  EXPECT_EQ(1UL, root->child_at(1)->child_count());
-  EXPECT_EQ(0UL, root->child_at(1)->child_at(0)->child_count());
-  EXPECT_STREQ(no_children_node.c_str(),
-      root->child_at(1)->child_at(0)->frame_name().c_str());
-
-  EXPECT_EQ(5UL, root->child_at(2)->child_count());
-  EXPECT_EQ(0UL, root->child_at(2)->child_at(0)->child_count());
-  EXPECT_EQ(0UL, root->child_at(2)->child_at(1)->child_count());
-  EXPECT_EQ(0UL, root->child_at(2)->child_at(2)->child_count());
-  EXPECT_EQ(1UL, root->child_at(2)->child_at(3)->child_count());
-  EXPECT_STREQ(deep_subtree.c_str(),
-      root->child_at(2)->child_at(3)->frame_name().c_str());
-  EXPECT_EQ(0UL, root->child_at(2)->child_at(4)->child_count());
-
-  FrameTreeNode* deep_tree = root->child_at(2)->child_at(3)->child_at(0);
-  EXPECT_EQ(365, deep_tree->frame_id());
-  EXPECT_EQ(1UL, deep_tree->child_count());
-  EXPECT_EQ(455, deep_tree->child_at(0)->frame_id());
-  EXPECT_EQ(1UL, deep_tree->child_at(0)->child_count());
-  EXPECT_EQ(555, deep_tree->child_at(0)->child_at(0)->frame_id());
-  EXPECT_EQ(1UL, deep_tree->child_at(0)->child_at(0)->child_count());
-  EXPECT_EQ(655, deep_tree->child_at(0)->child_at(0)->child_at(0)->frame_id());
-  EXPECT_EQ(0UL,
-      deep_tree->child_at(0)->child_at(0)->child_at(0)->child_count());
+  // Now that's it's fully built, verify the tree structure is as expected.
+  ASSERT_EQ("5: [14: [244: [], 245: []], "
+                "15: [255 'no children node': []], "
+                "16: [264: [], 265: [], 266: [], "
+                     "267 'node with deep subtree': "
+                         "[365: [455: [555: [655: []]]]], 268: []]]",
+            GetTreeState(&frame_tree));
 
   // Test removing of nodes.
   frame_tree.RemoveFrame(555, 655);
-  EXPECT_EQ(0UL, deep_tree->child_at(0)->child_at(0)->child_count());
+  ASSERT_EQ("5: [14: [244: [], 245: []], "
+                "15: [255 'no children node': []], "
+                "16: [264: [], 265: [], 266: [], "
+                     "267 'node with deep subtree': "
+                         "[365: [455: [555: []]]], 268: []]]",
+            GetTreeState(&frame_tree));
 
   frame_tree.RemoveFrame(16, 265);
-  EXPECT_EQ(4UL, root->child_at(2)->child_count());
+  ASSERT_EQ("5: [14: [244: [], 245: []], "
+                "15: [255 'no children node': []], "
+                "16: [264: [], 266: [], "
+                     "267 'node with deep subtree': "
+                         "[365: [455: [555: []]]], 268: []]]",
+            GetTreeState(&frame_tree));
 
   frame_tree.RemoveFrame(5, 15);
-  EXPECT_EQ(2UL, root->child_count());
+  ASSERT_EQ("5: [14: [244: [], 245: []], "
+                "16: [264: [], 266: [], "
+                     "267 'node with deep subtree': "
+                         "[365: [455: [555: []]]], 268: []]]",
+            GetTreeState(&frame_tree));
 }
 
 }  // namespace

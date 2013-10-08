@@ -58,7 +58,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // Reference to the whole frame tree that this RenderFrameHost belongs too.
   // Allows this RenderFrameHost to add and remove nodes in response to
-  // requests DOM manipulation messages from the renderer.
+  // messages from the renderer requesting DOM manipulation.
   FrameTree* frame_tree_;
   int routing_id_;
   bool is_swapped_out_;

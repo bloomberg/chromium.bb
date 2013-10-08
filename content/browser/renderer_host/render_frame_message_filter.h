@@ -11,7 +11,7 @@ namespace content {
 class RenderWidgetHelper;
 
 // RenderFrameMessageFilter intercepts FrameHost messages on the IO thread
-// that require low-latency processing. The canoncial example of this is
+// that require low-latency processing. The canonical example of this is
 // child-frame creation which is a sync IPC that provides the renderer
 // with the routing id for a newly created RenderFrame.
 //

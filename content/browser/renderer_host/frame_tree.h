@@ -26,7 +26,7 @@ class RenderViewHostImpl;
 // it to serve as an anchor for state that needs to persist across top-level
 // page navigations.
 //
-// TODO(ajwong): Move NavigationController ownership the to main frame
+// TODO(ajwong): Move NavigationController ownership to the main frame
 // FrameTreeNode. Possibly expose access to it from here.
 //
 // TODO(ajwong): Currently this class only contains FrameTreeNodes for
@@ -64,9 +64,9 @@ class CONTENT_EXPORT FrameTree {
   void SetFrameUrl(int64 frame_id, const GURL& url);
 
   // Resets the FrameTree and changes RenderFrameHost for the main frame.
-  // This destroys most of frame tree but retains the root node so that
+  // This destroys most of the frame tree but retains the root node so that
   // navigation state may be kept on it between process swaps. Used to
-  // support bookeeping for top-level navigations.
+  // support bookkeeping for top-level navigations.
   //
   // If |main_frame| is NULL, reset tree to initially constructed state.
   //
