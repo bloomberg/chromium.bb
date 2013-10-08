@@ -470,7 +470,6 @@ def main():
     return 1
   parser = optparse.OptionParser("usage: %prog -b <dir> -t <test> "
                                  "[-t <test> ...]")
-  parser.disable_interspersed_args()
   parser.add_option("-b", "--build-dir",
                     # TODO(thakis): Remove --build_dir once bots don't pass it.
                     "--build_dir",

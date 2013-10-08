@@ -566,7 +566,6 @@ class ChromeTests:
 def _main():
   parser = optparse.OptionParser("usage: %prog -b <dir> -t <test> "
                                  "[-t <test> ...]")
-  parser.disable_interspersed_args()
 
   parser.add_option("--help-tests", dest="help_tests", action="store_true",
                     default=False, help="List all available tests")
@@ -602,12 +601,6 @@ def _main():
                     help="dummy compatibility flag for sharding_supervisor.")
 
   options, args = parser.parse_args()
-
-  if not options.build_dir and not options.target:
-    # Currently happens on Windows, not sure why. TODO(thakis): Figure out and
-    # remove within 24h.
-    options.build_dir = 'src/out'
-    options.target = 'Debug'
 
   # target used to be a part of build_dir, so only add it if it's not there.
   # TODO(thakis): Always do this once the memory master no longer passes
