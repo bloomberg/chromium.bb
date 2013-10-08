@@ -1227,10 +1227,3 @@ crbug.com/304841 [ Win ] inspector/styles/override-screen-size.html [ Failure ]
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ ImageOnlyFailure ]
 crbug.com/305290 [ XP ] fast/text/international/complex-text-space-only-glyphpage.html [ ImageOnlyFailure ]
-
-Bug(dgozman) compositing/culling/filter-occlusion-blur-large.html [ NeedsRebaseline ]
-Bug(dgozman) compositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
-Bug(dgozman) compositing/masks/masked-ancestor.html [ NeedsRebaseline ]
-Bug(dgozman) virtual/softwarecompositing/culling/filter-occlusion-blur-large.html [ NeedsRebaseline ]
-Bug(dgozman) virtual/softwarecompositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
-Bug(dgozman) virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ NeedsRebaseline ]
