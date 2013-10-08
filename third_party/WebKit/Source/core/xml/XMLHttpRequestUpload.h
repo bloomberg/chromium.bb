@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventListener.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestEventTarget.h"
 #include "wtf/Forward.h"

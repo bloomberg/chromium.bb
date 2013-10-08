@@ -39,7 +39,7 @@
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/Event.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/Platform.h"

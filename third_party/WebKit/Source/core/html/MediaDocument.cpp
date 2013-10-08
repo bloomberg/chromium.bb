@@ -29,10 +29,10 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/events/EventNames.h"
-#include "core/events/KeyboardEvent.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/events/KeyboardEvent.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"

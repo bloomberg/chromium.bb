@@ -23,7 +23,7 @@
 
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGElement.h"

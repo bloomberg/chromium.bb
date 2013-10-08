@@ -34,7 +34,7 @@
 
 #include "core/page/SpeechInputEvent.h"
 
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

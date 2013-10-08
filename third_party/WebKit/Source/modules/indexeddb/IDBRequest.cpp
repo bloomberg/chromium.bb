@@ -33,17 +33,17 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/DOMError.h"
-#include "core/events/EventListener.h"
-#include "core/events/EventNames.h"
-#include "core/events/EventQueue.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "platform/SharedBuffer.h"
+#include "core/events/EventListener.h"
+#include "core/events/EventQueue.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "platform/SharedBuffer.h"
 
 namespace WebCore {
 

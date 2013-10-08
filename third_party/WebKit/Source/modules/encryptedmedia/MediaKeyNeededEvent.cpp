@@ -29,7 +29,7 @@
 
 #include "modules/encryptedmedia/MediaKeyNeededEvent.h"
 
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {

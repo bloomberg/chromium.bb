@@ -31,8 +31,8 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
-#include "core/events/EventNames.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
@@ -42,12 +42,12 @@
 #include "core/storage/StorageEvent.h"
 #include "weborigin/SecurityOrigin.h"
 
-#include "public/platform/WebStorageArea.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebViewImpl.h"
+#include "public/platform/WebStorageArea.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace WebCore {
 

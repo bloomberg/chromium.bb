@@ -23,9 +23,9 @@
 #include "config.h"
 #include "core/events/Event.h"
 
-#include "core/events/EventNames.h"
-#include "core/events/EventTarget.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/events/EventTarget.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/AtomicString.h"
 

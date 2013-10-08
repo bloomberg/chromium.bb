@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/page/animation/AnimationController.h"
 
-#include "core/events/EventNames.h"
 #include "core/dom/PseudoElement.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TransitionEvent.h"
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/page/Frame.h"

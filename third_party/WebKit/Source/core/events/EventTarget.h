@@ -33,7 +33,7 @@
 #define EventTarget_h
 
 #include "core/events/EventListenerMap.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

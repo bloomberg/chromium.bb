@@ -28,7 +28,7 @@
 #define BeforeLoadEvent_h
 
 #include "core/events/Event.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

@@ -34,8 +34,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventNames.h"
 #include "core/events/EventTarget.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "modules/notifications/NotificationClient.h"
 #include "platform/SharedBuffer.h"

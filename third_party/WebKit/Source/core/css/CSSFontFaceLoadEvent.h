@@ -34,7 +34,7 @@
 #include "core/css/FontFace.h"
 #include "core/dom/DOMError.h"
 #include "core/events/Event.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

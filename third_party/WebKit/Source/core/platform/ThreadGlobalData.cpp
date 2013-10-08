@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/platform/ThreadGlobalData.h"
 
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/InspectorCounters.h"
 #include "platform/PlatformThreadData.h"
 #include "wtf/MainThread.h"
@@ -43,7 +43,7 @@ namespace WebCore {
 ThreadSpecific<ThreadGlobalData>* ThreadGlobalData::staticData;
 
 ThreadGlobalData::ThreadGlobalData()
-    : m_eventNames(adoptPtr(new EventNames))
+    : m_eventNames(adoptPtr(new ThreadLocalEventNames))
     , m_inspectorCounters(adoptPtr(new ThreadLocalInspectorCounters()))
 {
     // This constructor will have been called on the main thread before being called on

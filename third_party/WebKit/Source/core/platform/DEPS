@@ -22,5 +22,5 @@ include_rules = [
     "!core/page",
     "!core/plugins",
     "!core/rendering",
-    "!core/events/EventNames.h",
+    "!core/events/ThreadLocalEventNames.h",
 ]

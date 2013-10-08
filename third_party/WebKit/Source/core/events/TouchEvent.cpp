@@ -28,10 +28,10 @@
 
 #include "core/events/TouchEvent.h"
 
-#include "core/events/EventDispatcher.h"
-#include "core/events/EventNames.h"
-#include "core/events/EventRetargeter.h"
 #include "core/dom/TouchList.h"
+#include "core/events/EventDispatcher.h"
+#include "core/events/EventRetargeter.h"
+#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

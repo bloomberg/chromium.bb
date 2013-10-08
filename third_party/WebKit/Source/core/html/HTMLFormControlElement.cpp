@@ -25,9 +25,9 @@
 #include "config.h"
 #include "core/html/HTMLFormControlElement.h"
 
-#include "core/events/Event.h"
-#include "core/events/EventNames.h"
 #include "core/dom/PostAttachCallbacks.h"
+#include "core/events/Event.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"

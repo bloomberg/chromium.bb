@@ -37,7 +37,7 @@
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/platform/animation/CSSAnimationDataList.h"
 #include "core/platform/animation/TimingFunction.h"

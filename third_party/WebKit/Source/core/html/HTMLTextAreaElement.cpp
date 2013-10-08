@@ -39,7 +39,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/events/Event.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"

@@ -22,11 +22,11 @@
 
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/events/Event.h"
-#include "core/events/EventNames.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/editing/Caret.h"
+#include "core/events/Event.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/inspector/InspectorController.h"

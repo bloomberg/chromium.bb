@@ -27,9 +27,6 @@
 #include "config.h"
 #include "core/page/DOMWindow.h"
 
-#include "wtf/MainThread.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
 #include <algorithm>
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
@@ -46,15 +43,15 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/events/EventListener.h"
-#include "core/events/EventNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/events/MessageEvent.h"
-#include "core/events/PageTransitionEvent.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/Editor.h"
+#include "core/events/EventListener.h"
+#include "core/events/MessageEvent.h"
+#include "core/events/PageTransitionEvent.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/history/BackForwardController.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -98,6 +95,9 @@
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
+#include "wtf/MainThread.h"
+#include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 
 using std::min;
 using std::max;

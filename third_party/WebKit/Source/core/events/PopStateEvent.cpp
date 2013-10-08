@@ -28,7 +28,7 @@
 #include "core/events/PopStateEvent.h"
 
 #include "bindings/v8/SerializedScriptValue.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/page/History.h"
 
 namespace WebCore {

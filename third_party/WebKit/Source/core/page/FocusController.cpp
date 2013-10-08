@@ -33,8 +33,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/events/Event.h"
-#include "core/events/EventNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -42,6 +40,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h" // For firstPositionInOrBeforeNode
+#include "core/events/Event.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLTextAreaElement.h"

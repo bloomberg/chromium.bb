@@ -25,8 +25,8 @@
 
 #include "core/dom/Clipboard.h"
 #include "core/events/EventDispatcher.h"
-#include "core/events/EventNames.h"
 #include "core/events/EventRetargeter.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/platform/PlatformMouseEvent.h"
 
 namespace WebCore {

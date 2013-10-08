@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/events/MessageEvent.h"
 
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/page/DOMWindow.h"
 
 namespace WebCore {

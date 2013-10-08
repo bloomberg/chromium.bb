@@ -28,7 +28,7 @@
 
 #include "modules/webaudio/AudioProcessingEvent.h"
 
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "modules/webaudio/AudioBuffer.h"
 
 namespace WebCore {

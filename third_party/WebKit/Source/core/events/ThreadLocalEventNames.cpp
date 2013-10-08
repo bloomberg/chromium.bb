@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 
@@ -29,7 +29,7 @@ namespace WebCore {
 #define INITIALIZE_EVENT_INTERFACE(name) \
     , interfaceFor##name(#name, AtomicString::ConstructFromLiteral)
 
-EventNames::EventNames()
+ThreadLocalEventNames::ThreadLocalEventNames()
     : dummy(0)
 EVENT_NAMES_FOR_EACH(INITIALIZE_EVENT_NAME)
 EVENT_INTERFACES_FOR_EACH(INITIALIZE_EVENT_INTERFACE)

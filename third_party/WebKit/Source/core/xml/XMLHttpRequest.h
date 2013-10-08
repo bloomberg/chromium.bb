@@ -26,7 +26,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceResponse.h"

@@ -20,10 +20,9 @@
  */
 
 #include "config.h"
-
-
-#include "core/events/EventNames.h"
 #include "core/svg/SVGZoomEvent.h"
+
+#include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
 

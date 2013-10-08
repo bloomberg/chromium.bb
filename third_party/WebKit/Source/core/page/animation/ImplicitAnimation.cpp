@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/page/UseCounter.h"
 #include "core/page/animation/AnimationControllerPrivate.h"
 #include "core/page/animation/CSSPropertyAnimation.h"

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "WebDOMEvent.h"
 
-#include "core/events/Event.h"
-#include "core/events/EventNames.h"
 #include "core/dom/Node.h"
+#include "core/events/Event.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "wtf/PassRefPtr.h"
 
 using WebCore::eventNames;

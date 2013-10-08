@@ -31,9 +31,9 @@
 #include "core/dom/NamedFlow.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/events/EventNames.h"
 #include "core/dom/NamedFlowCollection.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/events/UIEvent.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"

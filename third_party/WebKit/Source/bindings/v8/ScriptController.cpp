@@ -55,7 +55,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
-#include "core/events/EventNames.h"
+#include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
