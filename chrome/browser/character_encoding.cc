@@ -42,7 +42,7 @@ const CanonicalEncodingData kCanonicalEncodingNames[] = {
   { IDC_ENCODING_GB18030, "gb18030", IDS_ENCODING_SIMP_CHINESE },
   { IDC_ENCODING_BIG5, "Big5", IDS_ENCODING_TRAD_CHINESE },
   { IDC_ENCODING_BIG5HKSCS, "Big5-HKSCS", IDS_ENCODING_TRAD_CHINESE },
-  { IDC_ENCODING_KOREAN, "windows-949", IDS_ENCODING_KOREAN },
+  { IDC_ENCODING_KOREAN, "EUC-KR", IDS_ENCODING_KOREAN },
   { IDC_ENCODING_SHIFTJIS, "Shift_JIS", IDS_ENCODING_JAPANESE },
   { IDC_ENCODING_EUCJP, "EUC-JP", IDS_ENCODING_JAPANESE },
   { IDC_ENCODING_ISO2022JP, "ISO-2022-JP", IDS_ENCODING_JAPANESE },
@@ -88,7 +88,6 @@ const CanonicalEncodingDisplayNamePair kCanonicalDisplayNameOverrides[] = {
   // Only lists the canonical names where we want a different form for display.
   { "macintosh", "Macintosh" },
   { "windows-874", "Windows-874" },
-  { "windows-949", "Windows-949" },
   { "windows-1250", "Windows-1250" },
   { "windows-1251", "Windows-1251" },
   { "windows-1252", "Windows-1252" },
