@@ -12,6 +12,8 @@
 // - Virtual methods with nonempty implementations in their headers.
 // - Classes that derive from base::RefCounted / base::RefCountedThreadSafe
 //   should have protected or private destructors.
+// - WeakPtrFactory members that refer to their outer class should be the last
+//   member.
 
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/AST.h"
@@ -43,6 +45,9 @@ const char kPublicDtor[] =
 const char kProtectedNonVirtualDtor[] =
     "[chromium-style] Classes that are ref-counted and have non-private "
     "destructors should declare their destructor virtual.";
+const char kWeakPtrFactoryOrder[] =
+    "[chromium-style] WeakPtrFactory members which refer to their outer class "
+    "must be the last member in the outer class definition.";
 const char kNoteInheritance[] =
     "[chromium-style] %0 inherits from %1 here";
 const char kNoteImplicitDtor[] =
@@ -70,16 +75,25 @@ const Type* UnwrapType(const Type* type) {
   return type;
 }
 
+struct FindBadConstructsOptions {
+  FindBadConstructsOptions() : check_base_classes(false),
+                               check_virtuals_in_implementations(true),
+                               check_url_directory(false),
+                               check_weak_ptr_factory_order(false) {
+  }
+  bool check_base_classes;
+  bool check_virtuals_in_implementations;
+  bool check_url_directory;
+  bool check_weak_ptr_factory_order;
+};
+
 // Searches for constructs that we know we don't want in the Chromium code base.
 class FindBadConstructsConsumer : public ChromeClassTester {
  public:
   FindBadConstructsConsumer(CompilerInstance& instance,
-                            bool check_base_classes,
-                            bool check_virtuals_in_implementations,
-                            bool check_url_directory)
-      : ChromeClassTester(instance, check_url_directory),
-        check_base_classes_(check_base_classes),
-        check_virtuals_in_implementations_(check_virtuals_in_implementations) {
+                            const FindBadConstructsOptions& options)
+      : ChromeClassTester(instance, options.check_url_directory),
+        options_(options) {
     // Register warning/error messages.
     diag_method_requires_override_ = diagnostic().getCustomDiagID(
         getErrorLevel(), kMethodRequiresOverride);
@@ -91,6 +105,8 @@ class FindBadConstructsConsumer : public ChromeClassTester {
         getErrorLevel(), kPublicDtor);
     diag_protected_non_virtual_dtor_ = diagnostic().getCustomDiagID(
         getErrorLevel(), kProtectedNonVirtualDtor);
+    diag_weak_ptr_factory_order_ = diagnostic().getCustomDiagID(
+        getErrorLevel(), kWeakPtrFactoryOrder);
 
     // Registers notes to make it easier to interpret warnings.
     diag_note_inheritance_ = diagnostic().getCustomDiagID(
@@ -113,7 +129,7 @@ class FindBadConstructsConsumer : public ChromeClassTester {
       CheckCtorDtorWeight(record_location, record);
     }
 
-    if (!implementation_file || check_virtuals_in_implementations_) {
+    if (!implementation_file || options_.check_virtuals_in_implementations) {
       bool warn_on_inline_bodies = !implementation_file;
 
       // Check that all virtual methods are marked accordingly with both
@@ -122,6 +138,9 @@ class FindBadConstructsConsumer : public ChromeClassTester {
     }
 
     CheckRefCountedDtors(record_location, record);
+
+    if (options_.check_weak_ptr_factory_order)
+      CheckWeakPtrFactoryMembers(record_location, record);
   }
 
  private:
@@ -132,14 +151,14 @@ class FindBadConstructsConsumer : public ChromeClassTester {
     PublicDestructor
   };
 
-  bool check_base_classes_;
-  bool check_virtuals_in_implementations_;
+  FindBadConstructsOptions options_;
 
   unsigned diag_method_requires_override_;
   unsigned diag_method_requires_virtual_;
   unsigned diag_no_explicit_dtor_;
   unsigned diag_public_dtor_;
   unsigned diag_protected_non_virtual_dtor_;
+  unsigned diag_weak_ptr_factory_order_;
   unsigned diag_note_inheritance_;
   unsigned diag_note_implicit_dtor_;
   unsigned diag_note_public_dtor_;
@@ -514,6 +533,8 @@ class FindBadConstructsConsumer : public ChromeClassTester {
         assert(false && "Do not call DiagnosticForIssue with issue None");
         return 0;
     }
+    assert(false);
+    return 0;
   }
 
   // Check |record| to determine if it has any problematic refcounting
@@ -580,7 +601,7 @@ class FindBadConstructsConsumer : public ChromeClassTester {
     //       new RefCountedInterface);
     //   // Calls SomeInterface::~SomeInterface(), which is unsafe.
     //   delete static_cast<SomeInterface*>(some_class.get());
-    if (!check_base_classes_)
+    if (!options_.check_base_classes)
       return;
 
     // Find all public destructors. This will record the class hierarchy
@@ -614,23 +635,64 @@ class FindBadConstructsConsumer : public ChromeClassTester {
       }
     }
   }
+
+  // Check for any problems with WeakPtrFactory class members. This currently
+  // only checks that any WeakPtrFactory<T> member of T appears as the last
+  // data member in T. We could consider checking for bad uses of
+  // WeakPtrFactory to refer to other data members, but that would require
+  // looking at the initializer list in constructors to see what the factory
+  // points to.
+  // Note, if we later add other unrelated checks of data members, we should
+  // consider collapsing them in to one loop to avoid iterating over the data
+  // members more than once.
+  void CheckWeakPtrFactoryMembers(SourceLocation record_location,
+                                  CXXRecordDecl* record) {
+    // Skip anonymous structs.
+    if (record->getIdentifier() == NULL)
+      return;
+
+    // Iterate through members of the class.
+    RecordDecl::field_iterator iter(record->field_begin()),
+                               the_end(record->field_end());
+    SourceLocation weak_ptr_factory_location;  // Invalid initially.
+    for (; iter != the_end; ++iter) {
+      // If we enter the loop but have already seen a matching WeakPtrFactory,
+      // it means there is at least one member after the factory.
+      if (weak_ptr_factory_location.isValid()) {
+        diagnostic().Report(weak_ptr_factory_location,
+                            diag_weak_ptr_factory_order_);
+      }
+      const TemplateSpecializationType* template_spec_type =
+          iter->getType().getTypePtr()->getAs<TemplateSpecializationType>();
+      if (template_spec_type) {
+        const TemplateDecl* template_decl =
+            template_spec_type->getTemplateName().getAsTemplateDecl();
+        if (template_decl && template_spec_type->getNumArgs() >= 1) {
+          if (template_decl->getNameAsString().compare("WeakPtrFactory") == 0 &&
+              GetNamespace(template_decl) == "base") {
+            const TemplateArgument& arg = template_spec_type->getArg(0);
+            if (arg.getAsType().getTypePtr()->getAsCXXRecordDecl() ==
+                record->getTypeForDecl()->getAsCXXRecordDecl()) {
+              weak_ptr_factory_location = iter->getLocation();
+            }
+          }
+        }
+      }
+    }
+  }
 };
+
 
 class FindBadConstructsAction : public PluginASTAction {
  public:
-  FindBadConstructsAction()
-      : check_base_classes_(false),
-        check_virtuals_in_implementations_(true),
-        check_url_directory_(false) {
+  FindBadConstructsAction() {
   }
 
  protected:
   // Overridden from PluginASTAction:
   virtual ASTConsumer* CreateASTConsumer(CompilerInstance& instance,
                                          llvm::StringRef ref) {
-    return new FindBadConstructsConsumer(
-        instance, check_base_classes_, check_virtuals_in_implementations_,
-        check_url_directory_);
+    return new FindBadConstructsConsumer(instance, options_);
   }
 
   virtual bool ParseArgs(const CompilerInstance& instance,
@@ -640,13 +702,16 @@ class FindBadConstructsAction : public PluginASTAction {
     for (size_t i = 0; i < args.size() && parsed; ++i) {
       if (args[i] == "skip-virtuals-in-implementations") {
         // TODO(rsleevi): Remove this once http://crbug.com/115047 is fixed.
-        check_virtuals_in_implementations_ = false;
+        options_.check_virtuals_in_implementations = false;
       } else if (args[i] == "check-base-classes") {
         // TODO(rsleevi): Remove this once http://crbug.com/123295 is fixed.
-        check_base_classes_ = true;
+        options_.check_base_classes = true;
       } else if (args[i] == "check-url-directory") {
         // TODO(tfarina): Remove this once http://crbug.com/229660 is fixed.
-        check_url_directory_ = true;
+        options_.check_url_directory = true;
+      } else if (args[i] == "check-weak-ptr-factory-order") {
+        // TODO(dmichael): Remove this once http://crbug.com/303818 is fixed.
+        options_.check_weak_ptr_factory_order = true;
       } else {
         parsed = false;
         llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";
@@ -657,9 +722,7 @@ class FindBadConstructsAction : public PluginASTAction {
   }
 
  private:
-  bool check_base_classes_;
-  bool check_virtuals_in_implementations_;
-  bool check_url_directory_;
+  FindBadConstructsOptions options_;
 };
 
 }  // namespace
