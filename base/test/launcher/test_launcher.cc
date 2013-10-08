@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/launcher/test_results_tracker.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -42,10 +43,6 @@ using ::operator<<;
 const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
 // The environment variable name for the test shard index.
 const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
-
-// The default output file for XML output.
-const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
-    "test_detail.xml");
 
 namespace {
 
@@ -185,225 +182,6 @@ bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
   return (test_id % total_shards) == shard_index;
 }
 
-typedef Callback<void(bool)> RunTestsCallback;
-
-// A helper class to output results.
-// Note: as currently XML is the only supported format by gtest, we don't
-// check output format (e.g. "xml:" prefix) here and output an XML file
-// unconditionally.
-// Note: we don't output per-test-case or total summary info like
-// total failed_test_count, disabled_test_count, elapsed_time and so on.
-// Only each test (testcase element in the XML) will have the correct
-// failed/disabled/elapsed_time information. Each test won't include
-// detailed failure messages either.
-class ResultsPrinter {
- public:
-  ResultsPrinter(const CommandLine& command_line,
-                 const RunTestsCallback& callback);
-  ~ResultsPrinter();
-
-  // Called when test named |name| is scheduled to be started.
-  void OnTestStarted(const std::string& name);
-
-  // Called when all tests that were to be started have been scheduled
-  // to be started.
-  void OnAllTestsStarted();
-
-  // Adds |result| to the stored test results.
-  void AddTestResult(const TestResult& result);
-
-  WeakPtr<ResultsPrinter> GetWeakPtr();
-
- private:
-  // Prints a list of tests that finished with |status|.
-  void PrintTestsByStatus(TestResult::Status status,
-                          const std::string& description);
-
-  ThreadChecker thread_checker_;
-
-  // Test results grouped by test case name.
-  typedef std::map<std::string, std::vector<TestResult> > ResultsMap;
-  ResultsMap results_;
-
-  // List of full names of failed tests.
-  typedef std::map<TestResult::Status, std::vector<std::string> > StatusMap;
-  StatusMap tests_by_status_;
-
-  size_t test_started_count_;
-
-  // Total number of tests run.
-  size_t test_run_count_;
-
-  // File handle of output file (can be NULL if no file).
-  FILE* out_;
-
-  RunTestsCallback callback_;
-
-  WeakPtrFactory<ResultsPrinter> weak_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResultsPrinter);
-};
-
-ResultsPrinter::ResultsPrinter(const CommandLine& command_line,
-                               const RunTestsCallback& callback)
-    : test_started_count_(0),
-      test_run_count_(0),
-      out_(NULL),
-      callback_(callback),
-      weak_ptr_(this) {
-  if (!command_line.HasSwitch(kGTestOutputFlag))
-    return;
-  std::string flag = command_line.GetSwitchValueASCII(kGTestOutputFlag);
-  size_t colon_pos = flag.find(':');
-  FilePath path;
-  if (colon_pos != std::string::npos) {
-    FilePath flag_path =
-        command_line.GetSwitchValuePath(kGTestOutputFlag);
-    FilePath::StringType path_string = flag_path.value();
-    path = FilePath(path_string.substr(colon_pos + 1));
-    // If the given path ends with '/', consider it is a directory.
-    // Note: This does NOT check that a directory (or file) actually exists
-    // (the behavior is same as what gtest does).
-    if (path.EndsWithSeparator()) {
-      FilePath executable = command_line.GetProgram().BaseName();
-      path = path.Append(executable.ReplaceExtension(
-          FilePath::StringType(FILE_PATH_LITERAL("xml"))));
-    }
-  }
-  if (path.value().empty())
-    path = FilePath(kDefaultOutputFile);
-  FilePath dir_name = path.DirName();
-  if (!DirectoryExists(dir_name)) {
-    LOG(WARNING) << "The output directory does not exist. "
-                 << "Creating the directory: " << dir_name.value();
-    // Create the directory if necessary (because the gtest does the same).
-    file_util::CreateDirectory(dir_name);
-  }
-  out_ = file_util::OpenFile(path, "w");
-  if (!out_) {
-    LOG(ERROR) << "Cannot open output file: "
-               << path.value() << ".";
-    return;
-  }
-}
-
-ResultsPrinter::~ResultsPrinter() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!out_)
-    return;
-  fprintf(out_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-  fprintf(out_, "<testsuites name=\"AllTests\" tests=\"\" failures=\"\""
-          " disabled=\"\" errors=\"\" time=\"\">\n");
-  for (ResultsMap::iterator i = results_.begin(); i != results_.end(); ++i) {
-    fprintf(out_, "  <testsuite name=\"%s\" tests=\"%" PRIuS "\" failures=\"\""
-            " disabled=\"\" errors=\"\" time=\"\">\n",
-            i->first.c_str(), i->second.size());
-    for (size_t j = 0; j < i->second.size(); ++j) {
-      const TestResult& result = i->second[j];
-      fprintf(out_, "    <testcase name=\"%s\" status=\"run\" time=\"%.3f\""
-              " classname=\"%s\">\n",
-              result.test_name.c_str(),
-              result.elapsed_time.InSecondsF(),
-              result.test_case_name.c_str());
-      if (result.status != TestResult::TEST_SUCCESS)
-        fprintf(out_, "      <failure message=\"\" type=\"\"></failure>\n");
-      fprintf(out_, "    </testcase>\n");
-    }
-    fprintf(out_, "  </testsuite>\n");
-  }
-  fprintf(out_, "</testsuites>\n");
-  fclose(out_);
-}
-
-void ResultsPrinter::OnTestStarted(const std::string& name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ++test_started_count_;
-}
-
-void ResultsPrinter::OnAllTestsStarted() {
-  if (test_started_count_ == 0) {
-    fprintf(stdout, "0 tests run\n");
-    fflush(stdout);
-
-    // No tests have actually been started, so fire the callback
-    // to avoid a hang.
-    callback_.Run(true);
-    delete this;
-  }
-}
-
-void ResultsPrinter::AddTestResult(const TestResult& result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  ++test_run_count_;
-  results_[result.test_case_name].push_back(result);
-
-  // TODO(phajdan.jr): Align counter (padding).
-  std::string status_line(StringPrintf("[%" PRIuS "/%" PRIuS "] %s ",
-                                       test_run_count_,
-                                       test_started_count_,
-                                       result.GetFullName().c_str()));
-  if (result.completed()) {
-    status_line.append(StringPrintf("(%" PRId64 " ms)",
-                       result.elapsed_time.InMilliseconds()));
-  } else if (result.status == TestResult::TEST_TIMEOUT) {
-    status_line.append("(TIMED OUT)");
-  } else if (result.status == TestResult::TEST_CRASH) {
-    status_line.append("(CRASHED)");
-  } else if (result.status == TestResult::TEST_SKIPPED) {
-    status_line.append("(SKIPPED)");
-  } else if (result.status == TestResult::TEST_UNKNOWN) {
-    status_line.append("(UNKNOWN)");
-  } else {
-    // Fail very loudly so it's not ignored.
-    CHECK(false) << "Unhandled test result status: " << result.status;
-  }
-  fprintf(stdout, "%s\n", status_line.c_str());
-  fflush(stdout);
-
-  tests_by_status_[result.status].push_back(result.GetFullName());
-
-  if (test_run_count_ == test_started_count_) {
-    fprintf(stdout, "%" PRIuS " test%s run\n",
-            test_run_count_,
-            test_run_count_ > 1 ? "s" : "");
-    fflush(stdout);
-
-    PrintTestsByStatus(TestResult::TEST_FAILURE, "failed");
-    PrintTestsByStatus(TestResult::TEST_TIMEOUT, "timed out");
-    PrintTestsByStatus(TestResult::TEST_CRASH, "crashed");
-    PrintTestsByStatus(TestResult::TEST_SKIPPED, "skipped");
-    PrintTestsByStatus(TestResult::TEST_UNKNOWN, "had unknown result");
-
-    callback_.Run(
-        tests_by_status_[TestResult::TEST_SUCCESS].size() == test_run_count_);
-
-    delete this;
-  }
-}
-
-WeakPtr<ResultsPrinter> ResultsPrinter::GetWeakPtr() {
-  return weak_ptr_.GetWeakPtr();
-}
-
-void ResultsPrinter::PrintTestsByStatus(TestResult::Status status,
-                                        const std::string& description) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  const std::vector<std::string>& tests = tests_by_status_[status];
-  if (tests.empty())
-    return;
-  fprintf(stdout,
-          "%" PRIuS " test%s %s:\n",
-          tests.size(),
-          tests.size() != 1 ? "s" : "",
-          description.c_str());
-  for (size_t i = 0; i < tests.size(); i++)
-    fprintf(stdout, "    %s\n", tests[i].c_str());
-  fflush(stdout);
-}
-
 // For a basic pattern matching for gtest_filter options.  (Copied from
 // gtest.cc, see the comment below and http://crbug.com/44497)
 bool PatternMatchesString(const char* pattern, const char* str) {
@@ -448,7 +226,7 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
 void RunTests(TestLauncherDelegate* launcher_delegate,
               int total_shards,
               int shard_index,
-              const RunTestsCallback& callback) {
+              const ResultsPrinter::TestsResultCallback& callback) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   DCHECK(!command_line->HasSwitch(kGTestListTestsFlag));
