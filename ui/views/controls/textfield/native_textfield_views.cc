@@ -1192,7 +1192,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
     const bool readable = !textfield_->IsObscured();
     const bool shift = key_event.IsShiftDown();
     const bool control = key_event.IsControlDown();
-    const bool alt = key_event.IsAltDown();
+    const bool alt = key_event.IsAltDown() || key_event.IsAltGrDown();
     bool text_changed = false;
     bool cursor_changed = false;
     switch (key_code) {

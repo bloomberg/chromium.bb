@@ -1581,6 +1581,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_V, kCtrlOrCmdMask));
   EXPECT_EQ(ASCIIToUTF16("ab123cd"), omnibox_view->GetText());
   EXPECT_TRUE(popup_model->IsOpen());
+
+  // Ctrl/Cmd+Alt+V should not paste.
+  ASSERT_NO_FATAL_FAILURE(
+      SendKey(ui::VKEY_V, kCtrlOrCmdMask | ui::EF_ALT_DOWN));
+  EXPECT_EQ(ASCIIToUTF16("ab123cd"), omnibox_view->GetText());
+  // TODO(msw): Test that AltGr+V does not paste.
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {

@@ -257,10 +257,12 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.IsUnicodeKeyCode())
     return views::Textfield::OnKeyPressed(event);
 
+  const bool shift = event.IsShiftDown();
+  const bool control = event.IsControlDown();
+  const bool alt = event.IsAltDown() || event.IsAltGrDown();
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
-      model()->AcceptInput(event.IsAltDown() ? NEW_FOREGROUND_TAB : CURRENT_TAB,
-                           false);
+      model()->AcceptInput(alt ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
       return true;
     case ui::VKEY_ESCAPE:
       return model()->OnEscapeKeyPressed();
@@ -268,7 +270,7 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
       model()->OnControlKeyChanged(true);
       break;
     case ui::VKEY_DELETE:
-      if (event.IsShiftDown() && model()->popup_model()->IsOpen())
+      if (shift && model()->popup_model()->IsOpen())
         model()->popup_model()->TryDeletingCurrentItem();
       break;
     case ui::VKEY_UP:
@@ -278,21 +280,17 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
       model()->OnUpOrDownKeyPressed(1);
       return true;
     case ui::VKEY_PRIOR:
-      if (event.IsControlDown() || event.IsAltDown() ||
-          event.IsShiftDown()) {
+      if (control || alt || shift)
         return false;
-      }
       model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
       return true;
     case ui::VKEY_NEXT:
-      if (event.IsControlDown() || event.IsAltDown() ||
-          event.IsShiftDown()) {
+      if (control || alt || shift)
         return false;
-      }
       model()->OnUpOrDownKeyPressed(model()->result().size());
       return true;
     case ui::VKEY_V:
-      if (event.IsControlDown() && !read_only()) {
+      if (control && !alt && !read_only()) {
         OnBeforePossibleChange();
         OnPaste();
         OnAfterPossibleChange();
