@@ -747,8 +747,12 @@ SlideMode.prototype.commitItem_ = function(callback) {
 
   // If showing the video, then pause it. Note, that it may not be attached
   // to the media controls yet.
-  if (this.isShowingVideo_())
+  if (this.isShowingVideo_()) {
     this.imageView_.getVideo().pause();
+    // Force stop downloading, if uncached on Drive.
+    this.imageView_.getVideo().src = '';
+    this.imageView_.getVideo().load();
+  }
 
   this.editor_.closeSession(callback);
 };
