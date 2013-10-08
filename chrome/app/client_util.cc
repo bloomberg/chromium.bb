@@ -154,8 +154,11 @@ HMODULE LoadChromeWithDirectory(string16* dir) {
 #if !defined(CHROME_MULTIPLE_DLL)
   const wchar_t* dll_name = installer::kChromeDll;
 #else
-  const wchar_t* dll_name = cmd_line.HasSwitch(switches::kProcessType) ?
-      installer::kChromeChildDll : installer::kChromeDll;
+  const wchar_t* dll_name =
+      cmd_line.HasSwitch(switches::kProcessType) &&
+              cmd_line.GetSwitchValueASCII(switches::kProcessType) != "service"
+          ? installer::kChromeChildDll
+          : installer::kChromeDll;
 #endif
   dir->append(dll_name);
 
