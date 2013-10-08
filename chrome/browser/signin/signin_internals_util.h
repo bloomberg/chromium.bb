@@ -17,17 +17,6 @@ namespace signin_internals_util {
 extern const char kSigninPrefPrefix[];
 extern const char kTokenPrefPrefix[];
 
-// The following tokens are not under the purview of TokenService.
-extern const char kOperationsBaseToken[];
-extern const char kUserPolicySigninServiceToken[];
-extern const char kProfileDownloaderToken[];
-extern const char kObfuscatedGaiaIdFetcherToken[];
-extern const char kOAuth2MintTokenFlowToken[];
-extern const char kSIDToken[];
-extern const char kLSIDToken[];
-extern const char* kTokenPrefsArray[];
-extern const size_t kNumTokenPrefs;
-
 // The length of strings returned by GetTruncatedHash() below.
 const size_t kTruncateTokenStringLength = 6;
 
@@ -137,16 +126,13 @@ class SigninDiagnosticsObserver {
                                         const std::string& value) {}
   virtual void NotifySigninValueChanged(const TimedSigninStatusField& field,
                                         const std::string& value) {}
-
-  // Tokens and service related changes.
+  // OAuth tokens related changes.
   virtual void NotifyTokenReceivedSuccess(const std::string& token_name,
                                           const std::string& token,
                                           bool update_time) {}
   virtual void NotifyTokenReceivedFailure(const std::string& token_name,
                                           const std::string& error) {}
-  virtual void NotifyClearStoredToken(const std::string& token_name) {}
-
-};
+  virtual void NotifyClearStoredToken(const std::string& token_name) {}};
 
 // Gets the first 6 hex characters of the SHA256 hash of the passed in string.
 // These are enough to perform equality checks across a single users tokens,

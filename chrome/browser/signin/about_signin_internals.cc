@@ -13,8 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "google_apis/gaia/gaia_constants.h"
 
@@ -22,13 +20,6 @@ using base::Time;
 using namespace signin_internals_util;
 
 AboutSigninInternals::AboutSigninInternals() : profile_(NULL) {
-  // Initialize default values for tokens.
-  for (size_t i = 0; i < kNumTokenPrefs; ++i) {
-    signin_status_.token_info_map.insert(std::pair<std::string, TokenInfo>(
-        kTokenPrefsArray[i],
-        TokenInfo(std::string(), "Not Loaded", std::string(), 0,
-                  kTokenPrefsArray[i])));
-  }
 }
 
 AboutSigninInternals::~AboutSigninInternals() {
@@ -110,114 +101,7 @@ void AboutSigninInternals::RefreshSigninPrefs() {
     signin_status_.timed_signin_fields[i - TIMED_FIELDS_BEGIN] = value;
   }
 
-  // Get status and timestamps for all token services.
-  for (size_t i = 0; i < kNumTokenPrefs; i++) {
-    const std::string pref = TokenPrefPath(kTokenPrefsArray[i]);
-    const std::string value = pref + ".value";
-    const std::string status = pref + ".status";
-    const std::string time = pref + ".time";
-    const std::string time_internal = pref + ".time_internal";
-
-    // If the length is too long, assume its a full token and truncate it.
-    // We don't want to continue to persist full tokens in the preferences.
-    std::string truncated_value = pref_service->GetString(value.c_str());
-    if (truncated_value.length() >
-        signin_internals_util::kTruncateTokenStringLength) {
-      truncated_value =
-          GetTruncatedHash(pref_service->GetString(value.c_str()));
-      profile_->GetPrefs()->SetString(value.c_str(), truncated_value);
-    }
-
-    TokenInfo token_info(truncated_value,
-                         pref_service->GetString(status.c_str()),
-                         pref_service->GetString(time.c_str()),
-                         pref_service->GetInt64(time_internal.c_str()),
-                         kTokenPrefsArray[i]);
-
-    signin_status_.token_info_map[kTokenPrefsArray[i]] = token_info;
-  }
-
-  NotifyObservers();
-}
-
-void AboutSigninInternals::NotifyTokenReceivedSuccess(
-    const std::string& token_name,
-    const std::string& token,
-    bool update_time) {
-  // This should have been initialized already.
-  DCHECK(signin_status_.token_info_map.count(token_name));
-
-  std::string truncated_token = GetTruncatedHash(token);
-
-  const std::string status_success = "Successful";
-  signin_status_.token_info_map[token_name].truncated_token = truncated_token;
-  signin_status_.token_info_map[token_name].status = status_success;
-
-  // Also update preferences.
-  const std::string value_pref = TokenPrefPath(token_name) + ".value";
-  const std::string time_pref = TokenPrefPath(token_name) + ".time";
-  const std::string time_internal_pref =
-      TokenPrefPath(token_name) + ".time_internal";
-  const std::string status_pref = TokenPrefPath(token_name) + ".status";
-  profile_->GetPrefs()->SetString(value_pref.c_str(), truncated_token);
-  profile_->GetPrefs()->SetString(status_pref.c_str(), "Successful");
-
-  // Update timestamp if needed.
-  if (update_time) {
-    Time now = Time::NowFromSystemTime();
-    int64 time_as_int = now.ToInternalValue();
-    const std::string time_as_str =
-        UTF16ToUTF8(base::TimeFormatFriendlyDate(now));
-    signin_status_.token_info_map[token_name].time = time_as_str;
-    signin_status_.token_info_map[token_name].time_internal = time_as_int;
-    profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
-    profile_->GetPrefs()->SetInt64(time_internal_pref.c_str(), time_as_int);
-  }
-
-  NotifyObservers();
-}
-
-
-void AboutSigninInternals::NotifyTokenReceivedFailure(
-    const std::string& token_name,
-    const std::string& error) {
-  Time now = Time::NowFromSystemTime();
-  int64 time_as_int = now.ToInternalValue();
-  const std::string time_as_str =
-      UTF16ToUTF8(base::TimeFormatFriendlyDate(now));
-
-  // This should have been initialized already.
-  DCHECK(signin_status_.token_info_map.count(token_name));
-
-  signin_status_.token_info_map[token_name].truncated_token.clear();
-  signin_status_.token_info_map[token_name].status = error;
-  signin_status_.token_info_map[token_name].time = time_as_str;
-  signin_status_.token_info_map[token_name].time_internal = time_as_int;
-
-  // Also update preferences.
-  const std::string value_pref = TokenPrefPath(token_name) + ".value";
-  const std::string time_pref = TokenPrefPath(token_name) + ".time";
-  const std::string time_internal_pref =
-      TokenPrefPath(token_name) + ".time_internal";
-  const std::string status_pref = TokenPrefPath(token_name) + ".status";
-  profile_->GetPrefs()->SetString(value_pref.c_str(), std::string());
-  profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
-    profile_->GetPrefs()->SetInt64(time_internal_pref.c_str(), time_as_int);
-  profile_->GetPrefs()->SetString(status_pref.c_str(), error);
-
-  NotifyObservers();
-}
-
-// While clearing tokens, we don't update the time or status.
-void AboutSigninInternals::NotifyClearStoredToken(
-    const std::string& token_name) {
-  // This should have been initialized already.
-  DCHECK(signin_status_.token_info_map.count(token_name));
-
-  signin_status_.token_info_map[token_name].truncated_token.clear();
-
-  const std::string value_pref = TokenPrefPath(token_name) + ".value";
-  profile_->GetPrefs()->SetString(value_pref.c_str(), std::string());
+  // TODO(rogerta): Get status and timestamps for oauth2 tokens.
 
   NotifyObservers();
 }
@@ -230,14 +114,11 @@ void AboutSigninInternals::Initialize(Profile* profile) {
 
   SigninManagerFactory::GetForProfile(profile)->
       AddSigninDiagnosticsObserver(this);
-  TokenServiceFactory::GetForProfile(profile)->
-      AddSigninDiagnosticsObserver(this);
+  // TODO(rogerta): observe OAuth2TokenService.
 }
 
 void AboutSigninInternals::Shutdown() {
   SigninManagerFactory::GetForProfile(profile_)->
-      RemoveSigninDiagnosticsObserver(this);
-  TokenServiceFactory::GetForProfile(profile_)->
       RemoveSigninDiagnosticsObserver(this);
 }
 

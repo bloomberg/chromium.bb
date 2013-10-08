@@ -52,15 +52,6 @@ class AboutSigninInternals
       const signin_internals_util::TimedSigninStatusField& field,
       const std::string& value) OVERRIDE;
 
-  virtual void NotifyTokenReceivedSuccess(const std::string& token_name,
-                                          const std::string& token,
-                                          bool update_time) OVERRIDE;
-
-  virtual void NotifyTokenReceivedFailure(const std::string& token_name,
-                                          const std::string& error) OVERRIDE;
-
-  virtual void NotifyClearStoredToken(const std::string& token_name) OVERRIDE;
-
   void Initialize(Profile* profile);
 
   // BrowserContextKeyedService implementation.
