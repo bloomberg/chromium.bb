@@ -1224,3 +1224,8 @@ crbug.com/303444 animations/interpolation/webkit-column-count-interpolation.html
 crbug.com/303444 animations/unsigned-underflow.html [ Timeout ]
 crbug.com/303444 virtual/threaded/animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
 crbug.com/303444 virtual/threaded/animations/unsigned-underflow.html [ Timeout ]
+
+# Following tests start to crash in range 158775:158910
+# WebLot Win7 (dbg)
+crbug.com/305101 [ Win7 Debug ] fast/encoding/api/basics.html [ Crash ]
+crbug.com/305101 [ Win7 Debug ] fast/encoding/api/byte-order-marks.html [ Crash ]
