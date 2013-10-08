@@ -162,7 +162,7 @@ set_sources_assignment_filter(sources_assignment_filter)
 if (is_component_build) {
   component_mode = "shared_library"
 } else {
-  component_mode = "static_library"
+  component_mode = "source_set"
 }
 
 toolkit_uses_gtk = is_linux
@@ -264,6 +264,10 @@ set_defaults("shared_library") {
   } else if (is_mac) {
     configs += "//build/config/mac:mac_dynamic_flags"
   }
+}
+
+set_defaults("source_set") {
+  configs = native_compiler_configs
 }
 
 # ==============================================================================

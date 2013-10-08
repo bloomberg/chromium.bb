@@ -100,6 +100,10 @@ void TargetGenerator::GenerateTarget(Scope* scope,
     BinaryTargetGenerator generator(target, scope, function_token,
                                     Target::SHARED_LIBRARY, err);
     generator.Run();
+  } else if (output_type == functions::kSourceSet) {
+    BinaryTargetGenerator generator(target, scope, function_token,
+                                    Target::SOURCE_SET, err);
+    generator.Run();
   } else if (output_type == functions::kStaticLibrary) {
     BinaryTargetGenerator generator(target, scope, function_token,
                                     Target::STATIC_LIBRARY, err);

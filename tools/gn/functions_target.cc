@@ -58,18 +58,19 @@ const char kComponent[] = "component";
 const char kComponent_Help[] =
     "component: Declare a component target.\n"
     "\n"
-    "  A component is either a shared library or a static library depending\n"
-    "  on the component mode. This allows a project to separate out a build\n"
-    "  into shared libraries for faster devlopment (link time is reduced)\n"
-    "  but to switch to a static build for releases (for better performance).\n"
+    "  A component is a shared library, static library, or source set\n"
+    "  depending on the component mode. This allows a project to separate\n"
+    "  out a build into shared libraries for faster devlopment (link time is\n"
+    "  reduced) but to switch to a static build for releases (for better\n"
+    "  performance).\n"
     "\n"
     "  To use this function you must set the value of the \"component_mode\n"
-    "  variable to the string \"shared_library\" or \"static_library\". It is\n"
-    "  an error to call \"component\" without defining the mode (typically\n"
-    "  this is done in the master build configuration file).\n"
-    "\n"
-    "  See \"gn help shared_library\" and \"gn help static_library\" for\n"
-    "  more details.\n";
+    "  variable to one of the following strings:\n"
+    "    - \"shared_library\"\n"
+    "    - \"static_library\"\n"
+    "    - \"source_set\"\n"
+    "  It is an error to call \"component\" without defining the mode\n"
+    "  (typically this is done in the master build configuration file).\n";
 
 Value RunComponent(Scope* scope,
                    const FunctionCallNode* function,
@@ -90,7 +91,8 @@ Value RunComponent(Scope* scope,
   }
   if (component_mode_value->type() != Value::STRING ||
       (component_mode_value->string_value() != functions::kSharedLibrary &&
-       component_mode_value->string_value() != functions::kStaticLibrary)) {
+       component_mode_value->string_value() != functions::kStaticLibrary &&
+       component_mode_value->string_value() != functions::kSourceSet)) {
     *err = Err(function->function(), "Invalid component mode set.", helptext);
     return Value();
   }
@@ -339,11 +341,62 @@ Value RunSharedLibrary(Scope* scope,
                               block, err);
 }
 
+// source_set ------------------------------------------------------------------
+
+extern const char kSourceSet[] = "source_set";
+extern const char kSourceSet_Help[] =
+    "source_set: Declare a source set target.\n"
+    "\n"
+    "  A source set is a collection of sources that get compiled, but are not\n"
+    "  linked to produce any kind of library. Instead, the resulting object\n"
+    "  files are implicitly added to the linker line of all targets that\n"
+    "  depend on the source set.\n"
+    "\n"
+    "  In most cases, a source set will behave like a static library, except\n"
+    "  no actual library file will be produced. This will make the build go\n"
+    "  a little faster by skipping creation of a large static library, while\n"
+    "  maintaining the organizational benefits of focused build targets.\n"
+    "\n"
+    "  The main difference between a source set and a static library is\n"
+    "  around handling of exported symbols. Most linkers assume declaring\n"
+    "  a function exported means exported from the static library. The linker\n"
+    "  can then do dead code elimination to delete code not reachable from\n"
+    "  exported functions.\n"
+    "\n"
+    "  A source set will not do this code elimination since there is no link\n"
+    "  step. This allows you to link many sources sets into a shared library\n"
+    "  and have the \"exported symbol\" notation indicate \"export from the\n"
+    "  final shared library and not from the intermediate targets.\" There is\n"
+    "  no way to express this concept when linking multiple static libraries\n"
+    "  into a shared library.\n"
+    "\n"
+    "Variables\n"
+    "\n"
+    CONFIG_VALUES_VARS_HELP
+    DEPS_VARS
+    DEPENDENT_CONFIG_VARS
+    GENERAL_TARGET_VARS;
+
+Value RunSourceSet(Scope* scope,
+                   const FunctionCallNode* function,
+                   const std::vector<Value>& args,
+                   BlockNode* block,
+                   Err* err) {
+  return ExecuteGenericTarget(functions::kSourceSet, scope, function, args,
+                              block, err);
+}
+
 // static_library --------------------------------------------------------------
 
 const char kStaticLibrary[] = "static_library";
 const char kStaticLibrary_Help[] =
     "static_library: Declare a static library target.\n"
+    "\n"
+    "  Make a \".a\" / \".lib\" file.\n"
+    "\n"
+    "  If you only need the static library for intermediate results in the\n"
+    "  build, you should consider a source_set instead since it will skip\n"
+    "  the (potentially slow) step of creating the intermediate library file.\n"
     "\n"
     "Variables\n"
     "\n"

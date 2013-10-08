@@ -132,6 +132,7 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
 
   const char* extension;
   if (target->output_type() == Target::GROUP ||
+      target->output_type() == Target::SOURCE_SET ||
       target->output_type() == Target::COPY_FILES ||
       target->output_type() == Target::CUSTOM) {
     extension = "stamp";

@@ -188,7 +188,8 @@ void Target::PullDependentTargetInfo(std::set<const Config*>* unique_configs) {
 
     // Direct dependent libraries.
     if (dep->output_type() == STATIC_LIBRARY ||
-        dep->output_type() == SHARED_LIBRARY)
+        dep->output_type() == SHARED_LIBRARY ||
+        dep->output_type() == SOURCE_SET)
       inherited_libraries_.insert(dep);
 
     // Inherited libraries and flags are inherited across static library

@@ -194,6 +194,14 @@ Value RunSharedLibrary(Scope* scope,
                        BlockNode* block,
                        Err* err);
 
+extern const char kSourceSet[];
+extern const char kSourceSet_Help[];
+Value RunSourceSet(Scope* scope,
+                   const FunctionCallNode* function,
+                   const std::vector<Value>& args,
+                   BlockNode* block,
+                   Err* err);
+
 extern const char kStaticLibrary[];
 extern const char kStaticLibrary_Help[];
 Value RunStaticLibrary(Scope* scope,

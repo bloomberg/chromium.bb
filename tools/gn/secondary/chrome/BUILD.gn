@@ -96,7 +96,7 @@ static_library("common") {
 }
 
 # TODO(brettw) move to browser/devtools/BUILD.gn
-static_library("debugger") {
+source_set("debugger") {
   sources = [
     "browser/devtools/adb/android_rsa.cc",
     "browser/devtools/adb/android_rsa.h",
@@ -167,15 +167,15 @@ static_library("debugger") {
 
 }
 
-static_library("plugin") {
+source_set("plugin") {
   external = true
 }
 
-static_library("renderer") {
+source_set("renderer") {
   external = true
 }
 
-static_library("utility") {
+source_set("utility") {
   external = true
 }
 

@@ -161,6 +161,7 @@ test("gn_unittests") {
     "function_rebase_path_unittest.cc",
     "input_conversion_unittest.cc",
     "label_unittest.cc",
+    "ninja_binary_target_writer_unittest.cc",
     "ninja_copy_target_writer_unittest.cc",
     "ninja_helper_unittest.cc",
     "ninja_script_target_writer_unittest.cc",

@@ -567,6 +567,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(SetDefaultToolchain)
     INSERT_FUNCTION(SetSourcesAssignmentFilter)
     INSERT_FUNCTION(SharedLibrary)
+    INSERT_FUNCTION(SourceSet)
     INSERT_FUNCTION(StaticLibrary)
     INSERT_FUNCTION(Template)
     INSERT_FUNCTION(Test)

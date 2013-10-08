@@ -79,7 +79,8 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
     writer.Run();
   } else if (target->output_type() == Target::EXECUTABLE ||
              target->output_type() == Target::STATIC_LIBRARY ||
-             target->output_type() == Target::SHARED_LIBRARY) {
+             target->output_type() == Target::SHARED_LIBRARY ||
+             target->output_type() == Target::SOURCE_SET) {
     NinjaBinaryTargetWriter writer(target, file);
     writer.Run();
   } else {

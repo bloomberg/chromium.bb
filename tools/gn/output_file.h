@@ -33,9 +33,12 @@ class OutputFile {
   bool operator!=(const OutputFile& other) const {
     return value_ != other.value_;
   }
+  bool operator<(const OutputFile& other) const {
+    return value_ < other.value_;
+  }
 
  private:
   std::string value_;
 };
 
-#endif
+#endif  // TOOLS_GN_OUTPUT_FILE_H_

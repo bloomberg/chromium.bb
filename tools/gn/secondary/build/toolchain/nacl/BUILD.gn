@@ -38,6 +38,18 @@ toolchain("x86_newlib") {
     #pool = "link_pool"
   }
 
+  if (is_win) {
+    tool("stamp") {
+      command = "$python_path gyp-win-tool stamp \$out"
+      description = "STAMP \$out"
+    }
+  } else {
+    tool("stamp") {
+      command = "touch \$out"
+      description = "STAMP \$out"
+    }
+  }
+
   toolchain_args() {
     is_nacl = true
 

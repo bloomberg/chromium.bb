@@ -113,6 +113,10 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
 
   // Windows.
   {
+    // Note: we use forward slashes here so that the output will be the same on
+    // Linux and Windows.
+    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+        "C:/python/python.exe")));
     setup.settings()->set_target_os(Settings::WIN);
 
     std::ostringstream out;
@@ -124,11 +128,11 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
     const char expected_win[] =
         "arch = environment.x86\n"
         "rule __foo_bar___rule\n"
-        "  command = $pythonpath gyp-win-tool action-wrapper $arch __foo_bar___rule.$unique_name.rsp\n"
+        "  command = C:/python/python.exe gyp-win-tool action-wrapper $arch __foo_bar___rule.$unique_name.rsp\n"
         "  description = CUSTOM //foo:bar()\n"
         "  restat = 1\n"
         "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
-        "  rspfile_content = $pythonpath ../../foo/script.py -i ${source} \"--out=foo$ bar${source_name_part}.o\"\n"
+        "  rspfile_content = C:/python/python.exe ../../foo/script.py -i ${source} \"--out=foo$ bar${source_name_part}.o\"\n"
         "\n"
         "build input1.out: __foo_bar___rule../../foo/input1.txt | ../../foo/included.txt\n"
         "  unique_name = 0\n"

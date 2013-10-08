@@ -79,7 +79,6 @@ Toolchain::ToolType GetToolTypeForTarget(const Target* target) {
     case Target::EXECUTABLE:
       return Toolchain::TYPE_LINK;
     default:
-      NOTREACHED();
       return Toolchain::TYPE_NONE;
   }
 }
@@ -103,7 +102,10 @@ void NinjaBinaryTargetWriter::Run() {
   std::vector<OutputFile> obj_files;
   WriteSources(&obj_files);
 
-  WriteLinkerStuff(obj_files);
+  if (target_->output_type() == Target::SOURCE_SET)
+    WriteSourceSetStamp(obj_files);
+  else
+    WriteLinkerStuff(obj_files);
 }
 
 void NinjaBinaryTargetWriter::WriteCompilerVars() {
@@ -309,40 +311,26 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
        << helper_.GetRulePrefix(GetToolchain())
        << Toolchain::ToolTypeToName(tool_type_);
 
+  std::set<OutputFile> extra_object_files;
+  std::vector<const Target*> linkable_deps;
+  std::vector<const Target*> non_linkable_deps;
+  GetDeps(&extra_object_files, &linkable_deps, &non_linkable_deps);
+
   // Object files.
   for (size_t i = 0; i < object_files.size(); i++) {
     out_ << " ";
     path_output_.WriteFile(out_, object_files[i]);
   }
-
-  // Library inputs (deps and inherited static libraries).
-  //
-  // Static libraries since they're just a collection of the object files so
-  // don't need libraries linked with them, but we still need to go through
-  // the list and find non-linkable data deps in the "deps" section. We'll
-  // collect all non-linkable deps and put it in the implicit deps below.
-  std::vector<const Target*> extra_data_deps;
-  const std::vector<const Target*>& deps = target_->deps();
-  const std::set<const Target*>& inherited = target_->inherited_libraries();
-  for (size_t i = 0; i < deps.size(); i++) {
-    if (inherited.find(deps[i]) != inherited.end())
-      continue;
-    if (target_->output_type() != Target::STATIC_LIBRARY &&
-        deps[i]->IsLinkable()) {
-      out_ << " ";
-      path_output_.WriteFile(out_, helper_.GetTargetOutputFile(deps[i]));
-    } else {
-      extra_data_deps.push_back(deps[i]);
-    }
+  for (std::set<OutputFile>::iterator i = extra_object_files.begin();
+       i != extra_object_files.end(); ++i) {
+    out_ << " ";
+    path_output_.WriteFile(out_, *i);
   }
-  for (std::set<const Target*>::const_iterator i = inherited.begin();
-       i != inherited.end(); ++i) {
-    if (target_->output_type() == Target::STATIC_LIBRARY) {
-      extra_data_deps.push_back(*i);
-    } else {
-      out_ << " ";
-      path_output_.WriteFile(out_, helper_.GetTargetOutputFile(*i));
-    }
+
+  // Libs.
+  for (size_t i = 0; i < linkable_deps.size(); i++) {
+    out_ << " ";
+    path_output_.WriteFile(out_, helper_.GetTargetOutputFile(linkable_deps[i]));
   }
 
   // External link deps from GYP. This is indexed by a label with no toolchain.
@@ -357,22 +345,123 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
   }
 
   // Append data dependencies as implicit dependencies.
+  WriteImplicitDependencies(non_linkable_deps);
+
+  out_ << std::endl;
+}
+
+void NinjaBinaryTargetWriter::WriteSourceSetStamp(
+    const std::vector<OutputFile>& object_files) {
+  // The stamp rule for source sets is generally not used, since targets that
+  // depend on this will reference the object files directly. However, writing
+  // this rule allows the user to type the name of the target and get a build
+  // which can be convenient for development.
+  out_ << "build ";
+  path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
+  out_ << ": "
+       << helper_.GetRulePrefix(target_->settings()->toolchain())
+       << "stamp";
+
+  std::set<OutputFile> extra_object_files;
+  std::vector<const Target*> linkable_deps;
+  std::vector<const Target*> non_linkable_deps;
+  GetDeps(&extra_object_files, &linkable_deps, &non_linkable_deps);
+
+  // The classifier should never put extra object files in a source set:
+  // any source sets that we depend on should appear in our non-linkable
+  // deps instead.
+  DCHECK(extra_object_files.empty());
+
+  for (size_t i = 0; i < object_files.size(); i++) {
+    out_ << " ";
+    path_output_.WriteFile(out_, object_files[i]);
+  }
+
+  // Append data dependencies as implicit dependencies.
+  WriteImplicitDependencies(non_linkable_deps);
+
+  out_ << std::endl;
+}
+
+void NinjaBinaryTargetWriter::GetDeps(
+    std::set<OutputFile>* extra_object_files,
+    std::vector<const Target*>* linkable_deps,
+    std::vector<const Target*>* non_linkable_deps) const {
+  const std::vector<const Target*>& deps = target_->deps();
+  const std::set<const Target*>& inherited = target_->inherited_libraries();
+
+  // Normal deps.
+  for (size_t i = 0; i < deps.size(); i++) {
+    if (inherited.find(deps[i]) != inherited.end())
+      continue;  // Don't add dupes.
+    ClassifyDependency(deps[i], extra_object_files,
+                       linkable_deps, non_linkable_deps);
+  }
+
+  // Inherited libraries.
+  for (std::set<const Target*>::const_iterator i = inherited.begin();
+       i != inherited.end(); ++i) {
+    ClassifyDependency(*i, extra_object_files,
+                       linkable_deps, non_linkable_deps);
+  }
+
+  // Data deps.
   const std::vector<const Target*>& datadeps = target_->datadeps();
+  for (size_t i = 0; i < datadeps.size(); i++)
+    non_linkable_deps->push_back(datadeps[i]);
+}
+
+void NinjaBinaryTargetWriter::ClassifyDependency(
+    const Target* dep,
+    std::set<OutputFile>* extra_object_files,
+    std::vector<const Target*>* linkable_deps,
+    std::vector<const Target*>* non_linkable_deps) const {
+  // Only these types of outputs have libraries linked into them. Child deps of
+  // static libraries get pushed up the dependency tree until one of these is
+  // reached, and source sets don't link at all.
+  bool can_link_libs =
+      (target_->output_type() == Target::EXECUTABLE ||
+       target_->output_type() == Target::SHARED_LIBRARY);
+
+  if (dep->output_type() == Target::SOURCE_SET) {
+    if (target_->output_type() == Target::SOURCE_SET) {
+      // When a source set depends on another source set, add it as a data
+      // dependency so if the user says "ninja second_source_set" it will
+      // also compile the first (what you would expect) even though we'll
+      // never do anything with the first one's files.
+      non_linkable_deps->push_back(dep);
+    } else {
+      // Linking in a source set, copy its object files.
+      for (size_t i = 0; i < dep->sources().size(); i++) {
+        SourceFileType input_file_type = GetSourceFileType(
+            dep->sources()[i], dep->settings()->target_os());
+        if (input_file_type != SOURCE_UNKNOWN &&
+            input_file_type != SOURCE_H) {
+          // Note we need to specify the target as the source_set target
+          // itself, since this is used to prefix the object file name.
+          extra_object_files->insert(helper_.GetOutputFileForSource(
+              dep, dep->sources()[i], input_file_type));
+        }
+      }
+    }
+  } else if (can_link_libs && dep->IsLinkable()) {
+    linkable_deps->push_back(dep);
+  } else {
+    non_linkable_deps->push_back(dep);
+  }
+}
+
+void NinjaBinaryTargetWriter::WriteImplicitDependencies(
+    const std::vector<const Target*>& non_linkable_deps) {
   const std::vector<SourceFile>& data = target_->data();
-  if (!extra_data_deps.empty() || !datadeps.empty() || !data.empty()) {
+  if (!non_linkable_deps.empty() || !data.empty()) {
     out_ << " ||";
 
-    // Non-linkable deps in the deps section above.
-    for (size_t i = 0; i < extra_data_deps.size(); i++) {
+    // Non-linkable targets.
+    for (size_t i = 0; i < non_linkable_deps.size(); i++) {
       out_ << " ";
       path_output_.WriteFile(out_,
-                             helper_.GetTargetOutputFile(extra_data_deps[i]));
-    }
-
-    // Data deps.
-    for (size_t i = 0; i < datadeps.size(); i++) {
-      out_ << " ";
-      path_output_.WriteFile(out_, helper_.GetTargetOutputFile(datadeps[i]));
+                             helper_.GetTargetOutputFile(non_linkable_deps[i]));
     }
 
     // Data files.
@@ -382,6 +471,4 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
       path_output_.WriteFile(out_, data[i]);
     }
   }
-
-  out_ << std::endl;
 }
