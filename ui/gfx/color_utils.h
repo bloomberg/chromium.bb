@@ -45,12 +45,6 @@ GFX_EXPORT SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha);
 //    1 = full lightness (make all pixels white).
 GFX_EXPORT SkColor HSLShift(SkColor color, const HSL& shift);
 
-// Determine if a given alpha value is nearly completely transparent.
-bool IsColorCloseToTransparent(SkAlpha alpha);
-
-// Determine if a color is near grey.
-bool IsColorCloseToGrey(int r, int g, int b);
-
 // Builds a histogram based on the Y' of the Y'UV representation of
 // this image.
 GFX_EXPORT void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]);
