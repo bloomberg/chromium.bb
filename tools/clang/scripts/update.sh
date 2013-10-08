@@ -140,6 +140,8 @@ if [[ "${OS}" = "Darwin" ]]; then
   if [[ -d "${XCODEBUILD_DIR}" ]]; then
     echo "Clobbering .o files for Xcode build"
     find "${XCODEBUILD_DIR}" -name '*.o' -exec rm {} +
+    echo "Clobbering .dylib files for Xcode build"
+    find "${XCODEBUILD_DIR}" -name '*.dylib' -exec rm {} +
   fi
 fi
 
@@ -164,6 +166,12 @@ for CONFIG in Debug Release; do
     find "${MAKE_DIR}/${CONFIG}/obj" -name '*.gch' -exec rm {} +
     find "${MAKE_DIR}/${CONFIG}/obj" -name '*.o' -exec rm {} +
     find "${MAKE_DIR}/${CONFIG}/obj" -name '*.o.d' -exec rm {} +
+  fi
+
+  if [[ -d "${MAKE_DIR}/${CONFIG}" ]]; then
+    # See http://crbug.com/304125
+    echo "Clobbering ${CONFIG} .dylib files for ninja and make build"
+    find "${MAKE_DIR}/${CONFIG}" -name '*.dylib' -exec rm {} +
   fi
 
   if [[ "${OS}" = "Darwin" ]]; then
