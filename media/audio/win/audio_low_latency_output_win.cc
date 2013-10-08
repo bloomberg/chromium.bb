@@ -322,14 +322,18 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   render_thread_->Start();
   if (!render_thread_->HasBeenStarted()) {
     LOG(ERROR) << "Failed to start WASAPI render thread.";
+    StopThread();
+    callback->OnError(this);
     return;
   }
 
   // Ensure that the endpoint buffer is prepared with silence.
   if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
     if (!CoreAudioUtil::FillRenderEndpointBufferWithSilence(
-        audio_client_, audio_render_client_)) {
-      LOG(WARNING) << "Failed to prepare endpoint buffers with silence.";
+             audio_client_, audio_render_client_)) {
+      LOG(ERROR) << "Failed to prepare endpoint buffers with silence.";
+      StopThread();
+      callback->OnError(this);
       return;
     }
   }
@@ -338,10 +342,10 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   // Start streaming data between the endpoint buffer and the audio engine.
   HRESULT hr = audio_client_->Start();
   if (FAILED(hr)) {
-    SetEvent(stop_render_event_.Get());
-    render_thread_->Join();
-    render_thread_.reset();
-    HandleError(hr);
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to start output streaming: " << std::hex << hr;
+    StopThread();
+    callback->OnError(this);
   }
 }
 
@@ -354,27 +358,21 @@ void WASAPIAudioOutputStream::Stop() {
   // Stop output audio streaming.
   HRESULT hr = audio_client_->Stop();
   if (FAILED(hr)) {
-    LOG_IF(ERROR, hr != AUDCLNT_E_NOT_INITIALIZED)
+    LOG_GETLASTERROR(ERROR)
         << "Failed to stop output streaming: " << std::hex << hr;
+    source_->OnError(this);
   }
 
-  // Wait until the thread completes and perform cleanup.
-  SetEvent(stop_render_event_.Get());
-  render_thread_->Join();
-  render_thread_.reset();
-
-  // Ensure that we don't quit the main thread loop immediately next
-  // time Start() is called.
-  ResetEvent(stop_render_event_.Get());
-
-  // Clear source callback, it'll be set again on the next Start() call.
-  source_ = NULL;
+  // Make a local copy of |source_| since StopThread() will clear it.
+  AudioSourceCallback* callback = source_;
+  StopThread();
 
   // Flush all pending data and reset the audio clock stream position to 0.
   hr = audio_client_->Reset();
   if (FAILED(hr)) {
-    LOG_IF(ERROR, hr != AUDCLNT_E_NOT_INITIALIZED)
+    LOG_GETLASTERROR(ERROR)
         << "Failed to reset streaming: " << std::hex << hr;
+    callback->OnError(this);
   }
 
   // Extra safety check to ensure that the buffers are cleared.
@@ -619,14 +617,6 @@ void WASAPIAudioOutputStream::RenderAudioFromSource(
   }
 }
 
-void WASAPIAudioOutputStream::HandleError(HRESULT err) {
-  CHECK((started() && GetCurrentThreadId() == render_thread_->tid()) ||
-        (!started() && GetCurrentThreadId() == creating_thread_id_));
-  NOTREACHED() << "Error code: " << std::hex << err;
-  if (source_)
-    source_->OnError(this);
-}
-
 HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
     IAudioClient* client, HANDLE event_handle, uint32* endpoint_buffer_size) {
   DCHECK_EQ(share_mode_, AUDCLNT_SHAREMODE_EXCLUSIVE);
@@ -704,6 +694,24 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
   *endpoint_buffer_size = buffer_size_in_frames;
   VLOG(2) << "endpoint buffer size: " << buffer_size_in_frames;
   return hr;
+}
+
+void WASAPIAudioOutputStream::StopThread() {
+  if (render_thread_ ) {
+    if (render_thread_->HasBeenStarted()) {
+      // Wait until the thread completes and perform cleanup.
+      SetEvent(stop_render_event_.Get());
+      render_thread_->Join();
+    }
+
+    render_thread_.reset();
+
+    // Ensure that we don't quit the main thread loop immediately next
+    // time Start() is called.
+    ResetEvent(stop_render_event_.Get());
+  }
+
+  source_ = NULL;
 }
 
 }  // namespace media

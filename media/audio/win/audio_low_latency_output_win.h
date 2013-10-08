@@ -170,9 +170,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // glitches.
   void RenderAudioFromSource(IAudioClock* audio_clock, UINT64 device_frequency);
 
-  // Issues the OnError() callback to the |sink_|.
-  void HandleError(HRESULT err);
-
   // Called when the device will be opened in exclusive mode and use the
   // application specified format.
   // TODO(henrika): rewrite and move to CoreAudioUtil when removing flag
@@ -180,6 +177,11 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   HRESULT ExclusiveModeInitialization(IAudioClient* client,
                                       HANDLE event_handle,
                                       uint32* endpoint_buffer_size);
+
+  // If |render_thread_| is valid, sets |stop_render_event_| and blocks until
+  // the thread has stopped.  |stop_render_event_| is reset after the call.
+  // |source_| is set to NULL.
+  void StopThread();
 
   // Contains the thread ID of the creating thread.
   base::PlatformThreadId creating_thread_id_;
