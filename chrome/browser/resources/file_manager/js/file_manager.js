@@ -427,7 +427,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'menuitem, hr';
     cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
 
-    this.ui_.initWindowButtons();
+    if (this.dialogType == DialogType.FULL_PAGE) {
+      // This is to prevent the buttons from stealing focus on mouse down.
+      var preventFocus = function(event) {
+        event.preventDefault();
+      };
+
+      var maximizeButton = this.dialogDom_.querySelector('#maximize-button');
+      maximizeButton.addEventListener('click', this.onMaximize.bind(this));
+      maximizeButton.addEventListener('mousedown', preventFocus);
+
+      var closeButton = this.dialogDom_.querySelector('#close-button');
+      closeButton.addEventListener('click', this.onClose.bind(this));
+      closeButton.addEventListener('mousedown', preventFocus);
+    }
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
@@ -441,6 +454,26 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         e.stopPropagation();
       });
     }
+  };
+
+  FileManager.prototype.onMaximize = function() {
+    // Do not maximize when running via chrome://files in a browser.
+    if (util.platform.runningInBrowser())
+      return;
+
+    var appWindow = chrome.app.window.current();
+    if (appWindow.isMaximized())
+      appWindow.restore();
+    else
+      appWindow.maximize();
+  };
+
+  FileManager.prototype.onClose = function() {
+    // Do not close when running via chrome://files in a browser.
+    if (util.platform.runningInBrowser())
+      return;
+
+    window.close();
   };
 
   /**
@@ -655,7 +688,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.initDialogType_();
 
     // Create the root view of FileManager.
-    this.ui_ = new FileManagerUI(this.dialogDom_, this.dialogType);
+    this.ui_ = new FileManagerUI(this.dialogDom_);
 
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE &&
