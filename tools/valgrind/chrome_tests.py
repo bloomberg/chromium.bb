@@ -603,6 +603,10 @@ def _main():
 
   options, args = parser.parse_args()
 
+  # TODO(thakis): This is temporary debugging code to figure out what's
+  # happening on the DrMemory bots. Remove this within 2h.
+  print options
+
   # target used to be a part of build_dir, so only add it if it's not there.
   # TODO(thakis): Always do this once the memory master no longer passes
   # the target as part of build_dir.
