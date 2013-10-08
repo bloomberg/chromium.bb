@@ -1,0 +1,241 @@
+
+PASS Set element.onabort 
+PASS Reflect element.onabort 
+PASS Set document.onabort 
+PASS Set window.onabort 
+PASS Set element.onblur 
+PASS Reflect element.onblur 
+PASS Set document.onblur 
+PASS Set window.onblur 
+PASS Set element.onerror 
+PASS Reflect element.onerror 
+PASS Set document.onerror 
+PASS Set window.onerror 
+PASS Set element.onfocus 
+PASS Reflect element.onfocus 
+PASS Set document.onfocus 
+PASS Set window.onfocus 
+FAIL Set element.oncancel assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.oncancel assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.oncancel assert_equals: Initially null expected null but got undefined
+FAIL Set window.oncancel assert_equals: Initially null expected null but got undefined
+FAIL Set element.oncanplay assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.oncanplay assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.oncanplay assert_equals: Initially null expected null but got undefined
+FAIL Set window.oncanplay assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.oncanplaythrough assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.oncanplaythrough assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.oncanplaythrough assert_equals: Initially null expected null but got undefined
+FAIL Set window.oncanplaythrough assert_equals: Return null after setting string expected null but got ""
+PASS Set element.onchange 
+PASS Reflect element.onchange 
+PASS Set document.onchange 
+PASS Set window.onchange 
+PASS Set element.onclick 
+PASS Reflect element.onclick 
+PASS Set document.onclick 
+PASS Set window.onclick 
+FAIL Set element.onclose assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onclose assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onclose assert_equals: Initially null expected null but got undefined
+FAIL Set window.onclose assert_equals: Initially null expected null but got undefined
+PASS Set element.oncontextmenu 
+PASS Reflect element.oncontextmenu 
+PASS Set document.oncontextmenu 
+PASS Set window.oncontextmenu 
+FAIL Set element.oncuechange assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.oncuechange assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.oncuechange assert_equals: Initially null expected null but got undefined
+FAIL Set window.oncuechange assert_equals: Initially null expected null but got undefined
+PASS Set element.ondblclick 
+PASS Reflect element.ondblclick 
+PASS Set document.ondblclick 
+PASS Set window.ondblclick 
+PASS Set element.ondrag 
+PASS Reflect element.ondrag 
+PASS Set document.ondrag 
+PASS Set window.ondrag 
+PASS Set element.ondragend 
+PASS Reflect element.ondragend 
+PASS Set document.ondragend 
+PASS Set window.ondragend 
+PASS Set element.ondragenter 
+PASS Reflect element.ondragenter 
+PASS Set document.ondragenter 
+PASS Set window.ondragenter 
+FAIL Set element.ondragexit assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.ondragexit assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.ondragexit assert_equals: Initially null expected null but got undefined
+FAIL Set window.ondragexit assert_equals: Initially null expected null but got undefined
+PASS Set element.ondragleave 
+PASS Reflect element.ondragleave 
+PASS Set document.ondragleave 
+PASS Set window.ondragleave 
+PASS Set element.ondragover 
+PASS Reflect element.ondragover 
+PASS Set document.ondragover 
+PASS Set window.ondragover 
+PASS Set element.ondragstart 
+PASS Reflect element.ondragstart 
+PASS Set document.ondragstart 
+PASS Set window.ondragstart 
+PASS Set element.ondrop 
+PASS Reflect element.ondrop 
+PASS Set document.ondrop 
+PASS Set window.ondrop 
+FAIL Set element.ondurationchange assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.ondurationchange assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.ondurationchange assert_equals: Initially null expected null but got undefined
+FAIL Set window.ondurationchange assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onemptied assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onemptied assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onemptied assert_equals: Initially null expected null but got undefined
+FAIL Set window.onemptied assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onended assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onended assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onended assert_equals: Initially null expected null but got undefined
+FAIL Set window.onended assert_equals: Return null after setting string expected null but got ""
+PASS Set element.oninput 
+PASS Reflect element.oninput 
+PASS Set document.oninput 
+PASS Set window.oninput 
+PASS Set element.oninvalid 
+PASS Reflect element.oninvalid 
+PASS Set document.oninvalid 
+PASS Set window.oninvalid 
+PASS Set element.onkeydown 
+PASS Reflect element.onkeydown 
+PASS Set document.onkeydown 
+PASS Set window.onkeydown 
+PASS Set element.onkeypress 
+PASS Reflect element.onkeypress 
+PASS Set document.onkeypress 
+PASS Set window.onkeypress 
+PASS Set element.onkeyup 
+PASS Reflect element.onkeyup 
+PASS Set document.onkeyup 
+PASS Set window.onkeyup 
+PASS Set element.onload 
+PASS Reflect element.onload 
+PASS Set document.onload 
+PASS Set window.onload 
+FAIL Set element.onloadeddata assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onloadeddata assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onloadeddata assert_equals: Initially null expected null but got undefined
+FAIL Set window.onloadeddata assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onloadedmetadata assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onloadedmetadata assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onloadedmetadata assert_equals: Initially null expected null but got undefined
+FAIL Set window.onloadedmetadata assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onloadstart assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onloadstart assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onloadstart assert_equals: Initially null expected null but got undefined
+FAIL Set window.onloadstart assert_equals: Return null after setting string expected null but got ""
+PASS Set element.onmousedown 
+PASS Reflect element.onmousedown 
+PASS Set document.onmousedown 
+PASS Set window.onmousedown 
+PASS Set element.onmouseenter 
+PASS Reflect element.onmouseenter 
+PASS Set document.onmouseenter 
+PASS Set window.onmouseenter 
+PASS Set element.onmouseleave 
+PASS Reflect element.onmouseleave 
+PASS Set document.onmouseleave 
+PASS Set window.onmouseleave 
+PASS Set element.onmousemove 
+PASS Reflect element.onmousemove 
+PASS Set document.onmousemove 
+PASS Set window.onmousemove 
+PASS Set element.onmouseout 
+PASS Reflect element.onmouseout 
+PASS Set document.onmouseout 
+PASS Set window.onmouseout 
+PASS Set element.onmouseover 
+PASS Reflect element.onmouseover 
+PASS Set document.onmouseover 
+PASS Set window.onmouseover 
+PASS Set element.onmouseup 
+PASS Reflect element.onmouseup 
+PASS Set document.onmouseup 
+PASS Set window.onmouseup 
+PASS Set element.onmousewheel 
+PASS Reflect element.onmousewheel 
+PASS Set document.onmousewheel 
+PASS Set window.onmousewheel 
+FAIL Set element.onpause assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onpause assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onpause assert_equals: Initially null expected null but got undefined
+FAIL Set window.onpause assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onplay assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onplay assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onplay assert_equals: Initially null expected null but got undefined
+FAIL Set window.onplay assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onplaying assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onplaying assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onplaying assert_equals: Initially null expected null but got undefined
+FAIL Set window.onplaying assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onprogress assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onprogress assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onprogress assert_equals: Initially null expected null but got undefined
+FAIL Set window.onprogress assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onratechange assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onratechange assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onratechange assert_equals: Initially null expected null but got undefined
+FAIL Set window.onratechange assert_equals: Return null after setting string expected null but got ""
+PASS Set element.onreset 
+PASS Reflect element.onreset 
+PASS Set document.onreset 
+PASS Set window.onreset 
+PASS Set element.onscroll 
+PASS Reflect element.onscroll 
+PASS Set document.onscroll 
+PASS Set window.onscroll 
+FAIL Set element.onseeked assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onseeked assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onseeked assert_equals: Initially null expected null but got undefined
+FAIL Set window.onseeked assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onseeking assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onseeking assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onseeking assert_equals: Initially null expected null but got undefined
+FAIL Set window.onseeking assert_equals: Return null after setting string expected null but got ""
+PASS Set element.onselect 
+PASS Reflect element.onselect 
+PASS Set document.onselect 
+PASS Set window.onselect 
+FAIL Set element.onshow assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onshow assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onshow assert_equals: Initially null expected null but got undefined
+FAIL Set window.onshow assert_equals: Initially null expected null but got undefined
+FAIL Set element.onsort assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onsort assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onsort assert_equals: Initially null expected null but got undefined
+FAIL Set window.onsort assert_equals: Initially null expected null but got undefined
+FAIL Set element.onstalled assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onstalled assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onstalled assert_equals: Initially null expected null but got undefined
+FAIL Set window.onstalled assert_equals: Return null after setting string expected null but got ""
+PASS Set element.onsubmit 
+PASS Reflect element.onsubmit 
+PASS Set document.onsubmit 
+PASS Set window.onsubmit 
+FAIL Set element.onsuspend assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onsuspend assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onsuspend assert_equals: Initially null expected null but got undefined
+FAIL Set window.onsuspend assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.ontimeupdate assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.ontimeupdate assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.ontimeupdate assert_equals: Initially null expected null but got undefined
+FAIL Set window.ontimeupdate assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onvolumechange assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onvolumechange assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onvolumechange assert_equals: Initially null expected null but got undefined
+FAIL Set window.onvolumechange assert_equals: Return null after setting string expected null but got ""
+FAIL Set element.onwaiting assert_equals: Initially null expected null but got undefined
+FAIL Reflect element.onwaiting assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set document.onwaiting assert_equals: Initially null expected null but got undefined
+FAIL Set window.onwaiting assert_equals: Return null after setting string expected null but got ""
+FAIL Enumerate element.on* assert_true: Found onabort expected true got false
+FAIL Enumerate document.on* assert_true: Found onabort expected true got false
+FAIL Enumerate window.on* assert_true: Found oncancel expected true got false
+

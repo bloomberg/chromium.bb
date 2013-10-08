@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<title>GlobalEventHandlers test</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+// attribute list from WHATWG HTML Living Standard r8212
+var attributes = [
+    "onabort",
+    "onblur",
+    "onerror",
+    "onfocus",
+    "oncancel",
+    "oncanplay",
+    "oncanplaythrough",
+    "onchange",
+    "onclick",
+    "onclose",
+    "oncontextmenu",
+    "oncuechange",
+    "ondblclick",
+    "ondrag",
+    "ondragend",
+    "ondragenter",
+    "ondragexit",
+    "ondragleave",
+    "ondragover",
+    "ondragstart",
+    "ondrop",
+    "ondurationchange",
+    "onemptied",
+    "onended",
+    "oninput",
+    "oninvalid",
+    "onkeydown",
+    "onkeypress",
+    "onkeyup",
+    "onload",
+    "onloadeddata",
+    "onloadedmetadata",
+    "onloadstart",
+    "onmousedown",
+    "onmouseenter",
+    "onmouseleave",
+    "onmousemove",
+    "onmouseout",
+    "onmouseover",
+    "onmouseup",
+    "onmousewheel",
+    "onpause",
+    "onplay",
+    "onplaying",
+    "onprogress",
+    "onratechange",
+    "onreset",
+    "onscroll",
+    "onseeked",
+    "onseeking",
+    "onselect",
+    "onshow",
+    "onsort",
+    "onstalled",
+    "onsubmit",
+    "onsuspend",
+    "ontimeupdate",
+    "onvolumechange",
+    "onwaiting"
+];
+function testSet(object, attribute, name) {
+    function nop() {}
+    test(function() {
+        assert_equals(object[attribute], null, "Initially null");
+        object[attribute] = nop;
+        assert_equals(object[attribute], nop, "Return same function");
+        document[attribute] = "";
+        assert_equals(document[attribute], null, "Return null after setting string");
+    }, "Set " + name + "." + attribute);
+}
+function testEnumerate(object, name) {
+    // Object.propertyIsEnumerable cannot be used because it doesn't
+    // work with properties inherited through the prototype chain.
+    test(function() {
+        var seen = {};
+        attributes.forEach(function(attribute) {
+            seen[attribute] = false;
+        });
+        for (var attribute in object) {
+            seen[attribute] = true;
+        }
+        attributes.forEach(function(attribute) {
+            assert_true(seen[attribute], "Found " + attribute);
+        });
+    }, "Enumerate " + name + ".on*");
+}
+attributes.forEach(function(attribute) {
+    testSet(document.createElement('div'), attribute, "element");
+    test(function() {
+        var element = document.createElement('div');
+        assert_equals(element.getAttribute(attribute), null, "Initially null");
+        element.setAttribute(attribute, "return");
+        assert_equals(element.getAttribute(attribute), "return", "Return same string");
+        assert_equals(typeof element[attribute], "function", "Convert to function");
+    }, "Reflect element." + attribute);
+    testSet(document, attribute, "document");
+    testSet(window, attribute, "window");
+});
+testEnumerate(document.createElement('div'), "element");
+testEnumerate(document, "document");
+testEnumerate(window, "window");
+</script>
+<div id="log"></div>
