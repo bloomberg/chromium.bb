@@ -45,10 +45,10 @@ typedef uint32 SpdyStreamId;
 // flow control).
 const SpdyStreamId kSessionFlowControlStreamId = 0;
 
-// Initial window size for a Spdy stream.
+// Initial window size for a Spdy stream in bytes.
 const int32 kSpdyStreamInitialWindowSize = 64 * 1024;  // 64 KBytes
 
-// Initial window size for a Spdy session.
+// Initial window size for a Spdy session in bytes.
 const int32 kSpdySessionInitialWindowSize = 64 * 1024;  // 64 KBytes
 
 // Maximum window size for a Spdy stream or session.
