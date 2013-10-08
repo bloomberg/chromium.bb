@@ -209,6 +209,7 @@
     // hostname for this is chart.googleapis.com.
     { "name": "chart.apis.google.com", "include_subdomains": true, "pins": "google" },
     { "name": "oraprodsso.corp.google.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "oraprodmv.corp.google.com", "include_subdomains": true, "mode": "force-https" },
 
     // Other Google-related domains that must use an acceptable certificate
     // iff using SSL.
