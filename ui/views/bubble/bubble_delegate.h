@@ -141,6 +141,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();
 
+  // Whether |arrow()| should automatically flip while in RTL.
+  virtual bool ShouldFlipArrowForRtl() const;
+
   // Set the anchor view or rect; set these before CreateBubble or Show. Note
   // that if a valid view gets passed, the anchor rect will get ignored. If the
   // view gets deleted, but no new view gets set, the last known anchor postion

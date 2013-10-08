@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -167,31 +168,43 @@ class AutofillDialogViews : public AutofillDialogView,
 
  private:
   // A class that creates and manages a widget for error messages.
-  class ErrorBubble : public views::WidgetObserver {
+  class ErrorBubble : public views::BubbleDelegateView {
    public:
-    ErrorBubble(views::View* anchor, const base::string16& message);
+    ErrorBubble(views::View* anchor,
+                views::View* anchor_container,
+                const base::string16& message);
     virtual ~ErrorBubble();
 
-    bool IsShowing();
-
-    // Re-positions the bubble over |anchor_|. If |anchor_| is not visible,
-    // the bubble will hide.
+    // Updates the position of the bubble.
     void UpdatePosition();
 
-    virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+    // Hides and closes the bubble.
+    void Hide();
 
-    views::View* anchor() { return anchor_; }
+    // views::BubbleDelegateView:
+    virtual gfx::Size GetPreferredSize() OVERRIDE;
+    virtual gfx::Rect GetBubbleBounds() OVERRIDE;
+    virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+    virtual bool ShouldFlipArrowForRtl() const OVERRIDE;
+
+    const views::View* anchor() const { return anchor_; }
 
    private:
-    // Calculates and returns the bounds of |widget_|, depending on |anchor_|
-    // and |contents_|.
-    gfx::Rect GetBoundsForWidget();
+    // Calculate the effective container width (ignores edge padding).
+    int GetContainerWidth();
+
+    // Returns the desired bubble width (total).
+    int GetPreferredBubbleWidth();
+
+    // Whether the bubble should stick to the right edge of |anchor_|.
+    bool ShouldArrowGoOnTheRight();
 
     views::Widget* widget_;  // Weak, may be NULL.
-    views::View* anchor_;  // Weak.
-    // The contents view of |widget_|.
-    views::View* contents_;  // Weak.
-    ScopedObserver<views::Widget, ErrorBubble> observer_;
+    views::View* const anchor_;  // Weak.
+
+    // Used to determine the width of the bubble and whether to stick to the
+    // right edge of |anchor_|. Must contain |anchor_|.
+    views::View* const anchor_container_;  // Weak.
 
     DISALLOW_COPY_AND_ASSIGN(ErrorBubble);
   };
@@ -331,6 +344,7 @@ class AutofillDialogViews : public AutofillDialogView,
     void SetForwardMouseEvents(bool forward);
 
     // views::View implementation.
+    virtual const char* GetClassName() const OVERRIDE;
     virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
@@ -548,6 +562,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // |validity_map_|.
   void ShowErrorBubbleForViewIfNecessary(views::View* view);
 
+  // Hides |error_bubble_| (if it exists).
+  void HideErrorBubble();
+
   // Updates validity of the inputs in |section| with new |validity_messages|.
   // Fields are only updated with unsure messages if |overwrite_valid| is true.
   void MarkInputsInvalid(DialogSection section,
@@ -671,7 +688,7 @@ class AutofillDialogViews : public AutofillDialogView,
   views::FocusManager* focus_manager_;
 
   // The object that manages the error bubble widget.
-  scoped_ptr<ErrorBubble> error_bubble_;
+  ErrorBubble* error_bubble_;  // Weak; owns itself.
 
   // Map from input view (textfield or combobox) to error string.
   std::map<views::View*, base::string16> validity_map_;

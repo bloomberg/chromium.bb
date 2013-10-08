@@ -100,6 +100,13 @@ const int kDialogEdgePadding = 20;
 // The vertical padding between rows of manual inputs (in pixels).
 const int kManualInputRowPadding = 10;
 
+// The margin between the content of the error bubble and its border.
+const int kErrorBubbleHorizontalMargin = 14;
+const int kErrorBubbleVerticalMargin = 12;
+
+// The visible width of bubble borders (differs from the actual width) in px.
+const int kBubbleBorderVisibleWidth = 1;
+
 // Slight shading for mouse hover and legal document background.
 SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
 
@@ -124,6 +131,7 @@ const SkColor kGreyTextColor = SkColorSetRGB(102, 102, 102);
 
 const char kNotificationAreaClassName[] = "autofill/NotificationArea";
 const char kOverlayViewClassName[] = "autofill/OverlayView";
+const char kSectionContainerClassName[] = "autofill/SectionContainer";
 const char kSuggestedButtonClassName[] = "autofill/SuggestedButton";
 
 // Draws an arrow at the top of |canvas| pointing to |tip_x|.
@@ -215,37 +223,6 @@ class SectionRowView : public views::View {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SectionRowView);
-};
-
-// This view is used for the contents of the error bubble widget.
-class ErrorBubbleContents : public views::View {
- public:
-  explicit ErrorBubbleContents(const base::string16& message)
-      : color_(kWarningColor) {
-    set_border(views::Border::CreateEmptyBorder(kArrowHeight - 3, 0, 0, 0));
-
-    views::Label* label = new views::Label();
-    label->SetText(message);
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetEnabledColor(SK_ColorWHITE);
-    label->set_border(
-        views::Border::CreateSolidSidedBorder(5, 10, 5, 10, color_));
-    label->set_background(
-        views::Background::CreateSolidBackground(color_));
-    SetLayoutManager(new views::FillLayout());
-    AddChildView(label);
-  }
-  virtual ~ErrorBubbleContents() {}
-
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    views::View::OnPaint(canvas);
-    DrawArrow(canvas, width() / 2.0f, color_, SK_ColorTRANSPARENT);
-  }
-
- private:
-  SkColor color_;
-
-  DISALLOW_COPY_AND_ASSIGN(ErrorBubbleContents);
 };
 
 // A view that propagates visibility and preferred size changes.
@@ -505,30 +482,39 @@ class LoadingAnimationView : public views::View,
 // AutofillDialogViews::ErrorBubble --------------------------------------------
 
 AutofillDialogViews::ErrorBubble::ErrorBubble(views::View* anchor,
+                                              views::View* anchor_container,
                                               const base::string16& message)
     : anchor_(anchor),
-      contents_(new ErrorBubbleContents(message)),
-      observer_(this) {
-  widget_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  views::Widget* anchor_widget = anchor->GetWidget();
-  DCHECK(anchor_widget);
-  params.parent = anchor_widget->GetNativeView();
+      anchor_container_(anchor_container) {
+  DCHECK(anchor_container_->Contains(anchor));
 
-  widget_->Init(params);
-  widget_->SetContentsView(contents_);
+  SetAnchorView(anchor_);
+  set_arrow(ShouldArrowGoOnTheRight() ? views::BubbleBorder::TOP_RIGHT :
+                                        views::BubbleBorder::TOP_LEFT);
+  set_margins(gfx::Insets(kErrorBubbleVerticalMargin,
+                          kErrorBubbleHorizontalMargin,
+                          kErrorBubbleVerticalMargin,
+                          kErrorBubbleHorizontalMargin));
+  set_use_focusless(true);
+
+  SetLayoutManager(new views::FillLayout);
+  views::Label* label = new views::Label(message);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetMultiLine(true);
+  AddChildView(label);
+
+  widget_ = views::BubbleDelegateView::CreateBubble(this);
   UpdatePosition();
-  observer_.Add(widget_);
 }
 
 AutofillDialogViews::ErrorBubble::~ErrorBubble() {
-  if (widget_)
-    widget_->Close();
+  DCHECK(!widget_);
 }
 
-bool AutofillDialogViews::ErrorBubble::IsShowing() {
-  return widget_ && widget_->IsVisible();
+void AutofillDialogViews::ErrorBubble::Hide() {
+  views::Widget* widget = GetWidget();
+  if (widget && !widget->IsClosed())
+    widget->Close();
 }
 
 void AutofillDialogViews::ErrorBubble::UpdatePosition() {
@@ -536,7 +522,7 @@ void AutofillDialogViews::ErrorBubble::UpdatePosition() {
     return;
 
   if (!anchor_->GetVisibleBounds().IsEmpty()) {
-    widget_->SetBounds(GetBoundsForWidget());
+    SizeToContents();
     widget_->SetVisibilityChangedAnimationsEnabled(true);
     widget_->Show();
   } else {
@@ -545,22 +531,51 @@ void AutofillDialogViews::ErrorBubble::UpdatePosition() {
   }
 }
 
-void AutofillDialogViews::ErrorBubble::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(widget_, widget);
-  observer_.Remove(widget_);
-  widget_ = NULL;
+gfx::Size AutofillDialogViews::ErrorBubble::GetPreferredSize() {
+  int pref_width = GetPreferredBubbleWidth();
+  pref_width -= GetBubbleFrameView()->GetInsets().width();
+  pref_width -= 2 * kBubbleBorderVisibleWidth;
+  return gfx::Size(pref_width, GetHeightForWidth(pref_width));
 }
 
-gfx::Rect AutofillDialogViews::ErrorBubble::GetBoundsForWidget() {
+gfx::Rect AutofillDialogViews::ErrorBubble::GetBubbleBounds() {
+  gfx::Rect bounds = views::BubbleDelegateView::GetBubbleBounds();
   gfx::Rect anchor_bounds = anchor_->GetBoundsInScreen();
-  gfx::Rect bubble_bounds;
-  bubble_bounds.set_size(contents_->GetPreferredSize());
-  bubble_bounds.set_x(anchor_bounds.right() -
-      (anchor_bounds.width() + bubble_bounds.width()) / 2);
-  const int kErrorBubbleOverlap = 3;
-  bubble_bounds.set_y(anchor_bounds.bottom() - kErrorBubbleOverlap);
+  anchor_bounds.Inset(-GetBubbleFrameView()->bubble_border()->GetInsets());
+  bounds.set_x(ShouldArrowGoOnTheRight() ?
+      anchor_bounds.right() - bounds.width() - kBubbleBorderVisibleWidth :
+      anchor_bounds.x() + kBubbleBorderVisibleWidth);
+  return bounds;
+}
 
-  return bubble_bounds;
+void AutofillDialogViews::ErrorBubble::OnWidgetClosing(views::Widget* widget) {
+  if (widget == widget_)
+    widget_ = NULL;
+}
+
+bool AutofillDialogViews::ErrorBubble::ShouldFlipArrowForRtl() const {
+  return false;
+}
+
+int AutofillDialogViews::ErrorBubble::GetContainerWidth() {
+  return anchor_container_->width() - anchor_container_->GetInsets().width();
+}
+
+int AutofillDialogViews::ErrorBubble::GetPreferredBubbleWidth() {
+  return (GetContainerWidth() - views::kRelatedControlHorizontalSpacing) / 2;
+}
+
+bool AutofillDialogViews::ErrorBubble::ShouldArrowGoOnTheRight() {
+  gfx::Point anchor_offset;
+  views::View::ConvertPointToTarget(anchor_, anchor_container_, &anchor_offset);
+  anchor_offset.Offset(-anchor_container_->GetInsets().left(), 0);
+
+  if (base::i18n::IsRTL()) {
+    int anchor_right_x = anchor_offset.x() + anchor_->width();
+    return anchor_right_x >= GetPreferredBubbleWidth();
+  }
+
+  return anchor_offset.x() + GetPreferredBubbleWidth() > GetContainerWidth();
 }
 
 // AutofillDialogViews::AccountChooser -----------------------------------------
@@ -862,7 +877,7 @@ void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
       base::TimeDelta::FromMilliseconds(100),
       base::Bind(&AutofillDialogViews::ContentsPreferredSizeChanged,
                  base::Unretained(this)));
-  error_bubble_.reset();
+  HideErrorBubble();
 }
 
 bool AutofillDialogViews::NotificationArea::HasArrow() {
@@ -934,6 +949,10 @@ void AutofillDialogViews::SectionContainer::SetForwardMouseEvents(
   forward_mouse_events_ = forward;
   if (!forward)
     set_background(NULL);
+}
+
+const char* AutofillDialogViews::SectionContainer::GetClassName() const {
+  return kSectionContainerClassName;
 }
 
 void AutofillDialogViews::SectionContainer::OnMouseMoved(
@@ -1245,6 +1264,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
       footnote_view_(NULL),
       legal_document_view_(NULL),
       focus_manager_(NULL),
+      error_bubble_(NULL),
       observer_(this) {
   DCHECK(delegate);
   detail_groups_.insert(std::make_pair(SECTION_CC,
@@ -1258,6 +1278,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
 }
 
 AutofillDialogViews::~AutofillDialogViews() {
+  HideErrorBubble();
   DCHECK(!window_);
 }
 
@@ -1731,7 +1752,7 @@ void AutofillDialogViews::OnWillChangeFocus(
     views::View* focused_before,
     views::View* focused_now) {
   delegate_->FocusMoved();
-  error_bubble_.reset();
+  HideErrorBubble();
 }
 
 void AutofillDialogViews::OnDidChangeFocus(
@@ -2134,7 +2155,7 @@ void AutofillDialogViews::SetValidityForInput(
 
     if (error_bubble_ && error_bubble_->anchor() == input) {
       validity_map_.erase(input);
-      error_bubble_.reset();
+      HideErrorBubble();
     }
   }
 }
@@ -2148,8 +2169,19 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
   if (error_message != validity_map_.end()) {
     view->ScrollRectToVisible(view->GetLocalBounds());
 
-    if (!error_bubble_ || error_bubble_->anchor() != view)
-      error_bubble_.reset(new ErrorBubble(view, error_message->second));
+    if (!error_bubble_ || error_bubble_->anchor() != view) {
+      HideErrorBubble();
+      views::View* section =
+          view->GetAncestorWithClassName(kSectionContainerClassName);
+      error_bubble_ = new ErrorBubble(view, section, error_message->second);
+    }
+  }
+}
+
+void AutofillDialogViews::HideErrorBubble() {
+  if (error_bubble_) {
+    error_bubble_->Hide();
+    error_bubble_ = NULL;
   }
 }
 
