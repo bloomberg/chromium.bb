@@ -152,18 +152,6 @@ void UpdateRenderText(const Rect& rect,
   render_text->SetStyle(UNDERLINE, (font_style & Font::UNDERLINE) != 0);
 }
 
-// Returns updated |flags| to match platform-specific expected behavior.
-int AdjustPlatformSpecificFlags(const base::string16& text, int flags) {
-#if defined(OS_LINUX)
-  // TODO(asvitkine): ash/tooltips/tooltip_controller.cc adds \n's to the string
-  //                  without passing MULTI_LINE.
-  if (text.find('\n') != base::string16::npos)
-    flags |= Canvas::MULTI_LINE;
-#endif
-
-  return flags;
-}
-
 }  // namespace
 
 // static
@@ -174,8 +162,6 @@ void Canvas::SizeStringInt(const base::string16& text,
                            int flags) {
   DCHECK_GE(*width, 0);
   DCHECK_GE(*height, 0);
-
-  flags = AdjustPlatformSpecificFlags(text, flags);
 
   base::string16 adjusted_text = text;
 #if defined(OS_WIN)
@@ -238,8 +224,6 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
                                        const ShadowValues& shadows) {
   if (!IntersectsClipRect(text_bounds))
     return;
-
-  flags = AdjustPlatformSpecificFlags(text, flags);
 
   Rect clip_rect(text_bounds);
   clip_rect.Inset(ShadowValue::GetMargin(shadows));
