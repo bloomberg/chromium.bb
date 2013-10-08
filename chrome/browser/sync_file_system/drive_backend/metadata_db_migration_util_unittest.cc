@@ -29,12 +29,14 @@ bool CreateV0SerializedSyncableFileSystemURL(
     const GURL& origin,
     const base::FilePath& path,
     std::string* serialized_url) {
-  fileapi::ScopedExternalFileSystem scoped_fs(
+  fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       kV0ServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
-
   fileapi::FileSystemURL url =
       fileapi::ExternalMountPoints::GetSystemInstance()->
           CreateExternalFileSystemURL(origin, kV0ServiceName, path);
+  fileapi::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+      kV0ServiceName);
+
   if (!url.is_valid())
     return false;
   *serialized_url = fileapi::GetExternalFileSystemRootURIString(

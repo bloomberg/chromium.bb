@@ -314,22 +314,4 @@ bool ExternalMountPoints::ValidateNewMountPoint(const std::string& mount_name,
          !path.IsParent(potential_child->first);
 }
 
-ScopedExternalFileSystem::ScopedExternalFileSystem(
-    const std::string& mount_name,
-    FileSystemType type,
-    const base::FilePath& path)
-    : mount_name_(mount_name) {
-  ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      mount_name, type, path);
-}
-
-base::FilePath ScopedExternalFileSystem::GetVirtualRootPath() const {
-  return ExternalMountPoints::GetSystemInstance()->
-      CreateVirtualRootPath(mount_name_);
-}
-
-ScopedExternalFileSystem::~ScopedExternalFileSystem() {
-  ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(mount_name_);
-}
-
 }  // namespace fileapi

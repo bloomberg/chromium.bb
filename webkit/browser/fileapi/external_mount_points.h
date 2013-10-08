@@ -140,20 +140,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
   DISALLOW_COPY_AND_ASSIGN(ExternalMountPoints);
 };
 
-// Registers a scoped external filesystem which gets revoked when it scopes out.
-class WEBKIT_STORAGE_BROWSER_EXPORT ScopedExternalFileSystem {
- public:
-  ScopedExternalFileSystem(const std::string& mount_name,
-                           FileSystemType type,
-                           const base::FilePath& path);
-  ~ScopedExternalFileSystem();
-
-  base::FilePath GetVirtualRootPath() const;
-
- private:
-  const std::string mount_name_;
-};
-
 }  // namespace fileapi
 
 #endif  // WEBKIT_BROWSER_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
