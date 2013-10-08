@@ -29,13 +29,15 @@
 #ifndef AudioSourceProvider_h
 #define AudioSourceProvider_h
 
+#include "platform/PlatformExport.h"
+
 namespace WebCore {
 
 class AudioBus;
 class AudioSourceProviderClient;
 
 // Abstract base-class for a pull-model client.
-class AudioSourceProvider {
+class PLATFORM_EXPORT AudioSourceProvider {
 public:
     // provideInput() gets called repeatedly to render time-slices of a continuous audio stream.
     virtual void provideInput(AudioBus* bus, size_t framesToProcess) = 0;
