@@ -90,8 +90,7 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
           event->IsOnlyLeftMouseButton() &&
           target->delegate()->GetNonClientComponent(event->location()) ==
-          HTCAPTION &&
-          !ash::Shell::IsForcedMaximizeMode()) {
+          HTCAPTION) {
         bool destroyed = false;
         destroyed_ = &destroyed;
         ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(

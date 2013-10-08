@@ -210,10 +210,6 @@ class ASH_EXPORT Shell
       int container_id,
       aura::RootWindow* priority_root);
 
-  // True if an experimental maximize mode is enabled which forces browser and
-  // application windows to be maximized only.
-  static bool IsForcedMaximizeMode();
-
   void set_target_root_window(aura::RootWindow* target_root_window) {
     target_root_window_ = target_root_window;
   }

@@ -202,26 +202,21 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
       menu_model_->AddCheckItemWithStringId(
           LAUNCH_TYPE_PINNED_TAB,
           IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-#if defined(USE_ASH)
-      if (!ash::Shell::IsForcedMaximizeMode())
-#endif
-      {
 #if defined(OS_MACOSX)
-        // Mac does not support standalone web app browser windows or maximize.
-        menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_FULLSCREEN,
-            IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
+      // Mac does not support standalone web app browser windows or maximize.
+      menu_model_->AddCheckItemWithStringId(
+          LAUNCH_TYPE_FULLSCREEN,
+          IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
 #else
-        menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_WINDOW,
-            IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-        // Even though the launch type is Full Screen it is more accurately
-        // described as Maximized in Ash.
-        menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_FULLSCREEN,
-            IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+      menu_model_->AddCheckItemWithStringId(
+          LAUNCH_TYPE_WINDOW,
+          IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+      // Even though the launch type is Full Screen it is more accurately
+      // described as Maximized in Ash.
+      menu_model_->AddCheckItemWithStringId(
+          LAUNCH_TYPE_FULLSCREEN,
+          IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
 #endif
-      }
       menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
     }

@@ -173,19 +173,6 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   EXPECT_TRUE(t3.close_button()->visible());
   EXPECT_TRUE(CheckButtonsAtEdges(
       &container3, *t3.close_button(), *t3.close_button()));
-
-  // Neither the minimize button nor the size button should be visible when the
-  // "force-maximize-mode" experiment is turned on.
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kForcedMaximizeMode);
-  FrameCaptionButtonContainerView container4(widget_can_maximize.get(),
-      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
-  container4.Layout();
-  FrameCaptionButtonContainerView::TestApi t4(&container4);
-  EXPECT_FALSE(t4.minimize_button()->visible());
-  EXPECT_FALSE(t4.size_button()->visible());
-  EXPECT_TRUE(t4.close_button()->visible());
-  EXPECT_TRUE(CheckButtonsAtEdges(
-      &container4, *t4.close_button(), *t4.close_button()));
 }
 
 // Test the layout when a border is set on the container.

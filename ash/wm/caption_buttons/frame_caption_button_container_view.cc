@@ -100,8 +100,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
 
   size_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
-  size_button_->SetVisible(frame_->widget_delegate()->CanMaximize() &&
-                           !ash::Shell::IsForcedMaximizeMode());
+  size_button_->SetVisible(frame_->widget_delegate()->CanMaximize());
   AddChildView(size_button_);
 
   close_button_->SetAccessibleName(

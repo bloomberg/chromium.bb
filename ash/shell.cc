@@ -250,12 +250,6 @@ std::vector<aura::Window*> Shell::GetContainersFromAllRootWindows(
   return containers;
 }
 
-// static
-bool Shell::IsForcedMaximizeMode() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kForcedMaximizeMode);
-}
-
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
                             ui::MenuSourceType source_type) {
   // No context menus if there is no session with an active user.

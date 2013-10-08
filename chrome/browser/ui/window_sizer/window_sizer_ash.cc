@@ -78,10 +78,6 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
 
   bounds_in_screen->SetRect(0, 0, 0, 0);
 
-  // Experiment: Force the maximize mode for all tabbed windows
-  if (ash::Shell::IsForcedMaximizeMode())
-    *show_state = ui::SHOW_STATE_MAXIMIZED;
-
   ui::WindowShowState passed_show_state = *show_state;
   bool has_saved_bounds = true;
   if (!GetSavedWindowBounds(bounds_in_screen, show_state)) {

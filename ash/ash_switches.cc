@@ -198,10 +198,6 @@ const char kForceAshToDesktop[] = "ash-force-desktop";
 const char kAshDisableDragAndDropAppListToLauncher[] =
     "ash-disable-drag-and-drop-applist-to-launcher";
 
-// Enables a mode which enforces all browser & application windows to be created
-// in maximized mode.
-const char kForcedMaximizeMode[] = "forced-maximize-mode";
-
 bool UseAlternateFrameCaptionButtonStyle() {
   return CommandLine::ForCurrentProcess()->
       HasSwitch(kAshEnableAlternateFrameCaptionButtonStyle);

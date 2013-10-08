@@ -6413,13 +6413,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_DESCRIPTION" desc="Description for the flag to show a menu that lets you change the alignment of the shelf.">
         Enables a menu that allows changing the side the shelf is aligned to.
       </message>
-     <message name="IDS_FLAGS_FORCE_MAXIMIZE_MODE_NAME" desc="Name for the flag which forces the window manager to use maximized mode wherever possible.">
-        Always maximized mode
-     </message>
-     <message name="IDS_FLAGS_FORCE_MAXIMIZE_MODE_DESCRIPTION" desc="Description for the flag which forces the window manager to use maximized mode wherever possible.">
-       Forces the window manager to use maximize mode wherever possible.
-     </message>
-
       <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
         Disallow shelf to minimize-on-click.
       </message>

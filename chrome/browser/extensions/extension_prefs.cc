@@ -1040,11 +1040,6 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
   } else {
     result = default_pref_value;
   }
-#if (USE_ASH)
-  if (ash::Shell::IsForcedMaximizeMode() &&
-      (result == LAUNCH_FULLSCREEN || result == LAUNCH_WINDOW))
-    result = LAUNCH_REGULAR;
-#endif
 #if defined(OS_MACOSX)
     // App windows are not yet supported on mac.  Pref sync could make
     // the launch type LAUNCH_WINDOW, even if there is no UI to set it
