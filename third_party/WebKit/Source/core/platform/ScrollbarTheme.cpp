@@ -27,7 +27,6 @@
 #include "core/platform/ScrollbarTheme.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/page/Settings.h"
 #include "core/platform/ScrollbarThemeClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/mock/ScrollbarThemeMock.h"
@@ -37,7 +36,7 @@ namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::theme()
 {
-    if (Settings::mockScrollbarsEnabled()) {
+    if (ScrollbarTheme::mockScrollbarsEnabled()) {
         if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
             DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlayMockTheme, ());
             return &overlayMockTheme;
@@ -47,6 +46,18 @@ ScrollbarTheme* ScrollbarTheme::theme()
         return &mockTheme;
     }
     return nativeTheme();
+}
+
+bool ScrollbarTheme::gMockScrollbarsEnabled = false;
+
+void ScrollbarTheme::setMockScrollbarsEnabled(bool flag)
+{
+    gMockScrollbarsEnabled = flag;
+}
+
+bool ScrollbarTheme::mockScrollbarsEnabled()
+{
+    return gMockScrollbarsEnabled;
 }
 
 bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)

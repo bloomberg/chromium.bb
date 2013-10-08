@@ -27,7 +27,6 @@
 
 #include "config.h"
 #include "RuntimeEnabledFeatures.h"
-#include "core/page/Settings.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 
 namespace WebCore {

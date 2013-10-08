@@ -193,8 +193,6 @@ private:
 
     Timer<Settings> m_setImageLoadingSettingsTimer;
     void imageLoadingSettingsTimerFired(Timer<Settings>*);
-
-    static bool gMockScrollbarsEnabled;
 };
 
 } // namespace WebCore

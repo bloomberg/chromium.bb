@@ -35,6 +35,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/TextAutosizer.h"
 
 using namespace std;
@@ -75,8 +76,6 @@ static inline const AtomicString& getGenericFontFamilyForScript(const ScriptFont
         return getGenericFontFamilyForScript(fontMap, USCRIPT_COMMON);
     return emptyAtom;
 }
-
-bool Settings::gMockScrollbarsEnabled = false;
 
 // NOTEs
 //  1) EditingMacBehavior comprises builds on Mac;
@@ -346,12 +345,12 @@ void Settings::setDNSPrefetchingEnabled(bool dnsPrefetchingEnabled)
 
 void Settings::setMockScrollbarsEnabled(bool flag)
 {
-    gMockScrollbarsEnabled = flag;
+    ScrollbarTheme::setMockScrollbarsEnabled(flag);
 }
 
 bool Settings::mockScrollbarsEnabled()
 {
-    return gMockScrollbarsEnabled;
+    return ScrollbarTheme::mockScrollbarsEnabled();
 }
 
 void Settings::setOpenGLMultisamplingEnabled(bool flag)

@@ -138,8 +138,12 @@ public:
 
     static ScrollbarTheme* theme();
 
+    static void setMockScrollbarsEnabled(bool flag);
+    static bool mockScrollbarsEnabled();
+
 private:
     static ScrollbarTheme* nativeTheme(); // Must be implemented to return the correct theme subclass.
+    static bool gMockScrollbarsEnabled;
 };
 
 }
