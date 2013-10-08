@@ -126,13 +126,13 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
 
   int32 last_resource_value_;
 
-  base::WeakPtrFactory<ResourceTracker> weak_ptr_factory_;
-
   // On the host side, we want to check that we are only called on the main
   // thread. This is to protect us from accidentally using the tracker from
   // other threads (especially the IO thread). On the plugin side, the tracker
   // is protected by the proxy lock and is thread-safe, so this will be NULL.
   scoped_ptr<base::ThreadChecker> thread_checker_;
+
+  base::WeakPtrFactory<ResourceTracker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceTracker);
 };

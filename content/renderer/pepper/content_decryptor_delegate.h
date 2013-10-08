@@ -177,14 +177,14 @@ class ContentDecryptorDelegate {
 
   std::queue<uint32_t> free_buffers_;
 
-  base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;
-  base::WeakPtr<ContentDecryptorDelegate> weak_this_;
-
   // Keep track of audio parameters.
   media::SampleFormat audio_sample_format_;
   int audio_samples_per_second_;
   int audio_channel_count_;
   int audio_bytes_per_frame_;
+
+  base::WeakPtr<ContentDecryptorDelegate> weak_this_;
+  base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentDecryptorDelegate);
 };

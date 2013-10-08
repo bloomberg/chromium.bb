@@ -94,9 +94,6 @@ class BASE_EXPORT RunLoop {
 
   MessageLoop* loop_;
 
-  // WeakPtrFactory for QuitClosure safety.
-  base::WeakPtrFactory<RunLoop> weak_factory_;
-
   // Parent RunLoop or NULL if this is the top-most RunLoop.
   RunLoop* previous_run_loop_;
 
@@ -115,6 +112,9 @@ class BASE_EXPORT RunLoop {
   // Used to record that QuitWhenIdle() was called on the MessageLoop, meaning
   // that we should quit Run once it becomes idle.
   bool quit_when_idle_received_;
+
+  // WeakPtrFactory for QuitClosure safety.
+  base::WeakPtrFactory<RunLoop> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RunLoop);
 };

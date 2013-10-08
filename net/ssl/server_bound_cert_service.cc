@@ -371,11 +371,11 @@ ServerBoundCertService::ServerBoundCertService(
     const scoped_refptr<base::TaskRunner>& task_runner)
     : server_bound_cert_store_(server_bound_cert_store),
       task_runner_(task_runner),
-      weak_ptr_factory_(this),
       requests_(0),
       cert_store_hits_(0),
       inflight_joins_(0),
-      workers_created_(0) {
+      workers_created_(0),
+      weak_ptr_factory_(this) {
   base::Time start = base::Time::Now();
   base::Time end = start + base::TimeDelta::FromDays(
       kValidityPeriodInDays + kSystemTimeValidityBufferInDays);

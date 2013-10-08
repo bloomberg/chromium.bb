@@ -145,13 +145,13 @@ class NET_EXPORT HttpServerPropertiesImpl
   // pair) that either support or not support SPDY protocol.
   typedef base::hash_map<std::string, bool> SpdyServerHostPortTable;
 
-  base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;
-
   SpdyServerHostPortTable spdy_servers_table_;
 
   AlternateProtocolMap alternate_protocol_map_;
   SpdySettingsMap spdy_settings_map_;
   scoped_ptr<CachedPipelineCapabilityMap> pipeline_capability_map_;
+
+  base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesImpl);
 };

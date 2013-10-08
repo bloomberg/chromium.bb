@@ -285,8 +285,8 @@ InterfaceProxy* CreateVarDeprecatedProxy(Dispatcher* dispatcher) {
 PPB_Var_Deprecated_Proxy::PPB_Var_Deprecated_Proxy(
     Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
-      task_factory_(this),
-      ppb_var_impl_(NULL) {
+      ppb_var_impl_(NULL),
+      task_factory_(this) {
   if (!dispatcher->IsPlugin()) {
     ppb_var_impl_ = static_cast<const PPB_Var_Deprecated*>(
         dispatcher->local_get_interface()(PPB_VAR_DEPRECATED_INTERFACE));

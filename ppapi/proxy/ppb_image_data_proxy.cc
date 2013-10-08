@@ -249,14 +249,14 @@ class ImageDataCache {
   // Timer callback to expire entries for the given instance.
   void OnTimer(PP_Instance instance);
 
+  typedef std::map<PP_Instance, ImageDataInstanceCache> CacheMap;
+  CacheMap cache_;
+
   // This class does timer calls and we don't want to run these outside of the
   // scope of the object. Technically, since this class is a leaked static,
   // this will never happen and this factory is unnecessary. However, it's
   // probably better not to make assumptions about the lifetime of this class.
   base::WeakPtrFactory<ImageDataCache> weak_factory_;
-
-  typedef std::map<PP_Instance, ImageDataInstanceCache> CacheMap;
-  CacheMap cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDataCache);
 };

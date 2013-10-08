@@ -301,8 +301,8 @@ MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
     : instance_(instance),
       passthrough_object_(NULL),
       np_object_(NULL),
-      weak_ptr_factory_(this),
-      early_message_queue_state_(QUEUE_MESSAGES) {
+      early_message_queue_state_(QUEUE_MESSAGES),
+      weak_ptr_factory_(this) {
   // Now create an NPObject for receiving calls to postMessage. This sets the
   // reference count to 1.  We release it in the destructor.
   NPObject* obj = WebBindings::createObject(instance_->instanceNPP(),

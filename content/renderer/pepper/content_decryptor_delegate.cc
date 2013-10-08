@@ -232,12 +232,12 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       pending_video_decoder_init_request_id_(0),
       pending_audio_decode_request_id_(0),
       pending_video_decode_request_id_(0),
-      weak_ptr_factory_(this),
-      weak_this_(weak_ptr_factory_.GetWeakPtr()),
       audio_sample_format_(media::kUnknownSampleFormat),
       audio_samples_per_second_(0),
       audio_channel_count_(0),
-      audio_bytes_per_frame_(0) {
+      audio_bytes_per_frame_(0),
+      weak_ptr_factory_(this) {
+  weak_this_ = weak_ptr_factory_.GetWeakPtr();
 }
 
 ContentDecryptorDelegate::~ContentDecryptorDelegate() {

@@ -118,10 +118,6 @@ class MessageChannel {
 
   void DrainEarlyMessageQueue();
 
-  // This is used to ensure pending tasks will not fire after this object is
-  // destroyed.
-  base::WeakPtrFactory<MessageChannel> weak_ptr_factory_;
-
   // TODO(teravest): Remove all the tricky DRAIN_CANCELLED logic once
   // PluginInstance::ResetAsProxied() is gone.
   std::deque<WebKit::WebSerializedScriptValue> early_message_queue_;
@@ -138,6 +134,10 @@ class MessageChannel {
   // previous vars have been converted before calling PostMessage to ensure that
   // the order in which messages are processed is preserved.
   std::list<VarConversionResult> converted_var_queue_;
+
+  // This is used to ensure pending tasks will not fire after this object is
+  // destroyed.
+  base::WeakPtrFactory<MessageChannel> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageChannel);
 };

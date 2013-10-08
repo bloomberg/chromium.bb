@@ -197,7 +197,6 @@ class NET_EXPORT ServerBoundCertService
   // inflight_ maps from a server to an active generation which is taking
   // place.
   std::map<std::string, ServerBoundCertServiceJob*> inflight_;
-  base::WeakPtrFactory<ServerBoundCertService> weak_ptr_factory_;
 
   uint64 requests_;
   uint64 cert_store_hits_;
@@ -205,6 +204,8 @@ class NET_EXPORT ServerBoundCertService
   uint64 workers_created_;
 
   bool is_system_time_valid_;
+
+  base::WeakPtrFactory<ServerBoundCertService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerBoundCertService);
 };
