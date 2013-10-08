@@ -1,25 +1,24 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/suspend_observer.h"
+#include "ash/system/chromeos/power/suspend_observer.h"
 
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/user_activity_detector.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/extensions/api/system_private/system_private_api.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/display/output_configurator.h"
 
-namespace chromeos {
+namespace ash {
+namespace internal {
 
 SuspendObserver::SuspendObserver()
-    : power_client_(DBusThreadManager::Get()->GetPowerManagerClient()),
-      session_client_(DBusThreadManager::Get()->GetSessionManagerClient()),
+    : power_client_(
+          chromeos::DBusThreadManager::Get()->GetPowerManagerClient()),
+      session_client_(
+          chromeos::DBusThreadManager::Get()->GetSessionManagerClient()),
       screen_locked_(false) {
   power_client_->AddObserver(this);
   session_client_->AddObserver(this);
@@ -33,18 +32,20 @@ SuspendObserver::~SuspendObserver() {
 }
 
 void SuspendObserver::SuspendImminent() {
+  Shell* shell = Shell::GetInstance();
+  SessionStateDelegate* delegate = shell->session_state_delegate();
+
   // If the lock-before-suspending pref is set, get a callback to block
   // suspend and ask the session manager to lock the screen.
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  if (profile && profile->GetPrefs()->GetBoolean(prefs::kEnableScreenLock) &&
-      UserManager::Get()->CanCurrentUserLock() && !screen_locked_) {
+  if (!screen_locked_ && delegate->ShouldLockScreenBeforeSuspending() &&
+      delegate->CanLockScreen()) {
     screen_lock_callback_ = power_client_->GetSuspendReadinessCallback();
     VLOG(1) << "Requesting screen lock from SuspendObserver";
     session_client_->RequestLockScreen();
   }
 
-  ash::Shell::GetInstance()->user_activity_detector()->OnDisplayPowerChanging();
-  ash::Shell::GetInstance()->output_configurator()->SuspendDisplays();
+  shell->user_activity_detector()->OnDisplayPowerChanging();
+  shell->output_configurator()->SuspendDisplays();
 }
 
 void SuspendObserver::ScreenIsLocked() {
@@ -67,4 +68,5 @@ void SuspendObserver::ScreenIsUnlocked() {
   screen_locked_ = false;
 }
 
-}  // namespace chromeos
+}  // namespace internal
+}  // namespace ash

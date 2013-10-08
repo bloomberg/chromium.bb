@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/user_activity_notifier.h"
+#include "ash/system/chromeos/power/user_activity_notifier.h"
 
 #include "ash/shell.h"
 #include "ash/wm/user_activity_detector.h"
@@ -12,6 +12,9 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
+namespace ash {
+namespace internal {
+
 namespace {
 
 // Minimum number of seconds between notifications.
@@ -19,14 +22,13 @@ const int kNotifyIntervalSec = 5;
 
 }  // namespace
 
-namespace chromeos {
-
-UserActivityNotifier::UserActivityNotifier() {
-  ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
+UserActivityNotifier::UserActivityNotifier(UserActivityDetector* detector)
+    : detector_(detector) {
+  detector_->AddObserver(this);
 }
 
 UserActivityNotifier::~UserActivityNotifier() {
-  ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  detector_->RemoveObserver(this);
 }
 
 void UserActivityNotifier::OnUserActivity(const ui::Event* event) {
@@ -49,9 +51,11 @@ void UserActivityNotifier::OnUserActivity(const ui::Event* event) {
       }
     }
 
-    DBusThreadManager::Get()->GetPowerManagerClient()->NotifyUserActivity(type);
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+        NotifyUserActivity(type);
     last_notify_time_ = now;
   }
 }
 
-}  // namespace chromeos
+}  // namespace internal
+}  // namespace ash

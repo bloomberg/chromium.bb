@@ -28,6 +28,7 @@ class SessionStateDelegateChromeos
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;
   virtual bool CanLockScreen() const OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
+  virtual bool ShouldLockScreenBeforeSuspending() const OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsUserSessionBlocked() const OVERRIDE;

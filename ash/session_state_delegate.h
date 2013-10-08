@@ -50,6 +50,10 @@ class ASH_EXPORT SessionStateDelegate {
   // Returns true if the screen is currently locked.
   virtual bool IsScreenLocked() const = 0;
 
+  // Returns true if the screen should be locked when the system is about to
+  // suspend.
+  virtual bool ShouldLockScreenBeforeSuspending() const = 0;
+
   // Locks the screen. The locking happens asynchronously.
   virtual void LockScreen() = 0;
 

@@ -45,6 +45,10 @@ bool TestSessionStateDelegate::IsScreenLocked() const {
   return screen_locked_;
 }
 
+bool TestSessionStateDelegate::ShouldLockScreenBeforeSuspending() const {
+  return false;
+}
+
 void TestSessionStateDelegate::LockScreen() {
   if (CanLockScreen())
     screen_locked_ = true;
