@@ -35,6 +35,8 @@
 #include "V8TestInterfaceEmpty.h"
 #include "V8Window.h"
 #include "bindings/v8/BindingSecurity.h"
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8AbstractEventListener.h"
@@ -739,8 +741,10 @@ static void callWithScriptExecutionContextReadonlyAnyAttributeAttributeGetterCal
 static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->checkSecurityForNodeReadonlyDocumentAttribute())) {
+    ExceptionState es(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToNode(imp->checkSecurityForNodeReadonlyDocumentAttribute(), es)) {
         v8SetReturnValueNull(info);
+        es.throwIfNeeded();
         return;
     }
     v8SetReturnValueFast(info, imp->checkSecurityForNodeReadonlyDocumentAttribute(), imp);

@@ -9,8 +9,7 @@
         window.jsTestIsAsync = true;
 
         function checkFrames() {
-            shouldBeNull('xssed.contentDocument');
-            shouldBe('xssed.contentDocument', 'crossorigin.contentDocument');
+            shouldThrow('xssed.contentDocument');
             shouldThrow('xssed.contentWindow.location.href');
             finishJSTest();
         }

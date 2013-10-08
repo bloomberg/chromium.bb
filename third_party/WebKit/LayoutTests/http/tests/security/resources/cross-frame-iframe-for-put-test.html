@@ -7,6 +7,22 @@
             document.getElementById("console").appendChild(document.createTextNode(s + "\n"));
         }
 
+        function shouldThrow(a)
+        {
+            var message;
+            try {
+                var evalA = eval(a);
+                message = "FAIL: '" + a + "' should have thrown. It was instead '" + evalA + "'.";
+            } catch (e) {
+                message = "PASS: '" + a + "' threw '" + e.toString() + "'.";
+            }
+            if (window.testRunner) {
+                alert(message);
+            } else {
+                log(message);
+            }
+        }
+
         function shouldBe(a, b, shouldNotPrintValues)
         {
             var evalA, evalB;
@@ -150,7 +166,6 @@
         var documentOld = window.document;
         var embedsOld = window.embeds;
         var eventOld = window.event;
-        var frameElementOld = window.frameElement;
         var framesOld = window.frames;
         var historyOld = window.history;
         var imagesOld = window.images;
@@ -353,7 +368,7 @@
             shouldBe("window.document", "documentOld");
             shouldBe("window.embeds", "embedsOld");
             shouldBe("window.event", "eventOld");
-            shouldBe("window.frameElement", "frameElementOld");
+            shouldThrow("window.frameElement");
             shouldBe("window.frames", "framesOld");
             shouldBe("window.history", "historyOld");
             shouldBe("window.images", "imagesOld");

@@ -1765,8 +1765,10 @@ static void messagePortArrayAttributeSetterCallback(v8::Local<v8::String> name, 
 static void contentDocumentAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->contentDocument())) {
+    ExceptionState es(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToNode(imp->contentDocument(), es)) {
         v8SetReturnValueNull(info);
+        es.throwIfNeeded();
         return;
     }
     v8SetReturnValueFast(info, imp->contentDocument(), imp);
@@ -4271,8 +4273,9 @@ static void getSVGDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& args
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
     ExceptionState es(args.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->getSVGDocument(es))) {
+    if (!BindingSecurity::shouldAllowAccessToNode(imp->getSVGDocument(es), es)) {
         v8SetReturnValueNull(args);
+        es.throwIfNeeded();
         return;
     }
     RefPtr<SVGDocument> result = imp->getSVGDocument(es);

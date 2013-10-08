@@ -1441,23 +1441,24 @@ END
         }
     }
 
-    # Generate security checks if necessary
-    if ($attribute->extendedAttributes->{"CheckSecurityForNode"}) {
-        AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute) . "())) {\n";
-        $code .= "        v8SetReturnValueNull(info);\n";
-        $code .= "        return;\n";
-        $code .= "    }\n";
-    }
-
     my $useExceptions = 1 if $attribute->extendedAttributes->{"GetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
-    my $isNullable = $attribute->isNullable;
-    if ($useExceptions) {
+    if ($useExceptions || $attribute->extendedAttributes->{"CheckSecurityForNode"}) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
 
+    # Generate security checks if necessary
+    if ($attribute->extendedAttributes->{"CheckSecurityForNode"}) {
+        AddToImplIncludes("bindings/v8/BindingSecurity.h");
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute) . "(), es)) {\n";
+        $code .= "        v8SetReturnValueNull(info);\n";
+        $code .= "        es.throwIfNeeded();\n";
+        $code .= "        return;\n";
+        $code .= "    }\n";
+    }
+
+    my $isNullable = $attribute->isNullable;
     if ($isNullable) {
         $code .= "    bool isNull = false;\n";
     }
@@ -2274,8 +2275,9 @@ END
 
     if ($function->extendedAttributes->{"CheckSecurityForNode"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function) . "(es))) {\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function) . "(es), es)) {\n";
         $code .= "        v8SetReturnValueNull(args);\n";
+        $code .= "        es.throwIfNeeded();\n";
         $code .= "        return;\n";
         $code .= "    }\n";
 END

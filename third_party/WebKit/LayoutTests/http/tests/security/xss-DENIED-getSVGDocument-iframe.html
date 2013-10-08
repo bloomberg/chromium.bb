@@ -7,9 +7,12 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 function runTest() {
-    var svgDoc = document.getElementById("svgobject").getSVGDocument();
-    document.getElementById("output").innerHTML =
-            svgDoc ? "FAIL got SVGDocument: " + svgDoc : "PASS";
+    try {
+        var svgDoc = document.getElementById("svgobject").getSVGDocument();
+        console.log("FAIL: got SVGDocument: " + svgDoc);
+    } catch (e) {
+        console.log("PASS: SVGDocument access threw: '" + e.toString() + "'.");
+    }
     if (window.testRunner)
         testRunner.notifyDone();
 }

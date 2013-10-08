@@ -9,7 +9,7 @@
 
         function checkReferer() {
             window.frame = document.querySelector('iframe');
-            shouldBeNull('frame.contentDocument');
+            shouldThrow('frame.contentDocument');
             finishJSTest();
         }
 

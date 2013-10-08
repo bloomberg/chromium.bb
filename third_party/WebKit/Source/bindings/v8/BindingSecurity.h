@@ -47,7 +47,7 @@ enum SecurityReportingOption {
 
 class BindingSecurity {
 public:
-    static bool shouldAllowAccessToNode(Node*);
+    static bool shouldAllowAccessToNode(Node*, ExceptionState&);
     static bool shouldAllowAccessToFrame(Frame*, SecurityReportingOption = ReportSecurityError);
     static bool shouldAllowAccessToFrame(Frame*, ExceptionState&);
 };

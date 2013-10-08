@@ -2,6 +2,10 @@
 <div id="console"></div>
 <script src="cross-frame-access.js"></script>
 <script>
-log(eval("window.frameElement"));
+    try {
+        log(eval("window.frameElement"));
+    } catch (e) {
+        log("'window.frameElement' access threw: '" + e.toString() + "'.");
+    }
 </script>
 </body>
