@@ -34,8 +34,8 @@
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/FileSystemType.h"
 #include "modules/filesystem/LocalFileSystem.h"
+#include "platform/FileSystemType.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {

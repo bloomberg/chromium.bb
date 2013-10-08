@@ -40,9 +40,9 @@
 #include "modules/filesystem/FileEntrySync.h"
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/FileSystemType.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
 #include "modules/filesystem/WorkerLocalFileSystem.h"
+#include "platform/FileSystemType.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {

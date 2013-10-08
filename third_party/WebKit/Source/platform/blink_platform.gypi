@@ -1,6 +1,7 @@
 {
   'variables': {
     'platform_files': [
+      'AsyncFileSystem.h',
       'Clock.cpp',
       'Clock.h',
       'ContentType.cpp',
@@ -15,6 +16,7 @@
       'FileChooser.h',
       'FileMetadata.cpp',
       'FileMetadata.h',
+      'FileSystemType.h',
       'FloatConversion.h',
       'HostWindow.h',
       'JSONValues.cpp',

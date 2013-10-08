@@ -33,7 +33,7 @@
 
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "modules/filesystem/EntriesCallback.h"
-#include "modules/filesystem/FileSystemType.h"
+#include "platform/FileSystemType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"

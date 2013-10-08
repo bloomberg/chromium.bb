@@ -32,7 +32,7 @@
 #define LocalFileSystem_h
 
 #include "core/page/Page.h"
-#include "modules/filesystem/FileSystemType.h"
+#include "platform/FileSystemType.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

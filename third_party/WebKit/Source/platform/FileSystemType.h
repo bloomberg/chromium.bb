@@ -45,11 +45,6 @@ enum FileSystemType {
     FileSystemTypeExternal,
 };
 
-enum FileSystemSynchronousType {
-    AsynchronousFileSystem,
-    SynchronousFileSystem,
-};
-
 } // namespace WebCore
 
 #endif // FileSystemType_h

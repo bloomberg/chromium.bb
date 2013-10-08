@@ -31,7 +31,7 @@
 #ifndef AsyncFileSystem_h
 #define AsyncFileSystem_h
 
-#include "modules/filesystem/FileSystemType.h"
+#include "platform/FileSystemType.h"
 #include "platform/Timer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -44,7 +44,7 @@ class AsyncFileSystem;
 class AsyncFileSystemCallbacks;
 class KURL;
 
-// This class provides async interface for platform-specific file system implementation.  Note that all the methods take platform paths.
+// This class provides async interface for platform-specific file system implementation. Note that all the methods take platform paths.
 class AsyncFileSystem {
     WTF_MAKE_NONCOPYABLE(AsyncFileSystem);
 public:
@@ -86,12 +86,12 @@ public:
     // AsyncFileSystemCallbacks::didFail() is called otherwise.
     virtual void readMetadata(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>) = 0;
 
-    // Creates a file at a given path.  If exclusive flag is true, it fails if the path already exists.
+    // Creates a file at a given path. If exclusive flag is true, it fails if the path already exists.
     // AsyncFileSystemCallbacks::didSucceed() is called when the operation is completed successfully.
     // AsyncFileSystemCallbacks::didFail() is called otherwise.
     virtual void createFile(const KURL& path, bool exclusive, PassOwnPtr<AsyncFileSystemCallbacks>) = 0;
 
-    // Creates a directory at a given path.  If exclusive flag is true, it fails if the path already exists.
+    // Creates a directory at a given path. If exclusive flag is true, it fails if the path already exists.
     // AsyncFileSystemCallbacks::didSucceed() is called when the operation is completed successfully.
     // AsyncFileSystemCallbacks::didFail() is called otherwise.
     virtual void createDirectory(const KURL& path, bool exclusive, PassOwnPtr<AsyncFileSystemCallbacks>) = 0;

@@ -32,7 +32,7 @@
 #define DOMFileSystemBase_h
 
 #include "modules/filesystem/FileSystemFlags.h"
-#include "modules/filesystem/FileSystemType.h"
+#include "platform/FileSystemType.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

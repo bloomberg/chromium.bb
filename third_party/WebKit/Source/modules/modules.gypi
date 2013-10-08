@@ -318,7 +318,6 @@
       'filesystem/FileSystemCallbacks.h',
       'filesystem/FileSystemClient.h',
       'filesystem/FileSystemFlags.h',
-      'filesystem/FileSystemType.h',
       'filesystem/FileWriter.cpp',
       'filesystem/FileWriter.h',
       'filesystem/FileWriterBase.cpp',

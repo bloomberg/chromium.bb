@@ -58,7 +58,7 @@
 #include "core/fileapi/FileList.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/DataView.h"
-#include "core/platform/AsyncFileSystem.h"
+#include "platform/AsyncFileSystem.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferContents.h"

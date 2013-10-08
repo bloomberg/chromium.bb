@@ -13,7 +13,6 @@ include_rules = [
     "!modules/encryptedmedia/MediaKeyNeededEvent.h",
     "!modules/encryptedmedia/MediaKeys.h",
     "!modules/filesystem/DraggedIsolatedFileSystem.h",
-    "!modules/filesystem/FileSystemType.h",
     "!modules/geolocation/GeolocationClient.h",
     "!modules/geolocation/GeolocationController.h",
     "!modules/geolocation/GeolocationError.h",

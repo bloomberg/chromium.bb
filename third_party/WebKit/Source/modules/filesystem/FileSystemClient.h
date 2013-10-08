@@ -31,7 +31,7 @@
 #ifndef FileSystemClient_h
 #define FileSystemClient_h
 
-#include "modules/filesystem/FileSystemType.h"
+#include "platform/FileSystemType.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 

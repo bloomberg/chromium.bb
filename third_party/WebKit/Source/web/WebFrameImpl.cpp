@@ -178,7 +178,7 @@
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
-#include "modules/filesystem/FileSystemType.h"
+#include "platform/FileSystemType.h"
 #include "platform/TraceEvent.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/scroll/ScrollTypes.h"
