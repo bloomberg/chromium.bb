@@ -1003,6 +1003,14 @@ protected:
 
     void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide,
                             Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
+    void drawDashedOrDottedBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
+        BoxSide, Color, int thickness, EBorderStyle, bool antialias);
+    void drawDoubleBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
+        int length, BoxSide, Color, int thickness, int adjacentWidth1, int adjacentWidth2, bool antialias);
+    void drawRidgeOrGrooveBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
+        BoxSide, Color, EBorderStyle, int adjacentWidth1, int adjacentWidth2, bool antialias);
+    void drawSolidBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
+        BoxSide, Color, int adjacentWidth1, int adjacentWidth2, bool antialias);
 
     void paintFocusRing(PaintInfo&, const LayoutPoint&, RenderStyle*);
     void paintOutline(PaintInfo&, const LayoutRect&);
