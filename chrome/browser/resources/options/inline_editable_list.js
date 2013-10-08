@@ -125,18 +125,13 @@ cr.define('options', function() {
         var focusElement = this.editClickTarget_ || this.initialFocusElement;
         this.editClickTarget_ = null;
 
-        // When this is called in response to the selectedChange event,
-        // the list grabs focus immediately afterwards. Thus we must delay
-        // our focus grab.
-        var self = this;
         if (focusElement) {
-          window.setTimeout(function() {
-            // Make sure we are still in edit mode by the time we execute.
-            if (self.editing) {
-              focusElement.focus();
-              focusElement.select();
-            }
-          }, 50);
+          focusElement.focus();
+          // select() doesn't work well in mousedown event handler.
+          setTimeout(function() {
+              if (focusElement.ownerDocument.activeElement == focusElement)
+                focusElement.select();
+          }, 0);
         }
       } else {
         if (!this.editCancelled_ && this.hasBeenEdited &&

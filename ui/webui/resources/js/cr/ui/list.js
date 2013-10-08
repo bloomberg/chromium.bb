@@ -313,7 +313,7 @@ cr.define('cr.ui', function() {
       this.selectionModel = new ListSelectionModel(length);
 
       this.addEventListener('dblclick', this.handleDoubleClick_);
-      this.addEventListener('mousedown', this.handlePointerDownUp_);
+      this.addEventListener('mousedown', this.handleMouseDown_);
       this.addEventListener('mouseup', this.handlePointerDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
       this.addEventListener('focus', this.handleElementFocus_, true);
@@ -494,6 +494,44 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Try focusing on |eventTarget| or its ancestor under |root|.
+     * This is a helper for handleMouseDown_.
+     * @param {!Element} start An element which we start to try.
+     * @param {!Element} root An element which we finish to try.
+     * @return {boolean} True if we focused on an element successfully.
+     * @private
+     */
+    tryFocusOnAncestor_: function(start, root) {
+      for (var element = start; element && element != root;
+          element = element.parentElement) {
+        element.focus();
+        if (root.ownerDocument.activeElement == element)
+          return true;
+      }
+      return false;
+    },
+
+    /**
+     * Mousedown event handler.
+     * @param {MouseEvent} e The mouse event object.
+     * @private
+     */
+    handleMouseDown_: function(e) {
+      this.handlePointerDownUp_(e);
+      // If non-focusable area in a list item is clicked and the item still
+      // contains the focused element, the item did a special focus handling
+      // [1] and we should not focus on the list.
+      //
+      // [1] For example, clicking non-focusable area gives focus on the first
+      // form control in the item.
+      var listItem = this.getListItemAncestor(e.target);
+      if (listItem && !this.tryFocusOnAncestor_(e.target, listItem) &&
+          listItem.contains(listItem.ownerDocument.activeElement)) {
+        e.preventDefault();
+      }
+    },
+
+    /**
      * Called when an element in the list is focused. Marks the list as having
      * a focused element, and dispatches an event if it didn't have focus.
      * @param {Event} e The focus event.
@@ -512,18 +550,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleElementBlur_: function(e) {
-      // When the blur event happens we do not know who is getting focus so we
-      // delay this a bit until we know if the new focus node is outside the
-      // list.
-      // We need 51 msec delay because InlineEditableList sets focus after
-      // 50 msec.
-      var list = this;
-      var doc = e.target.ownerDocument;
-      window.setTimeout(function() {
-        var activeElement = doc.activeElement;
-        if (!list.contains(activeElement))
-          list.hasElementFocus = false;
-      }, 51);
+      if (!this.contains(e.relatedTarget))
+        this.hasElementFocus = false;
     },
 
     /**
