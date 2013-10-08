@@ -55,6 +55,8 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
 
 void ConfirmInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
   DCHECK(delegate_);
+  if (!owner())
+      return; // We're closing; don't call anything, it might access the owner.
 
   if (delegate_->LinkClicked(NEW_FOREGROUND_TAB))
     RemoveSelf();
@@ -62,6 +64,8 @@ void ConfirmInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
 
 void ConfirmInfoBar::ProcessButton(int action,
                                    const std::string& action_value) {
+  if (!owner())
+    return; // We're closing; don't call anything, it might access the owner.
   DCHECK((action == InfoBarAndroid::ACTION_OK) ||
       (action == InfoBarAndroid::ACTION_CANCEL));
   if ((action == InfoBarAndroid::ACTION_OK) ?

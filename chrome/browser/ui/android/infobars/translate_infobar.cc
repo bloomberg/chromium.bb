@@ -55,6 +55,9 @@ ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
 void TranslateInfoBar::ProcessButton(
     int action, const std::string& action_value) {
+  if (!owner())
+     return; // We're closing; don't call anything, it might access the owner.
+
   if (action == InfoBarAndroid::ACTION_TRANSLATE) {
     delegate_->Translate();
   } else if (action == InfoBarAndroid::ACTION_CANCEL) {
