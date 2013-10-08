@@ -177,8 +177,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 // Flaky on win xp. http://crbug.com/304775
 #if defined(OS_WIN)
 #define MAYBE_CanForwardRemoteStream DISABLED_CanForwardRemoteStream
+#define MAYBE_CanForwardRemoteStream720p DISABLED_CanForwardRemoteStream720p
 #else
 #define MAYBE_CanForwardRemoteStream CanForwardRemoteStream
+#define MAYBE_CanForwardRemoteStream720p CanForwardRemoteStream720p
 #endif
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanForwardRemoteStream) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -191,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanForwardRemoteStream) {
   ExpectTitle("OK");
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CanForwardRemoteStream720p) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
