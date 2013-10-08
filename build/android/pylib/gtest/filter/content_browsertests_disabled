@@ -2,13 +2,10 @@
 # Timeouts
 Http/MediaTest.*
 File/MediaTest.*
-ExternalClearKey/EncryptedMediaTest.*
-ClearKey/EncryptedMediaTest.*
 WorkerTest.*
 MediaTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
-EncryptedMediaTest.*
 CrossPlatformAccessibilityBrowserTest.*
 DatabaseTest.*
 ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_DuringUnload
