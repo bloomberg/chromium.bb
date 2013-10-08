@@ -6,7 +6,6 @@ ExternalClearKey/EncryptedMediaTest.*
 ClearKey/EncryptedMediaTest.*
 WorkerTest.*
 MediaTest.*
-MediaSourceTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
 EncryptedMediaTest.*
