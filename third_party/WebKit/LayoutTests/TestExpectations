@@ -424,7 +424,6 @@ crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Fail
 
 webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ Skip ]
 
-crbug.com/66087 [ Win ] fast/dom/Geolocation/timestamp.html [ Failure Pass ]
 crbug.com/66087 [ Win ] http/tests/misc/no-last-modified.html [ Pass Timeout ]
 
 # Needs V8 investigation.  Skipped due to concern that this may be corrupting

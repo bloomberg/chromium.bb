@@ -4,15 +4,15 @@ var mockLatitude = 51.478;
 var mockLongitude = -0.166;
 var mockAccuracy = 100.0;
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-    testRunner.setMockGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
-}
-
 var now = new Date().getTime();
 shouldBeTrue('now != 0');
 var t = null;
 var then = null;
+
+if (window.testRunner) {
+    testRunner.setGeolocationPermission(true);
+    testRunner.setMockGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
+}
 
 function checkPosition(p) {
     t = p.timestamp;
