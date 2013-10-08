@@ -18,6 +18,8 @@ class DesktopFocusRules : public corewm::BaseFocusRules {
   // Overridden from corewm::BaseFocusRules:
   virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE;
   virtual aura::Window* GetToplevelWindow(aura::Window* window) const OVERRIDE;
+  virtual aura::Window* GetNextActivatableWindow(
+      aura::Window* window) const OVERRIDE;
 
   // The content window. This is an activatable window even though it is a
   // child.

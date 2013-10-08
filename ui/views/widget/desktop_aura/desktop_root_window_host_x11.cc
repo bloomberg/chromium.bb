@@ -210,6 +210,7 @@ aura::RootWindow* DesktopRootWindowHostX11::Init(
 }
 
 void DesktopRootWindowHostX11::InitFocus(aura::Window* window) {
+  focus_client_->FocusWindow(window);
 }
 
 scoped_ptr<corewm::Tooltip> DesktopRootWindowHostX11::CreateTooltip() {
@@ -988,8 +989,6 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
   aura::client::SetWindowMoveClient(root_window_,
                                     x11_window_move_client_.get());
-
-  focus_client_->FocusWindow(content_window_);
   return root_window_;
 }
 

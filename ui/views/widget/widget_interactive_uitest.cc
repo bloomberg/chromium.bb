@@ -8,9 +8,11 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #if !defined(OS_CHROMEOS)
@@ -507,6 +509,61 @@ TEST_F(WidgetTest, WidgetNotActivatedOnFakeActivationMessages) {
   ::SetActiveWindow(win32_native_window1);
   EXPECT_EQ(true, widget1.active());
   EXPECT_EQ(false, widget2.active());
+}
+#endif
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+// Provides functionality to create a window modal dialog.
+class ModalDialogDelegate : public DialogDelegateView {
+ public:
+  ModalDialogDelegate() {}
+  virtual ~ModalDialogDelegate() {}
+
+  // WidgetDelegate overrides.
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+    return ui::MODAL_TYPE_WINDOW;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
+};
+
+// Tests whether the focused window is set correctly when a modal window is
+// created and destroyed. When it is destroyed it should focus the owner
+// window.
+TEST_F(WidgetTest, WindowModalWindowDestroyedActivationTest) {
+  // Create a top level widget.
+  Widget top_level_widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  gfx::Rect initial_bounds(0, 0, 500, 500);
+  init_params.bounds = initial_bounds;
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&top_level_widget);
+  top_level_widget.Init(init_params);
+  top_level_widget.Show();
+
+  aura::Window* top_level_window = top_level_widget.GetNativeWindow();
+  EXPECT_EQ(top_level_window, aura::client::GetFocusClient(
+                top_level_window)->GetFocusedWindow());
+
+  // Create a modal dialog.
+  // This instance will be destroyed when the dialog is destroyed.
+  ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate;
+
+  Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
+      dialog_delegate, NULL, top_level_widget.GetNativeWindow());
+  modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
+  modal_dialog_widget->Show();
+  aura::Window* dialog_window = modal_dialog_widget->GetNativeWindow();
+  EXPECT_EQ(dialog_window, aura::client::GetFocusClient(
+                top_level_window)->GetFocusedWindow());
+
+  modal_dialog_widget->CloseNow();
+  EXPECT_EQ(top_level_window, aura::client::GetFocusClient(
+                top_level_window)->GetFocusedWindow());
+  top_level_widget.CloseNow();
 }
 #endif
 

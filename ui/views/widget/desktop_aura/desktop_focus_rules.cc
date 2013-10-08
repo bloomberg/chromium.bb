@@ -32,4 +32,17 @@ aura::Window* DesktopFocusRules::GetToplevelWindow(
   return top_level_window;
 }
 
+aura::Window* DesktopFocusRules::GetNextActivatableWindow(
+    aura::Window* window) const {
+  aura::Window* next_activatable_window =
+      corewm::BaseFocusRules::GetNextActivatableWindow(window);
+  // In Desktop-Aura the content_window_'s parent is a dummy window and thus
+  // should never be activated. We should return the content_window_ if it
+  // can be activated in this case.
+  if (next_activatable_window == content_window_->parent() &&
+      CanActivateWindow(content_window_))
+    return content_window_;
+  return next_activatable_window;
+}
+
 }  // namespace views
