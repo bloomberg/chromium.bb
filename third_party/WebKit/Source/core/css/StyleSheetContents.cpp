@@ -29,6 +29,7 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/dom/Node.h"
 #include "core/fetch/CSSStyleSheetResource.h"
+#include "platform/TraceEvent.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
 
@@ -271,6 +272,8 @@ const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& p
 
 void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cachedStyleSheet, const SecurityOrigin* securityOrigin)
 {
+    TRACE_EVENT0("webkit", "StyleSheetContents::parseAuthorStyleSheet");
+
     bool enforceMIMEType = isStrictParserMode(m_parserContext.mode);
     bool hasValidMIMEType = false;
     String sheetText = cachedStyleSheet->sheetText(enforceMIMEType, &hasValidMIMEType);
