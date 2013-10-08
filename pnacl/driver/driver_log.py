@@ -59,6 +59,8 @@ def FixArch(arch):
               'mips32': 'MIPS32',
               'mips'  : 'MIPS32',
               'mipsel': 'MIPS32',
+
+              'linux-x86-32': 'LINUX_X8632',
               }
   if arch not in archfix:
     Log.Fatal('Unrecognized arch "%s"!', arch)

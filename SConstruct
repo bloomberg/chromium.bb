@@ -307,6 +307,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'translate_in_build_step', default=True,
     desc='Run translation during build phase (e.g. if do_not_run_tests=1)')
 
+  BitFromArgument(env, 'pnacl_unsandboxed', default=False,
+    desc='Translate pexe to an unsandboxed, host executable')
+
   BitFromArgument(env, 'browser_headless', default=False,
     desc='Where possible, set up a dummy display to run the browser on '
       'when running browser tests.  On Linux, this runs the browser through '
@@ -1517,6 +1520,10 @@ def CommandSelLdrTestNacl(env, name, nexe,
   command = [nexe]
   if args is not None:
     command += args
+
+  if env.Bit('pnacl_unsandboxed'):
+    # Run unsandboxed executable directly, without sel_ldr.
+    return env.CommandTest(name, command, size, **extra)
 
   if loader is None:
     loader = env.GetSelLdr()
