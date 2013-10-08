@@ -56,16 +56,28 @@ PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t nu
     if (sampleRate < minAllowedSampleRate() || sampleRate > maxAllowedSampleRate() || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfFrames)
         return 0;
 
-    return adoptRef(new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate));
+    RefPtr<AudioBuffer> buffer = adoptRef(new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate));
+
+    if (!buffer->createdSuccessfully(numberOfChannels))
+        return 0;
+    return buffer;
 }
 
 PassRefPtr<AudioBuffer> AudioBuffer::createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
 {
     RefPtr<AudioBus> bus = createBusFromInMemoryAudioFile(data, dataSize, mixToMono, sampleRate);
-    if (bus.get())
-        return adoptRef(new AudioBuffer(bus.get()));
+    if (bus.get()) {
+        RefPtr<AudioBuffer> buffer = adoptRef(new AudioBuffer(bus.get()));
+        if (buffer->createdSuccessfully(bus->numberOfChannels()))
+            return buffer;
+    }
 
     return 0;
+}
+
+bool AudioBuffer::createdSuccessfully(unsigned desiredNumberOfChannels) const
+{
+    return numberOfChannels() == desiredNumberOfChannels;
 }
 
 AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
@@ -78,6 +90,12 @@ AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float
 
     for (unsigned i = 0; i < numberOfChannels; ++i) {
         RefPtr<Float32Array> channelDataArray = Float32Array::create(m_length);
+        // If the channel data array could not be created, just return. The caller will need to
+        // check that the desired number of channels were created.
+        if (!channelDataArray) {
+            return;
+        }
+
         channelDataArray->setNeuterable(false);
         m_channels.append(channelDataArray);
     }
@@ -94,6 +112,11 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     m_channels.reserveCapacity(numberOfChannels);
     for (unsigned i = 0; i < numberOfChannels; ++i) {
         RefPtr<Float32Array> channelDataArray = Float32Array::create(m_length);
+        // If the channel data array could not be created, just return. The caller will need to
+        // check that the desired number of channels were created.
+        if (!channelDataArray)
+            return;
+
         channelDataArray->setNeuterable(false);
         channelDataArray->setRange(bus->channel(i)->data(), m_length, 0);
         m_channels.append(channelDataArray);

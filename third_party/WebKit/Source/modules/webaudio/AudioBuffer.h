@@ -73,6 +73,7 @@ public:
 protected:
     AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
     explicit AudioBuffer(AudioBus*);
+    bool createdSuccessfully(unsigned desiredNumberOfChannels) const;
 
     double m_gain; // scalar gain
     float m_sampleRate;

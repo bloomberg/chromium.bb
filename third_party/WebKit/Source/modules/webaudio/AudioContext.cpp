@@ -320,7 +320,9 @@ PassRefPtr<AudioBuffer> AudioContext::createBuffer(unsigned numberOfChannels, si
                 NotSupportedError,
                 ExceptionMessages::failedToConstruct(
                     "AudioBuffer",
-                    "invalid number of channels, frames, or sample rate."));
+                    "unable to create buffer of " + String::number(numberOfChannels)
+                    + " channel(s) of " + String::number(numberOfFrames)
+                    + " frames each."));
         }
         return 0;
     }
