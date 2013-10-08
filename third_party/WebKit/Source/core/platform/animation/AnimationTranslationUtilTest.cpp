@@ -28,6 +28,7 @@
 
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/platform/animation/KeyframeValueList.h"
+#include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
 #include "core/platform/graphics/transforms/ScaleTransformOperation.h"
@@ -55,6 +56,25 @@ TEST(AnimationTranslationUtilTest, createOpacityAnimation)
     WebCore::KeyframeValueList values(AnimatedPropertyOpacity);
     values.insert(adoptPtr(new FloatAnimationValue(0, 0)));
     values.insert(adoptPtr(new FloatAnimationValue(duration, 1)));
+
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
+    animation->setDuration(duration);
+
+    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
+}
+
+TEST(AnimationTranslationUtilTest, createFilterAnimation)
+{
+    const double duration = 1;
+    WebCore::KeyframeValueList values(AnimatedPropertyWebkitFilter);
+
+    FilterOperations operations1;
+    operations1.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
+    values.insert(adoptPtr(new FilterAnimationValue(0, &operations1)));
+
+    FilterOperations operations2;
+    operations2.operations().append(BasicColorMatrixFilterOperation::create(1.0, FilterOperation::SATURATE));
+    values.insert(adoptPtr(new FilterAnimationValue(duration, &operations2)));
 
     RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);

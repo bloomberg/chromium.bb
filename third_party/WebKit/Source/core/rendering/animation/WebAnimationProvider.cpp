@@ -61,8 +61,7 @@ AnimatedPropertyID cssToGraphicsLayerProperty(CSSPropertyID cssProperty)
         ASSERT_NOT_REACHED();
         return AnimatedPropertyInvalid; // Chromium compositor cannot accelerate background color yet.
     case CSSPropertyWebkitFilter:
-        ASSERT_NOT_REACHED();
-        return AnimatedPropertyInvalid; // Chromium compositor cannot accelerate filter yet.
+        return AnimatedPropertyWebkitFilter;
     default:
         // It's fine if we see other css properties here; they are just not accelerated.
         break;
