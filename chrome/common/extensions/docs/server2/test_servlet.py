@@ -12,10 +12,10 @@ class BrokenLinkTester(object):
   '''
   def __init__(self, server_instance, renderer):
     self.link_error_detector = LinkErrorDetector(
-      server_instance.host_file_system,
-      renderer,
-      svn_constants.PUBLIC_TEMPLATE_PATH,
-      root_pages=('extensions/index.html', 'apps/about_apps.html'))
+        server_instance.host_file_system_provider.GetTrunk(),
+        renderer,
+        svn_constants.PUBLIC_TEMPLATE_PATH,
+        root_pages=('extensions/index.html', 'apps/about_apps.html'))
 
   def TestBrokenLinks(self):
     broken_links = self.link_error_detector.GetBrokenLinks()

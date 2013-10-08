@@ -3,13 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from copy import deepcopy
 import unittest
 
-from host_file_system_creator import HostFileSystemCreator
-from host_file_system_creator_test import ConstructorForTest
+from host_file_system_provider import HostFileSystemProvider
 from host_file_system_iterator import HostFileSystemIterator
 from object_store_creator import ObjectStoreCreator
 from test_branch_utility import TestBranchUtility
+from test_data.canned_data import CANNED_API_FILE_SYSTEM_DATA
+from test_file_system import TestFileSystem
 
 
 def _GetIterationTracker(version):
@@ -28,13 +30,14 @@ def _GetIterationTracker(version):
 class HostFileSystemIteratorTest(unittest.TestCase):
 
   def setUp(self):
-    host_file_system_creator = HostFileSystemCreator(
+    def host_file_system_constructor(branch, **optargs):
+      return TestFileSystem(deepcopy(CANNED_API_FILE_SYSTEM_DATA[branch]))
+    host_file_system_provider = HostFileSystemProvider(
         ObjectStoreCreator.ForTest(),
-        constructor_for_test=ConstructorForTest)
+        constructor_for_test=host_file_system_constructor)
     self._branch_utility = TestBranchUtility.CreateWithCannedData()
     self._iterator = HostFileSystemIterator(
-        host_file_system_creator,
-        host_file_system_creator.Create('trunk'),
+        host_file_system_provider,
         self._branch_utility)
 
   def _GetStableChannelInfo(self,version):

@@ -49,6 +49,7 @@ class RenderServlet(Servlet):
       return Response.Redirect('/' + redirect,
                                permanent=canonical_result.permanent)
 
+    trunk_fs = server_instance.host_file_system_provider.GetTrunk()
     templates = server_instance.template_data_source_factory.Create(
         self._request,
         CreateDataSources(server_instance, self._request))
@@ -67,13 +68,13 @@ class RenderServlet(Servlet):
         content_type = 'application/zip'
       elif path.startswith('extensions/examples/'):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
-        content = server_instance.host_file_system.ReadSingle(
+        content = trunk_fs.ReadSingle(
             '%s/%s' % (svn_constants.DOCS_PATH, path[len('extensions/'):]),
             binary=_IsBinaryMimetype(mimetype))
         content_type = mimetype
       elif path.startswith('static/'):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
-        content = server_instance.host_file_system.ReadSingle(
+        content = trunk_fs.ReadSingle(
             ('%s/%s' % (svn_constants.DOCS_PATH, path)),
             binary=_IsBinaryMimetype(mimetype))
         content_type = mimetype

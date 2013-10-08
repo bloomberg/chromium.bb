@@ -40,7 +40,7 @@ def _GetType(dict_, name):
 class FakeAvailabilityFinder(object):
 
   def GetApiAvailability(self, version):
-    return ChannelInfo('stable', 396, 5)
+    return ChannelInfo('stable', '396', 5)
 
 
 class FakeSamplesDataSource(object):
@@ -172,7 +172,7 @@ class APIDataSourceTest(unittest.TestCase):
                       None)
     # The model namespace is "tester". No predetermined availability is found,
     # so the FakeAvailabilityFinder instance is used to find availability.
-    self.assertEqual(ChannelInfo('stable', 396, 5),
+    self.assertEqual(ChannelInfo('stable', '396', 5),
                      model._GetApiAvailability())
 
     # These APIs have predetermined availabilities in the
@@ -182,15 +182,15 @@ class APIDataSourceTest(unittest.TestCase):
                      model._GetApiAvailability())
 
     model._namespace.name = 'dev_api'
-    self.assertEqual(ChannelInfo('dev', 1500, 28),
+    self.assertEqual(ChannelInfo('dev', '1500', 28),
                      model._GetApiAvailability())
 
     model._namespace.name = 'beta_api'
-    self.assertEqual(ChannelInfo('beta', 1453, 27),
+    self.assertEqual(ChannelInfo('beta', '1453', 27),
                      model._GetApiAvailability())
 
     model._namespace.name = 'stable_api'
-    self.assertEqual(ChannelInfo('stable', 1132, 20),
+    self.assertEqual(ChannelInfo('stable', '1132', 20),
                      model._GetApiAvailability())
 
   def testGetIntroList(self):

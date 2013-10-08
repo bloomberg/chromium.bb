@@ -7,7 +7,7 @@ from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from github_file_system import GithubFileSystem
-from host_file_system_creator import HostFileSystemCreator
+from host_file_system_provider import HostFileSystemProvider
 from third_party.json_schema_compiler.memoize import memoize
 from render_servlet import RenderServlet
 from object_store_creator import ObjectStoreCreator
@@ -35,20 +35,19 @@ class OfflineRenderServletDelegate(RenderServlet.Delegate):
   def CreateServerInstance(self):
     object_store_creator = ObjectStoreCreator(start_empty=False)
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
-    host_file_system_creator = self._delegate.CreateHostFileSystemCreator(
-        object_store_creator)
-    host_file_system = host_file_system_creator.Create()
+    host_file_system_provider = self._delegate.CreateHostFileSystemProvider(
+        object_store_creator,
+        offline=True)
     app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
         object_store_creator)
     compiled_host_fs_factory = CompiledFileSystem.Factory(
-        host_file_system,
+        host_file_system_provider.GetTrunk(),
         object_store_creator)
     return ServerInstance(object_store_creator,
-                          host_file_system,
                           app_samples_file_system,
                           compiled_host_fs_factory,
                           branch_utility,
-                          host_file_system_creator)
+                          host_file_system_provider)
 
 class InstanceServlet(object):
   '''Servlet for running on normal AppEngine instances.
@@ -61,8 +60,8 @@ class InstanceServlet(object):
     def CreateBranchUtility(self, object_store_creator):
       return BranchUtility.Create(object_store_creator)
 
-    def CreateHostFileSystemCreator(self, object_store_creator):
-      return HostFileSystemCreator(object_store_creator, offline=True)
+    def CreateHostFileSystemProvider(self, object_store_creator, offline=None):
+      return HostFileSystemProvider(object_store_creator, offline=offline)
 
     def CreateAppSamplesFileSystem(self, object_store_creator):
       # TODO(kalman): OfflineServerInstance wrapper for GithubFileSystem, but

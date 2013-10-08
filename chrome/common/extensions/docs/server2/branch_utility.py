@@ -20,6 +20,11 @@ class ChannelInfo(object):
   '''
 
   def __init__(self, channel, branch, version):
+    assert isinstance(channel, basestring), channel
+    assert isinstance(branch, basestring), branch
+    # TODO(kalman): Assert that this is a string. One day Chromium will probably
+    # be served out of a git repository and the versions will no longer be ints.
+    assert isinstance(version, int) or version == 'trunk', version
     self.channel = channel
     self.branch = branch
     self.version = version
@@ -122,9 +127,12 @@ class BranchUtility(object):
 
 
   def GetChannelInfo(self, channel):
+    version = self._ExtractFromVersionJson(channel, 'version')
+    if version != 'trunk':
+      version = int(version)
     return ChannelInfo(channel,
                        self._ExtractFromVersionJson(channel, 'branch'),
-                       self._ExtractFromVersionJson(channel, 'version'))
+                       version)
 
   def GetStableChannelInfo(self, version):
     '''Given a |version| corresponding to a 'stable' version of Chrome, returns
@@ -173,11 +181,10 @@ class BranchUtility(object):
           numbers[number] += 1
 
     sorted_numbers = sorted(numbers.iteritems(),
-                            None,
-                            operator.itemgetter(1),
-                            True)
-    object_store.Set(channel_name, int(sorted_numbers[0][0]))
-    return int(sorted_numbers[0][0])
+                            key=operator.itemgetter(1),
+                            reverse=True)
+    object_store.Set(channel_name, sorted_numbers[0][0])
+    return sorted_numbers[0][0]
 
   def GetBranchForVersion(self, version):
     '''Returns the most recent branch for a given chrome version number using
@@ -195,8 +202,8 @@ class BranchUtility(object):
       # Here, entry['title'] looks like: '<title> - <version>.##.<branch>.##'
       version_title = entry['title'].split(' - ')[1].split('.')
       if version_title[0] == str(version):
-        self._branch_object_store.Set(str(version), int(version_title[2]))
-        return int(version_title[2])
+        self._branch_object_store.Set(str(version), version_title[2])
+        return version_title[2]
 
     raise ValueError('The branch for %s could not be found.' % version)
 

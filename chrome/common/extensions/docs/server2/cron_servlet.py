@@ -15,7 +15,7 @@ from data_source_registry import CreateDataSources
 from empty_dir_file_system import EmptyDirFileSystem
 from file_system_util import CreateURLsFromPaths
 from github_file_system import GithubFileSystem
-from host_file_system_creator import HostFileSystemCreator
+from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
@@ -90,8 +90,11 @@ class CronServlet(Servlet):
     def CreateBranchUtility(self, object_store_creator):
       return BranchUtility.Create(object_store_creator)
 
-    def CreateHostFileSystemCreator(self, object_store_creator):
-      return HostFileSystemCreator(object_store_creator)
+    def CreateHostFileSystemProvider(self,
+                                     object_store_creator,
+                                     max_trunk_revision=None):
+      return HostFileSystemProvider(object_store_creator,
+                                    max_trunk_revision=max_trunk_revision)
 
     def CreateAppSamplesFileSystem(self, object_store_creator):
       # TODO(kalman): CachingFileSystem wrapper for GithubFileSystem, but it's
@@ -133,6 +136,7 @@ class CronServlet(Servlet):
     # TODO(kalman): IMPORTANT. This sometimes throws an exception, breaking
     # everything. Need retry logic at the fetcher level.
     server_instance = self._GetSafeServerInstance()
+    trunk_fs = server_instance.host_file_system_provider.GetTrunk()
 
     def render(path):
       request = Request(path, self._request.host, self._request.headers)
@@ -143,8 +147,7 @@ class CronServlet(Servlet):
       '''Requests every file found under |path| in this host file system, with
       a request prefix of |prefix|.
       '''
-      files = [name for name, _ in
-          CreateURLsFromPaths(server_instance.host_file_system, path, prefix)]
+      files = [name for name, _ in CreateURLsFromPaths(trunk_fs, path, prefix)]
       return _RequestEachItem(path, files, render)
 
     results = []
@@ -170,8 +173,7 @@ class CronServlet(Servlet):
         # Fetch the zip file of each example (contains all the individual
         # files).
         example_zips = []
-        for root, _, files in server_instance.host_file_system.Walk(
-            svn_constants.EXAMPLES_PATH):
+        for root, _, files in trunk_fs.Walk(svn_constants.EXAMPLES_PATH):
           example_zips.extend(
               root + '.zip' for name in files if name == 'manifest.json')
         results.append(_RequestEachItem(
@@ -227,9 +229,8 @@ class CronServlet(Servlet):
 
     app_yaml_handler = AppYamlHelper(
         svn_constants.APP_YAML_PATH,
-        server_instance_near_head.host_file_system,
         server_instance_near_head.object_store_creator,
-        server_instance_near_head.host_file_system_creator)
+        server_instance_near_head.host_file_system_provider)
 
     if app_yaml_handler.IsUpToDate(delegate.GetAppVersion()):
       return server_instance_near_head
@@ -249,7 +250,9 @@ class CronServlet(Servlet):
     system. This is similar to HEAD but it's a concrete revision so won't
     change as the cron runs.
     '''
-    return self._CreateServerInstance(None).host_file_system.Stat('/').version
+    head_fs = (
+        self._CreateServerInstance(None).host_file_system_provider.GetTrunk())
+    return head_fs.Stat('/').version
 
   def _CreateServerInstance(self, revision):
     '''Creates a ServerInstance pinned to |revision|, or HEAD if None.
@@ -258,17 +261,15 @@ class CronServlet(Servlet):
     '''
     object_store_creator = ObjectStoreCreator(start_empty=True)
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
-    host_file_system_creator = self._delegate.CreateHostFileSystemCreator(
-        object_store_creator)
-    host_file_system = host_file_system_creator.Create(revision=revision)
+    host_file_system_provider = self._delegate.CreateHostFileSystemProvider(
+        object_store_creator, max_trunk_revision=revision)
     app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
         object_store_creator)
     compiled_host_fs_factory = CompiledFileSystem.Factory(
-        host_file_system,
+        host_file_system_provider.GetTrunk(),
         object_store_creator)
     return ServerInstance(object_store_creator,
-                          host_file_system,
                           app_samples_file_system,
                           compiled_host_fs_factory,
                           branch_utility,
-                          host_file_system_creator)
+                          host_file_system_provider)

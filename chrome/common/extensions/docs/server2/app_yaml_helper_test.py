@@ -7,7 +7,7 @@ import unittest
 
 from app_yaml_helper import AppYamlHelper
 from file_system import FileNotFoundError
-from host_file_system_creator import HostFileSystemCreator
+from host_file_system_provider import HostFileSystemProvider
 from mock_file_system import MockFileSystem
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
@@ -79,23 +79,29 @@ class AppYamlHelperTest(unittest.TestCase):
     }
 
     updates = []
-
+    # Pass a specific file system at head to the HostFileSystemProvider so that
+    # we know it's always going to be backed by a MockFileSystem. The Provider
+    # may decide to wrap it in caching etc.
     file_system_at_head = MockFileSystem(TestFileSystem(test_data))
 
     def apply_update(update):
       file_system_at_head.Update(update)
       updates.append(update)
 
-    def constructor(branch, revision=None):
+    def host_file_system_constructor(branch, revision=None):
+      self.assertEqual('trunk', branch)
+      self.assertTrue(revision is not None)
       return MockFileSystem.Create(TestFileSystem(test_data),
                                    updates[:revision])
-    host_file_system_creator = HostFileSystemCreator(
-        ObjectStoreCreator.ForTest(),
-        constructor_for_test=constructor)
+
+    object_store_creator = ObjectStoreCreator.ForTest()
+    host_file_system_provider = HostFileSystemProvider(
+        object_store_creator,
+        default_trunk_instance=file_system_at_head,
+        constructor_for_test=host_file_system_constructor)
     helper = AppYamlHelper('server2/app.yaml',
-                           file_system_at_head,
-                           ObjectStoreCreator.ForTest(disable_wrappers=False),
-                           host_file_system_creator)
+                           object_store_creator,
+                           host_file_system_provider)
 
     def assert_is_up_to_date(version):
       self.assertTrue(helper.IsUpToDate(version),

@@ -7,7 +7,7 @@ import unittest
 
 from empty_dir_file_system import EmptyDirFileSystem
 from fake_fetchers import ConfigureFakeFetchers
-from host_file_system_creator import HostFileSystemCreator
+from host_file_system_provider import HostFileSystemProvider
 from patch_servlet import PatchServlet
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
@@ -28,8 +28,8 @@ class _PatchServletDelegate(RenderServlet.Delegate):
   def CreateBranchUtility(self, object_store_creator):
     return TestBranchUtility.CreateWithCannedData()
 
-  def CreateHostFileSystemCreator(self, object_store_creator):
-    return HostFileSystemCreator.ForLocal(object_store_creator)
+  def CreateHostFileSystemProvider(self, object_store_creator, **optargs):
+    return HostFileSystemProvider.ForLocal(object_store_creator)
 
 class PatchServletTest(unittest.TestCase):
   def setUp(self):

@@ -6,8 +6,9 @@ def memoize(fn):
   '''Decorates |fn| to memoize.
   '''
   memory = {}
-  def impl(*args):
-    if args not in memory:
-      memory[args] = fn(*args)
-    return memory[args]
+  def impl(*args, **optargs):
+    full_args = args + tuple(optargs.iteritems())
+    if full_args not in memory:
+      memory[full_args] = fn(*args, **optargs)
+    return memory[full_args]
   return impl

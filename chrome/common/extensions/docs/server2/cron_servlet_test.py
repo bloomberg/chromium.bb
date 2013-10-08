@@ -9,7 +9,7 @@ from appengine_wrappers import GetAppVersion
 from app_yaml_helper import AppYamlHelper
 from cron_servlet import CronServlet
 from empty_dir_file_system import EmptyDirFileSystem
-from host_file_system_creator import HostFileSystemCreator
+from host_file_system_provider import HostFileSystemProvider
 from local_file_system import LocalFileSystem
 from mock_file_system import MockFileSystem
 from servlet import Request
@@ -30,12 +30,15 @@ class _TestDelegate(CronServlet.Delegate):
   def CreateBranchUtility(self, object_store_creator):
     return TestBranchUtility.CreateWithCannedData()
 
-  def CreateHostFileSystemCreator(self, object_store_creator):
+  def CreateHostFileSystemProvider(self,
+                                  object_store_creator,
+                                  max_trunk_revision=None):
     def constructor(branch=None, revision=None):
       file_system = self._create_file_system(revision)
       self.file_systems.append(file_system)
       return file_system
-    return HostFileSystemCreator(object_store_creator,
+    return HostFileSystemProvider(object_store_creator,
+                                 max_trunk_revision=max_trunk_revision,
                                  constructor_for_test=constructor)
 
   def CreateAppSamplesFileSystem(self, object_store_creator):

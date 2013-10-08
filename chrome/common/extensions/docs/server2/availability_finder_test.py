@@ -20,12 +20,15 @@ from test_data.canned_data import (CANNED_API_FILE_SYSTEM_DATA, CANNED_BRANCHES)
 from test_data.object_level_availability.tabs import TABS_SCHEMA_BRANCHES
 
 
-class FakeHostFileSystemCreator(object):
+class FakeHostFileSystemProvider(object):
 
   def __init__(self, file_system_data):
     self._file_system_data = file_system_data
 
-  def Create(self, branch):
+  def GetTrunk(self):
+    return self.GetBranch('trunk')
+
+  def GetBranch(self, branch):
     return TestFileSystem(self._file_system_data[str(branch)])
 
 
@@ -39,15 +42,12 @@ class AvailabilityFinderTest(unittest.TestCase):
         ObjectStoreCreator.ForTest())
 
     def create_availability_finder(file_system_data):
-      fake_host_fs_creator = FakeHostFileSystemCreator(file_system_data)
-      fake_host_fs = fake_host_fs_creator.Create('trunk')
-      return AvailabilityFinder(HostFileSystemIterator(
-                                    fake_host_fs_creator,
-                                    fake_host_fs,
-                                    self._branch_utility),
+      fake_host_fs_creator = FakeHostFileSystemProvider(file_system_data)
+      return AvailabilityFinder(HostFileSystemIterator(fake_host_fs_creator,
+                                                       self._branch_utility),
                                 ObjectStoreCreator.ForTest(),
                                 self._branch_utility,
-                                fake_host_fs)
+                                fake_host_fs_creator.GetTrunk())
 
     self._avail_finder = create_availability_finder(CANNED_API_FILE_SYSTEM_DATA)
     self._node_avail_finder = create_availability_finder(TABS_SCHEMA_BRANCHES)

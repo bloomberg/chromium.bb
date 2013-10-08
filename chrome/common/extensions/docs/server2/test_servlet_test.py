@@ -6,7 +6,7 @@
 import unittest
 
 from empty_dir_file_system import EmptyDirFileSystem
-from host_file_system_creator import HostFileSystemCreator
+from host_file_system_provider import HostFileSystemProvider
 from servlet import Request
 from test_branch_utility import TestBranchUtility
 from fail_on_access_file_system import FailOnAccessFileSystem
@@ -19,8 +19,8 @@ class _TestDelegate(object):
   def CreateAppSamplesFileSystem(self, object_store_creator):
     return EmptyDirFileSystem()
 
-  def CreateHostFileSystemCreator(self, object_store_creator):
-    return HostFileSystemCreator.ForTest(
+  def CreateHostFileSystemProvider(self, object_store_creator):
+    return HostFileSystemProvider.ForTest(
         FailOnAccessFileSystem(), object_store_creator)
 
 # This test can't really be useful. The set of valid tests is changing and

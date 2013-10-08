@@ -18,16 +18,14 @@ class AppYamlHelper(object):
   '''
   def __init__(self,
                app_yaml_path,
-               file_system_at_head,
                object_store_creator,
-               host_file_system_creator):
+               host_file_system_provider):
     self._app_yaml_path = app_yaml_path
-    self._file_system_at_head = file_system_at_head
     self._store = object_store_creator.Create(
         AppYamlHelper,
-        category=file_system_at_head.GetIdentity(),
+        category=host_file_system_provider.GetTrunk().GetIdentity(),
         start_empty=False)
-    self._host_file_system_creator = host_file_system_creator
+    self._host_file_system_provider = host_file_system_provider
 
   @staticmethod
   def ExtractVersion(app_yaml, key='version'):
@@ -74,7 +72,8 @@ class AppYamlHelper(object):
     checked into the host file system.
     '''
     checked_in_app_version = AppYamlHelper.ExtractVersion(
-        self._file_system_at_head.ReadSingle(self._app_yaml_path))
+        self._host_file_system_provider.GetTrunk().ReadSingle(
+            self._app_yaml_path))
     if app_version == checked_in_app_version:
       return True
     if AppYamlHelper.IsGreater(app_version, checked_in_app_version):
@@ -109,7 +108,7 @@ class AppYamlHelper(object):
       return AppYamlHelper.IsGreater(app_version_in_file_system, app_version)
 
     found = None
-    next_file_system = self._file_system_at_head
+    next_file_system = self._host_file_system_provider.GetTrunk()
 
     while has_greater_app_version(next_file_system):
       found = get_app_yaml_revision(next_file_system)
@@ -117,7 +116,7 @@ class AppYamlHelper(object):
       if found == 0:
         logging.warning('All revisions are greater than %s' % app_version)
         return 0
-      next_file_system = self._host_file_system_creator.Create(
+      next_file_system = self._host_file_system_provider.GetTrunk(
           revision=found - 1)
 
     if found is None:
