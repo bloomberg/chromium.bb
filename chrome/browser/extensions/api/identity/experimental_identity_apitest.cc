@@ -380,8 +380,14 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
   EXPECT_FALSE(func->install_ui_shown());
 }
 
+// Flaky on mac, http://crbug.com/305349
+#if defined(OS_MACOSX)
+#define MAYBE_NonInteractiveSuccess DISABLED_NonInteractiveSuccess
+#else
+#define MAYBE_NonInteractiveSuccess NonInteractiveSuccess
+#endif
 IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
-                       NonInteractiveSuccess) {
+                       MAYBE_NonInteractiveSuccess) {
   scoped_refptr<ExperimentalMockGetAuthTokenFunction> func(
       new ExperimentalMockGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
