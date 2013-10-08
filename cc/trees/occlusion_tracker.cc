@@ -664,9 +664,6 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
     const StackObject& second_last = stack_[stack_.size() - 2];
     unoccluded_region_in_target_surface.Subtract(
         second_last.occlusion_from_inside_target);
-  }
-  if (has_occlusion) {
-    const StackObject& second_last = stack_[stack_.size() - 2];
     unoccluded_region_in_target_surface.Subtract(
         second_last.occlusion_from_outside_target);
   }
