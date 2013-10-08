@@ -439,6 +439,7 @@
       'spdy_proxy_auth_origin%' : '',
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
+      'data_reduction_proxy_probe_url%' : '',
       'enable_mdns%' : 0,
       'enable_enhanced_bookmarks%': 0,
 
@@ -881,6 +882,7 @@
     'spdy_proxy_auth_origin%': '<(spdy_proxy_auth_origin)',
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
+    'data_reduction_proxy_probe_url%': '<(data_reduction_proxy_probe_url)',
     'enable_mdns%' : '<(enable_mdns)',
     'enable_enhanced_bookmarks%' : '<(enable_enhanced_bookmarks)',
     'v8_optimized_debug': '<(v8_optimized_debug)',
@@ -2322,6 +2324,10 @@
       }],
       ['spdy_proxy_auth_value != ""', {
         'defines': ['SPDY_PROXY_AUTH_VALUE="<(spdy_proxy_auth_value)"'],
+      }],
+      ['data_reduction_proxy_probe_url != ""', {
+        'defines': [
+          'DATA_REDUCTION_PROXY_PROBE_URL="<(data_reduction_proxy_probe_url)"'],
       }],
       ['enable_mdns==1', {
         'defines': ['ENABLE_MDNS=1'],

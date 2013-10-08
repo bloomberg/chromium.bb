@@ -28,6 +28,7 @@
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_engines/template_url_service_android.h"
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
@@ -106,6 +107,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     autofill::PersonalDataManagerAndroid::Register },
   { "ProfileAndroid", ProfileAndroid::RegisterProfileAndroid },
   { "ProfileSyncService", ProfileSyncServiceAndroid::Register },
+  { "DataReductionProxySettings", DataReductionProxySettingsAndroid::Register },
   { "SigninManager", SigninManagerAndroid::Register },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
   { "SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid },

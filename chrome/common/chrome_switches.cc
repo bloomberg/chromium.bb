@@ -245,6 +245,12 @@ const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 const char kCreateBrowserOnStartupForTests[] =
     "create-browser-on-startup-for-tests";
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// If set, the data reduction proxy will only be enabled if a request for this
+// URL is successful.
+const char kDataReductionProxyProbeURL[]    = "data-reduction-proxy-probe-url";
+#endif
+
 // Enables a frame context menu item that toggles the frame in and out of glass
 // mode (Windows Vista and up only).
 const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
@@ -1336,6 +1342,9 @@ const char kSimulateOutdated[]               = "simulate-outdated";
 
 // Origin for which SpdyProxy authentication is supported.
 const char kSpdyProxyAuthOrigin[]           = "spdy-proxy-auth-origin";
+
+// Authentication string for the data reduction proxy.
+const char kSpdyProxyAuthValue[]            = "spdy-proxy-auth-value";
 
 // Speculative resource prefetching.
 const char kSpeculativeResourcePrefetching[] =

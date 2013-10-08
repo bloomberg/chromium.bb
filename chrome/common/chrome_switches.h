@@ -78,6 +78,9 @@ extern const char kContentSettings2[];
 extern const char kCountry[];
 extern const char kCrashOnHangThreads[];
 extern const char kCreateBrowserOnStartupForTests[];
+#if defined(OS_ANDROID) || defined(OS_IOS)
+extern const char kDataReductionProxyProbeURL[];
+#endif
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];
 extern const char kDebugPrint[];
@@ -360,6 +363,7 @@ extern const char kSpeculativeResourcePrefetching[];
 extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
 extern const char kSpdyProxyAuthOrigin[];
+extern const char kSpdyProxyAuthValue[];
 extern const char kSpeculativeResourcePrefetchingEnabled[];
 extern const char kSpellingServiceFeedbackUrl[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];
