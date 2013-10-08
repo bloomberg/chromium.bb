@@ -222,6 +222,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyOpacity:
         style->setOpacity(toAnimatableDouble(value)->toDouble());
         return;
+    case CSSPropertyOrphans:
+        style->setOrphans(animatableValueRoundClampTo<unsigned short>(value, 1));
+        return;
     case CSSPropertyOutlineColor:
         style->setOutlineColor(toAnimatableColor(value)->color());
         style->setVisitedLinkOutlineColor(toAnimatableColor(value)->visitedLinkColor());
@@ -335,6 +338,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyWebkitTransformOriginZ:
         style->setTransformOriginZ(toAnimatableDouble(value)->toDouble());
+        return;
+    case CSSPropertyWidows:
+        style->setWidows(animatableValueRoundClampTo<unsigned short>(value, 1));
         return;
     case CSSPropertyWidth:
         style->setWidth(animatableValueToLength(value, state));

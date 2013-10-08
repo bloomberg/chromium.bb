@@ -210,6 +210,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->minWidth(), style);
     case CSSPropertyOpacity:
         return createFromDouble(style->opacity());
+    case CSSPropertyOrphans:
+        return createFromDouble(style->orphans());
     case CSSPropertyOutlineColor:
         return createFromColor(property, style);
     case CSSPropertyOutlineOffset:
@@ -280,6 +282,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->transformOriginY(), style);
     case CSSPropertyWebkitTransformOriginZ:
         return createFromDouble(style->transformOriginZ());
+    case CSSPropertyWidows:
+        return createFromDouble(style->widows());
     case CSSPropertyWidth:
         return createFromLength(style->width(), style);
     case CSSPropertyWordSpacing:
