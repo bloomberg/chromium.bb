@@ -148,7 +148,13 @@ class PosixDynamicThreadPoolTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(PosixDynamicThreadPoolTest, Basic) {
+#if defined(THREAD_SANITIZER)
+// These tests fail under ThreadSanitizer, see http://crbug.com/305100.
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+TEST_F(PosixDynamicThreadPoolTest, MAYBE_Basic) {
   EXPECT_EQ(0, peer_.num_idle_threads());
   EXPECT_EQ(0U, unique_threads_.size());
   EXPECT_EQ(0U, peer_.pending_tasks().size());
