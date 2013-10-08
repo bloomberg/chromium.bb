@@ -68,12 +68,13 @@ public:
 private:
     SegmentedFontData() { }
 
-    virtual const SimpleFontData* fontDataForCharacter(UChar32) const;
-    virtual bool containsCharacters(const UChar*, int length) const;
+    virtual const SimpleFontData* fontDataForCharacter(UChar32) const OVERRIDE;
+    virtual bool containsCharacters(const UChar*, int length) const OVERRIDE;
 
-    virtual bool isCustomFont() const;
-    virtual bool isLoading() const;
-    virtual bool isSegmented() const;
+    virtual bool isCustomFont() const OVERRIDE;
+    virtual bool isLoading() const OVERRIDE;
+    virtual bool isLoadingFallback() const OVERRIDE;
+    virtual bool isSegmented() const OVERRIDE;
 
     bool containsCharacter(UChar32) const;
 

@@ -88,15 +88,12 @@ private:
     const SimpleFontData* primarySimpleFontData(const Font* f)
     {
         ASSERT(isMainThread());
-        if (!m_cachedPrimarySimpleFontData) {
+        if (!m_cachedPrimarySimpleFontData)
             m_cachedPrimarySimpleFontData = primaryFontData(f)->fontDataForCharacter(' ');
-            if (m_cachedPrimarySimpleFontData)
-                m_cachedPrimarySimpleFontData->beginLoadIfNeeded();
-        }
         return m_cachedPrimarySimpleFontData;
     }
 
-    const FontData* primaryFontData(const Font* f) const { return fontDataAt(f, 0); }
+    const FontData* primaryFontData(const Font*) const;
     const FontData* fontDataAt(const Font*, unsigned index) const;
 
     void setPlatformFont(const FontPlatformData&);

@@ -84,6 +84,17 @@ bool SegmentedFontData::isLoading() const
     return false;
 }
 
+// Returns true only if all of the sub fonts are loadingFallback.
+bool SegmentedFontData::isLoadingFallback() const
+{
+    Vector<FontDataRange>::const_iterator end = m_ranges.end();
+    for (Vector<FontDataRange>::const_iterator it = m_ranges.begin(); it != end; ++it) {
+        if (!it->fontData()->isLoadingFallback())
+            return false;
+    }
+    return true;
+}
+
 bool SegmentedFontData::isSegmented() const
 {
     return true;
