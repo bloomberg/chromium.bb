@@ -80,7 +80,7 @@ const char* kAtomsToCache[] = {
 bool IsSideBezelsEnabled() {
   static bool side_bezels_enabled =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTouchSideBezels) == "1";
+          switches::kTouchSideBezels) != "0";
   return side_bezels_enabled;
 }
 #endif
