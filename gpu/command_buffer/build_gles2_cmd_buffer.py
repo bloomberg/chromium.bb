@@ -1969,7 +1969,7 @@ _FUNCTION_INFO = {
   },
   'TexImage2D': {
     'type': 'Manual',
-    'immediate': True,
+    'immediate': False,
     'client_test': False,
   },
   'TexParameterf': {
@@ -3652,9 +3652,6 @@ class DataHandler(TypeHandler):
         file.Write("    uint32 total_size = ComputeSize(_imageSize);\n")
     elif func.name == 'CompressedTexSubImage2DImmediate':
         file.Write("    uint32 total_size = ComputeSize(_imageSize);\n")
-    elif func.name == 'TexImage2DImmediate':
-      file.Write(
-          "    uint32 total_size = 0;  // TODO(gman): get correct size\n")
     elif func.name == 'TexSubImage2DImmediate':
       file.Write(
           "    uint32 total_size = 0;  // TODO(gman): get correct size\n")
@@ -3670,9 +3667,6 @@ class DataHandler(TypeHandler):
         file.Write("    uint32 total_size = cmd.ComputeSize(cmd.imageSize);\n")
     elif func.name == 'CompressedTexSubImage2DImmediate':
         file.Write("    uint32 total_size = cmd.ComputeSize(cmd.imageSize);\n")
-    elif func.name == 'TexImage2DImmediate':
-      file.Write(
-          "    uint32 total_size = 0;  // TODO(gman): get correct size\n")
     elif func.name == 'TexSubImage2DImmediate':
       file.Write(
           "    uint32 total_size = 0;  // TODO(gman): get correct size\n")

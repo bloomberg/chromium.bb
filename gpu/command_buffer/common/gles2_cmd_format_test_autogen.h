@@ -2079,7 +2079,6 @@ TEST_F(GLES2FormatTest, TexImage2D) {
       next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Implement test for TexImage2DImmediate
 TEST_F(GLES2FormatTest, TexParameterf) {
   cmds::TexParameterf& cmd = *GetBufferAs<cmds::TexParameterf>();
   void* next_cmd = cmd.Set(

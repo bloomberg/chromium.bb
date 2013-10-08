@@ -1060,18 +1060,6 @@
     }
   }
 
-  void TexImage2DImmediate(
-      GLenum target, GLint level, GLint internalformat, GLsizei width,
-      GLsizei height, GLint border, GLenum format, GLenum type) {
-    const uint32 s = 0;  // TODO(gman): compute correct size
-    gles2::cmds::TexImage2DImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::TexImage2DImmediate>(s);
-    if (c) {
-      c->Init(
-          target, level, internalformat, width, height, border, format, type);
-    }
-  }
-
   void TexParameterf(GLenum target, GLenum pname, GLfloat param) {
     gles2::cmds::TexParameterf* c = GetCmdSpace<gles2::cmds::TexParameterf>();
     if (c) {

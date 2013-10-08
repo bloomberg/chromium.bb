@@ -7893,38 +7893,6 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleTexImage2DImmediate(
-    uint32 immediate_data_size, const cmds::TexImage2DImmediate& c) {
-  GLenum target = static_cast<GLenum>(c.target);
-  GLint level = static_cast<GLint>(c.level);
-  // TODO(kloveless): Change TexImage2DImmediate command to use unsigned
-  // integer for internalformat.
-  GLenum internal_format = static_cast<GLenum>(c.internalformat);
-  GLsizei width = static_cast<GLsizei>(c.width);
-  GLsizei height = static_cast<GLsizei>(c.height);
-  GLint border = static_cast<GLint>(c.border);
-  GLenum format = static_cast<GLenum>(c.format);
-  GLenum type = static_cast<GLenum>(c.type);
-  uint32 size;
-  if (!GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, state_.unpack_alignment, &size,
-      NULL, NULL)) {
-    return error::kOutOfBounds;
-  }
-  const void* pixels = GetImmediateDataAs<const void*>(
-      c, size, immediate_data_size);
-  if (!pixels) {
-    return error::kOutOfBounds;
-  }
-
-  TextureManager::DoTextImage2DArguments args = {
-    target, level, internal_format, width, height, border, format, type,
-    pixels, size};
-  texture_manager()->ValidateAndDoTexImage2D(
-      &texture_state_, &state_, &framebuffer_state_, args);
-  return error::kNoError;
-}
-
 void GLES2DecoderImpl::DoCompressedTexSubImage2D(
   GLenum target,
   GLint level,
