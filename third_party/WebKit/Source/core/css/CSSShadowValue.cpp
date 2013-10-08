@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 #include "config.h"
-#include "core/css/ShadowValue.h"
+#include "core/css/CSSShadowValue.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/text/StringBuilder.h"
@@ -27,23 +27,23 @@
 namespace WebCore {
 
 // Used for text-shadow and box-shadow
-ShadowValue::ShadowValue(PassRefPtr<CSSPrimitiveValue> _x,
-    PassRefPtr<CSSPrimitiveValue> _y,
-    PassRefPtr<CSSPrimitiveValue> _blur,
-    PassRefPtr<CSSPrimitiveValue> _spread,
-    PassRefPtr<CSSPrimitiveValue> _style,
-    PassRefPtr<CSSPrimitiveValue> _color)
+CSSShadowValue::CSSShadowValue(PassRefPtr<CSSPrimitiveValue> x,
+    PassRefPtr<CSSPrimitiveValue> y,
+    PassRefPtr<CSSPrimitiveValue> blur,
+    PassRefPtr<CSSPrimitiveValue> spread,
+    PassRefPtr<CSSPrimitiveValue> style,
+    PassRefPtr<CSSPrimitiveValue> color)
     : CSSValue(ShadowClass)
-    , x(_x)
-    , y(_y)
-    , blur(_blur)
-    , spread(_spread)
-    , style(_style)
-    , color(_color)
+    , x(x)
+    , y(y)
+    , blur(blur)
+    , spread(spread)
+    , style(style)
+    , color(color)
 {
 }
 
-String ShadowValue::customCssText() const
+String CSSShadowValue::customCssText() const
 {
     StringBuilder text;
 
@@ -78,7 +78,7 @@ String ShadowValue::customCssText() const
     return text.toString();
 }
 
-bool ShadowValue::equals(const ShadowValue& other) const
+bool CSSShadowValue::equals(const CSSShadowValue& other) const
 {
     return compareCSSValuePtr(color, other.color)
         && compareCSSValuePtr(x, other.x)

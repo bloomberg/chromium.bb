@@ -34,7 +34,7 @@
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSShaderValue.h"
-#include "core/css/ShadowValue.h"
+#include "core/css/CSSShadowValue.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
@@ -423,7 +423,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
         }
 
         // Check that all parameters are primitive values, with the
-        // exception of drop shadow which has a ShadowValue parameter.
+        // exception of drop shadow which has a CSSShadowValue parameter.
         if (operationType != FilterOperation::DROP_SHADOW) {
             bool haveNonPrimitiveValue = false;
             for (unsigned j = 0; j < filterValue->length(); ++j) {
@@ -491,7 +491,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             if (!cssValue->isShadowValue())
                 continue;
 
-            ShadowValue* item = static_cast<ShadowValue*>(cssValue);
+            CSSShadowValue* item = toCSSShadowValue(cssValue);
             IntPoint location(item->x->computeLength<int>(style, rootStyle, zoomFactor), item->y->computeLength<int>(style, rootStyle, zoomFactor));
             int blur = item->blur ? item->blur->computeLength<int>(style, rootStyle, zoomFactor) : 0;
             Color shadowColor;

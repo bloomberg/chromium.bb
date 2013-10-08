@@ -56,6 +56,7 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSShaderValue.h"
+#include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSTransformValue.h"
@@ -68,7 +69,6 @@
 #include "core/css/MediaQueryExp.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
-#include "core/css/ShadowValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
@@ -6388,7 +6388,7 @@ struct ShadowParseContext {
                 values = CSSValueList::createCommaSeparated();
 
             // Construct the current shadow value and add it to the list.
-            values->append(ShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), style.release(), color.release()));
+            values->append(CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), style.release(), color.release()));
         }
 
         // Now reset for the next shadow value.

@@ -51,12 +51,12 @@
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShaderValue.h"
+#include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableValue.h"
-#include "core/css/ShadowValue.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
 
@@ -187,7 +187,7 @@ bool CSSValue::equals(const CSSValue& other) const
         case ReflectClass:
             return compareCSSValues<CSSReflectValue>(*this, other);
         case ShadowClass:
-            return compareCSSValues<ShadowValue>(*this, other);
+            return compareCSSValues<CSSShadowValue>(*this, other);
         case CubicBezierTimingFunctionClass:
             return compareCSSValues<CSSCubicBezierTimingFunctionValue>(*this, other);
         case StepsTimingFunctionClass:
@@ -275,7 +275,7 @@ String CSSValue::cssText() const
     case ReflectClass:
         return static_cast<const CSSReflectValue*>(this)->customCssText();
     case ShadowClass:
-        return static_cast<const ShadowValue*>(this)->customCssText();
+        return toCSSShadowValue(this)->customCssText();
     case CubicBezierTimingFunctionClass:
         return static_cast<const CSSCubicBezierTimingFunctionValue*>(this)->customCssText();
     case StepsTimingFunctionClass:
@@ -391,7 +391,7 @@ void CSSValue::destroy()
         delete toCSSReflectValue(this);
         return;
     case ShadowClass:
-        delete static_cast<ShadowValue*>(this);
+        delete toCSSShadowValue(this);
         return;
     case CubicBezierTimingFunctionClass:
         delete toCSSCubicBezierTimingFunctionValue(this);

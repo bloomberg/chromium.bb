@@ -56,11 +56,11 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSReflectValue.h"
+#include "core/css/CSSShadowValue.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/Counter.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
-#include "core/css/ShadowValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/ElementStyleResources.h"
@@ -1503,7 +1503,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             CSSValue* currValue = i.value();
             if (!currValue->isShadowValue())
                 continue;
-            ShadowValue* item = static_cast<ShadowValue*>(currValue);
+            CSSShadowValue* item = toCSSShadowValue(currValue);
             int x = item->x->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor);
             int y = item->y->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor);
             int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor) : 0;
