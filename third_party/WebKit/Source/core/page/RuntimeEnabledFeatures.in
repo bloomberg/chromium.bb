@@ -41,6 +41,7 @@ DeviceOrientation status=stable
 DevicePixelRatioIncludesZoom status=stable
 DialogElement status=experimental
 DirectoryUpload status=stable
+DirectWrite
 // FIXME: Remove this separate feature when CustomElements are always enabled
 EmbedderCustomElements
 EncodingAPI status=experimental

@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/platform/graphics/FontCache.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
 #include "platform/NotImplemented.h"
@@ -45,7 +46,16 @@ namespace WebCore {
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
-    m_fontManager = adoptPtr(SkFontMgr_New_GDI());
+    SkFontMgr* fontManager = 0;
+
+    // Prefer DirectWrite (if runtime feature is enabled) but fallback
+    // to GDI on platforms where DirectWrite is not supported.
+    if (RuntimeEnabledFeatures::directWriteEnabled())
+        fontManager = SkFontMgr_New_DirectWrite();
+    if (!fontManager)
+        fontManager = SkFontMgr_New_GDI();
+
+    m_fontManager = adoptPtr(fontManager);
 }
 
 
