@@ -6,7 +6,10 @@
 
 namespace chromeos {
 
-CrasAudioClientStubImpl::CrasAudioClientStubImpl() {}
+CrasAudioClientStubImpl::CrasAudioClientStubImpl()
+    : active_input_node_id_(0),
+      active_output_node_id_(0) {
+}
 
 void CrasAudioClientStubImpl::Init(dbus::Bus* bus) {
   VLOG(1) << "CrasAudioClientStubImpl is created";
