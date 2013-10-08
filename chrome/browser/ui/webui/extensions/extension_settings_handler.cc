@@ -237,8 +237,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   }
   extension_data->SetString("locationText", location_text);
 
-  // Determine the sort order: Extensions loaded through --load-extensions show
-  // up at the top. Disabled extensions show up at the bottom.
+  // Force unpacked extensions to show at the top.
   if (Manifest::IsUnpackedLocation(extension->location()))
     extension_data->SetInteger("order", 1);
   else

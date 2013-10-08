@@ -270,15 +270,15 @@ cr.define('extensions', function() {
 
     if (extensionsData.extensions.length > 0) {
       // Enforce order specified in the data or (if equal) then sort by
-      // extension name (case-insensitive).
+      // extension name (case-insensitive) followed by their ID (in the case
+      // where extensions have the same name).
       extensionsData.extensions.sort(function(a, b) {
-        if (a.order == b.order) {
-          a = a.name.toLowerCase();
-          b = b.name.toLowerCase();
-          return a < b ? -1 : (a > b ? 1 : 0);
-        } else {
-          return a.order < b.order ? -1 : 1;
+        function compare(x, y) {
+          return x < y ? -1 : (x > y ? 1 : 0);
         }
+        return compare(a.order, b.order) ||
+               compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
+               compare(a.id, b.id);
       });
     }
 
