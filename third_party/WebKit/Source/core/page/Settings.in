@@ -3,6 +3,13 @@
 
 defaultTextEncodingName type=String
 editableLinkBehavior type=EditableLinkBehavior, initial=EditableLinkDefaultBehavior
+
+# Do not hide chars typed in password fields immediately, but let the last char stay
+# visible for N seconds, configured by the passwordEchoDurationInSeconds setting
+# FIXME: Enable automatically if passwordEchoDurationInSeconds is set to a positive value.
+passwordEchoEnabled initial=false
+
+# Configure how long the last char should say visible in seconds.
 passwordEchoDurationInSeconds type=double, initial=1
 
 # Sets the magnification value for validation message timer.  If the
@@ -21,6 +28,8 @@ validationMessageTimerMagnification type=int, initial=50
 # draw canvas in software.
 minimumAccelerated2dCanvasSize type=int, initial=257*256
 
+# The layout width used with --enable-viewport when no viewport meta tag was defined.
+# FIXME: This should get the value from the @viewport UA sheet instead.
 layoutFallbackWidth type=int, initial=980
 
 minimumFontSize type=int, initial=0, setNeedsStyleRecalcInAllFrames=1
@@ -42,10 +51,15 @@ shouldPrintBackgrounds initial=false
 textAreasAreResizable initial=false, setNeedsStyleRecalcInAllFrames=1
 authorAndUserStylesEnabled initial=true, setNeedsStyleRecalcInAllFrames=1
 acceleratedCompositingEnabled initial=true, setNeedsStyleRecalcInAllFrames=1
+
+# Debugging feature used for accelerated compositing layers.
 showRepaintCounter initial=false, setNeedsStyleRecalcInAllFrames=1
 
 shrinksStandaloneImagesToFit initial=true
+
+# FIXME: Does this do anything now that we don't support page cache?
 pageCacheSupportsPlugins initial=false
+
 needsSiteSpecificQuirks initial=false
 offlineWebApplicationCacheEnabled initial=false
 usesEncodingDetector initial=false
@@ -53,12 +67,14 @@ allowScriptsToCloseWindows initial=false
 acceleratedFiltersEnabled initial=false
 regionBasedColumnsEnabled initial=false
 
-# FIXME: This should really be disabled by default as it makes platforms that don't support the feature download files
-# they can't use by. Leaving enabled for now to not change existing behavior.
+# FIXME: This should really be disabled by default as it makes platforms that
+# don't support the feature download files they can't use by.
+# Leaving enabled for now to not change existing behavior.
 downloadableBinaryFontsEnabled initial=true
 
 xssAuditorEnabled initial=false
 unsafePluginPastingEnabled initial=true
+
 acceleratedCompositingFor3DTransformsEnabled initial=true
 acceleratedCompositingForVideoEnabled initial=true
 acceleratedCompositingForPluginsEnabled initial=true
@@ -70,35 +86,42 @@ acceleratedCompositingForOverflowScrollEnabled initial=false
 acceleratedCompositingForTransitionEnabled initial=false
 acceleratedCompositingForFixedRootBackgroundEnabled initial=false
 
+forceCompositingMode initial=false
+
 # Works only in conjunction with forceCompositingMode.
 acceleratedCompositingForScrollableFramesEnabled initial=false
 compositedScrollingForFramesEnabled initial=false
 
+# 3D canvas (WebGL) support.
 webGLEnabled initial=false
+
 webGLErrorsToConsoleEnabled initial=true
 privilegedWebGLExtensionsEnabled initial=false
 accelerated2dCanvasEnabled initial=false
 antialiased2dCanvasEnabled initial=true
+
+# WebAudio support.
 webAudioEnabled initial=false
+
 fullScreenEnabled initial=false
 asynchronousSpellCheckingEnabled initial=false
 memoryInfoEnabled initial=false
 
 hyperlinkAuditingEnabled initial=false
-forceCompositingMode initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
 mediaPlaybackRequiresUserGesture initial=false
 mediaFullscreenRequiresUserGesture initial=true
-passwordEchoEnabled initial=false
 visualWordMovementEnabled initial=false
 shouldDisplaySubtitles initial=false
 shouldDisplayCaptions initial=false
 shouldDisplayTextDescriptions initial=false
+
 scrollingCoordinatorEnabled initial=false
 scrollAnimatorEnabled initial=true
 
 shouldRespectImageOrientation initial=false
+
 deviceSupportsTouch initial=false
 deviceSupportsMouse initial=true
 
@@ -118,6 +141,9 @@ applyPageScaleFactorInCompositor initial=false
 
 allowCustomScrollbarInMainFrame initial=true
 webSecurityEnabled initial=true
+
+# Special keyboard navigation mode intented for platforms with no
+# proper mouse or touch support, such as a TV controller with a remote.
 spatialNavigationEnabled initial=false
 
 # This setting adds a means to enable/disable touch initiated drag & drop. If
@@ -134,21 +160,28 @@ selectTrailingWhitespaceEnabled initial=defaultSelectTrailingWhitespaceEnabled
 
 selectionIncludesAltImageText initial=false
 useLegacyBackgroundSizeShorthandBehavior initial=false
+
 # This quirk is to maintain compatibility with Android apps built on
-# the Android SDK prior to and including version 18. Presumably, this
-# can be removed any time after 2015. See http://crbug.com/282130.
+# the Android SDK prior to and including version 18.
+# Presumably, this can be removed any time after 2015.
+# See http://crbug.com/282130.
 viewportMetaZeroValuesQuirk initial=false
-# Another Android SDK <= 18 quirk, removable 2015.  http://crbug.com/295287
+
+# Another Android SDK <= 18 quirk, removable 2015.
+# See http://crbug.com/295287
 ignoreMainFrameOverflowHiddenQuirk initial=false
+
 # This quirk is to maintain compatibility with Android apps.
 # It will be possible to remove it once WebSettings.{get|set}UseWideViewPort
-# API function will be removed. See http://crbug.com/288037.
+# API function will be removed.
+# See http://crbug.com/288037.
 wideViewportQuirkEnabled initial=false
 
 # This setting enables touch based text selection and editing.
 touchEditingEnabled initial=false
 
 experimentalWebSocketEnabled initial=false
+
 pinchVirtualViewportEnabled initial=false
 useSolidColorScrollbars initial=false
 
