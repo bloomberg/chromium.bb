@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_SUGGEST_PERMISSION_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_SUGGEST_PERMISSION_UTIL_H_
 
-#include "chrome/common/extensions/permissions/api_permission.h"
+#include "extensions/common/permissions/api_permission.h"
 
 class Profile;
 

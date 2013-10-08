@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 

@@ -6,9 +6,9 @@
 #define CHROME_COMMON_EXTENSIONS_PERMISSIONS_USB_DEVICE_PERMISSION_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/set_disjunction_permission.h"
 #include "chrome/common/extensions/permissions/usb_device_permission_data.h"
+#include "extensions/common/permissions/api_permission.h"
 
 namespace extensions {
 

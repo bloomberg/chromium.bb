@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/permissions/bluetooth_permission_data.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -14,11 +14,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "components/policy/core/common/schema.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission.h"
 
 using extensions::manifest_keys::kStorageManagedSchema;
 

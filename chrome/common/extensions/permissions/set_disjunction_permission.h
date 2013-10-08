@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 

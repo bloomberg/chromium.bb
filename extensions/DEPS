@@ -9,5 +9,9 @@ include_rules = [
 specific_include_rules = {
   ".*test\.cc": [
     "+content/public/test",
-  ]
+  ],
+  "api_permission_set_unittest\.cc": [
+    # Temporary include for tests.
+    "+chrome/common/extensions/extension_messages.h",
+  ],
 }

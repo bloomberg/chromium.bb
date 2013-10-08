@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/socket_permission_entry.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "ipc/ipc_param_traits.h"
 
 template <class T> struct FuzzTraits;

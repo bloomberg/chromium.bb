@@ -8,9 +8,9 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/console_message_level.h"
+#include "extensions/common/permissions/permissions_info.h"
 
 using content::CONSOLE_MESSAGE_LEVEL_WARNING;
 using content::RenderViewHost;

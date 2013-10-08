@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/permissions/api_permission.h"
 
 #if defined(OS_WIN)
 #include "base/strings/sys_string_conversions.h"

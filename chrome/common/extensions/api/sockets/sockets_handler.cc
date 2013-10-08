@@ -9,11 +9,11 @@
 #include "base/values.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/socket_permission_data.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission_set.h"
 
 namespace extensions {
 

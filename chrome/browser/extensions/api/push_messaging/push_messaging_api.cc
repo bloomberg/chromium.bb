@@ -28,10 +28,10 @@
 #include "chrome/common/extensions/api/push_messaging.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "url/gurl.h"
 

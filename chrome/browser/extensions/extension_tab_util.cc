@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
@@ -29,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "url/gurl.h"
 
 namespace keys = extensions::tabs_constants;

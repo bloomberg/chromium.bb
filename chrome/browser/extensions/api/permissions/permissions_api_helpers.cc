@@ -10,9 +10,9 @@
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern_set.h"
 
 using extensions::APIPermission;
@@ -145,5 +145,5 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
       new PermissionSet(apis, origins, URLPatternSet()));
 }
 
-}  // namespace permissions_api
+}  // namespace permissions_api_helpers
 }  // namespace extensions

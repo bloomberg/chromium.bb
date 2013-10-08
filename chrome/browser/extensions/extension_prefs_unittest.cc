@@ -19,12 +19,12 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "sync/api/string_ordinal.h"
 
 using base::Time;

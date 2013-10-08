@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
+#include "extensions/common/permissions/api_permission.h"
 
 namespace base {
 

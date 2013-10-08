@@ -26,7 +26,6 @@
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "components/policy/core/common/schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -35,6 +34,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission.h"
 
 using content::BrowserThread;
 

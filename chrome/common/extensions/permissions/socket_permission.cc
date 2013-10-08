@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/set_disjunction_permission.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

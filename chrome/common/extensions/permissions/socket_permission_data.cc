@@ -13,8 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "url/url_canon.h"
 
 namespace {

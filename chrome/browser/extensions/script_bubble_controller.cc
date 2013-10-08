@@ -13,8 +13,8 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/browser/navigation_details.h"
+#include "extensions/common/permissions/api_permission.h"
 
 using extensions::APIPermission;
 

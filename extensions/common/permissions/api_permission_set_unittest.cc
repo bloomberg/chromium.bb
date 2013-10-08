@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/pickle.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/permissions/api_permission_set.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
+#include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

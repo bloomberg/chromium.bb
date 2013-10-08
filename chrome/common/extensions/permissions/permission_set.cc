@@ -10,9 +10,9 @@
 
 #include "base/stl_util.h"
 #include "chrome/common/extensions/permissions/permission_message_util.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/generated_resources.h"

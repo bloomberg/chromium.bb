@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/bluetooth_permission_data.h"
 #include "chrome/common/extensions/permissions/set_disjunction_permission.h"
+#include "extensions/common/permissions/api_permission.h"
 
 namespace extensions {
 
