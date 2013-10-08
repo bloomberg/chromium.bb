@@ -9,18 +9,63 @@ function checkOneDevice() {
   assertEquals(1, devices.length);
   var firstDevice = devices[0];
 
-  var deviceName = firstDevice.querySelector('.device-name').textContent;
-  assertEquals('Sample device', deviceName);
-
-  var deviceDescription =
-        firstDevice.querySelector('.device-subline').textContent;
-  assertEquals('Sample device description', deviceDescription);
-
-  var button = firstDevice.querySelector('button');
-  // Button should be disabled since there is no logged in user.
-  assertEquals(true, button.disabled);
+  assertDomElementIsSamplePrinter(firstDevice);
 }
 
 function checkNoDevices() {
   assertEquals(0, $('register-device-list').children.length);
+}
+
+function registerShowOverlay() {
+  var button = document.querySelector('#register-device-list button');
+  var overlay = $('overlay');
+
+  assertTrue(button != null);
+
+  assertTrue(overlay.hidden);
+  button.click();
+  assertFalse(overlay.hidden);
+
+  assertFalse($('register-page-confirm').hidden);
+}
+
+function registerBegin() {
+  var button = $("register-continue-button");
+  assertTrue(button != null);
+
+  assertFalse($('register-page-confirm').hidden);
+  button.click();
+  assertTrue($('register-page-confirm').hidden);
+  assertFalse($('register-page-adding1').hidden);
+}
+
+function expectPageAdding1() {
+  assertFalse($('register-page-adding1').hidden);
+}
+
+function expectPageAdding2() {
+  assertFalse($('register-page-adding2').hidden);
+}
+
+function expectRegisterDone() {
+  assertTrue($('overlay').hidden);
+
+  var cloudDevices = $('cloud-devices');
+
+  var firstDevice = cloudDevices.firstChild;
+
+  assertDomElementIsSamplePrinter(firstDevice);
+}
+
+function assertDomElementIsSamplePrinter(device) {
+  var deviceName = device.querySelector('.device-name').textContent;
+  assertEquals('Sample device', deviceName);
+
+  var deviceDescription =
+        device.querySelector('.device-subline').textContent;
+  assertEquals('Sample device description', deviceDescription);
+
+  var button = device.querySelector('button');
+  // Button should not be disabled since there is a logged in user.
+  assertFalse(button.disabled);
 }
