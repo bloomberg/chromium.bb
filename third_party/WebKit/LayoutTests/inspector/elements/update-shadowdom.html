@@ -20,6 +20,7 @@ function test()
             InspectorTest.expandElementsTree(function() {
                 var containerElem = InspectorTest.expandedNodeWithId('container');
                 InspectorTest.dumpElementsTree(containerElem);
+                WebInspector.settings.showShadowDOM.set(false);
                 InspectorTest.completeTest();
             });
         });
