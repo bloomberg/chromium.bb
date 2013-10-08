@@ -39,7 +39,7 @@ const float kTwoPI = kPI * 2.0f;
 const int kFramesToBenchmark = 100;
 const unsigned int kRandomStartSeed = 0xC0DE533D;
 const int kMaxPointCount = 1024;
-const int kStartPointCount = 256;
+const int kStartPointCount = 48;
 const int kDefaultNumRegions = 256;
 
 unsigned int g_rand_state = kRandomStartSeed;
@@ -446,6 +446,21 @@ void Voronoi::HandleEvent(PSEvent* ps_event) {
         if (key_code == 84)  // 't' key
           if (!benchmarking_)
             StartBenchmark();
+        break;
+      }
+      case PP_INPUTEVENT_TYPE_TOUCHSTART:
+      case PP_INPUTEVENT_TYPE_TOUCHMOVE: {
+        pp::TouchInputEvent touches = pp::TouchInputEvent(event);
+        uint32_t count = touches.GetTouchCount(PP_TOUCHLIST_TYPE_TOUCHES);
+        // Touch points 0..n directly set position of points 0..n in
+        // Voronoi diagram.
+        for (uint32_t i = 0; i < count; i++) {
+          pp::TouchPoint touch =
+              touches.GetTouchByIndex(PP_TOUCHLIST_TYPE_TOUCHES, i);
+          pp::FloatPoint point = touch.position();
+          positions_[i].Set(point.x() / ps_context_->width,
+                            point.y() / ps_context_->height);
+        }
         break;
       }
       default:
