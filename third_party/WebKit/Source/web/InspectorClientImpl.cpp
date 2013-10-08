@@ -96,10 +96,10 @@ void InspectorClientImpl::clearBrowserCookies()
         agent->clearBrowserCookies();
 }
 
-void InspectorClientImpl::overrideDeviceMetrics(int width, int height, float fontScaleFactor, bool fitWindow)
+void InspectorClientImpl::overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool fitWindow)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->overrideDeviceMetrics(width, height, fontScaleFactor, fitWindow);
+        agent->overrideDeviceMetrics(width, height, deviceScaleFactor, fitWindow);
 }
 
 bool InspectorClientImpl::overridesShowPaintRects()

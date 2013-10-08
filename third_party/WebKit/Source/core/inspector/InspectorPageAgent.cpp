@@ -85,7 +85,7 @@ static const char pageAgentScriptExecutionDisabled[] = "pageAgentScriptExecution
 static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvaluateOnLoad";
 static const char pageAgentScreenWidthOverride[] = "pageAgentScreenWidthOverride";
 static const char pageAgentScreenHeightOverride[] = "pageAgentScreenHeightOverride";
-static const char pageAgentFontScaleFactorOverride[] = "pageAgentFontScaleFactorOverride";
+static const char pageAgentDeviceScaleFactorOverride[] = "pageAgentDeviceScaleFactorOverride";
 static const char pageAgentFitWindow[] = "pageAgentFitWindow";
 static const char pageAgentShowFPSCounter[] = "pageAgentShowFPSCounter";
 static const char pageAgentContinuousPaintingEnabled[] = "pageAgentContinuousPaintingEnabled";
@@ -360,9 +360,9 @@ void InspectorPageAgent::restore()
 
         int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
         int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
-        double currentFontScaleFactor = m_state->getDouble(PageAgentState::pageAgentFontScaleFactorOverride);
+        double currentDeviceScaleFactor = m_state->getDouble(PageAgentState::pageAgentDeviceScaleFactorOverride);
         bool currentFitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
-        updateViewMetrics(currentWidth, currentHeight, currentFontScaleFactor, currentFitWindow);
+        updateViewMetrics(currentWidth, currentHeight, currentDeviceScaleFactor, currentFitWindow);
         updateTouchEventEmulationInPage(m_state->getBoolean(PageAgentState::touchEventEmulationEnabled));
     }
 }
@@ -405,7 +405,7 @@ void InspectorPageAgent::disable(ErrorString*)
     updateViewMetrics(0, 0, 1, false);
     m_state->setLong(PageAgentState::pageAgentScreenWidthOverride, 0);
     m_state->setLong(PageAgentState::pageAgentScreenHeightOverride, 0);
-    m_state->setDouble(PageAgentState::pageAgentFontScaleFactorOverride, 1);
+    m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 1);
     m_state->setBoolean(PageAgentState::pageAgentFitWindow, false);
 }
 
@@ -659,7 +659,7 @@ void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const Stri
     DOMPatchSupport::patchDocument(*document, html);
 }
 
-void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int width, int height, double fontScaleFactor, bool fitWindow)
+void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int width, int height, double deviceScaleFactor, bool fitWindow)
 {
     const static long maxDimension = 10000000;
 
@@ -673,31 +673,31 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
         return;
     }
 
-    if (fontScaleFactor <= 0) {
-        *errorString = "fontScaleFactor must be positive";
+    if (deviceScaleFactor <= 0) {
+        *errorString = "deviceScaleFactor must be positive";
         return;
     }
 
-    if (!deviceMetricsChanged(width, height, fontScaleFactor, fitWindow))
+    if (!deviceMetricsChanged(width, height, deviceScaleFactor, fitWindow))
         return;
 
     m_state->setLong(PageAgentState::pageAgentScreenWidthOverride, width);
     m_state->setLong(PageAgentState::pageAgentScreenHeightOverride, height);
-    m_state->setDouble(PageAgentState::pageAgentFontScaleFactorOverride, fontScaleFactor);
+    m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, deviceScaleFactor);
     m_state->setBoolean(PageAgentState::pageAgentFitWindow, fitWindow);
 
-    updateViewMetrics(width, height, fontScaleFactor, fitWindow);
+    updateViewMetrics(width, height, deviceScaleFactor, fitWindow);
 }
 
-bool InspectorPageAgent::deviceMetricsChanged(int width, int height, double fontScaleFactor, bool fitWindow)
+bool InspectorPageAgent::deviceMetricsChanged(int width, int height, double deviceScaleFactor, bool fitWindow)
 {
     // These two always fit an int.
     int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
     int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
-    double currentFontScaleFactor = m_state->getDouble(PageAgentState::pageAgentFontScaleFactorOverride, 1);
+    double currentDeviceScaleFactor = m_state->getDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 1);
     bool currentFitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
 
-    return width != currentWidth || height != currentHeight || fontScaleFactor != currentFontScaleFactor || fitWindow != currentFitWindow;
+    return width != currentWidth || height != currentHeight || deviceScaleFactor != currentDeviceScaleFactor || fitWindow != currentFitWindow;
 }
 
 void InspectorPageAgent::setShowPaintRects(ErrorString*, bool show)
@@ -1077,9 +1077,9 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
     return result;
 }
 
-void InspectorPageAgent::updateViewMetrics(int width, int height, double fontScaleFactor, bool fitWindow)
+void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceScaleFactor, bool fitWindow)
 {
-    m_client->overrideDeviceMetrics(width, height, static_cast<float>(fontScaleFactor), fitWindow);
+    m_client->overrideDeviceMetrics(width, height, static_cast<float>(deviceScaleFactor), fitWindow);
 
     Document* document = mainFrame()->document();
     if (document)

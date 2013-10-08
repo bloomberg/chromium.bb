@@ -51,7 +51,7 @@ public:
         unsigned char flags);
     virtual void setTraceEventCallback(TraceEventCallback) { }
 
-    virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*fontScaleFactor*/, bool /*fitWindow*/) { }
+    virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*fitWindow*/) { }
 
     virtual bool overridesShowPaintRects() { return false; }
     virtual void setShowPaintRects(bool) { }

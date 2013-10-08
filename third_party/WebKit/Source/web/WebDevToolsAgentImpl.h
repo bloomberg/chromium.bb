@@ -103,7 +103,7 @@ public:
     virtual void clearBrowserCache();
     virtual void clearBrowserCookies();
 
-    virtual void overrideDeviceMetrics(int width, int height, float fontScaleFactor, bool fitWindow);
+    virtual void overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool fitWindow);
 
     virtual void getAllocatedObjects(HashSet<const void*>&);
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);

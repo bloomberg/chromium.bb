@@ -312,7 +312,7 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
     return false;
 }
 
-void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float fontScaleFactor, bool fitWindow)
+void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool fitWindow)
 {
     if (!width && !height) {
         if (m_deviceMetricsEnabled) {
@@ -325,7 +325,7 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float fo
             m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
             RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
         }
-        m_client->enableDeviceEmulation(IntSize(width, height), IntRect(0, 0, width, height), 2, fitWindow);
+        m_client->enableDeviceEmulation(IntSize(width, height), IntRect(0, 0, width, height), deviceScaleFactor, fitWindow);
         m_deviceMetricsEnabled = true;
     }
 }
