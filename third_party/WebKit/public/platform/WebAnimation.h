@@ -46,7 +46,8 @@ class WebAnimation {
 public:
     enum TargetProperty {
         TargetPropertyTransform = 0,
-        TargetPropertyOpacity
+        TargetPropertyOpacity,
+        TargetPropertyFilter
     };
 
     virtual ~WebAnimation() { }

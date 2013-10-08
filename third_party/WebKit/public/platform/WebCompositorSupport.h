@@ -40,6 +40,7 @@ class WebContentLayer;
 class WebContentLayerClient;
 class WebExternalTextureLayer;
 class WebExternalTextureLayerClient;
+class WebFilterAnimationCurve;
 class WebFilterOperations;
 class WebFloatAnimationCurve;
 class WebGraphicsContext3D;
@@ -82,6 +83,8 @@ public:
     // Animation ----------------------------------------------------
 
     virtual WebAnimation* createAnimation(const WebAnimationCurve&, WebAnimation::TargetProperty, int animationId = 0) { return 0; }
+
+    virtual WebFilterAnimationCurve* createFilterAnimationCurve() { return 0; }
 
     virtual WebFloatAnimationCurve* createFloatAnimationCurve() { return 0; }
 

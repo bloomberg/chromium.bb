@@ -27,6 +27,7 @@
 
 #include "WebCommon.h"
 
+#define WEB_FILTER_ANIMATION_CURVE_IS_DEFINED 1
 
 namespace WebKit {
 
@@ -43,6 +44,7 @@ public:
     };
 
     enum AnimationCurveType {
+        AnimationCurveTypeFilter,
         AnimationCurveTypeFloat,
         AnimationCurveTypeTransform,
     };
