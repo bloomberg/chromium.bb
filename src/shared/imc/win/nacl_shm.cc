@@ -47,8 +47,8 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
       INVALID_HANDLE_VALUE,
       NULL,
       flags,
-      static_cast<DWORD>(static_cast<unsigned __int64>(length) >> 32),
-      static_cast<DWORD>(length & 0xFFFFFFFF), NULL);
+      (DWORD) (((unsigned __int64) length) >> 32),
+      (DWORD) (length & 0xFFFFFFFF), NULL);
   return (memory == NULL) ? NACL_INVALID_HANDLE : memory;
 }
 

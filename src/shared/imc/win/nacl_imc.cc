@@ -111,32 +111,32 @@ static int ReadAll(HANDLE handle, void* buffer, size_t length) {
   size_t count = 0;
   while (count < length) {
     DWORD len;
-    DWORD chunk = static_cast<DWORD>(
+    DWORD chunk = (DWORD) (
       ((length - count) <= UINT_MAX) ? (length - count) : UINT_MAX);
-    if (ReadFile(handle, static_cast<char*>(buffer) + count,
+    if (ReadFile(handle, (char *) buffer + count,
                  chunk, &len, NULL) == FALSE) {
-      return static_cast<int>((0 < count) ? count : -1);
+      return (int) ((0 < count) ? count : -1);
     }
     count += len;
   }
-  return static_cast<int>(count);
-};
+  return (int) count;
+}
 
 static int WriteAll(HANDLE handle, const void* buffer, size_t length) {
   size_t count = 0;
   while (count < length) {
     DWORD len;
     /* The following statement is for the 64 bit portability. */
-    DWORD chunk = static_cast<DWORD>(
+    DWORD chunk = (DWORD) (
       ((length - count) <= UINT_MAX) ? (length - count) : UINT_MAX);
-    if (WriteFile(handle, static_cast<const char*>(buffer) + count,
+    if (WriteFile(handle, (const char *) buffer + count,
                   chunk, &len, NULL) == FALSE) {
-      return static_cast<int>((0 < count) ? count : -1);
+      return (int) ((0 < count) ? count : -1);
     }
     count += len;
   }
-  return static_cast<int>(count);
-};
+  return (int) count;
+}
 
 static BOOL SkipFile(HANDLE handle, size_t length) {
   while (0 < length) {
@@ -156,7 +156,7 @@ static BOOL SkipHandles(HANDLE handle, size_t count) {
     if (ReadAll(handle, &discard, sizeof discard) != sizeof discard) {
       return FALSE;
     }
-    CloseHandle(reinterpret_cast<HANDLE>(discard));
+    CloseHandle((HANDLE) discard);
     --count;
   }
   return TRUE;
@@ -175,7 +175,7 @@ int NaClGetLastErrorString(char* buffer, size_t length) {
       error,
       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
       buffer,
-      static_cast<DWORD>((64 * 1024 < length) ? 64 * 1024 : length),
+      (DWORD) ((64 * 1024 < length) ? 64 * 1024 : length),
       NULL) ? 0 : -1;
 }
 
@@ -309,7 +309,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
         }
         return -1;
       }
-      remote_handles[i] = reinterpret_cast<uint64_t>(temp_remote_handle);
+      remote_handles[i] = (uint64_t) temp_remote_handle;
     }
     if (g_broker_duplicate_handle_func == NULL) {
       CloseHandle(target);
@@ -321,7 +321,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
     if (UINT32_MAX - header.message_length < message->iov[i].length) {
       return -1;
     }
-    header.message_length += static_cast<uint32_t>(message->iov[i].length);
+    header.message_length += (uint32_t) message->iov[i].length;
   }
   if (WriteAll(handle, &header, sizeof header) != sizeof header) {
     return -1;
@@ -339,7 +339,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
           sizeof(uint64_t) * message->handle_count) {
     return -1;
   }
-  return static_cast<int>(header.message_length);
+  return (int) header.message_length;
 }
 
 int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
@@ -461,7 +461,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
               flags &= ~NACL_DONT_WAIT;
               goto Repeat;
             }
-            result = static_cast<int>(header.message_length);
+            result = (int) header.message_length;
           } else {
             SetLastError(ERROR_PIPE_LISTENING);
           }
@@ -498,8 +498,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
            i < message->iov_length && count < header.message_length;
            ++i) {
         NaClIOVec* iov = &message->iov[i];
-        uint32_t len = std::min(static_cast<uint32_t>(iov->length),
-                                total_message_bytes);
+        uint32_t len = std::min((uint32_t) iov->length, total_message_bytes);
         if (ReadAll(handle, iov->base, len) != len) {
           break;
         }
@@ -522,7 +521,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
           break;
         }
         for (i = 0; i < message->handle_count; ++i) {
-          message->handles[i] = reinterpret_cast<HANDLE>(received_handles[i]);
+          message->handles[i] = (HANDLE) received_handles[i];
         }
       } else {
         message->handle_count = 0;
@@ -534,7 +533,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
         }
         message->flags |= NACL_HANDLES_TRUNCATED;
       }
-      result = static_cast<int>(count);
+      result = (int) count;
       break;
     }
     case kCancel:
