@@ -24,6 +24,18 @@ IPC_MESSAGE_CONTROL3(TracingMsg_BeginTracing,
 // Sent to all child processes to disable trace event recording.
 IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)
 
+// Sent to all child processes to start monitoring.
+IPC_MESSAGE_CONTROL3(TracingMsg_EnableMonitoring,
+                     std::string /*  category_filter_str */,
+                     base::TimeTicks /* browser_time */,
+                     int /* base::debug::TraceLog::Options */)
+
+// Sent to all child processes to stop monitoring..
+IPC_MESSAGE_CONTROL0(TracingMsg_DisableMonitoring)
+
+// Sent to all child processes to capture the current monitorint snapshot.
+IPC_MESSAGE_CONTROL0(TracingMsg_CaptureMonitoringSnapshot)
+
 // Sent to all child processes to get trace buffer fullness.
 IPC_MESSAGE_CONTROL0(TracingMsg_GetTraceBufferPercentFull)
 
@@ -38,16 +50,24 @@ IPC_MESSAGE_CONTROL0(TracingMsg_CancelWatchEvent)
 // Notify the browser that this child process supports tracing.
 IPC_MESSAGE_CONTROL0(TracingHostMsg_ChildSupportsTracing)
 
-// Reply from child processes acking ChildProcessMsg_TraceChangeStatus(false).
+// Reply from child processes acking TracingMsg_EndTracing.
 IPC_MESSAGE_CONTROL1(TracingHostMsg_EndTracingAck,
                      std::vector<std::string> /* known_categories */)
+
+// Reply from child processes acking TracingMsg_CaptureMonitoringSnapshot.
+IPC_MESSAGE_CONTROL0(TracingHostMsg_CaptureMonitoringSnapshotAck)
 
 // Sent if the trace buffer becomes full.
 IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceNotification,
                      int /* base::debug::TraceLog::Notification */)
 
-// Child processes send trace data back in JSON chunks.
+// Child processes send back trace data in JSON chunks.
 IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceDataCollected,
+                     std::string /*json trace data*/)
+
+// Child processes send back trace data of the current monitoring
+// in JSON chunks.
+IPC_MESSAGE_CONTROL1(TracingHostMsg_MonitoringTraceDataCollected,
                      std::string /*json trace data*/)
 
 // Reply to TracingMsg_GetTraceBufferPercentFull.

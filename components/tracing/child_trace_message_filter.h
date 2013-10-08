@@ -32,8 +32,13 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Message handlers.
   void OnBeginTracing(const std::string& category_filter_str,
                       base::TimeTicks browser_time,
-                      int mode);
+                      int options);
   void OnEndTracing();
+  void OnEnableMonitoring(const std::string& category_filter_str,
+                          base::TimeTicks browser_time,
+                          int options);
+  void OnDisableMonitoring();
+  void OnCaptureMonitoringSnapshot();
   void OnGetTraceBufferPercentFull();
   void OnSetWatchEvent(const std::string& category_name,
                        const std::string& event_name);
@@ -43,6 +48,11 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events);
+
+  void OnMonitoringTraceDataCollected(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr,
+      bool has_more_events);
+
   void OnTraceNotification(int notification);
 
   IPC::Channel* channel_;
