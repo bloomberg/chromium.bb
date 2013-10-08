@@ -5,27 +5,9 @@
 #include "content/common/content_param_traits.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "net/base/ip_endpoint.h"
 #include "ui/gfx/range/range.h"
-
-namespace {
-
-int WebInputEventSizeForType(WebKit::WebInputEvent::Type type) {
-  if (WebKit::WebInputEvent::isMouseEventType(type))
-    return sizeof(WebKit::WebMouseEvent);
-  if (type == WebKit::WebInputEvent::MouseWheel)
-    return sizeof(WebKit::WebMouseWheelEvent);
-  if (WebKit::WebInputEvent::isKeyboardEventType(type))
-    return sizeof(WebKit::WebKeyboardEvent);
-  if (WebKit::WebInputEvent::isTouchEventType(type))
-    return sizeof(WebKit::WebTouchEvent);
-  if (WebKit::WebInputEvent::isGestureEventType(type))
-    return sizeof(WebKit::WebGestureEvent);
-  NOTREACHED() << "Unknown webkit event type " << type;
-  return 0;
-}
-
-}  // namespace
 
 namespace IPC {
 
@@ -91,7 +73,9 @@ bool ParamTraits<WebInputEventPointer>::Read(const Message* m,
     NOTREACHED();
     return false;
   }
-  if (data_length != WebInputEventSizeForType(event->type)) {
+  const size_t expected_size_for_type =
+      content::WebInputEventTraits::GetSize(event->type);
+  if (data_length != static_cast<int>(expected_size_for_type)) {
     NOTREACHED();
     return false;
   }

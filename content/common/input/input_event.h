@@ -8,50 +8,29 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/input/scoped_web_input_event.h"
+#include "ui/events/latency_info.h"
+
+namespace WebKit {
+class WebInputEvent;
+}
 
 namespace content {
 
-// An id'ed event that carries a specific input payload.
+// An content-specific wrapper for WebInputEvents and associated metadata.
 class CONTENT_EXPORT InputEvent {
  public:
-  // Input data carried by the InputEvent.
-  class CONTENT_EXPORT Payload {
-   public:
-    enum Type {
-      IPC_MESSAGE,
-      WEB_INPUT_EVENT,
-      PAYLOAD_TYPE_MAX = WEB_INPUT_EVENT
-    };
-    virtual ~Payload() {}
-    virtual Type GetType() const = 0;
-  };
-
-  // A valid InputEvent has a non-zero |id| and a non-NULL |payload|.
-  static scoped_ptr<InputEvent> Create(int64 id, scoped_ptr<Payload> payload);
-
-  template <typename PayloadType>
-  static scoped_ptr<InputEvent> Create(int64 id,
-                                       scoped_ptr<PayloadType> payload) {
-    return Create(id, payload.template PassAs<Payload>());
-  }
-
   InputEvent();
-  virtual ~InputEvent();
+  InputEvent(const WebKit::WebInputEvent& web_event,
+             const ui::LatencyInfo& latency_info,
+             bool is_keyboard_shortcut);
+  ~InputEvent();
 
-  // Returns true if the initialized InputEvent is |valid()|, false otherwise.
-  bool Initialize(int64 id, scoped_ptr<Payload> payload);
-
-  int64 id() const { return id_; }
-  const Payload* payload() const { return payload_.get(); }
-  bool valid() const { return id() && payload(); }
-
- protected:
-  InputEvent(int64 id, scoped_ptr<Payload> payload);
+  ScopedWebInputEvent web_event;
+  ui::LatencyInfo latency_info;
+  bool is_keyboard_shortcut;
 
  private:
-  int64 id_;
-  scoped_ptr<Payload> payload_;
-
   DISALLOW_COPY_AND_ASSIGN(InputEvent);
 };
 

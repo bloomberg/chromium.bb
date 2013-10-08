@@ -4,25 +4,19 @@
 
 #include "content/common/input/input_event.h"
 
-#include "base/logging.h"
+#include "content/common/input/web_input_event_traits.h"
 
 namespace content {
 
-InputEvent::InputEvent() : id_(0) {}
+InputEvent::InputEvent() : is_keyboard_shortcut(false) {}
+
+InputEvent::InputEvent(const WebKit::WebInputEvent& web_event,
+                       const ui::LatencyInfo& latency_info,
+                       bool is_keyboard_shortcut)
+     : web_event(WebInputEventTraits::Clone(web_event)),
+       latency_info(latency_info),
+       is_keyboard_shortcut(is_keyboard_shortcut) {}
 
 InputEvent::~InputEvent() {}
-
-scoped_ptr<InputEvent> InputEvent::Create(int64 id,
-                                          scoped_ptr<Payload> payload) {
-  scoped_ptr<InputEvent> event(new InputEvent());
-  event->Initialize(id, payload.Pass());
-  return event.Pass();
-}
-
-bool InputEvent::Initialize(int64 id, scoped_ptr<Payload> payload) {
-  id_ = id;
-  payload_ = payload.Pass();
-  return valid();
-}
 
 }  // namespace content
