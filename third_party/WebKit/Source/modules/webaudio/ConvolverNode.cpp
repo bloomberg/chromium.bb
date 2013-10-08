@@ -28,7 +28,7 @@
 
 #include "modules/webaudio/ConvolverNode.h"
 
-#include "core/platform/audio/Reverb.h"
+#include "platform/audio/Reverb.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"

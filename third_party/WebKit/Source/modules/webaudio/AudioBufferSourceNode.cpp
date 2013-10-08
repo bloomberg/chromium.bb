@@ -29,7 +29,7 @@
 #include "modules/webaudio/AudioBufferSourceNode.h"
 
 #include "core/page/PageConsole.h"
-#include "core/platform/audio/AudioUtilities.h"
+#include "platform/audio/AudioUtilities.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"

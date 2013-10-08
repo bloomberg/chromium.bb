@@ -32,7 +32,7 @@
 #ifndef MediaStreamSource_h
 #define MediaStreamSource_h
 
-#include "core/platform/audio/AudioDestinationConsumer.h"
+#include "platform/audio/AudioDestinationConsumer.h"
 #include "core/platform/mediastream/MediaConstraints.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

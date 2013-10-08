@@ -25,7 +25,7 @@
 #ifndef DefaultAudioDestinationNode_h
 #define DefaultAudioDestinationNode_h
 
-#include "core/platform/audio/AudioDestination.h"
+#include "platform/audio/AudioDestination.h"
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "wtf/OwnPtr.h"
 

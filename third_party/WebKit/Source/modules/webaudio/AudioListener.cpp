@@ -32,7 +32,7 @@
 
 #include "modules/webaudio/AudioListener.h"
 
-#include "core/platform/audio/AudioBus.h"
+#include "platform/audio/AudioBus.h"
 
 namespace WebCore {
 

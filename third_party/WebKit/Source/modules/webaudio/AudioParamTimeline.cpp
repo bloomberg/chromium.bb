@@ -29,7 +29,7 @@
 
 #include "modules/webaudio/AudioParamTimeline.h"
 
-#include "core/platform/audio/AudioUtilities.h"
+#include "platform/audio/AudioUtilities.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>

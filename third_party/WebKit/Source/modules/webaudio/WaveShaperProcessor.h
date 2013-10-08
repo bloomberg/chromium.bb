@@ -25,8 +25,8 @@
 #ifndef WaveShaperProcessor_h
 #define WaveShaperProcessor_h
 
-#include "core/platform/audio/AudioDSPKernel.h"
-#include "core/platform/audio/AudioDSPKernelProcessor.h"
+#include "platform/audio/AudioDSPKernel.h"
+#include "platform/audio/AudioDSPKernelProcessor.h"
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/Float32Array.h"
 #include "wtf/RefPtr.h"

@@ -33,7 +33,7 @@
 
 #include "core/platform/mediastream/MediaStreamComponent.h"
 
-#include "core/platform/audio/AudioBus.h"
+#include "platform/audio/AudioBus.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "platform/UUID.h"
 #include "public/platform/WebAudioSourceProvider.h"

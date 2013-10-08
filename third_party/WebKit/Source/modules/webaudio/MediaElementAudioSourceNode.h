@@ -28,8 +28,8 @@
 #if ENABLE(WEB_AUDIO)
 
 #include "core/html/HTMLMediaElement.h"
-#include "core/platform/audio/AudioSourceProviderClient.h"
-#include "core/platform/audio/MultiChannelResampler.h"
+#include "platform/audio/AudioSourceProviderClient.h"
+#include "platform/audio/MultiChannelResampler.h"
 #include "modules/webaudio/AudioSourceNode.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"

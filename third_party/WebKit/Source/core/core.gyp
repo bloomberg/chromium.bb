@@ -666,9 +666,6 @@
             ['include', 'platform/(graphics/)?mac/[^/]*Font[^/]*\\.(cpp|mm?)$'],
             ['include', 'platform/graphics/mac/ComplexText[^/]*\\.(cpp|h)$'],
 
-            # We can use this for the fast Accelerate.framework FFT.
-            ['include', 'platform/audio/mac/FFTFrameMac\\.cpp$'],
-
             # Cherry-pick some files that can't be included by broader regexps.
             # Some of these are used instead of Chromium platform files, see
             # the specific exclusions in the "exclude" list below.

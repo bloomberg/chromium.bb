@@ -28,7 +28,7 @@
 
 #include "modules/webaudio/DynamicsCompressorNode.h"
 
-#include "core/platform/audio/DynamicsCompressor.h"
+#include "platform/audio/DynamicsCompressor.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"

@@ -25,10 +25,10 @@
 #ifndef WaveShaperDSPKernel_h
 #define WaveShaperDSPKernel_h
 
-#include "core/platform/audio/AudioArray.h"
-#include "core/platform/audio/AudioDSPKernel.h"
-#include "core/platform/audio/DownSampler.h"
-#include "core/platform/audio/UpSampler.h"
+#include "platform/audio/AudioArray.h"
+#include "platform/audio/AudioDSPKernel.h"
+#include "platform/audio/DownSampler.h"
+#include "platform/audio/UpSampler.h"
 #include "modules/webaudio/WaveShaperProcessor.h"
 #include "wtf/OwnPtr.h"
 

@@ -81,7 +81,7 @@
 #include "wtf/text/CString.h"
 
 #if ENABLE(WEB_AUDIO)
-#include "core/platform/audio/AudioSourceProvider.h"
+#include "platform/audio/AudioSourceProvider.h"
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 #endif
 

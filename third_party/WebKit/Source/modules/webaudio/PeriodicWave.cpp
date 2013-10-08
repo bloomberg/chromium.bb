@@ -32,8 +32,8 @@
 
 #include "modules/webaudio/PeriodicWave.h"
 
-#include "core/platform/audio/FFTFrame.h"
-#include "core/platform/audio/VectorMath.h"
+#include "platform/audio/FFTFrame.h"
+#include "platform/audio/VectorMath.h"
 #include "modules/webaudio/OscillatorNode.h"
 #include "wtf/OwnPtr.h"
 #include <algorithm>

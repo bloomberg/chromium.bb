@@ -27,8 +27,8 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "core/platform/audio/AudioSourceProvider.h"
-#include "core/platform/audio/AudioSourceProviderClient.h"
+#include "platform/audio/AudioSourceProvider.h"
+#include "platform/audio/AudioSourceProviderClient.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioSourceNode.h"
 #include "wtf/OwnPtr.h"

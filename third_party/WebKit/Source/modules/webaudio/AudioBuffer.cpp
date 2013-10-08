@@ -35,8 +35,8 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/audio/AudioBus.h"
-#include "core/platform/audio/AudioFileReader.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioFileReader.h"
 #include "modules/webaudio/AudioContext.h"
 
 namespace WebCore {

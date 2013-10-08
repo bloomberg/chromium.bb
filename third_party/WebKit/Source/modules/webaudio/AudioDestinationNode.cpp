@@ -28,8 +28,8 @@
 
 #include "modules/webaudio/AudioDestinationNode.h"
 
-#include "core/platform/audio/AudioUtilities.h"
-#include "core/platform/audio/DenormalDisabler.h"
+#include "platform/audio/AudioUtilities.h"
+#include "platform/audio/DenormalDisabler.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"

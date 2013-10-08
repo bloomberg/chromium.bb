@@ -25,9 +25,9 @@
 #ifndef AudioDestinationNode_h
 #define AudioDestinationNode_h
 
-#include "core/platform/audio/AudioBus.h"
-#include "core/platform/audio/AudioIOCallback.h"
-#include "core/platform/audio/AudioSourceProvider.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioIOCallback.h"
+#include "platform/audio/AudioSourceProvider.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNode.h"
 

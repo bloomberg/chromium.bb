@@ -25,7 +25,7 @@
 #ifndef AudioSummingJunction_h
 #define AudioSummingJunction_h
 
-#include "core/platform/audio/AudioBus.h"
+#include "platform/audio/AudioBus.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 

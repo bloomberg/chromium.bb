@@ -28,7 +28,7 @@
 
 #include "modules/webaudio/GainNode.h"
 
-#include "core/platform/audio/AudioBus.h"
+#include "platform/audio/AudioBus.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 

@@ -30,6 +30,7 @@
 {
   'includes': [
     '../build/win/precompile.gypi',
+    '../core/features.gypi', # FIXME: We should factor out the GYP variables we need into a separate GYPI.
     'blink_platform.gypi',
   ],
   'targets': [{
@@ -112,6 +113,16 @@
       }, { # OS!="win"
         'sources/': [
           ['exclude', 'Win\\.cpp$'],
+        ],
+      }],
+      ['"WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {
+        'dependencies': [
+          '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+        ],
+      }],
+      ['"WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1" in feature_defines', {
+        'dependencies': [
+          '<(DEPTH)/third_party/openmax_dl/dl/dl.gyp:openmax_dl',
         ],
       }],
     ],

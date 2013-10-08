@@ -28,8 +28,8 @@
 
 #include "modules/webaudio/OscillatorNode.h"
 
-#include "core/platform/audio/AudioUtilities.h"
-#include "core/platform/audio/VectorMath.h"
+#include "platform/audio/AudioUtilities.h"
+#include "platform/audio/VectorMath.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/PeriodicWave.h"

@@ -30,7 +30,7 @@
 #define PeriodicWave_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/audio/AudioArray.h"
+#include "platform/audio/AudioArray.h"
 #include "wtf/Float32Array.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"

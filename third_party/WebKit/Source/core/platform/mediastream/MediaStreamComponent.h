@@ -32,7 +32,7 @@
 #ifndef MediaStreamComponent_h
 #define MediaStreamComponent_h
 
-#include "core/platform/audio/AudioSourceProvider.h"
+#include "platform/audio/AudioSourceProvider.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/ThreadingPrimitives.h"

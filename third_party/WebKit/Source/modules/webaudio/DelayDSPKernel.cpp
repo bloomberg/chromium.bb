@@ -28,7 +28,7 @@
 
 #include "modules/webaudio/DelayDSPKernel.h"
 
-#include "core/platform/audio/AudioUtilities.h"
+#include "platform/audio/AudioUtilities.h"
 #include <algorithm>
 
 using namespace std;

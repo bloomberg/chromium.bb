@@ -25,9 +25,9 @@
 #ifndef BiquadProcessor_h
 #define BiquadProcessor_h
 
-#include "core/platform/audio/AudioDSPKernel.h"
-#include "core/platform/audio/AudioDSPKernelProcessor.h"
-#include "core/platform/audio/Biquad.h"
+#include "platform/audio/AudioDSPKernel.h"
+#include "platform/audio/AudioDSPKernelProcessor.h"
+#include "platform/audio/Biquad.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
 #include "wtf/RefPtr.h"

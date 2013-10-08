@@ -33,7 +33,7 @@
 
 #include "WebAudioSourceProviderClient.h"
 #include "WebMediaPlayerClient.h"
-#include "core/platform/audio/AudioSourceProvider.h"
+#include "platform/audio/AudioSourceProvider.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #if OS(ANDROID)

@@ -25,7 +25,7 @@
 #ifndef OscillatorNode_h
 #define OscillatorNode_h
 
-#include "core/platform/audio/AudioBus.h"
+#include "platform/audio/AudioBus.h"
 #include "modules/webaudio/AudioParam.h"
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 #include "wtf/OwnArrayPtr.h"

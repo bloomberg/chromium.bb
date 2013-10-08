@@ -28,10 +28,10 @@
 
 #include "modules/webaudio/RealtimeAnalyser.h"
 
-#include "core/platform/audio/AudioBus.h"
-#include "core/platform/audio/AudioUtilities.h"
-#include "core/platform/audio/FFTFrame.h"
-#include "core/platform/audio/VectorMath.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioUtilities.h"
+#include "platform/audio/FFTFrame.h"
+#include "platform/audio/VectorMath.h"
 
 #include <algorithm>
 #include <limits.h>

@@ -28,8 +28,8 @@
 
 #include "modules/webaudio/AudioBasicProcessorNode.h"
 
-#include "core/platform/audio/AudioBus.h"
-#include "core/platform/audio/AudioProcessor.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioProcessor.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"

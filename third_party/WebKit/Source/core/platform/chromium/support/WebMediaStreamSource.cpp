@@ -32,7 +32,7 @@
 
 #include "public/platform/WebMediaStreamSource.h"
 
-#include "core/platform/audio/AudioBus.h"
+#include "platform/audio/AudioBus.h"
 #include "core/platform/mediastream/MediaConstraints.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebAudioDestinationConsumer.h"
