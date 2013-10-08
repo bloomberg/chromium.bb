@@ -215,10 +215,10 @@ _settings = dict(
 # master -- This bot pushes changes to the overlays.
   master=False,
 
-# important -- Master bot uses important bots to determine overall status.
-#              i.e. if master bot succeeds and other important slaves succeed
-#              then the master will uprev packages.  This should align
-#              with info vs. closer except for the master and options.tests.
+# important -- If False, this flag indicates that the CQ should not check
+#              whether this bot passed or failed. Set this to False if you are
+#              setting up a new bot. Once the bot is on the waterfall and is
+#              consistently green, mark the builder as important=True.
   important=False,
 
 # internal -- Whether this is an internal build config.
