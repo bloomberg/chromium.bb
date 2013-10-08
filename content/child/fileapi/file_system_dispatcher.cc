@@ -234,7 +234,7 @@ void FileSystemDispatcher::Remove(
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
   ChildThread::current()->Send(
-      new FileSystemMsg_Remove(request_id, path, recursive));
+      new FileSystemHostMsg_Remove(request_id, path, recursive));
 }
 
 void FileSystemDispatcher::ReadMetadata(

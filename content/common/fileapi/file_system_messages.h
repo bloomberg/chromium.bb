@@ -105,7 +105,7 @@ IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Copy,
                      GURL /* dest path */)
 
 // WebFileSystem::remove() message.
-IPC_MESSAGE_CONTROL3(FileSystemMsg_Remove,
+IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Remove,
                      int /* request_id */,
                      GURL /* path */,
                      bool /* recursive */)

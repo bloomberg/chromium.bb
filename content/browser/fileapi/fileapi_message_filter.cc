@@ -171,7 +171,7 @@ bool FileAPIMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_DeleteFileSystem, OnDeleteFileSystem)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Move, OnMove)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Copy, OnCopy)
-    IPC_MESSAGE_HANDLER(FileSystemMsg_Remove, OnRemove)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Remove, OnRemove)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_ReadMetadata, OnReadMetadata)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Create, OnCreate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Exists, OnExists)
