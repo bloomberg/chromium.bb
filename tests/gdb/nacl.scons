@@ -3,23 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import atexit
 import os
-import tempfile
 
 Import('env')
-
-def MakeTempFile(prefix='gdb_mmap'):
-  temporary_file = tempfile.mkstemp(prefix=prefix)
-  os.close(temporary_file[0])
-  temporary_file = temporary_file[1]
-  def Cleanup():
-    try:
-      os.unlink(temporary_file)
-    except OSError:
-      pass
-  atexit.register(Cleanup)
-  return temporary_file
 
 if 'TRUSTED_ENV' not in env:
   Return()
@@ -73,7 +59,9 @@ gdb_test_guest = env.GetTranslatedNexe(gdb_test_guest)
 # temporary file argument, and we encapsulate this here for brevity /
 # to avoid code duplication.
 def TempFileArguments():
-  return ','.join(['-f', MakeTempFile()])
+  temp_handle, temp_path = env.MakeTempFile(prefix='gdb_mmap')
+  os.close(temp_handle)
+  return ','.join(['-f', temp_path])
 
 node = env.CommandTest(
     'gdb_stepi_after_break.out',

@@ -3,10 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import tempfile # for gio_test
+import os
 
 Import('env')
-
 
 env.DualLibrary('gio',
                 ['gio.c',
@@ -38,12 +37,14 @@ gio_test_exe = gtest_env.ComponentProgram(
     EXTRA_LIBS=['gio', 'platform', 'gio_test'])
 
 # temp file will be removed by gio_test (if it compiles and test completes).
-temppath = tempfile.NamedTemporaryFile(prefix="gio", suffix=".tmp").name
+temp_handle, temp_path = env.MakeTempFile(prefix='tmp_gio', suffix='.tmp')
+os.close(temp_handle)
+
 node = gtest_env.CommandTest(
     'gio_test_output.xml.out',
     command=[gio_test_exe,
              '--gtest_output=xml:${TARGET}',
-             '-t', temppath,
+             '-t', temp_path,
    # Note: to regenerate the premade_text/binary_file, use "make_premade.py"
              '-x', env.File('premade_text_file'),
              '-b', env.File('premade_binary_file'),
@@ -58,12 +59,14 @@ gio_test_exe = gtest_env.ComponentProgram(
     EXTRA_LIBS=['gio', 'platform', 'gio_test'])
 
 # temp file will be removed by gio_pio_test (if it compiles and completes).
-temppath = tempfile.NamedTemporaryFile(prefix="gio_pio", suffix=".tmp").name
+temp_handle, temp_path = env.MakeTempFile(prefix='tmp_gio_pio', suffix='.tmp')
+os.close(temp_handle)
+
 node = gtest_env.CommandTest(
     'gio_pio_test_output.xml.out',
     command=[gio_test_exe,
              '--gtest_output=xml:${TARGET}',
-             '-t', temppath,
+             '-t', temp_path,
    # Note: to regenerate the premade_text/binary_file, use "make_premade.py"
              '-x', env.File('premade_text_file'),
              '-b', env.File('premade_binary_file'),

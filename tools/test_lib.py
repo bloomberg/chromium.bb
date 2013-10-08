@@ -296,7 +296,10 @@ def MakeTempFile(env, **kwargs):
   handle, path = tempfile.mkstemp()
   def Cleanup():
     try:
-      os.unlink(path)
+      # Try to remove the file but only if it exists. Some tests may clean up
+      # after themselves.
+      if os.path.exists(path):
+        os.unlink(path)
     except BaseException as e:
       sys.stderr.write('Unable to delete file %s on exit: %s\n' % (
         path, e))

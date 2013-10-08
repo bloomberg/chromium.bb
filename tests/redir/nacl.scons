@@ -3,9 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import atexit
 import os
-import tempfile
 
 Import('env')
 
@@ -34,21 +32,10 @@ if not env.Bit('host_windows'):
 # we immediately close to ensure that python is not holding on to a
 # file handle, so that on Windows, the Cleanup use of unlink will not
 # fail due to us still having an open file handle.
-(_, outfile)=tempfile.mkstemp()
+(_, outfile) = env.MakeTempFile(prefix='tmp_redir')
 os.close(_)
-(_, errfile)=tempfile.mkstemp()
+(_, errfile) = env.MakeTempFile(prefix='tmp_redir')
 os.close(_)
-
-def CleanupBinder(fname):
-  def Cleanup():
-    try:
-      os.unlink(fname)
-    except OSError:
-      pass
-  return Cleanup
-
-atexit.register(CleanupBinder(outfile))
-atexit.register(CleanupBinder(errfile))
 
 node = env.CommandSelLdrTestNacl(
     'redir_test.out',

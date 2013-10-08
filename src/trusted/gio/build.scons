@@ -3,11 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import atexit
 import os
-import platform
-import sys
-import tempfile
 
 Import('env')
 
@@ -73,21 +69,8 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
                   'gio',
                   ])
 
-  # atexit processing is necessary because on windows, the process
-  # itself often cannot unlink the file -- the python process has an
-  # open file handle, and windows refuses to unlink a file that is
-  # already open.
-  temporary_file = tempfile.mktemp()
-
-  def CleanupBinder(fn):
-    def Cleanup():
-      try:
-        os.unlink(fn)
-      except OSError:
-        pass
-    return Cleanup
-
-  atexit.register(CleanupBinder(temporary_file))
+  temp_handle, temp_path = env.MakeTempFile(prefix='tmp_gio')
+  os.close(temp_handle)
 
   node = env.CommandTest('gio_nacl_desc_test.out',
                          command = [gio_nacl_desc_test_exe,
@@ -96,6 +79,6 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
                                     # it's used just as a file with
                                     # bytes, not as a NaCl module.
                                     env.File('../service_runtime/testdata/fib_array.nexe'),
-                                    temporary_file])
+                                    temp_path])
 
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_nacl_desc_test')

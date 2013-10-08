@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-import tempfile
+import os
 
 Import('env')
 
@@ -84,7 +84,10 @@ nacl_desc_quota_test_exe = env.ComponentProgram('nacl_desc_quota_test',
                                                             'platform',
                                                             'gio',])
 
-temp_path = tempfile.mktemp()  # test program unlinks
+# Create a temporary file and close the handle. The nacl_desc_quota_test test
+# will remove the file.
+temp_handle, temp_path = env.MakeTempFile(prefix='tmp_desc')
+os.close(temp_handle)
 
 node = env.CommandTest('nacl_desc_quota_test.out',
                        command=[nacl_desc_quota_test_exe,
