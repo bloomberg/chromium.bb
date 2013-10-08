@@ -1078,7 +1078,7 @@ crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
 crbug.com/282082 inspector/debugger/live-edit.html [ Failure Timeout ]
 crbug.com/282086 [ XP Release ] virtual/gpu/fast/canvas/webgl/gl-uniform-arrays.html [ Pass Timeout ]
-crbug.com/282087 fast/dom/shadow/css-cue-for-video-in-shadow-2.html [ Pass Timeout ]
+crbug.com/282087 media/track/css-cue-for-video-in-shadow-2.html [ Pass Timeout ]
 crbug.com/282089 [ Win7 Debug ] plugins/override-node-method.html [ Crash Pass ]
 crbug.com/282091 fast/forms/time-multiple-fields/time-multiple-fields-speech-crash.html [ Pass Timeout ]
 crbug.com/282092 [ Mac ] svg/dom/SVGLength-px-with-context.html [ Failure Pass ]
