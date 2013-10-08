@@ -64,9 +64,12 @@
     {
       'target_name': 'mojo_system',
       # TODO(vtl): This should probably be '<(component)'; make it work.
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+      ],
+      'defines': [
+        'MOJO_SYSTEM_IMPLEMENTATION',
       ],
       'sources': [
         'public/system/core.h',
@@ -118,6 +121,32 @@
         'system/waiter_test_utils.cc',
         'system/waiter_test_utils.h',
         'system/waiter_unittest.cc',
+      ],
+    },
+    {
+      'target_name': 'mojo_shell',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'mojo_system'
+      ],
+      'sources': [
+        'shell/app_container.cc',
+        'shell/app_container.h',
+        'shell/shell.cc',
+        'shell/switches.cc',
+        'shell/switches.h',
+      ],
+    },
+    {
+      'target_name': 'sample_app',
+      'type': '<(component)',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'mojo_system',
+      ],
+      'sources': [
+        'shell/sample_app.cc',
       ],
     },
   ],
