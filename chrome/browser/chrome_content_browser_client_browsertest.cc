@@ -109,7 +109,7 @@ class InstantNTPURLRewriteTest : public ChromeContentBrowserClientBrowserTest {
 IN_PROC_BROWSER_TEST_F(InstantNTPURLRewriteTest,
                        UberURLHandler_InstantExtendedNewTabPage) {
   const GURL url_original("chrome://newtab");
-  const GURL url_rewritten("http://example.com/newtab");
+  const GURL url_rewritten("https://example.com/newtab");
   InstallTemplateURLWithNewTabPage(url_rewritten);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
       "Group1 use_cacheable_ntp:1"));
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
   // Don't do the kSingleProcess shenanigans here (see the dual test) because
   // otherwise RenderViewImpl crashes in a paranoid fit on startup.
   const GURL url_original("chrome://newtab");
-  const GURL url_rewritten("http://example.com/newtab");
+  const GURL url_rewritten("https://example.com/newtab");
   InstallTemplateURLWithNewTabPage(url_rewritten);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
       "Group1 use_cacheable_ntp:1"));

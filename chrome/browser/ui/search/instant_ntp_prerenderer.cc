@@ -242,9 +242,11 @@ void InstantNTPPrerenderer::ResetNTP(const std::string& instant_url) {
   // Instant NTP is only used in extended mode so we should always have a
   // non-empty URL to use.
   DCHECK(!instant_url.empty());
-  ntp_.reset(new InstantNTP(this, instant_url, profile_));
-  ntp_->InitContents(base::Bind(&InstantNTPPrerenderer::ReloadInstantNTP,
-                                base::Unretained(this)));
+  if (!chrome::ShouldUseCacheableNTP()) {
+    ntp_.reset(new InstantNTP(this, instant_url, profile_));
+    ntp_->InitContents(base::Bind(&InstantNTPPrerenderer::ReloadInstantNTP,
+                                  base::Unretained(this)));
+  }
 }
 
 bool InstantNTPPrerenderer::PageIsCurrent() const {

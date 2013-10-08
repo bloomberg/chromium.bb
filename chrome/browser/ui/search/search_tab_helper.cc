@@ -77,8 +77,11 @@ bool IsSearchResults(const content::WebContents* contents) {
 }
 
 bool IsLocal(const content::WebContents* contents) {
-  return contents &&
-      contents->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
+  if (!contents)
+    return false;
+  const content::NavigationEntry* entry =
+      contents->GetController().GetVisibleEntry();
+  return entry && entry->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
 // Returns true if |contents| are rendered inside an Instant process.

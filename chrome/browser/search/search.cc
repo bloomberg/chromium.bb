@@ -445,15 +445,22 @@ GURL GetNewTabPageURL(Profile* profile) {
   if (!ShouldUseCacheableNTP())
     return GURL();
 
-  if (!profile || !IsSuggestPrefEnabled(profile))
+  if (!profile || profile->IsOffTheRecord())
     return GURL();
+
+  if (!IsSuggestPrefEnabled(profile))
+    return GURL(chrome::kChromeSearchLocalNtpUrl);
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   if (!template_url)
-    return GURL();
+    return GURL(chrome::kChromeSearchLocalNtpUrl);
 
-  return TemplateURLRefToGURL(template_url->new_tab_url_ref(),
-                              kDisableStartMargin, false);
+  GURL url(TemplateURLRefToGURL(template_url->new_tab_url_ref(),
+                                kDisableStartMargin, false));
+  if (!url.is_valid() || !url.SchemeIsSecure())
+    return GURL(chrome::kChromeSearchLocalNtpUrl);
+
+  return url;
 }
 
 GURL GetLocalInstantURL(Profile* profile) {
