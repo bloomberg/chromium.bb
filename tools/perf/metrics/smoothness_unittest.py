@@ -5,8 +5,8 @@
 import random
 import unittest
 
-from metrics import discrepancy
 from metrics import smoothness
+from metrics import statistics
 from metrics.gpu_rendering_stats import GpuRenderingStats
 from telemetry.core.backends.chrome.tracing_backend import RawTraceResultImpl
 from telemetry.core.backends.chrome.trace_result import TraceResult
@@ -210,7 +210,7 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
     # We don't verify the correctness of the discrepancy computation itself,
     # because we have a separate unit test for that purpose.
     self.assertAlmostEquals(
-        discrepancy.FrameDiscrepancy(stats.screen_frame_timestamps, True),
+        statistics.FrameDiscrepancy(stats.screen_frame_timestamps, True),
         res.page_results[0]['jank'].value,
         places=4)
 
@@ -219,6 +219,6 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
     # The 17 here represents a threshold of 17 ms; this should match the value
     # in the smoothness metric.
     self.assertEquals(
-        smoothness.Percentile(expected_frame_times, 95.0) < 17.0,
+        statistics.Percentile(expected_frame_times, 95.0) < 17.0,
         res.page_results[0]['mostly_smooth'].value)
 
