@@ -166,9 +166,6 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   // A path for custom dictionary.
   base::FilePath custom_dictionary_path_;
 
-  // Used to create weak pointers for an instance of this class.
-  base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;
-
   // Observers for changes in dictionary load status and content changes.
   ObserverList<Observer> observers_;
 
@@ -180,6 +177,9 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
 
   // True if the dictionary has been loaded. Otherwise false.
   bool is_loaded_;
+
+  // Used to create weak pointers for an instance of this class.
+  base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckCustomDictionary);
 };

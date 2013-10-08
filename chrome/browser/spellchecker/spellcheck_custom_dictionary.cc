@@ -218,8 +218,8 @@ bool SpellcheckCustomDictionary::Change::empty() const {
 SpellcheckCustomDictionary::SpellcheckCustomDictionary(
     const base::FilePath& path)
     : custom_dictionary_path_(),
-      weak_ptr_factory_(this),
-      is_loaded_(false) {
+      is_loaded_(false),
+      weak_ptr_factory_(this) {
   custom_dictionary_path_ =
       path.Append(chrome::kCustomDictionaryFileName);
 }
