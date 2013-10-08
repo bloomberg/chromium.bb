@@ -132,11 +132,14 @@ void History::go(ScriptExecutionContext* context, int distance)
 
 KURL History::urlForState(const String& urlString)
 {
-    KURL baseURL = m_frame->document()->baseURL();
-    if (urlString.isEmpty())
-        return baseURL;
+    Document* document = m_frame->document();
 
-    return KURL(baseURL, urlString);
+    if (urlString.isNull())
+        return document->url();
+    if (urlString.isEmpty())
+        return document->baseURL();
+
+    return KURL(document->baseURL(), urlString);
 }
 
 void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& /* title */, const String& urlString, SameDocumentNavigationSource sameDocumentNavigationSource, ExceptionState& es)
