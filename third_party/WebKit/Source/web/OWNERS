@@ -4,9 +4,10 @@ darin@chromium.org
 dglazkov@chromium.org
 jamesr@chromium.org
 jochen@chromium.org
+ojan@chromium.org
+pfeldman@chromium.org
 tkent@chromium.org
 tony@chromium.org
-pfeldman@chromium.org
 
 # Bindings owners for WebBindings.cpp
 per-file WebBindings.cpp=adamk@chromium.org
