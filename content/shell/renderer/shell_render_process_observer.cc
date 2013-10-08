@@ -79,6 +79,10 @@ void ShellRenderProcessObserver::WebKitInitialized() {
   test_interfaces_->resetAll();
 }
 
+void ShellRenderProcessObserver::OnRenderProcessShutdown() {
+  test_interfaces_.reset();
+}
+
 bool ShellRenderProcessObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;

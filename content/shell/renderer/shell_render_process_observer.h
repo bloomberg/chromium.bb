@@ -38,6 +38,7 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
 
   // RenderProcessObserver implementation.
   virtual void WebKitInitialized() OVERRIDE;
+  virtual void OnRenderProcessShutdown() OVERRIDE;
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
   WebTestRunner::WebTestDelegate* test_delegate() const {
