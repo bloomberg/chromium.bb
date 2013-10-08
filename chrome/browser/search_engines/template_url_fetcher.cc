@@ -8,16 +8,12 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -28,9 +24,7 @@
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------
-class TemplateURLFetcher::RequestDelegate
-    : public net::URLFetcherDelegate,
-      public content::NotificationObserver {
+class TemplateURLFetcher::RequestDelegate : public net::URLFetcherDelegate {
  public:
   // Takes ownership of |callbacks|.
   RequestDelegate(TemplateURLFetcher* fetcher,
@@ -40,11 +34,6 @@ class TemplateURLFetcher::RequestDelegate
                   content::WebContents* web_contents,
                   TemplateURLFetcherCallbacks* callbacks,
                   ProviderType provider_type);
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // net::URLFetcherDelegate:
   // If data contains a valid OSDD, a TemplateURL is created and added to
@@ -61,6 +50,7 @@ class TemplateURLFetcher::RequestDelegate
   ProviderType provider_type() const { return provider_type_; }
 
  private:
+  void OnLoaded();
   void AddSearchProvider();
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
@@ -72,8 +62,7 @@ class TemplateURLFetcher::RequestDelegate
   const ProviderType provider_type_;
   scoped_ptr<TemplateURLFetcherCallbacks> callbacks_;
 
-  // Handles registering for our notifications.
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<TemplateURLService::Subscription> template_url_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestDelegate);
 };
@@ -100,9 +89,9 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
 
   if (!model->loaded()) {
     // Start the model load and set-up waiting for it.
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                   content::Source<TemplateURLService>(model));
+    template_url_subscription_ = model->RegisterOnLoadedCallback(
+        base::Bind(&TemplateURLFetcher::RequestDelegate::OnLoaded,
+                   base::Unretained(this)));
     model->Load();
   }
 
@@ -119,12 +108,8 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   url_fetcher_->Start();
 }
 
-void TemplateURLFetcher::RequestDelegate::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
-
+void TemplateURLFetcher::RequestDelegate::OnLoaded() {
+  template_url_subscription_.reset();
   if (!template_url_.get())
     return;
   AddSearchProvider();

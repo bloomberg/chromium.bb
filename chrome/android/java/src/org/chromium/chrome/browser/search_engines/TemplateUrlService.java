@@ -161,7 +161,8 @@ public class TemplateUrlService {
     }
 
     /**
-     * Registers a listener for the TEMPLATE_URL_SERVICE_LOADED notification.
+     * Registers a listener for the callback that indicates that the
+     * TemplateURLService has loaded.
      */
     public void registerLoadListener(LoadListener listener) {
         ThreadUtils.assertOnUiThread();
@@ -170,7 +171,8 @@ public class TemplateUrlService {
     }
 
     /**
-     * Unregisters a listener for the TEMPLATE_URL_SERVICE_LOADED notification.
+     * Unregisters a listener for the callback that indicates that the
+     * TemplateURLService has loaded.
      */
     public void unregisterLoadListener(LoadListener listener) {
         ThreadUtils.assertOnUiThread();

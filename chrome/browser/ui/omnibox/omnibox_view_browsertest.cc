@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -262,13 +261,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
         TemplateURLServiceFactory::GetForProfile(profile);
     ASSERT_TRUE(model);
 
-    if (!model->loaded()) {
-      content::NotificationRegistrar registrar;
-      registrar.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                    content::Source<TemplateURLService>(model));
-      model->Load();
-      content::RunMessageLoop();
-    }
+    ui_test_utils::WaitForTemplateURLServiceToLoad(model);
 
     ASSERT_TRUE(model->loaded());
     // Remove built-in template urls, like google.com, bing.com etc., as they
@@ -364,7 +357,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
       case chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY:
       case chrome::NOTIFICATION_HISTORY_LOADED:
       case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
-      case chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED:
         break;
       default:
         FAIL() << "Unexpected notification type";

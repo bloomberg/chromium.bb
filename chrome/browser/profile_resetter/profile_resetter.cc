@@ -6,7 +6,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_source.h"
 
 ProfileResetter::ProfileResetter(Profile* profile)
     : profile_(profile),
@@ -32,8 +30,6 @@ ProfileResetter::ProfileResetter(Profile* profile)
       cookies_remover_(NULL) {
   DCHECK(CalledOnValidThread());
   DCHECK(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                 content::Source<TemplateURLService>(template_url_service_));
 }
 
 ProfileResetter::~ProfileResetter() {
@@ -108,13 +104,13 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
                                      callback_);
     callback_.Reset();
     master_settings_.reset();
+    template_url_service_sub_.reset();
   }
 }
 
 void ProfileResetter::ResetDefaultSearchEngine() {
   DCHECK(CalledOnValidThread());
   DCHECK(template_url_service_);
-
   // If TemplateURLServiceFactory is ready we can clean it right now.
   // Otherwise, load it and continue from ProfileResetter::Observe.
   if (template_url_service_->loaded()) {
@@ -142,6 +138,10 @@ void ProfileResetter::ResetDefaultSearchEngine() {
 
     MarkAsDone(DEFAULT_SEARCH_ENGINE);
   } else {
+    template_url_service_sub_ =
+        template_url_service_->RegisterOnLoadedCallback(
+            base::Bind(&ProfileResetter::OnTemplateURLServiceLoaded,
+                       base::Unretained(this)));
     template_url_service_->Load();
   }
 }
@@ -249,12 +249,11 @@ void ProfileResetter::ResetPinnedTabs() {
   MarkAsDone(PINNED_TABS);
 }
 
-void ProfileResetter::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  DCHECK(CalledOnValidThread());
+void ProfileResetter::OnTemplateURLServiceLoaded() {
   // TemplateURLService has loaded. If we need to clean search engines, it's
   // time to go on.
+  DCHECK(CalledOnValidThread());
+  template_url_service_sub_.reset();
   if (pending_reset_flags_ & DEFAULT_SEARCH_ENGINE)
     ResetDefaultSearchEngine();
 }

@@ -10,17 +10,14 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 
 class Profile;
-class TemplateURLService;
 
 // This class allows resetting certain aspects of a profile to default values.
 // It is used in case the profile has been damaged due to malware or bad user
 // settings.
 class ProfileResetter : public base::NonThreadSafe,
-                        public content::NotificationObserver,
                         public BrowsingDataRemover::Observer {
  public:
   // Flags indicating what aspects of a profile shall be reset.
@@ -69,13 +66,11 @@ class ProfileResetter : public base::NonThreadSafe,
   void ResetStartupPages();
   void ResetPinnedTabs();
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // BrowsingDataRemover::Observer:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+
+  // Callback for when TemplateURLService has loaded.
+  void OnTemplateURLServiceLoaded();
 
   Profile* const profile_;
   scoped_ptr<BrandcodedDefaultSettings> master_settings_;
@@ -88,11 +83,11 @@ class ProfileResetter : public base::NonThreadSafe,
   // Called on UI thread when reset has been completed.
   base::Closure callback_;
 
-  content::NotificationRegistrar registrar_;
-
   // If non-null it means removal is in progress. BrowsingDataRemover takes care
   // of deleting itself when done.
   BrowsingDataRemover* cookies_remover_;
+
+  scoped_ptr<TemplateURLService::Subscription> template_url_service_sub_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileResetter);
 };

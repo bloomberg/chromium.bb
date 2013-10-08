@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -53,8 +54,8 @@ struct URLVisitedDetails;
 // TemplateURLService does not load the vector of TemplateURLs in its
 // constructor (except for testing). Use the Load method to trigger a load.
 // When TemplateURLService has completed loading, observers are notified via
-// OnTemplateURLServiceChanged as well as the TEMPLATE_URL_SERVICE_LOADED
-// notification message.
+// OnTemplateURLServiceChanged, or by a callback registered prior to calling
+// the Load method.
 //
 // TemplateURLService takes ownership of any TemplateURL passed to it. If there
 // is a WebDataService, deletion is handled by WebDataService, otherwise
@@ -70,6 +71,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Type for a static function pointer that acts as a time source.
   typedef base::Time(TimeProvider)();
   typedef std::map<std::string, syncer::SyncData> SyncDataMap;
+  typedef base::CallbackList<void(void)>::Subscription Subscription;
 
   // Struct used for initializing the data store with fake data.
   // Each initializer is mapped to a TemplateURL.
@@ -263,6 +265,12 @@ class TemplateURLService : public WebDataServiceConsumer,
   // OnTemplateURLServiceChanged.
   void Load();
 
+  // Registers a callback to be called when the service has loaded.
+  //
+  // If the service has already loaded, this function does nothing.
+  scoped_ptr<Subscription> RegisterOnLoadedCallback(
+      const base::Closure& callback);
+
 #if defined(UNIT_TEST)
   void set_loaded(bool value) { loaded_ = value; }
 #endif
@@ -437,10 +445,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Transitions to the loaded state.
   void ChangeToLoadedState();
-
-  // If there is a notification service, sends TEMPLATE_URL_SERVICE_LOADED
-  // notification.
-  void NotifyLoaded();
 
   // Saves enough of url to preferences so that it can be loaded from
   // preferences on start up.
@@ -730,6 +734,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // We set this value to increasingly specific values when we know what is the
   // cause/origin of a default search change.
   DefaultSearchChangeOrigin dsp_change_origin_;
+
+  // Stores a list of callbacks to be run after TemplateURLService has loaded.
+  base::CallbackList<void(void)> on_loaded_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };

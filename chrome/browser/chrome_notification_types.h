@@ -343,11 +343,6 @@ enum NotificationType {
 
   // Non-history storage services --------------------------------------------
 
-  // Notification that the TemplateURLService has finished loading from the
-  // database. The source is the TemplateURLService, and the details are
-  // NoDetails.
-  NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-
   // Sent when a TemplateURL is removed from the model. The source is the
   // Profile, and the details the id of the TemplateURL being removed.
   NOTIFICATION_TEMPLATE_URL_REMOVED,

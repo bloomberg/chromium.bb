@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/public/browser/notification_service.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -137,10 +135,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   EXPECT_FALSE(syncable_service_.syncing());
 
   // Send the notification that the TemplateURLService has started.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-      content::Source<TemplateURLService>(test_util_.model()),
-      content::NotificationService::NoDetails());
+  PreloadTemplateURLService();
   EXPECT_EQ(DataTypeController::MODEL_LOADED, search_engine_dtc_->state());
 
   // Wait until WebDB is loaded before we shut it down.

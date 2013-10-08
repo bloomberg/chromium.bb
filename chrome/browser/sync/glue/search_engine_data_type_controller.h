@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/ui_data_type_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -15,27 +17,22 @@
 
 namespace browser_sync {
 
-class SearchEngineDataTypeController : public UIDataTypeController,
-                                       public content::NotificationObserver {
+class SearchEngineDataTypeController : public UIDataTypeController {
  public:
   SearchEngineDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
 
-  // content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
   virtual ~SearchEngineDataTypeController();
 
   // FrontendDataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
-  virtual void StopModels() OVERRIDE;
 
-  content::NotificationRegistrar registrar_;
+  void OnTemplateURLServiceLoaded();
+
+  scoped_ptr<TemplateURLService::Subscription> template_url_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineDataTypeController);
 };

@@ -5,18 +5,16 @@
 #include "chrome/browser/search_engines/template_url_service_android.h"
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "content/public/browser/notification_source.h"
 #include "jni/TemplateUrlService_jni.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -37,25 +35,13 @@ TemplateUrlServiceAndroid::TemplateUrlServiceAndroid(JNIEnv* env,
     : weak_java_obj_(env, obj),
       template_url_service_(
           TemplateURLServiceFactory::GetForProfile(GetOriginalProfile())) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                 content::Source<TemplateURLService>(template_url_service_));
+  template_url_subscription_ =
+      template_url_service_->RegisterOnLoadedCallback(
+          base::Bind(&TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded,
+                     base::Unretained(this)));
 }
 
 TemplateUrlServiceAndroid::~TemplateUrlServiceAndroid() {
-}
-
-void TemplateUrlServiceAndroid::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED, type);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (weak_java_obj_.get(env).is_null())
-    return;
-
-  Java_TemplateUrlService_templateUrlServiceLoaded(env,
-      weak_java_obj_.get(env).obj());
 }
 
 void TemplateUrlServiceAndroid::Load(JNIEnv* env, jobject obj) {
@@ -138,6 +124,16 @@ TemplateUrlServiceAndroid::GetPrepopulatedTemplateUrlAt(JNIEnv* env,
 
 bool TemplateUrlServiceAndroid::IsPrepopulatedTemplate(TemplateURL* url) {
   return url->prepopulate_id() > 0;
+}
+
+void TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded() {
+  template_url_subscription_.reset();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (weak_java_obj_.get(env).is_null())
+    return;
+
+  Java_TemplateUrlService_templateUrlServiceLoaded(
+      env, weak_java_obj_.get(env).obj());
 }
 
 base::android::ScopedJavaLocalRef<jstring>

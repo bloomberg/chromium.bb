@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -10,8 +9,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -25,27 +22,19 @@ class TemplateURLScraperTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TemplateURLScraperTest);
 };
 
-class TemplateURLServiceLoader : public content::NotificationObserver {
+class TemplateURLServiceLoader {
  public:
   explicit TemplateURLServiceLoader(TemplateURLService* model) : model_(model) {
-    registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                   content::Source<TemplateURLService>(model));
+    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+        new content::MessageLoopRunner;
+    scoped_ptr<TemplateURLService::Subscription> subscription =
+        model_->RegisterOnLoadedCallback(
+            message_loop_runner->QuitClosure());
     model_->Load();
-    content::RunMessageLoop();
-  }
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-    if (type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED &&
-        content::Source<TemplateURLService>(source).ptr() == model_) {
-      base::MessageLoop::current()->Quit();
-    }
+    message_loop_runner->Run();
   }
 
  private:
-  content::NotificationRegistrar registrar_;
-
   TemplateURLService* model_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceLoader);

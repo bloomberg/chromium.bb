@@ -15,9 +15,8 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time/time.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
 #include "webkit/common/quota/quota_types.h"
 
@@ -50,11 +49,11 @@ struct SessionStorageUsageInfo;
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
 
-class BrowsingDataRemover : public content::NotificationObserver
+class BrowsingDataRemover
 #if defined(ENABLE_PLUGINS)
-                            , public PepperFlashSettingsManager::Client
+    : public PepperFlashSettingsManager::Client
 #endif
-                            {
+    {
  public:
   // Time period ranges available when doing browsing data removals.
   enum TimePeriod {
@@ -214,13 +213,9 @@ class BrowsingDataRemover : public content::NotificationObserver
   friend class base::DeleteHelper<BrowsingDataRemover>;
   virtual ~BrowsingDataRemover();
 
-  // content::NotificationObserver method. Callback when TemplateURLService has
-  // finished loading. Deletes the entries from the model, and if we're not
-  // waiting on anything else notifies observers and deletes this
-  // BrowsingDataRemover.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Callback for when TemplateURLService has finished loading. Clears the data,
+  // clears the respective waiting flag, and invokes NotifyAndDeleteIfDone.
+  void OnKeywordsLoaded();
 
   // Called when plug-in data has been cleared. Invokes NotifyAndDeleteIfDone.
   void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
@@ -243,33 +238,35 @@ class BrowsingDataRemover : public content::NotificationObserver
   // object.
   void NotifyAndDeleteIfDone();
 
-  // Callback when the hostname resolution cache has been cleared.
+  // Callback for when the hostname resolution cache has been cleared.
   // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
   void OnClearedHostnameResolutionCache();
 
   // Invoked on the IO thread to clear the hostname resolution cache.
   void ClearHostnameResolutionCacheOnIOThread(IOThread* io_thread);
 
-  // Callback when the LoggedIn Predictor has been cleared.
+  // Callback for when the LoggedIn Predictor has been cleared.
   // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
   void OnClearedLoggedInPredictor();
 
   // Clears the LoggedIn Predictor.
   void ClearLoggedInPredictor();
 
-  // Callback when speculative data in the network Predictor has been cleared.
-  // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
+  // Callback for when speculative data in the network Predictor has been
+  // cleared. Clears the respective waiting flag and invokes
+  // NotifyAndDeleteIfDone.
   void OnClearedNetworkPredictor();
 
   // Invoked on the IO thread to clear speculative data related to hostname
   // pre-resolution from the network Predictor.
   void ClearNetworkPredictorOnIOThread();
 
-  // Callback when network related data in ProfileIOData has been cleared.
+  // Callback for when network related data in ProfileIOData has been cleared.
   // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
   void OnClearedNetworkingHistory();
 
-  // Callback when the cache has been deleted. Invokes NotifyAndDeleteIfDone.
+  // Callback for when the cache has been deleted. Invokes
+  // NotifyAndDeleteIfDone.
   void ClearedCache();
 
   // Invoked on the IO thread to delete from the cache.
@@ -338,7 +335,7 @@ class BrowsingDataRemover : public content::NotificationObserver
   // deleted. Updates the waiting flag and invokes NotifyAndDeleteIfDone.
   void OnQuotaManagedDataDeleted();
 
-  // Callback when Cookies has been deleted. Invokes NotifyAndDeleteIfDone.
+  // Callback for when Cookies has been deleted. Invokes NotifyAndDeleteIfDone.
   void OnClearedCookies(int num_deleted);
 
   // Invoked on the IO thread to delete cookies.
@@ -353,18 +350,18 @@ class BrowsingDataRemover : public content::NotificationObserver
   void OnClearedServerBoundCertsOnIOThread(
       net::URLRequestContextGetter* rq_context);
 
-  // Callback when server bound certs have been deleted. Invokes
+  // Callback for when server bound certs have been deleted. Invokes
   // NotifyAndDeleteIfDone.
   void OnClearedServerBoundCerts();
 
   // Callback from the above method.
   void OnClearedFormData();
 
-  // Callback when the Autofill profile and credit card origin URLs have been
-  // deleted.
+  // Callback for when the Autofill profile and credit card origin URLs have
+  // been deleted.
   void OnClearedAutofillOriginURLs();
 
-  // Callback when the shader cache has been deleted.
+  // Callback for when the shader cache has been deleted.
   // Invokes NotifyAndDeleteIfDone.
   void ClearedShaderCache();
 
@@ -376,8 +373,6 @@ class BrowsingDataRemover : public content::NotificationObserver
 
   // Returns true if we're all done.
   bool AllDone();
-
-  content::NotificationRegistrar registrar_;
 
   // Profile we're to remove from.
   Profile* profile_;
@@ -440,6 +435,7 @@ class BrowsingDataRemover : public content::NotificationObserver
   bool waiting_for_clear_session_storage_;
   bool waiting_for_clear_shader_cache_;
   bool waiting_for_clear_webrtc_identity_store_;
+  bool waiting_for_clear_keyword_data_;
 
   // Tracking how many origins need to be deleted, and whether we're finished
   // gathering origins.
@@ -459,6 +455,8 @@ class BrowsingDataRemover : public content::NotificationObserver
 
   // Used if we need to clear history.
   CancelableTaskTracker history_task_tracker_;
+
+  scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemover);
 };

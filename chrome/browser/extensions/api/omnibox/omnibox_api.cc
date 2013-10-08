@@ -183,8 +183,9 @@ OmniboxAPI::OmniboxAPI(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
   if (url_service_) {
-    registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                   content::Source<TemplateURLService>(url_service_));
+    template_url_sub_ = url_service_->RegisterOnLoadedCallback(
+        base::Bind(&OmniboxAPI::OnTemplateURLsLoaded,
+                   base::Unretained(this)));
   }
 
   // Use monochrome icons for Omnibox icons.
@@ -192,6 +193,10 @@ OmniboxAPI::OmniboxAPI(Profile* profile)
   omnibox_icon_manager_.set_monochrome(true);
   omnibox_icon_manager_.set_padding(gfx::Insets(0, kOmniboxIconPaddingLeft,
                                                 0, kOmniboxIconPaddingRight));
+}
+
+void OmniboxAPI::Shutdown() {
+  template_url_sub_.reset();
 }
 
 OmniboxAPI::~OmniboxAPI() {
@@ -245,15 +250,7 @@ void OmniboxAPI::Observe(int type,
       }
     }
   } else {
-    DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
-    // Load pending extensions.
-    for (PendingExtensions::const_iterator i(pending_extensions_.begin());
-         i != pending_extensions_.end(); ++i) {
-      url_service_->RegisterExtensionKeyword((*i)->id(),
-                                             (*i)->name(),
-                                             OmniboxInfo::GetKeyword(*i));
-    }
-    pending_extensions_.clear();
+    NOTREACHED();
   }
 }
 
@@ -265,6 +262,18 @@ gfx::Image OmniboxAPI::GetOmniboxIcon(const std::string& extension_id) {
 gfx::Image OmniboxAPI::GetOmniboxPopupIcon(const std::string& extension_id) {
   return gfx::Image::CreateFrom1xBitmap(
       omnibox_popup_icon_manager_.GetIcon(extension_id));
+}
+
+void OmniboxAPI::OnTemplateURLsLoaded() {
+  // Register keywords for pending extensions.
+  template_url_sub_.reset();
+  for (PendingExtensions::const_iterator i(pending_extensions_.begin());
+       i != pending_extensions_.end(); ++i) {
+    url_service_->RegisterExtensionKeyword((*i)->id(),
+                                           (*i)->name(),
+                                           OmniboxInfo::GetKeyword(*i));
+  }
+  pending_extensions_.clear();
 }
 
 template <>

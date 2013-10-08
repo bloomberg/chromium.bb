@@ -13,9 +13,8 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/profile_writer.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/importer/importer_data_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
 class ExternalProcessImporterClient;
@@ -29,8 +28,7 @@ struct SourceProfile;
 
 // This class manages the import process. It creates the in-process half of the
 // importer bridge and the external process importer client.
-class ExternalProcessImporterHost : public BaseBookmarkModelObserver,
-                                    public content::NotificationObserver {
+class ExternalProcessImporterHost : public BaseBookmarkModelObserver {
  public:
   ExternalProcessImporterHost();
 
@@ -86,11 +84,8 @@ class ExternalProcessImporterHost : public BaseBookmarkModelObserver,
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkModelChanged() OVERRIDE;
 
-  // content::NotificationObserver:
   // Called when TemplateURLService has been loaded.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  void OnTemplateURLServiceLoaded();
 
   // ShowWarningDialog() asks user to close the application that is owning the
   // lock. They can retry or skip the importing process.
@@ -114,9 +109,6 @@ class ExternalProcessImporterHost : public BaseBookmarkModelObserver,
   // which are to be imported.
   void CheckForLoadedModels(uint16 items);
 
-  // Vends weak pointers for the importer to call us back.
-  base::WeakPtrFactory<ExternalProcessImporterHost> weak_ptr_factory_;
-
   // True if UI is not to be shown.
   bool headless_;
 
@@ -136,14 +128,15 @@ class ExternalProcessImporterHost : public BaseBookmarkModelObserver,
   // True if we're waiting for the model to finish loading.
   bool waiting_for_bookmarkbar_model_;
 
+  // May contain a Subscription waiting for the TemplateURLService to finish
+  // loading.
+  scoped_ptr<TemplateURLService::Subscription> template_service_subscription_;
+
   // Have we installed a listener on the bookmark model?
   bool installed_bookmark_observer_;
 
   // True if source profile is readable.
   bool is_source_readable_;
-
-  // Receives notification when the TemplateURLService has loaded.
-  content::NotificationRegistrar registrar_;
 
   // Writes data from the importer back to the profile.
   scoped_refptr<ProfileWriter> writer_;
@@ -163,6 +156,9 @@ class ExternalProcessImporterHost : public BaseBookmarkModelObserver,
   // True if the import process has been launched. This prevents race
   // conditions on import cancel.
   bool import_process_launched_;
+
+  // Vends weak pointers for the importer to call us back.
+  base::WeakPtrFactory<ExternalProcessImporterHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProcessImporterHost);
 };

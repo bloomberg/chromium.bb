@@ -15,8 +15,8 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
@@ -335,12 +335,13 @@ int FindInPage(WebContents* tab, const string16& search_string,
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
   if (service->loaded())
     return;
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-      content::Source<TemplateURLService>(service));
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  scoped_ptr<TemplateURLService::Subscription> subscription =
+      service->RegisterOnLoadedCallback(
+          message_loop_runner->QuitClosure());
   service->Load();
-  observer.Wait();
+  message_loop_runner->Run();
 
   ASSERT_TRUE(service->loaded());
 }

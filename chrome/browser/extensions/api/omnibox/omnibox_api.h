@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/extensions/api/omnibox.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -98,6 +99,9 @@ class OmniboxAPI : public ProfileKeyedAPI,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // BrowserContextKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
   // Returns the icon to display in the omnibox for the given extension.
   gfx::Image GetOmniboxIcon(const std::string& extension_id);
 
@@ -109,6 +113,8 @@ class OmniboxAPI : public ProfileKeyedAPI,
   friend class ProfileKeyedAPIFactory<OmniboxAPI>;
 
   typedef std::set<const Extension*> PendingExtensions;
+
+  void OnTemplateURLsLoaded();
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
@@ -129,6 +135,8 @@ class OmniboxAPI : public ProfileKeyedAPI,
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;
   ExtensionIconManager omnibox_popup_icon_manager_;
+
+  scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxAPI);
 };

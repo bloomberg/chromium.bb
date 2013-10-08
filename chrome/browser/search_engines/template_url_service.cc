@@ -772,8 +772,16 @@ void TemplateURLService::Load() {
     load_handle_ = service_->GetKeywords(this);
   } else {
     ChangeToLoadedState();
-    NotifyLoaded();
+    on_loaded_callbacks_.Notify();
   }
+}
+
+scoped_ptr<TemplateURLService::Subscription>
+    TemplateURLService::RegisterOnLoadedCallback(
+        const base::Closure& callback) {
+  return loaded_ ?
+      scoped_ptr<TemplateURLService::Subscription>() :
+      on_loaded_callbacks_.Add(callback);
 }
 
 void TemplateURLService::OnWebDataServiceRequestDone(
@@ -788,7 +796,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     // loaded.
     load_failed_ = true;
     ChangeToLoadedState();
-    NotifyLoaded();
+    on_loaded_callbacks_.Notify();
     return;
   }
 
@@ -820,7 +828,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   EnsureDefaultSearchProviderExists();
 
   NotifyObservers();
-  NotifyLoaded();
+  on_loaded_callbacks_.Notify();
 }
 
 string16 TemplateURLService::GetKeywordShortName(const string16& keyword,
@@ -1568,13 +1576,6 @@ void TemplateURLService::ChangeToLoadedState() {
   UIThreadSearchTermsData search_terms_data(profile_);
   provider_map_->Init(template_urls_, search_terms_data);
   loaded_ = true;
-}
-
-void TemplateURLService::NotifyLoaded() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-      content::Source<TemplateURLService>(this),
-      content::NotificationService::NoDetails());
 }
 
 void TemplateURLService::SaveDefaultSearchProviderToPrefs(
