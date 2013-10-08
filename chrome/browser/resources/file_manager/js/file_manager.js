@@ -1112,7 +1112,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     else
       targetElement = this.currentList_;
 
-    if (targetElement.tabIndex != -1)
+    // Hack: if the tabIndex is disabled, we can assume a modal dialog is
+    // shown. Focus to a button on the dialog instead.
+    if (!targetElement.hasAttribute('tabIndex') || targetElement.tabIndex == -1)
+      targetElement = document.querySelector('button:not([tabIndex="-1"])');
+
+    if (targetElement)
       targetElement.focus();
   };
 
