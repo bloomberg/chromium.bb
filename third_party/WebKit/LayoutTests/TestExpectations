@@ -147,12 +147,12 @@ crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Im
 # -----------------------------------------------------------------
 
 # Only flaky on Linux. Looks like slight pixel differences in text-on-a-path.
-#crbug.com/250897 [ Linux ] svg/batik/text/smallFonts.svg [ ImageOnlyFailure Pass ]
+crbug.com/250897 [ Linux ] svg/batik/text/smallFonts.svg [ ImageOnlyFailure Pass ]
 
 # Flaky mostly on XP, where the <use> batiklogo.svg doesn't arrive in time to get rendered.
 crbug.com/258991 [ XP ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textLayout.svg [ Failure Pass ]
-#crbug.com/258991 [ XP ] svg/batik/text/smallFonts.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/smallFonts.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textOnPath.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textFeatures.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textPosition2.svg [ Failure Pass ]
@@ -1198,9 +1198,6 @@ crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ 
 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
-
-crbug.com/304952 svg/batik/text/smallFonts.svg [ NeedsManualRebaseline ]
-
 
 # Flaky.
 crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Pass ]
