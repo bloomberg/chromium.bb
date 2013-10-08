@@ -79,8 +79,9 @@ function update_git_repo {
     echo "  $remote_url"
     echo
     read -t 60 -p "OK to update it to $CANONICAL_GIT_URL ? [Y/n] " -n 1
+    STATUS=$?
     echo
-    if [ $? -ne "0" ]; then
+    if [[ $STATUS -ne 0 ]]; then
       echo "Timeout; not updating remote URL."
     elif [ -z "$REPLY" -o "$REPLY" = "Y" -o "$REPLY" = "y" ]; then
       "$GIT" config remote.origin.url "$CANONICAL_GIT_URL"
