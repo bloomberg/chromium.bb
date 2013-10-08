@@ -113,7 +113,6 @@ class Base(cros_test_lib.MockTestCase):
     patch.url = 'fake_url/%s' % (change_id,)
     patch.project = project
     patch.sha1 = hex(_GetNumber())[2:].rstrip('L').lower().rjust(40, '0')
-    patch.status = 'NEW'
     patch.revision = patch.sha1
     patch.IsAlreadyMerged = lambda:is_merged
     patch.LookupAliases = functools.partial(
