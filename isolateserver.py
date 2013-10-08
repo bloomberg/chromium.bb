@@ -388,6 +388,18 @@ class Storage(object):
         if 'l' not in metadata
     ]
 
+    # For each digest keep only first Item that matches it. All other items
+    # are just indistinguishable copies from the point of view of isolate
+    # server (it doesn't care about paths at all, only content and digests).
+    seen = {}
+    duplicates = 0
+    for item in items:
+      if seen.setdefault(item.digest, item) is not item:
+        duplicates += 1
+    items = seen.values()
+    if duplicates:
+      logging.info('Skipped %d duplicated files', duplicates)
+
     # Enqueue all upload tasks.
     missing = set()
     channel = threading_utils.TaskChannel()

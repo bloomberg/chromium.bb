@@ -120,6 +120,11 @@ class StorageTest(TestCase):
           side_effect()
     return MockedStorageApi()
 
+  def assertEqualIgnoringOrder(self, a, b):
+    """Asserts that containers |a| and |b| contain same items."""
+    self.assertEqual(len(a), len(b))
+    self.assertEqual(set(a), set(b))
+
   def test_batch_items_for_check(self):
     items = [
       isolateserver.Item('foo', 12),
@@ -236,9 +241,14 @@ class StorageTest(TestCase):
         's': 300,
         'h': 'hash_c',
       },
+      'a_copy': {
+        's': 100,
+        'h': 'hash_a',
+      },
     }
     files_data = dict((k, 'x' * files[k]['s']) for k in files)
-    missing = set(['a', 'b'])
+    all_hashes = set(f['h'] for f in files.itervalues())
+    missing_hashes = set(['hash_a', 'hash_b'])
 
     # Files read by mocked_file_read.
     read_calls = []
@@ -258,7 +268,8 @@ class StorageTest(TestCase):
     class MockedStorageApi(isolateserver.StorageApi):
       def contains(self, items):
         contains_calls.append(items)
-        return [i for i in items if os.path.basename(i.path) in missing]
+        return [i for i in items
+            if os.path.basename(i.digest) in missing_hashes]
 
       def push(self, item, content):
         push_calls.append((item, ''.join(content)))
@@ -268,22 +279,25 @@ class StorageTest(TestCase):
     storage.upload_tree(root, files)
 
     # Was reading only missing files.
-    self.assertEqual(missing, set(read_calls))
+    self.assertEqualIgnoringOrder(
+        missing_hashes,
+        [files[path]['h'] for path in read_calls])
     # 'contains' checked for existence of all files.
-    self.assertEqual(
-        set(f['h'] for f in files.itervalues()),
-        set(i.digest for i in sum(contains_calls, [])))
+    self.assertEqualIgnoringOrder(
+        all_hashes,
+        [i.digest for i in sum(contains_calls, [])])
     # Pushed only missing files.
-    self.assertEqual(
-      set(files[name]['h'] for name in missing),
-      set(call[0].digest for call in push_calls))
+    self.assertEqualIgnoringOrder(
+        missing_hashes,
+        [call[0].digest for call in push_calls])
     # Pushing with correct data, size and push urls.
     for pushed_item, pushed_content in push_calls:
       filenames = [
           name for name, metadata in files.iteritems()
           if metadata['h'] == pushed_item.digest
       ]
-      self.assertEqual(1, len(filenames))
+      # If there are multiple files that map to same hash, upload_tree chooses
+      # a first one.
       filename = filenames[0]
       self.assertEqual(os.path.join(root, filename), pushed_item.path)
       self.assertEqual(files_data[filename], pushed_content)
