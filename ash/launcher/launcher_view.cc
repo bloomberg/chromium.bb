@@ -1109,7 +1109,7 @@ bool LauncherView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     drag_view_->layer()->SetOpacity(0.0f);
     if (RemovableByRipOff(current_index) == REMOVABLE) {
       // Move the item to the end of the launcher and hide it.
-      model_->Move(current_index, model_->item_count() - 1);
+      model_->Move(current_index, model_->FirstPanelIndex() - 1);
       AnimateToIdealBounds();
       // Make the item partially disappear to show that it will get removed if
       // dropped.
