@@ -330,9 +330,18 @@ ImageView.prototype.load = function(url, metadata, effect,
     var video = this.document_.createElement('video');
     var videoPreview = !!(metadata.thumbnail && metadata.thumbnail.url);
     if (videoPreview) {
-      video.setAttribute('poster', metadata.thumbnail.url);
-      this.replace(video, effect); // Show the poster immediately.
-      if (displayCallback) displayCallback();
+      var thumbnailLoader = new ThumbnailLoader(
+          metadata.thumbnail.url,
+          ThumbnailLoader.LoaderType.CANVAS,
+          metadata);
+      thumbnailLoader.loadDetachedImage(function(success) {
+        if (success) {
+          var canvas = thumbnailLoader.getImage();
+          video.setAttribute('poster', canvas.toDataURL('image/jpeg'));
+          this.replace(video, effect);  // Show the poster immediately.
+          if (displayCallback) displayCallback();
+        }
+      }.bind(this));
     }
 
     var onVideoLoad = function(error) {
@@ -362,6 +371,10 @@ ImageView.prototype.load = function(url, metadata, effect,
         false /* no preview */, cached);
   } else {
     var cachedScreen = this.screenCache_.getItem(this.contentID_);
+    var imageWidth = metadata.media && metadata.media.width ||
+                     metadata.drive && metadata.drive.imageWidth;
+    var imageHeight = metadata.media && metadata.media.height ||
+                      metadata.drive && metadata.drive.imageHeight;
     if (cachedScreen) {
       // We have a cached screen-scale canvas, use it instead of a thumbnail.
       displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, cachedScreen);
@@ -370,13 +383,18 @@ ImageView.prototype.load = function(url, metadata, effect,
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
     } else if ((!effect || (effect.constructor.name == 'Slide')) &&
         metadata.thumbnail && metadata.thumbnail.url &&
-        !(metadata.media && ImageUtil.ImageLoader.isTooLarge(metadata.media))) {
+        !(imageWidth && imageHeight &&
+          ImageUtil.ImageLoader.isTooLarge(imageWidth, imageHeight))) {
       // Only show thumbnails if there is no effect or the effect is Slide.
       // Also no thumbnail if the image is too large to be loaded.
-      this.imageLoader_.load(
+      var thumbnailLoader = new ThumbnailLoader(
           metadata.thumbnail.url,
-          function(url, callback) { callback(metadata.thumbnail.transform); },
-          displayThumbnail.bind(null, ImageView.LOAD_TYPE_IMAGE_FILE));
+          ThumbnailLoader.LoaderType.CANVAS,
+          metadata);
+      thumbnailLoader.loadDetachedImage(function(success) {
+        displayThumbnail(ImageView.LOAD_TYPE_IMAGE_FILE,
+                         success ? thumbnailLoader.getImage() : null);
+      });
     } else {
       loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, url,
           false /* no preview*/, 0 /* delay */);
@@ -384,26 +402,17 @@ ImageView.prototype.load = function(url, metadata, effect,
   }
 
   function displayThumbnail(loadType, canvas) {
-    var previewAvailable = !!canvas.width;
-    if (previewAvailable) {
-      // The thumbnail may have different aspect ratio than the main image.
-      // Force the main image proportions to avoid flicker.
-      if (!metadata.media.width) {
-        // We do not know the main image size, but chances are that it is large
-        // enough. Show the thumbnail at the maximum possible scale.
-        var bounds = self.viewport_.getScreenBounds();
-        var scale = Math.min(bounds.width / canvas.width,
-                             bounds.height / canvas.height);
-        self.replace(canvas, effect,
-            canvas.width * scale, canvas.height * scale, true /* preview */);
-      } else {
-        self.replace(canvas, effect,
-            metadata.media.width, metadata.media.height, true /* preview */);
-      }
+    if (canvas) {
+      self.replace(
+          canvas,
+          effect,
+          metadata.media.width || metadata.drive.imageWidth,
+          metadata.media.height || metadata.drive.imageHeight,
+          true /* preview */);
       if (displayCallback) displayCallback();
     }
-    loadMainImage(loadType, url, previewAvailable,
-        (effect && previewAvailable) ? effect.getSafeInterval() : 0);
+    loadMainImage(loadType, url, !!canvas,
+        (effect && canvas) ? effect.getSafeInterval() : 0);
   }
 
   function loadMainImage(loadType, contentURL, previewShown, delay) {

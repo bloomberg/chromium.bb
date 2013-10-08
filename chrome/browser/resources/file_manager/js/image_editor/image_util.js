@@ -422,12 +422,12 @@ ImageUtil.ImageLoader = function(document, opt_metadataCache) {
 ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT = 25 * 1000 * 1000;
 
 /**
- * @param {HTMLImageElement|HTMLCanvasElement|Object} image Image or image
- *     metadata, should have |width| and |height| properties.
+ * @param {number} width Width of the image.
+ * @param {number} height Height of the image.
  * @return {boolean} True if the image is too large to be loaded.
  */
-ImageUtil.ImageLoader.isTooLarge = function(image) {
-  return image.width * image.height > ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT;
+ImageUtil.ImageLoader.isTooLarge = function(width, height) {
+  return width * height > ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT;
 };
 
 /**
@@ -477,7 +477,8 @@ ImageUtil.ImageLoader.prototype.load = function(
     this.image_.onload = function(e) {
       this.image_.onerror = null;
       this.image_.onload = null;
-      if (ImageUtil.ImageLoader.isTooLarge(this.image_)) {
+      if (ImageUtil.ImageLoader.isTooLarge(this.image_.width,
+                                           this.image_.height)) {
         onError('IMAGE_TOO_BIG_ERROR');
         return;
       }

@@ -279,6 +279,27 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
 };
 
 /**
+ * Renders the thumbnail into either canvas or an image element.
+ * @private
+ */
+ThumbnailLoader.prototype.renderMedia_ = function() {
+  if (this.loaderType_ != ThumbnailLoader.LoaderType.CANVAS)
+    return;
+
+  if (!this.canvas_)
+    this.canvas_ = document.createElement('canvas');
+
+  // Copy the image to a canvas if the canvas is outdated.
+  if (!this.canvasUpToDate_) {
+    this.canvas_.width = this.image_.width;
+    this.canvas_.height = this.image_.height;
+    var context = this.canvas_.getContext('2d');
+    context.drawImage(this.image_, 0, 0);
+    this.canvasUpToDate_ = true;
+  }
+};
+
+/**
  * Attach the image to a given element.
  * @param {Element} container Parent element.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
@@ -289,31 +310,14 @@ ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
     return;
   }
 
-  var attachableMedia;
-  if (this.loaderType_ == ThumbnailLoader.LoaderType.CANVAS) {
-    if (!this.canvas_)
-      this.canvas_ = container.ownerDocument.createElement('canvas');
-
-    // Copy the image to a canvas if the canvas is outdated.
-    if (!this.canvasUpToDate_) {
-      this.canvas_.width = this.image_.width;
-      this.canvas_.height = this.image_.height;
-      var context = this.canvas_.getContext('2d');
-      context.drawImage(this.image_, 0, 0);
-      this.canvasUpToDate_ = true;
-    }
-
-    // Canvas will be attached.
-    attachableMedia = this.canvas_;
-  } else {
-    // Image will be attached.
-    attachableMedia = this.image_;
-  }
-
+  this.renderMedia_();
   util.applyTransform(container, this.transform_);
+  var attachableMedia = this.loaderType_ == ThumbnailLoader.LoaderType.CANVAS ?
+      this.canvas_ : this.image_;
 
   ThumbnailLoader.centerImage_(
       container, attachableMedia, fillMode, this.isRotated_());
+
   if (attachableMedia.parentNode != container) {
     container.textContent = '';
     container.appendChild(attachableMedia);
@@ -321,6 +325,18 @@ ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
 
   if (!this.taskId_)
     attachableMedia.classList.add('cached');
+};
+
+/**
+ * Gets the loaded image.
+ * TODO(mtomasz): Apply transformations.
+ *
+ * @return {Image|HTMLCanvasElement} Either image or a canvas object.
+ */
+ThumbnailLoader.prototype.getImage = function() {
+  this.renderMedia_();
+  return this.loaderType_ == ThumbnailLoader.LoaderType.CANVAS ? this.canvas_ :
+      this.image_;
 };
 
 /**
