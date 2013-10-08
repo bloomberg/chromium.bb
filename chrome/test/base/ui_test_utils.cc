@@ -122,6 +122,17 @@ base::FilePath GetSnapshotFileName(const base::FilePath& snapshot_directory) {
   return snapshot_file;
 }
 
+Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
+  Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
+  if (new_browser == NULL) {
+    BrowserAddedObserver observer;
+    new_browser = observer.WaitForSingleNewBrowser();
+    // The new browser should never be in |excluded_browsers|.
+    DCHECK(!ContainsKey(excluded_browsers, new_browser));
+  }
+  return new_browser;
+}
+
 }  // namespace
 
 bool GetCurrentTabTitle(const Browser* browser, string16* title) {
@@ -136,35 +147,14 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   return true;
 }
 
-void WaitForNavigations(NavigationController* controller,
-                        int number_of_navigations) {
-  content::TestNavigationObserver observer(controller->GetWebContents(),
-                                           number_of_navigations);
-  base::RunLoop run_loop;
-  observer.WaitForObservation(
-      base::Bind(&content::RunThisRunLoop, base::Unretained(&run_loop)),
-      content::GetQuitTaskForRunLoop(&run_loop));
-}
-
-Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
-  Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
-  if (new_browser == NULL) {
-    BrowserAddedObserver observer;
-    new_browser = observer.WaitForSingleNewBrowser();
-    // The new browser should never be in |excluded_browsers|.
-    DCHECK(!ContainsKey(excluded_browsers, new_browser));
-  }
-  return new_browser;
-}
-
 Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
   chrome::OpenURLOffTheRecord(profile, url, active_desktop);
   Browser* browser = chrome::FindTabbedBrowser(
       profile->GetOffTheRecordProfile(), false, active_desktop);
-  WaitForNavigations(
-      &browser->tab_strip_model()->GetActiveWebContents()->GetController(),
-      1);
+  content::TestNavigationObserver observer(
+      browser->tab_strip_model()->GetActiveWebContents());
+  observer.Wait();
   return browser;
 }
 
@@ -230,14 +220,12 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     web_contents = browser->tab_strip_model()->GetActiveWebContents();
   }
   if (disposition == CURRENT_TAB) {
-    base::RunLoop run_loop;
-    same_tab_observer.WaitForObservation(
-        base::Bind(&content::RunThisRunLoop, base::Unretained(&run_loop)),
-        content::GetQuitTaskForRunLoop(&run_loop));
+    same_tab_observer.Wait();
     return;
   } else if (web_contents) {
-    NavigationController* controller = &web_contents->GetController();
-    WaitForNavigations(controller, number_of_navigations);
+    content::TestNavigationObserver observer(web_contents,
+                                             number_of_navigations);
+    observer.Wait();
     return;
   }
   EXPECT_TRUE(NULL != web_contents) << " Unable to wait for navigation to \""

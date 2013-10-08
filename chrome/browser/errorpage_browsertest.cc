@@ -113,10 +113,7 @@ class ErrorPageTest : public InProcessBrowserTest {
     } else {
       FAIL();
     }
-    test_navigation_observer.WaitForObservation(
-        base::Bind(&content::RunMessageLoop),
-        base::Bind(&base::MessageLoop::Quit,
-                   base::Unretained(base::MessageLoopForUI::current())));
+    test_navigation_observer.Wait();
 
     EXPECT_EQ(title_watcher.WaitAndGetTitle(), ASCIIToUTF16(expected_title));
   }

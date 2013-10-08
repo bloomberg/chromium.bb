@@ -8,9 +8,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 
 namespace content {
 
@@ -18,7 +17,7 @@ struct LoadCommittedDetails;
 
 // For browser_tests, which run on the UI thread, run a second
 // MessageLoop and quit when the navigation completes loading.
-class TestNavigationObserver : public NotificationObserver {
+class TestNavigationObserver {
  public:
   // Create and register a new TestNavigationObserver against the
   // |web_contents|.
@@ -29,10 +28,8 @@ class TestNavigationObserver : public NotificationObserver {
 
   virtual ~TestNavigationObserver();
 
-  // Run |wait_loop_callback| until complete, then run |done_callback|.
-  void WaitForObservation(const base::Closure& wait_loop_callback,
-                          const base::Closure& done_callback);
-  // Convenient version of the above that runs a nested message loop and waits.
+  // Runs a nested message loop and blocks until the expected number of
+  // navigations are complete.
   void Wait();
 
   // Start/stop watching newly created WebContents.
@@ -42,10 +39,6 @@ class TestNavigationObserver : public NotificationObserver {
  protected:
   // Register this TestNavigationObserver as an observer of the |web_contents|.
   void RegisterAsObserver(WebContents* web_contents);
-
-  // NotificationObserver:
-  virtual void Observe(int type, const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
 
  private:
   class TestWebContentsObserver;
@@ -58,8 +51,8 @@ class TestNavigationObserver : public NotificationObserver {
       TestWebContentsObserver* observer,
       WebContents* web_contents,
       const LoadCommittedDetails& load_details);
-
-  NotificationRegistrar registrar_;
+  void OnDidStartLoading(WebContents* web_contents);
+  void OnDidStopLoading(WebContents* web_contents);
 
   // If true the navigation has started.
   bool navigation_started_;
@@ -70,15 +63,8 @@ class TestNavigationObserver : public NotificationObserver {
   // The number of navigations to wait for.
   int number_of_navigations_;
 
-  // |done_| will get set when this object observes a TabStripModel event.
-  bool done_;
-
-  // |running_| will be true during WaitForObservation until |done_| is true.
-  bool running_;
-
-  // |done_callback_| will be set while |running_| is true and will be called
-  // when navigation completes.
-  base::Closure done_callback_;
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   // Callback invoked on WebContents creation.
   WebContents::CreatedCallback web_contents_created_callback_;

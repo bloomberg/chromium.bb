@@ -1274,11 +1274,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
       content::TestNavigationObserver observer(
           current_browser()->tab_strip_model()->GetActiveWebContents());
       observer.StartWatchingNewWebContents();
-      base::RunLoop run_loop;
-      observer.WaitForObservation(
-          base::Bind(&content::RunThisRunLoop,
-                     base::Unretained(&run_loop)),
-          content::GetQuitTaskForRunLoop(&run_loop));
+      observer.Wait();
     }
   }
 

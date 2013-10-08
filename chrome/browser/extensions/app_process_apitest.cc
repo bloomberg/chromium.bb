@@ -699,10 +699,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ServerRedirectToAppFromExtension) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Wait for app tab to be created and loaded.
-  test_navigation_observer.WaitForObservation(
-      base::Bind(&content::RunMessageLoop),
-      base::Bind(&base::MessageLoop::Quit,
-                 base::Unretained(base::MessageLoopForUI::current())));
+  test_navigation_observer.Wait();
 
   // App has loaded, and chrome.app.isInstalled should be true.
   bool is_installed = false;
@@ -741,10 +738,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ClientRedirectToAppFromExtension) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Wait for app tab to be created and loaded.
-  test_navigation_observer.WaitForObservation(
-      base::Bind(&content::RunMessageLoop),
-      base::Bind(&base::MessageLoop::Quit,
-                 base::Unretained(base::MessageLoopForUI::current())));
+  test_navigation_observer.Wait();
 
   // App has loaded, and chrome.app.isInstalled should be true.
   bool is_installed = false;

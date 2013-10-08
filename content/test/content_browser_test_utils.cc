@@ -40,11 +40,7 @@ void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
                                            number_of_navigations);
 
   window->LoadURL(url);
-
-  base::RunLoop run_loop;
-  same_tab_observer.WaitForObservation(
-      base::Bind(&RunThisRunLoop, base::Unretained(&run_loop)),
-      GetQuitTaskForRunLoop(&run_loop));
+  same_tab_observer.Wait();
 }
 
 void NavigateToURL(Shell* window, const GURL& url) {

@@ -121,7 +121,7 @@ void TestWebContents::NavigateAndCommit(const GURL& url) {
 }
 
 void TestWebContents::TestSetIsLoading(bool value) {
-  SetIsLoading(value, NULL);
+  SetIsLoading(GetRenderViewHost(), value, NULL);
 }
 
 void TestWebContents::CommitPendingNavigation() {
@@ -129,7 +129,7 @@ void TestWebContents::CommitPendingNavigation() {
   // notifying that it has unloaded so the pending RVH is resumed and can
   // navigate.
   ProceedWithCrossSiteNavigation();
-  RenderViewHost* old_rvh = render_manager_.current_host();
+  RenderViewHost* old_rvh = GetRenderViewHost();
   TestRenderViewHost* rvh =
       static_cast<TestRenderViewHost*>(GetPendingRenderViewHost());
   if (!rvh)
@@ -155,7 +155,7 @@ void TestWebContents::ProceedWithCrossSiteNavigation() {
   if (!GetPendingRenderViewHost())
     return;
   TestRenderViewHost* rvh = static_cast<TestRenderViewHost*>(
-      render_manager_.current_host());
+      GetRenderViewHost());
   rvh->SendShouldCloseACK(true);
 }
 
@@ -204,7 +204,7 @@ void TestWebContents::TestDidFinishLoad(int64 frame_id,
                                         const GURL& url,
                                         bool is_main_frame) {
   ViewHostMsg_DidFinishLoad msg(0, frame_id, url, is_main_frame);
-  OnMessageReceived(render_manager_.current_host(), msg);
+  OnMessageReceived(GetRenderViewHost(), msg);
 }
 
 void TestWebContents::TestDidFailLoadWithError(
@@ -215,7 +215,7 @@ void TestWebContents::TestDidFailLoadWithError(
     const string16& error_description) {
   ViewHostMsg_DidFailLoadWithError msg(
       0, frame_id, url, is_main_frame, error_code, error_description);
-  OnMessageReceived(render_manager_.current_host(), msg);
+  OnMessageReceived(GetRenderViewHost(), msg);
 }
 
 void TestWebContents::CreateNewWindow(

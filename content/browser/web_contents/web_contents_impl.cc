@@ -2678,8 +2678,9 @@ void WebContentsImpl::NotifyBeforeFormRepostWarningShow() {
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
-// loading, or done loading and calls the base implementation.
-void WebContentsImpl::SetIsLoading(bool is_loading,
+// loading, or done loading.
+void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
+                                   bool is_loading,
                                    LoadNotificationDetails* details) {
   if (is_loading == is_loading_)
     return;
@@ -2700,10 +2701,15 @@ void WebContentsImpl::SetIsLoading(bool is_loading,
     delegate_->LoadingStateChanged(this);
   NotifyNavigationStateChanged(INVALIDATE_TYPE_LOAD);
 
-  if (is_loading)
+  if (is_loading) {
     TRACE_EVENT_ASYNC_BEGIN0("browser", "WebContentsImpl Loading", this);
-  else
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      DidStartLoading(render_view_host));
+  } else {
     TRACE_EVENT_ASYNC_END0("browser", "WebContentsImpl Loading", this);
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      DidStopLoading(render_view_host));
+  }
 
   // TODO(avi): Remove. http://crbug.com/170921
   int type = is_loading ? NOTIFICATION_LOAD_START : NOTIFICATION_LOAD_STOP;
@@ -2965,7 +2971,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   }
 
   ClearPowerSaveBlockers(rvh);
-  SetIsLoading(false, NULL);
+  SetIsLoading(rvh, false, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
   GetView()->OnTabCrashed(GetCrashedStatus(), crashed_error_code_);
@@ -3200,11 +3206,7 @@ void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
 }
 
 void WebContentsImpl::DidStartLoading(RenderViewHost* render_view_host) {
-  SetIsLoading(true, NULL);
-
-  // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidStartLoading(render_view_host));
+  SetIsLoading(render_view_host, true, NULL);
 }
 
 void WebContentsImpl::DidStopLoading(RenderViewHost* render_view_host) {
@@ -3227,11 +3229,7 @@ void WebContentsImpl::DidStopLoading(RenderViewHost* render_view_host) {
         controller_.GetCurrentEntryIndex()));
   }
 
-  SetIsLoading(false, details.get());
-
-  // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidStopLoading(render_view_host));
+  SetIsLoading(render_view_host, false, details.get());
 }
 
 void WebContentsImpl::DidCancelLoading() {

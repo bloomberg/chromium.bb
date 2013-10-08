@@ -2231,10 +2231,7 @@ class ClickModifierTest : public InProcessBrowserTest {
           browser->tab_strip_model()->GetActiveWebContents();
       content::TestNavigationObserver same_tab_observer(web_contents);
       SimulateMouseClick(web_contents, modifiers, button);
-      base::RunLoop run_loop;
-      same_tab_observer.WaitForObservation(
-          base::Bind(&content::RunThisRunLoop, base::Unretained(&run_loop)),
-          content::GetQuitTaskForRunLoop(&run_loop));
+      same_tab_observer.Wait();
       EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile(),
                                             browser->host_desktop_type()));
       EXPECT_EQ(1, browser->tab_strip_model()->count());

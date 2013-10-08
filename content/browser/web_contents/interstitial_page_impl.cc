@@ -398,12 +398,12 @@ void InterstitialPageImpl::DidNavigate(
   }
 
   // Notify the tab we are not loading so the throbber is stopped. It also
-  // causes a NOTIFY_LOAD_STOP notification, that the AutomationProvider (used
-  // by the UI tests) expects to consider a navigation as complete. Without
-  // this, navigating in a UI test to a URL that triggers an interstitial would
-  // hang.
+  // causes a WebContentsObserver::DidStopLoading callback that the
+  // AutomationProvider (used by the UI tests) expects to consider a navigation
+  // as complete. Without this, navigating in a UI test to a URL that triggers
+  // an interstitial would hang.
   web_contents_was_loading_ = web_contents_->IsLoading();
-  web_contents_->SetIsLoading(false, NULL);
+  web_contents_->SetIsLoading(web_contents_->GetRenderViewHost(), false, NULL);
 }
 
 void InterstitialPageImpl::UpdateTitle(
@@ -549,7 +549,7 @@ void InterstitialPageImpl::Proceed() {
 
   // Resumes the throbber, if applicable.
   if (web_contents_was_loading_)
-    web_contents_->SetIsLoading(true, NULL);
+    web_contents_->SetIsLoading(web_contents_->GetRenderViewHost(), true, NULL);
 
   // If this is a new navigation, the old page is going away, so we cancel any
   // blocked requests for it.  If it is not a new navigation, then it means the

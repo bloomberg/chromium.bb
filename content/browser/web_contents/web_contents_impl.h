@@ -640,10 +640,11 @@ class CONTENT_EXPORT WebContentsImpl
                            bool has_audio,
                            bool is_playing);
 
-  // Changes the IsLoading state and notifies delegate as needed
+  // Changes the IsLoading state and notifies the delegate as needed.
   // |details| is used to provide details on the load that just finished
-  // (but can be null if not applicable). Can be overridden.
-  void SetIsLoading(bool is_loading,
+  // (but can be null if not applicable).
+  void SetIsLoading(RenderViewHost* render_view_host,
+                    bool is_loading,
                     LoadNotificationDetails* details);
 
   // Called by derived classes to indicate that we're no longer waiting for a
