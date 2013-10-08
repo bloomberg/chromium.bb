@@ -107,6 +107,9 @@ void MigrateGoogleUpdateStateMultiToSingle(
     BrowserDistribution::Type to_migrate,
     const installer::InstallationState& machine_state);
 
+// Returns true if |install_status| represents a successful uninstall code.
+bool IsUninstallSuccess(InstallStatus install_status);
+
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
 // ScopedTokenPrivilege's destruction (unless it was already enabled when the

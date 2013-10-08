@@ -84,12 +84,16 @@ enum InstallStatus {
                                // they were invalid for any reason.
   DIFF_PATCH_SOURCE_MISSING,   // 50. No previous version archive found for
                                // differential update.
+  UNUSED_BINARIES,             // 51. No multi-install products to update. The
+                               // binaries will be uninstalled if they are not
+                               // in use.
+  UNUSED_BINARIES_UNINSTALLED,  // 52. The binaries were uninstalled.
   // Friendly reminder: note the COMPILE_ASSERT below.
 };
 
 
 // Existing InstallStatus values must not change.  Always add to the end.
-COMPILE_ASSERT(installer::DIFF_PATCH_SOURCE_MISSING == 50,
+COMPILE_ASSERT(installer::UNUSED_BINARIES_UNINSTALLED == 52,
                dont_change_enum);
 
 // The type of an update archive.

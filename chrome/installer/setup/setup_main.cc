@@ -367,6 +367,7 @@ bool CheckGroupPolicySettings(const InstallationState& original_state,
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
+// If only the binaries are being updated, fail.
 // If Chrome Frame is being installed by itself in multi-mode, non-ready-mode:
 //   - If a non-multi Chrome Frame installation is present, fail.
 // If Chrome Frame is being installed by itself in multi-mode, ready-mode:
@@ -405,7 +406,19 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
         original_state.GetProductState(system_level,
                                        BrowserDistribution::CHROME_BROWSER);
 
-    if (!binaries) {
+    if (binaries) {
+      if (products.size() == 1) {
+        // There are no products aside from the binaries, so there is no update
+        // to be applied. This can happen after multi-install Chrome Frame is
+        // migrated to single-install. This is treated as an update failure
+        // unless the binaries are not in-use, in which case they will be
+        // uninstalled and success will be reported (see handling in wWinMain).
+        LOG(INFO) << "No products to be updated.";
+        *status = installer::UNUSED_BINARIES;
+        installer_state->WriteInstallerResult(*status, 0, NULL);
+        return false;
+      }
+    } else {
       // This will only be hit if --multi-install is given with no products, or
       // if the app host is being installed and doesn't need the binaries at
       // user-level.
@@ -836,6 +849,10 @@ installer::InstallStatus UninstallProducts(
 
   installer::CleanUpInstallationDirectoryAfterUninstall(
       original_state, installer_state, cmd_line, &install_status);
+
+  // The app and vendor dirs may now be empty. Make a last-ditch attempt to
+  // delete them.
+  installer::DeleteChromeDirectoriesIfEmpty(installer_state.target_path());
 
   if (trigger_active_setup)
     InstallUtil::TriggerActiveSetupCommand();
@@ -1760,15 +1777,22 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   base::FilePath installer_directory;
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
-  // If --uninstall option is given, uninstall the identified product(s)
-  if (is_uninstall) {
-    install_status =
-        UninstallProducts(original_state, installer_state, cmd_line);
-  } else {
-    // If --uninstall option is not specified, we assume it is install case.
+  // If --uninstall option is not specified, we assume it is install case.
+  if (!is_uninstall) {
     install_status =
         InstallProducts(original_state, cmd_line, prefs, &installer_state,
                         &installer_directory);
+  }
+  // If --uninstall option is given or only the binaries are present and they're
+  // not in-use, uninstall the identified product(s).
+  if (is_uninstall || (install_status == installer::UNUSED_BINARIES &&
+                       !installer_state.AreBinariesInUse(original_state))) {
+    install_status =
+        UninstallProducts(original_state, installer_state, cmd_line);
+    // Report that the binaries were uninstalled if they were. This translates
+    // into a successful install return code.
+    if (!is_uninstall && IsUninstallSuccess(install_status))
+      install_status = installer::UNUSED_BINARIES_UNINSTALLED;
   }
 
   // Validate that the machine is now in a good state following the operation.

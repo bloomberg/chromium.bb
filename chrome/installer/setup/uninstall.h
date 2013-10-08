@@ -25,6 +25,20 @@ class InstallationState;
 class InstallerState;
 class Product;
 
+enum DeleteResult {
+  DELETE_SUCCEEDED,
+  DELETE_NOT_EMPTY,
+  DELETE_FAILED,
+  DELETE_REQUIRES_REBOOT,
+};
+
+// Deletes |target_directory| (".../Application") and the vendor directories
+// (e.g., ".../Google/Chrome") if they are empty. Returns DELETE_SUCCEEDED if
+// either the directories were deleted or if they were not empty. Returns
+// DELETE_FAILED if any could not be deleted due to an error.
+DeleteResult DeleteChromeDirectoriesIfEmpty(
+    const base::FilePath& application_directory);
+
 // This function removes all Chrome registration related keys. It returns true
 // if successful, otherwise false. The error code is set in |exit_code|.
 // |root| is the registry root (HKLM|HKCU) and |browser_entry_suffix| is the
@@ -77,7 +91,7 @@ void CleanUpInstallationDirectoryAfterUninstall(
     const InstallationState& original_state,
     const InstallerState& installer_state,
     const CommandLine& cmd_line,
-    installer::InstallStatus* uninstall_status);
+    InstallStatus* uninstall_status);
 
 }  // namespace installer
 

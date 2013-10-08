@@ -171,6 +171,10 @@ class InstallerState {
   // Frame may either exit or start up after this is called.
   bool IsChromeFrameRunning(const InstallationState& machine_state) const;
 
+  // Returns true if any of the binaries from a multi-install Chrome Frame that
+  // has been migrated to single-install are still in use.
+  bool AreBinariesInUse(const InstallationState& machine_state) const;
+
   // Returns the path to the installer under Chrome version folder
   // (for example <target_path>\Google\Chrome\Application\<Version>\Installer)
   base::FilePath GetInstallerDirectory(const base::Version& version) const;
@@ -210,10 +214,22 @@ class InstallerState {
   bool RequiresActiveSetup() const;
 
  protected:
+  // Bits for the |file_bits| argument of AnyExistsAndIsInUse.
+  enum {
+    CHROME_FRAME_DLL        = 1 << 0,
+    CHROME_FRAME_HELPER_EXE = 1 << 1,
+    CHROME_DLL              = 1 << 2,
+    NUM_BINARIES            = 3
+  };
+
   // Returns true if |file| exists and cannot be opened for exclusive write
   // access.
   static bool IsFileInUse(const base::FilePath& file);
 
+  // Returns true if any file corresponding to a bit in |file_bits| (from the
+  // enum above) for the currently installed version exists and is in use.
+  bool AnyExistsAndIsInUse(const InstallationState& machine_state,
+                           uint32 file_bits) const;
   base::FilePath GetDefaultProductInstallPath(BrowserDistribution* dist) const;
   bool CanAddProduct(const Product& product,
                      const base::FilePath* product_dir) const;

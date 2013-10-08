@@ -441,6 +441,15 @@ void MigrateGoogleUpdateStateMultiToSingle(
   }
 }
 
+bool IsUninstallSuccess(InstallStatus install_status) {
+  // The following status values represent failed uninstalls:
+  // 15: CHROME_NOT_INSTALLED
+  // 20: UNINSTALL_FAILED
+  // 21: UNINSTALL_CANCELLED
+  return (install_status == UNINSTALL_SUCCESSFUL ||
+          install_status == UNINSTALL_REQUIRES_REBOOT);
+}
+
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)
     : is_enabled_(false) {
   if (!::OpenProcessToken(::GetCurrentProcess(),

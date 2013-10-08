@@ -591,20 +591,14 @@ Version InstallerState::DetermineCriticalVersion(
 
 bool InstallerState::IsChromeFrameRunning(
     const InstallationState& machine_state) const {
-  // We check only for the current version (e.g. the version we are upgrading
-  // _from_). We don't need to check interstitial versions if any (as would
-  // occur in the case of multiple updates) since if they are in use, we are
-  // guaranteed that the current version is in use too.
-  bool in_use = false;
-  scoped_ptr<Version> current_version(GetCurrentVersion(machine_state));
-  if (current_version != NULL) {
-    base::FilePath cf_install_path(
-        target_path().AppendASCII(current_version->GetString())
-                     .Append(kChromeFrameDll));
-    in_use = base::PathExists(cf_install_path) &&
-        IsFileInUse(cf_install_path);
-  }
-  return in_use;
+  return AnyExistsAndIsInUse(machine_state, CHROME_FRAME_DLL);
+}
+
+bool InstallerState::AreBinariesInUse(
+    const InstallationState& machine_state) const {
+  return AnyExistsAndIsInUse(
+      machine_state,
+      CHROME_FRAME_DLL | CHROME_FRAME_HELPER_EXE | CHROME_DLL);
 }
 
 base::FilePath InstallerState::GetInstallerDirectory(
@@ -620,6 +614,39 @@ bool InstallerState::IsFileInUse(const base::FilePath& file) {
   return !base::win::ScopedHandle(CreateFile(file.value().c_str(),
                                              GENERIC_WRITE, 0, NULL,
                                              OPEN_EXISTING, 0, 0)).IsValid();
+}
+
+bool InstallerState::AnyExistsAndIsInUse(
+    const InstallationState& machine_state,
+    uint32 file_bits) const {
+  static const wchar_t* const kBinaryFileNames[] = {
+    kChromeFrameDll,
+    kChromeFrameHelperExe,
+    kChromeDll,
+  };
+  DCHECK_NE(file_bits, 0U);
+  DCHECK_LT(file_bits, 1U << NUM_BINARIES);
+  COMPILE_ASSERT(CHROME_FRAME_DLL == 1,no_youre_out_of_order);
+  COMPILE_ASSERT(CHROME_FRAME_HELPER_EXE == 2, no_youre_out_of_order);
+  COMPILE_ASSERT(CHROME_DLL == 4, no_youre_out_of_order);
+
+  // Check only for the current version (i.e., the version we are upgrading
+  // _from_). Later versions from pending in-use updates need not be checked
+  // since the current version is guaranteed to be in use if any such are.
+  bool in_use = false;
+  scoped_ptr<Version> current_version(GetCurrentVersion(machine_state));
+  if (!current_version)
+    return false;
+  base::FilePath directory(
+      target_path().AppendASCII(current_version->GetString()));
+  for (int i = 0; i < NUM_BINARIES; ++i) {
+    if (!(file_bits & (1U << i)))
+      continue;
+    base::FilePath file(directory.Append(kBinaryFileNames[i]));
+    if (base::PathExists(file) && IsFileInUse(file))
+      return true;
+  }
+  return false;
 }
 
 void InstallerState::GetExistingExeVersions(
@@ -779,8 +806,6 @@ void InstallerState::WriteInstallerResult(
     InstallStatus status,
     int string_resource_id,
     const std::wstring* const launch_cmd) const {
-  DWORD installer_result =
-      (InstallUtil::GetInstallReturnCode(status) == 0) ? 0 : 1;
   // Use a no-rollback list since this is a best-effort deal.
   scoped_ptr<WorkItemList> install_list(
       WorkItem::CreateNoRollbackWorkItemList());
