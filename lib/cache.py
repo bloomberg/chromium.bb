@@ -7,6 +7,7 @@
 import logging
 import os
 import shutil
+import urlparse
 
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
@@ -244,9 +245,25 @@ class TarballCache(DiskCache):
   def __init__(self, cache_dir):
     DiskCache.__init__(self, cache_dir)
 
+  def _Fetch(self, url, local_path):
+    """Fetch a remote file."""
+    cros_build_lib.RunCurl([url, '-o', local_path],
+                           debug_level=logging.DEBUG)
+
   def _Insert(self, key, tarball_path):
-    """Insert a tarball and its extracted contents into the cache."""
-    with osutils.TempDir(base_dir=self.staging_dir) as tempdir:
+    """Insert a tarball and its extracted contents into the cache.
+
+    Download the tarball first if a URL is provided as tarball_path.
+    """
+    with osutils.TempDir(prefix='tarball-cache',
+                         base_dir=self.staging_dir) as tempdir:
+
+      o = urlparse.urlsplit(tarball_path)
+      if o.scheme:
+        url = tarball_path
+        tarball_path = os.path.join(tempdir, os.path.basename(o.path))
+        self._Fetch(url, tarball_path)
+
       extract_path = os.path.join(tempdir, 'extract')
       os.mkdir(extract_path)
       Untar(tarball_path, extract_path)

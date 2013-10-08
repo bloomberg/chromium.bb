@@ -148,7 +148,7 @@ def CreateCacheTarball(extensions, outputdir, identifier, tarball):
 
 def main(argv):
   parser = commandline.ArgumentParser(
-      '%%(prog)s [options] <version>\n\n%s' % __doc__)
+      '%%(prog)s [options] <version>\n\n%s' % __doc__, caching=True)
   parser.add_argument('version', nargs=1)
   parser.add_argument('--path', default=None, type='path',
                       help='Path of files dir with external_extensions.json')
