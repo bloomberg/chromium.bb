@@ -29,6 +29,9 @@ class UI_EXPORT ComboboxModel {
   // interaction).
   virtual int GetDefaultIndex() const;
 
+  // Returns true if the item at |index| is enabled.
+  virtual bool IsItemEnabledAt(int index) const;
+
   // Adds/removes an observer. Override if model supports mutation.
   virtual void AddObserver(ComboboxModelObserver* observer) {}
   virtual void RemoveObserver(ComboboxModelObserver* observer) {}

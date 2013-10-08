@@ -110,6 +110,9 @@ class VIEWS_EXPORT Combobox
   // Called when the selection is changed by the user.
   void OnSelectionChanged();
 
+  // Converts a menu command ID to a menu item index.
+  int MenuCommandToIndex(int menu_command_id) const;
+
   // Our model. Not owned.
   ui::ComboboxModel* model_;
 

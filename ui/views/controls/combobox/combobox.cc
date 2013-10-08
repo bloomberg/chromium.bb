@@ -68,13 +68,14 @@ class InvalidBackground : public Background {
 };
 
 // Returns the next or previous valid index (depending on |increment|'s value).
-// Skips separator indices. Returns -1 if there is no valid adjacent index.
+// Skips separator or disabled indices. Returns -1 if there is no valid adjacent
+// index.
 int GetAdjacentIndex(ui::ComboboxModel* model, int increment, int index) {
   DCHECK(increment == -1 || increment == 1);
 
   index += increment;
   while (index >= 0 && index < model->GetItemCount()) {
-    if (!model->IsItemSeparatorAt(index))
+    if (!model->IsItemSeparatorAt(index) || !model->IsItemEnabledAt(index))
       return index;
     index += increment;
   }
@@ -152,15 +153,11 @@ bool Combobox::IsItemChecked(int id) const {
 }
 
 bool Combobox::IsCommandEnabled(int id) const {
-  return true;
+  return model()->IsItemEnabledAt(MenuCommandToIndex(id));
 }
 
 void Combobox::ExecuteCommand(int id) {
-  // (note that the id received is offset by kFirstMenuItemId)
-  // Revert menu ID offset to map back to combobox model.
-  id -= kFirstMenuItemId;
-  DCHECK_LT(id, model()->GetItemCount());
-  selected_index_ = id;
+  selected_index_ = MenuCommandToIndex(id);
   OnSelectionChanged();
 }
 
@@ -456,6 +453,14 @@ void Combobox::OnSelectionChanged() {
     listener_->OnSelectedIndexChanged(this);
   NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_VALUE_CHANGED, false);
   SchedulePaint();
+}
+
+int Combobox::MenuCommandToIndex(int menu_command_id) const {
+  // (note that the id received is offset by kFirstMenuItemId)
+  // Revert menu ID offset to map back to combobox model.
+  int index = menu_command_id - kFirstMenuItemId;
+  DCHECK_LT(index, model()->GetItemCount());
+  return index;
 }
 
 }  // namespace views

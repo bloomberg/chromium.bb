@@ -14,4 +14,8 @@ int ComboboxModel::GetDefaultIndex() const {
   return 0;
 }
 
+bool ComboboxModel::IsItemEnabledAt(int index) const {
+  return true;
+}
+
 }  // namespace ui
