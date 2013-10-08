@@ -262,8 +262,7 @@ void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
     DCHECK(auth_service_->HasAccessToken());
     DCHECK(access_token == auth_service_->access_token());
     drive::util::Log(logging::LOG_INFO,
-                     "CWS OAuth token fetch succeeded. (token: %s)",
-                     access_token.c_str());
+                     "CWS OAuth token fetch succeeded.");
     SetResult(new base::StringValue(access_token));
     SendResponse(true);
   } else {
