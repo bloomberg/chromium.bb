@@ -93,8 +93,7 @@ class FakeEncryptedMedia {
                             const std::vector<uint8>& message,
                             const std::string& default_url) = 0;
 
-    virtual void NeedKey(const std::string& session_id,
-                         const std::string& type,
+    virtual void NeedKey(const std::string& type,
                          const std::vector<uint8>& init_data,
                          AesDecryptor* decryptor) = 0;
   };
@@ -130,10 +129,9 @@ class FakeEncryptedMedia {
     app_->KeyMessage(session_id, message, default_url);
   }
 
-  void NeedKey(const std::string& session_id,
-               const std::string& type,
+  void NeedKey(const std::string& type,
                const std::vector<uint8>& init_data) {
-    app_->NeedKey(session_id, type, init_data, &decryptor_);
+    app_->NeedKey(type, init_data, &decryptor_);
   }
 
  private:
@@ -157,12 +155,9 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     current_session_id_ = session_id;
   }
 
-  virtual void NeedKey(const std::string& session_id,
-                       const std::string& type,
+  virtual void NeedKey(const std::string& type,
                        const std::vector<uint8>& init_data,
                        AesDecryptor* decryptor) OVERRIDE {
-    current_session_id_ = session_id;
-
     if (current_session_id_.empty()) {
       EXPECT_TRUE(decryptor->GenerateKeyRequest(type, kInitData,
                                                 arraysize(kInitData)));
@@ -203,8 +198,7 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
     FAIL() << "Unexpected KeyMessage";
   }
 
-  virtual void NeedKey(const std::string& session_id,
-                       const std::string& type,
+  virtual void NeedKey(const std::string& type,
                        const std::vector<uint8>& init_data,
                        AesDecryptor* decryptor) OVERRIDE {
   }
@@ -243,7 +237,7 @@ class MockMediaSource {
 
   scoped_ptr<Demuxer> GetDemuxer() { return owned_chunk_demuxer_.Pass(); }
 
-  void set_need_key_cb(const NeedKeyCB& need_key_cb) {
+  void set_need_key_cb(const Demuxer::NeedKeyCB& need_key_cb) {
     need_key_cb_ = need_key_cb;
   }
 
@@ -325,7 +319,7 @@ class MockMediaSource {
                       const std::vector<uint8>& init_data) {
     DCHECK(!init_data.empty());
     CHECK(!need_key_cb_.is_null());
-    need_key_cb_.Run(std::string(), type, init_data);
+    need_key_cb_.Run(type, init_data);
   }
 
   scoped_ptr<TextTrack> OnTextTrack(TextKind kind,
@@ -342,7 +336,7 @@ class MockMediaSource {
   std::string mimetype_;
   ChunkDemuxer* chunk_demuxer_;
   scoped_ptr<Demuxer> owned_chunk_demuxer_;
-  NeedKeyCB need_key_cb_;
+  Demuxer::NeedKeyCB need_key_cb_;
 };
 
 class PipelineIntegrationTest

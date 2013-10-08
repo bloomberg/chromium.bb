@@ -79,11 +79,6 @@ typedef base::Callback<void(const std::string& session_id,
 typedef base::Callback<void(const std::string& session_id,
                             const std::vector<uint8>& message,
                             const std::string& default_url)> KeyMessageCB;
-
-typedef base::Callback<void(const std::string& session_id,
-                            const std::string& type,
-                            const std::vector<uint8>& init_data)> NeedKeyCB;
-
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_KEYS_H_

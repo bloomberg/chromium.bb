@@ -143,7 +143,7 @@ void MediaSourceDelegate::StopDemuxer() {
 
 void MediaSourceDelegate::InitializeMediaSource(
     const MediaSourceOpenedCB& media_source_opened_cb,
-    const media::NeedKeyCB& need_key_cb,
+    const media::Demuxer::NeedKeyCB& need_key_cb,
     const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
     const UpdateNetworkStateCB& update_network_state_cb,
     const DurationChangeCB& duration_change_cb) {
@@ -705,8 +705,7 @@ void MediaSourceDelegate::OnNeedKey(const std::string& type,
   if (need_key_cb_.is_null())
     return;
 
-  // TODO(xhwang): Remove |session_id| from media::NeedKeyCB.
-  need_key_cb_.Run("", type, init_data);
+  need_key_cb_.Run(type, init_data);
 }
 
 bool MediaSourceDelegate::HasEncryptedStream() {

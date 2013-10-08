@@ -223,7 +223,6 @@ class WebMediaPlayerAndroid
   void OnMediaSourceOpened(WebKit::WebMediaSource* web_media_source);
 
   void OnNeedKey(const std::string& type,
-                 const std::string& session_id,
                  const std::vector<uint8>& init_data);
 
 #if defined(GOOGLE_TV)

@@ -62,7 +62,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // this object after this call.
   void InitializeMediaSource(
       const MediaSourceOpenedCB& media_source_opened_cb,
-      const media::NeedKeyCB& need_key_cb,
+      const media::Demuxer::NeedKeyCB& need_key_cb,
       const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
       const UpdateNetworkStateCB& update_network_state_cb,
       const DurationChangeCB& duration_change_cb);
@@ -204,7 +204,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   WebKit::WebTimeRanges buffered_web_time_ranges_;
 
   MediaSourceOpenedCB media_source_opened_cb_;
-  media::NeedKeyCB need_key_cb_;
+  media::Demuxer::NeedKeyCB need_key_cb_;
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.

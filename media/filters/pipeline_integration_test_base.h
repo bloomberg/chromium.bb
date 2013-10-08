@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "media/audio/clockless_audio_sink.h"
 #include "media/audio/null_audio_sink.h"
+#include "media/base/demuxer.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
@@ -23,7 +24,6 @@ class FilePath;
 namespace media {
 
 class Decryptor;
-class Demuxer;
 
 // Empty MD5 hash string.  Used to verify empty video tracks.
 extern const char kNullVideoHash[];
@@ -95,7 +95,7 @@ class PipelineIntegrationTestBase {
   scoped_refptr<ClocklessAudioSink> clockless_audio_sink_;
   bool ended_;
   PipelineStatus pipeline_status_;
-  NeedKeyCB need_key_cb_;
+  Demuxer::NeedKeyCB need_key_cb_;
   VideoFrame::Format last_video_frame_format_;
 
   void OnStatusCallbackChecked(PipelineStatus expected_status,
@@ -104,7 +104,7 @@ class PipelineIntegrationTestBase {
   PipelineStatusCB QuitOnStatusCB(PipelineStatus expected_status);
   void DemuxerNeedKeyCB(const std::string& type,
                         const std::vector<uint8>& init_data);
-    void set_need_key_cb(const NeedKeyCB& need_key_cb) {
+  void set_need_key_cb(const Demuxer::NeedKeyCB& need_key_cb) {
     need_key_cb_ = need_key_cb;
   }
 

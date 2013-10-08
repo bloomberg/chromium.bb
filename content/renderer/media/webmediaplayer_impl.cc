@@ -922,8 +922,7 @@ void WebMediaPlayerImpl::OnKeyAdded(const std::string& session_id) {
                         WebString::fromUTF8(session_id));
 }
 
-void WebMediaPlayerImpl::OnNeedKey(const std::string& session_id,
-                                   const std::string& type,
+void WebMediaPlayerImpl::OnNeedKey(const std::string& type,
                                    const std::vector<uint8>& init_data) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -939,7 +938,7 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& session_id,
 
   const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
   GetClient()->keyNeeded(WebString(),
-                         WebString::fromUTF8(session_id),
+                         WebString(),
                          init_data_ptr,
                          init_data.size());
 }
@@ -1036,7 +1035,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     demuxer_.reset(new media::FFmpegDemuxer(
         media_loop_, data_source_.get(),
-        BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnNeedKey, ""),
+        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
         media_log_));
   } else {
     DCHECK(!chunk_demuxer_);
@@ -1051,7 +1050,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnNeedKey, ""),
+        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
         add_text_track_cb,
         base::Bind(&LogMediaSourceError, media_log_));
     demuxer_.reset(chunk_demuxer_);

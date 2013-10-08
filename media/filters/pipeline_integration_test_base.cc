@@ -68,7 +68,7 @@ void PipelineIntegrationTestBase::DemuxerNeedKeyCB(
     const std::vector<uint8>& init_data) {
   DCHECK(!init_data.empty());
   CHECK(!need_key_cb_.is_null());
-  need_key_cb_.Run(std::string(), type, init_data);
+  need_key_cb_.Run(type, init_data);
 }
 
 void PipelineIntegrationTestBase::OnEnded() {

@@ -1199,8 +1199,7 @@ void WebMediaPlayerAndroid::OnMediaSourceOpened(
   client_->mediaSourceOpened(web_media_source);
 }
 
-void WebMediaPlayerAndroid::OnNeedKey(const std::string& session_id,
-                                      const std::string& type,
+void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
                                       const std::vector<uint8>& init_data) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   // Do not fire NeedKey event if encrypted media is not enabled.
@@ -1216,8 +1215,9 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& session_id,
     init_data_type_ = type;
 
   const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
+  // TODO(xhwang): Drop |keySystem| and |sessionId| in keyNeeded() call.
   client_->keyNeeded(WebString(),
-                     WebString::fromUTF8(session_id),
+                     WebString(),
                      init_data_ptr,
                      init_data.size());
 }
