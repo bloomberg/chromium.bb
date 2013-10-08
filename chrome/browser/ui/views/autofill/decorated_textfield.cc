@@ -132,11 +132,8 @@ void DecoratedTextfield::IconChanged() {
   int icon_space = icon_view_ ?
       icon_view_->GetPreferredSize().width() + 2 * kTextfieldIconPadding : 0;
 
-  // Extra indent inside of textfield before text starts, in px.
-  const int kTextIndent = 6;
-  int left = base::i18n::IsRTL() ? icon_space : kTextIndent;
-  int right = base::i18n::IsRTL() ? kTextIndent : icon_space;
-  SetHorizontalMargins(left, right);
+  bool is_rtl = base::i18n::IsRTL();
+  SetHorizontalMargins(is_rtl ? icon_space : 0, is_rtl ? 0 : icon_space);
 
   Layout();
   SchedulePaint();
