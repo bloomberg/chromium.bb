@@ -80,14 +80,14 @@ class LinkerTestRunner(base_test_runner.BaseTestRunner):
     """Sets up and runs a test case.
 
     Args:
-      test: An object which is ostensibly a subclass of LinkerTestCase.
+      test: An object which is ostensibly a subclass of LinkerTestCaseBase.
 
     Returns:
       A TestRunResults object which contains the result produced by the test
       and, in the case of a failure, the test that should be retried.
     """
 
-    assert isinstance(test, test_case.LinkerTestCase)
+    assert isinstance(test, test_case.LinkerTestCaseBase)
 
     try:
       results = test.Run(self.device)

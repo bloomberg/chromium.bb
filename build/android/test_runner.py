@@ -121,6 +121,8 @@ def AddLinkerTestOptions(option_parser):
   option_parser.commands_dict = {}
   option_parser.example = '%prog linker'
 
+  option_parser.add_option('-f', '--gtest-filter', dest='test_filter',
+                           help='googletest-style filter string.')
   AddCommonOptions(option_parser)
 
 
