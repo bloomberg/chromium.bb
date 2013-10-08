@@ -92,6 +92,7 @@
       ['OS=="mac"', {
         'link_settings': {
           'libraries': [
+            '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
             '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
           ]
         },
@@ -116,11 +117,17 @@
         ],
       }],
       ['"WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {
+        'include_dirs': [
+          '<(DEPTH)/third_party/ffmpeg',
+        ],
         'dependencies': [
           '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
         ],
       }],
       ['"WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1" in feature_defines', {
+         'include_dirs': [
+           '<(DEPTH)/third_party/openmax_dl',
+         ],
         'dependencies': [
           '<(DEPTH)/third_party/openmax_dl/dl/dl.gyp:openmax_dl',
         ],
