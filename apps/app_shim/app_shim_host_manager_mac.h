@@ -7,6 +7,7 @@
 
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_factory.h"
 
 namespace base {
@@ -21,7 +22,8 @@ class AppShimHostManagerTestApi;
 // socket (|factory_|) and creates a helper object to manage the connection.
 class AppShimHostManager
     : public IPC::ChannelFactory::Delegate,
-      public base::RefCountedThreadSafe<AppShimHostManager> {
+      public base::RefCountedThreadSafe<
+          AppShimHostManager, content::BrowserThread::DeleteOnUIThread> {
  public:
   AppShimHostManager();
 
@@ -36,6 +38,9 @@ class AppShimHostManager
 
  private:
   friend class base::RefCountedThreadSafe<AppShimHostManager>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<AppShimHostManager>;
   friend class test::AppShimHostManagerTestApi;
   virtual ~AppShimHostManager();
 

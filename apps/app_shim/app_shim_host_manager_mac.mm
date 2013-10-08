@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/browser_thread.h"
 #include "chrome/common/mac/app_mode_common.h"
 
 using content::BrowserThread;
