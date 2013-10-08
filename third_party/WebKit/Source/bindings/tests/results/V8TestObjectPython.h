@@ -39,6 +39,14 @@ public:
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
+    static void customReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customGetterReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+#if ENABLE(Condition)
+    static void customReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+#endif // ENABLE(Condition)
+#if ENABLE(Condition)
+    static void customGetterReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+#endif // ENABLE(Condition)
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestObjectPython* impl)
     {

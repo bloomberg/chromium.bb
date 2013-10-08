@@ -753,22 +753,22 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-#if ENABLE(Condition1)
+#if ENABLE(Condition)
 static void conditionalReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     v8SetReturnValueInt(info, imp->conditionalReadonlyLongAttribute());
 }
-#endif // ENABLE(Condition1)
+#endif // ENABLE(Condition)
 
-#if ENABLE(Condition1)
+#if ENABLE(Condition)
 static void conditionalReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestObjectPythonV8Internal::conditionalReadonlyLongAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-#endif // ENABLE(Condition1)
+#endif // ENABLE(Condition)
 
 #if ENABLE(Condition1) && ENABLE(Condition2)
 static void conditionalAndReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -803,6 +803,38 @@ static void conditionalOrReadonlyLongAttributeAttributeGetterCallback(v8::Local<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
+
+static void customReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    V8TestObjectPython::customReadonlyLongAttributeAttributeGetterCustom(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void customGetterReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    V8TestObjectPython::customGetterReadonlyLongAttributeAttributeGetterCustom(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+#if ENABLE(Condition)
+static void customReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    V8TestObjectPython::customReadonlyLongAttributeAttributeGetterCustom(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+#endif // ENABLE(Condition)
+
+#if ENABLE(Condition)
+static void customGetterReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    V8TestObjectPython::customGetterReadonlyLongAttributeAttributeGetterCustom(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+#endif // ENABLE(Condition)
 
 static void readonlyDocumentFragmentAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -872,15 +904,23 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"cachedAttributeReadonlyAnyAttribute", TestObjectPythonV8Internal::cachedAttributeReadonlyAnyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"callWithScriptExecutionContextReadonlyAnyAttribute", TestObjectPythonV8Internal::callWithScriptExecutionContextReadonlyAnyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"checkSecurityForNodeReadonlyDocumentAttribute", TestObjectPythonV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#if ENABLE(Condition1)
+#if ENABLE(Condition)
     {"conditionalReadonlyLongAttribute", TestObjectPythonV8Internal::conditionalReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition1)
+#endif // ENABLE(Condition)
 #if ENABLE(Condition1) && ENABLE(Condition2)
     {"conditionalAndReadonlyLongAttribute", TestObjectPythonV8Internal::conditionalAndReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
 #if ENABLE(Condition1) || ENABLE(Condition2)
     {"conditionalOrReadonlyLongAttribute", TestObjectPythonV8Internal::conditionalOrReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
+    {"customReadonlyLongAttribute", TestObjectPythonV8Internal::customReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"customGetterReadonlyLongAttribute", TestObjectPythonV8Internal::customGetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+#if ENABLE(Condition)
+    {"customReadonlyLongAttribute", TestObjectPythonV8Internal::customReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+#endif // ENABLE(Condition)
+#if ENABLE(Condition)
+    {"customGetterReadonlyLongAttribute", TestObjectPythonV8Internal::customGetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+#endif // ENABLE(Condition)
     {"readonlyDocumentFragmentAttribute", TestObjectPythonV8Internal::readonlyDocumentFragmentAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 

@@ -26,7 +26,7 @@
 [
     ConstructorTemplate=Event
 ] interface CustomEvent : Event {
-    [InitializedByEventConstructor, Custom] readonly attribute any detail;
+    [CustomGetter, InitializedByEventConstructor] readonly attribute any detail;
 
     [Custom] void initCustomEvent([Default=Undefined] optional DOMString typeArg,
                                   [Default=Undefined] optional boolean canBubbleArg,

@@ -71,7 +71,11 @@ static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 0, 0, "Getter");
     {% endif %}
+    {% if attribute.is_custom_getter %}
+    {{v8_class_name}}::{{attribute.name}}AttributeGetterCustom(name, info);
+    {% else %}
     {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter(name, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 {% endfilter %}

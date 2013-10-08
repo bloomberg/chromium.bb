@@ -37,7 +37,7 @@ For details, see bug http://crbug.com/239771
 
 import v8_types
 import v8_utilities
-from v8_utilities import uncapitalize
+from v8_utilities import has_extended_attribute, uncapitalize
 
 
 def generate_attributes(interface):
@@ -77,6 +77,9 @@ def generate_attribute_and_includes(interface, attribute):
         'name': attribute.name,
         'v8_type': v8_types.v8_type(idl_type),
     }
+    if has_extended_attribute(attribute, ('Custom', 'CustomGetter')):
+        contents['is_custom_getter'] = True
+        return contents, set()
 
     cpp_value = getter_expression(interface, attribute, contents)
     # Normally we can inline the function call into the return statement to

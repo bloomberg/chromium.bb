@@ -25,7 +25,7 @@
 
 interface History {
     readonly attribute unsigned long length;
-    [Custom] readonly attribute SerializedScriptValue state;
+    [CustomGetter] readonly attribute SerializedScriptValue state;
 
     [CallWith=ScriptExecutionContext] void back();
     [CallWith=ScriptExecutionContext] void forward();

@@ -709,7 +709,7 @@ END
 END
             $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
-        if (HasCustomSetter($attrExt) && !$attrExt->{"ImplementedBy"}) {
+        if (HasCustomSetter($attribute) && !$attrExt->{"ImplementedBy"}) {
             $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
             $header{classPublic}->add(<<END);
     static void ${name}AttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
@@ -1087,8 +1087,9 @@ sub HasCustomGetter
 
 sub HasCustomSetter
 {
-    my $attrExt = shift;
-    return $attrExt->{"Custom"} || $attrExt->{"CustomSetter"};
+    my $attribute = shift;
+    my $attrExt = $attribute->extendedAttributes;
+    return ($attrExt->{"Custom"} || $attrExt->{"CustomSetter"}) && !IsReadonly($attribute);
 }
 
 sub HasCustomMethod
@@ -1767,7 +1768,7 @@ sub GenerateNormalAttributeSetterCallback
         $code .= GenerateActivityLogging("Setter", $interface, "${attrName}");
     }
     $code .= GenerateCustomElementInvocationScopeIfNeeded($attrExt);
-    if (HasCustomSetter($attrExt)) {
+    if (HasCustomSetter($attribute)) {
         $code .= "    ${v8ClassName}::${attrName}AttributeSetterCustom(name, value, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::${attrName}AttributeSetter${forMainWorldSuffix}(name, value, info);\n";
@@ -1792,7 +1793,7 @@ sub GenerateNormalAttributeSetter
     my $attrType = $attribute->type;
     my $attrCached = GetCachedAttribute($attribute);
 
-    if (HasCustomSetter($attrExt)) {
+    if (HasCustomSetter($attribute)) {
         return;
     }
 
@@ -2997,7 +2998,7 @@ sub GenerateAttributeConfigurationParameters
     }
     $accessControl = "static_cast<v8::AccessControl>(" . $accessControl . ")";
 
-    my $customAccessor = HasCustomGetter($attrExt) || HasCustomSetter($attrExt) || "";
+    my $customAccessor = HasCustomGetter($attrExt) || HasCustomSetter($attribute) || "";
     if ($customAccessor eq "VALUE_IS_MISSING") {
         # use the naming convension, interface + (capitalize) attr name
         $customAccessor = $implClassName . "::" . $attrName;
@@ -3046,7 +3047,7 @@ sub GenerateAttributeConfigurationParameters
         $getterForMainWorld = "${getter}ForMainWorld";
         $setterForMainWorld = "${setter}ForMainWorld";
 
-        if (!HasCustomSetter($attrExt) && $attrExt->{"Replaceable"}) {
+        if (!HasCustomSetter($attribute) && $attrExt->{"Replaceable"}) {
             $setter = "${implClassName}V8Internal::${implClassName}ReplaceableAttributeSetterCallback";
             $setterForMainWorld = "0";
         }
@@ -4024,7 +4025,7 @@ END
             GenerateNormalAttributeGetter($attribute, $interface, "ForMainWorld");
             GenerateNormalAttributeGetterCallback($attribute, $interface, "ForMainWorld");
         }
-        if (!HasCustomSetter($attrExt) && $attrExt->{"Replaceable"}) {
+        if (!HasCustomSetter($attribute) && $attrExt->{"Replaceable"}) {
             $hasReplaceable = 1;
         } elsif (!IsReadonly($attribute)) {
             GenerateNormalAttributeSetter($attribute, $interface, "");

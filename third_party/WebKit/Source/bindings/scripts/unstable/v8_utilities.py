@@ -47,6 +47,10 @@ def cpp_implemented_as_name(definition_or_member):
     return definition_or_member.extended_attributes.get('ImplementedAs', definition_or_member.name)
 
 
+def has_extended_attribute(definition_or_member, extended_attribute_list):
+    return any(extended_attribute in definition_or_member.extended_attributes
+               for extended_attribute in extended_attribute_list)
+
 def has_extended_attribute_value(extended_attributes, key, value):
     return (key in extended_attributes and
             value in re.split('[|&]', extended_attributes[key]))
@@ -128,7 +132,7 @@ def generate_conditional_string(definition_or_member):
         if operator in conditional:
             conditions = set(conditional.split(operator))
             operator_separator = ' %s%s ' % (operator, operator)
-            return operator_separator.join(['ENABLE(%s)' % expression for expression in sorted(conditions)])
+            return operator_separator.join('ENABLE(%s)' % expression for expression in sorted(conditions))
     return 'ENABLE(%s)' % conditional
 
 

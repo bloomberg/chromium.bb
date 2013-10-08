@@ -60,7 +60,9 @@ template <typename T> void V8_USE(T) { }
 {% from 'attributes.cpp' import attribute_getter, attribute_getter_callback
    with context %}
 {% for attribute in attributes %}
+{% if not attribute.is_custom_getter %}
 {{attribute_getter(attribute)}}
+{% endif %}
 {{attribute_getter_callback(attribute)}}
 {% endfor %}
 } // namespace {{cpp_class_name}}V8Internal
