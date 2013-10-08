@@ -58,10 +58,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
       const cdm::InputBuffer& encrypted_buffer,
       cdm::AudioFrames* audio_frames) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual void OnPlatformChallengeResponse(
-      const cdm::PlatformChallengeResponse& response) OVERRIDE;
-  virtual void OnQueryOutputProtectionStatus(
-      uint32_t link_mask, uint32_t output_protection_mask) OVERRIDE;
 
  private:
   // TODO(xhwang): After we removed DecryptorClient. We probably can also remove
