@@ -112,7 +112,7 @@ $(1).pexe: $(1).bc
 	$(call LOG,FINALIZE,$$@,$(PNACL_FINALIZE) -o $$@ $$^)
 
 $(1).bc: $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(call LOG,LINK,$$@,$(PNACL_LINK) -o $$@ $(2) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6))
+	$(call LOG,LINK,$$@,$(PNACL_LINK) -o $$@ $(2) $(PNACL_LDFLAGS) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 
 

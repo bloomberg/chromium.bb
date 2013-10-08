@@ -289,6 +289,8 @@ endif
 #
 ifeq ($(CONFIG),Release)
 POSIX_FLAGS ?= -g -O2 -pthread -MMD -DNDEBUG
+NACL_LDFLAGS ?= -O2
+PNACL_LDFLAGS ?= -O2
 else
 POSIX_FLAGS ?= -g -O0 -pthread -MMD -DNACL_SDK_DEBUG
 endif
@@ -299,7 +301,7 @@ endif
 
 NACL_CFLAGS ?= -Wno-long-long -Werror
 NACL_CXXFLAGS ?= -Wno-long-long -Werror
-NACL_LDFLAGS ?= -Wl,-as-needed
+NACL_LDFLAGS += -Wl,-as-needed
 
 #
 # Default Paths
