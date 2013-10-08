@@ -30,6 +30,7 @@
 #define MultiChannelResampler_h
 
 #include "platform/audio/SincResampler.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -37,6 +38,7 @@ namespace WebCore {
 class AudioBus;
 
 class PLATFORM_EXPORT MultiChannelResampler {
+    WTF_MAKE_NONCOPYABLE(MultiChannelResampler);
 public:
     MultiChannelResampler(double scaleFactor, unsigned numberOfChannels);
 

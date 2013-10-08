@@ -30,6 +30,7 @@
 #define Reverb_h
 
 #include "platform/audio/ReverbConvolver.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -39,6 +40,7 @@ class AudioBus;
 // Multi-channel convolution reverb with channel matrixing - one or more ReverbConvolver objects are used internally.
 
 class PLATFORM_EXPORT Reverb {
+    WTF_MAKE_NONCOPYABLE(Reverb);
 public:
     enum { MaxFrameSize = 256 };
 

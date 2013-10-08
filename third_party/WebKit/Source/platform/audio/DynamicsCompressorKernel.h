@@ -31,12 +31,14 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 class PLATFORM_EXPORT DynamicsCompressorKernel {
+    WTF_MAKE_NONCOPYABLE(DynamicsCompressorKernel);
 public:
     DynamicsCompressorKernel(float sampleRate, unsigned numberOfChannels);
 
