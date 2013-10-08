@@ -56,7 +56,7 @@ class CommitTest(unittest.TestCase):
         state = {
             "changed_files": ["platform/chromium/" + filename],
         }
-        expected_logs = """MOCK run_and_throw_if_fail: ['mock-check-webkit-style', '--diff-files', 'platform/chromium/%s'], cwd=/mock-checkout
+        expected_logs = """MOCK run_and_throw_if_fail: ['mock-check-webkit-style', '--diff-files', 'platform/chromium/%s'], cwd=/mock-checkout/third_party/WebKit
 Committed r49824: <http://trac.webkit.org/changeset/49824>
 """ % filename
         capture.assert_outputs(self, step.run, [state], expected_logs=expected_logs)

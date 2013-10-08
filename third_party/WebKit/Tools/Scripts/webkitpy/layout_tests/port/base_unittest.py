@@ -221,7 +221,7 @@ class PortTest(unittest.TestCase):
     def test_additional_expectations(self):
         port = self.make_port(port_name='foo')
         port.port_name = 'foo'
-        port._filesystem.write_text_file('/mock-checkout/LayoutTests/platform/foo/TestExpectations', '')
+        port._filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/foo/TestExpectations', '')
         port._filesystem.write_text_file(
             '/tmp/additional-expectations-1.txt', 'content1\n')
         port._filesystem.write_text_file(

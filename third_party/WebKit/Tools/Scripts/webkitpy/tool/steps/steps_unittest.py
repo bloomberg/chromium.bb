@@ -70,12 +70,12 @@ class StepsTest(unittest.TestCase):
         tool._deprecated_port = DeprecatedPort()
         step = steps.RunTests(tool, mock_options)
         expected_logs = """Running Python unit tests
-MOCK run_and_throw_if_fail: ['Tools/Scripts/test-webkitpy'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['Tools/Scripts/test-webkitpy'], cwd=/mock-checkout/third_party/WebKit
 Running Perl unit tests
-MOCK run_and_throw_if_fail: ['Tools/Scripts/test-webkitperl'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['Tools/Scripts/test-webkitperl'], cwd=/mock-checkout/third_party/WebKit
 Running bindings generation tests
-MOCK run_and_throw_if_fail: ['Tools/Scripts/run-bindings-tests'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['Tools/Scripts/run-bindings-tests'], cwd=/mock-checkout/third_party/WebKit
 Running run-webkit-tests
-MOCK run_and_throw_if_fail: ['Tools/Scripts/run-webkit-tests', '--quiet'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['Tools/Scripts/run-webkit-tests', '--quiet'], cwd=/mock-checkout/third_party/WebKit
 """
         OutputCapture().assert_outputs(self, step.run, [{}], expected_logs=expected_logs)

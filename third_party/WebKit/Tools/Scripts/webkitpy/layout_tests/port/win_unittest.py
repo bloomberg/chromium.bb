@@ -59,12 +59,12 @@ class WinPortTest(chromium_port_testcase.ChromiumPortTestCase):
     def test_setup_environ_for_server_cygpath(self):
         port = self.make_port()
         env = port.setup_environ_for_server(port.driver_name())
-        self.assertEqual(env['CYGWIN_PATH'], '/mock-checkout/Source/WebKit/chromium/third_party/cygwin/bin')
+        self.assertEqual(env['CYGWIN_PATH'], '/mock-checkout/third_party/cygwin/bin')
 
     def test_setup_environ_for_server_register_cygwin(self):
         port = self.make_port(options=MockOptions(register_cygwin=True, results_directory='/'))
         port._executive = MockExecutive(should_log=True)
-        expected_logs = "MOCK run_command: ['/mock-checkout/Source/WebKit/chromium/third_party/cygwin/setup_mount.bat'], cwd=None\n"
+        expected_logs = "MOCK run_command: ['/mock-checkout/third_party/cygwin/setup_mount.bat'], cwd=None\n"
         output = outputcapture.OutputCapture()
         output.assert_outputs(self, port.setup_environ_for_server, expected_logs=expected_logs)
 
@@ -100,15 +100,15 @@ class WinPortTest(chromium_port_testcase.ChromiumPortTestCase):
     def test_build_path(self):
         # Test that optional paths are used regardless of whether they exist.
         options = MockOptions(configuration='Release', build_directory='/foo')
-        self.assert_build_path(options, ['/mock-checkout/Source/WebKit/chromium/out/Release'], '/foo/Release')
+        self.assert_build_path(options, ['/mock-checkout/out/Release'], '/foo/Release')
 
         # Test that optional relative paths are returned unmodified.
         options = MockOptions(configuration='Release', build_directory='foo')
-        self.assert_build_path(options, ['/mock-checkout/Source/WebKit/chromium/out/Release'], 'foo/Release')
+        self.assert_build_path(options, ['/mock-checkout/out/Release'], 'foo/Release')
 
         # Test that we prefer the legacy dir over the new dir.
         options = MockOptions(configuration='Release', build_directory=None)
-        self.assert_build_path(options, ['/mock-checkout/Source/WebKit/chromium/build/Release', '/mock-checkout/Source/WebKit/chromium/out'], '/mock-checkout/Source/WebKit/chromium/build/Release')
+        self.assert_build_path(options, ['/mock-checkout/build/Release', '/mock-checkout/out'], '/mock-checkout/build/Release')
 
     def test_build_path_timestamps(self):
         options = MockOptions(configuration='Release', build_directory=None)
@@ -130,4 +130,4 @@ class WinPortTest(chromium_port_testcase.ChromiumPortTestCase):
         self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver'))._path_to_driver().endswith('OtherDriver.exe'))
 
     def test_path_to_image_diff(self):
-        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff.exe')
+        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/third_party/WebKit/out/Release/image_diff.exe')

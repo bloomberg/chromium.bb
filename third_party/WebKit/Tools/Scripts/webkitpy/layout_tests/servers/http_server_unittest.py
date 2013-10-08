@@ -45,7 +45,7 @@ class TestHttpServer(unittest.TestCase):
         host = MockHost()
         test_port = test.TestPort(host)
         host.filesystem.write_text_file(
-            "/mock-checkout/Tools/Scripts/webkitpy/layout_tests/servers/lighttpd.conf", "Mock Config\n")
+            "/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/servers/lighttpd.conf", "Mock Config\n")
         host.filesystem.write_text_file(
             "/usr/lib/lighttpd/liblightcomp.dylib", "Mock dylib")
 
@@ -67,7 +67,7 @@ class TestHttpServer(unittest.TestCase):
         host = MockHost()
         test_port = test.TestPort(host)
         host.filesystem.write_text_file(
-            "/mock-checkout/Tools/Scripts/webkitpy/layout_tests/servers/lighttpd.conf", "Mock Config\n")
+            "/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/servers/lighttpd.conf", "Mock Config\n")
         host.filesystem.write_text_file(
             "/usr/lib/lighttpd/liblightcomp.dylib", "Mock dylib")
 

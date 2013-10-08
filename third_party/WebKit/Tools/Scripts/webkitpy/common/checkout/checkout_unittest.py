@@ -55,5 +55,5 @@ class CheckoutTest(unittest.TestCase):
         mock_patch = Mock()
         mock_patch.contents = lambda: "foo"
         mock_patch.reviewer = lambda: None
-        expected_logs = "MOCK run_command: ['svn-apply', '--force'], cwd=/mock-checkout, input=foo\n"
+        expected_logs = "MOCK run_command: ['svn-apply', '--force'], cwd=/mock-checkout/third_party/WebKit, input=foo\n"
         OutputCapture().assert_outputs(self, checkout.apply_patch, [mock_patch], expected_logs=expected_logs)

@@ -293,7 +293,7 @@ class PortTestCase(unittest.TestCase):
     def test_test_expectations(self):
         # Check that we read the expectations file
         host = MockSystemHost()
-        host.filesystem.write_text_file('/mock-checkout/LayoutTests/platform/testwebkitport/TestExpectations',
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/testwebkitport/TestExpectations',
             'BUG_TESTEXPECTATIONS SKIP : fast/html/article-element.html = FAIL\n')
         port = TestWebKitPort(host=host)
         self.assertEqual(''.join(port.expectations_dict().values()), 'BUG_TESTEXPECTATIONS SKIP : fast/html/article-element.html = FAIL\n')
@@ -348,7 +348,7 @@ class PortTestCase(unittest.TestCase):
 
         # Mock out _apache_config_file_name_for_platform to ignore the passed sys.platform value.
         port._apache_config_file_name_for_platform = lambda platform: 'httpd.conf'
-        self.assertEqual(port._path_to_apache_config_file(), '/mock-checkout/LayoutTests/http/conf/httpd.conf')
+        self.assertEqual(port._path_to_apache_config_file(), '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/httpd.conf')
 
         # Check that even if we mock out _apache_config_file_name, the environment variable takes precedence.
         saved_environ = os.environ.copy()

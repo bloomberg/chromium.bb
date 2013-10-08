@@ -43,19 +43,19 @@ class RunTestsTest(unittest.TestCase):
 
         if sys.platform != "cygwin":
             expected_logs = """Running bindings generation tests
-MOCK run_and_throw_if_fail: ['mock-run-bindings-tests'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['mock-run-bindings-tests'], cwd=/mock-checkout/third_party/WebKit
 Running WebKit unit tests
-MOCK run_and_throw_if_fail: ['mock-run-webkit-unit-tests'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['mock-run-webkit-unit-tests'], cwd=/mock-checkout/third_party/WebKit
 Running run-webkit-tests
-MOCK run_and_throw_if_fail: ['mock-run-webkit-tests', '--no-new-test-results', '--no-show-results', '--exit-after-n-failures=30', '--quiet', '--skip-failing-tests'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['mock-run-webkit-tests', '--no-new-test-results', '--no-show-results', '--exit-after-n-failures=30', '--quiet', '--skip-failing-tests'], cwd=/mock-checkout/third_party/WebKit
 """
         else:
             expected_logs = """Running bindings generation tests
-MOCK run_and_throw_if_fail: ['mock-run-bindings-tests'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['mock-run-bindings-tests'], cwd=/mock-checkout/third_party/WebKit
 Running WebKit unit tests
-MOCK run_and_throw_if_fail: ['mock-run-webkit-unit-tests'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['mock-run-webkit-unit-tests'], cwd=/mock-checkout/third_party/WebKit
 Running run-webkit-tests
-MOCK run_and_throw_if_fail: ['mock-run-webkit-tests', '--no-new-test-results', '--no-show-results', '--exit-after-n-failures=30', '--no-build'], cwd=/mock-checkout
+MOCK run_and_throw_if_fail: ['mock-run-webkit-tests', '--no-new-test-results', '--no-show-results', '--exit-after-n-failures=30', '--no-build'], cwd=/mock-checkout/third_party/WebKit
 """
 
         OutputCapture().assert_outputs(self, step.run, [{}], expected_logs=expected_logs)
