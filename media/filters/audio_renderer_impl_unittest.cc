@@ -239,7 +239,7 @@ class AudioRendererImplTest : public ::testing::Test {
   bool ConsumeBufferedData(uint32 requested_frames, bool* muted) {
     scoped_ptr<AudioBus> bus =
         AudioBus::Create(kChannels, std::max(requested_frames, 1u));
-    uint32 frames_read = renderer_->FillBuffer(bus.get(), requested_frames, 0);
+    uint32 frames_read = renderer_->Render(bus.get(), 0);
 
     if (muted)
       *muted = frames_read < 1 || bus->channel(0)[0] == kMutedAudio;
@@ -255,16 +255,15 @@ class AudioRendererImplTest : public ::testing::Test {
     int frames_read = 0;
     int total_frames_read = 0;
 
-    const int kRequestFrames = 1024;
-    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kRequestFrames);
+    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, 1024);
 
     do {
       TimeDelta audio_delay = TimeDelta::FromMicroseconds(
           total_frames_read * Time::kMicrosecondsPerSecond /
           static_cast<float>(decoder_->samples_per_second()));
 
-      frames_read = renderer_->FillBuffer(
-          bus.get(), kRequestFrames, audio_delay.InMilliseconds());
+      frames_read = renderer_->Render(
+          bus.get(), audio_delay.InMilliseconds());
       total_frames_read += frames_read;
     } while (frames_read > 0);
 

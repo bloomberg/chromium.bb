@@ -119,27 +119,6 @@ class MEDIA_EXPORT AudioRendererImpl
   // DecodedAudioReady().
   void HandleAbortedReadOrDecodeError(bool is_decode_error);
 
-  // Fills the given buffer with audio data by delegating to its |algorithm_|.
-  // FillBuffer() also takes care of updating the clock. Returns the number of
-  // frames copied into |dest|, which may be less than or equal to
-  // |requested_frames|.
-  //
-  // If this method returns fewer frames than |requested_frames|, it could
-  // be a sign that the pipeline is stalled or unable to stream the data fast
-  // enough.  In such scenarios, the callee should zero out unused portions
-  // of their buffer to playback silence.
-  //
-  // FillBuffer() updates the pipeline's playback timestamp. If FillBuffer() is
-  // not called at the same rate as audio samples are played, then the reported
-  // timestamp in the pipeline will be ahead of the actual audio playback. In
-  // this case |playback_delay| should be used to indicate when in the future
-  // should the filled buffer be played.
-  //
-  // Safe to call on any thread.
-  uint32 FillBuffer(AudioBus* dest,
-                    uint32 requested_frames,
-                    int audio_delay_milliseconds);
-
   // Estimate earliest time when current buffer can stop playing.
   void UpdateEarliestEndTime_Locked(int frames_filled,
                                     const base::TimeDelta& playback_delay,
@@ -151,6 +130,22 @@ class MEDIA_EXPORT AudioRendererImpl
   // AudioRendererSink::RenderCallback implementation.
   //
   // NOTE: These are called on the audio callback thread!
+  //
+  // Render() fills the given buffer with audio data by delegating to its
+  // |algorithm_|. Render() also takes care of updating the clock.
+  // Returns the number of frames copied into |audio_bus|, which may be less
+  // than or equal to the initial number of frames in |audio_bus|
+  //
+  // If this method returns fewer frames than the initial number of frames in
+  // |audio_bus|, it could be a sign that the pipeline is stalled or unable to
+  // stream the data fast enough.  In such scenarios, the callee should zero out
+  // unused portions of their buffer to play back silence.
+  //
+  // Render() updates the pipeline's playback timestamp. If Render() is
+  // not called at the same rate as audio samples are played, then the reported
+  // timestamp in the pipeline will be ahead of the actual audio playback. In
+  // this case |audio_delay_milliseconds| should be used to indicate when in the
+  // future should the filled buffer be played.
   virtual int Render(AudioBus* audio_bus,
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;

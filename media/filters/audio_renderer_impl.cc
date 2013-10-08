@@ -467,21 +467,13 @@ bool AudioRendererImpl::IsBeforePrerollTime(
 
 int AudioRendererImpl::Render(AudioBus* audio_bus,
                               int audio_delay_milliseconds) {
-  int frames_filled =
-      FillBuffer(audio_bus, audio_bus->frames(), audio_delay_milliseconds);
-  DCHECK_LE(frames_filled, audio_bus->frames());
-  return frames_filled;
-}
-
-uint32 AudioRendererImpl::FillBuffer(AudioBus* dest,
-                                     uint32 requested_frames,
-                                     int audio_delay_milliseconds) {
+  const int requested_frames = audio_bus->frames();
   base::TimeDelta current_time = kNoTimestamp();
   base::TimeDelta max_time = kNoTimestamp();
   base::TimeDelta playback_delay = base::TimeDelta::FromMilliseconds(
       audio_delay_milliseconds);
 
-  size_t frames_written = 0;
+  int frames_written = 0;
   base::Closure underflow_cb;
   {
     base::AutoLock auto_lock(lock_);
@@ -516,7 +508,7 @@ uint32 AudioRendererImpl::FillBuffer(AudioBus* dest,
     //   3) We are in the kPlaying state
     //
     // Otherwise the buffer has data we can send to the device.
-    frames_written = algorithm_->FillBuffer(dest, requested_frames);
+    frames_written = algorithm_->FillBuffer(audio_bus, requested_frames);
     if (frames_written == 0) {
       const base::TimeTicks now = now_cb_.Run();
 
@@ -577,25 +569,26 @@ uint32 AudioRendererImpl::FillBuffer(AudioBus* dest,
     max_time = algorithm_->GetTime();
     audio_time_buffered_ = max_time;
 
-    UpdateEarliestEndTime_Locked(
-        frames_written, playback_delay, now_cb_.Run());
+    if (frames_written > 0) {
+      UpdateEarliestEndTime_Locked(
+          frames_written, playback_delay, now_cb_.Run());
+    }
   }
 
-  if (current_time != kNoTimestamp() && max_time != kNoTimestamp()) {
+  if (current_time != kNoTimestamp() && max_time != kNoTimestamp())
     time_cb_.Run(current_time, max_time);
-  }
 
   if (!underflow_cb.is_null())
     underflow_cb.Run();
 
+  DCHECK_LE(frames_written, requested_frames);
   return frames_written;
 }
 
 void AudioRendererImpl::UpdateEarliestEndTime_Locked(
     int frames_filled, const base::TimeDelta& playback_delay,
     const base::TimeTicks& time_now) {
-  if (frames_filled <= 0)
-    return;
+  DCHECK_GT(frames_filled, 0);
 
   base::TimeDelta predicted_play_time = base::TimeDelta::FromMicroseconds(
       static_cast<float>(frames_filled) * base::Time::kMicrosecondsPerSecond /
