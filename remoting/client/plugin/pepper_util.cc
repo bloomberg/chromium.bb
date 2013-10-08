@@ -58,7 +58,7 @@ void PpNetAddressToSocketAddress(const pp::NetAddress& pp_net_address,
       PP_NetAddress_IPv4 ipv4_addr;
       CHECK(pp_net_address.DescribeAsIPv4Address(&ipv4_addr));
       address->SetIP(talk_base::IPAddress(
-          *reinterpret_cast<in_addr*>(&ipv4_addr.addr)));
+                         bit_cast<in_addr>(ipv4_addr.addr)));
       address->SetPort(base::NetToHost16(ipv4_addr.port));
       return;
     }
@@ -66,7 +66,7 @@ void PpNetAddressToSocketAddress(const pp::NetAddress& pp_net_address,
       PP_NetAddress_IPv6 ipv6_addr;
       CHECK(pp_net_address.DescribeAsIPv6Address(&ipv6_addr));
       address->SetIP(talk_base::IPAddress(
-          *reinterpret_cast<in6_addr*>(&ipv6_addr.addr)));
+                         bit_cast<in6_addr>(ipv6_addr.addr)));
       address->SetPort(base::NetToHost16(ipv6_addr.port));
       return;
     }

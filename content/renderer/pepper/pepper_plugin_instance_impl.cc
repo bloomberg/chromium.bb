@@ -469,7 +469,7 @@ void PepperPluginInstanceImpl::GamepadImpl::Sample(
   WebKit::WebGamepads webkit_data;
   RenderThreadImpl::current()->SampleGamepads(&webkit_data);
   ConvertWebKitGamepadData(
-      *reinterpret_cast<const ppapi::WebKitGamepads*>(&webkit_data), data);
+      bit_cast<ppapi::WebKitGamepads>(webkit_data), data);
 }
 
 PepperPluginInstanceImpl::PepperPluginInstanceImpl(
