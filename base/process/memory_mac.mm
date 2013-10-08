@@ -108,7 +108,7 @@ class ThreadLocalBooleanAutoReset {
 };
 
 base::LazyInstance<ThreadLocalBoolean>::Leaky
-    g_unchecked_malloc = LAZY_INSTANCE_INITIALIZER;
+    g_unchecked_alloc = LAZY_INSTANCE_INITIALIZER;
 
 // NOTE(shess): This is called when the malloc library noticed that the heap
 // is fubar.  Avoid calls which will re-enter the malloc library.
@@ -120,7 +120,7 @@ void CrMallocErrorBreak() {
   // to the OOM killer.  The EBADF case comes up because the malloc library
   // attempts to log to ASL (syslog) before calling this code, which fails
   // accessing a Unix-domain socket because of sandboxing.
-  if (errno == ENOMEM || (errno == EBADF && g_unchecked_malloc.Get().Get()))
+  if (errno == ENOMEM || (errno == EBADF && g_unchecked_alloc.Get().Get()))
     return;
 
   // A unit test checks this error message, so it needs to be in release builds.
@@ -493,11 +493,22 @@ void* UncheckedMalloc(size_t size) {
   if (g_old_malloc) {
 #if ARCH_CPU_32_BITS
     ScopedClearErrno clear_errno;
-    ThreadLocalBooleanAutoReset flag(g_unchecked_malloc.Pointer(), true);
+    ThreadLocalBooleanAutoReset flag(g_unchecked_alloc.Pointer(), true);
 #endif  // ARCH_CPU_32_BITS
     return g_old_malloc(malloc_default_zone(), size);
   }
   return malloc(size);
+}
+
+void* UncheckedCalloc(size_t num_items, size_t size) {
+  if (g_old_calloc) {
+#if ARCH_CPU_32_BITS
+    ScopedClearErrno clear_errno;
+    ThreadLocalBooleanAutoReset flag(g_unchecked_alloc.Pointer(), true);
+#endif  // ARCH_CPU_32_BITS
+    return g_old_calloc(malloc_default_zone(), num_items, size);
+  }
+  return calloc(num_items, size);
 }
 
 void EnableTerminationOnOutOfMemory() {

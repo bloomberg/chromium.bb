@@ -62,6 +62,7 @@ BASE_EXPORT bool AdjustOOMScore(ProcessId process, int score);
 // IF YOU USE THIS WITHOUT CONSULTING YOUR FRIENDLY OSX DEVELOPER,
 // YOUR CODE IS LIKELY TO BE REVERTED.  THANK YOU.
 BASE_EXPORT void* UncheckedMalloc(size_t size);
+BASE_EXPORT void* UncheckedCalloc(size_t num_items, size_t size);
 #endif  // defined(OS_MACOSX)
 
 }  // namespace base
