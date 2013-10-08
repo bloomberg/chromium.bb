@@ -55,6 +55,7 @@
 #if defined(OS_WIN)
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/widget/monitor_win.h"
+#include "ui/views/win/hwnd_util.h"
 #include "win8/util/win8_util.h"
 #endif
 
@@ -307,7 +308,7 @@ class NewTabButton : public views::ImageButton {
   // Overridden from views::View:
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* path) const OVERRIDE;
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 #endif
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -374,14 +375,14 @@ void NewTabButton::GetHitTestMask(gfx::Path* path) const {
   path->close();
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyRightMouseButton()) {
     gfx::Point point = event.location();
     views::View::ConvertPointToScreen(this, &point);
     bool destroyed = false;
     destroyed_ = &destroyed;
-    gfx::ShowSystemMenuAtPoint(GetWidget()->GetNativeView(), point);
+    gfx::ShowSystemMenuAtPoint(views::HWNDForView(this), point);
     if (destroyed)
       return;
 
