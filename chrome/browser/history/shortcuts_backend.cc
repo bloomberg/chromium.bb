@@ -32,48 +32,93 @@ namespace {
 
 // Takes Match classification vector and removes all matched positions,
 // compacting repetitions if necessary.
-void StripMatchMarkersFromClassifications(ACMatchClassifications* matches) {
-  DCHECK(matches);
+ACMatchClassifications StripMatchMarkers(
+    const ACMatchClassifications& matches) {
   ACMatchClassifications unmatched;
-  for (ACMatchClassifications::iterator i = matches->begin();
-       i != matches->end(); ++i) {
-    AutocompleteMatch::AddLastClassificationIfNecessary(&unmatched, i->offset,
-        i->style & ~ACMatchClassification::MATCH);
+  for (ACMatchClassifications::const_iterator i(matches.begin());
+       i != matches.end(); ++i) {
+    AutocompleteMatch::AddLastClassificationIfNecessary(
+        &unmatched, i->offset, i->style & ~ACMatchClassification::MATCH);
   }
-  matches->swap(unmatched);
+  return unmatched;
 }
 
 }  // namespace
 
 namespace history {
 
+// ShortcutsBackend::Shortcut::MatchCore --------------------------------------
+
+ShortcutsBackend::Shortcut::MatchCore::MatchCore(
+    const AutocompleteMatch& match)
+    : fill_into_edit(match.fill_into_edit),
+      destination_url(match.destination_url),
+      contents(match.contents),
+      contents_class(StripMatchMarkers(match.contents_class)),
+      description(match.description),
+      description_class(StripMatchMarkers(match.description_class)),
+      transition(match.transition),
+      type(match.type),
+      keyword(match.keyword) {
+}
+
+ShortcutsBackend::Shortcut::MatchCore::MatchCore(
+    const string16& fill_into_edit,
+    const GURL& destination_url,
+    const string16& contents,
+    const ACMatchClassifications& contents_class,
+    const string16& description,
+    const ACMatchClassifications& description_class,
+    content::PageTransition transition,
+    AutocompleteMatch::Type type,
+    const string16& keyword)
+    : fill_into_edit(fill_into_edit),
+      destination_url(destination_url),
+      contents(contents),
+      contents_class(StripMatchMarkers(contents_class)),
+      description(description),
+      description_class(StripMatchMarkers(description_class)),
+      transition(transition),
+      type(type),
+      keyword(keyword) {
+}
+
+ShortcutsBackend::Shortcut::MatchCore::~MatchCore() {
+}
+
+AutocompleteMatch ShortcutsBackend::Shortcut::MatchCore::ToMatch() const {
+  AutocompleteMatch match;
+  match.fill_into_edit = fill_into_edit;
+  match.destination_url = destination_url;
+  match.contents = contents;
+  match.contents_class = contents_class;
+  match.description = description;
+  match.description_class = description_class;
+  match.transition = transition;
+  match.type = type;
+  match.keyword = keyword;
+  return match;
+}
+
+
 // ShortcutsBackend::Shortcut -------------------------------------------------
 
 ShortcutsBackend::Shortcut::Shortcut(
     const std::string& id,
     const string16& text,
-    const GURL& url,
-    const string16& contents,
-    const ACMatchClassifications& contents_class,
-    const string16& description,
-    const ACMatchClassifications& description_class,
+    const MatchCore& match_core,
     const base::Time& last_access_time,
     int number_of_hits)
     : id(id),
       text(text),
-      url(url),
-      contents(contents),
-      contents_class(contents_class),
-      description(description),
-      description_class(description_class),
+      match_core(match_core),
       last_access_time(last_access_time),
       number_of_hits(number_of_hits) {
-  StripMatchMarkersFromClassifications(&this->contents_class);
-  StripMatchMarkersFromClassifications(&this->description_class);
 }
 
 ShortcutsBackend::Shortcut::Shortcut()
-    : last_access_time(base::Time::Now()),
+    : match_core(AutocompleteMatch()),
+      last_access_time(base::Time::Now()),
       number_of_hits(0) {
 }
 
@@ -216,9 +261,9 @@ void ShortcutsBackend::Observe(int type,
     std::vector<std::string> shortcut_ids;
 
     for (GuidMap::iterator it(guid_map_.begin()); it != guid_map_.end(); ++it) {
-      if (std::find_if(rows.begin(), rows.end(),
-                       URLRow::URLRowHasURL(it->second->second.url)) !=
-          rows.end())
+      if (std::find_if(
+          rows.begin(), rows.end(), URLRow::URLRowHasURL(
+              it->second->second.match_core.destination_url)) != rows.end())
         shortcut_ids.push_back(it->first);
     }
     DeleteShortcutsWithIds(shortcut_ids);
@@ -234,17 +279,15 @@ void ShortcutsBackend::Observe(int type,
   for (ShortcutMap::iterator it = shortcuts_map_.lower_bound(text_lowercase);
        it != shortcuts_map_.end() &&
            StartsWith(it->first, text_lowercase, true); ++it) {
-    if (match.destination_url == it->second.url) {
-      UpdateShortcut(Shortcut(
-          it->second.id, log->text, match.destination_url, match.contents,
-          match.contents_class, match.description, match.description_class,
-          base::Time::Now(), it->second.number_of_hits + 1));
+    if (match.destination_url == it->second.match_core.destination_url) {
+      UpdateShortcut(Shortcut(it->second.id, log->text,
+                              Shortcut::MatchCore(match), base::Time::Now(),
+                              it->second.number_of_hits + 1));
       return;
     }
   }
-  AddShortcut(Shortcut(base::GenerateGUID(), log->text, match.destination_url,
-                       match.contents, match.contents_class, match.description,
-                       match.description_class, base::Time::Now(), 1));
+  AddShortcut(Shortcut(base::GenerateGUID(), log->text,
+                       Shortcut::MatchCore(match), base::Time::Now(), 1));
 }
 
 void ShortcutsBackend::InitInternal() {
@@ -279,8 +322,9 @@ bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& url,
   std::vector<std::string> shortcut_ids;
   for (GuidMap::iterator it(guid_map_.begin()); it != guid_map_.end(); ) {
     if (exact_match ?
-        (it->second->second.url == url) :
-        StartsWithASCII(it->second->second.url.spec(), url_spec, true)) {
+        (it->second->second.match_core.destination_url == url) :
+        StartsWithASCII(it->second->second.match_core.destination_url.spec(),
+                        url_spec, true)) {
       shortcut_ids.push_back(it->first);
       shortcuts_map_.erase(it->second);
       guid_map_.erase(it++);

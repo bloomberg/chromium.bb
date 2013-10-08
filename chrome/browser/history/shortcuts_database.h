@@ -67,18 +67,17 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
 
  private:
   friend class base::RefCountedThreadSafe<ShortcutsDatabase>;
-
-  virtual ~ShortcutsDatabase();
-
-  // Ensures that the table is present.
-  bool EnsureTable();
-
   friend class ShortcutsDatabaseTest;
   FRIEND_TEST_ALL_PREFIXES(ShortcutsDatabaseTest, AddShortcut);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsDatabaseTest, UpdateShortcut);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsDatabaseTest, DeleteShortcutsWithIds);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsDatabaseTest, DeleteShortcutsWithUrl);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsDatabaseTest, LoadShortcuts);
+
+  virtual ~ShortcutsDatabase();
+
+  // Ensures that the table is present.
+  bool EnsureTable();
 
   // The sql database. Not valid until Init is called.
   sql::Connection db_;

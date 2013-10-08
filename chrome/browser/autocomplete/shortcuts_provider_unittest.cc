@@ -208,11 +208,17 @@ void ShortcutsProviderTest::FillData(TestShortcutInfo* db, size_t db_size) {
   size_t expected_size = backend_->shortcuts_map().size() + db_size;
   for (size_t i = 0; i < db_size; ++i) {
     const TestShortcutInfo& cur = db[i];
-    ShortcutsBackend::Shortcut shortcut(cur.guid,
-        ASCIIToUTF16(cur.title), GURL(cur.url), ASCIIToUTF16(cur.contents),
-        AutocompleteMatch::ClassificationsFromString(cur.contents_class),
-        ASCIIToUTF16(cur.description),
-        AutocompleteMatch::ClassificationsFromString(cur.description_class),
+    ShortcutsBackend::Shortcut shortcut(
+        cur.guid, ASCIIToUTF16(cur.title),
+        ShortcutsBackend::Shortcut::MatchCore(
+            /* fill_into_edit */string16(), GURL(cur.url),
+            ASCIIToUTF16(cur.contents),
+            AutocompleteMatch::ClassificationsFromString(cur.contents_class),
+            ASCIIToUTF16(cur.description),
+            AutocompleteMatch::ClassificationsFromString(cur.description_class),
+            /* transition */content::PAGE_TRANSITION_TYPED,
+            /* type */AutocompleteMatchType::HISTORY_TITLE,
+            /* keyword */string16()),
         base::Time::Now() - base::TimeDelta::FromDays(cur.days_from_now),
         cur.typed_count);
     backend_->AddShortcut(shortcut);
@@ -348,175 +354,65 @@ ACMatchClassifications ClassifyTest::RunTest(const string16& find_text) {
 }
 
 TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
-  ACMatchClassifications matches;
-  matches.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
+  ACMatchClassifications matches =
+      AutocompleteMatch::ClassificationsFromString("0,0");
   ClassifyTest classify_test(ASCIIToUTF16("A man, a plan, a canal Panama"),
                              matches);
 
   ACMatchClassifications spans_a = classify_test.RunTest(ASCIIToUTF16("man"));
   // ACMatch spans should be: '--MMM------------------------'
-  ASSERT_EQ(3U, spans_a.size());
-  EXPECT_EQ(0U, spans_a[0].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_a[0].style);
-  EXPECT_EQ(2U, spans_a[1].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_a[1].style);
-  EXPECT_EQ(5U, spans_a[2].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_a[2].style);
+  EXPECT_EQ("0,0,2,2,5,0", AutocompleteMatch::ClassificationsToString(spans_a));
 
   ACMatchClassifications spans_b = classify_test.RunTest(ASCIIToUTF16("man p"));
   // ACMatch spans should be: '--MMM----M-------------M-----'
-  ASSERT_EQ(7U, spans_b.size());
-  EXPECT_EQ(0U, spans_b[0].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_b[0].style);
-  EXPECT_EQ(2U, spans_b[1].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_b[1].style);
-  EXPECT_EQ(5U, spans_b[2].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_b[2].style);
-  EXPECT_EQ(9U, spans_b[3].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_b[3].style);
-  EXPECT_EQ(10U, spans_b[4].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_b[4].style);
-  EXPECT_EQ(23U, spans_b[5].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_b[5].style);
-  EXPECT_EQ(24U, spans_b[6].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_b[6].style);
+  EXPECT_EQ("0,0,2,2,5,0,9,2,10,0,23,2,24,0",
+            AutocompleteMatch::ClassificationsToString(spans_b));
 
   ACMatchClassifications spans_c =
       classify_test.RunTest(ASCIIToUTF16("man plan panama"));
   // ACMatch spans should be:'--MMM----MMMM----------MMMMMM'
-  ASSERT_EQ(6U, spans_c.size());
-  EXPECT_EQ(0U, spans_c[0].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_c[0].style);
-  EXPECT_EQ(2U, spans_c[1].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_c[1].style);
-  EXPECT_EQ(5U, spans_c[2].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_c[2].style);
-  EXPECT_EQ(9U, spans_c[3].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_c[3].style);
-  EXPECT_EQ(13U, spans_c[4].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_c[4].style);
-  EXPECT_EQ(23U, spans_c[5].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_c[5].style);
+  EXPECT_EQ("0,0,2,2,5,0,9,2,13,0,23,2",
+            AutocompleteMatch::ClassificationsToString(spans_c));
 
   ClassifyTest classify_test2(ASCIIToUTF16("Yahoo! Sports - Sports News, "
       "Scores, Rumors, Fantasy Games, and more"), matches);
 
   ACMatchClassifications spans_d = classify_test2.RunTest(ASCIIToUTF16("ne"));
   // ACMatch spans should match first two letters of the "news".
-  ASSERT_EQ(3U, spans_d.size());
-  EXPECT_EQ(0U, spans_d[0].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_d[0].style);
-  EXPECT_EQ(23U, spans_d[1].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_d[1].style);
-  EXPECT_EQ(25U, spans_d[2].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_d[2].style);
+  EXPECT_EQ("0,0,23,2,25,0",
+            AutocompleteMatch::ClassificationsToString(spans_d));
 
   ACMatchClassifications spans_e =
       classify_test2.RunTest(ASCIIToUTF16("news r"));
-  // ACMatch spans should be the same as original matches.
-  ASSERT_EQ(15U, spans_e.size());
-  EXPECT_EQ(0U, spans_e[0].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_e[0].style);
-  // "r" in "Sports".
-  EXPECT_EQ(10U, spans_e[1].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_e[1].style);
-  EXPECT_EQ(11U, spans_e[2].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_e[2].style);
-  // "r" in second "Sports".
-  EXPECT_EQ(19U, spans_e[3].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_e[3].style);
-  EXPECT_EQ(20U, spans_e[4].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_e[4].style);
-  // "News".
-  EXPECT_EQ(23U, spans_e[5].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_e[5].style);
-  EXPECT_EQ(27U, spans_e[6].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_e[6].style);
-  // "r" in "Scores".
-  EXPECT_EQ(32U, spans_e[7].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_e[7].style);
-  EXPECT_EQ(33U, spans_e[8].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_e[8].style);
-  // First "r" in "Rumors".
-  EXPECT_EQ(37U, spans_e[9].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_e[9].style);
-  EXPECT_EQ(38U, spans_e[10].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_e[10].style);
-  // Second "r" in "Rumors".
-  EXPECT_EQ(41U, spans_e[11].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_e[11].style);
-  EXPECT_EQ(42U, spans_e[12].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_e[12].style);
-  // "r" in "more".
-  EXPECT_EQ(66U, spans_e[13].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_e[13].style);
-  EXPECT_EQ(67U, spans_e[14].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_e[14].style);
+  EXPECT_EQ("0,0,10,2,11,0,19,2,20,0,23,2,27,0,32,2,33,0,37,2,38,0,41,2,42,0,"
+            "66,2,67,0", AutocompleteMatch::ClassificationsToString(spans_e));
 
-  matches.clear();
-  matches.push_back(ACMatchClassification(0, ACMatchClassification::URL));
+  matches = AutocompleteMatch::ClassificationsFromString("0,1");
   ClassifyTest classify_test3(ASCIIToUTF16("livescore.goal.com"), matches);
 
   ACMatchClassifications spans_f = classify_test3.RunTest(ASCIIToUTF16("go"));
   // ACMatch spans should match first two letters of the "goal".
-  ASSERT_EQ(3U, spans_f.size());
-  EXPECT_EQ(0U, spans_f[0].offset);
-  EXPECT_EQ(ACMatchClassification::URL, spans_f[0].style);
-  EXPECT_EQ(10U, spans_f[1].offset);
-  EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
-            spans_f[1].style);
-  EXPECT_EQ(12U, spans_f[2].offset);
-  EXPECT_EQ(ACMatchClassification::URL, spans_f[2].style);
+  EXPECT_EQ("0,1,10,3,12,1",
+            AutocompleteMatch::ClassificationsToString(spans_f));
 
-  matches.clear();
-  matches.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
-  matches.push_back(ACMatchClassification(13, ACMatchClassification::URL));
+  matches = AutocompleteMatch::ClassificationsFromString("0,0,13,1");
   ClassifyTest classify_test4(ASCIIToUTF16("Email login: mail.somecorp.com"),
                               matches);
 
   ACMatchClassifications spans_g = classify_test4.RunTest(ASCIIToUTF16("ail"));
-  ASSERT_EQ(6U, spans_g.size());
-  EXPECT_EQ(0U, spans_g[0].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_g[0].style);
-  EXPECT_EQ(2U, spans_g[1].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_g[1].style);
-  EXPECT_EQ(5U, spans_g[2].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_g[2].style);
-  EXPECT_EQ(13U, spans_g[3].offset);
-  EXPECT_EQ(ACMatchClassification::URL, spans_g[3].style);
-  EXPECT_EQ(14U, spans_g[4].offset);
-  EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
-            spans_g[4].style);
-  EXPECT_EQ(17U, spans_g[5].offset);
-  EXPECT_EQ(ACMatchClassification::URL, spans_g[5].style);
+  EXPECT_EQ("0,0,2,2,5,0,13,1,14,3,17,1",
+            AutocompleteMatch::ClassificationsToString(spans_g));
 
   ACMatchClassifications spans_h =
       classify_test4.RunTest(ASCIIToUTF16("lo log"));
-  ASSERT_EQ(4U, spans_h.size());
-  EXPECT_EQ(0U, spans_h[0].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_h[0].style);
-  EXPECT_EQ(6U, spans_h[1].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_h[1].style);
-  EXPECT_EQ(9U, spans_h[2].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_h[2].style);
-  EXPECT_EQ(13U, spans_h[3].offset);
-  EXPECT_EQ(ACMatchClassification::URL, spans_h[3].style);
+  EXPECT_EQ("0,0,6,2,9,0,13,1",
+            AutocompleteMatch::ClassificationsToString(spans_h));
 
   ACMatchClassifications spans_i =
       classify_test4.RunTest(ASCIIToUTF16("ail em"));
   // 'Email' and 'ail' should be matched.
-  ASSERT_EQ(5U, spans_i.size());
-  EXPECT_EQ(0U, spans_i[0].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_i[0].style);
-  EXPECT_EQ(5U, spans_i[1].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_i[1].style);
-  EXPECT_EQ(13U, spans_i[2].offset);
-  EXPECT_EQ(ACMatchClassification::URL, spans_i[2].style);
-  EXPECT_EQ(14U, spans_i[3].offset);
-  EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
-            spans_i[3].style);
-  EXPECT_EQ(17U, spans_i[4].offset);
-  EXPECT_EQ(ACMatchClassification::URL, spans_i[4].style);
+  EXPECT_EQ("0,2,5,0,13,1,14,3,17,1",
+            AutocompleteMatch::ClassificationsToString(spans_i));
 
   // Some web sites do not have a description.  If the string being searched is
   // empty, the classifications must also be empty: http://crbug.com/148647
@@ -526,9 +422,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   ASSERT_EQ(0U, spans_j.size());
 
   // Matches which end at beginning of classification merge properly.
-  matches.clear();
-  matches.push_back(ACMatchClassification(0, ACMatchClassification::DIM));
-  matches.push_back(ACMatchClassification(9, ACMatchClassification::NONE));
+  matches = AutocompleteMatch::ClassificationsFromString("0,4,9,0");
   ClassifyTest classify_test6(ASCIIToUTF16("html password example"), matches);
 
   // Extra space in the next string avoids having the string be a prefix of the
@@ -539,55 +433,33 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   // valid.
   ACMatchClassifications spans_k =
       classify_test6.RunTest(ASCIIToUTF16("html  pass"));
-  ASSERT_EQ(4U, spans_k.size());
-  EXPECT_EQ(0U, spans_k[0].offset);
-  EXPECT_EQ(ACMatchClassification::DIM | ACMatchClassification::MATCH,
-            spans_k[0].style);
-  EXPECT_EQ(4U, spans_k[1].offset);
-  EXPECT_EQ(ACMatchClassification::DIM, spans_k[1].style);
-  EXPECT_EQ(5U, spans_k[2].offset);
-  EXPECT_EQ(ACMatchClassification::DIM | ACMatchClassification::MATCH,
-            spans_k[2].style);
-  EXPECT_EQ(9U, spans_k[3].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_k[3].style);
+  EXPECT_EQ("0,6,4,4,5,6,9,0",
+            AutocompleteMatch::ClassificationsToString(spans_k));
 
   // Multiple matches with both beginning and end at beginning of
   // classifications merge properly.
-  matches.clear();
-  matches.push_back(ACMatchClassification(0, ACMatchClassification::URL));
-  matches.push_back(ACMatchClassification(11, ACMatchClassification::NONE));
+  matches = AutocompleteMatch::ClassificationsFromString("0,1,11,0");
   ClassifyTest classify_test7(ASCIIToUTF16("http://a.co is great"), matches);
 
   ACMatchClassifications spans_l =
       classify_test7.RunTest(ASCIIToUTF16("ht co"));
-  ASSERT_EQ(4U, spans_l.size());
-  EXPECT_EQ(0U, spans_l[0].offset);
-  EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
-            spans_l[0].style);
-  EXPECT_EQ(2U, spans_l[1].offset);
-  EXPECT_EQ(ACMatchClassification::URL, spans_l[1].style);
-  EXPECT_EQ(9U, spans_l[2].offset);
-  EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
-            spans_l[2].style);
-  EXPECT_EQ(11U, spans_l[3].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_l[3].style);
+  EXPECT_EQ("0,3,2,1,9,3,11,0",
+            AutocompleteMatch::ClassificationsToString(spans_l));
 }
 
 TEST_F(ShortcutsProviderTest, CalculateScore) {
-  ACMatchClassifications spans_content;
-  spans_content.push_back(ACMatchClassification(0, ACMatchClassification::URL));
-  spans_content.push_back(ACMatchClassification(
-      4, ACMatchClassification::MATCH | ACMatchClassification::URL));
-  spans_content.push_back(ACMatchClassification(8, ACMatchClassification::URL));
-  ACMatchClassifications spans_description;
-  spans_description.push_back(
-      ACMatchClassification(0, ACMatchClassification::NONE));
-  spans_description.push_back(
-      ACMatchClassification(2, ACMatchClassification::MATCH));
-  ShortcutsBackend::Shortcut shortcut(std::string(),
-      ASCIIToUTF16("test"), GURL("http://www.test.com"),
-      ASCIIToUTF16("www.test.com"), spans_content, ASCIIToUTF16("A test"),
-      spans_description, base::Time::Now(), 1);
+  ShortcutsBackend::Shortcut shortcut(
+      std::string(), ASCIIToUTF16("test"),
+      ShortcutsBackend::Shortcut::MatchCore(
+          /* fill_into_edit */string16(), GURL("http://www.test.com"),
+          ASCIIToUTF16("www.test.com"),
+          AutocompleteMatch::ClassificationsFromString("0,1,4,3,8,1"),
+          ASCIIToUTF16("A test"),
+          AutocompleteMatch::ClassificationsFromString("0,0,2,2"),
+          /* transition */content::PAGE_TRANSITION_TYPED,
+          /* type */AutocompleteMatchType::HISTORY_TITLE,
+          /* keyword */string16()),
+      base::Time::Now(), 1);
 
   // Maximal score.
   const int max_relevance = AutocompleteResult::kLowestDefaultScore - 1;

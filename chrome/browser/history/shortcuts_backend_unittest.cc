@@ -7,7 +7,6 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/shortcuts_database.h"
@@ -17,18 +16,32 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
+
+// Helpers --------------------------------------------------------------------
 
 namespace history {
 
-const base::TimeDelta kMaxRequestWaitTimeout = base::TimeDelta::FromSeconds(1);
+namespace {
+
+ShortcutsBackend::Shortcut::MatchCore MatchCoreForTesting(
+    const std::string& url) {
+  AutocompleteMatch match;
+  match.destination_url = GURL(url);
+  match.contents = ASCIIToUTF16("test");
+  return ShortcutsBackend::Shortcut::MatchCore(match);
+}
+
+}  // namespace
+
+
+// ShortcutsBackendTest -------------------------------------------------------
 
 class ShortcutsBackendTest : public testing::Test,
                              public ShortcutsBackend::ShortcutsBackendObserver {
  public:
   ShortcutsBackendTest()
-      : ui_thread_(BrowserThread::UI, &ui_message_loop_),
-        db_thread_(BrowserThread::DB),
+      : ui_thread_(content::BrowserThread::UI, &ui_message_loop_),
+        db_thread_(content::BrowserThread::DB),
         load_notified_(false),
         changed_notified_(false) {}
 
@@ -84,16 +97,15 @@ void ShortcutsBackendTest::InitBackend() {
   EXPECT_TRUE(backend_->initialized());
 }
 
+
+// Actual tests ---------------------------------------------------------------
+
 TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
   InitBackend();
   EXPECT_FALSE(changed_notified_);
-  ShortcutsBackend::Shortcut shortcut("BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
-      ASCIIToUTF16("goog"), GURL("http://www.google.com"),
-      ASCIIToUTF16("Google"),
-      AutocompleteMatch::ClassificationsFromString("0,1"),
-      ASCIIToUTF16("Google"),
-      AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
-      100);
+  ShortcutsBackend::Shortcut shortcut(
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880DF", ASCIIToUTF16("goog"),
+      MatchCoreForTesting("http://www.google.com"), base::Time::Now(), 100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut));
   EXPECT_TRUE(changed_notified_);
   changed_notified_ = false;
@@ -101,48 +113,36 @@ TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
   const ShortcutsBackend::ShortcutMap& shortcuts = backend_->shortcuts_map();
   ASSERT_TRUE(shortcuts.end() != shortcuts.find(shortcut.text));
   EXPECT_EQ(shortcut.id, shortcuts.find(shortcut.text)->second.id);
-  EXPECT_EQ(shortcut.contents, shortcuts.find(shortcut.text)->second.contents);
-  shortcut.contents = ASCIIToUTF16("Google Web Search");
+  EXPECT_EQ(shortcut.match_core.contents,
+            shortcuts.find(shortcut.text)->second.match_core.contents);
+  shortcut.match_core.contents = ASCIIToUTF16("Google Web Search");
   EXPECT_TRUE(backend_->UpdateShortcut(shortcut));
   EXPECT_TRUE(changed_notified_);
   EXPECT_EQ(shortcut.id, shortcuts.find(shortcut.text)->second.id);
-  EXPECT_EQ(shortcut.contents, shortcuts.find(shortcut.text)->second.contents);
+  EXPECT_EQ(shortcut.match_core.contents,
+            shortcuts.find(shortcut.text)->second.match_core.contents);
 }
 
 TEST_F(ShortcutsBackendTest, DeleteShortcuts) {
   InitBackend();
-  ShortcutsBackend::Shortcut shortcut1("BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
-      ASCIIToUTF16("goog"), GURL("http://www.google.com"),
-      ASCIIToUTF16("Google"),
-      AutocompleteMatch::ClassificationsFromString("0,1,4,0"),
-      ASCIIToUTF16("Google"),
-      AutocompleteMatch::ClassificationsFromString("0,3,4,1"),
-      base::Time::Now(), 100);
+  ShortcutsBackend::Shortcut shortcut1(
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880DF", ASCIIToUTF16("goog"),
+      MatchCoreForTesting("http://www.google.com"), base::Time::Now(), 100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut1));
 
-  ShortcutsBackend::Shortcut shortcut2("BD85DBA2-8C29-49F9-84AE-48E1E90880E0",
-      ASCIIToUTF16("gle"), GURL("http://www.google.com"),
-      ASCIIToUTF16("Google"),
-      AutocompleteMatch::ClassificationsFromString("0,1"),
-      ASCIIToUTF16("Google"),
-      AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
-      100);
+  ShortcutsBackend::Shortcut shortcut2(
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880E0", ASCIIToUTF16("gle"),
+      MatchCoreForTesting("http://www.google.com"), base::Time::Now(), 100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut2));
 
-  ShortcutsBackend::Shortcut shortcut3("BD85DBA2-8C29-49F9-84AE-48E1E90880E1",
-      ASCIIToUTF16("sp"), GURL("http://www.sport.com"), ASCIIToUTF16("Sports"),
-      AutocompleteMatch::ClassificationsFromString("0,1"),
-      ASCIIToUTF16("Sport news"),
-      AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
-      10);
+  ShortcutsBackend::Shortcut shortcut3(
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880E1", ASCIIToUTF16("sp"),
+      MatchCoreForTesting("http://www.sport.com"), base::Time::Now(), 10);
   EXPECT_TRUE(backend_->AddShortcut(shortcut3));
 
-  ShortcutsBackend::Shortcut shortcut4("BD85DBA2-8C29-49F9-84AE-48E1E90880E2",
-      ASCIIToUTF16("mov"), GURL("http://www.film.com"), ASCIIToUTF16("Movies"),
-      AutocompleteMatch::ClassificationsFromString("0,1"),
-      ASCIIToUTF16("Movie news"),
-      AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
-      10);
+  ShortcutsBackend::Shortcut shortcut4(
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880E2", ASCIIToUTF16("mov"),
+      MatchCoreForTesting("http://www.film.com"), base::Time::Now(), 10);
   EXPECT_TRUE(backend_->AddShortcut(shortcut4));
 
   const ShortcutsBackend::ShortcutMap& shortcuts = backend_->shortcuts_map();
@@ -153,7 +153,8 @@ TEST_F(ShortcutsBackendTest, DeleteShortcuts) {
   EXPECT_EQ(shortcut3.id, shortcuts.find(shortcut3.text)->second.id);
   EXPECT_EQ(shortcut4.id, shortcuts.find(shortcut4.text)->second.id);
 
-  EXPECT_TRUE(backend_->DeleteShortcutsWithUrl(shortcut1.url));
+  EXPECT_TRUE(backend_->DeleteShortcutsWithUrl(
+      shortcut1.match_core.destination_url));
 
   ASSERT_EQ(2U, shortcuts.size());
   EXPECT_TRUE(shortcuts.end() == shortcuts.find(shortcut1.text));

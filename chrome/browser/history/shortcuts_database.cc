@@ -26,13 +26,17 @@ void BindShortcutToStatement(
   DCHECK(base::IsValidGUID(shortcut.id));
   s->BindString(0, shortcut.id);
   s->BindString16(1, shortcut.text);
-  s->BindString(2, shortcut.url.spec());
-  s->BindString16(3, shortcut.contents);
-  s->BindString(4,
-      AutocompleteMatch::ClassificationsToString(shortcut.contents_class));
-  s->BindString16(5, shortcut.description);
-  s->BindString(6,
-      AutocompleteMatch::ClassificationsToString(shortcut.description_class));
+  // fill_into_edit
+  s->BindString(2, shortcut.match_core.destination_url.spec());
+  s->BindString16(3, shortcut.match_core.contents);
+  s->BindString(4, AutocompleteMatch::ClassificationsToString(
+      shortcut.match_core.contents_class));
+  s->BindString16(5, shortcut.match_core.description);
+  s->BindString(6, AutocompleteMatch::ClassificationsToString(
+      shortcut.match_core.description_class));
+  // transition
+  // type
+  // keyword
   s->BindInt64(7, shortcut.last_access_time.ToInternalValue());
   s->BindInt(8, shortcut.number_of_hits);
 }
@@ -145,12 +149,19 @@ bool ShortcutsDatabase::LoadShortcuts(GuidToShortcutMap* shortcuts) {
 
   shortcuts->clear();
   while (s.Step()) {
-    shortcuts->insert(std::make_pair(s.ColumnString(0),
-        ShortcutsBackend::Shortcut(s.ColumnString(0), s.ColumnString16(1),
-            GURL(s.ColumnString(2)), s.ColumnString16(3),
-            AutocompleteMatch::ClassificationsFromString(s.ColumnString(4)),
-            s.ColumnString16(5),
-            AutocompleteMatch::ClassificationsFromString(s.ColumnString(6)),
+    shortcuts->insert(std::make_pair(
+        s.ColumnString(0),
+        ShortcutsBackend::Shortcut(
+            s.ColumnString(0), s.ColumnString16(1),
+            ShortcutsBackend::Shortcut::MatchCore(
+                /*fill_into_edit*/string16(), GURL(s.ColumnString(2)),
+                s.ColumnString16(3),
+                AutocompleteMatch::ClassificationsFromString(s.ColumnString(4)),
+                s.ColumnString16(5),
+                AutocompleteMatch::ClassificationsFromString(s.ColumnString(6)),
+                /*transition*/content::PAGE_TRANSITION_TYPED,
+                /*type*/AutocompleteMatchType::HISTORY_TITLE,
+                /*keyword*/string16()),
             base::Time::FromInternalValue(s.ColumnInt64(7)), s.ColumnInt(8))));
   }
   return true;

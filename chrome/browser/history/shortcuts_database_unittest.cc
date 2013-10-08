@@ -82,11 +82,17 @@ size_t ShortcutsDatabaseTest::CountRecords() const {
 
 ShortcutsBackend::Shortcut ShortcutsDatabaseTest::ShortcutFromTestInfo(
     const ShortcutsDatabaseTestInfo& info) {
-  return ShortcutsBackend::Shortcut(info.guid, ASCIIToUTF16(info.title),
-      GURL(info.url), ASCIIToUTF16(info.contents),
-      AutocompleteMatch::ClassificationsFromString(info.contents_class),
-      ASCIIToUTF16(info.description),
-      AutocompleteMatch::ClassificationsFromString(info.description_class),
+  return ShortcutsBackend::Shortcut(
+      info.guid, ASCIIToUTF16(info.title),
+      ShortcutsBackend::Shortcut::MatchCore(
+          /* fill_into_edit */string16(), GURL(info.url),
+          ASCIIToUTF16(info.contents),
+          AutocompleteMatch::ClassificationsFromString(info.contents_class),
+          ASCIIToUTF16(info.description),
+          AutocompleteMatch::ClassificationsFromString(info.description_class),
+          /* transition */content::PAGE_TRANSITION_TYPED,
+          /* type */AutocompleteMatchType::HISTORY_TITLE,
+          /* keyword */string16()),
       base::Time::Now() - base::TimeDelta::FromDays(info.days_from_now),
       info.typed_count);
 }
@@ -114,14 +120,14 @@ TEST_F(ShortcutsDatabaseTest, UpdateShortcut) {
   AddAll();
   ShortcutsBackend::Shortcut shortcut(
       ShortcutFromTestInfo(shortcut_test_db[1]));
-  shortcut.contents = ASCIIToUTF16("gro.todhsals");
+  shortcut.match_core.contents = ASCIIToUTF16("gro.todhsals");
   EXPECT_TRUE(db_->UpdateShortcut(shortcut));
   ShortcutsDatabase::GuidToShortcutMap shortcuts;
   EXPECT_TRUE(db_->LoadShortcuts(&shortcuts));
   ShortcutsDatabase::GuidToShortcutMap::iterator it =
       shortcuts.find(shortcut.id);
   EXPECT_TRUE(it != shortcuts.end());
-  EXPECT_TRUE(it->second.contents == shortcut.contents);
+  EXPECT_TRUE(it->second.match_core.contents == shortcut.match_core.contents);
 }
 
 TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithIds) {

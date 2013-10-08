@@ -36,13 +36,39 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
  public:
   // The following struct encapsulates one previously selected omnibox shortcut.
   struct Shortcut {
+    // The pieces of an AutocompleteMatch that we preserve in a shortcut.
+    struct MatchCore {
+      explicit MatchCore(const AutocompleteMatch& match);
+      MatchCore(const string16& fill_into_edit,
+                const GURL& destination_url,
+                const string16& contents,
+                const ACMatchClassifications& contents_class,
+                const string16& description,
+                const ACMatchClassifications& description_class,
+                content::PageTransition transition,
+                AutocompleteMatch::Type type,
+                const string16& keyword);
+      ~MatchCore();
+
+      AutocompleteMatch ToMatch() const;
+
+      string16 fill_into_edit;
+      GURL destination_url;
+      string16 contents;
+      // For both contents_class and description_class, we strip MATCH
+      // classifications; the ShortcutsProvider will re-mark MATCH regions based
+      // on the user's current typing.
+      ACMatchClassifications contents_class;
+      string16 description;
+      ACMatchClassifications description_class;
+      content::PageTransition transition;
+      AutocompleteMatch::Type type;
+      string16 keyword;
+    };
+
     Shortcut(const std::string& id,
              const string16& text,
-             const GURL& url,
-             const string16& contents,
-             const ACMatchClassifications& contents_class,
-             const string16& description,
-             const ACMatchClassifications& description_class,
+             const MatchCore& match_core,
              const base::Time& last_access_time,
              int number_of_hits);
     // Required for STL, we don't use this directly.
@@ -51,18 +77,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
 
     std::string id;  // Unique guid for the shortcut.
     string16 text;   // The user's original input string.
-    GURL url;        // The corresponding destination URL.
-
-    // Contents and description from the original match, along with their
-    // corresponding markup. We need these in order to correctly mark which
-    // parts are URLs, dim, etc. However, we strip all MATCH classifications
-    // from these since we'll mark the matching portions ourselves as we match
-    // the user's current typing against these Shortcuts.
-    string16 contents;
-    ACMatchClassifications contents_class;
-    string16 description;
-    ACMatchClassifications description_class;
-
+    MatchCore match_core;
     base::Time last_access_time;  // Last time shortcut was selected.
     int number_of_hits;           // How many times shortcut was selected.
   };

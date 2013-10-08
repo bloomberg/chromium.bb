@@ -186,15 +186,11 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const string16& term_string,
     const history::ShortcutsBackend::Shortcut& shortcut) {
   DCHECK(!term_string.empty());
-  AutocompleteMatch match(this, relevance, true,
-                          AutocompleteMatchType::HISTORY_TITLE);
-  match.destination_url = shortcut.url;
+  AutocompleteMatch match(shortcut.match_core.ToMatch());
+  match.provider = this;
+  match.relevance = relevance;
+  match.deletable = true;
   DCHECK(match.destination_url.is_valid());
-  match.fill_into_edit = UTF8ToUTF16(shortcut.url.spec());
-  match.contents = shortcut.contents;
-  match.contents_class = shortcut.contents_class;
-  match.description = shortcut.description;
-  match.description_class = shortcut.description_class;
   match.RecordAdditionalInfo("number of hits", shortcut.number_of_hits);
   match.RecordAdditionalInfo("last access time", shortcut.last_access_time);
   match.RecordAdditionalInfo("original input text", UTF16ToUTF8(shortcut.text));
