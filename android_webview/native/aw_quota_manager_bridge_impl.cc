@@ -10,6 +10,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
@@ -141,6 +142,14 @@ void GetOriginsTask::DoneOnUIThread() {
   ui_callback_.Run(origin_, usage_, quota_);
 }
 
+void RunOnUIThread(const base::Closure& task) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    task.Run();
+  } else {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
+  }
+}
+
 }  // namespace
 
 
@@ -153,6 +162,12 @@ jint GetDefaultNativeAwQuotaManagerBridge(JNIEnv* env, jclass clazz) {
       browser_context->GetQuotaManagerBridge());
   DCHECK(bridge);
   return reinterpret_cast<jint>(bridge);
+}
+
+// static
+scoped_refptr<AwQuotaManagerBridge> AwQuotaManagerBridgeImpl::Create(
+    AwBrowserContext* browser_context) {
+  return new AwQuotaManagerBridgeImpl(browser_context);
 }
 
 AwQuotaManagerBridgeImpl::AwQuotaManagerBridgeImpl(
@@ -186,6 +201,11 @@ QuotaManager* AwQuotaManagerBridgeImpl::GetQuotaManager() const {
 }
 
 void AwQuotaManagerBridgeImpl::DeleteAllData(JNIEnv* env, jobject object) {
+  RunOnUIThread(base::Bind(&AwQuotaManagerBridgeImpl::DeleteAllDataOnUiThread,
+                           this));
+}
+
+void AwQuotaManagerBridgeImpl::DeleteAllDataOnUiThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GetStoragePartition()->ClearDataForUnboundedRange(
       // Clear all web storage data except cookies.
@@ -199,6 +219,15 @@ void AwQuotaManagerBridgeImpl::DeleteAllData(JNIEnv* env, jobject object) {
 
 void AwQuotaManagerBridgeImpl::DeleteOrigin(
     JNIEnv* env, jobject object, jstring origin) {
+  base::string16 origin_string(
+      base::android::ConvertJavaStringToUTF16(env, origin));
+  RunOnUIThread(base::Bind(&AwQuotaManagerBridgeImpl::DeleteOriginOnUiThread,
+                           this,
+                           origin_string));
+}
+
+void AwQuotaManagerBridgeImpl::DeleteOriginOnUiThread(
+    const base::string16& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   StoragePartition* storage_partition = GetStoragePartition();
   storage_partition->ClearDataForOrigin(
@@ -208,12 +237,18 @@ void AwQuotaManagerBridgeImpl::DeleteOrigin(
           StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
           StoragePartition::REMOVE_DATA_MASK_WEBSQL,
       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY,
-      GURL(base::android::ConvertJavaStringToUTF16(env, origin)),
+      GURL(origin),
       storage_partition->GetURLRequestContext());
 }
 
 void AwQuotaManagerBridgeImpl::GetOrigins(
     JNIEnv* env, jobject object, jint callback_id) {
+  RunOnUIThread(base::Bind(&AwQuotaManagerBridgeImpl::GetOriginsOnUiThread,
+                           this,
+                           callback_id));
+}
+
+void AwQuotaManagerBridgeImpl::GetOriginsOnUiThread(jint callback_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const GetOriginsCallback ui_callback = base::Bind(
@@ -269,6 +304,20 @@ void AwQuotaManagerBridgeImpl::GetUsageAndQuotaForOrigin(
     jstring origin,
     jint callback_id,
     bool is_quota) {
+  base::string16 origin_string(
+      base::android::ConvertJavaStringToUTF16(env, origin));
+  RunOnUIThread(base::Bind(
+      &AwQuotaManagerBridgeImpl::GetUsageAndQuotaForOriginOnUiThread,
+      this,
+      origin_string,
+      callback_id,
+      is_quota));
+}
+
+void AwQuotaManagerBridgeImpl::GetUsageAndQuotaForOriginOnUiThread(
+    const base::string16& origin,
+    jint callback_id,
+    bool is_quota) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const QuotaUsageCallback ui_callback = base::Bind(
       &AwQuotaManagerBridgeImpl::QuotaUsageCallbackImpl,
@@ -281,7 +330,7 @@ void AwQuotaManagerBridgeImpl::GetUsageAndQuotaForOrigin(
       FROM_HERE,
       base::Bind(&QuotaManager::GetUsageAndQuota,
                  GetQuotaManager(),
-                 GURL(base::android::ConvertJavaStringToUTF16(env, origin)),
+                 GURL(origin),
                  quota::kStorageTypeTemporary,
                  base::Bind(&OnUsageAndQuotaObtained, ui_callback)));
 }

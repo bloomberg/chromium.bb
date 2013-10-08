@@ -129,9 +129,9 @@ content::ContentRendererClient*
   return content_renderer_client_.get();
 }
 
-AwQuotaManagerBridge* AwMainDelegate::CreateAwQuotaManagerBridge(
+scoped_refptr<AwQuotaManagerBridge> AwMainDelegate::CreateAwQuotaManagerBridge(
     AwBrowserContext* browser_context) {
-  return new AwQuotaManagerBridgeImpl(browser_context);
+  return AwQuotaManagerBridgeImpl::Create(browser_context);
 }
 
 content::GeolocationPermissionContext*

@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_JNI_DEPENDENCY_FACTORY_H_
 #define ANDROID_WEBVIEW_BROWSER_JNI_DEPENDENCY_FACTORY_H_
 
+#include "base/memory/ref_counted.h"
+
 namespace content {
 class GeolocationPermissionContext;
 class WebContents;
@@ -22,7 +24,7 @@ class JniDependencyFactory {
  public:
   virtual ~JniDependencyFactory() {}
 
-  virtual AwQuotaManagerBridge* CreateAwQuotaManagerBridge(
+  virtual scoped_refptr<AwQuotaManagerBridge> CreateAwQuotaManagerBridge(
       AwBrowserContext* browser_context) = 0;
   virtual content::GeolocationPermissionContext* CreateGeolocationPermission(
       AwBrowserContext* browser_context) = 0;

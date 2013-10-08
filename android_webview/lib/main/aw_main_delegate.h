@@ -7,6 +7,7 @@
 
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/common/aw_content_client.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/app/content_main_delegate.h"
 
@@ -41,7 +42,7 @@ class AwMainDelegate : public content::ContentMainDelegate,
       CreateContentRendererClient() OVERRIDE;
 
   // JniDependencyFactory implementation.
-  virtual AwQuotaManagerBridge* CreateAwQuotaManagerBridge(
+  virtual scoped_refptr<AwQuotaManagerBridge> CreateAwQuotaManagerBridge(
       AwBrowserContext* browser_context) OVERRIDE;
   virtual content::GeolocationPermissionContext* CreateGeolocationPermission(
       AwBrowserContext* browser_context) OVERRIDE;

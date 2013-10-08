@@ -5,5 +5,9 @@
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 
 namespace android_webview {
+
+AwQuotaManagerBridge::AwQuotaManagerBridge() {}
+
 AwQuotaManagerBridge::~AwQuotaManagerBridge() {}
+
 }  // namespace android_webview

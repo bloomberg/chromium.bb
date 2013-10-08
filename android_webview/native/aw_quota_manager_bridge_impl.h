@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 
 class GURL;
 
@@ -32,8 +33,8 @@ class AwBrowserContext;
 
 class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
  public:
-  explicit AwQuotaManagerBridgeImpl(AwBrowserContext* browser_context);
-  virtual ~AwQuotaManagerBridgeImpl();
+  static scoped_refptr<AwQuotaManagerBridge> Create(
+      AwBrowserContext* browser_context);
 
   // Called by Java.
   void Init(JNIEnv* env, jobject object);
@@ -54,9 +55,19 @@ class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
                               int64 /* quota */)> QuotaUsageCallback;
 
  private:
+  explicit AwQuotaManagerBridgeImpl(AwBrowserContext* browser_context);
+  virtual ~AwQuotaManagerBridgeImpl();
+
   content::StoragePartition* GetStoragePartition() const;
 
   quota::QuotaManager* GetQuotaManager() const;
+
+  void DeleteAllDataOnUiThread();
+  void DeleteOriginOnUiThread(const base::string16& origin);
+  void GetOriginsOnUiThread(jint callback_id);
+  void GetUsageAndQuotaForOriginOnUiThread(const base::string16& origin,
+                                           jint callback_id,
+                                           bool is_quota);
 
   void GetOriginsCallbackImpl(
       int jcallback_id,

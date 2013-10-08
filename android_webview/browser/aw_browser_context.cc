@@ -186,9 +186,8 @@ AwBrowserContext::CreateRequestContextForStoragePartition(
 }
 
 AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
-  if (!quota_manager_bridge_) {
-    quota_manager_bridge_.reset(
-        native_factory_->CreateAwQuotaManagerBridge(this));
+  if (!quota_manager_bridge_.get()) {
+    quota_manager_bridge_ = native_factory_->CreateAwQuotaManagerBridge(this);
   }
   return quota_manager_bridge_.get();
 }
