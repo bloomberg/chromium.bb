@@ -1037,9 +1037,15 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& es)
         if (collapsed)
             m_end.setToBeforeChild(newText.get());
     } else {
-        RefPtr<Node> lastChild;
-        if (collapsed)
-            lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? newNode->lastChild() : newNode;
+        RefPtr<Node> lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? newNode->lastChild() : newNode;
+        if (lastChild && lastChild == m_start.childBefore()) {
+            // The insertion will do nothing, but we need to extend the range to include
+            // the inserted nodes.
+            Node* firstChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? newNode->firstChild() : newNode.get();
+            ASSERT(firstChild);
+            m_start.setToBeforeChild(firstChild);
+            return;
+        }
 
         container = m_start.container();
         container->insertBefore(newNode.release(), container->childNode(m_start.offset()), es);
