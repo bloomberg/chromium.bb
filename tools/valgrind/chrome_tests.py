@@ -605,6 +605,7 @@ def _main():
 
   # TODO(thakis): This is temporary debugging code to figure out what's
   # happening on the DrMemory bots. Remove this within 2h.
+  print sys.argv
   print options
 
   # target used to be a part of build_dir, so only add it if it's not there.
