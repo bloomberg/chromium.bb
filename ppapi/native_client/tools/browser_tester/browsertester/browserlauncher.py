@@ -284,6 +284,9 @@ class ChromeLauncher(BrowserLauncher):
             # Suppress metrics reporting.  This prevents misconfigured bots,
             # people testing at their desktop, etc from poisoning the UMA data.
             '--metrics-recording-only',
+            # Explicitly run with mesa. The test infrastructure doesn't have
+            # sufficient native GL contextes to run these tests.
+            '--use-gl=osmesa',
             # Chrome explicitly blacklists some ports as "unsafe" because
             # certain protocols use them.  Chrome gives an error like this:
             # Error 312 (net::ERR_UNSAFE_PORT): Unknown error
