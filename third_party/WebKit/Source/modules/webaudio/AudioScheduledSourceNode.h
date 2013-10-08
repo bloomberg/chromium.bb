@@ -78,7 +78,7 @@ public:
     bool isPlayingOrScheduled() const { return m_playbackState == PLAYING_STATE || m_playbackState == SCHEDULED_STATE; }
     bool hasFinished() const { return m_playbackState == FINISHED_STATE; }
 
-    EventListener* onended(DOMWrapperWorld* isolatedWorld) { return getAttributeEventListener(eventNames().endedEvent, isolatedWorld); }
+    EventListener* onended(DOMWrapperWorld* isolatedWorld) { return getAttributeEventListener(EventNames::ended, isolatedWorld); }
     void setOnended(PassRefPtr<EventListener>, DOMWrapperWorld* isolatedWorld = 0);
 
 protected:

@@ -1737,7 +1737,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header);
 
     if (experimentalFeaturesEnabled())
-        document->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(eventNames().securitypolicyviolationEvent, violationData));
+        document->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventNames::securitypolicyviolation, violationData));
 
     if (reportURIs.isEmpty())
         return;

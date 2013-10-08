@@ -94,7 +94,7 @@ bool HTMLSummaryElement::supportsFocus() const
 void HTMLSummaryElement::defaultEventHandler(Event* event)
 {
     if (isMainSummary() && renderer()) {
-        if (event->type() == eventNames().DOMActivateEvent && !isClickableControl(event->target()->toNode())) {
+        if (event->type() == EventNames::DOMActivate && !isClickableControl(event->target()->toNode())) {
             if (HTMLDetailsElement* details = detailsElement())
                 details->toggleOpen();
             event->setDefaultHandled();
@@ -102,12 +102,12 @@ void HTMLSummaryElement::defaultEventHandler(Event* event)
         }
 
         if (event->isKeyboardEvent()) {
-            if (event->type() == eventNames().keydownEvent && toKeyboardEvent(event)->keyIdentifier() == "U+0020") {
+            if (event->type() == EventNames::keydown && toKeyboardEvent(event)->keyIdentifier() == "U+0020") {
                 setActive(true, true);
                 // No setDefaultHandled() - IE dispatches a keypress in this case.
                 return;
             }
-            if (event->type() == eventNames().keypressEvent) {
+            if (event->type() == EventNames::keypress) {
                 switch (toKeyboardEvent(event)->charCode()) {
                 case '\r':
                     dispatchSimulatedClick(event);
@@ -119,7 +119,7 @@ void HTMLSummaryElement::defaultEventHandler(Event* event)
                     return;
                 }
             }
-            if (event->type() == eventNames().keyupEvent && toKeyboardEvent(event)->keyIdentifier() == "U+0020") {
+            if (event->type() == EventNames::keyup && toKeyboardEvent(event)->keyIdentifier() == "U+0020") {
                 if (active())
                     dispatchSimulatedClick(event);
                 event->setDefaultHandled();

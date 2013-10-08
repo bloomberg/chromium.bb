@@ -199,7 +199,7 @@ void InputMethodController::finishComposition(const String& text, FinishComposit
     // We should send this event before sending a TextEvent as written in Section 6.2.2 and 6.2.3 of
     // the DOM Event specification.
     if (Element* target = m_frame->document()->focusedElement()) {
-        RefPtr<CompositionEvent> event = CompositionEvent::create(eventNames().compositionendEvent, m_frame->domWindow(), text);
+        RefPtr<CompositionEvent> event = CompositionEvent::create(EventNames::compositionend, m_frame->domWindow(), text);
         target->dispatchEvent(event, IGNORE_EXCEPTION);
     }
 
@@ -258,14 +258,14 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
             // We should send a compositionstart event only when the given text is not empty because this
             // function doesn't create a composition node when the text is empty.
             if (!text.isEmpty()) {
-                target->dispatchEvent(CompositionEvent::create(eventNames().compositionstartEvent, m_frame->domWindow(), m_frame->selectedText()));
-                event = CompositionEvent::create(eventNames().compositionupdateEvent, m_frame->domWindow(), text);
+                target->dispatchEvent(CompositionEvent::create(EventNames::compositionstart, m_frame->domWindow(), m_frame->selectedText()));
+                event = CompositionEvent::create(EventNames::compositionupdate, m_frame->domWindow(), text);
             }
         } else {
             if (!text.isEmpty())
-                event = CompositionEvent::create(eventNames().compositionupdateEvent, m_frame->domWindow(), text);
+                event = CompositionEvent::create(EventNames::compositionupdate, m_frame->domWindow(), text);
             else
-                event = CompositionEvent::create(eventNames().compositionendEvent, m_frame->domWindow(), text);
+                event = CompositionEvent::create(EventNames::compositionend, m_frame->domWindow(), text);
         }
         if (event.get())
             target->dispatchEvent(event, IGNORE_EXCEPTION);

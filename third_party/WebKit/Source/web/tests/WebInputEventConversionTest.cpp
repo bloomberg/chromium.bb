@@ -243,7 +243,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     // which expect CSS pixel coordinates.
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), LeftButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
-        RefPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::eventNames().mousemoveEvent, domWindow, platformMouseEvent, 0, document);
+        RefPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, docRenderer, *mouseEvent);
 
         EXPECT_EQ(10, webMouseBuilder.x);
@@ -256,7 +256,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
-        RefPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::eventNames().mousemoveEvent, domWindow, platformMouseEvent, 0, document);
+        RefPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, docRenderer, *mouseEvent);
         EXPECT_EQ(WebMouseEvent::ButtonNone, webMouseBuilder.button);
     }
@@ -278,7 +278,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         RefPtr<Touch> touch = Touch::create(webViewImpl->page()->mainFrame(), document.get(), 0, 10, 10, 10, 10, 10, 10, 0, 0);
         RefPtr<TouchList> touchList = TouchList::create();
         touchList->append(touch);
-        RefPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::eventNames().touchmoveEvent, domWindow, 10, 10, 10, 10, false, false, false, false);
+        RefPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::EventNames::touchmove, domWindow, 10, 10, 10, 10, false, false, false, false);
 
         WebTouchEventBuilder webTouchBuilder(view, docRenderer, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);

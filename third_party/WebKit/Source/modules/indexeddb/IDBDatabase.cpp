@@ -307,7 +307,7 @@ void IDBDatabase::forceClose()
     for (TransactionMap::const_iterator::Values it = m_transactions.begin().values(), end = m_transactions.end().values(); it != end; ++it)
         (*it)->abort(IGNORE_EXCEPTION);
     this->close();
-    enqueueEvent(Event::create(eventNames().closeEvent));
+    enqueueEvent(Event::create(EventNames::close));
 }
 
 void IDBDatabase::close()
@@ -354,7 +354,7 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
         return;
 
     RefPtr<IDBAny> newVersionAny = newVersion == IDBDatabaseMetadata::NoIntVersion ? IDBAny::createNull() : IDBAny::create(newVersion);
-    enqueueEvent(IDBVersionChangeEvent::create(IDBAny::create(oldVersion), newVersionAny.release(), eventNames().versionchangeEvent));
+    enqueueEvent(IDBVersionChangeEvent::create(IDBAny::create(oldVersion), newVersionAny.release(), EventNames::versionchange));
 }
 
 void IDBDatabase::enqueueEvent(PassRefPtr<Event> event)
@@ -370,7 +370,7 @@ void IDBDatabase::enqueueEvent(PassRefPtr<Event> event)
 bool IDBDatabase::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBDatabase::dispatchEvent");
-    ASSERT(event->type() == eventNames().versionchangeEvent || event->type() == eventNames().closeEvent);
+    ASSERT(event->type() == EventNames::versionchange || event->type() == EventNames::close);
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
         if (m_enqueuedEvents[i].get() == event.get())
             m_enqueuedEvents.remove(i);

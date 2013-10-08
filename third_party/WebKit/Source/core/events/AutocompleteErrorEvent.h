@@ -62,7 +62,7 @@ private:
     }
 
     AutocompleteErrorEvent(const String& reason)
-        : Event(eventNames().autocompleteerrorEvent, false, false)
+        : Event(EventNames::autocompleteerror, false, false)
         , m_reason(reason)
     {
         ScriptWrappable::init(this);

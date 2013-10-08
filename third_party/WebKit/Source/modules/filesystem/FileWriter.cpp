@@ -124,7 +124,7 @@ void FileWriter::write(Blob* data, ExceptionState& es)
     } else
         doOperation(OperationWrite);
 
-    fireEvent(eventNames().writestartEvent);
+    fireEvent(EventNames::writestart);
 }
 
 void FileWriter::seek(long long position, ExceptionState& es)
@@ -164,7 +164,7 @@ void FileWriter::truncate(long long position, ExceptionState& es)
         m_queuedOperation = OperationTruncate;
     } else
         doOperation(OperationTruncate);
-    fireEvent(eventNames().writestartEvent);
+    fireEvent(EventNames::writestart);
 }
 
 void FileWriter::abort(ExceptionState& es)
@@ -205,7 +205,7 @@ void FileWriter::didWrite(long long bytes, bool complete)
     double now = currentTimeMS();
     if (complete || !m_lastProgressNotificationTimeMS || (now - m_lastProgressNotificationTimeMS > progressNotificationIntervalMS)) {
         m_lastProgressNotificationTimeMS = now;
-        fireEvent(eventNames().progressEvent);
+        fireEvent(EventNames::progress);
     }
 
     if (complete) {
@@ -303,12 +303,12 @@ void FileWriter::signalCompletion(FileError::ErrorCode code)
     if (FileError::OK != code) {
         m_error = FileError::create(code);
         if (FileError::ABORT_ERR == code)
-            fireEvent(eventNames().abortEvent);
+            fireEvent(EventNames::abort);
         else
-            fireEvent(eventNames().errorEvent);
+            fireEvent(EventNames::error);
     } else
-        fireEvent(eventNames().writeEvent);
-    fireEvent(eventNames().writeendEvent);
+        fireEvent(EventNames::write);
+    fireEvent(EventNames::writeend);
 }
 
 void FileWriter::fireEvent(const AtomicString& type)

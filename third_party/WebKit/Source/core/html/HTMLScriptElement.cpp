@@ -68,7 +68,7 @@ void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicSt
     else if (name == asyncAttr)
         m_loader->handleAsyncAttribute();
     else if (name == onbeforeloadAttr)
-        setAttributeEventListener(eventNames().beforeloadEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::beforeload, createAttributeEventListener(this, name, value));
     else
         HTMLElement::parseAttribute(name, value);
 }
@@ -168,7 +168,7 @@ bool HTMLScriptElement::hasSourceAttribute() const
 void HTMLScriptElement::dispatchLoadEvent()
 {
     ASSERT(!m_loader->haveFiredLoadEvent());
-    dispatchEvent(Event::create(eventNames().loadEvent));
+    dispatchEvent(Event::create(EventNames::load));
 }
 
 PassRefPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()

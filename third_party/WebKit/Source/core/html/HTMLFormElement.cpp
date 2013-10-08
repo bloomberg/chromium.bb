@@ -154,7 +154,7 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
 void HTMLFormElement::handleLocalEvents(Event* event)
 {
     Node* targetNode = event->target()->toNode();
-    if (event->eventPhase() != Event::CAPTURING_PHASE && targetNode && targetNode != this && (event->type() == eventNames().submitEvent || event->type() == eventNames().resetEvent)) {
+    if (event->eventPhase() != Event::CAPTURING_PHASE && targetNode && targetNode != this && (event->type() == EventNames::submit || event->type() == EventNames::reset)) {
         event->stopPropagation();
         return;
     }
@@ -279,7 +279,7 @@ bool HTMLFormElement::prepareForSubmission(Event* event)
     RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, &document(), NotSubmittedByJavaScript);
     frame->loader()->client()->dispatchWillSendSubmitEvent(formState.release());
 
-    if (dispatchEvent(Event::createCancelableBubble(eventNames().submitEvent)))
+    if (dispatchEvent(Event::createCancelableBubble(EventNames::submit)))
         m_shouldSubmit = true;
 
     m_isSubmittingOrPreparingForSubmission = false;
@@ -395,7 +395,7 @@ void HTMLFormElement::reset()
 
     m_isInResetFunction = true;
 
-    if (!dispatchEvent(Event::createCancelableBubble(eventNames().resetEvent))) {
+    if (!dispatchEvent(Event::createCancelableBubble(EventNames::reset))) {
         m_isInResetFunction = false;
         return;
     }
@@ -429,7 +429,7 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 {
     RefPtr<Event> event;
     if (result == AutocompleteResultSuccess)
-        event = Event::create(eventNames().autocompleteEvent);
+        event = Event::create(EventNames::autocomplete);
     else if (result == AutocompleteResultErrorDisabled)
         event = AutocompleteErrorEvent::create("disabled");
     else if (result == AutocompleteResultErrorCancel)
@@ -466,9 +466,9 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
     else if (name == accept_charsetAttr)
         m_attributes.setAcceptCharset(value);
     else if (name == onautocompleteAttr)
-        setAttributeEventListener(eventNames().autocompleteEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::autocomplete, createAttributeEventListener(this, name, value));
     else if (name == onautocompleteerrorAttr)
-        setAttributeEventListener(eventNames().autocompleteerrorEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::autocompleteerror, createAttributeEventListener(this, name, value));
     else
         HTMLElement::parseAttribute(name, value);
 }

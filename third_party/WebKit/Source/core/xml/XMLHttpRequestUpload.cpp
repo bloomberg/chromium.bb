@@ -53,10 +53,10 @@ ScriptExecutionContext* XMLHttpRequestUpload::scriptExecutionContext() const
 
 void XMLHttpRequestUpload::dispatchEventAndLoadEnd(PassRefPtr<Event> event)
 {
-    ASSERT(event->type() == eventNames().loadEvent || event->type() == eventNames().abortEvent || event->type() == eventNames().errorEvent || event->type() == eventNames().timeoutEvent);
+    ASSERT(event->type() == EventNames::load || event->type() == EventNames::abort || event->type() == EventNames::error || event->type() == EventNames::timeout);
 
     dispatchEvent(event);
-    dispatchEvent(XMLHttpRequestProgressEvent::create(eventNames().loadendEvent));
+    dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::loadend));
 }
 
 

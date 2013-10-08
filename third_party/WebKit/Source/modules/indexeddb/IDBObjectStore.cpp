@@ -317,7 +317,7 @@ private:
 
     virtual void handleEvent(ScriptExecutionContext* context, Event* event)
     {
-        ASSERT(event->type() == eventNames().successEvent);
+        ASSERT(event->type() == EventNames::success);
         EventTarget* target = event->target();
         IDBRequest* request = static_cast<IDBRequest*>(target);
 

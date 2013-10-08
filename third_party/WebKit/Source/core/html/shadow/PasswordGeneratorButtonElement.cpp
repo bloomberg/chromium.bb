@@ -170,18 +170,18 @@ void PasswordGeneratorButtonElement::defaultEventHandler(Event* event)
     }
 
     RefPtr<PasswordGeneratorButtonElement> protector(this);
-    if (event->type() == eventNames().clickEvent) {
+    if (event->type() == EventNames::click) {
         if (Page* page = document().page())
             page->chrome().client().openPasswordGenerator(input.get());
         event->setDefaultHandled();
     }
 
-    if (event->type() == eventNames().mouseoverEvent) {
+    if (event->type() == EventNames::mouseover) {
         m_isInHoverState = true;
         updateImage();
     }
 
-    if (event->type() == eventNames().mouseoutEvent) {
+    if (event->type() == EventNames::mouseout) {
         m_isInHoverState = false;
         updateImage();
     }

@@ -257,7 +257,7 @@ void FontFaceSet::beginFontLoading(FontFace* fontFace)
 
     ++m_loadingCount;
     if (m_loadingCount == 1 && !m_shouldFireDoneEvent)
-        scheduleEvent(CSSFontFaceLoadEvent::createForFontFaces(eventNames().loadingEvent));
+        scheduleEvent(CSSFontFaceLoadEvent::createForFontFaces(EventNames::loading));
     m_shouldFireDoneEvent = false;
 }
 
@@ -317,10 +317,10 @@ void FontFaceSet::fireDoneEventIfPossible()
         m_shouldFireDoneEvent = false;
         RefPtr<CSSFontFaceLoadEvent> doneEvent;
         RefPtr<CSSFontFaceLoadEvent> errorEvent;
-        doneEvent = CSSFontFaceLoadEvent::createForFontFaces(eventNames().loadingdoneEvent, m_loadedFonts);
+        doneEvent = CSSFontFaceLoadEvent::createForFontFaces(EventNames::loadingdone, m_loadedFonts);
         m_loadedFonts.clear();
         if (!m_failedFonts.isEmpty()) {
-            errorEvent = CSSFontFaceLoadEvent::createForFontFaces(eventNames().loadingerrorEvent, m_failedFonts);
+            errorEvent = CSSFontFaceLoadEvent::createForFontFaces(EventNames::loadingerror, m_failedFonts);
             m_failedFonts.clear();
         }
         dispatchEvent(doneEvent);

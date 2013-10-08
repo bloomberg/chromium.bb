@@ -538,7 +538,7 @@ void InspectorTimelineAgent::didFireTimer()
 
 bool InspectorTimelineAgent::willDispatchXHRReadyStateChangeEvent(ScriptExecutionContext* context, XMLHttpRequest* request)
 {
-    if (!request->hasEventListeners(eventNames().readystatechangeEvent))
+    if (!request->hasEventListeners(EventNames::readystatechange))
         return false;
     pushCurrentRecord(TimelineRecordFactory::createXHRReadyStateChangeData(request->url().string(), request->readyState()), TimelineRecordType::XHRReadyStateChange, false, frameForScriptExecutionContext(context));
     return true;
@@ -551,7 +551,7 @@ void InspectorTimelineAgent::didDispatchXHRReadyStateChangeEvent()
 
 bool InspectorTimelineAgent::willDispatchXHRLoadEvent(ScriptExecutionContext* context, XMLHttpRequest* request)
 {
-    if (!request->hasEventListeners(eventNames().loadEvent))
+    if (!request->hasEventListeners(EventNames::load))
         return false;
     pushCurrentRecord(TimelineRecordFactory::createXHRLoadData(request->url().string()), TimelineRecordType::XHRLoad, true, frameForScriptExecutionContext(context));
     return true;

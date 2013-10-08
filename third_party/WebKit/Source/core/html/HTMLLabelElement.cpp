@@ -121,7 +121,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
 {
     static bool processingClick = false;
 
-    if (evt->type() == eventNames().clickEvent && !processingClick) {
+    if (evt->type() == EventNames::click && !processingClick) {
         RefPtr<HTMLElement> element = control();
 
         // If we can't find a control or if the control received the click

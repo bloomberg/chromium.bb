@@ -145,7 +145,7 @@ void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utteranc
     ASSERT(m_currentSpeechUtterance);
     m_currentSpeechUtterance = 0;
 
-    fireEvent(errorOccurred ? eventNames().errorEvent : eventNames().endEvent, utterance, 0, String());
+    fireEvent(errorOccurred ? EventNames::error : EventNames::end, utterance, 0, String());
 
     if (m_utteranceQueue.size()) {
         RefPtr<SpeechSynthesisUtterance> firstUtterance = m_utteranceQueue.first();
@@ -166,10 +166,10 @@ void SpeechSynthesis::boundaryEventOccurred(PassRefPtr<PlatformSpeechSynthesisUt
 
     switch (boundary) {
     case SpeechWordBoundary:
-        fireEvent(eventNames().boundaryEvent, static_cast<SpeechSynthesisUtterance*>(utterance->client()), charIndex, wordBoundaryString);
+        fireEvent(EventNames::boundary, static_cast<SpeechSynthesisUtterance*>(utterance->client()), charIndex, wordBoundaryString);
         break;
     case SpeechSentenceBoundary:
-        fireEvent(eventNames().boundaryEvent, static_cast<SpeechSynthesisUtterance*>(utterance->client()), charIndex, sentenceBoundaryString);
+        fireEvent(EventNames::boundary, static_cast<SpeechSynthesisUtterance*>(utterance->client()), charIndex, sentenceBoundaryString);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -179,21 +179,21 @@ void SpeechSynthesis::boundaryEventOccurred(PassRefPtr<PlatformSpeechSynthesisUt
 void SpeechSynthesis::didStartSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)
 {
     if (utterance->client())
-        fireEvent(eventNames().startEvent, static_cast<SpeechSynthesisUtterance*>(utterance->client()), 0, String());
+        fireEvent(EventNames::start, static_cast<SpeechSynthesisUtterance*>(utterance->client()), 0, String());
 }
 
 void SpeechSynthesis::didPauseSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)
 {
     m_isPaused = true;
     if (utterance->client())
-        fireEvent(eventNames().pauseEvent, static_cast<SpeechSynthesisUtterance*>(utterance->client()), 0, String());
+        fireEvent(EventNames::pause, static_cast<SpeechSynthesisUtterance*>(utterance->client()), 0, String());
 }
 
 void SpeechSynthesis::didResumeSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)
 {
     m_isPaused = false;
     if (utterance->client())
-        fireEvent(eventNames().resumeEvent, static_cast<SpeechSynthesisUtterance*>(utterance->client()), 0, String());
+        fireEvent(EventNames::resume, static_cast<SpeechSynthesisUtterance*>(utterance->client()), 0, String());
 }
 
 void SpeechSynthesis::didFinishSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)

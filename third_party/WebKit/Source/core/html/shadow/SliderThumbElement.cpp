@@ -353,13 +353,13 @@ void SliderThumbElement::defaultEventHandler(Event* event)
     // We intentionally do not call event->setDefaultHandled() here because
     // MediaControlTimelineElement::defaultEventHandler() wants to handle these
     // mouse events.
-    if (eventType == eventNames().mousedownEvent && isLeftButton) {
+    if (eventType == EventNames::mousedown && isLeftButton) {
         startDragging();
         return;
-    } else if (eventType == eventNames().mouseupEvent && isLeftButton) {
+    } else if (eventType == EventNames::mouseup && isLeftButton) {
         stopDragging();
         return;
-    } else if (eventType == eventNames().mousemoveEvent) {
+    } else if (eventType == EventNames::mousemove) {
         if (m_inDragMode)
             setPositionFromPoint(mouseEvent->absoluteLocation());
         return;

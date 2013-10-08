@@ -72,7 +72,7 @@ float DateTimeSymbolicFieldElement::maximumWidth(const Font& font)
 
 void DateTimeSymbolicFieldElement::handleKeyboardEvent(KeyboardEvent* keyboardEvent)
 {
-    if (keyboardEvent->type() != eventNames().keypressEvent)
+    if (keyboardEvent->type() != EventNames::keypress)
         return;
 
     const UChar charCode = WTF::Unicode::toLower(keyboardEvent->charCode());

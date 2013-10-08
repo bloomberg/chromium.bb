@@ -298,7 +298,7 @@ void SourceBuffer::remove(double start, double end, ExceptionState& es)
     m_updating = true;
 
     // 7. Queue a task to fire a simple event named updatestart at this SourceBuffer object.
-    scheduleEvent(eventNames().updatestartEvent);
+    scheduleEvent(EventNames::updatestart);
 
     // 8. Return control to the caller and run the rest of the steps asynchronously.
     m_pendingRemoveStart = start;
@@ -340,10 +340,10 @@ void SourceBuffer::abortIfUpdating()
     m_updating = false;
 
     // 3.3. Queue a task to fire a simple event named abort at this SourceBuffer object.
-    scheduleEvent(eventNames().abortEvent);
+    scheduleEvent(EventNames::abort);
 
     // 3.4. Queue a task to fire a simple event named updateend at this SourceBuffer object.
-    scheduleEvent(eventNames().updateendEvent);
+    scheduleEvent(EventNames::updateend);
 
     TRACE_EVENT_ASYNC_END0("media", traceEventName, this);
 }
@@ -434,7 +434,7 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     m_updating = true;
 
     // 9. Queue a task to fire a simple event named updatestart at this SourceBuffer object.
-    scheduleEvent(eventNames().updatestartEvent);
+    scheduleEvent(EventNames::updatestart);
 
     // 10. Asynchronously run the buffer append algorithm.
     m_appendBufferTimer.startOneShot(0);
@@ -467,10 +467,10 @@ void SourceBuffer::appendBufferTimerFired(Timer<SourceBuffer>*)
     m_pendingAppendData.clear();
 
     // 4. Queue a task to fire a simple event named update at this SourceBuffer object.
-    scheduleEvent(eventNames().updateEvent);
+    scheduleEvent(EventNames::update);
 
     // 5. Queue a task to fire a simple event named updateend at this SourceBuffer object.
-    scheduleEvent(eventNames().updateendEvent);
+    scheduleEvent(EventNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
 }
 
@@ -492,10 +492,10 @@ void SourceBuffer::removeTimerFired(Timer<SourceBuffer>*)
     m_pendingRemoveEnd = -1;
 
     // 11. Queue a task to fire a simple event named update at this SourceBuffer object.
-    scheduleEvent(eventNames().updateEvent);
+    scheduleEvent(EventNames::update);
 
     // 12. Queue a task to fire a simple event named updateend at this SourceBuffer object.
-    scheduleEvent(eventNames().updateendEvent);
+    scheduleEvent(EventNames::updateend);
 }
 
 void SourceBuffer::appendStreamInternal(PassRefPtr<Stream> stream, ExceptionState& es)
@@ -529,7 +529,7 @@ void SourceBuffer::appendStreamInternal(PassRefPtr<Stream> stream, ExceptionStat
     m_updating = true;
 
     // 4. Queue a task to fire a simple event named updatestart at this SourceBuffer object.
-    scheduleEvent(eventNames().updatestartEvent);
+    scheduleEvent(EventNames::updatestart);
 
     // 5. Asynchronously run the stream append loop algorithm with stream and maxSize.
 
@@ -577,10 +577,10 @@ void SourceBuffer::appendStreamDone(bool success)
         m_updating = false;
 
         // 3. Queue a task to fire a simple event named error at this SourceBuffer object.
-        scheduleEvent(eventNames().errorEvent);
+        scheduleEvent(EventNames::error);
 
         // 4. Queue a task to fire a simple event named updateend at this SourceBuffer object.
-        scheduleEvent(eventNames().updateendEvent);
+        scheduleEvent(EventNames::updateend);
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
         return;
     }
@@ -591,10 +591,10 @@ void SourceBuffer::appendStreamDone(bool success)
     m_updating = false;
 
     // 13. Queue a task to fire a simple event named update at this SourceBuffer object.
-    scheduleEvent(eventNames().updateEvent);
+    scheduleEvent(EventNames::update);
 
     // 14. Queue a task to fire a simple event named updateend at this SourceBuffer object.
-    scheduleEvent(eventNames().updateendEvent);
+    scheduleEvent(EventNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
 }
 

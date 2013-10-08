@@ -76,7 +76,7 @@ void PickerIndicatorElement::defaultEventHandler(Event* event)
     if (!m_pickerIndicatorOwner || m_pickerIndicatorOwner->isPickerIndicatorOwnerDisabledOrReadOnly())
         return;
 
-    if (event->type() == eventNames().clickEvent) {
+    if (event->type() == EventNames::click) {
         openPopup();
         event->setDefaultHandled();
     }

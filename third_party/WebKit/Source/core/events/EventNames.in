@@ -76,6 +76,7 @@ focusout
 gesturescrollend
 gesturescrollstart
 gesturescrollupdate
+gestureshowpress
 gesturetap
 gesturetapdown
 gesturetapunconfirmed

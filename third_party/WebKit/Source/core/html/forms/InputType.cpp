@@ -420,7 +420,7 @@ String InputType::validationMessage() const
 
 bool InputType::shouldSubmitImplicitly(Event* event)
 {
-    return event->isKeyboardEvent() && event->type() == eventNames().keypressEvent && toKeyboardEvent(event)->charCode() == '\r';
+    return event->isKeyboardEvent() && event->type() == EventNames::keypress && toKeyboardEvent(event)->charCode() == '\r';
 }
 
 void InputType::createShadowSubtree()

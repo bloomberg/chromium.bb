@@ -49,7 +49,7 @@ AudioProcessingEvent::AudioProcessingEvent()
 }
 
 AudioProcessingEvent::AudioProcessingEvent(PassRefPtr<AudioBuffer> inputBuffer, PassRefPtr<AudioBuffer> outputBuffer)
-    : Event(eventNames().audioprocessEvent, true, false)
+    : Event(EventNames::audioprocess, true, false)
     , m_inputBuffer(inputBuffer)
     , m_outputBuffer(outputBuffer)
 {

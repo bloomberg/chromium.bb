@@ -115,7 +115,7 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         if (renderer())
             setNeedsWidgetUpdate(true);
     } else if (name == onbeforeloadAttr)
-        setAttributeEventListener(eventNames().beforeloadEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::beforeload, createAttributeEventListener(this, name, value));
     else
         HTMLPlugInImageElement::parseAttribute(name, value);
 }

@@ -123,7 +123,7 @@ void Worker::didReceiveResponse(unsigned long identifier, const ResourceResponse
 void Worker::notifyFinished()
 {
     if (m_scriptLoader->failed()) {
-        dispatchEvent(Event::createCancelable(eventNames().errorEvent));
+        dispatchEvent(Event::createCancelable(EventNames::error));
     } else {
         WorkerThreadStartMode startMode = DontPauseWorkerGlobalScopeOnStart;
         if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(scriptExecutionContext()))

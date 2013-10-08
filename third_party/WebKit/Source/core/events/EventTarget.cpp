@@ -184,20 +184,20 @@ void EventTarget::uncaughtExceptionInEventHandler()
 
 static AtomicString legacyType(const Event* event)
 {
-    if (event->type() == eventNames().transitionendEvent)
-        return eventNames().webkitTransitionEndEvent;
+    if (event->type() == EventNames::transitionend)
+        return EventNames::webkitTransitionEnd;
 
-    if (event->type() == eventNames().animationstartEvent)
-        return eventNames().webkitAnimationStartEvent;
+    if (event->type() == EventNames::animationstart)
+        return EventNames::webkitAnimationStart;
 
-    if (event->type() == eventNames().animationendEvent)
-        return eventNames().webkitAnimationEndEvent;
+    if (event->type() == EventNames::animationend)
+        return EventNames::webkitAnimationEnd;
 
-    if (event->type() == eventNames().animationiterationEvent)
-        return eventNames().webkitAnimationIterationEvent;
+    if (event->type() == EventNames::animationiteration)
+        return EventNames::webkitAnimationIteration;
 
-    if (event->type() == eventNames().wheelEvent)
-        return eventNames().mousewheelEvent;
+    if (event->type() == EventNames::wheel)
+        return EventNames::mousewheel;
 
     return emptyString();
 }
@@ -209,22 +209,22 @@ void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventLis
     UseCounter::Feature prefixedAndUnprefixedFeature;
     bool shouldCount = false;
 
-    if (legacyTypeName == eventNames().webkitTransitionEndEvent) {
+    if (legacyTypeName == EventNames::webkitTransitionEnd) {
         prefixedFeature = UseCounter::PrefixedTransitionEndEvent;
         unprefixedFeature = UseCounter::UnprefixedTransitionEndEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedTransitionEndEvent;
         shouldCount = true;
-    } else if (legacyTypeName == eventNames().webkitAnimationEndEvent) {
+    } else if (legacyTypeName == EventNames::webkitAnimationEnd) {
         prefixedFeature = UseCounter::PrefixedAnimationEndEvent;
         unprefixedFeature = UseCounter::UnprefixedAnimationEndEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationEndEvent;
         shouldCount = true;
-    } else if (legacyTypeName == eventNames().webkitAnimationStartEvent) {
+    } else if (legacyTypeName == EventNames::webkitAnimationStart) {
         prefixedFeature = UseCounter::PrefixedAnimationStartEvent;
         unprefixedFeature = UseCounter::UnprefixedAnimationStartEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationStartEvent;
         shouldCount = true;
-    } else if (legacyTypeName == eventNames().webkitAnimationIterationEvent) {
+    } else if (legacyTypeName == EventNames::webkitAnimationIteration) {
         prefixedFeature = UseCounter::PrefixedAnimationIterationEvent;
         unprefixedFeature = UseCounter::UnprefixedAnimationIterationEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationIterationEvent;
@@ -260,8 +260,8 @@ bool EventTarget::fireEventListeners(Event* event)
         legacyListenersVector = d->eventListenerMap.find(legacyTypeName);
 
     EventListenerVector* listenersVector = d->eventListenerMap.find(event->type());
-    if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && (event->type() == eventNames().animationiterationEvent || event->type() == eventNames().animationendEvent
-        || event->type() == eventNames().animationstartEvent))
+    if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && (event->type() == EventNames::animationiteration || event->type() == EventNames::animationend
+        || event->type() == EventNames::animationstart))
         listenersVector = 0;
 
     if (listenersVector) {
@@ -287,7 +287,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     // index |size|, so iterating up to (but not including) |size| naturally excludes
     // new event listeners.
 
-    if (event->type() == eventNames().beforeunloadEvent) {
+    if (event->type() == EventNames::beforeunload) {
         if (DOMWindow* executingWindow = this->executingWindow()) {
             if (executingWindow->top())
                 UseCounter::count(executingWindow, UseCounter::SubFrameBeforeUnloadFired);

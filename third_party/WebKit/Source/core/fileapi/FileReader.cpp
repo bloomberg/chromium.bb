@@ -192,9 +192,9 @@ void FileReader::doAbort()
 
     m_error = FileError::create(FileError::ABORT_ERR);
 
-    fireEvent(eventNames().errorEvent);
-    fireEvent(eventNames().abortEvent);
-    fireEvent(eventNames().loadendEvent);
+    fireEvent(EventNames::error);
+    fireEvent(EventNames::abort);
+    fireEvent(EventNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
     unsetPendingActivity(this);
@@ -212,7 +212,7 @@ void FileReader::terminate()
 
 void FileReader::didStartLoading()
 {
-    fireEvent(eventNames().loadstartEvent);
+    fireEvent(EventNames::loadstart);
 }
 
 void FileReader::didReceiveData()
@@ -222,7 +222,7 @@ void FileReader::didReceiveData()
     if (!m_lastProgressNotificationTimeMS)
         m_lastProgressNotificationTimeMS = now;
     else if (now - m_lastProgressNotificationTimeMS > progressNotificationIntervalMS) {
-        fireEvent(eventNames().progressEvent);
+        fireEvent(EventNames::progress);
         m_lastProgressNotificationTimeMS = now;
     }
 }
@@ -238,13 +238,13 @@ void FileReader::didFinishLoading()
     // if we're still loading (therefore we need abort process) or not.
     m_loadingState = LoadingStateNone;
 
-    fireEvent(eventNames().progressEvent);
+    fireEvent(EventNames::progress);
 
     ASSERT(m_state != DONE);
     m_state = DONE;
 
-    fireEvent(eventNames().loadEvent);
-    fireEvent(eventNames().loadendEvent);
+    fireEvent(EventNames::load);
+    fireEvent(EventNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
     unsetPendingActivity(this);
@@ -261,8 +261,8 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
     m_state = DONE;
 
     m_error = FileError::create(static_cast<FileError::ErrorCode>(errorCode));
-    fireEvent(eventNames().errorEvent);
-    fireEvent(eventNames().loadendEvent);
+    fireEvent(EventNames::error);
+    fireEvent(EventNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
     unsetPendingActivity(this);

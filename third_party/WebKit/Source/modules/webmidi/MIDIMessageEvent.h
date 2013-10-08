@@ -76,7 +76,7 @@ private:
     }
 
     MIDIMessageEvent(double receivedTime, PassRefPtr<Uint8Array> data)
-        : Event(eventNames().midimessageEvent, true, false)
+        : Event(EventNames::midimessage, true, false)
         , m_receivedTime(receivedTime)
         , m_data(data)
     {

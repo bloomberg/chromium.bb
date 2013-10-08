@@ -103,7 +103,7 @@ public:
     {
         if (!m_requestCallback->isActive())
             return;
-        if (event->type() != eventNames().successEvent) {
+        if (event->type() != EventNames::success) {
             m_requestCallback->sendFailure("Unexpected event type.");
             return;
         }
@@ -165,7 +165,7 @@ public:
 
     virtual void handleEvent(ScriptExecutionContext*, Event* event) OVERRIDE
     {
-        if (event->type() != eventNames().successEvent) {
+        if (event->type() != EventNames::success) {
             m_executableWithDatabase->requestCallback()->sendFailure("Unexpected event type.");
             return;
         }
@@ -204,7 +204,7 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
         requestCallback()->sendFailure("Could not open database.");
         return;
     }
-    idbOpenDBRequest->addEventListener(eventNames().successEvent, callback, false);
+    idbOpenDBRequest->addEventListener(EventNames::success, callback, false);
 }
 
 static PassRefPtr<IDBTransaction> transactionForDatabase(ScriptExecutionContext* scriptExecutionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IDBTransaction::modeReadOnly())
@@ -409,7 +409,7 @@ public:
 
     virtual void handleEvent(ScriptExecutionContext* context, Event* event) OVERRIDE
     {
-        if (event->type() != eventNames().successEvent) {
+        if (event->type() != EventNames::success) {
             m_requestCallback->sendFailure("Unexpected event type.");
             return;
         }
@@ -524,7 +524,7 @@ public:
         } else {
             idbRequest = idbObjectStore->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IndexedDB::CursorNext);
         }
-        idbRequest->addEventListener(eventNames().successEvent, openCursorCallback, false);
+        idbRequest->addEventListener(EventNames::success, openCursorCallback, false);
     }
 
     virtual RequestCallback* requestCallback() { return m_requestCallback.get(); }
@@ -629,7 +629,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
         requestCallback->sendFailure("Could not obtain database names.");
         return;
     }
-    idbRequest->addEventListener(eventNames().successEvent, GetDatabaseNamesCallback::create(requestCallback, document->securityOrigin()->toRawString()), false);
+    idbRequest->addEventListener(EventNames::success, GetDatabaseNamesCallback::create(requestCallback, document->securityOrigin()->toRawString()), false);
 }
 
 void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback> requestCallback)
@@ -699,7 +699,7 @@ public:
     {
         if (!m_requestCallback->isActive())
             return;
-        if (event->type() != eventNames().completeEvent) {
+        if (event->type() != EventNames::complete) {
             m_requestCallback->sendFailure("Unexpected event type.");
             return;
         }
@@ -755,7 +755,7 @@ public:
             m_requestCallback->sendFailure(String::format("Could not clear object store '%s': %d", m_objectStoreName.utf8().data(), ec));
             return;
         }
-        idbTransaction->addEventListener(eventNames().completeEvent, ClearObjectStoreListener::create(m_requestCallback), false);
+        idbTransaction->addEventListener(EventNames::complete, ClearObjectStoreListener::create(m_requestCallback), false);
     }
 
     virtual RequestCallback* requestCallback() { return m_requestCallback.get(); }

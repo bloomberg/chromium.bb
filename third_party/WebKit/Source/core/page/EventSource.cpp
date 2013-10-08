@@ -160,7 +160,7 @@ void EventSource::scheduleReconnect()
 {
     m_state = CONNECTING;
     m_reconnectTimer.startOneShot(m_reconnectDelay / 1000.0);
-    dispatchEvent(Event::create(eventNames().errorEvent));
+    dispatchEvent(Event::create(EventNames::error));
 }
 
 void EventSource::reconnectTimerFired(Timer<EventSource>*)
@@ -247,10 +247,10 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
 
     if (responseIsValid) {
         m_state = OPEN;
-        dispatchEvent(Event::create(eventNames().openEvent));
+        dispatchEvent(Event::create(EventNames::open));
     } else {
         m_loader->cancel();
-        dispatchEvent(Event::create(eventNames().errorEvent));
+        dispatchEvent(Event::create(EventNames::error));
     }
 }
 
@@ -311,7 +311,7 @@ void EventSource::abortConnectionAttempt()
     m_loader->cancel();
 
     ASSERT(m_state == CLOSED);
-    dispatchEvent(Event::create(eventNames().errorEvent));
+    dispatchEvent(Event::create(EventNames::error));
 }
 
 void EventSource::parseEventStream()
@@ -416,7 +416,7 @@ void EventSource::stop()
 PassRefPtr<MessageEvent> EventSource::createMessageEvent()
 {
     RefPtr<MessageEvent> event = MessageEvent::create();
-    event->initMessageEvent(m_eventName.isEmpty() ? eventNames().messageEvent : AtomicString(m_eventName), false, false, SerializedScriptValue::create(String(m_data)), m_eventStreamOrigin, m_lastEventId, 0, nullptr);
+    event->initMessageEvent(m_eventName.isEmpty() ? EventNames::message : AtomicString(m_eventName), false, false, SerializedScriptValue::create(String(m_data)), m_eventStreamOrigin, m_lastEventId, 0, nullptr);
     m_data.clear();
     return event.release();
 }

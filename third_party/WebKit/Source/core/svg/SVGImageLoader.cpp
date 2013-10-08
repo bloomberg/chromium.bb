@@ -38,7 +38,7 @@ SVGImageLoader::SVGImageLoader(SVGImageElement* node)
 void SVGImageLoader::dispatchLoadEvent()
 {
     if (image()->errorOccurred())
-        element()->dispatchEvent(Event::create(eventNames().errorEvent));
+        element()->dispatchEvent(Event::create(EventNames::error));
     else {
         SVGImageElement* imageElement = toSVGImageElement(element());
         if (imageElement->externalResourcesRequiredBaseValue())

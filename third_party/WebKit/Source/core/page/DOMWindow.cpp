@@ -1420,15 +1420,15 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
         document->addListenerTypeIfNeeded(eventType);
         if (isTouchEventType(eventType))
             document->didAddTouchEventHandler(document);
-        else if (eventType == eventNames().storageEvent)
+        else if (eventType == EventNames::storage)
             didAddStorageEventListener(this);
     }
 
     lifecycleNotifier()->notifyAddEventListener(this, eventType);
 
-    if (eventType == eventNames().unloadEvent) {
+    if (eventType == EventNames::unload) {
         addUnloadEventListener(this);
-    } else if (eventType == eventNames().beforeunloadEvent) {
+    } else if (eventType == EventNames::beforeunload) {
         if (allowsBeforeUnloadListeners(this)) {
             // This is confusingly named. It doesn't actually add the listener. It just increments a count
             // so that we know we have listeners registered for the purposes of determining if we can
@@ -1438,7 +1438,7 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
             // Subframes return false from allowsBeforeUnloadListeners.
             UseCounter::count(this, UseCounter::SubFrameBeforeUnloadRegistered);
         }
-    } else if (eventType == eventNames().deviceorientationEvent && RuntimeEnabledFeatures::deviceOrientationEnabled()) {
+    } else if (eventType == EventNames::deviceorientation && RuntimeEnabledFeatures::deviceOrientationEnabled()) {
         if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
             controller->startUpdating();
     }
@@ -1458,11 +1458,11 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
 
     lifecycleNotifier()->notifyRemoveEventListener(this, eventType);
 
-    if (eventType == eventNames().unloadEvent) {
+    if (eventType == EventNames::unload) {
         removeUnloadEventListener(this);
-    } else if (eventType == eventNames().beforeunloadEvent && allowsBeforeUnloadListeners(this)) {
+    } else if (eventType == EventNames::beforeunload && allowsBeforeUnloadListeners(this)) {
         removeBeforeUnloadEventListener(this);
-    } else if (eventType == eventNames().deviceorientationEvent) {
+    } else if (eventType == EventNames::deviceorientation) {
         if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
             controller->stopUpdating();
     }
@@ -1472,7 +1472,7 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
 
 void DOMWindow::dispatchLoadEvent()
 {
-    RefPtr<Event> loadEvent(Event::create(eventNames().loadEvent));
+    RefPtr<Event> loadEvent(Event::create(EventNames::load));
     if (m_frame && m_frame->loader()->documentLoader() && !m_frame->loader()->documentLoader()->timing()->loadEventStart()) {
         // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed while dispatching
         // the event, so protect it to prevent writing the end time into freed memory.
@@ -1489,7 +1489,7 @@ void DOMWindow::dispatchLoadEvent()
     // the DOM.
     Element* ownerElement = m_frame ? m_frame->ownerElement() : 0;
     if (ownerElement)
-        ownerElement->dispatchEvent(Event::create(eventNames().loadEvent));
+        ownerElement->dispatchEvent(Event::create(EventNames::load));
 
     InspectorInstrumentation::loadEventFired(frame());
 }

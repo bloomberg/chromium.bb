@@ -193,7 +193,7 @@ void AnimationControllerPrivate::fireEventsAndUpdateStyle()
     Vector<EventToDispatch>::const_iterator eventsToDispatchEnd = eventsToDispatch.end();
     for (Vector<EventToDispatch>::const_iterator it = eventsToDispatch.begin(); it != eventsToDispatchEnd; ++it) {
         Element* element = it->element.get();
-        if (it->eventType == eventNames().transitionendEvent)
+        if (it->eventType == EventNames::transitionend)
             element->dispatchEvent(TransitionEvent::create(it->eventType, it->name, it->elapsedTime, PseudoElement::pseudoElementNameForEvents(element->pseudoId())));
         else
             element->dispatchEvent(WebKitAnimationEvent::create(it->eventType, it->name, it->elapsedTime));

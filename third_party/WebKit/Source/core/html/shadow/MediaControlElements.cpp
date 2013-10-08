@@ -217,12 +217,12 @@ void MediaControlPanelElement::defaultEventHandler(Event* event)
 
     if (event->isMouseEvent()) {
         LayoutPoint location = toMouseEvent(event)->absoluteLocation();
-        if (event->type() == eventNames().mousedownEvent && event->target() == this) {
+        if (event->type() == EventNames::mousedown && event->target() == this) {
             startDrag(location);
             event->setDefaultHandled();
-        } else if (event->type() == eventNames().mousemoveEvent && m_isBeingDragged)
+        } else if (event->type() == EventNames::mousemove && m_isBeingDragged)
             continueDrag(location);
-        else if (event->type() == eventNames().mouseupEvent && m_isBeingDragged) {
+        else if (event->type() == EventNames::mouseup && m_isBeingDragged) {
             continueDrag(location);
             endDrag();
             event->setDefaultHandled();
@@ -304,7 +304,7 @@ PassRefPtr<MediaControlPanelMuteButtonElement> MediaControlPanelMuteButtonElemen
 
 void MediaControlPanelMuteButtonElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == eventNames().mouseoverEvent)
+    if (event->type() == EventNames::mouseover)
         m_controls->showVolumeSlider();
 
     MediaControlMuteButtonElement::defaultEventHandler(event);
@@ -354,7 +354,7 @@ PassRefPtr<MediaControlPlayButtonElement> MediaControlPlayButtonElement::create(
 
 void MediaControlPlayButtonElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == eventNames().clickEvent) {
+    if (event->type() == EventNames::click) {
         if (mediaController()->canPlay())
             mediaController()->play();
         else
@@ -393,7 +393,7 @@ PassRefPtr<MediaControlOverlayPlayButtonElement> MediaControlOverlayPlayButtonEl
 
 void MediaControlOverlayPlayButtonElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == eventNames().clickEvent && mediaController()->canPlay()) {
+    if (event->type() == EventNames::click && mediaController()->canPlay()) {
         mediaController()->play();
         updateDisplayType();
         event->setDefaultHandled();
@@ -444,7 +444,7 @@ void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType()
 
 void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == eventNames().clickEvent) {
+    if (event->type() == EventNames::click) {
         mediaController()->setClosedCaptionsVisible(!mediaController()->closedCaptionsVisible());
         setChecked(mediaController()->closedCaptionsVisible());
         updateDisplayType();
@@ -488,19 +488,19 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
     if (!inDocument() || !document().isActive())
         return;
 
-    if (event->type() == eventNames().mousedownEvent)
+    if (event->type() == EventNames::mousedown)
         mediaController()->beginScrubbing();
 
-    if (event->type() == eventNames().mouseupEvent)
+    if (event->type() == EventNames::mouseup)
         mediaController()->endScrubbing();
 
     MediaControlInputElement::defaultEventHandler(event);
 
-    if (event->type() == eventNames().mouseoverEvent || event->type() == eventNames().mouseoutEvent || event->type() == eventNames().mousemoveEvent)
+    if (event->type() == EventNames::mouseover || event->type() == EventNames::mouseout || event->type() == EventNames::mousemove)
         return;
 
     double time = value().toDouble();
-    if (event->type() == eventNames().inputEvent && time != mediaController()->currentTime())
+    if (event->type() == EventNames::input && time != mediaController()->currentTime())
         mediaController()->setCurrentTime(time, IGNORE_EXCEPTION);
 
     RenderSlider* slider = toRenderSlider(renderer());
@@ -571,7 +571,7 @@ PassRefPtr<MediaControlFullscreenButtonElement> MediaControlFullscreenButtonElem
 
 void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == eventNames().clickEvent) {
+    if (event->type() == EventNames::click) {
         // Only use the new full screen API if the fullScreenEnabled setting has
         // been explicitly enabled. Otherwise, use the old fullscreen API. This
         // allows apps which embed a WebView to retain the existing full screen

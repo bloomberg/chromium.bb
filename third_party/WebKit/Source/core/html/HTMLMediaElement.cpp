@@ -446,51 +446,51 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == mediagroupAttr)
         setMediaGroup(value);
     else if (name == onabortAttr)
-        setAttributeEventListener(eventNames().abortEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::abort, createAttributeEventListener(this, name, value));
     else if (name == onbeforeloadAttr)
-        setAttributeEventListener(eventNames().beforeloadEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::beforeload, createAttributeEventListener(this, name, value));
     else if (name == oncanplayAttr)
-        setAttributeEventListener(eventNames().canplayEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::canplay, createAttributeEventListener(this, name, value));
     else if (name == oncanplaythroughAttr)
-        setAttributeEventListener(eventNames().canplaythroughEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::canplaythrough, createAttributeEventListener(this, name, value));
     else if (name == ondurationchangeAttr)
-        setAttributeEventListener(eventNames().durationchangeEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::durationchange, createAttributeEventListener(this, name, value));
     else if (name == onemptiedAttr)
-        setAttributeEventListener(eventNames().emptiedEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::emptied, createAttributeEventListener(this, name, value));
     else if (name == onendedAttr)
-        setAttributeEventListener(eventNames().endedEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::ended, createAttributeEventListener(this, name, value));
     else if (name == onerrorAttr)
-        setAttributeEventListener(eventNames().errorEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::error, createAttributeEventListener(this, name, value));
     else if (name == onloadeddataAttr)
-        setAttributeEventListener(eventNames().loadeddataEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::loadeddata, createAttributeEventListener(this, name, value));
     else if (name == onloadedmetadataAttr)
-        setAttributeEventListener(eventNames().loadedmetadataEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::loadedmetadata, createAttributeEventListener(this, name, value));
     else if (name == onloadstartAttr)
-        setAttributeEventListener(eventNames().loadstartEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::loadstart, createAttributeEventListener(this, name, value));
     else if (name == onpauseAttr)
-        setAttributeEventListener(eventNames().pauseEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::pause, createAttributeEventListener(this, name, value));
     else if (name == onplayAttr)
-        setAttributeEventListener(eventNames().playEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::play, createAttributeEventListener(this, name, value));
     else if (name == onplayingAttr)
-        setAttributeEventListener(eventNames().playingEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::playing, createAttributeEventListener(this, name, value));
     else if (name == onprogressAttr)
-        setAttributeEventListener(eventNames().progressEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::progress, createAttributeEventListener(this, name, value));
     else if (name == onratechangeAttr)
-        setAttributeEventListener(eventNames().ratechangeEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::ratechange, createAttributeEventListener(this, name, value));
     else if (name == onseekedAttr)
-        setAttributeEventListener(eventNames().seekedEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::seeked, createAttributeEventListener(this, name, value));
     else if (name == onseekingAttr)
-        setAttributeEventListener(eventNames().seekingEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::seeking, createAttributeEventListener(this, name, value));
     else if (name == onstalledAttr)
-        setAttributeEventListener(eventNames().stalledEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::stalled, createAttributeEventListener(this, name, value));
     else if (name == onsuspendAttr)
-        setAttributeEventListener(eventNames().suspendEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::suspend, createAttributeEventListener(this, name, value));
     else if (name == ontimeupdateAttr)
-        setAttributeEventListener(eventNames().timeupdateEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::timeupdate, createAttributeEventListener(this, name, value));
     else if (name == onvolumechangeAttr)
-        setAttributeEventListener(eventNames().volumechangeEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::volumechange, createAttributeEventListener(this, name, value));
     else if (name == onwaitingAttr)
-        setAttributeEventListener(eventNames().waitingEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::waiting, createAttributeEventListener(this, name, value));
     else
         HTMLElement::parseAttribute(name, value);
 }
@@ -699,7 +699,7 @@ void HTMLMediaElement::prepareForLoad()
     // 3 - If the media element's networkState is set to NETWORK_LOADING or NETWORK_IDLE, queue
     // a task to fire a simple event named abort at the media element.
     if (m_networkState == NETWORK_LOADING || m_networkState == NETWORK_IDLE)
-        scheduleEvent(eventNames().abortEvent);
+        scheduleEvent(EventNames::abort);
 
     closeMediaSource();
 
@@ -714,7 +714,7 @@ void HTMLMediaElement::prepareForLoad()
         m_paused = true;
         m_seeking = false;
         invalidateCachedTime();
-        scheduleEvent(eventNames().emptiedEvent);
+        scheduleEvent(EventNames::emptied);
         updateMediaController();
         if (RuntimeEnabledFeatures::videoTrackEnabled())
             updateActiveTextTrackCues(0);
@@ -818,7 +818,7 @@ void HTMLMediaElement::selectMediaResource()
     m_networkState = NETWORK_LOADING;
 
     // 5 - Queue a task to fire a simple event named loadstart at the media element.
-    scheduleEvent(eventNames().loadstartEvent);
+    scheduleEvent(EventNames::loadstart);
 
     // 6 - If mode is attribute, then run these substeps
     if (mode == attribute) {
@@ -1132,18 +1132,18 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
         // correctly identifies the type of the event, if the startTime is
         // less than the endTime in the cue.
         if (eventTasks[i].second->startTime() >= eventTasks[i].second->endTime()) {
-            event = Event::create(eventNames().enterEvent);
+            event = Event::create(EventNames::enter);
             event->setTarget(eventTasks[i].second);
             m_asyncEventQueue->enqueueEvent(event.release());
 
-            event = Event::create(eventNames().exitEvent);
+            event = Event::create(EventNames::exit);
             event->setTarget(eventTasks[i].second);
             m_asyncEventQueue->enqueueEvent(event.release());
         } else {
             if (eventTasks[i].first == eventTasks[i].second->startTime())
-                event = Event::create(eventNames().enterEvent);
+                event = Event::create(EventNames::enter);
             else
-                event = Event::create(eventNames().exitEvent);
+                event = Event::create(EventNames::exit);
 
             event->setTarget(eventTasks[i].second);
             m_asyncEventQueue->enqueueEvent(event.release());
@@ -1157,7 +1157,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     // 15 - For each text track in affected tracks, in the list order, queue a
     // task to fire a simple event named cuechange at the TextTrack object, and, ...
     for (size_t i = 0; i < affectedTracks.size(); ++i) {
-        RefPtr<Event> event = Event::create(eventNames().cuechangeEvent);
+        RefPtr<Event> event = Event::create(EventNames::cuechange);
         event->setTarget(affectedTracks[i]);
 
         m_asyncEventQueue->enqueueEvent(event.release());
@@ -1165,7 +1165,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
         // ... if the text track has a corresponding track element, to then fire a
         // simple event named cuechange at the track element as well.
         if (affectedTracks[i]->trackType() == TextTrack::TrackElement) {
-            RefPtr<Event> event = Event::create(eventNames().cuechangeEvent);
+            RefPtr<Event> event = Event::create(EventNames::cuechange);
             HTMLTrackElement* trackElement = static_cast<LoadableTextTrack*>(affectedTracks[i])->trackElement();
             ASSERT(trackElement);
             event->setTarget(trackElement);
@@ -1403,7 +1403,7 @@ void HTMLMediaElement::noneSupported()
     m_networkState = NETWORK_NO_SOURCE;
 
     // 7 - Queue a task to fire a simple event named error at the media element.
-    scheduleEvent(eventNames().errorEvent);
+    scheduleEvent(EventNames::error);
 
     closeMediaSource();
 
@@ -1432,14 +1432,14 @@ void HTMLMediaElement::mediaEngineError(PassRefPtr<MediaError> err)
     m_error = err;
 
     // 3 - Queue a task to fire a simple event named error at the media element.
-    scheduleEvent(eventNames().errorEvent);
+    scheduleEvent(EventNames::error);
 
     closeMediaSource();
 
     // 4 - Set the element's networkState attribute to the NETWORK_EMPTY value and queue a
     // task to fire a simple event called emptied at the element.
     m_networkState = NETWORK_EMPTY;
-    scheduleEvent(eventNames().emptiedEvent);
+    scheduleEvent(EventNames::emptied);
 
     // 5 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
@@ -1550,8 +1550,8 @@ void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
 
     // Schedule one last progress event so we guarantee that at least one is fired
     // for files that load very quickly.
-    scheduleEvent(eventNames().progressEvent);
-    scheduleEvent(eventNames().suspendEvent);
+    scheduleEvent(EventNames::progress);
+    scheduleEvent(EventNames::suspend);
     m_networkState = NETWORK_IDLE;
 }
 
@@ -1599,7 +1599,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         // it started seeking, but seeking caused its readyState attribute to change to a value
         // lower than HAVE_FUTURE_DATA, then a waiting will be fired at the element.
         if (wasPotentiallyPlaying && m_readyState < HAVE_FUTURE_DATA)
-            scheduleEvent(eventNames().waitingEvent);
+            scheduleEvent(EventNames::waiting);
 
         // 4.8.10.9 steps 12-14
         if (m_readyState >= HAVE_CURRENT_DATA)
@@ -1608,14 +1608,14 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         if (wasPotentiallyPlaying && m_readyState < HAVE_FUTURE_DATA) {
             // 4.8.10.8
             scheduleTimeupdateEvent(false);
-            scheduleEvent(eventNames().waitingEvent);
+            scheduleEvent(EventNames::waiting);
         }
     }
 
     if (m_readyState >= HAVE_METADATA && oldState < HAVE_METADATA) {
         prepareMediaFragmentURI();
-        scheduleEvent(eventNames().durationchangeEvent);
-        scheduleEvent(eventNames().loadedmetadataEvent);
+        scheduleEvent(EventNames::durationchange);
+        scheduleEvent(EventNames::loadedmetadata);
         if (hasMediaControls())
             mediaControls()->loadedMetadata();
         if (renderer())
@@ -1627,33 +1627,33 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
     if (m_readyState >= HAVE_CURRENT_DATA && oldState < HAVE_CURRENT_DATA && !m_haveFiredLoadedData) {
         m_haveFiredLoadedData = true;
         shouldUpdateDisplayState = true;
-        scheduleEvent(eventNames().loadeddataEvent);
+        scheduleEvent(EventNames::loadeddata);
         setShouldDelayLoadEvent(false);
         applyMediaFragmentURI();
     }
 
     bool isPotentiallyPlaying = potentiallyPlaying();
     if (m_readyState == HAVE_FUTURE_DATA && oldState <= HAVE_CURRENT_DATA && tracksAreReady) {
-        scheduleEvent(eventNames().canplayEvent);
+        scheduleEvent(EventNames::canplay);
         if (isPotentiallyPlaying)
-            scheduleEvent(eventNames().playingEvent);
+            scheduleEvent(EventNames::playing);
         shouldUpdateDisplayState = true;
     }
 
     if (m_readyState == HAVE_ENOUGH_DATA && oldState < HAVE_ENOUGH_DATA && tracksAreReady) {
         if (oldState <= HAVE_CURRENT_DATA)
-            scheduleEvent(eventNames().canplayEvent);
+            scheduleEvent(EventNames::canplay);
 
-        scheduleEvent(eventNames().canplaythroughEvent);
+        scheduleEvent(EventNames::canplaythrough);
 
         if (isPotentiallyPlaying && oldState <= HAVE_CURRENT_DATA)
-            scheduleEvent(eventNames().playingEvent);
+            scheduleEvent(EventNames::playing);
 
         if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !userGestureRequiredForRateChange()) {
             m_paused = false;
             invalidateCachedTime();
-            scheduleEvent(eventNames().playEvent);
-            scheduleEvent(eventNames().playingEvent);
+            scheduleEvent(EventNames::play);
+            scheduleEvent(EventNames::playing);
         }
 
         shouldUpdateDisplayState = true;
@@ -1681,7 +1681,7 @@ void HTMLMediaElement::mediaPlayerKeyAdded(const String& keySystem, const String
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtr<Event> event = MediaKeyEvent::create(eventNames().webkitkeyaddedEvent, initializer);
+    RefPtr<Event> event = MediaKeyEvent::create(EventNames::webkitkeyadded, initializer);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
@@ -1718,7 +1718,7 @@ void HTMLMediaElement::mediaPlayerKeyError(const String& keySystem, const String
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtr<Event> event = MediaKeyEvent::create(eventNames().webkitkeyerrorEvent, initializer);
+    RefPtr<Event> event = MediaKeyEvent::create(EventNames::webkitkeyerror, initializer);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
@@ -1733,16 +1733,16 @@ void HTMLMediaElement::mediaPlayerKeyMessage(const String& keySystem, const Stri
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtr<Event> event = MediaKeyEvent::create(eventNames().webkitkeymessageEvent, initializer);
+    RefPtr<Event> event = MediaKeyEvent::create(EventNames::webkitkeymessage, initializer);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
 bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength)
 {
-    if (!hasEventListeners(eventNames().webkitneedkeyEvent)) {
+    if (!hasEventListeners(EventNames::webkitneedkey)) {
         m_error = MediaError::create(MediaError::MEDIA_ERR_ENCRYPTED);
-        scheduleEvent(eventNames().errorEvent);
+        scheduleEvent(EventNames::error);
         return false;
     }
 
@@ -1753,7 +1753,7 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& keySystem, const Strin
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtr<Event> event = MediaKeyEvent::create(eventNames().webkitneedkeyEvent, initializer);
+    RefPtr<Event> event = MediaKeyEvent::create(EventNames::webkitneedkey, initializer);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
     return true;
@@ -1764,7 +1764,7 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(Uint8Array* initData)
 {
     if (!hasEventListeners("webkitneedkey")) {
         m_error = MediaError::create(MediaError::MEDIA_ERR_ENCRYPTED);
-        scheduleEvent(eventNames().errorEvent);
+        scheduleEvent(EventNames::error);
         return false;
     }
 
@@ -1773,7 +1773,7 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(Uint8Array* initData)
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtr<Event> event = MediaKeyNeededEvent::create(eventNames().webkitneedkeyEvent, initializer);
+    RefPtr<Event> event = MediaKeyNeededEvent::create(EventNames::webkitneedkey, initializer);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 
@@ -1803,7 +1803,7 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
     double timedelta = time - m_previousProgressTime;
 
     if (m_player->didLoadingProgress()) {
-        scheduleEvent(eventNames().progressEvent);
+        scheduleEvent(EventNames::progress);
         m_previousProgressTime = time;
         m_sentStalledEvent = false;
         if (renderer())
@@ -1811,7 +1811,7 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
         if (hasMediaControls())
             mediaControls()->bufferingProgressed();
     } else if (timedelta > 3.0 && !m_sentStalledEvent) {
-        scheduleEvent(eventNames().stalledEvent);
+        scheduleEvent(EventNames::stalled);
         m_sentStalledEvent = true;
         setShouldDelayLoadEvent(false);
     }
@@ -1905,11 +1905,11 @@ void HTMLMediaElement::seek(double time, ExceptionState& es)
 
     if (noSeekRequired) {
         if (time == now) {
-            scheduleEvent(eventNames().seekingEvent);
+            scheduleEvent(EventNames::seeking);
             // FIXME: There must be a stable state before timeupdate+seeked are dispatched and seeking
             // is reset to false. See http://crbug.com/266631
             scheduleTimeupdateEvent(false);
-            scheduleEvent(eventNames().seekedEvent);
+            scheduleEvent(EventNames::seeked);
         }
         m_seeking = false;
         return;
@@ -1924,7 +1924,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& es)
     m_sentEndEvent = false;
 
     // 8 - Queue a task to fire a simple event named seeking at the element.
-    scheduleEvent(eventNames().seekingEvent);
+    scheduleEvent(EventNames::seeking);
 
     // 9 - Set the current playback position to the given new playback position
     m_player->seek(time);
@@ -1945,7 +1945,7 @@ void HTMLMediaElement::finishSeek()
     scheduleTimeupdateEvent(false);
 
     // 14 - Queue a task to fire a simple event named seeked at the element.
-    scheduleEvent(eventNames().seekedEvent);
+    scheduleEvent(EventNames::seeked);
 
     setDisplayMode(Video);
 }
@@ -2070,7 +2070,7 @@ void HTMLMediaElement::setDefaultPlaybackRate(double rate)
 {
     if (m_defaultPlaybackRate != rate) {
         m_defaultPlaybackRate = rate;
-        scheduleEvent(eventNames().ratechangeEvent);
+        scheduleEvent(EventNames::ratechange);
     }
 }
 
@@ -2086,7 +2086,7 @@ void HTMLMediaElement::setPlaybackRate(double rate)
     if (m_playbackRate != rate) {
         m_playbackRate = rate;
         invalidateCachedTime();
-        scheduleEvent(eventNames().ratechangeEvent);
+        scheduleEvent(EventNames::ratechange);
     }
 
     if (m_player && potentiallyPlaying() && m_player->rate() != rate && !m_mediaController)
@@ -2185,12 +2185,12 @@ void HTMLMediaElement::playInternal()
     if (m_paused) {
         m_paused = false;
         invalidateCachedTime();
-        scheduleEvent(eventNames().playEvent);
+        scheduleEvent(EventNames::play);
 
         if (m_readyState <= HAVE_CURRENT_DATA)
-            scheduleEvent(eventNames().waitingEvent);
+            scheduleEvent(EventNames::waiting);
         else if (m_readyState >= HAVE_FUTURE_DATA)
-            scheduleEvent(eventNames().playingEvent);
+            scheduleEvent(EventNames::playing);
     }
     m_autoplaying = false;
 
@@ -2222,7 +2222,7 @@ void HTMLMediaElement::pauseInternal()
     if (!m_paused) {
         m_paused = true;
         scheduleTimeupdateEvent(false);
-        scheduleEvent(eventNames().pauseEvent);
+        scheduleEvent(EventNames::pause);
     }
 
     updatePlayState();
@@ -2368,7 +2368,7 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& es)
     if (m_volume != vol) {
         m_volume = vol;
         updateVolume();
-        scheduleEvent(eventNames().volumechangeEvent);
+        scheduleEvent(EventNames::volumechange);
     }
 }
 
@@ -2388,7 +2388,7 @@ void HTMLMediaElement::setMuted(bool muted)
             if (hasMediaControls())
                 mediaControls()->changedMute();
         }
-        scheduleEvent(eventNames().volumechangeEvent);
+        scheduleEvent(EventNames::volumechange);
     }
 }
 
@@ -2483,7 +2483,7 @@ void HTMLMediaElement::scheduleTimeupdateEvent(bool periodicEvent)
     // event at a given time so filter here
     double movieTime = currentTime();
     if (movieTime != m_lastTimeUpdateEventMovieTime) {
-        scheduleEvent(eventNames().timeupdateEvent);
+        scheduleEvent(EventNames::timeupdate);
         m_lastTimeUpdateEventWallTime = now;
         m_lastTimeUpdateEventMovieTime = movieTime;
     }
@@ -3120,12 +3120,12 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
             if (!m_mediaController && !m_paused) {
                 // changes paused to true and fires a simple event named pause at the media element.
                 m_paused = true;
-                scheduleEvent(eventNames().pauseEvent);
+                scheduleEvent(EventNames::pause);
             }
             // Queue a task to fire a simple event named ended at the media element.
             if (!m_sentEndEvent) {
                 m_sentEndEvent = true;
-                scheduleEvent(eventNames().endedEvent);
+                scheduleEvent(EventNames::ended);
             }
             // If the media element has a current media controller, then report the controller state
             // for the media element's current media controller.
@@ -3153,7 +3153,7 @@ void HTMLMediaElement::durationChanged(double duration)
         return;
 
     m_duration = duration;
-    scheduleEvent(eventNames().durationchangeEvent);
+    scheduleEvent(EventNames::durationchange);
 
     if (hasMediaControls())
         mediaControls()->reset();
@@ -3427,7 +3427,7 @@ void HTMLMediaElement::userCancelledLoad()
     m_error = MediaError::create(MediaError::MEDIA_ERR_ABORTED);
 
     // 3 - Queue a task to fire a simple event named error at the media element.
-    scheduleEvent(eventNames().abortEvent);
+    scheduleEvent(EventNames::abort);
 
     closeMediaSource();
 
@@ -3437,7 +3437,7 @@ void HTMLMediaElement::userCancelledLoad()
     // attribute to the NETWORK_IDLE value.
     if (m_readyState == HAVE_NOTHING) {
         m_networkState = NETWORK_EMPTY;
-        scheduleEvent(eventNames().emptiedEvent);
+        scheduleEvent(EventNames::emptied);
     }
     else
         m_networkState = NETWORK_IDLE;
@@ -3801,7 +3801,7 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
 
 void* HTMLMediaElement::preDispatchEventHandler(Event* event)
 {
-    if (event && event->type() == eventNames().webkitfullscreenchangeEvent)
+    if (event && event->type() == EventNames::webkitfullscreenchange)
         configureMediaControls();
 
     return 0;

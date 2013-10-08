@@ -50,10 +50,10 @@ DateTimeFieldElement::DateTimeFieldElement(Document& document, FieldOwner& field
 
 void DateTimeFieldElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == eventNames().blurEvent)
+    if (event->type() == EventNames::blur)
         didBlur();
 
-    if (event->type() == eventNames().focusEvent)
+    if (event->type() == EventNames::focus)
         didFocus();
 
     if (event->isKeyboardEvent()) {
@@ -73,7 +73,7 @@ void DateTimeFieldElement::defaultEventHandler(Event* event)
 
 void DateTimeFieldElement::defaultKeyboardEventHandler(KeyboardEvent* keyboardEvent)
 {
-    if (keyboardEvent->type() != eventNames().keydownEvent)
+    if (keyboardEvent->type() != EventNames::keydown)
         return;
 
     if (isDisabled() || isFieldOwnerDisabled())

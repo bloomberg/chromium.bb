@@ -42,7 +42,7 @@ PassRefPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const String& 
 
 PassRefPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer)
 {
-    ASSERT(type == eventNames().tonechangeEvent);
+    ASSERT(type == EventNames::tonechange);
     return adoptRef(new RTCDTMFToneChangeEvent(initializer));
 }
 
@@ -52,14 +52,14 @@ RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent()
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
-    : Event(eventNames().tonechangeEvent, false, false)
+    : Event(EventNames::tonechange, false, false)
     , m_tone(tone)
 {
     ScriptWrappable::init(this);
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit& initializer)
-    : Event(eventNames().tonechangeEvent, initializer)
+    : Event(EventNames::tonechange, initializer)
     , m_tone(initializer.tone)
 {
     ScriptWrappable::init(this);

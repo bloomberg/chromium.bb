@@ -60,7 +60,7 @@ ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializ
 }
 
 ErrorEvent::ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, PassRefPtr<DOMWrapperWorld> world)
-    : Event(eventNames().errorEvent, false, true)
+    : Event(EventNames::error, false, true)
     , m_sanitizedMessage(message)
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)

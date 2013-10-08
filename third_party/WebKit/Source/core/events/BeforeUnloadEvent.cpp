@@ -29,7 +29,7 @@
 namespace WebCore {
 
 BeforeUnloadEvent::BeforeUnloadEvent()
-    : Event(eventNames().beforeunloadEvent, false, true)
+    : Event(EventNames::beforeunload, false, true)
 {
     ScriptWrappable::init(this);
 }

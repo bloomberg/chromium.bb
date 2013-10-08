@@ -250,7 +250,7 @@ void TextTrackList::scheduleAddTrackEvent(PassRefPtr<TextTrack> track)
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    m_pendingEvents.append(TrackEvent::create(eventNames().addtrackEvent, initializer));
+    m_pendingEvents.append(TrackEvent::create(EventNames::addtrack, initializer));
     if (!m_pendingEventTimer.isActive())
         m_pendingEventTimer.startOneShot(0);
 }

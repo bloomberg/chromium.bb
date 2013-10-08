@@ -301,7 +301,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     }
 
     notifyAccessibilityForSelectionChange();
-    m_frame->document()->enqueueDocumentEvent(Event::create(eventNames().selectionchangeEvent));
+    m_frame->document()->enqueueDocumentEvent(Event::create(EventNames::selectionchange));
 }
 
 static bool removingNodeRemovesPosition(Node* node, const Position& position)
@@ -1500,7 +1500,7 @@ void FrameSelection::selectAll()
     if (!root)
         return;
 
-    if (selectStartTarget && !selectStartTarget->dispatchEvent(Event::createCancelableBubble(eventNames().selectstartEvent)))
+    if (selectStartTarget && !selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventNames::selectstart)))
         return;
 
     VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root.get()));
@@ -1945,7 +1945,7 @@ bool FrameSelection::dispatchSelectStart()
     if (!selectStartTarget)
         return true;
 
-    return selectStartTarget->dispatchEvent(Event::createCancelableBubble(eventNames().selectstartEvent));
+    return selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventNames::selectstart));
 }
 
 inline bool FrameSelection::visualWordMovementEnabled() const

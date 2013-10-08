@@ -427,14 +427,14 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRReadyStateChangeEvent(scriptExecutionContext(), this);
 
     if (m_async || (m_state <= OPENED || m_state == DONE))
-        m_progressEventThrottle.dispatchReadyStateChangeEvent(XMLHttpRequestProgressEvent::create(eventNames().readystatechangeEvent), m_state == DONE ? FlushProgressEvent : DoNotFlushProgressEvent);
+        m_progressEventThrottle.dispatchReadyStateChangeEvent(XMLHttpRequestProgressEvent::create(EventNames::readystatechange), m_state == DONE ? FlushProgressEvent : DoNotFlushProgressEvent);
 
     InspectorInstrumentation::didDispatchXHRReadyStateChangeEvent(cookie);
     if (m_state == DONE && !m_error) {
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRLoadEvent(scriptExecutionContext(), this);
-        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(eventNames().loadEvent));
+        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::load));
         InspectorInstrumentation::didDispatchXHRLoadEvent(cookie);
-        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(eventNames().loadendEvent));
+        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::loadend));
     }
 }
 
@@ -736,10 +736,10 @@ void XMLHttpRequest::createRequest(ExceptionState& es)
     // Also, only async requests support upload progress events.
     bool uploadEvents = false;
     if (m_async) {
-        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(eventNames().loadstartEvent));
+        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::loadstart));
         if (m_requestEntityBody && m_upload) {
             uploadEvents = m_upload->hasEventListeners();
-            m_upload->dispatchEvent(XMLHttpRequestProgressEvent::create(eventNames().loadstartEvent));
+            m_upload->dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::loadstart));
         }
     }
 
@@ -829,11 +829,11 @@ void XMLHttpRequest::abort()
         m_state = UNSENT;
     }
 
-    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().abortEvent));
+    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(EventNames::abort));
     if (!m_uploadComplete) {
         m_uploadComplete = true;
         if (m_upload && m_uploadEventsAllowed)
-            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().abortEvent));
+            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(EventNames::abort));
     }
 }
 
@@ -940,7 +940,7 @@ void XMLHttpRequest::handleNetworkError()
 
     if (m_async) {
         changeState(DONE);
-        dispatchEventAndLoadEnd(eventNames().errorEvent);
+        dispatchEventAndLoadEnd(EventNames::error);
     } else {
         m_state = DONE;
     }
@@ -960,7 +960,7 @@ void XMLHttpRequest::handleDidCancel()
     }
     changeState(DONE);
 
-    dispatchEventAndLoadEnd(eventNames().abortEvent);
+    dispatchEventAndLoadEnd(EventNames::abort);
 }
 
 void XMLHttpRequest::dropProtectionSoon()
@@ -1184,12 +1184,12 @@ void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long lon
         return;
 
     if (m_uploadEventsAllowed)
-        m_upload->dispatchEvent(XMLHttpRequestProgressEvent::create(eventNames().progressEvent, true, bytesSent, totalBytesToBeSent));
+        m_upload->dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::progress, true, bytesSent, totalBytesToBeSent));
 
     if (bytesSent == totalBytesToBeSent && !m_uploadComplete) {
         m_uploadComplete = true;
         if (m_uploadEventsAllowed)
-            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(eventNames().loadEvent));
+            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(EventNames::load));
     }
 }
 
@@ -1295,7 +1295,7 @@ void XMLHttpRequest::handleDidTimeout()
     }
     changeState(DONE);
 
-    dispatchEventAndLoadEnd(eventNames().timeoutEvent);
+    dispatchEventAndLoadEnd(EventNames::timeout);
 }
 
 bool XMLHttpRequest::canSuspend() const

@@ -81,7 +81,7 @@ static KURL documentURLForScriptExecution(Document* document)
 
 inline PassRefPtr<Event> createScriptLoadEvent()
 {
-    return Event::create(eventNames().loadEvent);
+    return Event::create(EventNames::load);
 }
 
 ScriptSourceCode HTMLScriptRunner::sourceFromPendingScript(const PendingScript& script, bool& errorOccurred) const

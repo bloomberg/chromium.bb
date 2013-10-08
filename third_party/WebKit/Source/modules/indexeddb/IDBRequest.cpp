@@ -245,12 +245,12 @@ void IDBRequest::onError(PassRefPtr<DOMError> error)
 
     m_error = error;
     m_pendingCursor.clear();
-    enqueueEvent(Event::createCancelableBubble(eventNames().errorEvent));
+    enqueueEvent(Event::createCancelableBubble(EventNames::error));
 }
 
 static PassRefPtr<Event> createSuccessEvent()
 {
-    return Event::create(eventNames().successEvent);
+    return Event::create(EventNames::success);
 }
 
 void IDBRequest::onSuccess(const Vector<String>& stringList)
@@ -437,7 +437,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
 
     DOMRequestState::Scope scope(m_requestState);
 
-    if (event->type() != eventNames().blockedEvent)
+    if (event->type() != EventNames::blocked)
         m_readyState = DONE;
 
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
@@ -458,20 +458,20 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
 
     // Cursor properties should not updated until the success event is being dispatched.
     RefPtr<IDBCursor> cursorToNotify;
-    if (event->type() == eventNames().successEvent) {
+    if (event->type() == EventNames::success) {
         cursorToNotify = getResultCursor();
         if (cursorToNotify)
             cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release());
     }
 
-    if (event->type() == eventNames().upgradeneededEvent) {
+    if (event->type() == EventNames::upgradeneeded) {
         ASSERT(!m_didFireUpgradeNeededEvent);
         m_didFireUpgradeNeededEvent = true;
     }
 
     // FIXME: When we allow custom event dispatching, this will probably need to change.
-    ASSERT_WITH_MESSAGE(event->type() == eventNames().successEvent || event->type() == eventNames().errorEvent || event->type() == eventNames().blockedEvent || event->type() == eventNames().upgradeneededEvent, "event type was %s", event->type().string().utf8().data());
-    const bool setTransactionActive = m_transaction && (event->type() == eventNames().successEvent || event->type() == eventNames().upgradeneededEvent || (event->type() == eventNames().errorEvent && !m_requestAborted));
+    ASSERT_WITH_MESSAGE(event->type() == EventNames::success || event->type() == EventNames::error || event->type() == EventNames::blocked || event->type() == EventNames::upgradeneeded, "event type was %s", event->type().string().utf8().data());
+    const bool setTransactionActive = m_transaction && (event->type() == EventNames::success || event->type() == EventNames::upgradeneeded || (event->type() == EventNames::error && !m_requestAborted));
 
     if (setTransactionActive)
         m_transaction->setActive(true);
@@ -484,7 +484,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
 
         // Possibly abort the transaction. This must occur after unregistering (so this request
         // doesn't receive a second error) and before deactivating (which might trigger commit).
-        if (event->type() == eventNames().errorEvent && dontPreventDefault && !m_requestAborted) {
+        if (event->type() == EventNames::error && dontPreventDefault && !m_requestAborted) {
             m_transaction->setError(m_error);
             m_transaction->abort(IGNORE_EXCEPTION);
         }
@@ -497,7 +497,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
     if (cursorToNotify)
         cursorToNotify->postSuccessHandlerCallback();
 
-    if (m_readyState == DONE && event->type() != eventNames().upgradeneededEvent)
+    if (m_readyState == DONE && event->type() != EventNames::upgradeneeded)
         m_hasPendingActivity = false;
 
     return dontPreventDefault;

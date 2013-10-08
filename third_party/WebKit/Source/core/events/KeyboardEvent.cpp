@@ -33,11 +33,11 @@ static inline const AtomicString& eventTypeForKeyboardEventType(PlatformEvent::T
 {
     switch (type) {
         case PlatformEvent::KeyUp:
-            return eventNames().keyupEvent;
+            return EventNames::keyup;
         case PlatformEvent::RawKeyDown:
-            return eventNames().keydownEvent;
+            return EventNames::keydown;
         case PlatformEvent::Char:
-            return eventNames().keypressEvent;
+            return EventNames::keypress;
         case PlatformEvent::KeyDown:
             // The caller should disambiguate the combined event into RawKeyDown or Char events.
             break;
@@ -45,7 +45,7 @@ static inline const AtomicString& eventTypeForKeyboardEventType(PlatformEvent::T
             break;
     }
     ASSERT_NOT_REACHED();
-    return eventNames().keydownEvent;
+    return EventNames::keydown;
 }
 
 static inline int windowsVirtualKeyCodeWithoutLocation(int keycode)
@@ -182,7 +182,7 @@ int KeyboardEvent::keyCode() const
     // We match IE.
     if (!m_keyEvent)
         return 0;
-    if (type() == eventNames().keydownEvent || type() == eventNames().keyupEvent)
+    if (type() == EventNames::keydown || type() == EventNames::keyup)
         return windowsVirtualKeyCodeWithoutLocation(m_keyEvent->windowsVirtualKeyCode());
 
     return charCode();
@@ -194,7 +194,7 @@ int KeyboardEvent::charCode() const
     // Firefox: 0 for keydown/keyup events, character code for keypress
     // We match Firefox
 
-    if (!m_keyEvent || (type() != eventNames().keypressEvent))
+    if (!m_keyEvent || (type() != EventNames::keypress))
         return 0;
     String text = m_keyEvent->text();
     return static_cast<int>(text.characterStartingAt(0));

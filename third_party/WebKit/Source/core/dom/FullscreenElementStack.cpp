@@ -486,7 +486,7 @@ void FullscreenElementStack::fullScreenChangeDelayTimerFired(Timer<FullscreenEle
         if (!document()->contains(node.get()) && !node->inDocument())
             changeQueue.append(document()->documentElement());
 
-        node->dispatchEvent(Event::createBubble(eventNames().webkitfullscreenchangeEvent));
+        node->dispatchEvent(Event::createBubble(EventNames::webkitfullscreenchange));
     }
 
     while (!errorQueue.isEmpty()) {
@@ -502,7 +502,7 @@ void FullscreenElementStack::fullScreenChangeDelayTimerFired(Timer<FullscreenEle
         if (!document()->contains(node.get()) && !node->inDocument())
             errorQueue.append(document()->documentElement());
 
-        node->dispatchEvent(Event::createBubble(eventNames().webkitfullscreenerrorEvent));
+        node->dispatchEvent(Event::createBubble(EventNames::webkitfullscreenerror));
     }
 }
 

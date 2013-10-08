@@ -127,7 +127,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
     else if (name == usemapAttr)
         setIsLink(!value.isNull());
     else if (name == onbeforeloadAttr)
-        setAttributeEventListener(eventNames().beforeloadEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventNames::beforeload, createAttributeEventListener(this, name, value));
     else if (name == compositeAttr) {
         // FIXME: images don't support blend modes in their compositing attribute.
         BlendMode blendOp = BlendModeNormal;

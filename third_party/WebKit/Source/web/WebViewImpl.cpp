@@ -1990,16 +1990,16 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         AtomicString eventType;
         switch (inputEvent.type) {
         case WebInputEvent::MouseMove:
-            eventType = eventNames().mousemoveEvent;
+            eventType = EventNames::mousemove;
             break;
         case WebInputEvent::MouseLeave:
-            eventType = eventNames().mouseoutEvent;
+            eventType = EventNames::mouseout;
             break;
         case WebInputEvent::MouseDown:
-            eventType = eventNames().mousedownEvent;
+            eventType = EventNames::mousedown;
             break;
         case WebInputEvent::MouseUp:
-            eventType = eventNames().mouseupEvent;
+            eventType = EventNames::mouseup;
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -4199,13 +4199,13 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)
     AtomicString eventType;
     switch (event.type) {
     case WebInputEvent::MouseDown:
-        eventType = eventNames().mousedownEvent;
+        eventType = EventNames::mousedown;
         break;
     case WebInputEvent::MouseUp:
-        eventType = eventNames().mouseupEvent;
+        eventType = EventNames::mouseup;
         break;
     case WebInputEvent::MouseMove:
-        eventType = eventNames().mousemoveEvent;
+        eventType = EventNames::mousemove;
         break;
     default:
         ASSERT_NOT_REACHED();

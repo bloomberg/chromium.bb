@@ -139,13 +139,13 @@ void ImplicitAnimation::onAnimationEnd(double elapsedTime)
     if (keyframeAnim)
         keyframeAnim->setUnanimatedStyle(m_toStyle);
 
-    sendTransitionEvent(eventNames().transitionendEvent, elapsedTime);
+    sendTransitionEvent(EventNames::transitionend, elapsedTime);
     endAnimation();
 }
 
 bool ImplicitAnimation::sendTransitionEvent(const AtomicString& eventType, double elapsedTime)
 {
-    if (eventType == eventNames().transitionendEvent) {
+    if (eventType == EventNames::transitionend) {
         Document::ListenerType listenerType = Document::TRANSITIONEND_LISTENER;
 
         if (shouldSendEventForListener(listenerType)) {
@@ -163,7 +163,7 @@ bool ImplicitAnimation::sendTransitionEvent(const AtomicString& eventType, doubl
             m_compAnim->animationController()->addEventToDispatch(element, eventType, propertyName, elapsedTime);
 
             // Restore the original (unanimated) style
-            if (eventType == eventNames().transitionendEvent && element->renderer())
+            if (eventType == EventNames::transitionend && element->renderer())
                 setNeedsStyleRecalc(element.get());
 
             return true; // Did dispatch an event

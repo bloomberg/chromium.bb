@@ -205,17 +205,17 @@ bool Editor::canEditRichly() const
 
 bool Editor::canDHTMLCut()
 {
-    return !m_frame->selection().isInPasswordField() && !dispatchCPPEvent(eventNames().beforecutEvent, ClipboardNumb);
+    return !m_frame->selection().isInPasswordField() && !dispatchCPPEvent(EventNames::beforecut, ClipboardNumb);
 }
 
 bool Editor::canDHTMLCopy()
 {
-    return !m_frame->selection().isInPasswordField() && !dispatchCPPEvent(eventNames().beforecopyEvent, ClipboardNumb);
+    return !m_frame->selection().isInPasswordField() && !dispatchCPPEvent(EventNames::beforecopy, ClipboardNumb);
 }
 
 bool Editor::canDHTMLPaste()
 {
-    return !dispatchCPPEvent(eventNames().beforepasteEvent, ClipboardNumb);
+    return !dispatchCPPEvent(EventNames::beforepaste, ClipboardNumb);
 }
 
 bool Editor::canCut() const
@@ -372,7 +372,7 @@ bool Editor::tryDHTMLCopy()
     if (m_frame->selection().isInPasswordField())
         return false;
 
-    return !dispatchCPPEvent(eventNames().copyEvent, ClipboardWritable);
+    return !dispatchCPPEvent(EventNames::copy, ClipboardWritable);
 }
 
 bool Editor::tryDHTMLCut()
@@ -380,12 +380,12 @@ bool Editor::tryDHTMLCut()
     if (m_frame->selection().isInPasswordField())
         return false;
 
-    return !dispatchCPPEvent(eventNames().cutEvent, ClipboardWritable);
+    return !dispatchCPPEvent(EventNames::cut, ClipboardWritable);
 }
 
 bool Editor::tryDHTMLPaste(PasteMode pasteMode)
 {
-    return !dispatchCPPEvent(eventNames().pasteEvent, ClipboardReadable, pasteMode);
+    return !dispatchCPPEvent(EventNames::paste, ClipboardReadable, pasteMode);
 }
 
 void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
@@ -752,9 +752,9 @@ void Editor::outdent()
 static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, PassRefPtr<Element> endRoot)
 {
     if (startRoot)
-        startRoot->dispatchEvent(Event::create(eventNames().webkitEditableContentChangedEvent), IGNORE_EXCEPTION);
+        startRoot->dispatchEvent(Event::create(EventNames::webkitEditableContentChanged), IGNORE_EXCEPTION);
     if (endRoot && endRoot != startRoot)
-        endRoot->dispatchEvent(Event::create(eventNames().webkitEditableContentChangedEvent), IGNORE_EXCEPTION);
+        endRoot->dispatchEvent(Event::create(EventNames::webkitEditableContentChanged), IGNORE_EXCEPTION);
 }
 
 void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)

@@ -49,7 +49,7 @@ OfflineAudioCompletionEvent::OfflineAudioCompletionEvent()
 }
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(PassRefPtr<AudioBuffer> renderedBuffer)
-    : Event(eventNames().completeEvent, true, false)
+    : Event(EventNames::complete, true, false)
     , m_renderedBuffer(renderedBuffer)
 {
     ScriptWrappable::init(this);

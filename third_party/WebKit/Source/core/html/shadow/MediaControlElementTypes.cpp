@@ -143,7 +143,7 @@ MediaControlMuteButtonElement::MediaControlMuteButtonElement(Document& document,
 
 void MediaControlMuteButtonElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == eventNames().clickEvent) {
+    if (event->type() == EventNames::click) {
         mediaController()->setMuted(!mediaController()->muted());
         event->setDefaultHandled();
     }
@@ -180,7 +180,7 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
 
     MediaControlInputElement::defaultEventHandler(event);
 
-    if (event->type() == eventNames().mouseoverEvent || event->type() == eventNames().mouseoutEvent || event->type() == eventNames().mousemoveEvent)
+    if (event->type() == EventNames::mouseover || event->type() == EventNames::mouseout || event->type() == EventNames::mousemove)
         return;
 
     double volume = value().toDouble();

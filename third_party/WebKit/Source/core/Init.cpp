@@ -31,6 +31,7 @@
 #include "config.h"
 #include "Init.h"
 
+#include "EventNames.h"
 #include "FetchInitiatorTypeNames.h"
 #include "FontFamilyNames.h"
 #include "HTMLNames.h"
@@ -63,6 +64,7 @@ void init()
     XMLNSNames::init();
     XMLNames::init();
     FontFamilyNames::init();
+    EventNames::init();
     FetchInitiatorTypeNames::init();
     MediaFeatureNames::init();
     WTF::StringStatics::init();

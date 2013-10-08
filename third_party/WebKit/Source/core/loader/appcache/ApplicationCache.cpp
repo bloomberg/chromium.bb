@@ -107,24 +107,24 @@ const AtomicString& ApplicationCache::toEventType(ApplicationCacheHost::EventID 
 {
     switch (id) {
     case ApplicationCacheHost::CHECKING_EVENT:
-        return eventNames().checkingEvent;
+        return EventNames::checking;
     case ApplicationCacheHost::ERROR_EVENT:
-        return eventNames().errorEvent;
+        return EventNames::error;
     case ApplicationCacheHost::NOUPDATE_EVENT:
-        return eventNames().noupdateEvent;
+        return EventNames::noupdate;
     case ApplicationCacheHost::DOWNLOADING_EVENT:
-        return eventNames().downloadingEvent;
+        return EventNames::downloading;
     case ApplicationCacheHost::PROGRESS_EVENT:
-        return eventNames().progressEvent;
+        return EventNames::progress;
     case ApplicationCacheHost::UPDATEREADY_EVENT:
-        return eventNames().updatereadyEvent;
+        return EventNames::updateready;
     case ApplicationCacheHost::CACHED_EVENT:
-        return eventNames().cachedEvent;
+        return EventNames::cached;
     case ApplicationCacheHost::OBSOLETE_EVENT:
-        return eventNames().obsoleteEvent;
+        return EventNames::obsolete;
     }
     ASSERT_NOT_REACHED();
-    return eventNames().errorEvent;
+    return EventNames::error;
 }
 
 EventTargetData* ApplicationCache::eventTargetData()

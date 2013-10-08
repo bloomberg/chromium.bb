@@ -406,7 +406,7 @@ Element* AccessibilityNodeObject::mouseButtonListener() const
 
     // FIXME: Do the continuation search like anchorElement does
     for (Element* element = toElement(node); element; element = element->parentElement()) {
-        if (element->getAttributeEventListener(eventNames().clickEvent) || element->getAttributeEventListener(eventNames().mousedownEvent) || element->getAttributeEventListener(eventNames().mouseupEvent))
+        if (element->getAttributeEventListener(EventNames::click) || element->getAttributeEventListener(EventNames::mousedown) || element->getAttributeEventListener(EventNames::mouseup))
             return element;
     }
 
@@ -653,7 +653,7 @@ bool AccessibilityNodeObject::isClickable() const
             return false;
 
         // Note: we can't call node()->willRespondToMouseClickEvents() because that triggers a style recalc and can delete this.
-        if (node()->hasEventListeners(eventNames().mouseupEvent) || node()->hasEventListeners(eventNames().mousedownEvent) || node()->hasEventListeners(eventNames().clickEvent) || node()->hasEventListeners(eventNames().DOMActivateEvent))
+        if (node()->hasEventListeners(EventNames::mouseup) || node()->hasEventListeners(EventNames::mousedown) || node()->hasEventListeners(EventNames::click) || node()->hasEventListeners(EventNames::DOMActivate))
             return true;
     }
 

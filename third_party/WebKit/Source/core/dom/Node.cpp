@@ -2016,7 +2016,7 @@ void Node::didMoveToNewDocument(Document* oldDocument)
         if (AXObjectCache* cache = oldDocument->existingAXObjectCache())
             cache->remove(this);
 
-    const EventListenerVector& mousewheelListeners = getEventListeners(eventNames().mousewheelEvent);
+    const EventListenerVector& mousewheelListeners = getEventListeners(EventNames::mousewheel);
     WheelController* oldController = WheelController::from(oldDocument);
     WheelController* newController = WheelController::from(&document());
     for (size_t i = 0; i < mousewheelListeners.size(); ++i) {
@@ -2024,7 +2024,7 @@ void Node::didMoveToNewDocument(Document* oldDocument)
         newController->didAddWheelEventHandler(&document());
     }
 
-    const EventListenerVector& wheelListeners = getEventListeners(eventNames().wheelEvent);
+    const EventListenerVector& wheelListeners = getEventListeners(EventNames::wheel);
     for (size_t i = 0; i < wheelListeners.size(); ++i) {
         oldController->didRemoveWheelEventHandler(oldDocument);
         newController->didAddWheelEventHandler(&document());
@@ -2057,7 +2057,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
 
     Document& document = targetNode->document();
     document.addListenerTypeIfNeeded(eventType);
-    if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
+    if (eventType == EventNames::wheel || eventType == EventNames::mousewheel)
         WheelController::from(&document)->didAddWheelEventHandler(&document);
     else if (isTouchEventType(eventType))
         document.didAddTouchEventHandler(targetNode);
@@ -2078,7 +2078,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
     // FIXME: Notify Document that the listener has vanished. We need to keep track of a number of
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
     Document& document = targetNode->document();
-    if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
+    if (eventType == EventNames::wheel || eventType == EventNames::mousewheel)
         WheelController::from(&document)->didAddWheelEventHandler(&document);
     else if (isTouchEventType(eventType))
         document.didRemoveTouchEventHandler(targetNode);
@@ -2279,13 +2279,13 @@ void Node::dispatchSubtreeModifiedEvent()
     if (!document().hasListenerType(Document::DOMSUBTREEMODIFIED_LISTENER))
         return;
 
-    dispatchScopedEvent(MutationEvent::create(eventNames().DOMSubtreeModifiedEvent, true));
+    dispatchScopedEvent(MutationEvent::create(EventNames::DOMSubtreeModified, true));
 }
 
 bool Node::dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-    RefPtr<UIEvent> event = UIEvent::create(eventNames().DOMActivateEvent, true, true, document().defaultView(), detail);
+    RefPtr<UIEvent> event = UIEvent::create(EventNames::DOMActivate, true, true, document().defaultView(), detail);
     event->setUnderlyingEvent(underlyingEvent);
     dispatchScopedEvent(event);
     return event->defaultHandled();
@@ -2338,12 +2338,12 @@ bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)
 
 void Node::dispatchChangeEvent()
 {
-    dispatchScopedEvent(Event::createBubble(eventNames().changeEvent));
+    dispatchScopedEvent(Event::createBubble(EventNames::change));
 }
 
 void Node::dispatchInputEvent()
 {
-    dispatchScopedEvent(Event::createBubble(eventNames().inputEvent));
+    dispatchScopedEvent(Event::createBubble(EventNames::input));
 }
 
 void Node::defaultEventHandler(Event* event)
@@ -2351,24 +2351,24 @@ void Node::defaultEventHandler(Event* event)
     if (event->target() != this)
         return;
     const AtomicString& eventType = event->type();
-    if (eventType == eventNames().keydownEvent || eventType == eventNames().keypressEvent) {
+    if (eventType == EventNames::keydown || eventType == EventNames::keypress) {
         if (event->isKeyboardEvent()) {
             if (Frame* frame = document().frame())
                 frame->eventHandler()->defaultKeyboardEventHandler(toKeyboardEvent(event));
         }
-    } else if (eventType == eventNames().clickEvent) {
+    } else if (eventType == EventNames::click) {
         int detail = event->isUIEvent() ? static_cast<UIEvent*>(event)->detail() : 0;
         if (dispatchDOMActivateEvent(detail, event))
             event->setDefaultHandled();
-    } else if (eventType == eventNames().contextmenuEvent) {
+    } else if (eventType == EventNames::contextmenu) {
         if (Page* page = document().page())
             page->contextMenuController().handleContextMenuEvent(event);
-    } else if (eventType == eventNames().textInputEvent) {
+    } else if (eventType == EventNames::textInput) {
         if (event->hasInterface(eventNames().interfaceForTextEvent))
             if (Frame* frame = document().frame())
                 frame->eventHandler()->defaultTextInputEventHandler(static_cast<TextEvent*>(event));
 #if OS(WIN)
-    } else if (eventType == eventNames().mousedownEvent && event->isMouseEvent()) {
+    } else if (eventType == EventNames::mousedown && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
         if (mouseEvent->button() == MiddleButton) {
             if (enclosingLinkEventParentOrSelf())
@@ -2384,7 +2384,7 @@ void Node::defaultEventHandler(Event* event)
             }
         }
 #endif
-    } else if ((eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent) && event->hasInterface(eventNames().interfaceForWheelEvent)) {
+    } else if ((eventType == EventNames::wheel || eventType == EventNames::mousewheel) && event->hasInterface(eventNames().interfaceForWheelEvent)) {
         WheelEvent* wheelEvent = static_cast<WheelEvent*>(event);
 
         // If we don't have a renderer, send the wheel event to the first node we find with a renderer.
@@ -2396,7 +2396,7 @@ void Node::defaultEventHandler(Event* event)
         if (startNode && startNode->renderer())
             if (Frame* frame = document().frame())
                 frame->eventHandler()->defaultWheelEventHandler(startNode, wheelEvent);
-    } else if (event->type() == eventNames().webkitEditableContentChangedEvent) {
+    } else if (event->type() == EventNames::webkitEditableContentChanged) {
         dispatchInputEvent();
     }
 }
@@ -2409,21 +2409,21 @@ bool Node::willRespondToMouseMoveEvents()
 {
     if (isDisabledFormControl(this))
         return false;
-    return hasEventListeners(eventNames().mousemoveEvent) || hasEventListeners(eventNames().mouseoverEvent) || hasEventListeners(eventNames().mouseoutEvent);
+    return hasEventListeners(EventNames::mousemove) || hasEventListeners(EventNames::mouseover) || hasEventListeners(EventNames::mouseout);
 }
 
 bool Node::willRespondToMouseClickEvents()
 {
     if (isDisabledFormControl(this))
         return false;
-    return isContentEditable(UserSelectAllIsAlwaysNonEditable) || hasEventListeners(eventNames().mouseupEvent) || hasEventListeners(eventNames().mousedownEvent) || hasEventListeners(eventNames().clickEvent) || hasEventListeners(eventNames().DOMActivateEvent);
+    return isContentEditable(UserSelectAllIsAlwaysNonEditable) || hasEventListeners(EventNames::mouseup) || hasEventListeners(EventNames::mousedown) || hasEventListeners(EventNames::click) || hasEventListeners(EventNames::DOMActivate);
 }
 
 bool Node::willRespondToTouchEvents()
 {
     if (isDisabledFormControl(this))
         return false;
-    return hasEventListeners(eventNames().touchstartEvent) || hasEventListeners(eventNames().touchmoveEvent) || hasEventListeners(eventNames().touchcancelEvent) || hasEventListeners(eventNames().touchendEvent);
+    return hasEventListeners(EventNames::touchstart) || hasEventListeners(EventNames::touchmove) || hasEventListeners(EventNames::touchcancel) || hasEventListeners(EventNames::touchend);
 }
 
 // This is here for inlining

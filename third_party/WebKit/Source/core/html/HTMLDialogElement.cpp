@@ -96,7 +96,7 @@ void HTMLDialogElement::closeDialog(const String& returnValue)
     if (!returnValue.isNull())
         m_returnValue = returnValue;
 
-    dispatchEvent(Event::create(eventNames().closeEvent));
+    dispatchEvent(Event::create(EventNames::close));
 }
 
 PassRefPtr<RenderStyle> HTMLDialogElement::customStyleForRenderer()
@@ -166,7 +166,7 @@ bool HTMLDialogElement::isPresentationAttribute(const QualifiedName& name) const
 
 void HTMLDialogElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == eventNames().cancelEvent) {
+    if (event->type() == EventNames::cancel) {
         closeDialog();
         event->setDefaultHandled();
         return;

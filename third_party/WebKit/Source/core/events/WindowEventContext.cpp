@@ -39,7 +39,7 @@ WindowEventContext::WindowEventContext(Event* event, PassRefPtr<Node> node, cons
 {
     // We don't dispatch load events to the window. This quirk was originally
     // added because Mozilla doesn't propagate load events to the window object.
-    if (event->type() == eventNames().loadEvent)
+    if (event->type() == EventNames::load)
         return;
 
     Node* topLevelContainer = topEventContext ? topEventContext->node() : node.get();

@@ -677,18 +677,18 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
     if (webEvent.type == WebInputEvent::Undefined)
         return;
 
-    if (event->type() == eventNames().mousedownEvent)
+    if (event->type() == EventNames::mousedown)
         focusPlugin();
 
     if (m_scrollbarGroup) {
         // This needs to be set before the other callbacks in this scope, since
         // the scroll animator class might query the position in response.
         m_scrollbarGroup->setLastMousePosition(IntPoint(event->x(), event->y()));
-        if (event->type() == eventNames().mousemoveEvent)
+        if (event->type() == EventNames::mousemove)
             m_scrollbarGroup->scrollAnimator()->mouseMovedInContentArea();
-        else if (event->type() == eventNames().mouseoverEvent)
+        else if (event->type() == EventNames::mouseover)
             m_scrollbarGroup->scrollAnimator()->mouseEnteredContentArea();
-        else if (event->type() == eventNames().mouseoutEvent)
+        else if (event->type() == EventNames::mouseout)
             m_scrollbarGroup->scrollAnimator()->mouseExitedContentArea();
     }
 
@@ -711,13 +711,13 @@ void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)
     ASSERT(event->isDragEvent());
 
     WebDragStatus dragStatus = WebDragStatusUnknown;
-    if (event->type() == eventNames().dragenterEvent)
+    if (event->type() == EventNames::dragenter)
         dragStatus = WebDragStatusEnter;
-    else if (event->type() == eventNames().dragleaveEvent)
+    else if (event->type() == EventNames::dragleave)
         dragStatus = WebDragStatusLeave;
-    else if (event->type() == eventNames().dragoverEvent)
+    else if (event->type() == EventNames::dragover)
         dragStatus = WebDragStatusOver;
-    else if (event->type() == eventNames().dropEvent)
+    else if (event->type() == EventNames::drop)
         dragStatus = WebDragStatusDrop;
 
     if (dragStatus == WebDragStatusUnknown)
@@ -796,7 +796,7 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event)
         if (webEvent.type == WebInputEvent::Undefined)
             return;
 
-        if (event->type() == eventNames().touchstartEvent)
+        if (event->type() == EventNames::touchstart)
             focusPlugin();
 
         WebCursorInfo cursorInfo;

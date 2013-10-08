@@ -225,10 +225,10 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
         if (rendererIsEditable()) {
             // This keeps track of the editable block that the selection was in (if it was in one) just before the link was clicked
             // for the LiveWhenNotFocused editable link behavior
-            if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() != RightButton && document().frame()) {
+            if (event->type() == EventNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() != RightButton && document().frame()) {
                 setRootEditableElementForSelectionOnMouseDown(document().frame()->selection().rootEditableElement());
                 m_wasShiftKeyDownOnMouseDown = toMouseEvent(event)->shiftKey();
-            } else if (event->type() == eventNames().mouseoverEvent) {
+            } else if (event->type() == EventNames::mouseover) {
                 // These are cleared on mouseover and not mouseout because their values are needed for drag events,
                 // but drag events happen after mouse out events.
                 clearRootEditableElementForSelectionOnMouseDown();
@@ -636,12 +636,12 @@ bool HTMLAnchorElement::treatLinkAsLiveForEventType(EventType eventType) const
 
 bool isEnterKeyKeydownEvent(Event* event)
 {
-    return event->type() == eventNames().keydownEvent && event->isKeyboardEvent() && toKeyboardEvent(event)->keyIdentifier() == "Enter";
+    return event->type() == EventNames::keydown && event->isKeyboardEvent() && toKeyboardEvent(event)->keyIdentifier() == "Enter";
 }
 
 bool isLinkClick(Event* event)
 {
-    return event->type() == eventNames().clickEvent && (!event->isMouseEvent() || toMouseEvent(event)->button() != RightButton);
+    return event->type() == EventNames::click && (!event->isMouseEvent() || toMouseEvent(event)->button() != RightButton);
 }
 
 bool HTMLAnchorElement::willRespondToMouseClickEvents()
@@ -714,15 +714,15 @@ void HTMLAnchorElement::PrefetchEventHandler::handleEvent(Event* event)
     if (!shouldPrefetch(m_anchorElement->href()))
         return;
 
-    if (event->type() == eventNames().mouseoverEvent)
+    if (event->type() == EventNames::mouseover)
         handleMouseOver(event);
-    else if (event->type() == eventNames().mouseoutEvent)
+    else if (event->type() == EventNames::mouseout)
         handleMouseOut(event);
-    else if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton)
+    else if (event->type() == EventNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton)
         handleLeftMouseDown(event);
-    else if (event->type() == eventNames().gestureshowpressEvent)
+    else if (event->type() == EventNames::gestureshowpress)
         handleGestureShowPress(event);
-    else if (event->type() == eventNames().gesturetapunconfirmedEvent)
+    else if (event->type() == EventNames::gesturetapunconfirmed)
         handleGestureTapUnconfirmed(event);
     else if (isLinkClick(event))
         handleClick(event);
@@ -810,7 +810,7 @@ bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)
     if (m_hadHREFChanged)
         return false;
 
-    if (m_anchorElement->hasEventListeners(eventNames().clickEvent))
+    if (m_anchorElement->hasEventListeners(EventNames::click))
         return false;
 
     if (!url.protocolIsInHTTPFamily())
