@@ -76,12 +76,14 @@ class DriverTest(unittest.TestCase):
         port = TestWebKitPort()
         driver = Driver(port, 0, pixel_tests=False)
         driver._server_process = MockServerProcess(lines=[
+            '#READY',
             'ActualHash: foobar',
             'Content-Type: my_type',
             'Content-Transfer-Encoding: none',
             "#EOF",
         ])
         content_block = driver._read_block(0)
+        self.assertEqual(content_block.content, '')
         self.assertEqual(content_block.content_type, 'my_type')
         self.assertEqual(content_block.encoding, 'none')
         self.assertEqual(content_block.content_hash, 'foobar')

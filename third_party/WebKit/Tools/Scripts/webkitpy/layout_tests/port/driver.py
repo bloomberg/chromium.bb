@@ -422,6 +422,10 @@ class Driver(object):
 
             if out_line:
                 assert not out_seen_eof
+                # FIXME: This is a temporary hack so we can have content_shell print out when it's ready to start running tests.
+                # Once content_shell spits out #READY, then we can have _start block until it sees that message.
+                if out_line == "#READY\n":
+                    continue
                 out_line, out_seen_eof = self._strip_eof(out_line)
             if err_line:
                 assert not self.err_seen_eof
