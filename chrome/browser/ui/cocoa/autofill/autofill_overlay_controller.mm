@@ -171,8 +171,9 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
     return 0;
 
   // Overlays with text messages express a size preference.
-  return kOverlayImageBottomMargin + [messageView_ heightForWidth:width] +
-      NSHeight([imageView_ frame]);
+  return kOverlayImageBottomMargin +
+      [messageView_ heightForWidth:width] +
+      [[imageView_ image] size].height;
 }
 
 - (NSSize)preferredSize {

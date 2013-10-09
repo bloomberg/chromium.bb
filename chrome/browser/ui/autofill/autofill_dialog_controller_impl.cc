@@ -3176,8 +3176,6 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
 }
 
 void AutofillDialogControllerImpl::FinishSubmit() {
-#if defined(TOOLKIT_VIEWS)
-  // TODO(estade): implement overlays on other platforms.
   if (IsPayingWithWallet()) {
     // To get past this point, the view must call back OverlayButtonPressed.
     ScopedViewUpdates updates(view_.get());
@@ -3186,8 +3184,6 @@ void AutofillDialogControllerImpl::FinishSubmit() {
     card_generated_animation_.Start();
     return;
   }
-#endif
-
   DoFinishSubmit();
 }
 

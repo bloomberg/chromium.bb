@@ -295,9 +295,7 @@ class TestAutofillDialogController
 
   // Skips past the 2 second wait between FinishSubmit and DoFinishSubmit.
   void ForceFinishSubmit() {
-#if defined(TOOLKIT_VIEWS)
     DoFinishSubmit();
-#endif
   }
 
   void SimulateSubmitButtonDelayBegin() {
@@ -1761,7 +1759,6 @@ TEST_F(AutofillDialogControllerTest, SubmitWithSigninErrorDoesntSetPref) {
 
 // Tests that there's an overlay shown while waiting for full wallet items.
 // TODO(estade): enable on other platforms when overlays are supported there.
-#if defined(TOOLKIT_VIEWS)
 TEST_F(AutofillDialogControllerTest, WalletFirstRun) {
   // Simulate fist run.
   PrefService* prefs = profile()->GetPrefs();
@@ -1784,7 +1781,6 @@ TEST_F(AutofillDialogControllerTest, WalletFirstRun) {
   controller()->ForceFinishSubmit();
   EXPECT_TRUE(form_structure());
 }
-#endif
 
 TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
   ASSERT_FALSE(profile()->GetPrefs()->HasPrefPath(
