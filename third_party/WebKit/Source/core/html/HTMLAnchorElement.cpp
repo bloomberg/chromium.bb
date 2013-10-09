@@ -413,9 +413,9 @@ void HTMLAnchorElement::setHost(const String& value)
     if (!separator)
         return;
 
-    if (separator == kNotFound)
-        url.setHostAndPort(value);
-    else {
+    if (separator == kNotFound) {
+        url.setHost(value);
+    } else {
         unsigned portEnd;
         unsigned port = parsePortFromStringPosition(value, separator + 1, portEnd);
         if (!port) {

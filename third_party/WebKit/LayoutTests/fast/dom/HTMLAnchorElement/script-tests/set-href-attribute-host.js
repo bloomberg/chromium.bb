@@ -7,6 +7,11 @@ a.href = "https://www.mydomain.com:8080/path/";
 a.host = "www.otherdomain.com:0";
 shouldBe("a.href", "'https://www.otherdomain.com:0/path/'");
 
+debug("Set host without port");
+a.href = "https://www.mydomain.com:8080/path/";
+a.host = "www.otherdomain.com";
+shouldBe("a.href", "'https://www.otherdomain.com:8080/path/'");
+
 // IE8 throws "The URL is invalid" exception.
 debug("Set host with '?' in it");
 try {
@@ -26,6 +31,11 @@ debug("Set default port");
 a.href = "https://www.mydomain.com:8080/path/";
 a.host = "www.otherdomain.com:443";
 shouldBe("a.href", "'https://www.otherdomain.com/path/'");
+
+debug("Set host with invalid port");
+a.href = "https://www.mydomain.com:8080/path/";
+a.host = "www.otherdomain.com:invalid";
+shouldBe("a.href", "'https://www.otherdomain.com:0/path/'");
 
 // Firefox 3.5.2 rejects a port that contains non-digits.
 debug("Set host with letters in port number");
@@ -69,7 +79,7 @@ debug("Set host containing slashes in it");
 try {
 a.href = "https://www.mydomain.com:8080/path/";
 a.host = "www.other\dom/ain.com";
-shouldBe("a.href", "'https://www.otherdom/ain.com/path/'");
+shouldBe("a.href", "'https://www.otherdom%2Fain.com:8080/path/'");
 } catch(e) {
 debug("Exception: " + e.description);
 }
