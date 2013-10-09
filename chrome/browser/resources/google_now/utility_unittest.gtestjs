@@ -46,25 +46,24 @@ TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport1', function() {
 
   var mockRequest = {send: this.mockLocalFunctions.functions().sendRequest};
 
-  var expectedRequestParameters = 'error=TEST%20ERROR%20NAME%3A%20' +
-      'TEST%20ERROR%20MESSAGE&' +
-      'script=%2F%2Fext_id%2Futility.js&' +
-      'line=29&' +
-      'trace=Error%3A%20TEST%20ERROR%20MESSAGE%0A%20%20%20%20' +
-      'at%20buildErrorWithMessageForServer%20' +
-      '(chrome-extension%3A%2F%2Fext_id%2Futility.js%3A29%3A15)%0A' +
-      '%20%20%20%20at%20%3Canonymous%3E%3A2%3A16%0A%20%20%20%20' +
-      'at%20Object.InjectedScript._evaluateOn%20(%3Canonymous%3E%3A580%3A39)' +
-      '%0A%20%20%20%20' +
-      'at%20Object.InjectedScript._evaluateAndWrap%20(%3Canonymous%3E%3A539' +
-      '%3A52)%0A%20%20%20%20' +
-      'at%20Object.InjectedScript.evaluate%20(%3Canonymous%3E%3A458%3A21)';
+  var expectedRequestObject = {
+    message: 'TEST ERROR NAME: TEST ERROR MESSAGE',
+    file: '//ext_id/utility.js',
+    line: '29',
+    trace: 'Error: TEST ERROR MESSAGE\n    ' +
+           'at buildErrorWithMessageForServer (chrome-extension://ext_id/util' +
+           'ity.js:29:15)\n    ' +
+           'at <anonymous>:2:16\n    ' +
+           'at Object.InjectedScript._evaluateOn (<anonymous>:580:39)\n    ' +
+           'at Object.InjectedScript._evaluateAndWrap (<anonymous>:539:52)\n' +
+           '    at Object.InjectedScript.evaluate (<anonymous>:458:21)'
+  };
 
   this.mockGlobals.expects(once()).
-      buildServerRequest('jserror', 'application/x-www-form-urlencoded').
+      buildServerRequest('jserrors', 'application/json').
       will(returnValue(mockRequest));
   this.mockLocalFunctions.expects(once()).sendRequest(
-      expectedRequestParameters);
+      JSON.stringify(expectedRequestObject));
 
   // Invoking the tested function.
   sendErrorReport(testError);
@@ -90,19 +89,20 @@ TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport2', function() {
 
   var mockRequest = {send: this.mockLocalFunctions.functions().sendRequest};
 
-  var expectedRequestParameters = 'error=TypeError&' +
-      'script=%2F%2Fext_id%2Fbackground.js&' +
-      'line=444&' +
-      'trace=(message%20removed)%0A%20%20%20%20' +
-      'at%20chrome-extension%3A%2F%2Fext_id%2Fbackground.js%3A444%3A11' +
-      '%0A%20%20%20%20' +
-      'at%20chrome-extension%3A%2F%2Fext_id%2Futility.js%3A509%3A7';
+  var expectedRequestObject = {
+    message: 'TypeError',
+    file: '//ext_id/background.js',
+    line: '444',
+    trace: '(message removed)\n    ' +
+           'at chrome-extension://ext_id/background.js:444:11\n    ' +
+           'at chrome-extension://ext_id/utility.js:509:7'
+  };
 
   this.mockGlobals.expects(once()).
-      buildServerRequest('jserror', 'application/x-www-form-urlencoded').
+      buildServerRequest('jserrors', 'application/json').
       will(returnValue(mockRequest));
   this.mockLocalFunctions.expects(once()).sendRequest(
-      expectedRequestParameters);
+      JSON.stringify(expectedRequestObject));
 
   // Invoking the tested function.
   sendErrorReport(testError);

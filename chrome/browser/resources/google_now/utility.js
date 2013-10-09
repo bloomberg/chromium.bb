@@ -118,17 +118,18 @@ function sendErrorReport(error) {
   if (error.canSendMessageToServer)
     errorText = errorText + ': ' + error.message;
 
-  var requestParameters =
-      'error=' + encodeURIComponent(errorText) +
-      '&script=' + encodeURIComponent(file) +
-      '&line=' + encodeURIComponent(line) +
-      '&trace=' + encodeURIComponent(filteredStack);
-  var request = buildServerRequest('jserror',
-                                   'application/x-www-form-urlencoded');
+  var errorObject = {
+    message: errorText,
+    file: file,
+    line: line,
+    trace: filteredStack
+  };
+
+  var request = buildServerRequest('jserrors', 'application/json');
   request.onloadend = function(event) {
     console.log('sendErrorReport status: ' + request.status);
   };
-  request.send(requestParameters);
+  request.send(JSON.stringify(errorObject));
 }
 
 // Limiting 1 error report per background page load.
