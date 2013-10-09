@@ -294,7 +294,12 @@ void WallpaperManager::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
       ClearWallpaperCache();
-      MoveLoggedInUserCustomWallpaper();
+      BrowserThread::PostDelayedTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&WallpaperManager::MoveLoggedInUserCustomWallpaper,
+                     weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromSeconds(kMoveCustomWallpaperDelaySeconds));
       break;
     }
     case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
@@ -895,13 +900,12 @@ void WallpaperManager::MoveCustomWallpapersSuccess(
 
 void WallpaperManager::MoveLoggedInUserCustomWallpaper() {
   const User* logged_in_user = UserManager::Get()->GetLoggedInUser();
-  task_runner_->PostDelayedTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&WallpaperManager::MoveCustomWallpapersOnWorker,
-                 weak_factory_.GetWeakPtr(),
+                 base::Unretained(this),
                  logged_in_user->email(),
-                 logged_in_user->username_hash()),
-      base::TimeDelta::FromSeconds(kMoveCustomWallpaperDelaySeconds));
+                 logged_in_user->username_hash()));
 }
 
 void WallpaperManager::GetCustomWallpaperInternal(
