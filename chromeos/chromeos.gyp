@@ -308,6 +308,8 @@
         'process_proxy/process_proxy_registry.h',
         'system/name_value_pairs_parser.cc',
         'system/name_value_pairs_parser.h',
+        'system/statistics_provider.cc',
+        'system/statistics_provider.h',
       ],
       'conditions': [
         ['use_x11 == 1', {
@@ -387,6 +389,8 @@
         'network/onc/mock_certificate_importer.h',
         'network/onc/onc_test_utils.cc',
         'network/onc/onc_test_utils.h',
+        'system/mock_statistics_provider.cc',
+        'system/mock_statistics_provider.h',
       ],
       'include_dirs': [
         '..',

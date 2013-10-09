@@ -35,7 +35,7 @@ std::string GetSessionNameSynchronously() {
 #if defined(OS_CHROMEOS)
   // The approach below is similar to that used by the CrOs implementation of
   // StatisticsProvider::GetMachineStatistic(CHROMEOS_RELEASE_BOARD).
-  // See chrome/browser/chromeos/system/statistics_provider.{h|cc}.
+  // See chromeos/system/statistics_provider.{h|cc}.
   //
   // We cannot use StatisticsProvider here because of the mutual dependency
   // it creates between sync.gyp:sync and chrome.gyp:browser.

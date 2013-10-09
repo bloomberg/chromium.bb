@@ -7,6 +7,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chromeos/system/statistics_provider.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -64,7 +64,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
@@ -97,6 +96,7 @@
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/power_save_blocker.h"
@@ -381,10 +381,6 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
                   switches::kLoginProfile).value();
   }
 
-  // Initialize the statistics provider, which will ensure that the Chrome
-  // channel info is read and made available early.
-  system::StatisticsProvider::GetInstance()->Init();
-
 #if defined(GOOGLE_CHROME_BUILD)
   const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
   std::string channel;
@@ -424,8 +420,13 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   CrasAudioHandler::Initialize(
       AudioDevicesPrefHandler::Create(g_browser_process->local_state()));
 
-  if (!StartupUtils::IsOobeCompleted())
-    system::StatisticsProvider::GetInstance()->LoadOemManifest();
+  // Start loading machine statistics here. StatisticsProvider::Shutdown()
+  // will ensure that loading is aborted on early exit.
+  bool load_oem_statistics = !StartupUtils::IsOobeCompleted();
+  system::StatisticsProvider::GetInstance()->StartLoadingMachineStatistics(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE),
+      load_oem_statistics);
 
   base::FilePath downloads_directory;
   CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_directory));
@@ -576,13 +577,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     // in the background.
     UserManager::Get()->RestoreActiveSessions();
   }
-
-  // Start loading the machine statistics. Note: if we start loading machine
-  // statistics early in PreEarlyInitialization() then the crossystem tool
-  // sometimes hangs for unknown reasons, see http://crbug.com/167671.
-  // Also we must start loading no later than this point, because login manager
-  // may call GetMachineStatistic() during startup, see crbug.com/170635.
-  system::StatisticsProvider::GetInstance()->StartLoadingMachineStatistics();
 
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
@@ -746,6 +740,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   MagnificationManager::Shutdown();
   AccessibilityManager::Shutdown();
+  system::StatisticsProvider::GetInstance()->Shutdown();
 
   // Let the UserManager and WallpaperManager unregister itself as an observer
   // of the CrosSettings singleton before it is destroyed. This also ensures

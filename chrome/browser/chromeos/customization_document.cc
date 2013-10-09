@@ -17,10 +17,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -174,7 +174,7 @@ void StartupCustomizationDocument::Init(
 
     std::string hwid;
     if (statistics_provider->GetMachineStatistic(
-            chromeos::system::kHardwareClass, &hwid)) {
+            chromeos::system::kHardwareClassKey, &hwid)) {
       ListValue* hwid_list = NULL;
       if (root_->GetList(kHwidMapAttr, &hwid_list)) {
         for (size_t i = 0; i < hwid_list->GetSize(); ++i) {

@@ -10,9 +10,9 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/system/statistics_provider.h"
 #include "third_party/re2/re2/re2.h"
 #include "third_party/zlib/zlib.h"
 
@@ -121,7 +121,7 @@ bool IsMachineHWIDCorrect() {
   std::string hwid;
   chromeos::system::StatisticsProvider* stats =
       chromeos::system::StatisticsProvider::GetInstance();
-  if (!stats->GetMachineStatistic(chromeos::system::kHardwareClass, &hwid)) {
+  if (!stats->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid)) {
     LOG(ERROR) << "Couldn't get machine statistic 'hardware_class'.";
     return false;
   }

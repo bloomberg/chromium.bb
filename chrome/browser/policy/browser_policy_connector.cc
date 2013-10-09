@@ -69,7 +69,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -78,6 +77,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
+#include "chromeos/system/statistics_provider.h"
 #endif
 
 using content::BrowserThread;
@@ -157,7 +157,7 @@ class DeviceManagementServiceConfiguration
         chromeos::system::StatisticsProvider::GetInstance();
 
     std::string hwclass;
-    if (!provider->GetMachineStatistic(chromeos::system::kHardwareClass,
+    if (!provider->GetMachineStatistic(chromeos::system::kHardwareClassKey,
                                        &hwclass)) {
       LOG(ERROR) << "Failed to get machine information";
     }

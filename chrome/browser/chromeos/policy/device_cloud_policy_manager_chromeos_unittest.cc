@@ -28,6 +28,8 @@
 #include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/system/mock_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -39,7 +41,9 @@ using testing::AnyNumber;
 using testing::AtMost;
 using testing::DoAll;
 using testing::Mock;
+using testing::Return;
 using testing::SaveArg;
+using testing::SetArgumentPointee;
 using testing::_;
 
 namespace em = enterprise_management;
@@ -67,6 +71,18 @@ class DeviceCloudPolicyManagerChromeOSTest
                  loop_.message_loop_proxy(),
                  &install_attributes_) {
     fake_cryptohome_client_->Init(NULL /* no dbus::Bus */);
+    EXPECT_CALL(mock_statistics_provider_,
+                GetMachineStatistic(_, _))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(mock_statistics_provider_,
+                GetMachineStatistic("serial_number", _))
+        .WillRepeatedly(DoAll(SetArgumentPointee<1>(std::string("test_sn")),
+                              Return(true)));
+    chromeos::system::StatisticsProvider::SetTestProvider(
+        &mock_statistics_provider_);
+  }
+  virtual ~DeviceCloudPolicyManagerChromeOSTest() {
+    chromeos::system::StatisticsProvider::SetTestProvider(NULL);
   }
 
   virtual void SetUp() OVERRIDE {
@@ -113,6 +129,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   MockDeviceManagementService device_management_service_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::system::MockStatisticsProvider mock_statistics_provider_;
 
   DeviceCloudPolicyStoreChromeOS* store_;
   DeviceCloudPolicyManagerChromeOS manager_;

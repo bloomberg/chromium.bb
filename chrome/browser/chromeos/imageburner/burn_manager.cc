@@ -8,11 +8,11 @@
 #include "base/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_fetcher.h"
@@ -556,7 +556,7 @@ void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
   // Get image file name and image download URL.
   std::string hwid;
   if (fetched && system::StatisticsProvider::GetInstance()->
-      GetMachineStatistic(system::kHardwareClass, &hwid)) {
+      GetMachineStatistic(system::kHardwareClassKey, &hwid)) {
     ConfigFile config_file(content);
     image_file_name_ = config_file.GetProperty(kFileName, hwid);
     image_download_url_ = GURL(config_file.GetProperty(kUrl, hwid));

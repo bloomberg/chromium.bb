@@ -49,6 +49,8 @@
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/system/mock_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -215,6 +217,11 @@ class LoginUtilsTest : public testing::Test,
 
     CryptohomeLibrary::Initialize();
     LoginState::Initialize();
+
+    EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, _))
+        .WillRepeatedly(Return(false));
+    chromeos::system::StatisticsProvider::SetTestProvider(
+        &mock_statistics_provider_);
 
     mock_input_method_manager_ = new input_method::MockInputMethodManager();
     input_method::InitializeForTesting(mock_input_method_manager_);
@@ -477,6 +484,8 @@ class LoginUtilsTest : public testing::Test,
   net::TestURLFetcherFactory test_url_fetcher_factory_;
 
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
+
+  chromeos::system::MockStatisticsProvider mock_statistics_provider_;
 
   policy::BrowserPolicyConnector* connector_;
 
