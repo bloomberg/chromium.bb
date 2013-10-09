@@ -1913,8 +1913,6 @@ static void CalculateDrawPropertiesInternal(
 
   for (size_t i = 0; i < sorted_children.size(); ++i) {
     LayerType* child = sorted_children[i];
-    gfx::Rect drawable_content_rect_of_child_subtree;
-    gfx::Transform identity_matrix;
 
     child->draw_properties().index_of_first_descendants_addition =
         descendants_for_children->size();
