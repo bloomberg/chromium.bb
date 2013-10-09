@@ -944,12 +944,11 @@ vaapi_recorder_create(int drm_fd, int width, int height, const char *filename)
 	r->height = height;
 	r->drm_fd = drm_fd;
 
-	flags = O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC;
-	r->output_fd = open(filename, flags, 0644);
-
 	if (setup_worker_thread(r) < 0)
 		goto err_free;
 
+	flags = O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC;
+	r->output_fd = open(filename, flags, 0644);
 	if (r->output_fd < 0)
 		goto err_thread;
 
