@@ -286,3 +286,17 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   catcher.RestrictToProfile(browser()->profile());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+#if defined(OS_WIN)
+#define MAYBE_CaptureInSplitIncognitoMode DISABLED_CaptureInSplitIncognitoMode
+#else
+#define MAYBE_CaptureInSplitIncognitoMode CaptureInSplitIncognitoMode
+#endif
+// Test that a tab can be captured in split incognito mode.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
+  AddExtensionToCommandLineWhitelist();
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
+                                  "incognito.html",
+                                  kFlagEnableIncognito | kFlagUseIncognito))
+      << message_;
+}
