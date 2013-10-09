@@ -677,10 +677,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case EventReturnValue:
         return "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.";
 
-    case ScrollTopBody:
+    case ScrollTopBodyNotQuirksMode:
         return "body.scrollTop is deprecated in strict mode. Please use 'documentElement.scrollTop' if in strict mode and 'body.scrollTop' only if in quirks mode.";
-    case ScrollLeftBody:
+
+    case ScrollLeftBodyNotQuirksMode:
         return "body.scrollLeft is deprecated in strict mode. Please use 'documentElement.scrollLeft' if in strict mode and 'body.scrollLeft' only if in quirks mode.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

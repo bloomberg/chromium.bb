@@ -255,13 +255,12 @@ int HTMLBodyElement::scrollLeft()
 {
     Document& document = this->document();
 
-    // FIXME: The specification is not clear about what is the expected behavior here:
+    // FIXME: There are cases where body.scrollLeft is allowed to return
+    // non-zero values in both quirks and strict mode. It happens when
+    // <body> has an overflow that is not the Frame overflow.
     // http://dev.w3.org/csswg/cssom-view/#dom-element-scrollleft
-    // Blink bails out in order to match other engines' behavior (WebKit, IE, Firefox and Opera12).
     if (!document.inQuirksMode())
-        UseCounter::countDeprecation(&document, UseCounter::ScrollLeftBody);
-    else
-        UseCounter::count(&document, UseCounter::ScrollLeftBody);
+        UseCounter::countDeprecation(&document, UseCounter::ScrollLeftBodyNotQuirksMode);
 
     document.updateLayoutIgnorePendingStylesheets();
     FrameView* view = document.view();
@@ -273,9 +272,7 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
     Document& document = this->document();
 
     if (!document.inQuirksMode())
-        UseCounter::countDeprecation(&document, UseCounter::ScrollLeftBody);
-    else
-        UseCounter::count(&document, UseCounter::ScrollLeftBody);
+        UseCounter::countDeprecation(&document, UseCounter::ScrollLeftBodyNotQuirksMode);
 
     document.updateLayoutIgnorePendingStylesheets();
     Frame* frame = document.frame();
@@ -291,13 +288,12 @@ int HTMLBodyElement::scrollTop()
 {
     Document& document = this->document();
 
-    // FIXME: The specification is not clear about what is the expected behavior here:
-    // http://dev.w3.org/csswg/cssom-view/#dom-element-scrolltop .
-    // Blink should bail out in order to match other engines' behavior (WebKit, IE, Firefox and Opera12).
+    // FIXME: There are cases where body.scrollTop is allowed to return
+    // non-zero values in both quirks and strict mode. It happens when
+    // body has a overflow that is not the Frame overflow.
+    // http://dev.w3.org/csswg/cssom-view/#dom-element-scrolltop
     if (!document.inQuirksMode())
-        UseCounter::countDeprecation(&document, UseCounter::ScrollTopBody);
-    else
-        UseCounter::count(&document, UseCounter::ScrollTopBody);
+        UseCounter::countDeprecation(&document, UseCounter::ScrollTopBodyNotQuirksMode);
 
     document.updateLayoutIgnorePendingStylesheets();
     FrameView* view = document.view();
@@ -309,9 +305,7 @@ void HTMLBodyElement::setScrollTop(int scrollTop)
     Document& document = this->document();
 
     if (!document.inQuirksMode())
-        UseCounter::countDeprecation(&document, UseCounter::ScrollTopBody);
-    else
-        UseCounter::count(&document, UseCounter::ScrollTopBody);
+        UseCounter::countDeprecation(&document, UseCounter::ScrollTopBodyNotQuirksMode);
 
     document.updateLayoutIgnorePendingStylesheets();
     Frame* frame = document.frame();
