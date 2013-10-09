@@ -8,6 +8,8 @@
 #include "cc/debug/test_context_provider.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/layers/content_layer.h"
+#include "cc/layers/delegated_frame_provider.h"
+#include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"
@@ -1113,8 +1115,20 @@ class LayerTreeHostContextTestDontUseLostResources
     root->SetAnchorPoint(gfx::PointF());
     root->SetIsDrawable(true);
 
+    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    frame_data->render_pass_list.push_back(RenderPass::Create());
+    frame_data->render_pass_list.back()->SetNew(RenderPass::Id(1, 0),
+                                                gfx::Rect(10, 10),
+                                                gfx::Rect(10, 10),
+                                                gfx::Transform());
+
+    delegated_resource_collection_ = new DelegatedFrameResourceCollection;
+    delegated_frame_provider_ = new DelegatedFrameProvider(
+        delegated_resource_collection_.get(), frame_data.Pass());
+
     scoped_refptr<FakeDelegatedRendererLayer> delegated =
-        FakeDelegatedRendererLayer::Create(NULL);
+        FakeDelegatedRendererLayer::Create(NULL,
+                                           delegated_frame_provider_.get());
     delegated->SetBounds(gfx::Size(10, 10));
     delegated->SetAnchorPoint(gfx::PointF());
     delegated->SetIsDrawable(true);
@@ -1326,6 +1340,10 @@ class LayerTreeHostContextTestDontUseLostResources
  private:
   FakeContentLayerClient client_;
   bool lost_context_;
+
+  scoped_refptr<DelegatedFrameResourceCollection>
+      delegated_resource_collection_;
+  scoped_refptr<DelegatedFrameProvider> delegated_frame_provider_;
 
   scoped_refptr<VideoFrame> color_video_frame_;
   scoped_refptr<VideoFrame> hw_video_frame_;

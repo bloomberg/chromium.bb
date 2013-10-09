@@ -4,6 +4,8 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
 
+#include "cc/layers/delegated_frame_provider.h"
+#include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
@@ -68,11 +70,11 @@ void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
 
     software_ack_pending_ = false;
   }
-  if (!delegated_layer_.get() || !ack_pending_)
+  if (!resource_collection_.get() || !ack_pending_)
     return;
 
   cc::CompositorFrameAck ack;
-  delegated_layer_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
 
   browser_plugin_manager_->Send(
       new BrowserPluginHostMsg_CompositorFrameACK(
@@ -337,24 +339,39 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
   }
 
   DCHECK(!texture_layer_.get());
-  if (!delegated_layer_.get()) {
-    delegated_layer_ = cc::DelegatedRendererLayer::Create(NULL);
-    delegated_layer_->SetIsDrawable(true);
-    delegated_layer_->SetContentsOpaque(true);
 
-    background_layer_->AddChild(delegated_layer_);
-  }
-
-  cc::DelegatedFrameData *frame_data = frame->delegated_frame_data.get();
+  cc::DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
   if (!frame_data)
     return;
+
+  DCHECK(!frame_data->render_pass_list.empty());
+  cc::RenderPass* root_pass = frame_data->render_pass_list.back();
+  gfx::Size frame_size = root_pass->output_rect.size();
+
+  if (!resource_collection_) {
+    resource_collection_ = new cc::DelegatedFrameResourceCollection;
+    // TODO(danakj): Could return resources sooner if we set a client here and
+    // listened for UnusedResourcesAreAvailable().
+  }
+  if (!frame_provider_.get() || frame_provider_->frame_size() != frame_size) {
+    frame_provider_ = new cc::DelegatedFrameProvider(
+        resource_collection_.get(), frame->delegated_frame_data.Pass());
+    if (delegated_layer_.get())
+      delegated_layer_->RemoveFromParent();
+    delegated_layer_ =
+        cc::DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+    delegated_layer_->SetIsDrawable(true);
+    delegated_layer_->SetContentsOpaque(true);
+    background_layer_->AddChild(delegated_layer_);
+  } else {
+    frame_provider_->SetFrameData(frame->delegated_frame_data.Pass());
+  }
 
   CheckSizeAndAdjustLayerBounds(
       frame_data->render_pass_list.back()->output_rect.size(),
       frame->metadata.device_scale_factor,
       delegated_layer_.get());
 
-  delegated_layer_->SetFrameData(frame->delegated_frame_data.Pass());
   last_route_id_ = route_id;
   last_output_surface_id_ = output_surface_id;
   last_host_id_ = host_id;

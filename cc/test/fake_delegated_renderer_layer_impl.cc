@@ -8,6 +8,7 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/returned_resource.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 
@@ -24,11 +25,12 @@ scoped_ptr<LayerImpl> FakeDelegatedRendererLayerImpl::CreateLayerImpl(
 }
 
 static ResourceProvider::ResourceId AddResourceToFrame(
+    ResourceProvider* resource_provider,
     DelegatedFrameData* frame,
     ResourceProvider::ResourceId resource_id) {
   TransferableResource resource;
   resource.id = resource_id;
-  resource.target = GL_TEXTURE_2D;
+  resource.target = resource_provider->TargetForTesting(resource_id);
   frame->resource_list.push_back(resource);
   return resource_id;
 }
@@ -50,9 +52,10 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
   scoped_ptr<DelegatedFrameData> delegated_frame(new DelegatedFrameData);
   delegated_frame->render_pass_list.swap(*pass_list);
 
+  ResourceProvider* resource_provider = layer_tree_impl()->resource_provider();
+
   DrawQuad::ResourceIteratorCallback add_resource_to_frame_callback =
-      base::Bind(&AddResourceToFrame,
-                 delegated_frame.get());
+      base::Bind(&AddResourceToFrame, resource_provider, delegated_frame.get());
   for (size_t i = 0; i < delegated_frame->render_pass_list.size(); ++i) {
     RenderPass* pass = delegated_frame->render_pass_list[i];
     for (size_t j = 0; j < pass->quad_list.size(); ++j)
@@ -60,7 +63,7 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
   }
 
   CreateChildIdIfNeeded(base::Bind(&NoopReturnCallback));
-  SetFrameData(delegated_frame.Pass(), gfx::RectF());
+  SetFrameData(delegated_frame.get(), gfx::RectF());
 }
 
 }  // namespace cc

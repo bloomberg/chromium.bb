@@ -327,6 +327,7 @@ class CC_EXPORT ResourceProvider {
   void CreateForTesting(ResourceId id);
 
   GLint WrapModeForTesting(ResourceId id);
+  GLenum TargetForTesting(ResourceId id);
 
   // Sets the current read fence. If a resource is locked for read
   // and has read fences enabled, the resource will not allow writes

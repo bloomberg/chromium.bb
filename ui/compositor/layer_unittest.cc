@@ -12,6 +12,8 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "cc/layers/delegated_frame_provider.h"
+#include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/layer.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/test/pixel_test_utils.h"
@@ -1312,8 +1314,14 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
   root->Add(child.get());
   DrawTree(root.get());
 
+  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
+      new cc::DelegatedFrameResourceCollection;
+  scoped_refptr<cc::DelegatedFrameProvider> frame_provider;
+
   // Content matches layer size.
-  child->SetDelegatedFrame(MakeFrameData(gfx::Size(10, 10)), gfx::Size(10, 10));
+  frame_provider = new cc::DelegatedFrameProvider(
+      resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
+  child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 
@@ -1324,12 +1332,15 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
 
   // Content smaller than layer.
   child->SetBounds(gfx::Rect(0, 0, 10, 10));
-  child->SetDelegatedFrame(MakeFrameData(gfx::Size(5, 5)), gfx::Size(5, 5));
-  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
-            gfx::Size(5, 5).ToString());
+  frame_provider = new cc::DelegatedFrameProvider(
+      resource_collection.get(), MakeFrameData(gfx::Size(5, 5)));
+  child->SetShowDelegatedContent(frame_provider, gfx::Size(5, 5));
+  EXPECT_EQ(child->cc_layer()->bounds().ToString(), gfx::Size(5, 5).ToString());
 
   // Hi-DPI content on low-DPI layer.
-  child->SetDelegatedFrame(MakeFrameData(gfx::Size(20, 20)), gfx::Size(10, 10));
+  frame_provider = new cc::DelegatedFrameProvider(
+      resource_collection.get(), MakeFrameData(gfx::Size(20, 20)));
+  child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 
@@ -1339,7 +1350,9 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
             gfx::Size(20, 20).ToString());
 
   // Low-DPI content on hi-DPI layer.
-  child->SetDelegatedFrame(MakeFrameData(gfx::Size(10, 10)), gfx::Size(10, 10));
+  frame_provider = new cc::DelegatedFrameProvider(
+      resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
+  child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
             gfx::Size(20, 20).ToString());
 }
@@ -1358,9 +1371,15 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   EXPECT_TRUE(child->cc_layer());
   EXPECT_EQ(before, child->cc_layer());
 
+  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
+      new cc::DelegatedFrameResourceCollection;
+  scoped_refptr<cc::DelegatedFrameProvider> frame_provider =
+      new cc::DelegatedFrameProvider(resource_collection.get(),
+                                     MakeFrameData(gfx::Size(10, 10)));
+
   // Showing delegated content changes the underlying cc layer.
   before = child->cc_layer();
-  child->SetDelegatedFrame(MakeFrameData(gfx::Size(10, 10)), gfx::Size(10, 10));
+  child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
   EXPECT_TRUE(child->cc_layer());
   EXPECT_NE(before, child->cc_layer());
 

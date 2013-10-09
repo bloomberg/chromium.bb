@@ -14,20 +14,28 @@
 namespace cc {
 
 scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::Create(
-    DelegatedRendererLayerClient* client) {
+    DelegatedRendererLayerClient* client,
+    const scoped_refptr<DelegatedFrameProvider>& frame_provider) {
   return scoped_refptr<DelegatedRendererLayer>(
-      new DelegatedRendererLayer(client));
+      new DelegatedRendererLayer(client, frame_provider));
 }
 
 DelegatedRendererLayer::DelegatedRendererLayer(
-    DelegatedRendererLayerClient* client)
+    DelegatedRendererLayerClient* client,
+    const scoped_refptr<DelegatedFrameProvider>& frame_provider)
     : Layer(),
       client_(client),
-      needs_filter_context_(false),
+      frame_provider_(frame_provider),
+      should_collect_new_frame_(true),
+      frame_data_(NULL),
       main_thread_runner_(BlockingTaskRunner::current()),
-      weak_ptrs_(this) {}
+      weak_ptrs_(this) {
+  frame_provider_->AddObserver(this);
+}
 
-DelegatedRendererLayer::~DelegatedRendererLayer() {}
+DelegatedRendererLayer::~DelegatedRendererLayer() {
+  frame_provider_->RemoveObserver(this);
+}
 
 scoped_ptr<LayerImpl> DelegatedRendererLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
@@ -48,15 +56,13 @@ void DelegatedRendererLayer::SetLayerTreeHost(LayerTreeHost* host) {
     // or we never commited a frame with resources.
     SetNextCommitWaitsForActivation();
   } else {
-    if (needs_filter_context_)
-      host->set_needs_filter_context();
+    // There is no active frame in the new layer tree host to wait for so no
+    // need to call SetNextCommitWaitsForActivation().
+    should_collect_new_frame_ = true;
+    SetNeedsUpdate();
   }
 
   Layer::SetLayerTreeHost(host);
-}
-
-bool DelegatedRendererLayer::DrawsContent() const {
-  return Layer::DrawsContent() && !frame_size_.IsEmpty();
 }
 
 void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
@@ -68,24 +74,30 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
   delegated_impl->SetDisplaySize(display_size_);
 
   delegated_impl->CreateChildIdIfNeeded(
-      base::Bind(&DelegatedRendererLayer::ReceiveUnusedResourcesOnImplThread,
-                 main_thread_runner_,
-                 weak_ptrs_.GetWeakPtr()));
+      frame_provider_->GetReturnResourcesCallbackForImplThread());
 
   if (frame_data_)
-    delegated_impl->SetFrameData(frame_data_.Pass(), damage_in_frame_);
-  frame_data_.reset();
-  damage_in_frame_ = gfx::RectF();
+    delegated_impl->SetFrameData(frame_data_, frame_damage_);
+  frame_data_ = NULL;
+  frame_damage_ = gfx::RectF();
 
   // The ResourceProvider will have the new frame as soon as we push it to the
-  // pending tree. So unused resources will be returned as well.
+  // pending tree. So resources no longer in use will be returned as well.
   if (client_)
     client_->DidCommitFrameData();
 
   // TODO(danakj): The DidCommitFrameData() notification requires a push
-  // properties to happen in order to notify about unused resources returned
-  // from the parent compositor. crbug.com/259090
+  // properties to happen in order to notify about resources returned
+  // from the parent compositor that are no longer in use. crbug.com/259090
   needs_push_properties_ = true;
+}
+
+void DelegatedRendererLayer::ProviderHasNewFrame() {
+  should_collect_new_frame_ = true;
+  SetNeedsUpdate();
+  // The active frame needs to be replaced and resources returned before the
+  // commit is called complete.
+  SetNextCommitWaitsForActivation();
 }
 
 void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
@@ -95,80 +107,38 @@ void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
   SetNeedsCommit();
 }
 
-void DelegatedRendererLayer::SetFrameData(
-    scoped_ptr<DelegatedFrameData> new_frame_data) {
-  DCHECK(new_frame_data);
-
-  if (frame_data_) {
-    // Copy the resources from the last provided frame into the unused resources
-    // list, as the new frame will provide its own resources.
-    TransferableResource::ReturnResources(
-        frame_data_->resource_list,
-        &unused_resources_for_child_compositor_);
-    if (client_)
-      client_->UnusedResourcesAreAvailable();
-  }
-  frame_data_ = new_frame_data.Pass();
-  if (!frame_data_->render_pass_list.empty()) {
-    RenderPass* root_pass = frame_data_->render_pass_list.back();
-    damage_in_frame_.Union(root_pass->damage_rect);
-    frame_size_ = root_pass->output_rect.size();
-  } else {
-    frame_size_ = gfx::Size();
-  }
-
-  // If any RenderPassDrawQuad has a filter operation, then we need a filter
-  // context to draw this layer's content.
-  for (size_t i = 0;
-       !needs_filter_context_ && i < frame_data_->render_pass_list.size();
-       ++i) {
-    const QuadList& quad_list = frame_data_->render_pass_list[i]->quad_list;
-    for (size_t j = 0; !needs_filter_context_ && j < quad_list.size(); ++j) {
+static bool FrameDataHasFilter(DelegatedFrameData* frame) {
+  for (size_t i = 0; i < frame->render_pass_list.size(); ++i) {
+    const QuadList& quad_list = frame->render_pass_list[i]->quad_list;
+    for (size_t j = 0; j < quad_list.size(); ++j) {
       if (quad_list[j]->material != DrawQuad::RENDER_PASS)
         continue;
       const RenderPassDrawQuad* render_pass_quad =
           RenderPassDrawQuad::MaterialCast(quad_list[j]);
       if (!render_pass_quad->filters.IsEmpty() ||
           !render_pass_quad->background_filters.IsEmpty())
-        needs_filter_context_ = true;
+        return true;
     }
   }
-  if (needs_filter_context_ && layer_tree_host())
+  return false;
+}
+
+bool DelegatedRendererLayer::Update(ResourceUpdateQueue* queue,
+                                    const OcclusionTracker* occlusion) {
+  bool updated = Layer::Update(queue, occlusion);
+  if (!should_collect_new_frame_)
+    return updated;
+
+  frame_data_ =
+      frame_provider_->GetFrameDataAndRefResources(this, &frame_damage_);
+  should_collect_new_frame_ = false;
+
+  // If any quad has a filter operation, then we need a filter context to draw
+  // this layer's content.
+  if (FrameDataHasFilter(frame_data_) && layer_tree_host())
     layer_tree_host()->set_needs_filter_context();
 
-  SetNeedsCommit();
-  // The active frame needs to be replaced and resources returned before the
-  // commit is called complete.
-  SetNextCommitWaitsForActivation();
-}
-
-void DelegatedRendererLayer::TakeUnusedResourcesForChildCompositor(
-    ReturnedResourceArray* array) {
-  DCHECK(array->empty());
-  array->clear();
-
-  array->swap(unused_resources_for_child_compositor_);
-}
-
-void DelegatedRendererLayer::ReceiveUnusedResources(
-    const ReturnedResourceArray& unused) {
-  unused_resources_for_child_compositor_.insert(
-      unused_resources_for_child_compositor_.end(),
-      unused.begin(),
-      unused.end());
-  if (client_)
-    client_->UnusedResourcesAreAvailable();
-}
-
-// static
-void DelegatedRendererLayer::ReceiveUnusedResourcesOnImplThread(
-    scoped_refptr<BlockingTaskRunner> task_runner,
-    base::WeakPtr<DelegatedRendererLayer> self,
-    const ReturnedResourceArray& unused) {
-  task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &DelegatedRendererLayer::ReceiveUnusedResources, self, unused));
+  return true;
 }
 
 }  // namespace cc

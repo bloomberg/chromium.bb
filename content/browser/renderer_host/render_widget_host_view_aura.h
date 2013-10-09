@@ -15,6 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/layers/delegated_frame_provider.h"
+#include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/aura/image_transport_factory.h"
@@ -77,7 +79,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public ImageTransportFactoryObserver,
       public BrowserAccessibilityDelegate,
       public FrameContainer,
-      public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
+      public base::SupportsWeakPtr<RenderWidgetHostViewAura>,
+      public cc::DelegatedFrameResourceCollectionClient {
  public:
   // Used to notify whenever the paint-content of the view changes.
   class PaintObserver {
@@ -516,11 +519,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const ui::LatencyInfo& latency_info);
   void SendDelegatedFrameAck(uint32 output_surface_id);
 
-  void SwapSoftwareFrame(
-      uint32 output_surface_id,
-      scoped_ptr<cc::SoftwareFrameData> frame_data,
-      float frame_device_scale_factor,
-      const ui::LatencyInfo& latency_info);
+  // cc::DelegatedFrameProviderClient implementation.
+  virtual void UnusedResourcesAreAvailable() OVERRIDE;
+
+  void SwapSoftwareFrame(uint32 output_surface_id,
+                         scoped_ptr<cc::SoftwareFrameData> frame_data,
+                         float frame_device_scale_factor,
+                         const ui::LatencyInfo& latency_info);
   void SendSoftwareFrameAck(uint32 output_surface_id);
   void SendReclaimSoftwareFrames();
   void ReleaseSoftwareFrame(uint32 output_surface_id,
@@ -618,6 +623,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // True after a delegated frame has been skipped, until a frame is not
   // skipped.
   bool skipped_frames_;
+
+  // Holds delegated resources that have been given to a DelegatedFrameProvider,
+  // and gives back resources when they are no longer in use for return to the
+  // renderer.
+  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
+
+  // Provides delegated frame updates to the cc::DelegatedRendererLayer.
+  scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
 
   // The size of the last frame that was swapped (even if we skipped it).
   // Used to determine when the skipped_damage_ needs to be reset due to

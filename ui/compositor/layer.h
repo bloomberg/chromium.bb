@@ -33,7 +33,7 @@ class SkCanvas;
 namespace cc {
 class ContentLayer;
 class CopyOutputRequest;
-class DelegatedFrameData;
+class DelegatedFrameProvider;
 class DelegatedRendererLayer;
 class Layer;
 class ResourceUpdateQueue;
@@ -261,17 +261,13 @@ class COMPOSITOR_EXPORT Layer
                          float scale_factor);
   cc::TextureMailbox GetTextureMailbox(float* scale_factor);
 
-  // Sets a delegated frame, coming from a child compositor.
-  void SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame,
-                         gfx::Size frame_size_in_dip);
+  // Begins showing delegated frames from the |frame_provider|.
+  void SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
+                               gfx::Size frame_size_in_dip);
 
   bool has_external_content() {
     return texture_layer_.get() || delegated_renderer_layer_.get();
   }
-
-  // Gets unused resources to recycle to the child compositor.
-  void TakeUnusedResourcesForChildCompositor(
-      cc::ReturnedResourceArray* array);
 
   void SetShowPaintedContent();
 
@@ -494,8 +490,8 @@ class COMPOSITOR_EXPORT Layer
   // Device scale factor in which mailbox_ was rendered in.
   float mailbox_scale_factor_;
 
-  // The size of the delegated frame in DIP, set when SetDelegatedFrame was
-  // called.
+  // The size of the delegated frame in DIP, set when SetShowDelegatedContent
+  // was called.
   gfx::Size delegated_frame_size_in_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);

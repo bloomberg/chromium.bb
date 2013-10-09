@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "cc/layers/delegated_frame_provider.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/copy_output_request.h"
@@ -1470,15 +1471,35 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     // resources from the old one with resources from the new one which would
     // have the same id. Changing the layer to showing painted content destroys
     // the DelegatedRendererLayer.
-    // TODO(danakj): Lose and return all resources in the delegated layer first.
     window_->layer()->SetShowPaintedContent();
+    frame_provider_ = NULL;
+
+    // TODO(danakj): Lose all resources and send them back here, such as:
+    // resource_collection_->LoseAllResources();
+    // SendReturnedDelegatedResources(last_output_surface_id_);
+
+    // Drop the cc::DelegatedFrameResourceCollection so that we will not return
+    // any resources from the old output surface with the new output surface id.
+    resource_collection_->SetClient(NULL);
+    resource_collection_ = NULL;
     last_output_surface_id_ = output_surface_id;
   }
   if (frame_size.IsEmpty()) {
-    // TODO(danakj): Return all resources in the delegated layer somehow.
+    DCHECK_EQ(0u, frame_data->resource_list.size());
     window_->layer()->SetShowPaintedContent();
   } else {
-    window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
+    if (!resource_collection_) {
+      resource_collection_ = new cc::DelegatedFrameResourceCollection;
+      resource_collection_->SetClient(this);
+    }
+    if (!frame_provider_.get() || frame_size != frame_provider_->frame_size()) {
+      frame_provider_ = new cc::DelegatedFrameProvider(
+          resource_collection_.get(), frame_data.Pass());
+      window_->layer()->SetShowDelegatedContent(frame_provider_.get(),
+                                                frame_size_in_dip);
+    } else {
+      frame_provider_->SetFrameData(frame_data.Pass());
+    }
   }
   released_front_lock_ = NULL;
   current_frame_size_ = frame_size_in_dip;
@@ -1503,10 +1524,16 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
 
 void RenderWidgetHostViewAura::SendDelegatedFrameAck(uint32 output_surface_id) {
   cc::CompositorFrameAck ack;
-  window_->layer()->TakeUnusedResourcesForChildCompositor(&ack.resources);
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      host_->GetRoutingID(), output_surface_id,
-      host_->GetProcess()->GetID(), ack);
+  if (resource_collection_)
+    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(host_->GetRoutingID(),
+                                                   output_surface_id,
+                                                   host_->GetProcess()->GetID(),
+                                                   ack);
+}
+
+void RenderWidgetHostViewAura::UnusedResourcesAreAvailable() {
+  // TODO(danakj): If no ack is pending, collect and send resources now.
 }
 
 void RenderWidgetHostViewAura::SwapSoftwareFrame(
@@ -3185,6 +3212,9 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // The destruction of the holder may call back into the RWHVA, so do it
   // early.
   framebuffer_holder_ = NULL;
+
+  if (resource_collection_.get())
+    resource_collection_->SetClient(NULL);
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {

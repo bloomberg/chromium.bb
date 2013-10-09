@@ -22,6 +22,7 @@
       'input/top_controls_manager_unittest.cc',
       'layers/content_layer_unittest.cc',
       'layers/contents_scaling_layer_unittest.cc',
+      'layers/delegated_frame_provider_unittest.cc',
       'layers/delegated_renderer_layer_impl_unittest.cc',
       'layers/heads_up_display_unittest.cc',
       'layers/layer_impl_unittest.cc',

@@ -1479,6 +1479,11 @@ GLint ResourceProvider::WrapModeForTesting(ResourceId id) {
   return resource->wrap_mode;
 }
 
+GLenum ResourceProvider::TargetForTesting(ResourceId id) {
+  Resource* resource = GetResource(id);
+  return resource->target;
+}
+
 void ResourceProvider::LazyCreate(Resource* resource) {
   if (resource->type != GLTexture || resource->gl_id != 0)
     return;

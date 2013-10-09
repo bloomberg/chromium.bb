@@ -45,7 +45,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   // inform when resources are no longer in use.
   void CreateChildIdIfNeeded(const ReturnCallback& return_callback);
 
-  void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data,
+  void SetFrameData(const DelegatedFrameData* frame_data,
                     gfx::RectF damage_in_frame);
 
   void SetDisplaySize(gfx::Size size);

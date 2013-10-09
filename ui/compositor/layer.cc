@@ -522,27 +522,18 @@ cc::TextureMailbox Layer::GetTextureMailbox(float* scale_factor) {
   return mailbox_;
 }
 
-void Layer::SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame,
-                              gfx::Size frame_size_in_dip) {
-  DCHECK(frame && !frame->render_pass_list.empty());
-
+void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
+                                    gfx::Size frame_size_in_dip) {
   DCHECK_EQ(type_, LAYER_TEXTURED);
-  layer_updated_externally_ = true;
-  delegated_frame_size_in_dip_ = frame_size_in_dip;
-  if (!delegated_renderer_layer_.get()) {
-    scoped_refptr<cc::DelegatedRendererLayer> new_layer =
-        cc::DelegatedRendererLayer::Create(NULL);
-    SwitchToLayer(new_layer);
-    delegated_renderer_layer_ = new_layer;
-  }
-  delegated_renderer_layer_->SetFrameData(frame.Pass());
-  RecomputeDrawsContentAndUVRect();
-}
 
-void Layer::TakeUnusedResourcesForChildCompositor(
-    cc::ReturnedResourceArray* list) {
-  if (delegated_renderer_layer_.get())
-    delegated_renderer_layer_->TakeUnusedResourcesForChildCompositor(list);
+  scoped_refptr<cc::DelegatedRendererLayer> new_layer =
+      cc::DelegatedRendererLayer::Create(NULL, frame_provider);
+  SwitchToLayer(new_layer);
+  delegated_renderer_layer_ = new_layer;
+  layer_updated_externally_ = true;
+
+  delegated_frame_size_in_dip_ = frame_size_in_dip;
+  RecomputeDrawsContentAndUVRect();
 }
 
 void Layer::SetShowPaintedContent() {

@@ -9,8 +9,9 @@
 namespace cc {
 
 FakeDelegatedRendererLayer::FakeDelegatedRendererLayer(
-    DelegatedRendererLayerClient* client)
-    : DelegatedRendererLayer(client) {}
+    DelegatedRendererLayerClient* client,
+    DelegatedFrameProvider* frame_provider)
+    : DelegatedRendererLayer(client, frame_provider) {}
 
 FakeDelegatedRendererLayer::~FakeDelegatedRendererLayer() {}
 
