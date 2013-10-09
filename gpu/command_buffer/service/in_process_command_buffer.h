@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -126,7 +127,13 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   class SchedulerClient {
    public:
      virtual ~SchedulerClient() {}
+
+     // Queues a task to run as soon as possible.
      virtual void QueueTask(const base::Closure& task) = 0;
+
+     // Schedules |callback| to run at an appropriate time for performing idle
+     // work.
+     virtual void ScheduleIdleWork(const base::Closure& task) = 0;
   };
 
 #if defined(OS_ANDROID)
@@ -154,6 +161,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void OnResizeView(gfx::Size size, float scale_factor);
   bool GetBufferChanged(int32 transfer_buffer_id);
   void PumpCommands();
+  void ScheduleMoreIdleWork();
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
@@ -188,6 +196,9 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // Only used with explicit scheduling and the gpu thread is the same as
   // the client thread.
   scoped_ptr<base::SequenceChecker> sequence_checker_;
+
+  base::WeakPtr<InProcessCommandBuffer> gpu_thread_weak_ptr_;
+  base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessCommandBuffer);
 };

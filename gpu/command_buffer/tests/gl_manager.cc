@@ -131,11 +131,6 @@ void GLManager::Initialize(const GLManager::Options& options) {
   ASSERT_TRUE(command_buffer_->Initialize())
       << "could not create command buffer service";
 
-  gpu_control_.reset(
-      new GpuControlService(decoder_->GetContextGroup()->image_manager(),
-                            options.gpu_memory_buffer_factory,
-                            decoder_->GetContextGroup()->mailbox_manager()));
-
   gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                         decoder_.get(),
                                         decoder_.get()));
@@ -173,6 +168,12 @@ void GLManager::Initialize(const GLManager::Options& options) {
       options.size,
       ::gpu::gles2::DisallowedFeatures(),
       attribs)) << "could not initialize decoder";
+
+  gpu_control_.reset(
+      new GpuControlService(decoder_->GetContextGroup()->image_manager(),
+                            options.gpu_memory_buffer_factory,
+                            decoder_->GetContextGroup()->mailbox_manager(),
+                            decoder_->GetQueryManager()));
 
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GLManager::PumpCommands, base::Unretained(this)));

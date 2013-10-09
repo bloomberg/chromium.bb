@@ -75,8 +75,6 @@ class GLInProcessContextImpl
 
  private:
   void Destroy();
-  void PollQueryCallbacks();
-  void CallQueryCallback(size_t index);
   void OnContextLost();
   void OnSignalSyncPoint(const base::Closure& callback);
 
@@ -84,9 +82,6 @@ class GLInProcessContextImpl
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
   scoped_ptr<InProcessCommandBuffer> command_buffer_;
-
-  typedef std::pair<unsigned, base::Closure> QueryCallback;
-  std::vector<QueryCallback> query_callbacks_;
 
   unsigned int share_group_id_;
   bool context_lost_;
@@ -275,10 +270,6 @@ bool GLInProcessContextImpl::Initialize(
 }
 
 void GLInProcessContextImpl::Destroy() {
-  while (!query_callbacks_.empty()) {
-    CallQueryCallback(0);
-  }
-
   if (gles2_implementation_) {
     // First flush the context to ensure that any pending frees of resources
     // are completed. Otherwise, if this context is part of a share group,
@@ -295,48 +286,13 @@ void GLInProcessContextImpl::Destroy() {
   command_buffer_.reset();
 }
 
-void GLInProcessContextImpl::CallQueryCallback(size_t index) {
-  DCHECK_LT(index, query_callbacks_.size());
-  QueryCallback query_callback = query_callbacks_[index];
-  query_callbacks_[index] = query_callbacks_.back();
-  query_callbacks_.pop_back();
-  query_callback.second.Run();
-}
-
-// TODO(sievers): Move this to the service side
-void GLInProcessContextImpl::PollQueryCallbacks() {
-  for (size_t i = 0; i < query_callbacks_.size();) {
-    unsigned query = query_callbacks_[i].first;
-    GLuint param = 0;
-    gles2::GLES2Implementation* gl = GetImplementation();
-    if (gl->IsQueryEXT(query)) {
-      gl->GetQueryObjectuivEXT(query, GL_QUERY_RESULT_AVAILABLE_EXT, &param);
-    } else {
-      param = 1;
-    }
-    if (param) {
-      CallQueryCallback(i);
-    } else {
-      i++;
-    }
-  }
-  if (!query_callbacks_.empty()) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&GLInProcessContextImpl::PollQueryCallbacks,
-                   this->AsWeakPtr()),
-        base::TimeDelta::FromMilliseconds(5));
-  }
-}
-
 void GLInProcessContextImpl::SignalQuery(
     unsigned query,
     const base::Closure& callback) {
-  query_callbacks_.push_back(std::make_pair(query, callback));
-  // If size > 1, there is already a poll callback pending.
-  if (query_callbacks_.size() == 1) {
-    PollQueryCallbacks();
-  }
+  // Flush previously entered commands to ensure ordering with any
+  // glBeginQueryEXT() calls that may have been put into the context.
+  gles2_implementation_->ShallowFlushCHROMIUM();
+  command_buffer_->SignalQuery(query, callback);
 }
 
 #if defined(OS_ANDROID)

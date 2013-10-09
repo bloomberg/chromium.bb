@@ -7,16 +7,19 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/query_manager.h"
 
 namespace gpu {
 
 GpuControlService::GpuControlService(
     GpuMemoryBufferManagerInterface* gpu_memory_buffer_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    gles2::MailboxManager* mailbox_manager)
+    gles2::MailboxManager* mailbox_manager,
+    gles2::QueryManager* query_manager)
     : gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
-      mailbox_manager_(mailbox_manager) {
+      mailbox_manager_(mailbox_manager),
+      query_manager_(query_manager) {
 }
 
 GpuControlService::~GpuControlService() {
@@ -75,9 +78,14 @@ void GpuControlService::SignalSyncPoint(uint32 sync_point,
   NOTREACHED();
 }
 
-void GpuControlService::SignalQuery(uint32 query,
+void GpuControlService::SignalQuery(uint32 query_id,
                                     const base::Closure& callback) {
-  NOTREACHED();
+  DCHECK(query_manager_);
+  gles2::QueryManager::Query* query = query_manager_->GetQuery(query_id);
+  if (!query)
+    callback.Run();
+  else
+    query->AddCallback(callback);
 }
 
 bool GpuControlService::RegisterGpuMemoryBuffer(

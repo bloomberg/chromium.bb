@@ -17,13 +17,15 @@ class GpuMemoryBufferManagerInterface;
 
 namespace gles2 {
 class MailboxManager;
+class QueryManager;
 }
 
 class GPU_EXPORT GpuControlService : public GpuControl {
  public:
   GpuControlService(GpuMemoryBufferManagerInterface* gpu_memory_buffer_manager,
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-                    gles2::MailboxManager* mailbox_manager);
+                    gles2::MailboxManager* mailbox_manager,
+                    gles2::QueryManager* query_manager);
   virtual ~GpuControlService();
 
   // Overridden from GpuControl:
@@ -55,6 +57,7 @@ class GPU_EXPORT GpuControlService : public GpuControl {
   GpuMemoryBufferManagerInterface* gpu_memory_buffer_manager_;
   GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
   gles2::MailboxManager* mailbox_manager_;
+  gles2::QueryManager* query_manager_;
   typedef std::map<int32, linked_ptr<gfx::GpuMemoryBuffer> > GpuMemoryBufferMap;
   GpuMemoryBufferMap gpu_memory_buffers_;
 

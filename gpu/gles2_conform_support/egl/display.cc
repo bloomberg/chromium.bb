@@ -123,8 +123,8 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   gpu_scheduler_.reset(new gpu::GpuScheduler(command_buffer.get(),
                                              decoder_.get(),
                                              NULL));
-  gpu_control_.reset(new gpu::GpuControlService(NULL, NULL,
-                                                group->mailbox_manager()));
+  gpu_control_.reset(
+      new gpu::GpuControlService(NULL, NULL, group->mailbox_manager(), NULL));
 
   decoder_->set_engine(gpu_scheduler_.get());
   gfx::Size size(create_offscreen_width_, create_offscreen_height_);
