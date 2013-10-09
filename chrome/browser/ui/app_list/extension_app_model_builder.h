@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_APPS_MODEL_BUILDER_H_
-#define CHROME_BROWSER_UI_APP_LIST_APPS_MODEL_BUILDER_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_MODEL_BUILDER_H_
+#define CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_MODEL_BUILDER_H_
 
 #include <string>
 #include <vector>
@@ -29,22 +29,18 @@ class ImageSkia;
 
 // This class populates and maintains the given |model| with information from
 // |profile|.
-class AppsModelBuilder : public ui::ListModelObserver,
-                         public extensions::InstallObserver {
+class ExtensionAppModelBuilder : public extensions::InstallObserver {
  public:
-  AppsModelBuilder(Profile* profile,
-                   app_list::AppListModel::Apps* model,
-                   AppListControllerDelegate* controller);
-  virtual ~AppsModelBuilder();
-
-  // Returns app instance with id |extension_id|.
-  ExtensionAppItem* GetApp(const std::string& extension_id);
+  ExtensionAppModelBuilder(Profile* profile,
+                           app_list::AppListModel* model,
+                           AppListControllerDelegate* controller);
+  virtual ~ExtensionAppModelBuilder();
 
   // Rebuilds the model with the given profile.
   void SwitchProfile(Profile* profile);
 
  private:
-  typedef std::vector<ExtensionAppItem*> Apps;
+  typedef std::vector<ExtensionAppItem*> ExtensionAppList;
 
   // Overridden from extensions::InstallObserver:
   virtual void OnBeginExtensionInstall(const std::string& extension_id,
@@ -71,7 +67,7 @@ class AppsModelBuilder : public ui::ListModelObserver,
   virtual void OnShutdown() OVERRIDE;
 
   // Adds apps in |extensions| to |apps|.
-  void AddApps(const ExtensionSet* extensions, Apps* apps);
+  void AddApps(const ExtensionSet* extensions, ExtensionAppList* apps);
 
   // Populates the model with apps.
   void PopulateApps();
@@ -81,10 +77,6 @@ class AppsModelBuilder : public ui::ListModelObserver,
 
   // Inserts an app based on app ordinal prefs.
   void InsertApp(ExtensionAppItem* app);
-
-  // Returns the index of the application app with |app_id| in |model_|. If
-  // no match is found, returns -1.
-  int FindApp(const std::string& app_id);
 
   // Sets which app is intended to be highlighted. Will remove the highlight
   // from a currently highlighted app.
@@ -96,20 +88,16 @@ class AppsModelBuilder : public ui::ListModelObserver,
   // another call to SetHighlightedApp() is made.
   void UpdateHighlight();
 
-  // Returns app instance at given |index|.
-  ExtensionAppItem* GetAppAt(size_t index);
-
-  // ui::ListModelObserver overrides:
-  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
-  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
-  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
-  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
+  // Returns app instance matching |extension_id| or NULL.
+  ExtensionAppItem* GetExtensionAppItem(const std::string& extension_id);
 
   Profile* profile_;
+
+  // Unowned pointer to the app list controller (passed to created items).
   AppListControllerDelegate* controller_;
 
-  // Sub apps model of AppListModel that represents apps grid view.
-  app_list::AppListModel::Apps* model_;
+  // Unowned pointer to the app list model.
+  app_list::AppListModel* model_;
 
   std::string highlight_app_id_;
 
@@ -117,13 +105,10 @@ class AppsModelBuilder : public ui::ListModelObserver,
   // if we try to highlight an app that doesn't exist in the list yet.
   bool highlighted_app_pending_;
 
-  // True to ignore |model_| changes.
-  bool ignore_changes_;
-
   // We listen to this to show app installing progress.
   extensions::InstallTracker* tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppsModelBuilder);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionAppModelBuilder);
 };
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_APPS_MODEL_BUILDER_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_MODEL_BUILDER_H_

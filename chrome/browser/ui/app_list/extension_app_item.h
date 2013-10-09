@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "sync/api/string_ordinal.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -45,19 +44,13 @@ class ExtensionAppItem : public app_list::AppListItemModel,
   // Reload the title and icon from the underlying extension.
   void Reload();
 
-  syncer::StringOrdinal GetPageOrdinal() const;
-  syncer::StringOrdinal GetAppLaunchOrdinal() const;
-
-  // Update page and app launcher ordinals to put the app in between |prev| and
-  // |next|. Note that |prev| and |next| could be NULL when the app is put at
-  // the beginning or at the end.
-  void Move(const ExtensionAppItem* prev, const ExtensionAppItem* next);
-
   // Updates the app item's icon, if necessary adding an overlay and/or making
   // it gray.
   void UpdateIcon();
 
   const std::string& extension_id() const { return extension_id_; }
+
+  static const char kAppType[];
 
  private:
   // Gets extension associated with this model. Returns NULL if extension
@@ -87,8 +80,10 @@ class ExtensionAppItem : public app_list::AppListItemModel,
   virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
 
   // Overridden from AppListItemModel:
+  virtual std::string GetSortOrder() const OVERRIDE;
   virtual void Activate(int event_flags) OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
+  virtual const char* GetAppType() const OVERRIDE;
 
   // Overridden from app_list::AppContextMenuDelegate:
   virtual void ExecuteLaunchCommand(int event_flags) OVERRIDE;
@@ -109,6 +104,11 @@ class ExtensionAppItem : public app_list::AppListItemModel,
 
   // Whether or not this app is a platform app.
   bool is_platform_app_;
+
+  // Cache initial sort order. Sort order is not synced with the extensions
+  // app ordering once apps are loaded. This will be ignored (or overridden)
+  // once the app list is synced.
+  std::string sort_order_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

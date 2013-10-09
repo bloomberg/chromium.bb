@@ -29,7 +29,7 @@ ExtensionWebRequestTest.*
 BackgroundApplicationListModelTest.ExplicitTest
 
 # Timing out. Disabling for now. http://crbug.com/175496
-AppsModelBuilderTest.OnExtensionMoved
+ExtensionAppModelBuilderTest.OnExtensionMoved
 
 # Don't run FLAKY or FAILS tests under the heapchecker.
 # They may cause flaky leak reports and timeouts.

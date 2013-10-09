@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/apps_model_builder.h"
+#include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 
 #include <string>
 
@@ -28,12 +28,12 @@ const char kPackagedApp1Id[] = "emfkafnhnpcmabnnkckkchdilgeoekbo";
 const char kPackagedApp2Id[] = "jlklkagmeajbjiobondfhiekepofmljl";
 
 // Get a string of all apps in |model| joined with ','.
-std::string GetModelContent(app_list::AppListModel::Apps* model) {
+std::string GetModelContent(app_list::AppListModel* model) {
   std::string content;
-  for (size_t i = 0; i < model->item_count(); ++i) {
+  for (size_t i = 0; i < model->apps()->item_count(); ++i) {
     if (i > 0)
       content += ',';
-    content += model->GetItemAt(i)->title();
+    content += model->apps()->GetItemAt(i)->title();
   }
   return content;
 }
@@ -61,10 +61,10 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
 
 }  // namespace
 
-class AppsModelBuilderTest : public ExtensionServiceTestBase {
+class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
  public:
-  AppsModelBuilderTest() {}
-  virtual ~AppsModelBuilderTest() {}
+  ExtensionAppModelBuilderTest() {}
+  virtual ~ExtensionAppModelBuilderTest() {}
 
   virtual void SetUp() OVERRIDE {
     ExtensionServiceTestBase::SetUp();
@@ -84,20 +84,30 @@ class AppsModelBuilderTest : public ExtensionServiceTestBase {
     // There should be 4 extensions in the test profile.
     const ExtensionSet* extensions = service_->extensions();
     ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
+
+    model_.reset(new app_list::AppListModel);
   }
+
+  virtual void TearDown() OVERRIDE {
+    model_.reset();
+  }
+
+ protected:
+  scoped_ptr<app_list::AppListModel> model_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionAppModelBuilderTest);
 };
 
-TEST_F(AppsModelBuilderTest, Build) {
-  scoped_ptr<app_list::AppListModel::Apps> model(
-      new app_list::AppListModel::Apps);
-  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+TEST_F(ExtensionAppModelBuilderTest, Build) {
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 
   // The apps list would have 3 extension apps in the profile.
   EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model.get()));
+            GetModelContent(model_.get()));
 }
 
-TEST_F(AppsModelBuilderTest, HideWebStore) {
+TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
   // Install a "web store" app.
   scoped_refptr<extensions::Extension> store =
       MakeApp("webstore",
@@ -115,8 +125,8 @@ TEST_F(AppsModelBuilderTest, HideWebStore) {
   service_->AddExtension(enterprise_store.get());
 
   // Web stores should be present in the AppListModel.
-  app_list::AppListModel::Apps model1;
-  AppsModelBuilder builder1(profile_.get(), &model1, NULL);
+  app_list::AppListModel model1;
+  ExtensionAppModelBuilder builder1(profile_.get(), &model1, NULL);
   std::string content = GetModelContent(&model1);
   EXPECT_NE(std::string::npos, content.find("webstore"));
   EXPECT_NE(std::string::npos, content.find("enterprise_webstore"));
@@ -125,44 +135,38 @@ TEST_F(AppsModelBuilderTest, HideWebStore) {
   profile_->GetPrefs()->SetBoolean(prefs::kHideWebStoreIcon, true);
 
   // Web stores should NOT be in the AppListModel.
-  app_list::AppListModel::Apps model2;
-  AppsModelBuilder builder2(profile_.get(), &model2, NULL);
+  app_list::AppListModel model2;
+  ExtensionAppModelBuilder builder2(profile_.get(), &model2, NULL);
   content = GetModelContent(&model2);
   EXPECT_EQ(std::string::npos, content.find("webstore"));
   EXPECT_EQ(std::string::npos, content.find("enterprise_webstore"));
 }
 
-TEST_F(AppsModelBuilderTest, DisableAndEnable) {
-  scoped_ptr<app_list::AppListModel::Apps> model(
-      new app_list::AppListModel::Apps);
-  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+TEST_F(ExtensionAppModelBuilderTest, DisableAndEnable) {
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 
   service_->DisableExtension(kHostedAppId,
                              extensions::Extension::DISABLE_NONE);
   EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model.get()));
+            GetModelContent(model_.get()));
 
   service_->EnableExtension(kHostedAppId);
   EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model.get()));
+            GetModelContent(model_.get()));
 }
 
-TEST_F(AppsModelBuilderTest, Uninstall) {
-  scoped_ptr<app_list::AppListModel::Apps> model(
-      new app_list::AppListModel::Apps);
-  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+TEST_F(ExtensionAppModelBuilderTest, Uninstall) {
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 
   service_->UninstallExtension(kPackagedApp2Id, false, NULL);
   EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
-            GetModelContent(model.get()));
+            GetModelContent(model_.get()));
 
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AppsModelBuilderTest, UninstallTerminatedApp) {
-  scoped_ptr<app_list::AppListModel::Apps> model(
-      new app_list::AppListModel::Apps);
-  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 
   const extensions::Extension* app =
       service_->GetInstalledExtension(kPackagedApp2Id);
@@ -173,23 +177,23 @@ TEST_F(AppsModelBuilderTest, UninstallTerminatedApp) {
 
   service_->UninstallExtension(kPackagedApp2Id, false, NULL);
   EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
-            GetModelContent(model.get()));
+            GetModelContent(model_.get()));
 
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AppsModelBuilderTest, OrdinalPrefsChange) {
-  scoped_ptr<app_list::AppListModel::Apps> model(
-      new app_list::AppListModel::Apps);
-  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 
   ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
 
   syncer::StringOrdinal package_app_page =
       sorting->GetPageOrdinal(kPackagedApp1Id);
   sorting->SetPageOrdinal(kHostedAppId, package_app_page.CreateBefore());
-  EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
-            GetModelContent(model.get()));
+  // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
+  // New behavior: Sorting order doesn't change.
+  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
+            GetModelContent(model_.get()));
 
   syncer::StringOrdinal app1_ordinal =
       sorting->GetAppLaunchOrdinal(kPackagedApp1Id);
@@ -198,33 +202,39 @@ TEST_F(AppsModelBuilderTest, OrdinalPrefsChange) {
   sorting->SetPageOrdinal(kHostedAppId, package_app_page);
   sorting->SetAppLaunchOrdinal(kHostedAppId,
                                app1_ordinal.CreateBetween(app2_ordinal));
-  EXPECT_EQ(std::string("Packaged App 1,Hosted App,Packaged App 2"),
-            GetModelContent(model.get()));
+  // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
+  // New behavior: Sorting order doesn't change.
+  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
+            GetModelContent(model_.get()));
 }
 
-TEST_F(AppsModelBuilderTest, OnExtensionMoved) {
-  scoped_ptr<app_list::AppListModel::Apps> model(
-      new app_list::AppListModel::Apps);
-  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 
   ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
   sorting->SetPageOrdinal(kHostedAppId,
                           sorting->GetPageOrdinal(kPackagedApp1Id));
 
   service_->OnExtensionMoved(kHostedAppId, kPackagedApp1Id, kPackagedApp2Id);
-  EXPECT_EQ(std::string("Packaged App 1,Hosted App,Packaged App 2"),
-            GetModelContent(model.get()));
+  // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
+  // New behavior: Sorting order doesn't change.
+  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
+            GetModelContent(model_.get()));
 
   service_->OnExtensionMoved(kHostedAppId, kPackagedApp2Id, std::string());
+  // Old behavior: This would be "Packaged App 1,Packaged App 2,Hosted App"
+  // New behavior: Sorting order doesn't change.
   EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model.get()));
+            GetModelContent(model_.get()));
 
   service_->OnExtensionMoved(kHostedAppId, std::string(), kPackagedApp1Id);
-  EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
-            GetModelContent(model.get()));
+  // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
+  // New behavior: Sorting order doesn't change.
+  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
+            GetModelContent(model_.get()));
 }
 
-TEST_F(AppsModelBuilderTest, InvalidOrdinal) {
+TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
   // Creates a no-ordinal case.
   ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
   sorting->ClearOrdinals(kPackagedApp1Id);
@@ -236,14 +246,11 @@ TEST_F(AppsModelBuilderTest, InvalidOrdinal) {
       "page_ordinal",
       base::Value::CreateStringValue("a corrupted ordinal"));
 
-  scoped_ptr<app_list::AppListModel::Apps> model(
-      new app_list::AppListModel::Apps);
-
   // This should not assert or crash.
-  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 }
 
-TEST_F(AppsModelBuilderTest, OrdinalConfilicts) {
+TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
   // Creates conflict ordinals for app1 and app2.
   syncer::StringOrdinal conflict_ordinal =
       syncer::StringOrdinal::CreateInitialOrdinal();
@@ -258,16 +265,10 @@ TEST_F(AppsModelBuilderTest, OrdinalConfilicts) {
   sorting->SetPageOrdinal(kPackagedApp2Id, conflict_ordinal);
   sorting->SetAppLaunchOrdinal(kPackagedApp2Id, conflict_ordinal);
 
-  scoped_ptr<app_list::AppListModel::Apps> model(
-      new app_list::AppListModel::Apps);
-  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+  // This should not assert or crash.
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 
-  // By default, conflicted items are sorted by their app ids.
+  // By default, conflicted items are sorted by their app ids (= order added).
   EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
-            GetModelContent(model.get()));
-
-  // Move hosted app between app1 and app2 and it should not crash.
-  service_->OnExtensionMoved(kHostedAppId, kPackagedApp1Id, kPackagedApp2Id);
-  EXPECT_EQ(std::string("Packaged App 1,Hosted App,Packaged App 2"),
-            GetModelContent(model.get()));
+            GetModelContent(model_.get()));
 }

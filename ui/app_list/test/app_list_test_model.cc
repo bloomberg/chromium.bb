@@ -12,8 +12,9 @@ namespace test {
 
 class AppListTestModel::AppListTestItemModel : public AppListItemModel {
  public:
-  explicit AppListTestItemModel(AppListTestModel* model)
-      : model_(model) {
+  AppListTestItemModel(const std::string& id, AppListTestModel* model)
+      : AppListItemModel(id),
+        model_(model) {
   }
   virtual ~AppListTestItemModel() {}
 
@@ -53,7 +54,7 @@ std::string AppListTestModel::GetModelContent() {
 
 AppListItemModel* AppListTestModel::CreateItem(const std::string& title,
                                                const std::string& full_name) {
-  AppListItemModel* item = new AppListItemModel;
+  AppListItemModel* item = new AppListTestItemModel(title, this);
   item->SetTitleAndFullName(title, full_name);
   return item;
 }

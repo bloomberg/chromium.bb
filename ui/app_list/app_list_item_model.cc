@@ -9,8 +9,9 @@
 
 namespace app_list {
 
-AppListItemModel::AppListItemModel()
-    : highlighted_(false),
+AppListItemModel::AppListItemModel(const std::string& id)
+    : id_(id),
+      highlighted_(false),
       is_installing_(false),
       percent_downloaded_(-1) {
 }
@@ -72,7 +73,16 @@ void AppListItemModel::RemoveObserver(AppListItemModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+std::string AppListItemModel::GetSortOrder() const {
+  return "";
+}
+
 void AppListItemModel::Activate(int event_flags) {
+}
+
+const char* AppListItemModel::GetAppType() const {
+  static const char* app_type = "";
+  return app_type;
 }
 
 ui::MenuModel* AppListItemModel::GetContextMenuModel() {

@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
+#include "sync/api/string_ordinal.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -72,7 +73,8 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                    const std::string& extension_name,
                                    const gfx::ImageSkia& installing_icon,
                                    bool is_platform_app)
-    : profile_(profile),
+    : app_list::AppListItemModel(extension_id),
+      profile_(profile),
       extension_id_(extension_id),
       controller_(controller),
       extension_name_(extension_name),
@@ -83,6 +85,13 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
   Reload();
   GetExtensionSorting(profile_)->EnsureValidOrdinals(extension_id_,
                                                      syncer::StringOrdinal());
+  // Set |sort_order_|. Use '_' as a separator to ensure a_a preceeds aa_a.
+  // (StringOrdinal uses 'a'-'z').
+  const syncer::StringOrdinal& page =
+      GetExtensionSorting(profile_)->GetPageOrdinal(extension_id_);
+  const syncer::StringOrdinal& launch =
+     GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
+  sort_order_ = page.ToInternalValue() + '_' + launch.ToInternalValue();
 }
 
 ExtensionAppItem::~ExtensionAppItem() {
@@ -100,7 +109,6 @@ void ExtensionAppItem::Reload() {
   const Extension* extension = GetExtension();
   bool is_installing = !extension;
   SetIsInstalling(is_installing);
-  set_app_id(extension_id_);
   if (is_installing) {
     SetTitleAndFullName(extension_name_, extension_name_);
     UpdateIcon();
@@ -108,55 +116,6 @@ void ExtensionAppItem::Reload() {
   }
   SetTitleAndFullName(extension->short_name(), extension->name());
   LoadImage(extension);
-}
-
-syncer::StringOrdinal ExtensionAppItem::GetPageOrdinal() const {
-  return GetExtensionSorting(profile_)->GetPageOrdinal(extension_id_);
-}
-
-syncer::StringOrdinal ExtensionAppItem::GetAppLaunchOrdinal() const {
-  return GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
-}
-
-void ExtensionAppItem::Move(const ExtensionAppItem* prev,
-                            const ExtensionAppItem* next) {
-  // Does nothing if no predecessor nor successor.
-  if (!prev && !next)
-    return;
-
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  service->extension_prefs()->SetAppDraggedByUser(extension_id_);
-
-  // Handles only predecessor or only successor case.
-  if (!prev || !next) {
-    syncer::StringOrdinal page = prev ? prev->GetPageOrdinal() :
-                                        next->GetPageOrdinal();
-    GetExtensionSorting(profile_)->SetPageOrdinal(extension_id_, page);
-    service->OnExtensionMoved(extension_id_,
-                              prev ? prev->extension_id() : std::string(),
-                              next ? next->extension_id() : std::string());
-    return;
-  }
-
-  // Handles both predecessor and successor are on the same page.
-  syncer::StringOrdinal prev_page = prev->GetPageOrdinal();
-  syncer::StringOrdinal next_page = next->GetPageOrdinal();
-  if (prev_page.Equals(next_page)) {
-    GetExtensionSorting(profile_)->SetPageOrdinal(extension_id_, prev_page);
-    service->OnExtensionMoved(extension_id_,
-                              prev->extension_id(),
-                              next->extension_id());
-    return;
-  }
-
-  // Otherwise, go with |next|. This is okay because app list does not split
-  // page based ntp page ordinal.
-  // TODO(xiyuan): Revisit this when implementing paging support.
-  GetExtensionSorting(profile_)->SetPageOrdinal(extension_id_, prev_page);
-  service->OnExtensionMoved(extension_id_,
-                            prev->extension_id(),
-                            std::string());
 }
 
 void ExtensionAppItem::UpdateIcon() {
@@ -254,6 +213,10 @@ void ExtensionAppItem::ExtensionEnableFlowAborted(bool user_initiated) {
   controller_->OnCloseExtensionPrompt();
 }
 
+std::string ExtensionAppItem::GetSortOrder() const {
+  return sort_order_;
+}
+
 void ExtensionAppItem::Activate(int event_flags) {
   // |extension| could be NULL when it is being unloaded for updating.
   const Extension* extension = GetExtension();
@@ -278,6 +241,13 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   }
 
   return context_menu_->GetMenuModel();
+}
+
+// static
+const char ExtensionAppItem::kAppType[] = "ExtensionAppItem";
+
+const char* ExtensionAppItem::GetAppType() const {
+  return ExtensionAppItem::kAppType;
 }
 
 void ExtensionAppItem::ExecuteLaunchCommand(int event_flags) {

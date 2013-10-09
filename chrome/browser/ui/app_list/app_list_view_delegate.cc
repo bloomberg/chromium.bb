@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/apps_model_builder.h"
+#include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -151,9 +151,9 @@ void AppListViewDelegate::InitModel(app_list::AppListModel* model) {
   model_ = model;
 
   // Initialize apps model.
-  apps_builder_.reset(new AppsModelBuilder(profile_,
-                                           model->apps(),
-                                           controller_.get()));
+  apps_builder_.reset(new ExtensionAppModelBuilder(profile_,
+                                                   model,
+                                                   controller_.get()));
 
   // Initialize the profile information in the app list menu.
   OnProfileChanged();

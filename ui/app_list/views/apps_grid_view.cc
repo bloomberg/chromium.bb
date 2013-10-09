@@ -369,7 +369,7 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
     return;
 
   delegate_->GetShortcutPathForApp(
-      drag_view_->model()->app_id(),
+      drag_view_->model()->id(),
       base::Bind(&AppsGridView::OnGotShortcutPath, base::Unretained(this)));
   synchronous_drag_ = new SynchronousDrag(this, drag_view_, drag_view_offset_);
 #endif
@@ -1048,8 +1048,7 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
         drag_and_drop_host_->EndDrag(true);
       }
     } else {
-      if (drag_and_drop_host_->StartDrag(drag_view_->model()->app_id(),
-                                         point)) {
+      if (drag_and_drop_host_->StartDrag(drag_view_->model()->id(), point)) {
         // From now on we forward the drag events.
         forward_events_to_drag_and_drop_host_ = true;
         // Any flip operations are stopped.

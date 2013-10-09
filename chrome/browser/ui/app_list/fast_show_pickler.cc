@@ -154,11 +154,10 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
 }
 
 scoped_ptr<AppListItemModel> UnpickleAppListItemModel(PickleIterator* it) {
-  scoped_ptr<AppListItemModel> result(new AppListItemModel);
   std::string id;
   if (!it->ReadString(&id))
     return scoped_ptr<AppListItemModel>();
-  result->set_app_id(id);
+  scoped_ptr<AppListItemModel> result(new AppListItemModel(id));
   std::string title;
   if (!it->ReadString(&title))
     return scoped_ptr<AppListItemModel>();
@@ -177,7 +176,7 @@ scoped_ptr<AppListItemModel> UnpickleAppListItemModel(PickleIterator* it) {
 }
 
 bool PickleAppListItemModel(Pickle* pickle, AppListItemModel* item) {
-  if (!pickle->WriteString(item->app_id()))
+  if (!pickle->WriteString(item->id()))
     return false;
   if (!pickle->WriteString(item->title()))
     return false;
@@ -191,7 +190,6 @@ bool PickleAppListItemModel(Pickle* pickle, AppListItemModel* item) {
 }
 
 void CopyOverItem(AppListItemModel* src_item, AppListItemModel* dest_item) {
-  dest_item->set_app_id(src_item->app_id());
   dest_item->SetTitleAndFullName(src_item->title(), src_item->full_name());
   dest_item->SetIcon(src_item->icon(), src_item->has_shadow());
 }
@@ -223,7 +221,7 @@ void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
   dest->SetSignedIn(src->signed_in());
   for (size_t i = 0; i < src->apps()->item_count(); i++) {
     AppListItemModel* src_item = src->apps()->GetItemAt(i);
-    AppListItemModel* dest_item = new AppListItemModel;
+    AppListItemModel* dest_item = new AppListItemModel(src_item->id());
     CopyOverItem(src_item, dest_item);
     dest->apps()->Add(dest_item);
   }

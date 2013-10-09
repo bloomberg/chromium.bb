@@ -20,8 +20,8 @@ class AppListModelPicklerUnitTest : public testing::Test {
     ASSERT_EQ(m1->apps()->item_count(), m2->apps()->item_count());
     ASSERT_EQ(m1->signed_in(), m2->signed_in());
     for (size_t i = 0; i < m1->apps()->item_count(); i++) {
-      ASSERT_EQ(m1->apps()->GetItemAt(i)->app_id(),
-                m2->apps()->GetItemAt(i)->app_id());
+      ASSERT_EQ(m1->apps()->GetItemAt(i)->id(),
+                m2->apps()->GetItemAt(i)->id());
       ASSERT_EQ(m1->apps()->GetItemAt(i)->title(),
                 m2->apps()->GetItemAt(i)->title());
       ASSERT_EQ(m1->apps()->GetItemAt(i)->full_name(),
@@ -77,8 +77,7 @@ TEST_F(AppListModelPicklerUnitTest, EmptyModel) {
 
 TEST_F(AppListModelPicklerUnitTest, OneItem) {
   AppListModel model;
-  AppListItemModel* app1 = new AppListItemModel;
-  app1->set_app_id("abc");
+  AppListItemModel* app1 = new AppListItemModel("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   model.apps()->Add(app1);
 
@@ -87,13 +86,11 @@ TEST_F(AppListModelPicklerUnitTest, OneItem) {
 
 TEST_F(AppListModelPicklerUnitTest, TwoItems) {
   AppListModel model;
-  AppListItemModel* app1 = new AppListItemModel;
-  app1->set_app_id("abc");
+  AppListItemModel* app1 = new AppListItemModel("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   model.apps()->Add(app1);
 
-  AppListItemModel* app2 = new AppListItemModel;
-  app2->set_app_id("abc2");
+  AppListItemModel* app2 = new AppListItemModel("abc2");
   app2->SetTitleAndFullName("ht2", "hello, there 2");
   model.apps()->Add(app2);
 
@@ -102,14 +99,12 @@ TEST_F(AppListModelPicklerUnitTest, TwoItems) {
 
 TEST_F(AppListModelPicklerUnitTest, Images) {
   AppListModel model;
-  AppListItemModel* app1 = new AppListItemModel;
-  app1->set_app_id("abc");
+  AppListItemModel* app1 = new AppListItemModel("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(MakeImage(), true);
   model.apps()->Add(app1);
 
-  AppListItemModel* app2 = new AppListItemModel;
-  app2->set_app_id("abc2");
+  AppListItemModel* app2 = new AppListItemModel("abc2");
   app2->SetTitleAndFullName("ht2", "hello, there 2");
   model.apps()->Add(app2);
 
@@ -118,8 +113,7 @@ TEST_F(AppListModelPicklerUnitTest, Images) {
 
 TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   AppListModel model;
-  AppListItemModel* app1 = new AppListItemModel;
-  app1->set_app_id("abc");
+  AppListItemModel* app1 = new AppListItemModel("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(gfx::ImageSkia(), true);
   model.apps()->Add(app1);

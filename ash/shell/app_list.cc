@@ -14,6 +14,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"
@@ -44,7 +45,9 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
     LAST_TYPE,
   };
 
-  explicit WindowTypeLauncherItem(Type type) : type_(type) {
+  explicit WindowTypeLauncherItem(const std::string& id, Type type)
+      : app_list::AppListItemModel(id),
+        type_(type) {
     std::string title(GetTitle(type));
     SetIcon(GetIcon(type), false);
     SetTitleAndFullName(title, title);
@@ -198,7 +201,8 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
          ++i) {
       WindowTypeLauncherItem::Type type =
           static_cast<WindowTypeLauncherItem::Type>(i);
-      apps->Add(new WindowTypeLauncherItem(type));
+      std::string id = base::StringPrintf("%d", i);
+      apps->Add(new WindowTypeLauncherItem(id, type));
     }
   }
 

@@ -65,6 +65,17 @@ class APP_LIST_EXPORT AppListModel {
   void SetUsers(const Users& profile_menu_items);
   void SetSignedIn(bool signed_in);
 
+  // Find item matching |id|. NOTE: Requires a linear search.
+  AppListItemModel* FindItem(const std::string& id);
+
+  // Adds |item| to |apps_|. Takes ownership of |item|. Uses item->SortOrder()
+  // to insert in the correct place. TODO(stevenjb): Use synced app list order
+  // instead of SortOrder when available: crbug.com/305024.
+  void AddItem(AppListItemModel* item);
+
+  // Finds |item| in |apps_| and deletes it.
+  void DeleteItem(const std::string& id);
+
   Apps* apps() { return apps_.get(); }
   SearchBoxModel* search_box() { return search_box_.get(); }
   SearchResults* results() { return results_.get(); }

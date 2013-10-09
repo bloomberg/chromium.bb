@@ -122,8 +122,9 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
 
 class AppListItemWithMenu : public AppListItemModel {
  public:
-  AppListItemWithMenu(const std::string& title)
-      : menu_model_(NULL),
+  explicit AppListItemWithMenu(const std::string& title)
+      : AppListItemModel(title),
+        menu_model_(NULL),
         menu_ready_(true) {
     SetTitleAndFullName(title, title);
     menu_model_.AddItem(0, UTF8ToUTF16("Menu For: " + title));
@@ -550,8 +551,8 @@ TEST_F(AppsGridControllerTest, ItemInstallProgress) {
   EXPECT_TRUE([progressIndicator isIndeterminate]);
 
   // Completing install removes the progress bar, and restores the title.
-  // AppsModelBuilder will reload the ExtensionAppItem, which also highlights.
-  // Do the same here.
+  // ExtensionAppModelBuilder will reload the ExtensionAppItem, which also
+  // highlights. Do the same here.
   alternate_item_model->SetHighlighted(false);
   item_model->SetHighlighted(true);
   item_model->SetIsInstalling(false);

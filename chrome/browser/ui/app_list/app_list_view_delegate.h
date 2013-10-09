@@ -18,7 +18,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 
 class AppListControllerDelegate;
-class AppsModelBuilder;
+class ExtensionAppModelBuilder;
 class Profile;
 
 namespace app_list {
@@ -93,7 +93,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) OVERRIDE;
 
-  scoped_ptr<AppsModelBuilder> apps_builder_;
+  scoped_ptr<ExtensionAppModelBuilder> apps_builder_;
   scoped_ptr<app_list::SearchController> search_controller_;
   scoped_ptr<AppListControllerDelegate> controller_;
   Profile* profile_;
