@@ -125,12 +125,12 @@ class MockPacketWriter : public QuicPacketWriter {
   MockPacketWriter();
   virtual ~MockPacketWriter();
 
-  MOCK_METHOD6(WritePacket, int(const char* buffer,
-                                size_t buf_len,
-                                const IPAddressNumber& self_address,
-                                const IPEndPoint& peer_address,
-                                QuicBlockedWriterInterface* blocked_writer,
-                                int* error));
+  MOCK_METHOD5(WritePacket,
+               WriteResult(const char* buffer,
+                           size_t buf_len,
+                           const IPAddressNumber& self_address,
+                           const IPEndPoint& peer_address,
+                           QuicBlockedWriterInterface* blocked_writer));
 };
 
 }  // namespace test

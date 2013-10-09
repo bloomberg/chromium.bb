@@ -534,14 +534,13 @@ class WrongAddressWriter : public QuicPacketWriter {
     self_address_ = IPEndPoint(ip, 0);
   }
 
-  virtual int WritePacket(const char* buffer, size_t buf_len,
-                          const IPAddressNumber& real_self_address,
-                          const IPEndPoint& peer_address,
-                          QuicBlockedWriterInterface* blocked_writer,
-                          int* error) OVERRIDE {
+  virtual WriteResult WritePacket(
+      const char* buffer, size_t buf_len,
+      const IPAddressNumber& real_self_address,
+      const IPEndPoint& peer_address,
+      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
     return QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
-                                        self_address_.address(), peer_address,
-                                        error);
+                                        self_address_.address(), peer_address);
   }
 
   IPEndPoint self_address_;

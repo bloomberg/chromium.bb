@@ -98,13 +98,11 @@ QuicRandom* QuicEpollConnectionHelper::GetRandomGenerator() {
   return random_generator_;
 }
 
-int QuicEpollConnectionHelper::WritePacketToWire(
-    const QuicEncryptedPacket& packet,
-    int* error) {
+WriteResult QuicEpollConnectionHelper::WritePacketToWire(
+    const QuicEncryptedPacket& packet) {
   if (connection_->ShouldSimulateLostPacket()) {
     DLOG(INFO) << "Dropping packet due to fake packet loss.";
-    *error = 0;
-    return packet.length();
+    return WriteResult(WRITE_STATUS_OK, packet.length());
   }
 
   // If we have a writer, delgate the write to it.
@@ -112,14 +110,12 @@ int QuicEpollConnectionHelper::WritePacketToWire(
     return writer_->WritePacket(packet.data(), packet.length(),
                                 connection_->self_address().address(),
                                 connection_->peer_address(),
-                                connection_,
-                                error);
+                                connection_);
   } else {
     return QuicSocketUtils::WritePacket(
         fd_, packet.data(), packet.length(),
         connection_->self_address().address(),
-        connection_->peer_address(),
-        error);
+        connection_->peer_address());
   }
 }
 

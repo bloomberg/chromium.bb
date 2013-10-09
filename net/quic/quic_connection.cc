@@ -52,8 +52,9 @@ namespace {
 // This will likely have to be tuned.
 const QuicPacketSequenceNumber kMaxPacketGap = 5000;
 
-// We want to make sure if we get a large nack packet, we don't queue up too
-// many packets at once.  10 is a common default initial congestion window.
+// We want to make sure if we get a nack packet which triggers several
+// retransmissions, we don't queue up too many packets.  10 is TCP's default
+// initial congestion window(RFC 6928).
 const size_t kMaxRetransmissionsPerAck = 10;
 
 // TCP retransmits after 2 nacks.  We allow for a third in case of out-of-order
@@ -215,6 +216,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       guid_(guid),
       peer_address_(address),
       largest_seen_packet_with_ack_(0),
+      pending_version_negotiation_packet_(false),
       write_blocked_(false),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
       retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
@@ -504,11 +506,15 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
 }
 
 void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
+  // Latch current least unacked sequence number. This allows us to reset the
+  // retransmission and FEC abandonment timers conditionally below.
+  QuicPacketSequenceNumber least_unacked_sent_before =
+      sent_packet_manager_.GetLeastUnackedSentPacket();
+
   largest_seen_packet_with_ack_ = last_header_.packet_sequence_number;
 
-  received_truncated_ack_ =
-      incoming_ack.received_info.missing_packets.size() >=
-      QuicFramer::GetMaxUnackedPackets(last_header_);
+  received_truncated_ack_ = incoming_ack.received_info.missing_packets.size() >=
+                            QuicFramer::GetMaxUnackedPackets(last_header_);
 
   received_packet_manager_.UpdatePacketInformationReceivedByPeer(incoming_ack);
   received_packet_manager_.UpdatePacketInformationSentByPeer(incoming_ack);
@@ -519,35 +525,42 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
       received_packet_manager_.least_packet_awaited_by_peer() - 1);
 
   retransmitted_nacked_packet_count_ = 0;
-  SequenceNumberSet acked_packets;
-  sent_packet_manager_.OnIncomingAck(
-      incoming_ack.received_info, received_truncated_ack_, &acked_packets);
-  if (acked_packets.size() > 0) {
-    // Reset the RTO timeout for each packet when an ack is received.
-    if (retransmission_alarm_->IsSet()) {
-      retransmission_alarm_->Cancel();
-      // Only reschedule the timer if there are outstanding packets.
-      if (sent_packet_manager_.HasUnackedPackets()) {
-        QuicTime::Delta retransmission_delay =
-            congestion_manager_.GetRetransmissionDelay(
-                sent_packet_manager_.GetNumUnackedPackets(), 0);
-        retransmission_alarm_->Set(clock_->ApproximateNow().Add(
-            retransmission_delay));
-      }
-    }
-    if (abandon_fec_alarm_->IsSet()) {
-      abandon_fec_alarm_->Cancel();
-      // Only reschedule the timer if there are outstanding fec packets.
-      if (sent_packet_manager_.HasUnackedFecPackets()) {
-        QuicTime::Delta retransmission_delay =
-            congestion_manager_.GetRetransmissionDelay(
-                sent_packet_manager_.GetNumUnackedPackets(), 0);
-        abandon_fec_alarm_->Set(clock_->ApproximateNow().Add(
-            retransmission_delay));
-      }
-    }
+  sent_packet_manager_.OnIncomingAck(incoming_ack.received_info,
+                                     received_truncated_ack_);
+
+  // Get the updated least unacked sequence number.
+  QuicPacketSequenceNumber least_unacked_sent_after =
+      sent_packet_manager_.GetLeastUnackedSentPacket();
+
+  // Used to set RTO and FEC alarms.
+  QuicTime::Delta retransmission_delay =
+      congestion_manager_.GetRetransmissionDelay(
+          sent_packet_manager_.GetNumUnackedPackets(), 0);
+
+  // If there are outstanding packets, and the least unacked sequence number
+  // has increased after processing this latest AckFrame, then reschedule the
+  // retransmission timer.
+  if (sent_packet_manager_.HasUnackedPackets() &&
+      least_unacked_sent_before < least_unacked_sent_after) {
+    DCHECK(retransmission_alarm_->IsSet());
+
+    retransmission_alarm_->Cancel();
+    retransmission_alarm_->Set(
+        clock_->ApproximateNow().Add(retransmission_delay));
     consecutive_rto_count_ = 0;
+  } else if (!sent_packet_manager_.HasUnackedPackets()) {
+    retransmission_alarm_->Cancel();
   }
+
+  // If there are outstanding FEC packets, and the least unacked sequence number
+  // has increased after processing this latest AckFrame, then reschedule the
+  // abandon FEC timer.
+  abandon_fec_alarm_->Cancel();
+  if (sent_packet_manager_.HasUnackedFecPackets() &&
+      least_unacked_sent_before < least_unacked_sent_after) {
+    abandon_fec_alarm_->Set(clock_->ApproximateNow().Add(retransmission_delay));
+  }
+
   congestion_manager_.OnIncomingAckFrame(incoming_ack,
                                          time_of_last_received_packet_);
 }
@@ -740,7 +753,6 @@ void QuicConnection::OnPacketComplete() {
   MaybeSendInResponseToPacket(send_ack_immediately,
                               last_packet_should_instigate_ack);
 
-
   ClearLastFrames();
 }
 
@@ -833,12 +845,25 @@ void QuicConnection::SendVersionNegotiationPacket() {
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
     supported_versions.push_back(kSupportedQuicVersions[i]);
   }
-  QuicEncryptedPacket* encrypted =
-      packet_creator_.SerializeVersionNegotiationPacket(supported_versions);
+  scoped_ptr<QuicEncryptedPacket> version_packet(
+      packet_creator_.SerializeVersionNegotiationPacket(supported_versions));
   // TODO(satyamshekhar): implement zero server state negotiation.
-  int error;
-  helper_->WritePacketToWire(*encrypted, &error);
-  delete encrypted;
+  WriteResult result =
+      helper_->WritePacketToWire(*version_packet);
+  if (result.status == WRITE_STATUS_OK ||
+      (result.status == WRITE_STATUS_BLOCKED &&
+          helper_->IsWriteBlockedDataBuffered())) {
+    pending_version_negotiation_packet_ = false;
+    return;
+  }
+  if (result.status == WRITE_STATUS_ERROR) {
+    // We can't send an error as the socket is presumably borked.
+    CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
+  }
+  if (result.status == WRITE_STATUS_BLOCKED) {
+    write_blocked_ = true;
+  }
+  pending_version_negotiation_packet_ = true;
 }
 
 QuicConsumedData QuicConnection::SendvStreamDataInner(
@@ -1049,6 +1074,10 @@ bool QuicConnection::ProcessValidatedPacket() {
 bool QuicConnection::WriteQueuedPackets() {
   DCHECK(!write_blocked_);
 
+  if (pending_version_negotiation_packet_) {
+    SendVersionNegotiationPacket();
+  }
+
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (!write_blocked_ && packet_iterator != queued_packets_.end()) {
     if (WritePacket(packet_iterator->encryption_level,
@@ -1203,9 +1232,8 @@ void QuicConnection::SetupRetransmission(
     return;
   }
 
-  // Do not set the retransmission alarm if we're already handling the
-  // retransmission alarm because the retransmission alarm will be reset when
-  // OnRetransmissionTimeout completes.
+  // Do not set the retransmission alarm if we're already handling one, since
+  // it will be reset when OnRetransmissionTimeout completes.
   if (retransmission_alarm_->IsSet()) {
     return;
   }
@@ -1338,27 +1366,51 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
       << packet->length() << " " << encrypted->length() << " "
       << " forced: " << (forced == FORCE ? "yes" : "no");
 
-  int error;
-  QuicTime now = clock_->Now();
-  if (WritePacketToWire(sequence_number, level, *encrypted, &error) == -1) {
-    if (helper_->IsWriteBlocked(error)) {
-      // TODO(satyashekhar): It might be more efficient (fewer system calls), if
-      // all connections share this variable i.e this becomes a part of
-      // PacketWriterInterface.
-      write_blocked_ = true;
-      // If the socket buffers the the data, then the packet should not
-      // be queued and sent again, which would result in an unnecessary
-      // duplicate packet being sent.
-      if (helper_->IsWriteBlockedDataBuffered()) {
-        delete packet;
-        return true;
-      }
-      return false;
+  DCHECK(pending_write_.get() == NULL);
+  pending_write_.reset(new PendingWrite(sequence_number, transmission_type,
+                                        retransmittable, level, packet));
+
+  WriteResult result = WritePacketToWire(sequence_number, level, *encrypted);
+  if (result.status == WRITE_STATUS_BLOCKED) {
+    // TODO(satyashekhar): It might be more efficient (fewer system calls), if
+    // all connections share this variable i.e this becomes a part of
+    // PacketWriterInterface.
+    write_blocked_ = true;
+    // If the socket buffers the the data, then the packet should not
+    // be queued and sent again, which would result in an unnecessary
+    // duplicate packet being sent.  The helper must call OnPacketSent
+    // when the packet is actually sent.
+    if (helper_->IsWriteBlockedDataBuffered()) {
+      return true;
     }
+    pending_write_.reset();
+    return false;
+  }
+
+  return OnPacketSent(result);
+}
+
+bool QuicConnection::OnPacketSent(WriteResult result) {
+  DCHECK_NE(WRITE_STATUS_BLOCKED, result.status);
+  if (pending_write_.get() == NULL) {
+    LOG(DFATAL) << "OnPacketSent called without a pending write.";
+    return false;
+  }
+
+  QuicPacketSequenceNumber sequence_number = pending_write_->sequence_number;
+  TransmissionType transmission_type  = pending_write_->transmission_type;
+  HasRetransmittableData retransmittable = pending_write_->retransmittable;
+  EncryptionLevel level = pending_write_->level;
+  QuicPacket* packet = pending_write_->packet;
+  pending_write_.reset();
+
+  if (result.status == WRITE_STATUS_ERROR) {
     // We can't send an error as the socket is presumably borked.
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
     return false;
   }
+
+  QuicTime now = clock_->Now();
   if (transmission_type == NOT_RETRANSMISSION) {
     time_of_last_sent_packet_ = now;
   }
@@ -1384,12 +1436,12 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
   congestion_manager_.OnPacketSent(sequence_number, now, packet->length(),
                                    transmission_type, retransmittable);
 
-  stats_.bytes_sent += encrypted->length();
+  stats_.bytes_sent += result.bytes_written;
   ++stats_.packets_sent;
 
   if (transmission_type == NACK_RETRANSMISSION ||
       transmission_type == RTO_RETRANSMISSION) {
-    stats_.bytes_retransmitted += encrypted->length();
+    stats_.bytes_retransmitted += result.bytes_written;
     ++stats_.packets_retransmitted;
   }
 
@@ -1397,18 +1449,16 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
   return true;
 }
 
-int QuicConnection::WritePacketToWire(QuicPacketSequenceNumber sequence_number,
-                                      EncryptionLevel level,
-                                      const QuicEncryptedPacket& packet,
-                                      int* error) {
-  int bytes_written = helper_->WritePacketToWire(packet, error);
+WriteResult QuicConnection::WritePacketToWire(
+    QuicPacketSequenceNumber sequence_number,
+    EncryptionLevel level,
+    const QuicEncryptedPacket& packet) {
+  WriteResult result = helper_->WritePacketToWire(packet);
   if (debug_visitor_) {
-    // WritePacketToWire returned -1, then |error| will be populated with
-    // an error code, which we want to pass along to the visitor.
-    debug_visitor_->OnPacketSent(sequence_number, level, packet,
-                                 bytes_written == -1 ? *error : bytes_written);
+    // Pass the write result to the visitor.
+    debug_visitor_->OnPacketSent(sequence_number, level, packet, result);
   }
-  return bytes_written;
+  return result;
 }
 
 bool QuicConnection::OnSerializedPacket(
@@ -1506,8 +1556,6 @@ void QuicConnection::OnRetransmissionTimeout() {
     return;
   }
 
-  // TODO(ianswett): When multiple RTO's fire, the subsequent RTO should send
-  // the same data packet as the first RTO according to the TCP spec.
   // TODO(ianswett): When an RTO fires, but the connection has not been
   // established as forward secure, re-send the client hello first.
   ++stats_.rto_count;
@@ -1765,7 +1813,8 @@ void QuicConnection::Flush() {
 }
 
 bool QuicConnection::HasQueuedData() const {
-  return !queued_packets_.empty() || packet_generator_.HasQueuedFrames();
+  return pending_version_negotiation_packet_ ||
+      !queued_packets_.empty() || packet_generator_.HasQueuedFrames();
 }
 
 void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {

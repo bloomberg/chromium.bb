@@ -8,6 +8,7 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/mock_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -237,6 +238,24 @@ TEST_F(CryptoServerTest, ReplayProtection) {
   ShouldSucceed(msg);
   // The message should accepted twice when replay protection is off.
   ASSERT_EQ(kSHLO, out_.tag());
+}
+
+TEST(CryptoServerConfigGenerationTest, Determinism) {
+  // Test that using a deterministic PRNG causes the server-config to be
+  // deterministic.
+
+  MockRandom rand_a, rand_b;
+  const QuicCryptoServerConfig::ConfigOptions options;
+  MockClock clock;
+
+  QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a);
+  QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b);
+  scoped_ptr<CryptoHandshakeMessage> scfg_a(
+      a.AddDefaultConfig(&rand_a, &clock, options));
+  scoped_ptr<CryptoHandshakeMessage> scfg_b(
+      b.AddDefaultConfig(&rand_b, &clock, options));
+
+  ASSERT_EQ(scfg_a->DebugString(), scfg_b->DebugString());
 }
 
 class CryptoServerTestNoConfig : public CryptoServerTest {

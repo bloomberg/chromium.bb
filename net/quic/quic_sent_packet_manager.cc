@@ -131,15 +131,9 @@ void QuicSentPacketManager::OnRetransmittedPacket(
 
 void QuicSentPacketManager::OnIncomingAck(
     const ReceivedPacketInfo& received_info,
-    bool is_truncated_ack,
-    SequenceNumberSet* acked_packets) {
-  HandleAckForSentPackets(received_info, is_truncated_ack, acked_packets);
-  HandleAckForSentFecPackets(received_info, acked_packets);
-
-  if (acked_packets->size() > 0) {
-    // The AckNotifierManager should be informed of every ACKed sequence number.
-    ack_notifier_manager_.OnIncomingAck(*acked_packets);
-  }
+    bool is_truncated_ack) {
+  HandleAckForSentPackets(received_info, is_truncated_ack);
+  HandleAckForSentFecPackets(received_info);
 }
 
 void QuicSentPacketManager::DiscardUnackedPacket(
@@ -149,8 +143,7 @@ void QuicSentPacketManager::DiscardUnackedPacket(
 
 void QuicSentPacketManager::HandleAckForSentPackets(
     const ReceivedPacketInfo& received_info,
-    bool is_truncated_ack,
-    SequenceNumberSet* acked_packets) {
+    bool is_truncated_ack) {
   // Go through the packets we have not received an ack for and see if this
   // incoming_ack shows they've been seen by the peer.
   UnackedPacketMap::iterator it = unacked_packets_.begin();
@@ -166,12 +159,11 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       DVLOG(1) << ENDPOINT <<"Got an ack for packet " << sequence_number;
       // If data is associated with the most recent transmission of this
       // packet, then inform the caller.
-      QuicPacketSequenceNumber most_recent_transmission =
-          GetMostRecentTransmission(sequence_number);
-      if (HasRetransmittableFrames(most_recent_transmission)) {
-        acked_packets->insert(most_recent_transmission);
-      }
       it = MarkPacketReceivedByPeer(sequence_number);
+
+      // The AckNotifierManager is informed of every ACKed sequence number.
+      ack_notifier_manager_.OnPacketAcked(sequence_number);
+
       continue;
     }
 
@@ -381,8 +373,7 @@ void QuicSentPacketManager::DiscardPacket(
 }
 
 void QuicSentPacketManager::HandleAckForSentFecPackets(
-    const ReceivedPacketInfo& received_info,
-    SequenceNumberSet* acked_packets) {
+    const ReceivedPacketInfo& received_info) {
   UnackedFecPacketMap::iterator it = unacked_fec_packets_.begin();
   while (it != unacked_fec_packets_.end()) {
     QuicPacketSequenceNumber sequence_number = it->first;
@@ -392,7 +383,6 @@ void QuicSentPacketManager::HandleAckForSentFecPackets(
 
     if (!IsAwaitingPacket(received_info, sequence_number)) {
       DVLOG(1) << ENDPOINT << "Got an ack for fec packet: " << sequence_number;
-      acked_packets->insert(sequence_number);
       unacked_fec_packets_.erase(it++);
     } else {
       // TODO(rch): treat these packets more consistently.  They should

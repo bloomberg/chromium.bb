@@ -22,40 +22,32 @@ AckNotifierManager::~AckNotifierManager() {
   STLDeleteElements(&ack_notifiers_);
 }
 
-void AckNotifierManager::OnIncomingAck(const SequenceNumberSet& acked_packets) {
-  // Inform all the registered AckNotifiers of the new ACKs.
-  for (SequenceNumberSet::const_iterator seq_it = acked_packets.begin();
-       seq_it != acked_packets.end(); ++seq_it) {
-    AckNotifierMap::iterator map_it = ack_notifier_map_.find(*seq_it);
-    if (map_it == ack_notifier_map_.end()) {
-      // No AckNotifier is interested in this sequence number.
-      continue;
-    }
-
-    // One or more AckNotifiers are registered as interested in this sequence
-    // number. Iterate through them and call OnAck on each.
-    for (AckNotifierSet::iterator set_it = map_it->second.begin();
-         set_it != map_it->second.end(); ++set_it) {
-      (*set_it)->OnAck(*seq_it);
-    }
-
-    // Remove the sequence number from the map as we have notified all the
-    // registered AckNotifiers, and we won't see it again.
-    ack_notifier_map_.erase(map_it);
+void AckNotifierManager::OnPacketAcked(
+    QuicPacketSequenceNumber sequence_number) {
+  // Inform all the registered AckNotifiers of the new ACK.
+  AckNotifierMap::iterator map_it = ack_notifier_map_.find(sequence_number);
+  if (map_it == ack_notifier_map_.end()) {
+    // No AckNotifier is interested in this sequence number.
+    return;
   }
 
-  // Clear up any empty AckNotifiers
-  AckNotifierSet::iterator it = ack_notifiers_.begin();
-  while (it != ack_notifiers_.end()) {
-    if ((*it)->IsEmpty()) {
-      // The QuicAckNotifier has seen all the ACKs it was interested in, and
-      // has triggered its callback. No more use for it.
-      delete *it;
-      ack_notifiers_.erase(it++);
-    } else {
-      ++it;
+  // One or more AckNotifiers are registered as interested in this sequence
+  // number. Iterate through them and call OnAck on each.
+  for (AckNotifierSet::iterator set_it = map_it->second.begin();
+       set_it != map_it->second.end(); ++set_it) {
+    QuicAckNotifier* ack_notifier = *set_it;
+    ack_notifier->OnAck(sequence_number);
+
+    // If this has resulted in an empty AckNotifer, erase it.
+    if (ack_notifier->IsEmpty()) {
+      delete ack_notifier;
+      ack_notifiers_.erase(ack_notifier);
     }
   }
+
+  // Remove the sequence number from the map as we have notified all the
+  // registered AckNotifiers, and we won't see it again.
+  ack_notifier_map_.erase(map_it);
 }
 
 void AckNotifierManager::UpdateSequenceNumber(
