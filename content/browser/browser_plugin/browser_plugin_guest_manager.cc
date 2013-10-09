@@ -87,11 +87,11 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
     // a guest process in addition to which platform application the tag
     // belongs to and what storage partition is in use, rather than the URL
     // that the tag is being navigated to.
-    GURL guest_site(
-        base::StringPrintf("%s://%s/%s?%s", chrome::kGuestScheme,
-                            host.c_str(),
-                            params.persist_storage ? "persist" : "",
-                            url_encoded_partition.c_str()));
+    GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
+                                       kGuestScheme,
+                                       host.c_str(),
+                                       params.persist_storage ? "persist" : "",
+                                       url_encoded_partition.c_str()));
 
     // If we already have a webview tag in the same app using the same storage
     // partition, we should use the same SiteInstance so the existing tag and

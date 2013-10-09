@@ -813,8 +813,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DoNotCrashOnInvalidNavigation) {
   // should be blocked because the scheme isn't web-safe or a pseudo-scheme.
   ExecuteSyncJSFunction(
       test_embedder()->web_contents()->GetRenderViewHost(),
-      base::StringPrintf("SetSrc('%s://abc123');",
-                         chrome::kGuestScheme));
+      base::StringPrintf("SetSrc('%s://abc123');", kGuestScheme));
   EXPECT_TRUE(delegate->load_aborted());
   EXPECT_TRUE(delegate->load_aborted_url().is_valid());
 }

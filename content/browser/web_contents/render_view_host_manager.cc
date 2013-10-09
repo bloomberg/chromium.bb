@@ -891,8 +891,7 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
   SiteInstance* new_instance = curr_instance;
   const NavigationEntry* curr_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
-  bool is_guest_scheme = curr_instance->GetSiteURL().SchemeIs(
-      chrome::kGuestScheme);
+  bool is_guest_scheme = curr_instance->GetSiteURL().SchemeIs(kGuestScheme);
   bool force_swap = ShouldSwapProcessesForNavigation(curr_entry, &entry);
   if (!is_guest_scheme && (ShouldTransitionCrossSite() || force_swap))
     new_instance = GetSiteInstanceForEntry(entry, curr_instance);

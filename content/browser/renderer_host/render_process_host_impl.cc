@@ -1435,7 +1435,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
   if (host->IsGuest())
     return true;
 
-  if (!host->IsGuest() && site_url.SchemeIs(chrome::kGuestScheme))
+  if (!host->IsGuest() && site_url.SchemeIs(kGuestScheme))
     return false;
 
   // Check whether the given host and the intended site_url will be using the

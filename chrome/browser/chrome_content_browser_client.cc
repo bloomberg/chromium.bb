@@ -665,7 +665,7 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
 
   // The partition ID for webview guest processes is the string value of its
   // SiteInstance URL - "chrome-guest://app_id/persist?partition".
-  if (site.SchemeIs(chrome::kGuestScheme))
+  if (site.SchemeIs(content::kGuestScheme))
     partition_id = site.spec();
 
   DCHECK(IsValidStoragePartitionId(browser_context, partition_id));
@@ -702,7 +702,7 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
   // a specially formatted URL, based on the application it is hosted by and
   // the partition requested by it. The format for that URL is:
   // chrome-guest://partition_domain/persist?partition_name
-  if (site.SchemeIs(chrome::kGuestScheme)) {
+  if (site.SchemeIs(content::kGuestScheme)) {
     // Since guest URLs are only used for packaged apps, there must be an app
     // id in the URL.
     CHECK(site.has_host());

@@ -122,10 +122,10 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
                 BrowserContext::GetStoragePartition(browser_context, this));
         bool supports_browser_plugin = GetContentClient()->browser()->
             SupportsBrowserPlugin(browser_context, site_);
-        process_ =
-            new RenderProcessHostImpl(browser_context, partition,
-                                      supports_browser_plugin,
-                                      site_.SchemeIs(chrome::kGuestScheme));
+        process_ = new RenderProcessHostImpl(browser_context,
+                                             partition,
+                                             supports_browser_plugin,
+                                             site_.SchemeIs(kGuestScheme));
       }
     }
     CHECK(process_);
@@ -281,7 +281,7 @@ bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
 GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
                                  const GURL& real_url) {
   // TODO(fsamuel, creis): For some reason appID is not recognized as a host.
-  if (real_url.SchemeIs(chrome::kGuestScheme))
+  if (real_url.SchemeIs(kGuestScheme))
     return real_url;
 
   GURL url = SiteInstanceImpl::GetEffectiveURL(browser_context, real_url);

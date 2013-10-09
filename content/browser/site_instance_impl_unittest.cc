@@ -343,7 +343,7 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   test_url = GURL("file:///C:/Downloads/");
   EXPECT_EQ(GURL(), SiteInstanceImpl::GetSiteForURL(NULL, test_url));
 
-  std::string guest_url(chrome::kGuestScheme);
+  std::string guest_url(kGuestScheme);
   guest_url.append("://abc123");
   test_url = GURL(guest_url);
   EXPECT_EQ(test_url, SiteInstanceImpl::GetSiteForURL(NULL, test_url));
