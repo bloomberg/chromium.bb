@@ -1,0 +1,9 @@
+include_rules = [
+  "-chrome",
+
+  # Pieces of content_shell reused in app_shell.
+  # TODO(jamescook): Remove these. http://crbug.com/305404
+  "+content/shell/browser/minimal_shell.h",
+  "+content/shell/browser/shell_browser_context.h",
+  "+content/shell/common/shell_content_client.h",
+]

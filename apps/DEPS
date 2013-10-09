@@ -14,12 +14,6 @@ include_rules = [
   "+ui",
   "+win8",
 
-  # Pieces of content_shell reused in app_shell.
-  # TODO(jamescook): Remove these. http://crbug.com/305404
-  "+content/shell/browser/minimal_shell.h",
-  "+content/shell/browser/shell_browser_context.h",
-  "+content/shell/common/shell_content_client.h",
-
   # Temporary allowed includes.
   # TODO(benwells): remove these (http://crbug.com/159366)
   "+chrome/browser/chrome_notification_types.h",
@@ -29,6 +23,7 @@ include_rules = [
   "+chrome/browser/profiles",
   "+chrome/browser/sessions/session_id.h",
   "+chrome/common/chrome_switches.h",
+
   # Pieces of the extensions system that need to move to src/extensions.
   # See http://crbug.com/162530 for details.
   "+chrome/browser/extensions/api/app_runtime/app_runtime_api.h",
