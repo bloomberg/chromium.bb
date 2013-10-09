@@ -58,18 +58,22 @@ static int GetTapDownDeferralTimeMs() {
 }
 }  // namespace
 
-GestureEventFilter::GestureEventFilter(InputRouter* input_router)
-     : input_router_(input_router),
+GestureEventFilter::GestureEventFilter(
+    GestureEventFilterClient* client,
+    TouchpadTapSuppressionControllerClient* touchpad_client)
+     : client_(client),
        fling_in_progress_(false),
        scrolling_in_progress_(false),
        ignore_next_ack_(false),
        combined_scroll_pinch_(gfx::Transform()),
        touchpad_tap_suppression_controller_(
-           new TouchpadTapSuppressionController(input_router)),
+           new TouchpadTapSuppressionController(touchpad_client)),
        touchscreen_tap_suppression_controller_(
            new TouchscreenTapSuppressionController(this)),
        maximum_tap_gap_time_ms_(GetTapDownDeferralTimeMs()),
        debounce_interval_time_ms_(kDebouncingIntervalTimeMs) {
+  DCHECK(client);
+  DCHECK(touchpad_tap_suppression_controller_);
 }
 
 GestureEventFilter::~GestureEventFilter() { }
@@ -246,7 +250,7 @@ bool GestureEventFilter::ShouldForwardForCoalescing(
   return ShouldHandleEventNow();
 }
 
-void GestureEventFilter::ProcessGestureAck(bool processed,
+void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
                                            WebInputEvent::Type type) {
   if (IsGestureEventTypeAsync(type))
     return;
@@ -256,6 +260,13 @@ void GestureEventFilter::ProcessGestureAck(bool processed,
     return;
   }
   DCHECK_EQ(coalesced_gesture_events_.front().event.type, type);
+
+  // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
+  // event before the forwarding of queued events below, such additional events
+  // can be coalesced with existing queued events prior to dispatch.
+  client_->OnGestureEventAck(GetGestureEventAwaitingAck(), ack_result);
+
+  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (type == WebInputEvent::GestureFlingCancel) {
     if (coalesced_gesture_events_.front().event.sourceDevice ==
         WebGestureEvent::Touchscreen)
@@ -272,7 +283,7 @@ void GestureEventFilter::ProcessGestureAck(bool processed,
   } else if (!coalesced_gesture_events_.empty()) {
     const GestureEventWithLatencyInfo& next_gesture_event =
         coalesced_gesture_events_.front();
-    input_router_->SendGestureEventImmediately(next_gesture_event);
+    client_->SendGestureEventImmediately(next_gesture_event);
     // TODO(yusufo): Introduce GesturePanScroll so that these can be combined
     // into one gesture and kept inside the queue that way.
     if (coalesced_gesture_events_.size() > 1) {
@@ -282,7 +293,7 @@ void GestureEventFilter::ProcessGestureAck(bool processed,
               WebInputEvent::GestureScrollUpdate &&
           second_gesture_event.event.type ==
               WebInputEvent::GesturePinchUpdate) {
-        input_router_->SendGestureEventImmediately(second_gesture_event);
+        client_->SendGestureEventImmediately(second_gesture_event);
         ignore_next_ack_ = true;
         combined_scroll_pinch_ = gfx::Transform();
       }
@@ -299,13 +310,13 @@ bool GestureEventFilter::HasQueuedGestureEvents() const {
   return !coalesced_gesture_events_.empty();
 }
 
-const WebKit::WebGestureEvent&
+const GestureEventWithLatencyInfo&
 GestureEventFilter::GetGestureEventAwaitingAck() const {
   DCHECK(!coalesced_gesture_events_.empty());
   if (!ignore_next_ack_)
-    return coalesced_gesture_events_.front().event;
+    return coalesced_gesture_events_.front();
   else
-    return coalesced_gesture_events_.at(1).event;
+    return coalesced_gesture_events_.at(1);
 }
 
 void GestureEventFilter::FlingHasBeenHalted() {
@@ -325,7 +336,7 @@ void GestureEventFilter::ForwardGestureEventForDeferral(
 void GestureEventFilter::ForwardGestureEventSkipDeferral(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (ShouldForwardForCoalescing(gesture_event))
-      input_router_->SendGestureEventImmediately(gesture_event);
+      client_->SendGestureEventImmediately(gesture_event);
 }
 
 void GestureEventFilter::SendGestureTapDownNow() {
@@ -346,7 +357,7 @@ void GestureEventFilter::SendScrollEndingEventsNow() {
         ShouldForwardForTapSuppression(*it) &&
         ShouldForwardForTapDeferral(*it) &&
         ShouldForwardForCoalescing(*it)) {
-      input_router_->SendGestureEventImmediately(*it);
+      client_->SendGestureEventImmediately(*it);
     }
   }
   debouncing_deferral_queue_.clear();
@@ -455,7 +466,7 @@ void GestureEventFilter::SendAsyncEvents() {
     if (!GestureEventFilter::IsGestureEventTypeAsync(gesture_event.event.type))
       return;
     coalesced_gesture_events_.pop_front();
-    input_router_->SendGestureEventImmediately(gesture_event);
+    client_->SendGestureEventImmediately(gesture_event);
   }
 }
 

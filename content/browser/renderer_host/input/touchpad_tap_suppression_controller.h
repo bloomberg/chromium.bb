@@ -7,20 +7,28 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
+#include "content/common/content_export.h"
 #include "content/port/browser/event_with_latency_info.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 
-class InputRouter;
 class TapSuppressionController;
+
+class CONTENT_EXPORT TouchpadTapSuppressionControllerClient {
+ public:
+  virtual ~TouchpadTapSuppressionControllerClient() {}
+  virtual void SendMouseEventImmediately(
+      const MouseEventWithLatencyInfo& event) = 0;
+};
 
 // Controls the suppression of touchpad taps immediately following the dispatch
 // of a GestureFlingCancel event.
 class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
  public:
-  // The |input_router| must outlive the TouchpadTapSupressionController.
-  explicit TouchpadTapSuppressionController(InputRouter* input_router);
+  // The |client| must outlive the TouchpadTapSupressionController.
+  explicit TouchpadTapSuppressionController(
+      TouchpadTapSuppressionControllerClient* client);
   virtual ~TouchpadTapSuppressionController();
 
   // Should be called on arrival of GestureFlingCancel events.
@@ -49,7 +57,7 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   virtual void ForwardStashedTapDownForDeferral() OVERRIDE;
   virtual void ForwardStashedTapDownSkipDeferral() OVERRIDE;
 
-  InputRouter* input_router_;
+  TouchpadTapSuppressionControllerClient* client_;
   MouseEventWithLatencyInfo stashed_mouse_down_;
 
   // The core controller of tap suppression.

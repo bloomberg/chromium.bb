@@ -10,8 +10,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/renderer_host/input/gesture_event_filter.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
+#include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 namespace ui {
@@ -20,7 +22,6 @@ struct LatencyInfo;
 
 namespace content {
 
-class GestureEventFilter;
 class InputAckHandler;
 class InputRouterClient;
 class RenderProcessHost;
@@ -30,7 +31,9 @@ class RenderWidgetHostImpl;
 // forwarded to the renderer immediately upon receipt.
 class CONTENT_EXPORT ImmediateInputRouter
     : public NON_EXPORTED_BASE(InputRouter),
-      public NON_EXPORTED_BASE(TouchEventQueueClient) {
+      public NON_EXPORTED_BASE(GestureEventFilterClient),
+      public NON_EXPORTED_BASE(TouchEventQueueClient),
+      public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
  public:
   ImmediateInputRouter(RenderProcessHost* process,
                        InputRouterClient* client,
@@ -81,6 +84,10 @@ private:
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                InputEventAckState ack_result) OVERRIDE;
 
+  // GetureEventFilterClient
+  virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
+                                 InputEventAckState ack_result) OVERRIDE;
+
   bool SendMoveCaret(scoped_ptr<IPC::Message> message);
   bool SendSelectRange(scoped_ptr<IPC::Message> message);
   bool Send(IPC::Message* message);
@@ -113,7 +120,8 @@ private:
                             const ui::LatencyInfo& latency_info);
 
   // Called by ProcessInputEventAck() to process a keyboard event ack message.
-  void ProcessKeyboardAck(int type, InputEventAckState ack_result);
+  void ProcessKeyboardAck(WebKit::WebInputEvent::Type type,
+                          InputEventAckState ack_result);
 
   // Called by ProcessInputEventAck() to process a wheel event ack message.
   // This could result in a task being posted to allow additional wheel

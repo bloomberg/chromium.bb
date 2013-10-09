@@ -86,7 +86,7 @@ ImmediateInputRouter::ImmediateInputRouter(RenderProcessHost* process,
       mouse_wheel_pending_(false),
       has_touch_handler_(false),
       touch_event_queue_(new TouchEventQueue(this)),
-      gesture_event_filter_(new GestureEventFilter(this)) {
+      gesture_event_filter_(new GestureEventFilter(this, this)) {
   DCHECK(process);
   DCHECK(client);
 }
@@ -308,6 +308,12 @@ void ImmediateInputRouter::OnTouchEventAck(
   ack_handler_->OnTouchEventAck(event, ack_result);
 }
 
+void ImmediateInputRouter::OnGestureEventAck(
+    const GestureEventWithLatencyInfo& event,
+    InputEventAckState ack_result) {
+  ack_handler_->OnGestureEventAck(event.event, ack_result);
+}
+
 bool ImmediateInputRouter::SendSelectRange(scoped_ptr<IPC::Message> message) {
   DCHECK(message->type() == InputMsg_SelectRange::ID);
   if (select_range_pending_) {
@@ -384,7 +390,7 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
         // it is never sent to the renderer, and so it won't receive any ACKs.
         // So send the ACK to the gesture event filter immediately, and mark it
         // as having been processed.
-        gesture_event_filter_->ProcessGestureAck(true, input_event.type);
+        ProcessGestureAck(input_event.type, INPUT_EVENT_ACK_STATE_CONSUMED);
       } else if (WebInputEvent::isTouchEventType(input_event.type)) {
         // During an overscroll gesture initiated by touch-scrolling, the
         // touch-events do not reset or contribute to the overscroll gesture.
@@ -392,8 +398,7 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
         // ACK to the touch-event queue immediately. Mark the event as not
         // processed, to make sure that the touch-scroll gesture that initiated
         // the overscroll is updated properly.
-        touch_event_queue_->ProcessTouchAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-                                            latency_info);
+        ProcessTouchAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency_info);
       }
       return;
     }
@@ -476,7 +481,7 @@ void ImmediateInputRouter::ProcessInputEventAck(
       SendMouseEvent(*next_mouse_move);
     }
   } else if (WebInputEvent::isKeyboardEventType(type)) {
-    ProcessKeyboardAck(type, ack_result);
+    ProcessKeyboardAck(event_type, ack_result);
   } else if (type == WebInputEvent::MouseWheel) {
     ProcessWheelAck(ack_result);
   } else if (WebInputEvent::isTouchEventType(type)) {
@@ -501,7 +506,7 @@ void ImmediateInputRouter::ProcessInputEventAck(
 }
 
 void ImmediateInputRouter::ProcessKeyboardAck(
-    int type,
+    WebKit::WebInputEvent::Type type,
     InputEventAckState ack_result) {
   if (key_queue_.empty()) {
     ack_handler_->OnUnexpectedEventAck(InputAckHandler::UNEXPECTED_ACK);
@@ -540,14 +545,8 @@ void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result) {
 
 void ImmediateInputRouter::ProcessGestureAck(WebInputEvent::Type type,
                                              InputEventAckState ack_result) {
-  if (GestureEventFilter::IsGestureEventTypeAsync(type))
-    return;
-  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  // Note: the order the ack is passed to |ack_handler_| and
-  // |gesture_event_filter_| matters. See crbug.com/302592.
-  ack_handler_->OnGestureEventAck(
-      gesture_event_filter_->GetGestureEventAwaitingAck(), ack_result);
-  gesture_event_filter_->ProcessGestureAck(processed, type);
+  // |gesture_event_filter_| will forward to OnGestureEventAck when appropriate.
+  gesture_event_filter_->ProcessGestureAck(ack_result, type);
 }
 
 void ImmediateInputRouter::ProcessTouchAck(

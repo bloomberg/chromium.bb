@@ -410,6 +410,7 @@
         'browser/renderer_host/compositing_iosurface_transformer_mac_unittest.cc',
         'browser/renderer_host/frame_tree_unittest.cc',
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
+        'browser/renderer_host/input/gesture_event_filter_unittest.cc',
         'browser/renderer_host/input/immediate_input_router_unittest.cc',
         'browser/renderer_host/input/input_router_unittest.h',
         'browser/renderer_host/input/input_router_unittest.cc',
