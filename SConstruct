@@ -3101,6 +3101,7 @@ irt_variant_tests = [
     'tests/hello_world/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/infoleak/nacl.scons',
+    'tests/libc/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
     'tests/list_mappings/nacl.scons',
     'tests/longjmp/nacl.scons',

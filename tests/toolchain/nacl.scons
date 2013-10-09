@@ -71,8 +71,6 @@ def AddIntrinsicTest(test_env, src, exit_status,
 # Test various intrinsics.
 AddIntrinsicTest(env, 'intrinsics.cc', '55'),
 AddIntrinsicTest(env, 'float2.c', '0', golden_file=env.File('float2.stdout'))
-AddIntrinsicTest(env, 'memcpy_move_set.c', '0',
-                 golden_file=env.File('memcpy_move_set.stdout'))
 AddIntrinsicTest(env, 'synchronization_sync.c', '0',
                  # TODO(jfb) Blocked on bugs 3579 and 2981. This should
                  # work on PNaCl because it avoids the broken 16-bit
@@ -361,43 +359,6 @@ env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
                        'run_abi_types_test')
 
-strtoll_nexe = env.ComponentProgram('strtoll', 'strtoll.c',
-                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
-node = env.CommandSelLdrTestNacl('strtoll.out', strtoll_nexe)
-env.AddNodeToTestSuite(node,
-                       ['toolchain_tests', 'small_tests'],
-                       'run_strtoll_test')
-
-strtoull_nexe = env.ComponentProgram('strtoull', 'strtoull.c',
-                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
-node = env.CommandSelLdrTestNacl('strtoull.out', strtoull_nexe)
-env.AddNodeToTestSuite(node,
-                       ['toolchain_tests', 'small_tests'],
-                       'run_strtoull_test')
-
-wcstoll_nexe = env.ComponentProgram('wcstoll', 'wcstoll.c',
-                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
-node = env.CommandSelLdrTestNacl('wcstoll.out', wcstoll_nexe)
-env.AddNodeToTestSuite(node,
-                       ['toolchain_tests', 'small_tests'],
-                       'run_wcstoll_test',
-                       is_broken=env.Bit('nacl_glibc'))
-
-
-if not env.Bit('nacl_glibc'):
-  memalign_env = env.Clone()
-  memalign_env.Append(CPPDEFINES=['NEWLIB=1'])
-else:
-  memalign_env = env
-posix_memalign_nexe = memalign_env.ComponentProgram(
-    'posix_memalign',
-    'posix_memalign.c',
-    EXTRA_LIBS=['${NONIRT_LIBS}'])
-node = env.CommandSelLdrTestNacl('posix_memalign.out', posix_memalign_nexe)
-env.AddNodeToTestSuite(node,
-                       ['toolchain_tests', 'small_tests'],
-                       'run_posix_memalign_test')
-
 getpagesize_test_nexe = env.ComponentProgram(
     'getpagesize_test', 'getpagesize_test.c',
     EXTRA_LIBS=['${NONIRT_LIBS}'])
@@ -444,25 +405,6 @@ if env.Bit('nacl_glibc'):
   env.AddNodeToTestSuite(node,
                          ['toolchain_tests', 'small_tests'],
                          'run_byteswap64_test')
-
-# Test that using link-time optimization does not convert calls to
-# library functions that were never linked in.
-if env.Bit('bitcode'):
-  unopt_env = env.Clone()
-  unopt_env.Append(CFLAGS=['-O0'])
-  unopt_env.Append(CCFLAGS=['-O0'])
-  opt_env = env.Clone()
-  opt_env.Append(CFLAGS=['-O3'])
-  opt_env.Append(CCFLAGS=['-O3'])
-  opt_env.Append(LINKFLAGS=['-O3'])
-  obj = unopt_env.ComponentObject('printf_to_puts.c')
-  nexe = opt_env.ComponentProgram('printf_to_puts',
-                                  obj,
-                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
-  node = env.CommandSelLdrTestNacl('printf_to_puts.out', nexe)
-  env.AddNodeToTestSuite(node,
-                         ['toolchain_tests', 'small_tests'],
-                         'run_printf_to_puts_test')
 
 if env.Bit('nacl_glibc') or (env.IsNewLinker() and not env.Bit('bitcode')):
   def AddAlignedCodeTest(name, object_file):

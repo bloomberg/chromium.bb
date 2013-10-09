@@ -281,7 +281,10 @@ def MakeTempDir(env, **kwargs):
   temporary_dir = tempfile.mkdtemp(**kwargs)
   def Cleanup():
     try:
-      shutil.rmtree(temporary_dir)
+      # Try to remove the dir but only if it exists. Some tests may clean up
+      # after themselves.
+      if os.path.exists(temporary_dir):
+        shutil.rmtree(temporary_dir)
     except BaseException as e:
       sys.stderr.write('Unable to delete dir %s on exit: %s\n' % (
         temporary_dir, e))
