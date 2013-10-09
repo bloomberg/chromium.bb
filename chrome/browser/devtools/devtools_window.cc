@@ -557,10 +557,10 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       dock_side_(dock_side),
       is_loaded_(false),
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW),
-      weak_factory_(this),
       width_(-1),
       height_(-1),
-      dock_side_before_minimized_(dock_side) {
+      dock_side_before_minimized_(dock_side),
+      weak_factory_(this) {
   web_contents_ =
       content::WebContents::Create(content::WebContents::CreateParams(profile));
   frontend_contents_observer_.reset(

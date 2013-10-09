@@ -259,7 +259,6 @@ class DevToolsWindow : private content::NotificationObserver,
   DevToolsToggleAction action_on_load_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<content::DevToolsClientHost> frontend_host_;
-  base::WeakPtrFactory<DevToolsWindow> weak_factory_;
   scoped_ptr<DevToolsFileHelper> file_helper_;
   scoped_refptr<DevToolsFileSystemIndexer> file_system_indexer_;
   typedef std::map<
@@ -272,6 +271,7 @@ class DevToolsWindow : private content::NotificationObserver,
   DevToolsDockSide dock_side_before_minimized_;
 
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
+  base::WeakPtrFactory<DevToolsWindow> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

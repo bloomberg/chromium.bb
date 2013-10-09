@@ -111,9 +111,9 @@ class DevToolsFileHelper {
 
   content::WebContents* web_contents_;
   Profile* profile_;
-  base::WeakPtrFactory<DevToolsFileHelper> weak_factory_;
   typedef std::map<std::string, base::FilePath> PathsMap;
   PathsMap saved_files_;
+  base::WeakPtrFactory<DevToolsFileHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFileHelper);
 };
 
