@@ -51,6 +51,7 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "core/xml/XMLHttpRequestUpload.h"
+#include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ResourceError.h"
@@ -481,6 +482,8 @@ void XMLHttpRequest::open(const String& method, const KURL& url, ExceptionState&
 
 void XMLHttpRequest::open(const String& method, const KURL& url, bool async, ExceptionState& es)
 {
+    LOG(Network, "XMLHttpRequest %p open('%s', '%s', %d)", this, method.utf8().data(), url.elidedString().utf8().data(), async);
+
     if (!internalAbort())
         return;
 
@@ -592,6 +595,8 @@ bool XMLHttpRequest::areMethodAndURLValidForSend()
 
 void XMLHttpRequest::send(Document* document, ExceptionState& es)
 {
+    LOG(Network, "XMLHttpRequest %p send() Document %p", this, document);
+
     ASSERT(document);
 
     if (!initSend(es))
@@ -619,6 +624,8 @@ void XMLHttpRequest::send(Document* document, ExceptionState& es)
 
 void XMLHttpRequest::send(const String& body, ExceptionState& es)
 {
+    LOG(Network, "XMLHttpRequest %p send() String '%s'", this, body.utf8().data());
+
     if (!initSend(es))
         return;
 
@@ -641,6 +648,8 @@ void XMLHttpRequest::send(const String& body, ExceptionState& es)
 
 void XMLHttpRequest::send(Blob* body, ExceptionState& es)
 {
+    LOG(Network, "XMLHttpRequest %p send() Blob '%s'", this, body->url().elidedString().utf8().data());
+
     if (!initSend(es))
         return;
 
@@ -669,6 +678,8 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& es)
 
 void XMLHttpRequest::send(DOMFormData* body, ExceptionState& es)
 {
+    LOG(Network, "XMLHttpRequest %p send() DOMFormData %p", this, body);
+
     if (!initSend(es))
         return;
 
@@ -687,6 +698,8 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionState& es)
 
 void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& es)
 {
+    LOG(Network, "XMLHttpRequest %p send() ArrayBuffer %p", this, body);
+
     String consoleMessage("ArrayBuffer is deprecated in XMLHttpRequest.send(). Use ArrayBufferView instead.");
     scriptExecutionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, consoleMessage);
 
@@ -697,6 +710,8 @@ void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& es)
 
 void XMLHttpRequest::send(ArrayBufferView* body, ExceptionState& es)
 {
+    LOG(Network, "XMLHttpRequest %p send() ArrayBufferView %p", this, body);
+
     HistogramSupport::histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBufferView, XMLHttpRequestSendArrayBufferOrViewMax);
 
     sendBytesData(body->baseAddress(), body->byteLength(), es);
@@ -809,6 +824,8 @@ void XMLHttpRequest::createRequest(ExceptionState& es)
 
 void XMLHttpRequest::abort()
 {
+    LOG(Network, "XMLHttpRequest %p abort()", this);
+
     // internalAbort() calls dropProtection(), which may release the last reference.
     RefPtr<XMLHttpRequest> protect(this);
 
@@ -935,6 +952,8 @@ void XMLHttpRequest::dispatchEventAndLoadEnd(const AtomicString& type)
 
 void XMLHttpRequest::handleNetworkError()
 {
+    LOG(Network, "XMLHttpRequest %p handleNetworkError()", this);
+
     m_exceptionCode = NetworkError;
 
     handleDidFailGeneric();
@@ -951,6 +970,8 @@ void XMLHttpRequest::handleNetworkError()
 
 void XMLHttpRequest::handleDidCancel()
 {
+    LOG(Network, "XMLHttpRequest %p handleDidCancel()", this);
+
     m_exceptionCode = AbortError;
 
     handleDidFailGeneric();
@@ -1124,6 +1145,8 @@ String XMLHttpRequest::statusText(ExceptionState& es) const
 
 void XMLHttpRequest::didFail(const ResourceError& error)
 {
+    LOG(Network, "XMLHttpRequest %p didFail()", this);
+
     // If we are already in an error state, for instance we called abort(), bail out early.
     if (m_error)
         return;
@@ -1147,11 +1170,15 @@ void XMLHttpRequest::didFail(const ResourceError& error)
 
 void XMLHttpRequest::didFailRedirectCheck()
 {
+    LOG(Network, "XMLHttpRequest %p didFailRedirectCheck()", this);
+
     handleNetworkError();
 }
 
 void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
 {
+    LOG(Network, "XMLHttpRequest %p didFinishLoading(%lu)", this, identifier);
+
     if (m_error)
         return;
 
@@ -1181,6 +1208,8 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
+    LOG(Network, "XMLHttpRequest %p didSendData(%llu, %llu)", this, bytesSent, totalBytesToBeSent);
+
     if (!m_upload)
         return;
 
@@ -1196,6 +1225,8 @@ void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long lon
 
 void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
 {
+    LOG(Network, "XMLHttpRequest %p didReceiveResponse(%lu)", this, identifier);
+
     InspectorInstrumentation::didReceiveXHRResponse(scriptExecutionContext(), identifier);
 
     m_response = response;
@@ -1280,6 +1311,8 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
 
 void XMLHttpRequest::handleDidTimeout()
 {
+    LOG(Network, "XMLHttpRequest %p handleDidTimeout()", this);
+
     // internalAbort() calls dropProtection(), which may release the last reference.
     RefPtr<XMLHttpRequest> protect(this);
 
