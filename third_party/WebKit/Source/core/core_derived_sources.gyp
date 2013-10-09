@@ -482,9 +482,7 @@
         {
           'action_name': 'FetchInitiatorTypeNames',
           'inputs': [
-            'scripts/Hasher.pm',
-            'scripts/StaticString.pm',
-            'scripts/make_names.pl',
+            '<@(make_names_files)',
             'fetch/FetchInitiatorTypeNames.in',
           ],
           'outputs': [
@@ -493,21 +491,16 @@
           ],
           'action': [
             'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--resourceTypes',
+            'scripts/make_names.py',
+            'fetch/FetchInitiatorTypeNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'EventNames',
           'inputs': [
-            'scripts/Hasher.pm',
-            'scripts/StaticString.pm',
-            'scripts/make_names.pl',
+            '<@(make_names_files)',
             'events/EventNames.in',
           ],
           'outputs': [
@@ -516,14 +509,11 @@
           ],
           'action': [
             'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--eventNames',
+            'scripts/make_names.py',
+            'events/EventNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'XLinkNames',

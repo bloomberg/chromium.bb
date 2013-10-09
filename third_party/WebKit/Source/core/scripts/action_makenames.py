@@ -117,7 +117,7 @@ def main(args):
         inputAbs = os.path.abspath(input)
         inputAbsPosix = inputAbs.replace(os.path.sep, posixpath.sep)
         inputBasename = os.path.basename(input)
-        if inputBasename in ('make_names.pl', 'make_event_factory.pl', 'make_dom_exceptions.pl', 'make_settings.pl'):
+        if inputBasename in ('make_names.pl', 'make_dom_exceptions.pl', 'make_settings.pl'):
             assert makeNamesInput == None
             makeNamesInput = inputAbs
         elif inputBasename.endswith('TagNames.in'):
@@ -136,7 +136,7 @@ def main(args):
             assert False
 
     assert makeNamesInput != None
-    assert tagInput != None or attrInput != None or eventsInput != None or ('--fonts' in options) or ('--resourceTypes' in options) or ('--eventNames' in options)
+    assert tagInput != None or attrInput != None or eventsInput != None or ('--fonts' in options)
 
     # scriptsPath is a Perl include directory, located relative to
     # makeNamesInput.

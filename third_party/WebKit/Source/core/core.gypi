@@ -3627,12 +3627,19 @@
             # dependency for whole jinja2 package
             '<(DEPTH)/third_party/jinja2/__init__.py',
             '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
+            'scripts/hasher.py',
             'scripts/in_file.py',
             'scripts/in_generator.py',
             'scripts/license.py',
             'scripts/name_macros.py',
             'scripts/template_expander.py',
             'scripts/templates/macros.tmpl',
+        ],
+        'make_names_files': [
+            '<@(scripts_for_in_files)',
+            'scripts/make_names.py',
+            'scripts/templates/MakeNames.cpp.tmpl',
+            'scripts/templates/MakeNames.h.tmpl',
         ],
         'conditions': [
             ['OS=="win"', {

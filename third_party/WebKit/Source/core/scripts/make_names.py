@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (C) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,32 +27,39 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
 import sys
 
-import hasher
-
-_current_dir = os.path.dirname(os.path.realpath(__file__))
-# jinja2 is in chromium's third_party directory
-# Insert at front to override system libraries, and after path[0] == script dir
-sys.path.insert(1, os.path.join(_current_dir, *([os.pardir] * 4)))
-import jinja2
+import in_generator
+import template_expander
 
 
-def apply_template(path_to_template, params):
-    dirname, basename = os.path.split(path_to_template)
-    path_to_templates = os.path.join(_current_dir, 'templates')
-    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader([dirname, path_to_templates]), keep_trailing_newline=True)
-    jinja_env.filters['hash'] = hasher.hash
-    template = jinja_env.get_template(basename)
-    return template.render(params)
+class MakeNamesWriter(in_generator.Writer):
+    defaults = {
+    }
+    default_parameters = {
+        'namespace': '',
+    }
+
+    def __init__(self, in_file_path, enabled_conditions):
+        super(MakeNamesWriter, self).__init__(in_file_path, enabled_conditions)
+        namespace = self.in_file.parameters['namespace'].strip('"')
+        self._outputs = {
+            (namespace + ".h"): self.generate_header,
+            (namespace + ".cpp"): self.generate_implementation,
+        }
+        self._template_context = {
+            'namespace': namespace,
+            'names': [entry['name'] for entry in self.in_file.name_dictionaries],
+        }
+
+    @template_expander.use_jinja("MakeNames.h.tmpl")
+    def generate_header(self):
+        return self._template_context
+
+    @template_expander.use_jinja("MakeNames.cpp.tmpl")
+    def generate_implementation(self):
+        return self._template_context
 
 
-def use_jinja(template_file_name):
-    def real_decorator(generator):
-        def generator_internal(*args, **kwargs):
-            parameters = generator(*args, **kwargs)
-            return apply_template(template_file_name, parameters)
-        generator_internal.func_name = generator.func_name
-        return generator_internal
-    return real_decorator
+if __name__ == "__main__":
+    in_generator.Maker(MakeNamesWriter).main(sys.argv)
