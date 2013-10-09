@@ -49,6 +49,11 @@ crbug.com/24182 [ Debug ] fast/js/toString-and-valueOf-override.html [ Timeout ]
 
 crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout ]
 
+# Transient - XHR mixed content type revert will be restored.
+crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-allowed.html [ Failure Pass ]
+crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-blocked.html [ Failure Pass ]
+crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.html [ Failure Pass ]
+
 crbug.com/260129 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failure Pass ]
 
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Timeout ]

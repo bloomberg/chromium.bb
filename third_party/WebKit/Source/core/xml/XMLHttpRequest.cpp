@@ -774,7 +774,8 @@ void XMLHttpRequest::createRequest(ExceptionState& es)
     options.securityOrigin = securityOrigin();
     options.initiator = FetchInitiatorTypeNames::xmlhttprequest;
     options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(scriptExecutionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
-    options.mixedContentBlockingTreatment = TreatAsActiveContent;
+    // TODO(tsepez): Specify TreatAsActiveContent per http://crbug.com/305303.
+    options.mixedContentBlockingTreatment = TreatAsPassiveContent;
     options.timeoutMilliseconds = m_timeoutMilliseconds;
 
     m_exceptionCode = 0;
