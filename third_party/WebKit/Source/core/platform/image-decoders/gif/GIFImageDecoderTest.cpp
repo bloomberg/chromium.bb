@@ -452,6 +452,33 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
     EXPECT_EQ(baselineHashes[0], hashSkBitmap(firstFrame->getSkBitmap()));
 }
 
+// The first LZW codes in the image are invalid values that try to create a loop
+// in the dictionary. Decoding should fail, but not infinitely loop or corrupt memory.
+TEST(GIFImageDecoderTest, badInitialCode)
+{
+    RefPtr<SharedBuffer> testData = readFile("/Source/core/platform/image-decoders/testing/bad-initial-code.gif");
+    ASSERT_TRUE(testData.get());
+
+    OwnPtr<GIFImageDecoder> testDecoder(createDecoder());
+    testDecoder->setData(testData.get(), true);
+    EXPECT_EQ(1u, testDecoder->frameCount());
+    ASSERT_TRUE(testDecoder->frameBufferAtIndex(0));
+    EXPECT_TRUE(testDecoder->failed());
+}
+
+// The image has an invalid LZW code that exceeds dictionary size. Decoding should fail.
+TEST(GIFImageDecoderTest, badCode)
+{
+    RefPtr<SharedBuffer> testData = readFile("/Source/core/platform/image-decoders/testing/bad-code.gif");
+    ASSERT_TRUE(testData.get());
+
+    OwnPtr<GIFImageDecoder> testDecoder(createDecoder());
+    testDecoder->setData(testData.get(), true);
+    EXPECT_EQ(1u, testDecoder->frameCount());
+    ASSERT_TRUE(testDecoder->frameBufferAtIndex(0));
+    EXPECT_TRUE(testDecoder->failed());
+}
+
 TEST(GIFImageDecoderTest, invalidDisposalMethod)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
