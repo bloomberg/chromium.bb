@@ -2311,6 +2311,8 @@
         'browser/sync_file_system/drive_backend/metadata_database.h',
         'browser/sync_file_system/drive_backend/metadata_db_migration_util.cc',
         'browser/sync_file_system/drive_backend/metadata_db_migration_util.h',
+        'browser/sync_file_system/drive_backend/register_app_task.cc',
+        'browser/sync_file_system/drive_backend/register_app_task.h',
         'browser/sync_file_system/drive_backend/remote_to_local_syncer.cc',
         'browser/sync_file_system/drive_backend/remote_to_local_syncer.h',
         'browser/sync_file_system/drive_backend/sync_engine.cc',

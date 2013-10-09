@@ -107,8 +107,6 @@ class SyncEngine : public RemoteFileSyncService,
   virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
 
  private:
-  void DoRegisterApp(const std::string& app_id,
-                     const SyncStatusCallback& callback);
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
   void DoEnableApp(const std::string& app_id,

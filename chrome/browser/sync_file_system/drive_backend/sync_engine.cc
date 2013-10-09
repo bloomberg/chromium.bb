@@ -10,6 +10,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
+#include "chrome/browser/sync_file_system/drive_backend/register_app_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
@@ -60,10 +61,8 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
 void SyncEngine::RegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_.ScheduleTask(
-      base::Bind(&SyncEngine::DoRegisterApp,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 origin.host()),
+  task_manager_.ScheduleSyncTask(
+      scoped_ptr<SyncTask>(new RegisterAppTask(this, origin.host())),
       callback);
 }
 
@@ -205,11 +204,6 @@ MetadataDatabase* SyncEngine::GetMetadataDatabase() {
   return metadata_database_.get();
 }
 
-void SyncEngine::DoRegisterApp(const std::string& app_id,
-                               const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
-}
-
 void SyncEngine::DoDisableApp(const std::string& app_id,
                               const SyncStatusCallback& callback) {
   NOTIMPLEMENTED();
@@ -228,7 +222,7 @@ void SyncEngine::DoUninstallApp(const std::string& app_id,
 
 void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
                                SyncStatusCode status) {
-  NOTIMPLEMENTED();
+  metadata_database_ = initializer->PassMetadataDatabase();
 }
 
 void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
