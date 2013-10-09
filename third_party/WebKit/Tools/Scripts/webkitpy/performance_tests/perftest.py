@@ -163,6 +163,7 @@ class PerfTest(object):
     _metrics_regex = re.compile(r'^(?P<metric>Time|Malloc|JS Heap):')
     _statistics_keys = ['avg', 'median', 'stdev', 'min', 'max', 'unit', 'values']
     _score_regex = re.compile(r'^(?P<key>' + r'|'.join(_statistics_keys) + r')\s+(?P<value>([0-9\.]+(,\s+)?)+)\s*(?P<unit>.*)')
+    _console_regex = re.compile(r'^CONSOLE MESSAGE:')
 
     def _run_with_driver(self, driver, time_out_ms):
         output = self.run_single(driver, self.test_path(), time_out_ms)
@@ -175,6 +176,7 @@ class PerfTest(object):
             description_match = self._description_regex.match(line)
             metric_match = self._metrics_regex.match(line)
             score = self._score_regex.match(line)
+            console_match = self._console_regex.match(line)
 
             if description_match:
                 self._description = description_match.group('description')
@@ -186,6 +188,9 @@ class PerfTest(object):
 
                 metric = self._ensure_metrics(current_metric, score.group('unit'))
                 metric.append_group(map(lambda value: float(value), score.group('value').split(', ')))
+            elif console_match:
+                # Ignore console messages such as deprecation warnings.
+                continue
             else:
                 _log.error('ERROR: ' + line)
                 return False
