@@ -78,8 +78,6 @@ attribute boolean muted;
 [Reflect=muted] attribute boolean defaultMuted;
 
 // WebKit extensions
-attribute boolean webkitPreservesPitch;
-
 readonly attribute boolean webkitHasClosedCaptions;
 attribute boolean webkitClosedCaptionsVisible;
 

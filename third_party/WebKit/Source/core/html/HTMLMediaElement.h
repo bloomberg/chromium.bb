@@ -132,8 +132,6 @@ public:
     double playbackRate() const;
     void setPlaybackRate(double);
     void updatePlaybackRate();
-    bool webkitPreservesPitch() const;
-    void setWebkitPreservesPitch(bool);
     PassRefPtr<TimeRanges> played();
     PassRefPtr<TimeRanges> seekable() const;
     bool ended() const;
@@ -477,7 +475,6 @@ private:
 
     double m_playbackRate;
     double m_defaultPlaybackRate;
-    bool m_webkitPreservesPitch;
     NetworkState m_networkState;
     ReadyState m_readyState;
     ReadyState m_readyStateMaximum;

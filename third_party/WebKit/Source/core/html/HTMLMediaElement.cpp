@@ -250,7 +250,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_playbackRate(1.0f)
     , m_defaultPlaybackRate(1.0f)
-    , m_webkitPreservesPitch(true)
     , m_networkState(NETWORK_EMPTY)
     , m_readyState(HAVE_NOTHING)
     , m_readyStateMaximum(HAVE_NOTHING)
@@ -2100,19 +2099,6 @@ void HTMLMediaElement::updatePlaybackRate()
     double effectiveRate = m_mediaController ? m_mediaController->playbackRate() : m_playbackRate;
     if (m_player && potentiallyPlaying() && m_player->rate() != effectiveRate)
         m_player->setRate(effectiveRate);
-}
-
-bool HTMLMediaElement::webkitPreservesPitch() const
-{
-    return m_webkitPreservesPitch;
-}
-
-void HTMLMediaElement::setWebkitPreservesPitch(bool preservesPitch)
-{
-    LOG(Media, "HTMLMediaElement::setWebkitPreservesPitch(%s)", boolString(preservesPitch));
-
-    m_webkitPreservesPitch = preservesPitch;
-    notImplemented();
 }
 
 bool HTMLMediaElement::ended() const
