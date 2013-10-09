@@ -76,6 +76,10 @@ bool FrameIdMap::InsertPacket(const RtpCastHeader& rtp_header, bool* complete) {
     waiting_for_key_ = false;
   }
 
+  VLOG(1) << "InsertPacket frame:" << static_cast<int>(frame_id)
+          << " packet:" << static_cast<int>(rtp_header.packet_id)
+          << " max packet:" << static_cast<int>(rtp_header.max_packet_id);
+
   if (IsOlderFrameId(frame_id, last_released_frame_) && !waiting_for_key_) {
     return false;
   }

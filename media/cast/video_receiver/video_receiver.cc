@@ -20,7 +20,7 @@ const int64 kMinSchedulingDelayMs = 1;
 // Minimum time before a frame is due to be rendered before we pull it for
 // decode.
 static const int64 kMinFramePullMs = 20;
-static const int64 kMinTimeBetweenOffsetUpdatesMs = 500;
+static const int64 kMinTimeBetweenOffsetUpdatesMs = 2000;
 static const int kTimeOffsetFilter = 8;
 static const int64_t kMinProcessIntervalMs = 5;
 
@@ -40,14 +40,11 @@ class LocalRtpVideoData : public RtpData {
   virtual void OnReceivedPayloadData(const uint8* payload_data,
                                      int payload_size,
                                      const RtpCastHeader* rtp_header) OVERRIDE {
-    if (!time_updated_) {
+    base::TimeTicks now = clock_->NowTicks();
+    if (time_incoming_packet_.is_null() || now - time_incoming_packet_ >
+        base::TimeDelta::FromMilliseconds(kMinTimeBetweenOffsetUpdatesMs)) {
       incoming_rtp_timestamp_ = rtp_header->webrtc.header.timestamp;
-      time_incoming_packet_ = clock_->NowTicks();
-      time_updated_ = true;
-    } else if (clock_->NowTicks() > time_incoming_packet_ +
-          base::TimeDelta::FromMilliseconds(kMinTimeBetweenOffsetUpdatesMs)) {
-      incoming_rtp_timestamp_ = rtp_header->webrtc.header.timestamp;
-      time_incoming_packet_ = clock_->NowTicks();
+      time_incoming_packet_ = now;
       time_updated_ = true;
     }
     video_receiver_->IncomingRtpPacket(payload_data, payload_size, *rtp_header);
@@ -196,7 +193,7 @@ void VideoReceiver::DecodeVideoFrameThread(
           base::Bind(frame_decoded_callback,
                      base::Passed(&video_frame), render_time));
   } else {
-    VLOG(0) << "Failed to decode video frame";
+    // This will happen if we decide to decode but not show a frame.
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::GetRawVideoFrame,
             weak_factory_.GetWeakPtr(), frame_decoded_callback));
@@ -240,6 +237,7 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
     base::TimeTicks* render_time) {
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   *render_time = GetRenderTime(now, rtp_timestamp);
+
   base::TimeDelta min_wait_delta =
       base::TimeDelta::FromMilliseconds(kMinFramePullMs);
   base::TimeDelta time_until_render = *render_time - now;
@@ -253,14 +251,19 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
     cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::PlayoutTimeout, weak_factory_.GetWeakPtr()),
         time_until_release);
+    VLOG(0) << "Wait before releasing frame "
+            << static_cast<int>((*encoded_frame)->frame_id)
+            << " time " << time_until_release.InMilliseconds();
     return false;
   }
 
   base::TimeDelta dont_show_timeout_delta =
-    base::TimeDelta::FromMilliseconds(-kDontShowTimeoutMs);
+      base::TimeDelta::FromMilliseconds(-kDontShowTimeoutMs);
   if (codec_ == kVp8 && time_until_render < dont_show_timeout_delta) {
     (*encoded_frame)->data[0] &= 0xef;
-    VLOG(1) << "Don't show frame";
+    VLOG(0) << "Don't show frame "
+            << static_cast<int>((*encoded_frame)->frame_id)
+            << " time_until_render:" << time_until_render.InMilliseconds();
   }
   // We have a copy of the frame, release this one.
   framer_->ReleaseFrame((*encoded_frame)->frame_id);
@@ -285,6 +288,9 @@ void VideoReceiver::PlayoutTimeout() {
     DCHECK(false);
     return;
   }
+  VLOG(1) << "PlayoutTimeout retrieved frame "
+          << static_cast<int>(encoded_frame->frame_id);
+
   base::TimeTicks render_time;
   if (PullEncodedVideoFrame(rtp_timestamp, next_frame, &encoded_frame,
                             &render_time)) {
@@ -354,7 +360,7 @@ void VideoReceiver::IncomingPacket(const uint8* packet, int length,
 void VideoReceiver::IncomingRtpPacket(const uint8* payload_data,
                                       int payload_size,
                                       const RtpCastHeader& rtp_header) {
-  // TODO only release if we have a complete frame
+  // TODO(pwestin): only release if we have a complete frame
   framer_->InsertPacket(payload_data, payload_size, rtp_header);
   if (!queued_encoded_callbacks_.empty()) {
     VideoFrameEncodedCallback callback = queued_encoded_callbacks_.front();

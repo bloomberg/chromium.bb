@@ -34,6 +34,7 @@ class LocalRtpAudioData : public RtpData {
       const uint8* payload_data,
       int payload_size,
       const RtpCastHeader* rtp_header) OVERRIDE {
+    // TODO(pwestin): update this as video to refresh over time.
     if (time_first_incoming_packet_.is_null()) {
       first_incoming_rtp_timestamp_ = rtp_header->webrtc.header.timestamp;
       time_first_incoming_packet_ = clock_->NowTicks();
@@ -238,10 +239,10 @@ void AudioReceiver::GetEncodedAudioFrame(
   if (!audio_buffer_->GetEncodedAudioFrame(now, encoded_frame.get(),
                                            &rtp_timestamp, &next_frame)) {
     // We have no audio frames. Wait for new packet(s).
+    VLOG(1) << "Wait for more audio packets in frame";
     queued_encoded_callbacks_.push_back(callback);
     return;
   }
-  // Put the callback last in the queue on a wait event.
   PostEncodedAudioFrame(false, callback, rtp_timestamp, next_frame,
                         &encoded_frame);
 }
@@ -254,7 +255,7 @@ void AudioReceiver::PostEncodedAudioFrame(
     scoped_ptr<EncodedAudioFrame>* encoded_frame) {
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   base::TimeTicks playout_time = GetPlayoutTime(now, rtp_timestamp);
-  base::TimeDelta time_until_playout = now - playout_time;
+  base::TimeDelta time_until_playout = playout_time - now;
   base::TimeDelta min_wait_delta =
       base::TimeDelta::FromMilliseconds(kMaxAudioFrameWaitMs);
 
@@ -271,6 +272,8 @@ void AudioReceiver::PostEncodedAudioFrame(
     cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&AudioReceiver::PlayoutTimeout, weak_factory_.GetWeakPtr()),
         time_until_release);
+    VLOG(1) << "Wait until time to playout:"
+            << time_until_release.InMilliseconds();
     return;
   }
   (*encoded_frame)->codec = codec_;
@@ -322,18 +325,15 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
           base::TimeDelta::FromMilliseconds(rtp_timestamp_diff / frequency_khz);
       base::TimeDelta time_diff_delta = now - time_first_incoming_packet;
 
-      if (rtp_time_diff_delta > time_diff_delta) {
-        return (now + (rtp_time_diff_delta - time_diff_delta));
-      }
-      return now;
-      }
+      return now + std::max(rtp_time_diff_delta - time_diff_delta,
+                            base::TimeDelta());
+    }
   }
   // This can fail if we have not received any RTCP packets in a long time.
-  if (rtcp_->RtpTimestampInSenderTime(frequency_, rtp_timestamp,
-                                      &rtp_timestamp_in_ticks)) {
-    return (rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_);
-  }
-  return now;
+  return rtcp_->RtpTimestampInSenderTime(frequency_, rtp_timestamp,
+                                         &rtp_timestamp_in_ticks) ?
+    rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_ :
+    now;
 }
 
 void AudioReceiver::ScheduleNextRtcpReport() {

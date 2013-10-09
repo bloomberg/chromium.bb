@@ -84,6 +84,7 @@ void RtpPacketizer::Cast(bool is_key,
                          std::vector<uint8> data) {
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
+
   // Split the payload evenly (round number up).
   // TODO(hclam): Fix the use of static_cast here.
   uint32 num_packets =

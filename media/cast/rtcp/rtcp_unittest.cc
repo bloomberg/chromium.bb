@@ -31,9 +31,9 @@ class LocalRtcpTransport : public PacedPacketSender {
       : short_delay_(false),
         testing_clock_(testing_clock) {}
 
-  void SetRtcpReceiver(Rtcp* rtcp)  { rtcp_ = rtcp; }
+  void SetRtcpReceiver(Rtcp* rtcp) { rtcp_ = rtcp; }
 
-  void SetShortDelay()  { short_delay_ = true; }
+  void SetShortDelay() { short_delay_ = true; }
 
   virtual bool SendRtcpPacket(const std::vector<uint8>& packet) OVERRIDE {
     if (short_delay_) {

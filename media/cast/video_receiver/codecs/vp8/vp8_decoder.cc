@@ -29,6 +29,9 @@ void Vp8Decoder::InitDecode(int number_of_cores) {
 
 bool Vp8Decoder::Decode(const EncodedVideoFrame& input_image,
                         I420VideoFrame* decoded_frame) {
+  VLOG(1) << "VP8 decode frame:" << static_cast<int>(input_image.frame_id)
+          << " sized:" << input_image.data.size();
+
   if (input_image.data.empty()) return false;
 
   vpx_codec_iter_t iter = NULL;
@@ -38,27 +41,39 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame& input_image,
                        static_cast<unsigned int>(input_image.data.size()),
                        0,
                        1 /* real time*/)) {
+    VLOG(1) << "Failed to decode VP8 frame.";
     return false;
   }
 
   img = vpx_codec_get_frame(decoder_.get(), &iter);
-  if (img == NULL) return false;
+  if (img == NULL) {
+    VLOG(1) << "Skip rendering VP8 frame:"
+            << static_cast<int>(input_image.frame_id);
+    return false;
+  }
 
+  // The img is only valid until the next call to vpx_codec_decode.
   // Populate the decoded image.
   decoded_frame->width = img->d_w;
   decoded_frame->height = img->d_h;
 
   decoded_frame->y_plane.stride = img->stride[VPX_PLANE_Y];
   decoded_frame->y_plane.length = img->stride[VPX_PLANE_Y] * img->d_h;
-  decoded_frame->y_plane.data = img->planes[VPX_PLANE_Y];
+  decoded_frame->y_plane.data = new uint8[decoded_frame->y_plane.length];
+  memcpy(decoded_frame->y_plane.data, img->planes[VPX_PLANE_Y],
+         decoded_frame->y_plane.length);
 
   decoded_frame->u_plane.stride = img->stride[VPX_PLANE_U];
   decoded_frame->u_plane.length = img->stride[VPX_PLANE_U] * img->d_h;
-  decoded_frame->u_plane.data = img->planes[VPX_PLANE_U];
+  decoded_frame->u_plane.data = new uint8[decoded_frame->u_plane.length];
+  memcpy(decoded_frame->u_plane.data, img->planes[VPX_PLANE_U],
+         decoded_frame->u_plane.length);
 
   decoded_frame->v_plane.stride = img->stride[VPX_PLANE_V];
   decoded_frame->v_plane.length = img->stride[VPX_PLANE_V] * img->d_h;
-  decoded_frame->v_plane.data = img->planes[VPX_PLANE_V];
+  decoded_frame->v_plane.data = new uint8[decoded_frame->v_plane.length];
+  memcpy(decoded_frame->v_plane.data, img->planes[VPX_PLANE_V],
+         decoded_frame->v_plane.length);
 
   return true;
 }

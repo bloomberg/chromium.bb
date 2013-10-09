@@ -78,8 +78,8 @@ void RtpSender::ResendPackets(
 
         // Resend packet to the network.
         if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id) << ":"
-              << packet_id << " size: " << packets.size();
+          VLOG(1) << "Resend packet:" << static_cast<int>(frame_id)
+                  << ":" << packet_id << " size: " << packets.size();
           // Set a unique incremental sequence number for every packet.
           UpdateSequenceNumber(&packet);
           // Set the size as correspond to each frame.

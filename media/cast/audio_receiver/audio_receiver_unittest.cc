@@ -17,6 +17,7 @@ namespace media {
 namespace cast {
 
 static const int kPacketSize = 1500;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class TestAudioEncoderCallback :
     public base::RefCountedThreadSafe<TestAudioEncoderCallback>  {
@@ -65,6 +66,8 @@ class AudioReceiverTest : public ::testing::Test {
     audio_config_.channels = 1;
     audio_config_.codec = kPcm16;
     audio_config_.use_external_decoder = false;
+    testing_clock_.Advance(
+        base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(task_runner_, task_runner_,
         task_runner_, task_runner_, task_runner_);

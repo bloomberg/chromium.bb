@@ -230,7 +230,9 @@ void VideoSender::ResendCheck() {
         last_sent_frame_id_ = -1;
         UpdateFramesInFlight();
       } else {
-        ResendFrame(static_cast<uint8>(last_acked_frame_id_ + 1));
+        uint8 frame_id = static_cast<uint8>(last_acked_frame_id_ + 1);
+        VLOG(1) << "ACK timeout resend frame:" << static_cast<int>(frame_id);
+        ResendFrame(frame_id);
       }
     }
   }
@@ -306,6 +308,8 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
       resend_frame = static_cast<uint8>(last_acked_frame_id_ + 1);
     }
     if (resend_frame != -1) {
+      VLOG(1) << "Received duplicate ACK for frame:"
+              << static_cast<int>(resend_frame);
       ResendFrame(static_cast<uint8>(resend_frame));
     }
   } else {
@@ -321,6 +325,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
 }
 
 void VideoSender::ReceivedAck(uint8 acked_frame_id) {
+  VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   last_acked_frame_id_ = acked_frame_id;
   UpdateFramesInFlight();
 }

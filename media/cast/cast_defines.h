@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/time/time.h"
 
 namespace media {
@@ -95,6 +96,7 @@ inline base::TimeDelta ConvertFromNtpDiff(uint32 ntp_delay) {
 inline void ConvertTimeToFractions(int64 time_us,
                                    uint32* seconds,
                                    uint32* fractions) {
+  DCHECK_GE(time_us, 0) << "Time must NOT be negative";
   *seconds = static_cast<uint32>(time_us / base::Time::kMicrosecondsPerSecond);
   *fractions = static_cast<uint32>(
       (time_us % base::Time::kMicrosecondsPerSecond) * kMagicFractionalUnit);

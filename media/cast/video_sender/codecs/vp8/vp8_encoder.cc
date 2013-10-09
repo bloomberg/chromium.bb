@@ -183,6 +183,9 @@ bool Vp8Encoder::Encode(const I420VideoFrame& input_image,
   encoded_image->last_referenced_frame_id = latest_frame_id_to_reference;
   encoded_image->frame_id = ++last_encoded_frame_id_;
 
+  VLOG(1) << "VP8 encoded frame:" << static_cast<int>(encoded_image->frame_id)
+          << " sized:" << total_size;
+
   if (encoded_image->key_frame) {
     key_frame_requested_ = false;
 
@@ -310,7 +313,11 @@ void Vp8Encoder::GetCodecUpdateFlags(Vp8Buffers buffer_to_update,
 }
 
 void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
-  config_->rc_target_bitrate = new_bitrate / 1000;  // In kbit/s.
+  uint32 new_bitrate_kbit = new_bitrate / 1000;
+  if (config_->rc_target_bitrate == new_bitrate_kbit) return;
+
+  config_->rc_target_bitrate = new_bitrate_kbit;
+
   // Update encoder context.
   if (vpx_codec_enc_config_set(encoder_, config_.get())) {
     DCHECK(false) << "Invalid return value";

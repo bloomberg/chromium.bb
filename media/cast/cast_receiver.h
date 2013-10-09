@@ -37,7 +37,7 @@ typedef base::Callback<void(scoped_ptr<EncodedVideoFrame>,
     const base::TimeTicks&)> VideoFrameEncodedCallback;
 
 // This Class is thread safe.
-class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver>{
+class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver> {
  public:
   virtual void GetRawAudioFrame(int number_of_10ms_blocks,
                                 int desired_frequency,

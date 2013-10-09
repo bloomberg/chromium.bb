@@ -71,6 +71,7 @@ bool RtpParser::ParseCommon(const uint8* packet,
   rtp_header->webrtc.header.headerLength = kRtpCommonHeaderLength + csrc_octs;
   rtp_header->webrtc.type.Audio.isCNG = false;
   rtp_header->webrtc.type.Audio.channel = parser_config_.audio_channels;
+  // TODO(pwestin): look at x bit and skip data.
   return true;
 }
 
@@ -78,6 +79,7 @@ bool RtpParser::ParseCast(const uint8* packet,
                           int length,
                           RtpCastHeader* rtp_header) {
   if (length < kRtpCastHeaderLength) return false;
+
   // Extract header.
   const uint8* data_ptr = packet;
   int data_length = length;
@@ -98,9 +100,8 @@ bool RtpParser::ParseCast(const uint8* packet,
     data_length -= kRtpCastHeaderLength - 1;
   }
 
-  if (rtp_header->max_packet_id < rtp_header->packet_id) {
-    return false;
-  }
+  if (rtp_header->max_packet_id < rtp_header->packet_id) return false;
+
   data_callback_->OnReceivedPayloadData(data_ptr, data_length, rtp_header);
   return true;
 }

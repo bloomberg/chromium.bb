@@ -52,12 +52,12 @@ void CastMessageBuilder::CompleteFrameReceived(uint8 frame_id,
     // packet in the key-frame.
     UpdateAckMessage();
   } else {
-    if (!UpdateAckMessage())
-      return;
+    if (!UpdateAckMessage()) return;
 
     BuildPacketList();
   }
   // Send cast message.
+  VLOG(1) << "Send cast message Ack:" << static_cast<int>(frame_id);
   cast_feedback_->CastFeedback(cast_msg_);
 }
 
