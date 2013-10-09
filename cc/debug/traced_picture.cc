@@ -19,19 +19,17 @@ TracedPicture::TracedPicture(scoped_refptr<Picture> picture)
 TracedPicture::~TracedPicture() {
 }
 
-scoped_ptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::debug::ConvertableToTraceFormat>
     TracedPicture::AsTraceablePicture(Picture* picture) {
-  TracedPicture* ptr = new TracedPicture(picture);
-  scoped_ptr<TracedPicture> result(ptr);
-  return result.PassAs<base::debug::ConvertableToTraceFormat>();
+  return scoped_refptr<base::debug::ConvertableToTraceFormat>(
+      new TracedPicture(picture));
 }
 
-scoped_ptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::debug::ConvertableToTraceFormat>
     TracedPicture::AsTraceablePictureAlias(Picture* original) {
-  TracedPicture* ptr = new TracedPicture(original);
+  scoped_refptr<TracedPicture> ptr = new TracedPicture(original);
   ptr->is_alias_ = true;
-  scoped_ptr<TracedPicture> result(ptr);
-  return result.PassAs<base::debug::ConvertableToTraceFormat>();
+  return scoped_refptr<base::debug::ConvertableToTraceFormat>(ptr);
 }
 
 void TracedPicture::AppendAsTraceFormat(std::string* out) const {

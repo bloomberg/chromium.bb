@@ -19,7 +19,7 @@ void MainThreadRenderingStats::IssueTraceEvent() const {
                        "data", AsTraceableData());
 }
 
-scoped_ptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::debug::ConvertableToTraceFormat>
 MainThreadRenderingStats::AsTraceableData() const {
   scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
   record_data->SetInteger("frame_count", frame_count);
@@ -49,7 +49,7 @@ void ImplThreadRenderingStats::IssueTraceEvent() const {
                        "data", AsTraceableData());
 }
 
-scoped_ptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::debug::ConvertableToTraceFormat>
 ImplThreadRenderingStats::AsTraceableData() const {
   scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
   record_data->SetInteger("frame_count", frame_count);

@@ -40,7 +40,7 @@ struct CC_EXPORT MainThreadRenderingStats {
 
   MainThreadRenderingStats();
   void IssueTraceEvent() const;
-  scoped_ptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
+  scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
   void Add(const MainThreadRenderingStats& other);
 };
 
@@ -54,7 +54,7 @@ struct CC_EXPORT ImplThreadRenderingStats {
 
   ImplThreadRenderingStats();
   void IssueTraceEvent() const;
-  scoped_ptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
+  scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
   void Add(const ImplThreadRenderingStats& other);
 };
 

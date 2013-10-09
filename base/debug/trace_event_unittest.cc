@@ -1832,13 +1832,13 @@ TEST_F(TraceEventTestFixture, TraceContinuousSampling) {
 class MyData : public base::debug::ConvertableToTraceFormat {
  public:
   MyData() {}
-  virtual ~MyData() {}
 
   virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
     out->append("{\"foo\":1}");
   }
 
  private:
+  virtual ~MyData() {}
   DISALLOW_COPY_AND_ASSIGN(MyData);
 };
 
@@ -1846,30 +1846,29 @@ TEST_F(TraceEventTestFixture, ConvertableTypes) {
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
       TraceLog::RECORD_UNTIL_FULL);
 
-  scoped_ptr<MyData> data(new MyData());
-  scoped_ptr<MyData> data1(new MyData());
-  scoped_ptr<MyData> data2(new MyData());
-  TRACE_EVENT1("foo", "bar", "data",
-               data.PassAs<base::debug::ConvertableToTraceFormat>());
+  scoped_refptr<ConvertableToTraceFormat> data(new MyData());
+  scoped_refptr<ConvertableToTraceFormat> data1(new MyData());
+  scoped_refptr<ConvertableToTraceFormat> data2(new MyData());
+  TRACE_EVENT1("foo", "bar", "data", data);
   TRACE_EVENT2("foo", "baz",
-               "data1", data1.PassAs<base::debug::ConvertableToTraceFormat>(),
-               "data2", data2.PassAs<base::debug::ConvertableToTraceFormat>());
+               "data1", data1,
+               "data2", data2);
 
 
-  scoped_ptr<MyData> convertData1(new MyData());
-  scoped_ptr<MyData> convertData2(new MyData());
+  scoped_refptr<ConvertableToTraceFormat> convertData1(new MyData());
+  scoped_refptr<ConvertableToTraceFormat> convertData2(new MyData());
   TRACE_EVENT2(
       "foo",
       "string_first",
       "str",
       "string value 1",
       "convert",
-      convertData1.PassAs<base::debug::ConvertableToTraceFormat>());
+      convertData1);
   TRACE_EVENT2(
       "foo",
       "string_second",
       "convert",
-      convertData2.PassAs<base::debug::ConvertableToTraceFormat>(),
+      convertData2,
       "str",
       "string value 2");
   EndTraceAndFlush();

@@ -17,17 +17,17 @@ class TracedPicture : public base::debug::ConvertableToTraceFormat {
  public:
   explicit TracedPicture(scoped_refptr<Picture>);
 
-  virtual ~TracedPicture();
-
-  static scoped_ptr<base::debug::ConvertableToTraceFormat>
+  static scoped_refptr<base::debug::ConvertableToTraceFormat>
     AsTraceablePicture(Picture* picture);
 
-  static scoped_ptr<base::debug::ConvertableToTraceFormat>
+  static scoped_refptr<base::debug::ConvertableToTraceFormat>
     AsTraceablePictureAlias(Picture* original);
 
   virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE;
 
  private:
+  virtual ~TracedPicture();
+
   void AppendPicture(std::string* out) const;
   void AppendPictureAlias(std::string* out) const;
 

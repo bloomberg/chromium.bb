@@ -141,9 +141,9 @@ class CC_EXPORT Picture
   gfx::Point max_pixel_cell_;
   gfx::Size cell_size_;
 
-  scoped_ptr<base::debug::ConvertableToTraceFormat>
+  scoped_refptr<base::debug::ConvertableToTraceFormat>
     AsTraceableRasterData(gfx::Rect rect, float scale) const;
-  scoped_ptr<base::debug::ConvertableToTraceFormat>
+  scoped_refptr<base::debug::ConvertableToTraceFormat>
     AsTraceableRecordData() const;
 
   friend class base::RefCountedThreadSafe<Picture>;

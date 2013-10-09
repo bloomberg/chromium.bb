@@ -30,11 +30,10 @@ void TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
   MakeDictIntoImplicitSnapshot(dict, object_name, id);
 }
 
-scoped_ptr<base::debug::ConvertableToTraceFormat> TracedValue::FromValue(
+scoped_refptr<base::debug::ConvertableToTraceFormat> TracedValue::FromValue(
     base::Value* value) {
-  TracedValue* ptr = new TracedValue(value);
-  scoped_ptr<TracedValue> result(ptr);
-  return result.PassAs<base::debug::ConvertableToTraceFormat>();
+  return scoped_refptr<base::debug::ConvertableToTraceFormat>(
+      new TracedValue(value));
 }
 
 TracedValue::TracedValue(base::Value* value)

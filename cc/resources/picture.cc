@@ -462,7 +462,7 @@ Picture::PixelRefIterator& Picture::PixelRefIterator::operator++() {
   return *this;
 }
 
-scoped_ptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::debug::ConvertableToTraceFormat>
     Picture::AsTraceableRasterData(gfx::Rect rect, float scale) const {
   scoped_ptr<base::DictionaryValue> raster_data(new base::DictionaryValue());
   raster_data->Set("picture_id", TracedValue::CreateIDRef(this).release());
@@ -474,7 +474,7 @@ scoped_ptr<base::debug::ConvertableToTraceFormat>
   return TracedValue::FromValue(raster_data.release());
 }
 
-scoped_ptr<base::debug::ConvertableToTraceFormat>
+scoped_refptr<base::debug::ConvertableToTraceFormat>
     Picture::AsTraceableRecordData() const {
   scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
   record_data->Set("picture_id", TracedValue::CreateIDRef(this).release());

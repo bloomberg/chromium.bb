@@ -363,7 +363,7 @@ TraceEvent::TraceEvent(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    scoped_ptr<ConvertableToTraceFormat> convertable_values[],
+    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned char flags)
     : timestamp_(timestamp),
       thread_timestamp_(thread_timestamp),
@@ -382,14 +382,14 @@ TraceEvent::TraceEvent(
     arg_types_[i] = arg_types[i];
 
     if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-      convertable_values_[i].reset(convertable_values[i].release());
+      convertable_values_[i] = convertable_values[i];
     else
       arg_values_[i].as_uint = arg_values[i];
   }
   for (; i < kTraceMaxNumArgs; ++i) {
     arg_names_[i] = NULL;
     arg_values_[i].as_uint = 0u;
-    convertable_values_[i].reset();
+    convertable_values_[i] = NULL;
     arg_types_[i] = TRACE_VALUE_TYPE_UINT;
   }
 
@@ -454,10 +454,9 @@ TraceEvent::TraceEvent(const TraceEvent& other)
     arg_types_[i] = other.arg_types_[i];
 
     if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-      convertable_values_[i].reset(
-          const_cast<TraceEvent*>(&other)->convertable_values_[i].release());
+      convertable_values_[i] = other.convertable_values_[i];
     } else {
-      convertable_values_[i].reset();
+      convertable_values_[i] = NULL;
     }
   }
 }
@@ -482,10 +481,9 @@ TraceEvent& TraceEvent::operator=(const TraceEvent& other) {
     arg_types_[i] = other.arg_types_[i];
 
     if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-      convertable_values_[i].reset(
-          const_cast<TraceEvent*>(&other)->convertable_values_[i].release());
+      convertable_values_[i] = other.convertable_values_[i];
     } else {
-      convertable_values_[i].reset();
+      convertable_values_[i] = NULL;
     }
   }
   return *this;
@@ -1509,7 +1507,7 @@ void TraceLog::AddTraceEvent(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    scoped_ptr<ConvertableToTraceFormat> convertable_values[],
+    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned char flags) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
@@ -1530,7 +1528,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    scoped_ptr<ConvertableToTraceFormat> convertable_values[],
+    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned char flags) {
   DCHECK(name);
 

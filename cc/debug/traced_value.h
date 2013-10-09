@@ -26,15 +26,14 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
       base::DictionaryValue* dict,
       const char* object_name,
       const void* id);
-  static scoped_ptr<ConvertableToTraceFormat> FromValue(
+  static scoped_refptr<base::debug::ConvertableToTraceFormat> FromValue(
       base::Value* value);
-
-  virtual ~TracedValue();
 
   virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE;
 
  private:
   explicit TracedValue(base::Value* value);
+  virtual ~TracedValue();
 
   scoped_ptr<base::Value> value_;
 

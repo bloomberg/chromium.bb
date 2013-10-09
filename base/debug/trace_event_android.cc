@@ -25,7 +25,8 @@ void WriteEvent(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    scoped_ptr<base::debug::ConvertableToTraceFormat> convertable_values[],
+    const scoped_refptr<base::debug::ConvertableToTraceFormat>*
+        convertable_values,
     unsigned char flags) {
   std::string out = base::StringPrintf("%c|%d|%s", phase, getpid(), name);
   if (flags & TRACE_EVENT_FLAG_HAS_ID)
@@ -93,7 +94,7 @@ void TraceLog::SendToATrace(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    scoped_ptr<ConvertableToTraceFormat> convertable_values[],
+    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned char flags) {
   if (g_atrace_fd == -1)
     return;
