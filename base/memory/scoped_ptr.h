@@ -68,11 +68,11 @@
 // is different though because we are constructing a temporary on the return
 // line and thus can avoid needing to call Pass().
 //
-// Pass() properly handles upcast in assignment, i.e. you can assign
-// scoped_ptr<Child> to scoped_ptr<Parent>:
+// Pass() properly handles upcast in initialization, i.e. you can use a
+// scoped_ptr<Child> to initialize a scoped_ptr<Parent>:
 //
 //   scoped_ptr<Foo> foo(new Foo());
-//   scoped_ptr<FooParent> parent = foo.Pass();
+//   scoped_ptr<FooParent> parent(foo.Pass());
 //
 // PassAs<>() should be used to upcast return value in return statement:
 //
