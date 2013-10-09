@@ -123,10 +123,22 @@
     isRefTest = true;
   }
 
-  // Constructs a cubic-bezier timing function which produces 'y' at x = 0.5
+  // Constructs a timing function which produces 'y' at x = 0.5
   function createEasing(y) {
-      var b = (8 * y - 1) / 6;
-      return 'cubic-bezier(0, ' + b + ', 1, ' + b + ')';
+    // FIXME: if 'y' is > 0 and < 1 use a linear timing function and allow
+    // 'x' to vary. Use a bezier only for values < 0 or > 1.
+    if (y == 0) {
+      return 'steps(1, end)';
+    }
+    if (y == 1) {
+      return 'steps(1, start)';
+    }
+    if (y == 0.5) {
+      return 'steps(2, end)';
+    }
+    // Approximate using a bezier.
+    var b = (8 * y - 1) / 6;
+    return 'cubic-bezier(0, ' + b + ', 1, ' + b + ')';
   }
 
   function testInterpolationAt(fractions, params) {
