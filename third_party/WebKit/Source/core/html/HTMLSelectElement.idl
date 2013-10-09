@@ -24,7 +24,7 @@ interface HTMLSelectElement : HTMLElement {
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
     attribute boolean multiple;
-    [Reflect] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
     [Reflect] attribute boolean required;
     attribute long size;
 

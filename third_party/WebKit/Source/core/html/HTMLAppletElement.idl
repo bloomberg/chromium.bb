@@ -21,17 +21,17 @@
 [
     CustomLegacyCall
 ] interface HTMLAppletElement : HTMLElement {
-    [Reflect] attribute DOMString align;
-    [Reflect] attribute DOMString alt;
-    [Reflect] attribute DOMString archive;
-    [Reflect] attribute DOMString code;
-    [Reflect] attribute DOMString codeBase;
-    [Reflect] attribute DOMString height;
-    [Reflect] attribute DOMString hspace;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString _object;  // "object" is a reserved word
-    [Reflect] attribute DOMString vspace;
-    [Reflect] attribute DOMString width;
+    [Reflect, TreatNullAs=NullString] attribute DOMString align;
+    [Reflect, TreatNullAs=NullString] attribute DOMString alt;
+    [Reflect, TreatNullAs=NullString] attribute DOMString archive;
+    [Reflect, TreatNullAs=NullString] attribute DOMString code;
+    [Reflect, TreatNullAs=NullString] attribute DOMString codeBase;
+    [Reflect, TreatNullAs=NullString] attribute DOMString height;
+    [Reflect, TreatNullAs=NullString] attribute DOMString hspace;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString _object;  // "object" is a reserved word
+    [Reflect, TreatNullAs=NullString] attribute DOMString vspace;
+    [Reflect, TreatNullAs=NullString] attribute DOMString width;
     [Custom, NotEnumerable] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom, NotEnumerable] getter Node (DOMString name);

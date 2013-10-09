@@ -588,6 +588,23 @@ sub GetSpecialAccessorFunctionForType
     return 0;
 }
 
+sub GetV8StringResourceMode
+{
+    my $extendedAttributes = shift;
+
+    # Blink uses the non-standard identifier NullString instead of Web IDL
+    # standard EmptyString, in [TreatNullAs=NullString] and [TreatUndefinedAs=NullString],
+    # and does not support [TreatUndefinedAs=Null] or [TreatUndefinedAs=Missing]
+    # https://sites.google.com/a/chromium.org/dev/blink/webidl/blink-idl-extended-attributes#TOC-TreatNullAs-a-p-TreatUndefinedAs-a-p-
+    my $mode = "";
+    if (($extendedAttributes->{"TreatNullAs"} and $extendedAttributes->{"TreatNullAs"} eq "NullString") and ($extendedAttributes->{"TreatUndefinedAs"} and $extendedAttributes->{"TreatUndefinedAs"} eq "NullString")) {
+        $mode = "WithUndefinedOrNullCheck";
+    } elsif ($extendedAttributes->{"TreatNullAs"} and $extendedAttributes->{"TreatNullAs"} eq "NullString") {
+        $mode = "WithNullCheck";
+    }
+    return $mode;
+}
+
 sub GenerateHeader
 {
     my $object = shift;
@@ -1840,9 +1857,10 @@ END
             # Generate super-compact call for regular attribute setter:
             my $contentAttributeName = $reflect eq "VALUE_IS_MISSING" ? lc $attrName : $reflect;
             my $namespace = NamespaceForAttributeName($interfaceName, $contentAttributeName);
+            my $mode = GetV8StringResourceMode($attribute->extendedAttributes);
             AddToImplIncludes("${namespace}.h");
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
-            $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, value);\n";
+            $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<$mode>, stringResource, value);\n";
             # Attr (not Attribute) used in content attributes
             $code .= "    imp->setAttribute(${namespace}::${contentAttributeName}Attr, stringResource);\n";
             $code .= "}\n\n";
@@ -5144,16 +5162,7 @@ sub GetNativeType
     return "bool" if $type eq "boolean";
 
     if (($type eq "DOMString" || IsEnumType($type)) and $isParameter) {
-        # Blink uses the non-standard identifier NullString instead of Web IDL
-        # standard EmptyString, in [TreatNullAs=NullString] and [TreatUndefinedAs=NullString],
-        # and does not support [TreatUndefinedAs=Null] or [TreatUndefinedAs=Missing]
-        # https://sites.google.com/a/chromium.org/dev/blink/webidl/blink-idl-extended-attributes#TOC-TreatNullAs-a-p-TreatUndefinedAs-a-p-
-        my $mode = "";
-        if (($extendedAttributes->{"TreatNullAs"} and $extendedAttributes->{"TreatNullAs"} eq "NullString") and ($extendedAttributes->{"TreatUndefinedAs"} and $extendedAttributes->{"TreatUndefinedAs"} eq "NullString")) {
-            $mode = "WithUndefinedOrNullCheck";
-        } elsif (($extendedAttributes->{"TreatNullAs"} and $extendedAttributes->{"TreatNullAs"} eq "NullString") or $extendedAttributes->{"Reflect"}) {
-            $mode = "WithNullCheck";
-        }
+        my $mode = GetV8StringResourceMode($extendedAttributes);
         # FIXME: Add the case for 'elsif ($attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} and $attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} eq "NullString"))'.
         return "V8StringResource<$mode>";
     }

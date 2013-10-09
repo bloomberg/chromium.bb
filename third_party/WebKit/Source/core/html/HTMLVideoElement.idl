@@ -30,7 +30,7 @@
     [Reflect] attribute unsigned long height;
     readonly attribute unsigned long videoWidth;
     readonly attribute unsigned long videoHeight;
-    [Reflect, URL] attribute DOMString poster;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString poster;
 
     readonly attribute boolean webkitSupportsFullscreen;
     readonly attribute boolean webkitDisplayingFullscreen;

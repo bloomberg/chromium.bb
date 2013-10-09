@@ -19,6 +19,6 @@
  */
 
 interface HTMLTableCaptionElement : HTMLElement {
-    [Reflect] attribute DOMString align;
+    [Reflect, TreatNullAs=NullString] attribute DOMString align;
 };
 

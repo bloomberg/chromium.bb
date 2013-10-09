@@ -32,7 +32,7 @@
 readonly attribute MediaError error;
 
 // network state
-[Reflect, URL] attribute DOMString src;
+[Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
 [URL] readonly attribute DOMString currentSrc;
 
 const unsigned short NETWORK_EMPTY = 0;
@@ -100,6 +100,6 @@ readonly attribute unsigned long webkitVideoDecodedByteCount;
 [EnabledAtRuntime=VideoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
 [EnabledAtRuntime=VideoTrack] readonly attribute TextTrackList textTracks;
 
-[Reflect, TreatNullAs=NullString] attribute DOMString mediaGroup;
+[Reflect, TreatNullAs=NullString, TreatNullAs=NullString] attribute DOMString mediaGroup;
 [CustomSetter] attribute MediaController controller;
 };

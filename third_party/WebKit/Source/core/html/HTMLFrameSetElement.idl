@@ -20,8 +20,8 @@
 
 interface HTMLFrameSetElement : HTMLElement {
     [ImplementedAs=anonymousNamedGetter, OverrideBuiltins, NotEnumerable] getter Window (DOMString name);
-    [Reflect] attribute DOMString cols;
-    [Reflect] attribute DOMString rows;
+    [Reflect, TreatNullAs=NullString] attribute DOMString cols;
+    [Reflect, TreatNullAs=NullString] attribute DOMString rows;
 
     // Event handler attributes
     [NotEnumerable] attribute EventHandler onbeforeunload;

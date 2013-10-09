@@ -18,7 +18,7 @@
  */
 
 interface HTMLBaseFontElement : HTMLElement {
-    [Reflect] attribute DOMString color;
-    [Reflect] attribute DOMString face;
+    [Reflect, TreatNullAs=NullString] attribute DOMString color;
+    [Reflect, TreatNullAs=NullString] attribute DOMString face;
     [Reflect] attribute long size;
 };

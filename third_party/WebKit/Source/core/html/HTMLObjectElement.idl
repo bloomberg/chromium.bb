@@ -22,22 +22,22 @@
     CustomLegacyCall
 ] interface HTMLObjectElement : HTMLElement {
     readonly attribute HTMLFormElement form;
-    [Reflect] attribute DOMString code;
-    [Reflect] attribute DOMString align;
-    [Reflect] attribute DOMString archive;
-    [Reflect] attribute DOMString border;
-    [Reflect] attribute DOMString codeBase;
-    [Reflect] attribute DOMString codeType;
-    [Reflect, URL] attribute DOMString data;
+    [Reflect, TreatNullAs=NullString] attribute DOMString code;
+    [Reflect, TreatNullAs=NullString] attribute DOMString align;
+    [Reflect, TreatNullAs=NullString] attribute DOMString archive;
+    [Reflect, TreatNullAs=NullString] attribute DOMString border;
+    [Reflect, TreatNullAs=NullString] attribute DOMString codeBase;
+    [Reflect, TreatNullAs=NullString] attribute DOMString codeType;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString data;
     [Reflect] attribute boolean declare;
-    [Reflect] attribute DOMString height;
+    [Reflect, TreatNullAs=NullString] attribute DOMString height;
     [Reflect] attribute long hspace;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString standby;
-    [Reflect] attribute DOMString type;
-    [Reflect] attribute DOMString useMap;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString standby;
+    [Reflect, TreatNullAs=NullString] attribute DOMString type;
+    [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
     [Reflect] attribute long vspace;
-    [Reflect] attribute DOMString width;
+    [Reflect, TreatNullAs=NullString] attribute DOMString width;
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;
     readonly attribute DOMString validationMessage;

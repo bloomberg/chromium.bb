@@ -22,17 +22,17 @@
 interface HTMLTextAreaElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
     attribute long cols;
-    [Reflect] attribute DOMString dirName;
+    [Reflect, TreatNullAs=NullString] attribute DOMString dirName;
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
     [SetterRaisesException] attribute long maxLength;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString placeholder;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString placeholder;
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
     attribute long rows;
-    [Reflect] attribute DOMString wrap;
-    [EnabledAtRuntime=InputModeAttribute, Reflect] attribute DOMString inputMode;
+    [Reflect, TreatNullAs=NullString] attribute DOMString wrap;
+    [EnabledAtRuntime=InputModeAttribute, Reflect, TreatNullAs=NullString] attribute DOMString inputMode;
 
     readonly attribute DOMString type;
     [TreatNullAs=NullString] attribute DOMString defaultValue;

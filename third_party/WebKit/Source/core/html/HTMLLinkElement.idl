@@ -21,15 +21,15 @@
 
 interface HTMLLinkElement : HTMLElement {
     [Reflect] attribute boolean disabled;
-    [Reflect] attribute DOMString charset;
-    [Reflect, URL] attribute DOMString href;
-    [Reflect] attribute DOMString hreflang;
-    [Reflect] attribute DOMString media;
-    [Reflect] attribute DOMString rel;
-    [Reflect] attribute DOMString rev;
+    [Reflect, TreatNullAs=NullString] attribute DOMString charset;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString href;
+    [Reflect, TreatNullAs=NullString] attribute DOMString hreflang;
+    [Reflect, TreatNullAs=NullString] attribute DOMString media;
+    [Reflect, TreatNullAs=NullString] attribute DOMString rel;
+    [Reflect, TreatNullAs=NullString] attribute DOMString rev;
     [CustomSetter] attribute DOMSettableTokenList sizes;
-    [Reflect] attribute DOMString target;
-    [Reflect] attribute DOMString type;
+    [Reflect, TreatNullAs=NullString] attribute DOMString target;
+    [Reflect, TreatNullAs=NullString] attribute DOMString type;
 
     // DOM Level 2 Style
     readonly attribute StyleSheet sheet;

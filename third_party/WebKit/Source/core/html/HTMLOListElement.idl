@@ -21,6 +21,6 @@ interface HTMLOListElement : HTMLElement {
     [Reflect] attribute boolean compact;
     attribute long start;
     [Reflect] attribute boolean reversed;
-    [Reflect] attribute DOMString type;
+    [Reflect, TreatNullAs=NullString] attribute DOMString type;
 };
 

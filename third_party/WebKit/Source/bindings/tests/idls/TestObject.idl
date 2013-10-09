@@ -63,15 +63,15 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     attribute boolean                  create;
 
     // Reflected DOM attributes
-    [Reflect] attribute DOMString reflectedStringAttr;
+    [Reflect, TreatNullAs=NullString] attribute DOMString reflectedStringAttr;
     [Reflect] attribute long reflectedIntegralAttr;
     [Reflect] attribute unsigned long reflectedUnsignedIntegralAttr;
     [Reflect] attribute boolean reflectedBooleanAttr;
-    [Reflect, URL] attribute DOMString reflectedURLAttr;
-    [Reflect=customContentStringAttr] attribute DOMString reflectedStringAttr;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString reflectedURLAttr;
+    [Reflect=customContentStringAttr, TreatNullAs=NullString] attribute DOMString reflectedStringAttr;
     [Reflect=customContentIntegralAttr] attribute long reflectedCustomIntegralAttr;
     [Reflect=customContentBooleanAttr] attribute boolean reflectedCustomBooleanAttr;
-    [Reflect=customContentURLAttr, URL] attribute DOMString reflectedCustomURLAttr;
+    [Reflect=customContentURLAttr, TreatNullAs=NullString, URL] attribute DOMString reflectedCustomURLAttr;
 
     // TypedArray attribute
     attribute Float32Array typedArrayAttr;

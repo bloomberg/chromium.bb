@@ -21,45 +21,45 @@
 
 [
 ] interface HTMLInputElement : HTMLElement {
-    [Reflect] attribute DOMString accept;
-    [Reflect] attribute DOMString alt;
-    [Reflect] attribute DOMString autocomplete;
+    [Reflect, TreatNullAs=NullString] attribute DOMString accept;
+    [Reflect, TreatNullAs=NullString] attribute DOMString alt;
+    [Reflect, TreatNullAs=NullString] attribute DOMString autocomplete;
     [Reflect] attribute boolean autofocus;
     [Reflect=checked] attribute boolean defaultChecked;
     attribute boolean checked;
-    [Reflect] attribute DOMString dirName;
+    [Reflect, TreatNullAs=NullString] attribute DOMString dirName;
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
     // The 'files' attribute is intentionally not readonly.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
     attribute FileList files;
-    [Reflect, URL] attribute DOMString formAction;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString formAction;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString formEnctype;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString formMethod;
     [Reflect] attribute boolean formNoValidate;
-    [Reflect] attribute DOMString formTarget;
+    [Reflect, TreatNullAs=NullString] attribute DOMString formTarget;
     [CustomElementCallbacks] attribute unsigned long height;
     attribute boolean indeterminate;
     [EnabledAtRuntime=DataListElement] readonly attribute HTMLElement list;
-    [Reflect] attribute DOMString max;
+    [Reflect, TreatNullAs=NullString] attribute DOMString max;
     [SetterRaisesException, CustomElementCallbacks] attribute long maxLength;
-    [Reflect] attribute DOMString min;
+    [Reflect, TreatNullAs=NullString] attribute DOMString min;
     [Reflect] attribute boolean multiple;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString pattern;
-    [Reflect] attribute DOMString placeholder;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString pattern;
+    [Reflect, TreatNullAs=NullString] attribute DOMString placeholder;
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
     [SetterRaisesException, CustomElementCallbacks] attribute unsigned long size; // Changed string -> long -> unsigned long
-    [Reflect, URL] attribute DOMString src;
-    [Reflect] attribute DOMString step;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, TreatNullAs=NullString] attribute DOMString step;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString type; // readonly dropped as part of DOM level 2
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString defaultValue;
     // See the discussion in https://bugs.webkit.org/show_bug.cgi?id=100085
     [TreatNullAs=NullString, SetterRaisesException, CustomElementCallbacks] attribute DOMString value;
     [SetterRaisesException, CustomElementCallbacks] attribute Date valueAsDate;
     [SetterRaisesException, CustomElementCallbacks] attribute double valueAsNumber;
-    [EnabledAtRuntime=InputModeAttribute, Reflect] attribute DOMString inputMode;
+    [EnabledAtRuntime=InputModeAttribute, Reflect, TreatNullAs=NullString] attribute DOMString inputMode;
 
     [RaisesException, CustomElementCallbacks] void stepUp(optional long n);
     [RaisesException, CustomElementCallbacks] void stepDown(optional long n);
@@ -90,9 +90,9 @@
                            optional DOMString direction);
 
     // Non-standard attributes
-    [Reflect] attribute DOMString align;
+    [Reflect, TreatNullAs=NullString] attribute DOMString align;
     [Reflect, EnabledAtRuntime=DirectoryUpload] attribute boolean webkitdirectory;
-    [Reflect] attribute DOMString useMap;
+    [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
     [Reflect] attribute boolean incremental;
     [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=SpeechInput] attribute boolean webkitSpeech;
     [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=SpeechInput] attribute boolean webkitGrammar;

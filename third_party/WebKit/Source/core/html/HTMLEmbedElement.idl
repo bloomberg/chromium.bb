@@ -21,12 +21,12 @@
 [
     CustomLegacyCall,
 ] interface HTMLEmbedElement : HTMLElement {
-[Reflect] attribute DOMString align;
-[Reflect] attribute DOMString height;
-[Reflect] attribute DOMString name;
-[Reflect, URL] attribute DOMString src;
-[Reflect] attribute DOMString type;
-[Reflect] attribute DOMString width;
+[Reflect, TreatNullAs=NullString] attribute DOMString align;
+[Reflect, TreatNullAs=NullString] attribute DOMString height;
+[Reflect, TreatNullAs=NullString] attribute DOMString name;
+[Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+[Reflect, TreatNullAs=NullString] attribute DOMString type;
+[Reflect, TreatNullAs=NullString] attribute DOMString width;
 [Custom, NotEnumerable] getter boolean (unsigned long index);
 [Custom] setter boolean (unsigned long index, Node value);
 [Custom, NotEnumerable] getter Node (DOMString name);

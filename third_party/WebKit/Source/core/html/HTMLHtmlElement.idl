@@ -18,7 +18,7 @@
  */
 
 interface HTMLHtmlElement : HTMLElement {
-    [Reflect] attribute DOMString version;
-    [Reflect, URL] attribute DOMString manifest;
+    [Reflect, TreatNullAs=NullString] attribute DOMString version;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString manifest;
 };
 

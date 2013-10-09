@@ -61,7 +61,7 @@
     // DOM4
     // iht.com relies on id returning the empty string when no id is present.
     // Other browsers do this as well. So we don't convert null to JS null.
-    [Reflect] attribute DOMString id;
+    [Reflect, TreatNullAs=NullString] attribute DOMString id;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString prefix;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
@@ -95,7 +95,7 @@
     // HTML 5
     NodeList getElementsByClassName([Default=Undefined] optional DOMString name);
 
-    [Reflect=class, PerWorldBindings] attribute DOMString className;
+    [Reflect=class, TreatNullAs=NullString, PerWorldBindings] attribute DOMString className;
     [PerWorldBindings] readonly attribute DOMTokenList classList;
 
     [PerWorldBindings] readonly attribute DOMStringMap dataset;
@@ -108,13 +108,13 @@
     [RaisesException] boolean webkitMatchesSelector([Default=Undefined] optional DOMString selectors);
 
     // Shadow DOM API
-    [EnabledAtRuntime=ShadowDOM, Reflect, PerWorldBindings] attribute DOMString pseudo;
+    [EnabledAtRuntime=ShadowDOM, Reflect, TreatNullAs=NullString, PerWorldBindings] attribute DOMString pseudo;
     [EnabledAtRuntime=ShadowDOM, RaisesException] ShadowRoot createShadowRoot();
     [EnabledAtRuntime=ShadowDOM, PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
     [EnabledAtRuntime=ShadowDOM, PerWorldBindings] NodeList getDestinationInsertionPoints();
 
     // To-be-deprecated prefixed Shadow DOM API
-    [Reflect=pseudo, ImplementedAs=pseudo, PerWorldBindings, MeasureAs=ShadowDOMPrefixedPseudo] attribute DOMString webkitPseudo;
+    [Reflect=pseudo, TreatNullAs=NullString, ImplementedAs=pseudo, PerWorldBindings, MeasureAs=ShadowDOMPrefixedPseudo] attribute DOMString webkitPseudo;
     [ImplementedAs=createShadowRoot, RaisesException, MeasureAs=ShadowDOMPrefixedCreateShadowRoot] ShadowRoot webkitCreateShadowRoot();
     [ImplementedAs=shadowRoot, PerWorldBindings, MeasureAs=ShadowDOMPrefixedShadowRoot] readonly attribute ShadowRoot webkitShadowRoot;
 

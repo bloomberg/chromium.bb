@@ -30,11 +30,11 @@
 
 interface HTMLKeygenElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
-    [Reflect] attribute DOMString challenge;
+    [Reflect, TreatNullAs=NullString] attribute DOMString challenge;
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
-    [Reflect] attribute DOMString keytype;
-    [Reflect] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString keytype;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
 
     readonly attribute DOMString type;
 

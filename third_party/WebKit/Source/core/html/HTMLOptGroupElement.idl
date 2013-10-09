@@ -19,6 +19,6 @@
 
 interface HTMLOptGroupElement : HTMLElement {
     [Reflect] attribute boolean disabled;
-    [Reflect] attribute DOMString label;
+    [Reflect, TreatNullAs=NullString] attribute DOMString label;
 };
 

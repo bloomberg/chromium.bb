@@ -21,8 +21,8 @@
 interface HTMLStyleElement : HTMLElement {
     attribute boolean disabled;
     [EnabledAtRuntime=StyleScoped] attribute boolean scoped;
-    [Reflect] attribute DOMString media;
-    [Reflect] attribute DOMString type;
+    [Reflect, TreatNullAs=NullString] attribute DOMString media;
+    [Reflect, TreatNullAs=NullString] attribute DOMString type;
 
     // DOM Level 2 Style
     readonly attribute StyleSheet sheet;

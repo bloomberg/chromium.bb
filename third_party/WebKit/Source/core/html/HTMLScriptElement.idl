@@ -19,13 +19,13 @@
 
 interface HTMLScriptElement : HTMLElement {
     [TreatNullAs=NullString] attribute DOMString text;
-    [Reflect=for] attribute DOMString htmlFor;
-    [Reflect] attribute DOMString event;
-    [Reflect] attribute DOMString charset;
+    [Reflect=for, TreatNullAs=NullString] attribute DOMString htmlFor;
+    [Reflect, TreatNullAs=NullString] attribute DOMString event;
+    [Reflect, TreatNullAs=NullString] attribute DOMString charset;
     attribute boolean async;
     [Reflect] attribute boolean defer;
-    [Reflect, URL] attribute DOMString src;
-    [Reflect] attribute DOMString type;
-    [Reflect] attribute DOMString crossOrigin;
-    [Reflect, EnabledAtRuntime=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, TreatNullAs=NullString] attribute DOMString type;
+    [Reflect, TreatNullAs=NullString] attribute DOMString crossOrigin;
+    [Reflect, TreatNullAs=NullString, EnabledAtRuntime=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
 };

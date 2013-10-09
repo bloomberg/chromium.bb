@@ -20,24 +20,24 @@
 
 [
 ] interface HTMLImageElement : HTMLElement {
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString align;
-    [Reflect] attribute DOMString alt;
-    [Reflect] attribute DOMString border;
-    [Reflect] attribute DOMString crossOrigin;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString align;
+    [Reflect, TreatNullAs=NullString] attribute DOMString alt;
+    [Reflect, TreatNullAs=NullString] attribute DOMString border;
+    [Reflect, TreatNullAs=NullString] attribute DOMString crossOrigin;
     attribute long height;
     [Reflect] attribute long hspace;
     [Reflect] attribute boolean isMap;
-    [Reflect, URL] attribute DOMString longDesc;
-    [Reflect, URL] attribute DOMString src;
-    [Reflect, EnabledAtRuntime=Srcset] attribute DOMString srcset;
-    [Reflect] attribute DOMString useMap;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString longDesc;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, TreatNullAs=NullString, EnabledAtRuntime=Srcset] attribute DOMString srcset;
+    [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
     [Reflect] attribute long vspace;
     attribute long width;
 
     // Extensions
     readonly attribute boolean complete;
-    [Reflect,URL] attribute DOMString lowsrc;
+    [Reflect, TreatNullAs=NullString,URL] attribute DOMString lowsrc;
     readonly attribute long naturalHeight;
     readonly attribute long naturalWidth;
     readonly attribute long x;

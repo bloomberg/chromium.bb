@@ -19,18 +19,18 @@
  */
 
 interface HTMLAnchorElement : HTMLElement {
-    [Reflect] attribute DOMString charset;
-    [Reflect] attribute DOMString coords;
-    [Reflect] attribute DOMString download;
-    [Reflect, URL] attribute DOMString href;
-    [Reflect] attribute DOMString hreflang;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString ping;
-    [Reflect] attribute DOMString rel;
-    [Reflect] attribute DOMString rev;
-    [Reflect] attribute DOMString shape;
-    [Reflect] attribute DOMString target;
-    [Reflect] attribute DOMString type;
+    [Reflect, TreatNullAs=NullString] attribute DOMString charset;
+    [Reflect, TreatNullAs=NullString] attribute DOMString coords;
+    [Reflect, TreatNullAs=NullString] attribute DOMString download;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString href;
+    [Reflect, TreatNullAs=NullString] attribute DOMString hreflang;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString ping;
+    [Reflect, TreatNullAs=NullString] attribute DOMString rel;
+    [Reflect, TreatNullAs=NullString] attribute DOMString rev;
+    [Reflect, TreatNullAs=NullString] attribute DOMString shape;
+    [Reflect, TreatNullAs=NullString] attribute DOMString target;
+    [Reflect, TreatNullAs=NullString] attribute DOMString type;
 
     attribute DOMString hash;
     attribute DOMString host;

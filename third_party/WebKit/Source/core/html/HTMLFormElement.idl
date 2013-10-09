@@ -19,15 +19,15 @@
  */
 
 interface HTMLFormElement : HTMLElement {
-    [Reflect=accept_charset] attribute DOMString acceptCharset;
-    [Reflect, URL] attribute DOMString action;
-    [Reflect] attribute DOMString autocomplete;
+    [Reflect=accept_charset, TreatNullAs=NullString] attribute DOMString acceptCharset;
+    [Reflect, TreatNullAs=NullString, URL] attribute DOMString action;
+    [Reflect, TreatNullAs=NullString] attribute DOMString autocomplete;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString enctype;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString encoding;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString method;
-    [Reflect] attribute DOMString name;
+    [Reflect, TreatNullAs=NullString] attribute DOMString name;
     [Reflect] attribute boolean noValidate;
-    [Reflect] attribute DOMString target;
+    [Reflect, TreatNullAs=NullString] attribute DOMString target;
 
     readonly attribute HTMLCollection elements;
     readonly attribute long length;
