@@ -34,6 +34,7 @@ surface_to_from_global(void *data)
 	int32_t ix, iy;
 
 	surface = weston_surface_create(compositor);
+	assert(surface);
 	weston_surface_configure(surface, 5, 10, 50, 50);
 	weston_surface_update_transform(surface);
 

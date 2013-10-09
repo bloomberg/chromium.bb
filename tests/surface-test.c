@@ -34,6 +34,7 @@ surface_transform(void *data)
 	float x, y;
 
 	surface = weston_surface_create(compositor);
+	assert(surface);
 	weston_surface_configure(surface, 100, 100, 200, 200);
 	weston_surface_update_transform(surface);
 	weston_surface_to_global_float(surface, 20, 20, &x, &y);
