@@ -184,11 +184,7 @@ void AppListItemView::CancelContextMenu() {
 }
 
 gfx::ImageSkia AppListItemView::GetDragImage() {
-  gfx::Canvas canvas(size(), 1.0f, false /* is_opaque */);
-  gfx::Rect bounds(size());
-  canvas.DrawColor(SK_ColorTRANSPARENT);
-  PaintChildren(&canvas);
-  return gfx::ImageSkia(canvas.ExtractImageRep());
+  return icon_->GetImage();
 }
 
 void AppListItemView::ItemIconChanged() {
