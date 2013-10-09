@@ -75,7 +75,10 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   // Begins the initialization process for the PerformanceMonitor in order to
   // start collecting data.
-  void Start();
+  void Initialize();
+
+  // Start the cycle of metrics gathering.
+  void StartGatherCycle();
 
   // Inform PerformanceMonitor that bytes have been read; if these came across
   // the network (and PerformanceMonitor is initialized), then increment the
@@ -110,6 +113,9 @@ class PerformanceMonitor : public content::NotificationObserver {
   void InitOnBackgroundThread();
 
   void FinishInit();
+
+  // Create the persistent database if we haven't already done so.
+  void InitializeDatabaseIfNeeded();
 
   // Register for the appropriate notifications as a NotificationObserver.
   void RegisterForNotifications();
@@ -166,10 +172,6 @@ class PerformanceMonitor : public content::NotificationObserver {
   // gathers metrics from each entry.
   void GatherMetricsMapOnUIThread();
   void GatherMetricsMapOnIOThread(int current_update_sequence);
-
-  // Called at the end of the metrics gathering process, to start
-  // our timer for the next run.
-  void ResetMetricsTimerOnUIThread();
 
   // Generate an appropriate ExtensionEvent for an extension-related occurrance
   // and insert it in the database.

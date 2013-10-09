@@ -1535,6 +1535,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_creator_.reset();
 #endif  // !defined(OS_ANDROID)
 
+  performance_monitor::PerformanceMonitor::GetInstance()->Initialize();
+
   PostBrowserStart();
 
   if (parameters().ui_task) {
@@ -1585,7 +1587,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   base::RunLoop run_loop;
 #endif
 
-  performance_monitor::PerformanceMonitor::GetInstance()->Start();
+  performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 
   run_loop.Run();
 

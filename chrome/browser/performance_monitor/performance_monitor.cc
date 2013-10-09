@@ -126,15 +126,8 @@ PerformanceMonitor* PerformanceMonitor::GetInstance() {
   return Singleton<PerformanceMonitor>::get();
 }
 
-void PerformanceMonitor::Start() {
+void PerformanceMonitor::Initialize() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  static bool has_initialized = false;
-  if (has_initialized) {
-    NOTREACHED();
-    return;
-  }
-  has_initialized = true;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPerformanceMonitorGathering)) {
@@ -174,7 +167,9 @@ void PerformanceMonitor::InitOnBackgroundThread() {
   CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (database_logging_enabled_) {
-    database_ = Database::Create(database_path_);
+    if (!database_)
+      database_ = Database::Create(database_path_);
+
     if (!database_) {
       LOG(ERROR) << "Could not initialize database; aborting initialization.";
       database_logging_enabled_ = false;
@@ -205,10 +200,6 @@ void PerformanceMonitor::FinishInit() {
                    base::Unretained(this)));
   }
 
-  // Start our periodic gathering of metrics.
-  if (!disable_timer_autostart_for_testing_)
-    timer_.Reset();
-
   // Post a task to the background thread to a function which does nothing.
   // This will force any tasks the database is performing to finish prior to
   // the reply being sent, since they use the same thread.
@@ -221,6 +212,14 @@ void PerformanceMonitor::FinishInit() {
       base::Bind(&base::DoNothing),
       base::Bind(&PerformanceMonitor::NotifyInitialized,
                  base::Unretained(this)));
+}
+
+void PerformanceMonitor::StartGatherCycle() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Start our periodic gathering of metrics.
+  if (!disable_timer_autostart_for_testing_)
+    timer_.Reset();
 }
 
 void PerformanceMonitor::RegisterForNotifications() {
@@ -534,17 +533,8 @@ void PerformanceMonitor::StoreMetricsOnBackgroundThread(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&PerformanceMonitor::ResetMetricsTimerOnUIThread,
+      base::Bind(&PerformanceMonitor::StartGatherCycle,
                  base::Unretained(this)));
-}
-
-void PerformanceMonitor::ResetMetricsTimerOnUIThread() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Start up the timer again; we avoid the use of a repeating timer
-  // to not have concurrent metrics gathering running.
-  if (!disable_timer_autostart_for_testing_)
-    timer_.Reset();
 }
 
 void PerformanceMonitor::BytesReadOnIOThread(const net::URLRequest& request,

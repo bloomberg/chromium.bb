@@ -377,10 +377,6 @@ void DoGetMetrics(ListValue* results,
 }  // namespace
 
 PerformanceMonitorHandler::PerformanceMonitorHandler() {
-  // If we are not running the --run-performance-monitor flag, we will not have
-  // started PerformanceMonitor.
-  if (!PerformanceMonitor::initialized())
-    PerformanceMonitor::GetInstance()->Start();
 }
 
 PerformanceMonitorHandler::~PerformanceMonitorHandler() {}

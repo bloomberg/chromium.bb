@@ -166,7 +166,7 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     performance_monitor_->disable_timer_autostart_for_testing_ = true;
     // Force metrics to be stored, regardless of switches used.
     performance_monitor_->database_logging_enabled_ = true;
-    performance_monitor_->Start();
+    performance_monitor_->Initialize();
 
     windowed_observer.Wait();
   }
