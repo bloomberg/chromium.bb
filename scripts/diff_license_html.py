@@ -12,8 +12,8 @@ import re
 from chromite.lib import commandline
 
 
-def GetTreePackages(html_file):
-  """Get the list of debian packages in an unpacked ProdNG tree.
+def GetPackagesLicensesFromHtml(html_file):
+  """Get the list of packages and licenses in a ChromeOS license file.
 
   Args:
     html_file: which html license file to scan for packages.
@@ -29,8 +29,14 @@ def GetTreePackages(html_file):
   licenses = set()
 
   pkg_rgx = re.compile(r'<span class="title">(.+)-(.+)</span>')
-  license_rgx = re.compile(
-      r'(?:Gentoo Package (Stock License .+)</a>|Scanned (Source license .+):)')
+  license_rgx1 = re.compile(r'Scanned (Source License .+):', re.IGNORECASE)
+  license_rgx2 = re.compile(r'<pre>(Custom License .+):', re.IGNORECASE)
+  # Gentoo Package Stock License BZIP2:
+  # <a ... class="title">Gentoo Package Stock License public-domain</a>
+  license_rgx3 = re.compile(r'Gentoo Package (Stock License [^<:]+)',
+                            re.IGNORECASE)
+  license_rgx4 = re.compile(r'class="title">(Custom License .+)</a>',
+                            re.IGNORECASE)
   with open(html_file, 'r') as f:
     for line in f:
       # Grep and turn
@@ -41,20 +47,20 @@ def GetTreePackages(html_file):
       if match:
         packages[match.group(1)] = match.group(2)
 
-      match = license_rgx.search(line)
+      match = license_rgx1.search(line)
       if match:
-        lic = None
-        if match.group(1):
-          lic = match.group(1)
-        else:
-          # Turn Source license simplejson-2.5.0/LICENSE.txt
-          # into Source license simplejson/LICENSE.txt
-          # (we don't want to create diffs based on version numbers)
-          lic = re.sub(r'(.+)-([^/]+)/(.+)', r'\1/\3', match.group(2))
-
+        # Turn Source license simplejson-2.5.0/LICENSE.txt
+        # into Source license simplejson/LICENSE.txt
+        # (we don't want to create diffs based on version numbers)
+        lic = re.sub(r'(.+)-([^/]+)/(.+)', r'\1/\3', match.group(1))
+        # Old files had this lowercased.
+        lic = re.sub(r'Source license', r'Source License', lic)
         licenses.add(lic)
-        if not lic:
-          raise AssertionError('License for %s came up empty')
+
+      for rgx in (license_rgx2, license_rgx3, license_rgx4):
+        match = rgx.search(line)
+        if match:
+          licenses.add(match.group(1))
 
   return (packages, licenses)
 
@@ -63,8 +69,8 @@ def ComparePkgLists(pkg_list1, pkg_list2):
   """Compare the package list in 2 dictionaries and output the differences.
 
   Args:
-    pkg_list1: dict from GetTreePackages.
-    pkg_list2: dict from GetTreePackages.
+    pkg_list1: dict from GetPackagesLicensesFromHtml.
+    pkg_list2: dict from GetPackagesLicensesFromHtml.
 
   Returns:
     N/A (outputs result on stdout).
@@ -91,8 +97,8 @@ def CompareLicenseSets(set1, set2):
   """Compare the license list in 2 sets and output the differences.
 
   Args:
-    set1: set from GetTreePackages.
-    set2: set from GetTreePackages.
+    set1: set from GetPackagesLicensesFromHtml.
+    set2: set from GetPackagesLicensesFromHtml.
 
   Returns:
     N/A (outputs result on stdout).
@@ -114,8 +120,8 @@ def main(args):
                       help='new html file')
   opts = parser.parse_args(args)
 
-  pkg_list1 = GetTreePackages(opts.html1)
-  pkg_list2 = GetTreePackages(opts.html2)
+  pkg_list1 = GetPackagesLicensesFromHtml(opts.html1)
+  pkg_list2 = GetPackagesLicensesFromHtml(opts.html2)
   ComparePkgLists(pkg_list1[0], pkg_list2[0])
   print
   CompareLicenseSets(pkg_list1[1], pkg_list2[1])
