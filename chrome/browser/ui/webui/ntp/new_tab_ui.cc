@@ -90,19 +90,14 @@ const char* GetHtmlTextDirection(const string16& text) {
 
 NewTabUI::NewTabUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
+      WebContentsObserver(web_ui->GetWebContents()),
       showing_sync_bubble_(false) {
   g_live_new_tabs.Pointer()->insert(this);
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
-  content::WebContents* web_contents = web_ui->GetWebContents();
-  NTPUserDataLogger::CreateForWebContents(web_contents);
-  NTPUserDataLogger::FromWebContents(web_contents)->set_ntp_url(
+  NTPUserDataLogger::CreateForWebContents(web_contents());
+  NTPUserDataLogger::FromWebContents(web_contents())->set_ntp_url(
       GURL(chrome::kChromeUINewTabURL));
-
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-      content::Source<content::WebContents>(web_contents));
 
   // We count all link clicks as AUTO_BOOKMARK, so that site can be ranked more
   // highly. Note this means we're including clicks on not only most visited
@@ -229,6 +224,10 @@ void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
 }
 
+void NewTabUI::WasHidden() {
+  EmitMouseoverCount();
+}
+
 void NewTabUI::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
@@ -237,20 +236,13 @@ void NewTabUI::Observe(int type,
       last_paint_ = base::TimeTicks::Now();
       break;
     }
-    case content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED: {
-      if (!*content::Details<bool>(details).ptr()) {
-        EmitMouseoverCount(
-            content::Source<content::WebContents>(source).ptr());
-      }
-      break;
-    }
     default:
       CHECK(false) << "Unexpected notification: " << type;
   }
 }
 
-void NewTabUI::EmitMouseoverCount(content::WebContents* web_contents) {
-  NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(web_contents);
+void NewTabUI::EmitMouseoverCount() {
+  NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(web_contents());
   if (data->ntp_url() == GURL(chrome::kChromeUINewTabURL))
     data->EmitMouseoverCount();
 }
