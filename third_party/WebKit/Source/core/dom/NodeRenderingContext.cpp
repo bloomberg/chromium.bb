@@ -83,9 +83,8 @@ RenderObject* NodeRenderingContext::nextRenderer() const
     if (m_parentFlowRenderer)
         return m_parentFlowRenderer->nextRendererForNode(m_node);
 
-    // Avoid an O(N^2) problem with this function by not checking for
-    // nextRenderer() when the parent element hasn't attached yet.
-    if (m_renderingParent && !m_renderingParent->confusingAndOftenMisusedAttached())
+    // Avoid an O(N^2) walk over the children when reattaching all children of a node.
+    if (m_renderingParent && m_renderingParent->needsAttach())
         return 0;
 
     for (Node* sibling = NodeRenderingTraversal::nextSibling(m_node); sibling; sibling = NodeRenderingTraversal::nextSibling(sibling)) {
