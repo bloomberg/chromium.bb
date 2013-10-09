@@ -289,11 +289,8 @@ setup_tty(struct weston_launcher *launcher, int tty)
 		goto err_close;
 	}
 
-	ret = ioctl(launcher->tty, VT_ACTIVATE, minor(buf.st_rdev));
-	weston_log("VT_ACTIVATE ret=%d, %m vt\n", ret);
-
-	ret = ioctl(launcher->tty, VT_WAITACTIVE, minor(buf.st_rdev));
-	weston_log("VT_WAITACTIVE ret=%d, %m vt\n", ret);
+	ioctl(launcher->tty, VT_ACTIVATE, minor(buf.st_rdev));
+	ioctl(launcher->tty, VT_WAITACTIVE, minor(buf.st_rdev));
 
 	if (ioctl(launcher->tty, KDGKBMODE, &launcher->kb_mode)) {
 		weston_log("failed to read keyboard mode: %m\n");
