@@ -1486,6 +1486,8 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'dart':        'sourcecode',
         'dylib':       'compiled.mach-o.dylib',
         'framework':   'wrapper.framework',
+        'gyp':         'sourcecode',
+        'gypi':        'sourcecode',
         'h':           'sourcecode.c.h',
         'hxx':         'sourcecode.cpp.h',
         'icns':        'image.icns',
@@ -1515,6 +1517,8 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
 
       prop_map = {
         'dart':        'explicitFileType',
+        'gyp':         'explicitFileType',
+        'gypi':        'explicitFileType',
       }
 
       if is_dir:
