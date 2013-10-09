@@ -30,7 +30,7 @@
 {
   'includes': [
     '../build/win/precompile.gypi',
-    '../core/features.gypi', # FIXME: We should factor out the GYP variables we need into a separate GYPI.
+    '../build/features.gypi',
     'blink_platform.gypi',
   ],
   'targets': [{

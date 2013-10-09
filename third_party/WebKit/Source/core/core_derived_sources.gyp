@@ -32,7 +32,7 @@
   'includes': [
     'core.gypi',
     '../bindings/bindings.gypi',
-    'features.gypi',
+    '../build/features.gypi',
   ],
 
   'targets': [

@@ -33,7 +33,7 @@
         '../build/win/precompile.gypi',
         '../bindings/bindings.gypi',
         '../core/core.gypi',
-        '../core/features.gypi',
+        '../build/features.gypi',
         '../modules/modules.gypi',
         '../wtf/wtf.gypi',
         'web.gypi',

@@ -41,7 +41,7 @@
         ],
     },
     'includes': [
-        '../../Source/core/features.gypi',
+        '../../Source/build/features.gypi',
         '../../Source/testing/runner/runner.gypi',
         '../../Source/testing/plugin/plugin.gypi',
     ],

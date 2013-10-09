@@ -31,7 +31,7 @@
 {
   'includes': [
     '../build/win/precompile.gypi',
-    'features.gypi',
+    '../build/features.gypi',
     '../modules/modules.gypi',
     '../bindings/bindings.gypi',
     'core.gypi',

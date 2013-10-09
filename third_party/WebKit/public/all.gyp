@@ -29,7 +29,7 @@
 #
 {
     'includes': [
-        '../Source/core/features.gypi',
+        '../Source/build/features.gypi',
     ],
     'targets': [
         {

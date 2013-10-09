@@ -28,7 +28,7 @@
 {
   'includes': [
     '../build/win/precompile.gypi',
-    '../core/features.gypi',
+    '../build/features.gypi',
     'wtf.gypi',
   ],
   'conditions': [
