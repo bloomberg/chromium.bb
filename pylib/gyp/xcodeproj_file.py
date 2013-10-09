@@ -1483,6 +1483,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'cpp':         'sourcecode.cpp.cpp',
         'css':         'text.css',
         'cxx':         'sourcecode.cpp.cpp',
+        'dart':        'sourcecode',
         'dylib':       'compiled.mach-o.dylib',
         'framework':   'wrapper.framework',
         'h':           'sourcecode.c.h',
@@ -1512,8 +1513,13 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'y':           'sourcecode.yacc',
       }
 
+      prop_map = {
+        'dart':        'explicitFileType',
+      }
+
       if is_dir:
         file_type = 'folder'
+        prop_name = 'lastKnownFileType'
       else:
         basename = posixpath.basename(self._properties['path'])
         (root, ext) = posixpath.splitext(basename)
@@ -1528,8 +1534,9 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         # for unrecognized files not containing text.  Xcode seems to choose
         # based on content.
         file_type = extension_map.get(ext, 'text')
+        prop_name = prop_map.get(ext, 'lastKnownFileType')
 
-      self._properties['lastKnownFileType'] = file_type
+      self._properties[prop_name] = file_type
 
 
 class PBXVariantGroup(PBXGroup, XCFileLikeElement):
