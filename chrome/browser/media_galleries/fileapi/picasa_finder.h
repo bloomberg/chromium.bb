@@ -11,6 +11,11 @@
 
 namespace picasa {
 
+#if defined(OS_WIN)
+extern const wchar_t kPicasaRegistryPath[];
+extern const wchar_t kPicasaRegistryAppDataKey[];
+#endif
+
 typedef base::Callback<void(const std::string&)> DeviceIDCallback;
 
 // Bounces to FILE thread to find Picasa database. If the platform supports

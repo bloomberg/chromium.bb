@@ -11,8 +11,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
 
+#if defined(OS_WIN)
+#include "base/test/test_reg_util_win.h"
+#endif
+
 namespace extensions {
 class Extension;
+}
+
+namespace registry_util {
+class RegistryOverrideManager;
 }
 
 class Profile;
@@ -32,6 +40,7 @@ class EnsureMediaDirectoriesExists {
   base::FilePath GetFakeAppDataPath() const;
 #if defined(OS_WIN)
   base::FilePath GetFakeLocalAppDataPath() const;
+  void WriteCustomPicasaAppDataPathToRegistry(const base::FilePath& path);
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX)
   base::FilePath GetFakePicasaFoldersRootPath() const;
@@ -50,6 +59,8 @@ class EnsureMediaDirectoriesExists {
   scoped_ptr<base::ScopedPathOverride> video_override_;
 #if defined(OS_WIN)
   scoped_ptr<base::ScopedPathOverride> local_app_data_override_;
+
+  registry_util::RegistryOverrideManager registry_override_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(EnsureMediaDirectoriesExists);
