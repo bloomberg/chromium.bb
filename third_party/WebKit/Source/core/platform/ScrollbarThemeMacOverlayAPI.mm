@@ -35,7 +35,7 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
-#include "core/platform/ScrollbarThemeClient.h"
+#include "platform/scroll/ScrollbarThemeClient.h"
 
 namespace WebCore {
 

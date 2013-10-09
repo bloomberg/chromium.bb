@@ -27,7 +27,7 @@
 #include "core/platform/mock/ScrollbarThemeMock.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/ScrollbarThemeClient.h"
+#include "platform/scroll/ScrollbarThemeClient.h"
 
 namespace WebCore {
 

@@ -2647,7 +2647,6 @@
             'platform/ScrollbarThemeAndroid.cpp',
             'platform/ScrollbarThemeAuraOrGtk.cpp',
             'platform/ScrollbarThemeAuraOrGtk.h',
-            'platform/ScrollbarThemeClient.h',
             'platform/ScrollbarThemeMacCommon.h',
             'platform/ScrollbarThemeMacCommon.mm',
             'platform/ScrollbarThemeMacNonOverlayAPI.h',

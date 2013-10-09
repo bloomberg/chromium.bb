@@ -32,7 +32,7 @@
 #include "core/platform/ScrollbarThemeMacNonOverlayAPI.h"
 
 #include <Carbon/Carbon.h>
-#include "core/platform/ScrollbarThemeClient.h"
+#include "platform/scroll/ScrollbarThemeClient.h"
 #include "public/platform/mac/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"

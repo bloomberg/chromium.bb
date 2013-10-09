@@ -26,10 +26,10 @@
 #ifndef Scrollbar_h
 #define Scrollbar_h
 
-#include "core/platform/ScrollbarThemeClient.h"
 #include "core/platform/Widget.h"
 #include "platform/Timer.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/scroll/ScrollbarThemeClient.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassRefPtr.h"
 
