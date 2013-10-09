@@ -20,6 +20,14 @@
     targetIframe1 = document.getElementById("iframe1");
     targetIframe2 = document.getElementById("iframe2");
 
+    // Events must not bubble from document.
+    function errorIfEventsBubble() {
+      testFailed("Events must not bubble to the window.");
+      finishJSTest();
+    }
+    window.addEventListener("webkitpointerlockchange", errorIfEventsBubble);
+    window.addEventListener("webkitpointerlockerror", errorIfEventsBubble);
+
     todo = [
         function () {
             expectNoEvents("Unlock.");
