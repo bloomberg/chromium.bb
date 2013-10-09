@@ -49,7 +49,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/storage_partition.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #endif
 
 #if defined(ENABLE_APP_LIST)
