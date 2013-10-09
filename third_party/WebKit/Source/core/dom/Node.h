@@ -195,8 +195,7 @@ public:
     virtual KURL baseURI() const;
 
     // These should all actually return a node, but this is only important for language bindings,
-    // which will already know and hold a ref on the right node to return. Returning bool allows
-    // these methods to be more efficient since they don't need to return a ref
+    // which will already know and hold a ref on the right node to return.
     void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
     void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
     void removeChild(Node* child, ExceptionState&);
