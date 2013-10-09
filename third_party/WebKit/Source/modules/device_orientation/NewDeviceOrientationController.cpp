@@ -89,8 +89,7 @@ void NewDeviceOrientationController::unregisterWithDispatcher()
 
 bool NewDeviceOrientationController::isNullEvent(Event* event)
 {
-    ASSERT(event->type() == EventNames::deviceorientation);
-    DeviceOrientationEvent* orientationEvent = static_cast<DeviceOrientationEvent*>(event);
+    DeviceOrientationEvent* orientationEvent = toDeviceOrientationEvent(event);
     return !orientationEvent->orientation()->canProvideEventData();
 }
 

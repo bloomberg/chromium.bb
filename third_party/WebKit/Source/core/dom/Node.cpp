@@ -2364,9 +2364,10 @@ void Node::defaultEventHandler(Event* event)
         if (Page* page = document().page())
             page->contextMenuController().handleContextMenuEvent(event);
     } else if (eventType == EventNames::textInput) {
-        if (event->hasInterface(eventNames().interfaceForTextEvent))
+        if (event->hasInterface(eventNames().interfaceForTextEvent)) {
             if (Frame* frame = document().frame())
-                frame->eventHandler()->defaultTextInputEventHandler(static_cast<TextEvent*>(event));
+                frame->eventHandler()->defaultTextInputEventHandler(toTextEvent(event));
+        }
 #if OS(WIN)
     } else if (eventType == EventNames::mousedown && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
@@ -2385,7 +2386,7 @@ void Node::defaultEventHandler(Event* event)
         }
 #endif
     } else if ((eventType == EventNames::wheel || eventType == EventNames::mousewheel) && event->hasInterface(eventNames().interfaceForWheelEvent)) {
-        WheelEvent* wheelEvent = static_cast<WheelEvent*>(event);
+        WheelEvent* wheelEvent = toWheelEvent(event);
 
         // If we don't have a renderer, send the wheel event to the first node we find with a renderer.
         // This is needed for <option> and <optgroup> elements so that <select>s get a wheel scroll.
