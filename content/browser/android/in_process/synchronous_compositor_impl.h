@@ -77,7 +77,7 @@ class SynchronousCompositorImpl
   virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
   virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE;
   virtual bool IsExternalFlingActive() const OVERRIDE;
-  virtual void SetPageScaleFactor(float page_scale_factor) OVERRIDE;
+  virtual void SetTotalPageScaleFactor(float page_scale_factor) OVERRIDE;
   virtual void SetScrollableSize(gfx::SizeF scrollable_size) OVERRIDE;
 
   void SetInputHandler(cc::InputHandler* input_handler);

@@ -190,8 +190,10 @@ void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
   max_page_scale_factor_ = max_page_scale_factor;
   page_scale_factor_ = page_scale_factor;
 
-  if (root_layer_scroll_offset_delegate_)
-    root_layer_scroll_offset_delegate_->SetPageScaleFactor(page_scale_factor_);
+  if (root_layer_scroll_offset_delegate_) {
+    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactor(
+        total_page_scale_factor());
+  }
 }
 
 void LayerTreeImpl::SetPageScaleDelta(float delta) {
@@ -218,6 +220,11 @@ void LayerTreeImpl::SetPageScaleDelta(float delta) {
 
   UpdateMaxScrollOffset();
   set_needs_update_draw_properties();
+
+  if (root_layer_scroll_offset_delegate_) {
+    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactor(
+        total_page_scale_factor());
+  }
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
@@ -618,7 +625,8 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
 
   if (root_layer_scroll_offset_delegate_) {
     root_layer_scroll_offset_delegate_->SetScrollableSize(ScrollableSize());
-    root_layer_scroll_offset_delegate_->SetPageScaleFactor(page_scale_factor_);
+    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactor(
+        total_page_scale_factor());
   }
 }
 

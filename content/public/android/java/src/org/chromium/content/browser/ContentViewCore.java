@@ -100,10 +100,6 @@ import java.util.Map;
 
     private static final String TAG = "ContentViewCore";
 
-    // Used to avoid enabling zooming in / out if resulting zooming will
-    // produce little visible difference.
-    private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
-
     // Used to represent gestures for long press and long tap.
     private static final int IS_LONG_PRESS = 1;
     private static final int IS_LONG_TAP = 2;
@@ -2359,14 +2355,6 @@ import java.util.Map;
 
         if (needHidePopupZoomer) mPopupZoomer.hide(true);
 
-        if (pageScaleChanged) {
-            // This function should be called back from native as soon
-            // as the scroll is applied to the backbuffer.  We should only
-            // update mNativeScrollX/Y here for consistency.
-            getContentViewClient().onScaleChanged(
-                    mRenderCoordinates.getPageScaleFactor(), pageScaleFactor);
-        }
-
         mRenderCoordinates.updateFrameInfo(
                 scrollOffsetX, scrollOffsetY,
                 contentWidth, contentHeight,
@@ -2587,78 +2575,13 @@ import java.util.Map;
     }
 
     /**
-     * Checks whether the ContentViewCore can be zoomed in.
+     * Simulate a pinch zoom gesture.
      *
-     * @return True if the ContentViewCore can be zoomed in.
-     */
-    // This method uses the term 'zoom' for legacy reasons, but relates
-    // to what chrome calls the 'page scale factor'.
-    public boolean canZoomIn() {
-        final float zoomInExtent = mRenderCoordinates.getMaxPageScaleFactor()
-                - mRenderCoordinates.getPageScaleFactor();
-        return zoomInExtent > ZOOM_CONTROLS_EPSILON;
-    }
-
-    /**
-     * Checks whether the ContentViewCore can be zoomed out.
+     * @param delta the factor by which the current page scale should be multiplied by.
      *
-     * @return True if the ContentViewCore can be zoomed out.
+     * @return whether the gesture was sent.
      */
-    // This method uses the term 'zoom' for legacy reasons, but relates
-    // to what chrome calls the 'page scale factor'.
-    public boolean canZoomOut() {
-        final float zoomOutExtent = mRenderCoordinates.getPageScaleFactor()
-                - mRenderCoordinates.getMinPageScaleFactor();
-        return zoomOutExtent > ZOOM_CONTROLS_EPSILON;
-    }
-
-    /**
-     * Zooms in the ContentViewCore by 25% (or less if that would result in
-     * zooming in more than possible).
-     *
-     * @return True if there was a zoom change, false otherwise.
-     */
-    // This method uses the term 'zoom' for legacy reasons, but relates
-    // to what chrome calls the 'page scale factor'.
-    public boolean zoomIn() {
-        if (!canZoomIn()) {
-            return false;
-        }
-        return zoomByDelta(1.25f);
-    }
-
-    /**
-     * Zooms out the ContentViewCore by 20% (or less if that would result in
-     * zooming out more than possible).
-     *
-     * @return True if there was a zoom change, false otherwise.
-     */
-    // This method uses the term 'zoom' for legacy reasons, but relates
-    // to what chrome calls the 'page scale factor'.
-    public boolean zoomOut() {
-        if (!canZoomOut()) {
-            return false;
-        }
-        return zoomByDelta(0.8f);
-    }
-
-    /**
-     * Resets the zoom factor of the ContentViewCore.
-     *
-     * @return True if there was a zoom change, false otherwise.
-     */
-    // This method uses the term 'zoom' for legacy reasons, but relates
-    // to what chrome calls the 'page scale factor'.
-    public boolean zoomReset() {
-        // The page scale factor is initialized to mNativeMinimumScale when
-        // the page finishes loading. Thus sets it back to mNativeMinimumScale.
-        if (!canZoomOut()) return false;
-        return zoomByDelta(
-                mRenderCoordinates.getMinPageScaleFactor()
-                        / mRenderCoordinates.getPageScaleFactor());
-    }
-
-    private boolean zoomByDelta(float delta) {
+    public boolean pinchByDelta(float delta) {
         if (mNativeContentViewCore == 0) {
             return false;
         }

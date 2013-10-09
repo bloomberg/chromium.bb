@@ -2451,7 +2451,7 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
 
   virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
 
-  virtual void SetPageScaleFactor(float page_scale_factor) OVERRIDE {
+  virtual void SetTotalPageScaleFactor(float page_scale_factor) OVERRIDE {
     page_scale_factor_ = page_scale_factor;
   }
 
@@ -2509,6 +2509,9 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   // Updating page scale immediately updates the delegate.
   host_impl_->active_tree()->SetPageScaleFactorAndLimits(2.f, 0.5f, 4.f);
   EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
+  host_impl_->active_tree()->SetPageScaleDelta(1.5f);
+  EXPECT_EQ(3.f, scroll_delegate.page_scale_factor());
+  host_impl_->active_tree()->SetPageScaleDelta(1.f);
   host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
   EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
 

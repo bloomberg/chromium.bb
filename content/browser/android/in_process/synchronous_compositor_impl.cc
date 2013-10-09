@@ -443,7 +443,8 @@ bool SynchronousCompositorImpl::IsExternalFlingActive() const {
   return false;
 }
 
-void SynchronousCompositorImpl::SetPageScaleFactor(float page_scale_factor) {
+void SynchronousCompositorImpl::SetTotalPageScaleFactor(
+    float page_scale_factor) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)
     compositor_client_->SetRootLayerPageScaleFactor(page_scale_factor);

@@ -40,7 +40,7 @@ class LayerScrollOffsetDelegate {
 
   // This is called by the compositor to notify the delegate what is the current
   // page scale factor is.
-  virtual void SetPageScaleFactor(float page_scale_factor) = 0;
+  virtual void SetTotalPageScaleFactor(float page_scale_factor) = 0;
 
   // This is called by the compositor to notify the delegate what is the layer's
   // scrollable size is.
