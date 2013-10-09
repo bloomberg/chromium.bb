@@ -1177,6 +1177,8 @@ crbug.com/305476 [ Linux ] fast/encoding/api/streaming-decode.html [ Crash ]
 
 crbug.com/305708 [ Linux ] fast/text/international/hindi-spacing.html [ Pass ImageOnlyFailure ]
 
+crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
+
 # Should be fixed with the next Skia roll.
 crbug.com/304968 [ Win Debug ] fast/url/idna2003.html [ Crash ]
 crbug.com/304968 [ Win Debug ] fast/text/midword-break-before-surrogate-pair.html [ Crash ]
