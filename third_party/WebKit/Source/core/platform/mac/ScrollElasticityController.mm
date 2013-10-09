@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/platform/mac/ScrollElasticityController.h"
 
+#include "platform/PlatformWheelEvent.h"
 #include <sys/sysctl.h>
 #include <sys/time.h>
-#include "core/platform/PlatformWheelEvent.h"
 
 #if USE(RUBBER_BANDING)
 

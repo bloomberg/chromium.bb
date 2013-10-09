@@ -36,7 +36,6 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/support/WebScrollbarImpl.h"

@@ -27,10 +27,10 @@
 #include "config.h"
 #include "core/platform/ScrollbarThemeNonMacCommon.h"
 
-#include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/PlatformMouseEvent.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 
 namespace WebCore {

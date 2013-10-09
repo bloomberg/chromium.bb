@@ -30,7 +30,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/platform/PlatformMouseEvent.h"
+#include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 

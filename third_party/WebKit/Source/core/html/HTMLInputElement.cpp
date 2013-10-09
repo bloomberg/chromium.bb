@@ -65,10 +65,10 @@
 #include "core/page/FrameView.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/DateTimeChooser.h"
-#include "core/platform/PlatformMouseEvent.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/Language.h"
+#include "platform/PlatformMouseEvent.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/MathExtras.h"
 

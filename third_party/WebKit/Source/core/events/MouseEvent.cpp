@@ -27,7 +27,7 @@
 #include "core/events/EventDispatcher.h"
 #include "core/events/EventRetargeter.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/platform/PlatformMouseEvent.h"
+#include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 

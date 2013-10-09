@@ -31,7 +31,7 @@
 #ifndef ScrollAnimator_h
 #define ScrollAnimator_h
 
-#include "core/platform/PlatformWheelEvent.h"
+#include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/FastAllocBase.h"

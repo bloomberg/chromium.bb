@@ -47,11 +47,11 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/network/FormDataList.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/PlatformMouseEvent.h"
 #include "platform/text/PlatformLocale.h"
 
 using namespace std;

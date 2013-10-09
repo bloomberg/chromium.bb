@@ -32,11 +32,11 @@
 #define WebInputEventConversion_h
 
 #include "WebInputEvent.h"
-#include "core/platform/PlatformGestureEvent.h"
-#include "core/platform/PlatformKeyboardEvent.h"
-#include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/PlatformTouchEvent.h"
-#include "core/platform/PlatformWheelEvent.h"
+#include "platform/PlatformGestureEvent.h"
+#include "platform/PlatformKeyboardEvent.h"
+#include "platform/PlatformMouseEvent.h"
+#include "platform/PlatformTouchEvent.h"
+#include "platform/PlatformWheelEvent.h"
 
 namespace WebCore {
 class GestureEvent;

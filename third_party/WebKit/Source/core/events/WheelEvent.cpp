@@ -26,7 +26,7 @@
 
 #include "core/dom/Clipboard.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/platform/PlatformWheelEvent.h"
+#include "platform/PlatformWheelEvent.h"
 
 namespace WebCore {
 

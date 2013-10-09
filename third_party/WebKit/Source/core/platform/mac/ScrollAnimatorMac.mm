@@ -27,8 +27,6 @@
 
 #include "core/platform/mac/ScrollAnimatorMac.h"
 
-#include "core/platform/PlatformGestureEvent.h"
-#include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/ScrollbarTheme.h"
@@ -37,6 +35,8 @@
 #include "core/platform/mac/BlockExceptions.h"
 #include "core/platform/mac/EmptyProtocolDefinitions.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
+#include "platform/PlatformGestureEvent.h"
+#include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"

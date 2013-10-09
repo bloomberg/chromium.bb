@@ -26,8 +26,6 @@
 #ifndef PlatformEvent_h
 #define PlatformEvent_h
 
-#include "platform/PlatformExport.h"
-
 namespace WebCore {
 
 class PlatformEvent {

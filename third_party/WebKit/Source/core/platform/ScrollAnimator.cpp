@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/ScrollAnimator.h"
 
-#include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollableArea.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"

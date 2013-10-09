@@ -24,8 +24,8 @@
 #include "core/events/KeyboardEvent.h"
 
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/WindowsKeyboardCodes.h"
+#include "platform/PlatformKeyboardEvent.h"
 
 namespace WebCore {
 

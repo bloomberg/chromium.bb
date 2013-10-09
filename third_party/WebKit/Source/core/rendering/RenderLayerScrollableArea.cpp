@@ -54,8 +54,6 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/platform/PlatformGestureEvent.h"
-#include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -65,6 +63,8 @@
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
+#include "platform/PlatformGestureEvent.h"
+#include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 

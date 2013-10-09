@@ -40,13 +40,13 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
-#include "core/platform/PlatformKeyboardEvent.h"
-#include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/Widget.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/PlatformKeyboardEvent.h"
+#include "platform/PlatformMouseEvent.h"
+#include "platform/PlatformWheelEvent.h"
 
 using namespace WebCore;
 

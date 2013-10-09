@@ -27,8 +27,6 @@
 #include "core/platform/Scrollbar.h"
 
 #include <algorithm>
-#include "core/platform/PlatformGestureEvent.h"
-#include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/ScrollbarTheme.h"
@@ -39,6 +37,9 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
+
+#include "platform/PlatformGestureEvent.h"
+#include "platform/PlatformMouseEvent.h"
 
 using namespace std;
 

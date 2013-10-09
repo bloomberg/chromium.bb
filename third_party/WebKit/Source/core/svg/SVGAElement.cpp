@@ -42,13 +42,13 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/animation/SVGSMILElement.h"
+#include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 

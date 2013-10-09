@@ -58,10 +58,10 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/NotImplemented.h"
+#include "platform/PlatformKeyboardEvent.h"
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;

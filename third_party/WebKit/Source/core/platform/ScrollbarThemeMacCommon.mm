@@ -28,7 +28,6 @@
 
 #include <Carbon/Carbon.h>
 #include "core/page/FrameView.h"
-#include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/ScrollbarThemeMacNonOverlayAPI.h"
 #include "core/platform/ScrollbarThemeMacOverlayAPI.h"
@@ -41,6 +40,7 @@
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 #include "core/platform/mac/ScrollAnimatorMac.h"
+#include "platform/PlatformMouseEvent.h"
 #include "public/platform/mac/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"

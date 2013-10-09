@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/PlatformKeyboardEvent.h"
+#include "platform/PlatformKeyboardEvent.h"
 
 #if OS(WIN)
 #include <windows.h>
@@ -38,7 +38,7 @@
 namespace WebCore {
 
 #if OS(WIN)
-static const unsigned short HIGH_BIT_MASK_SHORT = 0x8000;
+static const unsigned short HIGHBITMASKSHORT = 0x8000;
 #endif
 
 void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type)
@@ -87,9 +87,9 @@ bool PlatformKeyboardEvent::currentCapsLockState()
 void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKey, bool& altKey, bool& metaKey)
 {
 #if OS(WIN)
-    shiftKey = GetKeyState(VK_SHIFT) & HIGH_BIT_MASK_SHORT;
-    ctrlKey = GetKeyState(VK_CONTROL) & HIGH_BIT_MASK_SHORT;
-    altKey = GetKeyState(VK_MENU) & HIGH_BIT_MASK_SHORT;
+    shiftKey = GetKeyState(VK_SHIFT) & HIGHBITMASKSHORT;
+    ctrlKey = GetKeyState(VK_CONTROL) & HIGHBITMASKSHORT;
+    altKey = GetKeyState(VK_MENU) & HIGHBITMASKSHORT;
     metaKey = false;
 #elif OS(MACOSX)
     UInt32 currentModifiers = GetCurrentKeyModifiers();

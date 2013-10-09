@@ -28,7 +28,7 @@
 
 #include "core/events/EventDispatcher.h"
 #include "core/events/MouseRelatedEvent.h"
-#include "core/platform/PlatformGestureEvent.h"
+#include "platform/PlatformGestureEvent.h"
 
 namespace WebCore {
 

@@ -32,6 +32,7 @@
 
 #include "PopupContainer.h"
 #include "PopupMenuChromium.h"
+#include "RuntimeEnabledFeatures.h"
 #include "URLTestHelpers.h"
 #include "WebDocument.h"
 #include "WebElement.h"
@@ -49,20 +50,19 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameView.h"
-#include "RuntimeEnabledFeatures.h"
-#include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PopupMenu.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/Color.h"
-#include "v8.h"
-#include <gtest/gtest.h>
+#include "platform/PlatformMouseEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
+#include "v8.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 using namespace WebKit;

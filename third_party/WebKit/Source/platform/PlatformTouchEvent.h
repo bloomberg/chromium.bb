@@ -20,12 +20,11 @@
 #ifndef PlatformTouchEvent_h
 #define PlatformTouchEvent_h
 
-#include "core/platform/PlatformTouchPoint.h"
 #include "platform/PlatformEvent.h"
+#include "platform/PlatformTouchPoint.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
-
 
 class PlatformTouchEvent : public PlatformEvent {
 public:

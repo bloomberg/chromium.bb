@@ -29,11 +29,11 @@
 #include "core/editing/FrameSelection.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Frame.h"
-#include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/PlatformKeyboardEvent.h"
 
 using namespace std;
 

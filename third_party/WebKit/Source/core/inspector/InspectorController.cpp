@@ -68,7 +68,7 @@
 #include "core/inspector/PageDebuggerAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
 #include "core/page/Page.h"
-#include "core/platform/PlatformMouseEvent.h"
+#include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 
