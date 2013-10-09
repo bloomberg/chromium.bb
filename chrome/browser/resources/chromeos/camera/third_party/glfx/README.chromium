@@ -1,0 +1,11 @@
+Name: glfx.js
+URL: http://evanw.github.io/glfx.js/
+Version: 58841c23919bd59787effc0333a4897b43835412
+License: MIT
+Security Critical: no
+
+Description:
+This directory contains a copy of the glfx.js library obtained from github on
+2013-10-09, with this command:
+
+git clone https://github.com/evanw/glfx.js.git

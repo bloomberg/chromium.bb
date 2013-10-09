@@ -1,0 +1,14 @@
+Name: ccv
+URL: https://github.com/liuliu/ccv/
+Version: dca50ebbe3b60c540a2304973dff722b56787ea2
+License: BSD
+Security Critical: no
+
+Description:
+This directory contains a Javascript implementation of head tracking, being a
+part of the ccv library obtained from github on 2013-10-09.
+
+Copied files:
+https://github.com/liuliu/ccv/blob/unstable/js/ccv.js
+https://github.com/liuliu/ccv/blob/unstable/js/face.js
+https://github.com/liuliu/ccv/blob/unstable/COPYING
