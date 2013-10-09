@@ -180,6 +180,16 @@ class IncludeOrderTest(unittest.TestCase):
         mock_input_api, mock_file, range(1, len(contents) + 1))
     self.assertEqual(0, len(warnings))
 
+  def testSpecialFirstInclude6(self):
+    mock_input_api = MockInputApi()
+    contents = ['#include "some/other/path/foo_win.h"',
+                '#include <set>',
+                '#include "a/header.h"']
+    mock_file = MockFile('some/path/foo_unittest_win.h', contents)
+    warnings = PRESUBMIT._CheckIncludeOrderInFile(
+        mock_input_api, mock_file, range(1, len(contents) + 1))
+    self.assertEqual(0, len(warnings))
+
   def testOrderAlreadyWrong(self):
     scope = [(1, '#include "b.h"'),
              (2, '#include "a.h"'),

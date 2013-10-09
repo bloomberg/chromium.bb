@@ -578,6 +578,10 @@ def _CheckIncludeOrderInFile(input_api, f, changed_linenums):
   excluded_include_pattern = input_api.re.compile(
       r'\s*#include (\<.*/.*|\<atlbase\.h\>|"build/build_config.h")')
   custom_include_pattern = input_api.re.compile(r'\s*#include "(?P<FILE>.*)"')
+  # Match the final or penultimate token if it is xxxtest so we can ignore it
+  # when considering the special first include.
+  test_file_tag_pattern = input_api.re.compile(
+    r'_[a-z]+test(?=(_[a-zA-Z0-9]+)?\.)')
   if_pattern = input_api.re.compile(
       r'\s*#\s*(if|elif|else|endif|define|undef).*')
   # Some files need specialized order of includes; exclude such files from this
@@ -594,6 +598,11 @@ def _CheckIncludeOrderInFile(input_api, f, changed_linenums):
   # some/path/file.h, the corresponding including file can be some/path/file.cc,
   # some/other/path/file.cc, some/path/file_platform.cc, some/path/file-suffix.h
   # etc. It's also possible that no special first include exists.
+  # If the included file is some/path/file_platform.h the including file could
+  # also be some/path/file_xxxtest_platform.h.
+  including_file_base_name = test_file_tag_pattern.sub(
+    '', input_api.os_path.basename(f.LocalPath()))
+
   for line in contents:
     line_num += 1
     if system_include_pattern.match(line):
@@ -604,9 +613,10 @@ def _CheckIncludeOrderInFile(input_api, f, changed_linenums):
     match = custom_include_pattern.match(line)
     if match:
       match_dict = match.groupdict()
-      header_basename = input_api.os_path.basename(
-          match_dict['FILE']).replace('.h', '')
-      if header_basename not in input_api.os_path.basename(f.LocalPath()):
+      header_basename = test_file_tag_pattern.sub(
+        '', input_api.os_path.basename(match_dict['FILE'])).replace('.h', '')
+
+      if header_basename not in including_file_base_name:
         # No special first include -> process the line again along with normal
         # includes.
         line_num -= 1
