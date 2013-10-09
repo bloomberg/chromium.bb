@@ -487,7 +487,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       plugin_url_(plugin_url),
       full_frame_(false),
       sent_initial_did_change_view_(false),
-      view_change_weak_ptr_factory_(this),
       bound_graphics_2d_platform_(NULL),
       has_webkit_focus_(false),
       has_content_area_focus_(false),
@@ -524,7 +523,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       document_loader_(NULL),
       external_document_load_(false),
       npp_(new NPP_t),
-      isolate_(v8::Isolate::GetCurrent()) {
+      isolate_(v8::Isolate::GetCurrent()),
+      view_change_weak_ptr_factory_(this) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));

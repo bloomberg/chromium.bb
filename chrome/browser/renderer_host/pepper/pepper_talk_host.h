@@ -45,9 +45,9 @@ class PepperTalkHost : public ppapi::host::ResourceHost {
   void OnStartRemotingCompleted(ppapi::host::ReplyMessageContext reply);
   void OnStopRemotingCompleted(ppapi::host::ReplyMessageContext reply);
 
-  base::WeakPtrFactory<PepperTalkHost> weak_factory_;
   content::BrowserPpapiHost* browser_ppapi_host_;
   bool remoting_started_;
+  base::WeakPtrFactory<PepperTalkHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTalkHost);
 };

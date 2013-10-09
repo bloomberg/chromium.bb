@@ -172,8 +172,6 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // DIP
   float scale_;
 
-  base::WeakPtrFactory<PepperGraphics2DHost> weak_ptr_factory_;
-
   ppapi::host::ReplyMessageContext flush_reply_context_;
 
   bool is_running_in_process_;

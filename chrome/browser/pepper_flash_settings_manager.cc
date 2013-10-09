@@ -930,10 +930,10 @@ void PepperFlashSettingsManager::Core::OnClearSiteDataResult(
 PepperFlashSettingsManager::PepperFlashSettingsManager(
     Client* client,
     content::BrowserContext* browser_context)
-    : weak_ptr_factory_(this),
-      client_(client),
+    : client_(client),
       browser_context_(browser_context),
-      next_request_id_(1) {
+      next_request_id_(1),
+      weak_ptr_factory_(this) {
   DCHECK(client);
   DCHECK(browser_context);
 }

@@ -686,13 +686,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // same as the default values.
   bool sent_initial_did_change_view_;
 
-  // We use a weak ptr factory for scheduling DidChangeView events so that we
-  // can tell whether updates are pending and consolidate them. When there's
-  // already a weak ptr pending (HasWeakPtrs is true), code should update the
-  // view_data_ but not send updates. This also allows us to cancel scheduled
-  // view change events.
-  base::WeakPtrFactory<PepperPluginInstanceImpl> view_change_weak_ptr_factory_;
-
   // The current device context for painting in 2D and 3D.
   scoped_refptr<PPB_Graphics3D_Impl> bound_graphics_3d_;
   PepperGraphics2DHost* bound_graphics_2d_platform_;
@@ -857,6 +850,13 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   v8::Isolate* isolate_;
 
   scoped_ptr<MouseLockDispatcher::LockTarget> lock_target_;
+
+  // We use a weak ptr factory for scheduling DidChangeView events so that we
+  // can tell whether updates are pending and consolidate them. When there's
+  // already a weak ptr pending (HasWeakPtrs is true), code should update the
+  // view_data_ but not send updates. This also allows us to cancel scheduled
+  // view change events.
+  base::WeakPtrFactory<PepperPluginInstanceImpl> view_change_weak_ptr_factory_;
 
   friend class PpapiPluginInstanceTest;
   DISALLOW_COPY_AND_ASSIGN(PepperPluginInstanceImpl);

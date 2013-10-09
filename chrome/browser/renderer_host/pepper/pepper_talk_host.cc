@@ -138,9 +138,9 @@ PepperTalkHost::PepperTalkHost(content::BrowserPpapiHost* host,
                                PP_Instance instance,
                                PP_Resource resource)
     : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
-      weak_factory_(this),
       browser_ppapi_host_(host),
-      remoting_started_(false) {
+      remoting_started_(false),
+      weak_factory_(this) {
 }
 
 PepperTalkHost::~PepperTalkHost() {

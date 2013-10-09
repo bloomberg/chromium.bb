@@ -118,8 +118,6 @@ class PepperFlashSettingsManager {
   // Notifies us that an error occurred in |core|.
   void OnError(Core* core);
 
-  base::WeakPtrFactory<PepperFlashSettingsManager> weak_ptr_factory_;
-
   // |client_| is not owned by this object and must outlive it.
   Client* client_;
 
@@ -129,6 +127,8 @@ class PepperFlashSettingsManager {
   scoped_refptr<Core> core_;
 
   uint32 next_request_id_;
+
+  base::WeakPtrFactory<PepperFlashSettingsManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashSettingsManager);
 };
