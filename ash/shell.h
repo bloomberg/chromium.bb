@@ -74,7 +74,6 @@ namespace ash {
 
 class AcceleratorController;
 class AshNativeCursorManager;
-class AutoclickController;
 class CapsLockDelegate;
 class DesktopBackgroundController;
 class DisplayController;
@@ -370,11 +369,6 @@ class ASH_EXPORT Shell
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
   }
-
-  AutoclickController* autoclick_controller() {
-    return autoclick_controller_.get();
-  }
-
   aura::client::ActivationClient* activation_client() {
     return activation_client_;
   }
@@ -596,7 +590,6 @@ class ASH_EXPORT Shell
   scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<MagnificationController> magnification_controller_;
   scoped_ptr<PartialMagnificationController> partial_magnification_controller_;
-  scoped_ptr<AutoclickController> autoclick_controller_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
   aura::client::ActivationClient* activation_client_;
