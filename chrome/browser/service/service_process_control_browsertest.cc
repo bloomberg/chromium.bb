@@ -99,11 +99,7 @@ class ServiceProcessControlBrowserTest
   base::ProcessHandle service_process_handle_;
 };
 
-// They way that the IPC is implemented only works on windows. This has to
-// change when we implement a different scheme for IPC.
-// Times out flakily, http://crbug.com/70076.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
-                       DISABLED_LaunchAndIPC) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
