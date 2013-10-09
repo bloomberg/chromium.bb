@@ -54,6 +54,16 @@ function slice(array, index)
 }
 
 /**
+ * @param {*} obj
+ * @return {string}
+ */
+function toString(obj)
+{
+    // We don't use String(obj) because it could be overriden.
+    return "" + obj;
+}
+
+/**
  * Please use this bind, not the one from Function.prototype
  * @param {function(...)} func
  * @param {Object} thisObject
@@ -140,7 +150,7 @@ InjectedScript.prototype = {
         if (this.isPrimitiveValue(object))
             result.value = object;
         else
-            result.description = this._toString(object);
+            result.description = toString(object);
         return /** @type {!RuntimeAgent.RemoteObject} */ (result);
     },
 
@@ -160,7 +170,7 @@ InjectedScript.prototype = {
         if (InjectedScriptHost.type(columns) == "array") {
             columnNames = [];
             for (var i = 0; i < columns.length; ++i)
-                columnNames.push(String(columns[i]));
+                columnNames.push(toString(columns[i]));
         }
         return this._wrapObject(table, "console", false, true, columnNames, true);
     },
@@ -340,7 +350,7 @@ InjectedScript.prototype = {
                     value: this._wrapObject(property.value, objectGroupName)
                 };
                 descriptors.push(descriptor);
-            } 
+            }
         }
         return descriptors;
     },
@@ -416,7 +426,7 @@ InjectedScript.prototype = {
                             continue;
                         try {
                             descriptor = { name: name, value: o[name], writable: false, configurable: false, enumerable: false};
-                            if (o === object) 
+                            if (o === object)
                                 descriptor.isOwn = true;
                             descriptors.push(descriptor);
                         } catch (e) {
@@ -433,7 +443,7 @@ InjectedScript.prototype = {
                 }
 
                 descriptor.name = name;
-                if (o === object) 
+                if (o === object)
                     descriptor.isOwn = true;
                 descriptors.push(descriptor);
             }
@@ -480,7 +490,7 @@ InjectedScript.prototype = {
                 try {
                     resolvedCallArgument = this._resolveCallArgument(args[i]);
                 } catch (e) {
-                    return String(e);
+                    return toString(e);
                 }
                 resolvedArgs.push(resolvedCallArgument)
             }
@@ -498,7 +508,7 @@ InjectedScript.prototype = {
             return this._createThrownValue(e, objectGroup);
         }
     },
-    
+
     /**
      * Resolves a value from CallArgument description.
      * @param {RuntimeAgent.CallArgument} callArgumentJson
@@ -552,7 +562,7 @@ InjectedScript.prototype = {
     {
         var remoteObject = this._wrapObject(value, objectGroup);
         try {
-            remoteObject.description = this._toString(value);
+            remoteObject.description = toString(value);
         } catch (e) {}
         return { wasThrown: true,
                  result: remoteObject };
@@ -636,7 +646,7 @@ InjectedScript.prototype = {
             return "Could not find call frame with given id";
         var result = callFrame.restart();
         if (result === false)
-            result = "Restart frame is not supported"; 
+            result = "Restart frame is not supported";
         return result;
     },
 
@@ -663,23 +673,23 @@ InjectedScript.prototype = {
      * @param {string|boolean} functionObjectId or false
      * @param {number} scopeNumber
      * @param {string} variableName
-     * @param {string} newValueJsonString RuntimeAgent.CallArgument structure serialized as string 
-     * @return {string|undefined} undefined if success or an error message 
+     * @param {string} newValueJsonString RuntimeAgent.CallArgument structure serialized as string
+     * @return {string|undefined} undefined if success or an error message
      */
     setVariableValue: function(topCallFrame, callFrameId, functionObjectId, scopeNumber, variableName, newValueJsonString)
-    {   
+    {
         var setter;
         if (typeof callFrameId === "string") {
             var callFrame = this.callFrameForId(topCallFrame, callFrameId);
             if (!callFrame)
                 return "Could not find call frame with given id";
-            setter = callFrame.setVariableValue.bind(callFrame);    
+            setter = callFrame.setVariableValue.bind(callFrame);
         } else {
             var parsedFunctionId = this._parseObjectId(/** @type {string} */ (functionObjectId));
             var func = this._objectForId(parsedFunctionId);
             if (typeof func !== "function")
                 return "Cannot resolve function by id.";
-            setter = InjectedScriptHost.setFunctionVariableValue.bind(InjectedScriptHost, func); 
+            setter = InjectedScriptHost.setFunctionVariableValue.bind(InjectedScriptHost, func);
         }
         var newValueJson;
         try {
@@ -691,7 +701,7 @@ InjectedScript.prototype = {
         try {
             resolvedValue = this._resolveCallArgument(newValueJson);
         } catch (e) {
-            return String(e);
+            return toString(e);
         }
         try {
             setter(scopeNumber, variableName, resolvedValue);
@@ -750,7 +760,7 @@ InjectedScript.prototype = {
     /**
      * @param {string} name
      * @return {Object}
-     */ 
+     */
     module: function(name)
     {
         return this._modules[name];
@@ -760,7 +770,7 @@ InjectedScript.prototype = {
      * @param {string} name
      * @param {string} source
      * @return {Object}
-     */ 
+     */
     injectModule: function(name, source)
     {
         delete this._modules[name];
@@ -838,10 +848,10 @@ InjectedScript.prototype = {
         var subtype = this._subtype(obj);
 
         if (subtype === "regexp")
-            return this._toString(obj);
+            return toString(obj);
 
         if (subtype === "date")
-            return this._toString(obj);
+            return toString(obj);
 
         if (subtype === "node") {
             var description = obj.nodeName.toLowerCase();
@@ -867,7 +877,7 @@ InjectedScript.prototype = {
 
         // NodeList in JSC is a function, check for array prior to this.
         if (typeof obj === "function")
-            return this._toString(obj);
+            return toString(obj);
 
         if (className === "Object") {
             // In Chromium DOM wrapper prototypes will have Object as their constructor name,
@@ -877,16 +887,6 @@ InjectedScript.prototype = {
                 return constructorName;
         }
         return className;
-    },
-
-    /**
-     * @param {*} obj
-     * @return {string}
-     */
-    _toString: function(obj)
-    {
-        // We don't use String(obj) because inspectedWindow.String is undefined if owning frame navigated to another page.
-        return "" + obj;
     }
 }
 
@@ -919,7 +919,7 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
 
         // Provide user-friendly number values.
         if (this.type === "number")
-            this.description = object + "";
+            this.description = toString(object);
         return;
     }
 
@@ -1000,7 +1000,7 @@ InjectedScript.RemoteObject.prototype = {
                     this._appendPropertyPreview(preview, { name: name, type: "object", value: "null" }, propertiesThreshold);
                     continue;
                 }
-    
+
                 const maxLength = 100;
                 var type = typeof value;
 
@@ -1009,7 +1009,7 @@ InjectedScript.RemoteObject.prototype = {
                         value = this._abbreviateString(value, maxLength, true);
                         preview.lossless = false;
                     }
-                    this._appendPropertyPreview(preview, { name: name, type: type, value: value + "" }, propertiesThreshold);
+                    this._appendPropertyPreview(preview, { name: name, type: type, value: toString(value) }, propertiesThreshold);
                     continue;
                 }
 
@@ -1081,7 +1081,7 @@ InjectedScript.CallFrameProxy = function(ordinal, callFrame)
 {
     this.callFrameId = "{\"ordinal\":" + ordinal + ",\"injectedScriptId\":" + injectedScriptId + "}";
     this.functionName = (callFrame.type === "function" ? callFrame.functionName : "");
-    this.location = { scriptId: String(callFrame.sourceID), lineNumber: callFrame.line, columnNumber: callFrame.column };
+    this.location = { scriptId: toString(callFrame.sourceID), lineNumber: callFrame.line, columnNumber: callFrame.column };
     this.scopeChain = this._wrapScopeChain(callFrame);
     this.this = injectedScript._wrapObject(callFrame.thisObject, "backtrace");
 }
@@ -1332,7 +1332,7 @@ CommandLineAPIImpl.prototype = {
     {
         if (injectedScript._subtype(object) === "node")
             object = object.outerHTML;
-        var string = object + "";
+        var string = toString(object);
         var hints = { copyToClipboard: true };
         var remoteObject = injectedScript._wrapObject(string, "")
         InjectedScriptHost.inspect(remoteObject, hints);
