@@ -69,12 +69,11 @@ private:
     bool explicitGridDidResize(const RenderStyle*) const;
     bool namedGridLinesDefinitionDidChange(const RenderStyle*) const;
 
-    LayoutUnit computePreferredTrackWidth(const GridLength&, size_t) const;
-
     class GridIterator;
     class GridSizingData;
     enum TrackSizingDirection { ForColumns, ForRows };
     void computedUsedBreadthOfGridTracks(TrackSizingDirection, GridSizingData&);
+    void computedUsedBreadthOfGridTracks(TrackSizingDirection, GridSizingData&, LayoutUnit& availableLogicalSpace);
     LayoutUnit computeUsedBreadthOfMinLength(TrackSizingDirection, const GridLength&) const;
     LayoutUnit computeUsedBreadthOfMaxLength(TrackSizingDirection, const GridLength&, LayoutUnit usedBreadth) const;
     LayoutUnit computeUsedBreadthOfSpecifiedLength(TrackSizingDirection, const Length&) const;
