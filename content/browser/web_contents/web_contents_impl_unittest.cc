@@ -375,7 +375,7 @@ TEST_F(WebContentsImplTest, SimpleNavigation) {
   // Controller's pending entry will have a NULL site instance until we assign
   // it in DidNavigate.
   EXPECT_TRUE(
-      NavigationEntryImpl::FromNavigationEntry(controller().GetActiveEntry())->
+      NavigationEntryImpl::FromNavigationEntry(controller().GetVisibleEntry())->
           site_instance() == NULL);
 
   // DidNavigate from the page
@@ -387,7 +387,7 @@ TEST_F(WebContentsImplTest, SimpleNavigation) {
   // able to find it later.
   EXPECT_EQ(
       instance1,
-      NavigationEntryImpl::FromNavigationEntry(controller().GetActiveEntry())->
+      NavigationEntryImpl::FromNavigationEntry(controller().GetVisibleEntry())->
           site_instance());
 }
 
@@ -399,7 +399,7 @@ TEST_F(WebContentsImplTest, NavigateToExcessivelyLongURL) {
 
   controller().LoadURL(
       url, Referrer(), PAGE_TRANSITION_GENERATED, std::string());
-  EXPECT_TRUE(controller().GetActiveEntry() == NULL);
+  EXPECT_TRUE(controller().GetVisibleEntry() == NULL);
 }
 
 // Test that navigating across a site boundary creates a new RenderViewHost
@@ -1232,7 +1232,7 @@ TEST_F(WebContentsImplTest,
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url2);
 
@@ -1241,7 +1241,7 @@ TEST_F(WebContentsImplTest,
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  entry = controller().GetActiveEntry();
+  entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
@@ -1279,7 +1279,7 @@ TEST_F(WebContentsImplTest,
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url2);
 
@@ -1288,7 +1288,7 @@ TEST_F(WebContentsImplTest,
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  entry = controller().GetActiveEntry();
+  entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
@@ -1324,7 +1324,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   // The URL specified to the interstitial should have been ignored.
   EXPECT_TRUE(entry->GetURL() == url1);
@@ -1334,7 +1334,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  entry = controller().GetActiveEntry();
+  entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
@@ -1375,7 +1375,7 @@ TEST_F(WebContentsImplTest,
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url2);
 
@@ -1395,7 +1395,7 @@ TEST_F(WebContentsImplTest,
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  entry = controller().GetActiveEntry();
+  entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url3);
 
@@ -1433,7 +1433,7 @@ TEST_F(WebContentsImplTest,
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url2);
 
@@ -1453,7 +1453,7 @@ TEST_F(WebContentsImplTest,
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  entry = controller().GetActiveEntry();
+  entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url3);
 
@@ -1490,7 +1490,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   // The URL specified to the interstitial should have been ignored.
   EXPECT_TRUE(entry->GetURL() == url1);
@@ -1502,7 +1502,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
   EXPECT_EQ(TestInterstitialPage::OKED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  entry = controller().GetActiveEntry();
+  entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
 
@@ -1561,7 +1561,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenGoBack) {
   // Make sure we are back to the original page and that the interstitial is
   // gone.
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url1.spec(), entry->GetURL().spec());
 
@@ -1601,7 +1601,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
   // Make sure we are back to the original page and that the interstitial is
   // gone.
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url1.spec(), entry->GetURL().spec());
 
@@ -1768,7 +1768,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == landing_url);
   EXPECT_EQ(2, controller().GetEntryCount());
@@ -1827,7 +1827,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
   EXPECT_TRUE(deleted2);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == landing_url);
   EXPECT_EQ(2, controller().GetEntryCount());

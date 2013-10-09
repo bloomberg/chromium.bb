@@ -964,7 +964,8 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   EXPECT_EQ(evil_rvh, contents()->GetRenderManagerForTesting()->current_host());
 
   // Also we should not have a pending navigation entry.
-  NavigationEntry* entry = contents()->GetController().GetActiveEntry();
+  EXPECT_TRUE(contents()->GetController().GetPendingEntry() == NULL);
+  NavigationEntry* entry = contents()->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(kUrl2, entry->GetURL());
 }

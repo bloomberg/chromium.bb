@@ -522,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     EXPECT_TRUE(screenshot_manager()->ScreenshotSetForEntry(entry));
 
     entry = NavigationEntryImpl::FromNavigationEntry(
-        web_contents->GetController().GetActiveEntry());
+        web_contents->GetController().GetLastCommittedEntry());
     EXPECT_FALSE(screenshot_manager()->ScreenshotSetForEntry(entry));
     EXPECT_FALSE(entry->screenshot().get());
     screenshot_manager()->Reset();

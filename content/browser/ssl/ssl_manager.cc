@@ -87,7 +87,7 @@ void SSLManager::NotifySSLInternalStateChanged(BrowserContext* context) {
   for (std::set<SSLManager*>::iterator i = managers->get().begin();
        i != managers->get().end(); ++i) {
     (*i)->UpdateEntry(NavigationEntryImpl::FromNavigationEntry(
-                          (*i)->controller()->GetActiveEntry()));
+                          (*i)->controller()->GetLastCommittedEntry()));
   }
 }
 
@@ -114,7 +114,8 @@ SSLManager::~SSLManager() {
 
 void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   NavigationEntryImpl* entry =
-      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry());
+      NavigationEntryImpl::FromNavigationEntry(
+          controller_->GetLastCommittedEntry());
 
   if (details.is_main_frame) {
     if (entry) {
@@ -144,12 +145,14 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
 
 void SSLManager::DidDisplayInsecureContent() {
   UpdateEntry(
-      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry()));
+      NavigationEntryImpl::FromNavigationEntry(
+          controller_->GetLastCommittedEntry()));
 }
 
 void SSLManager::DidRunInsecureContent(const std::string& security_origin) {
   NavigationEntryImpl* navigation_entry =
-      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry());
+      NavigationEntryImpl::FromNavigationEntry(
+          controller_->GetLastCommittedEntry());
   policy()->DidRunInsecureContent(navigation_entry, security_origin);
   UpdateEntry(navigation_entry);
 }

@@ -275,7 +275,7 @@ void InterstitialPageImpl::Hide() {
   frame_tree_.SwapMainFrame(NULL);
   web_contents_->DetachInterstitialPage();
   // Let's revert to the original title if necessary.
-  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents_->GetController().GetVisibleEntry();
   if (!new_navigation_ && should_revert_web_contents_title_) {
     entry->SetTitle(original_web_contents_title_);
     web_contents_->NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
@@ -415,7 +415,7 @@ void InterstitialPageImpl::UpdateTitle(
     return;
 
   DCHECK(render_view_host == render_view_host_);
-  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents_->GetController().GetVisibleEntry();
   if (!entry) {
     // Crash reports from the field indicate this can be NULL.
     // This is unexpected as InterstitialPages constructed with the
