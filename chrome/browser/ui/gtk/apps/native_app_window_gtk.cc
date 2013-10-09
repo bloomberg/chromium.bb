@@ -374,6 +374,10 @@ gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
       rect_with_decorations.width - current_width - left_inset);
 }
 
+bool NativeAppWindowGtk::IsVisible() const {
+  return gtk_widget_get_visible(GTK_WIDGET(window_));
+}
+
 void NativeAppWindowGtk::HideWithApp() {}
 void NativeAppWindowGtk::ShowWithApp() {}
 
@@ -482,6 +486,8 @@ gboolean NativeAppWindowGtk::OnWindowState(GtkWidget* sender,
     if (rvh)
       rvh->ExitFullscreen();
   }
+
+  shell_window_->OnNativeWindowChanged();
 
   return FALSE;
 }

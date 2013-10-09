@@ -362,16 +362,19 @@ void NativeAppWindowViews::Show() {
   }
 
   window_->Show();
+  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowViews::ShowInactive() {
   if (window_->IsVisible())
     return;
   window_->ShowInactive();
+  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowViews::Hide() {
   window_->Hide();
+  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowViews::Close() {
@@ -431,6 +434,10 @@ gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
       window_->non_client_view()->GetWindowBoundsForClientBounds(
           client_bounds);
   return window_bounds.InsetsFrom(client_bounds);
+}
+
+bool NativeAppWindowViews::IsVisible() const {
+  return window_->IsVisible();
 }
 
 void NativeAppWindowViews::HideWithApp() {}

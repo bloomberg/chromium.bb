@@ -219,7 +219,7 @@ class ShellWindow : public content::NotificationObserver,
   void OnNativeClose();
 
   // Should be called by native implementations when the window size, position,
-  // or minimized/maximized state has changed.
+  // minimized/maximized, or visibility state has changed.
   void OnNativeWindowChanged();
 
   // Should be called by native implementations when the window is activated.
@@ -378,6 +378,9 @@ class ShellWindow : public content::NotificationObserver,
   bool fullscreen_for_window_api_;
   // Fullscreen entered by HTML requestFullscreen.
   bool fullscreen_for_tab_;
+
+  // The window content is visible.
+  bool is_content_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };

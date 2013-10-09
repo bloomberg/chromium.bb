@@ -77,6 +77,7 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
 

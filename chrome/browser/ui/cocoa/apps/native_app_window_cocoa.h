@@ -124,6 +124,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void RenderViewHostChanged(
