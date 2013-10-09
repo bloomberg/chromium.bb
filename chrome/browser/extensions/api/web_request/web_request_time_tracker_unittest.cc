@@ -98,7 +98,6 @@ TEST(ExtensionWebRequestTimeTrackerTest, Delays) {
 }
 
 TEST(ExtensionWebRequestTimeTrackerTest, Delegate) {
-  using testing::_;
   using testing::Mock;
 
   ExtensionWebRequestTimeTrackerDelegateMock* delegate(

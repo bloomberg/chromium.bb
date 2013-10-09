@@ -206,7 +206,6 @@ TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromMiddle) {
 
 // Tests triggering of notifications to registered observers.
 TEST_F(ExtensionPrefValueMapTest, NotifyWhenNeeded) {
-  using testing::_;
   using testing::Mock;
   using testing::StrEq;
 
