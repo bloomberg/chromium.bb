@@ -650,7 +650,42 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * Return the current scale.
+     * Zooms in the WebView by 25% (or less if that would result in zooming in
+     * more than possible).
+     *
+     * @return True if there was a zoom change, false otherwise.
+     */
+    // This method uses the term 'zoom' for legacy reasons, but relates
+    // to what chrome calls the 'page scale factor'.
+    public boolean zoomIn() {
+        return mContentViewCore.zoomIn();
+    }
+
+    /**
+     * Zooms out the WebView by 20% (or less if that would result in zooming out
+     * more than possible).
+     *
+     * @return True if there was a zoom change, false otherwise.
+     */
+    // This method uses the term 'zoom' for legacy reasons, but relates
+    // to what chrome calls the 'page scale factor'.
+    public boolean zoomOut() {
+        return mContentViewCore.zoomOut();
+    }
+
+    /**
+     * Resets the zoom factor of the WebView.
+     *
+     * @return True if there was a zoom change, false otherwise.
+     */
+    // This method uses the term 'zoom' for legacy reasons, but relates
+    // to what chrome calls the 'page scale factor'.
+    public boolean zoomReset() {
+        return mContentViewCore.zoomReset();
+    }
+
+    /**
+     * Return the current scale of the WebView
      * @return The current scale.
      */
     public float getScale() {
