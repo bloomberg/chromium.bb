@@ -20,7 +20,7 @@ set -u
 
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out toolchain ../xcodebuild ../sconsbuild ../out
+rm -rf scons-out toolchain ../xcodebuild ../out
 
 echo @@@BUILD_STEP compile_toolchain@@@
 tools/llvm/trusted-toolchain-creator.sh trusted_sdk arm-trusted.tgz

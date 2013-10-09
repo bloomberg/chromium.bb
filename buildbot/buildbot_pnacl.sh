@@ -221,7 +221,7 @@ handle-error() {
 # Clear out object, and temporary directories.
 clobber() {
   echo "@@@BUILD_STEP clobber@@@"
-  rm -rf scons-out ../xcodebuild ../sconsbuild ../out
+  rm -rf scons-out ../xcodebuild ../out
 }
 
 # Generate filenames for arm bot uploads and downloads

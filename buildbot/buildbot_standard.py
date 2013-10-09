@@ -206,7 +206,6 @@ def RemoveGypBuildDirectories():
 
   # Linux and Mac
   RemoveDirectory('../xcodebuild')
-  RemoveDirectory('../sconsbuild')
   RemoveDirectory('../out')
   RemoveDirectory('src/third_party/nacl_sdk/arm-newlib')
 

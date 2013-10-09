@@ -831,9 +831,6 @@
       ],
     }],
   ],
-  'scons_settings': {
-    'sconsbuild_dir': '<(DEPTH)/sconsbuild',
-  },
   'xcode_settings': {
     # The Xcode generator will look for an xcode_settings section at the root
     # of each dict and use it to apply settings on a file-wide basis.  Most
