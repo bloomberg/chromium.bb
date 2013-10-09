@@ -253,10 +253,13 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   // rely on on-demand paging for allocation.  Unfortunately, even
   // MADV_DONTNEED ranges  count towards RLIMIT_AS so this is not an option.
   // See crbug.com/169327 for a discussion.
-  // For now, increase limit to 16GB for renderer and worker processes to
-  // accomodate.
+  // On the GPU process, irrespective of V8, we can exhaust a 4GB address space
+  // under normal usage, see crbug.com/271119
+  // For now, increase limit to 16GB for renderer and worker and gpu processes
+  // to accomodate.
   if (process_type == switches::kRendererProcess ||
-      process_type == switches::kWorkerProcess) {
+      process_type == switches::kWorkerProcess ||
+      process_type == switches::kGpuProcess) {
     address_space_limit = 1L << 34;
   }
 #endif  // defined(__LP64__)
