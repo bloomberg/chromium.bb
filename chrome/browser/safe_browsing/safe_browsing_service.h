@@ -129,7 +129,8 @@ class SafeBrowsingService
 
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.
-  void StartOnIOThread();
+  void StartOnIOThread(
+      net::URLRequestContextGetter* url_request_context_getter);
 
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times to stop during the life of the SafeBrowsingService. If
