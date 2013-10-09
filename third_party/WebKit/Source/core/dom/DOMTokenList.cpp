@@ -78,11 +78,15 @@ void DOMTokenList::add(const AtomicString& token, ExceptionState& es)
 void DOMTokenList::add(const Vector<String>& tokens, ExceptionState& es)
 {
     Vector<String> filteredTokens;
+    filteredTokens.reserveCapacity(tokens.size());
     for (size_t i = 0; i < tokens.size(); ++i) {
         if (!validateToken(tokens[i], "add", es))
             return;
-        if (!containsInternal(tokens[i]))
-            filteredTokens.append(tokens[i]);
+        if (containsInternal(tokens[i]))
+            continue;
+        if (filteredTokens.contains(tokens[i]))
+            continue;
+        filteredTokens.append(tokens[i]);
     }
 
     if (filteredTokens.isEmpty())
