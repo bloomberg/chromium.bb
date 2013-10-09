@@ -139,7 +139,7 @@ struct ShadowDOMSiblingTraversalStrategy {
     int countElementsOfTypeAfter(Element*, const QualifiedName&) const;
 
 private:
-    Vector<Node*> m_siblings;
+    const Vector<Node*>& m_siblings;
     int m_nth;
 };
 
