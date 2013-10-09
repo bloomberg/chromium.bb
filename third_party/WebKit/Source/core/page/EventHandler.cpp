@@ -99,42 +99,37 @@
 namespace WebCore {
 
 using namespace HTMLNames;
+using namespace SVGNames;
 
 // The link drag hysteresis is much larger than the others because there
 // needs to be enough space to cancel the link press without starting a link drag,
 // and because dragging links is rare.
-const int LinkDragHysteresis = 40;
-const int ImageDragHysteresis = 5;
-const int TextDragHysteresis = 3;
-const int GeneralDragHysteresis = 3;
-
-// Match key code of composition keydown event on windows.
-// IE sends VK_PROCESSKEY which has value 229;
-const int CompositionEventKeyCode = 229;
-
-using namespace SVGNames;
+static const int LinkDragHysteresis = 40;
+static const int ImageDragHysteresis = 5;
+static const int TextDragHysteresis = 3;
+static const int GeneralDragHysteresis = 3;
 
 // The amount of time to wait before sending a fake mouse event, triggered
 // during a scroll. The short interval is used if the content responds to the mouse events quickly enough,
 // otherwise the long interval is used.
-const double fakeMouseMoveShortInterval = 0.1;
-const double fakeMouseMoveLongInterval = 0.250;
+static const double fakeMouseMoveShortInterval = 0.1;
+static const double fakeMouseMoveLongInterval = 0.250;
 
 // The amount of time to wait for a cursor update on style and layout changes
 // Set to 50Hz, no need to be faster than common screen refresh rate
-const double cursorUpdateInterval = 0.02;
+static const double cursorUpdateInterval = 0.02;
 
-const int maximumCursorSize = 128;
+static const int maximumCursorSize = 128;
 
 // It's pretty unlikely that a scale of less than one would ever be used. But all we really
 // need to ensure here is that the scale isn't so small that integer overflow can occur when
 // dividing cursor sizes (limited above) by the scale.
-const double minimumCursorScale = 0.001;
+static const double minimumCursorScale = 0.001;
 
 #if OS(MACOSX)
-const double EventHandler::TextDragDelay = 0.15;
+static const double TextDragDelay = 0.15;
 #else
-const double EventHandler::TextDragDelay = 0.0;
+static const double TextDragDelay = 0.0;
 #endif
 
 
@@ -800,11 +795,6 @@ void EventHandler::updateSelectionForMouseDrag(const HitTestResult& hitTestResul
         FrameSelection::AdjustEndpointsAtBidiBoundary);
 }
 
-void EventHandler::lostMouseCapture()
-{
-    m_frame->selection().setCaretBlinkingSuspended(false);
-}
-
 bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& event)
 {
     Page* page = m_frame->page();
@@ -928,11 +918,6 @@ Node* EventHandler::mousePressNode() const
     return m_mousePressNode.get();
 }
 
-void EventHandler::setMousePressNode(PassRefPtr<Node> node)
-{
-    m_mousePressNode = node;
-}
-
 bool EventHandler::scrollOverflow(ScrollDirection direction, ScrollGranularity granularity, Node* startingNode)
 {
     Node* node = startingNode;
@@ -1021,14 +1006,7 @@ IntPoint EventHandler::lastKnownMousePosition() const
     return m_lastKnownMousePosition;
 }
 
-Frame* EventHandler::subframeForHitTestResult(const MouseEventWithHitTestResults& hitTestResult)
-{
-    if (!hitTestResult.isOverWidget())
-        return 0;
-    return subframeForTargetNode(hitTestResult.targetNode());
-}
-
-Frame* EventHandler::subframeForTargetNode(Node* node)
+static Frame* subframeForTargetNode(Node* node)
 {
     if (!node)
         return 0;
@@ -1042,6 +1020,13 @@ Frame* EventHandler::subframeForTargetNode(Node* node)
         return 0;
 
     return &toFrameView(widget)->frame();
+}
+
+static Frame* subframeForHitTestResult(const MouseEventWithHitTestResults& hitTestResult)
+{
+    if (!hitTestResult.isOverWidget())
+        return 0;
+    return subframeForTargetNode(hitTestResult.targetNode());
 }
 
 static bool isSubmitImage(Node* node)
@@ -2635,7 +2620,7 @@ Frame* EventHandler::getSubFrameForGestureEvent(const IntPoint& touchAdjustedPoi
         gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
     HitTestRequest request(HitTestRequest::ReadOnly);
     MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseDown);
-    return EventHandler::subframeForHitTestResult(mev);
+    return subframeForHitTestResult(mev);
 }
 
 void EventHandler::clearGestureScrollNodes()
@@ -3385,14 +3370,6 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
 
     target->dispatchEvent(event, IGNORE_EXCEPTION);
     return event->defaultHandled();
-}
-
-bool EventHandler::isKeyboardOptionTab(KeyboardEvent* event)
-{
-    return event
-        && (event->type() == EventNames::keydown || event->type() == EventNames::keypress)
-        && event->altKey()
-        && event->keyIdentifier() == "U+0009";
 }
 
 void EventHandler::defaultTextInputEventHandler(TextEvent* event)
