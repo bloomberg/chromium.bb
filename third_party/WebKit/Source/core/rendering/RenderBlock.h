@@ -576,7 +576,7 @@ private:
     // Called to lay out the legend for a fieldset or the ruby text of a ruby run.
     virtual RenderObject* layoutSpecialExcludedChild(bool /*relayoutChildren*/, SubtreeLayoutScope&) { return 0; }
 
-    void createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderObject* currentChild);
+    void createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderObject* currentChild, unsigned length);
     void updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderObject* firstLetterContainer);
 
     Node* nodeForHitTest() const;

@@ -5740,6 +5740,10 @@ static inline unsigned firstLetterLength(const String& text)
     while (length < text.length() && shouldSkipForFirstLetter((text)[length]))
         length++;
 
+    // Bail if we didn't find a letter
+    if (text.length() && length == text.length())
+        return 0;
+
     // Account for first letter.
     length++;
 
@@ -5758,8 +5762,10 @@ static inline unsigned firstLetterLength(const String& text)
     return length;
 }
 
-void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderObject* currentChild)
+void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderObject* currentChild, unsigned length)
 {
+    ASSERT(length && currentChild->isText());
+
     RenderObject* firstLetterContainer = currentChild->parent();
     RenderStyle* pseudoStyle = styleForFirstLetter(firstLetterBlock, firstLetterContainer);
     RenderObject* firstLetter = 0;
@@ -5777,11 +5783,6 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     // no text-transform or a different text-transform applied to it.
     String oldText = textObj->originalText();
     ASSERT(oldText.impl());
-
-    unsigned length = firstLetterLength(oldText);
-
-    if (!length)
-        return;
 
     // Construct a text fragment for the text after the first letter.
     // This text fragment might be empty.
@@ -5821,12 +5822,18 @@ void RenderBlock::updateFirstLetter()
 
     // Drill into inlines looking for our first text child.
     RenderObject* currChild = firstLetterBlock->firstChild();
+    unsigned length = 0;
     while (currChild) {
-        if (currChild->isText())
-            break;
-        if (currChild->isListMarker())
+        if (currChild->isText()) {
+            // FIXME: If there is leading punctuation in a different RenderText than
+            // the first letter, we'll not apply the correct style to it.
+            length = firstLetterLength(toRenderText(currChild)->originalText());
+            if (length)
+                break;
             currChild = currChild->nextSibling();
-        else if (currChild->isFloatingOrOutOfFlowPositioned()) {
+        } else if (currChild->isListMarker()) {
+            currChild = currChild->nextSibling();
+        } else if (currChild->isFloatingOrOutOfFlowPositioned()) {
             if (currChild->style()->styleType() == FIRST_LETTER) {
                 currChild = currChild->firstChild();
                 break;
@@ -5859,7 +5866,7 @@ void RenderBlock::updateFirstLetter()
     // adding and removing children of firstLetterContainer.
     LayoutStateDisabler layoutStateDisabler(view());
 
-    createFirstLetterRenderer(firstLetterBlock, currChild);
+    createFirstLetterRenderer(firstLetterBlock, currChild, length);
 }
 
 // Helper methods for obtaining the last line, computing line counts and heights for line counts
