@@ -3137,7 +3137,8 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
         net_log_, "SSL_OptionSet", "SSL_ENABLE_SESSION_TICKETS");
   }
 
-  rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_FALSE_START, PR_FALSE);
+  rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_FALSE_START,
+                     ssl_config_.false_start_enabled);
   if (rv != SECSuccess)
     LogFailedNSSFunction(net_log_, "SSL_OptionSet", "SSL_ENABLE_FALSE_START");
 

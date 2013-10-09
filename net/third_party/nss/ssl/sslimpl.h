@@ -881,6 +881,8 @@ const ssl3CipherSuiteDef *suite_def;
     /* Shared state between ssl3_HandleFinished and ssl3_FinishHandshake */
     PRBool                cacheSID;
 
+    PRBool                canFalseStart;   /* Can/did we False Start */
+
     /* clientSigAndHash contains the contents of the signature_algorithms
      * extension (if any) from the client. This is only valid for TLS 1.2
      * or later. */
@@ -1162,6 +1164,10 @@ struct sslSocketStr {
     unsigned long    clientAuthRequested;
     unsigned long    delayDisabled;       /* Nagle delay disabled */
     unsigned long    firstHsDone;         /* first handshake is complete. */
+    unsigned long    enoughFirstHsDone;   /* enough of the first handshake is
+					   * done for callbacks to be able to
+					   * retrieve channel security
+					   * parameters from the SSL socket. */
     unsigned long    handshakeBegun;     
     unsigned long    lastWriteBlocked;   
     unsigned long    recvdCloseNotify;    /* received SSL EOF. */
@@ -1210,6 +1216,8 @@ const unsigned char *  preferredCipher;
     void                     *badCertArg;
     SSLHandshakeCallback      handshakeCallback;
     void                     *handshakeCallbackData;
+    SSLCanFalseStartCallback  canFalseStartCallback;
+    void                     *canFalseStartCallbackData;
     void                     *pkcs11PinArg;
     SSLNextProtoCallback      nextProtoCallback;
     void                     *nextProtoArg;
@@ -1423,7 +1431,6 @@ extern void      ssl3_SetAlwaysBlock(sslSocket *ss);
 
 extern SECStatus ssl_EnableNagleDelay(sslSocket *ss, PRBool enabled);
 
-extern PRBool    ssl3_CanFalseStart(sslSocket *ss);
 extern SECStatus
 ssl3_CompressMACEncryptRecord(ssl3CipherSpec *   cwSpec,
 		              PRBool             isServer,

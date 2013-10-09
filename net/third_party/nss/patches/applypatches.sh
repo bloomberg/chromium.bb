@@ -61,3 +61,5 @@ patch -p4 < $patches_dir/cachelocks.patch
 patch -p4 < $patches_dir/ciphersuiteversion.patch
 
 patch -p4 < $patches_dir/peercertchain2.patch
+
+patch -p4 < $patches_dir/canfalsestart.patch
