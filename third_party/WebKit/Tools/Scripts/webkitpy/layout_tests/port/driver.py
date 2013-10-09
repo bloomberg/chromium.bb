@@ -285,7 +285,7 @@ class Driver(object):
 
     def stop(self):
         if self._server_process:
-            self._server_process.stop(self._port.driver_stop_timeout())
+            self._server_process.stop()
             self._server_process = None
             if self._profiler:
                 self._profiler.profile_after_exit()

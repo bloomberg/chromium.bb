@@ -363,7 +363,7 @@ class ServerProcess(object):
         if not self._proc:
             self._start()
 
-    def stop(self, timeout_secs=3.0):
+    def stop(self, timeout_secs=0.0):
         if not self._proc:
             return (None, None)
 
