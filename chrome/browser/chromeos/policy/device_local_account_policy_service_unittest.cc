@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -79,13 +78,6 @@ class DeviceLocalAccountPolicyServiceTest
                              POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
                              Value::CreateBooleanValue(false),
-                             NULL);
-    scoped_ptr<base::ListValue> allowed_extension_types(new base::ListValue());
-    allowed_extension_types->AppendString("hosted_app");
-    expected_policy_map_.Set(key::kExtensionAllowedTypes,
-                             POLICY_LEVEL_MANDATORY,
-                             POLICY_SCOPE_USER,
-                             allowed_extension_types.release(),
                              NULL);
 
     // Explicitly set value.
@@ -502,8 +494,6 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
       set_value("Always");
   device_local_account_policy_.payload().mutable_showlogoutbuttonintray()->
       set_value(false);
-  device_local_account_policy_.payload().mutable_extensionallowedtypes()->
-      mutable_value()->mutable_entries()->Clear();
   device_local_account_policy_.Build();
   device_settings_test_helper_.set_device_local_account_policy_blob(
       PolicyBuilder::kFakeUsername, device_local_account_policy_.GetBlob());

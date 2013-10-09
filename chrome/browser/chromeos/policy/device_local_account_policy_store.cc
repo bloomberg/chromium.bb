@@ -86,7 +86,6 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
                   base::Value::CreateIntegerValue(
                       chromeos::PowerPolicyController::ACTION_STOP_SESSION),
                   NULL);
-
   // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the ash
   // shelf does not auto-hide.
   policy_map_.Set(key::kShelfAutoHideBehavior,
@@ -107,16 +106,6 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
                   Value::CreateBooleanValue(false),
-                  NULL);
-  // Restrict device-local accounts to hosted apps for now (i.e. no extensions,
-  // packaged apps etc.) for security/privacy reasons (i.e. we'd like to
-  // prevent the admin from stealing private information from random people).
-  scoped_ptr<base::ListValue> allowed_extension_types(new base::ListValue());
-  allowed_extension_types->AppendString("hosted_app");
-  policy_map_.Set(key::kExtensionAllowedTypes,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
-                  allowed_extension_types.release(),
                   NULL);
 
   status_ = STATUS_OK;
