@@ -4,6 +4,7 @@
 
 #include "ui/views/examples/content_client/examples_content_browser_client.h"
 
+#include "content/shell/browser/shell_browser_context.h"
 #include "ui/views/examples/content_client/examples_browser_main_parts.h"
 
 namespace views {
@@ -22,8 +23,13 @@ content::BrowserMainParts* ExamplesContentBrowserClient::CreateBrowserMainParts(
   return examples_browser_main_parts_;
 }
 
-content::ShellBrowserContext* ExamplesContentBrowserClient::browser_context() {
-  return examples_browser_main_parts_->browser_context();
+net::URLRequestContextGetter*
+ExamplesContentBrowserClient::CreateRequestContext(
+    content::BrowserContext* content_browser_context,
+    content::ProtocolHandlerMap* protocol_handlers) {
+  content::ShellBrowserContext* shell_context =
+      examples_browser_main_parts_->browser_context();
+  return shell_context->CreateRequestContext(protocol_handlers);
 }
 
 }  // namespace examples

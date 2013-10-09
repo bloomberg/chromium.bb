@@ -28,8 +28,9 @@ class ExamplesContentBrowserClient : public content::ContentBrowserClient {
   // Overridden from content::ContentBrowserClient:
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
-
-  content::ShellBrowserContext* browser_context();
+  virtual net::URLRequestContextGetter* CreateRequestContext(
+      content::BrowserContext* browser_context,
+      content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
 
  private:
   ExamplesBrowserMainParts* examples_browser_main_parts_;
