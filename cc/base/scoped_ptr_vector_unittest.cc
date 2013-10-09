@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+
 #include "cc/base/scoped_ptr_vector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -15,6 +17,11 @@ class Data {
  private:
   explicit Data(int i) : data_(i) {}
   int data_;
+};
+
+class IsOddPredicate {
+ public:
+  bool operator()(const Data* data) { return (data->data() % 2) == 1; }
 };
 
 TEST(ScopedPtrVectorTest, PushBack) {
@@ -66,6 +73,32 @@ TEST(ScopedPtrVectorTest, InsertAndTake) {
   EXPECT_EQ(NULL, v2[0]);
   EXPECT_EQ(NULL, v2[1]);
   EXPECT_EQ(NULL, v2[2]);
+}
+
+TEST(ScopedPtrVectorTest, Partition) {
+  ScopedPtrVector<Data> v;
+  v.push_back(Data::Create(1));
+  v.push_back(Data::Create(2));
+  v.push_back(Data::Create(3));
+  v.push_back(Data::Create(4));
+  v.push_back(Data::Create(5));
+
+  ScopedPtrVector<Data>::iterator it = v.partition(IsOddPredicate());
+  std::set<int> odd_numbers;
+  for (ScopedPtrVector<Data>::iterator second_it = v.begin();
+       second_it != it;
+       ++second_it) {
+    EXPECT_EQ(1, (*second_it)->data() % 2);
+    odd_numbers.insert((*second_it)->data());
+  }
+  EXPECT_EQ(3u, odd_numbers.size());
+
+  std::set<int> even_numbers;
+  for (; it != v.end(); ++it) {
+    EXPECT_EQ(0, (*it)->data() % 2);
+    even_numbers.insert((*it)->data());
+  }
+  EXPECT_EQ(2u, even_numbers.size());
 }
 
 }  // namespace

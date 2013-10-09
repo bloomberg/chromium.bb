@@ -140,6 +140,13 @@ class ScopedPtrVector {
     data_.insert(position, tmp_data.begin(), tmp_data.end());
   }
 
+  template <typename Predicate>
+  iterator partition(Predicate predicate) {
+    typename std::vector<T*>::iterator first = begin();
+    typename std::vector<T*>::iterator last = end();
+    return static_cast<iterator>(std::partition(first, last, predicate));
+  }
+
   void swap(ScopedPtrVector<T>& other) {
     data_.swap(other.data_);
   }
