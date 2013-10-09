@@ -14,8 +14,6 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -100,8 +98,22 @@ class AutofillDriverImplBrowserTest
     autofill_driver_.reset();
   }
 
+  virtual void WasHidden() OVERRIDE {
+    if (!web_contents_hidden_callback_.is_null())
+      web_contents_hidden_callback_.Run();
+  }
+
+  virtual void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) OVERRIDE {
+    if (!nav_entry_committed_callback_.is_null())
+      nav_entry_committed_callback_.Run();
+  }
+
  protected:
   content::WebContents* web_contents_;
+
+  base::Closure web_contents_hidden_callback_;
+  base::Closure nav_entry_committed_callback_;
 
   testing::NiceMock<MockAutofillManagerDelegate> manager_delegate_;
   scoped_ptr<TestAutofillDriverImpl> autofill_driver_;
@@ -114,12 +126,13 @@ IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
   EXPECT_CALL(manager_delegate_, HideAutofillPopup())
       .Times(testing::AtLeast(1));
 
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-      content::Source<content::WebContents>(web_contents_));
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  web_contents_hidden_callback_ = runner->QuitClosure();
   chrome::AddSelectedTabWithURL(browser(), GURL(content::kAboutBlankURL),
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  observer.Wait();
+  runner->Run();
+  web_contents_hidden_callback_.Reset();
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
@@ -129,17 +142,17 @@ IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
   EXPECT_CALL(manager_delegate_, HideAutofillPopup())
       .Times(testing::AtLeast(1));
 
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
-          &(web_contents_->GetController())));
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  nav_entry_committed_callback_ = runner->QuitClosure();
   browser()->OpenURL(content::OpenURLParams(
       GURL(chrome::kChromeUIBookmarksURL), content::Referrer(),
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   browser()->OpenURL(content::OpenURLParams(
       GURL(chrome::kChromeUIAboutURL), content::Referrer(),
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
-  observer.Wait();
+  runner->Run();
+  nav_entry_committed_callback_.Reset();
 }
 
 }  // namespace autofill

@@ -13,9 +13,6 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -64,15 +61,6 @@ AutofillDriverImpl::AutofillDriverImpl(
   SetAutofillExternalDelegate(scoped_ptr<AutofillExternalDelegate>(
       new AutofillExternalDelegate(web_contents, autofill_manager_.get(),
                                    this)));
-
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                 content::Source<content::WebContents>(web_contents));
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
-          &(web_contents->GetController())));
 }
 
 AutofillDriverImpl::~AutofillDriverImpl() {}
@@ -207,18 +195,14 @@ void AutofillDriverImpl::SetAutofillManager(
   autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
 }
 
-void AutofillDriverImpl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
-    if (!*content::Details<bool>(details).ptr())
-      autofill_manager_->delegate()->HideAutofillPopup();
-  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    autofill_manager_->delegate()->HideAutofillPopup();
-  } else {
-    NOTREACHED();
-  }
+void AutofillDriverImpl::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  autofill_manager_->delegate()->HideAutofillPopup();
 }
+
+void AutofillDriverImpl::WasHidden() {
+  autofill_manager_->delegate()->HideAutofillPopup();
+}
+
 
 }  // namespace autofill
