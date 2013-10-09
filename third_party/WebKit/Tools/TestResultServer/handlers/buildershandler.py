@@ -90,7 +90,8 @@ def get_latest_build(build_data):
 
     latest_cached_builds = set(cached_builds) - set(current_builds)
     if len(latest_cached_builds) != 0:
-        latest_build = list(latest_cached_builds)[-1]
+        latest_cached_builds = sorted(list(latest_cached_builds))
+        latest_build = latest_cached_builds[-1]
     elif len(current_builds) != 0:
         latest_build = current_builds[0]
     else:

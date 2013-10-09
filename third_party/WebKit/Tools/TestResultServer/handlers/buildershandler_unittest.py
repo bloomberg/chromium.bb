@@ -50,29 +50,33 @@ class BuildersHandlerTest(unittest.TestCase):
                       'currentBuilds': ['3'],
                       'basedir': 'fake'}
         latest_build = buildershandler.get_latest_build(build_data)
-
         self.assertEqual(latest_build, '2')
 
         build_data = {'cachedBuilds': [],
                       'currentBuilds': ['1', '2', '3'],
                       'basedir': 'fake'}
         latest_build = buildershandler.get_latest_build(build_data)
-
         self.assertEqual(latest_build, '1')
 
         build_data = {'cachedBuilds': ['1', '2', '3'],
                       'currentBuilds': ['1', '2', '3'],
                       'basedir': 'fake'}
         latest_build = buildershandler.get_latest_build(build_data)
-
         self.assertEqual(latest_build, '1')
 
         build_data = {'cachedBuilds': [],
                       'currentBuilds': [],
                       'basedir': 'fake'}
         latest_build = buildershandler.get_latest_build(build_data)
-
         self.assertEqual(latest_build, None)
+
+        long_list = map(lambda x: str(x), xrange(1000, 1200))
+        current_build = long_list[-1]
+        build_data = {'cachedBuilds': long_list[:],
+                      'currentBuilds': [current_build],
+                      'basedir': 'fake'}
+        latest_build = buildershandler.get_latest_build(build_data)
+        self.assertEqual(latest_build, long_list[-2])
 
     def test_fetch_buildbot_data(self):
         try:
