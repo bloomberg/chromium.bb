@@ -70,7 +70,7 @@ def _EraseTombstone(adb, tombstone_file):
   Args:
     tombstone_file: the tombstone to delete.
   """
-  return adb.RunShellCommand('su -c rm /data/tombstones/' + tombstone_file)
+  return adb.RunShellCommandWithSU('rm /data/tombstones/' + tombstone_file)
 
 
 def _ResolveSymbols(tombstone_data, include_stack):

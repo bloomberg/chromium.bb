@@ -58,13 +58,19 @@ PACKAGE_INFO = {
         'org.chromium.content_shell_apk.ContentShellActivity',
         '/data/local/tmp/content-shell-command-line',
         None,
-        None),
+        'org.chromium.content_shell_apk.tests'),
     'chromium_test_shell': PackageInfo(
         'org.chromium.chrome.testshell',
         'org.chromium.chrome.testshell.ChromiumTestShellActivity',
         '/data/local/tmp/chromium-testshell-command-line',
         'chromium_testshell_devtools_remote',
         'org.chromium.chrome.testshell.tests'),
+    'android_webview_shell': PackageInfo(
+        'org.chromium.android_webview.shell',
+        'org.chromium.android_webview.shell.AwShellActivity',
+        None,
+        None,
+        'org.chromium.android_webview.test'),
     'gtest': PackageInfo(
         'org.chromium.native_test',
         'org.chromium.native_test.ChromeNativeTestActivity',

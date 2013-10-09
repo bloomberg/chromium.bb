@@ -72,7 +72,7 @@ def ProvisionDevices(options):
     devices = android_commands.GetAttachedDevices()
   for device in devices:
     android_cmd = android_commands.AndroidCommands(device)
-    android_cmd.RunShellCommand('su -c date -u %f' % time.time())
+    android_cmd.RunShellCommandWithSU('date -u %f' % time.time())
   if options.auto_reconnect:
     PushAndLaunchAdbReboot(devices, options.target)
 

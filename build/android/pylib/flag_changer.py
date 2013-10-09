@@ -92,14 +92,27 @@ class FlagChanger(object):
   def _UpdateCommandLineFile(self):
     """Writes out the command line to the file, or removes it if empty."""
     logging.info('Current flags: %s', self._current_flags)
-
+    # Root is not required to write to /data/local/tmp/.
+    use_root = '/data/local/tmp/' not in self._cmdline_file
     if self._current_flags:
       # The first command line argument doesn't matter as we are not actually
       # launching the chrome executable using this command line.
-      self._adb.SetProtectedFileContents(self._cmdline_file,
-                                         ' '.join(['_'] + self._current_flags))
+      cmd_line = ' '.join(['_'] + self._current_flags)
+      if use_root:
+        self._adb.SetProtectedFileContents(self._cmdline_file, cmd_line)
+        file_contents = self._adb.GetProtectedFileContents(self._cmdline_file)
+      else:
+        self._adb.SetFileContents(self._cmdline_file, cmd_line)
+        file_contents = self._adb.GetFileContents(self._cmdline_file)
+      assert len(file_contents) == 1 and file_contents[0] == cmd_line, (
+          'Failed to set the command line file at %s' % self._cmdline_file)
     else:
-      self._adb.RunShellCommand('su -c rm ' + self._cmdline_file)
+      if use_root:
+        self._adb.RunShellCommandWithSU('rm ' + self._cmdline_file)
+      else:
+        self._adb.RunShellCommand('rm ' + self._cmdline_file)
+      assert not self._adb.FileExistsOnDevice(self._cmdline_file), (
+          'Failed to remove the command line file at %s' % self._cmdline_file)
 
   def _TokenizeFlags(self, line):
     """Changes the string containing the command line into a list of flags.
