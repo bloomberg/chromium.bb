@@ -76,8 +76,8 @@ bool IsOnTaskRunnerThread(fileapi::FileSystemOperationContext* context) {
 }  // namespace
 
 NativeMediaFileUtil::NativeMediaFileUtil(MediaPathFilter* media_path_filter)
-    : weak_factory_(this),
-      media_path_filter_(media_path_filter) {
+    : media_path_filter_(media_path_filter),
+      weak_factory_(this) {
 }
 
 NativeMediaFileUtil::~NativeMediaFileUtil() {

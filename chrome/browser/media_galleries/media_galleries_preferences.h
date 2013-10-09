@@ -303,8 +303,6 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   // Set the ExtensionPrefs object to be returned by GetExtensionPrefs().
   void SetExtensionPrefsForTesting(extensions::ExtensionPrefs* extension_prefs);
 
-  base::WeakPtrFactory<MediaGalleriesPreferences> weak_factory_;
-
   bool initialized_;
   std::vector<base::Closure> on_initialize_callbacks_;
   int pre_initialization_callbacks_waiting_;
@@ -325,6 +323,8 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   DeviceIdPrefIdsMap device_map_;
 
   ObserverList<GalleryChangeObserver> gallery_change_observers_;
+
+  base::WeakPtrFactory<MediaGalleriesPreferences> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPreferences);
 };

@@ -201,10 +201,10 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       base::FilePath* local_file_path);
 
 
-  base::WeakPtrFactory<NativeMediaFileUtil> weak_factory_;
-
   // Not owned, owned by the backend which owns this.
   MediaPathFilter* media_path_filter_;
+
+  base::WeakPtrFactory<NativeMediaFileUtil> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMediaFileUtil);
 };

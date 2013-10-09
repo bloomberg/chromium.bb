@@ -350,11 +350,12 @@ bool MediaGalleryPrefInfo::IsGalleryAvailable() const {
 MediaGalleriesPreferences::GalleryChangeObserver::~GalleryChangeObserver() {}
 
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
-    : weak_factory_(this),
-      initialized_(false),
+    : initialized_(false),
       pre_initialization_callbacks_waiting_(0),
       profile_(profile),
-      extension_prefs_for_testing_(NULL) {}
+      extension_prefs_for_testing_(NULL),
+      weak_factory_(this) {
+}
 
 MediaGalleriesPreferences::~MediaGalleriesPreferences() {
   if (StorageMonitor::GetInstance())
