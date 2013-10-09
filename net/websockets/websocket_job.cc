@@ -358,9 +358,6 @@ bool WebSocketJob::SendHandshakeRequest(const char* data, int len) {
   if (!handshake_request_->ParseRequest(data, len))
     return false;
 
-  // handshake message is completed.
-  handshake_response_->set_protocol_version(
-      handshake_request_->protocol_version());
   AddCookieHeaderAndSend();
   return true;
 }

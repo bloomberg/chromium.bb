@@ -10,21 +10,6 @@
 //   cookies to the renderer process, so handles HttpOnly cookies in
 //   browser process.
 //
-// The classes below support two styles of handshake: handshake based
-// on hixie-76 draft and one based on hybi-04 draft. The critical difference
-// between these two is how they pass challenge and response values. Hixie-76
-// based handshake appends a few bytes of binary data after header fields of
-// handshake request and response. These data are called "key3" (for request)
-// or "response key" (for response). On the other hand, handshake based on
-// hybi-04 and later drafts put challenge and response values into handshake
-// header fields, thus we do not need to send or receive extra bytes after
-// handshake headers.
-//
-// While we are working on updating WebSocket implementation in WebKit to
-// conform to the latest protocol draft, we need to accept both styles of
-// handshake. After we land the protocol changes in WebKit, we will be able to
-// drop codes handling old-style handshake.
-
 #ifndef NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_HANDLER_H_
 #define NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_HANDLER_H_
 
@@ -58,10 +43,8 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeRequestHandler {
   void RemoveHeaders(const char* const headers_to_remove[],
                      size_t headers_to_remove_len);
 
-  // Gets request info to open WebSocket connection.
-  // Fills challenge data (concatenation of key1, 2 and 3 for hybi-03 and
-  // earlier, or Sec-WebSocket-Key header value for hybi-04 and later)
-  // in |challenge|.
+  // Gets request info to open WebSocket connection and fills challenge data in
+  // |challenge|.
   HttpRequestInfo GetRequestInfo(const GURL& url, std::string* challenge);
   // Gets request as SpdyHeaderBlock.
   // Also, fills challenge data in |challenge|.
@@ -75,19 +58,11 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeRequestHandler {
   // Calling raw_length is valid only after GetRawRequest() call.
   size_t raw_length() const;
 
-  // Returns the value of Sec-WebSocket-Version or Sec-WebSocket-Draft header
-  // (the latter is an old name of the former). Returns 0 if both headers were
-  // absent, which means the handshake was based on hybi-00 (= hixie-76).
-  // Should only be called after the handshake has been parsed.
-  int protocol_version() const;
-
  private:
   std::string status_line_;
   std::string headers_;
-  std::string key3_;
   int original_length_;
   int raw_length_;
-  int protocol_version_;  // "-1" means we haven't parsed the handshake yet.
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeRequestHandler);
 };
@@ -97,17 +72,11 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeResponseHandler {
   WebSocketHandshakeResponseHandler();
   ~WebSocketHandshakeResponseHandler();
 
-  // Set WebSocket protocol version before parsing the response.
-  // Default is 0 (hybi-00, which is same as hixie-76).
-  int protocol_version() const;
-  void set_protocol_version(int protocol_version);
-
   // Parses WebSocket handshake response from WebSocket server.
   // Returns number of bytes in |data| used for WebSocket handshake response
-  // message, including response key.  If it already got whole WebSocket
-  // handshake response message, returns zero.  In other words,
-  // [data + returned value, data + length) will be WebSocket frame data
-  // after handshake response message.
+  // message.  If it already got whole WebSocket handshake response message,
+  // returns zero.  In other words, [data + returned value, data + length) will
+  // be WebSocket frame data after handshake response message.
   // TODO(ukai): fail fast when response gives wrong status code.
   size_t ParseRawResponse(const char* data, int length);
   // Returns true if it already parses full handshake response message.
@@ -135,36 +104,17 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeResponseHandler {
   std::string GetResponse();
 
  private:
-  // Returns the length of response key. This function will return 0
-  // if the specified WebSocket protocol version does not require
-  // sending response key.
-  size_t GetResponseKeySize() const;
-
+  // Original bytes input by using ParseRawResponse().
   std::string original_;
+  // Number of bytes actually used for the handshake response in |original_|.
   int original_header_length_;
+
   std::string status_line_;
   std::string headers_;
   std::string header_separator_;
-  std::string key_;
-  int protocol_version_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeResponseHandler);
 };
-
-namespace internal {
-
-// Private Functions (Exposed for Unit Testing) -------------------------------
-
-// Gets a key number from |key| and appends the number to |challenge|.
-// The key number (/part_N/) is extracted as step per 4.-8. in
-// "5.2.  Sending the server's opening handshake" of
-// http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-00.txt
-// TODO(ricea): Remove this when we remove support for pre-RFC6455 versions of
-// WebSockets.
-void NET_EXPORT_PRIVATE GetKeyNumber(const std::string& key,
-                                     std::string* challenge);
-
-}  // namespace internal
 
 }  // namespace net
 
