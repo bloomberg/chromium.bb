@@ -85,9 +85,9 @@ import java.util.Map;
  * being tied to the view system.
  */
 @JNINamespace("content")
-    public class ContentViewCore implements MotionEventDelegate,
-                                            NavigationClient,
-                                            AccessibilityStateChangeListener {
+public class ContentViewCore
+        implements MotionEventDelegate, NavigationClient, AccessibilityStateChangeListener {
+
     /**
      * Indicates that input events are batched together and delivered just before vsync.
      */
