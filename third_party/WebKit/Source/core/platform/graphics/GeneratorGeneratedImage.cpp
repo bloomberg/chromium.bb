@@ -100,7 +100,7 @@ void GeneratorGeneratedImage::drawPatternWithoutCache(GraphicsContext* destConte
 }
 
 void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode)
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode, const IntSize& repeatSpacing)
 {
     // Allow the generator to provide visually-equivalent tiling parameters for better performance.
     IntSize adjustedSize = m_size;
@@ -138,9 +138,8 @@ void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const Fl
         m_cachedAdjustedSize = adjustedSize;
     }
 
-    m_cachedImageBuffer->setSpaceSize(spaceSize());
     // Tile the image buffer into the context.
-    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, scaleWithoutCTM, phase, compositeOp, destRect, blendMode);
+    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, scaleWithoutCTM, phase, compositeOp, destRect, blendMode, repeatSpacing);
     m_cacheTimer.restart();
 }
 

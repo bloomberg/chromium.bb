@@ -42,10 +42,9 @@ void SVGImageForContainer::draw(GraphicsContext* context, const FloatRect& dstRe
 }
 
 void SVGImageForContainer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode)
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode, const IntSize& repeatSpacing)
 {
-    m_image->setSpaceSize(spaceSize());
-    m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, compositeOp, dstRect, blendMode);
+    m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, compositeOp, dstRect, blendMode, repeatSpacing);
 }
 
 PassRefPtr<NativeImageSkia> SVGImageForContainer::nativeImageForCurrentFrame()

@@ -743,10 +743,8 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
             RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.tileSize());
             bool useLowQualityScaling = shouldPaintAtLowQuality(context, image.get(), bgLayer, geometry.tileSize());
             context->setDrawLuminanceMask(bgLayer->maskSourceType() == MaskLuminance);
-            if (image.get())
-                image->setSpaceSize(geometry.spaceSize());
             context->drawTiledImage(image.get(), geometry.destRect(), geometry.relativePhase(), geometry.tileSize(),
-                compositeOp, useLowQualityScaling, bgLayer->blendMode());
+                compositeOp, useLowQualityScaling, bgLayer->blendMode(), geometry.spaceSize());
         }
     }
 

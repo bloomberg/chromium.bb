@@ -406,7 +406,8 @@ void NativeImageSkia::drawPattern(
     const FloatPoint& phase,
     CompositeOperator compositeOp,
     const FloatRect& destRect,
-    BlendMode blendMode) const
+    BlendMode blendMode,
+    const IntSize& repeatSpacing) const
 {
     FloatRect normSrcRect = floatSrcRect;
     normSrcRect.intersect(FloatRect(0, 0, bitmap().width(), bitmap().height()));
@@ -454,11 +455,11 @@ void NativeImageSkia::drawPattern(
         // fragment is slightly larger to align to integer
         // boundaries.
         SkBitmap resampled = extractScaledImageFragment(normSrcRect, scaleX, scaleY, &scaledSrcRect);
-        if (spaceSize().isZero()) {
+        if (repeatSpacing.isZero()) {
             shader = adoptRef(SkShader::CreateBitmapShader(resampled, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
         } else {
             shader = adoptRef(SkShader::CreateBitmapShader(
-                createBitmapWithSpace(resampled, spaceSize().width() * ctmScaleX, spaceSize().height() * ctmScaleY),
+                createBitmapWithSpace(resampled, repeatSpacing.width() * ctmScaleX, repeatSpacing.height() * ctmScaleY),
                 SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
         }
 
@@ -473,11 +474,11 @@ void NativeImageSkia::drawPattern(
         // No need to resample before drawing.
         SkBitmap srcSubset;
         bitmap().extractSubset(&srcSubset, enclosingIntRect(normSrcRect));
-        if (spaceSize().isZero()) {
+        if (repeatSpacing.isZero()) {
             shader = adoptRef(SkShader::CreateBitmapShader(srcSubset, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
         } else {
             shader = adoptRef(SkShader::CreateBitmapShader(
-                createBitmapWithSpace(srcSubset, spaceSize().width() * ctmScaleX, spaceSize().height() * ctmScaleY),
+                createBitmapWithSpace(srcSubset, repeatSpacing.width() * ctmScaleX, repeatSpacing.height() * ctmScaleY),
                 SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
         }
 

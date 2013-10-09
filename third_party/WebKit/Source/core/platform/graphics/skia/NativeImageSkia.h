@@ -135,13 +135,8 @@ public:
         const FloatPoint& phase,
         CompositeOperator,
         const FloatRect& destRect,
-        BlendMode) const;
-
-    IntSize spaceSize() const { return m_space; }
-    void setSpaceSize(const IntSize& space)
-    {
-        m_space = space;
-    }
+        BlendMode,
+        const IntSize& repeatSpacing) const;
 
 private:
     NativeImageSkia();
@@ -206,8 +201,6 @@ private:
     // image. See comments for ImageResourceInfo.
     mutable ImageResourceInfo m_cachedImageInfo;
     mutable int m_resizeRequests;
-
-    IntSize m_space;
 };
 
 }

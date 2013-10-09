@@ -252,7 +252,7 @@ public:
     void drawImage(Image*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator, BlendMode, RespectImageOrientationEnum = DoNotRespectImageOrientation, bool useLowQualityScale = false);
 
     void drawTiledImage(Image*, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize,
-        CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false, BlendMode = BlendModeNormal);
+        CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false, BlendMode = BlendModeNormal, const IntSize& repeatSpacing = IntSize());
     void drawTiledImage(Image*, const IntRect& destRect, const IntRect& srcRect,
         const FloatSize& tileScaleFactor, Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
         CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false);

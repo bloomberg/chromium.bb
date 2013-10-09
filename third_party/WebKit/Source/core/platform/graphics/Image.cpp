@@ -123,7 +123,7 @@ void Image::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect
     draw(ctx, dstRect, srcRect, op, blendMode);
 }
 
-void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, CompositeOperator op, BlendMode blendMode)
+void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, CompositeOperator op, BlendMode blendMode, const IntSize& repeatSpacing)
 {
     if (mayFillWithSolidColor()) {
         fillWithSolidColor(ctxt, destRect, solidColor(), op);
@@ -142,7 +142,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
     FloatSize scale(scaledTileSize.width() / intrinsicTileSize.width(),
                     scaledTileSize.height() / intrinsicTileSize.height());
 
-    FloatSize actualTileSize(scaledTileSize.width() + spaceSize().width(), scaledTileSize.height() + spaceSize().height());
+    FloatSize actualTileSize(scaledTileSize.width() + repeatSpacing.width(), scaledTileSize.height() + repeatSpacing.height());
     FloatRect oneTileRect;
     oneTileRect.setX(destRect.x() + fmodf(fmodf(-srcPoint.x(), actualTileSize.width()) - actualTileSize.width(), actualTileSize.width()));
     oneTileRect.setY(destRect.y() + fmodf(fmodf(-srcPoint.y(), actualTileSize.height()) - actualTileSize.height(), actualTileSize.height()));
@@ -160,7 +160,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
     }
 
     FloatRect tileRect(FloatPoint(), intrinsicTileSize);
-    drawPattern(ctxt, tileRect, scale, oneTileRect.location(), op, destRect, blendMode);
+    drawPattern(ctxt, tileRect, scale, oneTileRect.location(), op, destRect, blendMode, repeatSpacing);
 
     startAnimation();
 }
@@ -225,13 +225,11 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
 }
 
 void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode)
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode, const IntSize& repeatSpacing)
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
-    if (RefPtr<NativeImageSkia> bitmap = nativeImageForCurrentFrame()) {
-        bitmap->setSpaceSize(spaceSize());
-        bitmap->drawPattern(context, adjustForNegativeSize(floatSrcRect), scale, phase, compositeOp, destRect, blendMode);
-    }
+    if (RefPtr<NativeImageSkia> bitmap = nativeImageForCurrentFrame())
+        bitmap->drawPattern(context, adjustForNegativeSize(floatSrcRect), scale, phase, compositeOp, destRect, blendMode, repeatSpacing);
 }
 
 void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)

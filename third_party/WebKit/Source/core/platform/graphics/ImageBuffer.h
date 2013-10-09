@@ -126,19 +126,11 @@ public:
     // Extensions3D::canUseCopyTextureCHROMIUM().
     bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject, GC3Denum, GC3Denum, GC3Dint, bool, bool);
 
-    // Space-size represents extra width and height that may be added to the image
-    // if used as a pattern with repeat: space
-    IntSize spaceSize() const { return m_space; }
-    void setSpaceSize(const IntSize& space)
-    {
-        m_space = space;
-    }
-
 private:
     bool isValid() const;
 
     void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
-    void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode);
+    void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode, const IntSize& repeatSpacing = IntSize());
     static PassRefPtr<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 
     friend class GraphicsContext;
@@ -153,7 +145,6 @@ private:
     RefPtr<SkCanvas> m_canvas;
     OwnPtr<GraphicsContext> m_context;
     Canvas2DLayerBridgePtr m_layerBridge;
-    IntSize m_space;
 
     // This constructor will place its success into the given out-variable
     // so that create() knows when it should return failure.

@@ -93,7 +93,7 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
     drawCrossfade(context);
 }
 
-void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode)
+void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode, const IntSize& repeatSpacing)
 {
     OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(m_size, 1, context->isAccelerated() ? Accelerated : Unaccelerated);
     if (!imageBuffer)
@@ -104,7 +104,7 @@ void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatR
     drawCrossfade(graphicsContext);
 
     // Tile the image buffer into the context.
-    imageBuffer->drawPattern(context, srcRect, scale, phase, compositeOp, dstRect, blendMode);
+    imageBuffer->drawPattern(context, srcRect, scale, phase, compositeOp, dstRect, blendMode, repeatSpacing);
 }
 
 }

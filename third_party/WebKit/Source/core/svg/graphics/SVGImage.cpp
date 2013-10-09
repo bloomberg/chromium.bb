@@ -202,7 +202,7 @@ PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& srcRect,
-    const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode)
+    const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode, const IntSize& repeatSpacing)
 {
     FloatRect zoomedContainerRect = FloatRect(FloatPoint(), containerSize);
     zoomedContainerRect.scale(zoom);
@@ -224,13 +224,12 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
         return;
     drawForContainer(buffer->context(), containerSize, zoom, imageBufferSize, zoomedContainerRect, CompositeSourceOver, BlendModeNormal);
     RefPtr<Image> image = buffer->copyImage(DontCopyBackingStore, Unscaled);
-    image->setSpaceSize(spaceSize());
 
     // Adjust the source rect and transform due to the image buffer's scaling.
     FloatRect scaledSrcRect = srcRect;
     scaledSrcRect.scale(imageBufferScale.width(), imageBufferScale.height());
 
-    image->drawPattern(context, scaledSrcRect, scaleWithoutCTM, phase, compositeOp, dstRect, blendMode);
+    image->drawPattern(context, scaledSrcRect, scaleWithoutCTM, phase, compositeOp, dstRect, blendMode, repeatSpacing);
 }
 
 void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)

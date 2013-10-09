@@ -51,7 +51,7 @@ public:
 protected:
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, BlendMode) OVERRIDE = 0;
+        const FloatRect&, BlendMode, const IntSize& repeatSpacing) OVERRIDE = 0;
 
     // FIXME: Implement this to be less conservative.
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE { return false; }

@@ -112,19 +112,11 @@ public:
 
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint& phase, CompositeOperator,
-        const FloatRect&, BlendMode = BlendModeNormal);
+        const FloatRect&, BlendMode = BlendModeNormal, const IntSize& repeatSpacing = IntSize());
 
 #if !ASSERT_DISABLED
     virtual bool notSolidColor() { return true; }
 #endif
-
-    // Space-size represents extra width and height that may be added to the image
-    // if used as a pattern with repeat: space
-    IntSize spaceSize() const { return m_space; }
-    void setSpaceSize(const IntSize& space)
-    {
-        m_space = space;
-    }
 
 protected:
     Image(ImageObserver* = 0);
@@ -135,7 +127,7 @@ protected:
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, BlendMode) = 0;
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, BlendMode, RespectImageOrientationEnum);
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatPoint& srcPoint, const FloatSize& tileSize,
-        CompositeOperator, BlendMode);
+        CompositeOperator, BlendMode, const IntSize& repeatSpacing);
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, CompositeOperator);
 
     // Supporting tiled drawing
@@ -145,7 +137,6 @@ protected:
 private:
     RefPtr<SharedBuffer> m_encodedImageData;
     ImageObserver* m_imageObserver;
-    IntSize m_space;
 };
 
 }

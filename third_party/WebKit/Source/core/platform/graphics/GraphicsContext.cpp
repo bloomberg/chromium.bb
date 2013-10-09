@@ -1014,7 +1014,7 @@ void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const Float
         setImageInterpolationQuality(previousInterpolationQuality);
 }
 
-void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize, CompositeOperator op, bool useLowQualityScale, BlendMode blendMode)
+void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize, CompositeOperator op, bool useLowQualityScale, BlendMode blendMode, const IntSize& repeatSpacing)
 {
     if (paintingDisabled() || !image)
         return;
@@ -1022,10 +1022,10 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, cons
     if (useLowQualityScale) {
         InterpolationQuality previousInterpolationQuality = imageInterpolationQuality();
         setImageInterpolationQuality(InterpolationLow);
-        image->drawTiled(this, destRect, srcPoint, tileSize, op, blendMode);
+        image->drawTiled(this, destRect, srcPoint, tileSize, op, blendMode, repeatSpacing);
         setImageInterpolationQuality(previousInterpolationQuality);
     } else {
-        image->drawTiled(this, destRect, srcPoint, tileSize, op, blendMode);
+        image->drawTiled(this, destRect, srcPoint, tileSize, op, blendMode, repeatSpacing);
     }
 }
 

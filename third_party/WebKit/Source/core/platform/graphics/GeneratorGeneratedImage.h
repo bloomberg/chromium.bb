@@ -55,7 +55,7 @@ protected:
         CompositeOperator, BlendMode) OVERRIDE;
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, BlendMode) OVERRIDE;
+        const FloatRect&, BlendMode, const IntSize& repeatSpacing) OVERRIDE;
 
     void drawPatternWithoutCache(GraphicsContext*, const FloatRect&, const FloatSize&,
         const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode);

@@ -224,10 +224,12 @@ protected:
             m_tileSize = tileSize;
         }
 
-        IntSize spaceSize() const { return m_space; }
-        void setSpaceSize(const IntSize& space)
+        // Space-size represents extra width and height that may be added to
+        // the image if used as a pattern with repeat: space
+        IntSize spaceSize() const { return m_repeatSpacing; }
+        void setSpaceSize(const IntSize& repeatSpacing)
         {
-            m_space = space;
+            m_repeatSpacing = repeatSpacing;
         }
 
         void setPhaseX(int x) { m_phase.setX(x); }
@@ -244,7 +246,7 @@ protected:
         IntPoint m_destOrigin;
         IntPoint m_phase;
         IntSize m_tileSize;
-        IntSize m_space;
+        IntSize m_repeatSpacing;
     };
 
     LayoutPoint adjustedPositionRelativeToOffsetParent(const LayoutPoint&) const;
