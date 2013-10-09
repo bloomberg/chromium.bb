@@ -2245,5 +2245,74 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostEviction);
 
+class LayerTreeHostContextTestSurfaceCreateCallback
+    : public LayerTreeHostContextTest {
+ public:
+  LayerTreeHostContextTestSurfaceCreateCallback()
+      : LayerTreeHostContextTest(),
+        layer_(FakeContentLayer::Create(&client_)),
+        num_commits_(0) {}
+
+  virtual void SetupTree() OVERRIDE {
+    layer_->SetBounds(gfx::Size(10, 20));
+    layer_tree_host()->SetRootLayer(layer_);
+    LayerTreeHostContextTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    switch (num_commits_) {
+      case 0:
+        EXPECT_EQ(1u, layer_->output_surface_created_count());
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      case 1:
+        EXPECT_EQ(1u, layer_->output_surface_created_count());
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      case 2:
+        EXPECT_EQ(1u, layer_->output_surface_created_count());
+        break;
+      case 3:
+        EXPECT_EQ(2u, layer_->output_surface_created_count());
+        layer_tree_host()->SetNeedsCommit();
+        break;
+    }
+    ++num_commits_;
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
+    switch (num_commits_) {
+      case 0:
+        break;
+      case 1:
+        break;
+      case 2:
+        LoseContext();
+        break;
+      case 3:
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
+    EXPECT_TRUE(succeeded);
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ protected:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> layer_;
+  int num_commits_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestSurfaceCreateCallback);
+
 }  // namespace
 }  // namespace cc

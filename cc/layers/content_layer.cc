@@ -165,4 +165,10 @@ skia::RefPtr<SkPicture> ContentLayer::GetPicture() const {
   return picture;
 }
 
+void ContentLayer::OnOutputSurfaceCreated() {
+  SetTextureFormat(
+      layer_tree_host()->GetRendererCapabilities().best_texture_format);
+  TiledLayer::OnOutputSurfaceCreated();
+}
+
 }  // namespace cc

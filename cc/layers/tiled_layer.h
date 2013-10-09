@@ -36,6 +36,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
   virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
+  virtual void OnOutputSurfaceCreated() OVERRIDE;
 
  protected:
   TiledLayer();

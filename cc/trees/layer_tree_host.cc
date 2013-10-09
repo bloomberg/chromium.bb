@@ -194,6 +194,10 @@ void LayerTreeHost::SetLayerTreeHostClientReady() {
   proxy_->SetLayerTreeHostClientReady();
 }
 
+static void LayerTreeHostOnOutputSurfaceCreatedCallback(Layer* layer) {
+  layer->OnOutputSurfaceCreated();
+}
+
 LayerTreeHost::CreateResult
 LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
   TRACE_EVENT1("cc",
@@ -211,6 +215,12 @@ LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
           PrioritizedResourceManager::Create(proxy_.get());
       surface_memory_placeholder_ =
           contents_texture_manager_->CreateTexture(gfx::Size(), RGBA_8888);
+    }
+
+    if (root_layer()) {
+      LayerTreeHostCommon::CallFunctionForSubtree(
+          root_layer(),
+          base::Bind(&LayerTreeHostOnOutputSurfaceCreatedCallback));
     }
 
     client_->DidInitializeOutputSurface(true);

@@ -850,6 +850,19 @@ bool TiledLayer::Update(ResourceUpdateQueue* queue,
   return updated;
 }
 
+void TiledLayer::OnOutputSurfaceCreated() {
+  // Ensure that all textures are of the right format.
+  for (LayerTilingData::TileMap::const_iterator iter = tiler_->tiles().begin();
+       iter != tiler_->tiles().end();
+       ++iter) {
+    UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
+    if (!tile)
+      continue;
+    PrioritizedResource* resource = tile->managed_resource();
+    resource->SetDimensions(resource->size(), texture_format_);
+  }
+}
+
 bool TiledLayer::NeedsIdlePaint() {
   // Don't trigger more paints if we failed (as we'll just fail again).
   if (failed_update_ || visible_content_rect().IsEmpty() ||

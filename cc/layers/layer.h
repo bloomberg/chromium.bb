@@ -327,6 +327,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual bool NeedMoreUpdates();
   virtual void SetIsMask(bool is_mask) {}
   virtual void ReduceMemoryUsage() {}
+  virtual void OnOutputSurfaceCreated() {}
 
   virtual std::string DebugName();
 

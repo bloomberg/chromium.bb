@@ -31,6 +31,7 @@ class CC_EXPORT ImageLayer : public TiledLayer {
                                       float* contents_scale_x,
                                       float* contents_scale_y,
                                       gfx::Size* content_bounds) OVERRIDE;
+  virtual void OnOutputSurfaceCreated() OVERRIDE;
 
   void SetBitmap(const SkBitmap& image);
 

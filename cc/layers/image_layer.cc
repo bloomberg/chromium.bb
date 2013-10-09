@@ -80,6 +80,12 @@ bool ImageLayer::DrawsContent() const {
   return !bitmap_.isNull() && TiledLayer::DrawsContent();
 }
 
+void ImageLayer::OnOutputSurfaceCreated() {
+  SetTextureFormat(
+      layer_tree_host()->GetRendererCapabilities().best_texture_format);
+  TiledLayer::OnOutputSurfaceCreated();
+}
+
 float ImageLayer::ImageContentsScaleX() const {
   if (bounds().IsEmpty() || bitmap_.width() == 0)
     return 1;
