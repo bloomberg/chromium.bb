@@ -575,6 +575,10 @@ void HTMLAnchorElement::handleClick(Event* event)
     appendServerMapMousePosition(url, event);
     KURL completedURL = document().completeURL(url.toString());
 
+    // Schedule the ping before the frame load. Prerender in Chrome may kill the renderer as soon as the navigation is
+    // sent out.
+    sendPings(completedURL);
+
     ResourceRequest request(completedURL);
     if (prefetchEventHandler()->hasIssuedPreconnect())
         frame->loader()->client()->dispatchWillRequestAfterPreconnect(request);
@@ -593,8 +597,6 @@ void HTMLAnchorElement::handleClick(Event* event)
             frameRequest.setShouldSendReferrer(NeverSendReferrer);
         frame->loader()->load(frameRequest);
     }
-
-    sendPings(completedURL);
 }
 
 HTMLAnchorElement::EventType HTMLAnchorElement::eventType(Event* event)
