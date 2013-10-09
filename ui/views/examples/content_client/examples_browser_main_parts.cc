@@ -25,6 +25,12 @@
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "content/shell/browser/minimal_shell.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/test/test_screen.h"
+#endif
+
 namespace views {
 namespace examples {
 
@@ -38,17 +44,31 @@ ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
 void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false, NULL));
 
-#if !defined(OS_CHROMEOS) && defined(USE_AURA)
+  gfx::NativeView window_context = NULL;
+#if defined(OS_CHROMEOS)
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
+  // Set up basic pieces of views::corewm.
+  minimal_shell_.reset(new content::MinimalShell(gfx::Size(800, 600)));
+  // Ensure the X window gets mapped.
+  minimal_shell_->root_window()->ShowRootWindow();
+  // Ensure Aura knows where to open new windows.
+  window_context = minimal_shell_->root_window();
+#elif defined(USE_AURA)
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, CreateDesktopScreen());
 #endif
   views_delegate_.reset(new DesktopTestViewsDelegate);
 
-  ShowExamplesWindowWithContent(QUIT_ON_CLOSE, browser_context_.get());
+  ShowExamplesWindowWithContent(
+      QUIT_ON_CLOSE, browser_context_.get(), window_context);
 }
 
 void ExamplesBrowserMainParts::PostMainMessageLoopRun() {
   browser_context_.reset();
+#if defined(OS_CHROMEOS)
+  minimal_shell_.reset();
+#endif
   views_delegate_.reset();
 #if defined(USE_AURA)
   aura::Env::DeleteInstance();

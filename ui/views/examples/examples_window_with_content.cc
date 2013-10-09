@@ -200,13 +200,15 @@ class ExamplesWindowContents : public WidgetDelegateView,
 ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
 
 void ShowExamplesWindowWithContent(Operation operation,
-                                   content::BrowserContext* browser_context) {
+                                   content::BrowserContext* browser_context,
+                                   gfx::NativeView window_context) {
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();
   } else {
     Widget* widget = new Widget;
     Widget::InitParams params;
     params.delegate = new ExamplesWindowContents(operation, browser_context);
+    params.context = window_context;
     params.bounds = gfx::Rect(0, 0, 850, 300);
     params.top_level = true;
     widget->Init(params);

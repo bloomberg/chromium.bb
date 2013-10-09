@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_main_parts.h"
 
 namespace content {
+class MinimalShell;
 class ShellBrowserContext;
 struct MainFunctionParams;
 }
@@ -38,6 +39,11 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<content::ShellBrowserContext> browser_context_;
 
   scoped_ptr<ViewsDelegate> views_delegate_;
+
+#if defined(OS_CHROMEOS)
+  // Enable a minimal set of views::corewm to be initialized.
+  scoped_ptr<content::MinimalShell> minimal_shell_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);
 };

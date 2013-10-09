@@ -43,6 +43,8 @@ class MinimalShell : public aura::client::StackingClient {
   explicit MinimalShell(const gfx::Size& default_window_size);
   virtual ~MinimalShell();
 
+  aura::RootWindow* root_window() { return root_window_.get(); }
+
   // Overridden from client::StackingClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,

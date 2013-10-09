@@ -353,7 +353,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == examples_button_) {
     views::examples::ShowExamplesWindowWithContent(
         views::examples::DO_NOTHING_ON_CLOSE,
-        ash::Shell::GetInstance()->browser_context());
+        ash::Shell::GetInstance()->browser_context(),
+        NULL);
   }
 }
 

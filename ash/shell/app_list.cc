@@ -122,7 +122,8 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
       case EXAMPLES_WINDOW: {
         views::examples::ShowExamplesWindowWithContent(
             views::examples::DO_NOTHING_ON_CLOSE,
-            ash::Shell::GetInstance()->browser_context());
+            ash::Shell::GetInstance()->browser_context(),
+            NULL);
         break;
       }
       default:
