@@ -400,7 +400,7 @@ static void readonlyArrayBufferAttributeAttributeGetter(v8::Local<v8::String> na
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     RefPtr<ArrayBuffer> result = imp->readonlyArrayBufferAttribute();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8ArrayBuffer>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper<V8ArrayBuffer>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -420,7 +420,7 @@ static void readonlyFloat32ArrayAttributeAttributeGetter(v8::Local<v8::String> n
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     RefPtr<Float32Array> result = imp->readonlyFloat32ArrayAttribute();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8Float32Array>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper<V8Float32Array>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -440,7 +440,7 @@ static void readonlyUint8ArrayAttributeAttributeGetter(v8::Local<v8::String> nam
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     RefPtr<Uint8Array> result = imp->readonlyUint8ArrayAttribute();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8Uint8Array>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper<V8Uint8Array>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -460,7 +460,7 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetter(v8::Local<v8::Str
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     RefPtr<TestInterfaceEmpty> result = imp->readonlyTestInterfaceEmptyAttribute();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -857,7 +857,7 @@ static void readonlyDocumentFragmentAttributeAttributeGetter(v8::Local<v8::Strin
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     RefPtr<DocumentFragment> result = imp->readonlyDocumentFragmentAttribute();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8DocumentFragment>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper<V8DocumentFragment>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -988,7 +988,7 @@ bool V8TestObjectPython::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::
 
 v8::Handle<v8::Object> V8TestObjectPython::createWrapper(PassRefPtr<TestObjectPython> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(impl.get());
+    ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestObjectPython>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());

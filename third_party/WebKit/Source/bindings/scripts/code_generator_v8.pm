@@ -1546,9 +1546,9 @@ END
         my $v8ReturnType = "V8" . $returnType;
         $code .= "    $nativeReturnType result = ${getterString};\n";
         if ($forMainWorldSuffix) {
-            $code .= "    if (result.get() && DOMDataStore::setReturnValueFromWrapper${forMainWorldSuffix}<${v8ReturnType}>(info.GetReturnValue(), result.get()))\n";
+            $code .= "    if (result && DOMDataStore::setReturnValueFromWrapper${forMainWorldSuffix}<${v8ReturnType}>(info.GetReturnValue(), result.get()))\n";
         } else {
-            $code .= "    if (result.get() && DOMDataStore::setReturnValueFromWrapper<${v8ReturnType}>(info.GetReturnValue(), result.get()))\n";
+            $code .= "    if (result && DOMDataStore::setReturnValueFromWrapper<${v8ReturnType}>(info.GetReturnValue(), result.get()))\n";
         }
         $code .= "        return;\n";
         $code .= "    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());\n";
@@ -4872,7 +4872,7 @@ sub GenerateToV8Converters
     $code .= <<END;
 v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(impl.get());
+    ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());

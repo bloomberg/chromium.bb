@@ -122,7 +122,7 @@ bool V8TestException::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Iso
 
 v8::Handle<v8::Object> V8TestException::createWrapper(PassRefPtr<TestException> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(impl.get());
+    ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestException>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());

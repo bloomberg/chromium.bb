@@ -199,7 +199,7 @@ bool V8TestOverloadedConstructors::HasInstanceInAnyWorld(v8::Handle<v8::Value> v
 
 v8::Handle<v8::Object> V8TestOverloadedConstructors::createWrapper(PassRefPtr<TestOverloadedConstructors> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(impl.get());
+    ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestOverloadedConstructors>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());

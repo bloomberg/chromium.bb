@@ -106,7 +106,7 @@ bool V8TestEvent::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate
 
 v8::Handle<v8::Object> V8TestEvent::createWrapper(PassRefPtr<TestEvent> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(impl.get());
+    ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestEvent>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());

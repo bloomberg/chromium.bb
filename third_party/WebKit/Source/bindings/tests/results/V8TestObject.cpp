@@ -125,7 +125,7 @@ static void readOnlyTestObjectAttrAttributeGetter(v8::Local<v8::String> name, co
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     RefPtr<TestObj> result = imp->readOnlyTestObjectAttr();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -2112,7 +2112,7 @@ static void perWorldReadOnlyAttributeAttributeGetter(v8::Local<v8::String> name,
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     RefPtr<TestObj> result = imp->perWorldReadOnlyAttribute();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -2132,7 +2132,7 @@ static void perWorldReadOnlyAttributeAttributeGetterForMainWorld(v8::Local<v8::S
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     RefPtr<TestObj> result = imp->perWorldReadOnlyAttribute();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestObject>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
@@ -5369,7 +5369,7 @@ EventTarget* V8TestObject::toEventTarget(v8::Handle<v8::Object> object)
 
 v8::Handle<v8::Object> V8TestObject::createWrapper(PassRefPtr<TestObj> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(impl.get());
+    ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestObject>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
