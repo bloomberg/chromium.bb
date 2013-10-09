@@ -54,8 +54,10 @@ class MultiPartResponseClient : public WebKit::WebURLLoaderClient {
     // TODO(ananta)
     // We should defer further loads on multipart resources on the same lines
     // as regular resources requested by plugins to prevent reentrancy.
-    plugin_stream_->DidReceiveData(data, data_length, byte_range_lower_bound_);
+    int64 data_offset = byte_range_lower_bound_;
     byte_range_lower_bound_ += data_length;
+    plugin_stream_->DidReceiveData(data, data_length, data_offset);
+    // DANGER: this instance may be deleted at this point.
   }
 
  private:
@@ -285,8 +287,10 @@ void PluginURLFetcher::OnReceivedData(const char* data,
   if (multipart_delegate_) {
     multipart_delegate_->OnReceivedData(data, data_length, encoded_data_length);
   } else {
-    plugin_stream_->DidReceiveData(data, data_length, data_offset_);
+    int64 offset = data_offset_;
     data_offset_ += data_length;
+    plugin_stream_->DidReceiveData(data, data_length, offset);
+    // DANGER: this instance may be deleted at this point.
   }
 }
 
