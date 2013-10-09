@@ -454,12 +454,11 @@ int main(int argc, char *argv[])
 		weston_config_section_get_string(s, "icon", &icon, NULL);
 		weston_config_section_get_string(s, "path", &path, NULL);
 
-		if (icon == NULL || path == NULL) {
+		if (icon != NULL && path != NULL)
+			tablet_shell_add_launcher(&tablet, icon, path);
+		else
 			fprintf(stderr, "invalid launcher section\n");
-			continue;
-		}
 
-		tablet_shell_add_launcher(&tablet, icon, path);
 		free(icon);
 		free(path);
 	}
