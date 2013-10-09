@@ -1321,6 +1321,7 @@ create_cursors(struct display *display)
 	weston_config_destroy(config);
 
 	display->cursor_theme = wl_cursor_theme_load(theme, size, display->shm);
+	free(theme);
 	display->cursors =
 		xmalloc(ARRAY_LENGTH(cursors) * sizeof display->cursors[0]);
 
