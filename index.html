@@ -111,9 +111,6 @@ reach column boundaries.</p>
 <p>This is a rather complicated patch and requires a bunch of additional work
 before it can be sent upstream.</p>
 
-<h3><a name="bugfix-checkSpellcheckAttrBeforeMark">bugfix/checkSpellcheckAttrBeforeMark</a> (Tianyin Zhang; D37544856)</h3>
-<p>This patch fixed a bug where text under elements having spellcheck attribute set to false got spellchecked. To see the bug, open <a href="repros/checkSpellcheckAttrBeforeMark.html">This Link</a> in Chrome</p>
-
 <h3><a name="bugfix-clearDragCaret">bugfix/clearDragCaret</a> (Shezan Baig; D31916022)</h3>
 <p>Open <a href="repros/clearDragCaret.html">this link</a> in Chrome, then
 select some text from another tab, and try to drag it into the editable div.
@@ -475,6 +472,9 @@ text.</p>
 <h3><a name="bugfix-caretPosition">bugfix/caretPosition</a> (Tianyin Zhang; D38913437, D38277785)</h3>
 <p>Retired because the reproduction steps depend on features in blpwtk1 that
 are not available in the chromium.bb repo.</p>
+
+<h3><a name="bugfix-checkSpellcheckAttrBeforeMark">bugfix/checkSpellcheckAttrBeforeMark</a> (Tianyin Zhang; D37544856)</h3>
+<p>Retired because the fix does not work in this version.</p>
 
 <h3><a name="bugfix-fixUndoSpellCaretPos">bugfix/fixUndoSpellCaretPos</a> (Tianyin Zhang; D38913437)</h3>
 <p>Retired in favor of <code><a
