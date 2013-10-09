@@ -91,6 +91,14 @@ LengthSize animatableValueToLengthSize(const AnimatableValue* value, const Style
         animatableValueToLength(animatableLengthSize->height(), state, range));
 }
 
+SVGLength animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
+{
+    SVGLength length = toAnimatableSVGLength(value)->toSVGLength();
+    if (length.valueInSpecifiedUnits() < 0)
+        length.setValueInSpecifiedUnits(0);
+    return length;
+}
+
 } // namespace
 
 // FIXME: Generate this function.
@@ -258,6 +266,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyRight:
         style->setRight(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyStrokeWidth:
+        style->setStrokeWidth(animatableValueToNonNegativeSVGLength(value));
         return;
     case CSSPropertyStopOpacity:
         style->setStopOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));

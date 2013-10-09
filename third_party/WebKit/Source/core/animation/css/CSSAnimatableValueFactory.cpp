@@ -51,7 +51,6 @@
 #include "core/platform/LengthBox.h"
 #include "core/rendering/style/RenderStyle.h"
 
-
 namespace WebCore {
 
 static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const RenderStyle* style)
@@ -234,6 +233,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->paddingTop(), style);
     case CSSPropertyRight:
         return createFromLength(style->right(), style);
+    case CSSPropertyStrokeWidth:
+        return AnimatableSVGLength::create(style->strokeWidth());
     case CSSPropertyStopOpacity:
         return createFromDouble(style->stopOpacity());
     case CSSPropertyStrokeDashoffset:
