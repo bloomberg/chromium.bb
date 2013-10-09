@@ -70,8 +70,7 @@ void ConfirmInfoBar::ProcessButton(int action,
       (action == InfoBarAndroid::ACTION_CANCEL));
   if ((action == InfoBarAndroid::ACTION_OK) ?
       delegate_->Accept() : delegate_->Cancel())
-    // TODO(miguelg): Consider RemoveSelf(); instead.
-    CloseInfoBar();
+    RemoveSelf();
 }
 
 string16 ConfirmInfoBar::GetTextFor(

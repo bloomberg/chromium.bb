@@ -98,9 +98,11 @@ public abstract class InfoBar implements InfoBarView {
 
     // Determine if the infobar should be dismissed when |url| is loaded.  Calling
     // setExpireOnNavigation(true/false) causes this method always to return true/false.
-    // For more control, subclasses can override this method and take the url into account.
-    public boolean shouldExpire(String url) {
-        return mExpireOnNavigation;
+    // This only applies to java-only infobars. C++ infobars will use the same logic
+    // as other platforms so they are not attempted to be dismissed twice.
+    // It should really be removed once all infobars have a C++ counterpart.
+    public final boolean shouldExpire(String url) {
+        return mExpireOnNavigation && mNativeInfoBarPtr == 0;
     }
 
     // Sets whether the bar should be dismissed when a navigation occurs.

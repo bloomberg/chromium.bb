@@ -72,7 +72,7 @@ void TranslateInfoBar::ProcessButton(
   else
     DCHECK_EQ(InfoBarAndroid::ACTION_NONE, action);
 
-  CloseInfoBar();
+  RemoveSelf();
 }
 
 void TranslateInfoBar::PassJavaInfoBar(InfoBarAndroid* source) {
