@@ -732,6 +732,9 @@ crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure 
 
 crbug.com/234758 [ Lion ] virtual/softwarecompositing/scrollbars/custom-composited-different-track-parts.html [ ImageOnlyFailure Pass ]
 
+# Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
+crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
+
 crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Failure Pass ]
 
 # Caused by http://trac.webkit.org/changeset/56394.
