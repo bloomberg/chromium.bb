@@ -98,6 +98,7 @@
           'libraries': [
             '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
             '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+            '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
           ]
         },
         'sources/': [
