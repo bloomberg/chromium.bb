@@ -166,10 +166,10 @@ class IndexedDBQuotaClientTest : public testing::Test {
   std::set<GURL> origins_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
-  base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestBrowserContext> browser_context_;
   quota::QuotaStatusCode delete_status_;
+  base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
 };
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {
