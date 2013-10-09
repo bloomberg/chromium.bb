@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 
@@ -39,6 +40,11 @@ void EnsureInitialized() {
 #else
   is_console = isatty(fileno(stdout));
 #endif
+}
+
+void WriteToStdOut(const std::string& output) {
+  size_t written_bytes = fwrite(output.data(), 1, output.size(), stdout);
+  DCHECK_EQ(output.size(), written_bytes);
 }
 
 }  // namespace
@@ -90,27 +96,27 @@ void OutputString(const std::string& output, TextDecoration dec) {
       case DECORATION_NONE:
         break;
       case DECORATION_DIM:
-        fwrite("\e[2m", 1, 4, stdout);
+        WriteToStdOut("\e[2m");
         break;
       case DECORATION_RED:
-        fwrite("\e[31m\e[1m", 1, 9, stdout);
+        WriteToStdOut("\e[31m\e[1m");
         break;
       case DECORATION_GREEN:
-        fwrite("\e[32m", 1, 5, stdout);
+        WriteToStdOut("\e[32m");
         break;
       case DECORATION_BLUE:
-        fwrite("\e[34m\e[1m", 1, 9, stdout);
+        WriteToStdOut("\e[34m\e[1m");
         break;
       case DECORATION_YELLOW:
-        fwrite("\e[33m\e[1m", 1, 9, stdout);
+        WriteToStdOut("\e[33m\e[1m");
         break;
     }
   }
 
-  fwrite(output.data(), 1, output.size(), stdout);
+  WriteToStdOut(output.data());
 
   if (dec != DECORATION_NONE)
-    fwrite("\e[0m", 1, 4, stdout);
+    WriteToStdOut("\e[0m");
 }
 
 #endif
