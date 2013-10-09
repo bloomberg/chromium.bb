@@ -172,7 +172,7 @@
         'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverlayPage.h',
         'character_array_name': 'InspectorOverlayPage_html',
       },
-      'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
+      'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
       'target_name': 'injected_canvas_script_source',
@@ -182,7 +182,7 @@
         'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InjectedScriptCanvasModuleSource.h',
         'character_array_name': 'InjectedScriptCanvasModuleSource_js',
       },
-      'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
+      'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
       'target_name': 'injected_script_source',
@@ -192,7 +192,7 @@
         'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InjectedScriptSource.h',
         'character_array_name': 'InjectedScriptSource_js',
       },
-      'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
+      'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
       'target_name': 'debugger_script_source',
@@ -202,7 +202,7 @@
         'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/DebuggerScriptSource.h',
         'character_array_name': 'DebuggerScriptSource_js',
       },
-      'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
+      'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
       'target_name': 'webcore_derived',
