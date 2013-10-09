@@ -4,6 +4,7 @@
 
 #include "ash/keyboard_overlay/keyboard_overlay_delegate.h"
 
+#include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,14 +15,28 @@
 
 namespace ash {
 
-typedef test::AshTestBase KeyboardOverlayDelegateTest;
+class KeyboardOverlayDelegateTest
+    : public test::AshTestBase,
+      public testing::WithParamInterface<ShelfAlignment> {
+ public:
+  KeyboardOverlayDelegateTest() : shelf_alignment_(GetParam()) {}
+  virtual ~KeyboardOverlayDelegateTest() {}
+  ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
+
+ private:
+  ShelfAlignment shelf_alignment_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDelegateTest);
+};
 
 // Verifies we can show and close the widget for the overlay dialog.
-TEST_F(KeyboardOverlayDelegateTest, ShowAndClose) {
+TEST_P(KeyboardOverlayDelegateTest, ShowAndClose) {
   if (!SupportsMultipleDisplays())
     return;
 
   UpdateDisplay("500x400,300x200");
+  ash::Shell* shell = ash::Shell::GetInstance();
+  shell->SetShelfAlignment(shelf_alignment(), shell->GetPrimaryRootWindow());
   KeyboardOverlayDelegate delegate(ASCIIToUTF16("Title"),
                                    GURL("chrome://keyboardoverlay/"));
   // Showing the dialog creates a widget.
@@ -41,5 +56,13 @@ TEST_F(KeyboardOverlayDelegateTest, ShowAndClose) {
   // Clean up.
   widget->CloseNow();
 }
+
+// Tests run three times - for all possible values of shelf alignment
+INSTANTIATE_TEST_CASE_P(ShelfAlignmentAny,
+                        KeyboardOverlayDelegateTest,
+                        testing::Values(SHELF_ALIGNMENT_BOTTOM,
+                                        SHELF_ALIGNMENT_LEFT,
+                                        SHELF_ALIGNMENT_RIGHT,
+                                        SHELF_ALIGNMENT_TOP));
 
 }  // namespace ash
