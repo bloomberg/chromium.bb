@@ -22,6 +22,7 @@ import org.chromium.content.browser.PageInfo;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.ui.WindowAndroid;
 
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -347,6 +348,15 @@ public abstract class TabBase implements NavigationClient {
     public int getSecurityLevel() {
         if (mNativeTabAndroid == 0) return ToolbarModelSecurityLevel.NONE;
         return nativeGetSecurityLevel(mNativeTabAndroid);
+    }
+
+    /**
+     * @return An {@link ObserverList.RewindableIterator} instance that points to all of
+     *         the current {@link TabObserver}s on this class.  Note that calling
+     *         {@link Iterator#remove()} will throw an {@link UnsupportedOperationException}.
+     */
+    protected ObserverList.RewindableIterator<TabObserver> getTabObservers() {
+        return mObservers.rewindableIterator();
     }
 
     /**
