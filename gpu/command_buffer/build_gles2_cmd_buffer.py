@@ -1623,7 +1623,7 @@ _FUNCTION_INFO = {
   },
   'GetAttribLocation': {
     'type': 'HandWritten',
-    'immediate': True,
+    'immediate': False,
     'bucket': True,
     'needs_size': True,
     'cmd_args':
@@ -1775,7 +1775,7 @@ _FUNCTION_INFO = {
   },
   'GetUniformLocation': {
     'type': 'HandWritten',
-    'immediate': True,
+    'immediate': False,
     'bucket': True,
     'needs_size': True,
     'cmd_args':

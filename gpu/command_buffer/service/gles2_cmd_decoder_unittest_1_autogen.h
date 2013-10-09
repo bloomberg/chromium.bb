@@ -1108,8 +1108,6 @@ TEST_F(GLES2DecoderTest1, GenTexturesImmediateInvalidArgs) {
 
 // TODO(gman): GetAttribLocation
 
-// TODO(gman): GetAttribLocationImmediate
-
 // TODO(gman): GetAttribLocationBucket
 
 
@@ -1817,8 +1815,6 @@ TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_1) {
 
 // TODO(gman): GetUniformLocation
 
-// TODO(gman): GetUniformLocationImmediate
-
 // TODO(gman): GetUniformLocationBucket
 
 
@@ -1904,6 +1900,26 @@ TEST_F(GLES2DecoderTest1, GetVertexAttribivInvalidArgs2_1) {
       kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
+}
+// TODO(gman): GetVertexAttribPointerv
+
+
+TEST_F(GLES2DecoderTest1, HintValidArgs) {
+  EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST));
+  SpecializedSetup<cmds::Hint, 0>(true);
+  cmds::Hint cmd;
+  cmd.Init(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, HintInvalidArgs0_0) {
+  EXPECT_CALL(*gl_, Hint(_, _)).Times(0);
+  SpecializedSetup<cmds::Hint, 0>(false);
+  cmds::Hint cmd;
+  cmd.Init(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_
 

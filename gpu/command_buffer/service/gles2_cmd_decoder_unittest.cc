@@ -2708,49 +2708,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetAttribLocationInvalidArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, GetAttribLocationImmediate) {
-  const uint32 kNameSize = strlen(kAttrib2Name);
-  const char* kNonExistentName = "foobar";
-  const uint32 kNonExistentNameSize = strlen(kNonExistentName);
-  typedef GetAttribLocationImmediate::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>();
-  *result = -1;
-  GetAttribLocationImmediate& cmd =
-      *GetImmediateAs<GetAttribLocationImmediate>();
-  cmd.Init(client_program_id_, kAttrib2Name,
-           kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(kAttrib2Location, *result);
-  *result = -1;
-  cmd.Init(client_program_id_, kNonExistentName,
-           kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNonExistentNameSize));
-  EXPECT_EQ(-1, *result);
-}
-
-TEST_F(GLES2DecoderWithShaderTest, GetAttribLocationImmediateInvalidArgs) {
-  const uint32 kNameSize = strlen(kAttrib2Name);
-  typedef GetAttribLocationImmediate::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>();
-  *result = -1;
-  GetAttribLocationImmediate& cmd =
-      *GetImmediateAs<GetAttribLocationImmediate>();
-  cmd.Init(kInvalidClientId, kAttrib2Name,
-           kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(-1, *result);
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-  *result = -1;
-  cmd.Init(client_program_id_, kAttrib2Name,
-           kInvalidSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_NE(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(-1, *result);
-  cmd.Init(client_program_id_, kAttrib2Name,
-           kSharedMemoryId, kInvalidSharedMemoryOffset);
-  EXPECT_NE(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(-1, *result);
-}
-
 TEST_F(GLES2DecoderWithShaderTest, GetAttribLocationBucket) {
   const uint32 kBucketId = 123;
   const char* kNonExistentName = "foobar";
@@ -2882,49 +2839,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationInvalidArgs) {
            kBadNameSize);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
-TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationImmediate) {
-  const uint32 kNameSize = strlen(kUniform2Name);
-  const char* kNonExistentName = "foobar";
-  const uint32 kNonExistentNameSize = strlen(kNonExistentName);
-  typedef GetUniformLocationImmediate::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>();
-  *result = -1;
-  GetUniformLocationImmediate& cmd =
-      *GetImmediateAs<GetUniformLocationImmediate>();
-  cmd.Init(client_program_id_, kUniform2Name,
-           kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(kUniform2FakeLocation, *result);
-  *result = -1;
-  cmd.Init(client_program_id_, kNonExistentName,
-           kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNonExistentNameSize));
-  EXPECT_EQ(-1, *result);
-}
-
-TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationImmediateInvalidArgs) {
-  const uint32 kNameSize = strlen(kUniform2Name);
-  typedef GetUniformLocationImmediate::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>();
-  *result = -1;
-  GetUniformLocationImmediate& cmd =
-      *GetImmediateAs<GetUniformLocationImmediate>();
-  cmd.Init(kInvalidClientId, kUniform2Name,
-           kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(-1, *result);
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-  *result = -1;
-  cmd.Init(client_program_id_, kUniform2Name,
-           kInvalidSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_NE(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(-1, *result);
-  cmd.Init(client_program_id_, kUniform2Name,
-           kSharedMemoryId, kInvalidSharedMemoryOffset);
-  EXPECT_NE(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(-1, *result);
 }
 
 TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationBucket) {

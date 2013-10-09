@@ -38,19 +38,6 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
     }
   }
 
-  void GetAttribLocationImmediate(
-      GLuint program, const char* name,
-      uint32 location_shm_id, uint32 location_shm_offset) {
-    const uint32 size = gles2::cmds::GetAttribLocationImmediate::ComputeSize(
-        name);
-    gles2::cmds::GetAttribLocationImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::GetAttribLocationImmediate>(
-            size);
-    if (c) {
-      c->Init(program, name, location_shm_id, location_shm_offset);
-    }
-  }
-
   void GetAttribLocationBucket(
       GLuint program, uint32 name_bucket_id,
       uint32 location_shm_id, uint32 location_shm_offset) {
@@ -70,19 +57,6 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
       c->Init(
           program, name_shm_id, name_shm_offset, location_shm_id,
           location_shm_offset, data_size);
-    }
-  }
-
-  void GetUniformLocationImmediate(
-      GLuint program, const char* name,
-      uint32 location_shm_id, uint32 location_shm_offset) {
-    const uint32 size = gles2::cmds::GetUniformLocationImmediate::ComputeSize(
-        name);
-    gles2::cmds::GetUniformLocationImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::GetUniformLocationImmediate>(
-            size);
-    if (c) {
-      c->Init(program, name, location_shm_id, location_shm_offset);
     }
   }
 
