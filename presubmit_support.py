@@ -243,7 +243,7 @@ class InputApi(object):
       r".*\bDebug[\\\/].*",
       r".*\bRelease[\\\/].*",
       r".*\bxcodebuild[\\\/].*",
-      r".*\bsconsbuild[\\\/].*",
+      r".*\bout[\\\/].*",
       # All caps files like README and LICENCE.
       r".*\b[A-Z0-9_]{2,}$",
       # SCM (can happen in dual SCM configuration). (Slightly over aggressive)
