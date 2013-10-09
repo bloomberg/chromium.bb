@@ -284,6 +284,7 @@
         'browser/ui/ash/launcher/shell_window_launcher_item_controller.h',
         'browser/ui/ash/launcher/shell_window_launcher_controller.cc',
         'browser/ui/ash/launcher/shell_window_launcher_controller.h',
+        'browser/ui/ash/multi_user_window_manager.h',        
         'browser/ui/ash/screenshot_taker.cc',
         'browser/ui/ash/screenshot_taker.h',
         'browser/ui/ash/session_state_delegate_chromeos.cc',
@@ -2656,6 +2657,9 @@
           'dependencies': [
             'browser_chromeos',
           ],
+          'sources': [
+            'browser/ui/ash/multi_user_window_manager.cc',
+          ],      
           'sources!': [
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',

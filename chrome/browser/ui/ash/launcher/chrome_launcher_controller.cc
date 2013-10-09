@@ -87,6 +87,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/multi_user_window_manager.h"
 #endif
 
 using extensions::Extension;
@@ -300,6 +301,9 @@ ChromeLauncherController::ChromeLauncherController(
       ChromeShellDelegate::instance()->IsMultiProfilesEnabled()) {
     user_switch_observer_.reset(
         new ChromeLauncherControllerUserSwitchObserverChromeOS(this));
+    // TODO(skuhne): Find a better place where to instantiate this. Note that
+    // once we start using the manager for other operations it will load itself.
+    chrome::MultiUserWindowManager::GetInstance();
   }
 #endif
 }
@@ -337,6 +341,12 @@ ChromeLauncherController::~ChromeLauncherController() {
   ReleaseProfile();
   if (instance_ == this)
     instance_ = NULL;
+#if defined(OS_CHROMEOS)
+  // Get rid of the multi user window manager instance.
+  // TODO(skuhne): Find a better place where this can be deleted. Looked at
+  // ash_init.cc, but it could only be deleted there, not created.
+  chrome::MultiUserWindowManager::DeleteInstance();
+#endif
 }
 
 // static
