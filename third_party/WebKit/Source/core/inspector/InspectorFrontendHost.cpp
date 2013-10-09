@@ -31,7 +31,6 @@
 #include "core/inspector/InspectorFrontendHost.h"
 
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/inspector/InspectorController.h"
@@ -50,6 +49,7 @@
 #include "modules/filesystem/DOMFileSystem.h"
 #include "platform/JSONValues.h"
 #include "platform/SharedBuffer.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/network/ResourceError.h"
 
 namespace WebCore {

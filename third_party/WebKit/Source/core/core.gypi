@@ -1993,8 +1993,6 @@
             'dom/TreeWalker.h',
             'dom/UserActionElementSet.cpp',
             'dom/UserActionElementSet.h',
-            'dom/UserGestureIndicator.cpp',
-            'dom/UserTypingGestureIndicator.cpp',
             'dom/ViewportDescription.cpp',
             'dom/ViewportDescription.h',
             'dom/VisitedLinkState.cpp',

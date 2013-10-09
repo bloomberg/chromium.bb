@@ -31,7 +31,6 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Chrome.h"
@@ -40,6 +39,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderFullScreen.h"
+#include "platform/UserGestureIndicator.h"
 
 namespace WebCore {
 

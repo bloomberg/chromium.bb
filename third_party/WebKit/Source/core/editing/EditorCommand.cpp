@@ -37,7 +37,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/events/Event.h"
-#include "core/dom/UserTypingGestureIndicator.h"
 #include "core/editing/CreateLinkCommand.h"
 #include "core/editing/FormatBlockCommand.h"
 #include "core/editing/IndentOutdentCommand.h"
@@ -295,14 +294,9 @@ static bool executeCreateLink(Frame& frame, Event*, EditorCommandSource, const S
     return true;
 }
 
-static bool executeCut(Frame& frame, Event*, EditorCommandSource source, const String&)
+static bool executeCut(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    if (source == CommandFromMenuOrKeyBinding) {
-        UserTypingGestureIndicator typingGestureIndicator(&frame);
-        frame.editor().cut();
-    } else {
-        frame.editor().cut();
-    }
+    frame.editor().cut();
     return true;
 }
 
@@ -321,7 +315,6 @@ static bool executeDelete(Frame& frame, Event*, EditorCommandSource source, cons
     switch (source) {
     case CommandFromMenuOrKeyBinding: {
         // Doesn't modify the text if the current selection isn't a range.
-        UserTypingGestureIndicator typingGestureIndicator(&frame);
         frame.editor().performDelete();
         return true;
     }
@@ -935,14 +928,9 @@ static bool executeToggleOverwrite(Frame& frame, Event*, EditorCommandSource, co
     return true;
 }
 
-static bool executePaste(Frame& frame, Event*, EditorCommandSource source, const String&)
+static bool executePaste(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    if (source == CommandFromMenuOrKeyBinding) {
-        UserTypingGestureIndicator typingGestureIndicator(&frame);
-        frame.editor().paste();
-    } else {
-        frame.editor().paste();
-    }
+    frame.editor().paste();
     return true;
 }
 
@@ -951,7 +939,6 @@ static bool executePasteGlobalSelection(Frame& frame, Event*, EditorCommandSourc
     if (!frame.editor().client().supportsGlobalSelection())
         return false;
     ASSERT_UNUSED(source, source == CommandFromMenuOrKeyBinding);
-    UserTypingGestureIndicator typingGestureIndicator(&frame);
 
     bool oldSelectionMode = Pasteboard::generalPasteboard()->isSelectionMode();
     Pasteboard::generalPasteboard()->setSelectionMode(true);
@@ -960,14 +947,9 @@ static bool executePasteGlobalSelection(Frame& frame, Event*, EditorCommandSourc
     return true;
 }
 
-static bool executePasteAndMatchStyle(Frame& frame, Event*, EditorCommandSource source, const String&)
+static bool executePasteAndMatchStyle(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    if (source == CommandFromMenuOrKeyBinding) {
-        UserTypingGestureIndicator typingGestureIndicator(&frame);
-        frame.editor().pasteAsPlainText();
-    } else {
-        frame.editor().pasteAsPlainText();
-    }
+    frame.editor().pasteAsPlainText();
     return true;
 }
 

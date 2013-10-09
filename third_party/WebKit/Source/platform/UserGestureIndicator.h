@@ -26,6 +26,7 @@
 #ifndef UserGestureIndicator_h
 #define UserGestureIndicator_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -41,7 +42,7 @@ enum ProcessingUserGestureState {
     DefinitelyNotProcessingUserGesture
 };
 
-class UserGestureToken : public RefCounted<UserGestureToken> {
+class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
 public:
     virtual ~UserGestureToken() { }
     virtual bool hasGestures() const = 0;
@@ -49,7 +50,7 @@ public:
     virtual void setJavascriptPrompt() = 0;
 };
 
-class UserGestureIndicatorDisabler {
+class PLATFORM_EXPORT UserGestureIndicatorDisabler {
     WTF_MAKE_NONCOPYABLE(UserGestureIndicatorDisabler);
 public:
     UserGestureIndicatorDisabler();
@@ -60,7 +61,7 @@ private:
     UserGestureIndicator* m_savedIndicator;
 };
 
-class UserGestureIndicator {
+class PLATFORM_EXPORT UserGestureIndicator {
     WTF_MAKE_NONCOPYABLE(UserGestureIndicator);
     friend class UserGestureIndicatorDisabler;
 public:

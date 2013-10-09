@@ -28,12 +28,12 @@
 #include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
+#include "platform/UserGestureIndicator.h"
 
 namespace WebCore {
 

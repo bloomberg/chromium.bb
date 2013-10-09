@@ -33,7 +33,6 @@
 
 #include "PopupListBox.h"
 #include "core/dom/Document.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
@@ -49,6 +48,7 @@
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/chromium/FramelessScrollViewClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/geometry/IntRect.h"
 #include <limits>
 

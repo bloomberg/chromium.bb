@@ -35,7 +35,7 @@
 #include <gtest/gtest.h>
 #include "WebScopedUserGesture.h"
 #include "WebUserGestureIndicator.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "platform/UserGestureIndicator.h"
 
 using namespace WebKit;
 using namespace WebCore;

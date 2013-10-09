@@ -35,7 +35,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/events/MouseEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
@@ -46,6 +45,7 @@
 #include "core/page/Chrome.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/RenderView.h"
+#include "platform/UserGestureIndicator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 

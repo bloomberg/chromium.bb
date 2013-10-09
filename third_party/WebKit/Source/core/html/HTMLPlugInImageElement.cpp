@@ -22,7 +22,6 @@
 #include "core/html/HTMLPlugInImageElement.h"
 
 #include "core/dom/PostAttachCallbacks.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
 #include "core/loader/FrameLoader.h"
@@ -38,6 +37,7 @@
 #include "core/plugins/PluginData.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderImage.h"
+#include "platform/UserGestureIndicator.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {

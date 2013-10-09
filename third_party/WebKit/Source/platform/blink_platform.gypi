@@ -63,6 +63,8 @@
       'Timer.cpp',
       'Timer.h',
       'TraceEvent.h',
+      'UserGestureIndicator.cpp',
+      'UserGestureIndicator.h',
       'URLPatternMatcher.cpp',
       'URLPatternMatcher.h',
       'UUID.cpp',

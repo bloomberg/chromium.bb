@@ -34,7 +34,6 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "core/events/Event.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/history/BackForwardController.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -46,6 +45,7 @@
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "platform/UserGestureIndicator.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {

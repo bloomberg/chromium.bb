@@ -37,9 +37,9 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/DOMWindow.h"
+#include "platform/UserGestureIndicator.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 

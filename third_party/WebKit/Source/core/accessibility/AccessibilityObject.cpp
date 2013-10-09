@@ -31,7 +31,6 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/page/Frame.h"
@@ -39,6 +38,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LocalizedStrings.h"
+#include "platform/UserGestureIndicator.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 

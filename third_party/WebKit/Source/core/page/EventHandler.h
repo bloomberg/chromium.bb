@@ -26,7 +26,6 @@
 #ifndef EventHandler_h
 #define EventHandler_h
 
-#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/TextGranularity.h"
 #include "core/events/TextEventInputType.h"
 #include "core/page/DragActions.h"
@@ -35,6 +34,7 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/rendering/HitTestRequest.h"
 #include "platform/Timer.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"

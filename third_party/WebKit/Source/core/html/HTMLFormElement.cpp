@@ -33,7 +33,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NamedNodesCollection.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
@@ -50,6 +49,7 @@
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/rendering/RenderTextControl.h"
+#include "platform/UserGestureIndicator.h"
 
 using namespace std;
 

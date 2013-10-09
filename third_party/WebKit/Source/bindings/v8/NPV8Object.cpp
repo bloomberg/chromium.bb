@@ -38,9 +38,9 @@
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
+#include "platform/UserGestureIndicator.h"
 #include "wtf/OwnArrayPtr.h"
 
 #include <stdio.h>

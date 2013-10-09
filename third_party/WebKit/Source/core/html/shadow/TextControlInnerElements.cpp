@@ -30,7 +30,6 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TextEventInputType.h"
@@ -43,6 +42,7 @@
 #include "core/page/SpeechInputEvent.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
+#include "platform/UserGestureIndicator.h"
 
 namespace WebCore {
 

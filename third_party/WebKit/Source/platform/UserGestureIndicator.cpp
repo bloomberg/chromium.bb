@@ -24,7 +24,8 @@
  */
 
 #include "config.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "platform/UserGestureIndicator.h"
+
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -118,8 +119,9 @@ UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state)
         if (!s_topmostIndicator) {
             s_topmostIndicator = this;
             m_token = GestureToken::create();
-        } else
+        } else {
             m_token = s_topmostIndicator->currentToken();
+        }
         s_state = state;
     }
 

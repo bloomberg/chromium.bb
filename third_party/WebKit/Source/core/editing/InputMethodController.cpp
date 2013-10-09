@@ -32,7 +32,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
-#include "core/dom/UserTypingGestureIndicator.h"
 #include "core/editing/Editor.h"
 #include "core/editing/TypingCommand.h"
 #include "core/html/HTMLTextAreaElement.h"
@@ -183,7 +182,6 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
 void InputMethodController::finishComposition(const String& text, FinishCompositionMode mode)
 {
     ASSERT(mode == ConfirmComposition || mode == CancelComposition);
-    UserTypingGestureIndicator typingGestureIndicator(m_frame);
 
     Editor::RevealSelectionScope revealSelectionScope(&editor());
 
@@ -223,8 +221,6 @@ void InputMethodController::finishComposition(const String& text, FinishComposit
 
 void InputMethodController::setComposition(const String& text, const Vector<CompositionUnderline>& underlines, unsigned selectionStart, unsigned selectionEnd)
 {
-    UserTypingGestureIndicator typingGestureIndicator(m_frame);
-
     Editor::RevealSelectionScope revealSelectionScope(&editor());
 
     // Updates styles before setting selection for composition to prevent

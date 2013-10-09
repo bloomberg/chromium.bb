@@ -32,7 +32,7 @@
 #include "WebUserGestureIndicator.h"
 
 #include "WebUserGestureToken.h"
-#include "core/dom/UserGestureIndicator.h"
+#include "platform/UserGestureIndicator.h"
 
 using namespace WebCore;
 

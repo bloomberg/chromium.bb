@@ -33,9 +33,9 @@
 
 #include "WebTextDirection.h"
 #include "core/events/Event.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/notifications/Notification.h"
+#include "platform/UserGestureIndicator.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "wtf/PassRefPtr.h"
