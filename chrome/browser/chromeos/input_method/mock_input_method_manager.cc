@@ -74,17 +74,6 @@ bool MockInputMethodManager::EnableInputMethod(
   return true;
 }
 
-bool MockInputMethodManager::MigrateOldInputMethods(
-    std::vector<std::string>* input_method_ids) {
-  return false;
-}
-
-bool MockInputMethodManager::MigrateKoreanKeyboard(
-    const std::string& keyboard_id,
-    std::vector<std::string>* input_method_ids) {
-  return false;
-}
-
 void MockInputMethodManager::ChangeInputMethod(
     const std::string& input_method_id) {
 }

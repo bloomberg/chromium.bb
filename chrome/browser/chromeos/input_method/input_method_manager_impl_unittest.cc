@@ -1241,32 +1241,6 @@ TEST_F(InputMethodManagerImplTest,
 }
 
 TEST_F(InputMethodManagerImplTest,
-       MigrateOldInputMethodTest) {
-  std::vector<std::string> input_method_ids;
-  input_method_ids.push_back("mozc");
-  input_method_ids.push_back("mozc-jp");
-  input_method_ids.push_back("xkb:us::eng");
-  input_method_ids.push_back(nacl_mozc_us_id);
-
-  manager_->MigrateOldInputMethods(&input_method_ids);
-
-  ASSERT_EQ(4U, input_method_ids.size());
-  EXPECT_EQ(input_method_ids.end(),
-            std::find(input_method_ids.begin(), input_method_ids.end(),
-                      "mozc"));
-  EXPECT_EQ(input_method_ids.end(),
-            std::find(input_method_ids.begin(), input_method_ids.end(),
-                      "mozc-jp"));
-  EXPECT_NE(input_method_ids.end(),
-            std::find(input_method_ids.begin(), input_method_ids.end(),
-                      "xkb:us::eng"));
-  EXPECT_NE(input_method_ids.end(),
-            std::find(input_method_ids.begin(), input_method_ids.end(),
-                      nacl_mozc_us_id));
-
-}
-
-TEST_F(InputMethodManagerImplTest,
        AsyncComponentExtentionInitializeBeforeIBusDaemonConnection) {
   const std::string xkb_id = "xkb:cz::cze";
   const std::string ime_id = nacl_mozc_us_id;

@@ -591,10 +591,6 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
 
   if (section == std::string(language_prefs::kGeneralSectionName) &&
       name == std::string(language_prefs::kPreloadEnginesConfigName)) {
-    // TODO(nona): Remove this function after few milestones are passed.
-    //             (http://crbug.com/236747)
-    if (input_method_manager_->MigrateOldInputMethods(&split_values))
-      preload_engines_.SetValue(JoinString(split_values, ','));
     input_method_manager_->EnableInputMethods(split_values);
     return;
   }
