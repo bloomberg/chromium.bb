@@ -239,6 +239,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->stopOpacity());
     case CSSPropertyStrokeDashoffset:
         return AnimatableSVGLength::create(style->strokeDashOffset());
+    case CSSPropertyStrokeMiterlimit:
+        return createFromDouble(style->strokeMiterLimit());
     case CSSPropertyStrokeOpacity:
         return createFromDouble(style->strokeOpacity());
     case CSSPropertyStroke:

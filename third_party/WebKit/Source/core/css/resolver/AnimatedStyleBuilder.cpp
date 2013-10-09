@@ -276,6 +276,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyStrokeDashoffset:
         style->setStrokeDashOffset(toAnimatableSVGLength(value)->toSVGLength());
         return;
+    case CSSPropertyStrokeMiterlimit:
+        style->setStrokeMiterLimit(clampTo<float>(toAnimatableDouble(value)->toDouble(), 1));
+        return;
     case CSSPropertyStrokeOpacity:
         style->setStrokeOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
