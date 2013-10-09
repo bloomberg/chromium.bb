@@ -21,7 +21,7 @@
           "css": {
             "type": "array",
             "optional": true,
-            "description": "Matches if all of the CSS selectors in the array match in a frame with the same origin as the page's main frame.  Note that listing hundreds of CSS selectors or CSS selectors that match hundreds of times per page can slow down web sites.",
+            "description": "Matches if all of the CSS selectors in the array match displayed elements in a frame with the same origin as the page's main frame.  All selectors in this array must be <a href=\"http://www.w3.org/TR/selectors4/#compound\">compound selectors</a> to speed up matching.  Note that listing hundreds of CSS selectors or CSS selectors that match hundreds of times per page can still slow down web sites.",
             // TODO(jyasskin): Figure out if we want to require all
             // the selectors to match in the same frame, or allow several
             // frames to contribute to a match.

@@ -20,7 +20,7 @@ user clicks on it, you'll have to keep using the $ref:pageAction API.
 
 <p>As a <a href="events.html#declarative">declarative API</a>, this
 API lets you register rules on the
-<code>$ref:declarativeContent.onPageChanged</code> event object which
+<code>$ref:onPageChanged</code> event object which
 take an action (currently just <code>$ref:ShowPageAction</code>) when
 a set of conditions, represented as a
 <code>$ref:[PageStateMatcher]</code>, are met.
@@ -36,12 +36,12 @@ password field is present on it:
 <pre>
 var rule1 = {
   conditions: [
-    new $ref:[declarativeContent.PageStateMatcher chrome.declarativeContent.PageStateMatcher]({
+    new $ref:[PageStateMatcher chrome.declarativeContent.PageStateMatcher]({
       $ref:[PageStateMatcher.pageUrl pageUrl]: { $ref:[events.UrlFilter.hostEquals hostEquals]: 'www.google.com', $ref:[events.UrlFilter.schemes schemes]: ['https'] },
       $ref:[PageStateMatcher.css css]: ["input[type='password']"]
     })
   ],
-  actions: [ new $ref:[declarativeContent.ShowPageAction chrome.declarativeContent.ShowPageAction]() ]
+  actions: [ new $ref:[ShowPageAction chrome.declarativeContent.ShowPageAction]() ]
 };
 </pre>
 
@@ -58,15 +58,15 @@ specified actions:
 <pre>
 var rule2 = {
   conditions: [
-    new $ref:[declarativeContent.PageStateMatcher chrome.declarativeContent.PageStateMatcher]({
+    new $ref:[PageStateMatcher chrome.declarativeContent.PageStateMatcher]({
       $ref:[PageStateMatcher.pageUrl pageUrl]: { $ref:[events.UrlFilter.hostEquals hostEquals]: 'www.google.com', $ref:[events.UrlFilter.schemes schemes]: ['https'] },
       $ref:[PageStateMatcher.css css]: ["input[type='password']"]
     })<strong>,
-    new chrome.declarativeContent.PageStateMatcher({
+    new $ref:[PageStateMatcher chrome.declarativeContent.PageStateMatcher]({
       $ref:[PageStateMatcher.css css]: ["video"]
     })</strong>
   ],
-  actions: [ new $ref:[declarativeContent.ShowPageAction chrome.declarativeContent.ShowPageAction]() ]
+  actions: [ new $ref:[ShowPageAction chrome.declarativeContent.ShowPageAction]() ]
 };
 </pre>
 
@@ -76,8 +76,8 @@ browser restarts, so register them as follows:
 </p>
 <pre>
 $ref:[runtime.onInstalled chrome.runtime.onInstalled].addListener(function(details) {
-  $ref:[declarativeContent.onPageChanged chrome.declarativeContent.onPageChanged].<a href="events.html#removingrules">removeRules</a>(undefined, function() {
-    $ref:[declarativeContent.onPageChanged chrome.declarativeContent.onPageChanged].<a href="events.html#addingrules">addRules</a>([rule2]);
+  $ref:[onPageChanged chrome.declarativeContent.onPageChanged].<a href="events.html#removingrules">removeRules</a>(undefined, function() {
+    $ref:[onPageChanged chrome.declarativeContent.onPageChanged].<a href="events.html#addingrules">addRules</a>([rule2]);
   });
 });
 </pre>
