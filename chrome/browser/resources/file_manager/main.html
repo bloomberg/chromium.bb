@@ -284,7 +284,7 @@
           <span id="app-name"></span>
         </div>
         <div class="dialog-navigation-list-contents">
-          <list id="navigation-list" tabindex="8"></list>
+          <list id="navigation-list" tabindex="14"></list>
         </div>
         <div class="dialog-navigation-list-footer">
           <!-- This progress center is under development and hidden. -->
@@ -319,14 +319,14 @@
       <div class="dialog-main">
         <div class="dialog-header">
           <div class="search-box-wrapper">
-            <input id="search-box" type="search" tabindex="9"
+            <input id="search-box" type="search" tabindex="-1"
                    i18n-values="aria-label:SEARCH_TEXT_LABEL">
             <!-- This is placed at the head of search-box -->
             <div id="search-icon"></div>
           </div>
           <div id="search-clear-button"></div>
           <div class="topbutton-bar">
-            <button class="menubutton gear-button" id="gear-button" tabindex="10"
+            <button class="menubutton gear-button" id="gear-button" tabindex="3"
                     menu="#gear-menu"
                     i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
                     aria-activedescendant="gear-menu">
@@ -345,7 +345,7 @@
             <div class="dialog-middlebar-contents" hidden>
               <div id="middlebar-header"
                    i18n-content="DRIVE_DIRECTORY_LABEL"></div>
-              <tree id="directory-tree" tabindex="8"></tree>
+              <tree id="directory-tree" tabindex="15"></tree>
             </div>
             <div class="splitter" id="middlebar-splitter" hidden></div>
             <div class="filelist-panel">
@@ -358,7 +358,7 @@
               <div id="list-container">
                 <div class="detail-table" id="detail-table" tabindex="1" autofocus>
                 </div>
-                <grid class="thumbnail-grid" tabindex="1"></grid>
+                <grid class="thumbnail-grid" tabindex="2"></grid>
                 <div id="spinner-container">
                   <div id="spinner-with-text"></div>
                 </div>
@@ -382,11 +382,11 @@
               </div>
             </div>
             <div class="right buttonbar" visibleif="full-page">
-              <button id="share-button" command="#share" tabindex="2"
+              <button id="share-button" command="#share" tabindex="4"
                       i18n-values="aria-label:SHARE_BUTTON_LABEL"></button>
               <button id="tasks" class="combobutton" menu="#tasks-menu"
-                      tabindex="3"></button>
-              <button id="delete-button" command="#delete" tabindex="4"
+                      tabindex="5"></button>
+              <button id="delete-button" command="#delete" tabindex="6"
                       i18n-values="aria-label:DELETE_BUTTON_LABEL"></button>
             </div>
             <div class="preparing-label" i18n-content="PREPARING_LABEL"></div>
@@ -413,11 +413,11 @@
       <div class="left">
         <button id="new-folder-button" i18n-content="NEW_FOLDER_BUTTON_LABEL"
                 visibleif="saveas-file folder" command="#new-folder"
-                tabindex="5">
+                tabindex="9">
         </button>
         <div id="filename-input-box">
           <div class="filename-label" i18n-content="FILENAME_LABEL"></div>
-          <input type="text" spellcheck="false" tabindex="6">
+          <input type="text" spellcheck="false" tabindex="10">
         </div>
         <div class="preparing-label" i18n-content="PREPARING_LABEL"></div>
         <div class="progress-bar">
@@ -426,8 +426,8 @@
       </div>
       <div class="right buttonbar">
         <select class="file-type"></select>
-        <button class="ok" disabled tabindex="7"></button>
-        <button class="cancel" i18n-content="CANCEL_LABEL" tabindex="8"></button>
+        <button class="ok" disabled tabindex="11"></button>
+        <button class="cancel" i18n-content="CANCEL_LABEL" tabindex="12"></button>
       </div>
     </div>
     <div id="drag-container"></div>

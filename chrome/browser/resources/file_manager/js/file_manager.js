@@ -864,6 +864,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'input', this.onSearchBoxUpdate_.bind(this));
     this.searchBox_.addEventListener(
         'keydown', this.onSearchBoxKeyDown_.bind(this));
+    this.searchBox_.addEventListener(
+        'focus', function() {
+           this.searchBox_.tabIndex = '99';  // See: go/filesapp-tabindex.
+        }.bind(this));
+    this.searchBox_.addEventListener(
+        'blur', function() {
+           this.searchBox_.tabIndex = '-1';
+        }.bind(this));
+
     this.searchTextMeasure_ = new TextMeasure(this.searchBox_);
     this.searchIcon_ = this.dialogDom_.querySelector('#search-icon');
     this.searchIcon_.addEventListener(

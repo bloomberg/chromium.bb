@@ -191,6 +191,7 @@ FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
     more.textContent = str('DRIVE_LEARN_MORE');
     more.href = urlConstants.GOOGLE_DRIVE_FAQ_URL;
   }
+  more.tabIndex = '13';  // See: go/filesapp-tabindex.
   more.target = '_blank';
 
   var dismiss;
