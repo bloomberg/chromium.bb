@@ -24,6 +24,7 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   virtual ~ChromeBrowserMainPartsWin();
 
   // BrowserParts overrides.
+  virtual void PreEarlyInitialization() OVERRIDE;
   virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual int PreCreateThreads() OVERRIDE;

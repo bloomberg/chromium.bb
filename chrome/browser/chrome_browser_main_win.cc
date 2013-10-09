@@ -184,6 +184,18 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
 ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
 }
 
+void ChromeBrowserMainPartsWin::PreEarlyInitialization() {
+  // DigitalPersona hooks us. Their hook can trigger sending messages from
+  // places we don't expect. For example, SetWindowTitle() triggering sending a
+  // mouse move. See 291265 for details.
+  HMODULE digital_persona = NULL;
+  if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                        L"DpOFeedb.dll", &digital_persona) &&
+      digital_persona) {
+    FreeModule(digital_persona);
+  }
+}
+
 void ChromeBrowserMainPartsWin::ToolkitInitialized() {
   ChromeBrowserMainParts::ToolkitInitialized();
   gfx::PlatformFontWin::adjust_font_callback = &AdjustUIFont;
