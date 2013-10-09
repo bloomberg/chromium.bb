@@ -290,7 +290,7 @@ select:hover {
   border-image: -webkit-image-set(
     url('chrome://resources/images/apps/button_hover.png') 1x,
     url('chrome://resources/images/2x/apps/button_hover.png')
-        2x) 5 / 5px / 2px repeat;
+        2x) 5 fill / 5px / 2px repeat;
   color: #222;
 }
 
@@ -300,7 +300,7 @@ input[type='submit']:active {
   border-image: -webkit-image-set(
     url('chrome://resources/images/apps/button_pressed.png') 1x,
     url('chrome://resources/images/2x/apps/button_pressed.png')
-        2x) 5 / 5px / 2px repeat;
+        2x) 5 fill / 5px / 2px repeat;
   color: #333;
 }
 
@@ -315,7 +315,7 @@ input[type='submit'][disabled]:hover {
   border-image: -webkit-image-set(
     url('chrome://resources/images/apps/button.png') 1x,
     url('chrome://resources/images/2x/apps/button.png')
-        2x) 5 / 5px / 2px repeat;
+        2x) 5 fill / 5px / 2px repeat;
   color: rgb(150, 150, 150);
 }
 

@@ -1314,15 +1314,21 @@ input.rename {
 }
 
 #delete-button {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/onbutton_trash.png') 1x,
-    url('../images/files/ui/2x/onbutton_trash.png') 2x);
-  background-position: center;
-  background-repeat: no-repeat;
-  display: -webkit-box;
   min-width: 21px;  /* overrride */
   padding: 0;  /* overrride */
   width: 21px;
+}
+
+#delete-button::before {
+  /* Background image should be specified in the before pseudo element because
+   * border image fill is specified to delete-button. */
+  background: -webkit-image-set(
+    url(../images/files/ui/onbutton_trash.png) 1x,
+    url(../images/files/ui/2x/onbutton_trash.png) 2x) no-repeat center;
+  content: '';
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
 #delete-button[disabled] {
