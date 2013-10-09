@@ -1892,6 +1892,17 @@ END
 
     $code .= GenerateCustomElementInvocationScopeIfNeeded($attribute->extendedAttributes);
 
+    my $returnSvgNativeType = GetSVGTypeNeedingTearOff($returnType);
+    if ($returnSvgNativeType) {
+        $code .= <<END;
+    if (!$expression) {
+        throwTypeError(info.GetIsolate());
+        return;
+    }
+END
+        $expression = $expression . "->propertyReference()";
+    }
+
     my $useExceptions = 1 if $attribute->extendedAttributes->{"SetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
 
     if ($useExceptions) {

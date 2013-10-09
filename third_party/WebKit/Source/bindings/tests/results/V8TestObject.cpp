@@ -1798,7 +1798,11 @@ static void mutablePointAttributeSetter(v8::Local<v8::String> name, v8::Local<v8
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, v, V8SVGPoint::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    imp->setMutablePoint(WTF::getPtr(v));
+    if (!WTF::getPtr(v)) {
+        throwTypeError(info.GetIsolate());
+        return;
+    }
+    imp->setMutablePoint(WTF::getPtr(v)->propertyReference());
 }
 
 static void mutablePointAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -1825,7 +1829,11 @@ static void immutablePointAttributeSetter(v8::Local<v8::String> name, v8::Local<
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, v, V8SVGPoint::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    imp->setImmutablePoint(WTF::getPtr(v));
+    if (!WTF::getPtr(v)) {
+        throwTypeError(info.GetIsolate());
+        return;
+    }
+    imp->setImmutablePoint(WTF::getPtr(v)->propertyReference());
 }
 
 static void immutablePointAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
