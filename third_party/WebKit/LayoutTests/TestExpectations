@@ -941,6 +941,15 @@ crbug.com/245566 editing/execCommand/delete-no-scroll.html [ Pass Timeout ]
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 crbug.com/247575 [ Linux MountainLion Win ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure Pass ]
 
+# Temporary - two-sided patch.
+crbug.com/295090 fast/url/file-http-base.html [ Failure Pass ]
+crbug.com/295090 fast/url/file.html [ Failure Pass ]
+crbug.com/295090 fast/url/host.html [ Failure Pass ]
+crbug.com/295090 fast/url/path.html [ Failure Pass ]
+crbug.com/295090 fast/url/segments-from-data-url.html [ Failure Pass ]
+crbug.com/295090 fast/url/segments.html [ Failure Pass ]
+crbug.com/295090 fast/dom/HTMLAnchorElement/set-href-attribute-pathname.html [ Failure Pass ]
+
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 crbug.com/244114 [ Win Release ] svg/css/font-face-variant-crash.html [ Crash Pass ]
