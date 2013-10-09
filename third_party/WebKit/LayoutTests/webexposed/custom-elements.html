@@ -19,6 +19,9 @@ document.body.appendChild(div);
 evalAndLogValue('document.querySelector(":unresolved")');
 div.remove();
 
+var span = document.createElement('span', 'type-extension');
+evalAndLogValue('span.getAttribute("is")');
+
 successfullyParsed = true;
 </script>
 <script src="../fast/js/resources/js-test-post.js"></script>

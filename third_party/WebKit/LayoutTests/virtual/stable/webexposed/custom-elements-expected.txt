@@ -16,6 +16,9 @@ document.querySelector(":unresolved")
 FAIL document.querySelector(":unresolved") threw exception SyntaxError: Failed to execute query: ':unresolved' is not a valid selector.
 undefined
 
+span.getAttribute("is")
+null
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
