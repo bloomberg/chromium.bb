@@ -32,6 +32,7 @@
 #include "wtf/PageAllocator.h"
 
 #include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/SpinLock.h"
 
 #if OS(POSIX)
 
@@ -168,6 +169,8 @@ char* getRandomSuperPageBase()
 #if CPU(32BIT)
 unsigned char SuperPageBitmap::s_bitmap[1 << (32 - kSuperPageShift - 3)];
 
+static int bitmapLock = 0;
+
 void SuperPageBitmap::registerSuperPage(void* ptr)
 {
     ASSERT(!isPointerInSuperPage(ptr));
@@ -176,7 +179,10 @@ void SuperPageBitmap::registerSuperPage(void* ptr)
     size_t byteIndex = raw >> 3;
     size_t bit = raw & 7;
     ASSERT(byteIndex < sizeof(s_bitmap));
+    // The read/modify/write is not guaranteed atomic, so take a lock.
+    spinLockLock(&bitmapLock);
     s_bitmap[byteIndex] |= (1 << bit);
+    spinLockUnlock(&bitmapLock);
 }
 
 void SuperPageBitmap::unregisterSuperPage(void* ptr)
@@ -187,7 +193,10 @@ void SuperPageBitmap::unregisterSuperPage(void* ptr)
     size_t byteIndex = raw >> 3;
     size_t bit = raw & 7;
     ASSERT(byteIndex < sizeof(s_bitmap));
+    // The read/modify/write is not guaranteed atomic, so take a lock.
+    spinLockLock(&bitmapLock);
     s_bitmap[byteIndex] &= ~(1 << bit);
+    spinLockUnlock(&bitmapLock);
 }
 #endif
 
