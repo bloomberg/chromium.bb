@@ -160,10 +160,8 @@ int ShellBrowserMain(
     size_t command_line_position = 0;
     bool ran_at_least_once = false;
 
-#if defined(OS_ANDROID)
     std::cout << "#READY\n";
     std::cout.flush();
-#endif
 
     while (GetNextTest(args, &command_line_position, &test_string)) {
       if (test_string.empty())
