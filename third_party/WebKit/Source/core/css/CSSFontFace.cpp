@@ -189,4 +189,25 @@ bool CSSFontFace::hasSVGFontFaceSource() const
 }
 #endif
 
+bool CSSFontFace::UnicodeRangeSet::intersectsWith(const String& text) const
+{
+    if (text.isEmpty())
+        return false;
+    if (m_ranges.isEmpty())
+        return true; // Empty UnicodeRangeSet represents the whole code space.
+
+    // FIXME: This takes O(text.length() * m_ranges.size()) time. It would be
+    // better to make m_ranges sorted and use binary search.
+    unsigned index = 0;
+    while (index < text.length()) {
+        UChar32 c = text.characterStartingAt(index);
+        index += U16_LENGTH(c);
+        for (unsigned i = 0; i < m_ranges.size(); i++) {
+            if (m_ranges[i].contains(c))
+                return true;
+        }
+    }
+    return false;
+}
+
 }

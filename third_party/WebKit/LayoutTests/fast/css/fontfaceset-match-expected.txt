@@ -1,0 +1,23 @@
+Tests match() method of FontFaceSet.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS faces.length is 2
+PASS faces[0].unicodeRange is "U+0-10FFFF"
+PASS faces[1].unicodeRange is "U+20"
+PASS faces.length is 0
+PASS faces.length is 3
+PASS faces[0].unicodeRange is "U+0-10FFFF"
+PASS faces[1].unicodeRange is "U+20"
+PASS faces[2].unicodeRange is "U+61-7A"
+PASS faces.length is 2
+PASS faces[0].unicodeRange is "U+0-10FFFF"
+PASS faces[1].unicodeRange is "U+3040-309F, U+30A0-30FF"
+PASS faces.length is 2
+PASS faces[0].unicodeRange is "U+0-10FFFF"
+PASS faces[1].unicodeRange is "U+1F600-1F64F"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

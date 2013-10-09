@@ -23,7 +23,7 @@ function runTests() {
     document.fonts.addEventListener('loadingdone', onLoadingDone);
     document.fonts.ready().then(finish);
 
-    document.fonts.load('10px TestFont1, TestFont2');
+    document.fonts.load('10px TestFont1, TestFont2', 'abc');
 }
 
 var event;

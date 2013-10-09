@@ -336,9 +336,14 @@ void FontFaceSet::fireDoneEventIfPossible()
     }
 }
 
-Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const String&, ExceptionState& es)
+static const String& nullToSpace(const String& s)
 {
-    // FIXME: The second parameter (text) is ignored.
+    DEFINE_STATIC_LOCAL(String, space, (" "));
+    return s.isNull() ? space : s;
+}
+
+Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const String& text, ExceptionState& es)
+{
     Vector<RefPtr<FontFace> > matchedFonts;
 
     Font font;
@@ -350,14 +355,13 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = document()->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (face)
-            matchedFonts.append(face->fontFaces());
+            matchedFonts.append(face->fontFaces(nullToSpace(text)));
     }
     return matchedFonts;
 }
 
-ScriptPromise FontFaceSet::load(const String& fontString, const String&, ExceptionState& es)
+ScriptPromise FontFaceSet::load(const String& fontString, const String& text, ExceptionState& es)
 {
-    // FIXME: The second parameter (text) is ignored.
     Font font;
     if (!resolveFontStyle(fontString, font)) {
         es.throwUninformativeAndGenericDOMException(SyntaxError);
@@ -372,14 +376,13 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String&, Excepti
             resolver->error(d);
             continue;
         }
-        face->loadFont(font.fontDescription(), resolver);
+        face->loadFont(font.fontDescription(), nullToSpace(text), resolver);
     }
     return resolver->promise();
 }
 
-bool FontFaceSet::check(const String& fontString, const String&, ExceptionState& es)
+bool FontFaceSet::check(const String& fontString, const String& text, ExceptionState& es)
 {
-    // FIXME: The second parameter (text) is ignored.
     Font font;
     if (!resolveFontStyle(fontString, font)) {
         es.throwUninformativeAndGenericDOMException(SyntaxError);
@@ -388,7 +391,7 @@ bool FontFaceSet::check(const String& fontString, const String&, ExceptionState&
 
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = document()->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
-        if (!face || !face->checkFont())
+        if (!face || !face->checkFont(nullToSpace(text)))
             return false;
     }
     return true;

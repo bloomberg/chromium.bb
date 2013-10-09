@@ -24,7 +24,7 @@ function runTests() {
     document.fonts.addEventListener('loadingerror', onLoadingError);
     document.fonts.ready().then(finish);
 
-    document.fonts.load('10px TestFont');
+    document.fonts.load('10px TestFont', 'abc');
 }
 
 var event;
@@ -49,7 +49,7 @@ function onLoadingError(e) {
     shouldBe("event.fontfaces.length", "1");
     shouldBeEqualToString("event.fontfaces[0].unicodeRange", "U+61-7A");
     shouldBeEqualToString("event.fontfaces[0].status", "error");
-    shouldBeFalse("document.fonts.check('10px TestFont')");
+    shouldBeFalse("document.fonts.check('10px TestFont', 'abc')");
 }
 
 function finish() {

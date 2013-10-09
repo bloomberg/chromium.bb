@@ -1,0 +1,74 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+<style>
+@font-face {
+    font-family: TestFont;
+    src: url(../../resources/Ahem.ttf);
+    /* no unicode-range descriptor */
+}
+
+@font-face {
+    font-family: TestFont;
+    src: url(../../resources/Ahem.ttf);
+    unicode-range: U+20; /* space character */
+}
+
+@font-face {
+    font-family: TestFont;
+    src: url(../../resources/Ahem.ttf);
+    unicode-range: U+61-7A; /* 'a'-'z' */
+}
+
+@font-face {
+    font-family: TestFont;
+    src: url(../../resources/Ahem.ttf);
+    unicode-range: U+3040-309F, U+30A0-30FF; /* Hiragana and Katakana */
+}
+
+@font-face {
+    font-family: TestFont;
+    src: url(../../resources/Ahem.ttf);
+    unicode-range: U+1F600-1F64F; /* Emoticons */
+}
+</style>
+<script>
+description('Tests match() method of FontFaceSet.');
+
+function runTests() {
+    faces = document.fonts.match('10px TestFont');
+    shouldBe('faces.length', '2');
+    shouldBeEqualToString('faces[0].unicodeRange', 'U+0-10FFFF');
+    shouldBeEqualToString('faces[1].unicodeRange', 'U+20');
+
+    faces = document.fonts.match('10px TestFont', '');
+    shouldBe('faces.length', '0');
+
+    faces = document.fonts.match('10px TestFont', 'abc def');
+    shouldBe('faces.length', '3');
+    shouldBeEqualToString('faces[0].unicodeRange', 'U+0-10FFFF');
+    shouldBeEqualToString('faces[1].unicodeRange', 'U+20');
+    shouldBeEqualToString('faces[2].unicodeRange', 'U+61-7A');
+
+    faces = document.fonts.match('10px TestFont', '\u30A1');
+    shouldBe('faces.length', '2');
+    shouldBeEqualToString('faces[0].unicodeRange', 'U+0-10FFFF');
+    shouldBeEqualToString('faces[1].unicodeRange', 'U+3040-309F, U+30A0-30FF');
+
+    faces = document.fonts.match('10px TestFont', '\uD83D\uDE04'); // Surrogate pair for U+1F604
+    shouldBe('faces.length', '2');
+    shouldBeEqualToString('faces[0].unicodeRange', 'U+0-10FFFF');
+    shouldBeEqualToString('faces[1].unicodeRange', 'U+1F600-1F64F');
+}
+
+if (document.fonts)
+    runTests();
+else
+    testFailed('document.fonts does not exist');
+
+</script>
+</head>
+<body>
+  <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

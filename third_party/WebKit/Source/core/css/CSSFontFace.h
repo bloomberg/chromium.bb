@@ -45,12 +45,11 @@ class CSSFontFace : public RefCounted<CSSFontFace> {
 public:
     static PassRefPtr<CSSFontFace> create(PassRefPtr<FontFace> fontFace) { return adoptRef(new CSSFontFace(fontFace)); }
 
-    struct UnicodeRange;
+    class UnicodeRangeSet;
 
     FontFace* fontFace() const { return m_fontFace.get(); }
 
-    void addRange(UChar32 from, UChar32 to) { m_ranges.append(UnicodeRange(from, to)); }
-    const Vector<UnicodeRange>& ranges() const { return m_ranges; }
+    UnicodeRangeSet& ranges() { return m_ranges; }
 
     void setSegmentedFontFace(CSSSegmentedFontFace*);
     void clearSegmentedFontFace() { m_segmentedFontFace = 0; }
@@ -74,10 +73,21 @@ public:
 
         UChar32 from() const { return m_from; }
         UChar32 to() const { return m_to; }
+        bool contains(UChar32 c) const { return m_from <= c && c <= m_to; }
 
     private:
         UChar32 m_from;
         UChar32 m_to;
+    };
+
+    class UnicodeRangeSet {
+    public:
+        void add(UChar32 from, UChar32 to) { m_ranges.append(UnicodeRange(from, to)); }
+        bool intersectsWith(const String&) const;
+        size_t size() const { return m_ranges.size(); }
+        const UnicodeRange& rangeAt(size_t i) const { return m_ranges[i]; }
+    private:
+        Vector<UnicodeRange> m_ranges;
     };
 
 #if ENABLE(SVG_FONTS)
@@ -96,7 +106,7 @@ private:
     }
     void setLoadStatus(FontFace::LoadStatus);
 
-    Vector<UnicodeRange> m_ranges;
+    UnicodeRangeSet m_ranges;
     CSSSegmentedFontFace* m_segmentedFontFace;
     Vector<OwnPtr<CSSFontFaceSource> > m_sources;
     CSSFontFaceSource* m_activeSource;

@@ -78,7 +78,7 @@ void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
         Vector<RefPtr<LoadFontCallback> > callbacks;
         m_callbacks.swap(callbacks);
         for (size_t index = 0; index < callbacks.size(); ++index) {
-            if (checkFont())
+            if (isLoaded())
                 callbacks[index]->notifyLoaded(this);
             else
                 callbacks[index]->notifyError(this);
@@ -93,7 +93,7 @@ void CSSSegmentedFontFace::appendFontFace(PassRefPtr<CSSFontFace> fontFace)
     m_fontFaces.append(fontFace);
 }
 
-static void appendFontData(SegmentedFontData* newFontData, PassRefPtr<SimpleFontData> prpFaceFontData, const Vector<CSSFontFace::UnicodeRange>& ranges)
+static void appendFontData(SegmentedFontData* newFontData, PassRefPtr<SimpleFontData> prpFaceFontData, const CSSFontFace::UnicodeRangeSet& ranges)
 {
     RefPtr<SimpleFontData> faceFontData = prpFaceFontData;
     unsigned numRanges = ranges.size();
@@ -103,7 +103,7 @@ static void appendFontData(SegmentedFontData* newFontData, PassRefPtr<SimpleFont
     }
 
     for (unsigned j = 0; j < numRanges; ++j)
-        newFontData->appendRange(FontDataRange(ranges[j].from(), ranges[j].to(), faceFontData));
+        newFontData->appendRange(FontDataRange(ranges.rangeAt(j).from(), ranges.rangeAt(j).to(), faceFontData));
 }
 
 PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fontDescription)
@@ -167,14 +167,7 @@ bool CSSSegmentedFontFace::isLoading() const
     return false;
 }
 
-void CSSSegmentedFontFace::willUseFontData(const FontDescription& fontDescription)
-{
-    unsigned size = m_fontFaces.size();
-    for (unsigned i = 0; i < size; i++)
-        m_fontFaces[i]->willUseFontData(fontDescription);
-}
-
-bool CSSSegmentedFontFace::checkFont() const
+bool CSSSegmentedFontFace::isLoaded() const
 {
     unsigned size = m_fontFaces.size();
     for (unsigned i = 0; i < size; i++) {
@@ -184,30 +177,50 @@ bool CSSSegmentedFontFace::checkFont() const
     return true;
 }
 
-void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, PassRefPtr<LoadFontCallback> callback)
+void CSSSegmentedFontFace::willUseFontData(const FontDescription& fontDescription)
 {
-    RefPtr<SegmentedFontData> fontData = toSegmentedFontData(getFontData(fontDescription).get());
-    unsigned numRanges = fontData->numRanges();
-    for (unsigned i = 0; i < numRanges; i++)
-        fontData->rangeAt(i).fontData()->beginLoadIfNeeded();
+    unsigned size = m_fontFaces.size();
+    for (unsigned i = 0; i < size; i++)
+        m_fontFaces[i]->willUseFontData(fontDescription);
+}
+
+bool CSSSegmentedFontFace::checkFont(const String& text) const
+{
+    unsigned size = m_fontFaces.size();
+    for (unsigned i = 0; i < size; i++) {
+        if (m_fontFaces[i]->loadStatus() != FontFace::Loaded && m_fontFaces[i]->ranges().intersectsWith(text))
+            return false;
+    }
+    return true;
+}
+
+void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, const String& text, PassRefPtr<LoadFontCallback> callback)
+{
+    unsigned size = m_fontFaces.size();
+    for (unsigned i = 0; i < size; i++) {
+        if (m_fontFaces[i]->loadStatus() == FontFace::Unloaded && m_fontFaces[i]->ranges().intersectsWith(text)) {
+            RefPtr<SimpleFontData> fontData = m_fontFaces[i]->getFontData(fontDescription, false, false);
+            fontData->beginLoadIfNeeded();
+        }
+    }
 
     if (callback) {
         if (isLoading())
             m_callbacks.append(callback);
-        else if (checkFont())
+        else if (isLoaded())
             callback->notifyLoaded(this);
         else
             callback->notifyError(this);
     }
 }
 
-Vector<RefPtr<FontFace> > CSSSegmentedFontFace::fontFaces() const
+Vector<RefPtr<FontFace> > CSSSegmentedFontFace::fontFaces(const String& text) const
 {
     Vector<RefPtr<FontFace> > fontFaces;
     unsigned size = m_fontFaces.size();
     for (unsigned i = 0; i < size; i++) {
         RefPtr<FontFace> face = m_fontFaces[i]->fontFace();
-        if (face)
+        if (face && m_fontFaces[i]->ranges().intersectsWith(text))
             fontFaces.append(face);
     }
     return fontFaces;
