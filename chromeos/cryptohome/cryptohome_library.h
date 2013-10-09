@@ -36,17 +36,14 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   // Returns system hash in hex encoded ascii format. Note: this may return
   // an empty string (e.g. if cryptohome is not running). It is up to the
   // calling function to try again after a delay if desired.
+  //
+  // TODO(hashimoto): Make it asynchronous. crbug.com/141009.
   virtual std::string GetSystemSalt() = 0;
 
-  // Encrypts |token| with the system salt key (stable for the lifetime
-  // of the device).  Useful to avoid storing plain text in place like
-  // Local State.
-  virtual std::string EncryptWithSystemSalt(const std::string& token) = 0;
-
-  // Decrypts |token| with the system salt key (stable for the lifetime
-  // of the device).
-  virtual std::string DecryptWithSystemSalt(
-      const std::string& encrypted_token_hex) = 0;
+  // Returns system hash in hex encoded ascii format, cached by a prior call
+  // to GetSystemSalt(). Note: this may return an empty string (e.g. if
+  // GetSystemSalt() is not yet called).
+  virtual std::string GetCachedSystemSalt() = 0;
 
  protected:
   CryptohomeLibrary();

@@ -12,10 +12,10 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -207,11 +207,13 @@ void DeviceOAuth2TokenService::ValidatingConsumer::InformConsumer() {
 
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     net::URLRequestContextGetter* getter,
-    PrefService* local_state)
+    PrefService* local_state,
+    TokenEncryptor* token_encryptor)
     : refresh_token_is_valid_(false),
       max_refresh_token_validation_retries_(3),
       url_request_context_getter_(getter),
-      local_state_(local_state) {
+      local_state_(local_state),
+      token_encryptor_(token_encryptor) {
 }
 
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
@@ -233,7 +235,7 @@ void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
     const std::string& refresh_token) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::string encrypted_refresh_token =
-      CryptohomeLibrary::Get()->EncryptWithSystemSalt(refresh_token);
+      token_encryptor_->EncryptWithSystemSalt(refresh_token);
 
   local_state_->SetString(prefs::kDeviceRobotAnyApiRefreshToken,
                           encrypted_refresh_token);
@@ -246,7 +248,7 @@ std::string DeviceOAuth2TokenService::GetRefreshToken(
     std::string encrypted_refresh_token =
         local_state_->GetString(prefs::kDeviceRobotAnyApiRefreshToken);
 
-    refresh_token_ = CryptohomeLibrary::Get()->DecryptWithSystemSalt(
+    refresh_token_ = token_encryptor_->DecryptWithSystemSalt(
         encrypted_refresh_token);
   }
   return refresh_token_;

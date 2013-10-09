@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
+#include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -27,7 +28,8 @@ void DeviceOAuth2TokenServiceFactory::Initialize() {
   DCHECK(!g_device_oauth2_token_service_);
   g_device_oauth2_token_service_ = new DeviceOAuth2TokenService(
       g_browser_process->system_request_context(),
-      g_browser_process->local_state());
+      g_browser_process->local_state(),
+      new CryptohomeTokenEncryptor);
 }
 
 // static

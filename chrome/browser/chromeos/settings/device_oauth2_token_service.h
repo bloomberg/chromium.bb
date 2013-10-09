@@ -28,6 +28,8 @@ class Profile;
 
 namespace chromeos {
 
+class TokenEncryptor;
+
 // DeviceOAuth2TokenService retrieves OAuth2 access tokens for a given
 // set of scopes using the device-level OAuth2 any-api refresh token
 // obtained during enterprise device enrollment.
@@ -67,8 +69,10 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
   friend class TestDeviceOAuth2TokenService;
 
   // Use DeviceOAuth2TokenServiceFactory to get an instance of this class.
+  // Ownership of |token_encryptor| will be taken.
   explicit DeviceOAuth2TokenService(net::URLRequestContextGetter* getter,
-                                    PrefService* local_state);
+                                    PrefService* local_state,
+                                    TokenEncryptor* token_encryptor);
   virtual ~DeviceOAuth2TokenService();
 
   void OnValidationComplete(bool token_is_valid);
@@ -81,6 +85,10 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
   // Cache the decrypted refresh token, so we only decrypt once.
   std::string refresh_token_;
   PrefService* local_state_;
+
+  // Used to encrypt/decrypt the refresh token.
+  scoped_ptr<TokenEncryptor> token_encryptor_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenService);
 };
 

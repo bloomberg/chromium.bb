@@ -357,8 +357,6 @@
         'chromeos_test_utils.h',
         'cryptohome/mock_async_method_caller.cc',
         'cryptohome/mock_async_method_caller.h',
-        'cryptohome/mock_cryptohome_library.cc',
-        'cryptohome/mock_cryptohome_library.h',
         'dbus/mock_cryptohome_client.cc',
         'dbus/mock_cryptohome_client.h',
         'dbus/mock_dbus_thread_manager.cc',

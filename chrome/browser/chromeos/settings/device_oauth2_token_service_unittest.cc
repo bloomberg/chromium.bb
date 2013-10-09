@@ -7,10 +7,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -25,6 +25,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Return;
+using ::testing::ReturnArg;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
@@ -36,8 +37,11 @@ static const int kValidatorUrlFetcherId = gaia::GaiaOAuthClient::kUrlFetcherId;
 class TestDeviceOAuth2TokenService : public DeviceOAuth2TokenService {
  public:
   explicit TestDeviceOAuth2TokenService(net::URLRequestContextGetter* getter,
-                                        PrefService* local_state)
-      : DeviceOAuth2TokenService(getter, local_state) {
+                                        PrefService* local_state,
+                                        TokenEncryptor* token_encryptor)
+      : DeviceOAuth2TokenService(getter,
+                                 local_state,
+                                 token_encryptor) {
   }
   void SetRobotAccountIdPolicyValue(const std::string& id) {
     robot_account_id_ = id;
@@ -53,6 +57,12 @@ class TestDeviceOAuth2TokenService : public DeviceOAuth2TokenService {
   DISALLOW_COPY_AND_ASSIGN(TestDeviceOAuth2TokenService);
 };
 
+class MockTokenEncryptor : public TokenEncryptor {
+ public:
+  MOCK_METHOD1(EncryptWithSystemSalt, std::string(const std::string&));
+  MOCK_METHOD1(DecryptWithSystemSalt, std::string(const std::string&));
+};
+
 class DeviceOAuth2TokenServiceTest : public testing::Test {
  public:
   DeviceOAuth2TokenServiceTest()
@@ -60,8 +70,10 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         request_context_getter_(new net::TestURLRequestContextGetter(
             message_loop_.message_loop_proxy())),
+        mock_token_encryptor_(new StrictMock<MockTokenEncryptor>),
         oauth2_service_(request_context_getter_.get(),
-                        scoped_testing_local_state_.Get()) {
+                        scoped_testing_local_state_.Get(),
+                        mock_token_encryptor_) {
     oauth2_service_.max_refresh_token_validation_retries_ = 0;
     oauth2_service_.set_max_authorization_token_fetch_retries_for_testing(0);
   }
@@ -70,11 +82,13 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   // Most tests just want a noop crypto impl with a dummy refresh token value in
   // Local State (if the value is an empty string, it will be ignored).
   void SetUpDefaultValues() {
-    cryptohome_library_.reset(chromeos::CryptohomeLibrary::GetTestImpl());
-    chromeos::CryptohomeLibrary::SetForTest(cryptohome_library_.get());
     SetDeviceRefreshTokenInLocalState("device_refresh_token_4_test");
     oauth2_service_.SetRobotAccountIdPolicyValue("service_acct@g.com");
     AssertConsumerTokensAndErrors(0, 0);
+
+    // Returns the input token as-is.
+    EXPECT_CALL(*mock_token_encryptor_, DecryptWithSystemSalt(_))
+        .WillRepeatedly(ReturnArg<0>());
   }
 
   scoped_ptr<OAuth2TokenService::Request> StartTokenRequest() {
@@ -84,7 +98,6 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    CryptohomeLibrary::SetForTest(NULL);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -122,10 +135,10 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   ScopedTestingLocalState scoped_testing_local_state_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   net::TestURLFetcherFactory factory_;
+  // Owned by oauth2_service_.
+  StrictMock<MockTokenEncryptor>* mock_token_encryptor_;
   TestDeviceOAuth2TokenService oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;
-  scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_library_;
-
 };
 
 void DeviceOAuth2TokenServiceTest::ReturnOAuthUrlFetchResults(
@@ -148,17 +161,14 @@ void DeviceOAuth2TokenServiceTest::AssertConsumerTokensAndErrors(
 }
 
 TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedToken) {
-  StrictMock<MockCryptohomeLibrary> mock_cryptohome_library;
-  CryptohomeLibrary::SetForTest(&mock_cryptohome_library);
-
-  EXPECT_CALL(mock_cryptohome_library, DecryptWithSystemSalt(StrEq("")))
+  EXPECT_CALL(*mock_token_encryptor_, DecryptWithSystemSalt(StrEq("")))
       .Times(1)
       .WillOnce(Return(""));
-  EXPECT_CALL(mock_cryptohome_library,
+  EXPECT_CALL(*mock_token_encryptor_,
               EncryptWithSystemSalt(StrEq("test-token")))
       .Times(1)
       .WillOnce(Return("encrypted"));
-  EXPECT_CALL(mock_cryptohome_library,
+  EXPECT_CALL(*mock_token_encryptor_,
               DecryptWithSystemSalt(StrEq("encrypted")))
       .Times(1)
       .WillOnce(Return("test-token"));

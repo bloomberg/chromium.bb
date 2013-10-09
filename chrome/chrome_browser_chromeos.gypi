@@ -786,6 +786,8 @@
         'browser/chromeos/settings/stub_cros_settings_provider.h',
         'browser/chromeos/settings/system_settings_provider.cc',
         'browser/chromeos/settings/system_settings_provider.h',
+        'browser/chromeos/settings/token_encryptor.cc',
+        'browser/chromeos/settings/token_encryptor.h',
         'browser/chromeos/sim_dialog_delegate.cc',
         'browser/chromeos/sim_dialog_delegate.h',
         'browser/chromeos/status/data_promo_notification.cc',
