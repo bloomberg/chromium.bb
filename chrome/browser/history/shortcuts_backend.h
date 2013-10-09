@@ -82,7 +82,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
     int number_of_hits;           // How many times shortcut was selected.
   };
 
-  typedef std::multimap<string16, ShortcutsBackend::Shortcut> ShortcutMap;
+  typedef std::multimap<string16, const ShortcutsBackend::Shortcut> ShortcutMap;
 
   // |profile| is necessary for profile notifications only and can be NULL in
   // unit-tests. For unit testing, set |suppress_db| to true to prevent creation

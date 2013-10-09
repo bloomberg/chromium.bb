@@ -21,6 +21,7 @@
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -43,6 +44,24 @@ ACMatchClassifications StripMatchMarkers(
   return unmatched;
 }
 
+// Normally shortcuts have the same match type as the original match they were
+// created from, but for certain match types, we should modify the shortcut's
+// type slightly to reflect that the origin of the shortcut is historical.
+AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
+  switch (type) {
+    case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
+    case AutocompleteMatchType::NAVSUGGEST:
+      return AutocompleteMatchType::HISTORY_URL;
+
+    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
+    case AutocompleteMatchType::SEARCH_SUGGEST:
+      return AutocompleteMatchType::SEARCH_HISTORY;
+
+    default:
+      return type;
+  }
+}
+
 }  // namespace
 
 namespace history {
@@ -58,7 +77,7 @@ ShortcutsBackend::Shortcut::MatchCore::MatchCore(
       description(match.description),
       description_class(StripMatchMarkers(match.description_class)),
       transition(match.transition),
-      type(match.type),
+      type(GetTypeForShortcut(match.type)),
       keyword(match.keyword) {
 }
 
@@ -79,7 +98,7 @@ ShortcutsBackend::Shortcut::MatchCore::MatchCore(
       description(description),
       description_class(StripMatchMarkers(description_class)),
       transition(transition),
-      type(type),
+      type(GetTypeForShortcut(type)),
       keyword(keyword) {
 }
 
@@ -131,8 +150,10 @@ ShortcutsBackend::Shortcut::~Shortcut() {
 ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
     : current_state_(NOT_INITIALIZED),
       no_db_access_(suppress_db) {
-  if (!suppress_db)
-    db_ = new ShortcutsDatabase(profile);
+  if (!suppress_db) {
+    db_ = new ShortcutsDatabase(
+        profile->GetPath().Append(chrome::kShortcutsDatabaseName));
+  }
   // |profile| can be NULL in tests.
   if (profile) {
     notification_registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -260,7 +281,8 @@ void ShortcutsBackend::Observe(int type,
         content::Details<const history::URLsDeletedDetails>(details)->rows);
     std::vector<std::string> shortcut_ids;
 
-    for (GuidMap::iterator it(guid_map_.begin()); it != guid_map_.end(); ++it) {
+    for (GuidMap::const_iterator it(guid_map_.begin()); it != guid_map_.end();
+         ++it) {
       if (std::find_if(
           rows.begin(), rows.end(), URLRow::URLRowHasURL(
               it->second->second.match_core.destination_url)) != rows.end())
@@ -276,7 +298,8 @@ void ShortcutsBackend::Observe(int type,
   string16 text_lowercase(base::i18n::ToLower(log->text));
 
   const AutocompleteMatch& match(log->result.match_at(log->selected_index));
-  for (ShortcutMap::iterator it = shortcuts_map_.lower_bound(text_lowercase);
+  for (ShortcutMap::const_iterator it(
+       shortcuts_map_.lower_bound(text_lowercase));
        it != shortcuts_map_.end() &&
            StartsWith(it->first, text_lowercase, true); ++it) {
     if (match.destination_url == it->second.match_core.destination_url) {
@@ -297,8 +320,8 @@ void ShortcutsBackend::InitInternal() {
   db_->LoadShortcuts(&shortcuts);
   temp_shortcuts_map_.reset(new ShortcutMap);
   temp_guid_map_.reset(new GuidMap);
-  for (ShortcutsDatabase::GuidToShortcutMap::iterator it = shortcuts.begin();
-       it != shortcuts.end(); ++it) {
+  for (ShortcutsDatabase::GuidToShortcutMap::const_iterator it(
+       shortcuts.begin()); it != shortcuts.end(); ++it) {
     (*temp_guid_map_)[it->first] = temp_shortcuts_map_->insert(
         std::make_pair(base::i18n::ToLower(it->second.text), it->second));
   }

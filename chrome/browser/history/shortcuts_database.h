@@ -17,8 +17,6 @@
 #include "sql/connection.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace history {
 
 // This class manages the shortcut provider table within the SQLite database
@@ -43,7 +41,7 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
  public:
   typedef std::map<std::string, ShortcutsBackend::Shortcut> GuidToShortcutMap;
 
-  explicit ShortcutsDatabase(Profile* profile);
+  explicit ShortcutsDatabase(const base::FilePath& database_path);
 
   bool Init();
 
@@ -63,7 +61,7 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
   bool DeleteAllShortcuts();
 
   // Loads all of the shortcuts.
-  bool LoadShortcuts(GuidToShortcutMap* shortcuts);
+  void LoadShortcuts(GuidToShortcutMap* shortcuts);
 
  private:
   friend class base::RefCountedThreadSafe<ShortcutsDatabase>;

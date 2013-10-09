@@ -23,6 +23,13 @@ namespace history {
 
 namespace {
 
+AutocompleteMatch::Type ConvertedMatchType(AutocompleteMatch::Type type) {
+  return ShortcutsBackend::Shortcut(
+      std::string(), string16(), ShortcutsBackend::Shortcut::MatchCore(
+          AutocompleteMatch(NULL, 0, 0, type)),
+      base::Time::Now(), 0).match_core.type;
+}
+
 ShortcutsBackend::Shortcut::MatchCore MatchCoreForTesting(
     const std::string& url) {
   AutocompleteMatch match;
@@ -99,6 +106,29 @@ void ShortcutsBackendTest::InitBackend() {
 
 
 // Actual tests ---------------------------------------------------------------
+
+// Verifies that particular original match types are automatically modified when
+// creating shortcuts.
+TEST_F(ShortcutsBackendTest, ChangeMatchTypeOnShortcutCreation) {
+  struct {
+    AutocompleteMatch::Type input_type;
+    AutocompleteMatch::Type output_type;
+  } type_cases[] = {
+    { AutocompleteMatchType::URL_WHAT_YOU_TYPED,
+      AutocompleteMatchType::HISTORY_URL },
+    { AutocompleteMatchType::NAVSUGGEST,
+      AutocompleteMatchType::HISTORY_URL },
+    { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+      AutocompleteMatchType::SEARCH_HISTORY },
+    { AutocompleteMatchType::SEARCH_SUGGEST,
+      AutocompleteMatchType::SEARCH_HISTORY },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(type_cases); ++i) {
+    EXPECT_EQ(type_cases[i].output_type,
+              ConvertedMatchType(type_cases[i].input_type));
+  }
+}
 
 TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
   InitBackend();
