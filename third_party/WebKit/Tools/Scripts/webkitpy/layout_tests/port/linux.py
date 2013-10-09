@@ -30,7 +30,7 @@ import logging
 import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.layout_tests.port import chromium
+from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.port import win
 from webkitpy.layout_tests.port import config
 
@@ -38,7 +38,7 @@ from webkitpy.layout_tests.port import config
 _log = logging.getLogger(__name__)
 
 
-class LinuxPort(chromium.ChromiumPort):
+class LinuxPort(base.Port):
     port_name = 'linux'
 
     SUPPORTED_VERSIONS = ('x86', 'x86_64')
@@ -52,8 +52,9 @@ class LinuxPort(chromium.ChromiumPort):
     def _determine_driver_path_statically(cls, host, options):
         config_object = config.Config(host.executive, host.filesystem)
         build_directory = getattr(options, 'build_directory', None)
-        webkit_base = WebKitFinder(host.filesystem).webkit_base()
-        chromium_base = cls._chromium_base_dir(host.filesystem)
+        finder = WebKitFinder(host.filesystem)
+        webkit_base = finder.webkit_base()
+        chromium_base = finder.chromium_base()
         driver_name = getattr(options, 'driver_name', None)
         if driver_name is None:
             driver_name = cls.CONTENT_SHELL_NAME
@@ -90,7 +91,7 @@ class LinuxPort(chromium.ChromiumPort):
         return port_name
 
     def __init__(self, host, port_name, **kwargs):
-        chromium.ChromiumPort.__init__(self, host, port_name, **kwargs)
+        super(LinuxPort, self).__init__(host, port_name, **kwargs)
         (base, arch) = port_name.rsplit('-', 1)
         assert base == 'linux'
         assert arch in self.SUPPORTED_VERSIONS
@@ -113,7 +114,7 @@ class LinuxPort(chromium.ChromiumPort):
         return [self._build_path('libffmpegsumo.so')]
 
     def check_build(self, needs_http, printer):
-        result = chromium.ChromiumPort.check_build(self, needs_http, printer)
+        result = super(LinuxPort, self).check_build(needs_http, printer)
         if not result:
             _log.error('For complete Linux build requirements, please see:')
             _log.error('')

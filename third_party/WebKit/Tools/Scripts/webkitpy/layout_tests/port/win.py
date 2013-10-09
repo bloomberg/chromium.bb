@@ -31,13 +31,13 @@
 import os
 import logging
 
-import chromium
+from webkitpy.layout_tests.port import base
 
 
 _log = logging.getLogger(__name__)
 
 
-class WinPort(chromium.ChromiumPort):
+class WinPort(base.Port):
     port_name = 'win'
 
     # FIXME: Figure out how to unify this with base.TestConfiguration.all_systems()?
@@ -61,12 +61,12 @@ class WinPort(chromium.ChromiumPort):
         return port_name
 
     def __init__(self, host, port_name, **kwargs):
-        chromium.ChromiumPort.__init__(self, host, port_name, **kwargs)
+        super(WinPort, self).__init__(host, port_name, **kwargs)
         self._version = port_name[port_name.index('win-') + len('win-'):]
         assert self._version in self.SUPPORTED_VERSIONS, "%s is not in %s" % (self._version, self.SUPPORTED_VERSIONS)
 
     def setup_environ_for_server(self, server_name=None):
-        env = chromium.ChromiumPort.setup_environ_for_server(self, server_name)
+        env = super(WinPort, self).setup_environ_for_server(server_name)
 
         # FIXME: lighttpd depends on some environment variable we're not whitelisting.
         # We should add the variable to an explicit whitelist in base.Port.
@@ -92,7 +92,7 @@ class WinPort(chromium.ChromiumPort):
         return []
 
     def check_build(self, needs_http, printer):
-        result = chromium.ChromiumPort.check_build(self, needs_http, printer)
+        result = super(WinPort, self).check_build(needs_http, printer)
         if not result:
             _log.error('For complete Windows build requirements, please see:')
             _log.error('')

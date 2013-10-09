@@ -32,12 +32,12 @@ import webkitpy.thirdparty.unittest2 as unittest
 from webkitpy.common.system import outputcapture
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.layout_tests.port import chromium_port_testcase
+from webkitpy.layout_tests.port import port_testcase
 from webkitpy.layout_tests.port import win
 from webkitpy.tool.mocktool import MockOptions
 
 
-class WinPortTest(chromium_port_testcase.ChromiumPortTestCase):
+class WinPortTest(port_testcase.PortTestCase):
     port_name = 'win'
     port_maker = win.WinPort
     os_name = 'win'
@@ -130,4 +130,4 @@ class WinPortTest(chromium_port_testcase.ChromiumPortTestCase):
         self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver'))._path_to_driver().endswith('OtherDriver.exe'))
 
     def test_path_to_image_diff(self):
-        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/third_party/WebKit/out/Release/image_diff.exe')
+        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff.exe')

@@ -89,6 +89,68 @@ class Port(object):
     # True if the port as aac and mp3 codecs built in.
     PORT_HAS_AUDIO_CODECS_BUILT_IN = False
 
+    ALL_SYSTEMS = (
+        ('snowleopard', 'x86'),
+        ('lion', 'x86'),
+
+        # FIXME: We treat Retina (High-DPI) devices as if they are running
+        # a different operating system version. This isn't accurate, but will work until
+        # we need to test and support baselines across multiple O/S versions.
+        ('retina', 'x86'),
+
+        ('mountainlion', 'x86'),
+        ('xp', 'x86'),
+        ('win7', 'x86'),
+        ('lucid', 'x86'),
+        ('lucid', 'x86_64'),
+        # FIXME: Technically this should be 'arm', but adding a third architecture type breaks TestConfigurationConverter.
+        # If we need this to be 'arm' in the future, then we first have to fix TestConfigurationConverter.
+        ('icecreamsandwich', 'x86'),
+        )
+
+    ALL_BASELINE_VARIANTS = [
+        'mac-mountainlion', 'mac-retina', 'mac-lion', 'mac-snowleopard',
+        'win-win7', 'win-xp',
+        'linux-x86_64', 'linux-x86',
+    ]
+
+    CONFIGURATION_SPECIFIER_MACROS = {
+        'mac': ['snowleopard', 'lion', 'retina', 'mountainlion'],
+        'win': ['xp', 'win7'],
+        'linux': ['lucid'],
+        'android': ['icecreamsandwich'],
+    }
+
+    DEFAULT_BUILD_DIRECTORIES = ('out',)
+
+    # overridden in subclasses.
+    FALLBACK_PATHS = {}
+
+    SUPPORTED_VERSIONS = []
+
+    @classmethod
+    def latest_platform_fallback_path(cls):
+        return cls.FALLBACK_PATHS[cls.SUPPORTED_VERSIONS[-1]]
+
+    @classmethod
+    def _static_build_path(cls, filesystem, build_directory, chromium_base, webkit_base, configuration, comps):
+        if build_directory:
+            return filesystem.join(build_directory, configuration, *comps)
+
+        hits = []
+        for directory in cls.DEFAULT_BUILD_DIRECTORIES:
+            base_dir = filesystem.join(chromium_base, directory, configuration)
+            path = filesystem.join(base_dir, *comps)
+            if filesystem.exists(path):
+                hits.append((filesystem.mtime(path), path))
+
+        if hits:
+            hits.sort(reverse=True)
+            return hits[0][1]  # Return the newest file found.
+
+        # We have to default to something, so pick the last one.
+        return filesystem.join(base_dir, *comps)
+
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         """Return a fully-specified port name that can be used to construct objects."""
@@ -161,8 +223,7 @@ class Port(object):
         return False
 
     def default_pixel_tests(self):
-        # FIXME: Disable until they are run by default on build.webkit.org.
-        return False
+        return True
 
     def default_smoke_test_only(self):
         return False
@@ -196,7 +257,10 @@ class Port(object):
 
     def default_max_locked_shards(self):
         """Return the number of "locked" shards to run in parallel (like the http tests)."""
-        return 1
+        max_locked_shards = int(self.default_child_processes()) / 4
+        if not max_locked_shards:
+            return 1
+        return max_locked_shards
 
     def worker_startup_delay_secs(self):
         # FIXME: If we start workers up too quickly, DumpRenderTree appears
@@ -231,11 +295,7 @@ class Port(object):
     def default_baseline_search_path(self):
         """Return a list of absolute paths to directories to search under for
         baselines. The directories are searched in order."""
-        search_paths = []
-        search_paths.append(self.name())
-        if self.name() != self.port_name:
-            search_paths.append(self.port_name)
-        return map(self._webkit_baseline_path, search_paths)
+        return map(self._webkit_baseline_path, self.FALLBACK_PATHS[self.version()])
 
     @memoized
     def _compare_baseline(self):
@@ -245,19 +305,51 @@ class Port(object):
             return factory.get(target_port).default_baseline_search_path()
         return []
 
-    def check_build(self, needs_http, printer):
-        """This routine is used to ensure that the build is up to date
-        and all the needed binaries are present."""
-        if self.get_option('build'):
-            return False
-        if not self._check_driver():
-            return False
-        if self.get_option('pixel_tests'):
-            if not self.check_image_diff():
-                return False
-        if not self._check_port_build():
+    def _check_file_exists(self, path_to_file, file_description,
+                           override_step=None, logging=True):
+        """Verify the file is present where expected or log an error.
+
+        Args:
+            file_name: The (human friendly) name or description of the file
+                you're looking for (e.g., "HTTP Server"). Used for error logging.
+            override_step: An optional string to be logged if the check fails.
+            logging: Whether or not log the error messages."""
+        if not self._filesystem.exists(path_to_file):
+            if logging:
+                _log.error('Unable to find %s' % file_description)
+                _log.error('    at %s' % path_to_file)
+                if override_step:
+                    _log.error('    %s' % override_step)
+                    _log.error('')
             return False
         return True
+
+    def check_build(self, needs_http, printer):
+        result = True
+
+        dump_render_tree_binary_path = self._path_to_driver()
+        result = self._check_file_exists(dump_render_tree_binary_path,
+                                         'test driver') and result
+        if result and self.get_option('build'):
+            result = self._check_driver_build_up_to_date(
+                self.get_option('configuration'))
+        else:
+            _log.error('')
+
+        helper_path = self._path_to_helper()
+        if helper_path:
+            result = self._check_file_exists(helper_path,
+                                             'layout test helper') and result
+
+        if self.get_option('pixel_tests'):
+            result = self.check_image_diff(
+                'To override, invoke with --no-pixel-tests') and result
+
+        # It's okay if pretty patch and wdiff aren't available, but we will at least log messages.
+        self._pretty_patch_available = self.check_pretty_patch()
+        self._wdiff_available = self.check_wdiff()
+
+        return result
 
     def _check_driver(self):
         driver_path = self._path_to_driver()
@@ -276,8 +368,20 @@ class Port(object):
         This step can be skipped with --nocheck-sys-deps.
 
         Returns whether the system is properly configured."""
-        if needs_http:
-            return self.check_httpd()
+        cmd = [self._path_to_driver(), '--check-layout-test-sys-deps']
+
+        local_error = ScriptError()
+
+        def error_handler(script_error):
+            local_error.exit_code = script_error.exit_code
+
+        output = self._executive.run_command(cmd, error_handler=error_handler)
+        if local_error.exit_code:
+            _log.error('System dependencies check failed.')
+            _log.error('To override, invoke with --nocheck-sys-deps')
+            _log.error('')
+            _log.error(output)
+            return False
         return True
 
     def check_image_diff(self, override_step=None, logging=True):
@@ -754,6 +858,9 @@ class Port(object):
     def path_from_webkit_base(self, *comps):
         return self._webkit_finder.path_from_webkit_base(*comps)
 
+    def path_from_chromium_base(self, *comps):
+        return self._webkit_finder.path_from_chromium_base(*comps)
+
     def path_to_script(self, script_name):
         return self._webkit_finder.path_to_script(script_name)
 
@@ -803,7 +910,7 @@ class Port(object):
         return False
 
     def is_chromium(self):
-        return False
+        return True
 
     def name(self):
         """Returns a name that uniquely identifies this particular type of port
@@ -864,13 +971,19 @@ class Port(object):
 
     def default_results_directory(self):
         """Absolute path to the default place to store the test results."""
-        # Results are store relative to the built products to make it easy
-        # to have multiple copies of webkit checked out and built.
-        return self._build_path('layout-test-results')
+        try:
+            return self.path_from_chromium_base('webkit', self.get_option('configuration'), 'layout-test-results')
+        except AssertionError:
+            return self._build_path('layout-test-results')
 
     def setup_test_run(self):
         """Perform port-specific work at the beginning of a test run."""
-        pass
+        # Delete the disk cache if any to ensure a clean test run.
+        dump_render_tree_binary_path = self._path_to_driver()
+        cachedir = self._filesystem.dirname(dump_render_tree_binary_path)
+        cachedir = self._filesystem.join(cachedir, "cache")
+        if self._filesystem.exists(cachedir):
+            self._filesystem.rmtree(cachedir)
 
     def clean_up_test_run(self):
         """Perform port-specific work at the end of a test run."""
@@ -900,6 +1013,8 @@ class Port(object):
             'CHROME_DEVEL_SANDBOX',
             'CHROME_IPC_LOGGING',
             'ASAN_OPTIONS',
+            'VALGRIND_LIB',
+            'VALGRIND_LIB_INNER',
         ]
         if self.host.platform.is_linux() or self.host.platform.is_freebsd():
             variables_to_copy += [
@@ -950,7 +1065,15 @@ class Port(object):
         """If a port needs to reconfigure graphics settings or do other
         things to ensure a known test configuration, it should override this
         method."""
-        pass
+        helper_path = self._path_to_helper()
+        if helper_path:
+            _log.debug("Starting layout helper %s" % helper_path)
+            # Note: Not thread safe: http://bugs.python.org/issue2320
+            self._helper = self._executive.popen([helper_path],
+                stdin=self._executive.PIPE, stdout=self._executive.PIPE, stderr=None)
+            is_ready = self._helper.stdout.readline()
+            if not is_ready.startswith('ready'):
+                _log.error("layout_test_helper failed to be ready")
 
     def requires_http_server(self):
         """Does the port require an HTTP server for running tests? This could
@@ -992,7 +1115,16 @@ class Port(object):
         """Shut down the test helper if it is running. Do nothing if
         it isn't, or it isn't available. If a port overrides start_helper()
         it must override this routine as well."""
-        pass
+        if self._helper:
+            _log.debug("Stopping layout test helper")
+            try:
+                self._helper.stdin.write("x\n")
+                self._helper.stdin.close()
+                self._helper.wait()
+            except IOError, e:
+                pass
+            finally:
+                self._helper = None
 
     def stop_http_server(self):
         """Shut down the http server if it is running. Do nothing if it isn't."""
@@ -1033,7 +1165,7 @@ class Port(object):
 
         Returns a dictionary, each key representing a macro term ('win', for example),
         and value being a list of valid configuration specifiers (such as ['xp', 'vista', 'win7'])."""
-        return {}
+        return self.CONFIGURATION_SPECIFIER_MACROS
 
     def all_baseline_variants(self):
         """Returns a list of platform names sufficient to cover all the baselines.
@@ -1041,7 +1173,40 @@ class Port(object):
         The list should be sorted so that a later platform  will reuse
         an earlier platform's baselines if they are the same (e.g.,
         'snowleopard' should precede 'leopard')."""
-        raise NotImplementedError
+        return self.ALL_BASELINE_VARIANTS
+
+    def _generate_all_test_configurations(self):
+        """Returns a sequence of the TestConfigurations the port supports."""
+        # By default, we assume we want to test every graphics type in
+        # every configuration on every system.
+        test_configurations = []
+        for version, architecture in self.ALL_SYSTEMS:
+            for build_type in self.ALL_BUILD_TYPES:
+                test_configurations.append(TestConfiguration(version, architecture, build_type))
+        return test_configurations
+
+    try_builder_names = frozenset([
+        'linux_layout',
+        'mac_layout',
+        'win_layout',
+        'linux_layout_rel',
+        'mac_layout_rel',
+        'win_layout_rel',
+    ])
+
+    def warn_if_bug_missing_in_test_expectations(self):
+        return True
+
+    def _port_specific_expectations_files(self):
+        paths = []
+        paths.append(self.path_from_chromium_base('skia', 'skia_test_expectations.txt'))
+        paths.append(self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'))
+        paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))
+
+        builder_name = self.get_option('builder_name', 'DUMMY_BUILDER_NAME')
+        if builder_name == 'DUMMY_BUILDER_NAME' or '(deps)' in builder_name or builder_name in self.try_builder_names:
+            paths.append(self.path_from_chromium_base('webkit', 'tools', 'layout_tests', 'test_expectations.txt'))
+        return paths
 
     def expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings.
@@ -1087,29 +1252,13 @@ class Port(object):
         _log.warning("Unexpected ignore mode: '%s'." % ignore_mode)
         return {}
 
-    def _port_specific_expectations_files(self):
-        # Unlike baseline_search_path, we only want to search [WK2-PORT, PORT-VERSION, PORT] and any directories
-        # included via --additional-platform-directory, not the full casade.
-        search_paths = [self.port_name]
-
-        non_wk2_name = self.name().replace('-wk2', '')
-        if non_wk2_name != self.port_name:
-            search_paths.append(non_wk2_name)
-
-        search_paths.extend(self.get_option("additional_platform_directory", []))
-
-        return [self._filesystem.join(self._webkit_baseline_path(d), 'TestExpectations') for d in search_paths]
-
     def expectations_files(self):
         return [self.path_to_generic_test_expectations_file()] + self._port_specific_expectations_files()
 
     def repository_paths(self):
-        """Returns a list of (repository_name, repository_path) tuples of its depending code base.
-        By default it returns a list that only contains a ('WebKit', <webkitRepositoryPath>) tuple."""
-
-        # We use LayoutTest directory here because webkit_base isn't a part of WebKit repository in Chromium port
-        # where turnk isn't checked out as a whole.
-        return [('blink', self.layout_tests_dir())]
+        """Returns a list of (repository_name, repository_path) tuples of its depending code base."""
+        return [('blink', self.layout_tests_dir()),
+                ('chromium', self.path_from_chromium_base('build'))]
 
     _WDIFF_DEL = '##WDIFF_DEL##'
     _WDIFF_ADD = '##WDIFF_ADD##'
@@ -1259,14 +1408,6 @@ class Port(object):
         config_file_name = self._apache_config_file_name_for_platform(sys.platform)
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
 
-    def _build_path(self, *comps):
-        build_directory = self.get_option('build_directory')
-        if build_directory:
-            root_directory = self._filesystem.join(build_directory, self.get_option('configuration'))
-        else:
-            root_directory = self._config.build_directory(self.get_option('configuration'))
-        return self._filesystem.join(self._filesystem.abspath(root_directory), *comps)
-
     def _path_to_driver(self, configuration=None):
         """Returns the full path to the test driver."""
         return self._build_path(self.driver_name())
@@ -1322,17 +1463,21 @@ class Port(object):
         given platform."""
         return self._filesystem.join(self.layout_tests_dir(), 'platform', platform)
 
-    # FIXME: Belongs on a Platform object.
-    def _generate_all_test_configurations(self):
-        """Generates a list of TestConfiguration instances, representing configurations
-        for a platform across all OSes, architectures, build and graphics types."""
-        raise NotImplementedError('Port._generate_all_test_configurations')
-
     def _driver_class(self):
         """Returns the port's driver implementation."""
         return driver.Driver
 
     def _get_crash_log(self, name, pid, stdout, stderr, newer_than):
+        if stderr and 'AddressSanitizer' in stderr:
+            # Running the AddressSanitizer take a lot of memory, so we need to
+            # serialize access to it across all the concurrently running drivers.
+
+            # FIXME: investigate using LLVM_SYMBOLIZER_PATH here to reduce the overhead.
+            asan_filter_path = self.path_from_chromium_base('tools', 'valgrind', 'asan', 'asan_symbolize.py')
+            if self._filesystem.exists(asan_filter_path):
+                output = self._executive.run_command(['flock', sys.executable, asan_filter_path], input=stderr, decode_output=False)
+                stderr = self._executive.run_command(['c++filt'], input=output, decode_output=False)
+
         name_str = name or '<unknown process name>'
         pid_str = str(pid or '<unknown>')
         stdout_lines = (stdout or '<empty>').decode('utf8', 'replace').splitlines()
@@ -1351,7 +1496,50 @@ class Port(object):
         pass
 
     def virtual_test_suites(self):
-        return []
+        return [
+            VirtualTestSuite('virtual/gpu/fast/canvas',
+                             'fast/canvas',
+                             ['--enable-accelerated-2d-canvas']),
+            VirtualTestSuite('virtual/gpu/canvas/philip',
+                             'canvas/philip',
+                             ['--enable-accelerated-2d-canvas']),
+            VirtualTestSuite('virtual/threaded/compositing/visibility',
+                             'compositing/visibility',
+                             ['--enable-threaded-compositing']),
+            VirtualTestSuite('virtual/threaded/compositing/webgl',
+                             'compositing/webgl',
+                             ['--enable-threaded-compositing']),
+            VirtualTestSuite('virtual/gpu/fast/hidpi',
+                             'fast/hidpi',
+                             ['--force-compositing-mode']),
+            VirtualTestSuite('virtual/softwarecompositing',
+                             'compositing',
+                             ['--enable-software-compositing', '--disable-gpu-compositing']),
+            VirtualTestSuite('virtual/deferred/fast/images',
+                             'fast/images',
+                             ['--enable-deferred-image-decoding', '--enable-per-tile-painting', '--force-compositing-mode']),
+            VirtualTestSuite('virtual/gpu/compositedscrolling/overflow',
+                             'compositing/overflow',
+                             ['--enable-accelerated-overflow-scroll']),
+            VirtualTestSuite('virtual/gpu/compositedscrolling/scrollbars',
+                             'scrollbars',
+                             ['--enable-accelerated-overflow-scroll']),
+            VirtualTestSuite('virtual/threaded/animations',
+                             'animations',
+                             ['--enable-threaded-compositing']),
+            VirtualTestSuite('virtual/threaded/transitions',
+                             'transitions',
+                             ['--enable-threaded-compositing']),
+            VirtualTestSuite('virtual/web-animations-css/animations',
+                             'animations',
+                             ['--enable-web-animations-css']),
+            VirtualTestSuite('virtual/stable/webexposed',
+                             'webexposed',
+                             ['--stable-release-mode']),
+            VirtualTestSuite('virtual/stable/media',
+                             'media/stable',
+                             ['--stable-release-mode']),
+        ]
 
     @memoized
     def populated_virtual_test_suites(self):
@@ -1465,6 +1653,43 @@ class Port(object):
             return cygpath(path)
         return path
 
+    def _build_path(self, *comps):
+        return self._build_path_with_configuration(None, *comps)
+
+    def _build_path_with_configuration(self, configuration, *comps):
+        # Note that we don't do the option caching that the
+        # base class does, because finding the right directory is relatively
+        # fast.
+        configuration = configuration or self.get_option('configuration')
+        return self._static_build_path(self._filesystem, self.get_option('build_directory'),
+            self.path_from_chromium_base(), self.path_from_webkit_base(), configuration, comps)
+
+    def _check_driver_build_up_to_date(self, configuration):
+        if configuration in ('Debug', 'Release'):
+            try:
+                debug_path = self._path_to_driver('Debug')
+                release_path = self._path_to_driver('Release')
+
+                debug_mtime = self._filesystem.mtime(debug_path)
+                release_mtime = self._filesystem.mtime(release_path)
+
+                if (debug_mtime > release_mtime and configuration == 'Release' or
+                    release_mtime > debug_mtime and configuration == 'Debug'):
+                    most_recent_binary = 'Release' if configuration == 'Debug' else 'Debug'
+                    _log.warning('You are running the %s binary. However the %s binary appears to be more recent. '
+                                 'Please pass --%s.', configuration, most_recent_binary, most_recent_binary.lower())
+                    _log.warning('')
+            # This will fail if we don't have both a debug and release binary.
+            # That's fine because, in this case, we must already be running the
+            # most up-to-date one.
+            except OSError:
+                pass
+        return True
+
+    def _chromium_baseline_path(self, platform):
+        if platform is None:
+            platform = self.name()
+        return self.path_from_webkit_base('LayoutTests', 'platform', platform)
 
 class VirtualTestSuite(object):
     def __init__(self, name, base, args, tests=None):

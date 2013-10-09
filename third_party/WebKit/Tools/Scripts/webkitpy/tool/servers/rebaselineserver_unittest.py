@@ -302,6 +302,7 @@ def get_test_config(test_files=[], result_files=[]):
 
     class TestMacPort(Port):
         port_name = "mac"
+        FALLBACK_PATHS = {'': ['mac']}
 
     return TestConfig(
         TestMacPort(host, 'mac'),

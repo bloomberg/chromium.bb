@@ -37,7 +37,7 @@ from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port import android
-from webkitpy.layout_tests.port import chromium_port_testcase
+from webkitpy.layout_tests.port import port_testcase
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import driver_unittest
 from webkitpy.tool.mocktool import MockOptions
@@ -143,7 +143,7 @@ class AndroidCommandsTest(unittest.TestCase):
         self.assertEquals('adb -s 123456789ABCDEF0 pull bar foo', self._mock_executive.last_command())
 
 
-class AndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
+class AndroidPortTest(port_testcase.PortTestCase):
     port_name = 'android'
     port_maker = android.AndroidPort
 
@@ -157,8 +157,11 @@ class AndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
         host = MockSystemHost()
         host.filesystem.exists = lambda p: True
         port = self.make_port(host=host)
-        port.check_build(needs_http=True, printer=chromium_port_testcase.FakePrinter())
+        port.check_build(needs_http=True, printer=port_testcase.FakePrinter())
 
+    def test_check_sys_deps(self):
+        # FIXME: Do something useful here, but testing the full logic would be hard.
+        pass
 
     def make_wdiff_available(self, port):
         port._wdiff_available = True

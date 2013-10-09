@@ -357,6 +357,14 @@ class TestPort(Port):
         'test-win-win7', 'test-win-xp',
     )
 
+    FALLBACK_PATHS = {
+        'xp':          ['test-win-win7', 'test-win-xp'],
+        'win7':        ['test-win-win7'],
+        'leopard':     ['test-mac-leopard', 'test-mac-snowleopard'],
+        'snowleopard': ['test-mac-snowleopard'],
+        'lucid':       ['test-linux-x86_64', 'test-win-win7'],
+    }
+
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name == 'test':
@@ -395,6 +403,11 @@ class TestPort(Port):
         }
         self._version = version_map[self._name]
 
+    def repository_paths(self):
+        """Returns a list of (repository_name, repository_path) tuples of its depending code base."""
+        # FIXME: We override this just to keep the perf tests happy.
+        return [('blink', self.layout_tests_dir())]
+
     def buildbot_archives_baselines(self):
         return self._name != 'test-win-xp'
 
@@ -405,16 +418,6 @@ class TestPort(Port):
         # This routine shouldn't normally be called, but it is called by
         # the mock_drt Driver. We return something, but make sure it's useless.
         return 'MOCK _path_to_driver'
-
-    def baseline_search_path(self):
-        search_paths = {
-            'test-mac-snowleopard': ['test-mac-snowleopard'],
-            'test-mac-leopard': ['test-mac-leopard', 'test-mac-snowleopard'],
-            'test-win-win7': ['test-win-win7'],
-            'test-win-xp': ['test-win-xp', 'test-win-win7'],
-            'test-linux-x86_64': ['test-linux-x86_64', 'test-win-win7'],
-        }
-        return [self._webkit_baseline_path(d) for d in search_paths[self.name()]]
 
     def default_child_processes(self):
         return 1
@@ -508,6 +511,9 @@ class TestPort(Port):
 
     def path_to_generic_test_expectations_file(self):
         return self._generic_expectations_path
+
+    def _port_specific_expectations_files(self):
+        return [self._filesystem.join(self._webkit_baseline_path(d), 'TestExpectations') for d in ['test', 'test-win-xp']]
 
     def all_test_configurations(self):
         """Returns a sequence of the TestConfigurations the port supports."""

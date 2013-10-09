@@ -33,10 +33,10 @@ from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.tool.mocktool import MockOptions
 
 from webkitpy.layout_tests.port import linux
-from webkitpy.layout_tests.port import chromium_port_testcase
+from webkitpy.layout_tests.port import port_testcase
 
 
-class LinuxPortTest(chromium_port_testcase.ChromiumPortTestCase):
+class LinuxPortTest(port_testcase.PortTestCase):
     port_name = 'linux'
     port_maker = linux.LinuxPort
 
@@ -93,19 +93,15 @@ class LinuxPortTest(chromium_port_testcase.ChromiumPortTestCase):
     def test_build_path(self):
         # Test that optional paths are used regardless of whether they exist.
         options = MockOptions(configuration='Release', build_directory='/foo')
-        self.assert_build_path(options, ['/mock-checkout/third_party/WebKit/Source/WebKit/chromium/out/Release'], '/foo/Release')
+        self.assert_build_path(options, ['/mock-checkout/out/Release'], '/foo/Release')
 
         # Test that optional relative paths are returned unmodified.
         options = MockOptions(configuration='Release', build_directory='foo')
-        self.assert_build_path(options, ['/mock-checkout/third_party/WebKit/Source/WebKit/chromium/out/Release'], 'foo/Release')
-
-        # Test that we prefer the legacy dir over the new dir.
-        options = MockOptions(configuration='Release', build_directory=None)
-        self.assert_build_path(options, ['/mock-checkout/third_party/WebKit/Source/WebKit/chromium/sconsbuild/Release', '/mock-checkout/third_party/WebKit/Source/WebKit/chromium/out/Release'], '/mock-checkout/third_party/WebKit/out/Release')
+        self.assert_build_path(options, ['/mock-checkout/out/Release'], 'foo/Release')
 
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith('content_shell'))
         self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver'))._path_to_driver().endswith('OtherDriver'))
 
     def test_path_to_image_diff(self):
-        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/third_party/WebKit/out/Release/image_diff')
+        self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff')

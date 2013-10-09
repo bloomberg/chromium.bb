@@ -33,15 +33,15 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.layout_tests.layout_tests_mover import LayoutTestsMover
-from webkitpy.layout_tests.port.chromium import ChromiumPort
+from webkitpy.layout_tests.port import base
 
 
-class MockPort(ChromiumPort):
+class MockPort(base.Port):
 
     def __init__(self, **kwargs):
         # This sets up a mock FileSystem and SCM using that FileSystem.
         host = MockHost()
-        ChromiumPort.__init__(self, host, host.port_factory.all_port_names()[0], **kwargs)
+        super(MockPort, self).__init__(host, host.port_factory.all_port_names()[0], **kwargs)
 
         host.filesystem.maybe_make_directory(self._absolute_path('platform'))
         host.filesystem.maybe_make_directory(self._absolute_path('existing_directory'))

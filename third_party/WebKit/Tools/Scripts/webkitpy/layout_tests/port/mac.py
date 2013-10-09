@@ -31,13 +31,13 @@
 import logging
 import signal
 
-from webkitpy.layout_tests.port import chromium
+from webkitpy.layout_tests.port import base
 
 
 _log = logging.getLogger(__name__)
 
 
-class MacPort(chromium.ChromiumPort):
+class MacPort(base.Port):
     SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'retina', 'mountainlion')
     port_name = 'mac'
 
@@ -63,7 +63,7 @@ class MacPort(chromium.ChromiumPort):
         return port_name
 
     def __init__(self, host, port_name, **kwargs):
-        chromium.ChromiumPort.__init__(self, host, port_name, **kwargs)
+        super(MacPort, self).__init__(host, port_name, **kwargs)
         self._version = port_name[port_name.index('mac-') + len('mac-'):]
         assert self._version in self.SUPPORTED_VERSIONS
 
@@ -71,7 +71,7 @@ class MacPort(chromium.ChromiumPort):
         return [self._build_path('ffmpegsumo.so')]
 
     def check_build(self, needs_http, printer):
-        result = chromium.ChromiumPort.check_build(self, needs_http, printer)
+        result = super(MacPort, self).check_build(needs_http, printer)
         if not result:
             _log.error('For complete Mac build requirements, please see:')
             _log.error('')

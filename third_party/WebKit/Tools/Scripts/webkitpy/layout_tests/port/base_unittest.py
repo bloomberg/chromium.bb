@@ -214,9 +214,9 @@ class PortTest(unittest.TestCase):
 
     def test_nonexistant_expectations(self):
         port = self.make_port(port_name='foo')
-        port.expectations_files = lambda: ['/mock-checkout/LayoutTests/platform/exists/TestExpectations', '/mock-checkout/LayoutTests/platform/nonexistant/TestExpectations']
-        port._filesystem.write_text_file('/mock-checkout/LayoutTests/platform/exists/TestExpectations', '')
-        self.assertEqual('\n'.join(port.expectations_dict().keys()), '/mock-checkout/LayoutTests/platform/exists/TestExpectations')
+        port.expectations_files = lambda: ['/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations', '/mock-checkout/third_party/WebKit/LayoutTests/platform/nonexistant/TestExpectations']
+        port._filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations', '')
+        self.assertEqual('\n'.join(port.expectations_dict().keys()), '/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations')
 
     def test_additional_expectations(self):
         port = self.make_port(port_name='foo')
@@ -231,15 +231,15 @@ class PortTest(unittest.TestCase):
 
         port._options.additional_expectations = [
             '/tmp/additional-expectations-1.txt']
-        self.assertEqual('\n'.join(port.expectations_dict().values()), '\ncontent1\n')
+        self.assertEqual('\n'.join(port.expectations_dict().values()), 'content1\n')
 
         port._options.additional_expectations = [
             '/tmp/nonexistent-file', '/tmp/additional-expectations-1.txt']
-        self.assertEqual('\n'.join(port.expectations_dict().values()), '\ncontent1\n')
+        self.assertEqual('\n'.join(port.expectations_dict().values()), 'content1\n')
 
         port._options.additional_expectations = [
             '/tmp/additional-expectations-1.txt', '/tmp/additional-expectations-2.txt']
-        self.assertEqual('\n'.join(port.expectations_dict().values()), '\ncontent1\n\ncontent2\n')
+        self.assertEqual('\n'.join(port.expectations_dict().values()), 'content1\n\ncontent2\n')
 
     def test_additional_env_var(self):
         port = self.make_port(options=optparse.Values({'additional_env_var': ['FOO=BAR', 'BAR=FOO']}))
