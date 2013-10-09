@@ -471,8 +471,6 @@ def main():
   parser = optparse.OptionParser("usage: %prog -b <dir> -t <test> "
                                  "[-t <test> ...]")
   parser.add_option("-b", "--build-dir",
-                    # TODO(thakis): Remove --build_dir once bots don't pass it.
-                    "--build_dir",
                     help="the location of the output of the compiler output")
   parser.add_option("--target", help="Debug or Release")
   parser.add_option("-t", "--test", action="append", help="which test to run")
@@ -490,11 +488,9 @@ def main():
 
   options, args = parser.parse_args()
 
-  # target used to be a part of build_dir, so only add it if it's not there.
-  # TODO(thakis): Always do this once the memory master no longer passes
-  # the target as part of build_dir.
-  if options.target and options.target not in options.build_dir:
-    options.build_dir = os.path.join(options.build_dir, options.target)
+  # Bake target into build_dir.
+  assert not options.build_dir.endswith(options.target)
+  options.build_dir = os.path.join(options.build_dir, options.target)
 
   if options.verbose:
     logging_utils.config_root(logging.DEBUG)
