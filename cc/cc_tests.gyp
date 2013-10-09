@@ -46,7 +46,6 @@
       'output/gl_renderer_unittest.cc',
       'output/output_surface_unittest.cc',
       'output/renderer_pixeltest.cc',
-      'output/render_surface_filters_unittest.cc',
       'output/shader_unittest.cc',
       'output/software_renderer_unittest.cc',
       'quads/draw_quad_unittest.cc',

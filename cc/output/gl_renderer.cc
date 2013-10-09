@@ -478,46 +478,6 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
       Context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0));
 }
 
-static inline SkBitmap ApplyFilters(GLRenderer* renderer,
-                                    ContextProvider* offscreen_contexts,
-                                    const FilterOperations& filters,
-                                    ScopedResource* source_texture_resource) {
-  if (filters.IsEmpty())
-    return SkBitmap();
-
-  if (!offscreen_contexts || !offscreen_contexts->GrContext())
-    return SkBitmap();
-
-  ResourceProvider::ScopedWriteLockGL lock(renderer->resource_provider(),
-                                           source_texture_resource->id());
-
-  // Flush the compositor context to ensure that textures there are available
-  // in the shared context.  Do this after locking/creating the compositor
-  // texture.
-  renderer->resource_provider()->Flush();
-
-  // Make sure skia uses the correct GL context.
-  offscreen_contexts->Context3d()->makeContextCurrent();
-
-  SkBitmap source =
-      RenderSurfaceFilters::Apply(filters,
-                                  lock.texture_id(),
-                                  source_texture_resource->size(),
-                                  offscreen_contexts->GrContext());
-
-  // Flush skia context so that all the rendered stuff appears on the
-  // texture.
-  offscreen_contexts->GrContext()->flush();
-
-  // Flush the GL context so rendering results from this context are
-  // visible in the compositor's context.
-  offscreen_contexts->Context3d()->flush();
-
-  // Use the compositor's GL context again.
-  renderer->Context()->makeContextCurrent();
-  return source;
-}
-
 static SkBitmap ApplyImageFilter(GLRenderer* renderer,
                                  ContextProvider* offscreen_contexts,
                                  gfx::Point origin,
@@ -631,10 +591,6 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   // TODO(danakj): When this algorithm changes, update
   // LayerTreeHost::PrioritizeTextures() accordingly.
 
-  FilterOperations filters =
-      RenderSurfaceFilters::Optimize(quad->background_filters);
-  DCHECK(!filters.IsEmpty());
-
   // TODO(danakj): We only allow background filters on an opaque render surface
   // because other surfaces may contain translucent pixels, and the contents
   // behind those translucent pixels wouldn't have the filter applied.
@@ -642,13 +598,18 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
     return scoped_ptr<ScopedResource>();
   DCHECK(!frame->current_texture);
 
+  // TODO(ajuma): Add support for reference filters once
+  // FilterOperations::GetOutsets supports reference filters.
+  if (quad->background_filters.HasReferenceFilter())
+    return scoped_ptr<ScopedResource>();
+
   // TODO(danakj): Do a single readback for both the surface and replica and
   // cache the filtered results (once filter textures are not reused).
   gfx::Rect window_rect = gfx::ToEnclosingRect(MathUtil::MapClippedRect(
       contents_device_transform, SharedGeometryQuad().BoundingBox()));
 
   int top, right, bottom, left;
-  filters.GetOutsets(&top, &right, &bottom, &left);
+  quad->background_filters.GetOutsets(&top, &right, &bottom, &left);
   window_rect.Inset(-left, -top, -right, -bottom);
 
   window_rect.Intersect(
@@ -668,11 +629,15 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
                           window_rect);
   }
 
+  skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
+      quad->background_filters, device_background_texture->size());
+
   SkBitmap filtered_device_background =
-      ApplyFilters(this,
-                   frame->offscreen_context_provider,
-                   filters,
-                   device_background_texture.get());
+      ApplyImageFilter(this,
+                       frame->offscreen_context_provider,
+                       quad->rect.origin(),
+                       filter.get(),
+                       device_background_texture.get());
   if (!filtered_device_background.getTexture())
     return scoped_ptr<ScopedResource>();
 
@@ -774,7 +739,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   bool use_color_matrix = false;
   // TODO(ajuma): Always use RenderSurfaceFilters::BuildImageFilter, not just
   // when we have a reference filter.
-  if (quad->filters.HasReferenceFilter()) {
+  if (!quad->filters.IsEmpty()) {
     skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, contents_texture->size());
     if (filter) {
@@ -797,21 +762,6 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                          filter.get(),
                                          contents_texture);
       }
-    }
-  } else if (!quad->filters.IsEmpty()) {
-    FilterOperations optimized_filters =
-        RenderSurfaceFilters::Optimize(quad->filters);
-
-    if ((optimized_filters.size() == 1) &&
-        (optimized_filters.at(0).type() == FilterOperation::COLOR_MATRIX)) {
-      memcpy(
-          color_matrix, optimized_filters.at(0).matrix(), sizeof(color_matrix));
-      use_color_matrix = true;
-    } else {
-      filter_bitmap = ApplyFilters(this,
-                                   frame->offscreen_context_provider,
-                                   optimized_filters,
-                                   contents_texture);
     }
   }
 
