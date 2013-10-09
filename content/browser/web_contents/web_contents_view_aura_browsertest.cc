@@ -277,13 +277,26 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       OverscrollNavigation) {
+// Flaky on Windows (perhaps just Win-Aura): http://crbug.com/305722
+#if defined(OS_WIN)
+#define MAYBE_OverscrollNavigation DISABLED_OverscrollNavigation
+#else
+#define MAYBE_OverscrollNavigation OverscrollNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollNavigation) {
   TestOverscrollNavigation(false);
 }
 
+// Flaky on Windows (perhaps just Win-Aura): http://crbug.com/305722
+#if defined(OS_WIN)
+#define MAYBE_OverscrollNavigationWithTouchHandler \
+        DISABLED_OverscrollNavigationWithTouchHandler
+#else
+#define MAYBE_OverscrollNavigationWithTouchHandler \
+        OverscrollNavigationWithTouchHandler
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       OverscrollNavigationWithTouchHandler) {
+                       MAYBE_OverscrollNavigationWithTouchHandler) {
   TestOverscrollNavigation(true);
 }
 
