@@ -39,14 +39,15 @@ class TestConnectionHelper : public QuicEpollConnectionHelper {
       : QuicEpollConnectionHelper(fd, eps) {
   }
 
-  virtual WriteResult WritePacketToWire(
-      const QuicEncryptedPacket& packet) OVERRIDE {
+  virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
+                                int* error) OVERRIDE {
     QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), true);
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);
     EXPECT_TRUE(framer.ProcessPacket(packet));
     header_ = *visitor.header();
-    return WriteResult(WRITE_STATUS_OK, packet.length());
+    *error = 0;
+    return packet.length();
   }
 
   QuicPacketHeader* header() { return &header_; }

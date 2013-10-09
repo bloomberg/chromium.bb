@@ -10,7 +10,6 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -410,9 +409,9 @@ TEST_F(QuicConnectionHelperTest, WritePacketToWire) {
   Initialize();
 
   int len = GetWrite(0)->length();
-  WriteResult result = helper_->WritePacketToWire(*GetWrite(0));
-  EXPECT_EQ(len, result.bytes_written);
-  EXPECT_EQ(WRITE_STATUS_OK, result.status);
+  int error = 0;
+  EXPECT_EQ(len, helper_->WritePacketToWire(*GetWrite(0), &error));
+  EXPECT_EQ(0, error);
   EXPECT_TRUE(AtEof());
 }
 
@@ -421,9 +420,9 @@ TEST_F(QuicConnectionHelperTest, WritePacketToWireAsync) {
   Initialize();
 
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(Return(true));
-  WriteResult result = helper_->WritePacketToWire(*GetWrite(0));
-  EXPECT_EQ(-1, result.bytes_written);
-  EXPECT_EQ(WRITE_STATUS_BLOCKED, result.status);
+  int error = 0;
+  EXPECT_EQ(-1, helper_->WritePacketToWire(*GetWrite(0), &error));
+  EXPECT_EQ(ERR_IO_PENDING, error);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(AtEof());
 }

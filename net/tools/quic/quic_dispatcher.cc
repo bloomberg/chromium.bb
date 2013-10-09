@@ -53,22 +53,25 @@ QuicDispatcher::~QuicDispatcher() {
   STLDeleteElements(&closed_session_list_);
 }
 
-WriteResult  QuicDispatcher::WritePacket(const char* buffer, size_t buf_len,
-                                         const IPAddressNumber& self_address,
-                                         const IPEndPoint& peer_address,
-                                         QuicBlockedWriterInterface* writer) {
+int QuicDispatcher::WritePacket(const char* buffer, size_t buf_len,
+                                const IPAddressNumber& self_address,
+                                const IPEndPoint& peer_address,
+                                QuicBlockedWriterInterface* writer,
+                                int* error) {
   if (write_blocked_) {
     write_blocked_list_.insert(make_pair(writer, true));
-    return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
+    *error = EAGAIN;
+    return -1;
   }
 
-  WriteResult result = QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
-                                                    self_address, peer_address);
-  if (result.status == WRITE_STATUS_BLOCKED) {
+  int rc = QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
+                                        self_address, peer_address,
+                                        error);
+  if (rc == -1 && (*error == EWOULDBLOCK || *error == EAGAIN)) {
     write_blocked_list_.insert(make_pair(writer, true));
     write_blocked_ = true;
   }
-  return result;
+  return rc;
 }
 
 void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,

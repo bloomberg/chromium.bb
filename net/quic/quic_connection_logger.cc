@@ -33,15 +33,15 @@ base::Value* NetLogQuicPacketSentCallback(
     QuicPacketSequenceNumber sequence_number,
     EncryptionLevel level,
     size_t packet_size,
-    WriteResult result,
+    int rv,
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("encryption_level", level);
   dict->SetString("packet_sequence_number",
                   base::Uint64ToString(sequence_number));
   dict->SetInteger("size", packet_size);
-  if (result.status != WRITE_STATUS_OK) {
-    dict->SetInteger("net_error", result.error_code);
+  if (rv < 0) {
+    dict->SetInteger("net_error", rv);
   }
   return dict;
 }
@@ -255,11 +255,11 @@ void QuicConnectionLogger::OnPacketSent(
     QuicPacketSequenceNumber sequence_number,
     EncryptionLevel level,
     const QuicEncryptedPacket& packet,
-    WriteResult result) {
+    int rv) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
       base::Bind(&NetLogQuicPacketSentCallback, sequence_number, level,
-                 packet.length(), result));
+                 packet.length(), rv));
 }
 
 void QuicConnectionLogger:: OnPacketRetransmitted(

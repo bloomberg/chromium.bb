@@ -63,8 +63,6 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Encrypter : public QuicEncrypter {
   unsigned char nonce_prefix_[4];
 
 #if defined(USE_OPENSSL)
-  // TODO(rtenneti): when Chromium's version of OpenSSL has EVP_AEAD_CTX, merge
-  // internal CL 53267501.
   ScopedEVPCipherCtx ctx_;
 #endif
 };
