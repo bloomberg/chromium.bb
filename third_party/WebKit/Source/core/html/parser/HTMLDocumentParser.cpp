@@ -299,6 +299,8 @@ bool HTMLDocumentParser::canTakeNextToken(SynchronousMode mode, PumpSession& ses
 
 void HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> chunk)
 {
+    TRACE_EVENT0("webkit", "HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser");
+
     // alert(), runModalDialog, and the JavaScript Debugger all run nested event loops
     // which can cause this method to be re-entered. We detect re-entry using
     // hasActiveParser(), save the chunk as a speculation, and return.
@@ -378,6 +380,8 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk
 
 void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> popChunk)
 {
+    TRACE_EVENT0("webkit", "HTMLDocumentParser::processParsedChunkFromBackgroundParser");
+
     ASSERT_WITH_SECURITY_IMPLICATION(!document()->activeParserCount());
     ASSERT(!isParsingFragment());
     ASSERT(!isWaitingForScripts());
