@@ -384,18 +384,12 @@ BOOL WINAPI Monitor2EnumPorts(HANDLE,
 }
 
 BOOL WINAPI Monitor2OpenPort(HANDLE, wchar_t*, HANDLE* handle) {
-  PortData* port_data = new PortData();
-  if (port_data == NULL) {
-    LOG(ERROR) << "Unable to allocate memory for internal structures.";
-    SetLastError(E_OUTOFMEMORY);
-    return FALSE;
-  }
   if (handle == NULL) {
     LOG(ERROR) << "handle should not be NULL.";
     SetLastError(ERROR_INVALID_PARAMETER);
     return FALSE;
   }
-  *handle = (HANDLE)port_data;
+  *handle = new PortData();
   return TRUE;
 }
 
@@ -549,13 +543,8 @@ BOOL WINAPI Monitor2XcvOpenPort(HANDLE,
     return FALSE;
   }
   XcvUiData* xcv_data = new XcvUiData();
-  if (xcv_data == NULL) {
-    LOG(ERROR) << "Unable to allocate memory for internal structures.";
-    SetLastError(E_OUTOFMEMORY);
-    return FALSE;
-  }
   xcv_data->granted_access = granted_access;
-  *handle = (HANDLE)xcv_data;
+  *handle = xcv_data;
   return TRUE;
 }
 
@@ -621,21 +610,17 @@ BOOL WINAPI MonitorUiConfigureOrDeletePortUI(const wchar_t*,
 
 MONITOR2* WINAPI InitializePrintMonitor2(MONITORINIT*,
                                          HANDLE* handle) {
-  cloud_print::MonitorData* monitor_data = new cloud_print::MonitorData;
-  if (monitor_data == NULL) {
-    return NULL;
-  }
-  if (handle != NULL) {
-    *handle = (HANDLE)monitor_data;
-    if (!cloud_print::kIsUnittest) {
-      // Unit tests set up their own AtExitManager
-      monitor_data->at_exit_manager.reset(new base::AtExitManager());
-      // Single spooler.exe handles verbose users.
-      PathService::DisableCache();
-    }
-  } else {
+  if (handle == NULL) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return NULL;
+  }
+  cloud_print::MonitorData* monitor_data = new cloud_print::MonitorData;
+  *handle = monitor_data;
+  if (!cloud_print::kIsUnittest) {
+    // Unit tests set up their own AtExitManager
+    monitor_data->at_exit_manager.reset(new base::AtExitManager());
+    // Single spooler.exe handles verbose users.
+    PathService::DisableCache();
   }
   return &cloud_print::g_monitor_2;
 }
