@@ -2552,4 +2552,25 @@ crypto::CryptoModuleBlockingPasswordDelegate*
 }
 #endif
 
+bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+#if defined(ENABLE_PLUGINS)
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  const ExtensionSet* extension_set = NULL;
+  if (profile) {
+    extension_set = extensions::ExtensionSystem::Get(profile)->
+        extension_service()->extensions();
+  }
+  // TODO(teravest): Populate allowed_file_handle_origins_ when FileIO is moved
+  // from the renderer to the browser.
+  return IsExtensionOrSharedModuleWhitelisted(url, extension_set,
+                                              allowed_file_handle_origins_) ||
+         IsHostAllowedByCommandLine(url, extension_set,
+                                    switches::kAllowNaClFileHandleAPI);
+#else
+  return false;
+#endif
+}
+
 }  // namespace chrome

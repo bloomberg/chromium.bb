@@ -301,4 +301,10 @@ crypto::CryptoModuleBlockingPasswordDelegate*
 }
 #endif
 
+bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  return false;
+}
+
 }  // namespace content

@@ -240,6 +240,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if plugin living in the container can use
   // pp::FileIO::RequestOSFileHandle.
+  // TODO(teravest): Remove this when FileIO is moved to the browser.
   virtual bool IsPluginAllowedToCallRequestOSFileHandle(
       WebKit::WebPluginContainer* container);
 
