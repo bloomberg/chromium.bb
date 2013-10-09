@@ -43,7 +43,6 @@ Attr::Attr(Element& element, const QualifiedName& name)
     , m_element(&element)
     , m_name(name)
     , m_ignoreChildrenChanged(0)
-    , m_specified(true)
 {
     ScriptWrappable::init(this);
 }
@@ -54,7 +53,6 @@ Attr::Attr(Document& document, const QualifiedName& name, const AtomicString& st
     , m_name(name)
     , m_standaloneValue(standaloneValue)
     , m_ignoreChildrenChanged(0)
-    , m_specified(true)
 {
     ScriptWrappable::init(this);
 }

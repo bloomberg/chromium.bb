@@ -931,7 +931,6 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& es
         Attr* attr = toAttr(source.get());
         if (attr->ownerElement())
             attr->ownerElement()->removeAttributeNode(attr, es);
-        attr->setSpecified(true);
         break;
     }
     default:

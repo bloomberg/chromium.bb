@@ -47,7 +47,7 @@ public:
     virtual ~Attr();
 
     String name() const { return qualifiedName().toString(); }
-    bool specified() const { return m_specified; }
+    bool specified() const { return true; }
     Element* ownerElement() const { return m_element; }
 
     const AtomicString& value() const;
@@ -57,8 +57,6 @@ public:
     const QualifiedName& qualifiedName() const { return m_name; }
 
     bool isId() const;
-
-    void setSpecified(bool specified) { m_specified = specified; }
 
     void attachToElement(Element*);
     void detachFromElementWithValue(const AtomicString&);
@@ -94,9 +92,7 @@ private:
     Element* m_element;
     QualifiedName m_name;
     AtomicString m_standaloneValue;
-
-    unsigned m_ignoreChildrenChanged : 31;
-    bool m_specified : 1;
+    unsigned m_ignoreChildrenChanged;
 };
 
 inline Attr* toAttr(Node* node)
