@@ -1677,3 +1677,6 @@
 0xf4c75cafe4330950	mceSave
 0xfb7010f719b412c4	mceSetStyleInfo
 0x7174576438022591	styleWithCSS
+0xe302ba33f0b1d69e	webapps.AddShortcut.AppShortcut
+0x4ba515be980efd9c	webapps.AddShortcut.AppShortcutApple
+0xcc8255164f6f088c	webapps.AddShortcut.Bookmark
