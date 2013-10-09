@@ -75,6 +75,7 @@ colorInterpolation
 colorInterpolationFilters
 colorProfile
 colorRendering
+columnFill
 content
 counterIncrement
 counterReset

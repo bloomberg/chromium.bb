@@ -965,6 +965,9 @@ luminosity
 // object-fit
 scale-down
 
+// column-fill
+balance
+
 // overflow
 -webkit-paged-x
 -webkit-paged-y

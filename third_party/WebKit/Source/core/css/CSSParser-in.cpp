@@ -791,6 +791,12 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
     case CSSPropertyInternalCallback:
         // This property is only injected programmatically, not parsed from stylesheets.
         return false;
+    case CSSPropertyColumnFill:
+        if (RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
+            if (valueID == CSSValueAuto || valueID == CSSValueBalance)
+                return true;
+        }
+        break;
     case CSSPropertyAlignContent:
          if (valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround || valueID == CSSValueStretch)
              return true;
@@ -1007,6 +1013,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitColumnBreakAfter:
     case CSSPropertyWebkitColumnBreakBefore:
     case CSSPropertyWebkitColumnBreakInside:
+    case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnRuleStyle:
     case CSSPropertyAlignContent:
     case CSSPropertyAlignItems:
@@ -2855,6 +2862,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitColumnBreakAfter:
     case CSSPropertyWebkitColumnBreakBefore:
     case CSSPropertyWebkitColumnBreakInside:
+    case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnRuleStyle:
     case CSSPropertyAlignContent:
     case CSSPropertyAlignItems:

@@ -564,6 +564,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitColumnBreakBefore:
     case CSSPropertyWebkitColumnBreakInside:
     case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnGap:
     case CSSPropertyWebkitColumnProgression:
     case CSSPropertyWebkitColumnRule:

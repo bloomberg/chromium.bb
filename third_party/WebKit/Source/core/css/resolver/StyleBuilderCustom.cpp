@@ -2037,6 +2037,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitColumnBreakBefore:
     case CSSPropertyWebkitColumnBreakInside:
     case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnGap:
     case CSSPropertyWebkitColumnProgression:
     case CSSPropertyWebkitColumnRuleColor:

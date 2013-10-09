@@ -1910,6 +1910,10 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             if (style->hasAutoColumnCount())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
             return cssValuePool().createValue(style->columnCount(), CSSPrimitiveValue::CSS_NUMBER);
+        case CSSPropertyColumnFill:
+            if (RuntimeEnabledFeatures::regionBasedColumnsEnabled())
+                return cssValuePool().createValue(style->columnFill());
+            return 0;
         case CSSPropertyWebkitColumnGap:
             if (style->hasNormalColumnGap())
                 return cssValuePool().createIdentifierValue(CSSValueNormal);

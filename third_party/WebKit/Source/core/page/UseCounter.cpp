@@ -495,6 +495,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyObjectPosition: return 437;
     case CSSPropertyInternalCallback: return 438;
     case CSSPropertyWebkitShapeImageThreshold: return 439;
+    case CSSPropertyColumnFill: return 440;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
@@ -515,7 +516,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 439; }
+static int maximumCSSSampleId() { return 440; }
 
 UseCounter::UseCounter()
 {
