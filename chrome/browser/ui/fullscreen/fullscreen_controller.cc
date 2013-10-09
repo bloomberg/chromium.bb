@@ -43,8 +43,7 @@ using content::UserMetricsAction;
 using content::WebContents;
 
 FullscreenController::FullscreenController(Browser* browser)
-    : ptr_factory_(this),
-      browser_(browser),
+    : browser_(browser),
       window_(browser->window()),
       profile_(browser->profile()),
       fullscreened_tab_(NULL),
@@ -54,7 +53,8 @@ FullscreenController::FullscreenController(Browser* browser)
       mouse_lock_tab_(NULL),
       mouse_lock_state_(MOUSELOCK_NOT_REQUESTED),
       reentrant_window_state_change_call_check_(false),
-      is_privileged_fullscreen_for_testing_(false) {
+      is_privileged_fullscreen_for_testing_(false),
+      ptr_factory_(this) {
   DCHECK(window_);
   DCHECK(profile_);
 }

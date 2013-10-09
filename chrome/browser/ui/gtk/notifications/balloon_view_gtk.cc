@@ -99,9 +99,9 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       shelf_(NULL),
       hbox_(NULL),
       html_container_(NULL),
-      weak_factory_(this),
       menu_showing_(false),
-      pending_close_(false) {}
+      pending_close_(false),
+      weak_factory_(this) {}
 
 BalloonViewImpl::~BalloonViewImpl() {
   if (frame_container_) {

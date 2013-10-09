@@ -134,10 +134,6 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
 
   BubbleGtk* bubble_;
 
-  // We need to push some things on the back of the message loop, so we have
-  // a factory attached to our instance to manage task lifetimes.
-  base::WeakPtrFactory<BookmarkBubbleGtk> factory_;
-
   // Whether the bubble is creating or editing an existing bookmark.
   bool newly_bookmarked_;
   // When closing the window, whether we should update or remove the bookmark.
@@ -145,6 +141,10 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
   bool remove_bookmark_;
 
   content::NotificationRegistrar registrar_;
+
+  // We need to push some things on the back of the message loop, so we have
+  // a factory attached to our instance to manage task lifetimes.
+  base::WeakPtrFactory<BookmarkBubbleGtk> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleGtk);
 };

@@ -99,8 +99,7 @@ class ChromeShellDelegate::TabRestoreHelper : public TabRestoreServiceObserver {
 };
 
 ChromeShellDelegate::ChromeShellDelegate()
-    : weak_factory_(this),
-      launcher_delegate_(NULL) {
+    : launcher_delegate_(NULL) {
   instance_ = this;
   PlatformInit();
 }

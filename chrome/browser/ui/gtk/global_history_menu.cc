@@ -97,8 +97,8 @@ GlobalHistoryMenu::GlobalHistoryMenu(Browser* browser)
       profile_(browser_->profile()),
       history_menu_(NULL),
       top_sites_(NULL),
-      weak_ptr_factory_(this),
-      tab_restore_service_(NULL) {
+      tab_restore_service_(NULL),
+      weak_ptr_factory_(this) {
 }
 
 GlobalHistoryMenu::~GlobalHistoryMenu() {

@@ -184,9 +184,9 @@ class CertificateManagerHandler
   CancelableTaskTracker tracker_;
   scoped_refptr<FileAccessProvider> file_access_provider_;
 
-  base::WeakPtrFactory<CertificateManagerHandler> weak_ptr_factory_;
-
   scoped_ptr<CertIdMap> cert_id_map_;
+
+  base::WeakPtrFactory<CertificateManagerHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerHandler);
 };

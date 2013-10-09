@@ -723,10 +723,10 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
       model_(model),
       window_(window),
       theme_service_(GtkThemeService::GetFrom(model->profile())),
-      weak_factory_(this),
-      layout_factory_(this),
       added_as_message_loop_observer_(false),
-      hover_tab_selector_(model) {
+      hover_tab_selector_(model),
+      weak_factory_(this),
+      layout_factory_(this) {
 }
 
 TabStripGtk::~TabStripGtk() {

@@ -54,10 +54,10 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
       stop_(theme_service_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, IDR_STOP_D),
       widget_(gtk_chrome_button_new()),
       stop_to_reload_timer_delay_(base::TimeDelta::FromMilliseconds(1350)),
-      weak_factory_(this),
       menu_visible_(false),
       testing_mouse_hovered_(false),
-      testing_reload_count_(0) {
+      testing_reload_count_(0),
+      weak_factory_(this) {
   menu_model_.reset(new ui::SimpleMenuModel(this));
   for (size_t i = 0; i < arraysize(kReloadMenuItems); i++) {
     menu_model_->AddItemWithStringId(kReloadMenuItems[i], kReloadMenuItems[i]);

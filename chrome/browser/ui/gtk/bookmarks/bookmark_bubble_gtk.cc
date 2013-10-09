@@ -142,10 +142,10 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
       name_entry_(NULL),
       folder_combo_(NULL),
       bubble_(NULL),
-      factory_(this),
       newly_bookmarked_(newly_bookmarked),
       apply_edits_(true),
-      remove_bookmark_(false) {
+      remove_bookmark_(false),
+      factory_(this) {
   GtkWidget* label = gtk_label_new(l10n_util::GetStringUTF8(
       newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
                           IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK).c_str());

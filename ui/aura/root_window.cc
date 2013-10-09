@@ -171,8 +171,6 @@ RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
 RootWindow::RootWindow(const CreateParams& params)
     : Window(NULL),
       host_(CreateHost(this, params)),
-      schedule_paint_factory_(this),
-      event_factory_(this),
       touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
       mouse_pressed_handler_(NULL),
@@ -185,6 +183,8 @@ RootWindow::RootWindow(const CreateParams& params)
       defer_draw_scheduling_(false),
       mouse_moved_handler_set_reason_(MOUSE_MOVED_HANDLER_SET_REASON_NULL),
       move_hold_count_(0),
+      schedule_paint_factory_(this),
+      event_factory_(this),
       held_event_factory_(this),
       repostable_event_factory_(this) {
   SetName("RootWindow");

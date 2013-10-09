@@ -380,13 +380,13 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       tab_to_search_hint_icon_(NULL),
       tab_to_search_hint_trailing_label_(NULL),
       browser_(browser),
-      weak_ptr_factory_(this),
       popup_window_mode_(false),
       theme_service_(NULL),
       hbox_width_(0),
       entry_box_width_(0),
       show_selected_keyword_(false),
-      show_keyword_hint_(false) {
+      show_keyword_hint_(false),
+      weak_ptr_factory_(this) {
 }
 
 LocationBarViewGtk::~LocationBarViewGtk() {

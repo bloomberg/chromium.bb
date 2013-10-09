@@ -182,16 +182,16 @@ class DockedPanelCollection :
   // title-only states are delayed, for better usability with Taskbars/Docks.
   TitlebarAction delayed_titlebar_action_;
 
+  // Used to save the placement information for a panel.
+  PanelPlacement saved_panel_placement_;
+
+  static const int kPanelsHorizontalSpacing = 4;
+
   // Owned by MessageLoop after posting.
   base::WeakPtrFactory<DockedPanelCollection> titlebar_action_factory_;
 
   // Owned by MessageLoop after posting.
   base::WeakPtrFactory<DockedPanelCollection> refresh_action_factory_;
-
-  // Used to save the placement information for a panel.
-  PanelPlacement saved_panel_placement_;
-
-  static const int kPanelsHorizontalSpacing = 4;
 
   DISALLOW_COPY_AND_ASSIGN(DockedPanelCollection);
 };

@@ -54,8 +54,8 @@ class SyncInternalsUI : public content::WebUIController,
       const syncer::JsArgList& args) OVERRIDE;
 
  private:
-  base::WeakPtrFactory<SyncInternalsUI> weak_ptr_factory_;
   base::WeakPtr<syncer::JsController> js_controller_;
+  base::WeakPtrFactory<SyncInternalsUI> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncInternalsUI);
 };

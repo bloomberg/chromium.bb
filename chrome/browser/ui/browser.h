@@ -860,9 +860,6 @@ class Browser : public TabStripModelObserver,
   // See ScheduleUIUpdate and ProcessPendingUIUpdates.
   UpdateMap scheduled_updates_;
 
-  // The following factory is used for chrome update coalescing.
-  base::WeakPtrFactory<Browser> chrome_updater_factory_;
-
   // In-progress download termination handling /////////////////////////////////
 
   enum CancelDownloadConfirmationState {
@@ -894,9 +891,6 @@ class Browser : public TabStripModelObserver,
 
   scoped_ptr<chrome::UnloadController> unload_controller_;
   scoped_ptr<chrome::FastUnloadController> fast_unload_controller_;
-
-  // The following factory is used to close the frame at a later time.
-  base::WeakPtrFactory<Browser> weak_factory_;
 
   // The Find Bar. This may be NULL if there is no Find Bar, and if it is
   // non-NULL, it may or may not be visible.
@@ -937,6 +931,12 @@ class Browser : public TabStripModelObserver,
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
+
+  // The following factory is used for chrome update coalescing.
+  base::WeakPtrFactory<Browser> chrome_updater_factory_;
+
+  // The following factory is used to close the frame at a later time.
+  base::WeakPtrFactory<Browser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

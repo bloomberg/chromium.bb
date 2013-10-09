@@ -100,9 +100,6 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  // For callbacks may be run after destruction.
-  base::WeakPtrFactory<MostVisitedHandler> weak_ptr_factory_;
-
   // The most visited URLs, in priority order.
   // Only used for matching up clicks on the page to which most visited entry
   // was clicked on for metrics purposes.
@@ -120,6 +117,9 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
 
   // Whether the user has performed a "tracked" action to leave the page or not.
   bool user_action_logged_;
+
+  // For callbacks which may be run after destruction.
+  base::WeakPtrFactory<MostVisitedHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedHandler);
 };

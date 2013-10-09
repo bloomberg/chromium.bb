@@ -171,8 +171,6 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<PluginsDOMHandler> weak_ptr_factory_;
-
   // Holds grouped plug-ins. The key is the group identifier and
   // the value is the list of plug-ins belonging to the group.
   typedef base::hash_map<std::string, std::vector<const WebPluginInfo*> >
@@ -181,6 +179,8 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   // This pref guards the value whether about:plugins is in the details mode or
   // not.
   BooleanPrefMember show_details_;
+
+  base::WeakPtrFactory<PluginsDOMHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginsDOMHandler);
 };

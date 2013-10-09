@@ -109,8 +109,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<ChromeShellDelegate> weak_factory_;
-
   ChromeLauncherController* launcher_delegate_;
 
   scoped_ptr<TabRestoreHelper> tab_restore_helper_;

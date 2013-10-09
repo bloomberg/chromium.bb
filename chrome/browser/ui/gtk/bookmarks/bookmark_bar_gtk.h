@@ -419,12 +419,12 @@ class BookmarkBarGtk : public gfx::AnimationDelegate,
   // Tracks whether bookmarks can be modified.
   BooleanPrefMember edit_bookmarks_enabled_;
 
-  base::WeakPtrFactory<BookmarkBarGtk> weak_factory_;
-
   BookmarkBar::State bookmark_bar_state_;
 
   // Maximum height of the bookmark bar.
   int max_height_;
+
+  base::WeakPtrFactory<BookmarkBarGtk> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarGtk);
 };

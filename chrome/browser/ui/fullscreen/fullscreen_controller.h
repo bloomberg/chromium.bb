@@ -175,8 +175,6 @@ class FullscreenController : public content::NotificationObserver {
   void SetPrivilegedFullscreenForTesting(bool is_privileged);
   void UnlockMouse();
 
-  base::WeakPtrFactory<FullscreenController> ptr_factory_;
-
   Browser* const browser_;
   BrowserWindow* const window_;
   Profile* const profile_;
@@ -222,6 +220,8 @@ class FullscreenController : public content::NotificationObserver {
   // Used in testing to confirm proper behavior for specific, privileged
   // fullscreen cases.
   bool is_privileged_fullscreen_for_testing_;
+
+  base::WeakPtrFactory<FullscreenController> ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenController);
 };

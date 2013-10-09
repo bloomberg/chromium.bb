@@ -155,9 +155,9 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       slide_animation_(this),
       last_allocation_width_(-1),
       throbbing_widget_(NULL),
-      weak_factory_(this),
       bookmark_bar_state_(BookmarkBar::DETACHED),
-      max_height_(0) {
+      max_height_(0),
+      weak_factory_(this) {
   Init();
   // Force an update by simulating being in the wrong state.
   // BrowserWindowGtk sets our true state after we're created.

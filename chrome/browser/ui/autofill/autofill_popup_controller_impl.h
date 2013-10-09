@@ -233,9 +233,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // Whether the popup view should hide on mouse presses outside of it.
   bool hide_on_outside_click_;
 
-  base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
-
   content::RenderWidgetHost::KeyPressEventCallback key_press_event_callback_;
+
+  base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 };
 
 }  // namespace autofill

@@ -482,13 +482,6 @@ class TabStripGtk : public TabStripModelObserver,
   // the drag session.
   scoped_ptr<DraggedTabControllerGtk> drag_controller_;
 
-  // A factory that is used to construct a delayed callback to the
-  // ResizeLayoutTabsNow method.
-  base::WeakPtrFactory<TabStripGtk> weak_factory_;
-
-  // A different factory for calls to Layout().
-  base::WeakPtrFactory<TabStripGtk> layout_factory_;
-
   // True if the tabstrip has already been added as a MessageLoop observer.
   bool added_as_message_loop_observer_;
 
@@ -496,6 +489,13 @@ class TabStripGtk : public TabStripModelObserver,
   HoverTabSelector hover_tab_selector_;
 
   content::NotificationRegistrar registrar_;
+
+  // A factory that is used to construct a delayed callback to the
+  // ResizeLayoutTabsNow method.
+  base::WeakPtrFactory<TabStripGtk> weak_factory_;
+
+  // A different factory for calls to Layout().
+  base::WeakPtrFactory<TabStripGtk> layout_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripGtk);
 };

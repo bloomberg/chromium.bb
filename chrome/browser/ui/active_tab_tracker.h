@@ -96,13 +96,13 @@ class ActiveTabTracker : public chrome::BrowserListObserver,
   // Timer used to query for idle state.
   base::Timer timer_;
 
-  // WeakPtrFactory used when querying for idle state.
-  base::WeakPtrFactory<ActiveTabTracker> weak_ptr_factory_;
-
   // The url of the active tab. Empty indicates not valid.
   GURL url_;
 
   content::NotificationRegistrar registrar_;
+
+  // WeakPtrFactory used when querying for idle state.
+  base::WeakPtrFactory<ActiveTabTracker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveTabTracker);
 };

@@ -324,7 +324,6 @@ class PolicyUIHandler : public content::NotificationObserver,
 
   bool initialized_;
   std::string device_domain_;
-  base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
 
   // Providers that supply status dictionaries for user and device policy,
   // respectively. These are created on initialization time as appropriate for
@@ -333,6 +332,8 @@ class PolicyUIHandler : public content::NotificationObserver,
   scoped_ptr<CloudPolicyStatusProvider> device_status_provider_;
 
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyUIHandler);
 };

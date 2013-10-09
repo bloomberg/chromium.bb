@@ -108,9 +108,9 @@ class ExtensionPopupGtk : public content::NotificationObserver,
   // Whether a devtools window is attached to this bubble.
   bool being_inspected_;
 
-  base::WeakPtrFactory<ExtensionPopupGtk> weak_factory_;
-
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
+
+  base::WeakPtrFactory<ExtensionPopupGtk> weak_factory_;
 
   // Used for testing. ---------------------------------------------------------
   gfx::Rect GetViewBounds();

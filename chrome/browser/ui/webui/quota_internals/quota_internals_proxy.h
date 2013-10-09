@@ -77,11 +77,11 @@ class QuotaInternalsProxy
   QuotaInternalsHandler* handler_;
 
   // Used on IO Thread.
-  base::WeakPtrFactory<QuotaInternalsProxy> weak_factory_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   std::set<std::pair<std::string, quota::StorageType> >
       hosts_visited_, hosts_pending_;
   std::vector<PerHostStorageInfo> report_pending_;
+  base::WeakPtrFactory<QuotaInternalsProxy> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaInternalsProxy);
 };

@@ -131,7 +131,6 @@ class ReloadButtonGtk : public content::NotificationObserver,
 
   // The y position of the last mouse down event.
   int y_position_of_last_press_;
-  base::WeakPtrFactory<ReloadButtonGtk> weak_factory_;
   // The menu gets reset every time it is shown.
   scoped_ptr<MenuGtk> menu_;
   // The dropdown menu model.
@@ -145,6 +144,8 @@ class ReloadButtonGtk : public content::NotificationObserver,
   // Increments when we would tell the browser to "reload", so
   // test code can tell whether we did so (as there may be no |browser_|).
   int testing_reload_count_;
+
+  base::WeakPtrFactory<ReloadButtonGtk> weak_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReloadButtonGtk);
 };

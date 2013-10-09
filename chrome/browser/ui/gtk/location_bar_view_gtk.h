@@ -473,9 +473,6 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   Browser* browser_;
 
-  // Used to schedule a task for the first run bubble.
-  base::WeakPtrFactory<LocationBarViewGtk> weak_ptr_factory_;
-
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (font size / color). This is used for popups.
   bool popup_window_mode_;
@@ -507,6 +504,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Used to remember the URL and title text when drag&drop has begun.
   GURL drag_url_;
   string16 drag_title_;
+
+  // Used to schedule a task for the first run bubble.
+  base::WeakPtrFactory<LocationBarViewGtk> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

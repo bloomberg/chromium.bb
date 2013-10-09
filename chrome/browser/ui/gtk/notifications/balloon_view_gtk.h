@@ -112,9 +112,6 @@ class BalloonViewImpl : public BalloonView,
   // The renderer of the HTML contents.
   scoped_ptr<BalloonViewHost> html_contents_;
 
-  // The following factory is used to call methods at a later time.
-  base::WeakPtrFactory<BalloonViewImpl> weak_factory_;
-
   // Close button.
   scoped_ptr<CustomDrawButton> close_button_;
 
@@ -136,6 +133,8 @@ class BalloonViewImpl : public BalloonView,
 
   // Is there a pending system-initiated close?
   bool pending_close_;
+
+  base::WeakPtrFactory<BalloonViewImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };

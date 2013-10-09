@@ -50,9 +50,9 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
       bubble_(NULL),
       host_(host),
       anchor_(anchor),
-      weak_factory_(this),
       devtools_callback_(base::Bind(
-          &ExtensionPopupGtk::OnDevToolsStateChanged, base::Unretained(this))) {
+          &ExtensionPopupGtk::OnDevToolsStateChanged, base::Unretained(this))),
+      weak_factory_(this) {
   host_->view()->SetContainer(this);
   being_inspected_ = show_action == SHOW_AND_INSPECT;
 

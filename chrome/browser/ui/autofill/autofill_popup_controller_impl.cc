@@ -98,10 +98,10 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       element_bounds_(element_bounds),
       text_direction_(text_direction),
       hide_on_outside_click_(false),
-      weak_ptr_factory_(this),
       key_press_event_callback_(
           base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
-                     base::Unretained(this))) {
+                     base::Unretained(this))),
+      weak_ptr_factory_(this) {
   ClearState();
 #if !defined(OS_ANDROID)
   subtext_font_ = name_font_.DeriveFont(kLabelFontSizeDelta);

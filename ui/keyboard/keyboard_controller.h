@@ -82,9 +82,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   scoped_ptr<aura::Window> container_;
   ui::InputMethod* input_method_;
   bool keyboard_visible_;
-  base::WeakPtrFactory<KeyboardController> weak_factory_;
 
   ObserverList<KeyboardControllerObserver> observer_list_;
+
+  base::WeakPtrFactory<KeyboardController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardController);
 };

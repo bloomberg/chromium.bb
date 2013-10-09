@@ -212,13 +212,13 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // Callback executed when sync setup succeeds or fails.
   Callback sync_setup_completed_callback_;
 
-  base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
-
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // CloudPolicyClient reference we keep while determining whether to create
   // a new profile for an enterprise user or not.
   scoped_ptr<policy::CloudPolicyClient> policy_client_;
 #endif
+
+  base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarter);
 };

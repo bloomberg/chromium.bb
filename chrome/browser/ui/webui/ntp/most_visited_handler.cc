@@ -53,10 +53,10 @@
 using content::UserMetricsAction;
 
 MostVisitedHandler::MostVisitedHandler()
-    : weak_ptr_factory_(this),
-      got_first_most_visited_request_(false),
+    : got_first_most_visited_request_(false),
       most_visited_viewed_(false),
-      user_action_logged_(false) {
+      user_action_logged_(false),
+      weak_ptr_factory_(this) {
 }
 
 MostVisitedHandler::~MostVisitedHandler() {

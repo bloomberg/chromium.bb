@@ -97,9 +97,6 @@ class NaClDomHandler : public WebUIMessageHandler {
   // is gathered.
   void PopulatePageInformation(DictionaryValue* naclInfo);
 
-  // Factory for the creating refs in callbacks.
-  base::WeakPtrFactory<NaClDomHandler> weak_ptr_factory_;
-
   // Returns whether the specified plugin is enabled.
   bool isPluginEnabled(size_t plugin_index);
 
@@ -128,15 +125,18 @@ class NaClDomHandler : public WebUIMessageHandler {
   bool pnacl_path_exists_;
   std::string pnacl_version_string_;
 
+  // Factory for the creating refs in callbacks.
+  base::WeakPtrFactory<NaClDomHandler> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(NaClDomHandler);
 };
 
 NaClDomHandler::NaClDomHandler()
-    : weak_ptr_factory_(this),
-      page_has_requested_data_(false),
+    : page_has_requested_data_(false),
       has_plugin_info_(false),
       pnacl_path_validated_(false),
-      pnacl_path_exists_(false) {
+      pnacl_path_exists_(false),
+      weak_ptr_factory_(this) {
   PluginService::GetInstance()->GetPlugins(base::Bind(
       &NaClDomHandler::OnGotPlugins, weak_ptr_factory_.GetWeakPtr()));
 }

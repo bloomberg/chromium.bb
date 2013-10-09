@@ -329,13 +329,11 @@ Browser::Browser(const CreateParams& params)
                                          params.profile)),
       app_name_(params.app_name),
       app_type_(params.app_type),
-      chrome_updater_factory_(this),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       override_bounds_(params.initial_bounds),
       initial_show_state_(params.initial_show_state),
       is_session_restore_(params.is_session_restore),
       host_desktop_type_(params.host_desktop_type),
-      weak_factory_(this),
       content_setting_bubble_model_delegate_(
           new BrowserContentSettingBubbleModelDelegate(this)),
       toolbar_model_delegate_(new BrowserToolbarModelDelegate(this)),
@@ -344,7 +342,9 @@ Browser::Browser(const CreateParams& params)
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(
           this, g_browser_process->profile_manager())),
-      window_has_shown_(false) {
+      window_has_shown_(false),
+      chrome_updater_factory_(this),
+      weak_factory_(this) {
   // If this causes a crash then a window is being opened using a profile type
   // that is disallowed by policy. The crash prevents the disabled window type
   // from opening at all, but the path that triggered it should be fixed.

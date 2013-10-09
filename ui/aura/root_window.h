@@ -424,12 +424,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   scoped_ptr<RootWindowHost> host_;
 
-  // Used to schedule painting.
-  base::WeakPtrFactory<RootWindow> schedule_paint_factory_;
-
-  // Use to post mouse move event.
-  base::WeakPtrFactory<RootWindow> event_factory_;
-
   // Touch ids that are currently down.
   uint32 touch_ids_down_;
 
@@ -458,17 +452,25 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // How many move holds are outstanding. We try to defer dispatching
   // touch/mouse moves while the count is > 0.
   int move_hold_count_;
-  // Used to schedule DispatchHeldEvents() when |move_hold_count_| goes to 0.
-  base::WeakPtrFactory<RootWindow> held_event_factory_;
   scoped_ptr<ui::LocatedEvent> held_move_event_;
 
   // Allowing for reposting of events. Used when exiting context menus.
   scoped_ptr<ui::LocatedEvent>  held_repostable_event_;
-  base::WeakPtrFactory<RootWindow> repostable_event_factory_;
 
   scoped_ptr<ui::ViewProp> prop_;
 
   scoped_ptr<RootWindowTransformer> transformer_;
+
+  // Used to schedule painting.
+  base::WeakPtrFactory<RootWindow> schedule_paint_factory_;
+
+  // Use to post mouse move event.
+  base::WeakPtrFactory<RootWindow> event_factory_;
+
+  // Used to schedule DispatchHeldEvents() when |move_hold_count_| goes to 0.
+  base::WeakPtrFactory<RootWindow> held_event_factory_;
+
+  base::WeakPtrFactory<RootWindow> repostable_event_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

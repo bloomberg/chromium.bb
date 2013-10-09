@@ -119,9 +119,6 @@ class FlashDOMHandler : public WebUIMessageHandler,
   // Crash list.
   scoped_refptr<CrashUploadList> upload_list_;
 
-  // Factory for the creating refs in callbacks.
-  base::WeakPtrFactory<FlashDOMHandler> weak_ptr_factory_;
-
   // Whether the list of all crashes is available.
   bool crash_list_available_;
   // Whether the page has requested data.
@@ -131,16 +128,18 @@ class FlashDOMHandler : public WebUIMessageHandler,
   // Whether the plugin information is ready.
   bool has_plugin_info_;
 
+  base::WeakPtrFactory<FlashDOMHandler> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(FlashDOMHandler);
 };
 
 FlashDOMHandler::FlashDOMHandler()
-    : weak_ptr_factory_(this),
-      crash_list_available_(false),
+    : crash_list_available_(false),
       page_has_requested_data_(false),
       has_gpu_info_(false),
-      has_plugin_info_(false) {
-  // Request Crash data asynchronously.
+      has_plugin_info_(false),
+      weak_ptr_factory_(this) {
+        // Request Crash data asynchronously.
   upload_list_ = CrashUploadList::Create(this);
   upload_list_->LoadUploadListAsynchronously();
 

@@ -110,15 +110,15 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
 
   history::TopSites* top_sites_;
 
-  // For callbacks may be run after destruction.
-  base::WeakPtrFactory<GlobalHistoryMenu> weak_ptr_factory_;
-
   TabRestoreService* tab_restore_service_;  // weak
 
   // A mapping from GtkMenuItems to HistoryItems that maintain data.
   MenuItemToHistoryMap menu_item_history_map_;
 
   content::NotificationRegistrar registrar_;
+
+  // For callbacks which may be run after destruction.
+  base::WeakPtrFactory<GlobalHistoryMenu> weak_ptr_factory_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_GLOBAL_HISTORY_MENU_H_
