@@ -742,11 +742,14 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
       kDeviceAttestationEnabled,
       policy.attestation_settings().attestation_enabled());
 
-  new_values_cache->SetBoolean(
-      kAttestationForContentProtectionEnabled,
-      policy.has_attestation_settings() &&
-      policy.attestation_settings().has_content_protection_enabled() &&
-      policy.attestation_settings().content_protection_enabled());
+  if (policy.has_attestation_settings() &&
+      policy.attestation_settings().has_content_protection_enabled()) {
+    new_values_cache->SetBoolean(
+        kAttestationForContentProtectionEnabled,
+        policy.attestation_settings().content_protection_enabled());
+  } else {
+    new_values_cache->SetBoolean(kAttestationForContentProtectionEnabled, true);
+  }
 }
 
 void DeviceSettingsProvider::UpdateValuesCache(
