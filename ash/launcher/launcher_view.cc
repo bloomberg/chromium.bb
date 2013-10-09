@@ -15,7 +15,6 @@
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/alternate_app_list_button.h"
@@ -23,6 +22,7 @@
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
 #include "base/auto_reset.h"
@@ -421,8 +421,7 @@ LauncherView::LauncherView(LauncherModel* model,
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
   focus_search_.reset(new LauncherFocusSearch(view_model_.get()));
-  tooltip_.reset(new LauncherTooltipManager(
-      shelf_layout_manager, this));
+  tooltip_.reset(new ShelfTooltipManager(shelf_layout_manager, this));
 }
 
 LauncherView::~LauncherView() {

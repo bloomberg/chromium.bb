@@ -42,10 +42,10 @@ namespace internal {
 
 class DragImageView;
 class LauncherButton;
-class LauncherTooltipManager;
-class ShelfLayoutManager;
 class OverflowBubble;
 class OverflowButton;
+class ShelfLayoutManager;
+class ShelfTooltipManager;
 
 class ASH_EXPORT LauncherView : public views::View,
                                 public LauncherModelObserver,
@@ -61,7 +61,7 @@ class ASH_EXPORT LauncherView : public views::View,
                ShelfLayoutManager* shelf_layout_manager);
   virtual ~LauncherView();
 
-  LauncherTooltipManager* tooltip_manager() { return tooltip_.get(); }
+  ShelfTooltipManager* tooltip_manager() { return tooltip_.get(); }
 
   LauncherModel* model() { return model_; }
 
@@ -334,7 +334,7 @@ class ASH_EXPORT LauncherView : public views::View,
 
   OverflowBubble* owner_overflow_bubble_;
 
-  scoped_ptr<LauncherTooltipManager> tooltip_;
+  scoped_ptr<ShelfTooltipManager> tooltip_;
 
   // Pointer device that initiated the current drag operation. If there is no
   // current dragging operation, this is NONE.

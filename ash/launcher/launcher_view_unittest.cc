@@ -12,10 +12,10 @@
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_icon_observer.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -1056,7 +1056,7 @@ TEST_F(LauncherViewTest, LauncherItemBoundsCheck) {
   VerifyLauncherItemBoundsAreValid();
 }
 
-TEST_F(LauncherViewTest, LauncherTooltipTest) {
+TEST_F(LauncherViewTest, ShelfTooltipTest) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -1068,7 +1068,7 @@ TEST_F(LauncherViewTest, LauncherTooltipTest) {
   internal::LauncherButton* platform_button = GetButtonByID(platform_button_id);
 
   internal::LauncherButtonHost* button_host = launcher_view_;
-  internal::LauncherTooltipManager* tooltip_manager =
+  internal::ShelfTooltipManager* tooltip_manager =
       launcher_view_->tooltip_manager();
 
   button_host->MouseEnteredButton(app_button);
@@ -1106,7 +1106,7 @@ TEST_F(LauncherViewTest, LauncherTooltipTest) {
 // button, see crbug.com/288838.
 TEST_F(LauncherViewTest, RemovingItemClosesTooltip) {
   internal::LauncherButtonHost* button_host = launcher_view_;
-  internal::LauncherTooltipManager* tooltip_manager =
+  internal::ShelfTooltipManager* tooltip_manager =
       launcher_view_->tooltip_manager();
 
   // Add an item to the launcher.
@@ -1132,7 +1132,7 @@ TEST_F(LauncherViewTest, RemovingItemClosesTooltip) {
 // Changing the shelf alignment closes any open tooltip.
 TEST_F(LauncherViewTest, ShelfAlignmentClosesTooltip) {
   internal::LauncherButtonHost* button_host = launcher_view_;
-  internal::LauncherTooltipManager* tooltip_manager =
+  internal::ShelfTooltipManager* tooltip_manager =
       launcher_view_->tooltip_manager();
 
   // Add an item to the launcher.
@@ -1226,7 +1226,7 @@ TEST_F(LauncherViewTest, ShouldHideTooltipWithAppListWindowTest) {
 // Test that by moving the mouse cursor off the button onto the bubble it closes
 // the bubble.
 TEST_F(LauncherViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
-  internal::LauncherTooltipManager* tooltip_manager =
+  internal::ShelfTooltipManager* tooltip_manager =
       launcher_view_->tooltip_manager();
   tooltip_manager->CreateZeroDelayTimerForTest();
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher_tooltip_manager.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
 
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -34,16 +34,16 @@ void SetEventTarget(ui::EventTarget* target,
 namespace ash {
 namespace test {
 
-class LauncherTooltipManagerTest : public AshTestBase {
+class ShelfTooltipManagerTest : public AshTestBase {
  public:
-  LauncherTooltipManagerTest() {}
-  virtual ~LauncherTooltipManagerTest() {}
+  ShelfTooltipManagerTest() {}
+  virtual ~ShelfTooltipManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     internal::RootWindowController* controller =
         Shell::GetPrimaryRootWindowController();
-    tooltip_manager_.reset(new internal::LauncherTooltipManager(
+    tooltip_manager_.reset(new internal::ShelfTooltipManager(
         controller->GetShelfLayoutManager(),
         LauncherTestAPI(controller->shelf()->launcher()).launcher_view()));
   }
@@ -82,7 +82,7 @@ class LauncherTooltipManagerTest : public AshTestBase {
  protected:
   scoped_ptr<views::Widget> widget_;
   scoped_ptr<views::View> dummy_anchor_;
-  scoped_ptr<internal::LauncherTooltipManager> tooltip_manager_;
+  scoped_ptr<internal::ShelfTooltipManager> tooltip_manager_;
 
  private:
   void CreateWidget() {
@@ -101,10 +101,10 @@ class LauncherTooltipManagerTest : public AshTestBase {
     widget_->SetContentsView(dummy_anchor_.get());
   }
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherTooltipManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfTooltipManagerTest);
 };
 
-TEST_F(LauncherTooltipManagerTest, ShowingBasics) {
+TEST_F(ShelfTooltipManagerTest, ShowingBasics) {
   // ShowDelayed() should just start the timer instead of showing immediately.
   ShowDelayed();
   EXPECT_FALSE(TooltipIsVisible());
@@ -115,7 +115,7 @@ TEST_F(LauncherTooltipManagerTest, ShowingBasics) {
   EXPECT_FALSE(IsTimerRunning());
 }
 
-TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsHidden) {
+TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsHidden) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
@@ -144,7 +144,7 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsHidden) {
   EXPECT_FALSE(IsTimerRunning());
 }
 
-TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsAutoHide) {
+TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
   // Create a visible window so auto-hide behavior is enforced.
   views::Widget* dummy = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -176,7 +176,7 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsAutoHide) {
   EXPECT_FALSE(IsTimerRunning());
 }
 
-TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
+TEST_F(ShelfTooltipManagerTest, ShouldHideForEvents) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
@@ -218,7 +218,7 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   EXPECT_FALSE(TooltipIsVisible());
 }
 
-TEST_F(LauncherTooltipManagerTest, HideForMouseMoveEvent) {
+TEST_F(ShelfTooltipManagerTest, HideForMouseMoveEvent) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
@@ -246,8 +246,8 @@ TEST_F(LauncherTooltipManagerTest, HideForMouseMoveEvent) {
   EXPECT_FALSE(TooltipIsVisible());
 }
 
-//Checks that tooltip is hidden when mouse is pressed in anywhere.
-TEST_F(LauncherTooltipManagerTest, HideForMouseClickEvent) {
+// Checks that tooltip is hidden when mouse is pressed in anywhere.
+TEST_F(ShelfTooltipManagerTest, HideForMouseClickEvent) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 

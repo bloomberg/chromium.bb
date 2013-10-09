@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_LAUNCHER_TOOLTIP_MANAGER_H_
-#define ASH_LAUNCHER_LAUNCHER_TOOLTIP_MANAGER_H_
+#ifndef ASH_SHELF_SHELF_TOOLTIP_MANAGER_H_
+#define ASH_SHELF_SHELF_TOOLTIP_MANAGER_H_
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -27,7 +27,7 @@ class Label;
 
 namespace ash {
 namespace test {
-class LauncherTooltipManagerTest;
+class ShelfTooltipManagerTest;
 class LauncherViewTest;
 }
 
@@ -35,18 +35,15 @@ namespace internal {
 class LauncherView;
 class ShelfLayoutManager;
 
-// LauncherTooltipManager manages the tooltip balloon poping up on launcher
-// items.
-class ASH_EXPORT LauncherTooltipManager : public ui::EventHandler,
-                                          public ShelfLayoutManagerObserver {
+// ShelfTooltipManager manages the tooltip balloon poping up on shelf items.
+class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
+                                       public ShelfLayoutManagerObserver {
  public:
-  LauncherTooltipManager(ShelfLayoutManager* shelf_layout_manager,
-                         LauncherView* launcher_view);
-  virtual ~LauncherTooltipManager();
+  ShelfTooltipManager(ShelfLayoutManager* shelf_layout_manager,
+                      LauncherView* launcher_view);
+  virtual ~ShelfTooltipManager();
 
-  ShelfLayoutManager* shelf_layout_manager() {
-    return shelf_layout_manager_;
-  }
+  ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
 
   // Called when the bubble is closed.
   void OnBubbleClosed(views::BubbleDelegateView* view);
@@ -94,9 +91,9 @@ protected:
   virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) OVERRIDE;
 
  private:
-  class LauncherTooltipBubble;
+  class ShelfTooltipBubble;
   friend class test::LauncherViewTest;
-  friend class test::LauncherTooltipManagerTest;
+  friend class test::ShelfTooltipManagerTest;
 
   void CancelHidingAnimation();
   void CloseSoon();
@@ -104,7 +101,7 @@ protected:
   void CreateBubble(views::View* anchor, const base::string16& text);
   void CreateTimer(int delay_in_ms);
 
-  LauncherTooltipBubble* view_;
+  ShelfTooltipBubble* view_;
   views::Widget* widget_;
   views::View* anchor_;
   base::string16 text_;
@@ -113,12 +110,12 @@ protected:
   ShelfLayoutManager* shelf_layout_manager_;
   LauncherView* launcher_view_;
 
-  base::WeakPtrFactory<LauncherTooltipManager> weak_factory_;
+  base::WeakPtrFactory<ShelfTooltipManager> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherTooltipManager);
+  DISALLOW_COPY_AND_ASSIGN(ShelfTooltipManager);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_LAUNCHER_TOOLTIP_MANAGER_H_
+#endif  // ASH_SHELF_SHELF_TOOLTIP_MANAGER_H_

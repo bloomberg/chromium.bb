@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher_tooltip_manager.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
 
 #include "ash/launcher/launcher_view.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -46,12 +46,12 @@ const int kArrowOffsetTopBottom = 7;
 }  // namespace
 
 // The implementation of tooltip of the launcher.
-class LauncherTooltipManager::LauncherTooltipBubble
+class ShelfTooltipManager::ShelfTooltipBubble
     : public views::BubbleDelegateView {
  public:
-  LauncherTooltipBubble(views::View* anchor,
+  ShelfTooltipBubble(views::View* anchor,
                         views::BubbleBorder::Arrow arrow,
-                        LauncherTooltipManager* host);
+                        ShelfTooltipManager* host);
 
   void SetText(const base::string16& text);
   void Close();
@@ -63,18 +63,17 @@ class LauncherTooltipManager::LauncherTooltipBubble
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  LauncherTooltipManager* host_;
+  ShelfTooltipManager* host_;
   views::Label* label_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherTooltipBubble);
+  DISALLOW_COPY_AND_ASSIGN(ShelfTooltipBubble);
 };
 
-LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
+ShelfTooltipManager::ShelfTooltipBubble::ShelfTooltipBubble(
     views::View* anchor,
     views::BubbleBorder::Arrow arrow,
-    LauncherTooltipManager* host)
-    : views::BubbleDelegateView(anchor, arrow),
-      host_(host) {
+    ShelfTooltipManager* host)
+    : views::BubbleDelegateView(anchor, arrow), host_(host) {
   // Make sure that the bubble follows the animation of the shelf.
   set_move_with_anchor(true);
   gfx::Insets insets = gfx::Insets(kArrowOffsetTopBottom,
@@ -109,26 +108,26 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   views::BubbleDelegateView::CreateBubble(this);
 }
 
-void LauncherTooltipManager::LauncherTooltipBubble::SetText(
+void ShelfTooltipManager::ShelfTooltipBubble::SetText(
     const base::string16& text) {
   label_->SetText(text);
   SizeToContents();
 }
 
-void LauncherTooltipManager::LauncherTooltipBubble::Close() {
+void ShelfTooltipManager::ShelfTooltipBubble::Close() {
   if (GetWidget()) {
     host_ = NULL;
     GetWidget()->Close();
   }
 }
 
-void LauncherTooltipManager::LauncherTooltipBubble::WindowClosing() {
+void ShelfTooltipManager::ShelfTooltipBubble::WindowClosing() {
   views::BubbleDelegateView::WindowClosing();
   if (host_)
     host_->OnBubbleClosed(this);
 }
 
-gfx::Size LauncherTooltipManager::LauncherTooltipBubble::GetPreferredSize() {
+gfx::Size ShelfTooltipManager::ShelfTooltipBubble::GetPreferredSize() {
   gfx::Size pref_size = views::BubbleDelegateView::GetPreferredSize();
   if (pref_size.height() < kTooltipMinHeight)
     pref_size.set_height(kTooltipMinHeight);
@@ -137,7 +136,7 @@ gfx::Size LauncherTooltipManager::LauncherTooltipBubble::GetPreferredSize() {
   return pref_size;
 }
 
-LauncherTooltipManager::LauncherTooltipManager(
+ShelfTooltipManager::ShelfTooltipManager(
     ShelfLayoutManager* shelf_layout_manager,
     LauncherView* launcher_view)
     : view_(NULL),
@@ -152,7 +151,7 @@ LauncherTooltipManager::LauncherTooltipManager(
     Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
-LauncherTooltipManager::~LauncherTooltipManager() {
+ShelfTooltipManager::~ShelfTooltipManager() {
   CancelHidingAnimation();
   Close();
   if (shelf_layout_manager_)
@@ -161,8 +160,8 @@ LauncherTooltipManager::~LauncherTooltipManager() {
     Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-void LauncherTooltipManager::ShowDelayed(views::View* anchor,
-                                         const base::string16& text) {
+void ShelfTooltipManager::ShowDelayed(views::View* anchor,
+                                      const base::string16& text) {
   if (view_) {
     if (timer_.get() && timer_->IsRunning()) {
       return;
@@ -179,8 +178,8 @@ void LauncherTooltipManager::ShowDelayed(views::View* anchor,
   ResetTimer();
 }
 
-void LauncherTooltipManager::ShowImmediately(views::View* anchor,
-                                             const base::string16& text) {
+void ShelfTooltipManager::ShowImmediately(views::View* anchor,
+                                          const base::string16& text) {
   if (view_) {
     if (timer_.get() && timer_->IsRunning())
       StopTimer();
@@ -195,7 +194,7 @@ void LauncherTooltipManager::ShowImmediately(views::View* anchor,
   ShowInternal();
 }
 
-void LauncherTooltipManager::Close() {
+void ShelfTooltipManager::Close() {
   StopTimer();
   if (view_) {
     view_->Close();
@@ -204,14 +203,14 @@ void LauncherTooltipManager::Close() {
   }
 }
 
-void LauncherTooltipManager::OnBubbleClosed(views::BubbleDelegateView* view) {
+void ShelfTooltipManager::OnBubbleClosed(views::BubbleDelegateView* view) {
   if (view == view_) {
     view_ = NULL;
     widget_ = NULL;
   }
 }
 
-void LauncherTooltipManager::UpdateArrow() {
+void ShelfTooltipManager::UpdateArrow() {
   if (view_) {
     CancelHidingAnimation();
     Close();
@@ -219,7 +218,7 @@ void LauncherTooltipManager::UpdateArrow() {
   }
 }
 
-void LauncherTooltipManager::ResetTimer() {
+void ShelfTooltipManager::ResetTimer() {
   if (timer_.get() && timer_->IsRunning()) {
     timer_->Reset();
     return;
@@ -232,22 +231,22 @@ void LauncherTooltipManager::ResetTimer() {
   CreateTimer(kTooltipAppearanceDelay);
 }
 
-void LauncherTooltipManager::StopTimer() {
+void ShelfTooltipManager::StopTimer() {
   timer_.reset();
 }
 
-bool LauncherTooltipManager::IsVisible() {
+bool ShelfTooltipManager::IsVisible() {
   if (timer_.get() && timer_->IsRunning())
     return false;
 
   return widget_ && widget_->IsVisible();
 }
 
-void LauncherTooltipManager::CreateZeroDelayTimerForTest() {
+void ShelfTooltipManager::CreateZeroDelayTimerForTest() {
   CreateTimer(0);
 }
 
-void LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
+void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(event);
   DCHECK(event->target());
   if (!widget_ || !widget_->IsVisible())
@@ -280,13 +279,13 @@ void LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void LauncherTooltipManager::OnTouchEvent(ui::TouchEvent* event) {
+void ShelfTooltipManager::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (widget_ && widget_->IsVisible() && widget_->GetNativeWindow() != target)
     Close();
 }
 
-void LauncherTooltipManager::OnGestureEvent(ui::GestureEvent* event) {
+void ShelfTooltipManager::OnGestureEvent(ui::GestureEvent* event) {
   if (widget_ && widget_->IsVisible()) {
     // Because this mouse event may arrive to |view_|, here we just schedule
     // the closing event rather than directly calling Close().
@@ -294,15 +293,15 @@ void LauncherTooltipManager::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void LauncherTooltipManager::OnCancelMode(ui::CancelModeEvent* event) {
+void ShelfTooltipManager::OnCancelMode(ui::CancelModeEvent* event) {
   Close();
 }
 
-void LauncherTooltipManager::WillDeleteShelf() {
+void ShelfTooltipManager::WillDeleteShelf() {
   shelf_layout_manager_ = NULL;
 }
 
-void LauncherTooltipManager::WillChangeVisibilityState(
+void ShelfTooltipManager::WillChangeVisibilityState(
     ShelfVisibilityState new_state) {
   if (new_state == SHELF_HIDDEN) {
     StopTimer();
@@ -310,8 +309,7 @@ void LauncherTooltipManager::WillChangeVisibilityState(
   }
 }
 
-void LauncherTooltipManager::OnAutoHideStateChanged(
-    ShelfAutoHideState new_state) {
+void ShelfTooltipManager::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
   if (new_state == SHELF_AUTO_HIDE_HIDDEN) {
     StopTimer();
     // AutoHide state change happens during an event filter, so immediate close
@@ -321,7 +319,7 @@ void LauncherTooltipManager::OnAutoHideStateChanged(
   }
 }
 
-void LauncherTooltipManager::CancelHidingAnimation() {
+void ShelfTooltipManager::CancelHidingAnimation() {
   if (!widget_ || !widget_->GetNativeView())
     return;
 
@@ -330,21 +328,21 @@ void LauncherTooltipManager::CancelHidingAnimation() {
       native_view, views::corewm::ANIMATE_NONE);
 }
 
-void LauncherTooltipManager::CloseSoon() {
+void ShelfTooltipManager::CloseSoon() {
   base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,
-      base::Bind(&LauncherTooltipManager::Close, weak_factory_.GetWeakPtr()));
+      base::Bind(&ShelfTooltipManager::Close, weak_factory_.GetWeakPtr()));
 }
 
-void LauncherTooltipManager::ShowInternal() {
+void ShelfTooltipManager::ShowInternal() {
   if (view_)
     view_->GetWidget()->Show();
 
   timer_.reset();
 }
 
-void LauncherTooltipManager::CreateBubble(views::View* anchor,
-                                          const base::string16& text) {
+void ShelfTooltipManager::CreateBubble(views::View* anchor,
+                                       const base::string16& text) {
   DCHECK(!view_);
 
   anchor_ = anchor;
@@ -356,7 +354,7 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
           views::BubbleBorder::RIGHT_CENTER,
           views::BubbleBorder::TOP_CENTER);
 
-  view_ = new LauncherTooltipBubble(anchor, arrow, this);
+  view_ = new ShelfTooltipBubble(anchor, arrow, this);
   widget_ = view_->GetWidget();
   view_->SetText(text_);
 
@@ -367,14 +365,13 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
       native_view, views::corewm::ANIMATE_HIDE);
 }
 
-void LauncherTooltipManager::CreateTimer(int delay_in_ms) {
-  base::OneShotTimer<LauncherTooltipManager>* new_timer =
-      new base::OneShotTimer<LauncherTooltipManager>();
-  new_timer->Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(delay_in_ms),
-      this,
-      &LauncherTooltipManager::ShowInternal);
+void ShelfTooltipManager::CreateTimer(int delay_in_ms) {
+  base::OneShotTimer<ShelfTooltipManager>* new_timer =
+      new base::OneShotTimer<ShelfTooltipManager>();
+  new_timer->Start(FROM_HERE,
+                   base::TimeDelta::FromMilliseconds(delay_in_ms),
+                   this,
+                   &ShelfTooltipManager::ShowInternal);
   timer_.reset(new_timer);
 }
 
