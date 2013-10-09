@@ -801,7 +801,7 @@ SlideMode.prototype.onBeforeUnload = function() {
  * @private
  */
 SlideMode.prototype.onClick_ = function(event) {
-  if (!this.isShowingVideo_())
+  if (!this.isShowingVideo_() || !this.mediaControls_.getMedia())
     return;
   if (event.ctrlKey) {
     this.mediaControls_.toggleLoopedModeWithFeedback(true);
@@ -862,7 +862,7 @@ SlideMode.prototype.onKeyDown = function(event) {
 
   switch (keyID) {
     case 'U+0020':  // Space toggles the video playback.
-      if (this.isShowingVideo_())
+      if (this.isShowingVideo_() && this.mediaControls_.getMedia())
         this.mediaControls_.togglePlayStateWithFeedback();
       break;
 
