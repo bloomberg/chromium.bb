@@ -38,4 +38,11 @@ def CheckChangeOnCommit(input_api, output_api):
 
 
 def GetPreferredTrySlaves(project, change):
-  return ['linux_nacl_sdk', 'win_nacl_sdk', 'mac_nacl_sdk']
+  return [
+    'linux_nacl_sdk',
+    'linux_nacl_sdk_build',
+    'win_nacl_sdk',
+    'win_nacl_sdk_build',
+    'mac_nacl_sdk',
+    'mac_nacl_sdk_build'
+  ]
