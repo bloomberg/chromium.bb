@@ -1124,8 +1124,6 @@ void WebContentsImpl::WasShown() {
 
   last_selected_time_ = base::TimeTicks::Now();
 
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasShown());
-
   // The resize rect might have changed while this was inactive -- send the new
   // one to make sure it's up to date.
   RenderViewHostImpl* rvh =
@@ -1134,7 +1132,11 @@ void WebContentsImpl::WasShown() {
     rvh->ResizeRectChanged(GetRootWindowResizerRect());
   }
 
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasShown());
+
   should_normally_be_visible_ = true;
+
+  // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       Source<WebContents>(this),
@@ -1157,7 +1159,11 @@ void WebContentsImpl::WasHidden() {
       rwhv->Hide();
   }
 
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasHidden());
+
   should_normally_be_visible_ = false;
+
+  // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       Source<WebContents>(this),

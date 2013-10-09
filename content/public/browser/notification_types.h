@@ -42,6 +42,7 @@ enum NotificationType {
   //
   // The source will be the navigation controller doing the commit. The
   // details will be NavigationController::LoadCommittedDetails.
+  // DEPRECATED: Use WebContentsObserver::NavigationEntryCommitted()
   NOTIFICATION_NAV_ENTRY_COMMITTED,
 
   // Indicates that the NavigationController given in the Source has
@@ -142,6 +143,8 @@ enum NotificationType {
   // Indicates a WebContents has been hidden or restored.  The source is
   // a Source<WebContents>. The details is a bool set to true if the new
   // state is visible.
+  // DEPRECATED: Use WebContentsObserver::WasShown() and/or
+  // WebContentsObserver::WasHidden()
   NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
 
   // This notification is sent when a WebContents is being destroyed. Any

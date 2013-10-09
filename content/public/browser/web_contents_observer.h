@@ -228,8 +228,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // configured to ignore UI events, and an UI event took place.
   virtual void DidGetIgnoredUIEvent() {}
 
-  // This method is invoked every time the WebContents becomes visible.
+  // These methods are invoked every time the WebContents changes visibility.
   virtual void WasShown() {}
+  virtual void WasHidden() {}
 
   // This methods is invoked when the title of the WebContents is set. If the
   // title was explicitly set, |explicit_set| is true, otherwise the title was
