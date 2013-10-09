@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_GENERATION_MANAGER_H_
-#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_GENERATION_MANAGER_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_GENERATION_AGENT_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_GENERATION_AGENT_H_
 
 #include <map>
 #include <utility>
@@ -28,11 +28,11 @@ struct PasswordForm;
 // This class is responsible for controlling communication for password
 // generation between the browser (which shows the popup and generates
 // passwords) and WebKit (shows the generation icon in the password field).
-class PasswordGenerationManager : public content::RenderViewObserver,
+class PasswordGenerationAgent : public content::RenderViewObserver,
                                   public WebKit::WebPasswordGeneratorClient {
  public:
-  explicit PasswordGenerationManager(content::RenderView* render_view);
-  virtual ~PasswordGenerationManager();
+  explicit PasswordGenerationAgent(content::RenderView* render_view);
+  virtual ~PasswordGenerationAgent();
 
  protected:
   // Returns true if this document is one that we should consider analyzing.
@@ -80,9 +80,9 @@ class PasswordGenerationManager : public content::RenderViewObserver,
 
   std::vector<WebKit::WebInputElement> passwords_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationManager);
+  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgent);
 };
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_GENERATION_MANAGER_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_GENERATION_AGENT_H_

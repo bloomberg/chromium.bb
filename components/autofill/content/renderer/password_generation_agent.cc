@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/content/renderer/password_generation_manager.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -90,16 +90,16 @@ bool ContainsForm(const std::vector<autofill::FormData>& forms,
 
 }  // namespace
 
-PasswordGenerationManager::PasswordGenerationManager(
+PasswordGenerationAgent::PasswordGenerationAgent(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       render_view_(render_view),
       enabled_(false) {
   render_view_->GetWebView()->setPasswordGeneratorClient(this);
 }
-PasswordGenerationManager::~PasswordGenerationManager() {}
+PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
-void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
+void PasswordGenerationAgent::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   // In every navigation, the IPC message sent by the password autofill manager
   // to query whether the current form is blacklisted or not happens when the
   // document load finishes, so we need to clear previous states here before we
@@ -118,7 +118,7 @@ void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   }
 }
 
-void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
+void PasswordGenerationAgent::DidFinishLoad(WebKit::WebFrame* frame) {
   // We don't want to generate passwords if the browser won't store or sync
   // them.
   if (!enabled_)
@@ -164,7 +164,7 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
       password_generation::NO_SIGN_UP_DETECTED);
 }
 
-bool PasswordGenerationManager::ShouldAnalyzeDocument(
+bool PasswordGenerationAgent::ShouldAnalyzeDocument(
     const WebKit::WebDocument& document) const {
   // Make sure that this security origin is allowed to use password manager.
   // Generating a password that can't be saved is a bad idea.
@@ -177,7 +177,7 @@ bool PasswordGenerationManager::ShouldAnalyzeDocument(
   return true;
 }
 
-void PasswordGenerationManager::openPasswordGenerator(
+void PasswordGenerationAgent::openPasswordGenerator(
     WebKit::WebInputElement& element) {
   WebKit::WebElement button(element.passwordGeneratorButtonElement());
   gfx::Rect rect(button.boundsInViewportSpace());
@@ -194,9 +194,9 @@ void PasswordGenerationManager::openPasswordGenerator(
       password_generation::BUBBLE_SHOWN);
 }
 
-bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
+bool PasswordGenerationAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PasswordGenerationManager, message)
+  IPC_BEGIN_MESSAGE_MAP(PasswordGenerationAgent, message)
     IPC_MESSAGE_HANDLER(AutofillMsg_FormNotBlacklisted,
                         OnFormNotBlacklisted)
     IPC_MESSAGE_HANDLER(AutofillMsg_GeneratedPasswordAccepted,
@@ -210,12 +210,12 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void PasswordGenerationManager::OnFormNotBlacklisted(const PasswordForm& form) {
+void PasswordGenerationAgent::OnFormNotBlacklisted(const PasswordForm& form) {
   not_blacklisted_password_form_origins_.push_back(form.origin);
   MaybeShowIcon();
 }
 
-void PasswordGenerationManager::OnPasswordAccepted(
+void PasswordGenerationAgent::OnPasswordAccepted(
     const base::string16& password) {
   for (std::vector<WebKit::WebInputElement>::iterator it = passwords_.begin();
        it != passwords_.end(); ++it) {
@@ -227,18 +227,18 @@ void PasswordGenerationManager::OnPasswordAccepted(
   }
 }
 
-void PasswordGenerationManager::OnPasswordGenerationEnabled(bool enabled) {
+void PasswordGenerationAgent::OnPasswordGenerationEnabled(bool enabled) {
   enabled_ = enabled;
 }
 
-void PasswordGenerationManager::OnAccountCreationFormsDetected(
+void PasswordGenerationAgent::OnAccountCreationFormsDetected(
     const std::vector<autofill::FormData>& forms) {
   account_creation_forms_.insert(
       account_creation_forms_.end(), forms.begin(), forms.end());
   MaybeShowIcon();
 }
 
-void PasswordGenerationManager::MaybeShowIcon() {
+void PasswordGenerationAgent::MaybeShowIcon() {
   // We should show the password generation icon only when we have detected
   // account creation form, we have confirmed from browser that this form
   // is not blacklisted by the users, and the Autofill server has marked one

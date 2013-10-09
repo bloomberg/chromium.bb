@@ -369,8 +369,8 @@
             'autofill/content/renderer/password_autofill_agent.h',
             'autofill/content/renderer/password_form_conversion_utils.cc',
             'autofill/content/renderer/password_form_conversion_utils.h',
-            'autofill/content/renderer/password_generation_manager.cc',
-            'autofill/content/renderer/password_generation_manager.h',
+            'autofill/content/renderer/password_generation_agent.cc',
+            'autofill/content/renderer/password_generation_agent.h',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],

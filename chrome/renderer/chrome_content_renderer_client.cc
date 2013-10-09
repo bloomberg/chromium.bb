@@ -66,7 +66,7 @@
 #include "chrome/renderer/validation_message_agent.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
-#include "components/autofill/content/renderer/password_generation_manager.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/common/content_constants.h"
@@ -112,7 +112,7 @@
 
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
-using autofill::PasswordGenerationManager;
+using autofill::PasswordGenerationAgent;
 using content::RenderThread;
 using content::WebPluginInfo;
 using extensions::Extension;
@@ -386,7 +386,7 @@ void ChromeContentRendererClient::RenderViewCreated(
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (autofill::password_generation::IsPasswordGenerationEnabled())
-    new PasswordGenerationManager(render_view);
+    new PasswordGenerationAgent(render_view);
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "components/autofill/content/renderer/password_generation_manager.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,15 +24,15 @@ using WebKit::WebString;
 
 namespace autofill {
 
-class TestPasswordGenerationManager : public PasswordGenerationManager {
+class TestPasswordGenerationAgent : public PasswordGenerationAgent {
  public:
-  explicit TestPasswordGenerationManager(content::RenderView* view)
-      : PasswordGenerationManager(view) {}
-  virtual ~TestPasswordGenerationManager() {}
+  explicit TestPasswordGenerationAgent(content::RenderView* view)
+      : PasswordGenerationAgent(view) {}
+  virtual ~TestPasswordGenerationAgent() {}
 
   // Make this public
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    return PasswordGenerationManager::OnMessageReceived(message);
+    return PasswordGenerationAgent::OnMessageReceived(message);
   }
 
   const std::vector<IPC::Message*>& messages() {
@@ -57,19 +57,19 @@ class TestPasswordGenerationManager : public PasswordGenerationManager {
  private:
   ScopedVector<IPC::Message> messages_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestPasswordGenerationManager);
+  DISALLOW_COPY_AND_ASSIGN(TestPasswordGenerationAgent);
 };
 
-class PasswordGenerationManagerTest : public ChromeRenderViewTest {
+class PasswordGenerationAgentTest : public ChromeRenderViewTest {
  public:
-  PasswordGenerationManagerTest() {}
+  PasswordGenerationAgentTest() {}
 
   virtual void SetUp() {
-    // We don't actually create a PasswordGenerationManager during
+    // We don't actually create a PasswordGenerationAgent during
     // ChromeRenderViewTest::SetUp because it's behind a flag. Since we want
     // to use a test manager anyway, we just create our own.
     ChromeRenderViewTest::SetUp();
-    generation_manager_.reset(new TestPasswordGenerationManager(view_));
+    generation_manager_.reset(new TestPasswordGenerationAgent(view_));
   }
 
   virtual void TearDown() {
@@ -132,10 +132,10 @@ class PasswordGenerationManagerTest : public ChromeRenderViewTest {
   }
 
  protected:
-  scoped_ptr<TestPasswordGenerationManager> generation_manager_;
+  scoped_ptr<TestPasswordGenerationAgent> generation_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTest);
 };
 
 const char kSigninFormHTML[] =
@@ -171,7 +171,7 @@ const char kInvalidActionAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-TEST_F(PasswordGenerationManagerTest, DetectionTest) {
+TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   // Don't shown the icon for non account creation forms.
   LoadHTML(kSigninFormHTML);
   ExpectPasswordGenerationIconShown("password", false);
@@ -205,7 +205,7 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
   ExpectPasswordGenerationIconShown("first_password", false);
 }
 
-TEST_F(PasswordGenerationManagerTest, FillTest) {
+TEST_F(PasswordGenerationAgentTest, FillTest) {
   // Make sure that we are enabled before loading HTML.
   SetPasswordGenerationEnabledMessage();
   LoadHTML(kAccountCreationFormHTML);
@@ -241,7 +241,7 @@ TEST_F(PasswordGenerationManagerTest, FillTest) {
   EXPECT_EQ(element, document.focusedNode());
 }
 
-TEST_F(PasswordGenerationManagerTest, BlacklistedTest) {
+TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
   // Make sure password generation is enabled.
   SetPasswordGenerationEnabledMessage();
 
@@ -274,7 +274,7 @@ TEST_F(PasswordGenerationManagerTest, BlacklistedTest) {
   ExpectPasswordGenerationIconShown("first_password", true);
 }
 
-TEST_F(PasswordGenerationManagerTest, AccountCreationFormsDetectedTest) {
+TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
   // Make sure password generation is enabled.
   SetPasswordGenerationEnabledMessage();
 
