@@ -34,7 +34,7 @@ This test is based on code written by Cameron Adams and imported from
 
 <!doctype html>
 <head>
-<title>Benchmark - Balls Animation using requestAnimationFrame</title>
+<title>Benchmark - Balls Animation using CSS and requestAnimationFrame</title>
 <style>
 html {
     height: 100%;
@@ -55,9 +55,9 @@ span {
     border-radius: 6px;
 }
 </style>
+<script src="../resources/runner.js"></script>
+<script src="resources/framerate.js"></script>
 <script>
-var framesPerTimerReading = 10;
-var maxFrameTimes = 30;
 var stageWidth = 600;
 var stageHeight = 600;
 var maxParticles = 2500;
@@ -67,8 +67,6 @@ var particleRadius = 6;
 var colors = ["#cc0000", "#ffcc00", "#aaff00", "#0099cc", "#194c99", "#661999"];
 
 var testRunning = true;
-var frameCount = 0;
-var frameTimes = [];
 var particles = [];
 var prevTime;
 
@@ -82,6 +80,7 @@ window.onload = function () {
     // Start the animation
     prevTime = PerfTestRunner.now();
     animate();
+    startTrackingFrameRate();
 }
 
 function animate()
@@ -92,20 +91,6 @@ function animate()
     // Draw each particle
     for (var particle in particles)
         particles[particle].draw(timeDelta);
-
-    if ((frameCount++ % framesPerTimerReading) == 0) {
-        // Limit the frame time array to the last 30 frames
-        while (frameTimes.length > maxFrameTimes)
-            frameTimes.splice(0, 1);
-
-        // Calculate the framerate based upon the difference between the absolute times of the oldest and newest frames
-        // subdivided by how many frames were drawn inbetween
-        var frameRate = framesPerTimerReading * 1000 / ((currTime - frameTimes[0]) / frameTimes.length);
-        if (!isNaN(frameRate))
-            PerfTestRunner.measureValueAsync(frameRate);
-
-        frameTimes.push(currTime);
-    }
 
     prevTime = currTime;
 
@@ -166,13 +151,12 @@ function Particle()
 }
 
 function onCompletedRun() {
-    testRunning = false;
+    stopTrackingFrameRate();
 
     for (var i = 0; i < particles.length; i++)
         particles[i].destroy();
     particles = [];
 }
 </script>
-<script src="../resources/runner.js"></script>
 </head>
 </html>

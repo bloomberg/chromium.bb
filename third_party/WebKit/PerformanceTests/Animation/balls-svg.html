@@ -34,7 +34,7 @@ This test is based on code written by Cameron Adams and imported from
 
 <!doctype html>
 <head>
-<title>Benchmark - Balls Animation using CSS Animations</title>
+<title>Benchmark - Balls Animation using SVG Animations</title>
 <style>
 html {
     height: 100%;
@@ -70,36 +70,35 @@ var animationDuration = 10;
 var particles = [];
 
 window.onload = function () {
+    svgContainer.setAttribute('width', stageWidth);
+    svgContainer.setAttribute('height', stageHeight);
+
+    for (var i = 0; i < maxParticles; i++)
+        addParticle();
+
     PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
-
-    generateStyleElement();
-
-    // Create the particles
-    for (var i = 0; i < maxParticles; i++) {
-        var particle = new Particle(i);
-        particle.start();
-        particles.push(particle);
-    }
 
     startTrackingFrameRate();
 }
 
-function generateStyleElement() {
-    var allParticleKeyframes = '';
-    for (var i = 0; i < maxParticles; i++)
-        allParticleKeyframes += generateParticleKeyframes(i);
-    document.querySelector('#keyframes').innerHTML = allParticleKeyframes;
+function addParticle()
+{
+    var circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('r', particleRadius);
+    circle.setAttribute('fill', colors[Math.floor(Math.random() * colors.length)]);
+    addAnimation(circle);
+    svgContainer.appendChild(circle);
 }
 
-function generateParticleKeyframes(index) {
-    var keyframes = '@-webkit-keyframes ' + animationNameForIndex(index) + '{\n';
-
+function addAnimation(target) {
     var angle = Math.PI * 2 * PerfTestRunner.random();
     var velocity = minVelocity + ((maxVelocity - minVelocity) * PerfTestRunner.random());
     var x = stageWidth / 2 - particleRadius;
     var y = stageHeight / 2 - particleRadius;
     var dx = Math.cos(angle) * velocity;
     var dy = Math.sin(angle) * velocity;
+    var prevX = x;
+    var prevY = y;
 
     function detectCollision(lineX, normalX, lineY, normalY) {
         var dtx = Infinity;
@@ -120,7 +119,7 @@ function generateParticleKeyframes(index) {
     }
 
     var t = 0;
-    keyframes += generateKeyframe(0, x, y);
+    var prevT = t;
     while (t < animationDuration) {
         var collisionA = detectCollision(0, 1, 0, 1);
         var collisionB = detectCollision(stageWidth, -1, stageHeight, -1);
@@ -137,56 +136,34 @@ function generateParticleKeyframes(index) {
             dx = collision.dx;
             dy = collision.dy;
         }
-        keyframes += generateKeyframe(t, x, y);
+        target.appendChild(generateTransition(prevT, prevX, prevY, t, x, y));
+        prevX = x;
+        prevY = y;
+        prevT = t;
     }
-
-    keyframes += '}\n';
-    return keyframes;
-}
-
-function generateKeyframe(t, x, y) {
-    return (100 * t / animationDuration) + '% { left: ' + x + 'px; top: ' + y + 'px; }\n';
-}
-
-function animationNameForIndex(index) {
-    return 'animation-' + index;
-}
-
-function Particle(index)
-{
-    // Create visual element for the particle.
-    var domNode = document.createElement('span');
-    document.body.appendChild(domNode);
-
-    // Set colour of element.
-    domNode.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    domNode.style.webkitAnimationTimingFunction = 'linear';
-    domNode.style.webkitAnimationIterationCount = 'infinite';
-    domNode.style.webkitAnimationDirection = 'alternate';
-    domNode.style.webkitAnimationDuration = animationDuration + 's';
-
-    function start() {
-        domNode.style.webkitAnimationName = animationNameForIndex(index);
+    if (target.lastChild) {
+        target.lastChild.setAttribute('repeatCount', '1000');
     }
-
-    function destroy()
-    {
-        document.body.removeChild(domNode);
-    }
-
-    this.start = start;
-    this.destroy = destroy;
 }
+
+function generateTransition(prevT, prevX, prevY, t, x, y) {
+    var animation = document.createElementNS('http://www.w3.org/2000/svg','animateTransform');
+    animation.setAttribute('attributeName', 'transform');
+    animation.setAttribute('attributeType', 'xml');
+    animation.setAttribute('type', 'translate' );
+    animation.setAttribute('from', prevX + ' ' + prevY);
+    animation.setAttribute('to', x + ' ' + y);
+    animation.setAttribute('begin', prevT + 's');
+    animation.setAttribute('dur', (t - prevT) + 's');
+    return animation;
+}
+
 
 function onCompletedRun() {
-    testRunning = false;
     stopTrackingFrameRate();
-
-    for (var i = 0; i < particles.length; i++)
-        particles[i].destroy();
-    particles = [];
+    svgContainer.remove();
 }
 </script>
-<style id="keyframes"></style>
 </head>
+<svg ns="http://www.w3.org/2000/svg" version="1.1" id="svgContainer"></svg>
 </html>
