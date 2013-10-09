@@ -31,6 +31,17 @@
 #include "../shared/os-compatibility.h"
 #include "weston-test-client-helper.h"
 
+static inline void *
+xzalloc(size_t size)
+{
+	void *p;
+
+	p = calloc(1, size);
+	assert(p);
+
+	return p;
+}
+
 int
 surface_contains(struct surface *surface, int x, int y)
 {
@@ -341,7 +352,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	struct keyboard *keyboard;
 
 	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
-		pointer = calloc(1, sizeof *pointer);
+		pointer = xzalloc(sizeof *pointer);
 		pointer->wl_pointer = wl_seat_get_pointer(seat);
 		wl_pointer_set_user_data(pointer->wl_pointer, pointer);
 		wl_pointer_add_listener(pointer->wl_pointer, &pointer_listener,
@@ -354,7 +365,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 
 	if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !input->keyboard) {
-		keyboard = calloc(1, sizeof *keyboard);
+		keyboard = xzalloc(sizeof *keyboard);
 		keyboard->wl_keyboard = wl_seat_get_keyboard(seat);
 		wl_keyboard_set_user_data(keyboard->wl_keyboard, keyboard);
 		wl_keyboard_add_listener(keyboard->wl_keyboard, &keyboard_listener,
@@ -419,8 +430,7 @@ handle_global(void *data, struct wl_registry *registry,
 	struct test *test;
 	struct global *global;
 
-	global = malloc(sizeof *global);
-	assert(global);
+	global = xzalloc(sizeof *global);
 	global->name = id;
 	global->interface = strdup(interface);
 	assert(interface);
@@ -432,7 +442,7 @@ handle_global(void *data, struct wl_registry *registry,
 			wl_registry_bind(registry, id,
 					 &wl_compositor_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		input = calloc(1, sizeof *input);
+		input = xzalloc(sizeof *input);
 		input->wl_seat =
 			wl_registry_bind(registry, id,
 					 &wl_seat_interface, 1);
@@ -444,7 +454,7 @@ handle_global(void *data, struct wl_registry *registry,
 					 &wl_shm_interface, 1);
 		wl_shm_add_listener(client->wl_shm, &shm_listener, client);
 	} else if (strcmp(interface, "wl_output") == 0) {
-		output = malloc(sizeof *output);
+		output = xzalloc(sizeof *output);
 		output->wl_output =
 			wl_registry_bind(registry, id,
 					 &wl_output_interface, 1);
@@ -452,7 +462,7 @@ handle_global(void *data, struct wl_registry *registry,
 				       &output_listener, output);
 		client->output = output;
 	} else if (strcmp(interface, "wl_test") == 0) {
-		test = calloc(1, sizeof *test);
+		test = xzalloc(sizeof *test);
 		test->wl_test =
 			wl_registry_bind(registry, id,
 					 &wl_test_interface, 1);
@@ -481,7 +491,7 @@ client_create(int x, int y, int width, int height)
 	wl_log_set_handler_client(log_handler);
 
 	/* connect to display */
-	client = calloc(1, sizeof *client);
+	client = xzalloc(sizeof *client);
 	client->wl_display = wl_display_connect(NULL);
 	assert(client->wl_display);
 	wl_list_init(&client->global_list);
@@ -504,8 +514,7 @@ client_create(int x, int y, int width, int height)
 	assert(client->output);
 
 	/* initialize the client surface */
-	surface = calloc(1, sizeof *surface);
-
+	surface = xzalloc(sizeof *surface);
 	surface->wl_surface =
 		wl_compositor_create_surface(client->wl_compositor);
 	assert(surface->wl_surface);
