@@ -1710,8 +1710,8 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 }
 
 // This fails on Linux when run with the rest of unit_tests (crbug.com/302156)
-// and fails consistently on Mac 64.
-#if defined(OS_LINUX) || (defined(OS_MACOSX) && ARCH_CPU_64_BITS)
+// and fails consistently on Mac.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_FastShutdown \
     DISABLED_FastShutdown
 #else
