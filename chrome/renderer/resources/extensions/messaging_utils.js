@@ -4,7 +4,7 @@
 
 // Routines used to normalize arguments to messaging functions.
 
-function alignSendMessageArguments(args, hasOptionsArgument) {
+function alignSendMessageArguments(args) {
   // Align missing (optional) function arguments with the arguments that
   // schema validation is expecting, e.g.
   //   extension.sendRequest(req)     -> extension.sendRequest(null, req)
@@ -15,25 +15,8 @@ function alignSendMessageArguments(args, hasOptionsArgument) {
 
   // responseCallback (last argument) is optional.
   var responseCallback = null;
-  if (typeof args[lastArg] == 'function')
+  if (typeof(args[lastArg]) == 'function')
     responseCallback = args[lastArg--];
-
-  var options = null;
-  if (hasOptionsArgument && lastArg >= 1) {
-    // options (third argument) is optional. It can also be ambiguous which
-    // argument it should match. If there are more than two arguments remaining,
-    // options is definitely present:
-    if (lastArg > 1) {
-      options = args[lastArg--];
-    } else {
-      // Exactly two arguments remaining. If the first argument is a string,
-      // it should bind to targetId, and the second argument should bind to
-      // request, which is required. In other words, when two arguments remain,
-      // only bind options when the first argument cannot bind to targetId.
-      if (!(args[0] === null || typeof args[0] == 'string'))
-        options = args[lastArg--];
-    }
-  }
 
   // request (second argument) is required.
   var request = args[lastArg--];
@@ -45,8 +28,6 @@ function alignSendMessageArguments(args, hasOptionsArgument) {
 
   if (lastArg != -1)
     return null;
-  if (hasOptionsArgument)
-    return [targetId, request, options, responseCallback];
   return [targetId, request, responseCallback];
 }
 

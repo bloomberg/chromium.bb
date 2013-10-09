@@ -213,8 +213,7 @@
                              sourceTab,
                              sourceExtensionId,
                              targetExtensionId,
-                             sourceUrl,
-                             tlsChannelId) {
+                             sourceUrl) {
     // Only create a new Port if someone is actually listening for a connection.
     // In addition to being an optimization, this also fixes a bug where if 2
     // channels were opened to and from the same process, closing one would
@@ -237,8 +236,6 @@
       sender.url = sourceUrl;
     if (sourceTab)
       sender.tab = sourceTab;
-    if (tlsChannelId)
-      sender.tlsChannelId = tlsChannelId;
 
     // Special case for sendRequest/onRequest and sendMessage/onMessage.
     if (channelName == kRequestChannel || channelName == kMessageChannel) {
@@ -335,11 +332,9 @@
     });
   };
 
-  function sendMessageUpdateArguments(functionName, hasOptionsArgument) {
-    // skip functionName and hasOptionsArgument
-    var args = $Array.slice(arguments, 2);
-    var alignedArgs = messagingUtils.alignSendMessageArguments(args,
-        hasOptionsArgument);
+  function sendMessageUpdateArguments(functionName) {
+    var args = $Array.slice(arguments, 1);  // skip functionName
+    var alignedArgs = messagingUtils.alignSendMessageArguments(args);
     if (!alignedArgs)
       throw new Error('Invalid arguments to ' + functionName + '.');
     return alignedArgs;

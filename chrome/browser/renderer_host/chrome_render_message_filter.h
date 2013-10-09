@@ -88,16 +88,13 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
   void OnOpenChannelToExtension(int routing_id,
                                 const ExtensionMsg_ExternalConnectionInfo& info,
-                                const std::string& channel_name,
-                                bool include_tls_channel_id,
-                                int* port_id);
+                                const std::string& channel_name, int* port_id);
   void OpenChannelToExtensionOnUIThread(
       int source_process_id,
       int source_routing_id,
       int receiver_port_id,
       const ExtensionMsg_ExternalConnectionInfo& info,
-      const std::string& channel_name,
-      bool include_tls_channel_id);
+      const std::string& channel_name);
   void OnOpenChannelToNativeApp(int routing_id,
                                 const std::string& source_extension_id,
                                 const std::string& native_app_name,

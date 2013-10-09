@@ -78,7 +78,6 @@ void ChromeMockRenderThread::OnOpenChannelToExtension(
     int routing_id,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& channel_name,
-    bool include_tls_channel_id,
     int* port_id) {
   *port_id = 0;
 }

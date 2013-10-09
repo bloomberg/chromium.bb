@@ -70,8 +70,7 @@ var results = {
   COULD_NOT_ESTABLISH_CONNECTION_ERROR: 3,
   OTHER_ERROR: 4,
   INCORRECT_RESPONSE_SENDER: 5,
-  INCORRECT_RESPONSE_MESSAGE: 6,
-  NO_TLS_CHANNEL_ID: 7
+  INCORRECT_RESPONSE_MESSAGE: 6
 };
 
 // Make the messages sent vaguely complex, but unambiguously JSON-ifiable.
@@ -146,49 +145,6 @@ function sendToBrowser(msg) {
   domAutomationController.send(msg);
 }
 
-function sendToBrowserForTlsChannelId(result) {
-  // Because the TLS channel ID tests read the TLS either an error code or the
-  // TLS channel ID string from the same value, they require the result code
-  // to be sent as a string.
-  // String() is clobbered, so coerce string creation with +.
-  sendToBrowser("" + result);
-}
-
-function checkRuntime(reply) {
-  if (!reply)
-    reply = sendToBrowser;
-
-  if (!chrome.runtime) {
-    reply(results.NAMESPACE_NOT_DEFINED);
-    return false;
-  }
-
-  if (!chrome.runtime.connect || !chrome.runtime.sendMessage) {
-    reply(results.FUNCTION_NOT_DEFINED);
-    return false;
-  }
-  return true;
-}
-
-function checkRuntimeForTlsChannelId() {
-  return checkRuntime(sendToBrowserForTlsChannelId);
-}
-
-function checkTlsChannelIdResponse(response) {
-  if (chrome.runtime.lastError) {
-    if (chrome.runtime.lastError.message == kCouldNotEstablishConnection)
-      sendToBrowserForTlsChannelId(
-          results.COULD_NOT_ESTABLISH_CONNECTION_ERROR);
-    else
-      sendToBrowserForTlsChannelId(results.OTHER_ERROR);
-    return;
-  }
-  if (!response.sender.tlsChannelId)
-    sendToBrowserForTlsChannelId(results.NO_TLS_CHANNEL_ID);
-  else
-    sendToBrowserForTlsChannelId(response.sender.tlsChannelId);
-}
-
 window.actions = {
   appendIframe: function(src) {
     var iframe = document.createElement('iframe');
@@ -206,11 +162,15 @@ window.actions = {
 
 window.assertions = {
   canConnectAndSendMessages: function(extensionId, message) {
-    if (!checkRuntime())
+    if (!chrome.runtime) {
+      sendToBrowser(results.NAMESPACE_NOT_DEFINED);
       return;
+    }
 
-    if (!message)
-      message = kMessage;
+    if (!chrome.runtime.sendMessage || !chrome.runtime.connect) {
+      sendToBrowser(results.FUNCTION_NOT_DEFINED);
+      return;
+    }
 
     if (!message)
       message = kMessage;
@@ -260,33 +220,6 @@ window.assertions = {
       });
     }
     sendToBrowser(result);
-  },
-
-  getTlsChannelIdFromPortConnect: function(extensionId, includeTlsChannelId,
-                                           message) {
-    if (!checkRuntimeForTlsChannelId())
-      return;
-
-    if (!message)
-      message = kMessage;
-
-    var port = chrome.runtime.connect(extensionId,
-        {'includeTlsChannelId': includeTlsChannelId});
-    port.onMessage.addListener(checkTlsChannelIdResponse);
-    port.postMessage(message);
-  },
-
-  getTlsChannelIdFromSendMessage: function(extensionId, includeTlsChannelId,
-                                           message) {
-    if (!checkRuntimeForTlsChannelId())
-      return;
-
-    if (!message)
-      message = kMessage;
-
-    chrome.runtime.sendMessage(extensionId, message,
-        {'includeTlsChannelId': includeTlsChannelId},
-        checkTlsChannelIdResponse);
   }
 };
 

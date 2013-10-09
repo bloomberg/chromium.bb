@@ -127,8 +127,6 @@ TEST_F(ExternallyConnectableTest, Matches) {
 
   EXPECT_FALSE(info->all_ids);
 
-  EXPECT_FALSE(info->accepts_tls_channel_id);
-
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://example.com")));
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://example.com/")));
   EXPECT_FALSE(info->matches.MatchesURL(GURL("http://example.com/index.html")));
@@ -152,31 +150,6 @@ TEST_F(ExternallyConnectableTest, Matches) {
 
   EXPECT_FALSE(info->matches.MatchesURL(GURL("http://yahoo.com")));
   EXPECT_FALSE(info->matches.MatchesURL(GURL("http://yahoo.com/")));
-}
-
-TEST_F(ExternallyConnectableTest, MatchesWithTlsChannelId) {
-  scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess(
-          "externally_connectable_matches_tls_channel_id.json");
-  ASSERT_TRUE(extension.get());
-
-  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kWebConnectable));
-
-  ExternallyConnectableInfo* info =
-      ExternallyConnectableInfo::Get(extension.get());
-  ASSERT_TRUE(info);
-
-  EXPECT_THAT(info->ids, ElementsAre());
-
-  EXPECT_FALSE(info->all_ids);
-
-  EXPECT_TRUE(info->accepts_tls_channel_id);
-
-  // The matches portion of the manifest is identical to those in
-  // externally_connectable_matches, so only a subset of the Matches tests is
-  // repeated here.
-  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://example.com")));
-  EXPECT_FALSE(info->matches.MatchesURL(GURL("http://example.com/index.html")));
 }
 
 TEST_F(ExternallyConnectableTest, AllIDs) {
@@ -208,7 +181,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
 
   // all_ids = false.
   {
-    ExternallyConnectableInfo info(URLPatternSet(), matches_ids, false, false);
+    ExternallyConnectableInfo info(URLPatternSet(), matches_ids, false);
     for (size_t i = 0; i < matches_ids.size(); ++i)
       EXPECT_TRUE(info.IdCanConnect(matches_ids[i]));
     for (size_t i = 0; i < arraysize(nomatches_ids_array); ++i)
@@ -217,7 +190,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
 
   // all_ids = true.
   {
-    ExternallyConnectableInfo info(URLPatternSet(), matches_ids, true, false);
+    ExternallyConnectableInfo info(URLPatternSet(), matches_ids, true);
     for (size_t i = 0; i < matches_ids.size(); ++i)
       EXPECT_TRUE(info.IdCanConnect(matches_ids[i]));
     for (size_t i = 0; i < arraysize(nomatches_ids_array); ++i)

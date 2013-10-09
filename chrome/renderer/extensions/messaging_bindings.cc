@@ -240,7 +240,6 @@ void MessagingBindings::DispatchOnConnect(
     const std::string& source_extension_id,
     const std::string& target_extension_id,
     const GURL& source_url,
-    const std::string& tls_channel_id,
     content::RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 
@@ -265,19 +264,13 @@ void MessagingBindings::DispatchOnConnect(
     if (!source_tab.empty())
       tab = converter->ToV8Value(&source_tab, (*it)->v8_context());
 
-    v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined();
-    if (tls_channel_id.size()) {
-      tls_channel_id_value =
-          v8::String::New(tls_channel_id.c_str(), tls_channel_id.size());
-    }
     v8::Handle<v8::Value> arguments[] = {
       v8::Integer::New(target_port_id),
       v8::String::New(channel_name.c_str(), channel_name.size()),
       tab,
       v8::String::New(source_extension_id.c_str(), source_extension_id.size()),
       v8::String::New(target_extension_id.c_str(), target_extension_id.size()),
-      v8::String::New(source_url_spec.c_str(), source_url_spec.size()),
-      tls_channel_id_value
+      v8::String::New(source_url_spec.c_str(), source_url_spec.size())
     };
 
     v8::Handle<v8::Value> retval = (*it)->module_system()->CallModuleMethod(

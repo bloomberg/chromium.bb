@@ -271,13 +271,12 @@ void ExtensionHelper::OnExtensionDispatchOnConnect(
     int target_port_id,
     const std::string& channel_name,
     const base::DictionaryValue& source_tab,
-    const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& tls_channel_id) {
+    const ExtensionMsg_ExternalConnectionInfo& info) {
   MessagingBindings::DispatchOnConnect(
       dispatcher_->v8_context_set().GetAll(),
       target_port_id, channel_name, source_tab,
       info.source_id, info.target_id, info.source_url,
-      tls_channel_id, render_view());
+      render_view());
 }
 
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,

@@ -8,12 +8,10 @@
 #include <map>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/api/messaging/message_property_provider.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "content/public/browser/notification_observer.h"
@@ -76,8 +74,7 @@ class MessageService : public ProfileKeyedAPI,
                                    const base::DictionaryValue& source_tab,
                                    const std::string& source_extension_id,
                                    const std::string& target_extension_id,
-                                   const GURL& source_url,
-                                   const std::string& tls_channel_id) {}
+                                   const GURL& source_url) {}
 
     // Notify the port that the channel has been closed. If |error_message| is
     // non-empty, it indicates an error occurred while opening the connection.
@@ -124,8 +121,7 @@ class MessageService : public ProfileKeyedAPI,
       const std::string& source_extension_id,
       const std::string& target_extension_id,
       const GURL& source_url,
-      const std::string& channel_name,
-      bool include_tls_channel_id);
+      const std::string& channel_name);
 
   // Same as above, but opens a channel to the tab with the given ID.  Messages
   // are restricted to that tab, so if there are multiple tabs in that process,
@@ -147,8 +143,7 @@ class MessageService : public ProfileKeyedAPI,
   virtual void CloseChannel(int port_id,
                             const std::string& error_message) OVERRIDE;
 
-  // Enqueues a message on a pending channel, or sends a message to the given
-  // port if the channel isn't pending.
+  // Sends a message to the given port.
   void PostMessage(int port_id, const std::string& message);
 
   // NativeMessageProcessHost::Client
@@ -164,18 +159,11 @@ class MessageService : public ProfileKeyedAPI,
   // A map of channel ID to its channel object.
   typedef std::map<int, MessageChannel*> MessageChannelMap;
 
-  typedef std::pair<int, std::string> PendingMessage;
-  typedef std::vector<PendingMessage> PendingMessagesQueue;
-  // A set of channel IDs waiting for TLS channel IDs to complete opening,
-  // and any pending messages queued to be sent on those channels.
-  typedef std::map<int, PendingMessagesQueue> PendingTlsChannelIdMap;
-
   // A map of channel ID to information about the extension that is waiting
   // for that channel to open. Used for lazy background pages.
   typedef std::string ExtensionID;
-  typedef std::pair<Profile*, ExtensionID> PendingLazyBackgroundPageChannel;
-  typedef std::map<int, PendingLazyBackgroundPageChannel>
-      PendingLazyBackgroundPageChannelMap;
+  typedef std::pair<Profile*, ExtensionID> PendingChannel;
+  typedef std::map<int, PendingChannel> PendingChannelMap;
 
   // Common among OpenChannel* variants.
   bool OpenChannelImpl(scoped_ptr<OpenChannelParams> params);
@@ -197,46 +185,28 @@ class MessageService : public ProfileKeyedAPI,
   // A process that might be in our list of channels has closed.
   void OnProcessClosed(content::RenderProcessHost* process);
 
-  void GotDomainBoundCert(scoped_ptr<OpenChannelParams> params,
-                          const std::string& tls_channel_id);
-
-  // Enqueues a message on a pending channel.
-  void EnqueuePendingMessage(int port_id, int channel_id,
-                             const std::string& message);
-
-  // Enqueues a message on a channel pending on a lazy background page load.
-  void EnqueuePendingMessageForLazyBackgroundLoad(int port_id,
-                                                  int channel_id,
-                                                  const std::string& message);
-
-  // Immediately sends a message to the given port.
-  void DispatchMessage(int port_id, MessageChannel* channel,
-                       const std::string& message);
-
   // Potentially registers a pending task with the LazyBackgroundTaskQueue
   // to open a channel. Returns true if a task was queued.
   // Takes ownership of |params| if true is returned.
-  bool MaybeAddPendingLazyBackgroundPageOpenChannelTask(
-      Profile* profile,
-      const Extension* extension,
-      OpenChannelParams* params);
+  bool MaybeAddPendingOpenChannelTask(Profile* profile,
+                                      const Extension* extension,
+                                      OpenChannelParams* params);
 
   // Callbacks for LazyBackgroundTaskQueue tasks. The queue passes in an
   // ExtensionHost to its task callbacks, though some of our callbacks don't
   // use that argument.
-  void PendingLazyBackgroundPageOpenChannel(
-      scoped_ptr<OpenChannelParams> params,
-      int source_process_id,
-      extensions::ExtensionHost* host);
-  void PendingLazyBackgroundPageCloseChannel(int port_id,
-                                             const std::string& error_message,
-                                             extensions::ExtensionHost* host) {
+  void PendingOpenChannel(scoped_ptr<OpenChannelParams> params,
+                          int source_process_id,
+                          extensions::ExtensionHost* host);
+  void PendingCloseChannel(int port_id,
+                           const std::string& error_message,
+                           extensions::ExtensionHost* host) {
     if (host)
       CloseChannel(port_id, error_message);
   }
-  void PendingLazyBackgroundPagePostMessage(int port_id,
-                                            const std::string& message,
-                                            extensions::ExtensionHost* host) {
+  void PendingPostMessage(int port_id,
+                          const std::string& message,
+                          extensions::ExtensionHost* host) {
     if (host)
       PostMessage(port_id, message);
   }
@@ -257,9 +227,7 @@ class MessageService : public ProfileKeyedAPI,
 
   content::NotificationRegistrar registrar_;
   MessageChannelMap channels_;
-  PendingTlsChannelIdMap pending_tls_channel_id_channels_;
-  PendingLazyBackgroundPageChannelMap pending_lazy_background_page_channels_;
-  MessagePropertyProvider property_provider_;
+  PendingChannelMap pending_channels_;
 
   // Weak pointer. Guaranteed to outlive this class.
   LazyBackgroundTaskQueue* lazy_background_task_queue_;
