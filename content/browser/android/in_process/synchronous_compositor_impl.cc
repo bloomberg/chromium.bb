@@ -436,6 +436,13 @@ gfx::Vector2dF SynchronousCompositorImpl::GetTotalScrollOffset() {
   return gfx::Vector2dF();
 }
 
+bool SynchronousCompositorImpl::IsExternalFlingActive() const {
+  DCHECK(CalledOnValidThread());
+  if (compositor_client_)
+    return compositor_client_->IsExternalFlingActive();
+  return false;
+}
+
 void SynchronousCompositorImpl::SetPageScaleFactor(float page_scale_factor) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)

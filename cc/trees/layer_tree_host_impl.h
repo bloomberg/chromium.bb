@@ -282,6 +282,8 @@ class CC_EXPORT LayerTreeHostImpl
     return scroll_layer_id_when_mouse_over_scrollbar_;
   }
 
+  bool IsCurrentlyScrolling() const;
+
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
 

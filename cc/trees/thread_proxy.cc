@@ -1494,7 +1494,7 @@ void ThreadProxy::RenewTreePriority() {
   DCHECK(IsImplThread());
   bool smoothness_takes_priority =
       layer_tree_host_impl_->pinch_gesture_active() ||
-      layer_tree_host_impl_->CurrentlyScrollingLayer() ||
+      layer_tree_host_impl_->IsCurrentlyScrolling() ||
       layer_tree_host_impl_->page_scale_animation_active();
 
   base::TimeTicks now = layer_tree_host_impl_->CurrentPhysicalTimeTicks();

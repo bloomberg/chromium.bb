@@ -98,7 +98,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   list.push_back(root_render_pass.PassAs<RenderPass>());
 
   float device_scale_factor = 1.f;
-  renderer()->DrawFrame(&list, NULL, device_scale_factor, true);
+  renderer()->DrawFrame(&list, NULL, device_scale_factor, true, false);
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
@@ -191,7 +191,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   list.push_back(root_render_pass.PassAs<RenderPass>());
 
   float device_scale_factor = 1.f;
-  renderer()->DrawFrame(&list, NULL, device_scale_factor, true);
+  renderer()->DrawFrame(&list, NULL, device_scale_factor, true, false);
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
@@ -262,7 +262,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   list.push_back(root_render_pass.PassAs<RenderPass>());
 
   float device_scale_factor = 1.f;
-  renderer()->DrawFrame(&list, NULL, device_scale_factor, true);
+  renderer()->DrawFrame(&list, NULL, device_scale_factor, true, false);
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
@@ -314,7 +314,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   AddQuad(root_clear_pass, viewport_rect, SK_ColorGREEN);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list, NULL, device_scale_factor, true);
+  renderer()->DrawFrame(&list, NULL, device_scale_factor, true, false);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
   EXPECT_EQ(SK_ColorGREEN, output.getColor(0, 0));
@@ -333,7 +333,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   AddQuad(root_smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list, NULL, device_scale_factor, true);
+  renderer()->DrawFrame(&list, NULL, device_scale_factor, true, false);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
   // If we didn't clear, the borders should still be green.
@@ -380,7 +380,7 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   root_clear_pass->quad_list[0]->visible_rect = interior_visible_rect;
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list, NULL, device_scale_factor, true);
+  renderer()->DrawFrame(&list, NULL, device_scale_factor, true, false);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
   EXPECT_EQ(SK_ColorGREEN, output.getColor(0, 0));

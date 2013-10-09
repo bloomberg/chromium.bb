@@ -671,9 +671,10 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
     for (int x = 0; x < 2; ++x) {
       if (x == 0 && y == 1)
         continue;
+      SkPaint paint;
       content_layer_clients[y][x].add_draw_bitmap(
           lazy_bitmap[y][x],
-          gfx::Point(x * 128 + 10, y * 128 + 10));
+          gfx::Point(x * 128 + 10, y * 128 + 10), paint);
       pictures[y][x] = Picture::Create(
           gfx::Rect(x * 128 + 10, y * 128 + 10, 64, 64));
       pictures[y][x]->Record(

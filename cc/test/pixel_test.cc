@@ -72,6 +72,7 @@ class PixelTest::PixelTestRendererClient
 
 PixelTest::PixelTest()
     : device_viewport_size_(gfx::Size(200, 200)),
+      disable_picture_quad_image_filtering_(false),
       fake_client_(
           new PixelTestRendererClient(gfx::Rect(device_viewport_size_))) {}
 
@@ -119,7 +120,8 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
   renderer_->DrawFrame(pass_list,
                        offscreen_contexts.get(),
                        device_scale_factor,
-                       allow_partial_swap);
+                       allow_partial_swap,
+                       disable_picture_quad_image_filtering_);
 
   // Wait for the readback to complete.
   resource_provider_->Finish();

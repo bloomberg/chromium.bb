@@ -34,6 +34,10 @@ class LayerScrollOffsetDelegate {
   // more than the value passed to the most recent SetMaxScrollOffset call.
   virtual gfx::Vector2dF GetTotalScrollOffset() = 0;
 
+  // This is called by the compositor to check whether a delegate-managed fling
+  // is active or not.
+  virtual bool IsExternalFlingActive() const = 0;
+
   // This is called by the compositor to notify the delegate what is the current
   // page scale factor is.
   virtual void SetPageScaleFactor(float page_scale_factor) = 0;

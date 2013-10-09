@@ -324,7 +324,8 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
   // cases and fall back to a persistent bitmap backing
   // (http://crbug.com/280374).
   skia::RefPtr<SkDrawFilter> opacity_filter =
-      skia::AdoptRef(new skia::OpacityDrawFilter(quad->opacity(), true));
+      skia::AdoptRef(new skia::OpacityDrawFilter(
+          quad->opacity(), frame->disable_picture_quad_image_filtering));
   DCHECK(!current_canvas_->getDrawFilter());
   current_canvas_->setDrawFilter(opacity_filter.get());
 

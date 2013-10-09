@@ -51,6 +51,9 @@ class BrowserViewRenderer {
     // Set the view's scroll offset cap to |new_value|.
     virtual void SetMaxContainerViewScrollOffset(gfx::Vector2d new_value) = 0;
 
+    // Is a WebView-managed fling in progress?
+    virtual bool IsFlingActive() const = 0;
+
     // Set the current page scale to |page_scale_factor|.
     virtual void SetPageScaleFactor(float page_scale_factor) = 0;
 

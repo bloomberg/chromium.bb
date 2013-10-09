@@ -34,7 +34,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
-                         bool allow_partial_swap) OVERRIDE;
+                         bool allow_partial_swap,
+                         bool disable_picture_quad_image_filtering) OVERRIDE;
 
   struct CC_EXPORT DrawingFrame {
     DrawingFrame();
@@ -50,6 +51,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
     gfx::Transform window_matrix;
 
     ContextProvider* offscreen_context_provider;
+
+    bool disable_picture_quad_image_filtering;
   };
 
   void SetEnlargePassTextureAmountForTesting(gfx::Vector2d amount);

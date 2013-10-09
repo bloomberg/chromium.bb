@@ -376,6 +376,7 @@ class ScrollDelegateIgnore : public LayerScrollOffsetDelegate {
   virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
     return fixed_offset_;
   }
+  virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
 
   void set_fixed_offset(gfx::Vector2dF fixed_offset) {
     fixed_offset_ = fixed_offset;
@@ -432,6 +433,7 @@ class ScrollDelegateAccept : public LayerScrollOffsetDelegate {
   virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
     return current_offset_;
   }
+  virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
   virtual void SetPageScaleFactor(float page_scale_factor) OVERRIDE {}
   virtual void SetScrollableSize(gfx::SizeF scrollable_size) OVERRIDE {}
 

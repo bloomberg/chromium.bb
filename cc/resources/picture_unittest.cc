@@ -127,9 +127,10 @@ TEST(PictureTest, PixelRefIterator) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        SkPaint paint;
         content_layer_client.add_draw_bitmap(
             lazy_bitmap[y][x],
-            gfx::Point(x * 512 + 6, y * 512 + 6));
+            gfx::Point(x * 512 + 6, y * 512 + 6), paint);
       }
     }
   }
@@ -224,9 +225,10 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        SkPaint paint;
         content_layer_client.add_draw_bitmap(
             lazy_bitmap[y][x],
-            gfx::Point(1024 + x * 512 + 6, y * 512 + 6));
+            gfx::Point(1024 + x * 512 + 6, y * 512 + 6), paint);
       }
     }
   }
@@ -345,9 +347,10 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        SkPaint paint;
         content_layer_client.add_draw_bitmap(
             lazy_bitmap[y][x],
-            gfx::Point(x * 512 + 6, y * 512 + 6));
+            gfx::Point(x * 512 + 6, y * 512 + 6), paint);
       }
     }
   }

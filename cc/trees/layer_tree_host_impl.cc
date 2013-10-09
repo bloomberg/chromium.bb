@@ -1329,11 +1329,14 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   if (output_surface_->ForcedDrawToSoftwareDevice()) {
     bool allow_partial_swap = false;
+    bool disable_picture_quad_image_filtering =
+        IsCurrentlyScrolling() || needs_animate_layers();
 
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_, output_surface_.get(), NULL);
     temp_software_renderer->DrawFrame(
-        &frame->render_passes, NULL, device_scale_factor_, allow_partial_swap);
+        &frame->render_passes, NULL, device_scale_factor_, allow_partial_swap,
+        disable_picture_quad_image_filtering);
   } else {
     // We don't track damage on the HUD layer (it interacts with damage tracking
     // visualizations), so disable partial swaps to make the HUD layer display
@@ -1343,7 +1346,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
     renderer_->DrawFrame(&frame->render_passes,
                          offscreen_context_provider_.get(),
                          device_scale_factor_,
-                         allow_partial_swap);
+                         allow_partial_swap,
+                         false);
   }
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
@@ -1446,6 +1450,11 @@ LayerImpl* LayerTreeHostImpl::RootScrollLayer() const {
 
 LayerImpl* LayerTreeHostImpl::CurrentlyScrollingLayer() const {
   return active_tree_->CurrentlyScrollingLayer();
+}
+
+bool LayerTreeHostImpl::IsCurrentlyScrolling() const {
+  return CurrentlyScrollingLayer() ||
+         (RootScrollLayer() && RootScrollLayer()->IsExternalFlingActive());
 }
 
 // Content layers can be either directly scrollable or contained in an outer

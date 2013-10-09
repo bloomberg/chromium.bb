@@ -1520,6 +1520,86 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
       FuzzyPixelOffByOneComparator(true)));
 }
 
+template<typename TypeParam> bool IsSoftwareRenderer() {
+  return false;
+}
+
+template<>
+bool IsSoftwareRenderer<SoftwareRenderer>() {
+  return true;
+}
+
+template<>
+bool IsSoftwareRenderer<SoftwareRendererWithExpandedViewport>() {
+  return true;
+}
+
+// If we disable image filtering, then a 2x2 bitmap should appear as four
+// huge sharp squares.
+TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
+  // We only care about this in software mode since bilinear filtering is
+  // cheap in hardware.
+  if (!IsSoftwareRenderer<TypeParam>())
+    return;
+
+  gfx::Size pile_tile_size(1000, 1000);
+  gfx::Rect viewport(this->device_viewport_size_);
+  bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
+  ResourceFormat texture_format = RGBA_8888;
+
+  RenderPass::Id id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
+  bitmap.allocPixels();
+  {
+    SkAutoLockPixels lock(bitmap);
+    SkCanvas canvas(bitmap);
+    canvas.drawPoint(0, 0, SK_ColorGREEN);
+    canvas.drawPoint(0, 1, SK_ColorBLUE);
+    canvas.drawPoint(1, 0, SK_ColorBLUE);
+    canvas.drawPoint(1, 1, SK_ColorGREEN);
+  }
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  SkPaint paint;
+  paint.setFilterLevel(SkPaint::kLow_FilterLevel);
+  pile->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
+  pile->RerecordPile();
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport);
+
+  scoped_ptr<PictureDrawQuad> quad = PictureDrawQuad::Create();
+  quad->SetNew(shared_state.get(),
+                     viewport,
+                     gfx::Rect(),
+                     gfx::RectF(0, 0, 2, 2),
+                     viewport.size(),
+                     texture_format,
+                     viewport,
+                     1.f,
+                     use_skia_gpu_backend,
+                     pile);
+  pass->quad_list.push_back(quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  this->disable_picture_quad_image_filtering_ = true;
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      PixelTest::NoOffscreenContext,
+      base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
+      ExactPixelComparator(true)));
+}
+
 TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
            PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);

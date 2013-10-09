@@ -18,6 +18,12 @@ namespace cc {
 
 class FakeContentLayerClient : public cc::ContentLayerClient {
  public:
+  struct BitmapData {
+    SkBitmap bitmap;
+    gfx::Point point;
+    SkPaint paint;
+  };
+
   FakeContentLayerClient();
   virtual ~FakeContentLayerClient();
 
@@ -32,13 +38,19 @@ class FakeContentLayerClient : public cc::ContentLayerClient {
     draw_rects_.push_back(std::make_pair(rect, paint));
   }
 
-  void add_draw_bitmap(const SkBitmap& bitmap, gfx::Point point) {
-    draw_bitmaps_.push_back(std::make_pair(bitmap, point));
+  void add_draw_bitmap(const SkBitmap& bitmap,
+                       gfx::Point point,
+                       const SkPaint& paint) {
+    BitmapData data;
+    data.bitmap = bitmap;
+    data.point = point;
+    data.paint = paint;
+    draw_bitmaps_.push_back(data);
   }
 
  private:
   typedef std::vector<std::pair<gfx::RectF, SkPaint> > RectPaintVector;
-  typedef std::vector<std::pair<SkBitmap, gfx::Point> > BitmapVector;
+  typedef std::vector<BitmapData> BitmapVector;
 
   bool paint_all_opaque_;
   RectPaintVector draw_rects_;

@@ -345,6 +345,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   void SetScrollOffsetDelegate(
       LayerScrollOffsetDelegate* scroll_offset_delegate);
+  bool IsExternalFlingActive() const;
+
   void SetScrollOffset(gfx::Vector2d scroll_offset);
   void SetScrollOffsetAndDelta(gfx::Vector2d scroll_offset,
                                gfx::Vector2dF scroll_delta);

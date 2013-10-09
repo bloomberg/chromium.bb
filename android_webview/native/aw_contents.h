@@ -160,6 +160,7 @@ class AwContents : public FindHelper::Listener,
   virtual void SetMaxContainerViewScrollOffset(
       gfx::Vector2d new_value) OVERRIDE;
   virtual void ScrollContainerViewTo(gfx::Vector2d new_value) OVERRIDE;
+  virtual bool IsFlingActive() const OVERRIDE;
   virtual void SetPageScaleFactor(float page_scale_factor) OVERRIDE;
   virtual void SetContentsSize(gfx::SizeF contents_size_dip) OVERRIDE;
   virtual void DidOverscroll(gfx::Vector2d overscroll_delta) OVERRIDE;

@@ -840,6 +840,10 @@ gfx::Vector2dF InProcessViewRenderer::GetTotalRootLayerScrollOffset() {
   return scroll_offset_dip_;
 }
 
+bool InProcessViewRenderer::IsExternalFlingActive() const {
+  return client_->IsFlingActive();
+}
+
 void InProcessViewRenderer::SetRootLayerPageScaleFactor(
     float page_scale_factor) {
   page_scale_factor_ = page_scale_factor;

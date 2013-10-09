@@ -35,7 +35,7 @@ void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
 
   for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
       it != draw_bitmaps_.end(); ++it) {
-    canvas->drawBitmap(it->first, it->second.x(), it->second.y());
+    canvas->drawBitmap(it->bitmap, it->point.x(), it->point.y(), &it->paint);
   }
 }
 

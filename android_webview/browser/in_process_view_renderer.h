@@ -85,6 +85,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
       gfx::Vector2dF new_value_css) OVERRIDE;
   virtual void DidUpdateContent() OVERRIDE;
   virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() OVERRIDE;
+  virtual bool IsExternalFlingActive() const OVERRIDE;
   virtual void SetRootLayerPageScaleFactor(float page_scale_factor) OVERRIDE;
   virtual void SetRootLayerScrollableSize(gfx::SizeF scrollable_size) OVERRIDE;
   virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,

@@ -824,6 +824,14 @@ void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
       env, obj.obj(), new_value.x(), new_value.y());
 }
 
+bool AwContents::IsFlingActive() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return false;
+  return Java_AwContents_isFlingActive(env, obj.obj());
+}
+
 void AwContents::SetPageScaleFactor(float page_scale_factor) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
