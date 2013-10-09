@@ -1130,6 +1130,7 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
             return false;
         } else {
           SetMouseMovedHandler(NULL, MOUSE_MOVED_HANDLER_SET_REASON_NULL);
+          return false;
         }
       }
       break;
