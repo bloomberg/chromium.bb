@@ -895,6 +895,27 @@ int32_t NaClSysTestInfoLeak(struct NaClAppThread *natp) {
                    "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7");
   __asm__ volatile("fmxr fpscr, %0" :: "r" (0xdeadbeef) : "vfpcc");
 
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+
+  static const char manybytes[128] =
+      "Sensitive information must not be leaked to untrusted code!!!\n"
+      "Where is Maletoth?\n";
+
+  __asm__ volatile("ldc1  $f0,  0(%0)\n"
+                   "ldc1  $f2,  8(%0)\n"
+                   "ldc1  $f4,  16(%0)\n"
+                   "ldc1  $f6,  24(%0)\n"
+                   "ldc1  $f8,  32(%0)\n"
+                   "ldc1  $f10, 40(%0)\n"
+                   "ldc1  $f12, 48(%0)\n"
+                   "ldc1  $f14, 56(%0)\n"
+                   "ldc1  $f16, 64(%0)\n"
+                   "ldc1  $f18, 72(%0)\n"
+                   : : "r" (manybytes)
+                   : "$f0", "$f1", "$f2", "$f3", "$f4", "$f5", "$f6", "$f7",
+                     "$f8", "$f9", "$f10", "$f11", "$f12", "$f13", "$f14",
+                     "$f15", "$f16", "$f17", "$f18", "$f19");
+
 #endif
 
   UNREFERENCED_PARAMETER(natp);

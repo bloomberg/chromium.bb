@@ -15,14 +15,33 @@
  * module. This happens when a main nacl thread is created and starting to
  * execute the nacl code, or when nacl module is returning from a system
  * call. This piece of code lives in a service runtime part of address space.
+ * When a new thread is started, we also clear callee-saved FPU registers
+ * (f20-f31), while in the case of returning to a thread these registers are set
+ * and restored by trusted code.
  * The one and only argument is in register a0
  *
  * a0 -- address of thread context (struct NaClThreadContext)
  */
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClStartSwitch):
 
   .set noreorder
+
+  /*
+   * A new untrusted thread is started, so we clear even callee saved
+   * FPU registers.
+   */
+
+  mtc1  $zero, $f0
+  mtc1  $zero, $f1
+  mov.d $f20,  $f0
+  mov.d $f22,  $f0
+  mov.d $f24,  $f0
+  mov.d $f26,  $f0
+  mov.d $f28,  $f0
+  mov.d $f30,  $f0
+
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
 
   /*
    * We clear the following registers to avoid information leaks. The
@@ -42,6 +61,22 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
   addu $t5, $zero, $zero
   addu $gp, $zero, $zero
   addu $ra, $zero, $zero
+
+  /*
+   * We clear floating point registers f0-f19, while f20-f31 are callee-saved,
+   * and those need clearing only when a new thread is started.
+   */
+  mtc1  $zero, $f0
+  mtc1  $zero, $f1
+  mov.d $f2,   $f0
+  mov.d $f4,   $f0
+  mov.d $f6,   $f0
+  mov.d $f8,   $f0
+  mov.d $f10,  $f0
+  mov.d $f12,  $f0
+  mov.d $f14,  $f0
+  mov.d $f16,  $f0
+  mov.d $f18,  $f0
 
   /* NACL_CALLEE_SAVE_LIST BEGIN */
 

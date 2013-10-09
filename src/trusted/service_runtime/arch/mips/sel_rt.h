@@ -65,6 +65,8 @@ static INLINE uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext *th_ctx) {
   return th_ctx->stack_ptr;
 }
 
+NORETURN void NaClStartSwitch(struct NaClThreadContext *);
+
 #endif /* !defined(__ASSEMBLER__) */
 
 #define NACL_THREAD_CONTEXT_OFFSET_S0                  0x00

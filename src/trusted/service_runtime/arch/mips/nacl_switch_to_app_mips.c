@@ -43,5 +43,5 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
   /*
    * context stored in $a0
    */
-  NaClSwitch(context);
+  NaClStartSwitch(context);
 }
