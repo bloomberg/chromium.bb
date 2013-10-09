@@ -60,7 +60,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport1', function() {
   };
 
   this.mockGlobals.expects(once()).
-      buildServerRequest('jserrors', 'application/json').
+      buildServerRequest('POST', 'jserrors', 'application/json').
       will(returnValue(mockRequest));
   this.mockLocalFunctions.expects(once()).sendRequest(
       JSON.stringify(expectedRequestObject));
@@ -99,7 +99,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport2', function() {
   };
 
   this.mockGlobals.expects(once()).
-      buildServerRequest('jserrors', 'application/json').
+      buildServerRequest('POST', 'jserrors', 'application/json').
       will(returnValue(mockRequest));
   this.mockLocalFunctions.expects(once()).sendRequest(
       JSON.stringify(expectedRequestObject));

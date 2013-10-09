@@ -732,7 +732,7 @@ var testing = {};
 
       // Allow pattern to match multiple lines for text wrapping.
       var callerRegExp =
-          new RegExp(stackInfo.callerName + '\\((.|\\n)*?\\);', 'g');
+          new RegExp(stackInfo.callerName + '\\((.|\\n|\\r)*?\\);', 'g');
 
       // Find all matches allowing wrap around such as when a helper function
       // calls assert/expect calls and that helper function is called multiple

@@ -30,17 +30,26 @@
  * code the server will send.
  */
 var HTTP_OK = 200;
+var HTTP_NOCONTENT = 204;
 
 var HTTP_BAD_REQUEST = 400;
 var HTTP_UNAUTHORIZED = 401;
 var HTTP_FORBIDDEN = 403;
 var HTTP_METHOD_NOT_ALLOWED = 405;
 
+var MS_IN_SECOND = 1000;
+var MS_IN_MINUTE = 60 * 1000;
+
 /**
  * Initial period for polling for Google Now Notifications cards to use when the
  * period from the server is not available.
  */
 var INITIAL_POLLING_PERIOD_SECONDS = 5 * 60;  // 5 minutes
+
+/**
+ * Mininal period for polling for Google Now Notifications cards.
+ */
+var MINIMUM_POLLING_PERIOD_SECONDS = 5 * 60;  // 5 minutes
 
 /**
  * Maximal period for polling for Google Now Notifications cards to use when the
@@ -87,6 +96,34 @@ var WELCOME_TOAST_NOTIFICATION_ID = 'enable-now-toast';
 var ToastButtonIndex = {YES: 0, NO: 1};
 
 /**
+ * Notification as it's sent by the server.
+ *
+ * @typedef {{
+ *   notificationId: string,
+ *   chromeNotificationId: string,
+ *   trigger: Object=,
+ *   version: number,
+ *   chromeNotificationOptions: Object,
+ *   actionUrls: Object=,
+ *   dismissal: Object
+ * }}
+ */
+var UnmergedNotification;
+
+/**
+ * Notification group as the client stores it. |cardsTimestamp| and |rank| are
+ * defined if |cards| is non-empty.
+ *
+ * @typedef {{
+ *   cards: Array.<UnmergedNotification>,
+ *   cardsTimestamp: number=,
+ *   nextPollTime: number,
+ *   rank: number=
+ * }}
+ */
+var StorageGroup;
+
+/**
  * Checks if a new task can't be scheduled when another task is already
  * scheduled.
  * @param {string} newTaskName Name of the new task.
@@ -118,6 +155,7 @@ var tasks = buildTaskManager(areTasksConflicting);
 // Add error processing to API calls.
 wrapper.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
 wrapper.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
+wrapper.instrumentChromeApiFunction('notifications.clear', 1);
 wrapper.instrumentChromeApiFunction('notifications.create', 2);
 wrapper.instrumentChromeApiFunction('notifications.update', 2);
 wrapper.instrumentChromeApiFunction('notifications.getAll', 0);
@@ -197,7 +235,6 @@ function recordEvent(event) {
  *     parameter.
  */
 function setAuthorization(request, callbackBoolean) {
-  tasks.debugSetStepName('setAuthorization-isSignedIn');
   authenticationManager.isSignedIn(function(token) {
     if (!token) {
       callbackBoolean(false);
@@ -211,7 +248,6 @@ function setAuthorization(request, callbackBoolean) {
     request.onloadend = wrapper.wrapCallback(function(event) {
       if (request.status == HTTP_FORBIDDEN ||
           request.status == HTTP_UNAUTHORIZED) {
-        tasks.debugSetStepName('setAuthorization-removeToken');
         authenticationManager.removeToken(token, function() {
           originalOnLoadEnd(event);
         });
@@ -225,45 +261,22 @@ function setAuthorization(request, callbackBoolean) {
 }
 
 /**
- * Parses JSON response from the notification server, show notifications and
- * schedule next update.
- * @param {string} response Server response.
- * @param {function()} callback Completion callback.
+ * Shows parsed and merged cards as notifications.
+ * @param {Object.<string, MergedCard>} cards Map from chromeNotificationId to
+ *     the merged card, containing cards to show.
  */
-function parseAndShowNotificationCards(response, callback) {
-  console.log('parseAndShowNotificationCards ' + response);
-  try {
-    var parsedResponse = JSON.parse(response);
-  } catch (error) {
-    console.error('parseAndShowNotificationCards parse error: ' + error);
-    callback();
-    return;
-  }
+function showNotificationCards(cards) {
+  console.log('showNotificationCards ' + JSON.stringify(cards));
 
-  var cards = parsedResponse.cards;
-
-  if (!(cards instanceof Array)) {
-    callback();
-    return;
-  }
-
-  if (typeof parsedResponse.next_poll_seconds != 'number') {
-    callback();
-    return;
-  }
-
-  tasks.debugSetStepName('parseAndShowNotificationCards-storage-get');
   instrumented.storage.local.get(['notificationsData', 'recentDismissals'],
       function(items) {
-        console.log('parseAndShowNotificationCards-get ' +
+        console.log('showNotificationCards-get ' +
             JSON.stringify(items));
         items.notificationsData = items.notificationsData || {};
         items.recentDismissals = items.recentDismissals || {};
 
-        tasks.debugSetStepName(
-            'parseAndShowNotificationCards-notifications-getAll');
         instrumented.notifications.getAll(function(notifications) {
-          console.log('parseAndShowNotificationCards-getAll ' +
+          console.log('showNotificationCards-getAll ' +
               JSON.stringify(notifications));
           // TODO(vadimt): Figure out what to do when notifications are
           // disabled for our extension.
@@ -273,62 +286,47 @@ function parseAndShowNotificationCards(response, callback) {
           // client-side filtering of cards.
           var updatedRecentDismissals = {};
           var currentTimeMs = Date.now();
-          for (var notificationId in items.recentDismissals) {
-            if (currentTimeMs - items.recentDismissals[notificationId] <
+          for (var chromeNotificationId in items.recentDismissals) {
+            if (currentTimeMs - items.recentDismissals[chromeNotificationId] <
                 DISMISS_RETENTION_TIME_MS) {
-              updatedRecentDismissals[notificationId] =
-                  items.recentDismissals[notificationId];
-            }
-          }
-
-          // Mark existing notifications that received an update in this server
-          // response.
-          var updatedNotifications = {};
-
-          for (var i = 0; i < cards.length; ++i) {
-            var notificationId = cards[i].notificationId;
-            if (!(notificationId in updatedRecentDismissals) &&
-                notificationId in notifications) {
-              updatedNotifications[notificationId] = true;
+              updatedRecentDismissals[chromeNotificationId] =
+                  items.recentDismissals[chromeNotificationId];
+              delete cards[chromeNotificationId];
             }
           }
 
           // Delete notifications that didn't receive an update.
-          for (var notificationId in notifications) {
-            console.log('parseAndShowNotificationCards-delete-check ' +
-                        notificationId);
-            if (!(notificationId in updatedNotifications)) {
-              console.log('parseAndShowNotificationCards-delete ' +
-                  notificationId);
-              cardSet.clear(notificationId);
+          for (var chromeNotificationId in notifications) {
+            console.log('showNotificationCards-delete-check ' +
+                        chromeNotificationId);
+            if (!(chromeNotificationId in cards)) {
+              console.log(
+                  'showNotificationCards-delete ' + chromeNotificationId);
+              cardSet.clear(chromeNotificationId);
             }
           }
-
-          recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
 
           // Create/update notifications and store their new properties.
           var newNotificationsData = {};
-          for (var i = 0; i < cards.length; ++i) {
-            var card = cards[i];
-            if (!(card.notificationId in updatedRecentDismissals)) {
-              var notificationData =
-                  items.notificationsData[card.notificationId];
-              var previousVersion = notifications[card.notificationId] &&
-                                    notificationData &&
-                                    notificationData.cardCreateInfo &&
-                                    notificationData.cardCreateInfo.version;
-              newNotificationsData[card.notificationId] =
-                  cardSet.update(card, previousVersion);
-            }
+          for (var chromeNotificationId in cards) {
+            var notificationData =
+                items.notificationsData[chromeNotificationId];
+            var previousVersion = notifications[chromeNotificationId] &&
+                                  notificationData &&
+                                  notificationData.cardCreateInfo &&
+                                  notificationData.cardCreateInfo.version;
+            newNotificationsData[chromeNotificationId] = cardSet.update(
+                chromeNotificationId,
+                cards[chromeNotificationId],
+                previousVersion);
           }
 
-          updateCardsAttempts.start(parsedResponse.next_poll_seconds);
+          recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
 
           chrome.storage.local.set({
             notificationsData: newNotificationsData,
             recentDismissals: updatedRecentDismissals
           });
-          callback();
         });
       });
 }
@@ -346,55 +344,226 @@ function removeAllCards() {
   // code is no longer necessary.
   instrumented.notifications.getAll(function(notifications) {
     notifications = notifications || {};
-    for (var notificationId in notifications) {
-      chrome.notifications.clear(notificationId, function() {});
+    for (var chromeNotificationId in notifications) {
+      instrumented.notifications.clear(chromeNotificationId, function() {});
     }
-    chrome.storage.local.set({notificationsData: {}});
+    chrome.storage.local.remove(['notificationsData', 'notificationGroups']);
+  });
+}
+
+/**
+ * Merges an unmerged notification into a merged card with same ID.
+ * @param {MergedCard=} mergedCard Existing merged card or undefined if a merged
+ *     card doesn't exist (i.e. we see this ID for the first time while
+ *     merging).
+ * @param {UnmergedNotification} unmergedNotification Notification as it was
+ *     received from the server.
+ * @param {number} notificationTimestamp The moment the unmerged card was
+ *     received.
+ * @param {number} notificationGroupRank Rank of the group of the unmerged card.
+ * @return {MergedCard} Result of merging |unmergedNotification| into
+ *     |mergedCard|.
+ */
+function mergeCards(
+    mergedCard,
+    unmergedNotification,
+    notificationTimestamp,
+    notificationGroupRank) {
+  var result = mergedCard || {dismissals: []};
+
+  var priority = mergedCard ?
+      Math.max(
+          mergedCard.notification.priority,
+          unmergedNotification.chromeNotificationOptions.priority) :
+      unmergedNotification.chromeNotificationOptions.priority;
+
+  if (!mergedCard || notificationGroupRank > mergedCard.groupRank) {
+    result.groupRank = notificationGroupRank;
+    var showTime = unmergedNotification.trigger &&
+        unmergedNotification.trigger.showTimeSec &&
+        (notificationTimestamp +
+         unmergedNotification.trigger.showTimeSec * MS_IN_SECOND);
+    var hideTime = unmergedNotification.trigger &&
+        unmergedNotification.trigger.hideTimeSec &&
+        (notificationTimestamp +
+         unmergedNotification.trigger.hideTimeSec * MS_IN_SECOND);
+    result.trigger = {
+      showTime: showTime,
+      hideTime: hideTime
+    };
+  }
+
+  if (!mergedCard || notificationTimestamp > mergedCard.timestamp) {
+    result.timestamp = notificationTimestamp;
+    result.notification = unmergedNotification.chromeNotificationOptions;
+    result.actionUrls = unmergedNotification.actionUrls;
+    result.version = unmergedNotification.version;
+  }
+
+  result.notification.priority = priority;
+  var dismissalData = {
+    notificationId: unmergedNotification.notificationId,
+    parameters: unmergedNotification.dismissal
+  };
+  result.dismissals.push(dismissalData);
+
+  return result;
+}
+
+/**
+ * Merges a card group into a set of merged cards.
+ * @param {Object.<string, MergedCard>} mergedCards Map from
+ *     chromeNotificationId to a merged card.
+ *     This is an input/output parameter.
+ * @param {StorageGroup} storageGroup Group to merge into the merged card set.
+ */
+function mergeGroup(mergedCards, storageGroup) {
+  for (var i = 0; i < storageGroup.cards.length; i++) {
+    var card = storageGroup.cards[i];
+    mergedCards[card.chromeNotificationId] = mergeCards(
+        mergedCards[card.chromeNotificationId],
+        card,
+        storageGroup.cardsTimestamp,
+        storageGroup.rank);
+  }
+}
+
+/**
+ * Schedules next cards poll.
+ * @param {Object.<string, StorageGroup>} groups Map from group name to group
+ *     information.
+ */
+function scheduleNextPoll(groups) {
+  var nextPollTime = null;
+
+  for (var groupName in groups) {
+    var group = groups[groupName];
+    nextPollTime = nextPollTime == null ?
+        group.nextPollTime : Math.min(group.nextPollTime, nextPollTime);
+  }
+
+  verify(nextPollTime != null, 'scheduleNextPoll: nextPollTime is null');
+
+  var nextPollDelaySeconds = Math.max(
+      (nextPollTime - Date.now()) / MS_IN_SECOND,
+      MINIMUM_POLLING_PERIOD_SECONDS);
+  updateCardsAttempts.start(nextPollDelaySeconds);
+}
+
+/**
+ * Parses JSON response from the notification server, shows notifications and
+ * schedules next update.
+ * @param {string} response Server response.
+ */
+function parseAndShowNotificationCards(response) {
+  console.log('parseAndShowNotificationCards ' + response);
+  var parsedResponse = JSON.parse(response);
+
+  var groups = parsedResponse.groups;
+
+  // Populate groups with corresponding cards.
+  if (parsedResponse.notifications) {
+    for (var i = 0; i != parsedResponse.notifications.length; ++i) {
+      var card = parsedResponse.notifications[i];
+      var group = groups[card.groupName];
+      group.cards = group.cards || [];
+      group.cards.push(card);
+    }
+  }
+
+  instrumented.storage.local.get('notificationGroups', function(items) {
+    console.log('parseAndShowNotificationCards-get ' + JSON.stringify(items));
+    items.notificationGroups = items.notificationGroups || {};
+
+    var now = Date.now();
+
+    // Build updated set of groups and merge cards from all groups into one set.
+    var updatedGroups = {};
+    var mergedCards = {};
+
+    for (var groupName in groups) {
+      var receivedGroup = groups[groupName];
+      var storageGroup = items.notificationGroups[groupName] || {
+        cards: [],
+        cardsTimestamp: undefined,
+        nextPollTime: now,
+        rank: undefined
+      };
+
+      if (receivedGroup.requested)
+        receivedGroup.cards = receivedGroup.cards || [];
+
+      if (receivedGroup.cards) {
+        storageGroup.cards = receivedGroup.cards;
+        storageGroup.cardsTimestamp = now;
+        storageGroup.rank = receivedGroup.rank;
+      }
+
+      if (receivedGroup.nextPollSeconds !== undefined) {
+        storageGroup.nextPollTime =
+            now + receivedGroup.nextPollSeconds * MS_IN_SECOND;
+      }
+
+      updatedGroups[groupName] = storageGroup;
+
+      mergeGroup(mergedCards, storageGroup);
+    }
+
+    scheduleNextPoll(updatedGroups);
+
+    chrome.storage.local.set({notificationGroups: updatedGroups});
+
+    showNotificationCards(mergedCards);
   });
 }
 
 /**
  * Requests notification cards from the server.
  * @param {Location} position Location of this computer.
- * @param {function()} callback Completion callback.
  */
-function requestNotificationCards(position, callback) {
+function requestNotificationCards(position) {
   console.log('requestNotificationCards ' + JSON.stringify(position) +
       ' from ' + NOTIFICATION_CARDS_URL);
 
-  if (!NOTIFICATION_CARDS_URL) {
-    callback();
+  if (!NOTIFICATION_CARDS_URL)
     return;
-  }
 
   recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
 
-  // TODO(vadimt): Should we use 'q' as the parameter name?
-  var requestParameters =
-      'q=' + position.coords.latitude +
-      ',' + position.coords.longitude +
-      ',' + position.coords.accuracy;
+  instrumented.storage.local.get('notificationGroups', function(items) {
+    console.log('requestNotificationCards-storage-get ' +
+                JSON.stringify(items));
 
-  var request = buildServerRequest('notifications',
-                                   'application/x-www-form-urlencoded');
+    var requestParameters = '?timeZoneOffsetMs=' +
+        (-new Date().getTimezoneOffset() * MS_IN_MINUTE);
 
-  request.onloadend = function(event) {
-    console.log('requestNotificationCards-onloadend ' + request.status);
-    if (request.status == HTTP_OK) {
-      recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
-      parseAndShowNotificationCards(request.response, callback);
-    } else {
-      callback();
+    if (items.notificationGroups) {
+      var now = Date.now();
+
+      for (var groupName in items.notificationGroups) {
+        var group = items.notificationGroups[groupName];
+        if (group.nextPollTime <= now)
+          requestParameters += ('&requestTypes=' + groupName);
+      }
     }
-  };
 
-  setAuthorization(request, function(success) {
-    if (success) {
-      tasks.debugSetStepName('requestNotificationCards-send-request');
-      request.send(requestParameters);
-    } else {
-      callback();
-    }
+    console.log('requestNotificationCards: request=' + requestParameters);
+
+    var request = buildServerRequest('GET',
+                                     'notifications' + requestParameters);
+
+    request.onloadend = function(event) {
+      console.log('requestNotificationCards-onloadend ' + request.status);
+      if (request.status == HTTP_OK) {
+        recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
+        parseAndShowNotificationCards(request.response);
+      }
+    };
+
+    setAuthorization(request, function(success) {
+      if (success)
+        request.send();
+    });
   });
 }
 
@@ -436,7 +605,7 @@ function stopRequestLocation() {
 function updateNotificationsCards(position) {
   console.log('updateNotificationsCards ' + JSON.stringify(position) +
       ' @' + new Date());
-  tasks.add(UPDATE_CARDS_TASK_NAME, function(callback) {
+  tasks.add(UPDATE_CARDS_TASK_NAME, function() {
     console.log('updateNotificationsCards-task-begin');
     updateCardsAttempts.isRunning(function(running) {
       if (running) {
@@ -444,9 +613,7 @@ function updateNotificationsCards(position) {
           processPendingDismissals(function(success) {
             if (success) {
               // The cards are requested only if there are no unsent dismissals.
-              requestNotificationCards(position, callback);
-            } else {
-              callback();
+              requestNotificationCards(position);
             }
           });
         });
@@ -457,16 +624,16 @@ function updateNotificationsCards(position) {
 
 /**
  * Sends a server request to dismiss a card.
- * @param {string} notificationId Unique identifier of the card.
+ * @param {string} chromeNotificationId chrome.notifications ID of the card.
  * @param {number} dismissalTimeMs Time of the user's dismissal of the card in
  *     milliseconds since epoch.
- * @param {Object} dismissalParameters Dismissal parameters.
+ * @param {DismissalData} dismissalData Data to build a dismissal request.
  * @param {function(boolean)} callbackBoolean Completion callback with 'done'
  *     parameter.
  */
 function requestCardDismissal(
-    notificationId, dismissalTimeMs, dismissalParameters, callbackBoolean) {
-  console.log('requestDismissingCard ' + notificationId + ' from ' +
+    chromeNotificationId, dismissalTimeMs, dismissalData, callbackBoolean) {
+  console.log('requestDismissingCard ' + chromeNotificationId + ' from ' +
       NOTIFICATION_CARDS_URL);
 
   var dismissalAge = Date.now() - dismissalTimeMs;
@@ -477,33 +644,35 @@ function requestCardDismissal(
   }
 
   recordEvent(GoogleNowEvent.DISMISS_REQUEST_TOTAL);
-  var request = buildServerRequest('dismiss', 'application/json');
+
+  var request = 'notifications/' + dismissalData.notificationId +
+      '?age=' + dismissalAge +
+      '&chromeNotificationId=' + chromeNotificationId;
+
+  for (var paramField in dismissalData.parameters)
+    request += ('&' + paramField + '=' + dismissalData.parameters[paramField]);
+
+  console.log('requestCardDismissal: request=' + request);
+
+  var request = buildServerRequest('DELETE', request);
   request.onloadend = function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
-    if (request.status == HTTP_OK)
+    if (request.status == HTTP_NOCONTENT)
       recordEvent(GoogleNowEvent.DISMISS_REQUEST_SUCCESS);
 
     // A dismissal doesn't require further retries if it was successful or
     // doesn't have a chance for successful completion.
-    var done = request.status == HTTP_OK ||
+    var done = request.status == HTTP_NOCONTENT ||
         request.status == HTTP_BAD_REQUEST ||
         request.status == HTTP_METHOD_NOT_ALLOWED;
     callbackBoolean(done);
   };
 
   setAuthorization(request, function(success) {
-    if (success) {
-      tasks.debugSetStepName('requestCardDismissal-send-request');
-
-      var dismissalObject = {
-        id: notificationId,
-        age: dismissalAge,
-        dismissal: dismissalParameters
-      };
-      request.send(JSON.stringify(dismissalObject));
-    } else {
+    if (success)
+      request.send();
+    else
       callbackBoolean(false);
-    }
   });
 }
 
@@ -513,7 +682,6 @@ function requestCardDismissal(
  *     parameter. Success means that no pending dismissals are left.
  */
 function processPendingDismissals(callbackBoolean) {
-  tasks.debugSetStepName('processPendingDismissals-storage-get');
   instrumented.storage.local.get(['pendingDismissals', 'recentDismissals'],
       function(items) {
         console.log('processPendingDismissals-storage-get ' +
@@ -544,14 +712,15 @@ function processPendingDismissals(callbackBoolean) {
           // recursively with the rest.
           var dismissal = items.pendingDismissals[0];
           requestCardDismissal(
-              dismissal.notificationId,
+              dismissal.chromeNotificationId,
               dismissal.time,
-              dismissal.parameters,
+              dismissal.dismissalData,
               function(done) {
                 if (done) {
                   dismissalsChanged = true;
                   items.pendingDismissals.splice(0, 1);
-                  items.recentDismissals[dismissal.notificationId] = Date.now();
+                  items.recentDismissals[dismissal.chromeNotificationId] =
+                      Date.now();
                   doProcessDismissals();
                 } else {
                   onFinish(false);
@@ -567,34 +736,29 @@ function processPendingDismissals(callbackBoolean) {
  * Submits a task to send pending dismissals.
  */
 function retryPendingDismissals() {
-  tasks.add(RETRY_DISMISS_TASK_NAME, function(callback) {
+  tasks.add(RETRY_DISMISS_TASK_NAME, function() {
     dismissalAttempts.planForNext(function() {
-      processPendingDismissals(function(success) { callback(); });
+      processPendingDismissals(function(success) {});
      });
   });
 }
 
 /**
  * Opens URL corresponding to the clicked part of the notification.
- * @param {string} notificationId Unique identifier of the notification.
+ * @param {string} chromeNotificationId chrome.notifications ID of the card.
  * @param {function(Object): string} selector Function that extracts the url for
  *     the clicked area from the button action URLs info.
  */
-function onNotificationClicked(notificationId, selector) {
+function onNotificationClicked(chromeNotificationId, selector) {
   instrumented.storage.local.get('notificationsData', function(items) {
     var notificationData = items &&
         items.notificationsData &&
-        items.notificationsData[notificationId];
+        items.notificationsData[chromeNotificationId];
 
     if (!notificationData)
       return;
 
-    var actionUrls = notificationData.actionUrls;
-    if (typeof actionUrls != 'object') {
-      return;
-    }
-
-    var url = selector(actionUrls);
+    var url = selector(notificationData.actionUrls);
     if (!url)
       return;
 
@@ -627,14 +791,14 @@ function onToastNotificationClicked(buttonIndex) {
 
 /**
  * Callback for chrome.notifications.onClosed event.
- * @param {string} notificationId Unique identifier of the notification.
+ * @param {string} chromeNotificationId chrome.notifications ID of the card.
  * @param {boolean} byUser Whether the notification was closed by the user.
  */
-function onNotificationClosed(notificationId, byUser) {
+function onNotificationClosed(chromeNotificationId, byUser) {
   if (!byUser)
     return;
 
-  if (notificationId == WELCOME_TOAST_NOTIFICATION_ID) {
+  if (chromeNotificationId == WELCOME_TOAST_NOTIFICATION_ID) {
     // Even though they only closed the notification without clicking no, treat
     // it as though they clicked No anwyay, and don't show the toast again.
     chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastDismissed');
@@ -645,31 +809,35 @@ function onNotificationClosed(notificationId, byUser) {
   // At this point we are guaranteed that the notification is a now card.
   chrome.metricsPrivate.recordUserAction('GoogleNow.Dismissed');
 
-  tasks.add(DISMISS_CARD_TASK_NAME, function(callback) {
+  tasks.add(DISMISS_CARD_TASK_NAME, function() {
     dismissalAttempts.start();
 
     // Deleting the notification in case it was re-added while this task was
     // scheduled, waiting for execution.
-    cardSet.clear(notificationId);
+    cardSet.clear(chromeNotificationId);
 
-    tasks.debugSetStepName('onNotificationClosed-storage-get');
-    instrumented.storage.local.get(['pendingDismissals', 'notificationsData'],
-        function(items) {
-          items.pendingDismissals = items.pendingDismissals || [];
-          items.notificationsData = items.notificationsData || {};
+    instrumented.storage.local.get(
+        ['pendingDismissals', 'notificationsData'], function(items) {
+      items.pendingDismissals = items.pendingDismissals || [];
+      items.notificationsData = items.notificationsData || {};
 
-          var notificationData = items.notificationsData[notificationId];
+      var notificationData = items.notificationsData[chromeNotificationId];
 
+      if (notificationData && notificationData.dismissals) {
+        for (var i = 0; i < notificationData.dismissals.length; i++) {
           var dismissal = {
-            notificationId: notificationId,
+            chromeNotificationId: chromeNotificationId,
             time: Date.now(),
-            parameters: notificationData && notificationData.dismissalParameters
+            dismissalData: notificationData.dismissals[i]
           };
           items.pendingDismissals.push(dismissal);
-          chrome.storage.local.set(
-              {pendingDismissals: items.pendingDismissals});
-          processPendingDismissals(function(success) { callback(); });
-        });
+        }
+
+        chrome.storage.local.set({pendingDismissals: items.pendingDismissals});
+      }
+
+      processPendingDismissals(function(success) {});
+    });
   });
 }
 
@@ -916,14 +1084,14 @@ function showWelcomeToast() {
     buttons: buttons
   };
   instrumented.notifications.create(WELCOME_TOAST_NOTIFICATION_ID, options,
-      function(notificationId) {});
+      function(chromeNotificationId) {});
 }
 
 /**
  * Hides the welcome toast.
  */
 function hideWelcomeToast() {
-  chrome.notifications.clear(
+  instrumented.notifications.clear(
       WELCOME_TOAST_NOTIFICATION_ID,
       function() {});
 }
@@ -956,21 +1124,21 @@ authenticationManager.addListener(function() {
 });
 
 instrumented.notifications.onClicked.addListener(
-    function(notificationId) {
+    function(chromeNotificationId) {
       chrome.metricsPrivate.recordUserAction('GoogleNow.MessageClicked');
-      onNotificationClicked(notificationId, function(actionUrls) {
-        return actionUrls.messageUrl;
+      onNotificationClicked(chromeNotificationId, function(actionUrls) {
+        return actionUrls && actionUrls.messageUrl;
       });
     });
 
 instrumented.notifications.onButtonClicked.addListener(
-    function(notificationId, buttonIndex) {
-      if (notificationId == WELCOME_TOAST_NOTIFICATION_ID) {
+    function(chromeNotificationId, buttonIndex) {
+      if (chromeNotificationId == WELCOME_TOAST_NOTIFICATION_ID) {
         onToastNotificationClicked(buttonIndex);
       } else {
         chrome.metricsPrivate.recordUserAction(
             'GoogleNow.ButtonClicked' + buttonIndex);
-        onNotificationClicked(notificationId, function(actionUrls) {
+        onNotificationClicked(chromeNotificationId, function(actionUrls) {
           var url = actionUrls.buttonUrls[buttonIndex];
           verify(url, 'onButtonClicked: no url for a button');
           return url;

@@ -49,6 +49,275 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AreTasksConflicting', function() {
   testTaskPair(STATE_CHANGED_TASK_NAME, STATE_CHANGED_TASK_NAME, false);
 });
 
+var testNotificationId = 'TEST GROUP-SOME TEST ID';
+var testChromeNotificationId = 'TEST CARD ID';
+var testNotification1 =
+    {testNotificationField: 'TEST NOTIFICATION VALUE1', priority: -1};
+var testNotification2 =
+    {testNotificationField: 'TEST NOTIFICATION VALUE2', priority: 0};
+var testActionUrls1 = {testField: 'TEST VALUE1'};
+var testActionUrls2 = {testField: 'TEST VALUE2'};
+var testDismissal1 = {testDismissalField: 'TEST DISMISSAL VALUE 1'};
+var testDismissal2 = {testDismissalField: 'TEST DISMISSAL VALUE 2'};
+var testVersion = 7;
+var testTimestamp1 = 300000;
+var testTimestamp2 = 600000;
+var testGroupRank1 = 19;
+var testGroupRank2 = 23;
+var testTriggerUnmerged = {showTimeSec: 100, hideTimeSec: 200};
+var testTriggerMerged = {showTime: 300007, hideTime: 300011};
+var testVersion1 = 29;
+var testVersion2 = 31;
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'MergeCardsEmptyNoTrigger',
+    function() {
+      // Tests merging a card with an empty trigger into an 'undefined' merged
+      // card. This should start a new card.
+
+      // Invoking the tested function.
+      var resultingMergedCard = mergeCards(undefined, {
+        notificationId: testNotificationId,
+        chromeNotificationId: testChromeNotificationId,
+        version: testVersion1,
+        chromeNotificationOptions: testNotification1,
+        actionUrls: testActionUrls1,
+        dismissal: testDismissal1
+      }, testTimestamp1, testGroupRank1);
+
+      // Check the return value.
+      assertEquals(
+          JSON.stringify({
+            dismissals: [
+              {
+                notificationId: testNotificationId,
+                parameters: testDismissal1
+              }
+            ],
+            groupRank: testGroupRank1,
+            trigger: {},
+            timestamp: testTimestamp1,
+            notification: testNotification1,
+            actionUrls: testActionUrls1,
+            version: testVersion1
+          }),
+        JSON.stringify(resultingMergedCard));
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'MergeCards1',
+    function() {
+      // Tests merging a unmerged card into a merged card.
+      // Unmerged card priority is greater than merged card one. Unmerged card
+      // rank is less than merged card one, and it's older.
+
+      // Setup.
+      var mergedCard = {
+        trigger: testTriggerMerged,
+        version: testVersion1,
+        timestamp: testTimestamp2,
+        notification: testNotification1,
+        actionUrls: testActionUrls1,
+        groupRank: testGroupRank2,
+        dismissals:
+            [{notificationId: testNotificationId, parameters: testDismissal1}]
+      };
+
+      var unmergedNotification = {
+        notificationId: testNotificationId,
+        chromeNotificationId: testChromeNotificationId,
+        version: testVersion2,
+        chromeNotificationOptions: testNotification2,
+        actionUrls: testActionUrls2,
+        dismissal: testDismissal2,
+        trigger: testTriggerUnmerged
+      };
+
+      // Invoking the tested function.
+      var resultingMergedCard = mergeCards(
+          mergedCard, unmergedNotification, testTimestamp1, testGroupRank1);
+
+      // Check the return value.
+      assertEquals(
+          JSON.stringify({
+            trigger: testTriggerMerged,
+            version: testVersion1,
+            timestamp: testTimestamp2,
+            notification: {
+                testNotificationField: 'TEST NOTIFICATION VALUE1',
+                priority: 0
+             },
+            actionUrls: testActionUrls1,
+            groupRank: testGroupRank2,
+            dismissals: [
+              {notificationId: testNotificationId, parameters: testDismissal1},
+              {notificationId: testNotificationId, parameters: testDismissal2}
+            ]
+          }),
+        JSON.stringify(resultingMergedCard));
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'MergeCards2',
+    function() {
+      // Tests merging a unmerged card into a merged card.
+      // Unmerged card priority is less than merged card one. Unmerged card rank
+      // is greater than merged card one, and it's older.
+
+      // Setup.
+      var mergedCard = {
+        trigger: testTriggerMerged,
+        version: testVersion1,
+        timestamp: testTimestamp2,
+        notification: testNotification2,
+        actionUrls: testActionUrls1,
+        groupRank: testGroupRank1,
+        dismissals:
+            [{notificationId: testNotificationId, parameters: testDismissal1}]
+      };
+
+      var unmergedNotification = {
+        notificationId: testNotificationId,
+        chromeNotificationId: testChromeNotificationId,
+        version: testVersion2,
+        chromeNotificationOptions: testNotification1,
+        actionUrls: testActionUrls2,
+        dismissal: testDismissal2,
+        trigger: testTriggerUnmerged
+      };
+
+      // Invoking the tested function.
+      var resultingMergedCard = mergeCards(
+          mergedCard, unmergedNotification, testTimestamp1, testGroupRank2);
+
+      // Check the return value.
+      assertEquals(
+          JSON.stringify({
+            trigger: {showTime: 400000, hideTime: 500000},
+            version: testVersion1,
+            timestamp: testTimestamp2,
+            notification: {
+                testNotificationField: 'TEST NOTIFICATION VALUE2',
+                priority: 0
+             },
+            actionUrls: testActionUrls1,
+            groupRank: testGroupRank2,
+            dismissals: [
+              {notificationId: testNotificationId, parameters: testDismissal1},
+              {notificationId: testNotificationId, parameters: testDismissal2}
+            ]
+          }),
+        JSON.stringify(resultingMergedCard));
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'MergeCards3',
+    function() {
+      // Tests merging a unmerged card into a merged card.
+      // Unmerged card priority is less than merged card one. Unmerged card rank
+      // is less than merged card one, and it's newer.
+
+      // Setup.
+      var mergedCard = {
+        trigger: testTriggerMerged,
+        version: testVersion1,
+        timestamp: testTimestamp1,
+        notification: testNotification2,
+        actionUrls: testActionUrls1,
+        groupRank: testGroupRank2,
+        dismissals:
+            [{notificationId: testNotificationId, parameters: testDismissal1}]
+      };
+
+      var unmergedNotification = {
+        notificationId: testNotificationId,
+        chromeNotificationId: testChromeNotificationId,
+        version: testVersion2,
+        chromeNotificationOptions: testNotification1,
+        actionUrls: testActionUrls2,
+        dismissal: testDismissal2,
+        trigger: testTriggerUnmerged
+      };
+
+      // Invoking the tested function.
+      var resultingMergedCard = mergeCards(
+          mergedCard, unmergedNotification, testTimestamp2, testGroupRank1);
+
+      // Check the return value.
+      assertEquals(
+          JSON.stringify({
+            trigger: testTriggerMerged,
+            version: testVersion2,
+            timestamp: testTimestamp2,
+            notification: {
+                testNotificationField: 'TEST NOTIFICATION VALUE1',
+                priority: 0
+             },
+            actionUrls: testActionUrls2,
+            groupRank: testGroupRank2,
+            dismissals: [
+              {notificationId: testNotificationId, parameters: testDismissal1},
+              {notificationId: testNotificationId, parameters: testDismissal2}
+            ]
+          }),
+        JSON.stringify(resultingMergedCard));
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'MergeGroup',
+    function() {
+      // Tests mergeGroup method.
+
+      // Setup.
+      this.makeAndRegisterMockGlobals(['mergeCards']);
+
+      this.mockGlobals.expects(once()).
+          mergeCards(
+              undefined,
+              eqJSON({chromeNotificationId: 'ID 1', testField: 'TEST_FIELD1'}),
+              300000,
+              17).
+          will(returnValue({testField: 'RESULT 1'}));
+      this.mockGlobals.expects(once()).
+          mergeCards(
+              eqJSON({testField: 'TEST_FIELD22'}),
+              eqJSON({chromeNotificationId: 'ID 2', testField: 'TEST_FIELD2'}),
+              300000,
+              17).
+          will(returnValue({testField: 'RESULT 2'}));
+
+      var group = {
+        cards: [
+          {chromeNotificationId: 'ID 1', testField: 'TEST_FIELD1'},
+          {chromeNotificationId: 'ID 2', testField: 'TEST_FIELD2'}
+        ],
+        cardsTimestamp: 300000,
+        nextPollTime: 600000,
+        rank: 17
+      };
+
+      var mergedCards = {
+        'ID 2': { testField: 'TEST_FIELD22' },
+        'ID 3': { testField: 'TEST_FIELD3' }
+      };
+
+      // Invoking the tested function.
+      mergeGroup(mergedCards, group);
+
+      // Check the output parameter.
+      assertEquals(
+          JSON.stringify({
+            'ID 2': { testField: 'RESULT 2' },
+            'ID 3': { testField: 'TEST_FIELD3'},
+            'ID 1': { testField: 'RESULT 1' }}),
+          JSON.stringify(mergedCards));
+    });
+
 /**
  * Mocks global functions and APIs that initialize() depends upon.
  * @param {Test} fixture Test fixture.
@@ -63,7 +332,7 @@ function mockInitializeDependencies(fixture) {
   fixture.makeAndRegisterMockApis([
     'authenticationManager.isSignedIn',
     'chrome.location.clearWatch',
-    'chrome.storage.local.set',
+    'chrome.storage.local.remove',
     'instrumented.metricsPrivate.getVariationParams',
     'instrumented.notifications.getAll',
     'instrumented.preferencesPrivate.googleGeolocationAccessEnabled.get',
@@ -148,7 +417,8 @@ function expectInitialization(mockApisObj) {
   mockApisObj.expects(once()).
       updateCardsAttempts_stop();
   mockApisObj.expects(once()).
-      chrome_storage_local_set(eqJSON({notificationsData: {}}));
+      chrome_storage_local_remove(
+          eqJSON(['notificationsData', 'notificationGroups']));
   var tasksAddSavedArgs = new SaveMockArguments();
   mockApisObj.expects(once()).
       tasks_add(
@@ -416,14 +686,14 @@ TEST_F(
 
 TEST_F(
     'GoogleNowBackgroundUnitTest',
-    'OnNotificationClicked_ActionUrlsNotObject',
+    'OnNotificationClicked_ActionUrlsUndefined',
     function() {
-      // Tests the case when the data associated with notification id is not an
-      // object, probably because of a malformed server response.
+      // Tests the case when the data associated with notification id is
+      // 'undefined'.
       // In this case, the function should do nothing.
 
       // Setup and expectations.
-      var testActionUrls = 'string, not object';
+      var testActionUrls = undefined;
       var testNotificationId = 'TEST_ID';
       var testNotificationData = {
           notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
@@ -438,6 +708,8 @@ TEST_F(
               storageGetSavedArgs.match(eq('notificationsData')),
               storageGetSavedArgs.match(ANYTHING)).
           will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+      this.mockLocalFunctions.expects(once()).selector(undefined).will(
+          returnValue(undefined));
 
       // Invoking the tested function.
       onNotificationClicked(

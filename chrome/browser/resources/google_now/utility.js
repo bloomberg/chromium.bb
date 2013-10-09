@@ -58,16 +58,18 @@ function verify(condition, message) {
 
 /**
  * Builds a request to the notification server.
+ * @param {string} method Request method.
  * @param {string} handlerName Server handler to send the request to.
- * @param {string} contentType Value for the Content-type header.
+ * @param {string=} contentType Value for the Content-type header.
  * @return {XMLHttpRequest} Server request.
  */
-function buildServerRequest(handlerName, contentType) {
+function buildServerRequest(method, handlerName, contentType) {
   var request = new XMLHttpRequest();
 
   request.responseType = 'text';
-  request.open('POST', NOTIFICATION_CARDS_URL + '/' + handlerName, true);
-  request.setRequestHeader('Content-type', contentType);
+  request.open(method, NOTIFICATION_CARDS_URL + '/' + handlerName, true);
+  if (contentType)
+    request.setRequestHeader('Content-type', contentType);
 
   return request;
 }
@@ -125,7 +127,7 @@ function sendErrorReport(error) {
     trace: filteredStack
   };
 
-  var request = buildServerRequest('jserrors', 'application/json');
+  var request = buildServerRequest('POST', 'jserrors', 'application/json');
   request.onloadend = function(event) {
     console.log('sendErrorReport status: ' + request.status);
   };

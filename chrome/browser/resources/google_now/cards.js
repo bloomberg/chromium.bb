@@ -4,7 +4,52 @@
 
 'use strict';
 
-var MS_IN_SECOND = 1000;
+/**
+ * Show/hide trigger in a card.
+ *
+ * @typedef {{
+ *   showTime: number=,
+ *   hideTime: number=
+ * }}
+ */
+var Trigger;
+
+/**
+ * Data to build a dismissal request for a card from a specific group.
+ *
+ * @typedef {{
+ *   notificationId: string,
+ *   parameters: Object
+ * }}
+ */
+var DismissalData;
+
+/**
+ * Card merged from potentially multiple groups.
+ *
+ * @typedef {{
+ *   trigger: Trigger,
+ *   version: number,
+ *   timestamp: number,
+ *   notification: Object,
+ *   actionUrls: Object=,
+ *   groupRank: number,
+ *   dismissals: Array.<DismissalData>
+ * }}
+ */
+var MergedCard;
+
+/**
+ * Set of parameters for creating card notification.
+ *
+ * @typedef {{
+ *   notification: Object,
+ *   hideTime: number=,
+ *   version: number,
+ *   previousVersion: number=
+ * }}
+ */
+var CardCreateInfo;
 
 /**
  * Builds an object to manage notification card set.
@@ -32,8 +77,8 @@ function buildCardSet() {
   /**
    * Shows a notification.
    * @param {string} cardId Card ID.
-   * @param {Object} cardCreateInfo Google Now card represented as a set of
-   *     parameters for showing a Chrome notification.
+   * @param {CardCreateInfo} cardCreateInfo Google Now card represented as a set
+   *     of parameters for showing a Chrome notification.
    */
   function showNotification(cardId, cardCreateInfo) {
     console.log('cardManager.showNotification ' + cardId + ' ' +
@@ -54,7 +99,7 @@ function buildCardSet() {
               return;
             }
 
-            scheduleHiding(cardId, cardCreateInfo.timeHide);
+            scheduleHiding(cardId, cardCreateInfo.hideTime);
           });
     } else {
       // Update existing notification.
@@ -70,60 +115,53 @@ function buildCardSet() {
               return;
             }
 
-            scheduleHiding(cardId, cardCreateInfo.timeHide);
+            scheduleHiding(cardId, cardCreateInfo.hideTime);
           });
     }
   }
 
   /**
    * Updates/creates a card notification with new data.
-   * @param {Object} card Google Now from the server.
+   * @param {string} cardId Card ID.
+   * @param {MergedCard} card Google Now card from the server.
    * @param {number=} previousVersion The version of the shown card with
    *     this id, if it exists, undefined otherwise.
    * @return {Object} Notification data entry for this card.
    */
-  function update(card, previousVersion) {
+  function update(cardId, card, previousVersion) {
     console.log('cardManager.update ' + JSON.stringify(card) + ' ' +
         previousVersion);
 
-    if (typeof card.version != 'number') {
-      console.log('cardCreateInfo.version is not a number');
-      // Fix card version.
-      card.version = previousVersion || 0;
-    }
-
     // TODO(vadimt): Don't clear alarms etc that don't exist. Or make sure doing
     // this doesn't output an error to console.
-    chrome.alarms.clear(cardHidePrefix + card.notificationId);
+    chrome.alarms.clear(cardHidePrefix + cardId);
 
-    var timeHide = card.trigger && card.trigger.hideTimeSec !== undefined ?
-        Date.now() + card.trigger.hideTimeSec * MS_IN_SECOND : undefined;
     var cardCreateInfo = {
       notification: card.notification,
-      timeHide: timeHide,
+      hideTime: card.trigger.hideTime,
       version: card.version,
       previousVersion: previousVersion
     };
 
-    var cardShowAlarmName = cardShowPrefix + card.notificationId;
-    if (card.trigger && card.trigger.showTimeSec) {
+    var cardShowAlarmName = cardShowPrefix + cardId;
+    if (card.trigger.showTime && card.trigger.showTime > Date.now()) {
       // Card needs to be shown later.
-      console.log('cardManager.register: postponed');
+      console.log('cardManager.update: postponed');
       var alarmInfo = {
-        when: Date.now() + card.trigger.showTimeSec * MS_IN_SECOND
+        when: card.trigger.showTime
       };
       chrome.alarms.create(cardShowAlarmName, alarmInfo);
     } else {
       // Card needs to be shown immediately.
-      console.log('cardManager.register: immediate');
+      console.log('cardManager.update: immediate');
       chrome.alarms.clear(cardShowAlarmName);
-      showNotification(card.notificationId, cardCreateInfo);
+      showNotification(cardId, cardCreateInfo);
     }
 
     return {
       actionUrls: card.actionUrls,
       cardCreateInfo: cardCreateInfo,
-      dismissalParameters: card.dismissal
+      dismissals: card.dismissals
     };
   }
 
@@ -132,7 +170,7 @@ function buildCardSet() {
    * @param {string} cardId Card ID.
    */
   function clear(cardId) {
-    console.log('cardManager.unregister ' + cardId);
+    console.log('cardManager.clear ' + cardId);
 
     chrome.notifications.clear(cardId, function() {});
     chrome.alarms.clear(cardShowPrefix + cardId);
@@ -158,7 +196,7 @@ function buildCardSet() {
     } else if (alarm.name.indexOf(cardHidePrefix) == 0) {
       // Alarm to hide the card.
       var cardId = alarm.name.substring(cardHidePrefix.length);
-      chrome.notifications.clear(cardId, function() {});
+      clear(cardId);
     }
   });
 

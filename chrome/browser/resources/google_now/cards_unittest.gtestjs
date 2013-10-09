@@ -25,7 +25,11 @@ var testNotification = {testNotificationField: 'TEST NOTIFICATION VALUE'};
 var expectedShowAlarmId = 'card-show-TEST CARD ID';
 var expectedHideAlarmId = 'card-hide-TEST CARD ID';
 var testActionUrls = {testField: 'TEST VALUE'};
-var testDismissal = {testDismissalField: 'TEST DISMISSAL VALUE'};
+var testDismissals = [
+  {testDismissalField: 'TEST DISMISSAL VALUE 1'},
+  {testDismissalField: 'TEST DISMISSAL VALUE 2'}
+];
+var testGroupRank = 271;
 
 function setUpCardManagerTest(fixture) {
   fixture.makeAndRegisterMockApis([
@@ -67,8 +71,8 @@ TEST_F('GoogleNowCardsUnitTest', 'BuildCardManager', function() {
   assertEquals('function', typeof test.alarmCallback);
 });
 
-TEST_F('GoogleNowCardsUnitTest', 'CreateCard', function() {
-  // Creates a new card with no trigger.
+TEST_F('GoogleNowCardsUnitTest', 'CreateCardEmptyTrigger', function() {
+  // Creates a new card with empty trigger.
 
   // Setup and expectations.
   var test = setUpCardManagerTest(this);
@@ -85,46 +89,11 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateCard', function() {
       will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, testCardId));
 
   // Call tested method.
-  var notificationData = test.cardSet.update({
-    notificationId: testCardId,
+  var notificationData = test.cardSet.update(testCardId, {
     notification: testNotification,
     actionUrls: testActionUrls,
-    dismissal: testDismissal,
-    version: 0});
-
-  // Check the return value.
-  assertEquals(
-      JSON.stringify({
-        actionUrls: testActionUrls,
-        cardCreateInfo: {
-          notification: testNotification,
-          timeHide: undefined,
-          version: 0
-        },
-        dismissalParameters: testDismissal
-      }),
-    JSON.stringify(notificationData));
-});
-
-TEST_F('GoogleNowCardsUnitTest', 'CreateCardEmptyTrigger', function() {
-  // Creates a new card with empty trigger.
-
-  // Setup and expectations.
-  var test = setUpCardManagerTest(this);
-  this.mockApis.expects(once()).
-      chrome_alarms_clear(expectedHideAlarmId);
-  this.mockApis.expects(once()).
-      chrome_alarms_clear(expectedShowAlarmId);
-  this.mockApis.expects(once()).
-      instrumented_notifications_create(
-          testCardId, eqJSON(testNotification), ANYTHING);
-
-  // Call tested method.
-  var notificationData = test.cardSet.update({
-    notificationId: testCardId,
-    notification: testNotification,
-    actionUrls: testActionUrls,
-    dismissal: testDismissal,
+    dismissals: testDismissals,
+    groupRank: testGroupRank,
     version: 0,
     trigger: {}});
 
@@ -134,11 +103,11 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateCardEmptyTrigger', function() {
         actionUrls: testActionUrls,
         cardCreateInfo: {
           notification: testNotification,
-          timeHide: undefined,
+          hideTime: undefined,
           version: 0
         },
-        dismissalParameters: testDismissal
-     }),
+        dismissals: testDismissals
+      }),
     JSON.stringify(notificationData));
 });
 
@@ -162,13 +131,13 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateCardHideTime', function() {
       chrome_alarms_create(expectedHideAlarmId, eqJSON({when: 1313000}));
 
   // Call tested method.
-  var notificationData = test.cardSet.update({
-    notificationId: testCardId,
+  var notificationData = test.cardSet.update(testCardId, {
     notification: testNotification,
     actionUrls: testActionUrls,
-    dismissal: testDismissal,
+    dismissals: testDismissals,
+    groupRank: testGroupRank,
     version: 0,
-    trigger: {hideTimeSec: 1013}});
+    trigger: {hideTime: 1313000}});
 
   // Check the return value.
   assertEquals(
@@ -176,10 +145,10 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateCardHideTime', function() {
         actionUrls: testActionUrls,
         cardCreateInfo: {
           notification: testNotification,
-          timeHide: 1313000,
+          hideTime: 1313000,
           version: 0
         },
-        dismissalParameters: testDismissal
+        dismissals: testDismissals
       }),
     JSON.stringify(notificationData));
 });
@@ -202,12 +171,13 @@ TEST_F('GoogleNowCardsUnitTest', 'UpdateCardSameVersion', function() {
       will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, true));
 
   // Call tested method.
-  var notificationData = test.cardSet.update({
-    notificationId: testCardId,
+  var notificationData = test.cardSet.update(testCardId, {
     notification: testNotification,
     actionUrls: testActionUrls,
-    dismissal: testDismissal,
-    version: 0},
+    dismissals: testDismissals,
+    groupRank: testGroupRank,
+    version: 0,
+    trigger: {}},
       0);
 
   // Check the return value.
@@ -219,7 +189,7 @@ TEST_F('GoogleNowCardsUnitTest', 'UpdateCardSameVersion', function() {
           version: 0,
           previousVersion: 0
         },
-        dismissalParameters: testDismissal
+        dismissals: testDismissals
       }),
     JSON.stringify(notificationData));
 });
@@ -245,13 +215,13 @@ TEST_F('GoogleNowCardsUnitTest', 'UpdateCardSameVersionHideTime', function() {
       chrome_alarms_create(expectedHideAlarmId, eqJSON({when: 1313000}));
 
   // Call tested method.
-  test.cardSet.update({
-                        notificationId: testCardId,
+  test.cardSet.update(testCardId, {
                         notification: testNotification,
                         actionUrls: testActionUrls,
-                        dismissal: testDismissal,
+                        dismissals: testDismissals,
+                        groupRank: testGroupRank,
                         version: 0,
-                        trigger: {hideTimeSec: 1013}},
+                        trigger: {hideTime: 1313000}},
                       0);
 });
 
@@ -269,12 +239,13 @@ TEST_F('GoogleNowCardsUnitTest', 'UpdateCardDifferentVersion', function() {
           testCardId, eqJSON(testNotification), ANYTHING);
 
   // Call tested method.
-  test.cardSet.update({
-                        notificationId: testCardId,
+  test.cardSet.update(testCardId, {
                         notification: testNotification,
                         actionUrls: testActionUrls,
-                        dismissal: testDismissal,
-                        version: 0},
+                        dismissals: testDismissals,
+                        groupRank: testGroupRank,
+                        version: 0,
+                        trigger: {}},
                       1);
 });
 
@@ -292,13 +263,13 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateCardTriggerShowNow', function() {
           testCardId, eqJSON(testNotification), ANYTHING);
 
   // Call tested method.
-  test.cardSet.update({
-    notificationId: testCardId,
+  test.cardSet.update(testCardId, {
     notification: testNotification,
     actionUrls: testActionUrls,
-    dismissal: testDismissal,
+    dismissals: testDismissals,
+    groupRank: testGroupRank,
     version: 0,
-    trigger: {showTimeSec: 0}});
+    trigger: {showTime: Date.now()}});
 });
 
 TEST_F('GoogleNowCardsUnitTest', 'CreateCardTriggerShowLater', function() {
@@ -313,13 +284,13 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateCardTriggerShowLater', function() {
       chrome_alarms_create(expectedShowAlarmId, eqJSON({when: 539000}));
 
   // Call tested method.
-  test.cardSet.update({
-    notificationId: testCardId,
+  test.cardSet.update(testCardId, {
     notification: testNotification,
     actionUrls: testActionUrls,
-    dismissal: testDismissal,
+    dismissals: testDismissals,
+    groupRank: testGroupRank,
     version: 0,
-    trigger: {showTimeSec: 239}});
+    trigger: {showTime: 539000}});
 });
 
 TEST_F('GoogleNowCardsUnitTest', 'ClearCard', function() {
@@ -378,7 +349,7 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataCreate', function() {
               actionUrls: testActionUrls,
               cardCreateInfo: {
                 notification: testNotification,
-                timeHide: 1313000,
+                hideTime: 1313000,
                 version: 0}}}}));
   var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
   this.mockApis.expects(once()).
@@ -412,7 +383,7 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataUpdate', function() {
               actionUrls: testActionUrls,
               cardCreateInfo: {
                 notification: testNotification,
-                timeHide: 1313000,
+                hideTime: 1313000,
                 version: 0,
                 previousVersion:0}}}}));
   var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
@@ -429,6 +400,11 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmHide', function() {
   var test = setUpCardManagerTest(this);
   this.mockApis.expects(once()).
       chrome_notifications_clear(testCardId, ANYTHING);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+
 
   // Call tested method.
   test.alarmCallback({name: expectedHideAlarmId});
