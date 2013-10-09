@@ -293,6 +293,7 @@ void RenderBox::updateShapeOutsideInfoAfterStyleChange(const ShapeValue* shapeOu
     } else {
         ShapeOutsideInfo::removeInfo(this);
     }
+    markShapeOutsideDependentsForLayout();
 }
 
 void RenderBox::updateGridPositionAfterStyleChange(const RenderStyle* oldStyle)
