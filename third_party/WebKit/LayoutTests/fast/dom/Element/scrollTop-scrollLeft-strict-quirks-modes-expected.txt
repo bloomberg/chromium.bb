@@ -5,8 +5,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS iframeStrict.contentDocument.documentElement.scrollTop is 5000
 PASS iframeStrict.contentDocument.documentElement.scrollLeft is 4000
-PASS iframeStrict.contentDocument.body.scrollTop is 0
-PASS iframeStrict.contentDocument.body.scrollLeft is 0
+FAIL iframeStrict.contentDocument.body.scrollTop should be 0. Was 5000.
+FAIL iframeStrict.contentDocument.body.scrollLeft should be 0. Was 4000.
 PASS iframeStrict.contentWindow.pageYOffset is 5000
 PASS iframeStrict.contentWindow.pageXOffset is 4000
 PASS iframeQuirks.contentDocument.documentElement.scrollTop is 0

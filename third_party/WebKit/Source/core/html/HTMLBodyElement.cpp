@@ -253,14 +253,16 @@ static int adjustForZoom(int value, Document* document)
 
 int HTMLBodyElement::scrollLeft()
 {
+    Document& document = this->document();
+
     // FIXME: The specification is not clear about what is the expected behavior here:
     // http://dev.w3.org/csswg/cssom-view/#dom-element-scrollleft
     // Blink bails out in order to match other engines' behavior (WebKit, IE, Firefox and Opera12).
-    if (!document().inQuirksMode())
-        return 0;
+    if (!document.inQuirksMode())
+        UseCounter::countDeprecation(&document, UseCounter::ScrollLeftBody);
+    else
+        UseCounter::count(&document, UseCounter::ScrollLeftBody);
 
-    // Update the document's layout.
-    Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
     FrameView* view = document.view();
     return view ? adjustForZoom(view->scrollX(), &document) : 0;
@@ -268,10 +270,13 @@ int HTMLBodyElement::scrollLeft()
 
 void HTMLBodyElement::setScrollLeft(int scrollLeft)
 {
-    if (!document().inQuirksMode())
-        return;
-
     Document& document = this->document();
+
+    if (!document.inQuirksMode())
+        UseCounter::countDeprecation(&document, UseCounter::ScrollLeftBody);
+    else
+        UseCounter::count(&document, UseCounter::ScrollLeftBody);
+
     document.updateLayoutIgnorePendingStylesheets();
     Frame* frame = document.frame();
     if (!frame)
@@ -284,14 +289,16 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
 
 int HTMLBodyElement::scrollTop()
 {
+    Document& document = this->document();
+
     // FIXME: The specification is not clear about what is the expected behavior here:
     // http://dev.w3.org/csswg/cssom-view/#dom-element-scrolltop .
-    // Blink bails out in order to match other engines' behavior (WebKit, IE, Firefox and Opera12).
-    if (!document().inQuirksMode())
-        return 0;
+    // Blink should bail out in order to match other engines' behavior (WebKit, IE, Firefox and Opera12).
+    if (!document.inQuirksMode())
+        UseCounter::countDeprecation(&document, UseCounter::ScrollTopBody);
+    else
+        UseCounter::count(&document, UseCounter::ScrollTopBody);
 
-    // Update the document's layout.
-    Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
     FrameView* view = document.view();
     return view ? adjustForZoom(view->scrollY(), &document) : 0;
@@ -299,10 +306,13 @@ int HTMLBodyElement::scrollTop()
 
 void HTMLBodyElement::setScrollTop(int scrollTop)
 {
-    if (!document().inQuirksMode())
-        return;
-
     Document& document = this->document();
+
+    if (!document.inQuirksMode())
+        UseCounter::countDeprecation(&document, UseCounter::ScrollTopBody);
+    else
+        UseCounter::count(&document, UseCounter::ScrollTopBody);
+
     document.updateLayoutIgnorePendingStylesheets();
     Frame* frame = document.frame();
     if (!frame)
