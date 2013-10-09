@@ -3,6 +3,7 @@
 <style>
 .target {
   stroke: black;
+  stroke-width: 10px;
 }
 .replica {
   stroke: green;
@@ -10,9 +11,8 @@
 </style>
 <body>
 <template id="target-template">
-  <svg width="200" height="20">
-    <rect width="200" height="20" fill="none"></rect>
-    <path d="M0,10 l200,0" stroke-width="2" stroke-dasharray="15,15">
+  <svg height="200" width="10">
+    <path d="M5,0 l0,200" stroke-dasharray="15,15" class="target">
   </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
