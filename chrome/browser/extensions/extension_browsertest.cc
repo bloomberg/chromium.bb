@@ -506,6 +506,7 @@ void ExtensionBrowserTest::ReloadExtension(const std::string extension_id) {
       extensions::ExtensionSystem::Get(profile())->extension_service();
   service->ReloadExtension(extension_id);
   observer.Wait();
+  WaitForExtensionViewsToLoad();
 }
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
