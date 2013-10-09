@@ -1120,12 +1120,9 @@ void Dispatcher::DidCreateScriptContext(
     // The API will be automatically set up when first used.
     if (extension->HasAPIPermission(APIPermission::kWebView)) {
       module_system->Require("webView");
-      // TODO(mtomasz): Remove the Files app from the whitelist in M-31.
-      // crbug.com/297936
       bool includeExperimental =
           GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
-          extension->id() == extension_misc::kIdentityApiUiAppId ||
-          extension->id() == "hhaomjibdihmijegdhdafkllkbggdgoj";  // Files App.
+          extension->id() == extension_misc::kIdentityApiUiAppId;
       if (!includeExperimental) {
         // TODO(asargent) We need a whitelist for webview experimental.
         // crbug.com/264852
