@@ -201,16 +201,8 @@
               'copies': [{
                 'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit',
                 'files': [
-                  '../webkit/tools/test_shell/resources/missingImage.png',
-                  '../webkit/tools/test_shell/resources/textAreaResizeCorner.png',
-                ],
-              }],
-            }, { # OS!="mac"
-              'copies': [{
-                'destination': '<(PRODUCT_DIR)/DumpRenderTree_resources',
-                'files': [
-                  '../webkit/tools/test_shell/resources/missingImage.gif',
-                  '../webkit/tools/test_shell/resources/textAreaResizeCorner.png',
+                  'shell/resources/missingImage.png',
+                  'shell/resources/textAreaResizeCorner.png',
                 ],
               }],
             }],
