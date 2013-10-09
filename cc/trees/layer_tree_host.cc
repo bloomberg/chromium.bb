@@ -1164,7 +1164,6 @@ scoped_ptr<base::Value> LayerTreeHost::AsValue() const {
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks time) {
-  rendering_stats_instrumentation_->IncrementAnimationFrameCount();
   if (!settings_.accelerated_animation_enabled ||
       animation_registrar_->active_animation_controllers().empty())
     return;

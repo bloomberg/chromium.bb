@@ -125,7 +125,6 @@ class CC_EXPORT ManagedTileState {
   RasterMode raster_mode;
 
   ManagedTileBin bin;
-  ManagedTileBin tree_bin[NUM_TREES];
 
   TileResolution resolution;
   bool required_for_activation;

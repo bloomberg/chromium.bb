@@ -54,8 +54,6 @@ ManagedTileState::ManagedTileState()
       distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()),
       visible_and_ready_to_draw(false),
       scheduled_priority(0) {
-  for (int i = 0; i < NUM_TREES; ++i)
-    tree_bin[i] = NEVER_BIN;
 }
 
 ManagedTileState::TileVersion::TileVersion()
@@ -101,10 +99,7 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->SetBoolean("has_resource", has_resource);
   state->SetBoolean("is_using_gpu_memory", is_using_gpu_memory);
-  state->Set("tree_bin.0",
-             ManagedTileBinAsValue(tree_bin[ACTIVE_TREE]).release());
-  state->Set("tree_bin.1",
-             ManagedTileBinAsValue(tree_bin[PENDING_TREE]).release());
+  state->Set("bin", ManagedTileBinAsValue(bin).release());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
   state->Set("time_to_needed_in_seconds",
       MathUtil::AsValueSafely(time_to_needed_in_seconds).release());
@@ -123,4 +118,3 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
 }
 
 }  // namespace cc
-

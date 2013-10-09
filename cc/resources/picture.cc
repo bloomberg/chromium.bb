@@ -14,7 +14,6 @@
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
 #include "cc/debug/benchmark_instrumentation.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_picture.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/content_layer_client.h"
@@ -242,8 +241,7 @@ void Picture::Record(ContentLayerClient* painter,
 }
 
 void Picture::GatherPixelRefs(
-    const SkTileGridPicture::TileGridInfo& tile_grid_info,
-    RenderingStatsInstrumentation* stats_instrumentation) {
+    const SkTileGridPicture::TileGridInfo& tile_grid_info) {
   TRACE_EVENT2("cc", "Picture::GatherPixelRefs",
                "width", layer_rect_.width(),
                "height", layer_rect_.height());
@@ -261,8 +259,6 @@ void Picture::GatherPixelRefs(
   int min_y = std::numeric_limits<int>::max();
   int max_x = 0;
   int max_y = 0;
-
-  base::TimeTicks start_time = stats_instrumentation->StartRecording();
 
   skia::LazyPixelRefList pixel_refs;
   skia::LazyPixelRefUtils::GatherPixelRefs(picture_.get(), &pixel_refs);
@@ -292,9 +288,6 @@ void Picture::GatherPixelRefs(
     max_x = std::max(max_x, max.x());
     max_y = std::max(max_y, max.y());
   }
-
-  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
-  stats_instrumentation->AddImageGathering(duration);
 
   min_pixel_cell_ = gfx::Point(min_x, min_y);
   max_pixel_cell_ = gfx::Point(max_x, max_y);

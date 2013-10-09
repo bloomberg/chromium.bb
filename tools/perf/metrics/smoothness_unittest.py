@@ -7,7 +7,7 @@ import unittest
 
 from metrics import smoothness
 from metrics import statistics
-from metrics.gpu_rendering_stats import GpuRenderingStats
+from metrics.rendering_stats import RenderingStats
 from telemetry.core.backends.chrome.tracing_backend import RawTraceResultImpl
 from telemetry.core.backends.chrome.trace_result import TraceResult
 from telemetry.page import page
@@ -38,33 +38,14 @@ class MockFrame(object):
     self.impl_stats = {}
     self.texture_stats = {}
     self.latency_stats = {}
-    self.main_stats['animation_frame_count'] = 0
-    self.main_stats['screen_frame_count'] = 0
+    self.main_stats['frame_count'] = 0
     self.main_stats['paint_time'] = mock_timer.Advance()
-    self.main_stats['record_time'] = mock_timer.Advance()
-    self.main_stats['commit_time'] = mock_timer.Advance()
-    self.main_stats['commit_count'] = 1
     self.main_stats['painted_pixel_count'] = random.randint(0, 2000000)
+    self.main_stats['record_time'] = mock_timer.Advance()
     self.main_stats['recorded_pixel_count'] = random.randint(0, 2000000)
-    self.main_stats['image_gathering_count'] = random.randint(0, 100)
-    self.main_stats['image_gathering_time'] = mock_timer.Advance()
-    self.impl_stats['screen_frame_count'] = 1
-    self.impl_stats['dropped_frame_count'] = random.randint(0, 4)
+    self.impl_stats['frame_count'] = 1
     self.impl_stats['rasterize_time'] = mock_timer.Advance()
-    self.impl_stats['rasterize_time_for_now_bins_on_pending_tree'] = (
-        mock_timer.Advance())
-    self.impl_stats['best_rasterize_time'] = mock_timer.Advance()
     self.impl_stats['rasterized_pixel_count'] = random.randint(0, 2000000)
-    self.impl_stats['impl_thread_scroll_count'] = random.randint(0, 4)
-    self.impl_stats['main_thread_scroll_count'] = random.randint(0, 4)
-    self.impl_stats['drawn_layer_count'] = random.randint(0, 10)
-    self.impl_stats['missing_tile_count'] = random.randint(0, 10000)
-    self.impl_stats['deferred_image_decode_count'] = random.randint(0, 100)
-    self.impl_stats['deferred_image_cache_hit_count'] = random.randint(0, 50)
-    self.impl_stats['tile_analysis_count'] = random.randint(0, 10000)
-    self.impl_stats['solid_color_tile_analysis_count'] = random.randint(0, 1000)
-    self.impl_stats['deferred_image_decode_time'] = mock_timer.Advance()
-    self.impl_stats['tile_analysis_time'] = mock_timer.Advance()
     self.end = mock_timer.microseconds
     self.duration = self.end - self.start
 
@@ -148,8 +129,8 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
       mock_frame.AppendTraceEventForMainThreadStats(trace_events)
       mock_frame.AppendTraceEventForImplThreadStats(trace_events)
       total_time_seconds += mock_frame.duration / 1e6
-      num_frames_sent += mock_frame.main_stats['screen_frame_count']
-      num_frames_sent += mock_frame.impl_stats['screen_frame_count']
+      num_frames_sent += mock_frame.main_stats['frame_count']
+      num_frames_sent += mock_frame.impl_stats['frame_count']
       current_frame_time = mock_timer.microseconds / 1000.0
       if previous_frame_time:
         difference = current_frame_time - previous_frame_time
@@ -185,12 +166,12 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
     timeline = trace_result.AsTimelineModel()
 
     # Find the timeline marker and gesture marker in the timeline,
-    # and create a GpuRenderingStats object.
+    # and create a RenderingStats object.
     smoothness_marker = smoothness.FindTimelineMarker(
         timeline, smoothness.TIMELINE_MARKER)
     gesture_marker = smoothness.FindTimelineMarker(
         timeline, smoothness.SYNTHETIC_GESTURE_MARKER)
-    stats = GpuRenderingStats(
+    stats = RenderingStats(
         smoothness_marker, gesture_marker, {}, True)
 
     # Make a results object and add results to it from the smoothness metric.
@@ -210,7 +191,7 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
     # We don't verify the correctness of the discrepancy computation itself,
     # because we have a separate unit test for that purpose.
     self.assertAlmostEquals(
-        statistics.FrameDiscrepancy(stats.screen_frame_timestamps, True),
+        statistics.FrameDiscrepancy(stats.frame_timestamps, True),
         res.page_results[0]['jank'].value,
         places=4)
 
@@ -221,4 +202,3 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
     self.assertEquals(
         statistics.Percentile(expected_frame_times, 95.0) < 17.0,
         res.page_results[0]['mostly_smooth'].value)
-

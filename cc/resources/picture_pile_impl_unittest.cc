@@ -665,7 +665,6 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
   pile->RerecordPile();
 
   FakeContentLayerClient content_layer_clients[2][2];
-  FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_refptr<Picture> pictures[2][2];
   for (int y = 0; y < 2; ++y) {
     for (int x = 0; x < 2; ++x) {
@@ -680,7 +679,7 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
       pictures[y][x]->Record(
           &content_layer_clients[y][x],
           tile_grid_info);
-      pictures[y][x]->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
+      pictures[y][x]->GatherPixelRefs(tile_grid_info);
       pile->AddPictureToRecording(0, 0, pictures[y][x]);
     }
   }
@@ -749,9 +748,10 @@ TEST(PicturePileImpl, RasterContentsOpaque) {
   bitmap.allocPixels();
   SkCanvas canvas(bitmap);
 
-  PicturePileImpl::RasterStats raster_stats;
+  FakeRenderingStatsInstrumentation rendering_stats_instrumentation;
+
   pile->RasterToBitmap(
-      &canvas, canvas_rect, contents_scale, &raster_stats);
+      &canvas, canvas_rect, contents_scale, &rendering_stats_instrumentation);
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
   int num_pixels = bitmap.width() * bitmap.height();
@@ -785,9 +785,9 @@ TEST(PicturePileImpl, RasterContentsTransparent) {
   bitmap.allocPixels();
   SkCanvas canvas(bitmap);
 
-  PicturePileImpl::RasterStats raster_stats;
+  FakeRenderingStatsInstrumentation rendering_stats_instrumentation;
   pile->RasterToBitmap(
-      &canvas, canvas_rect, contents_scale, &raster_stats);
+      &canvas, canvas_rect, contents_scale, &rendering_stats_instrumentation);
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
   int num_pixels = bitmap.width() * bitmap.height();

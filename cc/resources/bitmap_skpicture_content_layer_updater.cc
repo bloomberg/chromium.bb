@@ -81,9 +81,7 @@ void BitmapSkPictureContentLayerUpdater::PaintContentsRect(
       rendering_stats_instrumentation_->EndRecording(start_time);
   rendering_stats_instrumentation_->AddRaster(
       duration,
-      duration,
-      source_rect.width() * source_rect.height(),
-      false);
+      source_rect.width() * source_rect.height());
 }
 
 }  // namespace cc

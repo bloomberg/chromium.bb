@@ -379,8 +379,9 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     pending_bin = kBinIsActiveMap[tile_is_active][pending_bin];
     combined_bin = kBinIsActiveMap[tile_is_active][combined_bin];
 
-    mts.tree_bin[ACTIVE_TREE] = kBinPolicyMap[memory_policy][active_bin];
-    mts.tree_bin[PENDING_TREE] = kBinPolicyMap[memory_policy][pending_bin];
+    ManagedTileBin tree_bin[NUM_TREES];
+    tree_bin[ACTIVE_TREE] = kBinPolicyMap[memory_policy][active_bin];
+    tree_bin[PENDING_TREE] = kBinPolicyMap[memory_policy][pending_bin];
 
     // The bin that the tile would have if the GPU memory manager had
     // a maximally permissive policy, send to the GPU memory manager
@@ -395,12 +396,12 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
         tile_priority = tile->combined_priority();
         break;
       case SMOOTHNESS_TAKES_PRIORITY:
-        mts.bin = mts.tree_bin[ACTIVE_TREE];
+        mts.bin = tree_bin[ACTIVE_TREE];
         gpu_memmgr_stats_bin = active_bin;
         tile_priority = active_priority;
         break;
       case NEW_CONTENT_TAKES_PRIORITY:
-        mts.bin = mts.tree_bin[PENDING_TREE];
+        mts.bin = tree_bin[PENDING_TREE];
         gpu_memmgr_stats_bin = pending_bin;
         tile_priority = pending_priority;
         break;
@@ -417,8 +418,8 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     // Bump up the priority if we determined it's NEVER_BIN on one tree,
     // but is still required on the other tree.
     bool is_in_never_bin_on_both_trees =
-        mts.tree_bin[ACTIVE_TREE] == NEVER_BIN &&
-        mts.tree_bin[PENDING_TREE] == NEVER_BIN;
+        tree_bin[ACTIVE_TREE] == NEVER_BIN &&
+        tree_bin[PENDING_TREE] == NEVER_BIN;
 
     if (mts.bin == NEVER_BIN && !is_in_never_bin_on_both_trees)
       mts.bin = tile_is_active ? AT_LAST_AND_ACTIVE_BIN : AT_LAST_BIN;
@@ -430,7 +431,7 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     mts.required_for_activation = tile_priority.required_for_activation;
 
     mts.visible_and_ready_to_draw =
-        mts.tree_bin[ACTIVE_TREE] == NOW_AND_READY_TO_DRAW_BIN;
+        tree_bin[ACTIVE_TREE] == NOW_AND_READY_TO_DRAW_BIN;
 
     if (mts.bin == NEVER_BIN) {
       FreeResourcesForTile(tile);
@@ -835,7 +836,6 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
       tile->content_rect(),
       tile->contents_scale(),
       mts.raster_mode,
-      mts.tree_bin[PENDING_TREE] == NOW_BIN,
       mts.resolution,
       tile->layer_id(),
       static_cast<const void *>(tile),

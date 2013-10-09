@@ -39,7 +39,7 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
   base::TimeDelta duration =
       rendering_stats_instrumentation_->EndRecording(start_time);
   rendering_stats_instrumentation_->AddRecord(
-      duration, duration, content_rect.width() * content_rect.height());
+      duration, content_rect.width() * content_rect.height());
   picture_.endRecording();
 }
 

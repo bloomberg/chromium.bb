@@ -116,8 +116,6 @@ bool PicturePile::Update(
         modified_pile = true;
         TRACE_EVENT0(benchmark_instrumentation::kCategory,
                      benchmark_instrumentation::kRecordLoop);
-        base::TimeDelta total_duration =
-          base::TimeDelta::FromInternalValue(0);
         base::TimeDelta best_duration = base::TimeDelta::FromInternalValue(
             std::numeric_limits<int64>::max());
         for (int i = 0; i < repeat_count; i++) {
@@ -125,15 +123,12 @@ bool PicturePile::Update(
           (*pic)->Record(painter, tile_grid_info_);
           base::TimeDelta duration =
               stats_instrumentation->EndRecording(start_time);
-          total_duration += duration;
           best_duration = std::min(duration, best_duration);
         }
-        int painted_pixels =
+        int recorded_pixel_count =
             (*pic)->LayerRect().width() * (*pic)->LayerRect().height();
-        stats_instrumentation->AddRecord(total_duration,
-                                         best_duration,
-                                         painted_pixels);
-        (*pic)->GatherPixelRefs(tile_grid_info_, stats_instrumentation);
+        stats_instrumentation->AddRecord(best_duration, recorded_pixel_count);
+        (*pic)->GatherPixelRefs(tile_grid_info_);
         (*pic)->CloneForDrawing(num_raster_threads_);
       }
     }

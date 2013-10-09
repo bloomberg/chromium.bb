@@ -95,20 +95,20 @@ def CalcResults(benchmark_stats, results):
   s = benchmark_stats
 
   frame_times = []
-  for i in xrange(1, len(s.screen_frame_timestamps)):
+  for i in xrange(1, len(s.frame_timestamps)):
     frame_times.append(
-        round(s.screen_frame_timestamps[i] - s.screen_frame_timestamps[i-1], 2))
+        round(s.frame_timestamps[i] - s.frame_timestamps[i-1], 2))
 
   # List of raw frame times.
   results.Add('frame_times', 'ms', frame_times)
 
+  # Arithmetic mean of frame times.
   mean_frame_time_ms = 1000 * statistics.ArithmeticMean(
-      s.total_time, s.screen_frame_count)
-  # Arithmetic mean of frame times. Not the generalized mean.
+      s.total_time, len(s.frame_timestamps))
   results.Add('mean_frame_time', 'ms', round(mean_frame_time_ms, 3))
 
   # Absolute discrepancy of frame time stamps.
-  jank = statistics.FrameDiscrepancy(s.screen_frame_timestamps)
+  jank = statistics.FrameDiscrepancy(s.frame_timestamps)
   results.Add('jank', '', round(jank, 4))
 
   # Are we hitting 60 fps for 95 percent of all frames? (Boolean value)
@@ -133,4 +133,3 @@ def FindTimelineMarker(timeline, name):
   if len(events) != 1:
     raise MissingTimelineMarker(name)
   return events[0]
-

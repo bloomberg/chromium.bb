@@ -865,10 +865,6 @@ void ThreadProxy::BeginFrameOnMainThread(
     // to receive its callbacks before that.
     BlockingTaskRunner::CapturePostTasks blocked;
 
-    RenderingStatsInstrumentation* stats_instrumentation =
-        layer_tree_host_->rendering_stats_instrumentation();
-    base::TimeTicks start_time = stats_instrumentation->StartRecording();
-
     CompletionEvent completion;
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -879,8 +875,8 @@ void ThreadProxy::BeginFrameOnMainThread(
                    offscreen_context_provider));
     completion.Wait();
 
-    base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
-    stats_instrumentation->AddCommit(duration);
+    RenderingStatsInstrumentation* stats_instrumentation =
+        layer_tree_host_->rendering_stats_instrumentation();
     stats_instrumentation->IssueTraceEventForMainThreadStats();
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }

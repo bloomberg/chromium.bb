@@ -805,8 +805,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     }
 
     if (append_quads_data.num_missing_tiles) {
-      rendering_stats_instrumentation_->AddMissingTiles(
-          append_quads_data.num_missing_tiles);
       bool layer_has_animating_transform =
           it->screen_space_transform_is_animating() ||
           it->draw_transform_is_animating();
@@ -823,8 +821,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   if (have_copy_request ||
       output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
     draw_frame = true;
-
-  rendering_stats_instrumentation_->AddLayersDrawn(layers_drawn);
 
 #ifndef NDEBUG
   for (size_t i = 0; i < frame->render_passes.size(); ++i) {
@@ -1271,15 +1267,12 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   DCHECK(!frame->render_passes.empty());
 
-  int old_dropped_frame_count = fps_counter_->dropped_frame_count();
   fps_counter_->SaveTimeStamp(frame_begin_time,
                               !output_surface_->context_provider());
 
   bool on_main_thread = false;
-  rendering_stats_instrumentation_->IncrementScreenFrameCount(
+  rendering_stats_instrumentation_->IncrementFrameCount(
       1, on_main_thread);
-  rendering_stats_instrumentation_->IncrementDroppedFrameCount(
-      fps_counter_->dropped_frame_count() - old_dropped_frame_count);
 
   if (tile_manager_) {
     memory_history_->SaveEntry(
@@ -1538,9 +1531,9 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   if (debug_state_.continuous_painting) {
     const RenderingStats& stats =
         rendering_stats_instrumentation_->GetRenderingStats();
-    paint_time_counter_->SavePaintTime(
-        stats.main_stats.paint_time + stats.main_stats.record_time +
-            stats.impl_stats.rasterize_time_for_now_bins_on_pending_tree);
+    paint_time_counter_->SavePaintTime(stats.main_stats.paint_time +
+                                       stats.main_stats.record_time +
+                                       stats.impl_stats.rasterize_time);
   }
 
   client_->DidActivatePendingTree();
@@ -1981,7 +1974,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
           layer_impl, &scroll_on_main_thread);
 
   if (scroll_on_main_thread) {
-    rendering_stats_instrumentation_->IncrementMainThreadScrolls();
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
     return ScrollOnMainThread;
   }
@@ -1995,7 +1987,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
         potentially_scrolling_layer_impl);
     should_bubble_scrolls_ = (type != NonBubblingGesture);
     wheel_scrolling_ = (type == Wheel);
-    rendering_stats_instrumentation_->IncrementImplThreadScrolls();
     client_->RenewTreePriority();
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
     return ScrollStarted;

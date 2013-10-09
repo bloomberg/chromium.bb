@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -110,7 +109,6 @@ TEST(PictureTest, PixelRefIterator) {
   tile_grid_info.fOffset.setZero();
 
   FakeContentLayerClient content_layer_client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
 
   // Lazy pixel refs are found in the following grids:
   // |---|---|---|---|
@@ -138,7 +136,7 @@ TEST(PictureTest, PixelRefIterator) {
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
   picture->Record(&content_layer_client,
                   tile_grid_info);
-  picture->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
+  picture->GatherPixelRefs(tile_grid_info);
 
   // Default iterator does not have any pixel refs
   {
@@ -208,7 +206,6 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
   tile_grid_info.fOffset.setZero();
 
   FakeContentLayerClient content_layer_client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
 
   // Lazy pixel refs are found in the following grids:
   // |---|---|---|---|
@@ -236,7 +233,7 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
   picture->Record(&content_layer_client,
                   tile_grid_info);
-  picture->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
+  picture->GatherPixelRefs(tile_grid_info);
 
   // Default iterator does not have any pixel refs
   {
@@ -330,7 +327,6 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
   tile_grid_info.fOffset.setZero();
 
   FakeContentLayerClient content_layer_client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
 
   // Lazy pixel refs are found in the following grids:
   // |---|---|---|---|
@@ -358,7 +354,7 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
   picture->Record(&content_layer_client,
                   tile_grid_info);
-  picture->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
+  picture->GatherPixelRefs(tile_grid_info);
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {

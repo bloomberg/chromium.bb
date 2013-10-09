@@ -32,17 +32,11 @@ struct CC_EXPORT MainThreadRenderingStats {
   // Note: when adding new members, please remember to update EnumerateFields
   // and Add in rendering_stats.cc.
 
-  int64 animation_frame_count;
-  int64 screen_frame_count;
+  int64 frame_count;
   base::TimeDelta paint_time;
-  base::TimeDelta record_time;
-  base::TimeDelta best_record_time;
-  base::TimeDelta commit_time;
-  int64 commit_count;
   int64 painted_pixel_count;
+  base::TimeDelta record_time;
   int64 recorded_pixel_count;
-  int64 image_gathering_count;
-  base::TimeDelta image_gathering_time;
 
   MainThreadRenderingStats();
   void IssueTraceEvent() const;
@@ -54,22 +48,9 @@ struct CC_EXPORT ImplThreadRenderingStats {
   // Note: when adding new members, please remember to update EnumerateFields
   // and Add in rendering_stats.cc.
 
-  int64 screen_frame_count;
-  int64 dropped_frame_count;
+  int64 frame_count;
   base::TimeDelta rasterize_time;
-  base::TimeDelta rasterize_time_for_now_bins_on_pending_tree;
-  base::TimeDelta best_rasterize_time;
   int64 rasterized_pixel_count;
-  int64 impl_thread_scroll_count;
-  int64 main_thread_scroll_count;
-  int64 drawn_layer_count;
-  int64 missing_tile_count;
-  int64 deferred_image_decode_count;
-  int64 deferred_image_cache_hit_count;
-  int64 tile_analysis_count;
-  int64 solid_color_tile_analysis_count;
-  base::TimeDelta deferred_image_decode_time;
-  base::TimeDelta tile_analysis_time;
 
   ImplThreadRenderingStats();
   void IssueTraceEvent() const;

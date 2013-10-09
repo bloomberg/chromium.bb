@@ -164,7 +164,6 @@ class RasterWorkerPoolPerfTest : public testing::Test {
               gfx::Rect(),
               1.0,
               HIGH_QUALITY_RASTER_MODE,
-              false,
               TileResolution(),
               1,
               NULL,

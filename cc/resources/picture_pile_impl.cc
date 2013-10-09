@@ -73,8 +73,12 @@ void PicturePileImpl::RasterDirect(
     SkCanvas* canvas,
     gfx::Rect canvas_rect,
     float contents_scale,
-    RasterStats* raster_stats) {
-  RasterCommon(canvas, NULL, canvas_rect, contents_scale, raster_stats);
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
+  RasterCommon(canvas,
+               NULL,
+               canvas_rect,
+               contents_scale,
+               rendering_stats_instrumentation);
 }
 
 void PicturePileImpl::RasterForAnalysis(
@@ -88,7 +92,7 @@ void PicturePileImpl::RasterToBitmap(
     SkCanvas* canvas,
     gfx::Rect canvas_rect,
     float contents_scale,
-    RasterStats* raster_stats) {
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
 #ifndef NDEBUG
   // Any non-painted areas will be left in this color.
   canvas->clear(DebugColors::NonPaintedFillColor());
@@ -132,7 +136,11 @@ void PicturePileImpl::RasterToBitmap(
     }
   }
 
-  RasterCommon(canvas, NULL, canvas_rect, contents_scale, raster_stats);
+  RasterCommon(canvas,
+               NULL,
+               canvas_rect,
+               contents_scale,
+               rendering_stats_instrumentation);
 }
 
 void PicturePileImpl::RasterCommon(
@@ -140,7 +148,7 @@ void PicturePileImpl::RasterCommon(
     SkDrawPictureCallback* callback,
     gfx::Rect canvas_rect,
     float contents_scale,
-    RasterStats* raster_stats) {
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   DCHECK(contents_scale >= min_contents_scale_);
 
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
@@ -158,12 +166,6 @@ void PicturePileImpl::RasterCommon(
   canvas->clipRect(gfx::RectToSkRect(content_rect),
                    SkRegion::kIntersect_Op);
   Region unclipped(content_rect);
-
-  if (raster_stats) {
-    raster_stats->total_pixels_rasterized = 0;
-    raster_stats->total_rasterize_time = base::TimeDelta::FromSeconds(0);
-    raster_stats->best_rasterize_time = base::TimeDelta::FromSeconds(0);
-  }
 
   for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
        tile_iter; ++tile_iter) {
@@ -196,8 +198,6 @@ void PicturePileImpl::RasterCommon(
       if (!unclipped.Intersects(content_clip))
         continue;
 
-      base::TimeDelta total_duration =
-          base::TimeDelta::FromInternalValue(0);
       base::TimeDelta best_duration =
           base::TimeDelta::FromInternalValue(std::numeric_limits<int64>::max());
       int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
@@ -206,23 +206,20 @@ void PicturePileImpl::RasterCommon(
                    benchmark_instrumentation::kRasterLoop);
       for (int j = 0; j < repeat_count; ++j) {
         base::TimeTicks start_time;
-        if (raster_stats)
-          start_time = base::TimeTicks::HighResNow();
-
+        if (rendering_stats_instrumentation)
+          start_time = rendering_stats_instrumentation->StartRecording();
         (*i)->Raster(canvas, callback, content_clip, contents_scale);
-
-        if (raster_stats) {
-          base::TimeDelta duration = base::TimeTicks::HighResNow() - start_time;
-          total_duration += duration;
+        if (rendering_stats_instrumentation) {
+          base::TimeDelta duration =
+              rendering_stats_instrumentation->EndRecording(start_time);
           best_duration = std::min(best_duration, duration);
         }
       }
-
-      if (raster_stats) {
-        raster_stats->total_pixels_rasterized +=
+      if (rendering_stats_instrumentation) {
+        int64 rasterized_pixel_count =
             repeat_count * content_clip.width() * content_clip.height();
-        raster_stats->total_rasterize_time += total_duration;
-        raster_stats->best_rasterize_time += best_duration;
+        rendering_stats_instrumentation->AddRaster(best_duration,
+                                                   rasterized_pixel_count);
       }
 
       if (show_debug_picture_borders_) {

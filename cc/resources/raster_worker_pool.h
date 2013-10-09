@@ -196,7 +196,6 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
       gfx::Rect content_rect,
       float contents_scale,
       RasterMode raster_mode,
-      bool is_tile_in_pending_tree_now_bin,
       TileResolution tile_resolution,
       int layer_id,
       const void* tile_id,

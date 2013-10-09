@@ -55,7 +55,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                            gfx::Rect content_rect,
                            float contents_scale,
                            RasterMode raster_mode,
-                           bool is_tile_in_pending_tree_now_bin,
                            TileResolution tile_resolution,
                            int layer_id,
                            const void* tile_id,
@@ -68,7 +67,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         content_rect_(content_rect),
         contents_scale_(contents_scale),
         raster_mode_(raster_mode),
-        is_tile_in_pending_tree_now_bin_(is_tile_in_pending_tree_now_bin),
         tile_resolution_(tile_resolution),
         layer_id_(layer_id),
         tile_id_(tile_id),
@@ -90,14 +88,11 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
     DCHECK(picture_clone);
 
-    base::TimeTicks start_time = rendering_stats_->StartRecording();
     picture_clone->AnalyzeInRect(content_rect_, contents_scale_, &analysis_);
-    base::TimeDelta duration = rendering_stats_->EndRecording(start_time);
 
     // Record the solid color prediction.
     UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",
                           analysis_.is_solid_color);
-    rendering_stats_->AddAnalysisResult(duration, analysis_.is_solid_color);
 
     // Clear the flag if we're not using the estimator.
     analysis_.is_solid_color &= kUseColorEstimator;
@@ -170,25 +165,21 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
     canvas.setDrawFilter(draw_filter.get());
 
-    if (rendering_stats_->record_rendering_stats()) {
-      PicturePileImpl::RasterStats raster_stats;
-      picture_clone->RasterToBitmap(
-          &canvas, content_rect_, contents_scale_, &raster_stats);
-      rendering_stats_->AddRaster(
-          raster_stats.total_rasterize_time,
-          raster_stats.best_rasterize_time,
-          raster_stats.total_pixels_rasterized,
-          is_tile_in_pending_tree_now_bin_);
+    base::TimeDelta prev_rasterize_time =
+        rendering_stats_->GetImplThreadRenderingStats().rasterize_time;
 
+    picture_clone->RasterToBitmap(
+        &canvas, content_rect_, contents_scale_, rendering_stats_);
+
+    if (rendering_stats_->record_rendering_stats()) {
+      base::TimeDelta current_rasterize_time =
+          rendering_stats_->GetImplThreadRenderingStats().rasterize_time;
       HISTOGRAM_CUSTOM_COUNTS(
           "Renderer4.PictureRasterTimeUS",
-          raster_stats.total_rasterize_time.InMicroseconds(),
+          (current_rasterize_time - prev_rasterize_time).InMicroseconds(),
           0,
           100000,
           100);
-    } else {
-      picture_clone->RasterToBitmap(
-          &canvas, content_rect_, contents_scale_, NULL);
     }
 
     ChangeBitmapConfigIfNeeded(bitmap, buffer);
@@ -216,8 +207,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   scoped_ptr<base::Value> DataAsValue() const {
     scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
     res->Set("tile_id", TracedValue::CreateIDRef(tile_id_).release());
-    res->SetBoolean("is_tile_in_pending_tree_now_bin",
-                    is_tile_in_pending_tree_now_bin_);
     res->Set("resolution", TileResolutionAsValue(tile_resolution_).release());
     res->SetInteger("source_frame_number", source_frame_number_);
     res->SetInteger("layer_id", layer_id_);
@@ -244,7 +233,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   gfx::Rect content_rect_;
   float contents_scale_;
   RasterMode raster_mode_;
-  bool is_tile_in_pending_tree_now_bin_;
   TileResolution tile_resolution_;
   int layer_id_;
   const void* tile_id_;
@@ -271,10 +259,7 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     TRACE_EVENT0("cc", "ImageDecodeWorkerPoolTaskImpl::RunOnWorkerThread");
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         pixel_ref_);
-    base::TimeTicks start_time = rendering_stats_->StartRecording();
     pixel_ref_->Decode();
-    base::TimeDelta duration = rendering_stats_->EndRecording(start_time);
-    rendering_stats_->AddDeferredImageDecode(duration);
   }
   virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
@@ -434,7 +419,6 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     gfx::Rect content_rect,
     float contents_scale,
     RasterMode raster_mode,
-    bool is_tile_in_pending_tree_now_bin,
     TileResolution tile_resolution,
     int layer_id,
     const void* tile_id,
@@ -448,7 +432,6 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
                                    content_rect,
                                    contents_scale,
                                    raster_mode,
-                                   is_tile_in_pending_tree_now_bin,
                                    tile_resolution,
                                    layer_id,
                                    tile_id,

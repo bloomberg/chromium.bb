@@ -191,10 +191,6 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     // to receive its callbacks before that.
     BlockingTaskRunner::CapturePostTasks blocked;
 
-    RenderingStatsInstrumentation* stats_instrumentation =
-        layer_tree_host_->rendering_stats_instrumentation();
-    base::TimeTicks start_time = stats_instrumentation->StartRecording();
-
     layer_tree_host_impl_->BeginCommit();
 
     if (layer_tree_host_->contents_texture_manager()) {
@@ -227,8 +223,8 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     DCHECK_EQ(1.f, scroll_info->page_scale_delta);
 #endif
 
-    base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
-    stats_instrumentation->AddCommit(duration);
+    RenderingStatsInstrumentation* stats_instrumentation =
+        layer_tree_host_->rendering_stats_instrumentation();
     stats_instrumentation->IssueTraceEventForMainThreadStats();
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }

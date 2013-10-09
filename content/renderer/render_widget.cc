@@ -1486,8 +1486,7 @@ void RenderWidget::DoDeferredUpdate() {
   last_do_deferred_update_time_ = frame_begin_ticks;
 
   if (!is_accelerated_compositing_active_) {
-    legacy_software_mode_stats_->IncrementAnimationFrameCount();
-    legacy_software_mode_stats_->IncrementScreenFrameCount(1, true);
+    legacy_software_mode_stats_->IncrementFrameCount(1, true);
     legacy_software_mode_stats_->IssueTraceEventForMainThreadStats();
     legacy_software_mode_stats_->AccumulateAndClearMainThreadStats();
   }

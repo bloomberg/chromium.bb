@@ -4,7 +4,7 @@
 import logging
 
 from metrics import smoothness
-from metrics.gpu_rendering_stats import GpuRenderingStats
+from metrics.rendering_stats import RenderingStats
 from telemetry.page import page_measurement
 
 
@@ -22,19 +22,11 @@ class MissingDisplayFrameRate(page_measurement.MeasurementFailure):
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
     super(Smoothness, self).__init__('smoothness')
-    self.force_enable_threaded_compositing = False
     self._metrics = None
     self._trace_result = None
 
-  def AddCommandLineOptions(self, parser):
-    parser.add_option('--report-all-results', dest='report_all_results',
-                      action='store_true',
-                      help='Reports all data collected, not just FPS')
-
   def CustomizeBrowserOptions(self, options):
     smoothness.SmoothnessMetrics.CustomizeBrowserOptions(options)
-    if self.force_enable_threaded_compositing:
-      options.AppendExtraBrowserArgs('--enable-threaded-compositing')
 
   def CanRunForPage(self, page):
     return hasattr(page, 'smoothness')
@@ -61,7 +53,14 @@ class Smoothness(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     rendering_stats_deltas = self._metrics.deltas
 
-    if not (rendering_stats_deltas['numFramesSentToScreen'] > 0):
+    # TODO(ernstm): remove numFramesSentToScreen when RenderingStats
+    # cleanup CL was picked up by the reference build.
+    if 'frameCount' in rendering_stats_deltas:
+      frame_count = rendering_stats_deltas.get('frameCount', 0)
+    else:
+      frame_count = rendering_stats_deltas.get('numFramesSentToScreen', 0)
+
+    if not (frame_count > 0):
       raise DidNotScrollException()
 
     timeline = self._trace_result.AsTimelineModel()
@@ -76,15 +75,11 @@ class Smoothness(page_measurement.PageMeasurement):
       logging.warning(
         'No gesture marker found in timeline; using smoothness marker instead.')
       gesture_marker = smoothness_marker
-    benchmark_stats = GpuRenderingStats(smoothness_marker,
-                                        gesture_marker,
-                                        rendering_stats_deltas,
-                                        self._metrics.is_using_gpu_benchmarking)
+    benchmark_stats = RenderingStats(smoothness_marker,
+                                     gesture_marker,
+                                     rendering_stats_deltas,
+                                     self._metrics.is_using_gpu_benchmarking)
     smoothness.CalcResults(benchmark_stats, results)
-
-    if self.options.report_all_results:
-      for k, v in rendering_stats_deltas.iteritems():
-        results.Add(k, '', v)
 
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
