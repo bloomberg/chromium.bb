@@ -62,7 +62,7 @@ COMPILE_ASSERT(
     PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP);
 #endif
 
-#if defined(OS_CHROMEOS) && defined(USE_ASH) && defined(USE_X11)
+#if defined(OS_CHROMEOS) && defined(USE_ASH)
 void UnregisterClientOnUIThread(
     chromeos::OutputConfigurator::OutputProtectionClientId client_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -83,7 +83,7 @@ PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter() {
 }
 
 PepperOutputProtectionMessageFilter::~PepperOutputProtectionMessageFilter() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_ASH)
   if (client_id_ != 0) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
