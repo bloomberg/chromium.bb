@@ -21,7 +21,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
 
-#if (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include <glib-object.h>
 #endif
 
@@ -131,26 +131,16 @@ int main(int argc, char* argv[]) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
-#if (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // g_type_init will be deprecated in 2.36. 2.35 is the development
+  // version for 2.36, hence do not call g_type_init starting 2.35.
+  // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
+#if !GLIB_CHECK_VERSION(2, 35, 0)
   // Needed so ProxyConfigServiceLinux can use gconf.
   // Normally handled by BrowserMainLoop::InitializeToolkit().
-  // From glib version 2.36 onwards, g_type_init is implicitly called and it is
-  // deprecated.
-  // TODO(yael) Simplify this once Ubuntu 10.04 is no longer supported.
-#if defined(G_GNUC_BEGIN_IGNORE_DEPRECATIONS) && \
-    defined(G_GNUC_END_IGNORE_DEPRECATIONS)
-#define USE_GLIB_DEPRECATIONS_MACROS
-#endif
-
-#if defined(USE_GLIB_DEPRECATIONS_MACROS)
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-#endif
   g_type_init();
-#if defined(USE_GLIB_DEPRECATIONS_MACROS)
-G_GNUC_END_IGNORE_DEPRECATIONS
 #endif
-#undef USE_GLIB_DEPRECATIONS_MACROS
-#endif  // (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   base::AtExitManager exit_manager;
   CommandLine::Init(argc, argv);
   logging::LoggingSettings settings;
