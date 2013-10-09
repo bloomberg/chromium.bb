@@ -40,7 +40,8 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         pending_read_(false),
         pending_reset_(false),
         pending_stop_(false),
-        total_bytes_decoded_(0) {
+        total_bytes_decoded_(0),
+        has_no_key_(false) {
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder_);
 
@@ -101,6 +102,11 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   void Decrypt(Decryptor::StreamType stream_type,
                const scoped_refptr<DecoderBuffer>& encrypted,
                const Decryptor::DecryptCB& decrypt_cb) {
+    if (has_no_key_) {
+      decrypt_cb.Run(Decryptor::kNoKey, NULL);
+      return;
+    }
+
     DCHECK_EQ(stream_type, Decryptor::kVideo);
     scoped_refptr<DecoderBuffer> decrypted = DecoderBuffer::CopyFrom(
         encrypted->data(), encrypted->data_size());
@@ -116,7 +122,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     // TODO(xhwang): Add test cases where the fake decoder returns error or
     // the fake demuxer aborts demuxer read.
     ASSERT_TRUE(status == VideoFrameStream::OK ||
-                status == VideoFrameStream::ABORTED);
+                status == VideoFrameStream::ABORTED) << status;
     frame_read_ = frame;
     if (frame.get() && !frame->IsEndOfStream())
       num_decoded_frames_++;
@@ -138,13 +144,17 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     decoder_ = NULL;
   }
 
+  void ReadOneFrame() {
+    frame_read_ = NULL;
+    pending_read_ = true;
+    video_frame_stream_->Read(base::Bind(
+        &VideoFrameStreamTest::FrameReady, base::Unretained(this)));
+    message_loop_.RunUntilIdle();
+  }
+
   void ReadUntilPending() {
     do {
-      frame_read_ = NULL;
-      pending_read_ = true;
-      video_frame_stream_->Read(base::Bind(
-          &VideoFrameStreamTest::FrameReady, base::Unretained(this)));
-      message_loop_.RunUntilIdle();
+      ReadOneFrame();
     } while (!pending_read_);
   }
 
@@ -153,6 +163,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     DEMUXER_READ_NORMAL,
     DEMUXER_READ_CONFIG_CHANGE,
     SET_DECRYPTOR,
+    DECRYPTOR_NO_KEY,
     DECODER_INIT,
     DECODER_REINIT,
     DECODER_READ,
@@ -179,6 +190,13 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
             .Times(2);
         // Initialize will fail because no decryptor is available.
         InitializeVideoFrameStream();
+        break;
+
+      case DECRYPTOR_NO_KEY:
+        EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
+            .WillRepeatedly(RunCallback<0>(decryptor_.get()));
+        has_no_key_ = true;
+        ReadOneFrame();
         break;
 
       case DECODER_INIT:
@@ -230,9 +248,10 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         demuxer_stream_->SatisfyRead();
         break;
 
+      // These two cases are only interesting to test during
+      // VideoFrameStream::Stop().  There's no need to satisfy a callback.
       case SET_DECRYPTOR:
-        // VideoFrameStream::Stop() does not wait for pending DecryptorReadyCB.
-        // Therefore there's no need to satisfy a callback.
+      case DECRYPTOR_NO_KEY:
         NOTREACHED();
         break;
 
@@ -245,12 +264,10 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         break;
 
       case DECODER_READ:
-        DCHECK(pending_read_);
         decoder_->SatisfyRead();
         break;
 
       case DECODER_RESET:
-        DCHECK(pending_reset_);
         decoder_->SatisfyReset();
         break;
 
@@ -304,6 +321,9 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   bool pending_stop_;
   int total_bytes_decoded_;
   scoped_refptr<VideoFrame> frame_read_;
+
+  // Decryptor has no key to decrypt a frame.
+  bool has_no_key_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoFrameStreamTest);
@@ -489,6 +509,12 @@ TEST_P(VideoFrameStreamTest, Stop_AfterConfigChangeRead) {
   Initialize();
   EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
   SatisfyPendingCallback(DEMUXER_READ_CONFIG_CHANGE);
+  Stop();
+}
+
+TEST_P(VideoFrameStreamTest, Stop_DuringNoKeyRead) {
+  Initialize();
+  EnterPendingState(DECRYPTOR_NO_KEY);
   Stop();
 }
 

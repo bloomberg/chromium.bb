@@ -136,7 +136,6 @@ class MEDIA_EXPORT VideoFrameStream {
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WeakPtrFactory<VideoFrameStream> weak_factory_;
-  base::WeakPtr<VideoFrameStream> weak_this_;
 
   State state_;
 
