@@ -552,7 +552,7 @@ class Git(SCM, SVNRepository):
         if not match:
             raise ScriptError(message="Unable to find local branch tracking origin/master.")
         branch = str(match.group("branch_name"))
-        return self._run_git(['rev-parse', '--symbolic-full-name', branch]).strip()
+        return self._branch_from_ref(self._run_git(['rev-parse', '--symbolic-full-name', branch]).strip())
 
     def is_cleanly_tracking_remote_master(self):
         if self.has_working_directory_changes():
@@ -565,5 +565,5 @@ class Git(SCM, SVNRepository):
 
     def ensure_cleanly_tracking_remote_master(self):
         self.discard_working_directory_changes()
-        self._run_git(['checkout', '-q', self._branch_tracking_remote_master().replace('refs/heads/', '', 1)])
+        self._run_git(['checkout', '-q', self._branch_tracking_remote_master()])
         self.discard_local_commits()
