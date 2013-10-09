@@ -545,7 +545,7 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   base::FundamentalValue ui_preview_request_id(preview_request_id);
   if (IsAutoCancelEnabledForTesting()) {
     IncrementAutoCancelCountForTesting();
-    OnClosePrintPreviewDialog();
+    web_ui()->CallJavascriptFunction("autoCancelForTesting");
   } else {
     web_ui()->CallJavascriptFunction("updatePrintPreview", ui_identifier,
                                      ui_preview_request_id);

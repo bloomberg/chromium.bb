@@ -40,6 +40,7 @@ cr.define('print_preview', function() {
     global['printScalingDisabledForSourcePDF'] =
         this.onPrintScalingDisabledForSourcePDF_.bind(this);
     global['onDidGetAccessToken'] = this.onDidGetAccessToken_.bind(this);
+    global['autoCancelForTesting'] = this.autoCancelForTesting_.bind(this);
   };
 
   /**
@@ -578,6 +579,17 @@ cr.define('print_preview', function() {
      */
     onPrintScalingDisabledForSourcePDF_: function() {
       cr.dispatchSimpleEvent(this, NativeLayer.EventType.DISABLE_SCALING);
+    },
+
+    /**
+     * Simulates a user click on the print preview dialog cancel button. Used
+     * only for testing.
+     * @private
+     */
+    autoCancelForTesting_: function() {
+      var properties = {view: window, bubbles: true, cancelable: true};
+      var click = new MouseEvent('click', properties);
+      document.querySelector('#print-header .cancel').dispatchEvent(click);
     }
   };
 
