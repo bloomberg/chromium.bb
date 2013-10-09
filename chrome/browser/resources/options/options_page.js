@@ -617,7 +617,7 @@ cr.define('options', function() {
     if (freeze) {
       // Lock the width, since auto width computation may change.
       container.style.width = window.getComputedStyle(container).width;
-      container.oldScrollTop = document.body.scrollTop;
+      container.oldScrollTop = document.documentElement.scrollTop;
       container.classList.add('frozen');
       var verticalPosition =
           container.getBoundingClientRect().top - container.oldScrollTop;
