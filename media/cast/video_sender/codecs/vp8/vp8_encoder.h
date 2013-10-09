@@ -42,7 +42,7 @@ class Vp8Encoder {
     kAltRefBuffer = 0,
     kGoldenBuffer = 1,
     kLastBuffer = 2,
-    kNoBuffer = 3 // Note: must be last.
+    kNoBuffer = 3  // Note: must be last.
   };
 
   void InitEncode(int number_of_cores);
