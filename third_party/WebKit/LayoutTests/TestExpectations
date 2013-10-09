@@ -1232,3 +1232,7 @@ crbug.com/304841 [ Win ] inspector/styles/override-screen-size.html [ Failure ]
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ ImageOnlyFailure ]
 crbug.com/305290 [ XP ] fast/text/international/complex-text-space-only-glyphpage.html [ ImageOnlyFailure ]
+
+# Test crashes flakily.
+crbug.com/305476 [ Linux ] fast/encoding/api/streaming-decode.html [ Crash ]
+
