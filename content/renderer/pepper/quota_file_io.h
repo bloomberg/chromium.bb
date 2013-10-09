@@ -41,7 +41,7 @@ class QuotaFileIO {
     virtual void WillUpdateFile(const GURL& file_path) = 0;
     virtual void DidUpdateFile(const GURL& file_path, int64_t delta) = 0;
     // Returns a MessageLoopProxy instance associated with the message loop of
-    // the file thread in this renderer.
+    // the file thread.
     virtual scoped_refptr<base::MessageLoopProxy>
         GetFileThreadMessageLoopProxy() = 0;
   };

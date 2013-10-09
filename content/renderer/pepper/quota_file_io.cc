@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "content/renderer/pepper/host_globals.h"
 
 using base::PlatformFile;
 using base::PlatformFileError;
