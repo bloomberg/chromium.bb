@@ -593,8 +593,10 @@ void BrowserPluginGuest::Initialize(
       new BrowserPluginMsg_GuestContentWindowReady(instance_id_,
                                                    guest_routing_id));
 
-  if (!params.src.empty())
+  if (!params.src.empty()) {
+    // params.src will be validated in BrowserPluginGuest::OnNavigateGuest.
     OnNavigateGuest(instance_id_, params.src);
+  }
 
   has_render_view_ = true;
 
@@ -1355,32 +1357,38 @@ void BrowserPluginGuest::OnNavigateGuest(
   // non-empty page, the action is considered no-op. This empty src navigation
   // should never be sent to BrowserPluginGuest (browser process).
   DCHECK(!src.empty());
-  if (!src.empty()) {
-    // Do not allow navigating a guest to schemes other than known safe schemes.
-    // This will block the embedder trying to load unwanted schemes, e.g.
-    // chrome://settings.
-    bool scheme_is_blocked =
-        (!ChildProcessSecurityPolicyImpl::GetInstance()->IsWebSafeScheme(
-            url.scheme()) &&
-        !ChildProcessSecurityPolicyImpl::GetInstance()->IsPseudoScheme(
-            url.scheme())) ||
-        url.SchemeIs(kJavaScriptScheme);
-    if (scheme_is_blocked || !url.is_valid()) {
-      if (delegate_) {
-        std::string error_type;
-        RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::", &error_type);
-        delegate_->LoadAbort(true /* is_top_level */, url, error_type);
-      }
-      return;
-    }
+  if (src.empty())
+    return;
 
-    // As guests do not swap processes on navigation, only navigations to
-    // normal web URLs are supported.  No protocol handlers are installed for
-    // other schemes (e.g., WebUI or extensions), and no permissions or bindings
-    // can be granted to the guest process.
-    LoadURLWithParams(GetWebContents(), url, Referrer(),
-                      PAGE_TRANSITION_AUTO_TOPLEVEL);
+  // Do not allow navigating a guest to schemes other than known safe schemes.
+  // This will block the embedder trying to load unwanted schemes, e.g.
+  // chrome://settings.
+  bool scheme_is_blocked =
+      (!ChildProcessSecurityPolicyImpl::GetInstance()->IsWebSafeScheme(
+          url.scheme()) &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->IsPseudoScheme(
+          url.scheme())) ||
+      url.SchemeIs(kJavaScriptScheme);
+  if (scheme_is_blocked || !url.is_valid()) {
+    if (delegate_) {
+      std::string error_type;
+      RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::", &error_type);
+      delegate_->LoadAbort(true /* is_top_level */, url, error_type);
+    }
+    return;
   }
+
+  GURL validated_url(url);
+  RenderViewHost::FilterURL(
+      GetWebContents()->GetRenderProcessHost(),
+      false,
+      &validated_url);
+  // As guests do not swap processes on navigation, only navigations to
+  // normal web URLs are supported.  No protocol handlers are installed for
+  // other schemes (e.g., WebUI or extensions), and no permissions or bindings
+  // can be granted to the guest process.
+  LoadURLWithParams(GetWebContents(), validated_url, Referrer(),
+                    PAGE_TRANSITION_AUTO_TOPLEVEL);
 }
 
 void BrowserPluginGuest::OnPluginDestroyed(int instance_id) {
