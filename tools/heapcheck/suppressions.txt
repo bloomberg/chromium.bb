@@ -852,10 +852,3 @@
    fun:chromeos::KeyboardDrivenEventRewriterTest::GetRewrittenEventAsString
    fun:chromeos::KeyboardDrivenEventRewriterTest_PassThrough_Test::TestBody
 }
-{
-   bug_304970
-   Heapcheck:Leak
-   ...
-   fun:TestCastSocket
-   fun:extensions::api::cast_channel::CastSocketTest::SetUp
-}

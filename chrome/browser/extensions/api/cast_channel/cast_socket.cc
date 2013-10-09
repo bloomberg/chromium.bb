@@ -134,16 +134,6 @@ void CastSocket::OnConnectComplete(int result) {
 void CastSocket::Close(const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Close ReadyState = " << ready_state_;
-  if (ready_state_ == READY_STATE_CLOSING ||
-      ready_state_ == READY_STATE_CLOSED) {
-    callback.Run(net::OK);
-    return;
-  }
-  if (ready_state_ != READY_STATE_OPEN &&
-      ready_state_ != READY_STATE_CONNECTING) {
-    callback.Run(net::ERR_FAILED);
-    return;
-  }
   socket_.reset(NULL);
   ready_state_ = READY_STATE_CLOSED;
   callback.Run(net::OK);

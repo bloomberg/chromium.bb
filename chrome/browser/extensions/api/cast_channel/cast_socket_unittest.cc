@@ -35,6 +35,7 @@ class MockTCPClientSocket : public net::TCPClientSocket {
  public:
   explicit MockTCPClientSocket(const net::AddressList& addresses) :
     TCPClientSocket(addresses, NULL, net::NetLog::Source()) { }
+  virtual ~MockTCPClientSocket() { }
 
   MOCK_METHOD1(Connect, int(const net::CompletionCallback& callback));
   MOCK_METHOD2(SetKeepAlive, bool(bool, int));
@@ -56,30 +57,47 @@ class CompleteHandler {
   DISALLOW_COPY_AND_ASSIGN(CompleteHandler);
 };
 
-
 class TestCastSocket : public CastSocket {
  public:
   explicit TestCastSocket(MockCastSocketDelegate* delegate) :
     CastSocket("abcdefg", GURL("cast://192.0.0.1:8009"), delegate,
-               &capturing_net_log_) {
+               &capturing_net_log_), owns_socket_(true) {
     net::AddressList addresses;
     mock_tcp_socket_ = new MockTCPClientSocket(addresses);
   }
-  virtual ~TestCastSocket() { }
 
-  // Unowned ptr to the underlying socket.  Do not reference after calling
-  // Close().
+  virtual ~TestCastSocket() {
+    if (owns_socket_) {
+      DCHECK(mock_tcp_socket_);
+      delete mock_tcp_socket_;
+    }
+  }
+
+  virtual void Close(const net::CompletionCallback& callback) OVERRIDE {
+    if (!owns_socket_)
+      mock_tcp_socket_ = NULL;
+    CastSocket::Close(callback);
+  }
+
+  // Ptr to the mock socket.  Ownership is transferred to CastSocket when it is
+  // returned from CreateSocket().  CastSocket will destroy it on Close(),
+  // so don't refer to |mock_tcp_socket_| afterwards.
   MockTCPClientSocket* mock_tcp_socket_;
 
  protected:
+  // Transfers ownership of |mock_tcp_socket_| to CastSocket.
   virtual net::TCPClientSocket* CreateSocket(
       const net::AddressList& addresses,
       net::NetLog* net_log,
       const net::NetLog::Source& source) OVERRIDE {
+    owns_socket_ = false;
     return mock_tcp_socket_;
   }
+
  private:
   net::CapturingNetLog capturing_net_log_;
+  // Whether this object or the parent owns |mock_tcp_socket_|.
+  bool owns_socket_;
 };
 
 class CastSocketTest : public testing::Test {
@@ -89,6 +107,12 @@ class CastSocketTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     socket_.reset(new TestCastSocket(&mock_delegate_));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    EXPECT_CALL(handler_, OnCloseComplete(net::OK));
+    socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
+                              base::Unretained(&handler_)));
   }
 
   // Sets expectations when the socket is connected.  Connecting the socket also
@@ -121,7 +145,9 @@ class CastSocketTest : public testing::Test {
 
  protected:
   MockTCPClientSocket& mock_tcp_socket() {
-    return *(socket_->mock_tcp_socket_);
+    MockTCPClientSocket* mock_socket = socket_->mock_tcp_socket_;
+    DCHECK(mock_socket);
+    return *mock_socket;
   }
 
   MockCastSocketDelegate mock_delegate_;
