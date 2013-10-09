@@ -39,7 +39,7 @@ cr.define('uber', function() {
    * @private
    */
   function handleScroll() {
-    var offset = document.body.scrollLeft * -1;
+    var offset = document.documentElement.scrollLeft * -1;
     for (var i = 0; i < headerElements.length; i++) {
       // As a workaround for http://crbug.com/231830, set the transform to
       // 'none' rather than 0px.
@@ -47,7 +47,7 @@ cr.define('uber', function() {
           'translateX(' + offset + 'px)' : 'none';
     }
 
-    invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
+    invokeMethodOnParent('adjustToScroll', document.documentElement.scrollLeft);
   };
 
   /**
@@ -67,7 +67,7 @@ cr.define('uber', function() {
    * @private
    */
   function handleFrameSelected() {
-    document.body.scrollLeft = 0;
+    document.documentElement.scrollLeft = 0;
   }
 
   /**
