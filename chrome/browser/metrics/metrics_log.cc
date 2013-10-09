@@ -389,22 +389,6 @@ void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-int64 MetricsLog::GetIncrementalUptime(PrefService* pref) {
-  base::TimeTicks now = base::TimeTicks::Now();
-  static base::TimeTicks last_updated_time(now);
-  int64 incremental_time = (now - last_updated_time).InSeconds();
-  last_updated_time = now;
-
-  if (incremental_time > 0) {
-    int64 metrics_uptime = pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
-    metrics_uptime += incremental_time;
-    pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
-  }
-
-  return incremental_time;
-}
-
-// static
 std::string MetricsLog::GetVersionString() {
   chrome::VersionInfo version_info;
   if (!version_info.is_valid()) {
@@ -431,14 +415,15 @@ const std::string& MetricsLog::version_extension() {
 }
 
 void MetricsLog::RecordIncrementalStabilityElements(
-    const std::vector<content::WebPluginInfo>& plugin_list) {
+    const std::vector<content::WebPluginInfo>& plugin_list,
+    base::TimeDelta incremental_uptime) {
   DCHECK(!locked());
 
   PrefService* pref = GetPrefService();
   DCHECK(pref);
 
   WriteRequiredStabilityAttributes(pref);
-  WriteRealtimeStabilityAttributes(pref);
+  WriteRealtimeStabilityAttributes(pref, incremental_uptime);
   WritePluginStabilityElements(plugin_list, pref);
 }
 
@@ -467,6 +452,7 @@ void MetricsLog::GetFieldTrialIds(
 
 void MetricsLog::WriteStabilityElement(
     const std::vector<content::WebPluginInfo>& plugin_list,
+    base::TimeDelta incremental_uptime,
     PrefService* pref) {
   DCHECK(!locked());
 
@@ -475,7 +461,7 @@ void MetricsLog::WriteStabilityElement(
   //       sent, but that's true for all the metrics.
 
   WriteRequiredStabilityAttributes(pref);
-  WriteRealtimeStabilityAttributes(pref);
+  WriteRealtimeStabilityAttributes(pref, incremental_uptime);
 
   int incomplete_shutdown_count =
       pref->GetInteger(prefs::kStabilityIncompleteSessionEndCount);
@@ -600,7 +586,9 @@ void MetricsLog::WriteRequiredStabilityAttributes(PrefService* pref) {
   stability->set_crash_count(crash_count);
 }
 
-void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
+void MetricsLog::WriteRealtimeStabilityAttributes(
+    PrefService* pref,
+    base::TimeDelta incremental_uptime) {
   // Update the stats which are critical for real-time stability monitoring.
   // Since these are "optional," only list ones that are non-zero, as the counts
   // are aggergated (summed) server side.
@@ -657,9 +645,9 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
   }
 #endif  // OS_CHROMEOS
 
-  int64 recent_duration = GetIncrementalUptime(pref);
-  if (recent_duration)
-    stability->set_uptime_sec(recent_duration);
+  const uint64 uptime_sec = incremental_uptime.InSeconds();
+  if (uptime_sec)
+    stability->set_uptime_sec(uptime_sec);
 }
 
 void MetricsLog::WritePluginList(
@@ -679,12 +667,13 @@ void MetricsLog::WritePluginList(
 }
 
 void MetricsLog::RecordEnvironment(
-         const std::vector<content::WebPluginInfo>& plugin_list,
-         const GoogleUpdateMetrics& google_update_metrics) {
+    const std::vector<content::WebPluginInfo>& plugin_list,
+    const GoogleUpdateMetrics& google_update_metrics,
+    base::TimeDelta incremental_uptime) {
   DCHECK(!locked());
 
   PrefService* pref = GetPrefService();
-  WriteStabilityElement(plugin_list, pref);
+  WriteStabilityElement(plugin_list, incremental_uptime, pref);
 
   RecordEnvironmentProto(plugin_list, google_update_metrics);
 }

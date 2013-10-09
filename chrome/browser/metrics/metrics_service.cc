@@ -906,8 +906,8 @@ void MetricsService::InitializeMetricsState() {
   }
 
   // Initialize uptime counters.
-  int64 startup_uptime = MetricsLog::GetIncrementalUptime(pref);
-  DCHECK_EQ(0, startup_uptime);
+  const base::TimeDelta startup_uptime = GetIncrementalUptime(pref);
+  DCHECK_EQ(0, startup_uptime.InMicroseconds());
   // For backwards compatibility, leave this intact in case Omaha is checking
   // them.  prefs::kStabilityLastTimestampSec may also be useless now.
   // TODO(jar): Delete these if they have no uses.
@@ -1048,7 +1048,25 @@ void MetricsService::ReceivedProfilerData(
 
 void MetricsService::FinishedReceivingProfilerData() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-    state_ = INIT_TASK_DONE;
+  state_ = INIT_TASK_DONE;
+}
+
+base::TimeDelta MetricsService::GetIncrementalUptime(PrefService* pref) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  // If this is the first call, init |last_updated_time_|.
+  if (last_updated_time_.is_null())
+    last_updated_time_ = now;
+  const base::TimeDelta incremental_time = now - last_updated_time_;
+  last_updated_time_ = now;
+
+  const int64 incremental_time_secs = incremental_time.InSeconds();
+  if (incremental_time_secs > 0) {
+    int64 metrics_uptime = pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
+    metrics_uptime += incremental_time_secs;
+    pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
+  }
+
+  return incremental_time;
 }
 
 int MetricsService::GetLowEntropySource() {
@@ -1168,7 +1186,9 @@ void MetricsService::CloseCurrentLog() {
       static_cast<MetricsLog*>(log_manager_.current_log());
   DCHECK(current_log);
   current_log->RecordEnvironmentProto(plugins_, google_update_metrics_);
-  current_log->RecordIncrementalStabilityElements(plugins_);
+  PrefService* pref = g_browser_process->local_state();
+  current_log->RecordIncrementalStabilityElements(plugins_,
+                                                  GetIncrementalUptime(pref));
   RecordCurrentHistograms();
 
   log_manager_.FinishCurrentLog();
@@ -1376,7 +1396,9 @@ void MetricsService::PrepareInitialLog() {
 
   DCHECK(initial_log_.get());
   initial_log_->set_hardware_class(hardware_class_);
-  initial_log_->RecordEnvironment(plugins_, google_update_metrics_);
+  PrefService* pref = g_browser_process->local_state();
+  initial_log_->RecordEnvironment(plugins_, google_update_metrics_,
+                                  GetIncrementalUptime(pref));
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.

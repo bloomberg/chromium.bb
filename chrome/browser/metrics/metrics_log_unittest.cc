@@ -133,7 +133,7 @@ class MetricsLogTest : public testing::Test {
     if (proto_only)
       log.RecordEnvironmentProto(plugins, google_update_metrics);
     else
-      log.RecordEnvironment(plugins, google_update_metrics);
+      log.RecordEnvironment(plugins, google_update_metrics, base::TimeDelta());
 
     // Computed from original time of 1373051956.
     EXPECT_EQ(1373050800, log.system_profile().install_date());

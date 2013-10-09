@@ -75,10 +75,6 @@ class MetricsLog : public MetricsLogBase {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Get the amount of uptime in seconds since this function was last called.
-  // This updates the cumulative uptime metric for uninstall as a side effect.
-  static int64 GetIncrementalUptime(PrefService* pref);
-
   // Get the current version of the application as a string.
   static std::string GetVersionString();
 
@@ -95,7 +91,8 @@ class MetricsLog : public MetricsLogBase {
   // dictionary giving the metrics for the profile.
   void RecordEnvironment(
       const std::vector<content::WebPluginInfo>& plugin_list,
-      const GoogleUpdateMetrics& google_update_metrics);
+      const GoogleUpdateMetrics& google_update_metrics,
+      base::TimeDelta incremental_uptime);
 
   // Records the current operating environment.  Takes the list of installed
   // plugins and Google Update statistics as parameters because those can't be
@@ -124,7 +121,8 @@ class MetricsLog : public MetricsLogBase {
   // installed plugins as a parameter because that can't be obtained
   // synchronously from the UI thread.
   void RecordIncrementalStabilityElements(
-      const std::vector<content::WebPluginInfo>& plugin_list);
+      const std::vector<content::WebPluginInfo>& plugin_list,
+      base::TimeDelta incremental_uptime);
 
  protected:
   // Exposed for the sake of mocking in test code.
@@ -153,6 +151,7 @@ class MetricsLog : public MetricsLogBase {
   // NOTE: Has the side-effect of clearing those counts.
   void WriteStabilityElement(
       const std::vector<content::WebPluginInfo>& plugin_list,
+      base::TimeDelta incremental_uptime,
       PrefService* pref);
 
   // Within stability group, write plugin crash stats.
@@ -167,7 +166,8 @@ class MetricsLog : public MetricsLogBase {
   // and can't be delayed until the user decides to restart chromium.
   // Delaying these stats would bias metrics away from happy long lived
   // chromium processes (ones that don't crash, and keep on running).
-  void WriteRealtimeStabilityAttributes(PrefService* pref);
+  void WriteRealtimeStabilityAttributes(PrefService* pref,
+                                        base::TimeDelta incremental_uptime);
 
   // Writes the list of installed plugins.
   void WritePluginList(const std::vector<content::WebPluginInfo>& plugin_list);

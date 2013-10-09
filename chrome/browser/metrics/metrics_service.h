@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/process/kill.h"
+#include "base/time/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "chrome/common/metrics/metrics_service_base.h"
@@ -260,6 +261,10 @@ class MetricsService
   // Callback that moves the state to INIT_TASK_DONE.
   virtual void FinishedReceivingProfilerData() OVERRIDE;
 
+  // Get the amount of uptime since this function was last called.
+  // This updates the cumulative uptime metric for uninstall as a side effect.
+  base::TimeDelta GetIncrementalUptime(PrefService* pref);
+
   // Returns the low entropy source for this client. This is a random value
   // that is non-identifying amongst browser clients. This method will
   // generate the entropy source value if it has not been called before.
@@ -483,6 +488,9 @@ class MetricsService
 
   // The last entropy source returned by this service, used for testing.
   EntropySourceReturned entropy_source_returned_;
+
+  // Stores the time of the last call to |GetIncrementalUptime()|.
+  base::TimeTicks last_updated_time_;
 
   // Reduntant marker to check that we completed our shutdown, and set the
   // exited-cleanly bit in the prefs.
