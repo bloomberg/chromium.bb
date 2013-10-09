@@ -207,6 +207,7 @@ launch_client(struct nested *nested, const char *path)
 		fprintf(stderr, "launch_client: "
 			"socketpair failed while launching '%s': %m\n",
 			path);
+		free(client);
 		return NULL;
 	}
 
@@ -214,6 +215,7 @@ launch_client(struct nested *nested, const char *path)
 	if (pid == -1) {
 		close(sv[0]);
 		close(sv[1]);
+		free(client);
 		fprintf(stderr, "launch_client: "
 			"fork failed while launching '%s': %m\n", path);
 		return NULL;
@@ -246,6 +248,7 @@ launch_client(struct nested *nested, const char *path)
 	client->client = wl_client_create(nested->child_display, sv[0]);
 	if (!client->client) {
 		close(sv[0]);
+		free(client);
 		fprintf(stderr, "launch_client: "
 			"wl_client_create failed while launching '%s'.\n",
 			path);
