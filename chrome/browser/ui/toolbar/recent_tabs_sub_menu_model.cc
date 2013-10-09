@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/pref_names.h"
 #include "grit/browser_resources.h"
@@ -52,8 +53,13 @@ namespace {
 // These values must be bigger than the maximum possible number of items in
 // menu, so that index of last menu item doesn't clash with this value when menu
 // items are retrieved via GetIndexOfCommandId.
-const int kFirstTabCommandId = 100;
-const int kFirstWindowCommandId = 200;
+// The range of all command ID's used in RecentTabsSubMenuModel must be between
+// WrenchMenuModel::kMinRecentTabsCommandId i.e. 1001 and 1200
+// (WrenchMenuModel::kMaxRecentTabsCommandId) inclusively.
+const int kFirstTabCommandId = WrenchMenuModel::kMinRecentTabsCommandId;
+const int kFirstWindowCommandId = 1051;
+const int kMinDeviceNameCommandId = 1100;
+const int kMaxDeviceNameCommandId = 1110;
 
 // The maximum number of recently closed entries to be shown in the menu.
 const int kMaxRecentlyClosedEntries = 8;
@@ -80,6 +86,11 @@ bool IsTabModelCommandId(int command_id) {
 bool IsWindowModelCommandId(int command_id) {
   return command_id >= kFirstWindowCommandId &&
          command_id < RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId;
+}
+
+bool IsDeviceNameCommandId(int command_id) {
+  return command_id >= kMinDeviceNameCommandId &&
+      command_id <= kMaxDeviceNameCommandId;
 }
 
 // Convert |tab_model_index| to command id of menu item.
@@ -146,9 +157,8 @@ struct RecentTabsSubMenuModel::TabNavigationItem {
   GURL url;
 };
 
-const int RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId = 500;
-const int RecentTabsSubMenuModel::kDisabledRecentlyClosedHeaderCommandId = 501;
-const int RecentTabsSubMenuModel::kDeviceNameCommandId = 1000;
+const int RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId = 1120;
+const int RecentTabsSubMenuModel::kDisabledRecentlyClosedHeaderCommandId = 1121;
 
 RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     ui::AcceleratorProvider* accelerator_provider,
@@ -192,8 +202,8 @@ bool RecentTabsSubMenuModel::IsCommandIdChecked(int command_id) const {
 bool RecentTabsSubMenuModel::IsCommandIdEnabled(int command_id) const {
   if (command_id == kRecentlyClosedHeaderCommandId ||
       command_id == kDisabledRecentlyClosedHeaderCommandId ||
-      command_id == kDeviceNameCommandId ||
-      command_id == IDC_RECENT_TABS_NO_DEVICE_TABS) {
+      command_id == IDC_RECENT_TABS_NO_DEVICE_TABS ||
+      IsDeviceNameCommandId(command_id)) {
     return false;
   }
   return true;
@@ -224,8 +234,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
 
-  DCHECK_NE(kDeviceNameCommandId, command_id);
   DCHECK_NE(IDC_RECENT_TABS_NO_DEVICE_TABS, command_id);
+  DCHECK(!IsDeviceNameCommandId(command_id));
 
   WindowOpenDisposition disposition =
       ui::DispositionFromEventFlags(event_flags);
@@ -282,8 +292,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
 const gfx::Font* RecentTabsSubMenuModel::GetLabelFontAt(int index) const {
   int command_id = GetCommandIdAt(index);
-  if (command_id == kDeviceNameCommandId ||
-      command_id == kRecentlyClosedHeaderCommandId) {
+  if (command_id == kRecentlyClosedHeaderCommandId ||
+      IsDeviceNameCommandId(command_id)) {
     return &ResourceBundle::GetSharedInstance().GetFont(
         ResourceBundle::BoldFont);
   }
@@ -431,7 +441,7 @@ void RecentTabsSubMenuModel::BuildDevices() {
     // Add the header for the device session.
     DCHECK(!session->session_name.empty());
     AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItem(kDeviceNameCommandId, UTF8ToUTF16(session->session_name));
+    AddItem(kMinDeviceNameCommandId + i, UTF8ToUTF16(session->session_name));
     AddDeviceFavicon(GetItemCount() - 1, session->device_type);
 
     // Build tab menu items from sorted session tabs.
