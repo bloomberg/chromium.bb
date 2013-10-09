@@ -65,8 +65,6 @@ def SetupEnvironment():
   # Path to PNaCl toolchain
   pnacl_label = 'pnacl_%s_x86' % GetSconsOS()
   env.pnacl_base = os.path.join(env.nacl_root, 'toolchain', pnacl_label)
-  env.pnacl_root_newlib = os.path.join(env.pnacl_base, 'newlib')
-  env.pnacl_root_glibc = os.path.join(env.pnacl_base, 'glibc')
 
   # QEMU
   env.arm_root = os.path.join(env.nacl_root,
@@ -331,9 +329,9 @@ def Translate(arch, pexe):
   if arch is None:
     Fatal('Missing -arch for PNaCl translation.')
   output_file = os.path.splitext(pexe)[0] + '.' + arch + '.nexe'
-  pnacl_translate = os.path.join(env.pnacl_root_newlib, 'bin',
-                                 'pnacl-translate')
-  args = [ pnacl_translate, '-arch', arch, pexe, '-o', output_file ]
+  pnacl_translate = os.path.join(env.pnacl_base, 'bin', 'pnacl-translate')
+  args = [ pnacl_translate, '-arch', arch, pexe, '-o', output_file,
+           '--allow-llvm-bitcode-input' ]
   Run(args)
   return output_file
 
