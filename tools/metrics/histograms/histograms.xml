@@ -5169,6 +5169,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InstantExtended.CacheableNTPLoad"
+    enum="InstantExtended_CacheableNTPLoad">
+  <summary>
+    Records a histogram for how often the Cacheable NTP fails to load.
+  </summary>
+</histogram>
+
 <histogram name="InstantExtended.FallbackToLocalOverlay"
     enum="InstantExtended_FallbackCause">
   <summary>
@@ -22760,6 +22767,11 @@ other types of suffix sets.
   <int value="0" label="URL_ADDED_TO_BLACKLIST"/>
   <int value="1" label="URL_REMOVED_FROM_BLACKLIST"/>
   <int value="2" label="URL_BLOCKED_BY_BLACKLIST"/>
+</enum>
+
+<enum name="InstantExtended_CacheableNTPLoad" type="int">
+  <int value="0" label="Failed to load"/>
+  <int value="1" label="Loaded successfuly"/>
 </enum>
 
 <enum name="InstantExtended_FallbackCause" type="int">
