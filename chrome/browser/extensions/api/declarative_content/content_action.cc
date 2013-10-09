@@ -57,10 +57,12 @@ class ShowPageAction : public ContentAction {
   virtual void Revert(const std::string& extension_id,
                       const base::Time& extension_install_time,
                       ApplyInfo* apply_info) const OVERRIDE {
-    GetPageAction(apply_info->profile, extension_id)->
-        UndoDeclarativeShow(ExtensionTabUtil::GetTabId(apply_info->tab));
-    apply_info->tab->NotifyNavigationStateChanged(
-        content::INVALIDATE_TYPE_PAGE_ACTIONS);
+    if (ExtensionAction* action =
+            GetPageAction(apply_info->profile, extension_id)) {
+      action->UndoDeclarativeShow(ExtensionTabUtil::GetTabId(apply_info->tab));
+      apply_info->tab->NotifyNavigationStateChanged(
+          content::INVALIDATE_TYPE_PAGE_ACTIONS);
+    }
   }
 
  private:
@@ -69,7 +71,8 @@ class ShowPageAction : public ContentAction {
     ExtensionService* service =
         ExtensionSystem::Get(profile)->extension_service();
     const Extension* extension = service->GetInstalledExtension(extension_id);
-    DCHECK(extension);
+    if (!extension)
+      return NULL;
     return ExtensionActionManager::Get(profile)->GetPageAction(*extension);
   }
   virtual ~ShowPageAction() {}

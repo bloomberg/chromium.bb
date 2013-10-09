@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/test/browser_test_utils.h"
@@ -31,6 +33,19 @@ const char kDeclarativeContentManifest[] =
     "  ],\n"
     "  \"page_action\": {}\n"
     "}\n";
+
+const char kBackgroundHelpers[] =
+    "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
+    "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
+    "var onPageChanged = chrome.declarativeContent.onPageChanged;\n"
+    "\n"
+    "function setRules(rules, responseString) {\n"
+    "  onPageChanged.removeRules(undefined, function() {\n"
+    "    onPageChanged.addRules(rules, function() {\n"
+    "      window.domAutomationController.send(responseString);\n"
+    "    });\n"
+    "  });\n"
+    "};\n";
 
 class DeclarativeContentApiTest : public ExtensionApiTest {
  public:
@@ -115,23 +130,62 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
       << "Removing the matching element should hide the page action again.";
 }
 
+// http://crbug.com/304373
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       UninstallWhileActivePageAction) {
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+  const std::string extension_id = extension->id();
+  const ExtensionAction* page_action = ExtensionActionManager::Get(
+      browser()->profile())->GetPageAction(*extension);
+  ASSERT_TRUE(page_action);
+
+  const std::string kTestRule =
+      "setRules([{\n"
+      "  conditions: [new PageStateMatcher({\n"
+      "                   pageUrl: {hostPrefix: \"test\"}})],\n"
+      "  actions: [new ShowPageAction()]\n"
+      "}], 'test_rule');\n";
+  EXPECT_EQ("test_rule",
+            ExecuteScriptInBackgroundPage(extension_id, kTestRule));
+
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  NavigateInRenderer(tab, GURL("http://test/"));
+
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+  EXPECT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+  LocationBarTesting* location_bar =
+      browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+  EXPECT_EQ(1, location_bar->PageActionCount());
+  EXPECT_EQ(1, location_bar->PageActionVisibleCount());
+
+  ReloadExtension(extension_id);  // Invalidates page_action and extension.
+  EXPECT_EQ("test_rule",
+            ExecuteScriptInBackgroundPage(extension_id, kTestRule));
+  // TODO(jyasskin): Apply new rules to existing tabs, without waiting for a
+  // navigation.
+  NavigateInRenderer(tab, GURL("http://test/"));
+  EXPECT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+  EXPECT_EQ(1, location_bar->PageActionCount());
+  EXPECT_EQ(1, location_bar->PageActionVisibleCount());
+
+  UnloadExtension(extension_id);
+  NavigateInRenderer(tab, GURL("http://test/"));
+  EXPECT_TRUE(WaitForPageActionVisibilityChangeTo(0));
+  EXPECT_EQ(0, location_bar->PageActionCount());
+  EXPECT_EQ(0, location_bar->PageActionVisibleCount());
+}
+
 // This tests against a renderer crash that was present during development.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                        AddExtensionMatchingExistingTabWithDeadFrames) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
-  ext_dir_.WriteFile(
-      FILE_PATH_LITERAL("background.js"),
-      "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
-      "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
-      "var onPageChanged = chrome.declarativeContent.onPageChanged;\n"
-      "\n"
-      "function setRules(rules, responseString) {\n"
-      "  onPageChanged.removeRules(undefined, function() {\n"
-      "    onPageChanged.addRules(rules, function() {\n"
-      "      window.domAutomationController.send(responseString);\n"
-      "    });\n"
-      "  });\n"
-      "};\n");
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
   content::WebContents* const tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   const int tab_id = ExtensionTabUtil::GetTabId(tab);
