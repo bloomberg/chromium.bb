@@ -1,0 +1,16 @@
+<script src="http://evanw.github.com/glfx.js/glfx.js"></script>
+<script>
+
+window.onload = function() {
+    var canvasA = fx.canvas();
+    document.body.appendChild(canvasA);
+    var texture = canvasA.texture(document.getElementById('imageA'));
+    var canvasB = fx.canvas();
+    texture.loadContentsOf(document.getElementById('imageB'));
+    canvasA.draw(texture).update();
+};
+
+</script>
+<img id="imageA" src="image.jpg">
+<img id="imageB" src="cs224.jpg">
+<p>This tests that loadContentsOf completely replaces the contents of the previous image with the new one. The canvas below should look like the image above to the right (and should also be the same size).</p>
