@@ -1117,11 +1117,11 @@ crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throw
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
 # Android virtual suite shares the same expectation.
-# crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
-# crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
-# webkit.org/b/90704 virtual/android/fullscreen/exit-full-screen-iframe.html [ Failure Pass ]
-# crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
-# crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
+crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
+crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
+webkit.org/b/90704 virtual/android/fullscreen/exit-full-screen-iframe.html [ Failure Pass ]
+crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
+crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 
 crbug.com/298045 [ Mac ] virtual/implsidepainting [ Skip ]
 crbug.com/298188 [ Linux Win ] virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass ]
