@@ -225,7 +225,7 @@ Profiler.prototype.accumulate_ = function(
             return previous + worldUnits[subWorldName][current];
           }, 0);
 
-        model.children.push({
+        retVal.model.children.push({
           name: categoryName + '-remaining',
           size: remainSize
         });
@@ -245,7 +245,7 @@ Profiler.prototype.accumulate_ = function(
         model.children.push(retVal.model);
 
         if (size > retVal.totalSize) {
-          model.children.push({
+          retVal.model.children.push({
             name: categoryName + '-remaining',
             size: size - retVal.totalSize
           });

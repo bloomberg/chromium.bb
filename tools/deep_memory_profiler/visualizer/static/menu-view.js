@@ -64,7 +64,7 @@ MenuView.prototype.redraw_ = function(models) {
         if (index === -1)
           left.children.push(child);
         else
-          merge(child, left.children[index]);
+          merge(left.children[index], child);
       });
     }
   }
