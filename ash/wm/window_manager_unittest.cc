@@ -750,6 +750,8 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }
 
+#if defined(OS_CHROMEOS)
+// A keypress only hides the cursor on ChromeOS (crbug.com/304296).
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   aura::test::EventGenerator& generator = GetEventGenerator();
   views::corewm::CursorManager* cursor_manager =
@@ -833,5 +835,6 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   EXPECT_FALSE(observer_b.did_visibility_change());
   EXPECT_TRUE(observer_a.is_cursor_visible());
 }
+#endif
 
 }  // namespace ash

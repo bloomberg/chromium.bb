@@ -23,6 +23,7 @@ namespace corewm {
 namespace {
 
 bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) {
+#if defined(OS_CHROMEOS)
   // All alt and control key commands are ignored.
   if (event.IsAltDown() || event.IsControlDown())
     return false;
@@ -64,6 +65,9 @@ bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) {
     return false;
 
   return true;
+#else  // !defined(OS_CHROMEOS)
+  return false;
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace

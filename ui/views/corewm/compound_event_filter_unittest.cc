@@ -48,6 +48,8 @@ class ConsumeGestureEventFilter : public ui::EventHandler {
 
 typedef aura::test::AuraTestBase CompoundEventFilterTest;
 
+#if defined(OS_CHROMEOS)
+// A keypress only hides the cursor on ChromeOS (crbug.com/304296).
 TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
   scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
@@ -93,6 +95,7 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 }
+#endif
 
 TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
