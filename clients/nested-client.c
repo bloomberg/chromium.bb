@@ -347,10 +347,12 @@ main(int argc, char **argv)
 	if (getenv("WAYLAND_SOCKET") == NULL) {
 		fprintf(stderr,
 			"must be run by nested, don't run standalone\n");
-		return -1;
+		return EXIT_FAILURE;
 	}
 
 	client = nested_client_create();
+	if (client == NULL)
+		return EXIT_FAILURE;
 
 	while (ret != -1)
 		ret = wl_display_dispatch(client->display);
