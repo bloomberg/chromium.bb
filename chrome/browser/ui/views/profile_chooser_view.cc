@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profile_chooser_view.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -12,6 +13,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/user_manager_view.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -27,6 +30,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -269,6 +273,16 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   views::GridLayout* layout = CreateSingleColumnLayout(this);
   layout->set_minimum_size(gfx::Size(kMinMenuWidth, 0));
 
+  if (view_to_display == GAIA_SIGNIN_VIEW) {
+    Profile* profile = browser_->profile();
+    views::WebView* web_view = new views::WebView(profile);
+    web_view->LoadInitialURL(GURL(chrome::kChromeUIInlineLoginURL));
+    layout->StartRow(1, 0);
+    layout->AddView(web_view);
+    Layout();
+    return;
+  }
+
   // Separate items into active and alternatives.
   Indexes other_profiles;
   bool is_guest_view = true;
@@ -357,8 +371,13 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   } else if (sender == signout_current_profile_link_) {
     avatar_menu_->BeginSignOut();
   } else if (sender == signin_current_profile_link_) {
-    GURL page = signin::GetPromoURL(signin::SOURCE_MENU, false);
-    chrome::ShowSingletonTab(browser_, page);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableInlineSignin)) {
+      ShowView(GAIA_SIGNIN_VIEW, avatar_menu_.get());
+    } else {
+      GURL page = signin::GetPromoURL(signin::SOURCE_MENU, false);
+      chrome::ShowSingletonTab(browser_, page);
+    }
   } else {
     DCHECK(sender == change_photo_link_);
     avatar_menu_->EditProfile(

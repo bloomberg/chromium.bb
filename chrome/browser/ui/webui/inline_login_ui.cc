@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_cookie_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -217,6 +218,10 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(profile, CreateWebUIDataSource());
 
   web_ui->AddMessageHandler(new InlineLoginUIHandler(profile));
+  // Required for intercepting extension function calls when the page is loaded
+  // in a bubble (not a full tab, thus tab helpers are not registered
+  // automatically).
+  extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
 }
 
 InlineLoginUI::~InlineLoginUI() {}

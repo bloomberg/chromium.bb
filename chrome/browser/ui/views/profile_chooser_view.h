@@ -64,8 +64,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Different views that can be displayed in the bubble.
   enum BubbleViewMode {
-    PROFILE_CHOOSER_VIEW,    // Displays a "fast profile switcher" view.
-    ACCOUNT_MANAGEMENT_VIEW  // Displays a list of accounts for the active user.
+    PROFILE_CHOOSER_VIEW,     // Shows a "fast profile switcher" view.
+    ACCOUNT_MANAGEMENT_VIEW,  // Shows a list of accounts for the active user.
+    GAIA_SIGNIN_VIEW          // Shows a web view with Gaia signin page.
   };
 
   ProfileChooserView(views::View* anchor_view,
