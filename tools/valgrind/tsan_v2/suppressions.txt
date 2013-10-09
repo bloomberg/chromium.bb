@@ -140,3 +140,6 @@ race:net::URLFetcherCore::Stop
 
 # http://crbug.com/304178
 race:localtime_r
+
+# http://crbug.com/305459
+race:base::debug::TraceEventTestFixture_TraceContinuousSampling_Test::TestBody
