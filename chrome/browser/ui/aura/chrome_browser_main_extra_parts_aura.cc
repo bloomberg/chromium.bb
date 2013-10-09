@@ -51,6 +51,7 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 #if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
+  aura::Env::CreateInstance();
   active_desktop_monitor_.reset(new ActiveDesktopMonitor(GetInitialDesktop()));
 #endif
 #endif

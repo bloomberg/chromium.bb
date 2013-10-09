@@ -65,7 +65,7 @@ void AuraTestHelper::SetUp() {
   bool allow_test_contexts = true;
   ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
 
-  Env::GetInstance();
+  Env::CreateInstance();
   test_screen_.reset(TestScreen::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   root_window_.reset(test_screen_->CreateRootWindowForPrimaryDisplay());

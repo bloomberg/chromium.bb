@@ -115,7 +115,7 @@ int DemoMain() {
   bool allow_test_contexts = false;
   ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
 
-  aura::Env::GetInstance();
+  aura::Env::CreateInstance();
   scoped_ptr<aura::TestScreen> test_screen(aura::TestScreen::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());
   scoped_ptr<aura::RootWindow> root_window(

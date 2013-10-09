@@ -254,6 +254,7 @@ class BubbleWidgetClosingTest : public BubbleDelegateTest,
  public:
   BubbleWidgetClosingTest() : bubble_destroyed_(false) {
 #if defined(USE_AURA)
+    aura::Env::CreateInstance();
     loop_.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
 #endif
   }

@@ -194,6 +194,10 @@
 #include "ui/views/focus/accelerator_handler.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -1465,6 +1469,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
     RegisterComponentsForUpdate(parsed_command_line());
+
+#if defined(USE_AURA)
+  // Env creates the compositor. Aura widgets need the compositor to be created
+  // before they can be initialized by the browser.
+  aura::Env::CreateInstance();
+#endif
 
   if (browser_creator_->Start(parsed_command_line(), base::FilePath(),
                               profile_, last_opened_profiles, &result_code)) {

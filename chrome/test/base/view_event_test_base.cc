@@ -126,6 +126,10 @@ void ViewEventTestBase::SetUp() {
       ->SetActiveUserSessionStarted(true);
   context = ash::Shell::GetPrimaryRootWindow();
 #endif  // !OS_WIN
+#if defined(USE_AURA)
+  aura::Env::CreateInstance();
+#endif
+
 #elif defined(USE_AURA)
   // Instead of using the ash shell, use an AuraTestHelper to create and manage
   // the test screen.
@@ -158,8 +162,11 @@ void ViewEventTestBase::TearDown() {
   // Ash Shell can't just live on its own without a browser process, we need to
   // also shut down the message center.
   message_center::MessageCenter::Shutdown();
+#endif
+#if defined(USE_AURA)
   aura::Env::DeleteInstance();
 #endif
+
 #elif defined(USE_AURA)
   aura_test_helper_->TearDown();
 #endif

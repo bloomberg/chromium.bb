@@ -18,6 +18,10 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 namespace extensions {
 
 using content::BrowserThread;
@@ -32,9 +36,17 @@ TestExtensionEnvironment::TestExtensionEnvironment()
   file_thread_.Start();
   file_blocking_thread_.Start();
   io_thread_.StartIOThread();
+
+#if defined(USE_AURA)
+  aura::Env::CreateInstance();
+#endif
 }
 
 TestExtensionEnvironment::~TestExtensionEnvironment() {
+#if defined(USE_AURA)
+  aura::Env::DeleteInstance();
+#endif
+
   profile_.reset();
   // Delete the profile, and then cycle the message loop to clear
   // out delayed deletions.

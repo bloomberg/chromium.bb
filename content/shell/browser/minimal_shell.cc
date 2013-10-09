@@ -5,6 +5,7 @@
 #include "content/shell/browser/minimal_shell.h"
 
 #include "ui/aura/client/default_capture_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
@@ -14,6 +15,7 @@
 namespace content {
 
 MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
+  aura::Env::CreateInstance();
   root_window_.reset(new aura::RootWindow(
       aura::RootWindow::CreateParams(
           gfx::Rect(default_window_size))));

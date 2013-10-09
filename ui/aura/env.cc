@@ -39,12 +39,18 @@ Env::~Env() {
   ui::Compositor::Terminate();
 }
 
-// static
-Env* Env::GetInstance() {
+//static
+void Env::CreateInstance() {
   if (!instance_) {
     instance_ = new Env;
     instance_->Init();
   }
+}
+
+// static
+Env* Env::GetInstance() {
+  DCHECK(instance_) << "Env::CreateInstance must be called before getting "
+                       "the instance of Env.";
   return instance_;
 }
 
@@ -62,6 +68,8 @@ void Env::RemoveObserver(EnvObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
+    !defined(USE_GTK_MESSAGE_PUMP)
 base::MessageLoop::Dispatcher* Env::GetDispatcher() {
 #if defined(USE_X11)
   return base::MessagePumpX11::Current();
@@ -69,6 +77,7 @@ base::MessageLoop::Dispatcher* Env::GetDispatcher() {
   return dispatcher_.get();
 #endif
 }
+#endif
 
 void Env::RootWindowActivated(RootWindow* root_window) {
   FOR_EACH_OBSERVER(EnvObserver, observers_,
@@ -79,7 +88,8 @@ void Env::RootWindowActivated(RootWindow* root_window) {
 // Env, private:
 
 void Env::Init() {
-#if !defined(USE_X11) && !defined(USE_OZONE)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(USE_X11) && \
+    !defined(USE_OZONE)
   dispatcher_.reset(CreateDispatcher());
 #endif
 #if defined(USE_X11)

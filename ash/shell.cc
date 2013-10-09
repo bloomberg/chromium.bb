@@ -715,6 +715,11 @@ void Shell::Init() {
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
+  // Env creates the compositor. Historically it seems to have been implicitly
+  // initialized first by the ActivationController, but now that FocusController
+  // no longer does this we need to do it explicitly.
+  aura::Env::CreateInstance();
+
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal
   // windows are active.
@@ -726,10 +731,6 @@ void Shell::Init() {
   env_filter_.reset(new views::corewm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
-  // Env creates the compositor. Historically it seems to have been implicitly
-  // initialized first by the ActivationController, but now that FocusController
-  // no longer does this we need to do it explicitly.
-  aura::Env::GetInstance();
   views::corewm::FocusController* focus_controller =
       new views::corewm::FocusController(new wm::AshFocusRules);
   focus_client_.reset(focus_controller);
