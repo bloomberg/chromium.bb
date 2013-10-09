@@ -205,7 +205,6 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     : baseURL(baseURL)
     , mode(mode)
     , isHTMLDocument(false)
-    , isCSSCustomFilterEnabled(false)
     , needsSiteSpecificQuirks(false)
     , useLegacyBackgroundSizeShorthandBehavior(false)
 {
@@ -216,7 +215,6 @@ CSSParserContext::CSSParserContext(const Document& document, const KURL& baseURL
     , charset(charset)
     , mode(document.inQuirksMode() ? CSSQuirksMode : CSSStrictMode)
     , isHTMLDocument(document.isHTMLDocument())
-    , isCSSCustomFilterEnabled(document.settings() ? document.settings()->isCSSCustomFilterEnabled() : false)
     , needsSiteSpecificQuirks(document.settings() ? document.settings()->needsSiteSpecificQuirks() : false)
     , useLegacyBackgroundSizeShorthandBehavior(document.settings() ? document.settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
 {
@@ -228,7 +226,6 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.charset == b.charset
         && a.mode == b.mode
         && a.isHTMLDocument == b.isHTMLDocument
-        && a.isCSSCustomFilterEnabled == b.isCSSCustomFilterEnabled
         && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks
         && a.useLegacyBackgroundSizeShorthandBehavior == b.useLegacyBackgroundSizeShorthandBehavior;
 }
@@ -8900,7 +8897,7 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
 
             if (filterType == CSSFilterValue::CustomFilterOperation) {
                 // Make sure parsing fails if custom filters are disabled.
-                if (!m_context.isCSSCustomFilterEnabled)
+                if (!RuntimeEnabledFeatures::cssCustomFilterEnabled())
                     return 0;
 
                 RefPtr<CSSFilterValue> filterValue = parseCustomFilterFunction(value);

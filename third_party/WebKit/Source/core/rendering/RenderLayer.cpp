@@ -5304,7 +5304,7 @@ bool RenderLayer::isCSSCustomFilterEnabled() const
 {
     // We only want to enable shaders if WebGL is also enabled on this platform.
     const Settings* settings = renderer()->document().settings();
-    return settings && settings->isCSSCustomFilterEnabled() && settings->webGLEnabled();
+    return settings && RuntimeEnabledFeatures::cssCustomFilterEnabled() && settings->webGLEnabled();
 }
 
 FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)

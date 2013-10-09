@@ -21,6 +21,7 @@ AuthorShadowDOMForAnyElement
 Crypto status=experimental
 CSSAnimationUnprefixed status=experimental
 CSSCompositing status=experimental
+CSSCustomFilter status=experimental
 CSSExclusions status=experimental
 CSSGridLayout status=experimental
 CSSMaskSourceType status=experimental

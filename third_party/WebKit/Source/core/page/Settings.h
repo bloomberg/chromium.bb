@@ -136,9 +136,6 @@ public:
     void setUserStyleSheetLocation(const KURL&);
     const KURL& userStyleSheetLocation() const { return m_userStyleSheetLocation; }
 
-    void setCSSCustomFilterEnabled(bool enabled) { m_isCSSCustomFilterEnabled = enabled; }
-    bool isCSSCustomFilterEnabled() const { return m_isCSSCustomFilterEnabled; }
-
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
 
@@ -183,7 +180,6 @@ private:
     bool m_areImagesEnabled : 1;
     bool m_arePluginsEnabled : 1;
     bool m_isScriptEnabled : 1;
-    bool m_isCSSCustomFilterEnabled : 1;
     bool m_dnsPrefetchingEnabled : 1;
 
     bool m_touchEventEmulationEnabled : 1;

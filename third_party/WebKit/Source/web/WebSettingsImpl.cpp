@@ -385,11 +385,6 @@ void WebSettingsImpl::setRegionBasedColumnsEnabled(bool enabled)
     m_settings->setRegionBasedColumnsEnabled(enabled);
 }
 
-void WebSettingsImpl::setExperimentalCSSCustomFilterEnabled(bool enabled)
-{
-    m_settings->setCSSCustomFilterEnabled(enabled);
-}
-
 void WebSettingsImpl::setOpenGLMultisamplingEnabled(bool enabled)
 {
     m_settings->setOpenGLMultisamplingEnabled(enabled);

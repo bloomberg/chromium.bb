@@ -94,7 +94,6 @@ public:
     virtual void setEditingBehavior(EditingBehavior);
     virtual void setEnableScrollAnimator(bool);
     virtual void setEnableTouchAdjustment(bool);
-    virtual void setExperimentalCSSCustomFilterEnabled(bool);
     virtual void setRegionBasedColumnsEnabled(bool);
     virtual void setExperimentalWebGLEnabled(bool);
     virtual void setExperimentalWebSocketEnabled(bool);

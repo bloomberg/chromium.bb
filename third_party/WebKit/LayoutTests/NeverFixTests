@@ -102,3 +102,6 @@ media/stable [ WontFix ]
 
 # Only run fake-Android tests on Linux
 [ Mac Win ] virtual/android [ WontFix ]
+
+# We only run it through the virtual stable test suite.
+webexposed/stableOnly [ WontFix ]

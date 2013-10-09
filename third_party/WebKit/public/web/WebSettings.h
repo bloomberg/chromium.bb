@@ -101,7 +101,6 @@ public:
     virtual void setEditingBehavior(EditingBehavior) = 0;
     virtual void setEnableScrollAnimator(bool) = 0;
     virtual void setEnableTouchAdjustment(bool) = 0;
-    virtual void setExperimentalCSSCustomFilterEnabled(bool) = 0;
     virtual void setRegionBasedColumnsEnabled(bool) = 0;
     virtual void setExperimentalWebGLEnabled(bool) = 0;
     virtual void setExperimentalWebSocketEnabled(bool) = 0;
@@ -194,6 +193,7 @@ public:
     void setFixedElementsLayoutRelativeToFrame(bool) { }
     void setInitializeAtMinimumPageScale(bool enabled) { setLoadWithOverviewMode(enabled); }
     void setCSSStickyPositionEnabled(bool) { }
+    void setExperimentalCSSCustomFilterEnabled(bool) { }
 
 protected:
     ~WebSettings() { }
