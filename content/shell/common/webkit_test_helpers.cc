@@ -112,6 +112,7 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
 #if defined(OS_ANDROID)
   prefs->text_autosizing_enabled = false;
 #endif
+  prefs->viewport_enabled = false;
 }
 
 base::FilePath GetWebKitRootDirFilePath() {
