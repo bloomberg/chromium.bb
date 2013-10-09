@@ -53,7 +53,8 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   BookmarkMenuDelegate(Browser* browser,
                        content::PageNavigator* navigator,
                        views::Widget* parent,
-                       int first_menu_id);
+                       int first_menu_id,
+                       int max_menu_id);
   virtual ~BookmarkMenuDelegate();
 
   // Creates the menus from the model.
@@ -129,6 +130,9 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   virtual void DidRemoveBookmarks() OVERRIDE;
 
  private:
+  friend class BookmarkMenuDelegateTest;
+  FRIEND_TEST_ALL_PREFIXES(BookmarkMenuDelegateTest, MenuIdRange);
+
   typedef std::map<int, const BookmarkNode*> MenuIDToNodeMap;
   typedef std::map<const BookmarkNode*, views::MenuItemView*> NodeToMenuMap;
 
@@ -157,6 +161,10 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
                  int start_child_index,
                  views::MenuItemView* menu,
                  int* next_menu_id);
+
+  // Returns true if |menu_id_| is outside the range of minimum and maximum menu
+  // ID's allowed.
+  bool IsOutsideMenuIdRange(int menu_id) const;
 
   Browser* browser_;
   Profile* profile_;
@@ -189,6 +197,10 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
 
   // ID of the next menu item.
   int next_menu_id_;
+
+  // Minimum and maximum ID's to use for menu items.
+  const int min_menu_id_;
+  const int max_menu_id_;
 
   views::MenuDelegate* real_delegate_;
 
