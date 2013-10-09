@@ -35,9 +35,11 @@ class WebRTCIdentityStoreBackend
                               const std::string& private_key)>
       FindIdentityCallback;
 
-  // No data is saved on disk if |path| is empty.
+  // No data is saved on disk if |path| is empty. Identites older than
+  // |validity_period| will be removed lazily.
   WebRTCIdentityStoreBackend(const base::FilePath& path,
-                             quota::SpecialStoragePolicy* policy);
+                             quota::SpecialStoragePolicy* policy,
+                             base::TimeDelta validity_period);
 
   // Finds the identity with |origin|, |identity_name|, and |common_name| from
   // the DB.
@@ -77,6 +79,10 @@ class WebRTCIdentityStoreBackend
                      base::Time delete_end,
                      const base::Closure& callback);
 
+  // Changes the validity period. Should be called before the database is
+  // loaded into memory.
+  void SetValidityPeriodForTesting(base::TimeDelta validity_period);
+
  private:
   friend class base::RefCountedThreadSafe<WebRTCIdentityStoreBackend>;
   class SqlLiteStorage;
@@ -95,6 +101,9 @@ class WebRTCIdentityStoreBackend
 
   void OnLoaded(scoped_ptr<IdentityMap> out_map);
 
+
+  // Identities expires after |validity_period_|.
+  base::TimeDelta validity_period_;
   // In-memory copy of the identities.
   IdentityMap identities_;
   // "Find identity" requests waiting for the DB to load.
