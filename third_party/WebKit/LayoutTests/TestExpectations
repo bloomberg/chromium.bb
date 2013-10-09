@@ -324,6 +324,9 @@ crbug.com/27569 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-tripmine
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-network-error.html [ Pass Timeout ]
+
+crbug.com/305579 http/tests/security/xssAuditor/chunked-big-script.html [ Failure Pass ]
+
 crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Pass Timeout ] # Also slow
 
 # These fail because chromium's appcache is async but webkit's is not.
