@@ -333,7 +333,7 @@ err0:
 	if (len < 0)
 		return -1;
 
-	if (major(s.st_rdev) == DRM_MAJOR)
+	if (fd != -1 && major(s.st_rdev) == DRM_MAJOR)
 		wl->drm_fd = fd;
 
 	return 0;
