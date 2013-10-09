@@ -28,8 +28,10 @@ static const int64_t kMinProcessIntervalMs = 5;
 // Used to pass payload data into the video receiver.
 class LocalRtpVideoData : public RtpData {
  public:
-  explicit LocalRtpVideoData(VideoReceiver* video_receiver)
-      : video_receiver_(video_receiver),
+  explicit LocalRtpVideoData(base::TickClock* clock,
+                             VideoReceiver* video_receiver)
+      : clock_(clock),
+        video_receiver_(video_receiver),
         time_updated_(false),
         incoming_rtp_timestamp_(0) {
   }
@@ -40,12 +42,12 @@ class LocalRtpVideoData : public RtpData {
                                      const RtpCastHeader* rtp_header) OVERRIDE {
     if (!time_updated_) {
       incoming_rtp_timestamp_ = rtp_header->webrtc.header.timestamp;
-      time_incoming_packet_ = video_receiver_->clock_->NowTicks();
+      time_incoming_packet_ = clock_->NowTicks();
       time_updated_ = true;
-    } else if (video_receiver_->clock_->NowTicks() > time_incoming_packet_ +
+    } else if (clock_->NowTicks() > time_incoming_packet_ +
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenOffsetUpdatesMs)) {
       incoming_rtp_timestamp_ = rtp_header->webrtc.header.timestamp;
-      time_incoming_packet_ = video_receiver_->clock_->NowTicks();
+      time_incoming_packet_ = clock_->NowTicks();
       time_updated_ = true;
     }
     video_receiver_->IncomingRtpPacket(payload_data, payload_size, *rtp_header);
@@ -61,6 +63,7 @@ class LocalRtpVideoData : public RtpData {
   }
 
  private:
+  base::TickClock* clock_;  // Not owned by this class.
   VideoReceiver* video_receiver_;
   bool time_updated_;
   base::TimeTicks time_incoming_packet_;
@@ -106,17 +109,17 @@ class LocalRtpReceiverStatistics : public RtpReceiverStatistics {
   RtpReceiver* rtp_receiver_;
 };
 
-VideoReceiver::VideoReceiver(scoped_refptr<CastThread> cast_thread,
+VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              const VideoReceiverConfig& video_config,
                              PacedPacketSender* const packet_sender)
-      : cast_thread_(cast_thread),
+      : cast_environment_(cast_environment),
         codec_(video_config.codec),
         incoming_ssrc_(video_config.incoming_ssrc),
-        default_tick_clock_(new base::DefaultTickClock()),
-        clock_(default_tick_clock_.get()),
-        incoming_payload_callback_(new LocalRtpVideoData(this)),
+        incoming_payload_callback_(
+            new LocalRtpVideoData(cast_environment_->Clock(), this)),
         incoming_payload_feedback_(new LocalRtpVideoFeedback(this)),
-        rtp_receiver_(NULL, &video_config, incoming_payload_callback_.get()),
+        rtp_receiver_(cast_environment_->Clock(), NULL, &video_config,
+                      incoming_payload_callback_.get()),
         rtp_video_receiver_statistics_(
             new LocalRtpReceiverStatistics(&rtp_receiver_)),
         weak_factory_(this) {
@@ -126,7 +129,8 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastThread> cast_thread,
       video_config.max_frame_rate / 1000;
   DCHECK(max_unacked_frames) << "Invalid argument";
 
-  framer_.reset(new Framer(incoming_payload_feedback_.get(),
+  framer_.reset(new Framer(cast_environment_->Clock(),
+                           incoming_payload_feedback_.get(),
                            video_config.incoming_ssrc,
                            video_config.decoder_faster_than_max_frame_rate,
                            max_unacked_frames));
@@ -135,15 +139,16 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastThread> cast_thread,
   }
 
   rtcp_.reset(
-      new Rtcp(NULL,
-              packet_sender,
-              NULL,
-              rtp_video_receiver_statistics_.get(),
-              video_config.rtcp_mode,
-              base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
-              false,
-              video_config.feedback_ssrc,
-              video_config.rtcp_c_name));
+      new Rtcp(cast_environment_->Clock(),
+               NULL,
+               packet_sender,
+               NULL,
+               rtp_video_receiver_statistics_.get(),
+               video_config.rtcp_mode,
+               base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
+               false,
+               video_config.feedback_ssrc,
+               video_config.rtcp_c_name));
 
   rtcp_->SetRemoteSSRC(video_config.incoming_ssrc);
   ScheduleNextRtcpReport();
@@ -165,7 +170,7 @@ void VideoReceiver::DecodeVideoFrame(
     scoped_ptr<EncodedVideoFrame> encoded_frame,
     const base::TimeTicks& render_time) {
   // Hand the ownership of the encoded frame to the decode thread.
-  cast_thread_->PostTask(CastThread::VIDEO_DECODER, FROM_HERE,
+  cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER, FROM_HERE,
       base::Bind(&VideoReceiver::DecodeVideoFrameThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&encoded_frame),
                  render_time, callback));
@@ -176,7 +181,7 @@ void VideoReceiver::DecodeVideoFrameThread(
     scoped_ptr<EncodedVideoFrame> encoded_frame,
     const base::TimeTicks render_time,
     const VideoFrameDecodedCallback& frame_decoded_callback) {
-  DCHECK(cast_thread_->CurrentlyOn(CastThread::VIDEO_DECODER));
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_DECODER));
   DCHECK(video_decoder_);
 
   // TODO(mikhal): Allow the application to allocate this memory.
@@ -187,12 +192,12 @@ void VideoReceiver::DecodeVideoFrameThread(
 
   if (success) {
     // Frame decoded - return frame to the user via callback.
-    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
           base::Bind(frame_decoded_callback,
                      base::Passed(&video_frame), render_time));
   } else {
     VLOG(0) << "Failed to decode video frame";
-    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::GetRawVideoFrame,
             weak_factory_.GetWeakPtr(), frame_decoded_callback));
   }
@@ -204,7 +209,7 @@ void VideoReceiver::GetEncodedVideoFrame(
   scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   // TODO(pwestin): we can deprecate the timeout argument.
   if (!framer_->GetEncodedVideoFrame(now, encoded_frame.get(), &rtp_timestamp,
@@ -216,7 +221,7 @@ void VideoReceiver::GetEncodedVideoFrame(
   base::TimeTicks render_time;
   if (PullEncodedVideoFrame(rtp_timestamp, next_frame, &encoded_frame,
                             &render_time)) {
-    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(callback, base::Passed(&encoded_frame), render_time));
   } else {
     // We have a video frame; however we are missing packets and we have time
@@ -233,7 +238,7 @@ void VideoReceiver::GetEncodedVideoFrame(
 bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
     bool next_frame, scoped_ptr<EncodedVideoFrame>* encoded_frame,
     base::TimeTicks* render_time) {
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   *render_time = GetRenderTime(now, rtp_timestamp);
   base::TimeDelta min_wait_delta =
       base::TimeDelta::FromMilliseconds(kMinFramePullMs);
@@ -245,7 +250,7 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
     // will wait for 2 to arrive, however if 2 never show up this timer will hit
     // and we will pull out frame 3 for decoding and rendering.
     base::TimeDelta time_until_release = time_until_render - min_wait_delta;
-    cast_thread_->PostDelayedTask(CastThread::MAIN, FROM_HERE,
+    cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::PlayoutTimeout, weak_factory_.GetWeakPtr()),
         time_until_release);
     return false;
@@ -269,7 +274,7 @@ void VideoReceiver::PlayoutTimeout() {
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   // TODO(pwestin): we can deprecate the timeout argument.
   if (!framer_->GetEncodedVideoFrame(now, encoded_frame.get(),
@@ -286,7 +291,7 @@ void VideoReceiver::PlayoutTimeout() {
     if (!queued_encoded_callbacks_.empty()) {
       VideoFrameEncodedCallback callback = queued_encoded_callbacks_.front();
       queued_encoded_callbacks_.pop_front();
-      cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
           base::Bind(callback, base::Passed(&encoded_frame), render_time));
     }
   } else {
@@ -303,7 +308,7 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
   base::TimeTicks time_incoming_packet;
   uint32 incoming_rtp_timestamp;
 
-  if (time_offset_.InMilliseconds()) {  // was == 0
+  if (time_offset_.InMilliseconds() == 0) {
     incoming_payload_callback_->GetPacketTimeInformation(
         &time_incoming_packet, &incoming_rtp_timestamp);
 
@@ -343,7 +348,7 @@ void VideoReceiver::IncomingPacket(const uint8* packet, int length,
   } else {
     rtp_receiver_.ReceivedPacket(packet, length);
   }
-  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, callback);
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
 }
 
 void VideoReceiver::IncomingRtpPacket(const uint8* payload_data,
@@ -354,7 +359,7 @@ void VideoReceiver::IncomingRtpPacket(const uint8* payload_data,
   if (!queued_encoded_callbacks_.empty()) {
     VideoFrameEncodedCallback callback = queued_encoded_callbacks_.front();
     queued_encoded_callbacks_.pop_front();
-    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::GetEncodedVideoFrame,
             weak_factory_.GetWeakPtr(), callback));
   }
@@ -364,7 +369,7 @@ void VideoReceiver::IncomingRtpPacket(const uint8* payload_data,
 // message builder).
 void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   rtcp_->SendRtcpCast(cast_message);
-  time_last_sent_cast_message_= clock_->NowTicks();
+  time_last_sent_cast_message_= cast_environment_->Clock()->NowTicks();
 }
 
 // Send a key frame request to the sender.
@@ -378,10 +383,11 @@ void VideoReceiver::ScheduleNextCastMessage() {
   base::TimeTicks send_time;
   framer_->TimeToSendNextCastMessage(&send_time);
 
-  base::TimeDelta time_to_send = send_time - clock_->NowTicks();
+  base::TimeDelta time_to_send = send_time -
+      cast_environment_->Clock()->NowTicks();
   time_to_send = std::max(time_to_send,
       base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
-  cast_thread_->PostDelayedTask(CastThread::MAIN, FROM_HERE,
+  cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&VideoReceiver::SendNextCastMessage,
                  weak_factory_.GetWeakPtr()), time_to_send);
 }
@@ -393,13 +399,13 @@ void VideoReceiver::SendNextCastMessage() {
 
 // Schedule the next RTCP report to be sent back to the sender.
 void VideoReceiver::ScheduleNextRtcpReport() {
-  base::TimeDelta time_to_next =
-      rtcp_->TimeToSendNextRtcpReport() - clock_->NowTicks();
+  base::TimeDelta time_to_next = rtcp_->TimeToSendNextRtcpReport() -
+      cast_environment_->Clock()->NowTicks();
 
   time_to_next = std::max(time_to_next,
       base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
 
-  cast_thread_->PostDelayedTask(CastThread::MAIN, FROM_HERE,
+  cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&VideoReceiver::SendNextRtcpReport,
                 weak_factory_.GetWeakPtr()), time_to_next);
 }

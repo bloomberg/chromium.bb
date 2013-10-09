@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/audio_receiver/audio_receiver.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
-#include "media/cast/cast_thread.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/video_receiver/video_receiver.h"
 
@@ -22,7 +22,7 @@ namespace cast {
 // receivers.
 class CastReceiverImpl : public CastReceiver {
  public:
-  CastReceiverImpl(scoped_refptr<CastThread> cast_thread,
+  CastReceiverImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const AudioReceiverConfig& audio_config,
                    const VideoReceiverConfig& video_config,
                    PacketSender* const packet_sender);

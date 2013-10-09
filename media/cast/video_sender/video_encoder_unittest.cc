@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/video_sender/video_encoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,12 +94,12 @@ class VideoEncoderTest : public ::testing::Test {
 
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
-                                  task_runner_, task_runner_);
+    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+        task_runner_, task_runner_, task_runner_, task_runner_);
   }
 
   void Configure(uint8 max_unacked_frames) {
-    video_encoder_= new VideoEncoder(cast_thread_, video_config_,
+    video_encoder_= new VideoEncoder(cast_environment_, video_config_,
        max_unacked_frames);
     video_encoder_controller_ = video_encoder_.get();
   }
@@ -113,7 +113,7 @@ class VideoEncoderTest : public ::testing::Test {
   VideoEncoderController* video_encoder_controller_;
   I420VideoFrame video_frame_;
 
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
 };
 
 TEST_F(VideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {

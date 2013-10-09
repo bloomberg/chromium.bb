@@ -19,7 +19,7 @@ static const size_t kSize2 = 101;
 static const size_t kSize3 = 102;
 static const size_t kSize4 = 103;
 static const size_t kNackSize = 104;
-static const int64 kStartMillisecond = 123456789;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class PacedSenderTest : public ::testing::Test {
  protected:
@@ -32,17 +32,16 @@ class PacedSenderTest : public ::testing::Test {
 
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
-                                  task_runner_, task_runner_);
-    paced_sender_.reset(new PacedSender(cast_thread_, &mock_transport_));
-    paced_sender_->set_clock(&testing_clock_);
+    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+        task_runner_, task_runner_, task_runner_, task_runner_);
+    paced_sender_.reset(new PacedSender(cast_environment_, &mock_transport_));
   }
 
   base::SimpleTestTickClock testing_clock_;
   MockPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PacedSender> paced_sender_;
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
 };
 
 TEST_F(PacedSenderTest, PassThroughRtcp) {

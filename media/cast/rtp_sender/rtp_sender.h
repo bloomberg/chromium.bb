@@ -11,7 +11,6 @@
 #include <set>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
@@ -33,7 +32,8 @@ typedef std::map<uint8, std::set<uint16> > MissingFramesAndPackets;
 // acknowledged by the remote peer or timed out.
 class RtpSender {
  public:
-  RtpSender(const AudioSenderConfig* audio_config,
+  RtpSender(base::TickClock* clock,
+            const AudioSenderConfig* audio_config,
             const VideoSenderConfig* video_config,
             PacedPacketSender* transport);
 
@@ -51,21 +51,14 @@ class RtpSender {
 
   void RtpStatistics(const base::TimeTicks& now, RtcpSenderInfo* sender_info);
 
-  // Used for testing.
-  void set_clock(base::TickClock* clock) {
-    // TODO(pwestin): review how we pass in a clock for testing.
-    clock_ = clock;
-  }
-
  private:
   void UpdateSequenceNumber(std::vector<uint8>* packet);
 
+  base::TickClock* const clock_;  // Not owned by this class.
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
   scoped_ptr<PacketStorage> storage_;
   PacedPacketSender* transport_;
-  scoped_ptr<base::TickClock> default_tick_clock_;
-  base::TickClock* clock_;
 };
 
 }  // namespace cast

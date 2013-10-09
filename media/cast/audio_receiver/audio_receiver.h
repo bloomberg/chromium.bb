@@ -11,12 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
-#include "media/cast/cast_thread.h"
 #include "media/cast/rtcp/rtcp.h"  // RtcpCastMessage
 #include "media/cast/rtp_common/rtp_defines.h"  // RtpCastHeader
 
@@ -36,7 +35,7 @@ class RtpReceiverStatistics;
 class AudioReceiver : public base::NonThreadSafe,
                       public base::SupportsWeakPtr<AudioReceiver> {
  public:
-  AudioReceiver(scoped_refptr<CastThread> cast_thread,
+  AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                 const AudioReceiverConfig& audio_config,
                 PacedPacketSender* const packet_sender);
 
@@ -54,9 +53,6 @@ class AudioReceiver : public base::NonThreadSafe,
   // Should only be called from the main cast thread.
   void IncomingPacket(const uint8* packet, int length,
                       const base::Closure callback);
-
-  // Only used for testing.
-  void set_clock(base::TickClock* clock);
 
  protected:
   void IncomingParsedRtpPacket(const uint8* payload_data,
@@ -92,7 +88,7 @@ class AudioReceiver : public base::NonThreadSafe,
   // Actually send the next RTCP report.
   void SendNextRtcpReport();
 
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   base::WeakPtrFactory<AudioReceiver> weak_factory_;
 
   const AudioCodec codec_;
@@ -109,9 +105,6 @@ class AudioReceiver : public base::NonThreadSafe,
   base::TimeDelta time_offset_;
 
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
-
-  scoped_ptr<base::TickClock> default_tick_clock_;
-  base::TickClock* clock_;
 };
 
 }  // namespace cast

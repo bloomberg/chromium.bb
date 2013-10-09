@@ -13,7 +13,8 @@
 namespace media {
 namespace cast {
 
-RtpReceiver::RtpReceiver(const AudioReceiverConfig* audio_config,
+RtpReceiver::RtpReceiver(base::TickClock* clock,
+                         const AudioReceiverConfig* audio_config,
                          const VideoReceiverConfig* video_config,
                          RtpData* incoming_payload_callback) {
   DCHECK(incoming_payload_callback) << "Invalid argument";
@@ -30,7 +31,7 @@ RtpReceiver::RtpReceiver(const AudioReceiverConfig* audio_config,
     config.payload_type = video_config->rtp_payload_type;
     config.video_codec = video_config->codec;
   }
-  stats_.reset(new ReceiverStats());
+  stats_.reset(new ReceiverStats(clock));
   parser_.reset(new RtpParser(incoming_payload_callback, config));
 }
 

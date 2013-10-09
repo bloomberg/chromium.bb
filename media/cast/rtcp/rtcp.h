@@ -12,7 +12,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
@@ -66,7 +65,8 @@ class RtpReceiverStatistics {
 
 class Rtcp {
  public:
-  Rtcp(RtcpSenderFeedback* sender_feedback,
+  Rtcp(base::TickClock* clock,
+       RtcpSenderFeedback* sender_feedback,
        PacedPacketSender* paced_packet_sender,
        RtpSenderStatistics* rtp_sender_statistics,
        RtpReceiverStatistics* rtp_receiver_statistics,
@@ -94,10 +94,6 @@ class Rtcp {
   bool RtpTimestampInSenderTime(int frequency,
                                 uint32 rtp_timestamp,
                                 base::TimeTicks* rtp_timestamp_in_ticks) const;
-
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-  }
 
  protected:
   int CheckForWrapAround(uint32 new_timestamp,
@@ -129,6 +125,7 @@ class Rtcp {
 
   void UpdateNextTimeToSendRtcp();
 
+  base::TickClock* const clock_;  // Not owned by this class.
   const base::TimeDelta rtcp_interval_;
   const RtcpMode rtcp_mode_;
   const bool sending_media_;
@@ -160,9 +157,6 @@ class Rtcp {
   base::TimeDelta max_rtt_;
   int number_of_rtt_in_avg_;
   float avg_rtt_ms_;
-
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(Rtcp);
 };

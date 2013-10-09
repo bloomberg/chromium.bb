@@ -84,7 +84,8 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
   Rtcp* rtcp_;
 };
 
-Rtcp::Rtcp(RtcpSenderFeedback* sender_feedback,
+Rtcp::Rtcp(base::TickClock* clock,
+           RtcpSenderFeedback* sender_feedback,
            PacedPacketSender* paced_packet_sender,
            RtpSenderStatistics* rtp_sender_statistics,
            RtpReceiverStatistics* rtp_receiver_statistics,
@@ -109,7 +110,7 @@ Rtcp::Rtcp(RtcpSenderFeedback* sender_feedback,
       last_received_ntp_fraction_(0),
       min_rtt_(base::TimeDelta::FromMilliseconds(kMaxRttMs)),
       number_of_rtt_in_avg_(0),
-      clock_(&default_tick_clock_) {
+      clock_(clock) {
   rtcp_receiver_.reset(new RtcpReceiver(sender_feedback,
                                         receiver_feedback_.get(),
                                         rtt_feedback_.get(),

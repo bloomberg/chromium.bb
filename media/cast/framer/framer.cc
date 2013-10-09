@@ -11,13 +11,14 @@ namespace cast {
 
 typedef FrameList::const_iterator ConstFrameIterator;
 
-Framer::Framer(RtpPayloadFeedback* incoming_payload_feedback,
+Framer::Framer(base::TickClock* clock,
+               RtpPayloadFeedback* incoming_payload_feedback,
                uint32 ssrc,
                bool decoder_faster_than_max_frame_rate,
                int max_unacked_frames)
-    : decoder_faster_than_max_frame_rate_(decoder_faster_than_max_frame_rate),
-      clock_(&default_tick_clock_),
-      cast_msg_builder_(new CastMessageBuilder(incoming_payload_feedback,
+    : clock_(clock),
+      decoder_faster_than_max_frame_rate_(decoder_faster_than_max_frame_rate),
+      cast_msg_builder_(new CastMessageBuilder(clock, incoming_payload_feedback,
           &frame_id_map_, ssrc, decoder_faster_than_max_frame_rate,
           max_unacked_frames)) {
   DCHECK(incoming_payload_feedback) << "Invalid argument";

@@ -16,13 +16,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 
 namespace media {
 namespace cast {
 
 // This Class is thread safe.
-class FrameInput : public base::RefCountedThreadSafe<PacketReceiver> {
+class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
  public:
   // The video_frame must be valid until the callback is called.
   // The callback is called from the main cast thread as soon as
@@ -69,13 +69,13 @@ class FrameInput : public base::RefCountedThreadSafe<PacketReceiver> {
 class CastSender {
  public:
   static CastSender* CreateCastSender(
-      scoped_refptr<CastThread> cast_thread,
+      scoped_refptr<CastEnvironment> cast_environment,
       const AudioSenderConfig& audio_config,
       const VideoSenderConfig& video_config,
       VideoEncoderController* const video_encoder_controller,
       PacketSender* const packet_sender);
 
-  virtual ~CastSender() {};
+  virtual ~CastSender() {}
 
   // All audio and video frames for the session should be inserted to this
   // object.

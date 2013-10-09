@@ -16,7 +16,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 
 namespace media {
 namespace cast {
@@ -39,7 +39,8 @@ class PacedSender : public PacedPacketSender,
                     public base::NonThreadSafe,
                     public base::SupportsWeakPtr<PacedSender> {
  public:
-  PacedSender(scoped_refptr<CastThread> cast_thread, PacketSender* transport);
+  PacedSender(scoped_refptr<CastEnvironment> cast_environment,
+              PacketSender* transport);
   virtual ~PacedSender();
 
   virtual bool SendPacket(const std::vector<uint8>& packet,
@@ -49,10 +50,6 @@ class PacedSender : public PacedPacketSender,
                             int num_of_packets) OVERRIDE;
 
   virtual bool SendRtcpPacket(const std::vector<uint8>& packet) OVERRIDE;
-
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-  }
 
  protected:
   // Schedule a delayed task on the main cast thread when it's time to send the
@@ -68,16 +65,13 @@ class PacedSender : public PacedPacketSender,
 
   typedef std::list<std::vector<uint8> > PacketList;
 
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   int burst_size_;
   int packets_sent_in_burst_;
   base::TimeTicks time_last_process_;
   PacketList packet_list_;
   PacketList resend_packet_list_;
   PacketSender* transport_;
-
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* clock_;
 
   base::WeakPtrFactory<PacedSender> weak_factory_;
 

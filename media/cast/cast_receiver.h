@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 
 namespace media {
 namespace cast {
@@ -62,7 +62,7 @@ class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver>{
 class CastReceiver {
  public:
   static CastReceiver* CreateCastReceiver(
-      scoped_refptr<CastThread> cast_thread,
+      scoped_refptr<CastEnvironment> cast_environment,
       const AudioReceiverConfig& audio_config,
       const VideoReceiverConfig& video_config,
       PacketSender* const packet_sender);

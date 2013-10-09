@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_CAST_THREAD_H_
-#define MEDIA_CAST_CAST_THREAD_H_
+#ifndef MEDIA_CAST_CAST_ENVIRONMENT_H_
+#define MEDIA_CAST_CAST_ENVIRONMENT_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 
 namespace media {
 namespace cast {
 
-class CastThread : public base::RefCountedThreadSafe<CastThread> {
+class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
  public:
   // An enumeration of the cast threads.
   enum ThreadId {
@@ -32,11 +33,12 @@ class CastThread : public base::RefCountedThreadSafe<CastThread> {
     VIDEO_DECODER,
   };
 
-  CastThread(scoped_refptr<base::TaskRunner> main_thread_proxy,
-             scoped_refptr<base::TaskRunner> audio_encode_thread_proxy,
-             scoped_refptr<base::TaskRunner> audio_decode_thread_proxy,
-             scoped_refptr<base::TaskRunner> video_encode_thread_proxy,
-             scoped_refptr<base::TaskRunner> video_decode_thread_proxy);
+  CastEnvironment(base::TickClock* clock,
+                  scoped_refptr<base::TaskRunner> main_thread_proxy,
+                  scoped_refptr<base::TaskRunner> audio_encode_thread_proxy,
+                  scoped_refptr<base::TaskRunner> audio_decode_thread_proxy,
+                  scoped_refptr<base::TaskRunner> video_encode_thread_proxy,
+                  scoped_refptr<base::TaskRunner> video_decode_thread_proxy);
 
   // These are the same methods in message_loop.h, but are guaranteed to either
   // get posted to the MessageLoop if it's still alive, or be deleted otherwise.
@@ -54,25 +56,28 @@ class CastThread : public base::RefCountedThreadSafe<CastThread> {
 
   bool CurrentlyOn(ThreadId identifier);
 
+ base::TickClock* Clock();
+
  protected:
-  virtual ~CastThread();
+  virtual ~CastEnvironment();
 
  private:
-  friend class base::RefCountedThreadSafe<CastThread>;
+  friend class base::RefCountedThreadSafe<CastEnvironment>;
 
   scoped_refptr<base::TaskRunner> GetMessageTaskRunnerForThread(
       ThreadId identifier);
 
+  base::TickClock* const clock_;  // Not owned by this class.
   scoped_refptr<base::TaskRunner> main_thread_proxy_;
   scoped_refptr<base::TaskRunner> audio_encode_thread_proxy_;
   scoped_refptr<base::TaskRunner> audio_decode_thread_proxy_;
   scoped_refptr<base::TaskRunner> video_encode_thread_proxy_;
   scoped_refptr<base::TaskRunner> video_decode_thread_proxy_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastThread);
+  DISALLOW_COPY_AND_ASSIGN(CastEnvironment);
 };
 
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_CAST_THREAD_H_
+#endif  // MEDIA_CAST_CAST_ENVIRONMENT_H_

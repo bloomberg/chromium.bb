@@ -13,7 +13,7 @@ namespace cast {
 static const uint32 kMaxBitrateConfigured = 5000000;
 static const uint32 kMinBitrateConfigured = 500000;
 static const uint32 kStartBitrate = 2000000;
-static const int64 kStartMillisecond = 123456789;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 static const int64 kRttMs = 20;
 static const int64 kAckRateMs = 33;
 static const int64 kNackRateMs = 10;
@@ -21,13 +21,13 @@ static const int64 kNackRateMs = 10;
 class CongestionControlTest : public ::testing::Test {
  protected:
   CongestionControlTest()
-      : congestion_control_(kDefaultCongestionControlBackOff,
+      : congestion_control_(&testing_clock_,
+                            kDefaultCongestionControlBackOff,
                             kMaxBitrateConfigured,
                             kMinBitrateConfigured,
                             kStartBitrate) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    congestion_control_.set_clock(&testing_clock_);
   }
 
   base::SimpleTestTickClock testing_clock_;

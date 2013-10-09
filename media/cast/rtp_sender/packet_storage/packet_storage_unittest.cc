@@ -4,13 +4,11 @@
 
 #include "media/cast/rtp_sender/packet_storage/packet_storage.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
 #include <vector>
 
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 namespace cast {
@@ -19,18 +17,17 @@ static const int kMaxDeltaStoredMs = 500;
 static const base::TimeDelta kDeltaBetweenFrames =
     base::TimeDelta::FromMilliseconds(33);
 
-static const int64 kStartMillisecond = 123456789;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class PacketStorageTest : public ::testing::Test {
  protected:
-  PacketStorageTest() : packet_storage_(kMaxDeltaStoredMs) {
+  PacketStorageTest() : packet_storage_(&testing_clock_, kMaxDeltaStoredMs) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    packet_storage_.set_clock(&testing_clock_);
   }
 
-  PacketStorage packet_storage_;
   base::SimpleTestTickClock testing_clock_;
+  PacketStorage packet_storage_;
 };
 
 TEST_F(PacketStorageTest, TimeOut) {

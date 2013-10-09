@@ -22,7 +22,8 @@ typedef std::map<uint8, base::TimeTicks> TimeLastNackMap;
 
 class CastMessageBuilder {
  public:
-  CastMessageBuilder(RtpPayloadFeedback* incoming_payload_feedback,
+  CastMessageBuilder(base::TickClock* clock,
+                     RtpPayloadFeedback* incoming_payload_feedback,
                      FrameIdMap* frame_id_map,
                      uint32 media_ssrc,
                      bool decoder_faster_than_max_frame_rate,
@@ -34,15 +35,12 @@ class CastMessageBuilder {
   void UpdateCastMessage();
   void Reset();
 
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-  }
-
  private:
   bool UpdateAckMessage();
   void BuildPacketList();
   bool UpdateCastMessageInternal(RtcpCastMessage* message);
 
+  base::TickClock* const clock_;  // Not owned by this class.
   RtpPayloadFeedback* const cast_feedback_;
 
   // CastMessageBuilder has only const access to the frame id mapper.
@@ -60,9 +58,6 @@ class CastMessageBuilder {
   bool slowing_down_ack_;
   bool acked_last_frame_;
   uint8 last_acked_frame_id_;
-
-  scoped_ptr<base::TickClock> default_tick_clock_;
-  base::TickClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMessageBuilder);
 };

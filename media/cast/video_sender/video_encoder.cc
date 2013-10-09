@@ -10,11 +10,11 @@
 namespace media {
 namespace cast {
 
-VideoEncoder::VideoEncoder(scoped_refptr<CastThread> cast_thread,
+VideoEncoder::VideoEncoder(scoped_refptr<CastEnvironment> cast_environment,
                            const VideoSenderConfig& video_config,
                            uint8 max_unacked_frames)
     : video_config_(video_config),
-      cast_thread_(cast_thread),
+      cast_environment_(cast_environment),
       skip_next_frame_(false),
       skip_count_(0) {
   if (video_config.codec == kVp8) {
@@ -43,7 +43,7 @@ bool VideoEncoder::EncodeVideoFrame(
     return false;
   }
 
-  cast_thread_->PostTask(CastThread::VIDEO_ENCODER, FROM_HERE,
+  cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER, FROM_HERE,
       base::Bind(&VideoEncoder::EncodeVideoFrameEncoderThread, this,
           video_frame, capture_time, dynamic_config_, frame_encoded_callback,
           frame_release_callback));
@@ -69,7 +69,8 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
   bool retval = vp8_encoder_->Encode(*video_frame, encoded_frame.get());
 
   // We are done with the video frame release it.
-  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, frame_release_callback);
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+                              frame_release_callback);
 
   if (!retval) {
     VLOG(1) << "Encoding failed";
@@ -79,7 +80,7 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
     VLOG(1) << "Encoding resulted in an empty frame";
     return;
   }
-  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(frame_encoded_callback,
           base::Passed(&encoded_frame), capture_time));
 }

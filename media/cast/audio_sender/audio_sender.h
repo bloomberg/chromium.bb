@@ -10,11 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_sender/rtp_sender.h"
 
@@ -31,7 +30,7 @@ class PacedPacketSender;
 class AudioSender : public base::NonThreadSafe,
                     public base::SupportsWeakPtr<AudioSender> {
  public:
-  AudioSender(scoped_refptr<CastThread> cast_thread,
+  AudioSender(scoped_refptr<CastEnvironment> cast_environment,
               const AudioSenderConfig& audio_config,
               PacedPacketSender* const paced_packet_sender);
 
@@ -57,13 +56,6 @@ class AudioSender : public base::NonThreadSafe,
   void IncomingRtcpPacket(const uint8* packet, int length,
                           const base::Closure callback);
 
-  // Only used for testing.
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-    rtcp_.set_clock(clock);
-    rtp_sender_.set_clock(clock);
-  }
-
  protected:
   void SendEncodedAudioFrame(scoped_ptr<EncodedAudioFrame> audio_frame,
                              const base::TimeTicks& recorded_time);
@@ -77,13 +69,10 @@ class AudioSender : public base::NonThreadSafe,
   void ScheduleNextRtcpReport();
   void SendRtcpReport();
 
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* clock_;
-
   base::WeakPtrFactory<AudioSender> weak_factory_;
 
   const uint32 incoming_feedback_ssrc_;
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<AudioEncoder> audio_encoder_;
   RtpSender rtp_sender_;
   scoped_ptr<LocalRtpSenderStatistics> rtp_audio_sender_statistics_;

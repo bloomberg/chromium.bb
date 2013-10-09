@@ -12,13 +12,13 @@
 namespace media {
 namespace cast {
 
-static const int64 kStartMillisecond = 123456789;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 static const uint32 kStdTimeIncrementMs = 33;
 
 class ReceiverStatsTest : public ::testing::Test {
  protected:
   ReceiverStatsTest()
-      : stats_(),
+      : stats_(&testing_clock_),
         rtp_header_(),
         fraction_lost_(0),
         cumulative_lost_(0),
@@ -27,7 +27,6 @@ class ReceiverStatsTest : public ::testing::Test {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     start_time_ =  testing_clock_.NowTicks();
-    stats_.set_clock(&testing_clock_);
     delta_increments_ = base::TimeDelta::FromMilliseconds(kStdTimeIncrementMs);
   }
   virtual ~ReceiverStatsTest() {}

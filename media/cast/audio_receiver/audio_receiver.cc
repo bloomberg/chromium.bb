@@ -48,11 +48,6 @@ class LocalRtpAudioData : public RtpData {
     *incoming_rtp_timestamp = first_incoming_rtp_timestamp_;
   }
 
-  // Only used for testing.
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-  }
-
  private:
   AudioReceiver* audio_receiver_;
   base::TimeTicks time_first_incoming_packet_;
@@ -96,61 +91,54 @@ class LocalRtpReceiverStatistics : public RtpReceiverStatistics {
   RtpReceiver* rtp_receiver_;
 };
 
-
-AudioReceiver::AudioReceiver(scoped_refptr<CastThread> cast_thread,
+AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              const AudioReceiverConfig& audio_config,
                              PacedPacketSender* const packet_sender)
-    : cast_thread_(cast_thread),
+    : cast_environment_(cast_environment),
       codec_(audio_config.codec),
       incoming_ssrc_(audio_config.incoming_ssrc),
       frequency_(audio_config.frequency),
       audio_buffer_(),
       audio_decoder_(),
       time_offset_(),
-      default_tick_clock_(new base::DefaultTickClock()),
-      clock_(default_tick_clock_.get()),
       weak_factory_(this) {
   target_delay_delta_ =
       base::TimeDelta::FromMilliseconds(audio_config.rtp_max_delay_ms);
-  incoming_payload_callback_.reset(new LocalRtpAudioData(this, clock_));
+  incoming_payload_callback_.reset(
+      new LocalRtpAudioData(this, cast_environment->Clock()));
   incoming_payload_feedback_.reset(new LocalRtpAudioFeedback(this));
   if (audio_config.use_external_decoder) {
-    audio_buffer_.reset(new Framer(incoming_payload_feedback_.get(),
+    audio_buffer_.reset(new Framer(cast_environment->Clock(),
+                                   incoming_payload_feedback_.get(),
                                    audio_config.incoming_ssrc,
                                    true,
                                    0));
   } else {
     audio_decoder_ = new AudioDecoder(audio_config);
   }
-  rtp_receiver_.reset(new RtpReceiver(&audio_config,
-                                  NULL,
-                                  incoming_payload_callback_.get()));
+  rtp_receiver_.reset(new RtpReceiver(cast_environment->Clock(),
+                                      &audio_config,
+                                      NULL,
+                                      incoming_payload_callback_.get()));
   rtp_audio_receiver_statistics_.reset(
       new LocalRtpReceiverStatistics(rtp_receiver_.get()));
   base::TimeDelta rtcp_interval_delta =
       base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval);
-  rtcp_.reset(new Rtcp(NULL,
-                   packet_sender,
-                   NULL,
-                   rtp_audio_receiver_statistics_.get(),
-                   audio_config.rtcp_mode,
-                   rtcp_interval_delta,
-                   false,
-                   audio_config.feedback_ssrc,
-                   audio_config.rtcp_c_name));
+  rtcp_.reset(new Rtcp(cast_environment->Clock(),
+                       NULL,
+                       packet_sender,
+                       NULL,
+                       rtp_audio_receiver_statistics_.get(),
+                       audio_config.rtcp_mode,
+                       rtcp_interval_delta,
+                       false,
+                       audio_config.feedback_ssrc,
+                       audio_config.rtcp_c_name));
   rtcp_->SetRemoteSSRC(audio_config.incoming_ssrc);
   ScheduleNextRtcpReport();
 }
 
 AudioReceiver::~AudioReceiver() {}
-
-// Only used for testing.
-// TODO(pwestin): Revisit all of these.
-void AudioReceiver::set_clock(base::TickClock* clock) {
-  clock_ = clock;
-  rtcp_->set_clock(clock);
-  incoming_payload_callback_->set_clock(clock);
-}
 
 void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
                                             int payload_size,
@@ -170,7 +158,7 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
     }
     AudioFrameEncodedCallback callback = queued_encoded_callbacks_.front();
     queued_encoded_callbacks_.pop_front();
-    cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&AudioReceiver::GetEncodedAudioFrame,
             weak_factory_.GetWeakPtr(), callback));
   }
@@ -180,16 +168,19 @@ void AudioReceiver::GetRawAudioFrame(int number_of_10ms_blocks,
       int desired_frequency, const AudioFrameDecodedCallback& callback) {
   DCHECK(audio_decoder_) << "Invalid function call in this configuration";
 
-  cast_thread_->PostTask(CastThread::AUDIO_DECODER, FROM_HERE, base::Bind(
-      &AudioReceiver::DecodeAudioFrameThread, weak_factory_.GetWeakPtr(),
-      number_of_10ms_blocks, desired_frequency, callback));
+  cast_environment_->PostTask(CastEnvironment::AUDIO_DECODER, FROM_HERE,
+      base::Bind(&AudioReceiver::DecodeAudioFrameThread,
+                 weak_factory_.GetWeakPtr(),
+                 number_of_10ms_blocks,
+                 desired_frequency,
+                 callback));
 }
 
 void AudioReceiver::DecodeAudioFrameThread(
     int number_of_10ms_blocks,
     int desired_frequency,
     const AudioFrameDecodedCallback callback) {
-  DCHECK(cast_thread_->CurrentlyOn(CastThread::AUDIO_DECODER));
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO_DECODER));
   // TODO(mikhal): Allow the application to allocate this memory.
   scoped_ptr<PcmAudioFrame> audio_frame(new PcmAudioFrame());
 
@@ -200,12 +191,12 @@ void AudioReceiver::DecodeAudioFrameThread(
                                         &rtp_timestamp)) {
     return;
   }
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   base::TimeTicks playout_time;
   playout_time = GetPlayoutTime(now, rtp_timestamp);
 
   // Frame is ready - Send back to the main thread.
-  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(callback,
       base::Passed(&audio_frame), playout_time));
 }
@@ -221,7 +212,7 @@ void AudioReceiver::PlayoutTimeout() {
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<EncodedAudioFrame> encoded_frame(new EncodedAudioFrame());
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   if (!audio_buffer_->GetEncodedAudioFrame(now, encoded_frame.get(),
                                            &rtp_timestamp, &next_frame)) {
@@ -242,7 +233,7 @@ void AudioReceiver::GetEncodedAudioFrame(
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<EncodedAudioFrame> encoded_frame(new EncodedAudioFrame());
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   if (!audio_buffer_->GetEncodedAudioFrame(now, encoded_frame.get(),
                                            &rtp_timestamp, &next_frame)) {
@@ -261,7 +252,7 @@ void AudioReceiver::PostEncodedAudioFrame(
     uint32 rtp_timestamp,
     bool next_frame,
     scoped_ptr<EncodedAudioFrame>* encoded_frame) {
-  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   base::TimeTicks playout_time = GetPlayoutTime(now, rtp_timestamp);
   base::TimeDelta time_until_playout = now - playout_time;
   base::TimeDelta min_wait_delta =
@@ -277,7 +268,7 @@ void AudioReceiver::PostEncodedAudioFrame(
     }
 
     base::TimeDelta time_until_release = time_until_playout - min_wait_delta;
-    cast_thread_->PostDelayedTask(CastThread::MAIN, FROM_HERE,
+    cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&AudioReceiver::PlayoutTimeout, weak_factory_.GetWeakPtr()),
         time_until_release);
     return;
@@ -285,7 +276,7 @@ void AudioReceiver::PostEncodedAudioFrame(
   (*encoded_frame)->codec = codec_;
   audio_buffer_->ReleaseFrame((*encoded_frame)->frame_id);
 
-  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE,
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(callback, base::Passed(encoded_frame), playout_time));
 }
 
@@ -297,7 +288,7 @@ void AudioReceiver::IncomingPacket(const uint8* packet, int length,
   } else {
     rtcp_->IncomingRtcpPacket(packet, length);
   }
-  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, callback);
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
 }
 
 void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
@@ -333,28 +324,26 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
 
       if (rtp_time_diff_delta > time_diff_delta) {
         return (now + (rtp_time_diff_delta - time_diff_delta));
-      } else {
-        return now;
       }
-    }
+      return now;
+      }
   }
   // This can fail if we have not received any RTCP packets in a long time.
   if (rtcp_->RtpTimestampInSenderTime(frequency_, rtp_timestamp,
                                       &rtp_timestamp_in_ticks)) {
     return (rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_);
-  } else {
-    return now;
   }
+  return now;
 }
 
 void AudioReceiver::ScheduleNextRtcpReport() {
-  base::TimeDelta time_to_send =
-      rtcp_->TimeToSendNextRtcpReport() - clock_->NowTicks();
+  base::TimeDelta time_to_send = rtcp_->TimeToSendNextRtcpReport() -
+      cast_environment_->Clock()->NowTicks();
 
   time_to_send = std::max(time_to_send,
       base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
 
-  cast_thread_->PostDelayedTask(CastThread::MAIN, FROM_HERE,
+  cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&AudioReceiver::SendNextRtcpReport,
       weak_factory_.GetWeakPtr()), time_to_send);
 }

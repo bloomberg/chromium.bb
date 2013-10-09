@@ -7,7 +7,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/audio_sender/audio_sender.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/pacing/mock_paced_packet_sender.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +15,7 @@
 namespace media {
 namespace cast {
 
-static const int64 kStartMillisecond = 123456789;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 using testing::_;
 
@@ -32,8 +32,8 @@ class AudioSenderTest : public ::testing::Test {
 
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
-                                  task_runner_, task_runner_);
+    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+        task_runner_, task_runner_, task_runner_, task_runner_);
     AudioSenderConfig audio_config;
     audio_config.codec = kOpus;
     audio_config.use_external_encoder = false;
@@ -43,8 +43,7 @@ class AudioSenderTest : public ::testing::Test {
     audio_config.rtp_payload_type = 127;
 
     audio_sender_.reset(
-        new AudioSender(cast_thread_, audio_config, &mock_transport_));
-    audio_sender_->set_clock(&testing_clock_);
+        new AudioSender(cast_environment_, audio_config, &mock_transport_));
   }
 
   virtual ~AudioSenderTest() {}
@@ -53,7 +52,7 @@ class AudioSenderTest : public ::testing::Test {
   MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<AudioSender> audio_sender_;
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
 };
 
 TEST_F(AudioSenderTest, Encode20ms) {

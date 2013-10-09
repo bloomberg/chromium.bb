@@ -4,14 +4,14 @@
 
 #include "media/cast/rtp_sender/rtp_packetizer/rtp_packetizer.h"
 
-#include <gtest/gtest.h>
-
 #include "base/memory/scoped_ptr.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/rtp_common/rtp_defines.h"
 #include "media/cast/rtp_sender/packet_storage/packet_storage.h"
 #include "media/cast/rtp_sender/rtp_packetizer/test/rtp_header_parser.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 namespace cast {
@@ -26,6 +26,7 @@ static const int kSsrc = 0x12345;
 static const unsigned int kFrameSize = 5000;
 static const int kTotalHeaderLength = 19;
 static const int kMaxPacketStorageTimeMs = 300;
+static const int64 kStartMillisecond = 0;
 
 class TestRtpPacketTransport : public PacedPacketSender {
  public:
@@ -103,12 +104,14 @@ class RtpPacketizerTest : public ::testing::Test {
  protected:
   RtpPacketizerTest()
       :video_frame_(),
-       packet_storage_(kMaxPacketStorageTimeMs) {
+       packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs) {
     config_.sequence_number = kSeqNum;
     config_.ssrc = kSsrc;
     config_.payload_type = kPayload;
     config_.max_payload_length = kMaxPacketLength;
     transport_.reset(new TestRtpPacketTransport(config_));
+    testing_clock_.Advance(
+        base::TimeDelta::FromMilliseconds(kStartMillisecond));
     rtp_packetizer_.reset(
         new RtpPacketizer(transport_.get(), &packet_storage_, config_));
   }
@@ -121,6 +124,7 @@ class RtpPacketizerTest : public ::testing::Test {
     video_frame_.data.assign(kFrameSize, 123);
   }
 
+  base::SimpleTestTickClock testing_clock_;
   scoped_ptr<RtpPacketizer> rtp_packetizer_;
   RtpPacketizerConfig config_;
   scoped_ptr<TestRtpPacketTransport> transport_;
@@ -144,9 +148,9 @@ TEST_F(RtpPacketizerTest, Stats) {
   unsigned int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
   transport_->SetExpectedNumberOfPackets(expected_num_of_packets);
 
-  base::TimeTicks time;
-  time += base::TimeDelta::FromMilliseconds(kTimestampMs);
-  rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_, time);
+  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kTimestampMs));
+  rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_,
+                                             testing_clock_.NowTicks());
   EXPECT_EQ(expected_num_of_packets, rtp_packetizer_->send_packets_count());
   EXPECT_EQ(kFrameSize, rtp_packetizer_->send_octet_count());
 }

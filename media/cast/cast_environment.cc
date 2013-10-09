@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 
 #include "base/logging.h"
 
@@ -11,13 +11,15 @@ using base::TaskRunner;
 namespace media {
 namespace cast {
 
-CastThread::CastThread(
+CastEnvironment::CastEnvironment(
+    base::TickClock* clock,
     scoped_refptr<TaskRunner> main_thread_proxy,
     scoped_refptr<TaskRunner> audio_encode_thread_proxy,
     scoped_refptr<TaskRunner> audio_decode_thread_proxy,
     scoped_refptr<TaskRunner> video_encode_thread_proxy,
     scoped_refptr<TaskRunner> video_decode_thread_proxy)
-    : main_thread_proxy_(main_thread_proxy),
+    : clock_(clock),
+      main_thread_proxy_(main_thread_proxy),
       audio_encode_thread_proxy_(audio_encode_thread_proxy),
       audio_decode_thread_proxy_(audio_decode_thread_proxy),
       video_encode_thread_proxy_(video_encode_thread_proxy),
@@ -25,9 +27,9 @@ CastThread::CastThread(
   DCHECK(main_thread_proxy) << "Main thread required";
 }
 
-CastThread::~CastThread() {}
+CastEnvironment::~CastEnvironment() {}
 
-bool CastThread::PostTask(ThreadId identifier,
+bool CastEnvironment::PostTask(ThreadId identifier,
                           const tracked_objects::Location& from_here,
                           const base::Closure& task) {
   scoped_refptr<TaskRunner> task_runner =
@@ -36,7 +38,7 @@ bool CastThread::PostTask(ThreadId identifier,
   return task_runner->PostTask(from_here, task);
 }
 
-bool CastThread::PostDelayedTask(ThreadId identifier,
+bool CastEnvironment::PostDelayedTask(ThreadId identifier,
                                  const tracked_objects::Location& from_here,
                                  const base::Closure& task,
                                  base::TimeDelta delay) {
@@ -46,18 +48,18 @@ bool CastThread::PostDelayedTask(ThreadId identifier,
   return task_runner->PostDelayedTask(from_here, task, delay);
 }
 
-scoped_refptr<TaskRunner> CastThread::GetMessageTaskRunnerForThread(
-      ThreadId identifier) {
+scoped_refptr<TaskRunner> CastEnvironment::GetMessageTaskRunnerForThread(
+    ThreadId identifier) {
   switch (identifier) {
-    case CastThread::MAIN:
+    case CastEnvironment::MAIN:
       return main_thread_proxy_;
-    case CastThread::AUDIO_ENCODER:
+    case CastEnvironment::AUDIO_ENCODER:
       return audio_encode_thread_proxy_;
-    case CastThread::AUDIO_DECODER:
+    case CastEnvironment::AUDIO_DECODER:
       return audio_decode_thread_proxy_;
-    case CastThread::VIDEO_ENCODER:
+    case CastEnvironment::VIDEO_ENCODER:
       return video_encode_thread_proxy_;
-    case CastThread::VIDEO_DECODER:
+    case CastEnvironment::VIDEO_DECODER:
       return video_decode_thread_proxy_;
     default:
       NOTREACHED() << "Invalid Thread ID.";
@@ -65,22 +67,26 @@ scoped_refptr<TaskRunner> CastThread::GetMessageTaskRunnerForThread(
   }
 }
 
-bool CastThread::CurrentlyOn(ThreadId identifier) {
+bool CastEnvironment::CurrentlyOn(ThreadId identifier) {
   switch (identifier) {
-    case CastThread::MAIN:
+    case CastEnvironment::MAIN:
       return main_thread_proxy_->RunsTasksOnCurrentThread();
-    case CastThread::AUDIO_ENCODER:
+    case CastEnvironment::AUDIO_ENCODER:
       return audio_encode_thread_proxy_->RunsTasksOnCurrentThread();
-    case CastThread::AUDIO_DECODER:
+    case CastEnvironment::AUDIO_DECODER:
       return audio_decode_thread_proxy_->RunsTasksOnCurrentThread();
-    case CastThread::VIDEO_ENCODER:
+    case CastEnvironment::VIDEO_ENCODER:
       return video_encode_thread_proxy_->RunsTasksOnCurrentThread();
-    case CastThread::VIDEO_DECODER:
+    case CastEnvironment::VIDEO_DECODER:
       return video_decode_thread_proxy_->RunsTasksOnCurrentThread();
     default:
       NOTREACHED() << "Wrong thread identifier";
       return false;
   }
+}
+
+base::TickClock* CastEnvironment::Clock() {
+  return clock_;
 }
 
 }  // namespace cast

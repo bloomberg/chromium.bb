@@ -30,7 +30,8 @@ class RtpParser;
 
 class RtpReceiver {
  public:
-  RtpReceiver(const AudioReceiverConfig* audio_config,
+  RtpReceiver(base::TickClock* clock,
+              const AudioReceiverConfig* audio_config,
               const VideoReceiverConfig* video_config,
               RtpData* incoming_payload_callback);
   ~RtpReceiver();

@@ -12,16 +12,15 @@ namespace cast {
 
 static const uint32 kMaxSequenceNumber = 65536;
 
-ReceiverStats::ReceiverStats()
-    : min_sequence_number_(0),
+ReceiverStats::ReceiverStats(base::TickClock* clock)
+    : clock_(clock),
+      min_sequence_number_(0),
       max_sequence_number_(0),
       total_number_packets_(0),
       sequence_number_cycles_(0),
       interval_min_sequence_number_(0),
       interval_number_packets_(0),
-      interval_wrap_count_(0),
-      default_tick_clock_(),
-      clock_(&default_tick_clock_) {}
+      interval_wrap_count_(0) {}
 
 ReceiverStats::~ReceiverStats() {}
 

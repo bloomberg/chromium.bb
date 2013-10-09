@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/audio_sender/audio_sender.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
-#include "media/cast/cast_thread.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/video_sender/video_sender.h"
 
@@ -24,7 +24,7 @@ class VideoSender;
 // together such as pacer, packet receiver, frame input, audio and video sender.
 class CastSenderImpl : public CastSender {
  public:
-  CastSenderImpl(scoped_refptr<CastThread> cast_thread,
+  CastSenderImpl(scoped_refptr<CastEnvironment> cast_environment,
                  const AudioSenderConfig& audio_config,
                  const VideoSenderConfig& video_config,
                  VideoEncoderController* const video_encoder_controller,

@@ -16,8 +16,8 @@
       'sources': [
         'cast_config.cc',
         'cast_config.h',
-        'cast_thread.cc',
-        'cast_thread.h',
+        'cast_environment.cc',
+        'cast_environment.h',
       ], # source
     },
   ],  # targets,

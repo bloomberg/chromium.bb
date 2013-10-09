@@ -16,13 +16,12 @@ class FramerTest : public ::testing::Test {
  protected:
   FramerTest()
       : mock_rtp_payload_feedback_(),
-        framer_(&mock_rtp_payload_feedback_, 0, true, 0) {
-    framer_.set_clock(&testing_clock_);
+        framer_(&testing_clock_, &mock_rtp_payload_feedback_, 0, true, 0) {
   }
 
   virtual ~FramerTest() {}
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // Build a default one packet frame - populate webrtc header.
     rtp_header_.is_key_frame = false;
     rtp_header_.frame_id = 0;

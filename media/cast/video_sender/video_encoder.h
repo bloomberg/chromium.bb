@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/video_sender/codecs/vp8/vp8_encoder.h"
 
 namespace media {
@@ -23,7 +23,7 @@ class VideoEncoder : public VideoEncoderController,
   typedef base::Callback<void(scoped_ptr<EncodedVideoFrame>,
                               const base::TimeTicks&)> FrameEncodedCallback;
 
-  VideoEncoder(scoped_refptr<CastThread> cast_thread,
+  VideoEncoder(scoped_refptr<CastEnvironment> cast_environment,
                const VideoSenderConfig& video_config,
                uint8 max_unacked_frames);
 
@@ -67,7 +67,7 @@ class VideoEncoder : public VideoEncoderController,
   friend class base::RefCountedThreadSafe<VideoEncoder>;
 
   const VideoSenderConfig video_config_;
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<Vp8Encoder> vp8_encoder_;
   CodecDynamicConfig dynamic_config_;
   bool skip_next_frame_;

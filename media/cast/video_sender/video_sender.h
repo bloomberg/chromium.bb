@@ -10,11 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/congestion_control/congestion_control.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_sender/rtp_sender.h"
@@ -37,7 +36,7 @@ class PacedPacketSender;
 class VideoSender : public base::NonThreadSafe,
                     public base::SupportsWeakPtr<VideoSender> {
  public:
-  VideoSender(scoped_refptr<CastThread> cast_thread,
+  VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const VideoSenderConfig& video_config,
               VideoEncoderController* const video_encoder_controller,
               PacedPacketSender* const paced_packet_sender);
@@ -64,13 +63,6 @@ class VideoSender : public base::NonThreadSafe,
   // Only called from the main cast thread.
   void IncomingRtcpPacket(const uint8* packet, int length,
                           const base::Closure callback);
-
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-    congestion_control_.set_clock(clock);
-    rtcp_->set_clock(clock);
-    rtp_sender_->set_clock(clock);
-  }
 
  protected:
   // Protected for testability.
@@ -113,7 +105,7 @@ class VideoSender : public base::NonThreadSafe,
   const base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;
 
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<LocalRtcpVideoSenderFeedback> rtcp_feedback_;
   scoped_ptr<LocalRtpVideoSenderStatistics> rtp_video_sender_statistics_;
   scoped_refptr<VideoEncoder> video_encoder_;
@@ -129,9 +121,6 @@ class VideoSender : public base::NonThreadSafe,
   base::TimeTicks last_checked_skip_count_time_;
   int last_skip_count_;
   CongestionControl congestion_control_;
-
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* clock_;
 
   base::WeakPtrFactory<VideoSender> weak_factory_;
 

@@ -54,7 +54,7 @@ class Vp8Encoder {
   Vp8Buffers GetNextBufferToUpdate();
 
   // Calculate which previous frame to reference.
-  uint8_t GetLatestFrameIdToReference();
+  uint8 GetLatestFrameIdToReference();
 
   // Get encoder flags for our referenced encoder buffers.
   void GetCodecReferenceFlags(vpx_codec_flags_t* flags);

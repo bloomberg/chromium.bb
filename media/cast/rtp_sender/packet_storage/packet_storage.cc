@@ -40,9 +40,9 @@ class StoredPacket {
 };
 
 
-PacketStorage::PacketStorage(int max_time_stored_ms)
-    : default_tick_clock_(new base::DefaultTickClock()),
-      clock_(default_tick_clock_.get()) {
+PacketStorage::PacketStorage(base::TickClock* clock,
+                             int max_time_stored_ms)
+    : clock_(clock) {
   max_time_stored_ = base::TimeDelta::FromMilliseconds(max_time_stored_ms);
   DCHECK_LE(max_time_stored_ms, kMaxAllowedTimeStoredMs) << "Invalid argument";
 }

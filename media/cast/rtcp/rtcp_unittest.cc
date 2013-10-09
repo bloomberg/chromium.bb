@@ -21,7 +21,7 @@ static const uint32 kReceiverSsrc = 0x40506;
 static const uint32 kUnknownSsrc = 0xDEAD;
 static const std::string kCName("test@10.1.1.1");
 static const uint32 kRtcpIntervalMs = 500;
-static const int64 kStartMillisecond = 123456789;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 static const int64 kAddedDelay = 123;
 static const int64 kAddedShortDelay= 100;
 
@@ -64,7 +64,8 @@ class LocalRtcpTransport : public PacedPacketSender {
 
 class RtcpPeer : public Rtcp {
  public:
-  RtcpPeer(RtcpSenderFeedback* sender_feedback,
+  RtcpPeer(base::TickClock* clock,
+           RtcpSenderFeedback* sender_feedback,
            PacedPacketSender* const paced_packet_sender,
            RtpSenderStatistics* rtp_sender_statistics,
            RtpReceiverStatistics* rtp_receiver_statistics,
@@ -73,7 +74,8 @@ class RtcpPeer : public Rtcp {
            bool sending_media,
            uint32 local_ssrc,
            const std::string& c_name)
-      : Rtcp(sender_feedback,
+      : Rtcp(clock,
+             sender_feedback,
              paced_packet_sender,
              rtp_sender_statistics,
              rtp_receiver_statistics,
@@ -115,7 +117,8 @@ class RtcpTest : public ::testing::Test {
 TEST_F(RtcpTest, TimeToSend) {
   base::TimeTicks start_time =
       base::TimeTicks::FromInternalValue(kStartMillisecond * 1000);
-  Rtcp rtcp(&mock_sender_feedback_,
+  Rtcp rtcp(&testing_clock_,
+            &mock_sender_feedback_,
             &transport_,
             NULL,
             NULL,
@@ -124,7 +127,6 @@ TEST_F(RtcpTest, TimeToSend) {
             true,  // Media sender.
             kSenderSsrc,
             kCName);
-  rtcp.set_clock(&testing_clock_);
   transport_.SetRtcpReceiver(&rtcp);
   EXPECT_LE(start_time, rtcp.TimeToSendNextRtcpReport());
   EXPECT_GE(start_time + base::TimeDelta::FromMilliseconds(
@@ -136,7 +138,8 @@ TEST_F(RtcpTest, TimeToSend) {
 }
 
 TEST_F(RtcpTest, BasicSenderReport) {
-  Rtcp rtcp(&mock_sender_feedback_,
+  Rtcp rtcp(&testing_clock_,
+            &mock_sender_feedback_,
             &transport_,
             NULL,
             NULL,
@@ -151,7 +154,8 @@ TEST_F(RtcpTest, BasicSenderReport) {
 
 TEST_F(RtcpTest, BasicReceiverReport) {
   EXPECT_CALL(mock_sender_feedback_, OnReceivedReportBlock(_)).Times(1);
-  Rtcp rtcp(&mock_sender_feedback_,
+  Rtcp rtcp(&testing_clock_,
+            &mock_sender_feedback_,
             &transport_,
             NULL,
             NULL,
@@ -170,7 +174,8 @@ TEST_F(RtcpTest, BasicPli) {
   EXPECT_CALL(mock_sender_feedback_, OnReceivedIntraFrameRequest()).Times(1);
 
   // Media receiver.
-  Rtcp rtcp(&mock_sender_feedback_,
+  Rtcp rtcp(&testing_clock_,
+            &mock_sender_feedback_,
             &transport_,
             NULL,
             NULL,
@@ -179,7 +184,6 @@ TEST_F(RtcpTest, BasicPli) {
             false,
             kSenderSsrc,
             kCName);
-  rtcp.set_clock(&testing_clock_);
   transport_.SetRtcpReceiver(&rtcp);
   rtcp.SetRemoteSSRC(kSenderSsrc);
   rtcp.SendRtcpPli(kSenderSsrc);
@@ -189,7 +193,8 @@ TEST_F(RtcpTest, BasicCast) {
   EXPECT_CALL(mock_sender_feedback_, OnReceivedCastFeedback(_)).Times(1);
 
   // Media receiver.
-  Rtcp rtcp(&mock_sender_feedback_,
+  Rtcp rtcp(&testing_clock_,
+            &mock_sender_feedback_,
             &transport_,
             NULL,
             NULL,
@@ -198,7 +203,6 @@ TEST_F(RtcpTest, BasicCast) {
             false,
             kSenderSsrc,
             kCName);
-  rtcp.set_clock(&testing_clock_);
   transport_.SetRtcpReceiver(&rtcp);
   rtcp.SetRemoteSSRC(kSenderSsrc);
   RtcpCastMessage cast_message(kSenderSsrc);
@@ -218,7 +222,8 @@ TEST_F(RtcpTest, BasicCast) {
 TEST_F(RtcpTest, Rtt) {
   // Media receiver.
   LocalRtcpTransport receiver_transport(&testing_clock_);
-  Rtcp rtcp_receiver(&mock_sender_feedback_,
+  Rtcp rtcp_receiver(&testing_clock_,
+                     &mock_sender_feedback_,
                      &receiver_transport,
                      NULL,
                      NULL,
@@ -227,11 +232,11 @@ TEST_F(RtcpTest, Rtt) {
                      false,
                      kReceiverSsrc,
                      kCName);
-  rtcp_receiver.set_clock(&testing_clock_);
 
   // Media sender.
   LocalRtcpTransport sender_transport(&testing_clock_);
-  Rtcp rtcp_sender(&mock_sender_feedback_,
+  Rtcp rtcp_sender(&testing_clock_,
+                   &mock_sender_feedback_,
                    &sender_transport,
                    NULL,
                    NULL,
@@ -241,7 +246,6 @@ TEST_F(RtcpTest, Rtt) {
                    kSenderSsrc,
                    kCName);
 
-  rtcp_sender.set_clock(&testing_clock_);
   receiver_transport.SetRtcpReceiver(&rtcp_sender);
   sender_transport.SetRtcpReceiver(&rtcp_receiver);
 
@@ -296,7 +300,8 @@ TEST_F(RtcpTest, Rtt) {
 }
 
 TEST_F(RtcpTest, NtpAndTime) {
-  RtcpPeer rtcp_peer(&mock_sender_feedback_,
+  RtcpPeer rtcp_peer(&testing_clock_,
+                     &mock_sender_feedback_,
                      NULL,
                      NULL,
                      NULL,
@@ -305,7 +310,6 @@ TEST_F(RtcpTest, NtpAndTime) {
                      false,
                      kReceiverSsrc,
                      kCName);
-  rtcp_peer.set_clock(&testing_clock_);
   uint32 ntp_seconds = 0;
   uint32 ntp_fractions = 0;
   base::TimeTicks input_time = base::TimeTicks::FromInternalValue(
@@ -317,7 +321,8 @@ TEST_F(RtcpTest, NtpAndTime) {
 }
 
 TEST_F(RtcpTest, WrapAround) {
-  RtcpPeer rtcp_peer(&mock_sender_feedback_,
+  RtcpPeer rtcp_peer(&testing_clock_,
+                     &mock_sender_feedback_,
                      NULL,
                      NULL,
                      NULL,
@@ -326,7 +331,6 @@ TEST_F(RtcpTest, WrapAround) {
                      false,
                      kReceiverSsrc,
                      kCName);
-  rtcp_peer.set_clock(&testing_clock_);
   uint32 new_timestamp = 0;
   uint32 old_timestamp = 0;
   EXPECT_EQ(0, rtcp_peer.CheckForWrapAround(new_timestamp, old_timestamp));
@@ -345,7 +349,8 @@ TEST_F(RtcpTest, WrapAround) {
 }
 
 TEST_F(RtcpTest, RtpTimestampInSenderTime) {
-  RtcpPeer rtcp_peer(&mock_sender_feedback_,
+  RtcpPeer rtcp_peer(&testing_clock_,
+                     &mock_sender_feedback_,
                      NULL,
                      NULL,
                      NULL,
@@ -354,7 +359,6 @@ TEST_F(RtcpTest, RtpTimestampInSenderTime) {
                      false,
                      kReceiverSsrc,
                      kCName);
-  rtcp_peer.set_clock(&testing_clock_);
   int frequency = 32000;
   uint32 rtp_timestamp = 64000;
   base::TimeTicks rtp_timestamp_in_ticks;

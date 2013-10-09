@@ -20,16 +20,16 @@ static const int kCongestionControlMaxBitrateIncreasePerMillisecond = 1200;
 
 static const int64 kMaxElapsedTimeMs = kCongestionControlMaxChangeIntervalMs;
 
-CongestionControl::CongestionControl(float congestion_control_back_off,
+CongestionControl::CongestionControl(base::TickClock* clock,
+                                     float congestion_control_back_off,
                                      uint32 max_bitrate_configured,
                                      uint32 min_bitrate_configured,
                                      uint32 start_bitrate)
-    : congestion_control_back_off_(congestion_control_back_off),
+    : clock_(clock),
+      congestion_control_back_off_(congestion_control_back_off),
       max_bitrate_configured_(max_bitrate_configured),
       min_bitrate_configured_(min_bitrate_configured),
-      bitrate_(start_bitrate),
-      default_tick_clock_(new base::DefaultTickClock()),
-      clock_(default_tick_clock_.get()) {
+      bitrate_(start_bitrate) {
   DCHECK_GT(congestion_control_back_off, 0.0f) << "Invalid config";
   DCHECK_LT(congestion_control_back_off, 1.0f) << "Invalid config";
   DCHECK_GE(max_bitrate_configured, min_bitrate_configured) << "Invalid config";

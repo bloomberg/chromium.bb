@@ -7,14 +7,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/pacing/mock_paced_packet_sender.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/video_receiver/video_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 static const int kPacketSize = 1500;
-static const int64 kStartMillisecond = 123456789;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 namespace media {
 namespace cast {
@@ -54,10 +54,10 @@ class TestVideoReceiverCallback :
 
 class PeerVideoReceiver : public VideoReceiver {
  public:
-  PeerVideoReceiver(scoped_refptr<CastThread> cast_thread,
+  PeerVideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                     const VideoReceiverConfig& video_config,
                     PacedPacketSender* const packet_sender)
-      : VideoReceiver(cast_thread, video_config, packet_sender) {
+      : VideoReceiver(cast_environment, video_config, packet_sender) {
   }
   using VideoReceiver::IncomingRtpPacket;
 };
@@ -70,14 +70,13 @@ class VideoReceiverTest : public ::testing::Test {
     config_.codec = kVp8;
     config_.use_external_decoder = false;
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_thread_ = new CastThread(task_runner_, NULL, NULL,
+    cast_environment_ = new CastEnvironment(task_runner_, NULL, NULL,
                                   task_runner_, task_runner_);
     receiver_.reset(new
-        PeerVideoReceiver(cast_thread_, config_, &mock_transport_));
+        PeerVideoReceiver(cast_environment_, config_, &mock_transport_));
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     video_receiver_callback_ = new TestVideoReceiverCallback();
-    receiver_->set_clock(&testing_clock_);
   }
 
   virtual ~VideoReceiverTest() {}
@@ -102,7 +101,7 @@ class VideoReceiverTest : public ::testing::Test {
   base::SimpleTestTickClock testing_clock_;
 
   scoped_refptr<test::FakeTaskRunner> task_runner_;
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<TestVideoReceiverCallback> video_receiver_callback_;
 };
 

@@ -5,7 +5,6 @@
 #ifndef MEDIA_CAST_RTP_RECEIVER_RECEIVER_STATS_H_
 #define MEDIA_CAST_RTP_RECEIVER_RECEIVER_STATS_H_
 
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/rtp_common/rtp_defines.h"
@@ -15,19 +14,18 @@ namespace cast {
 
 class ReceiverStats {
  public:
-  ReceiverStats();
+  explicit ReceiverStats(base::TickClock* clock);
   ~ReceiverStats();
+
   void GetStatistics(uint8* fraction_lost,
                      uint32* cumulative_lost,  // 24 bits valid.
                      uint32* extended_high_sequence_number,
                      uint32* jitter);
   void UpdateStatistics(const RtpCastHeader& header);
 
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-  }
-
  private:
+  base::TickClock* const clock_;  // Not owned by this class.
+
   // Global metrics.
   uint16 min_sequence_number_;
   uint16 max_sequence_number_;
@@ -41,8 +39,6 @@ class ReceiverStats {
   int interval_min_sequence_number_;
   int interval_number_packets_;
   int interval_wrap_count_;
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* clock_;
 };
 
 }  // namespace cast

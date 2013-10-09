@@ -15,7 +15,7 @@ namespace cast {
 static const uint32 kSsrc = 0x1234;
 static const uint32 kShortTimeIncrementMs = 10;
 static const uint32 kLongTimeIncrementMs = 40;
-static const int64 kStartMillisecond = 123456789;
+static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 typedef std::map<uint8, int> MissingPacketsMap;
 
@@ -79,7 +79,8 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
 class CastMessageBuilderTest : public ::testing::Test {
  protected:
   CastMessageBuilderTest()
-      : cast_msg_builder_(new CastMessageBuilder(&feedback_,
+      : cast_msg_builder_(new CastMessageBuilder(&testing_clock_,
+                                                 &feedback_,
                                                  &frame_id_map_,
                                                  kSsrc,
                                                  true,
@@ -88,7 +89,6 @@ class CastMessageBuilderTest : public ::testing::Test {
     rtp_header_.is_key_frame = false;
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    cast_msg_builder_->set_clock(&testing_clock_);
   }
 
   virtual ~CastMessageBuilderTest() {}
@@ -125,7 +125,8 @@ class CastMessageBuilderTest : public ::testing::Test {
   }
 
   void SetDecoderSlowerThanMaxFrameRate(int max_unacked_frames) {
-    cast_msg_builder_.reset(new CastMessageBuilder(&feedback_,
+    cast_msg_builder_.reset(new CastMessageBuilder(&testing_clock_,
+                                                   &feedback_,
                                                    &frame_id_map_,
                                                    kSsrc,
                                                    false,

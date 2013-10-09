@@ -31,7 +31,6 @@ class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
     DCHECK(false) << "Invalid callback";
   }
 
-
   virtual void OnReceivedRpsi(uint8 payload_type,
                               uint64 picture_id) OVERRIDE {
     DCHECK(false) << "Invalid callback";
@@ -74,16 +73,18 @@ class LocalRtpSenderStatistics : public RtpSenderStatistics {
   RtpSender* rtp_sender_;
 };
 
-AudioSender::AudioSender(scoped_refptr<CastThread> cast_thread,
+AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const AudioSenderConfig& audio_config,
                          PacedPacketSender* const paced_packet_sender)
       : incoming_feedback_ssrc_(audio_config.incoming_feedback_ssrc),
-        cast_thread_(cast_thread),
-        rtp_sender_(&audio_config, NULL, paced_packet_sender),
+        cast_environment_(cast_environment),
+        rtp_sender_(cast_environment->Clock(), &audio_config, NULL,
+                    paced_packet_sender),
         rtcp_feedback_(new LocalRtcpAudioSenderFeedback(this)),
         rtp_audio_sender_statistics_(
             new LocalRtpSenderStatistics(&rtp_sender_)),
-        rtcp_(rtcp_feedback_.get(),
+        rtcp_(cast_environment->Clock(),
+              rtcp_feedback_.get(),
               paced_packet_sender,
               rtp_audio_sender_statistics_.get(),
               NULL,
@@ -92,12 +93,11 @@ AudioSender::AudioSender(scoped_refptr<CastThread> cast_thread,
               true,
               audio_config.sender_ssrc,
               audio_config.rtcp_c_name),
-        clock_(&default_tick_clock_),
         weak_factory_(this) {
   rtcp_.SetRemoteSSRC(audio_config.incoming_feedback_ssrc);
 
   if (!audio_config.use_external_encoder) {
-    audio_encoder_ = new AudioEncoder(cast_thread, audio_config);
+    audio_encoder_ = new AudioEncoder(cast_environment, audio_config);
   }
   ScheduleNextRtcpReport();
 }
@@ -109,7 +109,6 @@ void AudioSender::InsertRawAudioFrame(
     const base::TimeTicks& recorded_time,
     const base::Closure callback) {
   DCHECK(audio_encoder_.get()) << "Invalid internal state";
-
 
   audio_encoder_->InsertRawAudioFrame(audio_frame, recorded_time,
       base::Bind(&AudioSender::SendEncodedAudioFrame,
@@ -139,17 +138,17 @@ void AudioSender::ResendPackets(
 void AudioSender::IncomingRtcpPacket(const uint8* packet, int length,
                                      const base::Closure callback) {
   rtcp_.IncomingRtcpPacket(packet, length);
-  cast_thread_->PostTask(CastThread::MAIN, FROM_HERE, callback);
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
 }
 
 void AudioSender::ScheduleNextRtcpReport() {
   base::TimeDelta time_to_next =
-      rtcp_.TimeToSendNextRtcpReport() - clock_->NowTicks();
+      rtcp_.TimeToSendNextRtcpReport() - cast_environment_->Clock()->NowTicks();
 
   time_to_next = std::max(time_to_next,
       base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
 
-  cast_thread_->PostDelayedTask(CastThread::MAIN, FROM_HERE,
+  cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&AudioSender::SendRtcpReport, weak_factory_.GetWeakPtr()),
                  time_to_next);
 }

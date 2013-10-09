@@ -8,7 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/audio_receiver/audio_receiver.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/cast_thread.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/pacing/mock_paced_packet_sender.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,11 +48,11 @@ class TestAudioEncoderCallback :
 
 class PeerAudioReceiver : public AudioReceiver {
  public:
-  PeerAudioReceiver(scoped_refptr<CastThread> cast_thread,
+  PeerAudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                     const AudioReceiverConfig& audio_config,
                     PacedPacketSender* const packet_sender)
-      : AudioReceiver(cast_thread, audio_config, packet_sender) {
-  }
+      : AudioReceiver(cast_environment, audio_config, packet_sender) {}
+
   using AudioReceiver::IncomingParsedRtpPacket;
 };
 
@@ -66,16 +66,15 @@ class AudioReceiverTest : public ::testing::Test {
     audio_config_.codec = kPcm16;
     audio_config_.use_external_decoder = false;
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
-                                  task_runner_, task_runner_);
+    cast_environment_ = new CastEnvironment(task_runner_, task_runner_,
+        task_runner_, task_runner_, task_runner_);
     test_audio_encoder_callback_ = new TestAudioEncoderCallback();
   }
 
   void Configure(bool use_external_decoder) {
     audio_config_.use_external_decoder = use_external_decoder;
-    receiver_.reset(
-        new PeerAudioReceiver(cast_thread_, audio_config_, &mock_transport_));
-    receiver_->set_clock(&testing_clock_);
+    receiver_.reset(new PeerAudioReceiver(cast_environment_, audio_config_,
+                                          &mock_transport_));
   }
 
   virtual ~AudioReceiverTest() {}
@@ -98,7 +97,7 @@ class AudioReceiverTest : public ::testing::Test {
   MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PeerAudioReceiver> receiver_;
-  scoped_refptr<CastThread> cast_thread_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<TestAudioEncoderCallback> test_audio_encoder_callback_;
 };
 

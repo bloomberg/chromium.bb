@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/framer/cast_message_builder.h"
@@ -26,7 +25,8 @@ typedef std::map<uint8, linked_ptr<FrameBuffer> > FrameList;
 
 class Framer {
  public:
-  Framer(RtpPayloadFeedback* incoming_payload_feedback,
+  Framer(base::TickClock* clock,
+         RtpPayloadFeedback* incoming_payload_feedback,
          uint32 ssrc,
          bool decoder_faster_than_max_frame_rate,
          int max_unacked_frames);
@@ -57,21 +57,14 @@ class Framer {
   bool TimeToSendNextCastMessage(base::TimeTicks* time_to_send);
   void SendCastMessage();
 
-  void set_clock(base::TickClock* clock) {
-    clock_ = clock;
-    cast_msg_builder_->set_clock(clock);
-  }
-
  private:
   // Return true if we should wait.
   bool WaitForNextFrame(const base::TimeTicks& timeout) const;
 
+  base::TickClock* const clock_;  // Not owned by this class.
   const bool decoder_faster_than_max_frame_rate_;
   FrameList frames_;
   FrameIdMap frame_id_map_;
-
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* clock_;
 
   scoped_ptr<CastMessageBuilder> cast_msg_builder_;
 

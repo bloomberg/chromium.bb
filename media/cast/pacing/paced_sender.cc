@@ -14,13 +14,12 @@ namespace cast {
 static const int64 kPacingIntervalMs = 10;
 static const int kPacingMaxBurstsPerFrame = 3;
 
-PacedSender::PacedSender(scoped_refptr<CastThread> cast_thread,
+PacedSender::PacedSender(scoped_refptr<CastEnvironment> cast_environment,
                          PacketSender* transport)
-    : cast_thread_(cast_thread),
+    : cast_environment_(cast_environment),
       burst_size_(1),
       packets_sent_in_burst_(0),
       transport_(transport),
-      clock_(&default_tick_clock_),
       weak_factory_(this) {
   ScheduleNextSend();
 }
@@ -69,20 +68,21 @@ bool PacedSender::SendRtcpPacket(const std::vector<uint8>& packet) {
 }
 
 void PacedSender::ScheduleNextSend() {
-  base::TimeDelta time_to_next = time_last_process_ - clock_->NowTicks() +
+  base::TimeDelta time_to_next = time_last_process_ -
+      cast_environment_->Clock()->NowTicks() +
       base::TimeDelta::FromMilliseconds(kPacingIntervalMs);
 
   time_to_next = std::max(time_to_next,
       base::TimeDelta::FromMilliseconds(0));
 
-  cast_thread_->PostDelayedTask(CastThread::MAIN, FROM_HERE,
+  cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&PacedSender::SendNextPacketBurst, weak_factory_.GetWeakPtr()),
                  time_to_next);
 }
 
 void PacedSender::SendNextPacketBurst() {
   int packets_to_send = burst_size_;
-  time_last_process_ = clock_->NowTicks();
+  time_last_process_ = cast_environment_->Clock()->NowTicks();
   for (int i = 0; i < packets_to_send; ++i) {
     SendStoredPacket();
   }
