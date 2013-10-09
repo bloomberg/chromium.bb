@@ -153,9 +153,9 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
   virtual gfx::Size GetMaximumDialogSize() OVERRIDE;
   virtual void AddObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
 
   Profile* profile() { return shell_window_->profile(); }
   content::WebContents* web_contents() {
@@ -190,7 +190,7 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
 
   base::WeakPtrFactory<NativeAppWindowViews> weak_ptr_factory_;
 
-  ObserverList<web_modal::WebContentsModalDialogHostObserver> observer_list_;
+  ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };

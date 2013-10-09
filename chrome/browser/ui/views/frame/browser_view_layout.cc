@@ -32,7 +32,7 @@
 
 using views::View;
 using web_modal::WebContentsModalDialogHost;
-using web_modal::WebContentsModalDialogHostObserver;
+using web_modal::ModalDialogHostObserver;
 
 namespace {
 
@@ -70,13 +70,13 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   }
 
   virtual ~WebContentsModalDialogHostViews() {
-    FOR_EACH_OBSERVER(web_modal::WebContentsModalDialogHostObserver,
+    FOR_EACH_OBSERVER(web_modal::ModalDialogHostObserver,
                       observer_list_,
                       OnHostDestroying());
   }
 
   void NotifyPositionRequiresUpdate() {
-    FOR_EACH_OBSERVER(WebContentsModalDialogHostObserver,
+    FOR_EACH_OBSERVER(ModalDialogHostObserver,
                       observer_list_,
                       OnPositionRequiresUpdate());
   }
@@ -115,17 +115,17 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
 
   // Add/remove observer.
   virtual void AddObserver(
-      WebContentsModalDialogHostObserver* observer) OVERRIDE {
+      ModalDialogHostObserver* observer) OVERRIDE {
     observer_list_.AddObserver(observer);
   }
   virtual void RemoveObserver(
-      WebContentsModalDialogHostObserver* observer) OVERRIDE {
+      ModalDialogHostObserver* observer) OVERRIDE {
     observer_list_.RemoveObserver(observer);
   }
 
   BrowserViewLayout* const browser_view_layout_;
 
-  ObserverList<WebContentsModalDialogHostObserver> observer_list_;
+  ObserverList<ModalDialogHostObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostViews);
 };

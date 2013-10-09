@@ -6,16 +6,7 @@
 
 namespace web_modal {
 
-WebContentsModalDialogHostObserver::~WebContentsModalDialogHostObserver() {
-}
-
-WebContentsModalDialogHostObserver::WebContentsModalDialogHostObserver() {
-}
-
 WebContentsModalDialogHost::~WebContentsModalDialogHost() {
-}
-
-WebContentsModalDialogHost::WebContentsModalDialogHost() {
 }
 
 }  // namespace web_modal

@@ -858,12 +858,12 @@ gfx::Size NativeAppWindowCocoa::GetMaximumDialogSize() {
 }
 
 void NativeAppWindowCocoa::AddObserver(
-    web_modal::WebContentsModalDialogHostObserver* observer) {
+    web_modal::ModalDialogHostObserver* observer) {
   NOTIMPLEMENTED();
 }
 
 void NativeAppWindowCocoa::RemoveObserver(
-    web_modal::WebContentsModalDialogHostObserver* observer) {
+    web_modal::ModalDialogHostObserver* observer) {
   NOTIMPLEMENTED();
 }
 

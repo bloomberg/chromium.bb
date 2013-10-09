@@ -39,13 +39,13 @@ using web_modal::NativeWebContentsModalDialog;
 using web_modal::NativeWebContentsModalDialogManager;
 using web_modal::NativeWebContentsModalDialogManagerDelegate;
 using web_modal::WebContentsModalDialogHost;
-using web_modal::WebContentsModalDialogHostObserver;
+using web_modal::ModalDialogHostObserver;
 
 namespace {
 
 class NativeWebContentsModalDialogManagerViews
     : public NativeWebContentsModalDialogManager,
-      public WebContentsModalDialogHostObserver,
+      public ModalDialogHostObserver,
       public views::WidgetObserver {
  public:
   NativeWebContentsModalDialogManagerViews(

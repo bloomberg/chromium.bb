@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents_view.h"
 
 using web_modal::WebContentsModalDialogHost;
-using web_modal::WebContentsModalDialogHostObserver;
+using web_modal::ModalDialogHostObserver;
 
 namespace {
 
@@ -51,9 +51,9 @@ class PrintPreviewTestBrowserWindow
   }
 
   virtual void AddObserver(
-      WebContentsModalDialogHostObserver* observer) OVERRIDE {}
+      ModalDialogHostObserver* observer) OVERRIDE {}
   virtual void RemoveObserver(
-      WebContentsModalDialogHostObserver* observer) OVERRIDE {}
+      ModalDialogHostObserver* observer) OVERRIDE {}
 
  private:
   Browser* FindBrowser() const {

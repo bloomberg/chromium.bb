@@ -19,6 +19,7 @@ class WidgetDelegate;
 }
 
 namespace web_modal {
+class ModalDialogHost;
 class WebContentsModalDialogHost;
 }
 
@@ -27,6 +28,10 @@ class WebContentsModalDialogHost;
 void UpdateWebContentsModalDialogPosition(
     views::Widget* widget,
     web_modal::WebContentsModalDialogHost* dialog_host);
+
+void UpdateBrowserModalDialogPosition(
+    views::Widget* widget,
+    web_modal::ModalDialogHost* dialog_host);
 
 // Create a widget for |dialog| that is modal to the browser window |parent|.
 // This places the dialog appropriately if |parent| is a valid browser window.

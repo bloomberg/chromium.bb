@@ -318,11 +318,11 @@ gfx::Size ExtensionHost::GetMaximumDialogSize() {
 }
 
 void ExtensionHost::AddObserver(
-    web_modal::WebContentsModalDialogHostObserver* observer) {
+    web_modal::ModalDialogHostObserver* observer) {
 }
 
 void ExtensionHost::RemoveObserver(
-    web_modal::WebContentsModalDialogHostObserver* observer) {
+    web_modal::ModalDialogHostObserver* observer) {
 }
 #endif
 

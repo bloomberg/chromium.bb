@@ -59,9 +59,9 @@ class DialogHost : public web_modal::WebContentsModalDialogHost {
   }
   virtual gfx::Size GetMaximumDialogSize() OVERRIDE { return max_dialog_size_; }
   virtual void AddObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE {};
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE {};
   virtual void RemoveObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE {};
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE {};
 
  private:
   gfx::NativeView host_view_;
@@ -70,65 +70,113 @@ class DialogHost : public web_modal::WebContentsModalDialogHost {
   DISALLOW_COPY_AND_ASSIGN(DialogHost);
 };
 
-typedef ViewsTestBase ConstrainedWindowViewsTest;
+class ConstrainedWindowViewsTest : public ViewsTestBase {
+ public:
+  ConstrainedWindowViewsTest() : contents_(NULL) {}
+  virtual ~ConstrainedWindowViewsTest() {}
 
-TEST_F(ConstrainedWindowViewsTest, UpdateDialogPosition) {
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  Widget parent;
-  parent.Init(params);
+  virtual void SetUp() OVERRIDE {
+    ViewsTestBase::SetUp();
+    contents_ = new DialogContents;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.delegate = contents_;
+    dialog_.reset(new Widget);
+    dialog_->Init(params);
+    dialog_host_.reset(new DialogHost(dialog_->GetNativeView()));
 
-  DialogContents* contents = new DialogContents;
-  Widget* dialog =
-      CreateBrowserModalDialogViews(contents, parent.GetNativeWindow());
-  DialogHost dialog_host(parent.GetNativeView());
-  UpdateWebContentsModalDialogPosition(dialog, &dialog_host);
+    // Make sure the dialog size is dominated by the preferred size of the
+    // contents.
+    gfx::Size preferred_size = dialog()->GetRootView()->GetPreferredSize();
+    preferred_size.Enlarge(500, 500);
+    contents()->set_preferred_size(preferred_size);
+  }
 
-  // Set the preferred size to something larger than the size of a dialog with
-  // no content.
-  gfx::Size preferred_size = dialog->GetClientAreaBoundsInScreen().size();
+  virtual void TearDown() OVERRIDE {
+    ViewsTestBase::TearDown();
+    contents_ = NULL;
+    dialog_host_.reset();
+    dialog_.reset();
+  }
+
+  gfx::Size GetDialogSize() {
+    return dialog()->GetRootView()->GetBoundsInScreen().size();
+  }
+
+  DialogContents* contents() { return contents_; }
+  DialogHost* dialog_host() { return dialog_host_.get(); }
+  Widget* dialog() { return dialog_.get(); }
+
+ private:
+  DialogContents* contents_;
+  scoped_ptr<DialogHost> dialog_host_;
+  scoped_ptr<Widget> dialog_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViewsTest);
+};
+
+// Make sure a dialog that increases its preferred size grows on the next
+// position update.
+TEST_F(ConstrainedWindowViewsTest, GrowModalDialogSize) {
+  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  gfx::Size expected_size = GetDialogSize();
+  gfx::Size preferred_size = contents()->GetPreferredSize();
+  expected_size.Enlarge(50, 50);
   preferred_size.Enlarge(50, 50);
-  contents->set_preferred_size(preferred_size);
-  UpdateWebContentsModalDialogPosition(dialog, &dialog_host);
+  contents()->set_preferred_size(preferred_size);
+  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  EXPECT_EQ(expected_size.ToString(), GetDialogSize().ToString());
+}
 
-  // Now increase the preferred content area and make sure the dialog grows by
-  // the same amount after the position is updated.
-  gfx::Size expected_size = dialog->GetClientAreaBoundsInScreen().size();
-  expected_size.Enlarge(200, 200);
-  preferred_size.Enlarge(200, 200);
-  contents->set_preferred_size(preferred_size);
-  UpdateWebContentsModalDialogPosition(dialog, &dialog_host);
-  EXPECT_EQ(expected_size, dialog->GetClientAreaBoundsInScreen().size());
+// Make sure a dialog that reduces its preferred size shrinks on the next
+// position update.
+TEST_F(ConstrainedWindowViewsTest, ShrinkModalDialogSize) {
+  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  gfx::Size expected_size = GetDialogSize();
+  gfx::Size preferred_size = contents()->GetPreferredSize();
+  expected_size.Enlarge(-50, -50);
+  preferred_size.Enlarge(-50, -50);
+  contents()->set_preferred_size(preferred_size);
+  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  EXPECT_EQ(expected_size.ToString(), GetDialogSize().ToString());
+}
 
-  // Make sure the dialog shrinks when the preferred content area shrinks.
-  expected_size.Enlarge(-200, -200);
-  preferred_size.Enlarge(-200, -200);
-  contents->set_preferred_size(preferred_size);
-  UpdateWebContentsModalDialogPosition(dialog, &dialog_host);
-  EXPECT_EQ(expected_size, dialog->GetClientAreaBoundsInScreen().size());
+// Make sure browser modal dialogs are not affected by restrictions on web
+// content modal dialog maximum sizes.
+TEST_F(ConstrainedWindowViewsTest, MaximumBrowserDialogSize) {
+  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  gfx::Size dialog_size = GetDialogSize();
+  gfx::Size max_dialog_size = dialog_size;
+  max_dialog_size.Enlarge(-50, -50);
+  dialog_host()->set_max_dialog_size(max_dialog_size);
+  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  EXPECT_EQ(dialog_size.ToString(), GetDialogSize().ToString());
+}
 
-  // Make sure the dialog is never larger than the max dialog size the dialog
-  // host can handle.
-  gfx::Size full_dialog_size = dialog->GetClientAreaBoundsInScreen().size();
+// Web content modal dialogs should not get a size larger than what the dialog
+// host gives as the maximum size.
+TEST_F(ConstrainedWindowViewsTest, MaximumWebContentsDialogSize) {
+  UpdateWebContentsModalDialogPosition(dialog(), dialog_host());
+  gfx::Size full_dialog_size = GetDialogSize();
   gfx::Size max_dialog_size = full_dialog_size;
-  max_dialog_size.Enlarge(-100, -100);
-  dialog_host.set_max_dialog_size(max_dialog_size);
-  UpdateWebContentsModalDialogPosition(dialog, &dialog_host);
+  max_dialog_size.Enlarge(-50, -50);
+  dialog_host()->set_max_dialog_size(max_dialog_size);
+  UpdateWebContentsModalDialogPosition(dialog(), dialog_host());
   // The top border of the dialog is intentionally drawn outside the area
   // specified by the dialog host, so add it to the size the dialog is expected
   // to occupy.
-  expected_size = max_dialog_size;
-  Border* border = dialog->non_client_view()->frame_view()->border();
+  gfx::Size expected_size = max_dialog_size;
+  Border* border = dialog()->non_client_view()->frame_view()->border();
   if (border)
     expected_size.Enlarge(0, border->GetInsets().top());
-  EXPECT_EQ(expected_size,
-            dialog->non_client_view()->GetBoundsInScreen().size());
+  EXPECT_EQ(expected_size.ToString(), GetDialogSize().ToString());
 
-  // Enlarge the max area again and make sure the dialog again uses its
-  // preferred size.
-  dialog_host.set_max_dialog_size(gfx::Size(5000, 5000));
-  UpdateWebContentsModalDialogPosition(dialog, &dialog_host);
-  EXPECT_EQ(full_dialog_size, dialog->GetClientAreaBoundsInScreen().size());
+  // Increasing the maximum dialog size should bring the dialog back to its
+  // original size.
+  max_dialog_size.Enlarge(100, 100);
+  dialog_host()->set_max_dialog_size(max_dialog_size);
+  UpdateWebContentsModalDialogPosition(dialog(), dialog_host());
+  EXPECT_EQ(full_dialog_size.ToString(), GetDialogSize().ToString());
 }
 
 }  // namespace views

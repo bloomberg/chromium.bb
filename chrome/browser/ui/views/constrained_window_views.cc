@@ -39,23 +39,22 @@
 #include "ash/wm/custom_frame_view_ash.h"
 #endif
 
-using web_modal::WebContentsModalDialogHost;
-using web_modal::WebContentsModalDialogHostObserver;
+using web_modal::ModalDialogHost;
+using web_modal::ModalDialogHostObserver;
 
 namespace {
 // The name of a key to store on the window handle to associate
-// WebContentsModalDialogHostObserverViews with the Widget.
-const char* const kWebContentsModalDialogHostObserverViewsKey =
-    "__WEB_CONTENTS_MODAL_DIALOG_HOST_OBSERVER_VIEWS__";
+// BrowserModalDialogHostObserverViews with the Widget.
+const char* const kBrowserModalDialogHostObserverViewsKey =
+    "__BROWSER_MODAL_DIALOG_HOST_OBSERVER_VIEWS__";
 
-// Applies positioning changes from the WebContentsModalDialogHost to the
-// Widget.
-class WebContentsModalDialogHostObserverViews
+// Applies positioning changes from the ModalDialogHost to the Widget.
+class BrowserModalDialogHostObserverViews
     : public views::WidgetObserver,
-      public WebContentsModalDialogHostObserver {
+      public ModalDialogHostObserver {
  public:
-  WebContentsModalDialogHostObserverViews(
-      WebContentsModalDialogHost* host,
+  BrowserModalDialogHostObserverViews(
+      ModalDialogHost* host,
       views::Widget* target_widget,
       const char *const native_window_property)
       : host_(host),
@@ -67,7 +66,7 @@ class WebContentsModalDialogHostObserverViews
     target_widget_->AddObserver(this);
   }
 
-  virtual ~WebContentsModalDialogHostObserverViews() {
+  virtual ~BrowserModalDialogHostObserverViews() {
     if (host_)
       host_->RemoveObserver(this);
     target_widget_->RemoveObserver(this);
@@ -82,7 +81,7 @@ class WebContentsModalDialogHostObserverViews
 
   // WebContentsModalDialogHostObserver overrides
   virtual void OnPositionRequiresUpdate() OVERRIDE {
-    UpdateWebContentsModalDialogPosition(target_widget_, host_);
+    UpdateBrowserModalDialogPosition(target_widget_, host_);
   }
 
   virtual void OnHostDestroying() OVERRIDE {
@@ -91,12 +90,35 @@ class WebContentsModalDialogHostObserverViews
   }
 
  private:
-  WebContentsModalDialogHost* host_;
+  ModalDialogHost* host_;
   views::Widget* target_widget_;
   const char* const native_window_property_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostObserverViews);
+  DISALLOW_COPY_AND_ASSIGN(BrowserModalDialogHostObserverViews);
 };
+
+void UpdateModalDialogPosition(
+    views::Widget* widget,
+    web_modal::ModalDialogHost* dialog_host,
+    const gfx::Size& size) {
+  gfx::Point position = dialog_host->GetDialogPosition(size);
+  views::Border* border =
+      widget->non_client_view()->frame_view()->border();
+  // Border may be null during widget initialization.
+  if (border) {
+    // Align the first row of pixels inside the border. This is the apparent
+    // top of the dialog.
+    position.set_y(position.y() - border->GetInsets().top());
+  }
+
+  if (widget->is_top_level()) {
+    position +=
+        views::Widget::GetWidgetForNativeView(dialog_host->GetHostView())->
+            GetClientAreaBoundsInScreen().OffsetFromOrigin();
+  }
+
+  widget->SetBounds(gfx::Rect(position, size));
+}
 
 }  // namespace
 
@@ -571,31 +593,24 @@ void UpdateWebContentsModalDialogPosition(
     views::Widget* widget,
     web_modal::WebContentsModalDialogHost* dialog_host) {
   gfx::Size size = widget->GetRootView()->GetPreferredSize();
-  views::Border* border =
-      widget->non_client_view()->frame_view()->border();
   gfx::Size max_size = dialog_host->GetMaximumDialogSize();
   // Enlarge the max size by the top border, as the dialog will be shifted
-  // outside the area specified by the dialog host by this amount later in the
-  // function.
+  // outside the area specified by the dialog host by this amount later.
+  views::Border* border =
+      widget->non_client_view()->frame_view()->border();
   // Border may be null during widget initialization.
   if (border)
     max_size.Enlarge(0, border->GetInsets().top());
   size.SetToMin(max_size);
+  UpdateModalDialogPosition(widget, dialog_host, size);
+}
 
-  gfx::Point position = dialog_host->GetDialogPosition(size);
-  if (border) {
-    // Align the first row of pixels inside the border. This is the apparent
-    // top of the dialog.
-    position.set_y(position.y() - border->GetInsets().top());
-  }
-
-  if (widget->is_top_level()) {
-    position +=
-        views::Widget::GetWidgetForNativeView(dialog_host->GetHostView())->
-            GetClientAreaBoundsInScreen().OffsetFromOrigin();
-  }
-
-  widget->SetBounds(gfx::Rect(position, size));
+void UpdateBrowserModalDialogPosition(
+    views::Widget* widget,
+    web_modal::ModalDialogHost* dialog_host) {
+  UpdateModalDialogPosition(widget,
+                            dialog_host,
+                            widget->GetRootView()->GetPreferredSize());
 }
 
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
@@ -609,11 +624,11 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
   Browser* browser = chrome::FindBrowserWithWindow(parent);
   if (browser) {
     ChromeWebModalDialogManagerDelegate* manager = browser;
-    WebContentsModalDialogHost* host = manager->GetWebContentsModalDialogHost();
+    ModalDialogHost* host = manager->GetWebContentsModalDialogHost();
     DCHECK_EQ(parent, host->GetHostView());
-    WebContentsModalDialogHostObserver* dialog_host_observer =
-        new WebContentsModalDialogHostObserverViews(
-            host, widget, kWebContentsModalDialogHostObserverViewsKey);
+    ModalDialogHostObserver* dialog_host_observer =
+        new BrowserModalDialogHostObserverViews(
+            host, widget, kBrowserModalDialogHostObserverViewsKey);
     dialog_host_observer->OnPositionRequiresUpdate();
   }
   return widget;

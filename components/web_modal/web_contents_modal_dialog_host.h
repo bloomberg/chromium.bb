@@ -5,55 +5,24 @@
 #ifndef COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
 #define COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
 
-#include "ui/gfx/native_widget_types.h"
+#include "components/web_modal/modal_dialog_host.h"
 
 namespace gfx {
-class Point;
 class Size;
 }
 
 namespace web_modal {
 
-// Observer to be implemented to update web contents modal dialogs when the host
-// indicates their position needs to be changed.
-class WebContentsModalDialogHostObserver {
- public:
-  virtual ~WebContentsModalDialogHostObserver();
-
-  virtual void OnPositionRequiresUpdate() = 0;
-  virtual void OnHostDestroying() = 0;
-
- protected:
-  WebContentsModalDialogHostObserver();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostObserver);
-};
-
-// Interface for supporting positioning of web contents modal dialogs over a
-// window/widget.
-class WebContentsModalDialogHost {
+// Unlike browser modal dialogs, web contents modal dialogs should not be able
+// to draw outside the browser window. WebContentsModalDialogHost adds a
+// GetMaximumDialogSize method in order for positioning code to be able to take
+// this into account.
+class WebContentsModalDialogHost : public ModalDialogHost {
  public:
   virtual ~WebContentsModalDialogHost();
 
-  // Returns the view against which the dialog is positioned and parented.
-  virtual gfx::NativeView GetHostView() const = 0;
-  // Gets the position for the dialog in coordinates relative to the host
-  // view.
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) = 0;
-
   // Returns the maximum dimensions a dialog can have.
   virtual gfx::Size GetMaximumDialogSize() = 0;
-
-  // Add/remove observer.
-  virtual void AddObserver(WebContentsModalDialogHostObserver* observer) = 0;
-  virtual void RemoveObserver(WebContentsModalDialogHostObserver* observer) = 0;
-
- protected:
-  WebContentsModalDialogHost();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHost);
 };
 
 }  // namespace web_modal

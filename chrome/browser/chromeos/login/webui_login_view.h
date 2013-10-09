@@ -65,9 +65,9 @@ class WebUILoginView : public views::View,
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
   virtual gfx::Size GetMaximumDialogSize() OVERRIDE;
   virtual void AddObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
 
   // Gets the native window from the view widget.
   gfx::NativeWindow GetNativeWindow() const;
@@ -168,7 +168,7 @@ class WebUILoginView : public views::View,
 
   scoped_ptr<ScopedGaiaAuthExtension> auth_extension_;
 
-  ObserverList<web_modal::WebContentsModalDialogHostObserver> observer_list_;
+  ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };

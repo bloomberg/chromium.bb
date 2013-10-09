@@ -86,9 +86,9 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
   virtual gfx::Size GetMaximumDialogSize() OVERRIDE;
   virtual void AddObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
 
   content::WebContents* web_contents() const {
     return shell_window_->web_contents();
@@ -168,7 +168,7 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
 
   // Observers to be notified when any web contents modal dialog requires
   // updating its dimensions.
-  ObserverList<web_modal::WebContentsModalDialogHostObserver> observer_list_;
+  ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
 
   ui::X11AtomCache atom_cache_;
 

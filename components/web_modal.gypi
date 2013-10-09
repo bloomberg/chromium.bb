@@ -19,6 +19,8 @@
         'WEB_MODAL_IMPLEMENTATION',
       ],
       'sources': [
+        'web_modal/modal_dialog_host.cc',
+        'web_modal/modal_dialog_host.h',
         'web_modal/native_web_contents_modal_dialog.h',
         'web_modal/native_web_contents_modal_dialog_manager.h',
         'web_modal/web_contents_modal_dialog_host.cc',
