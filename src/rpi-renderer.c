@@ -1288,8 +1288,7 @@ rpi_renderer_attach(struct weston_surface *base, struct weston_buffer *buffer)
 	} else {
 #if ENABLE_EGL
 		struct rpi_renderer *renderer = to_rpi_renderer(base->compositor);
-		struct wl_resource *wl_resource =
-			(struct wl_resource *)buffer->resource;
+		struct wl_resource *wl_resource = buffer->resource;
 
 		if (!renderer->has_bind_display ||
 		    !renderer->query_buffer(renderer->egl_display,
