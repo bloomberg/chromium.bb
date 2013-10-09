@@ -93,6 +93,9 @@ cr.define('cr.ui.dialogs', function() {
     // Handle Escape.
     if (event.keyCode == 27 && !this.cancelButton_.disabled) {
       this.onCancelClick_(event);
+      event.stopPropagation();
+      // Prevent the event from being handled by the container of the dialog.
+      // e.g. Prevent the parent container from closing at the same time.
       event.preventDefault();
     }
   };
