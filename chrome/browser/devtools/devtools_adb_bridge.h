@@ -186,17 +186,15 @@ class DevToolsAdbBridge
    public:
     explicit RemoteDevice(scoped_refptr<AndroidDevice> device);
 
+    std::string GetSerial();
+    std::string GetModel();
+    bool IsConnected();
+    void AddBrowser(scoped_refptr<RemoteBrowser> browser);
+
     scoped_refptr<AndroidDevice> device() { return device_; }
-    std::string serial() { return device_->serial(); }
-    std::string model() { return device_->model(); }
-
     RemoteBrowsers& browsers() { return browsers_; }
-    void AddBrowser(scoped_refptr<RemoteBrowser> browser) {
-      browsers_.push_back(browser);
-    }
-
-    gfx::Size GetScreenSize() { return screen_size_; }
-    void SetScreenSize(const gfx::Size& size) { screen_size_ = size; }
+    gfx::Size screen_size() { return screen_size_; }
+    void set_screen_size(const gfx::Size& size) { screen_size_ = size; }
 
    private:
     friend class base::RefCounted<RemoteDevice>;
@@ -219,6 +217,7 @@ class DevToolsAdbBridge
                             const CommandCallback& callback) = 0;
     virtual void OpenSocket(const std::string& socket_name,
                             const SocketCallback& callback) = 0;
+    virtual bool IsConnected() = 0;
     void HttpQuery(const std::string& la_name,
                    const std::string& request,
                    const CommandCallback& callback);

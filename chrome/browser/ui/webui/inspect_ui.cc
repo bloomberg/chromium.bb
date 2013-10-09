@@ -96,8 +96,9 @@ const char kNameField[]  = "name";
 const char kFaviconUrlField[] = "faviconUrl";
 const char kDescription[] = "description";
 const char kPidField[]  = "pid";
-const char kAdbSerialField[] = "adbSerial";
+const char kAdbConnectedField[] = "adbConnected";
 const char kAdbModelField[] = "adbModel";
+const char kAdbSerialField[] = "adbSerial";
 const char kAdbBrowserProductField[] = "adbBrowserProduct";
 const char kAdbBrowserPackageField[] = "adbBrowserPackage";
 const char kAdbBrowserVersionField[] = "adbBrowserVersion";
@@ -689,11 +690,12 @@ void InspectUI::RemoteDevicesChanged(
        dit != devices->end(); ++dit) {
     DevToolsAdbBridge::RemoteDevice* device = dit->get();
     DictionaryValue* device_data = new DictionaryValue();
-    device_data->SetString(kAdbModelField, device->model());
-    device_data->SetString(kAdbSerialField, device->serial());
+    device_data->SetString(kAdbModelField, device->GetModel());
+    device_data->SetString(kAdbSerialField, device->GetSerial());
+    device_data->SetBoolean(kAdbConnectedField, device->IsConnected());
     std::string device_id = base::StringPrintf(
         "device:%s",
-        device->serial().c_str());
+        device->GetSerial().c_str());
     device_data->SetString(kAdbGlobalIdField, device_id);
     ListValue* browser_list = new ListValue();
     device_data->Set(kAdbBrowsersField, browser_list);
@@ -708,7 +710,7 @@ void InspectUI::RemoteDevicesChanged(
       browser_data->SetString(kAdbBrowserVersionField, browser->version());
       std::string browser_id = base::StringPrintf(
           "browser:%s:%s:%s",
-          device->serial().c_str(),
+          device->GetSerial().c_str(),
           browser->product().c_str(),  // Force sorting by product name.
           browser->socket().c_str());
       browser_data->SetString(kAdbGlobalIdField, browser_id);
@@ -725,7 +727,7 @@ void InspectUI::RemoteDevicesChanged(
             GURL(page->url()), page->title(), GURL(page->favicon_url()),
             page->description(), 0, 0);
         std::string page_id = base::StringPrintf("page:%s:%s:%s",
-            device->serial().c_str(),
+            device->GetSerial().c_str(),
             browser->socket().c_str(),
             page->id().c_str());
         page_data->SetString(kAdbGlobalIdField, page_id);
@@ -734,7 +736,7 @@ void InspectUI::RemoteDevicesChanged(
         // Pass the screen size in the page object to make sure that
         // the caching logic does not prevent the page item from updating
         // when the screen size changes.
-        gfx::Size screen_size = device->GetScreenSize();
+        gfx::Size screen_size = device->screen_size();
         page_data->SetInteger(kAdbScreenWidthField, screen_size.width());
         page_data->SetInteger(kAdbScreenHeightField, screen_size.height());
         remote_pages_[page_id] = page;
@@ -745,7 +747,7 @@ void InspectUI::RemoteDevicesChanged(
 
     if (port_forwarding_controller) {
       PortForwardingController::DevicesStatus::iterator sit =
-          port_forwarding_status.find(device->serial());
+          port_forwarding_status.find(device->GetSerial());
       if (sit != port_forwarding_status.end()) {
         DictionaryValue* port_status_dict = new DictionaryValue();
         typedef PortForwardingController::PortStatusMap StatusMap;

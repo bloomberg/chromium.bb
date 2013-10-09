@@ -135,13 +135,8 @@ function populateDeviceLists(devices) {
   for (var d = 0; d < devices.length; d++) {
     var device = devices[d];
 
-    var devicePorts;
-    var browserList;
     var deviceSection = $(device.adbGlobalId);
-    if (deviceSection) {
-      devicePorts = deviceSection.querySelector('.device-ports');
-      browserList = deviceSection.querySelector('.browsers');
-    } else {
+    if (!deviceSection) {
       deviceSection = document.createElement('div');
       deviceSection.id = device.adbGlobalId;
       deviceSection.className = 'device';
@@ -153,7 +148,6 @@ function populateDeviceLists(devices) {
 
       var deviceName = document.createElement('div');
       deviceName.className = 'device-name';
-      deviceName.textContent = device.adbModel;
       deviceHeader.appendChild(deviceName);
 
       if (device.adbSerial) {
@@ -163,18 +157,28 @@ function populateDeviceLists(devices) {
         deviceHeader.appendChild(deviceSerial);
       }
 
-      devicePorts = document.createElement('div');
+      var devicePorts = document.createElement('div');
       devicePorts.className = 'device-ports';
       deviceHeader.appendChild(devicePorts);
 
-      browserList = document.createElement('div');
+      var browserList = document.createElement('div');
       browserList.className = 'browsers';
       deviceSection.appendChild(browserList);
+
+      var authenticating = document.createElement('div');
+      authenticating.className = 'device-auth';
+      deviceSection.appendChild(authenticating);
     }
 
     if (alreadyDisplayed(deviceSection, device))
       continue;
 
+    deviceSection.querySelector('.device-name').textContent = device.adbModel;
+    deviceSection.querySelector('.device-auth').textContent =
+        device.adbConnected ? '' : 'Pending authentication: please accept ' +
+          'debugging session on the device.';
+
+    var devicePorts = deviceSection.querySelector('.device-ports');
     devicePorts.textContent = '';
     if (device.adbPortStatus) {
       for (var port in device.adbPortStatus) {
@@ -198,6 +202,7 @@ function populateDeviceLists(devices) {
       }
     }
 
+    var browserList = deviceSection.querySelector('.browsers');
     var newBrowserIds =
         device.browsers.map(function(b) { return b.adbGlobalId });
     Array.prototype.forEach.call(

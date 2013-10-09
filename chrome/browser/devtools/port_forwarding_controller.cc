@@ -595,16 +595,18 @@ PortForwardingController::UpdateDeviceList(
   for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> device = *it;
-    Registry::iterator rit = registry_.find(device->serial());
+    if (!device->IsConnected())
+      continue;
+    Registry::iterator rit = registry_.find(device->GetSerial());
     if (rit == registry_.end()) {
       std::string socket = FindBestSocketForTethering(device->browsers());
-      if (!socket.empty() || device->serial().empty()) {
+      if (!socket.empty() || device->GetSerial().empty()) {
         // Will delete itself when disconnected.
         new Connection(
           &registry_, device->device(), socket, adb_thread_, pref_service_);
       }
     } else {
-      status[device->serial()] = (*rit).second->GetPortStatusMap();
+      status[device->GetSerial()] = (*rit).second->GetPortStatusMap();
     }
   }
   return status;

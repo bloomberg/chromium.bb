@@ -93,6 +93,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   bool terminated() { return terminated_; }
 
+  bool is_connected() { return is_connected_; }
+
  private:
   friend class base::RefCountedThreadSafe<AndroidUsbDevice>;
   virtual ~AndroidUsbDevice();

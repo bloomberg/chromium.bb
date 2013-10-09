@@ -84,6 +84,8 @@ class AdbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
                           const CommandCallback& callback) OVERRIDE;
   virtual void OpenSocket(const std::string& name,
                           const SocketCallback& callback) OVERRIDE;
+  virtual bool IsConnected() OVERRIDE;
+
  private:
   virtual ~AdbDeviceImpl() {}
 };
@@ -106,6 +108,10 @@ void AdbDeviceImpl::OpenSocket(const std::string& name,
   AdbClientSocket::TransportQuery(kAdbPort, serial(), socket_name, callback);
 }
 
+bool AdbDeviceImpl::IsConnected() {
+  return true;
+}
+
 
 // UsbDeviceImpl --------------------------------------------------------------
 
@@ -116,6 +122,7 @@ class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
                           const CommandCallback& callback) OVERRIDE;
   virtual void OpenSocket(const std::string& name,
                           const SocketCallback& callback) OVERRIDE;
+  virtual bool IsConnected() OVERRIDE;
 
  private:
   void OnOpenSocket(const SocketCallback& callback,
@@ -199,6 +206,10 @@ void UsbDeviceImpl::OnRead(net::StreamSocket* socket,
                                    socket, buffer, new_data, callback));
   if (result != net::ERR_IO_PENDING)
     OnRead(socket, buffer, new_data, callback, result);
+}
+
+bool UsbDeviceImpl::IsConnected() {
+  return device_->is_connected();
 }
 
 
@@ -398,8 +409,14 @@ void AdbPagesCommand::ProcessSerials() {
 #endif  // defined(DEBUG_DEVTOOLS)
 
   scoped_refptr<DevToolsAdbBridge::AndroidDevice> device = devices_.back();
-  device->RunCommand(kDeviceModelCommand,
-                     base::Bind(&AdbPagesCommand::ReceivedModel, this));
+  if (device->IsConnected()) {
+    device->RunCommand(kDeviceModelCommand,
+                       base::Bind(&AdbPagesCommand::ReceivedModel, this));
+  } else {
+    remote_devices_->push_back(new DevToolsAdbBridge::RemoteDevice(device));
+    devices_.pop_back();
+    ProcessSerials();
+  }
 }
 
 void AdbPagesCommand::ReceivedModel(int result, const std::string& response) {
@@ -639,7 +656,7 @@ void AdbPagesCommand::ParseScreenSize(const std::string& str) {
       !base::StringToInt(numbers[1], &height))
     return;
 
-  remote_devices_->back()->SetScreenSize(gfx::Size(width, height));
+  remote_devices_->back()->set_screen_size(gfx::Size(width, height));
 }
 
 
@@ -1034,6 +1051,23 @@ DevToolsAdbBridge::RemoteBrowser::~RemoteBrowser() {
 DevToolsAdbBridge::RemoteDevice::RemoteDevice(
     scoped_refptr<AndroidDevice> device)
     : device_(device) {
+}
+
+std::string DevToolsAdbBridge::RemoteDevice::GetSerial() {
+  return device_->serial();
+}
+
+std::string DevToolsAdbBridge::RemoteDevice::GetModel() {
+  return device_->model();
+}
+
+bool DevToolsAdbBridge::RemoteDevice::IsConnected() {
+  return device_->IsConnected();
+}
+
+void DevToolsAdbBridge::RemoteDevice::AddBrowser(
+    scoped_refptr<RemoteBrowser> browser) {
+  browsers_.push_back(browser);
 }
 
 DevToolsAdbBridge::RemoteDevice::~RemoteDevice() {
