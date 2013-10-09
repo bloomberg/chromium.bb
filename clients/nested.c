@@ -288,7 +288,7 @@ surface_attach(struct wl_client *client,
 		wl_buffer_send_release(surface->buffer_resource);
 
 	surface->buffer_resource = buffer_resource;
-	if (!query_buffer(nested->egl_display, buffer_resource,
+	if (!query_buffer(nested->egl_display, (void *) buffer_resource,
 			  EGL_TEXTURE_FORMAT, &format)) {
 		fprintf(stderr, "attaching non-egl wl_buffer\n");
 		return;
@@ -316,8 +316,10 @@ surface_attach(struct wl_client *client,
 		return;
 	}
 
-	query_buffer(nested->egl_display, buffer_resource, EGL_WIDTH, &width);
-	query_buffer(nested->egl_display, buffer_resource, EGL_HEIGHT, &height);
+	query_buffer(nested->egl_display,
+		     (void *) buffer_resource, EGL_WIDTH, &width);
+	query_buffer(nested->egl_display,
+		     (void *) buffer_resource, EGL_HEIGHT, &height);
 
 	device = display_get_cairo_device(nested->display);
 	surface->cairo_surface = 
