@@ -24,7 +24,9 @@ struct DomainRule {
 8.bg, 0
 9.bg, 0
 a.bg, 0
+a.prod.fastly.net, 4
 a.se, 0
+a.ssl.fastly.net, 4
 aa.no, 0
 aarborte.no, 0
 ab.ca, 0
@@ -52,7 +54,6 @@ ac.ma, 0
 ac.me, 0
 ac.mu, 0
 ac.mw, 0
-ac.ng, 0
 ac.pa, 0
 ac.pr, 0
 ac.rs, 0
@@ -214,13 +215,16 @@ aomori.aomori.jp, 0
 aomori.jp, 0
 aosta.it, 0
 aoste.it, 0
+ap-northeast-1.compute.amazonaws.com, 4
+ap-southeast-1.compute.amazonaws.com, 4
+ap-southeast-2.compute.amazonaws.com, 4
 ap.it, 0
 appspot.com, 4
 aq, 0
 aq.it, 0
 aquarium.museum, 0
 aquila.it, 0
-ar, 2
+ar, 0
 ar.com, 4
 ar.it, 0
 ar.us, 0
@@ -359,6 +363,7 @@ azumino.nagano.jp, 0
 b.bg, 0
 b.br, 0
 b.se, 0
+b.ssl.fastly.net, 4
 ba, 0
 ba.it, 0
 babia-gora.pl, 0
@@ -788,6 +793,8 @@ cl, 0
 cl.it, 0
 clinton.museum, 0
 clock.museum, 0
+cloudcontrolapp.com, 4
+cloudcontrolled.com, 4
 cloudfront.net, 4
 club.aero, 0
 club.tw, 0
@@ -831,6 +838,7 @@ co.mw, 0
 co.na, 0
 co.nl, 4
 co.no, 4
+co.om, 0
 co.pl, 4
 co.pn, 0
 co.pw, 0
@@ -866,6 +874,7 @@ com.ag, 0
 com.ai, 0
 com.al, 0
 com.an, 0
+com.ar, 0
 com.au, 0
 com.aw, 0
 com.az, 0
@@ -936,6 +945,7 @@ com.na, 0
 com.nf, 0
 com.ng, 0
 com.nr, 0
+com.om, 0
 com.pa, 0
 com.pe, 0
 com.pf, 0
@@ -961,6 +971,7 @@ com.sl, 0
 com.sn, 0
 com.so, 0
 com.st, 0
+com.sv, 0
 com.sy, 0
 com.tj, 0
 com.tm, 0
@@ -981,12 +992,13 @@ communication.museum, 0
 communications.museum, 0
 community.museum, 0
 como.it, 0
+compute-1.amazonaws.com, 4
+compute.amazonaws.com, 4
 computer.museum, 0
 computerhistory.museum, 0
 conf.au, 0
 conf.lv, 0
 conference.aero, 0
-congresodelalengua3.ar, 1
 consulado.st, 0
 consultant.aero, 0
 consulting.aero, 0
@@ -1023,6 +1035,7 @@ crew.aero, 0
 crimea.ua, 0
 crotone.it, 0
 cs.it, 0
+csiro.au, 0
 ct.it, 0
 ct.us, 0
 cu, 0
@@ -1173,6 +1186,7 @@ edu.ac, 0
 edu.af, 0
 edu.al, 0
 edu.an, 0
+edu.ar, 0
 edu.au, 0
 edu.az, 0
 edu.ba, 0
@@ -1238,6 +1252,7 @@ edu.mx, 0
 edu.my, 0
 edu.ng, 0
 edu.nr, 0
+edu.om, 0
 edu.pa, 0
 edu.pe, 0
 edu.pf, 0
@@ -1261,6 +1276,7 @@ edu.sg, 0
 edu.sl, 0
 edu.sn, 0
 edu.st, 0
+edu.sv, 0
 edu.sy, 0
 edu.tj, 0
 edu.tm, 0
@@ -1273,7 +1289,6 @@ edu.vc, 0
 edu.ve, 0
 edu.vn, 0
 edu.ws, 0
-educ.ar, 1
 education.museum, 0
 educational.museum, 0
 educator.aero, 0
@@ -1349,6 +1364,7 @@ eti.br, 0
 etne.no, 0
 etnedal.no, 0
 eu, 0
+eu-west-1.compute.amazonaws.com, 4
 eu.com, 4
 eu.int, 0
 eun.eg, 0
@@ -1651,6 +1667,8 @@ glas.museum, 0
 glass.museum, 0
 gliding.aero, 0
 gliwice.pl, 0
+global.prod.fastly.net, 4
+global.ssl.fastly.net, 4
 glogow.pl, 0
 gloppen.no, 0
 gm, 0
@@ -1669,6 +1687,7 @@ go.th, 0
 go.tj, 0
 go.tz, 0
 go.ug, 0
+gob.ar, 0
 gob.bo, 0
 gob.cl, 0
 gob.do, 0
@@ -1680,7 +1699,7 @@ gob.mx, 0
 gob.pa, 0
 gob.pe, 0
 gob.pk, 0
-gobiernoelectronico.ar, 1
+gob.sv, 0
 gobo.wakayama.jp, 0
 godo.gifu.jp, 0
 gojome.akita.jp, 0
@@ -1790,6 +1809,7 @@ gov.my, 0
 gov.nc.tr, 0
 gov.ng, 0
 gov.nr, 0
+gov.om, 0
 gov.ph, 0
 gov.pk, 0
 gov.pl, 0
@@ -1981,6 +2001,8 @@ hemsedal.no, 0
 herad.no, 0
 here-for-more.info, 4
 heritage.museum, 0
+herokuapp.com, 4
+herokussl.com, 4
 heroy.more-og-romsdal.no, 0
 heroy.nordland.no, 0
 hi.cn, 0
@@ -2263,6 +2285,7 @@ ingatlan.hu, 0
 ino.kochi.jp, 0
 insurance.aero, 0
 int, 0
+int.ar, 0
 int.az, 0
 int.bo, 0
 int.ci, 0
@@ -3205,12 +3228,12 @@ me, 0
 me.it, 0
 me.tz, 0
 me.us, 0
-mecon.ar, 1
 med.br, 0
 med.ec, 0
 med.ee, 0
 med.ht, 0
 med.ly, 0
+med.om, 0
 med.pa, 0
 med.pl, 0
 med.pro, 0
@@ -3275,6 +3298,7 @@ mil, 0
 mil.ac, 0
 mil.ae, 0
 mil.al, 0
+mil.ar, 0
 mil.az, 0
 mil.ba, 0
 mil.bo, 0
@@ -3302,6 +3326,7 @@ mil.lv, 0
 mil.mg, 0
 mil.mv, 0
 mil.my, 0
+mil.ng, 0
 mil.no, 0
 mil.pe, 0
 mil.ph, 0
@@ -3426,6 +3451,7 @@ mobara.chiba.jp, 0
 mobi, 0
 mobi.gp, 0
 mobi.na, 0
+mobi.ng, 0
 mobi.tt, 0
 mobi.tz, 0
 mochizuki.nagano.jp, 0
@@ -3509,6 +3535,7 @@ museum, 0
 museum.mv, 0
 museum.mw, 0
 museum.no, 0
+museum.om, 0
 museum.tt, 0
 museumcenter.museum, 0
 museumvereniging.museum, 0
@@ -3534,7 +3561,6 @@ na.it, 0
 naamesjevuemie.no, 0
 nabari.mie.jp, 0
 nachikatsuura.wakayama.jp, 0
-nacion.ar, 1
 nagahama.shiga.jp, 0
 nagai.yamagata.jp, 0
 nagakute.aichi.jp, 0
@@ -3595,6 +3621,7 @@ name.mk, 0
 name.mv, 0
 name.my, 0
 name.na, 0
+name.ng, 0
 name.pr, 0
 name.qa, 0
 name.tj, 0
@@ -3688,6 +3715,7 @@ net.ag, 0
 net.ai, 0
 net.al, 0
 net.an, 0
+net.ar, 0
 net.au, 0
 net.az, 0
 net.ba, 0
@@ -3752,6 +3780,7 @@ net.my, 0
 net.nf, 0
 net.ng, 0
 net.nr, 0
+net.om, 0
 net.pa, 0
 net.pe, 0
 net.ph, 0
@@ -3807,7 +3836,6 @@ ngo.ph, 0
 ngo.pl, 0
 nh.us, 0
 ni, 2
-nic.ar, 1
 nic.im, 0
 nic.in, 0
 nic.tj, 0
@@ -4039,7 +4067,7 @@ olbiatempio.it, 0
 olecko.pl, 0
 olkusz.pl, 0
 olsztyn.pl, 0
-om, 2
+om, 0
 omachi.nagano.jp, 0
 omachi.saga.jp, 0
 omaezaki.shizuoka.jp, 0
@@ -4107,6 +4135,7 @@ org.ag, 0
 org.ai, 0
 org.al, 0
 org.an, 0
+org.ar, 0
 org.au, 0
 org.az, 0
 org.ba, 0
@@ -4181,6 +4210,7 @@ org.my, 0
 org.na, 0
 org.ng, 0
 org.nr, 0
+org.om, 0
 org.pa, 0
 org.pe, 0
 org.pf, 0
@@ -4207,6 +4237,7 @@ org.sl, 0
 org.sn, 0
 org.so, 0
 org.st, 0
+org.sv, 0
 org.sy, 0
 org.sz, 0
 org.tj, 0
@@ -4434,6 +4465,7 @@ pro.ec, 0
 pro.ht, 0
 pro.mv, 0
 pro.na, 0
+pro.om, 0
 pro.pr, 0
 pro.tt, 0
 pro.vn, 0
@@ -4441,7 +4473,6 @@ prochowice.pl, 0
 production.aero, 0
 prof.pr, 0
 project.museum, 0
-promocion.ar, 1
 pruszkow.pl, 0
 przeworsk.pl, 0
 ps, 0
@@ -4509,6 +4540,7 @@ rec.co, 0
 rec.nf, 0
 rec.ro, 0
 recreation.aero, 0
+red.sv, 0
 reggio-calabria.it, 0
 reggio-emilia.it, 0
 reggiocalabria.it, 0
@@ -4526,7 +4558,6 @@ res.in, 0
 research.aero, 0
 research.museum, 0
 resistance.museum, 0
-retina.ar, 1
 rg.it, 0
 rhcloud.com, 4
 ri.it, 0
@@ -4556,6 +4587,7 @@ rnrt.tn, 0
 rns.tn, 0
 rnu.tn, 0
 ro, 0
+ro.com, 4
 ro.it, 0
 roan.no, 0
 rochester.museum, 0
@@ -4613,6 +4645,7 @@ s3-website-us-west-1.amazonaws.com, 4
 s3-website-us-west-2.amazonaws.com, 4
 s3.amazonaws.com, 4
 sa, 0
+sa-east-1.compute.amazonaws.com, 4
 sa.au, 0
 sa.com, 4
 sa.cr, 0
@@ -4726,6 +4759,7 @@ sch.je, 0
 sch.jo, 0
 sch.lk, 0
 sch.ly, 0
+sch.ng, 0
 sch.qa, 0
 sch.sa, 0
 sch.uk, 2
@@ -5091,7 +5125,7 @@ suwalki.pl, 0
 suzaka.nagano.jp, 0
 suzu.ishikawa.jp, 0
 suzuka.mie.jp, 0
-sv, 2
+sv, 0
 sv.it, 0
 svalbard.no, 0
 sveio.no, 0
@@ -5429,6 +5463,7 @@ tsuwano.shimane.jp, 0
 tsuyama.okayama.jp, 0
 tt, 0
 tula.ru, 0
+tur.ar, 0
 tur.br, 0
 turek.pl, 0
 turen.tn, 0
@@ -5458,7 +5493,6 @@ tz, 0
 u.bg, 0
 u.se, 0
 ua, 0
-uba.ar, 1
 ube.yamaguchi.jp, 0
 uchihara.ibaraki.jp, 0
 uchiko.ehime.jp, 0
@@ -5519,6 +5553,10 @@ urn.arpa, 0
 uruma.okinawa.jp, 0
 uryu.hokkaido.jp, 0
 us, 0
+us-east-1.amazonaws.com, 4
+us-gov-west-1.compute.amazonaws.com, 4
+us-west-1.compute.amazonaws.com, 4
+us-west-2.compute.amazonaws.com, 4
 us.com, 4
 us.na, 0
 us.org, 4
@@ -6084,6 +6122,8 @@ yuu.yamaguchi.jp, 0
 yuza.yamagata.jp, 0
 yuzawa.niigata.jp, 0
 yuzhno-sakhalinsk.ru, 0
+z-1.compute-1.amazonaws.com, 4
+z-2.compute-1.amazonaws.com, 4
 z.bg, 0
 z.se, 0
 za, 2
