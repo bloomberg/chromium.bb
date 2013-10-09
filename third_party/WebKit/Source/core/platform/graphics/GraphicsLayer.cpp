@@ -908,9 +908,11 @@ void GraphicsLayer::setContentsClippingMaskLayer(GraphicsLayer* contentsClipping
         return;
 
     m_contentsClippingMaskLayer = contentsClippingMaskLayer;
+    WebLayer* contentsLayer = contentsLayerIfRegistered();
+    if (!contentsLayer)
+        return;
     WebLayer* contentsClippingMaskWebLayer = m_contentsClippingMaskLayer ? m_contentsClippingMaskLayer->platformLayer() : 0;
-    if (hasContentsLayer())
-        contentsLayer()->setMaskLayer(contentsClippingMaskWebLayer);
+    contentsLayer->setMaskLayer(contentsClippingMaskWebLayer);
     updateContentsRect();
 }
 
