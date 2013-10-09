@@ -524,6 +524,8 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 			weston_log("Mapping frame buffer failed.\n");
 			goto out_free;
 		}
+	} else {
+		close(fb_fd);
 	}
 
 	output->base.start_repaint_loop = fbdev_output_start_repaint_loop;
