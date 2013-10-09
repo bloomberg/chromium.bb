@@ -225,17 +225,6 @@
     }
   }
 
-  void CompressedTexImage2DImmediate(
-      GLenum target, GLint level, GLenum internalformat, GLsizei width,
-      GLsizei height, GLint border, GLsizei imageSize) {
-    const uint32 s = 0;  // TODO(gman): compute correct size
-    gles2::cmds::CompressedTexImage2DImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::CompressedTexImage2DImmediate>(s);  // NOLINT
-    if (c) {
-      c->Init(target, level, internalformat, width, height, border, imageSize);
-    }
-  }
-
   void CompressedTexImage2DBucket(
       GLenum target, GLint level, GLenum internalformat, GLsizei width,
       GLsizei height, GLint border, GLuint bucket_id) {
@@ -1125,19 +1114,6 @@
       c->Init(
           target, level, xoffset, yoffset, width, height, format, type,
           pixels_shm_id, pixels_shm_offset, internal);
-    }
-  }
-
-  void TexSubImage2DImmediate(
-      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-      GLsizei height, GLenum format, GLenum type, GLboolean internal) {
-    const uint32 s = 0;  // TODO(gman): compute correct size
-    gles2::cmds::TexSubImage2DImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::TexSubImage2DImmediate>(s);
-    if (c) {
-      c->Init(
-          target, level, xoffset, yoffset, width, height, format, type,
-          internal);
     }
   }
 

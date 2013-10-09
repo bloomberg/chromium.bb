@@ -382,19 +382,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameterivImmediate, 0>(
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 };
 
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribiv, 0>(
-    bool valid) {
-  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
-  DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);
-  if (valid) {
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-};
-
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h"
 
 }  // namespace gles2

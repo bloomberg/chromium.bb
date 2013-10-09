@@ -431,7 +431,6 @@ TEST_F(GLES2FormatTest, CompressedTexImage2D) {
       next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Implement test for CompressedTexImage2DImmediate
 TEST_F(GLES2FormatTest, CompressedTexImage2DBucket) {
   cmds::CompressedTexImage2DBucket& cmd =
       *GetBufferAs<cmds::CompressedTexImage2DBucket>();
@@ -2234,7 +2233,6 @@ TEST_F(GLES2FormatTest, TexSubImage2D) {
       next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Implement test for TexSubImage2DImmediate
 TEST_F(GLES2FormatTest, Uniform1f) {
   cmds::Uniform1f& cmd = *GetBufferAs<cmds::Uniform1f>();
   void* next_cmd = cmd.Set(

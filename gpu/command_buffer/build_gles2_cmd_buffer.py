@@ -1330,7 +1330,7 @@ _FUNCTION_INFO = {
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {
     'type': 'Manual',
-    'immediate': True,
+    'immediate': False,
     'bucket': True,
   },
   'CompressedTexSubImage2D': {
@@ -2005,7 +2005,7 @@ _FUNCTION_INFO = {
   },
   'TexSubImage2D': {
     'type': 'Manual',
-    'immediate': True,
+    'immediate': False,
     'client_test': False,
     'cmd_args': 'GLenumTextureTarget target, GLint level, '
                 'GLint xoffset, GLint yoffset, '
@@ -3648,13 +3648,8 @@ class DataHandler(TypeHandler):
       file.Write("    uint32 total_size = ComputeSize(_size);\n")
     elif func.name == 'BufferSubDataImmediate':
         file.Write("    uint32 total_size = ComputeSize(_size);\n")
-    elif func.name == 'CompressedTexImage2DImmediate':
-        file.Write("    uint32 total_size = ComputeSize(_imageSize);\n")
     elif func.name == 'CompressedTexSubImage2DImmediate':
         file.Write("    uint32 total_size = ComputeSize(_imageSize);\n")
-    elif func.name == 'TexSubImage2DImmediate':
-      file.Write(
-          "    uint32 total_size = 0;  // TODO(gman): get correct size\n")
 
   def WriteImmediateCmdSizeTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -3663,13 +3658,8 @@ class DataHandler(TypeHandler):
       file.Write("    uint32 total_size = cmd.ComputeSize(cmd.size);\n")
     elif func.name == 'BufferSubDataImmediate':
         file.Write("    uint32 total_size = cmd.ComputeSize(cmd.size);\n")
-    elif func.name == 'CompressedTexImage2DImmediate':
-        file.Write("    uint32 total_size = cmd.ComputeSize(cmd.imageSize);\n")
     elif func.name == 'CompressedTexSubImage2DImmediate':
         file.Write("    uint32 total_size = cmd.ComputeSize(cmd.imageSize);\n")
-    elif func.name == 'TexSubImage2DImmediate':
-      file.Write(
-          "    uint32 total_size = 0;  // TODO(gman): get correct size\n")
     file.Write("  EXPECT_EQ(sizeof(cmd), total_size);\n")
 
   def WriteImmediateCmdInit(self, func, file):
