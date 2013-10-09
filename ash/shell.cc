@@ -122,6 +122,9 @@
 #endif  // defined(USE_X11)
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/system/chromeos/power/power_status.h"
+#include "ash/system/chromeos/power/suspend_observer.h"
+#include "ash/system/chromeos/power/user_activity_notifier.h"
+#include "ash/system/chromeos/power/video_activity_notifier.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -539,7 +542,7 @@ Shell::Shell(ShellDelegate* delegate)
       activation_client_(NULL),
 #if defined(OS_CHROMEOS) && defined(USE_X11)
       output_configurator_(new chromeos::OutputConfigurator()),
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
       native_cursor_manager_(new AshNativeCursorManager),
       cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
           native_cursor_manager_)),
@@ -621,6 +624,11 @@ Shell::~Shell() {
   // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems
   // needs to remove observers from it.
   system_tray_notifier_.reset();
+
+#if defined(OS_CHROMEOS)
+  // Destroy VideoActivityNotifier before destroying VideoDetector.
+  video_activity_notifier_.reset();
+#endif  // defined(OS_CHROMEOS)
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
@@ -869,11 +877,17 @@ void Shell::Init() {
     env_filter_->set_cursor_hidden_by_filter(true);
   }
 
-  // Set accelerator controller delegates.
 #if defined(OS_CHROMEOS)
+  // Set accelerator controller delegates.
   accelerator_controller_->SetBrightnessControlDelegate(
       scoped_ptr<ash::BrightnessControlDelegate>(
           new ash::system::BrightnessControllerChromeos).Pass());
+
+  suspend_observer_.reset(new internal::SuspendObserver());
+  user_activity_notifier_.reset(
+      new internal::UserActivityNotifier(user_activity_detector_.get()));
+  video_activity_notifier_.reset(
+      new internal::VideoActivityNotifier(video_detector_.get()));
 #endif
 
   // The compositor thread and main message loop have to be running in
