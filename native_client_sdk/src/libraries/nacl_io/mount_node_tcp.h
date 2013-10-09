@@ -23,7 +23,7 @@ class MountNodeTCP : public MountNodeSocket {
   MountNodeTCP(Mount* mount, PP_Resource socket);
 
  protected:
-  virtual Error Init(int flags);
+  virtual Error Init(int open_flags);
   virtual void Destroy();
 
  public:

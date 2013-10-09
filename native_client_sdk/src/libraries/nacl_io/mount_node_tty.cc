@@ -15,6 +15,7 @@
 #include <algorithm>
 
 #include "nacl_io/ioctl.h"
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/auto_lock.h"
@@ -76,11 +77,10 @@ EventEmitter* MountNodeTty::GetEventEmitter() {
   return emitter_.get();
 }
 
-Error MountNodeTty::Write(size_t offs,
-                     const void* buf,
-                     size_t count,
-                     int* out_bytes) {
-
+Error MountNodeTty::Write(const HandleAttr& attr,
+                          const void* buf,
+                          size_t count,
+                          int* out_bytes) {
   AUTO_LOCK(output_lock_);
   *out_bytes = 0;
 
@@ -102,7 +102,10 @@ Error MountNodeTty::Write(size_t offs,
 }
 
 
-Error MountNodeTty::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+Error MountNodeTty::Read(const HandleAttr& attr,
+                         void* buf,
+                         size_t count,
+                         int* out_bytes) {
   EventListenerLock wait(GetEventEmitter());
   *out_bytes = 0;
 
@@ -151,7 +154,8 @@ Error MountNodeTty::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
 
 Error MountNodeTty::Echo(const char* string, int count) {
   int wrote;
-  Error error = Write(0, string, count, &wrote);
+  HandleAttr data;
+  Error error = Write(data, string, count, &wrote);
   if (error != 0 || wrote != count) {
     // TOOD(sbc): Do something more useful in response to a
     // failure to echo.

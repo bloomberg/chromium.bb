@@ -12,8 +12,10 @@
 
 #include "nacl_io/error.h"
 #include "nacl_io/ioctl.h"
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/mount_dev.h"
+#include "nacl_io/mount_mem.h"
 #include "nacl_io/mount_node.h"
 #include "nacl_io/mount_node_dir.h"
 #include "nacl_io/mount_node_mem.h"
@@ -25,11 +27,21 @@ using namespace nacl_io;
 
 static int s_AllocNum = 0;
 
-class MockMemory : public MountNodeMem {
+class MockMount : public MountMem {
  public:
-  MockMemory() : MountNodeMem(NULL) { s_AllocNum++; }
+  MockMount() {
+    StringMap_t map;
+    EXPECT_EQ(0, Init(1, map, NULL));
+  }
 
-  ~MockMemory() { s_AllocNum--; }
+  int num_nodes() { return inode_pool_.size(); }
+};
+
+class MockNode : public MountNodeMem {
+ public:
+  MockNode() : MountNodeMem(NULL) { s_AllocNum++; }
+
+  ~MockNode() { s_AllocNum--; }
 
   using MountNodeMem::Init;
   using MountNodeMem::AddChild;
@@ -50,7 +62,7 @@ class MockDir : public MountNodeDir {
 };
 
 TEST(MountNodeTest, File) {
-  MockMemory file;
+  MockNode file;
   ScopedMountNode result_node;
   size_t result_size = 0;
   int result_bytes = 0;
@@ -72,18 +84,19 @@ TEST(MountNodeTest, File) {
   for (size_t a = 0; a < sizeof(buf1); a++)
     buf1[a] = a;
   memset(buf2, 0, sizeof(buf2));
+  HandleAttr attr;
 
   EXPECT_EQ(0, file.GetSize(&result_size));
   EXPECT_EQ(0, result_size);
-  EXPECT_EQ(0, file.Read(0, buf2, sizeof(buf2), &result_bytes));
+  EXPECT_EQ(0, file.Read(attr, buf2, sizeof(buf2), &result_bytes));
   EXPECT_EQ(0, result_bytes);
   EXPECT_EQ(0, file.GetSize(&result_size));
   EXPECT_EQ(0, result_size);
-  EXPECT_EQ(0, file.Write(0, buf1, sizeof(buf1), &result_bytes));
+  EXPECT_EQ(0, file.Write(attr, buf1, sizeof(buf1), &result_bytes));
   EXPECT_EQ(sizeof(buf1), result_bytes);
   EXPECT_EQ(0, file.GetSize(&result_size));
   EXPECT_EQ(sizeof(buf1), result_size);
-  EXPECT_EQ(0, file.Read(0, buf2, sizeof(buf2), &result_bytes));
+  EXPECT_EQ(0, file.Read(attr, buf2, sizeof(buf2), &result_bytes));
   EXPECT_EQ(sizeof(buf1), result_bytes);
   EXPECT_EQ(0, memcmp(buf1, buf2, sizeof(buf1)));
 
@@ -102,7 +115,7 @@ TEST(MountNodeTest, File) {
 }
 
 TEST(MountNodeTest, FTruncate) {
-  MockMemory file;
+  MockNode file;
   size_t result_size = 0;
   int result_bytes = 0;
 
@@ -114,9 +127,10 @@ TEST(MountNodeTest, FTruncate) {
     data[a] = a;
   memset(buffer, 0, sizeof(buffer));
   memset(zero, 0, sizeof(zero));
+  HandleAttr attr;
 
   // Write the data to the file.
-  ASSERT_EQ(0, file.Write(0, data, sizeof(data), &result_bytes));
+  ASSERT_EQ(0, file.Write(attr, data, sizeof(data), &result_bytes));
   ASSERT_EQ(sizeof(data), result_bytes);
 
   // Double the size of the file.
@@ -125,12 +139,13 @@ TEST(MountNodeTest, FTruncate) {
   EXPECT_EQ(sizeof(data) * 2, result_size);
 
   // Read the first half of the file, it shouldn't have changed.
-  EXPECT_EQ(0, file.Read(0, buffer, sizeof(buffer), &result_bytes));
+  EXPECT_EQ(0, file.Read(attr, buffer, sizeof(buffer), &result_bytes));
   EXPECT_EQ(sizeof(buffer), result_bytes);
   EXPECT_EQ(0, memcmp(buffer, data, sizeof(buffer)));
 
   // Read the second half of the file, it should be all zeroes.
-  EXPECT_EQ(0, file.Read(sizeof(data), buffer, sizeof(buffer), &result_bytes));
+  attr.offs = sizeof(data);
+  EXPECT_EQ(0, file.Read(attr, buffer, sizeof(buffer), &result_bytes));
   EXPECT_EQ(sizeof(buffer), result_bytes);
   EXPECT_EQ(0, memcmp(buffer, zero, sizeof(buffer)));
 
@@ -140,9 +155,35 @@ TEST(MountNodeTest, FTruncate) {
   EXPECT_EQ(100, result_size);
 
   // Data should still be there.
-  EXPECT_EQ(0, file.Read(0, buffer, sizeof(buffer), &result_bytes));
+  attr.offs = 0;
+  EXPECT_EQ(0, file.Read(attr, buffer, sizeof(buffer), &result_bytes));
   EXPECT_EQ(100, result_bytes);
   EXPECT_EQ(0, memcmp(buffer, data, 100));
+}
+
+TEST(MountTest, Fcntl) {
+  MockNode* node = new MockNode();
+  ScopedMount mnt(new MockMount());
+  ScopedMountNode file(node);
+  KernelHandle handle(mnt, file);
+  ASSERT_EQ(0, handle.Init(O_CREAT|O_APPEND));
+
+  // Test F_GETFL
+  ASSERT_EQ(0, node->Init(S_IREAD | S_IWRITE));
+  int flags = 0;
+  ASSERT_EQ(0, handle.Fcntl(F_GETFL, NULL, &flags));
+  ASSERT_EQ(O_CREAT|O_APPEND, flags);
+
+  // Test F_SETFL
+  // Test adding of O_NONBLOCK
+  flags = O_NONBLOCK|O_APPEND;
+  ASSERT_EQ(0, handle.Fcntl(F_SETFL, reinterpret_cast<char*>(flags), NULL));
+  ASSERT_EQ(0, handle.Fcntl(F_GETFL, NULL, &flags));
+  ASSERT_EQ(O_CREAT|O_APPEND|O_NONBLOCK, flags);
+
+  // Clearing of O_APPEND should generate EPERM;
+  flags = O_NONBLOCK;
+  ASSERT_EQ(EPERM, handle.Fcntl(F_SETFL, reinterpret_cast<char*>(flags), NULL));
 }
 
 TEST(MountNodeTest, Directory) {
@@ -166,13 +207,14 @@ TEST(MountNodeTest, Directory) {
 
   // IO operations should fail
   char buf1[1024];
+  HandleAttr attr;
   EXPECT_EQ(0, root.GetSize(&result_size));
   EXPECT_EQ(0, result_size);
-  EXPECT_EQ(EISDIR, root.Read(0, buf1, sizeof(buf1), &result_bytes));
-  EXPECT_EQ(EISDIR, root.Write(0, buf1, sizeof(buf1), &result_bytes));
+  EXPECT_EQ(EISDIR, root.Read(attr, buf1, sizeof(buf1), &result_bytes));
+  EXPECT_EQ(EISDIR, root.Write(attr, buf1, sizeof(buf1), &result_bytes));
 
   // Test directory operations
-  MockMemory* raw_file = new MockMemory;
+  MockNode* raw_file = new MockNode;
   EXPECT_EQ(0, raw_file->Init(S_IREAD | S_IWRITE));
   ScopedMountNode file(raw_file);
 

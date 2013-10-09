@@ -17,6 +17,7 @@
 #include <windows.h>  // For Sleep()
 #endif
 
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/mount_html5fs.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osunistd.h"
@@ -199,12 +200,13 @@ TEST_F(MountHtml5FsTest, OpenForCreate) {
   EXPECT_EQ(ENOENT, mnt->Access(path, F_OK));
 
   ScopedMountNode node;
-  EXPECT_EQ(0, mnt->Open(path, O_CREAT | O_RDWR, &node));
+  ASSERT_EQ(0, mnt->Open(path, O_CREAT | O_RDWR, &node));
 
   // Write some data.
   char contents[] = "contents";
   int bytes_written = 0;
-  EXPECT_EQ(0, node->Write(0, &contents[0], strlen(contents), &bytes_written));
+  EXPECT_EQ(0, node->Write(HandleAttr(), &contents[0], strlen(contents),
+                           &bytes_written));
   EXPECT_EQ(strlen(contents), bytes_written);
 
   // Create again.
@@ -234,7 +236,6 @@ TEST_F(MountHtml5FsTest, Read) {
   EXPECT_TRUE(
       ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
   EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
-
   StringMap_t map;
   ScopedRef<MountHtml5FsForTesting> mnt(
       new MountHtml5FsForTesting(map, &ppapi_));
@@ -244,28 +245,33 @@ TEST_F(MountHtml5FsTest, Read) {
 
   char buffer[10] = {0};
   int bytes_read = 0;
-  EXPECT_EQ(0, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  HandleAttr attr;
+  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
   EXPECT_EQ(strlen(contents), bytes_read);
   EXPECT_STREQ(contents, buffer);
 
   // Read nothing past the end of the file.
-  EXPECT_EQ(0, node->Read(100, &buffer[0], sizeof(buffer), &bytes_read));
+  attr.offs = 100;
+  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
   EXPECT_EQ(0, bytes_read);
 
   // Read part of the data.
-  EXPECT_EQ(0, node->Read(4, &buffer[0], sizeof(buffer), &bytes_read));
+  attr.offs = 4;
+  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
   ASSERT_EQ(strlen(contents) - 4, bytes_read);
   buffer[bytes_read] = 0;
   EXPECT_STREQ("ents", buffer);
 
   // Writing should fail.
   int bytes_written = 1;  // Set to a non-zero value.
-  EXPECT_EQ(EACCES, node->Write(0, &buffer[0], sizeof(buffer), &bytes_written));
+  attr.offs = 0;
+  EXPECT_EQ(EACCES, node->Write(attr, &buffer[0], sizeof(buffer),
+                                &bytes_written));
   EXPECT_EQ(0, bytes_written);
 
   // Reading from a directory should fail.
   EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDONLY, &node));
-  EXPECT_EQ(EISDIR, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(EISDIR, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
 }
 
 TEST_F(MountHtml5FsTest, Write) {
@@ -284,24 +290,27 @@ TEST_F(MountHtml5FsTest, Write) {
   // Reading should fail.
   char buffer[10];
   int bytes_read = 1;  // Set to a non-zero value.
-  EXPECT_EQ(EACCES, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  HandleAttr attr;
+  EXPECT_EQ(EACCES, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
   EXPECT_EQ(0, bytes_read);
 
   // Reopen as read-write.
   ASSERT_EQ(0, mnt->Open(Path("/file"), O_RDWR, &node));
 
   int bytes_written = 1;  // Set to a non-zero value.
-  EXPECT_EQ(0, node->Write(3, "struct", 6, &bytes_written));
+  attr.offs = 3;
+  EXPECT_EQ(0, node->Write(attr, "struct", 6, &bytes_written));
   EXPECT_EQ(6, bytes_written);
 
-  EXPECT_EQ(0, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  attr.offs = 0;
+  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
   EXPECT_EQ(9, bytes_read);
   buffer[bytes_read] = 0;
   EXPECT_STREQ("construct", buffer);
 
   // Writing to a directory should fail.
   EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDWR, &node));
-  EXPECT_EQ(EISDIR, node->Write(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(EISDIR, node->Write(attr, &buffer[0], sizeof(buffer), &bytes_read));
 }
 
 TEST_F(MountHtml5FsTest, GetStat) {
@@ -378,19 +387,20 @@ TEST_F(MountHtml5FsTest, FTruncate) {
   ScopedMountNode node;
   ASSERT_EQ(0, mnt->Open(Path("/file"), O_RDWR, &node));
 
+  HandleAttr attr;
   char buffer[10] = {0};
   int bytes_read = 0;
 
   // First make the file shorter...
   EXPECT_EQ(0, node->FTruncate(4));
-  EXPECT_EQ(0, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
   EXPECT_EQ(4, bytes_read);
   buffer[bytes_read] = 0;
   EXPECT_STREQ("cont", buffer);
 
   // Now make the file longer...
   EXPECT_EQ(0, node->FTruncate(8));
-  EXPECT_EQ(0, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
   EXPECT_EQ(8, bytes_read);
   buffer[bytes_read] = 0;
   EXPECT_STREQ("cont\0\0\0\0", buffer);

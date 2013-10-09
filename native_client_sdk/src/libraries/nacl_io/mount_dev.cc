@@ -34,8 +34,11 @@ class RealNode : public MountNode {
  public:
   RealNode(Mount* mount, int fd);
 
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
-  virtual Error Write(size_t offs,
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes);
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);
@@ -49,8 +52,11 @@ class NullNode : public MountNodeCharDevice {
  public:
   explicit NullNode(Mount* mount) : MountNodeCharDevice(mount) {}
 
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
-  virtual Error Write(size_t offs,
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes);
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);
@@ -60,7 +66,7 @@ class ConsoleNode : public MountNodeCharDevice {
  public:
   ConsoleNode(Mount* mount, PP_LogLevel level);
 
-  virtual Error Write(size_t offs,
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);
@@ -73,8 +79,11 @@ class ZeroNode : public MountNode {
  public:
   explicit ZeroNode(Mount* mount);
 
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
-  virtual Error Write(size_t offs,
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes);
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);
@@ -84,8 +93,11 @@ class UrandomNode : public MountNode {
  public:
   explicit UrandomNode(Mount* mount);
 
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
-  virtual Error Write(size_t offs,
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes);
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);
@@ -101,7 +113,10 @@ RealNode::RealNode(Mount* mount, int fd) : MountNode(mount), fd_(fd) {
   stat_.st_mode = S_IFCHR;
 }
 
-Error RealNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+Error RealNode::Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes) {
   *out_bytes = 0;
 
   size_t readcnt;
@@ -113,7 +128,7 @@ Error RealNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
   return 0;
 }
 
-Error RealNode::Write(size_t offs,
+Error RealNode::Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes) {
@@ -130,12 +145,15 @@ Error RealNode::Write(size_t offs,
 
 Error RealNode::GetStat(struct stat* stat) { return _real_fstat(fd_, stat); }
 
-Error NullNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+Error NullNode::Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes) {
   *out_bytes = 0;
   return 0;
 }
 
-Error NullNode::Write(size_t offs,
+Error NullNode::Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes) {
@@ -147,7 +165,7 @@ ConsoleNode::ConsoleNode(Mount* mount, PP_LogLevel level)
     : MountNodeCharDevice(mount), level_(level) {
 }
 
-Error ConsoleNode::Write(size_t offs,
+Error ConsoleNode::Write(const HandleAttr& attr,
                          const void* buf,
                          size_t count,
                          int* out_bytes) {
@@ -159,9 +177,9 @@ Error ConsoleNode::Write(size_t offs,
   if (!(var_intr && con_intr))
     return ENOSYS;
 
-  const char* data = static_cast<const char*>(buf);
+  const char* var_data = static_cast<const char*>(buf);
   uint32_t len = static_cast<uint32_t>(count);
-  struct PP_Var val = var_intr->VarFromUtf8(data, len);
+  struct PP_Var val = var_intr->VarFromUtf8(var_data, len);
   con_intr->Log(mount_->ppapi()->GetInstance(), level_, val);
 
   *out_bytes = count;
@@ -170,13 +188,16 @@ Error ConsoleNode::Write(size_t offs,
 
 ZeroNode::ZeroNode(Mount* mount) : MountNode(mount) { stat_.st_mode = S_IFCHR; }
 
-Error ZeroNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+Error ZeroNode::Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes) {
   memset(buf, 0, count);
   *out_bytes = count;
   return 0;
 }
 
-Error ZeroNode::Write(size_t offs,
+Error ZeroNode::Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes) {
@@ -193,7 +214,10 @@ UrandomNode::UrandomNode(Mount* mount) : MountNode(mount) {
 #endif
 }
 
-Error UrandomNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+Error UrandomNode::Read(const HandleAttr& attr,
+                        void* buf,
+                        size_t count,
+                        int* out_bytes) {
   *out_bytes = 0;
 
 #if defined(__native_client__)
@@ -229,7 +253,7 @@ Error UrandomNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
 #endif
 }
 
-Error UrandomNode::Write(size_t offs,
+Error UrandomNode::Write(const HandleAttr& attr,
                          const void* buf,
                          size_t count,
                          int* out_bytes) {
@@ -252,11 +276,13 @@ Error MountDev::Access(const Path& path, int a_mode) {
   return 0;
 }
 
-Error MountDev::Open(const Path& path, int mode, ScopedMountNode* out_node) {
+Error MountDev::Open(const Path& path,
+                     int open_flags,
+                     ScopedMountNode* out_node) {
   out_node->reset(NULL);
 
   // Don't allow creating any files.
-  if (mode & O_CREAT)
+  if (open_flags & O_CREAT)
     return EINVAL;
 
   return root_->FindChild(path.Join(), out_node);

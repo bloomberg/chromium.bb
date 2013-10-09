@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "mount_dev_mock.h"
 #include "nacl_io/ioctl.h"
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/mount_mem.h"
 #include "nacl_io/osdirent.h"
@@ -93,14 +94,16 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(EEXIST, mnt.Mkdir(Path("/foo"), O_RDWR));
   EXPECT_EQ(2, mnt.num_nodes());
 
+  HandleAttr attrs;
+
   // Attempt to READ/WRITE
   EXPECT_EQ(0, file->GetSize(&result_size));
   EXPECT_EQ(0, result_size);
-  EXPECT_EQ(0, file->Write(0, buf1, sizeof(buf1), &result_bytes));
+  EXPECT_EQ(0, file->Write(attrs, buf1, sizeof(buf1), &result_bytes));
   EXPECT_EQ(sizeof(buf1), result_bytes);
   EXPECT_EQ(0, file->GetSize(&result_size));
   EXPECT_EQ(sizeof(buf1), result_size);
-  EXPECT_EQ(0, file->Read(0, buf1, sizeof(buf1), &result_bytes));
+  EXPECT_EQ(0, file->Read(attrs, buf1, sizeof(buf1), &result_bytes));
   EXPECT_EQ(sizeof(buf1), result_bytes);
   EXPECT_EQ(2, mnt.num_nodes());
   EXPECT_EQ(2, file->RefCount());
@@ -207,13 +210,14 @@ TEST(MountTest, DevNull) {
 
   // Writing to /dev/null should write everything.
   const char msg[] = "Dummy test message.";
-  EXPECT_EQ(0, dev_null->Write(0, &msg[0], strlen(msg), &result_bytes));
+  HandleAttr attrs;
+  EXPECT_EQ(0, dev_null->Write(attrs, &msg[0], strlen(msg), &result_bytes));
   EXPECT_EQ(strlen(msg), result_bytes);
 
   // Reading from /dev/null should read nothing.
   const int kBufferLength = 100;
   char buffer[kBufferLength];
-  EXPECT_EQ(0, dev_null->Read(0, &buffer[0], kBufferLength, &result_bytes));
+  EXPECT_EQ(0, dev_null->Read(attrs, &buffer[0], kBufferLength, &result_bytes));
   EXPECT_EQ(0, result_bytes);
 }
 
@@ -228,8 +232,9 @@ TEST(MountTest, DevZero) {
   ASSERT_NE(NULL_NODE, dev_zero.get());
 
   // Writing to /dev/zero should write everything.
+  HandleAttr attrs;
   const char msg[] = "Dummy test message.";
-  EXPECT_EQ(0, dev_zero->Write(0, &msg[0], strlen(msg), &result_bytes));
+  EXPECT_EQ(0, dev_zero->Write(attrs, &msg[0], strlen(msg), &result_bytes));
   EXPECT_EQ(strlen(msg), result_bytes);
 
   // Reading from /dev/zero should read all zeroes.
@@ -237,7 +242,7 @@ TEST(MountTest, DevZero) {
   char buffer[kBufferLength];
   // First fill with all 1s.
   memset(&buffer[0], 0x1, kBufferLength);
-  EXPECT_EQ(0, dev_zero->Read(0, &buffer[0], kBufferLength, &result_bytes));
+  EXPECT_EQ(0, dev_zero->Read(attrs, &buffer[0], kBufferLength, &result_bytes));
   EXPECT_EQ(kBufferLength, result_bytes);
 
   char zero_buffer[kBufferLength];
@@ -258,7 +263,8 @@ TEST(MountTest, DISABLED_DevUrandom) {
 
   // Writing to /dev/urandom should write everything.
   const char msg[] = "Dummy test message.";
-  EXPECT_EQ(0, dev_urandom->Write(0, &msg[0], strlen(msg), &result_bytes));
+  HandleAttr attrs;
+  EXPECT_EQ(0, dev_urandom->Write(attrs, &msg[0], strlen(msg), &result_bytes));
   EXPECT_EQ(strlen(msg), result_bytes);
 
   // Reading from /dev/urandom should read random bytes.
@@ -271,8 +277,8 @@ TEST(MountTest, DISABLED_DevUrandom) {
   unsigned char buffer[kSampleBatchSize];
   for (int batch = 0; batch < kSampleBatches; ++batch) {
     int bytes_read = 0;
-    EXPECT_EQ(0,
-              dev_urandom->Read(0, &buffer[0], kSampleBatchSize, &bytes_read));
+    EXPECT_EQ(0, dev_urandom->Read(attrs, &buffer[0], kSampleBatchSize,
+                                   &bytes_read));
     EXPECT_EQ(kSampleBatchSize, bytes_read);
 
     for (int i = 0; i < bytes_read; ++i) {
@@ -290,4 +296,3 @@ TEST(MountTest, DISABLED_DevUrandom) {
   // Approximate chi-squared value for p-value 0.05, 255 degrees-of-freedom.
   EXPECT_LE(chi_squared, 293.24);
 }
-

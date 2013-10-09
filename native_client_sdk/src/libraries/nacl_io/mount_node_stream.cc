@@ -23,9 +23,9 @@ MountNodeStream::MountNodeStream(Mount* mnt)
       stream_state_flags_(0) {
 }
 
-Error MountNodeStream::Init(int perm) {
-  MountNode::Init(perm);
-  if (perm & O_NONBLOCK)
+Error MountNodeStream::Init(int open_flags) {
+  MountNode::Init(Mount::OpenFlagsToPermission(open_flags));
+  if (open_flags & O_NONBLOCK)
     SetStreamFlags(SSF_NON_BLOCK);
 
   return 0;

@@ -39,9 +39,9 @@ Error Mount::OpenResource(const Path& path, ScopedMountNode* out_node) {
   return EINVAL;
 }
 
-int Mount::OpenModeToPermission(int mode) {
+int Mount::OpenFlagsToPermission(int open_flags) {
   int out;
-  switch (mode & 3) {
+  switch (open_flags & 3) {
     case O_RDONLY:
       out = S_IREAD;
     case O_WRONLY:

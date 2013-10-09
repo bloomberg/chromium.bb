@@ -170,7 +170,11 @@ EventEmitterUDP* MountNodeUDP::GetEventEmitter() {
   return emitter_.get();
 }
 
-Error MountNodeUDP::Init(int flags) {
+Error MountNodeUDP::Init(int open_flags) {
+  Error err = MountNodeSocket::Init(open_flags);
+  if (err != 0)
+    return err;
+
   if (UDPInterface() == NULL)
     return EACCES;
 

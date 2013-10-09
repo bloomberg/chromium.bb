@@ -74,14 +74,15 @@ TEST_F(TtyTest, TtyInput) {
 
   // We read a small chunk first to ensure it doesn't give us
   // more than we ask for.
-  EXPECT_EQ(0, dev_tty_->Read(0, buffer, 5, &bytes_read));
+  HandleAttr attrs;
+  EXPECT_EQ(0, dev_tty_->Read(attrs, buffer, 5, &bytes_read));
   EXPECT_EQ(bytes_read, 5);
   EXPECT_EQ(0, memcmp(message.data(), buffer, 5));
   EXPECT_EQ(0, memcmp(buffer + 5, backup_buffer + 5, 95));
 
   // Now we ask for more data than is left in the tty, to ensure
   // it doesn't give us more than is there.
-  EXPECT_EQ(0, dev_tty_->Read(0, buffer + 5, 95, &bytes_read));
+  EXPECT_EQ(0, dev_tty_->Read(attrs, buffer + 5, 95, &bytes_read));
   EXPECT_EQ(bytes_read, message.size() - 5);
   EXPECT_EQ(0, memcmp(message.data(), buffer, message.size()));
   EXPECT_EQ(0, memcmp(buffer + message.size(),
@@ -106,7 +107,8 @@ TEST_F(TtyTest, TtyOutput) {
   int bytes_written = 10;
   const char* message = "hello\n";
   int message_len = strlen(message);
-  EXPECT_EQ(EIO, dev_tty_->Write(0, message, message_len, &bytes_written));
+  HandleAttr attrs;
+  EXPECT_EQ(EIO, dev_tty_->Write(attrs, message, message_len, &bytes_written));
 
   // Setup output handler with user_data to record calls.
   user_data_t user_data;
@@ -120,7 +122,7 @@ TEST_F(TtyTest, TtyOutput) {
   EXPECT_EQ(0, dev_tty_->Ioctl(TIOCNACLOUTPUT,
                                reinterpret_cast<char*>(&handler)));
 
-  EXPECT_EQ(0, dev_tty_->Write(0, message, message_len, &bytes_written));
+  EXPECT_EQ(0, dev_tty_->Write(attrs, message, message_len, &bytes_written));
   EXPECT_EQ(message_len, bytes_written);
   EXPECT_EQ(message_len, user_data.output_count);
   EXPECT_EQ(0, strncmp(user_data.output_buf, message, message_len));

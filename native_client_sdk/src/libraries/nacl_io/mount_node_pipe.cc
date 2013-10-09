@@ -11,6 +11,7 @@
 
 #include "nacl_io/event_emitter_pipe.h"
 #include "nacl_io/ioctl.h"
+#include "nacl_io/kernel_handle.h"
 
 namespace {
   const size_t kDefaultPipeSize = 512 * 1024;
@@ -27,11 +28,11 @@ EventEmitter* MountNodePipe::GetEventEmitter() {
   return pipe_.get();
 }
 
-Error MountNodePipe::Read(size_t offs,
+Error MountNodePipe::Read(const HandleAttr& attr,
                           void *buf,
                           size_t count,
                           int* out_bytes) {
-  int ms = (GetMode() & O_NONBLOCK) ? 0 : read_timeout_;
+  int ms = attr.IsBlocking() ? read_timeout_ : 0;
 
   EventListenerLock wait(GetEventEmitter());
   Error err = wait.WaitOnEvent(POLLIN, ms);
@@ -42,11 +43,11 @@ Error MountNodePipe::Read(size_t offs,
   return 0;
 }
 
-Error MountNodePipe::Write(size_t offs,
+Error MountNodePipe::Write(const HandleAttr& attr,
                            const void *buf,
                            size_t count,
                            int* out_bytes) {
-  int ms = (GetMode() & O_NONBLOCK) ? 0 : write_timeout_;
+  int ms = attr.IsBlocking() ? write_timeout_ : 0;
 
   EventListenerLock wait(GetEventEmitter());
   Error err = wait.WaitOnEvent(POLLOUT, ms);

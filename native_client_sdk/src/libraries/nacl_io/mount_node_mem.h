@@ -20,8 +20,11 @@ class MountNodeMem : public MountNode {
 
  public:
   // Normal read/write operations on a file
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
-  virtual Error Write(size_t offs,
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes);
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);

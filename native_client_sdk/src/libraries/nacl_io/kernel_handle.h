@@ -5,6 +5,7 @@
 #ifndef LIBRARIES_NACL_IO_KERNEL_HANDLE_H_
 #define LIBRARIES_NACL_IO_KERNEL_HANDLE_H_
 
+#include <fcntl.h>
 #include <pthread.h>
 
 #include "nacl_io/error.h"
@@ -19,14 +20,25 @@
 
 namespace nacl_io {
 
-class MountNode;
 class MountNodeSocket;
+
+// HandleAttr struct is passed the MountNode in calls
+// to Read and Write.  It contains handle specific state
+// such as the file offset and the open flags.
+struct HandleAttr {
+  HandleAttr() : offs(0), flags(0) {}
+  bool IsBlocking() const { return !(flags & O_NONBLOCK); }
+
+  size_t offs;
+  int flags;
+};
 
 // KernelHandle provides a reference counted container for the open
 // file information, such as it's mount, node, access type and offset.
 // KernelHandle can only be referenced when the KernelProxy lock is held.
 class KernelHandle : public sdk_util::RefObject {
  public:
+
   KernelHandle();
   KernelHandle(const ScopedMount& mnt, const ScopedMountNode& node);
   ~KernelHandle();
@@ -40,6 +52,7 @@ class KernelHandle : public sdk_util::RefObject {
   Error Read(void* buf, size_t nbytes, int* bytes_read);
   Error Write(const void* buf, size_t nbytes, int* bytes_written);
   Error GetDents(struct dirent* pdir, size_t count, int* bytes_written);
+  Error Fcntl(int request, char* arg, int* result);
 
   const ScopedMountNode& node() { return node_; }
   const ScopedMount& mount() { return mount_; }
@@ -48,11 +61,12 @@ class KernelHandle : public sdk_util::RefObject {
   // NULL.
   MountNodeSocket* socket_node();
 
+  const HandleAttr& Data() { return handle_data_; }
 private:
   ScopedMount mount_;
   ScopedMountNode node_;
-  sdk_util::SimpleLock offs_lock_;
-  size_t offs_;
+  sdk_util::SimpleLock handle_lock_;
+  HandleAttr handle_data_;
 
   friend class KernelProxy;
   DISALLOW_COPY_AND_ASSIGN(KernelHandle);

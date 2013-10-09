@@ -8,6 +8,7 @@
 #include "nacl_io/ossocket.h"
 #ifdef PROVIDES_SOCKET_API
 
+#include <sys/fcntl.h>
 #include <ppapi/c/pp_errors.h>
 #include <ppapi/c/pp_resource.h>
 #include <ppapi/c/ppb_net_address.h>
@@ -32,12 +33,14 @@ class MountNodeSocket : public MountNodeStream {
 
  protected:
   virtual void Destroy();
-  virtual Error Init(int flags) = 0;
 
  public:
   // Normal read/write operations on a file (recv/send).
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
-  virtual Error Write(size_t offs,
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes);
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);
@@ -64,16 +67,26 @@ class MountNodeSocket : public MountNodeStream {
   virtual Error Bind(const struct sockaddr* addr, socklen_t len);
   virtual Error Connect(const struct sockaddr* addr, socklen_t len);
   virtual Error Listen(int backlog);
-  virtual Error Recv(void* buf, size_t len, int flags, int* out_len);
-  virtual Error RecvFrom(void* buf,
+  virtual Error Recv(const HandleAttr& attr,
+                     void* buf,
+                     size_t len,
+                     int flags,
+                     int* out_len);
+  virtual Error RecvFrom(const HandleAttr& attr,
+                         void* buf,
                          size_t len,
                          int flags,
                          struct sockaddr* src_addr,
                          socklen_t* addrlen,
                          int* out_len);
 
-  virtual Error Send(const void* buf, size_t len, int flags, int* out_len);
-  virtual Error SendTo(const void* buf,
+  virtual Error Send(const HandleAttr& attr,
+                     const void* buf,
+                     size_t len,
+                     int flags,
+                     int* out_len);
+  virtual Error SendTo(const HandleAttr& attr,
+                       const void* buf,
                        size_t len,
                        int flags,
                        const struct sockaddr* dest_addr,
@@ -91,14 +104,16 @@ class MountNodeSocket : public MountNodeStream {
  protected:
 
   // Wraps common error checks, timeouts, work pump for send.
-  Error SendHelper(const void* buf,
+  Error SendHelper(const HandleAttr& attr,
+                   const void* buf,
                    size_t len,
                    int flags,
                    PP_Resource addr,
                    int* out_len);
 
   // Wraps common error checks, timeouts, work pump for recv.
-  Error RecvHelper(void* buf,
+  Error RecvHelper(const HandleAttr& attr,
+                   void* buf,
                    size_t len,
                    int flags,
                    PP_Resource* addr,

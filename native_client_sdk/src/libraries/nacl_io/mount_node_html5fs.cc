@@ -13,7 +13,9 @@
 #include <ppapi/c/ppb_file_io.h>
 #include <string.h>
 #include <vector>
+
 #include "nacl_io/getdents_helper.h"
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/pepper_interface.h"
@@ -41,30 +43,30 @@ void* GetOutputBuffer(void* user_data, uint32_t count, uint32_t size) {
   return output->data;
 }
 
-int32_t ModeToOpenFlags(int mode) {
-  int32_t open_flags = 0;
+int32_t OpenFlagsToPPAPIOpenFlags(int open_flags) {
+  int32_t ppapi_flags = 0;
 
-  switch (mode & 3) {
+  switch (open_flags & 3) {
     default:
     case O_RDONLY:
-      open_flags = PP_FILEOPENFLAG_READ;
+      ppapi_flags = PP_FILEOPENFLAG_READ;
       break;
     case O_WRONLY:
-      open_flags = PP_FILEOPENFLAG_WRITE;
+      ppapi_flags = PP_FILEOPENFLAG_WRITE;
       break;
     case O_RDWR:
-      open_flags = PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE;
+      ppapi_flags = PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE;
       break;
   }
 
-  if (mode & O_CREAT)
-    open_flags |= PP_FILEOPENFLAG_CREATE;
-  if (mode & O_TRUNC)
-    open_flags |= PP_FILEOPENFLAG_TRUNCATE;
-  if (mode & O_EXCL)
-    open_flags |= PP_FILEOPENFLAG_EXCLUSIVE;
+  if (open_flags & O_CREAT)
+    ppapi_flags |= PP_FILEOPENFLAG_CREATE;
+  if (open_flags & O_TRUNC)
+    ppapi_flags |= PP_FILEOPENFLAG_TRUNCATE;
+  if (open_flags & O_EXCL)
+    ppapi_flags |= PP_FILEOPENFLAG_EXCLUSIVE;
 
-  return open_flags;
+  return ppapi_flags;
 }
 
 }  // namespace
@@ -169,7 +171,7 @@ Error MountNodeHtml5Fs::GetStat(struct stat* stat) {
   return 0;
 }
 
-Error MountNodeHtml5Fs::Read(size_t offs,
+Error MountNodeHtml5Fs::Read(const HandleAttr& attr,
                              void* buf,
                              size_t count,
                              int* out_bytes) {
@@ -180,7 +182,7 @@ Error MountNodeHtml5Fs::Read(size_t offs,
 
   int32_t result =
       mount_->ppapi()->GetFileIoInterface()->Read(fileio_resource_,
-                                                  offs,
+                                                  attr.offs,
                                                   static_cast<char*>(buf),
                                                   static_cast<int32_t>(count),
                                                   PP_BlockUntilComplete());
@@ -202,7 +204,7 @@ Error MountNodeHtml5Fs::FTruncate(off_t size) {
   return 0;
 }
 
-Error MountNodeHtml5Fs::Write(size_t offs,
+Error MountNodeHtml5Fs::Write(const HandleAttr& attr,
                               const void* buf,
                               size_t count,
                               int* out_bytes) {
@@ -213,7 +215,7 @@ Error MountNodeHtml5Fs::Write(size_t offs,
 
   int32_t result = mount_->ppapi()->GetFileIoInterface()
       ->Write(fileio_resource_,
-              offs,
+              attr.offs,
               static_cast<const char*>(buf),
               static_cast<int32_t>(count),
               PP_BlockUntilComplete());
@@ -259,8 +261,8 @@ MountNodeHtml5Fs::MountNodeHtml5Fs(Mount* mount, PP_Resource fileref_resource)
       fileref_resource_(fileref_resource),
       fileio_resource_(0) {}
 
-Error MountNodeHtml5Fs::Init(int perm) {
-  Error error = MountNode::Init(Mount::OpenModeToPermission(perm));
+Error MountNodeHtml5Fs::Init(int open_flags) {
+  Error error = MountNode::Init(Mount::OpenFlagsToPermission(open_flags));
   if (error)
     return error;
 
@@ -274,16 +276,15 @@ Error MountNodeHtml5Fs::Init(int perm) {
   if (query_result == PP_OK && file_info.type == PP_FILETYPE_DIRECTORY)
     return 0;
 
-  fileio_resource_ = mount_->ppapi()->GetFileIoInterface()
-      ->Create(mount_->ppapi()->GetInstance());
+  FileIoInterface* file_io = mount_->ppapi()->GetFileIoInterface();
+  fileio_resource_ = file_io->Create(mount_->ppapi()->GetInstance());
   if (!fileio_resource_)
     return ENOSYS;
 
-  int32_t open_result =
-      mount_->ppapi()->GetFileIoInterface()->Open(fileio_resource_,
-                                                  fileref_resource_,
-                                                  ModeToOpenFlags(perm),
-                                                  PP_BlockUntilComplete());
+  int32_t open_result = file_io->Open(fileio_resource_,
+                                      fileref_resource_,
+                                      OpenFlagsToPPAPIOpenFlags(open_flags),
+                                      PP_BlockUntilComplete());
   if (open_result != PP_OK)
     return PPErrorToErrno(open_result);
   return 0;

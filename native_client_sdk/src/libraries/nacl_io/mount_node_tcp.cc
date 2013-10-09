@@ -169,7 +169,11 @@ void MountNodeTCP::Destroy() {
   MountNodeSocket::Destroy();
 }
 
-Error MountNodeTCP::Init(int flags) {
+Error MountNodeTCP::Init(int open_flags) {
+  Error err = MountNodeSocket::Init(open_flags);
+  if (err != 0)
+    return err;
+
   if (TCPInterface() == NULL)
     return EACCES;
 

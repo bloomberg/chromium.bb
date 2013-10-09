@@ -54,7 +54,7 @@ class Mount : public sdk_util::RefObject {
   // MountNode is created with a ref count of 1.
   // Assumes that |out_node| is non-NULL.
   virtual Error Open(const Path& path,
-                     int o_flags,
+                     int open_flags,
                      ScopedMountNode* out_node) = 0;
 
   // OpenResource is only used to read files from the NaCl NMF file. No mount
@@ -69,8 +69,8 @@ class Mount : public sdk_util::RefObject {
   virtual Error Rmdir(const Path& path) = 0;
   virtual Error Remove(const Path& path) = 0;
 
-  // Convert from R,W,R/W open flags to STAT permission flags
-  static int OpenModeToPermission(int mode);
+  // Convert from R,W,R/W open flags to STAT permissions.
+  static int OpenFlagsToPermission(int open_flags);
 
   // Assumes that |node| is non-NULL.
   void OnNodeCreated(MountNode* node);

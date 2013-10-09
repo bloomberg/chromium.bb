@@ -25,9 +25,12 @@ class MountNodeHttp : public MountNode {
                          size_t count,
                          int* out_bytes);
   virtual Error GetStat(struct stat* stat);
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes);
   virtual Error FTruncate(off_t size);
-  virtual Error Write(size_t offs,
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);

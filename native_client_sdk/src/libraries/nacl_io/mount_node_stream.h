@@ -36,7 +36,7 @@ class MountNodeStream : public MountNode {
  public:
   explicit MountNodeStream(Mount* mnt);
 
-  virtual Error Init(int perm);
+  virtual Error Init(int open_flags);
 
   // Attempts to pump input and output
   virtual void QueueInput();

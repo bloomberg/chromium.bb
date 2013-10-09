@@ -18,8 +18,9 @@ class MountNodePipe : public MountNodeStream {
   explicit MountNodePipe(Mount* mnt);
 
   virtual EventEmitter* GetEventEmitter();
-  virtual Error Read(size_t offs, void *buf, size_t count, int* out_bytes);
-  virtual Error Write(size_t offs, const void *buf,
+  virtual Error Read(const HandleAttr& attr, void *buf, size_t count,
+                     int* out_bytes);
+  virtual Error Write(const HandleAttr& attr, const void *buf,
                       size_t count, int* out_bytes);
 
  protected:

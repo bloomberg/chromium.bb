@@ -21,6 +21,7 @@ namespace nacl_io {
 
 class Mount;
 class MountNode;
+struct HandleAttr;
 
 typedef sdk_util::ScopedRef<MountNode> ScopedMountNode;
 
@@ -32,8 +33,8 @@ class MountNode : public sdk_util::RefObject {
   virtual ~MountNode();
 
  protected:
-  // Initialize with node specific flags, in this case stat permissions.
-  virtual Error Init(int flags);
+  // Initialize with stat mode flags
+  virtual Error Init(int mode);
   virtual void Destroy();
 
  public:
@@ -59,9 +60,12 @@ class MountNode : public sdk_util::RefObject {
   // Assume that |arg| is non-NULL.
   virtual Error Ioctl(int request, char* arg);
   // Assume that |buf| and |out_bytes| are non-NULL.
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes);
   // Assume that |buf| and |out_bytes| are non-NULL.
-  virtual Error Write(size_t offs,
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes);
@@ -86,7 +90,6 @@ class MountNode : public sdk_util::RefObject {
   virtual bool IsaFile();
   virtual bool IsaSock();
   virtual bool IsaTTY();
-
 
   // Number of children for this node (directory)
   virtual int ChildCount();

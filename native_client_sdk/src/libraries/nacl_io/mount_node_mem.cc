@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/osstat.h"
 #include "sdk_util/auto_lock.h"
 
@@ -29,7 +30,10 @@ MountNodeMem::MountNodeMem(Mount* mount)
 
 MountNodeMem::~MountNodeMem() {}
 
-Error MountNodeMem::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+Error MountNodeMem::Read(const HandleAttr& attr,
+                         void* buf,
+                         size_t count,
+                         int* out_bytes) {
   *out_bytes = 0;
 
   AUTO_LOCK(node_lock_);
@@ -38,16 +42,16 @@ Error MountNodeMem::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
 
   size_t size = stat_.st_size;
 
-  if (offs + count > size) {
-    count = size - offs;
+  if (attr.offs + count > size) {
+    count = size - attr.offs;
   }
 
-  memcpy(buf, &data_[offs], count);
+  memcpy(buf, &data_[attr.offs], count);
   *out_bytes = static_cast<int>(count);
   return 0;
 }
 
-Error MountNodeMem::Write(size_t offs,
+Error MountNodeMem::Write(const HandleAttr& attr,
                           const void* buf,
                           size_t count,
                           int* out_bytes) {
@@ -57,12 +61,12 @@ Error MountNodeMem::Write(size_t offs,
   if (count == 0)
     return 0;
 
-  if (count + offs > stat_.st_size) {
-    Resize(count + offs);
-    count = stat_.st_size - offs;
+  if (count + attr.offs > stat_.st_size) {
+    Resize(count + attr.offs);
+    count = stat_.st_size - attr.offs;
   }
 
-  memcpy(&data_[offs], buf, count);
+  memcpy(&data_[attr.offs], buf, count);
   *out_bytes = static_cast<int>(count);
   return 0;
 }

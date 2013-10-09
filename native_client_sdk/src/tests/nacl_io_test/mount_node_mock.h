@@ -7,11 +7,13 @@
 
 #include "gmock/gmock.h"
 
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/mount.h"
 
 class MountNodeMock : public nacl_io::MountNode {
  public:
   typedef nacl_io::Error Error;
+  typedef nacl_io::HandleAttr HandleAttr;
   typedef nacl_io::ScopedMountNode ScopedMountNode;
 
   explicit MountNodeMock(nacl_io::Mount*);
@@ -24,8 +26,8 @@ class MountNodeMock : public nacl_io::MountNode {
   MOCK_METHOD4(GetDents, Error(size_t, struct dirent*, size_t, int*));
   MOCK_METHOD1(GetStat, Error(struct stat*));
   MOCK_METHOD2(Ioctl, Error(int, char*));
-  MOCK_METHOD4(Read, Error(size_t, void*, size_t, int*));
-  MOCK_METHOD4(Write, Error(size_t, const void*, size_t, int*));
+  MOCK_METHOD4(Read, Error(const HandleAttr&, void*, size_t, int*));
+  MOCK_METHOD4(Write, Error(const HandleAttr&, const void*, size_t, int*));
   MOCK_METHOD6(MMap, Error(void*, size_t, int, int, size_t, void**));
   MOCK_METHOD0(GetLinks, int());
   MOCK_METHOD0(GetMode, int());

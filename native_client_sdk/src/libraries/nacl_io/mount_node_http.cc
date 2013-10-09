@@ -11,6 +11,7 @@
 
 #include <ppapi/c/pp_errors.h>
 
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/mount_http.h"
 #include "nacl_io/osinttypes.h"
 
@@ -215,7 +216,7 @@ Error MountNodeHttp::GetStat(struct stat* stat) {
   return 0;
 }
 
-Error MountNodeHttp::Read(size_t offs,
+Error MountNodeHttp::Read(const HandleAttr& attr,
                           void* buf,
                           size_t count,
                           int* out_bytes) {
@@ -229,15 +230,15 @@ Error MountNodeHttp::Read(size_t offs,
         return error;
     }
 
-    return ReadPartialFromCache(offs, buf, count, out_bytes);
+    return ReadPartialFromCache(attr.offs, buf, count, out_bytes);
   }
 
-  return DownloadPartial(offs, buf, count, out_bytes);
+  return DownloadPartial(attr.offs, buf, count, out_bytes);
 }
 
 Error MountNodeHttp::FTruncate(off_t size) { return ENOSYS; }
 
-Error MountNodeHttp::Write(size_t offs,
+Error MountNodeHttp::Write(const HandleAttr& attr,
                            const void* buf,
                            size_t count,
                            int* out_bytes) {

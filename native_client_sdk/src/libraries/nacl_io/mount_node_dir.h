@@ -35,8 +35,9 @@ class MountNodeDir : public MountNode {
                          struct dirent* pdir,
                          size_t count,
                          int* out_bytes);
-  virtual Error Read(size_t offs, void *buf, size_t count, int* out_bytes);
-  virtual Error Write(size_t offs, const void *buf,
+  virtual Error Read(const HandleAttr& attr, void *buf,
+                     size_t count, int* out_bytes);
+  virtual Error Write(const HandleAttr& attr, const void *buf,
                       size_t count, int* out_bytes);
 
   // Adds a finds or adds a directory entry as an INO, updating the refcount

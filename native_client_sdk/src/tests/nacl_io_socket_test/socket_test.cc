@@ -128,12 +128,16 @@ class SocketTestWithServer : public ::testing::Test {
     // Wait for thread to signal that it is ready to accept connections.
     pthread_cond_wait(&ready_cond_, &ready_lock_);
     pthread_mutex_unlock(&ready_lock_);
+
+    sock_ = socket(AF_INET, SOCK_STREAM, 0);
+    EXPECT_GT(sock_, -1);
   }
 
   void TearDown() {
     // Stop the echo server and the background thread it runs on
     loop_.PostQuit(true);
     pthread_join(server_thread_, NULL);
+    ASSERT_EQ(0, close(sock_));
   }
 
   static void ServerLog(const char* msg) {
@@ -142,6 +146,7 @@ class SocketTestWithServer : public ::testing::Test {
   }
 
  protected:
+  int sock_;
   pp::MessageLoop loop_;
   pp::Instance instance_;
   pthread_cond_t ready_cond_;
@@ -190,7 +195,6 @@ TEST_F(SocketTestUDP, Bind) {
 
   // Invalid to rebind after wildcard
   EXPECT_EQ(EINVAL, Bind(sock2, LOCAL_HOST, PORT1));
-
 }
 
 TEST_F(SocketTestUDP, SendRcv) {
@@ -264,32 +268,27 @@ TEST_F(SocketTestWithServer, TCPConnect) {
 
   memset(outbuf, 1, sizeof(outbuf));
 
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
-  EXPECT_GT(sock, -1);
-
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
 
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
 
-  EXPECT_EQ(0, connect(sock, (sockaddr*)&addr, addrlen))
+  ASSERT_EQ(0, connect(sock_, (sockaddr*) &addr, addrlen))
     << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   // Send two different messages to the echo server and verify the
   // response matches.
   strcpy(outbuf, "hello");
   memset(inbuf, 0, sizeof(inbuf));
-  EXPECT_EQ(sizeof(outbuf), write(sock, outbuf, sizeof(outbuf)));
-  EXPECT_EQ(sizeof(outbuf), read(sock, inbuf, sizeof(inbuf)));
+  ASSERT_EQ(sizeof(outbuf), write(sock_, outbuf, sizeof(outbuf)));
+  ASSERT_EQ(sizeof(outbuf), read(sock_, inbuf, sizeof(inbuf)));
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 
   strcpy(outbuf, "world");
   memset(inbuf, 0, sizeof(inbuf));
-  EXPECT_EQ(sizeof(outbuf), write(sock, outbuf, sizeof(outbuf)));
-  EXPECT_EQ(sizeof(outbuf), read(sock, inbuf, sizeof(inbuf)));
+  ASSERT_EQ(sizeof(outbuf), write(sock_, outbuf, sizeof(outbuf)));
+  ASSERT_EQ(sizeof(outbuf), read(sock_, inbuf, sizeof(inbuf)));
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
-
-  ASSERT_EQ(0, close(sock));
 }
 
 TEST_F(SocketTest, Getsockopt) {

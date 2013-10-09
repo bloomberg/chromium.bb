@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "nacl_io/mount_passthrough.h"
+
 #include <errno.h>
+
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
 
 namespace nacl_io {
@@ -24,11 +27,14 @@ class MountNodePassthrough : public MountNode {
 
  public:
   // Normal read/write operations on a file
-  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+  virtual Error Read(const HandleAttr& attr,
+                     void* buf,
+                     size_t count,
+                     int* out_bytes) {
     *out_bytes = 0;
 
     off_t new_offset;
-    int err = _real_lseek(real_fd_, offs, 0, &new_offset);
+    int err = _real_lseek(real_fd_, attr.offs, 0, &new_offset);
     if (err)
       return err;
 
@@ -41,14 +47,14 @@ class MountNodePassthrough : public MountNode {
     return 0;
   }
 
-  virtual Error Write(size_t offs,
+  virtual Error Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes) {
     *out_bytes = 0;
 
     off_t new_offset;
-    int err = _real_lseek(real_fd_, offs, 0, &new_offset);
+    int err = _real_lseek(real_fd_, attr.offs, 0, &new_offset);
     if (err)
       return err;
 

@@ -34,14 +34,17 @@ MountNodeDir::~MountNodeDir() {
   }
 }
 
-Error MountNodeDir::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+Error MountNodeDir::Read(const HandleAttr& attr,
+                         void* buf,
+                         size_t count,
+                         int* out_bytes) {
   *out_bytes = 0;
   return EISDIR;
 }
 
 Error MountNodeDir::FTruncate(off_t size) { return EISDIR; }
 
-Error MountNodeDir::Write(size_t offs,
+Error MountNodeDir::Write(const HandleAttr& attr,
                           const void* buf,
                           size_t count,
                           int* out_bytes) {

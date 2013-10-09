@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <string>
 
+#include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/osmman.h"
@@ -38,8 +39,8 @@ MountNode::MountNode(Mount* mount) : mount_(mount) {
 
 MountNode::~MountNode() {}
 
-Error MountNode::Init(int perm) {
-  stat_.st_mode |= perm;
+Error MountNode::Init(int mode) {
+  stat_.st_mode |= mode;
   return 0;
 }
 
@@ -78,12 +79,15 @@ Error MountNode::GetStat(struct stat* pstat) {
 
 Error MountNode::Ioctl(int request, char* arg) { return EINVAL; }
 
-Error MountNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+Error MountNode::Read(const HandleAttr& attr,
+                      void* buf,
+                      size_t count,
+                      int* out_bytes) {
   *out_bytes = 0;
   return EINVAL;
 }
 
-Error MountNode::Write(size_t offs,
+Error MountNode::Write(const HandleAttr& attr,
                        const void* buf,
                        size_t count,
                        int* out_bytes) {
@@ -115,8 +119,11 @@ Error MountNode::MMap(void* addr,
     return mmap_error;
   }
 
+  HandleAttr data;
+  data.offs = offset;
+  data.flags = 0;
   int bytes_read;
-  Error read_error = Read(offset, new_addr, length, &bytes_read);
+  Error read_error = Read(data, new_addr, length, &bytes_read);
   if (read_error) {
     _real_munmap(new_addr, length);
     return read_error;

@@ -33,7 +33,7 @@ Error MountHtml5Fs::Access(const Path& path, int a_mode) {
 }
 
 Error MountHtml5Fs::Open(const Path& path,
-                         int mode,
+                         int open_flags,
                          ScopedMountNode* out_node) {
   out_node->reset(NULL);
   Error error = BlockUntilFilesystemOpen();
@@ -46,7 +46,7 @@ Error MountHtml5Fs::Open(const Path& path,
     return ENOENT;
 
   ScopedMountNode node(new MountNodeHtml5Fs(this, fileref));
-  error = node->Init(mode);
+  error = node->Init(open_flags);
   if (error)
     return error;
 

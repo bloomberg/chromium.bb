@@ -22,7 +22,7 @@ class MountNodeUDP : public MountNodeSocket {
   explicit MountNodeUDP(Mount* mount);
 
  protected:
-  virtual Error Init(int flags);
+  virtual Error Init(int open_flags);
   virtual void Destroy();
 
  public:

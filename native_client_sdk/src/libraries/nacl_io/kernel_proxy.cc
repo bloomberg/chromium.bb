@@ -154,18 +154,18 @@ int KernelProxy::open_resource(const char* path) {
   return AllocateFD(handle);
 }
 
-int KernelProxy::open(const char* path, int oflags) {
+int KernelProxy::open(const char* path, int open_flags) {
   ScopedMount mnt;
   ScopedMountNode node;
 
-  Error error = AcquireMountAndNode(path, oflags, &mnt, &node);
+  Error error = AcquireMountAndNode(path, open_flags, &mnt, &node);
   if (error) {
     errno = error;
     return -1;
   }
 
   ScopedKernelHandle handle(new KernelHandle(mnt, node));
-  error = handle->Init(oflags);
+  error = handle->Init(open_flags);
   if (error) {
     errno = error;
     return -1;
@@ -631,9 +631,14 @@ int KernelProxy::fcntl(int fd, int request, char *argp) {
     return -1;
   }
 
-  // TODO(sbc): Needs implementation.
-  errno = ENOSYS;
-  return -1;
+  int rtn = 0;
+  error = handle->Fcntl(request, argp, &rtn);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return rtn;
 }
 
 int KernelProxy::access(const char* path, int amode) {
@@ -1179,7 +1184,8 @@ ssize_t KernelProxy::recv(int fd,
     return -1;
 
   int out_len = 0;
-  Error err = handle->socket_node()->Recv(buf, len, flags, &out_len);
+  Error err = handle->socket_node()->Recv(handle->Data(), buf, len, flags,
+                                          &out_len);
   if (err != 0) {
     errno = err;
     return -1;
@@ -1209,7 +1215,8 @@ ssize_t KernelProxy::recvfrom(int fd,
     return -1;
 
   int out_len = 0;
-  Error err = handle->socket_node()->RecvFrom(buf,
+  Error err = handle->socket_node()->RecvFrom(handle->Data(),
+                                              buf,
                                               len,
                                               flags,
                                               addr,
@@ -1248,7 +1255,8 @@ ssize_t KernelProxy::send(int fd, const void* buf, size_t len, int flags) {
     return -1;
 
   int out_len = 0;
-  Error err = handle->socket_node()->Send(buf, len, flags, &out_len);
+  Error err = handle->socket_node()->Send(handle->Data(), buf, len, flags,
+                                          &out_len);
   if (err != 0) {
     errno = err;
     return -1;
@@ -1278,8 +1286,8 @@ ssize_t KernelProxy::sendto(int fd,
     return -1;
 
   int out_len = 0;
-  Error err =
-      handle->socket_node()->SendTo(buf, len, flags, addr, addrlen, &out_len);
+  Error err = handle->socket_node()->SendTo(handle->Data(), buf, len, flags,
+                                            addr, addrlen, &out_len);
 
   if (err != 0) {
     errno = err;
