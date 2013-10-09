@@ -48,9 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# r11592 alters the GDI font rendering results
-crbug.com/301130 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
-crbug.com/304146 svg/batik/text/textOnPath.svg [ ImageOnlyFailure ]
-crbug.com/304146 svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
