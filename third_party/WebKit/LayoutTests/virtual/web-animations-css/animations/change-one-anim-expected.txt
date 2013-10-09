@@ -1,4 +1,4 @@
 Warning this test is running in real-time and may be flaky.
 PASS - "left" property for "box" element at 0.75s saw something close to: 150
-FAIL - "top" property for "box" element at 0.75s expected: 225 but saw: 300
+FAIL - "top" property for "box" element at 0.75s expected: 225 but saw: auto
 

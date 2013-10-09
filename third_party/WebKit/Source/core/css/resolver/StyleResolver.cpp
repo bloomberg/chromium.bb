@@ -1241,27 +1241,27 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Doc
     const Element* element = state.element();
     const CSSAnimationUpdate* update = state.animationUpdate();
     AnimationStack* animationStack = timeline->animationStack(element);
-    if (!animationStack)
-        return false;
     bool didApply = false;
 
-    const Vector<Animation*>& animations = animationStack->activeAnimations(element);
-    for (size_t i = 0; i < animations.size(); ++i) {
-        RefPtr<Animation> animation = animations.at(i);
-        if (update && update->isCancelled(animation->player()))
-            continue;
-        const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
-        for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
-            CSSPropertyID property = iter->key;
-            if (!isPropertyForPass<pass>(property))
+    if (animationStack) {
+        const Vector<Animation*>& animations = animationStack->activeAnimations(element);
+        for (size_t i = 0; i < animations.size(); ++i) {
+            RefPtr<Animation> animation = animations.at(i);
+            if (update && update->isCancelled(animation->player()))
                 continue;
-            RELEASE_ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Not yet implemented: An interface for compositing onto the underlying value.");
-            RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
-            if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-                state.setLineHeightValue(toAnimatableLength(animatableValue.get())->toCSSValue().get());
-            else
-                AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
-            didApply = true;
+            const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
+            for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
+                CSSPropertyID property = iter->key;
+                if (!isPropertyForPass<pass>(property))
+                    continue;
+                RELEASE_ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Web Animations not yet implemented: An interface for compositing onto the underlying value.");
+                RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
+                if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
+                    state.setLineHeightValue(toAnimatableLength(animatableValue.get())->toCSSValue().get());
+                else
+                    AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
+                didApply = true;
+            }
         }
     }
 

@@ -292,21 +292,16 @@ crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Failure Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/change-keyframes-name.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-iteration-count-non-integer.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/fill-mode-missing-from-to-keyframes.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/fill-mode-multiple-keyframes.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-reverse.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/fill-mode-transform.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/fill-mode.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/play-state.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/play-state-suspend.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/state-at-end-event.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/3d/state-at-end-event-transform.html [ ImageOnlyFailure Pass ]
 crbug.com/258896 virtual/web-animations-css/animations/suspend-resume-animation.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/suspend-transform-animation.html [ ImageOnlyFailure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
 # These can't be rebaselined because they time out.
-crbug.com/258896 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Timeout Pass ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-forwards.html [ Timeout Pass ]
 
 # This test is slow due to Mesa slowness.

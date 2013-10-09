@@ -97,6 +97,8 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
         default:
             ASSERT_NOT_REACHED();
         }
+    } else {
+        timing.fillMode = Timing::FillModeNone;
     }
     if (animationData->isDirectionSet()) {
         switch (animationData->direction()) {

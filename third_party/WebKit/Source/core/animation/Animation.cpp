@@ -79,6 +79,7 @@ void Animation::clearEffects()
     ensureAnimationStack(m_target.get())->remove(this);
     m_activeInAnimationStack = false;
     m_compositableValues.clear();
+    m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
 }
 
 void Animation::updateChildrenAndEffects(bool wasInEffect) const
