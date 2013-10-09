@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/test/base/testing_profile.h"
@@ -39,7 +40,7 @@ class TestTabModel : public TabModel {
   }
   virtual bool IsSessionRestoreInProgress() const OVERRIDE { return false; }
   virtual void OpenClearBrowsingData() const OVERRIDE {}
-  virtual browser_sync::SyncedTabDelegate* GetTabAt(int index) const OVERRIDE {
+  virtual TabAndroid* GetTabAt(int index) const OVERRIDE {
     return NULL;
   }
 

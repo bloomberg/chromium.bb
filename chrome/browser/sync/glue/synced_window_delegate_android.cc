@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/synced_window_delegate_android.h"
 
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
@@ -76,7 +77,9 @@ bool SyncedWindowDelegateAndroid::IsTabPinned(
 }
 
 SyncedTabDelegate* SyncedWindowDelegateAndroid::GetTabAt(int index) const {
-  return tab_model_->GetTabAt(index);
+  // After a restart, it is possible for the Tab to be null during startup.
+  TabAndroid* tab = tab_model_->GetTabAt(index);
+  return tab ? tab->GetSyncedTabDelegate() : NULL;
 }
 
 SessionID::id_type SyncedWindowDelegateAndroid::GetTabIdAt(int index) const {
