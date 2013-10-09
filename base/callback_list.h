@@ -45,6 +45,8 @@
 //   }
 //
 //   base::CallbackList<void(const Foo&)> callback_list_;
+//
+//   DISALLOW_COPY_AND_ASSIGN(MyWidget);
 // };
 //
 //
@@ -67,6 +69,8 @@
 //
 //   scoped_ptr<base::CallbackList<void(const Foo&)>::Subscription>
 //       foo_subscription_;
+//
+//   DISALLOW_COPY_AND_ASSIGN(MyWidgetListener);
 // };
 
 namespace base {
@@ -81,11 +85,12 @@ class CallbackListBase {
     Subscription(CallbackListBase<CallbackType>* list,
                  typename std::list<CallbackType>::iterator iter)
         : list_(list),
-          iter_(iter) {}
+          iter_(iter) {
+    }
 
     ~Subscription() {
       if (list_->active_iterator_count_)
-        (*iter_).Reset();
+        iter_->Reset();
       else
         list_->callbacks_.erase(iter_);
     }
@@ -145,8 +150,7 @@ class CallbackListBase {
     typename std::list<CallbackType>::iterator list_iter_;
   };
 
-  CallbackListBase()
-      : active_iterator_count_(0) {}
+  CallbackListBase() : active_iterator_count_(0) {}
 
   ~CallbackListBase() {
     DCHECK_EQ(0, active_iterator_count_);
@@ -194,7 +198,7 @@ class CallbackList<void(void)>
     internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run();
     }
   }
@@ -205,8 +209,7 @@ class CallbackList<void(void)>
 
 template <typename A1>
 class CallbackList<void(A1)>
-    : public internal::CallbackListBase<
-        Callback<void(A1)> > {
+    : public internal::CallbackListBase<Callback<void(A1)> > {
  public:
   typedef Callback<void(A1)> CallbackType;
 
@@ -216,7 +219,7 @@ class CallbackList<void(A1)>
     typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run(a1);
     }
   }
@@ -227,8 +230,7 @@ class CallbackList<void(A1)>
 
 template <typename A1, typename A2>
 class CallbackList<void(A1, A2)>
-    : public internal::CallbackListBase<
-        Callback<void(A1, A2)> > {
+    : public internal::CallbackListBase<Callback<void(A1, A2)> > {
  public:
   typedef Callback<void(A1, A2)> CallbackType;
 
@@ -239,7 +241,7 @@ class CallbackList<void(A1, A2)>
     typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run(a1, a2);
     }
   }
@@ -250,8 +252,7 @@ class CallbackList<void(A1, A2)>
 
 template <typename A1, typename A2, typename A3>
 class CallbackList<void(A1, A2, A3)>
-    : public internal::CallbackListBase<
-        Callback<void(A1, A2, A3)> > {
+    : public internal::CallbackListBase<Callback<void(A1, A2, A3)> > {
  public:
   typedef Callback<void(A1, A2, A3)> CallbackType;
 
@@ -263,7 +264,7 @@ class CallbackList<void(A1, A2, A3)>
     typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run(a1, a2, a3);
     }
   }
@@ -274,8 +275,7 @@ class CallbackList<void(A1, A2, A3)>
 
 template <typename A1, typename A2, typename A3, typename A4>
 class CallbackList<void(A1, A2, A3, A4)>
-    : public internal::CallbackListBase<
-        Callback<void(A1, A2, A3, A4)> > {
+    : public internal::CallbackListBase<Callback<void(A1, A2, A3, A4)> > {
  public:
   typedef Callback<void(A1, A2, A3, A4)> CallbackType;
 
@@ -288,7 +288,7 @@ class CallbackList<void(A1, A2, A3, A4)>
     typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run(a1, a2, a3, a4);
     }
   }
@@ -299,8 +299,7 @@ class CallbackList<void(A1, A2, A3, A4)>
 
 template <typename A1, typename A2, typename A3, typename A4, typename A5>
 class CallbackList<void(A1, A2, A3, A4, A5)>
-    : public internal::CallbackListBase<
-        Callback<void(A1, A2, A3, A4, A5)> > {
+    : public internal::CallbackListBase<Callback<void(A1, A2, A3, A4, A5)> > {
  public:
   typedef Callback<void(A1, A2, A3, A4, A5)> CallbackType;
 
@@ -314,7 +313,7 @@ class CallbackList<void(A1, A2, A3, A4, A5)>
     typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run(a1, a2, a3, a4, a5);
     }
   }
@@ -326,8 +325,8 @@ class CallbackList<void(A1, A2, A3, A4, A5)>
 template <typename A1, typename A2, typename A3, typename A4, typename A5,
     typename A6>
 class CallbackList<void(A1, A2, A3, A4, A5, A6)>
-    : public internal::CallbackListBase<
-        Callback<void(A1, A2, A3, A4, A5, A6)> > {
+    : public internal::CallbackListBase<Callback<void(A1, A2, A3, A4, A5,
+        A6)> > {
  public:
   typedef Callback<void(A1, A2, A3, A4, A5, A6)> CallbackType;
 
@@ -342,7 +341,7 @@ class CallbackList<void(A1, A2, A3, A4, A5, A6)>
     typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run(a1, a2, a3, a4, a5, a6);
     }
   }
@@ -354,8 +353,8 @@ class CallbackList<void(A1, A2, A3, A4, A5, A6)>
 template <typename A1, typename A2, typename A3, typename A4, typename A5,
     typename A6, typename A7>
 class CallbackList<void(A1, A2, A3, A4, A5, A6, A7)>
-    : public internal::CallbackListBase<
-        Callback<void(A1, A2, A3, A4, A5, A6, A7)> > {
+    : public internal::CallbackListBase<Callback<void(A1, A2, A3, A4, A5, A6,
+        A7)> > {
  public:
   typedef Callback<void(A1, A2, A3, A4, A5, A6, A7)> CallbackType;
 
@@ -371,7 +370,7 @@ class CallbackList<void(A1, A2, A3, A4, A5, A6, A7)>
     typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run(a1, a2, a3, a4, a5, a6, a7);
     }
   }

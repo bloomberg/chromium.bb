@@ -50,6 +50,8 @@ $var MAX_ARITY = 7
 //   }
 //
 //   base::CallbackList<void(const Foo&)> callback_list_;
+//
+//   DISALLOW_COPY_AND_ASSIGN(MyWidget);
 // };
 //
 //
@@ -72,6 +74,8 @@ $var MAX_ARITY = 7
 //
 //   scoped_ptr<base::CallbackList<void(const Foo&)>::Subscription>
 //       foo_subscription_;
+//
+//   DISALLOW_COPY_AND_ASSIGN(MyWidgetListener);
 // };
 
 namespace base {
@@ -86,11 +90,12 @@ class CallbackListBase {
     Subscription(CallbackListBase<CallbackType>* list,
                  typename std::list<CallbackType>::iterator iter)
         : list_(list),
-          iter_(iter) {}
+          iter_(iter) {
+    }
 
     ~Subscription() {
       if (list_->active_iterator_count_)
-        (*iter_).Reset();
+        iter_->Reset();
       else
         list_->callbacks_.erase(iter_);
     }
@@ -150,8 +155,7 @@ class CallbackListBase {
     typename std::list<CallbackType>::iterator list_iter_;
   };
 
-  CallbackListBase()
-      : active_iterator_count_(0) {}
+  CallbackListBase() : active_iterator_count_(0) {}
 
   ~CallbackListBase() {
     DCHECK_EQ(0, active_iterator_count_);
@@ -199,8 +203,7 @@ class CallbackList<void(void)>
 ]] $else [[
 template <$for ARG , [[typename A$(ARG)]]>
 class CallbackList<void($for ARG , [[A$(ARG)]])>
-    : public internal::CallbackListBase<
-        Callback<void($for ARG , [[A$(ARG)]])> > {
+    : public internal::CallbackListBase<Callback<void($for ARG , [[A$(ARG)]])> > {
 ]]
 
  public:
@@ -228,7 +231,7 @@ $if ARITY == 0 [[
 ]]
 
     CallbackType* cb;
-    while((cb = it.GetNext()) != NULL) {
+    while ((cb = it.GetNext()) != NULL) {
       cb->Run($for ARG , [[a$(ARG)]]);
     }
   }

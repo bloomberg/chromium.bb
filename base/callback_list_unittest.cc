@@ -20,9 +20,10 @@ class Listener {
   void IncrementTotal() { total_++; }
   void IncrementByMultipleOfScaler(int x) { total_ += x * scaler_; }
 
-  int total_;
+  int total() const { return total_; }
 
  private:
+  int total_;
   int scaler_;
   DISALLOW_COPY_AND_ASSIGN(Listener);
 };
@@ -39,9 +40,10 @@ class Remover {
     removal_subscription_ = sub.Pass();
   }
 
-  int total_;
+  int total() const { return total_; }
 
  private:
+  int total_;
   scoped_ptr<CallbackList<void(void)>::Subscription> removal_subscription_;
   DISALLOW_COPY_AND_ASSIGN(Remover);
 };
@@ -51,7 +53,8 @@ class Adder {
   explicit Adder(CallbackList<void(void)>* cb_reg)
       : added_(false),
         total_(0),
-        cb_reg_(cb_reg) {}
+        cb_reg_(cb_reg) {
+  }
   void AddCallback() {
     if (!added_) {
       added_ = true;
@@ -61,10 +64,13 @@ class Adder {
   }
   void IncrementTotal() { total_++; }
 
-  bool added_;
-  int total_;
+  bool added() const { return added_; }
+
+  int total() const { return total_; }
 
  private:
+  bool added_;
+  int total_;
   CallbackList<void(void)>* cb_reg_;
   scoped_ptr<CallbackList<void(void)>::Subscription> subscription_;
   DISALLOW_COPY_AND_ASSIGN(Adder);
@@ -85,9 +91,10 @@ class Summer {
     value_ = a + b + c + d + e + f;
   }
 
-  int value_;
+  int value() const { return value_; }
 
  private:
+  int value_;
   DISALLOW_COPY_AND_ASSIGN(Summer);
 };
 
@@ -100,42 +107,42 @@ TEST(CallbackListTest, ArityTest) {
       c1.Add(Bind(&Summer::AddOneParam, Unretained(&s)));
 
   c1.Notify(1);
-  EXPECT_EQ(1, s.value_);
+  EXPECT_EQ(1, s.value());
 
   CallbackList<void(int, int)> c2;
   scoped_ptr<CallbackList<void(int, int)>::Subscription> subscription2 =
       c2.Add(Bind(&Summer::AddTwoParam, Unretained(&s)));
 
   c2.Notify(1, 2);
-  EXPECT_EQ(3, s.value_);
+  EXPECT_EQ(3, s.value());
 
   CallbackList<void(int, int, int)> c3;
   scoped_ptr<CallbackList<void(int, int, int)>::Subscription>
       subscription3 = c3.Add(Bind(&Summer::AddThreeParam, Unretained(&s)));
 
   c3.Notify(1, 2, 3);
-  EXPECT_EQ(6, s.value_);
+  EXPECT_EQ(6, s.value());
 
   CallbackList<void(int, int, int, int)> c4;
   scoped_ptr<CallbackList<void(int, int, int, int)>::Subscription>
       subscription4 = c4.Add(Bind(&Summer::AddFourParam, Unretained(&s)));
 
   c4.Notify(1, 2, 3, 4);
-  EXPECT_EQ(10, s.value_);
+  EXPECT_EQ(10, s.value());
 
   CallbackList<void(int, int, int, int, int)> c5;
   scoped_ptr<CallbackList<void(int, int, int, int, int)>::Subscription>
       subscription5 = c5.Add(Bind(&Summer::AddFiveParam, Unretained(&s)));
 
   c5.Notify(1, 2, 3, 4, 5);
-  EXPECT_EQ(15, s.value_);
+  EXPECT_EQ(15, s.value());
 
   CallbackList<void(int, int, int, int, int, int)> c6;
   scoped_ptr<CallbackList<void(int, int, int, int, int, int)>::Subscription>
       subscription6 = c6.Add(Bind(&Summer::AddSixParam, Unretained(&s)));
 
   c6.Notify(1, 2, 3, 4, 5, 6);
-  EXPECT_EQ(21, s.value_);
+  EXPECT_EQ(21, s.value());
 }
 
 // Sanity check that closures added to the list will be run, and those removed
@@ -154,8 +161,8 @@ TEST(CallbackListTest, BasicTest) {
 
   cb_reg.Notify();
 
-  EXPECT_EQ(1, a.total_);
-  EXPECT_EQ(1, b.total_);
+  EXPECT_EQ(1, a.total());
+  EXPECT_EQ(1, b.total());
 
   b_subscription.reset();
 
@@ -164,9 +171,9 @@ TEST(CallbackListTest, BasicTest) {
 
   cb_reg.Notify();
 
-  EXPECT_EQ(2, a.total_);
-  EXPECT_EQ(1, b.total_);
-  EXPECT_EQ(1, c.total_);
+  EXPECT_EQ(2, a.total());
+  EXPECT_EQ(1, b.total());
+  EXPECT_EQ(1, c.total());
 
   a_subscription.reset();
   b_subscription.reset();
@@ -189,8 +196,8 @@ TEST(CallbackListTest, BasicTestWithParams) {
 
   cb_reg.Notify(10);
 
-  EXPECT_EQ(10, a.total_);
-  EXPECT_EQ(-10, b.total_);
+  EXPECT_EQ(10, a.total());
+  EXPECT_EQ(-10, b.total());
 
   b_subscription.reset();
 
@@ -199,9 +206,9 @@ TEST(CallbackListTest, BasicTestWithParams) {
 
   cb_reg.Notify(10);
 
-  EXPECT_EQ(20, a.total_);
-  EXPECT_EQ(-10, b.total_);
-  EXPECT_EQ(10, c.total_);
+  EXPECT_EQ(20, a.total());
+  EXPECT_EQ(-10, b.total());
+  EXPECT_EQ(10, c.total());
 
   a_subscription.reset();
   b_subscription.reset();
@@ -235,18 +242,18 @@ TEST(CallbackListTest, RemoveCallbacksDuringIteration) {
 
   // |remover_1| runs once (and removes itself), |remover_2| runs once (and
   // removes a), |a| never runs, and |b| runs once.
-  EXPECT_EQ(1, remover_1.total_);
-  EXPECT_EQ(1, remover_2.total_);
-  EXPECT_EQ(0, a.total_);
-  EXPECT_EQ(1, b.total_);
+  EXPECT_EQ(1, remover_1.total());
+  EXPECT_EQ(1, remover_2.total());
+  EXPECT_EQ(0, a.total());
+  EXPECT_EQ(1, b.total());
 
   cb_reg.Notify();
 
   // Only |remover_2| and |b| run this time.
-  EXPECT_EQ(1, remover_1.total_);
-  EXPECT_EQ(2, remover_2.total_);
-  EXPECT_EQ(0, a.total_);
-  EXPECT_EQ(2, b.total_);
+  EXPECT_EQ(1, remover_1.total());
+  EXPECT_EQ(2, remover_2.total());
+  EXPECT_EQ(0, a.total());
+  EXPECT_EQ(2, b.total());
 }
 
 // Test that a callback can add another callback to the list durning iteration
@@ -263,14 +270,14 @@ TEST(CallbackListTest, AddCallbacksDuringIteration) {
 
   cb_reg.Notify();
 
-  EXPECT_EQ(1, a.total_);
-  EXPECT_EQ(1, b.total_);
-  EXPECT_TRUE(a.added_);
+  EXPECT_EQ(1, a.total());
+  EXPECT_EQ(1, b.total());
+  EXPECT_TRUE(a.added());
 
   cb_reg.Notify();
 
-  EXPECT_EQ(2, a.total_);
-  EXPECT_EQ(2, b.total_);
+  EXPECT_EQ(2, a.total());
+  EXPECT_EQ(2, b.total());
 }
 
 // Sanity check: notifying an empty list is a no-op.
