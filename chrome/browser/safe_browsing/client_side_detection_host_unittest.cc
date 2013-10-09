@@ -321,8 +321,13 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
   MockTestingProfile* mock_profile_;  // We don't own this object
 };
 
-
+#if defined(OS_WIN)
+// Crashes on Blink canary bots: http://crbug.com/299149
+TEST_F(ClientSideDetectionHostTest,
+       DISABLED_OnPhishingDetectionDoneInvalidVerdict) {
+#else
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
+#endif
   // Case 0: renderer sends an invalid verdict string that we're unable to
   // parse.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
