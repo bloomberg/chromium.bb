@@ -169,7 +169,8 @@ static void
 pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
 		    uint32_t time, uint32_t axis, wl_fixed_t value)
 {
-	fprintf(stderr, "test-client: got pointer axis %u %d\n", axis, value);
+	fprintf(stderr, "test-client: got pointer axis %u %f\n",
+		axis, wl_fixed_to_double(value));
 }
 
 static const struct wl_pointer_listener pointer_listener = {
