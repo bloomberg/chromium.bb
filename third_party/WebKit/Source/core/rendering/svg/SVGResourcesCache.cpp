@@ -68,10 +68,9 @@ void SVGResourcesCache::addResourcesFromRenderObject(RenderObject* object, const
 
 void SVGResourcesCache::removeResourcesFromRenderObject(RenderObject* object)
 {
-    if (!m_cache.contains(object))
-        return;
-
     OwnPtr<SVGResources> resources = m_cache.take(object);
+    if (!resources)
+        return;
 
     // Walk resources and register the render object at each resources.
     HashSet<RenderSVGResourceContainer*> resourceSet;
