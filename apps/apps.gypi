@@ -90,5 +90,41 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
-  ],
+  ],  # targets
+  'conditions': [
+    ['chromeos==1', {
+      'targets': [
+        {
+          'target_name': 'app_shell',
+          'type': 'executable',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'variables': {
+            'chromium_code': 1,
+          },
+          'dependencies': [
+            'apps',
+            '../base/base.gyp:base',
+            '../content/content.gyp:content',
+            '../content/content.gyp:content_shell_lib',
+            '../skia/skia.gyp:skia',
+            '../ui/views/views.gyp:views',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'shell/app_shell_browser_main_parts.cc',
+            'shell/app_shell_browser_main_parts.h',
+            'shell/app_shell_content_browser_client.cc',
+            'shell/app_shell_content_browser_client.h',
+            'shell/app_shell_main_delegate.cc',
+            'shell/app_shell_main_delegate.h',
+            'shell/app_shell_main.cc',
+            'shell/web_view_window.cc',
+            'shell/web_view_window.cc',
+          ],
+        },
+      ],  # targets
+    }],  # chromeos==1
+  ],  # conditions
 }

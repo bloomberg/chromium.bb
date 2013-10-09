@@ -1,5 +1,6 @@
 include_rules = [
   "+base",
+  "+content/public/app",
   "+content/public/browser",
   "+content/public/common",
   "+content/public/test",
@@ -12,6 +13,13 @@ include_rules = [
   "+third_party/skia/include",
   "+ui",
   "+win8",
+
+  # Pieces of content_shell reused in app_shell.
+  # TODO(jamescook): Remove these. http://crbug.com/305404
+  "+content/shell/browser/minimal_shell.h",
+  "+content/shell/browser/shell_browser_context.h",
+  "+content/shell/common/shell_content_client.h",
+
   # Temporary allowed includes.
   # TODO(benwells): remove these (http://crbug.com/159366)
   "+chrome/browser/chrome_notification_types.h",
