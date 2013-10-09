@@ -1310,6 +1310,13 @@ bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
   return !active_bounds.Contains(cursor_location);
 }
 
+gfx::Rect LauncherView::GetVisibleItemsBoundsInScreen() {
+  gfx::Size preferred_size = GetPreferredSize();
+  gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
+  ConvertPointToScreen(this, &origin);
+  return gfx::Rect(origin, preferred_size);
+}
+
 int LauncherView::CancelDrag(int modified_index) {
   FinalizeRipOffDrag(true);
   if (!drag_view_)
@@ -1343,23 +1350,23 @@ gfx::Size LauncherView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
 
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+  const int preferred_size = shelf->GetPreferredShelfSize();
+
   const int app_list_index = view_model_->view_size() - 1;
   const int last_button_index = is_overflow_mode() ?
       last_visible_index_ : app_list_index;
   const gfx::Rect last_button_bounds =
       last_button_index  >= first_visible_index_ ?
           view_model_->view_at(last_button_index)->bounds() :
-          gfx::Rect(gfx::Size(kLauncherPreferredSize,
-                              kLauncherPreferredSize));
-
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+          gfx::Rect(gfx::Size(preferred_size, preferred_size));
 
   if (shelf->IsHorizontalAlignment()) {
     return gfx::Size(last_button_bounds.right() + leading_inset(),
-                     kLauncherPreferredSize);
+                     preferred_size);
   }
 
-  return gfx::Size(kLauncherPreferredSize,
+  return gfx::Size(preferred_size,
                    last_button_bounds.bottom() + leading_inset());
 }
 

@@ -207,7 +207,8 @@ class LauncherViewTest : public AshTestBase {
     launcher_view_ = test::LauncherTestAPI(launcher).launcher_view();
 
     // The bounds should be big enough for 4 buttons + overflow chevron.
-    launcher_view_->SetBounds(0, 0, 500, 50);
+    launcher_view_->SetBounds(0, 0, 500,
+        internal::ShelfLayoutManager::GetPreferredShelfSize());
 
     test_api_.reset(new LauncherViewTestAPI(launcher_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
@@ -411,30 +412,47 @@ class LauncherViewLegacyShelfLayoutTest : public LauncherViewTest {
   DISALLOW_COPY_AND_ASSIGN(LauncherViewLegacyShelfLayoutTest);
 };
 
+class ScopedTextDirectionChange {
+ public:
+  ScopedTextDirectionChange(bool is_rtl)
+      : is_rtl_(is_rtl) {
+    original_locale_ = l10n_util::GetApplicationLocale(std::string());
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale("he");
+    CheckTextDirectionIsCorrect();
+  }
+
+  ~ScopedTextDirectionChange() {
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale(original_locale_);
+  }
+
+ private:
+  void CheckTextDirectionIsCorrect() {
+    ASSERT_EQ(is_rtl_, base::i18n::IsRTL());
+  }
+
+  bool is_rtl_;
+  std::string original_locale_;
+};
+
 class LauncherViewTextDirectionTest
     : public LauncherViewTest,
       public testing::WithParamInterface<bool> {
  public:
-  LauncherViewTextDirectionTest() : is_rtl_(GetParam()) {}
+  LauncherViewTextDirectionTest() : text_direction_change_(GetParam()) {}
   virtual ~LauncherViewTextDirectionTest() {}
 
   virtual void SetUp() OVERRIDE {
     LauncherViewTest::SetUp();
-    original_locale_ = l10n_util::GetApplicationLocale(std::string());
-    if (is_rtl_)
-      base::i18n::SetICUDefaultLocale("he");
-    ASSERT_EQ(is_rtl_, base::i18n::IsRTL());
   }
 
   virtual void TearDown() OVERRIDE {
-    if (is_rtl_)
-      base::i18n::SetICUDefaultLocale(original_locale_);
     LauncherViewTest::TearDown();
   }
 
  private:
-  bool is_rtl_;
-  std::string original_locale_;
+  ScopedTextDirectionChange text_direction_change_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherViewTextDirectionTest);
 };
@@ -1294,7 +1312,53 @@ TEST_F(LauncherViewLegacyShelfLayoutTest, CheckFittsLaw) {
   EXPECT_GT(ideal_bounds_0.width(), ideal_bounds_1.width());
 }
 
+class LauncherViewVisibleBoundsTest : public LauncherViewTest,
+                                      public testing::WithParamInterface<bool> {
+ public:
+  LauncherViewVisibleBoundsTest() : text_direction_change_(GetParam()) {}
+
+  void CheckAllItemsAreInBounds() {
+    gfx::Rect visible_bounds = launcher_view_->GetVisibleItemsBoundsInScreen();
+    gfx::Rect launcher_bounds = launcher_view_->GetBoundsInScreen();
+    EXPECT_TRUE(launcher_bounds.Contains(visible_bounds));
+    for (int i = 0; i < test_api_->GetButtonCount(); ++i)
+      if (internal::LauncherButton* button = test_api_->GetButton(i))
+        EXPECT_TRUE(visible_bounds.Contains(button->GetBoundsInScreen()));
+    CheckAppListButtonIsInBounds();
+  }
+
+  void CheckAppListButtonIsInBounds() {
+    gfx::Rect visible_bounds = launcher_view_->GetVisibleItemsBoundsInScreen();
+    gfx::Rect app_list_button_bounds = launcher_view_->GetAppListButtonView()->
+       GetBoundsInScreen();
+    EXPECT_TRUE(visible_bounds.Contains(app_list_button_bounds));
+  }
+
+ private:
+  ScopedTextDirectionChange text_direction_change_;
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherViewVisibleBoundsTest);
+};
+
+TEST_P(LauncherViewVisibleBoundsTest, ItemsAreInBounds) {
+  // Adding elements leaving some empty space.
+  for (int i = 0; i < 3; i++) {
+    AddAppShortcut();
+  }
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
+  CheckAllItemsAreInBounds();
+  // Same for overflow case.
+  while (!test_api_->IsOverflowButtonVisible()) {
+    AddAppShortcut();
+  }
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  CheckAllItemsAreInBounds();
+}
+
 INSTANTIATE_TEST_CASE_P(LtrRtl, LauncherViewTextDirectionTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(VisibleBounds, LauncherViewVisibleBoundsTest,
+    testing::Bool());
 
 }  // namespace test
 }  // namespace ash

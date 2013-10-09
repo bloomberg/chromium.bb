@@ -103,6 +103,10 @@ class ASH_EXPORT LauncherView : public views::View,
   int leading_inset() const { return leading_inset_; }
   void set_leading_inset(int leading_inset) { leading_inset_ = leading_inset; }
 
+  // Returns rectangle bounding all visible launcher items. Used screen
+  // coordinate system.
+  gfx::Rect GetVisibleItemsBoundsInScreen();
+
   // Overridden from FocusTraversable:
   virtual views::FocusSearch* GetFocusSearch() OVERRIDE;
   virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;

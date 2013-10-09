@@ -184,6 +184,10 @@ gfx::Rect Launcher::GetLauncherViewBounds() const {
   return launcher_view_->bounds();
 }
 
+gfx::Rect Launcher::GetVisibleItemsBoundsInScreen() const {
+  return launcher_view_->GetVisibleItemsBoundsInScreen();
+}
+
 app_list::ApplicationDragAndDropHost* Launcher::GetDragAndDropHostForAppList() {
   return launcher_view_;
 }

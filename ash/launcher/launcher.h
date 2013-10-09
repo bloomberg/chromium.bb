@@ -107,6 +107,10 @@ class ASH_EXPORT Launcher {
   void SetLauncherViewBounds(gfx::Rect bounds);
   gfx::Rect GetLauncherViewBounds() const;
 
+  // Returns rectangle bounding all visible launcher items. Used screen
+  // coordinate system.
+  gfx::Rect GetVisibleItemsBoundsInScreen() const;
+
   // Returns ApplicationDragAndDropHost for this Launcher.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
