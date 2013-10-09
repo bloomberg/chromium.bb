@@ -209,6 +209,7 @@ class Planet {
   void SetLight(float zoom);
   void SetTexture(const std::string& name, int width, int height,
       uint32_t* pixels);
+  void SpinPlanet(pp::Point new_point, pp::Point last_point);
 
   void Reset();
   void RequestTextures();
@@ -226,6 +227,7 @@ class Planet {
   float ui_zoom_;
   float ui_spin_x_;
   float ui_spin_y_;
+  pp::Point ui_last_point_;
 
   // Various settings for position & orientation of planet.  Do not change
   // these variables, instead use SetPlanet*() functions.
@@ -327,6 +329,7 @@ void Planet::Reset() {
   ui_light_ = 1.0f;
   ui_spin_x_ = 0.01f;
   ui_spin_y_ = 0.0f;
+  ui_last_point_ = pp::Point(0, 0);
 
   // Set up reasonable default values.
   SetPlanetXYZR(0.0f, 0.0f, 48.0f, 4.0f);
@@ -670,6 +673,16 @@ void Planet::SetTexture(const std::string& name, int width, int height,
   }
 }
 
+void Planet::SpinPlanet(pp::Point new_point, pp::Point last_point) {
+  float delta_x = static_cast<float>(new_point.x() - last_point.x());
+  float delta_y = static_cast<float>(new_point.y() - last_point.y());
+  float spin_x = std::min(10.0f, std::max(-10.0f, delta_x * 0.5f));
+  float spin_y = std::min(10.0f, std::max(-10.0f, delta_y * 0.5f));
+  ui_spin_x_ = spin_x / 100.0f;
+  ui_spin_y_ = spin_y / 100.0f;
+  ui_last_point_ = new_point;
+}
+
 // Handle input events from the user and messages from JS.
 void Planet::HandleEvent(PSEvent* ps_event) {
   // Give the 2D context a chance to process the event.
@@ -687,17 +700,14 @@ void Planet::HandleEvent(PSEvent* ps_event) {
             StartBenchmark();
         break;
       }
-      case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-      case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
+      case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+      case PP_INPUTEVENT_TYPE_MOUSEMOVE: {
         pp::MouseInputEvent mouse = pp::MouseInputEvent(event);
         if (mouse.GetModifiers() & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) {
-          PP_Point delta = mouse.GetMovement();
-          float delta_x = static_cast<float>(delta.x);
-          float delta_y = static_cast<float>(delta.y);
-          float spin_x = std::min(4.0f, std::max(-4.0f, delta_x * 0.5f));
-          float spin_y = std::min(4.0f, std::max(-4.0f, delta_y * 0.5f));
-          ui_spin_x_ = spin_x / 100.0f;
-          ui_spin_y_ = spin_y / 100.0f;
+          if (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN)
+            SpinPlanet(mouse.GetPosition(), mouse.GetPosition());
+          else
+            SpinPlanet(mouse.GetPosition(), ui_last_point_);
         }
         break;
       }
@@ -707,6 +717,23 @@ void Planet::HandleEvent(PSEvent* ps_event) {
         SetZoom(ui_zoom_ + (ticks.x + ticks.y) * kWheelSpeed);
         // Update html slider by sending update message to JS.
         PostUpdateMessage("set_zoom", ui_zoom_);
+        break;
+      }
+      case PP_INPUTEVENT_TYPE_TOUCHSTART:
+      case PP_INPUTEVENT_TYPE_TOUCHMOVE: {
+        pp::TouchInputEvent touches = pp::TouchInputEvent(event);
+        uint32_t count = touches.GetTouchCount(PP_TOUCHLIST_TYPE_TOUCHES);
+        if (count > 0) {
+          // Use first touch point to spin planet.
+          pp::TouchPoint touch =
+              touches.GetTouchByIndex(PP_TOUCHLIST_TYPE_TOUCHES, 0);
+          pp::Point screen_point(touch.position().x(),
+                                 touch.position().y());
+          if (event.GetType() == PP_INPUTEVENT_TYPE_TOUCHSTART)
+            SpinPlanet(screen_point, screen_point);
+          else
+            SpinPlanet(screen_point, ui_last_point_);
+        }
         break;
       }
       default:
