@@ -56,7 +56,8 @@ urlConstants.GOOGLE_DRIVE_HELP =
  * @const {string}
  */
 urlConstants.GOOGLE_DRIVE_REDEEM =
-    'http://www.google.com/intl/en/chrome/devices/goodies.html';
+    'http://www.google.com/intl/en/chrome/devices/goodies.html' +
+    '?utm_medium=filesappbanner';
 
 /**
  * Location of Google Drive root.
