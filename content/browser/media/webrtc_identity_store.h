@@ -83,7 +83,6 @@ class CONTENT_EXPORT WebRTCIdentityStore
   friend class base::RefCountedThreadSafe<WebRTCIdentityStore>;
   friend class WebRTCIdentityStoreTest;
 
-  void SetValidityPeriodForTesting(base::TimeDelta validity_period);
   void SetTaskRunnerForTesting(
       const scoped_refptr<base::TaskRunner>& task_runner);
 
@@ -99,12 +98,8 @@ class CONTENT_EXPORT WebRTCIdentityStore
   void PostRequestResult(WebRTCIdentityRequest* request,
                          const WebRTCIdentityRequestResult& result);
 
-  // The validity period of the certificates.
-  base::TimeDelta validity_period_;
-
   // The TaskRunner for doing work on a worker thread.
   scoped_refptr<base::TaskRunner> task_runner_;
-
   // Weak references of the in flight requests. Used to join identical external
   // requests.
   std::vector<WebRTCIdentityRequest*> in_flight_requests_;
