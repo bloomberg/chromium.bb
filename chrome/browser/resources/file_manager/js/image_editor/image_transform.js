@@ -67,7 +67,18 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
   addCropFrame('bottom horizontal');
   addCropFrame('right bottom corner');
 
+  this.onResizedBound_ = this.onResized_.bind(this);
+  window.addEventListener('resize', this.onResizedBound_);
+
   this.createDefaultCrop();
+};
+
+/**
+ * Handles resizing of the window and updates the crop rectangle.
+ * @private
+ */
+ImageEditor.Mode.Crop.prototype.onResized_ = function() {
+  this.positionDOM();
 };
 
 /**
@@ -114,6 +125,8 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   this.domOverlay_.parentNode.removeChild(this.domOverlay_);
   this.domOverlay_ = null;
   this.editor_.hideOverlappingTools();
+  window.removeEventListener(this.onResizedBound_);
+  this.onResizedBound_ = null;
 };
 
 /**
