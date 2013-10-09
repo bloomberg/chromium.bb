@@ -19,10 +19,10 @@
  */
 
 interface HTMLDocument : Document {
-    [Custom, CustomElementCallbacks=Enable] void open();
+    [Custom, CustomElementCallbacks] void open();
     void close();
-    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, CustomElementCallbacks=Enable] void write([Default=Undefined] optional DOMString text);
-    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, CustomElementCallbacks=Enable] void writeln([Default=Undefined] optional DOMString text);
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, CustomElementCallbacks] void write([Default=Undefined] optional DOMString text);
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, CustomElementCallbacks] void writeln([Default=Undefined] optional DOMString text);
 
     readonly attribute HTMLCollection embeds;
     readonly attribute HTMLCollection plugins;
@@ -37,18 +37,18 @@ interface HTMLDocument : Document {
     [DeprecateAs=CaptureEvents] void captureEvents();
     [DeprecateAs=ReleaseEvents] void releaseEvents();
 
-    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString dir;
-    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString designMode;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString dir;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString designMode;
     readonly attribute DOMString compatMode;
 
     readonly attribute Element activeElement;
     boolean hasFocus();
 
     // Deprecated attributes
-    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString bgColor;
-    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString fgColor;
-    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString alinkColor;
-    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString linkColor;
-    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString vlinkColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString bgColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString fgColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString alinkColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString linkColor;
+    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString vlinkColor;
 };
 

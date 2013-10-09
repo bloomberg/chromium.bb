@@ -52,11 +52,11 @@
      [RaisesException] short compareBoundaryPoints([Default=Undefined] optional CompareHow how,
                                                [Default=Undefined] optional Range sourceRange);
 
-    [RaisesException, CustomElementCallbacks=Enable] void deleteContents();
-    [RaisesException, CustomElementCallbacks=Enable] DocumentFragment extractContents();
-    [RaisesException, CustomElementCallbacks=Enable] DocumentFragment cloneContents();
-    [RaisesException, CustomElementCallbacks=Enable] void insertNode([Default=Undefined] optional Node newNode);
-    [RaisesException, CustomElementCallbacks=Enable] void surroundContents([Default=Undefined] optional Node newParent);
+    [RaisesException, CustomElementCallbacks] void deleteContents();
+    [RaisesException, CustomElementCallbacks] DocumentFragment extractContents();
+    [RaisesException, CustomElementCallbacks] DocumentFragment cloneContents();
+    [RaisesException, CustomElementCallbacks] void insertNode([Default=Undefined] optional Node newNode);
+    [RaisesException, CustomElementCallbacks] void surroundContents([Default=Undefined] optional Node newParent);
     [RaisesException] Range cloneRange();
     [RaisesException] DOMString toString();
 
@@ -69,7 +69,7 @@
 
     // extensions
 
-    [RaisesException, CustomElementCallbacks=Enable] DocumentFragment createContextualFragment([Default=Undefined] optional DOMString html);
+    [RaisesException, CustomElementCallbacks] DocumentFragment createContextualFragment([Default=Undefined] optional DOMString html);
 
     // WebKit extensions
 

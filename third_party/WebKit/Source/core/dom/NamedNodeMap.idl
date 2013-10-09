@@ -25,9 +25,9 @@
     Node getNamedItem([Default=Undefined] optional DOMString name);
     [NotEnumerable, ImplementedAs=getNamedItem] getter Node ([Default=Undefined] optional DOMString name);
 
-    [RaisesException, CustomElementCallbacks=Enable] Node setNamedItem([Default=Undefined] optional Node node);
+    [RaisesException, CustomElementCallbacks] Node setNamedItem([Default=Undefined] optional Node node);
 
-    [RaisesException, CustomElementCallbacks=Enable] Node removeNamedItem([Default=Undefined] optional DOMString name);
+    [RaisesException, CustomElementCallbacks] Node removeNamedItem([Default=Undefined] optional DOMString name);
 
     getter Node item([Default=Undefined] optional unsigned long index);
 
@@ -40,9 +40,9 @@
     /*[RaisesException]*/ Node getNamedItemNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                               [Default=Undefined] optional DOMString localName);
 
-    [RaisesException, CustomElementCallbacks=Enable] Node setNamedItemNS([Default=Undefined] optional Node node);
+    [RaisesException, CustomElementCallbacks] Node setNamedItemNS([Default=Undefined] optional Node node);
 
-    [RaisesException, CustomElementCallbacks=Enable] Node removeNamedItemNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+    [RaisesException, CustomElementCallbacks] Node removeNamedItemNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                           [Default=Undefined] optional DOMString localName);
 
 };

@@ -45,7 +45,7 @@
     [RaisesException] void collapseToEnd();
     [RaisesException] void collapseToStart();
 
-    [CustomElementCallbacks=Enable] void deleteFromDocument();
+    [CustomElementCallbacks] void deleteFromDocument();
     boolean containsNode([Default=Undefined] optional Node node,
                          [Default=Undefined] optional boolean allowPartial);
     [RaisesException] void selectAllChildren([Default=Undefined] optional Node node);

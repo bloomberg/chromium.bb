@@ -99,5 +99,6 @@ interface TestObjectPython {
     [CustomGetter] readonly attribute long customGetterReadonlyLongAttribute;
     [Conditional=Condition, Custom] readonly attribute long customReadonlyLongAttribute;
     [Conditional=Condition, CustomGetter] readonly attribute long customGetterReadonlyLongAttribute;
+    [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
 };

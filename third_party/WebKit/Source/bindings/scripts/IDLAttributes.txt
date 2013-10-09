@@ -45,7 +45,7 @@ ConstructorRaisesException
 ConstructorTemplate=Event|TypedArray
 Custom
 CustomConstructor
-CustomElementCallbacks=Enable|Disable
+CustomElementCallbacks
 CustomEnumerateProperty
 CustomGetter
 CustomIsReachable

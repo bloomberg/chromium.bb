@@ -27,12 +27,12 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString tagName;
 
     [TreatReturnedNullStringAs=Null] DOMString getAttribute([Default=Undefined] optional DOMString name);
-    [RaisesException, CustomElementCallbacks=Enable] void setAttribute([Default=Undefined] optional DOMString name,
+    [RaisesException, CustomElementCallbacks] void setAttribute([Default=Undefined] optional DOMString name,
                                      [Default=Undefined] optional DOMString value);
-    [CustomElementCallbacks=Enable] void removeAttribute([Default=Undefined] optional DOMString name);
+    [CustomElementCallbacks] void removeAttribute([Default=Undefined] optional DOMString name);
     [MeasureAs=ElementGetAttributeNode] Attr getAttributeNode([Default=Undefined] optional DOMString name); // Removed from DOM4.
-    [RaisesException, CustomElementCallbacks=Enable, MeasureAs=ElementSetAttributeNode] Attr setAttributeNode([Default=Undefined, StrictTypeChecking] optional Attr newAttr); // Removed from DOM4.
-    [RaisesException, CustomElementCallbacks=Enable, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode([Default=Undefined, StrictTypeChecking] optional Attr oldAttr); // Removed from DOM4.
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNode] Attr setAttributeNode([Default=Undefined, StrictTypeChecking] optional Attr newAttr); // Removed from DOM4.
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode([Default=Undefined, StrictTypeChecking] optional Attr oldAttr); // Removed from DOM4.
     [PerWorldBindings] NodeList getElementsByTagName([Default=Undefined] optional DOMString name);
 
     [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
@@ -42,16 +42,16 @@
 
      DOMString getAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                             [Default=Undefined] optional DOMString localName);
-     [RaisesException, CustomElementCallbacks=Enable] void setAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+     [RaisesException, CustomElementCallbacks] void setAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                        [Default=Undefined] optional DOMString qualifiedName,
                                        [Default=Undefined] optional DOMString value);
-     [CustomElementCallbacks=Enable] void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI,
+     [CustomElementCallbacks] void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI,
                                           DOMString localName);
      NodeList getElementsByTagNameNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                    [Default=Undefined] optional DOMString localName);
      [MeasureAs=ElementGetAttributeNodeNS] Attr getAttributeNodeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                                    [Default=Undefined] optional DOMString localName); // Removed from DOM4.
-    [RaisesException, CustomElementCallbacks=Enable] Attr setAttributeNodeNS([Default=Undefined, StrictTypeChecking] optional Attr newAttr);
+    [RaisesException, CustomElementCallbacks] Attr setAttributeNodeNS([Default=Undefined, StrictTypeChecking] optional Attr newAttr);
     boolean hasAttribute(DOMString name);
      boolean hasAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                           [Default=Undefined] optional DOMString localName);

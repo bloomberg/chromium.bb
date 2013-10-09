@@ -1728,15 +1728,8 @@ sub GenerateCustomElementInvocationScopeIfNeeded
 {
     my $code = "";
     my $ext = shift;
-    my $annotation = $ext->{"CustomElementCallbacks"} || "";
 
-    if ($annotation eq "None") {
-        # Explicit CustomElementCallbacks=None overrides any other
-        # heuristic.
-        return $code;
-    }
-
-    if ($annotation eq "Enable" or $ext->{"Reflect"}) {
+    if ($ext->{"CustomElementCallbacks"} or $ext->{"Reflect"}) {
         AddToImplIncludes("core/dom/custom/CustomElementCallbackDispatcher.h");
         $code .= <<END;
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;

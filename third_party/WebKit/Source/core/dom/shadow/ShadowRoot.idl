@@ -32,7 +32,7 @@
     attribute boolean resetStyleInheritance;
     [EnabledAtRuntime=ShadowDOM, ImplementedAs=bindingsOlderShadowRoot] readonly attribute ShadowRoot olderShadowRoot;
 
-    [TreatNullAs=NullString, CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
 
     [RaisesException] Node cloneNode([Default=Undefined] optional boolean deep);
     Selection getSelection();

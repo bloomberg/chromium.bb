@@ -26,7 +26,7 @@ interface Attr : Node {
 
     readonly attribute boolean specified;
 
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException, CustomElementCallbacks=Enable] attribute DOMString value;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException, CustomElementCallbacks] attribute DOMString value;
 
     // DOM Level 2
 

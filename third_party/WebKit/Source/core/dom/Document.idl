@@ -29,7 +29,7 @@ callback CustomElementConstructor = Element ();
     readonly attribute DOMImplementation implementation;
     readonly attribute Element documentElement;
 
-    [CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElement([TreatNullAs=NullString,Default=Undefined] optional DOMString tagName);
+    [CustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElement([TreatNullAs=NullString,Default=Undefined] optional DOMString tagName);
     DocumentFragment   createDocumentFragment();
     [PerWorldBindings] Text createTextNode([Default=Undefined] optional DOMString data);
     Comment createComment([Default=Undefined] optional DOMString data);
@@ -41,9 +41,9 @@ callback CustomElementConstructor = Element ();
 
     // Introduced in DOM Level 2:
 
-    [CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Node importNode([Default=Undefined] optional Node importedNode,
+    [CustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Node importNode([Default=Undefined] optional Node importedNode,
                     optional boolean deep);
-    [CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+    [CustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                             [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName);
     [RaisesException, MeasureAs=DocumentCreateAttributeNS] Attr createAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                                                   [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName); // Removed from DOM4.
@@ -59,7 +59,7 @@ callback CustomElementConstructor = Element ();
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException, MeasureAs=DocumentXMLVersion] attribute DOMString xmlVersion; // Removed from DOM4.
     [SetterRaisesException, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone; // Removed from DOM4.
 
-    [RaisesException, CustomElementCallbacks=Enable] Node               adoptNode([Default=Undefined] optional Node source);
+    [RaisesException, CustomElementCallbacks] Node               adoptNode([Default=Undefined] optional Node source);
 
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString documentURI;
 
@@ -98,7 +98,7 @@ callback CustomElementConstructor = Element ();
                                                         [Default=Undefined] optional DOMString pseudoElement);
 
     // Common extensions
-    [CustomElementCallbacks=Enable]
+    [CustomElementCallbacks]
     boolean            execCommand([Default=Undefined] optional DOMString command,
                                    [Default=Undefined] optional boolean userInterface,
                                    [TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString value);
@@ -111,14 +111,14 @@ callback CustomElementConstructor = Element ();
 
     // Moved down from HTMLDocument
 
-             [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString title;
+             [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString title;
     readonly attribute DOMString referrer;
              [TreatNullAs=NullString, SetterRaisesException] attribute DOMString domain;
     readonly attribute DOMString URL;
 
              [TreatNullAs=NullString, GetterRaisesException, SetterRaisesException] attribute DOMString cookie;
 
-             [SetterRaisesException, CustomElementCallbacks=Enable] attribute HTMLElement body;
+             [SetterRaisesException, CustomElementCallbacks] attribute HTMLElement body;
 
     readonly attribute HTMLHeadElement head;
     readonly attribute HTMLCollection images;
@@ -261,10 +261,10 @@ callback CustomElementConstructor = Element ();
                                                [Default=Undefined] optional float webkitForce);
     [EnabledAtRuntime=Touch] TouchList createTouchList(Touch... touches);
 
-    [DeprecateAs=PrefixedDocumentRegister, EnabledAtRuntime=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks=Enable, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
-    [EnabledAtRuntime=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks=Enable, RaisesException] CustomElementConstructor register(DOMString name, optional Dictionary options);
-    [CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
-    [CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
+    [DeprecateAs=PrefixedDocumentRegister, EnabledAtRuntime=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
+    [EnabledAtRuntime=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor register(DOMString name, optional Dictionary options);
+    [CustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
+    [CustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);
 
     // Page visibility API.

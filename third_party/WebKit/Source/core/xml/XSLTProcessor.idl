@@ -37,8 +37,8 @@
 ] interface XSLTProcessor {
 
     void importStylesheet([Default=Undefined] optional Node stylesheet);
-    [CustomElementCallbacks=Enable] DocumentFragment transformToFragment([Default=Undefined] optional Node source, [Default=Undefined] optional Document docVal);
-    [CustomElementCallbacks=Enable] Document transformToDocument([Default=Undefined] optional Node source);
+    [CustomElementCallbacks] DocumentFragment transformToFragment([Default=Undefined] optional Node source, [Default=Undefined] optional Document docVal);
+    [CustomElementCallbacks] Document transformToDocument([Default=Undefined] optional Node source);
 
     [Custom] void setParameter(DOMString namespaceURI, DOMString localName, DOMString value);
     [Custom, TreatReturnedNullStringAs=Undefined] DOMString getParameter(DOMString namespaceURI, DOMString localName);
