@@ -102,6 +102,7 @@ PrintPreviewWebUITest.prototype = {
 
     this.initialSettings_ = new print_preview.NativeInitialSettings(
       false /*isInKioskAutoPrintMode*/,
+      false /*hidePrintWithSystemDialogLink*/,
       ',' /*thousandsDelimeter*/,
       '.' /*decimalDelimeter*/,
       1 /*unitType*/,

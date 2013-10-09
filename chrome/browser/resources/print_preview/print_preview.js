@@ -502,6 +502,9 @@ cr.define('print_preview', function() {
           settings.selectionOnly);
       this.destinationStore_.init(settings.systemDefaultDestinationId);
       this.appState_.setInitialized();
+
+      setIsVisible($('system-dialog-link'),
+                   !settings.hidePrintWithSystemDialogLink);
     },
 
     /**

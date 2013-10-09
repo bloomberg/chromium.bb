@@ -162,6 +162,7 @@ const char kNumberFormat[] = "numberFormat";
 // Name of a dictionary field specifying whether to print automatically in
 // kiosk mode. See http://crbug.com/31395.
 const char kPrintAutomaticallyInKioskMode[] = "printAutomaticallyInKioskMode";
+const char kHidePrintWithSystemDialogLink[] = "hidePrintWithSystemDialogLink";
 // Name of a dictionary field holding the state of selection for document.
 const char kDocumentHasSelection[] = "documentHasSelection";
 
@@ -868,6 +869,13 @@ void PrintPreviewHandler::SendInitialSettings(
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   initial_settings.SetBoolean(kPrintAutomaticallyInKioskMode,
                               cmdline->HasSwitch(switches::kKioskModePrinting));
+#if defined(OS_WIN)
+  // In Win8 metro, the system print dialog can only open on the desktop.  Doing
+  // so will cause the browser to appear hung, so we don't show the link in
+  // metro.
+  bool is_ash = (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH);
+  initial_settings.SetBoolean(kHidePrintWithSystemDialogLink, is_ash);
+#endif
 
   if (print_preview_ui->source_is_modifiable())
     GetNumberFormatAndMeasurementSystem(&initial_settings);
