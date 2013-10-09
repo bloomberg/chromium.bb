@@ -15,6 +15,7 @@
             'auto_login_parser/auto_login_parser_unittest.cc',
             'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
             'browser_context_keyed_service/dependency_graph_unittest.cc',
+            'dom_distiller/core/distiller_url_fetcher_unittest.cc',
             'dom_distiller/core/dom_distiller_database_unittest.cc',
             'dom_distiller/core/dom_distiller_store_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',
@@ -56,6 +57,7 @@
             'browser_context_keyed_service',
 
             # Dependencies of dom_distiller
+            'distilled_page_proto',
             'dom_distiller_core',
 
             # Dependencies of encryptor

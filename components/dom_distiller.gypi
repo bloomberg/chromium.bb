@@ -48,7 +48,9 @@
           'target_name': 'dom_distiller_core',
           'type': 'static_library',
           'dependencies': [
+            'distilled_page_proto',
             '../base/base.gyp:base',
+            #'../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -59,6 +61,8 @@
           'sources': [
             'dom_distiller/core/article_entry.cc',
             'dom_distiller/core/article_entry.h',
+            'dom_distiller/core/distiller_url_fetcher.cc',
+            'dom_distiller/core/distiller_url_fetcher.h',
             'dom_distiller/core/dom_distiller_constants.cc',
             'dom_distiller/core/dom_distiller_constants.h',
             'dom_distiller/core/dom_distiller_database.cc',
@@ -66,6 +70,18 @@
             'dom_distiller/core/dom_distiller_store.cc',
             'dom_distiller/core/dom_distiller_store.h',
           ],
+        },
+        {
+          'target_name': 'distilled_page_proto',
+          'type': 'static_library',
+          'sources': [
+            'dom_distiller/core/proto/distilled_page.proto',
+          ],
+          'variables': {
+            'proto_in_dir': 'dom_distiller/core/proto',
+            'proto_out_dir': 'components/dom_distiller/core/proto',
+          },
+          'includes': [ '../build/protoc.gypi' ]
         },
       ],
     }],

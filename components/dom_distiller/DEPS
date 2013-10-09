@@ -3,6 +3,8 @@ include_rules = [
   "+sync/api",
   "+sync/protocol",
   "+third_party/leveldatabase/src/include",
+  "+net/http",
+  "+net/url_request",
 
   # The dom distiller is a layered component; subdirectories must explicitly
   # introduce the ability to use the content layer as appropriate.
