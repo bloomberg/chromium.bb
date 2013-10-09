@@ -67,7 +67,7 @@ public:
     ClassRootNodeList(Node* rootNode, const AtomicString& className)
         : m_className(className)
         , m_rootNode(rootNode)
-        , m_currentElement(nextInternal(rootNode && rootNode->isElementNode() ? toElement(rootNode) : ElementTraversal::firstWithin(rootNode))) { }
+        , m_currentElement(nextInternal(ElementTraversal::firstWithin(m_rootNode))) { }
 
     bool isEmpty() const { return !m_currentElement; }
 
@@ -226,6 +226,19 @@ inline bool SelectorDataList::canUseFastQuery(Node* rootNode) const
     return m_selectors.size() == 1 && rootNode->inDocument() && !rootNode->document().inQuirksMode();
 }
 
+inline bool ancestorHasClassName(Node* rootNode, const AtomicString& className)
+{
+    if (!rootNode->isElementNode())
+        return false;
+
+    for (Element* element = toElement(rootNode); element; element = element->parentElement()) {
+        if (element->hasClass() && element->classNames().contains(className))
+            return true;
+    }
+    return false;
+}
+
+
 // If returns true, traversalRoots has the elements that may match the selector query.
 //
 // If returns false, traversalRoots has the rootNode parameter or descendants of rootNode representing
@@ -270,6 +283,10 @@ PassOwnPtr<SimpleNodeList> SelectorDataList::findTraverseRoots(Node* rootNode, b
                 return adoptPtr(new ClassElementList(rootNode, selector->value()));
             }
             matchTraverseRoots = false;
+            // Since there exists some ancestor element which has the class name, we need to see all children of rootNode.
+            if (ancestorHasClassName(rootNode, selector->value()))
+                return adoptPtr(new SingleNodeList(rootNode));
+
             return adoptPtr(new ClassRootNodeList(rootNode, selector->value()));
         }
 
