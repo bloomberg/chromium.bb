@@ -159,7 +159,7 @@ void SearchBoxModelObserverBridge::TextChanged() {
   if (![delegate_ appListDelegate])
     return;
 
-  [menuController_ setModel:NULL];
+  menuController_.reset();
   appListMenu_.reset(
       new app_list::AppListMenu([delegate_ appListDelegate],
                                 [delegate_ appListModel]->users()));
