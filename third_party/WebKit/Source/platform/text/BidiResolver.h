@@ -25,6 +25,7 @@
 #include "platform/text/BidiContext.h"
 #include "platform/text/BidiRunList.h"
 #include "platform/text/TextDirection.h"
+#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -225,6 +226,9 @@ public:
 
     TextDirection determineParagraphDirectionality(bool* hasStrongDirectionality = 0);
 
+    void setMidpointStateForIsolatedRun(Run*, const MidpointState<Iterator>&);
+    MidpointState<Iterator> midpointStateForIsolatedRun(Run*);
+
 protected:
     void increment() { m_current.increment(); }
     // FIXME: Instead of InlineBidiResolvers subclassing this method, we should
@@ -262,6 +266,7 @@ private:
     void reorderRunsFromLevels();
 
     Vector<BidiEmbedding, 8> m_currentExplicitEmbeddingSequence;
+    HashMap<Run *, MidpointState<Iterator> > m_midpointStateForIsolatedRun;
 };
 
 #ifndef NDEBUG
@@ -956,6 +961,20 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
     reorderRunsFromLevels();
     endOfLine = Iterator();
 }
+
+template <class Iterator, class Run>
+void BidiResolver<Iterator, Run>::setMidpointStateForIsolatedRun(Run* run, const MidpointState<Iterator>& midpoint)
+{
+    ASSERT(!m_midpointStateForIsolatedRun.contains(run));
+    m_midpointStateForIsolatedRun.add(run, midpoint);
+}
+
+template<class Iterator, class Run>
+MidpointState<Iterator> BidiResolver<Iterator, Run>::midpointStateForIsolatedRun(Run* run)
+{
+    return m_midpointStateForIsolatedRun.take(run);
+}
+
 
 } // namespace WebCore
 

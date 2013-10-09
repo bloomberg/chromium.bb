@@ -474,6 +474,62 @@ static inline void addPlaceholderRunForIsolatedInline(InlineBidiResolver& resolv
     // FIXME: isolatedRuns() could be a hash of object->run and then we could cheaply
     // ASSERT here that we didn't create multiple objects for the same inline.
     resolver.isolatedRuns().append(isolatedRun);
+    LineMidpointState& lineMidpointState = resolver.midpointState();
+    resolver.setMidpointStateForIsolatedRun(isolatedRun, lineMidpointState);
+}
+
+static inline BidiRun* createRun(int start, int end, RenderObject* obj, InlineBidiResolver& resolver)
+{
+    return new BidiRun(start, end, obj, resolver.context(), resolver.dir());
+}
+
+enum AppendRunBehavior {
+    AppendingFakeRun,
+    AppendingRunsForObject
+};
+
+static void adjustMidpointsAndAppendRunsForObjectIfNeeded(RenderObject* obj, unsigned start, unsigned end, InlineBidiResolver& resolver, AppendRunBehavior behavior = AppendingFakeRun, BidiRunList<BidiRun>* runs = 0)
+{
+    if (start > end || RenderBlock::shouldSkipCreatingRunsForObject(obj))
+        return;
+
+    LineMidpointState& lineMidpointState = resolver.midpointState();
+    bool haveNextMidpoint = (lineMidpointState.currentMidpoint < lineMidpointState.numMidpoints);
+    InlineIterator nextMidpoint;
+    if (haveNextMidpoint)
+        nextMidpoint = lineMidpointState.midpoints[lineMidpointState.currentMidpoint];
+    if (lineMidpointState.betweenMidpoints) {
+        if (!(haveNextMidpoint && nextMidpoint.m_obj == obj))
+            return;
+        // This is a new start point. Stop ignoring objects and
+        // adjust our start.
+        lineMidpointState.betweenMidpoints = false;
+        start = nextMidpoint.m_pos;
+        lineMidpointState.currentMidpoint++;
+        if (start < end)
+            return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, resolver, behavior, runs);
+    } else {
+        if (!haveNextMidpoint || (obj != nextMidpoint.m_obj)) {
+            if (behavior == AppendingFakeRun)
+                return;
+            runs->addRun(createRun(start, end, obj, resolver));
+            return;
+        }
+
+        // An end midpoint has been encountered within our object. We
+        // need to go ahead and append a run with our endpoint.
+        if (static_cast<int>(nextMidpoint.m_pos + 1) <= end) {
+            lineMidpointState.betweenMidpoints = true;
+            lineMidpointState.currentMidpoint++;
+            if (nextMidpoint.m_pos != UINT_MAX) { // UINT_MAX means stop at the object and don't nclude any of it.
+                if (static_cast<int>(nextMidpoint.m_pos + 1) > start && behavior == AppendingRunsForObject)
+                    runs->addRun(createRun(start, nextMidpoint.m_pos + 1, obj, resolver));
+                return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, nextMidpoint.m_pos + 1, end, resolver, behavior, runs);
+            }
+        } else if (behavior == AppendingRunsForObject) {
+            runs->addRun(createRun(start, end, obj, resolver));
+        }
+    }
 }
 
 class IsolateTracker {
@@ -498,26 +554,21 @@ public:
     void embed(WTF::Unicode::Direction, BidiEmbeddingSource) { }
     void commitExplicitEmbedding() { }
 
-    void addFakeRunIfNecessary(RenderObject* obj, unsigned pos, InlineBidiResolver& resolver)
+
+    void addFakeRunIfNecessary(RenderObject* obj, unsigned pos, unsigned end, InlineBidiResolver& resolver)
     {
         // We only need to add a fake run for a given isolated span once during each call to createBidiRunsForLine.
         // We'll be called for every span inside the isolated span so we just ignore subsequent calls.
         // We also avoid creating a fake run until we hit a child that warrants one, e.g. we skip floats.
-        if (m_haveAddedFakeRunForRootIsolate || RenderBlock::shouldSkipCreatingRunsForObject(obj))
-            return;
-        m_haveAddedFakeRunForRootIsolate = true;
+        if (!(m_haveAddedFakeRunForRootIsolate || RenderBlock::shouldSkipCreatingRunsForObject(obj))) {
+            addPlaceholderRunForIsolatedInline(resolver, obj, pos);
+            m_haveAddedFakeRunForRootIsolate = true;
+        }
+        adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, pos, end, resolver);
+
         // obj and pos together denote a single position in the inline, from which the parsing of the isolate will start.
         // We don't need to mark the end of the run because this is implicit: it is either endOfLine or the end of the
         // isolate, when we call createBidiRunsForLine it will stop at whichever comes first.
-        addPlaceholderRunForIsolatedInline(resolver, obj, pos);
-        // FIXME: Inline isolates don't work properly with collapsing whitespace, see webkit.org/b/109624
-        // For now, if we enter an isolate between midpoints, we increment our current midpoint or else
-        // we'll leave the isolate and ignore the content that follows.
-        MidpointState<InlineIterator>& midpointState = resolver.midpointState();
-        if (midpointState.betweenMidpoints && midpointState.midpoints[midpointState.currentMidpoint].object() == obj) {
-            midpointState.betweenMidpoints = false;
-            ++midpointState.currentMidpoint;
-        }
     }
 
 private:
@@ -537,7 +588,7 @@ inline void InlineBidiResolver::appendRun()
         RenderObject* obj = m_sor.m_obj;
         while (obj && obj != m_eor.m_obj && obj != endOfLine.m_obj) {
             if (isolateTracker.inIsolate())
-                isolateTracker.addFakeRunIfNecessary(obj, start, *this);
+                isolateTracker.addFakeRunIfNecessary(obj, start, obj->length(), *this);
             else
                 RenderBlock::appendRunsForObject(m_runs, start, obj->length(), obj, *this);
             // FIXME: start/obj should be an InlineIterator instead of two separate variables.
@@ -553,7 +604,7 @@ inline void InlineBidiResolver::appendRun()
             // It's OK to add runs for zero-length RenderObjects, just don't make the run larger than it should be
             int end = obj->length() ? pos + 1 : 0;
             if (isolateTracker.inIsolate())
-                isolateTracker.addFakeRunIfNecessary(obj, start, *this);
+                isolateTracker.addFakeRunIfNecessary(obj, start, end, *this);
             else
                 RenderBlock::appendRunsForObject(m_runs, start, end, obj, *this);
         }
