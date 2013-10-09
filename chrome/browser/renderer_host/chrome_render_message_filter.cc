@@ -284,7 +284,9 @@ void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
 void ChromeRenderMessageFilter::OnOpenChannelToExtension(
     int routing_id,
     const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& channel_name, int* port_id) {
+    const std::string& channel_name,
+    bool include_tls_channel_id,
+    int* port_id) {
   int port2_id;
   extensions::MessageService::AllocatePortIdPair(port_id, &port2_id);
 
@@ -292,18 +294,20 @@ void ChromeRenderMessageFilter::OnOpenChannelToExtension(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ChromeRenderMessageFilter::OpenChannelToExtensionOnUIThread,
                  this, render_process_id_, routing_id, port2_id, info,
-                 channel_name));
+                 channel_name, include_tls_channel_id));
 }
 
 void ChromeRenderMessageFilter::OpenChannelToExtensionOnUIThread(
     int source_process_id, int source_routing_id,
     int receiver_port_id,
     const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& channel_name) {
+    const std::string& channel_name,
+    bool include_tls_channel_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   extensions::MessageService::Get(profile_)->OpenChannelToExtension(
       source_process_id, source_routing_id, receiver_port_id,
-      info.source_id, info.target_id, info.source_url, channel_name);
+      info.source_id, info.target_id, info.source_url, channel_name,
+      include_tls_channel_id);
 }
 
 void ChromeRenderMessageFilter::OnOpenChannelToNativeApp(

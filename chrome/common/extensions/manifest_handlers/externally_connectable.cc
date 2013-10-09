@@ -185,8 +185,12 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
         keys::kExternallyConnectable));
   }
 
+  bool accepts_tls_channel_id =
+      externally_connectable->accepts_tls_channel_id.get() &&
+      *externally_connectable->accepts_tls_channel_id;
   return make_scoped_ptr(
-      new ExternallyConnectableInfo(matches, ids, all_ids));
+      new ExternallyConnectableInfo(matches, ids, all_ids,
+                                    accepts_tls_channel_id));
 }
 
 ExternallyConnectableInfo::~ExternallyConnectableInfo() {}
@@ -194,8 +198,10 @@ ExternallyConnectableInfo::~ExternallyConnectableInfo() {}
 ExternallyConnectableInfo::ExternallyConnectableInfo(
     const URLPatternSet& matches,
     const std::vector<std::string>& ids,
-    bool all_ids)
-    : matches(matches), ids(Sorted(ids)), all_ids(all_ids) {}
+    bool all_ids,
+    bool accepts_tls_channel_id)
+    : matches(matches), ids(Sorted(ids)), all_ids(all_ids),
+      accepts_tls_channel_id(accepts_tls_channel_id) {}
 
 bool ExternallyConnectableInfo::IdCanConnect(const std::string& id) {
   if (all_ids)
