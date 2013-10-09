@@ -30,8 +30,21 @@ class MinimizeButtonMetrics {
   void OnHWNDActivated();
 
  private:
+  // Gets the value for GetMinimizeButtonOffsetX(), caching if found.
+  int GetAndCacheMinimizeButtonOffsetX() const;
+
   HWND hwnd_;
-  int cached_minimize_button_x_delta_;
+
+  // Cached offset of the minimize button. If RTL this is the location of the
+  // minimize button, if LTR this is the offset from the right edge of the
+  // client area to the minimize button.
+  mutable int cached_minimize_button_x_delta_;
+
+  // Static cache of |cached_minimize_button_x_delta_|.
+  static int last_cached_minimize_button_x_delta_;
+
+  // Has OnHWNDActivated() been invoked?
+  bool was_activated_;
 
   DISALLOW_COPY_AND_ASSIGN(MinimizeButtonMetrics);
 };

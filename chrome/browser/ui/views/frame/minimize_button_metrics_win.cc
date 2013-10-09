@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/i18n/rtl.h"
+#include "ui/base/win/shell.h"
 #include "ui/gfx/win/dpi.h"
 
 namespace {
@@ -29,9 +30,13 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
 
 }  // namespace
 
+// static
+int MinimizeButtonMetrics::last_cached_minimize_button_x_delta_ = 0;
+
 MinimizeButtonMetrics::MinimizeButtonMetrics()
     : hwnd_(NULL),
-      cached_minimize_button_x_delta_(0) {
+      cached_minimize_button_x_delta_(last_cached_minimize_button_x_delta_),
+      was_activated_(false) {
 }
 
 MinimizeButtonMetrics::~MinimizeButtonMetrics() {
@@ -43,25 +48,22 @@ void MinimizeButtonMetrics::Init(HWND hwnd) {
 }
 
 void MinimizeButtonMetrics::OnHWNDActivated() {
-  int minimize_offset = GetMinimizeButtonOffsetForWindow(hwnd_);
-
-  RECT rect = {0};
-  GetClientRect(hwnd_, &rect);
-  // Calculate and cache the value of the minimize button delta, i.e. the
-  // offset to be applied to the left or right edge of the client rect
-  // depending on whether the language is RTL or not.
-  // This cached value is only used if the WM_GETTITLEBARINFOEX message fails
-  // to get the offset of the minimize button.
-  if (base::i18n::IsRTL())
-    cached_minimize_button_x_delta_ = minimize_offset;
-  else
-    cached_minimize_button_x_delta_ = rect.right - minimize_offset;
+  was_activated_ = true;
+  // NOTE: we don't cache here as it seems only after the activate is the value
+  // correct.
 }
 
 int MinimizeButtonMetrics::GetMinimizeButtonOffsetX() const {
-  int minimize_button_offset = GetMinimizeButtonOffsetForWindow(hwnd_);
-  if (minimize_button_offset > 0)
-    return minimize_button_offset;
+  // Under DWM WM_GETTITLEBARINFOEX won't return the right thing until after
+  // WM_NCACTIVATE (maybe it returns classic values?). In an attempt to return a
+  // consistant value we cache the last value across instances and use it until
+  // we get the activate.
+  if (was_activated_ || !ui::win::IsAeroGlassEnabled() ||
+      cached_minimize_button_x_delta_ == 0) {
+    const int minimize_button_offset = GetAndCacheMinimizeButtonOffsetX();
+    if (minimize_button_offset > 0)
+      return minimize_button_offset;
+  }
 
   // If we fail to get the minimize button offset via the WM_GETTITLEBARINFOEX
   // message then calculate and return this via the
@@ -69,11 +71,27 @@ int MinimizeButtonMetrics::GetMinimizeButtonOffsetX() const {
   // CacheMinimizeButtonDelta() for more details.
   DCHECK(cached_minimize_button_x_delta_);
 
-  RECT client_rect = {0};
-  GetClientRect(hwnd_, &client_rect);
-
   if (base::i18n::IsRTL())
     return cached_minimize_button_x_delta_;
+
+  RECT client_rect = {0};
+  GetClientRect(hwnd_, &client_rect);
   return client_rect.right - cached_minimize_button_x_delta_;
 }
 
+int MinimizeButtonMetrics::GetAndCacheMinimizeButtonOffsetX() const {
+  const int minimize_button_offset = GetMinimizeButtonOffsetForWindow(hwnd_);
+  if (minimize_button_offset <= 0)
+    return 0;
+
+  if (base::i18n::IsRTL()) {
+    cached_minimize_button_x_delta_ = minimize_button_offset;
+  } else {
+    RECT client_rect = {0};
+    GetClientRect(hwnd_, &client_rect);
+    cached_minimize_button_x_delta_ =
+        client_rect.right - minimize_button_offset;
+  }
+  last_cached_minimize_button_x_delta_ = cached_minimize_button_x_delta_;
+  return minimize_button_offset;
+}
