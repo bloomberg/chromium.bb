@@ -144,7 +144,7 @@ _PATH_RULES_SPECIFIER = [
     ([# Jinja templates: files have .cpp or .h extensions, but contain
       # template code, which can't be handled, so disable tests.
       "Source/bindings/templates",
-      "Source/core/scripts/templates"],
+      "Source/build/scripts/templates"],
      ["-"]),
 
     ([# IDL compiler reference output

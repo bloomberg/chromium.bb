@@ -98,6 +98,7 @@ class BindingsTests(object):
     def generate_from_idl_pl(self, idl_file, output_directory):
         cmd = ['perl', '-w',
                '-Ibindings/scripts',
+               '-Ibuild/scripts',
                '-Icore/scripts',
                '-I../../JSON/out/lib/perl5',
                'bindings/scripts/generate_bindings.pl',

@@ -198,7 +198,7 @@
           'scripts/code_generator_v8.pm',
           'scripts/idl_parser.pm',
           'scripts/idl_serializer.pm',
-          '../core/scripts/preprocessor.pm',
+          '../build/scripts/preprocessor.pm',
           'scripts/IDLAttributes.txt',
           # FIXME: If the dependency structure changes, we rebuild all files,
           # since we're not computing dependencies file-by-file in the build.
@@ -237,7 +237,7 @@
           '<(perl_exe)',
           '-w',
           '-Iscripts',
-          '-I../core/scripts',
+          '-I../build/scripts',
           '-I<(DEPTH)/third_party/JSON/out/lib/perl5',
           'scripts/generate_bindings.pl',
           '--outputDir',
@@ -267,7 +267,7 @@
       'actions': [{
         'action_name': 'derived_sources_all_in_one',
         'inputs': [
-          '../core/scripts/action_derivedsourcesallinone.py',
+          '../build/scripts/action_derivedsourcesallinone.py',
           '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
         ],
         'outputs': [
@@ -275,7 +275,7 @@
         ],
         'action': [
           'python',
-          '../core/scripts/action_derivedsourcesallinone.py',
+          '../build/scripts/action_derivedsourcesallinone.py',
           '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
           '--',
           '<@(derived_sources_aggregate_files)',

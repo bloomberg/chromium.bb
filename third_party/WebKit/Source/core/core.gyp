@@ -497,7 +497,7 @@
                       'TCMInterposing|ScrollAnimatorChromiumMacExt|WebCoreTheme',
                 },
                 'action': [
-                  'scripts/check_objc_rename.sh',
+                  '../build/scripts/check_objc_rename.sh',
                   '<(class_whitelist_regex)',
                   '<(category_whitelist_regex)',
                 ],
