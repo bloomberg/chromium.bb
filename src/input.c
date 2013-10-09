@@ -489,6 +489,12 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 
 		serial = wl_display_next_serial(display);
 
+		if (kbd && kbd->focus != pointer->focus)
+			send_modifiers_to_client_in_list(surface_client,
+							 &kbd->resource_list,
+							 serial,
+							 kbd);
+
 		move_resources_for_client(focus_resource_list,
 					  &pointer->resource_list,
 					  surface_client);
@@ -501,15 +507,6 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 		}
 
 		pointer->focus_serial = serial;
-	}
-
-	if (kbd && surface && surface->resource && kbd->focus != pointer->focus) {
-		struct wl_client *surface_client =
-			wl_resource_get_client(surface->resource);
-		send_modifiers_to_client_in_list(surface_client,
-						 &kbd->resource_list,
-						 serial,
-						 kbd);
 	}
 
 	pointer->focus = surface;
