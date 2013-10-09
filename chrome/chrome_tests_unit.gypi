@@ -913,7 +913,6 @@
         'browser/google_apis/gdata_wapi_parser_unittest.cc',
         'browser/google_apis/gdata_wapi_requests_unittest.cc',
         'browser/google_apis/gdata_wapi_url_generator_unittest.cc',
-        'browser/google_apis/request_sender_unittest.cc',
         'browser/google_apis/request_util_unittest.cc',
         'browser/google_apis/time_util_unittest.cc',
         'browser/history/android/android_cache_database_unittest.cc',
