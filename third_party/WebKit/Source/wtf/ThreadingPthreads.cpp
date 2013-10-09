@@ -37,7 +37,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RandomNumberSeed.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/ThreadFunctionInvocation.h"
 #include "wtf/ThreadIdentifierDataPthreads.h"
@@ -121,7 +120,6 @@ void initializeThreading()
     StringImpl::empty();
     atomicallyInitializedStaticMutex = new Mutex;
     threadMapMutex();
-    initializeRandomNumberGenerator();
     ThreadIdentifierData::initializeOnce();
     wtfThreadData();
     s_dtoaP5Mutex = new Mutex;
