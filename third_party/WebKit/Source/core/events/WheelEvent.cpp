@@ -148,7 +148,7 @@ WheelEventDispatchMediator::WheelEventDispatchMediator(const PlatformWheelEvent&
 
 WheelEvent* WheelEventDispatchMediator::event() const
 {
-    return toWheelEvent(EventDispatchMediator::event());
+    return static_cast<WheelEvent*>(EventDispatchMediator::event());
 }
 
 bool WheelEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const

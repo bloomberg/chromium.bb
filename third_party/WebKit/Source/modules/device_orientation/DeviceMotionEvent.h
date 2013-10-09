@@ -68,12 +68,6 @@ private:
     RefPtr<DeviceRotationRate> m_rotationRate;
 };
 
-inline DeviceMotionEvent* toDeviceMotionEvent(Event* event)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->interfaceName() == EventNames::devicemotion);
-    return static_cast<DeviceMotionEvent*>(event);
-}
-
 } // namespace WebCore
 
 #endif // DeviceMotionEvent_h

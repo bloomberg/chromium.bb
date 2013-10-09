@@ -73,7 +73,7 @@ private:
 
 inline GestureEvent* toGestureEvent(Event* event)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->isGestureEvent());
+    ASSERT(event && event->isGestureEvent());
     return static_cast<GestureEvent*>(event);
 }
 
