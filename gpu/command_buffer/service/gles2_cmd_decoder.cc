@@ -317,11 +317,11 @@ class ScopedTexture2DBinder {
 // object goes out of scope.
 class ScopedRenderBufferBinder {
  public:
-  ScopedRenderBufferBinder(GLES2DecoderImpl* decoder, GLuint id);
+  ScopedRenderBufferBinder(ContextState* state, GLuint id);
   ~ScopedRenderBufferBinder();
 
  private:
-  GLES2DecoderImpl* decoder_;
+  ContextState* state_;
   DISALLOW_COPY_AND_ASSIGN(ScopedRenderBufferBinder);
 };
 
@@ -623,7 +623,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
-  void RestoreCurrentRenderbufferBindings();
   void RestoreCurrentTexture2DBindings();
 
   // Sets DEPTH_TEST, STENCIL_TEST and color mask for the current framebuffer.
@@ -1711,18 +1710,18 @@ ScopedTexture2DBinder::~ScopedTexture2DBinder() {
   decoder_->RestoreCurrentTexture2DBindings();
 }
 
-ScopedRenderBufferBinder::ScopedRenderBufferBinder(GLES2DecoderImpl* decoder,
+ScopedRenderBufferBinder::ScopedRenderBufferBinder(ContextState* state,
                                                    GLuint id)
-    : decoder_(decoder) {
+    : state_(state) {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedRenderBufferBinder::ctor", decoder_->GetErrorState());
+      "ScopedRenderBufferBinder::ctor", state_->GetErrorState());
   glBindRenderbufferEXT(GL_RENDERBUFFER, id);
 }
 
 ScopedRenderBufferBinder::~ScopedRenderBufferBinder() {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedRenderBufferBinder::dtor", decoder_->GetErrorState());
-  decoder_->RestoreCurrentRenderbufferBindings();
+      "ScopedRenderBufferBinder::dtor", state_->GetErrorState());
+  state_->RestoreRenderbufferBindings();
 }
 
 ScopedFrameBufferBinder::ScopedFrameBufferBinder(GLES2DecoderImpl* decoder,
@@ -1942,7 +1941,7 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size, GLenum format,
                                        GLsizei samples) {
   ScopedGLErrorSuppressor suppressor(
       "BackRenderbuffer::AllocateStorage", decoder_->GetErrorState());
-  ScopedRenderBufferBinder binder(decoder_, id_);
+  ScopedRenderBufferBinder binder(&decoder_->state_, id_);
 
   uint32 estimated_size = 0;
   if (!decoder_->renderbuffer_manager()->ComputeEstimatedRenderbufferSize(
@@ -2788,13 +2787,6 @@ void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
 void GLES2DecoderImpl::ReleaseCurrent() {
   if (context_.get())
     context_->ReleaseCurrent(surface_.get());
-}
-
-void GLES2DecoderImpl::RestoreCurrentRenderbufferBindings() {
-  Renderbuffer* renderbuffer =
-      GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
-  glBindRenderbufferEXT(
-      GL_RENDERBUFFER, renderbuffer ? renderbuffer->service_id() : 0);
 }
 
 static void RebindCurrentFramebuffer(
