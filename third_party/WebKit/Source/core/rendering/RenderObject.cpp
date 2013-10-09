@@ -2544,10 +2544,11 @@ void RenderObject::willBeDestroyed()
     // has a null frame, so we assert this. However, we don't want release builds to crash which is why we
     // check that the frame is not null.
     ASSERT(frame());
-    if (frame() && frame()->page())
-        frame()->page()->stopAutoscrollIfNeeded(this);
-
-    animation()->cancelAnimations(this);
+    if (Frame* frame = this->frame()) {
+        if (frame->page())
+            frame->page()->stopAutoscrollIfNeeded(this);
+        frame->animation()->cancelAnimations(this);
+    }
 
     // For accessibility management, notify the parent of the imminent change to its child set.
     // We do it now, before remove(), while the parent pointer is still available.
