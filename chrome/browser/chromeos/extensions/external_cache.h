@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -50,7 +51,7 @@ class ExternalCache : public content::NotificationObserver,
   // only. If |wait_for_cache_initialization| is |true|, the cache contents will
   // not be read until a flag file appears in the cache directory, signaling
   // that the cache is ready.
-  ExternalCache(const std::string& cache_dir,
+  ExternalCache(const base::FilePath& cache_dir,
                 net::URLRequestContextGetter* request_context,
                 const scoped_refptr<base::SequencedTaskRunner>&
                     backend_task_runner,
@@ -59,25 +60,14 @@ class ExternalCache : public content::NotificationObserver,
                 bool wait_for_cache_initialization);
   virtual ~ExternalCache();
 
+  // Name of flag file that indicates that cache is ready (import finished).
+  static const char kCacheReadyFlagFileName[];
+
   // Returns already cached extensions.
   const base::DictionaryValue* cached_extensions() {
     return cached_extensions_.get();
   }
 
-  // Shut down the cache. The |callback| will be invoked when the cache has shut
-  // down completely and there are no more pending file I/O operations.
-  void Shutdown(const base::Closure& callback);
-
-  // Replace the list of extensions to cache with |prefs| and perform update
-  // checks for these.
-  void UpdateExtensionsList(scoped_ptr<base::DictionaryValue> prefs);
-
-  // If a user of one of the ExternalCache's extensions detects that
-  // the extension is damaged then this method can be used to remove it from
-  // the cache and retry to download it after a restart.
-  void OnDamagedFileDetected(const base::FilePath& path);
-
- protected:
   // Implementation of content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -103,6 +93,20 @@ class ExternalCache : public content::NotificationObserver,
   virtual bool GetExtensionExistingVersion(const std::string& id,
                                            std::string* version) OVERRIDE;
 
+  // Shut down the cache. The |callback| will be invoked when the cache has shut
+  // down completely and there are no more pending file I/O operations.
+  void Shutdown(const base::Closure& callback);
+
+  // Replace the list of extensions to cache with |prefs| and perform update
+  // checks for these.
+  void UpdateExtensionsList(scoped_ptr<base::DictionaryValue> prefs);
+
+  // If a user of one of the ExternalCache's extensions detects that
+  // the extension is damaged then this method can be used to remove it from
+  // the cache and retry to download it after a restart.
+  void OnDamagedFileDetected(const base::FilePath& path);
+
+ private:
   // Notifies the that the cache has been updated, providing
   // extensions loader with an updated list of extensions.
   void UpdateExtensionLoader();
@@ -117,7 +121,7 @@ class ExternalCache : public content::NotificationObserver,
   // posts its result back to the |external_cache| on the UI thread.
   static void BackendCheckCacheStatus(
       base::WeakPtr<ExternalCache> external_cache,
-      const std::string& cache_dir);
+      const base::FilePath& cache_dir);
 
   // Invoked on the UI thread after checking whether the cache is ready. If the
   // cache is not ready yet, posts a delayed task that will repeat the check,
@@ -133,12 +137,12 @@ class ExternalCache : public content::NotificationObserver,
   // back a list of cache entries to the |external_cache| on the UI thread.
   static void BackendCheckCacheContents(
       base::WeakPtr<ExternalCache> external_cache,
-      const std::string& cache_dir,
+      const base::FilePath& cache_dir,
       scoped_ptr<base::DictionaryValue> prefs);
 
   // Helper for BackendCheckCacheContents() that updates |prefs|.
   static void BackendCheckCacheContentsInternal(
-      const std::string& cache_dir,
+      const base::FilePath& cache_dir,
       base::DictionaryValue* prefs);
 
   // Invoked when the cache has been updated. |prefs| contains all the currently
@@ -149,14 +153,14 @@ class ExternalCache : public content::NotificationObserver,
   // is invoked via the |backend_task_runner_|.
   static void BackendInstallCacheEntry(
       base::WeakPtr<ExternalCache> external_cache,
-      const std::string& cache_dir,
+      const base::FilePath& cache_dir,
       const std::string& id,
       const base::FilePath& path,
       const std::string& version);
 
   // Invoked on the UI thread when a new entry has been installed in the cache.
   void OnCacheEntryInstalled(const std::string& id,
-                             const std::string& path,
+                             const base::FilePath& path,
                              const std::string& version);
 
   // Posted to the |backend_task_runner_| during cache shutdown so that it runs
@@ -165,7 +169,7 @@ class ExternalCache : public content::NotificationObserver,
   static void BackendShudown(const base::Closure& callback);
 
   // Path to the directory where the extension cache is stored.
-  std::string cache_dir_;
+  base::FilePath cache_dir_;
 
   // Request context used by the |downloader_|.
   net::URLRequestContextGetter* request_context_;

@@ -74,7 +74,7 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
   friend struct DefaultSingletonTraits<ExternalCacheDispatcher>;
 
   ExternalCacheDispatcher()
-    : external_cache_(kPreinstalledAppsCacheDir,
+    : external_cache_(base::FilePath(kPreinstalledAppsCacheDir),
                       g_browser_process->system_request_context(),
                       content::BrowserThread::GetBlockingPool()->
                           GetSequencedTaskRunnerWithShutdownBehavior(

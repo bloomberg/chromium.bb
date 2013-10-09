@@ -65,7 +65,7 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
     : weak_ptr_factory_(this),
       created_extension_loader_(false),
       install_attributes_(install_attributes),
-      external_cache_(kAppPackCacheDir,
+      external_cache_(base::FilePath(kAppPackCacheDir),
                       request_context,
                       content::BrowserThread::GetBlockingPool()->
                           GetSequencedTaskRunnerWithShutdownBehavior(

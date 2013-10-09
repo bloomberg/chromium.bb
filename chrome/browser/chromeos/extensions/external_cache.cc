@@ -32,16 +32,15 @@ namespace {
 // File name extension for CRX files (not case sensitive).
 const char kCRXFileExtension[] = ".crx";
 
-// Name of flag file that indicates that cache is ready (import finished).
-const char kCacheReadyFlagFileName[] = ".initialized";
-
 // Delay between checks for flag file presence when waiting for the cache to
 // become ready.
 const int64_t kCacheStatusPollingDelayMs = 1000;
 
 }  // namespace
 
-ExternalCache::ExternalCache(const std::string& cache_dir,
+const char ExternalCache::kCacheReadyFlagFileName[] = ".initialized";
+
+ExternalCache::ExternalCache(const base::FilePath& cache_dir,
                              net::URLRequestContextGetter* request_context,
                              const scoped_refptr<base::SequencedTaskRunner>&
                                  backend_task_runner,
@@ -117,7 +116,7 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
       UpdateExtensionLoader();
 
       // The file will be downloaded again on the next restart.
-      if (base::FilePath(cache_dir_).IsParent(path)) {
+      if (cache_dir_.IsParent(path)) {
         backend_task_runner_->PostTask(
             FROM_HERE,
             base::Bind(base::IgnoreResult(base::DeleteFile),
@@ -231,14 +230,13 @@ void ExternalCache::CheckCache() {
 // static
 void ExternalCache::BackendCheckCacheStatus(
     base::WeakPtr<ExternalCache> external_cache,
-    const std::string& cache_dir) {
-  const base::FilePath dir(cache_dir);
+    const base::FilePath& cache_dir) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&ExternalCache::OnCacheStatusChecked,
-                 external_cache,
-                 base::PathExists(dir.AppendASCII(kCacheReadyFlagFileName))));
+          external_cache,
+          base::PathExists(cache_dir.AppendASCII(kCacheReadyFlagFileName))));
 }
 
 void ExternalCache::OnCacheStatusChecked(bool ready) {
@@ -272,9 +270,8 @@ void ExternalCache::CheckCacheContents() {
 // static
 void ExternalCache::BackendCheckCacheContents(
     base::WeakPtr<ExternalCache> external_cache,
-    const std::string& cache_dir,
+    const base::FilePath& cache_dir,
     scoped_ptr<base::DictionaryValue> prefs) {
-  const base::FilePath dir(cache_dir);
   BackendCheckCacheContentsInternal(cache_dir, prefs.get());
   content::BrowserThread::PostTask(content::BrowserThread::UI,
                                    FROM_HERE,
@@ -285,26 +282,25 @@ void ExternalCache::BackendCheckCacheContents(
 
 // static
 void ExternalCache::BackendCheckCacheContentsInternal(
-    const std::string& cache_dir,
+    const base::FilePath& cache_dir,
     base::DictionaryValue* prefs) {
-  // Start by verifying that the cache dir exists.
-  base::FilePath dir(cache_dir);
-  if (!base::DirectoryExists(dir)) {
+  // Start by verifying that the cache_dir exists.
+  if (!base::DirectoryExists(cache_dir)) {
     // Create it now.
-    if (!file_util::CreateDirectory(dir)) {
+    if (!file_util::CreateDirectory(cache_dir)) {
       LOG(ERROR) << "Failed to create ExternalCache directory at "
-                 << dir.value();
+                 << cache_dir.value();
     }
 
     // Nothing else to do. Cache won't be used.
     return;
   }
 
-  // Enumerate all the files in the cache |dir|, including directories
+  // Enumerate all the files in the cache |cache_dir|, including directories
   // and symlinks. Each unrecognized file will be erased.
   int types = base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES |
       base::FileEnumerator::SHOW_SYM_LINKS;
-  base::FileEnumerator enumerator(dir, false /* recursive */, types);
+  base::FileEnumerator enumerator(cache_dir, false /* recursive */, types);
   for (base::FilePath path = enumerator.Next();
        !path.empty(); path = enumerator.Next()) {
     base::FileEnumerator::FileInfo info = enumerator.GetInfo();
@@ -385,7 +381,7 @@ void ExternalCache::BackendCheckCacheContentsInternal(
         VLOG(1) << "ExternalCache found old cached version "
                 << prev_version_string << " path: " << prev_crx;
         base::FilePath prev_crx_file(prev_crx);
-        if (dir.IsParent(prev_crx_file)) {
+        if (cache_dir.IsParent(prev_crx_file)) {
           // Only delete old cached files under cache_dir_ folder.
           base::DeleteFile(base::FilePath(prev_crx), true /* recursive */);
         }
@@ -468,7 +464,7 @@ void ExternalCache::OnCacheUpdated(scoped_ptr<base::DictionaryValue> prefs) {
 // static
 void ExternalCache::BackendInstallCacheEntry(
     base::WeakPtr<ExternalCache> external_cache,
-    const std::string& app_cache_dir,
+    const base::FilePath& cache_dir,
     const std::string& id,
     const base::FilePath& path,
     const std::string& version) {
@@ -481,7 +477,6 @@ void ExternalCache::BackendInstallCacheEntry(
   }
 
   std::string basename = id + "-" + version + kCRXFileExtension;
-  base::FilePath cache_dir(app_cache_dir);
   base::FilePath cached_crx_path = cache_dir.Append(basename);
 
   if (base::PathExists(cached_crx_path)) {
@@ -513,17 +508,17 @@ void ExternalCache::BackendInstallCacheEntry(
       base::Bind(&ExternalCache::OnCacheEntryInstalled,
                  external_cache,
                  id,
-                 cached_crx_path.value(),
+                 cached_crx_path,
                  version));
 }
 
 void ExternalCache::OnCacheEntryInstalled(const std::string& id,
-                                          const std::string& path,
+                                          const base::FilePath& path,
                                           const std::string& version) {
   if (shutdown_)
     return;
 
-  VLOG(1) << "AppPack installed a new extension in the cache: " << path;
+  VLOG(1) << "AppPack installed a new extension in the cache: " << path.value();
 
   base::DictionaryValue* entry = NULL;
   if (!extensions_->GetDictionary(id, &entry)) {
@@ -542,7 +537,8 @@ void ExternalCache::OnCacheEntryInstalled(const std::string& id,
   }
   entry->Remove(extensions::ExternalProviderImpl::kExternalUpdateUrl, NULL);
   entry->SetString(extensions::ExternalProviderImpl::kExternalVersion, version);
-  entry->SetString(extensions::ExternalProviderImpl::kExternalCrx, path);
+  entry->SetString(extensions::ExternalProviderImpl::kExternalCrx,
+                   path.value());
 
   cached_extensions_->Set(id, entry);
   UpdateExtensionLoader();
