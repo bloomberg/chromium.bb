@@ -25,7 +25,7 @@
     ['include_tests==1', {
       'targets': [
         {
-          'target_name': 'cast_unittest',
+          'target_name': 'cast_unittests',
           'type': '<(gtest_target_type)',
           'dependencies': [
             'cast_config',
