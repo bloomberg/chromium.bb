@@ -276,8 +276,7 @@ static inline bool shouldGesturesTriggerActive()
 static inline bool shouldRefetchEventTarget(const MouseEventWithHitTestResults& mev)
 {
     Node* targetNode = mev.targetNode();
-    ASSERT(targetNode);
-    if (!targetNode->parentNode())
+    if (!targetNode || !targetNode->parentNode())
         return true;
     return targetNode->isShadowRoot() && toShadowRoot(targetNode)->host()->hasTagName(inputTag);
 }
