@@ -175,6 +175,8 @@ void WebContentsViewGtk::RestoreFocus() {
 }
 
 DropData* WebContentsViewGtk::GetDropData() const {
+  if (!drag_dest_)
+    return NULL;
   return drag_dest_->current_drop_data();
 }
 
@@ -281,6 +283,8 @@ WebContents* WebContentsViewGtk::web_contents() {
 }
 
 void WebContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
+  if (!drag_dest_)
+    return;
   drag_dest_->UpdateDragStatus(operation);
 }
 
@@ -306,6 +310,15 @@ void WebContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
 }
 
 void WebContentsViewGtk::UpdateDragDest(RenderViewHost* host) {
+  // Drag-and-drop is entirely managed by BrowserPluginGuest for guest
+  // processes in a largely platform independent way. WebDragDestGtk
+  // will result in spurious messages being sent to the guest process which
+  // will violate assumptions.
+  if (host->GetProcess() && host->GetProcess()->IsGuest()) {
+    DCHECK(!drag_dest_);
+    return;
+  }
+
   gfx::NativeView content_view = host->GetView()->GetNativeView();
 
   // If the host is already used by the drag_dest_, there's no point in deleting
