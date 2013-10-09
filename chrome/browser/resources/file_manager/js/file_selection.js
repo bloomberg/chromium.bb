@@ -322,8 +322,7 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   }
 
   // Sync the commands availability.
-  if (selection.totalCount != 0)
-    this.fileManager_.updateCommands();
+  this.fileManager_.updateCommands();
 
   // Update context menu.
   this.fileManager_.updateContextMenuActionItems(null, false);
