@@ -256,7 +256,11 @@ setup_tty(struct weston_launcher *launcher, int tty)
 	int ret, kd_mode;
 
 	if (tty == 0) {
-		launcher->tty = tty;
+		launcher->tty = dup(tty);
+		if (launcher->tty == -1) {
+			weston_log("couldn't dup stdin: %m\n");
+			return -1;
+		}
 	} else {
 		snprintf(tty_device, sizeof tty_device, "/dev/tty%d", tty);
 		launcher->tty = open(tty_device, O_RDWR | O_CLOEXEC);
@@ -379,5 +383,6 @@ weston_launcher_destroy(struct weston_launcher *launcher)
 		wl_event_source_remove(launcher->vt_source);
 	}
 
+	close(launcher->tty);
 	free(launcher);
 }
