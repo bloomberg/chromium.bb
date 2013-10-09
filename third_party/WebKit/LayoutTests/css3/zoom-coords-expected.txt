@@ -103,7 +103,7 @@ PASS image3.height is 50
 PASS image3.right is 1200
 PASS image3.bottom is 550
 PASS text3.left is 1100
-PASS text3.top is within 1 of 566
+PASS text3.top is within 1 of 565
 PASS text3.width is within 1 of 92
 PASS text3.height is within 1 of 12
 PASS text3.right is within 1 of 1192
