@@ -331,8 +331,10 @@ HTMLMediaElement::~HTMLMediaElement()
             m_textTracks->item(i)->clearClient();
     }
 
-    if (m_mediaController)
+    if (m_mediaController) {
         m_mediaController->removeMediaElement(this);
+        m_mediaController = 0;
+    }
 
     closeMediaSource();
 
