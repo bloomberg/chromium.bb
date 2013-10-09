@@ -359,6 +359,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     is_current_user_new_ = false;
     // Set active user wallpaper back.
     WallpaperManager::Get()->SetUserWallpaper(active_user_->email());
+    NotifyUserAddedToSession(user);
     return;
   }
 
@@ -1862,6 +1863,13 @@ void UserManagerImpl::NotifyActiveUserChanged(const User* active_user) {
   FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
                     session_state_observer_list_,
                     ActiveUserChanged(active_user));
+}
+
+void UserManagerImpl::NotifyUserAddedToSession(const User* added_user) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
+                    session_state_observer_list_,
+                    UserAddedToSession(added_user));
 }
 
 void UserManagerImpl::NotifyActiveUserHashChanged(const std::string& hash) {

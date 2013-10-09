@@ -48,6 +48,7 @@ class SessionStateDelegateChromeos
 
   // UserManager::UserSessionStateObserver:
   virtual void ActiveUserChanged(const chromeos::User* active_user) OVERRIDE;
+  virtual void UserAddedToSession(const chromeos::User* added_user) OVERRIDE;
 
  private:
   // List of observers is only used on Chrome OS for now.

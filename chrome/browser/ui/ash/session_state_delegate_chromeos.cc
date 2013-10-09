@@ -164,3 +164,10 @@ void SessionStateDelegateChromeos::ActiveUserChanged(
                     session_state_observer_list_,
                     ActiveUserChanged(active_user->email()));
 }
+
+void SessionStateDelegateChromeos::UserAddedToSession(
+    const chromeos::User* added_user) {
+  FOR_EACH_OBSERVER(ash::SessionStateObserver,
+                    session_state_observer_list_,
+                    UserAddedToSession(added_user->email()));
+}

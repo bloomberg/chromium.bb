@@ -40,6 +40,9 @@ class UserManager {
     // Called when active user has changed.
     virtual void ActiveUserChanged(const User* active_user);
 
+    // Called when another user got added to the existing session.
+    virtual void UserAddedToSession(const User* added_user);
+
     // Called right before notifying on user change so that those who rely
     // on user_id hash would be accessing up-to-date value.
     virtual void ActiveUserHashChanged(const std::string& hash);

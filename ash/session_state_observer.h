@@ -16,6 +16,9 @@ class ASH_EXPORT SessionStateObserver {
   // Called when active user has changed.
   virtual void ActiveUserChanged(const std::string& user_id) {}
 
+  // Called when another user gets added to the existing session.
+  virtual void UserAddedToSession(const std::string& user_id) {}
+
  protected:
   virtual ~SessionStateObserver() {}
 };
