@@ -40,6 +40,7 @@ class ChromiumDataObject;
 class DataTransferItemList;
 class DragImage;
 class Element;
+class ExceptionState;
 class FileList;
 class Frame;
 class ImageResource;
@@ -76,8 +77,9 @@ public:
     PassRefPtr<FileList> files() const;
 
     IntPoint dragLocation() const { return m_dragLoc; }
-    ImageResource* dragImage() const { return m_dragImage.get(); }
-    void setDragImage(ImageResource*, const IntPoint&);
+    void setDragImage(Element*, int x, int y, ExceptionState&);
+    ImageResource* dragImageResource() const { return m_dragImage.get(); }
+    void setDragImageResource(ImageResource*, const IntPoint&);
     Node* dragImageElement() const { return m_dragImageElement.get(); }
     void setDragImageElement(Node*, const IntPoint&);
 

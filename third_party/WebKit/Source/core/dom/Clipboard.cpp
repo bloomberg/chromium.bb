@@ -32,6 +32,7 @@
 #include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/page/Frame.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -210,7 +211,23 @@ PassRefPtr<FileList> Clipboard::files() const
     return files.release();
 }
 
-void Clipboard::setDragImage(ImageResource* img, const IntPoint& loc)
+void Clipboard::setDragImage(Element* image, int x, int y, ExceptionState& es)
+{
+    if (!isForDragAndDrop())
+        return;
+
+    if (!image) {
+        es.throwTypeError("setDragImage: Invalid first argument");
+        return;
+    }
+    IntPoint location(x, y);
+    if (image->hasTagName(HTMLNames::imgTag) && !image->inDocument())
+        setDragImageResource(toHTMLImageElement(image)->cachedImage(), location);
+    else
+        setDragImageElement(image, location);
+}
+
+void Clipboard::setDragImageResource(ImageResource* img, const IntPoint& loc)
 {
     setDragImage(img, 0, loc);
 }

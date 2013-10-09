@@ -36,7 +36,7 @@
     void clearData(optional DOMString type);
     DOMString getData(DOMString type);
     boolean setData(DOMString type, DOMString data);
-    [Custom, RaisesException] void setDragImage(HTMLImageElement image, long x, long y);
+    [RaisesException] void setDragImage(Element image, long x, long y);
 
     readonly attribute DataTransferItemList items;
 };
