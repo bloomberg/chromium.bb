@@ -202,9 +202,9 @@ class CannedSyncableFileSystem
   typedef ObserverListThreadSafe<LocalFileSyncStatus::Observer> ObserverList;
 
   // Callbacks.
-  void DidOpenFileSystem(base::PlatformFileError result,
+  void DidOpenFileSystem(const GURL& root,
                          const std::string& name,
-                         const GURL& root);
+                         base::PlatformFileError result);
   void DidInitializeFileSystemContext(sync_file_system::SyncStatusCode status);
 
   void InitializeSyncStatusObserver();

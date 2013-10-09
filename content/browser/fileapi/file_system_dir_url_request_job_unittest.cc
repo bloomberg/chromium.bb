@@ -72,9 +72,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     ClearUnusedJob();
   }
 
-  void OnOpenFileSystem(base::PlatformFileError result,
+  void OnOpenFileSystem(const GURL& root_url,
                         const std::string& name,
-                        const GURL& root_url) {
+                        base::PlatformFileError result) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
   }
 

@@ -203,9 +203,9 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                 int64 bytes,
                 bool complete);
   void DidOpenFileSystem(int request_id,
-                         base::PlatformFileError result,
+                         const GURL& root,
                          const std::string& filesystem_name,
-                         const GURL& root);
+                         base::PlatformFileError result);
   void DidResolveURL(int request_id,
                      base::PlatformFileError result,
                      const fileapi::FileSystemInfo& info,

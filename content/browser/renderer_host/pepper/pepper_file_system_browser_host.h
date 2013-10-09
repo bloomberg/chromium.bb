@@ -63,9 +63,9 @@ class PepperFileSystemBrowserHost :
       scoped_refptr<fileapi::FileSystemContext> fs_context);
   void OpenFileSystemComplete(
       ppapi::host::ReplyMessageContext reply_context,
-      base::PlatformFileError error,
+      const GURL& root,
       const std::string& name,
-      const GURL& root);
+      base::PlatformFileError error);
 
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         int64_t expected_size);

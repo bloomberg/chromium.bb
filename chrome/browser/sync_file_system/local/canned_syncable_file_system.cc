@@ -681,7 +681,9 @@ void CannedSyncableFileSystem::DoGetUsageAndQuota(
 }
 
 void CannedSyncableFileSystem::DidOpenFileSystem(
-    PlatformFileError result, const std::string& name, const GURL& root) {
+    const GURL& root,
+    const std::string& name,
+    PlatformFileError result) {
   result_ = result;
   root_url_ = root;
   is_filesystem_opened_ = true;

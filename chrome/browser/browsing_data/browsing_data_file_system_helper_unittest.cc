@@ -94,9 +94,9 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
   // Callback that should be executed in response to
   // fileapi::FileSystemContext::OpenFileSystem.
-  void OpenFileSystemCallback(base::PlatformFileError error,
+  void OpenFileSystemCallback(const GURL& root,
                               const std::string& name,
-                              const GURL& root) {
+                              base::PlatformFileError error) {
     open_file_system_result_ = error;
     Notify();
   }

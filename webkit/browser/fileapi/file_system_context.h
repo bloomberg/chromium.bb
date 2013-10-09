@@ -151,9 +151,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   ExternalFileSystemBackend* external_backend() const;
 
   // Used for OpenFileSystem.
-  typedef base::Callback<void(base::PlatformFileError result,
+  typedef base::Callback<void(const GURL& root,
                               const std::string& name,
-                              const GURL& root)> OpenFileSystemCallback;
+                              base::PlatformFileError result)>
+      OpenFileSystemCallback;
 
   // Used for ResolveURL.
   typedef base::Callback<void(base::PlatformFileError result,

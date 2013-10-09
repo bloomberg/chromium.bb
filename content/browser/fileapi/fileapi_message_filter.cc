@@ -891,9 +891,9 @@ void FileAPIMessageFilter::DidWrite(int request_id,
 }
 
 void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
-                                             base::PlatformFileError result,
+                                             const GURL& root,
                                              const std::string& filesystem_name,
-                                             const GURL& root) {
+                                             base::PlatformFileError result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (result == base::PLATFORM_FILE_OK) {
     DCHECK(root.is_valid());

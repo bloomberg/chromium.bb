@@ -215,9 +215,9 @@ class BlobURLRequestJobTest : public testing::Test {
       *modification_time = file_info.last_modified;
   }
 
-  void OnValidateFileSystem(base::PlatformFileError result,
+  void OnValidateFileSystem(const GURL& root,
                             const std::string& name,
-                            const GURL& root) {
+                            base::PlatformFileError result) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
     ASSERT_TRUE(root.is_valid());
     file_system_root_url_ = root;

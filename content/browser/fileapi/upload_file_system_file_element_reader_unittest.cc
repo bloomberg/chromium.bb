@@ -100,9 +100,9 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
     *modification_time = file_info.last_modified;
   }
 
-  void OnOpenFileSystem(base::PlatformFileError result,
+  void OnOpenFileSystem(const GURL& root,
                         const std::string& name,
-                        const GURL& root) {
+                        base::PlatformFileError result) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
     ASSERT_TRUE(root.is_valid());
     file_system_root_url_ = root;

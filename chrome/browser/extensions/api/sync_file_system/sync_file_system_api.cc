@@ -135,16 +135,16 @@ SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
 }
 
 void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
-    base::PlatformFileError error,
+    const GURL& root_url,
     const std::string& file_system_name,
-    const GURL& root_url) {
+    base::PlatformFileError error) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         Bind(&SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem,
-             this, error, file_system_name, root_url));
+             this, root_url, file_system_name, error));
     return;
   }
 

@@ -41,13 +41,6 @@ QuotaClient* CreateQuotaClient(
   return new FileSystemQuotaClient(context, is_incognito);
 }
 
-void DidOpenFileSystem(
-    const FileSystemContext::OpenFileSystemCallback& callback,
-    const GURL& filesystem_root,
-    const std::string& filesystem_name,
-    base::PlatformFileError error) {
-  callback.Run(error, filesystem_name, filesystem_root);
-}
 
 void DidGetMetadataForResolveURL(
     const base::FilePath& path,
@@ -281,18 +274,17 @@ void FileSystemContext::OpenFileSystem(
 
   if (!FileSystemContext::IsSandboxFileSystem(type)) {
     // Disallow opening a non-sandboxed filesystem.
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, std::string(), GURL());
+    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
     return;
   }
 
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend) {
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, std::string(), GURL());
+    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
     return;
   }
 
-  backend->OpenFileSystem(origin_url, type, mode,
-                          base::Bind(&DidOpenFileSystem, callback));
+  backend->OpenFileSystem(origin_url, type, mode, callback);
 }
 
 void FileSystemContext::ResolveURL(
