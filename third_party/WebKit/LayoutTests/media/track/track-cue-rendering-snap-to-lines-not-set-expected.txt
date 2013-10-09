@@ -1,18 +1,15 @@
 Test that TextTrack's cues are rendered correctly when the snap to lines flag is not set.
 EVENT(canplaythrough)
 
-The track container and the media controls should completely cover the video element
-EXPECTED (cueDisplayContainer.offsetHeight + controlsPanelElement.offsetHeight == video.videoHeight == 'true') OK
-EXPECTED (cueDisplayContainer.offsetWidth == video.videoWidth == 'true') OK
-
 ** Default **
 EVENT(seeked)
 Active cues: 1
 
 * Cue 0 *
 EXPECTED (cueDisplayElement.innerText == 'This is a demo track to illustrate positioning features of cues.') OK
-Cue left position (percentage): 0
-Cue top position (percentage): 81
+Cue alignment (default or as specified): middle
+Cue left position (percentage): 50
+Cue top position (percentage): 100
 
 ** Center **
 EVENT(seeked)
@@ -20,6 +17,7 @@ Active cues: 1
 
 * Cue 0 *
 EXPECTED (cueDisplayElement.innerText == 'Using HTML5 captions, you can position the cues anywhere.') OK
+Cue alignment (default or as specified): middle
 Cue left position (percentage): 50
 Cue top position (percentage): 50
 
@@ -28,7 +26,8 @@ EVENT(seeked)
 Active cues: 1
 
 * Cue 0 *
-EXPECTED (cueDisplayElement.innerText == 'For example, here is a cue on the top left-corner.'), OBSERVED '' FAIL
+EXPECTED (cueDisplayElement.innerText == 'For example, here is a cue on the top left-corner.') OK
+Cue alignment (default or as specified): start
 Cue left position (percentage): 0
 Cue top position (percentage): 0
 
@@ -37,7 +36,8 @@ EVENT(seeked)
 Active cues: 1
 
 * Cue 0 *
-EXPECTED (cueDisplayElement.innerText == 'Or on the top-right corner.'), OBSERVED '' FAIL
+EXPECTED (cueDisplayElement.innerText == 'Or on the top-right corner.') OK
+Cue alignment (default or as specified): end
 Cue left position (percentage): 100
 Cue top position (percentage): 0
 
@@ -46,7 +46,8 @@ EVENT(seeked)
 Active cues: 1
 
 * Cue 0 *
-EXPECTED (cueDisplayElement.innerText == 'Bottom-right corner.'), OBSERVED '' FAIL
+EXPECTED (cueDisplayElement.innerText == 'Bottom-right corner.') OK
+Cue alignment (default or as specified): right
 Cue left position (percentage): 100
 Cue top position (percentage): 100
 
@@ -55,7 +56,8 @@ EVENT(seeked)
 Active cues: 1
 
 * Cue 0 *
-EXPECTED (cueDisplayElement.innerText == 'And, as you might expect, the bottom-left one.'), OBSERVED '' FAIL
+EXPECTED (cueDisplayElement.innerText == 'And, as you might expect, the bottom-left one.') OK
+Cue alignment (default or as specified): left
 Cue left position (percentage): 0
 Cue top position (percentage): 100
 
@@ -65,6 +67,7 @@ Active cues: 1
 
 * Cue 0 *
 EXPECTED (cueDisplayElement.innerText == 'Cues are implicitly displayed within the viewport area.') OK
+Cue alignment (default or as specified): middle
 Cue left position (percentage): 50
 Cue top position (percentage): 50
 
@@ -74,36 +77,43 @@ Active cues: 7
 
 * Cue 0 *
 EXPECTED (cueDisplayElement.innerText == 'You may even have multiple cues in the same time.') OK
+Cue alignment (default or as specified): middle
 Cue left position (percentage): 50
 Cue top position (percentage): 50
 
 * Cue 1 *
-EXPECTED (cueDisplayElement.innerText == 'Top-left cue.'), OBSERVED '' FAIL
+EXPECTED (cueDisplayElement.innerText == 'Top-left cue.') OK
+Cue alignment (default or as specified): start
 Cue left position (percentage): 0
 Cue top position (percentage): 0
 
 * Cue 2 *
-EXPECTED (cueDisplayElement.innerText == 'Top-right cue.'), OBSERVED '' FAIL
+EXPECTED (cueDisplayElement.innerText == 'Top-right cue.') OK
+Cue alignment (default or as specified): end
 Cue left position (percentage): 100
 Cue top position (percentage): 0
 
 * Cue 3 *
 EXPECTED (cueDisplayElement.innerText == 'Bottom cue.') OK
+Cue alignment (default or as specified): middle
 Cue left position (percentage): 50
 Cue top position (percentage): 100
 
 * Cue 4 *
-EXPECTED (cueDisplayElement.innerText == 'Random cue 1.'), OBSERVED '' FAIL
+EXPECTED (cueDisplayElement.innerText == 'Random cue 1.') OK
+Cue alignment (default or as specified): end
 Cue left position (percentage): 100
 Cue top position (percentage): 25
 
 * Cue 5 *
 EXPECTED (cueDisplayElement.innerText == 'Random cue 2.') OK
+Cue alignment (default or as specified): start
 Cue left position (percentage): 44
 Cue top position (percentage): 33
 
 * Cue 6 *
 EXPECTED (cueDisplayElement.innerText == 'Random cue 3.') OK
+Cue alignment (default or as specified): start
 Cue left position (percentage): 23
 Cue top position (percentage): 55
 END OF TEST
