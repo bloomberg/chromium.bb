@@ -27,8 +27,8 @@
 #include "core/platform/ScrollbarThemeOverlay.h"
 
 #include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 #include <algorithm>

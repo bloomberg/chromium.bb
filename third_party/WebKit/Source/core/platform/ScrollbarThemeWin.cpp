@@ -31,13 +31,14 @@
 #include <vsstyle.h>
 
 #include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/win/SystemInfo.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/win/WebThemeEngine.h"
+
 namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
