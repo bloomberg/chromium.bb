@@ -41,8 +41,7 @@ static const int kMaxMenuWidth = 400;
 BookmarkMenuDelegate::BookmarkMenuDelegate(Browser* browser,
                                            PageNavigator* navigator,
                                            views::Widget* parent,
-                                           int first_menu_id,
-                                           int max_menu_id)
+                                           int first_menu_id)
     : browser_(browser),
       profile_(browser->profile()),
       page_navigator_(navigator),
@@ -51,8 +50,6 @@ BookmarkMenuDelegate::BookmarkMenuDelegate(Browser* browser,
       for_drop_(false),
       parent_menu_item_(NULL),
       next_menu_id_(first_menu_id),
-      min_menu_id_(first_menu_id),
-      max_menu_id_(max_menu_id),
       real_delegate_(NULL),
       is_mutating_model_(false),
       location_(BOOKMARK_LAUNCH_LOCATION_NONE) {}
@@ -69,7 +66,6 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
                                 BookmarkLaunchLocation location) {
   GetBookmarkModel()->AddObserver(this);
   real_delegate_ = real_delegate;
-  location_ = location;
   if (parent) {
     parent_menu_item_ = parent;
     int initial_count = parent->GetSubmenu() ?
@@ -84,6 +80,8 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
   } else {
     menu_ = CreateMenu(node, start_child_index, show_options);
   }
+
+  location_ = location;
 }
 
 void BookmarkMenuDelegate::SetPageNavigator(PageNavigator* navigator) {
@@ -434,17 +432,12 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(
   if (!node->IsVisible() || node->GetTotalNodeCount() == 1)
     return;  // No children, don't create a menu.
 
-  int id = *next_menu_id;
-  // Don't create the submenu if its menu ID will be outside the range allowed.
-  if (IsOutsideMenuIdRange(id))
-    return;
-  (*next_menu_id)++;
-
   if (!*added_separator) {
     *added_separator = true;
     menu->AppendSeparator();
   }
-
+  int id = *next_menu_id;
+  (*next_menu_id)++;
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* folder_icon = rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
   MenuItemView* submenu = menu->AppendSubMenuWithIcon(
@@ -463,10 +456,6 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
   for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
     const int id = *next_menu_id;
-    // Don't create the item if its menu ID will be outside the range allowed.
-    if (IsOutsideMenuIdRange(id))
-      break;
-
     (*next_menu_id)++;
 
     menu_id_to_node_map_[id] = node;
@@ -486,8 +475,4 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
       NOTREACHED();
     }
   }
-}
-
-bool BookmarkMenuDelegate::IsOutsideMenuIdRange(int menu_id) const {
-  return menu_id < min_menu_id_ || menu_id > max_menu_id_;
 }

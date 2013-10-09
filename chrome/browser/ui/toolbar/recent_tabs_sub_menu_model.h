@@ -39,11 +39,6 @@ class AcceleratorProvider;
 class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
                                public ui::SimpleMenuModel::Delegate {
  public:
-  // Command Id for recently closed items header or disabled item to which the
-  // accelerator string will be appended.
-  static const int kRecentlyClosedHeaderCommandId;
-  static const int kDisabledRecentlyClosedHeaderCommandId;
-
   // If |associator| is NULL, default associator for |browser|'s profile will
   // be used.  Testing may require a specific |associator|.
   RecentTabsSubMenuModel(ui::AcceleratorProvider* accelerator_provider,
@@ -64,6 +59,14 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   bool GetURLAndTitleForItemAtIndex(int index,
                                     std::string* url,
                                     string16* title) const;
+
+  // Command Id for recently closed items header or disabled item to which the
+  // accelerator string will be appended.
+  static const int kRecentlyClosedHeaderCommandId;
+  static const int kDisabledRecentlyClosedHeaderCommandId;
+
+  // Command Id for other devices section headers, using the device name.
+  static const int kDeviceNameCommandId;
 
  private:
   struct TabNavigationItem;

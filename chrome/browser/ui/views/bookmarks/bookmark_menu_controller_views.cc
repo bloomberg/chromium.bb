@@ -34,8 +34,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                const BookmarkNode* node,
                                                int start_child_index)
     : menu_delegate_(
-        new BookmarkMenuDelegate(browser, page_navigator, parent, 1,
-                                 kint32max)),
+        new BookmarkMenuDelegate(browser, page_navigator, parent, 1)),
       node_(node),
       observer_(NULL),
       for_drop_(false),
