@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/new_credit_card_bubble_views.h"
 
+#include "base/i18n/rtl.h"
 #include "chrome/browser/ui/autofill/new_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -23,6 +24,11 @@ namespace autofill {
 
 namespace {
 
+// The space between the bubble and edges of the web contents when showing
+// without an anchor (e.g. when requestAutocomplete() is called from a popup).
+const int kAnchorlessEndPadding = 20;
+const int kAnchorlessTopPadding = 10;
+
 // Get the view this bubble will be anchored to via |controller|.
 views::View* GetAnchor(NewCreditCardBubbleController* controller) {
   Browser* browser = chrome::FindTabbedBrowser(controller->profile(), false,
@@ -31,6 +37,11 @@ views::View* GetAnchor(NewCreditCardBubbleController* controller) {
     return NULL;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   return browser_view->GetToolbarView()->app_menu();
+}
+
+views::BubbleBorder::Arrow GetArrow(NewCreditCardBubbleController* controller) {
+  views::View* anchor = GetAnchor(controller);
+  return anchor ? views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::NONE;
 }
 
 }  // namespace
@@ -93,6 +104,35 @@ void NewCreditCardBubbleViews::Init() {
   AddChildView(link);
 }
 
+gfx::Rect NewCreditCardBubbleViews::GetBubbleBounds() {
+  gfx::Rect bounds = views::BubbleDelegateView::GetBubbleBounds();
+  if (GetAnchorView())
+    return bounds;
+
+  Browser* browser = chrome::FindBrowserWithProfile(controller_->profile(),
+                                                    chrome::GetActiveDesktop());
+  DCHECK(browser);
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  views::View* contents_view = browser_view->GetContentsView();
+  gfx::Rect web_contents_bounds = contents_view->GetBoundsInScreen();
+  gfx::Insets border_insets(GetBubbleFrameView()->bubble_border()->GetInsets());
+
+  int x;
+  if (base::i18n::IsRTL()) {
+    x = web_contents_bounds.x() - border_insets.left() + kAnchorlessEndPadding;
+  } else {
+    x = web_contents_bounds.right() + border_insets.right();
+    x -= bounds.width() + kAnchorlessEndPadding;
+  }
+  int y = web_contents_bounds.y() - border_insets.top() + kAnchorlessTopPadding;
+
+  int width = bounds.width() - border_insets.width();
+  int height = bounds.height() - border_insets.height();
+
+  return gfx::Rect(gfx::Point(x, y), gfx::Size(width, height));
+}
+
 base::string16 NewCreditCardBubbleViews::GetWindowTitle() const {
   return controller_->TitleText();
 }
@@ -111,7 +151,7 @@ base::WeakPtr<NewCreditCardBubbleView> NewCreditCardBubbleView::Create(
 
 NewCreditCardBubbleViews::NewCreditCardBubbleViews(
     NewCreditCardBubbleController* controller)
-    : BubbleDelegateView(GetAnchor(controller), views::BubbleBorder::TOP_RIGHT),
+    : BubbleDelegateView(GetAnchor(controller), GetArrow(controller)),
       controller_(controller),
       weak_ptr_factory_(this) {
   gfx::Insets insets = views::BubbleFrameView::GetTitleInsets();
