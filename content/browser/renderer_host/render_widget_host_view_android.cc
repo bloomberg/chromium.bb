@@ -662,7 +662,8 @@ void RenderWidgetHostViewAndroid::UnusedResourcesAreAvailable() {
 }
 
 void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
-  RemoveLayers();
+  if (are_layers_attached_)
+    RemoveLayers();
   frame_provider_ = NULL;
   delegated_renderer_layer_ = NULL;
   layer_ = NULL;
@@ -693,13 +694,15 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     }
     if (!frame_provider_ ||
         texture_size_in_layer_ != frame_provider_->frame_size()) {
-      RemoveLayers();
+      if (are_layers_attached_)
+        RemoveLayers();
       frame_provider_ = new cc::DelegatedFrameProvider(
           resource_collection_.get(), frame_data.Pass());
       delegated_renderer_layer_ =
           cc::DelegatedRendererLayer::Create(this, frame_provider_);
       layer_ = delegated_renderer_layer_;
-      AttachLayers();
+      if (are_layers_attached_)
+        AttachLayers();
     } else {
       frame_provider_->SetFrameData(frame_data.Pass());
     }
