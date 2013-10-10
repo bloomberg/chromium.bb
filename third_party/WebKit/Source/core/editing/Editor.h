@@ -30,7 +30,6 @@
 #include "core/dom/DocumentMarker.h"
 #include "core/editing/EditAction.h"
 #include "core/editing/EditingBehavior.h"
-#include "core/editing/EditorInsertAction.h"
 #include "core/editing/FindOptions.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"

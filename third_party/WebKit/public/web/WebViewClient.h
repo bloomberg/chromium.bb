@@ -37,7 +37,6 @@
 #include "WebAXEnums.h"
 #include "WebContentDetectionResult.h"
 #include "WebDragOperation.h"
-#include "WebEditingAction.h"
 #include "WebFileChooserCompletion.h"
 #include "WebFileChooserParams.h"
 #include "WebPageVisibilityState.h"

@@ -39,7 +39,6 @@
 #include "WebConsoleMessage.h"
 #include "WebContentSecurityPolicy.h"
 #include "WebCursorInfo.h"
-#include "WebEditingAction.h"
 #include "WebFontDescription.h"
 #include "WebFormElement.h"
 #include "WebGeolocationError.h"
@@ -66,7 +65,6 @@
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/IconURL.h"
-#include "core/editing/EditorInsertAction.h"
 #include "core/editing/TextAffinity.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/HTMLFormElement.h"
@@ -365,10 +363,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebCursorInfo::TypeZoomOut, Cursor::ZoomOut);
 COMPILE_ASSERT_MATCHING_ENUM(WebCursorInfo::TypeGrab, Cursor::Grab);
 COMPILE_ASSERT_MATCHING_ENUM(WebCursorInfo::TypeGrabbing, Cursor::Grabbing);
 COMPILE_ASSERT_MATCHING_ENUM(WebCursorInfo::TypeCustom, Cursor::Custom);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebEditingActionTyped, EditorInsertActionTyped);
-COMPILE_ASSERT_MATCHING_ENUM(WebEditingActionPasted, EditorInsertActionPasted);
-COMPILE_ASSERT_MATCHING_ENUM(WebEditingActionDropped, EditorInsertActionDropped);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebFontDescription::GenericFamilyNone, FontDescription::NoFamily);
 COMPILE_ASSERT_MATCHING_ENUM(WebFontDescription::GenericFamilyStandard, FontDescription::StandardFamily);

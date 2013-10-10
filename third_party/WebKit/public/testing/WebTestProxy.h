@@ -41,7 +41,6 @@
 #include "public/web/WebDOMMessageEvent.h"
 #include "public/web/WebDataSource.h"
 #include "public/web/WebDragOperation.h"
-#include "public/web/WebEditingAction.h"
 #include "public/web/WebIconURL.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebNavigationType.h"

@@ -29,7 +29,6 @@
 
 #include "HTMLNames.h"
 #include "WebAutofillClient.h"
-#include "WebEditingAction.h"
 #include "WebElement.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"

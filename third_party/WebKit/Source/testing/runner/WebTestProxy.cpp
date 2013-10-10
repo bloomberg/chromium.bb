@@ -129,19 +129,6 @@ void printRangeDescription(WebTestDelegate* delegate, const WebRange& range)
     printNodeDescription(delegate, endNode, exception);
 }
 
-string editingActionDescription(WebEditingAction action)
-{
-    switch (action) {
-    case WebKit::WebEditingActionTyped:
-        return "WebViewInsertActionTyped";
-    case WebKit::WebEditingActionPasted:
-        return "WebViewInsertActionPasted";
-    case WebKit::WebEditingActionDropped:
-        return "WebViewInsertActionDropped";
-    }
-    return "(UNKNOWN ACTION)";
-}
-
 string textAffinityDescription(WebTextAffinity affinity)
 {
     switch (affinity) {
