@@ -672,9 +672,6 @@ private:
 public:
     GraphicsLayer* layerForScrolling() const;
     GraphicsLayer* layerForScrollChild() const;
-    GraphicsLayer* layerForHorizontalScrollbar() const;
-    GraphicsLayer* layerForVerticalScrollbar() const;
-    GraphicsLayer* layerForScrollCorner() const;
     bool usesCompositedScrolling() const;
 
     bool hasOverlayScrollbars() const;

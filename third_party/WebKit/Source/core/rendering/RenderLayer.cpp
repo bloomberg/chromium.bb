@@ -4333,21 +4333,6 @@ GraphicsLayer* RenderLayer::layerForScrollChild() const
     return m_compositedLayerMapping ? m_compositedLayerMapping->childForSuperlayers() : 0;
 }
 
-GraphicsLayer* RenderLayer::layerForHorizontalScrollbar() const
-{
-    return m_compositedLayerMapping ? m_compositedLayerMapping->layerForHorizontalScrollbar() : 0;
-}
-
-GraphicsLayer* RenderLayer::layerForVerticalScrollbar() const
-{
-    return m_compositedLayerMapping ? m_compositedLayerMapping->layerForVerticalScrollbar() : 0;
-}
-
-GraphicsLayer* RenderLayer::layerForScrollCorner() const
-{
-    return m_compositedLayerMapping ? m_compositedLayerMapping->layerForScrollCorner() : 0;
-}
-
 bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 {
     return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);

@@ -153,17 +153,17 @@ GraphicsLayer* RenderLayerScrollableArea::layerForScrolling() const
 
 GraphicsLayer* RenderLayerScrollableArea::layerForHorizontalScrollbar() const
 {
-    return layer()->layerForHorizontalScrollbar();
+    return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->layerForHorizontalScrollbar() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForVerticalScrollbar() const
 {
-    return layer()->layerForVerticalScrollbar();
+    return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->layerForVerticalScrollbar() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForScrollCorner() const
 {
-    return layer()->layerForScrollCorner();
+    return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->layerForScrollCorner() : 0;
 }
 
 bool RenderLayerScrollableArea::usesCompositedScrolling() const

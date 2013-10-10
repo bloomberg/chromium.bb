@@ -1337,17 +1337,20 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
         return searchRoot;
     }
 
-    if (graphicsLayer == searchRoot->layerForHorizontalScrollbar()) {
+    GraphicsLayer* layerForHorizontalScrollbar = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForHorizontalScrollbar() : 0;
+    if (graphicsLayer == layerForHorizontalScrollbar) {
         *layerType = "horizontalScrollbar";
         return searchRoot;
     }
 
-    if (graphicsLayer == searchRoot->layerForVerticalScrollbar()) {
+    GraphicsLayer* layerForVerticalScrollbar = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForVerticalScrollbar() : 0;
+    if (graphicsLayer == layerForVerticalScrollbar) {
         *layerType = "verticalScrollbar";
         return searchRoot;
     }
 
-    if (graphicsLayer == searchRoot->layerForScrollCorner()) {
+    GraphicsLayer* layerForScrollCorner = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForScrollCorner() : 0;
+    if (graphicsLayer == layerForScrollCorner) {
         *layerType = "scrollCorner";
         return searchRoot;
     }
