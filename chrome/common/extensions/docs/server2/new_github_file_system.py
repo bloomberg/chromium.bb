@@ -5,6 +5,7 @@
 import json
 import logging
 from cStringIO import StringIO
+import sys
 from zipfile import BadZipfile, ZipFile
 
 import appengine_blobstore as blobstore
@@ -93,6 +94,7 @@ class GithubFileSystem(FileSystem):
     '''Fetches the current repository version from github.com and returns it.
     The version is a 'sha' hash value.
     '''
+    # TODO(kalman): Do this asynchronously (use FetchAsync).
     result = self._fetcher.Fetch(
         'commits/HEAD', username=self._username, password=self._password)
 
@@ -149,7 +151,9 @@ class GithubFileSystem(FileSystem):
     names = self._GetNamelist()
     if not names:
       # No files in this repository.
-      raise FileNotFoundError('No paths can be found, repository is empty')
+      def raise_file_not_found():
+        raise FileNotFoundError('No paths can be found, repository is empty')
+      return Future(delegate=Gettable(raise_file_not_found))
     else:
       prefix = names[0].split('/')[0]
 
@@ -166,7 +170,9 @@ class GithubFileSystem(FileSystem):
         try:
           reads[path] = self._repo_zip.Get().read(full_path)
         except KeyError as error:
-          raise FileNotFoundError(error)
+          return Future(exc_info=(FileNotFoundError,
+                                  FileNotFoundError(error),
+                                  sys.exc_info()[2]))
 
     return Future(value=reads)
 

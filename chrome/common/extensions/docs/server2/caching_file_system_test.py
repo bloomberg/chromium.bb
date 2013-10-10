@@ -60,13 +60,13 @@ class CachingFileSystemTest(unittest.TestCase):
     file_system._read_object_store.Set(
         'list/',
         (expected, file_system.Stat('list/').version))
-    self.assertEqual(expected, sorted(file_system.ReadSingle('list/')))
+    self.assertEqual(expected, sorted(file_system.ReadSingle('list/').Get()))
 
     expected.remove('file0.html')
     file_system._read_object_store.Set(
         'list/',
         (expected, file_system.Stat('list/').version))
-    self.assertEqual(expected, sorted(file_system.ReadSingle('list/')))
+    self.assertEqual(expected, sorted(file_system.ReadSingle('list/').Get()))
 
   def testCaching(self):
     test_fs = TestFileSystem({
@@ -82,22 +82,30 @@ class CachingFileSystemTest(unittest.TestCase):
       return self._CreateCachingFileSystem(mock_fs, start_empty=True)
 
     file_system = create_empty_caching_fs()
-    self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
+
+    # The stat/read should happen before resolving the Future, and resolving
+    # the future shouldn't do any additional work.
+    get_future = file_system.ReadSingle('bob/bob0')
     self.assertTrue(*mock_fs.CheckAndReset(read_count=1, stat_count=1))
+    self.assertEqual('bob/bob0 contents', get_future.Get())
+    self.assertTrue(*mock_fs.CheckAndReset())
 
     # Resource has been cached, so test resource is not re-fetched.
-    self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
+    self.assertEqual('bob/bob0 contents',
+                     file_system.ReadSingle('bob/bob0').Get())
     self.assertTrue(*mock_fs.CheckAndReset())
 
     # Test if the Stat version is the same the resource is not re-fetched.
     file_system = create_empty_caching_fs()
-    self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
+    self.assertEqual('bob/bob0 contents',
+                     file_system.ReadSingle('bob/bob0').Get())
     self.assertTrue(*mock_fs.CheckAndReset(stat_count=1))
 
     # Test if there is a newer version, the resource is re-fetched.
     file_system = create_empty_caching_fs()
     test_fs.IncrementStat();
-    self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
+    self.assertEqual('bob/bob0 contents',
+                     file_system.ReadSingle('bob/bob0').Get())
     self.assertTrue(*mock_fs.CheckAndReset(read_count=1, stat_count=1))
 
     # Test directory and subdirectory stats are cached.
@@ -106,33 +114,44 @@ class CachingFileSystemTest(unittest.TestCase):
     file_system._read_object_store.Del('bob/bob0')
     file_system._stat_object_store.Del('bob/bob1')
     test_fs.IncrementStat();
-    self.assertEqual('bob/bob1 contents', file_system.ReadSingle('bob/bob1'))
-    self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
+    self.assertEqual('bob/bob1 contents',
+                     file_system.ReadSingle('bob/bob1').Get())
+    self.assertEqual('bob/bob0 contents',
+                     file_system.ReadSingle('bob/bob0').Get())
     self.assertTrue(*mock_fs.CheckAndReset(read_count=2, stat_count=1))
-    self.assertEqual('bob/bob1 contents', file_system.ReadSingle('bob/bob1'))
+    self.assertEqual('bob/bob1 contents',
+                     file_system.ReadSingle('bob/bob1').Get())
     self.assertTrue(*mock_fs.CheckAndReset())
 
     # Test a more recent parent directory doesn't force a refetch of children.
     file_system = create_empty_caching_fs()
     file_system._read_object_store.Del('bob/bob0')
     file_system._read_object_store.Del('bob/bob1')
-    self.assertEqual('bob/bob1 contents', file_system.ReadSingle('bob/bob1'))
-    self.assertEqual('bob/bob2 contents', file_system.ReadSingle('bob/bob2'))
-    self.assertEqual('bob/bob3 contents', file_system.ReadSingle('bob/bob3'))
+    self.assertEqual('bob/bob1 contents',
+                     file_system.ReadSingle('bob/bob1').Get())
+    self.assertEqual('bob/bob2 contents',
+                     file_system.ReadSingle('bob/bob2').Get())
+    self.assertEqual('bob/bob3 contents',
+                     file_system.ReadSingle('bob/bob3').Get())
     self.assertTrue(*mock_fs.CheckAndReset(read_count=3, stat_count=1))
 
     test_fs.IncrementStat(path='bob/')
     file_system = create_empty_caching_fs()
-    self.assertEqual('bob/bob1 contents', file_system.ReadSingle('bob/bob1'))
-    self.assertEqual('bob/bob2 contents', file_system.ReadSingle('bob/bob2'))
-    self.assertEqual('bob/bob3 contents', file_system.ReadSingle('bob/bob3'))
+    self.assertEqual('bob/bob1 contents',
+                     file_system.ReadSingle('bob/bob1').Get())
+    self.assertEqual('bob/bob2 contents',
+                     file_system.ReadSingle('bob/bob2').Get())
+    self.assertEqual('bob/bob3 contents',
+                     file_system.ReadSingle('bob/bob3').Get())
     self.assertTrue(*mock_fs.CheckAndReset(stat_count=1))
 
     file_system = create_empty_caching_fs()
     file_system._stat_object_store.Del('bob/bob0')
-    self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
+    self.assertEqual('bob/bob0 contents',
+                     file_system.ReadSingle('bob/bob0').Get())
     self.assertTrue(*mock_fs.CheckAndReset(read_count=1, stat_count=1))
-    self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
+    self.assertEqual('bob/bob0 contents',
+                     file_system.ReadSingle('bob/bob0').Get())
     self.assertTrue(*mock_fs.CheckAndReset())
 
   def testCachedStat(self):

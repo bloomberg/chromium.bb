@@ -5,7 +5,7 @@
 from functools import partial
 import os
 
-from future import Future
+from future import Gettable, Future
 from local_file_system import LocalFileSystem
 
 
@@ -19,6 +19,10 @@ class _Response(object):
 class FakeUrlFetcher(object):
   def __init__(self, base_path):
     self._base_path = base_path
+    # Mock capabilities. Perhaps this class should be MockUrlFetcher.
+    self._sync_count = 0
+    self._async_count = 0
+    self._async_resolve_count = 0
 
   def _ReadFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -42,10 +46,18 @@ class FakeUrlFetcher(object):
     return html
 
   def FetchAsync(self, url):
+    self._async_count += 1
     url = url.rsplit('?', 1)[0]
-    return Future(value=self.Fetch(url))
+    def resolve():
+      self._async_resolve_count += 1
+      return self._DoFetch(url)
+    return Future(delegate=Gettable(resolve))
 
   def Fetch(self, url):
+    self._sync_count += 1
+    return self._DoFetch(url)
+
+  def _DoFetch(self, url):
     url = url.rsplit('?', 1)[0]
     result = _Response()
     if url.endswith('/'):
@@ -53,6 +65,28 @@ class FakeUrlFetcher(object):
     else:
       result.content = self._ReadFile(url)
     return result
+
+  def CheckAndReset(self, sync_count=0, async_count=0, async_resolve_count=0):
+    '''Returns a tuple (success, error). Use in tests like:
+    self.assertTrue(*fetcher.CheckAndReset(...))
+    '''
+    errors = []
+    for desc, expected, actual in (
+        ('sync_count', sync_count, self._sync_count),
+        ('async_count', async_count, self._async_count),
+        ('async_resolve_count', async_resolve_count,
+                                self._async_resolve_count)):
+      if actual != expected:
+        errors.append('%s: expected %s got %s' % (desc, expected, actual))
+    try:
+      return (len(errors) == 0, ', '.join(errors))
+    finally:
+      self.Reset()
+
+  def Reset(self):
+    self._sync_count = 0
+    self._async_count = 0
+    self._async_resolve_count = 0
 
 
 class FakeURLFSFetcher(object):
@@ -75,5 +109,5 @@ class FakeURLFSFetcher(object):
     return Future(value=self.Fetch(url))
 
   def Fetch(self, url, **kwargs):
-    return _Response(
-        self._file_system.ReadSingle(self._base_path + '/' + url, binary=True))
+    return _Response(self._file_system.ReadSingle(
+        self._base_path + '/' + url, binary=True).Get())

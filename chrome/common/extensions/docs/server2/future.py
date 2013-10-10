@@ -20,12 +20,14 @@ class Gettable(object):
 class Future(object):
   '''Stores a value, error, or delegate to be used later.
   '''
-  def __init__(self, value=_no_value, delegate=None):
+  def __init__(self, value=_no_value, delegate=None, exc_info=None):
     self._value = value
     self._delegate = delegate
-    self._exc_info = None
-    if (self._value is _no_value and self._delegate is None):
-      raise ValueError('Must have either a value or delegate.')
+    self._exc_info = exc_info
+    if (self._value is _no_value and
+        self._delegate is None and
+        self._exc_info is None):
+      raise ValueError('Must have either a value, error, or delegate.')
 
   def Get(self):
     '''Gets the stored value, error, or delegate contents.

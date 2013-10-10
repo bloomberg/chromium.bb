@@ -52,7 +52,7 @@ class LinkErrorDetectorTest(unittest.TestCase):
   def render(self, path):
     try:
       return Response(
-          content=file_system.ReadSingle('docs/templates/public/' + path),
+          content=file_system.ReadSingle('docs/templates/public/' + path).Get(),
           status=200)
     except FileNotFoundError:
       return Response(status=404)

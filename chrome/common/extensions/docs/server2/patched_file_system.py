@@ -5,7 +5,7 @@
 from copy import deepcopy
 
 from file_system import FileSystem, StatInfo, FileNotFoundError
-from future import Future
+from future import Gettable, Future
 
 class _AsyncFetchFuture(object):
   def __init__(self,
@@ -46,7 +46,9 @@ class PatchedFileSystem(FileSystem):
     patched_files = set()
     added, deleted, modified = self._patcher.GetPatchedFiles()
     if set(paths) & set(deleted):
-      raise FileNotFoundError('Files are removed from the patch.')
+      def raise_file_not_found():
+        raise FileNotFoundError('Files are removed from the patch.')
+      return Future(delegate=Gettable(raise_file_not_found))
     patched_files |= (set(added) | set(modified))
     dir_paths = set(path for path in paths if path.endswith('/'))
     file_paths = set(paths) - dir_paths
@@ -67,7 +69,7 @@ class PatchedFileSystem(FileSystem):
     for path in paths:
       assert path.endswith('/')
       try:
-        value[path] = self._base_file_system.ReadSingle(path, binary)
+        value[path] = self._base_file_system.ReadSingle(path, binary).Get()
       except FileNotFoundError:
         value[path] = None
     return value

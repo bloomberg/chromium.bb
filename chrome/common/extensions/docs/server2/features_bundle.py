@@ -39,7 +39,7 @@ class _FeaturesCache(object):
   def _CreateCache(self, _, features_json):
     features = features_utility.Parse(Parse(features_json))
     for path in self._extra_paths:
-      extra_json = self._file_system.ReadSingle(path)
+      extra_json = self._file_system.ReadSingle(path).Get()
       features = features_utility.MergedWith(
           features_utility.Parse(Parse(extra_json)), features)
     return features

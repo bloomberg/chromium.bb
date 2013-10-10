@@ -65,7 +65,7 @@ class SamplesDataSource(object):
       return calls.union(re.findall(chrome_regex, js_file))
 
     def _GetDataFromManifest(self, path, file_system):
-      manifest = file_system.ReadSingle(path + '/manifest.json')
+      manifest = file_system.ReadSingle(path + '/manifest.json').Get()
       try:
         manifest_json = json.loads(json_comment_eater.Nom(manifest))
       except ValueError as e:
@@ -81,7 +81,7 @@ class SamplesDataSource(object):
       if not l10n_data['default_locale']:
         return l10n_data
       locales_path = path + '/_locales/'
-      locales_dir = file_system.ReadSingle(locales_path)
+      locales_dir = file_system.ReadSingle(locales_path).Get()
       if locales_dir:
         locales_files = file_system.Read(
             [locales_path + f + 'messages.json' for f in locales_dir]).Get()

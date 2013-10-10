@@ -2,9 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
 from file_system import FileSystem, StatInfo, FileNotFoundError
 from future import Future
 from object_store_creator import ObjectStoreCreator
+
 
 class _AsyncUncachedFuture(object):
   def __init__(self,
@@ -96,7 +99,10 @@ class CachingFileSystem(FileSystem):
       stat_value = stat_values.get(path)
       if stat_value is None:
         # TODO(cduvall): do a concurrent Stat with the missing stat values.
-        stat_value = self.Stat(path)
+        try:
+          stat_value = self.Stat(path)
+        except:
+          return Future(exc_info=sys.exc_info())
       read_value = read_values.get(path)
       if read_value is None:
         uncached[path] = stat_value

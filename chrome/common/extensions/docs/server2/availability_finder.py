@@ -63,7 +63,7 @@ def _GetApiSchemaFilename(api_name, file_system):
   def under_api_path(path):
     return '%s/%s' % (API_PATH, path)
 
-  file_names = file_system.ReadSingle(under_api_path(''))
+  file_names = file_system.ReadSingle(under_api_path('')).Get()
 
   if _EXTENSION_API in file_names:
     # Prior to Chrome version 18, extension_api.json contained all API schema
@@ -74,7 +74,7 @@ def _GetApiSchemaFilename(api_name, file_system):
     # TODO(epeterson) Avoid doing unnecessary work by re-parsing.
     # See http://crbug.com/295812.
     extension_api_json = json_parse.Parse(
-        file_system.ReadSingle('%s/%s'% (API_PATH, _EXTENSION_API)))
+        file_system.ReadSingle('%s/%s'% (API_PATH, _EXTENSION_API)).Get())
     if any(api['namespace'] == api_name for api in extension_api_json):
       return under_api_path(_EXTENSION_API)
     return None
@@ -98,7 +98,7 @@ def _GetApiSchema(api_name, file_system):
   if api_file_name is None:
     return None
 
-  api_file_text = file_system.ReadSingle(api_file_name)
+  api_file_text = file_system.ReadSingle(api_file_name).Get()
   if api_file_name == _EXTENSION_API:
     matching_schemas = [api for api in json_parse.Parse(api_file_text)
                         if api['namespace'] == api_name]

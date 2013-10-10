@@ -22,7 +22,8 @@ class ExampleZipper(object):
     try:
       for file_name in files:
         file_path = '%s%s' % (base_dir, file_name)
-        file_contents = self._file_system.ReadSingle(file_path, binary=True)
+        file_contents = self._file_system.ReadSingle(
+            file_path, binary=True).Get()
         if isinstance(file_contents, unicode):
           # Data is sometimes already cached as unicode.
           file_contents = file_contents.encode('utf8')

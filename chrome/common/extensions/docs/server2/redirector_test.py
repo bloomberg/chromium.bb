@@ -101,7 +101,7 @@ class RedirectorTest(unittest.TestCase):
 
     for path in expected_paths:
       self.assertEqual(
-          Parse(file_system.ReadSingle(path)),
+          Parse(file_system.ReadSingle(path).Get()),
           # Access the cache's object store to see what files were hit during
           # the cron run. Returns strings parsed as JSON.
           # TODO(jshumway): Make a non hack version of this check.

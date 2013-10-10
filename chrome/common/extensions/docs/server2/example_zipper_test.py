@@ -26,7 +26,7 @@ class ExampleZipperTest(unittest.TestCase):
 
   def testCreateZip(self):
     # Cache manifest.json as unicode and make sure ExampleZipper doesn't error.
-    self._file_system.ReadSingle('example_zipper/basic/manifest.json')
+    self._file_system.ReadSingle('example_zipper/basic/manifest.json').Get()
     self.assertTrue(len(self._example_zipper.Create('basic')) > 0)
 
 if __name__ == '__main__':

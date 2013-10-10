@@ -49,7 +49,7 @@ class CompiledFileSystem(object):
 
   def _RecursiveList(self, path):
     files = []
-    for filename in self._file_system.ReadSingle(path):
+    for filename in self._file_system.ReadSingle(path).Get():
       if filename.endswith('/'):
         files.extend(['%s%s' % (filename, f)
                       for f in self._RecursiveList('%s%s' % (path, filename))])
@@ -69,7 +69,7 @@ class CompiledFileSystem(object):
       return cache_entry._cache_data
     cache_data = self._populate_function(
         path,
-        self._file_system.ReadSingle(path, binary=binary))
+        self._file_system.ReadSingle(path, binary=binary).Get())
     self._file_object_store.Set(path, _CacheEntry(cache_data, version))
     return cache_data
 

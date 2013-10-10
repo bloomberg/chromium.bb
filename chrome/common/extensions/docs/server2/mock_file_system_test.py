@@ -37,21 +37,21 @@ class MockFileSystemTest(unittest.TestCase):
     self.assertFalse(*fs.CheckAndReset(read_count=1))
     self.assertFalse(*fs.CheckAndReset(stat_count=1))
 
-    fs.ReadSingle('apps/')
+    fs.ReadSingle('apps/').Get()
     self.assertTrue(*fs.CheckAndReset(read_count=1))
     self.assertFalse(*fs.CheckAndReset(read_count=1))
     self.assertTrue(*fs.CheckAndReset())
 
-    fs.ReadSingle('apps/')
+    fs.ReadSingle('apps/').Get()
     self.assertFalse(*fs.CheckAndReset(read_count=2))
 
-    fs.ReadSingle('extensions/')
-    fs.ReadSingle('extensions/')
+    fs.ReadSingle('extensions/').Get()
+    fs.ReadSingle('extensions/').Get()
     self.assertTrue(*fs.CheckAndReset(read_count=2))
     self.assertFalse(*fs.CheckAndReset(read_count=2))
     self.assertTrue(*fs.CheckAndReset())
 
-    fs.ReadSingle('404.html')
+    fs.ReadSingle('404.html').Get()
     future = fs.Read(['notfound.html', 'apps/'])
     self.assertTrue(*fs.CheckAndReset(read_count=2))
     self.assertRaises(FileNotFoundError, future.Get)
@@ -63,7 +63,7 @@ class MockFileSystemTest(unittest.TestCase):
     self.assertFalse(*fs.CheckAndReset(stat_count=42))
     self.assertTrue(*fs.CheckAndReset())
 
-    fs.ReadSingle('404.html')
+    fs.ReadSingle('404.html').Get()
     fs.Stat('404.html')
     fs.Stat('apps/')
     self.assertTrue(*fs.CheckAndReset(read_count=1, stat_count=2))
@@ -83,7 +83,7 @@ class MockFileSystemTest(unittest.TestCase):
       'about_apps.html': '0',
       'fakedir/': '0',
     }), fs.Stat('apps/'))
-    self.assertEqual('404.html contents', fs.ReadSingle('404.html'))
+    self.assertEqual('404.html contents', fs.ReadSingle('404.html').Get())
 
     fs.Update({
       '404.html': 'New version!'
@@ -100,7 +100,7 @@ class MockFileSystemTest(unittest.TestCase):
       'about_apps.html': '0',
       'fakedir/': '0',
     }), fs.Stat('apps/'))
-    self.assertEqual('New version!', fs.ReadSingle('404.html'))
+    self.assertEqual('New version!', fs.ReadSingle('404.html').Get())
 
     fs.Update({
       '404.html': 'Newer version!',
@@ -131,8 +131,8 @@ class MockFileSystemTest(unittest.TestCase):
       'activeTab.html': '0',
       'alarms.html': '0'
     }), fs.Stat('extensions/'))
-    self.assertEqual('Newer version!', fs.ReadSingle('404.html'))
-    self.assertEqual('yo', fs.ReadSingle('apps/fakedir/file.html'))
+    self.assertEqual('Newer version!', fs.ReadSingle('404.html').Get())
+    self.assertEqual('yo', fs.ReadSingle('apps/fakedir/file.html').Get())
 
 if __name__ == '__main__':
   unittest.main()

@@ -70,13 +70,13 @@ class RenderServlet(Servlet):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
         content = trunk_fs.ReadSingle(
             '%s/%s' % (svn_constants.DOCS_PATH, path[len('extensions/'):]),
-            binary=_IsBinaryMimetype(mimetype))
+            binary=_IsBinaryMimetype(mimetype)).Get()
         content_type = mimetype
       elif path.startswith('static/'):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
         content = trunk_fs.ReadSingle(
             ('%s/%s' % (svn_constants.DOCS_PATH, path)),
-            binary=_IsBinaryMimetype(mimetype))
+            binary=_IsBinaryMimetype(mimetype)).Get()
         content_type = mimetype
       elif path.endswith('.html'):
         content = templates.Render(path)

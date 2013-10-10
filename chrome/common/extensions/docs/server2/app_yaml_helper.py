@@ -73,7 +73,7 @@ class AppYamlHelper(object):
     '''
     checked_in_app_version = AppYamlHelper.ExtractVersion(
         self._host_file_system_provider.GetTrunk().ReadSingle(
-            self._app_yaml_path))
+            self._app_yaml_path).Get())
     if app_version == checked_in_app_version:
       return True
     if AppYamlHelper.IsGreater(app_version, checked_in_app_version):
@@ -104,7 +104,7 @@ class AppYamlHelper(object):
 
     def has_greater_app_version(file_system):
       app_version_in_file_system = AppYamlHelper.ExtractVersion(
-          file_system.ReadSingle(self._app_yaml_path))
+          file_system.ReadSingle(self._app_yaml_path).Get())
       return AppYamlHelper.IsGreater(app_version_in_file_system, app_version)
 
     found = None

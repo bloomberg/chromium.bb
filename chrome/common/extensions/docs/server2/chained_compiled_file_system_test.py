@@ -55,7 +55,7 @@ class ChainedCompiledFileSystemTest(unittest.TestCase):
     self.assertNotEqual(self._chained_compiled_fs.GetFromFile('a.txt'),
                         self._base_compiled_fs.GetFromFile('a.txt'))
     self.assertEqual(self._chained_compiled_fs.GetFromFile('a.txt'),
-                     self._file_system.ReadSingle('a.txt'))
+                     self._file_system.ReadSingle('a.txt').Get())
 
   def testGetFromFileListing(self):
     self.assertEqual(self._chained_compiled_fs.GetFromFile('dir/'),
@@ -64,7 +64,7 @@ class ChainedCompiledFileSystemTest(unittest.TestCase):
     self.assertNotEqual(self._chained_compiled_fs.GetFromFileListing('dir/'),
                         self._base_compiled_fs.GetFromFileListing('dir/'))
     self.assertEqual(self._chained_compiled_fs.GetFromFileListing('dir/'),
-                     self._file_system.ReadSingle('dir/'))
+                     self._file_system.ReadSingle('dir/').Get())
 
 if __name__ == '__main__':
   unittest.main()

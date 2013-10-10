@@ -28,9 +28,9 @@ class HostFileSystemProviderTest(unittest.TestCase):
         constructor_for_test=self._constructor_for_test)
 
     fs = creator.GetBranch('1500')
-    first_read = fs.ReadSingle(self._idle_path)
+    first_read = fs.ReadSingle(self._idle_path).Get()
     self._canned_data['1500']['api']['idle.json'] = 'blah blah blah'
-    second_read = fs.ReadSingle(self._idle_path)
+    second_read = fs.ReadSingle(self._idle_path).Get()
 
     self.assertEqual(first_read, second_read)
 
@@ -42,7 +42,7 @@ class HostFileSystemProviderTest(unittest.TestCase):
 
     fs = creator.GetBranch('1500')
     # Offline file system should raise a FileNotFoundError if read is attempted.
-    self.assertRaises(FileNotFoundError, fs.ReadSingle, self._idle_path)
+    self.assertRaises(FileNotFoundError, fs.ReadSingle(self._idle_path).Get)
 
 if __name__ == '__main__':
   unittest.main()

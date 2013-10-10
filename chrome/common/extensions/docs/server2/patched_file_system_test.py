@@ -90,47 +90,51 @@ class PatchedFileSystemTest(unittest.TestCase):
     })
 
     for key in expected:
-      self.assertEqual(expected[key], self._file_system.ReadSingle(key))
+      self.assertEqual(expected[key], self._file_system.ReadSingle(key).Get())
 
     self.assertEqual(
         expected,
         self._file_system.Read(expected.keys()).Get())
 
-    self.assertRaises(FileNotFoundError, self._file_system.ReadSingle,
-      'test2.txt')
-    self.assertRaises(FileNotFoundError, self._file_system.ReadSingle,
-      'dir2/subdir1/sub1.txt')
-    self.assertRaises(FileNotFoundError, self._file_system.ReadSingle,
-      'not_existing')
-    self.assertRaises(FileNotFoundError, self._file_system.ReadSingle,
-      'dir1/not_existing')
-    self.assertRaises(FileNotFoundError, self._file_system.ReadSingle,
-      'dir1/newsubdir/not_existing')
+    self.assertRaises(FileNotFoundError,
+                      self._file_system.ReadSingle('test2.txt').Get)
+    self.assertRaises(FileNotFoundError,
+                      self._file_system.ReadSingle('dir2/subdir1/sub1.txt').Get)
+    self.assertRaises(FileNotFoundError,
+                      self._file_system.ReadSingle('not_existing').Get)
+    self.assertRaises(FileNotFoundError,
+                      self._file_system.ReadSingle('dir1/not_existing').Get)
+    self.assertRaises(
+        FileNotFoundError,
+        self._file_system.ReadSingle('dir1/newsubdir/not_existing').Get)
 
   def testReadDir(self):
-    self.assertEqual(sorted(self._file_system.ReadSingle('dir1/')),
-                     sorted(set(self._host_file_system.ReadSingle('dir1/')) |
-                            set(('file2.html', 'newsubdir/'))))
+    self.assertEqual(
+        sorted(self._file_system.ReadSingle('dir1/').Get()),
+        sorted(set(self._host_file_system.ReadSingle('dir1/').Get()) |
+               set(('file2.html', 'newsubdir/'))))
 
-    self.assertEqual(sorted(self._file_system.ReadSingle('dir1/newsubdir/')),
-                     sorted(['a.js']))
+    self.assertEqual(
+        sorted(self._file_system.ReadSingle('dir1/newsubdir/').Get()),
+        sorted(['a.js']))
 
-    self.assertEqual(sorted(self._file_system.ReadSingle('dir2/')),
-                     sorted(self._host_file_system.ReadSingle('dir2/')))
+    self.assertEqual(sorted(self._file_system.ReadSingle('dir2/').Get()),
+                     sorted(self._host_file_system.ReadSingle('dir2/').Get()))
 
-    self.assertEqual(sorted(self._file_system.ReadSingle('dir2/subdir1/')),
-        sorted(set(self._host_file_system.ReadSingle('dir2/subdir1/')) -
+    self.assertEqual(
+        sorted(self._file_system.ReadSingle('dir2/subdir1/').Get()),
+        sorted(set(self._host_file_system.ReadSingle('dir2/subdir1/').Get()) -
                set(('sub1.txt',))))
 
-    self.assertEqual(sorted(self._file_system.ReadSingle('newdir/')),
+    self.assertEqual(sorted(self._file_system.ReadSingle('newdir/').Get()),
                      sorted(['1.html']))
 
-    self.assertEqual(self._file_system.ReadSingle('dir3/'), [])
+    self.assertEqual(self._file_system.ReadSingle('dir3/').Get(), [])
 
-    self.assertEqual(self._file_system.ReadSingle('dir4/'), [])
+    self.assertEqual(self._file_system.ReadSingle('dir4/').Get(), [])
 
-    self.assertRaises(FileNotFoundError, self._file_system.ReadSingle,
-      'not_existing_dir/')
+    self.assertRaises(FileNotFoundError,
+                      self._file_system.ReadSingle('not_existing_dir/').Get)
 
   def testStat(self):
     version = 'patched_%s' % self._patcher.GetVersion()

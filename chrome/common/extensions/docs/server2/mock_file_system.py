@@ -51,7 +51,7 @@ class MockFileSystem(FileSystem):
   def _GetMostRecentUpdate(self, path):
     for revision, update in reversed(list(enumerate(self._updates))):
       try:
-        return (revision + 1, update.ReadSingle(path))
+        return (revision + 1, update.ReadSingle(path).Get())
       except FileNotFoundError:
         pass
     return (0, None)
@@ -75,7 +75,7 @@ class MockFileSystem(FileSystem):
     if not path.endswith('/'):
       return str(int(version) + self._GetMostRecentUpdate(path)[0])
     # Bleh, it's a directory, need to recursively search all the children.
-    child_paths = self._file_system.ReadSingle(path)
+    child_paths = self._file_system.ReadSingle(path).Get()
     if not child_paths:
       return version
     return str(max([int(version)] +
