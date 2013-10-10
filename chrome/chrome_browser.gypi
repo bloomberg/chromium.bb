@@ -1387,6 +1387,8 @@
         'browser/password_manager/password_store_win.h',
         'browser/password_manager/password_store_x.cc',
         'browser/password_manager/password_store_x.h',
+        'browser/password_manager/password_syncable_service.cc',
+        'browser/password_manager/password_syncable_service.h',
         'browser/pepper_broker_infobar_delegate.cc',
         'browser/pepper_broker_infobar_delegate.h',
         'browser/pepper_flash_settings_manager.cc',
