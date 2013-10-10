@@ -61,7 +61,6 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       picturebuffers_requested_(false),
       io_task_is_posted_(false),
       decoder_met_eos_(false),
-      num_bytes_used_in_the_pending_buffer_(0),
       gl_decoder_(decoder) {
 }
 
@@ -171,7 +170,6 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   base::TimeDelta timestamp =
       base::TimeDelta::FromMicroseconds(bitstream_buffer.id());
 
-  int bytes_written = 0;
   scoped_ptr<base::SharedMemory> shm(
       new base::SharedMemory(bitstream_buffer.handle(), true));
 
@@ -179,30 +177,28 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
                     "Failed to SharedMemory::Map()",
                     UNREADABLE_INPUT);
 
-  const size_t offset = num_bytes_used_in_the_pending_buffer_;
-  bytes_written = media_codec_->QueueInputBuffer(
-          input_buf_index,
-          static_cast<const uint8*>(shm->memory()) + offset,
-          bitstream_buffer.size() - offset, timestamp);
-  num_bytes_used_in_the_pending_buffer_ += bytes_written;
-  CHECK_LE(num_bytes_used_in_the_pending_buffer_, bitstream_buffer.size());
+  status =
+      media_codec_->QueueInputBuffer(input_buf_index,
+                                     static_cast<const uint8*>(shm->memory()),
+                                     bitstream_buffer.size(),
+                                     timestamp);
+  RETURN_ON_FAILURE(status == media::MEDIA_CODEC_OK,
+                    "Failed to QueueInputBuffer: " << status,
+                    PLATFORM_FAILURE);
 
-  if (num_bytes_used_in_the_pending_buffer_ == bitstream_buffer.size()) {
-    num_bytes_used_in_the_pending_buffer_ = 0;
-    pending_bitstream_buffers_.pop();
+  pending_bitstream_buffers_.pop();
 
-    // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
-    // will be returned from the bitstream buffer. However, MediaCodec API is
-    // not enough to guarantee it.
-    // So, here, we calls NotifyEndOfBitstreamBuffer() in advance in order to
-    // keep getting more bitstreams from the client, and throttle them by using
-    // |bitstreams_notified_in_advance_|.
-    // TODO(dwkang): check if there is a way to remove this workaround.
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
-        base::AsWeakPtr(this), bitstream_buffer.id()));
-    bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
-  }
+  // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
+  // will be returned from the bitstream buffer. However, MediaCodec API is
+  // not enough to guarantee it.
+  // So, here, we calls NotifyEndOfBitstreamBuffer() in advance in order to
+  // keep getting more bitstreams from the client, and throttle them by using
+  // |bitstreams_notified_in_advance_|.
+  // TODO(dwkang): check if there is a way to remove this workaround.
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
+      base::AsWeakPtr(this), bitstream_buffer.id()));
+  bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
 }
 
 void AndroidVideoDecodeAccelerator::DequeueOutput() {
@@ -220,7 +216,6 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
   do {
     size_t offset = 0;
     size_t size = 0;
-    int buf_index = 0;
 
     media::MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
         NoWaitTimeOut(), &buf_index, &offset, &size, &timestamp, &eos);
@@ -405,11 +400,12 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
     return false;
 
   gfx::ScopedJavaSurface surface(surface_texture_.get());
-  // VDA does not pass the container indicated resolution in the initialization
-  // phase. Here, we set 720p by default.
-  // TODO(dwkang): find out a way to remove the following hard-coded value.
-  media_codec_->Start(
-      codec_, gfx::Size(1280, 720), surface.j_surface().obj(), NULL);
+  // Pass a dummy 320x240 canvas size and let the codec signal the real size
+  // when it's known from the bitstream.
+  if (!media_codec_->Start(
+           codec_, gfx::Size(320, 240), surface.j_surface().obj(), NULL)) {
+    return false;
+  }
   media_codec_->GetOutputBuffers();
   return true;
 }
@@ -439,7 +435,6 @@ void AndroidVideoDecodeAccelerator::Reset() {
     ConfigureMediaCodec();
   }
   decoder_met_eos_ = false;
-  num_bytes_used_in_the_pending_buffer_ = 0;
   state_ = NO_ERROR;
 
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(

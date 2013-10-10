@@ -145,8 +145,11 @@ class MEDIA_EXPORT MediaCodecBridge {
   jobject media_codec() { return j_media_codec_.obj(); }
 
  private:
-  // Fills a particular input buffer and returns the size of copied data.
-  size_t FillInputBuffer(int index, const uint8* data, int data_size);
+  // Fills a particular input buffer; returns false if |data_size| exceeds the
+  // input buffer's capacity (and doesn't touch the input buffer in that case).
+  bool FillInputBuffer(int index,
+                       const uint8* data,
+                       int data_size) WARN_UNUSED_RESULT;
 
   // Java MediaCodec instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_codec_;
@@ -198,4 +201,3 @@ class MEDIA_EXPORT VideoCodecBridge : public MediaCodecBridge {
 }  // namespace media
 
 #endif  // MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
-

@@ -182,12 +182,12 @@ void MediaCodecBridge::GetOutputFormat(int* width, int* height) {
 MediaCodecStatus MediaCodecBridge::QueueInputBuffer(
     int index, const uint8* data, int data_size,
     const base::TimeDelta& presentation_time) {
-  int size_to_copy = FillInputBuffer(index, data, data_size);
-  DCHECK_EQ(size_to_copy, data_size);
+  if (!FillInputBuffer(index, data, data_size))
+    return MEDIA_CODEC_ERROR;
   JNIEnv* env = AttachCurrentThread();
   return static_cast<MediaCodecStatus>(Java_MediaCodecBridge_queueInputBuffer(
       env, j_media_codec_.obj(),
-      index, 0, size_to_copy, presentation_time.InMicroseconds(), 0));
+      index, 0, data_size, presentation_time.InMicroseconds(), 0));
 }
 
 MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
@@ -195,8 +195,8 @@ MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
     int key_id_size, const uint8* iv, int iv_size,
     const SubsampleEntry* subsamples, int subsamples_size,
     const base::TimeDelta& presentation_time) {
-  int size_to_copy = FillInputBuffer(index, data, data_size);
-  DCHECK_EQ(size_to_copy, data_size);
+  if (!FillInputBuffer(index, data, data_size))
+    return MEDIA_CODEC_ERROR;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_key_id =
@@ -288,25 +288,22 @@ void MediaCodecBridge::GetOutputBuffers() {
   Java_MediaCodecBridge_getOutputBuffers(env, j_media_codec_.obj());
 }
 
-size_t MediaCodecBridge::FillInputBuffer(
-    int index, const uint8* data, int size) {
+bool MediaCodecBridge::FillInputBuffer(int index, const uint8* data, int size) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> j_buffer(
       Java_MediaCodecBridge_getInputBuffer(env, j_media_codec_.obj(), index));
+  jlong capacity = env->GetDirectBufferCapacity(j_buffer.obj());
+  if (size > capacity) {
+    LOG(ERROR) << "Input buffer size " << size
+               << " exceeds MediaCodec input buffer capacity: " << capacity;
+    return false;
+  }
 
   uint8* direct_buffer =
       static_cast<uint8*>(env->GetDirectBufferAddress(j_buffer.obj()));
-  int64 buffer_capacity = env->GetDirectBufferCapacity(j_buffer.obj());
-
-  int size_to_copy = (buffer_capacity < size) ? buffer_capacity : size;
-  // TODO(qinmin): Handling the case that not all the data can be copied.
-  DCHECK(size_to_copy == size) <<
-      "Failed to fill all the data into the input buffer. Size to fill: "
-      << size << ". Size filled: " << size_to_copy;
-  if (size_to_copy > 0)
-    memcpy(direct_buffer, data, size_to_copy);
-  return size_to_copy;
+  memcpy(direct_buffer, data, size);
+  return true;
 }
 
 AudioCodecBridge::AudioCodecBridge(const std::string& mime)

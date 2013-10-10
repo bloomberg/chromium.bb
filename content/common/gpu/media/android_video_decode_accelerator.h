@@ -150,10 +150,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   typedef std::queue<media::BitstreamBuffer> BitstreamBufferList;
   BitstreamBufferList pending_bitstream_buffers_;
 
-  // Indicates the number of bytes already passed to the decoder in the first
-  // buffer in |pending_bitstream_buffers_|.
-  size_t num_bytes_used_in_the_pending_buffer_;
-
   // Keeps track of bitstream ids notified to the client with
   // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
   std::list<int32> bitstreams_notified_in_advance_;
