@@ -46,6 +46,8 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
   source->AddResourcePath("layouts/latin-accents.js",
                           IDR_KEYBOARD_LAYOUTS_LATIN_ACCENTS);
   source->AddResourcePath("layouts/numeric.html", IDR_KEYBOARD_LAYOUTS_NUMERIC);
+  source->AddResourcePath("layouts/system-qwerty.html",
+                          IDR_KEYBOARD_LAYOUTS_SYSTEM_QWERTY);
   source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
   source->AddResourcePath("polymer.min.js", IDR_KEYBOARD_POLYMER);
   source->AddResourcePath("voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS);

@@ -4,7 +4,8 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-key-sequence" attributes="keys hintTexts keyCodes">
+<polymer-element name="kb-key-sequence"
+    attributes="keys hintTexts keyCodes invert">
   <template>
     <style>
       @host {
@@ -41,8 +42,15 @@
             key.accents = newKeys[i];
             if (newHintTexts)
               key.hintText = newHintTexts[i];
+            var keyCodeIndex = keyCodes[i];
+
+            if (this.invert) {
+              key.invert = true;
+              key.char = newKeys[i];
+              keyCodeIndex = key.hintText;
+            }
             var state = this.$.keyCodeMetadata.GetKeyCodeAndModifiers(
-                keyCodes[i]);
+                keyCodeIndex);
             if (state) {
               key.keyCode = state.keyCode;
               key.shiftModifier = state.shiftModifier;

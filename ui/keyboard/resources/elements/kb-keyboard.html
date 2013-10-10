@@ -212,7 +212,8 @@
        */
       inputTypeToLayoutMap: {
         number: "numeric",
-        text: "qwerty"
+        text: "qwerty",
+        password: "system-qwerty" //TODO(rsadam@): Add unit test for this.
       },
 
       /**
@@ -251,12 +252,7 @@
         var layout = this.inputTypeToLayoutMap[this.inputType];
         if (!layout)
           layout = this.inputTypeToLayoutMap.text;
-        // Reselects the default keyset if target layout is the same as current
-        // layout. This forces a reset of the keyboard state.
-        if(this.layout == layout)
-          this.selectDefaultKeyset();
-        else
-          this.layout = layout;
+        this.layout = layout;
       },
 
       /**
@@ -593,6 +589,26 @@
        */
       get activeKeyset() {
         return this.querySelector('#' + this.activeKeysetId);
+      },
+
+      /**
+       * The current input type.
+       * @type {string}
+       */
+      get inputTypeValue() {
+        return inputType;
+      },
+
+      /**
+       * Changes the input type if it's different from the current
+       * type, else resets the keyset to the default keyset.
+       * @type {string}
+       */
+      set inputTypeValue(value) {
+        if (value == this.inputType)
+          this.selectDefaultKeyset();
+        else
+          this.inputType = value;
       },
 
       /**
