@@ -717,8 +717,9 @@ IN_PROC_BROWSER_TEST_F(ExperimentalLaunchWebAuthFlowFunctionTest,
   EXPECT_EQ(std::string(errors::kInteractionRequired), error);
 }
 
+// Flaky on mac, http://crbug.com/305349
 IN_PROC_BROWSER_TEST_F(ExperimentalLaunchWebAuthFlowFunctionTest,
-                       NonInteractiveSuccess) {
+                       MAYBE_NonInteractiveSuccess) {
   scoped_refptr<ExperimentalIdentityLaunchWebAuthFlowFunction> function(
       new ExperimentalIdentityLaunchWebAuthFlowFunction());
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
