@@ -705,6 +705,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 #endif
         use_https_src_server_(false),
         call_javascript_(true),
+        check_load_events_(true),
         loader_path_("files/prerender/prerender_loader.html"),
         explicitly_set_browser_(NULL) {}
 
@@ -967,6 +968,10 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     call_javascript_ = false;
   }
 
+  void DisableLoadEventCheck() {
+    check_load_events_ = false;
+  }
+
   TaskManagerModel* GetModel() const {
     return TaskManager::GetInstance()->model();
   }
@@ -1206,8 +1211,10 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
       // Test that the referring page received events.
       EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
-      EXPECT_EQ(expected_number_of_loads,
-                GetPrerenderLoadEventCountForLinkNumber(0));
+      if (check_load_events_) {
+        EXPECT_EQ(expected_number_of_loads,
+                  GetPrerenderLoadEventCountForLinkNumber(0));
+      }
       EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
     } else {
       // In the failure case, we should have removed |dest_url_| from the
@@ -1221,8 +1228,10 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         // Not a dummy PrerenderContents, so test that the refering
         // page received events.
         EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
-        EXPECT_EQ(expected_number_of_loads,
-                  GetPrerenderLoadEventCountForLinkNumber(0));
+        if (check_load_events_) {
+          EXPECT_EQ(expected_number_of_loads,
+                    GetPrerenderLoadEventCountForLinkNumber(0));
+        }
         EXPECT_TRUE(DidReceivePrerenderStopEventForLinkNumber(0));
       }
     }
@@ -1311,6 +1320,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   GURL dest_url_;
   bool use_https_src_server_;
   bool call_javascript_;
+  bool check_load_events_;
   std::string loader_path_;
   std::string loader_query_and_fragment_;
   Browser* explicitly_set_browser_;
@@ -1923,6 +1933,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRegisterProtocolHandler) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
   ASSERT_TRUE(GetPrerenderManager());
   GetPrerenderManager()->mutable_config().max_bytes = 30 * 1024 * 1024;
+  // The excessive memory kill may happen before or after the load event as it
+  // happens asynchronously with IPC calls. Even if the test does not start
+  // allocating until after load, the browser process might notice before the
+  // message gets through. This happens on XP debug bots because they're so
+  // slow. Instead, don't bother checking the load event count.
+  DisableLoadEventCheck();
   PrerenderTestURL("files/prerender/prerender_excessive_memory.html",
                    FINAL_STATUS_MEMORY_LIMIT_EXCEEDED,
                    1);

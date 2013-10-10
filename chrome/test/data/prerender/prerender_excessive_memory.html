@@ -9,22 +9,19 @@ is cancelled.
 <body>
   Makes the renderer use an excessive amount of memory.
   <script type="text/javascript">
-    function UseMemory() {
-      var string = "";
-      while (string.length < 1024*1024)
-        string = string + "---------";
+    var string = "";
+    while (string.length < 1024*1024)
+      string = string + "---------";
 
-      // This allows a sufficiently long string to be created with less copying
-      // and reallocation of data, speeding the test and hopefully eliminating
-      // flake.
-      var array = [];
-      // The maximum for the sake of this test is 30 MB, so allocate just a
-      // little more.
-      for (var i = 0; i < 31; ++i)
-        array[i] = string;
-      string = array.join();
-    }
-    window.onload = setTimeout.bind(null, UseMemory);
+    // This allows a sufficiently long string to be created with less copying
+    // and reallocation of data, speeding the test and hopefully eliminating
+    // flake.
+    var array = [];
+    // The maximum for the sake of this test is 30 MB, so allocate just a
+    // little more.
+    for (var i = 0; i < 31; ++i)
+      array[i] = string;
+    string = array.join();
   </script>
 </body>
 </html>
