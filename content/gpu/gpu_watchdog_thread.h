@@ -92,6 +92,10 @@ class GpuWatchdogThread : public base::Thread,
 
   bool suspended_;
 
+#if defined(OS_CHROMEOS)
+  FILE* tty_file_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThread);
 };
 

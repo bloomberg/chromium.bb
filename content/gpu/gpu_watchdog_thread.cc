@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/file_util.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
@@ -21,6 +22,8 @@
 namespace content {
 namespace {
 const int64 kCheckPeriodMs = 2000;
+const base::FilePath::CharType
+    kTtyFilePath[] = FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
 }  // namespace
 
 GpuWatchdogThread::GpuWatchdogThread(int timeout)
@@ -51,6 +54,9 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
   DCHECK(result);
 #endif
 
+#if defined(OS_CHROMEOS)
+  tty_file_ = file_util::OpenFile(base::FilePath(kTtyFilePath), "r");
+#endif
   watched_message_loop_->AddTaskObserver(&task_observer_);
 }
 
@@ -109,6 +115,11 @@ GpuWatchdogThread::~GpuWatchdogThread() {
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   if (power_monitor)
     power_monitor->RemoveObserver(this);
+
+#if defined(OS_CHROMEOS)
+  if (tty_file_)
+    fclose(tty_file_);
+#endif
 
   watched_message_loop_->RemoveTaskObserver(&task_observer_);
 }
@@ -221,6 +232,20 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 #if defined(OS_WIN)
   if (IsDebuggerPresent())
     return;
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Don't crash if we're not on tty1. This avoids noise in the GPU process
+  // crashes caused by people who use VT2 but still enable crash reporting.
+  char tty_string[8] = {0};
+  if (tty_file_ &&
+      !fseek(tty_file_, 0, SEEK_SET) &&
+      fread(tty_string, 1, 7, tty_file_)) {
+    int tty_number = -1;
+    int num_res = sscanf(tty_string, "tty%d", &tty_number);
+    if (num_res == 1 && tty_number != 1)
+      return;
+  }
 #endif
 
   LOG(ERROR) << "The GPU process hung. Terminating after "
