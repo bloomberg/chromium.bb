@@ -385,7 +385,8 @@ class Rietveld(object):
         except urllib2.URLError, e:
           if retry >= (maxtries - 1):
             raise
-          if not 'Name or service not known' in e.reason:
+          if (not 'Name or service not known' in e.reason and
+              not 'EOF occurred in violation of protocol' in e.reason):
             # Usually internal GAE flakiness.
             raise
         # If reaching this line, loop again. Uses a small backoff.
