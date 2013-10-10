@@ -1201,4 +1201,30 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.
 }
 
+TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), "focusout_focusin_events.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "focusout_focusin_events.html", true, 0);
+
+    webView->setFocus(true);
+    webView->setFocus(false);
+    webView->setFocus(true);
+
+    WebElement element = webView->mainFrame()->document().getElementById("message");
+    EXPECT_STREQ("focusoutfocusin", element.innerText().utf8().data());
+}
+
+TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), "domfocusout_domfocusin_events.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "domfocusout_domfocusin_events.html", true, 0);
+
+    webView->setFocus(true);
+    webView->setFocus(false);
+    webView->setFocus(true);
+
+    WebElement element = webView->mainFrame()->document().getElementById("message");
+    EXPECT_STREQ("DOMFocusOutDOMFocusIn", element.innerText().utf8().data());
+}
+
 }

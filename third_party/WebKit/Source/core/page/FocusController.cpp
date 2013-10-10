@@ -135,11 +135,25 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
             return;
     }
 
-    if (!focused && document->focusedElement())
-        document->focusedElement()->dispatchBlurEvent(0);
+    if (!focused && document->focusedElement()) {
+        RefPtr<Element> focusedElement(document->focusedElement());
+        focusedElement->dispatchBlurEvent(0);
+        if (focusedElement == document->focusedElement()) {
+            focusedElement->dispatchFocusOutEvent(EventNames::focusout, 0);
+            if (focusedElement == document->focusedElement())
+                focusedElement->dispatchFocusOutEvent(EventNames::DOMFocusOut, 0);
+        }
+    }
     document->dispatchWindowEvent(Event::create(focused ? EventNames::focus : EventNames::blur));
-    if (focused && document->focusedElement())
-        document->focusedElement()->dispatchFocusEvent(0, FocusDirectionPage);
+    if (focused && document->focusedElement()) {
+        RefPtr<Element> focusedElement(document->focusedElement());
+        focusedElement->dispatchFocusEvent(0, FocusDirectionPage);
+        if (focusedElement == document->focusedElement()) {
+            document->focusedElement()->dispatchFocusInEvent(EventNames::focusin, 0);
+            if (focusedElement == document->focusedElement())
+                document->focusedElement()->dispatchFocusInEvent(EventNames::DOMFocusIn, 0);
+        }
+    }
 }
 
 static inline bool hasCustomFocusLogic(Element* element)
