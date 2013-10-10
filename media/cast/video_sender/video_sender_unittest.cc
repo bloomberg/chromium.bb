@@ -153,7 +153,7 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
 }
 
 TEST_F(VideoSenderTest, RtcpTimer) {
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(2);
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
   InitEncoder(false);
 
   // Make sure that we send at least one RTCP packet.
