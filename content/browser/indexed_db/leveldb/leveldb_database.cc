@@ -96,11 +96,7 @@ static leveldb::Status OpenDB(leveldb::Comparator* comparator,
   options.comparator = comparator;
   options.create_if_missing = true;
   options.paranoid_checks = true;
-
-  // Marking compression as explicitly off so snappy support can be
-  // compiled in for other leveldb clients without implicitly enabling
-  // it for IndexedDB. http://crbug.com/81384
-  options.compression = leveldb::kNoCompression;
+  options.compression = leveldb::kSnappyCompression;
 
   // For info about the troubles we've run into with this parameter, see:
   // https://code.google.com/p/chromium/issues/detail?id=227313#c11
