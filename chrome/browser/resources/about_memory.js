@@ -42,18 +42,15 @@ function handleHelpTooltipMouseOver(event) {
   var width = el.offsetWidth;
   var height = el.offsetHeight;
 
-  if (event.pageX - width - 50 + document.body.scrollLeft >= 0 ) {
+  if (event.pageX - width - 50 + document.documentElement.scrollLeft >= 0)
     el.style.left = (event.pageX - width - 20) + 'px';
-  } else {
+  else
     el.style.left = (event.pageX + 20) + 'px';
-  }
 
-
-  if (event.pageY - height - 50 + document.body.scrollTop >= 0) {
+  if (event.pageY - height - 50 + document.documentElement.scrollTop >= 0)
     el.style.top = (event.pageY - height - 20) + 'px';
-  } else {
+  else
     el.style.top = (event.pageY + 20) + 'px';
-  }
 
   el.style.visibility = 'visible';
 }
@@ -72,7 +69,7 @@ function enableHelpTooltips() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
   // This is the javascript code that processes the template:
   var input = new JsEvalContext(loadTimeData.getValue('jstemplateData'));
   var output = document.getElementById('t');
