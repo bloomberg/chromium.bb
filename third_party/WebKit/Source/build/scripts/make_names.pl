@@ -86,9 +86,7 @@ mkpath($outputDir);
 if (length($fontNamesIn)) {
     my $familyNamesFileBase = "FontFamily";
     my $familyNamesPrefix = "CSS";
-    my $exportInclude = "#include \"platform/PlatformExport.h\"";
-    my $exportDeclaration = "PLATFORM_EXPORT";
-    createGenericNamesFile($fontNamesIn, $familyNamesFileBase, $familyNamesPrefix, $exportInclude, $exportDeclaration);
+    createGenericNamesFile($fontNamesIn, $familyNamesFileBase, $familyNamesPrefix);
 }
 
 die "You must specify at least one of --tags <file> or --attrs <file>" unless (length($tagsFile) || length($attrsFile));
@@ -1239,8 +1237,6 @@ sub createGenericNamesFile
     my $inputName = shift;
     my $baseName = shift;
     my $basePrefix = shift;
-    my $exportInclude = shift;
-    my $exportDeclaration = shift;
 
     my $names = new IO::File;
     open($names, $inputName) or die "Failed to open file: $inputName";
@@ -1255,10 +1251,9 @@ sub createGenericNamesFile
     open F, ">$header" or die "Unable to open $header for writing.";
 
     printLicenseHeader($F);
+    printHeaderHead($F, $basePrefix, $baseName, "#include \"wtf/text/AtomicString.h\"");
 
-    printHeaderHead($F, $basePrefix, $baseName, "#include \"wtf/text/AtomicString.h\"\n".$exportInclude);
-
-    printMacros($F, "extern const ".$exportDeclaration." WTF::AtomicString", "", \%parameters);
+    printMacros($F, "extern const WTF::AtomicString", "", \%parameters);
     print F "#endif\n\n";
 
     printInit($F, 1);

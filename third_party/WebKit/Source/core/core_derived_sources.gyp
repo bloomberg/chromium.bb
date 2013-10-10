@@ -316,6 +316,29 @@
           'msvs_cygwin_shell': 1,
         },
         {
+          'action_name': 'FontFamilyNames',
+          'inputs': [
+            '../build/scripts/Hasher.pm',
+            '../build/scripts/StaticString.pm',
+            '../build/scripts/make_names.pl',
+            'css/FontFamilyNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/action_makenames.py',
+            '<@(_outputs)',
+            '--',
+            '<@(_inputs)',
+            '--',
+            '--fonts',
+          ],
+          'msvs_cygwin_shell': 1,
+        },
+        {
           'action_name': 'SVGNames',
           'inputs': [
             '../build/scripts/Hasher.pm',

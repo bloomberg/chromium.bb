@@ -276,6 +276,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/SVGNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
 
         # Generated from HTMLEntityNames.in
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLEntityTable.cpp',
