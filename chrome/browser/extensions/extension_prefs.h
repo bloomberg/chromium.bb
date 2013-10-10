@@ -175,6 +175,10 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   ExtensionIdList GetToolbarOrder();
   void SetToolbarOrder(const ExtensionIdList& extension_ids);
 
+  // Get/Set the list of known disabled extension IDs.
+  ExtensionIdSet GetKnownDisabled();
+  void SetKnownDisabled(const ExtensionIdSet& extension_ids);
+
   // Called when an extension is installed, so that prefs get created.
   // If |page_ordinal| is an invalid ordinal, then a page will be found
   // for the App.
@@ -580,10 +584,15 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   bool DoesExtensionHaveState(const std::string& id,
                               Extension::State check_state) const;
 
-  // Helper function to Get/Set array of strings from/to prefs.
-  ExtensionIdList GetExtensionPrefAsVector(const char* pref);
-  void SetExtensionPrefFromVector(const char* pref,
-                                  const ExtensionIdList& extension_ids);
+  // Reads the list of strings for |pref| from prefs into an
+  // ExtensionIdContainer.
+  template <class ExtensionIdContainer>
+  ExtensionIdContainer GetExtensionPrefAsContainer(const char* pref);
+
+  // Writes the list of strings contained in |strings| to |pref| in prefs.
+  template <class ExtensionIdContainer>
+  void SetExtensionPrefFromContainer(const char* pref,
+                                     const ExtensionIdContainer& strings);
 
   // Helper function to populate |extension_dict| with the values needed
   // by a newly installed extension. Work is broken up between this

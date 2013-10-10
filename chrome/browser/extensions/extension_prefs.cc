@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_prefs.h"
 
+#include <iterator>
+
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -1146,11 +1148,20 @@ bool ExtensionPrefs::IsExtensionDisabled(
 }
 
 ExtensionIdList ExtensionPrefs::GetToolbarOrder() {
-  return GetExtensionPrefAsVector(prefs::kExtensionToolbar);
+  return GetExtensionPrefAsContainer<ExtensionIdList>(prefs::kExtensionToolbar);
 }
 
 void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
-  SetExtensionPrefFromVector(prefs::kExtensionToolbar, extension_ids);
+  SetExtensionPrefFromContainer(prefs::kExtensionToolbar, extension_ids);
+}
+
+ExtensionIdSet ExtensionPrefs::GetKnownDisabled() {
+  return GetExtensionPrefAsContainer<ExtensionIdSet>(
+      prefs::kExtensionKnownDisabled);
+}
+
+void ExtensionPrefs::SetKnownDisabled(const ExtensionIdSet& extension_ids) {
+  SetExtensionPrefFromContainer(prefs::kExtensionKnownDisabled, extension_ids);
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
@@ -1773,6 +1784,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
       prefs::kExtensionsLastChromeVersion,
       std::string(),  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kExtensionKnownDisabled,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
 #if defined(TOOLKIT_VIEWS)
   registry->RegisterIntegerPref(
@@ -1782,30 +1795,35 @@ void ExtensionPrefs::RegisterProfilePrefs(
 #endif
 }
 
-ExtensionIdList ExtensionPrefs::GetExtensionPrefAsVector(
+template <class ExtensionIdContainer>
+ExtensionIdContainer ExtensionPrefs::GetExtensionPrefAsContainer(
     const char* pref) {
-  ExtensionIdList extension_ids;
+  ExtensionIdContainer extension_ids;
   const ListValue* list_of_values = prefs_->GetList(pref);
   if (!list_of_values)
     return extension_ids;
 
+  std::insert_iterator<ExtensionIdContainer> insert_iterator(
+      extension_ids, extension_ids.end());
   std::string extension_id;
   for (size_t i = 0; i < list_of_values->GetSize(); ++i) {
     if (list_of_values->GetString(i, &extension_id))
-      extension_ids.push_back(extension_id);
+      insert_iterator = extension_id;
   }
   return extension_ids;
 }
 
-void ExtensionPrefs::SetExtensionPrefFromVector(
+template <class ExtensionIdContainer>
+void ExtensionPrefs::SetExtensionPrefFromContainer(
     const char* pref,
-    const ExtensionIdList& strings) {
+    const ExtensionIdContainer& strings) {
   ListPrefUpdate update(prefs_, pref);
   ListValue* list_of_values = update.Get();
   list_of_values->Clear();
-  for (ExtensionIdList::const_iterator iter = strings.begin();
-       iter != strings.end(); ++iter)
+  for (typename ExtensionIdContainer::const_iterator iter = strings.begin();
+       iter != strings.end(); ++iter) {
     list_of_values->Append(new base::StringValue(*iter));
+  }
 }
 
 void ExtensionPrefs::PopulateExtensionInfoPrefs(

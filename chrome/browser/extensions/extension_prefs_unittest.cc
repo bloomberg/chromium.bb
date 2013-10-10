@@ -109,10 +109,7 @@ class ExtensionPrefsToolbarOrder : public ExtensionPrefsTest {
 
   virtual void Verify() OVERRIDE {
     std::vector<std::string> result = prefs()->GetToolbarOrder();
-    ASSERT_EQ(list_.size(), result.size());
-    for (size_t i = 0; i < list_.size(); i++) {
-      EXPECT_EQ(list_[i], result[i]);
-    }
+    ASSERT_EQ(list_, result);
   }
 
  private:
@@ -120,6 +117,27 @@ class ExtensionPrefsToolbarOrder : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsToolbarOrder, ToolbarOrder) {}
 
+// Tests the GetKnownDisabled/SetKnownDisabled functions.
+class ExtensionPrefsKnownDisabled : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() OVERRIDE {
+    set_.insert(prefs_.AddExtensionAndReturnId("1"));
+    set_.insert(prefs_.AddExtensionAndReturnId("2"));
+    set_.insert(prefs_.AddExtensionAndReturnId("3"));
+    std::set<std::string> before_set = prefs()->GetKnownDisabled();
+    EXPECT_TRUE(before_set.empty());
+    prefs()->SetKnownDisabled(set_);
+  }
+
+  virtual void Verify() OVERRIDE {
+    std::set<std::string> result = prefs()->GetKnownDisabled();
+    ASSERT_EQ(set_, result);
+  }
+
+ private:
+  std::set<std::string> set_;
+};
+TEST_F(ExtensionPrefsKnownDisabled, KnownDisabled) {}
 
 // Tests the IsExtensionDisabled/SetExtensionState functions.
 class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
