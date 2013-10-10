@@ -650,7 +650,7 @@ void EditorClientImpl::checkGrammarOfString(const String& text, WTF::Vector<Gram
     // badGrammarLocation and badGrammarLength to tell WebKit that the input
     // text has grammar errors.
     for (size_t i = 0; i < webResults.size(); ++i) {
-        if (webResults[i].type == WebTextDecorationTypeGrammar) {
+        if (webResults[i].decoration == WebTextDecorationTypeGrammar) {
             GrammarDetail detail;
             detail.location = webResults[i].location;
             detail.length = webResults[i].length;

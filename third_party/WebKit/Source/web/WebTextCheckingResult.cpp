@@ -40,7 +40,7 @@ namespace WebKit {
 WebTextCheckingResult::operator TextCheckingResult() const
 {
     TextCheckingResult result;
-    result.decoration = static_cast<TextDecorationType>(type);
+    result.decoration = static_cast<TextDecorationType>(decoration);
     result.location = location;
     result.length = length;
     result.replacement = replacement;

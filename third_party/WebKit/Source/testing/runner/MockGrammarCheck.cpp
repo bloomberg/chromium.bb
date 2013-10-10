@@ -72,7 +72,7 @@ bool MockGrammarCheck::checkGrammarOfString(const WebString& text, vector<WebTex
         size_t offset = 0;
         string16 error(grammarErrors[i].text, grammarErrors[i].text + strlen(grammarErrors[i].text));
         while ((offset = stringText.find(error, offset)) != string16::npos) {
-            results->push_back(WebTextCheckingResult(WebTextCheckingTypeGrammar, offset + grammarErrors[i].location, grammarErrors[i].length));
+            results->push_back(WebTextCheckingResult(WebTextDecorationTypeGrammar, offset + grammarErrors[i].location, grammarErrors[i].length));
             offset += grammarErrors[i].length;
         }
     }

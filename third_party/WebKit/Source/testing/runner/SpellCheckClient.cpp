@@ -92,7 +92,7 @@ void SpellCheckClient::checkTextOfParagraph(const WebString& text, WebTextChecki
             if (!misspelledLength)
                 break;
             WebTextCheckingResult result;
-            result.type = WebTextDecorationTypeSpelling;
+            result.decoration = WebTextDecorationTypeSpelling;
             result.location = offset + misspelledPosition;
             result.length = misspelledLength;
             results.push_back(result);
@@ -142,7 +142,7 @@ void SpellCheckClient::finishLastTextCheck()
             break;
         WebVector<WebString> suggestions;
         m_spellcheck.fillSuggestionList(WebString(text.substr(misspelledPosition, misspelledLength)), &suggestions);
-        results.push_back(WebTextCheckingResult(WebTextCheckingTypeSpelling, offset + misspelledPosition, misspelledLength, suggestions.isEmpty() ? WebString() : suggestions[0]));
+        results.push_back(WebTextCheckingResult(WebTextDecorationTypeSpelling, offset + misspelledPosition, misspelledLength, suggestions.isEmpty() ? WebString() : suggestions[0]));
         text = text.substr(misspelledPosition + misspelledLength);
         offset += misspelledPosition + misspelledLength;
     }
