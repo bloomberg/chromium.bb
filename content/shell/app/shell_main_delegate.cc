@@ -114,6 +114,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       return true;
     }
   }
+
+#if defined(OS_ANDROID)
+  // Disable <canvas> path antialiasing for consistency with Android Chrome.
+  command_line.AppendSwitch(switches::kDisable2dCanvasAntialiasing);
+#endif
+
   if (command_line.HasSwitch(switches::kDumpRenderTree)) {
     EnableBrowserLayoutTestMode();
 
