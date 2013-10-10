@@ -116,7 +116,12 @@ enum TextDrawingMode {
 };
 typedef unsigned TextDrawingModeFlags;
 
-enum MaskType { AlphaMaskType, LuminanceMaskType };
+enum ColorFilter {
+    ColorFilterNone,
+    ColorFilterLuminanceToAlpha,
+    ColorFilterSRGBToLinearRGB,
+    ColorFilterLinearRGBToSRGB
+};
 
 String compositeOperatorName(CompositeOperator, BlendMode);
 bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, BlendMode&);

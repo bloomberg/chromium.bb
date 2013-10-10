@@ -165,9 +165,6 @@ public:
     CompositeOperator compositeOperation() const { return m_state->m_compositeOperator; }
     BlendMode blendModeOperation() const { return m_state->m_blendMode; }
 
-    void setDrawLuminanceMask(bool drawLuminanceMask) { m_state->m_drawLuminanceMask = drawLuminanceMask; }
-    bool drawLuminanceMask() const { return m_state->m_drawLuminanceMask; }
-
     // Change the way document markers are rendered.
     // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
     void setUseHighResMarkers(bool isHighRes) { m_useHighResMarker = isHighRes; }
@@ -204,7 +201,8 @@ public:
     AnnotationModeFlags annotationMode() const { return m_annotationMode; }
     void setAnnotationMode(const AnnotationModeFlags mode) { m_annotationMode = mode; }
 
-    void setColorSpaceConversion(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
+    SkColorFilter* colorFilter();
+    void setColorFilter(ColorFilter);
     // ---------- End state management methods -----------------
 
     // Get the contents of the image buffer
@@ -303,8 +301,7 @@ public:
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
     void beginTransparencyLayer(float opacity, const FloatRect* = 0);
-    void beginTransparencyLayer(float opacity, CompositeOperator, const FloatRect* = 0);
-    void beginMaskedLayer(const FloatRect&, MaskType = AlphaMaskType);
+    void beginLayer(float opacity, CompositeOperator, const FloatRect* = 0, ColorFilter = ColorFilterNone);
     void endLayer();
 
     bool hasShadow() const;
@@ -374,6 +371,8 @@ private:
     static void addCornerArc(SkPath*, const SkRect&, const IntSize&, int);
     static void setPathFromConvexPoints(SkPath*, size_t, const FloatPoint*);
     static void setRadii(SkVector*, IntSize, IntSize, IntSize, IntSize);
+
+    static PassRefPtr<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
 #if OS(MACOSX)
     static inline int getFocusRingOutset(int offset) { return offset + 2; }

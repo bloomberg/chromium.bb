@@ -43,7 +43,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
-#include "third_party/skia/include/effects/SkLumaXfermode.h"
+#include "third_party/skia/include/effects/SkLumaColorFilter.h"
 #include "weborigin/KURL.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
@@ -378,9 +378,17 @@ void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation
     m_state->m_xferMode = WebCoreCompositeToSkiaComposite(compositeOperation, blendMode);
 }
 
-void GraphicsContext::setColorSpaceConversion(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
+SkColorFilter* GraphicsContext::colorFilter()
 {
-    m_state->m_colorFilter = ImageBuffer::createColorSpaceFilter(srcColorSpace, dstColorSpace);
+    return m_state->m_colorFilter.get();
+}
+
+void GraphicsContext::setColorFilter(ColorFilter colorFilter)
+{
+    // We only support one active color filter at the moment. If (when) this becomes a problem,
+    // we should switch to using color filter chains (Skia work in progress).
+    ASSERT(!m_state->m_colorFilter);
+    m_state->m_colorFilter = WebCoreColorFilterToSkiaColorFilter(colorFilter);
 }
 
 bool GraphicsContext::readPixels(SkBitmap* bitmap, int x, int y, SkCanvas::Config8888 config8888)
@@ -413,10 +421,10 @@ bool GraphicsContext::concat(const SkMatrix& matrix)
 
 void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bounds)
 {
-    beginTransparencyLayer(opacity, m_state->m_compositeOperator, bounds);
+    beginLayer(opacity, m_state->m_compositeOperator, bounds);
 }
 
-void GraphicsContext::beginTransparencyLayer(float opacity, CompositeOperator op, const FloatRect* bounds)
+void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const FloatRect* bounds, ColorFilter colorFilter)
 {
     if (paintingDisabled())
         return;
@@ -429,8 +437,8 @@ void GraphicsContext::beginTransparencyLayer(float opacity, CompositeOperator op
 
     SkPaint layerPaint;
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
-    RefPtr<SkXfermode> xferMode = WebCoreCompositeToSkiaComposite(op, m_state->m_blendMode);
-    layerPaint.setXfermode(xferMode.get());
+    layerPaint.setXfermode(WebCoreCompositeToSkiaComposite(op, m_state->m_blendMode).get());
+    layerPaint.setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter).get());
 
     if (bounds) {
         SkRect skBounds = WebCoreFloatRectToSKRect(*bounds);
@@ -438,26 +446,6 @@ void GraphicsContext::beginTransparencyLayer(float opacity, CompositeOperator op
     } else {
         saveLayer(0, &layerPaint, saveFlags);
     }
-
-
-#if !ASSERT_DISABLED
-    ++m_layerCount;
-#endif
-}
-
-void GraphicsContext::beginMaskedLayer(const FloatRect& bounds, MaskType maskType)
-{
-    if (paintingDisabled())
-        return;
-
-    SkPaint layerPaint;
-    RefPtr<SkXfermode> xferMode = adoptRef(maskType == AlphaMaskType
-        ? SkXfermode::Create(SkXfermode::kSrcIn_Mode)
-        : SkLumaMaskXfermode::Create(SkXfermode::kSrcIn_Mode));
-    layerPaint.setXfermode(xferMode.get());
-
-    SkRect skBounds = WebCoreFloatRectToSKRect(bounds);
-    saveLayer(&skBounds, &layerPaint);
 
 #if !ASSERT_DISABLED
     ++m_layerCount;
@@ -1725,8 +1713,6 @@ void GraphicsContext::setupPaintCommon(SkPaint* paint) const
 
     if (!SkXfermode::IsMode(m_state->m_xferMode.get(), SkXfermode::kSrcOver_Mode))
         paint->setXfermode(m_state->m_xferMode.get());
-    if (this->drawLuminanceMask())
-        paint->setXfermode(SkLumaMaskXfermode::Create(SkXfermode::kSrcOver_Mode));
 
     if (m_state->m_looper)
         paint->setLooper(m_state->m_looper.get());
@@ -1767,6 +1753,26 @@ void GraphicsContext::setRadii(SkVector* radii, IntSize topLeft, IntSize topRigh
     radii[SkRRect::kLowerLeft_Corner].set(SkIntToScalar(bottomLeft.width()),
         SkIntToScalar(bottomLeft.height()));
 }
+
+PassRefPtr<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(ColorFilter colorFilter)
+{
+    switch (colorFilter) {
+    case ColorFilterLuminanceToAlpha:
+        return adoptRef(SkLumaColorFilter::Create());
+    case ColorFilterLinearRGBToSRGB:
+        return ImageBuffer::createColorSpaceFilter(ColorSpaceLinearRGB, ColorSpaceDeviceRGB);
+    case ColorFilterSRGBToLinearRGB:
+        return ImageBuffer::createColorSpaceFilter(ColorSpaceDeviceRGB, ColorSpaceLinearRGB);
+    case ColorFilterNone:
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+
+    return 0;
+}
+
 
 #if OS(MACOSX)
 CGColorSpaceRef deviceRGBColorSpaceRef()

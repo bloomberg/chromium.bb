@@ -1665,7 +1665,7 @@ template<class T> void  CanvasRenderingContext2D::fullCanvasCompositedDrawImage(
 {
     ASSERT(isFullCanvasCompositeMode(op));
 
-    drawingContext()->beginTransparencyLayer(1, op);
+    drawingContext()->beginLayer(1, op);
     drawImageToContext(image, drawingContext(), dest, src, CompositeSourceOver);
     drawingContext()->endLayer();
 }
@@ -1686,7 +1686,7 @@ template<class T> void CanvasRenderingContext2D::fullCanvasCompositedFill(const 
 
     GraphicsContext* c = drawingContext();
     ASSERT(c);
-    c->beginTransparencyLayer(1, state().m_globalComposite);
+    c->beginLayer(1, state().m_globalComposite);
     CompositeOperator previousOperator = c->compositeOperation();
     c->setCompositeOperation(CompositeSourceOver);
     fillPrimitive(area, c);

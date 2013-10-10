@@ -65,7 +65,6 @@ private:
         , m_shouldAntialias(true)
         , m_shouldSmoothFonts(true)
         , m_shouldClampToSourceRect(true)
-        , m_drawLuminanceMask(false)
     {
     }
 
@@ -86,7 +85,6 @@ private:
         , m_shouldAntialias(other.m_shouldAntialias)
         , m_shouldSmoothFonts(other.m_shouldSmoothFonts)
         , m_shouldClampToSourceRect(other.m_shouldClampToSourceRect)
-        , m_drawLuminanceMask(other.m_drawLuminanceMask)
     {
     }
 
@@ -140,7 +138,6 @@ private:
     bool m_shouldAntialias : 1;
     bool m_shouldSmoothFonts : 1;
     bool m_shouldClampToSourceRect : 1;
-    bool m_drawLuminanceMask : 1;
 };
 
 } // namespace WebCore

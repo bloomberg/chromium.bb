@@ -206,7 +206,8 @@ crbug.com/306190 [ Linux Win ] svg/zoom/page/zoom-hixie-mixed-009.xml [ ImageOnl
 crbug.com/306190 [ Linux Win ] svg/zoom/text/zoom-hixie-mixed-009.xml [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/hixie/mixed/009.xml [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/text/scaling-font-with-geometric-precision.html [ ImageOnlyFailure Pass ]
-webkit.org/b/83303 [ Linux ] svg/transforms/text-with-mask-with-svg-transform.svg [ ImageOnlyFailure Pass ]
+# fmalita: re-enable after https://codereview.chromium.org/26428003/
+# webkit.org/b/83303 [ Linux ] svg/transforms/text-with-mask-with-svg-transform.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/transforms/text-with-pattern-with-svg-transform.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Win ] svg/as-background-image/svg-as-background-1.html [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Win ] svg/as-background-image/svg-as-background-3.html [ ImageOnlyFailure Pass ]
@@ -223,6 +224,9 @@ webkit.org/b/84854 [ Win7 ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass
 webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
 
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
+
+Bug(fmalita) svg/filters/filter-clip.svg [ NeedsManualRebaseline ]
+Bug(fmalita) svg/transforms/text-with-mask-with-svg-transform.svg [ NeedsManualRebaseline ]
 
 # -----------------------------------------------------------------
 # End SVG TESTS

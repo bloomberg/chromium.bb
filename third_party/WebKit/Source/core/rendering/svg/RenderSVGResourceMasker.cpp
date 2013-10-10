@@ -72,37 +72,43 @@ bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*,
     if (repaintRect.isEmpty() || !element()->hasChildNodes())
         return false;
 
-    const SVGRenderStyle* svgStyle = style()->svgStyle();
-    ASSERT(svgStyle);
-    ColorSpace colorSpace = svgStyle->colorInterpolation() == CI_LINEARRGB
-        ? ColorSpaceLinearRGB
-        : ColorSpaceDeviceRGB;
-
-    // Mask layer start.
-    context->beginTransparencyLayer(1, &repaintRect);
-    {
-        // Draw the mask with color conversion (when needed).
-        GraphicsContextStateSaver maskContentSaver(*context);
-        context->setColorSpaceConversion(ColorSpaceDeviceRGB, colorSpace);
-
-        drawMaskContent(context, object->objectBoundingBox());
-    }
-
     // Content layer start.
-    MaskType maskType = svgStyle->maskType() == MT_LUMINANCE ? LuminanceMaskType : AlphaMaskType;
-    context->beginMaskedLayer(repaintRect, maskType);
+    context->beginTransparencyLayer(1, &repaintRect);
 
     return true;
 }
 
-void RenderSVGResourceMasker::postApplyResource(RenderObject*, GraphicsContext*& context,
+void RenderSVGResourceMasker::postApplyResource(RenderObject* object, GraphicsContext*& context,
     unsigned short resourceMode, const Path*, const RenderSVGShape*)
 {
+    ASSERT(object);
+    ASSERT(context);
+    ASSERT(style());
     ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
+    ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
-    // Transfer content layer -> mask layer (SrcIn)
+    FloatRect repaintRect = object->repaintRectInLocalCoordinates();
+
+    const SVGRenderStyle* svgStyle = style()->svgStyle();
+    ASSERT(svgStyle);
+    ColorFilter maskLayerFilter = svgStyle->maskType() == MT_LUMINANCE
+        ? ColorFilterLuminanceToAlpha : ColorFilterNone;
+    ColorFilter maskContentFilter = svgStyle->colorInterpolation() == CI_LINEARRGB
+        ? ColorFilterSRGBToLinearRGB : ColorFilterNone;
+
+    // Mask layer start.
+    context->beginLayer(1, CompositeDestinationIn, &repaintRect, maskLayerFilter);
+    {
+        // Draw the mask with color conversion (when needed).
+        GraphicsContextStateSaver maskContentSaver(*context);
+        context->setColorFilter(maskContentFilter);
+
+        drawMaskContent(context, object->objectBoundingBox());
+    }
+
+    // Transfer mask layer -> content layer (DstIn)
     context->endLayer();
-    // Transfer mask layer -> bg layer (SrcOver)
+    // Transfer content layer -> backdrop (SrcOver)
     context->endLayer();
 }
 

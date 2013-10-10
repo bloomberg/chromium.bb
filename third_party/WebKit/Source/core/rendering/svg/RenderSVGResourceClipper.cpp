@@ -191,7 +191,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     }
 
     // Masked content layer start.
-    context->beginMaskedLayer(repaintRect);
+    context->beginLayer(1, CompositeSourceIn, &repaintRect);
 
     return true;
 }

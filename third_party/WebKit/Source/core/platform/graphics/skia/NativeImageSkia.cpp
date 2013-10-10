@@ -45,7 +45,6 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "third_party/skia/include/effects/SkLumaXfermode.h"
 
 #include <math.h>
 #include <limits>
@@ -325,11 +324,8 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
 {
     TRACE_EVENT0("skia", "NativeImageSkia::draw");
     SkPaint paint;
-    if (context->drawLuminanceMask()) {
-        paint.setXfermode(SkLumaMaskXfermode::Create(SkXfermode::kSrcOver_Mode));
-    } else {
-        paint.setXfermode(compOp.get());
-    }
+    paint.setXfermode(compOp.get());
+    paint.setColorFilter(context->colorFilter());
     paint.setAlpha(context->getNormalizedAlpha());
     paint.setLooper(context->drawLooper());
     // only antialias if we're rotated or skewed
@@ -498,11 +494,8 @@ void NativeImageSkia::drawPattern(
 
     SkPaint paint;
     paint.setShader(shader.get());
-    if (context->drawLuminanceMask()) {
-        paint.setXfermode(SkLumaMaskXfermode::Create(SkXfermode::kSrcOver_Mode));
-    } else {
-        paint.setXfermode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode).get());
-    }
+    paint.setXfermode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode).get());
+    paint.setColorFilter(context->colorFilter());
 
     paint.setFilterBitmap(resampling == LinearResampling);
     if (useBicubicFilter)
