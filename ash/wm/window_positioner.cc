@@ -6,11 +6,14 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/auto_window_management.h"
 #include "base/command_line.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
@@ -26,15 +29,72 @@ const int kForceMaximizeWidthLimitDisabled = 640;
 
 const int WindowPositioner::kMinimumWindowOffset = 32;
 
+// The number of pixels which are kept free top, left and right when a window
+// gets positioned to its default location.
+// static
+const int WindowPositioner::kDesktopBorderSize = 16;
+
+// Maximum width of a window even if there is more room on the desktop.
+// static
+const int WindowPositioner::kMaximumWindowWidth = 1100;
+
 // static
 int WindowPositioner::GetForceMaximizedWidthLimit() {
   static int maximum_limit = 0;
   if (!maximum_limit) {
     maximum_limit = CommandLine::ForCurrentProcess()->HasSwitch(
-                        ash::switches::kAshDisableAutoMaximizing) ?
+        switches::kAshDisableAutoMaximizing) ?
         kForceMaximizeWidthLimitDisabled : kForceMaximizeWidthLimit;
   }
   return maximum_limit;
+}
+
+void WindowPositioner::GetBoundsAndShowStateForNewWindow(
+    const gfx::Screen* screen,
+    const aura::Window* new_window,
+    bool is_saved_bounds,
+    ui::WindowShowState show_state_in,
+    gfx::Rect* bounds_in_out,
+    ui::WindowShowState* show_state_out) {
+
+  // Always open new window in the target display.
+  aura::RootWindow* target = Shell::GetTargetRootWindow();
+
+  aura::Window* top_window = GetTopWindowForNewWindow(target);
+  // Our window should not have any impact if we are already on top.
+  if (top_window == new_window)
+    top_window = NULL;
+
+  // If there is no valid other window we take the coordinates as is.
+  if (!top_window) {
+    gfx::Rect work_area = screen->GetDisplayNearestWindow(target).work_area();
+
+    if (is_saved_bounds) {
+      // Restore to saved state - if there is one.
+      bounds_in_out->AdjustToFit(work_area);
+      return;
+    }
+
+    // When using "small screens" we want to always open in full screen mode.
+    if (show_state_in == ui::SHOW_STATE_DEFAULT &&
+        work_area.width() <=
+        WindowPositioner::GetForceMaximizedWidthLimit() &&
+        (!new_window || !wm::GetWindowState(new_window)->IsFullscreen())) {
+      *show_state_out = ui::SHOW_STATE_MAXIMIZED;
+    }
+    return;
+  }
+  bool maximized = wm::GetWindowState(top_window)->IsMaximized();
+  // We ignore the saved show state, but look instead for the top level
+  // window's show state.
+  if (show_state_in == ui::SHOW_STATE_DEFAULT) {
+    *show_state_out = maximized ? ui::SHOW_STATE_MAXIMIZED :
+        ui::SHOW_STATE_DEFAULT;
+  }
+
+  // Use the size of the other window. The window's bound will be rearranged
+  // in ash::WorkspaceLayoutManager using this location.
+  *bounds_in_out = top_window->GetBoundsInScreen();
 }
 
 WindowPositioner::WindowPositioner()
@@ -47,6 +107,27 @@ WindowPositioner::WindowPositioner()
 }
 
 WindowPositioner::~WindowPositioner() {
+}
+
+gfx::Rect WindowPositioner::GetDefaultWindowBounds(
+    const gfx::Display& display) {
+  const gfx::Rect work_area = display.work_area();
+  // There should be a 'desktop' border around the window at the left and right
+  // side.
+  int default_width = work_area.width() - 2 * kDesktopBorderSize;
+  // There should also be a 'desktop' border around the window at the top.
+  // Since the workspace excludes the tray area we only need one border size.
+  int default_height = work_area.height() - kDesktopBorderSize;
+  int offset_x = kDesktopBorderSize;
+  if (default_width > kMaximumWindowWidth) {
+    // The window should get centered on the screen and not follow the grid.
+    offset_x = (work_area.width() - kMaximumWindowWidth) / 2;
+    default_width = kMaximumWindowWidth;
+  }
+  return gfx::Rect(work_area.x() + offset_x,
+                   work_area.y() + kDesktopBorderSize,
+                   default_width,
+                   default_height);
 }
 
 gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
@@ -63,7 +144,7 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   pop_position_offset_increment_y = grid;
   // We handle the Multi monitor support by retrieving the active window's
   // work area.
-  aura::Window* window = ash::wm::GetActiveWindow();
+  aura::Window* window = wm::GetActiveWindow();
   const gfx::Rect work_area = window && window->IsVisible() ?
       Shell::GetScreen()->GetDisplayNearestWindow(window).work_area() :
       Shell::GetScreen()->GetPrimaryDisplay().work_area();
@@ -118,7 +199,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
     const gfx::Rect& work_area,
     int grid) {
   const std::vector<aura::Window*> windows =
-      ash::MruWindowTracker::BuildWindowList(false);
+      MruWindowTracker::BuildWindowList(false);
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.
@@ -127,7 +208,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
     if (windows[i] && windows[i]->IsVisible() && windows[i]->layer() &&
         (!windows[i]->transparent() ||
          windows[i]->layer()->GetTargetOpacity() == 1.0)) {
-      ash::wm::WindowState* window_state = ash::wm::GetWindowState(windows[i]);
+      wm::WindowState* window_state = wm::GetWindowState(windows[i]);
       // When any window is maximized we cannot find any free space.
       if (window_state->IsMaximizedOrFullscreen())
         return gfx::Rect(0, 0, 0, 0);

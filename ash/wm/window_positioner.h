@@ -7,10 +7,17 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
 class Window;
+}
+
+namespace gfx {
+class Display;
+class Rect;
+class Screen;
 }
 
 namespace ash {
@@ -26,6 +33,31 @@ class ASH_EXPORT WindowPositioner {
   // When the screen resolution width is smaller then this size, The algorithm
   // will default to maximized.
   static int GetForceMaximizedWidthLimit();
+
+  // The number of pixels which are kept free top, left and right when a window
+  // gets positioned to its default location.
+  static const int kDesktopBorderSize;
+
+  // Maximum width of a window even if there is more room on the desktop.
+  static const int kMaximumWindowWidth;
+
+  // Computes and returns the bounds and show state for new window
+  // based on the parameter passed AND existing windows. |window| is
+  // the one this function will generate a bounds for and used to
+  // exclude the self window in making decision how to position the
+  // window. |window| can be (and in most case) NULL.
+  // |is_saved_bounds| indicates the |bounds_in_out| is the saved
+  // bounds.
+  static void GetBoundsAndShowStateForNewWindow(
+      const gfx::Screen* screen,
+      const aura::Window* new_window,
+      bool is_saved_bounds,
+      ui::WindowShowState show_state_in,
+      gfx::Rect* bounds_in_out,
+      ui::WindowShowState* show_state_out);
+
+  // Returns the default bounds for a window to be created in the |display|.
+  static gfx::Rect GetDefaultWindowBounds(const gfx::Display& display);
 
   WindowPositioner();
   ~WindowPositioner();

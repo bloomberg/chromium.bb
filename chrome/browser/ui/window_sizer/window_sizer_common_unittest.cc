@@ -13,6 +13,10 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 namespace {
 
 class TestScreen : public gfx::Screen {
@@ -52,8 +56,12 @@ class TestScreen : public gfx::Screen {
 
   virtual gfx::Display GetDisplayNearestWindow(
       gfx::NativeView view) const OVERRIDE {
+#if defined(USE_AURA)
+    return GetDisplayMatching(view->GetBoundsInScreen());
+#else
     NOTREACHED();
     return gfx::Display();
+#endif
   }
 
   virtual gfx::Display GetDisplayNearestPoint(
@@ -92,7 +100,7 @@ class TestScreen : public gfx::Screen {
   }
 
   void AddDisplay(const gfx::Rect& bounds,
-                          const gfx::Rect& work_area) {
+                  const gfx::Rect& work_area) {
     gfx::Display display(displays_.size(), bounds);
     display.set_work_area(work_area);
     displays_.push_back(display);

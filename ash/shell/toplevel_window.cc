@@ -7,6 +7,8 @@
 #include "ash/display/display_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/wm/window_positioner.h"
+#include "ash/wm/window_state.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -15,6 +17,18 @@
 
 namespace ash {
 namespace shell {
+namespace {
+
+struct SavedState {
+  gfx::Rect bounds;
+  ui::WindowShowState show_state;
+};
+
+// The last window state in ash_shell. We don't bother deleting
+// this on shutdown.
+SavedState* saved_state = NULL;
+
+}  // namespace
 
 ToplevelWindow::CreateParams::CreateParams()
     : can_resize(false),
@@ -23,18 +37,11 @@ ToplevelWindow::CreateParams::CreateParams()
 
 // static
 void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
-  static int count = 0;
-  int x = count == 0 ? 150 : 750;
-  count = (count + 1) % 2;
-
-  gfx::Rect bounds(x, 150, 300, 300);
-  gfx::Display display =
-      ash::Shell::GetScreen()->GetDisplayMatching(bounds);
-  aura::RootWindow* root = ash::Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display.id());
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      new ToplevelWindow(params), root, bounds);
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
+      new ToplevelWindow(params), Shell::GetPrimaryRootWindow());
   widget->GetNativeView()->SetName("Examples:ToplevelWindow");
+  wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());
+  window_state->set_window_position_managed(true);
   widget->Show();
 }
 
@@ -50,6 +57,35 @@ void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
 
 base::string16 ToplevelWindow::GetWindowTitle() const {
   return ASCIIToUTF16("Examples: Toplevel Window");
+}
+
+void ToplevelWindow::SaveWindowPlacement(const gfx::Rect& bounds,
+                                         ui::WindowShowState show_state) {
+  if (!saved_state)
+    saved_state = new SavedState;
+  saved_state->bounds = bounds;
+  saved_state->show_state = show_state;
+}
+
+bool ToplevelWindow::GetSavedWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
+  bool is_saved_bounds = !!saved_state;
+  if (saved_state) {
+    *bounds = saved_state->bounds;
+    *show_state = saved_state->show_state;
+  } else {
+    // Initial default bounds.
+    bounds->SetRect(10, 150, 300, 300);
+  }
+  ash::WindowPositioner::GetBoundsAndShowStateForNewWindow(
+      ash::Shell::GetScreen(),
+      NULL,
+      is_saved_bounds,
+      *show_state,
+      bounds,
+      show_state);
+  return true;
 }
 
 views::View* ToplevelWindow::GetContentsView() {

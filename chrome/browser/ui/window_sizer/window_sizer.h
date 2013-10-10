@@ -14,6 +14,7 @@
 class Browser;
 
 namespace gfx {
+class Display;
 class Screen;
 }
 
@@ -97,13 +98,6 @@ class WindowSizer {
   static gfx::Point GetDefaultPopupOrigin(const gfx::Size& size,
                                           chrome::HostDesktopType type);
 
-  // The number of pixels which are kept free top, left and right when a window
-  // gets positioned to its default location.
-  static const int kDesktopBorderSize;
-
-  // Maximum width of a window even if there is more room on the desktop.
-  static const int kMaximumWindowWidth;
-
   // How much horizontal and vertical offset there is between newly
   // opened windows.  This value may be different on each platform.
   static const int kWindowTilePixels;
@@ -127,13 +121,12 @@ class WindowSizer {
   bool GetSavedWindowBounds(gfx::Rect* bounds,
                             ui::WindowShowState* show_state) const;
 
-  // Gets the default window position and size if there is no last window and
-  // no saved window placement in prefs. This function determines the default
-  // size based on monitor size, etc.
-  void GetDefaultWindowBounds(gfx::Rect* default_bounds) const;
-#if defined(USE_ASH)
-  void GetDefaultWindowBoundsAsh(gfx::Rect* default_bounds) const;
-#endif
+  // Gets the default window position and size to be shown on
+  // |display| if there is no last window and no saved window
+  // placement in prefs. This function determines the default size
+  // based on monitor size, etc.
+  void GetDefaultWindowBounds(const gfx::Display& display,
+                              gfx::Rect* default_bounds) const;
 
   // Adjusts |bounds| to be visible on-screen, biased toward the work area of
   // the monitor containing |other_bounds|.  Despite the name, this doesn't

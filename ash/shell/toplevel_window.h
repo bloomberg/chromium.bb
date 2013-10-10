@@ -29,6 +29,12 @@ class ToplevelWindow : public views::WidgetDelegateView {
 
   // Overridden from views::WidgetDelegate:
   virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual void SaveWindowPlacement(
+      const gfx::Rect& bounds,
+      ui::WindowShowState show_state) OVERRIDE;
+  virtual bool GetSavedWindowPlacement(
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
