@@ -30,6 +30,7 @@ struct CC_EXPORT DrawProperties {
         num_unclipped_descendants(0),
         can_draw_directly_to_backbuffer(false),
         layer_or_descendant_has_copy_request(false),
+        has_child_with_a_scroll_parent(false),
         sorted_for_recursion(false),
         index_of_first_descendants_addition(0),
         num_descendants_added(0),
@@ -102,6 +103,12 @@ struct CC_EXPORT DrawProperties {
   // If true, the layer or some layer in its sub-tree has a CopyOutputRequest
   // present on it.
   bool layer_or_descendant_has_copy_request;
+
+  // This is true if the layer has any direct child that has a scroll parent.
+  // This layer will not be the scroll parent in this case. This information
+  // lets us avoid work in CalculateDrawPropertiesInternal -- if none of our
+  // children have scroll parents, we will not need to recur out of order.
+  bool has_child_with_a_scroll_parent;
 
   // This is true if the order (wrt to its siblings in the tree) in which the
   // layer will be visited while computing draw properties has been determined.

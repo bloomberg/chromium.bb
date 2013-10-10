@@ -1063,6 +1063,7 @@ static void PreCalculateMetaInformation(
   }
 
   layer->draw_properties().sorted_for_recursion = false;
+  layer->draw_properties().has_child_with_a_scroll_parent = false;
 
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
@@ -1078,6 +1079,8 @@ static void PreCalculateMetaInformation(
     num_descendants_that_draw_content +=
         child_layer->draw_properties().num_descendants_that_draw_content;
 
+    if (child_layer->scroll_parent())
+      layer->draw_properties().has_child_with_a_scroll_parent = true;
     recursive_data->Merge(data_for_child);
   }
 
@@ -1209,6 +1212,7 @@ static void AddScrollParentChain(std::vector<LayerType*>* out,
 template <typename LayerType>
 static bool SortChildrenForRecursion(std::vector<LayerType*>* out,
                                      const LayerType& parent) {
+  out->reserve(parent.children().size());
   bool order_changed = false;
   for (size_t i = 0; i < parent.children().size(); ++i) {
     LayerType* current =
@@ -1901,7 +1905,10 @@ static void CalculateDrawPropertiesInternal(
   scoped_ptr<LayerListType> unsorted_descendants;
 
   std::vector<LayerType*> sorted_children;
-  bool child_order_changed = SortChildrenForRecursion(&sorted_children, *layer);
+  bool child_order_changed = false;
+  if (layer_draw_properties.has_child_with_a_scroll_parent)
+    child_order_changed = SortChildrenForRecursion(&sorted_children, *layer);
+
   if (child_order_changed) {
     // We'll be visiting our children out of order; use the temporary lists.
     unsorted_render_surface_layer_list.reset(new LayerListType);
@@ -1911,8 +1918,15 @@ static void CalculateDrawPropertiesInternal(
     descendants_for_children = unsorted_descendants.get();
   }
 
-  for (size_t i = 0; i < sorted_children.size(); ++i) {
-    LayerType* child = sorted_children[i];
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    // If one of layer's children has a scroll parent, then we may have to
+    // visit the children out of order. The new order is stored in
+    // sorted_children. Otherwise, we'll grab the child directly from the
+    // layer's list of children.
+    LayerType* child =
+        layer_draw_properties.has_child_with_a_scroll_parent
+            ? sorted_children[i]
+            : LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
 
     child->draw_properties().index_of_first_descendants_addition =
         descendants_for_children->size();
