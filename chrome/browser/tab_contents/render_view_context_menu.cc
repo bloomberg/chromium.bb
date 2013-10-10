@@ -743,8 +743,6 @@ void RenderViewContextMenu::AppendPopupExtensionItems() {
 }
 
 void RenderViewContextMenu::AppendPanelItems() {
-  const Extension* extension = GetExtension();
-
   bool has_selection = !params_.selection_text.empty();
 
   // Checking link should take precedence before checking selection since on Mac
@@ -757,10 +755,16 @@ void RenderViewContextMenu::AppendPanelItems() {
   else if (has_selection)
     AppendCopyItem();
 
-  // Only add extension items from this extension.
-  int index = 0;
-  extension_items_.AppendExtensionItems(extension->id(),
-                                        PrintableSelectionText(), &index);
+  // Avoid appending extension related items when |extension| is null. This
+  // happens when the panel is navigated to a url outside of the extension's
+  // package.
+  const Extension* extension = GetExtension();
+  if (extension) {
+    // Only add extension items from this extension.
+    int index = 0;
+    extension_items_.AppendExtensionItems(extension->id(),
+                                          PrintableSelectionText(), &index);
+  }
 }
 
 void RenderViewContextMenu::AddMenuItem(int command_id,
