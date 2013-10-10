@@ -638,13 +638,17 @@ camera.views.Camera.prototype.drawFrame_ = function() {
   // Update internal state of the tracker.
   this.tracker_.update();
 
-  // Process effect preview canvases. Ribbin initialization is true before the
+  // Process effect preview canvases. Ribbon initialization is true before the
   // ribbon is expanded for the first time. This trick is used to fill the
   // ribbon with images as soon as possible.
   if (this.frame_ % 3 == 0 && this.expanded_ && !this.taking_ ||
       this.ribbonInitialization_) {
     for (var index = 0; index < this.previewProcessors_.length; index++) {
-      this.previewProcessors_[index].processFrame();
+      var processor = this.previewProcessors_[index];
+      var effectRect = processor.output.getBoundingClientRect();
+      // Render only visible effects.
+      if (effectRect.right >= 0 && effectRect.left < document.body.offsetWidth)
+        processor.processFrame();
     }
   }
   this.frame_++;

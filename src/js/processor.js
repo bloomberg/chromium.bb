@@ -70,6 +70,12 @@ camera.Processor.prototype = {
   },
   get effect() {
     return this.effect_;
+  },
+  get input() {
+    return this.input_;
+  },
+  get output() {
+    return this.output_;
   }
 };
 
