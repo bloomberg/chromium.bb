@@ -232,9 +232,10 @@ Error MountNodeTty::ProcessInput(struct tioc_nacl_input_string* message) {
   return 0;
 }
 
-Error MountNodeTty::Ioctl(int request, char* arg) {
+Error MountNodeTty::VIoctl(int request, va_list args) {
   switch (request) {
     case TIOCNACLOUTPUT: {
+      struct tioc_nacl_output* arg = va_arg(args, struct tioc_nacl_output*);
       AUTO_LOCK(output_lock_);
       if (arg == NULL) {
         output_handler_.handler = NULL;
@@ -242,18 +243,18 @@ Error MountNodeTty::Ioctl(int request, char* arg) {
       }
       if (output_handler_.handler != NULL)
         return EALREADY;
-      output_handler_ = *reinterpret_cast<tioc_nacl_output*>(arg);
+      output_handler_ = *arg;
       return 0;
     }
     case TIOCNACLINPUT: {
       // This ioctl is used to deliver data from the user to this tty node's
       // input buffer.
       struct tioc_nacl_input_string* message =
-        reinterpret_cast<struct tioc_nacl_input_string*>(arg);
+        va_arg(args, struct tioc_nacl_input_string*);
       return ProcessInput(message);
     }
     case TIOCSWINSZ: {
-      struct winsize* size = reinterpret_cast<struct winsize*>(arg);
+      struct winsize* size = va_arg(args, struct winsize*);
       {
         AUTO_LOCK(node_lock_);
         rows_ = size->ws_row;
@@ -270,7 +271,7 @@ Error MountNodeTty::Ioctl(int request, char* arg) {
       return 0;
     }
     case TIOCGWINSZ: {
-      struct winsize* size = reinterpret_cast<struct winsize*>(arg);
+      struct winsize* size = va_arg(args, struct winsize*);
       size->ws_row = rows_;
       size->ws_col = cols_;
       return 0;

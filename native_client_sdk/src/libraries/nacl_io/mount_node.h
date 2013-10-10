@@ -5,6 +5,7 @@
 #ifndef LIBRARIES_NACL_IO_MOUNT_NODE_H_
 #define LIBRARIES_NACL_IO_MOUNT_NODE_H_
 
+#include <stdarg.h>
 #include <string>
 
 #include "nacl_io/error.h"
@@ -58,7 +59,8 @@ class MountNode : public sdk_util::RefObject {
   // Assume that |stat| is non-NULL.
   virtual Error GetStat(struct stat* stat);
   // Assume that |arg| is non-NULL.
-  virtual Error Ioctl(int request, char* arg);
+  Error Ioctl(int request, ...);
+  virtual Error VIoctl(int request, va_list args);
   // Assume that |buf| and |out_bytes| are non-NULL.
   virtual Error Read(const HandleAttr& attr,
                      void* buf,

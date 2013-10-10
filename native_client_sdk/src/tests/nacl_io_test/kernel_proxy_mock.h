@@ -28,14 +28,14 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD2(dup2, int(int, int));
   MOCK_METHOD2(fchmod, int(int, int));
   MOCK_METHOD3(fchown, int(int, uid_t, gid_t));
-  MOCK_METHOD3(fcntl, int(int, int, char*));
+  MOCK_METHOD3(fcntl, int(int, int, va_list));
   MOCK_METHOD2(ftruncate, int(int, off_t));
   MOCK_METHOD2(fstat, int(int, struct stat*));
   MOCK_METHOD1(fsync, int(int));
   MOCK_METHOD2(getcwd, char*(char*, size_t));
   MOCK_METHOD3(getdents, int(int, void*, unsigned int));
   MOCK_METHOD1(getwd, char*(char*));
-  MOCK_METHOD3(ioctl, int(int, int, char*));
+  MOCK_METHOD3(ioctl, int(int, int, va_list));
   MOCK_METHOD1(isatty, int(int));
   MOCK_METHOD2(kill, int(int, int));
   MOCK_METHOD3(lchown, int(const char*, uid_t, gid_t));

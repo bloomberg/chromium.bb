@@ -25,7 +25,7 @@ class MountNodeMock : public nacl_io::MountNode {
   MOCK_METHOD1(FTruncate, Error(off_t));
   MOCK_METHOD4(GetDents, Error(size_t, struct dirent*, size_t, int*));
   MOCK_METHOD1(GetStat, Error(struct stat*));
-  MOCK_METHOD2(Ioctl, Error(int, char*));
+  MOCK_METHOD2(Ioctl, Error(int, va_list));
   MOCK_METHOD4(Read, Error(const HandleAttr&, void*, size_t, int*));
   MOCK_METHOD4(Write, Error(const HandleAttr&, const void*, size_t, int*));
   MOCK_METHOD6(MMap, Error(void*, size_t, int, int, size_t, void**));

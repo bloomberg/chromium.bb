@@ -226,14 +226,14 @@ int ki_open_resource(const char* file) {
   ON_NOSYS_RETURN(-1);  return s_kp->open_resource(file);
 }
 
-int ki_fcntl(int d, int request, char* argp) {
+int ki_fcntl(int d, int request, va_list args) {
   ON_NOSYS_RETURN(-1);
-  return s_kp->fcntl(d, request, argp);
+  return s_kp->fcntl(d, request, args);
 }
 
-int ki_ioctl(int d, int request, char* argp) {
+int ki_ioctl(int d, int request, va_list args) {
   ON_NOSYS_RETURN(-1);
-  return s_kp->ioctl(d, request, argp);
+  return s_kp->ioctl(d, request, args);
 }
 
 int ki_chown(const char* path, uid_t owner, gid_t group) {

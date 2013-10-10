@@ -52,7 +52,8 @@ class KernelHandle : public sdk_util::RefObject {
   Error Read(void* buf, size_t nbytes, int* bytes_read);
   Error Write(const void* buf, size_t nbytes, int* bytes_written);
   Error GetDents(struct dirent* pdir, size_t count, int* bytes_written);
-  Error Fcntl(int request, char* arg, int* result);
+  Error Fcntl(int request, int* result, ...);
+  Error VFcntl(int request, int* result, va_list args);
 
   const ScopedMountNode& node() { return node_; }
   const ScopedMount& mount() { return mount_; }

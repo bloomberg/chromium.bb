@@ -10,7 +10,7 @@
 int fcntl(int fd, int cmd, ...) {
   va_list ap;
   va_start(ap, cmd);
-  char* arg = va_arg(ap, char*);
+  int rtn = ki_fcntl(fd, cmd, ap);
   va_end(ap);
-  return ki_fcntl(fd, cmd, arg);
+  return rtn;
 }

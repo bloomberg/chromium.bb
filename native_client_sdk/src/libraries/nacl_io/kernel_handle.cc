@@ -113,7 +113,15 @@ Error KernelHandle::GetDents(struct dirent* pdir, size_t nbytes, int* cnt) {
   return error;
 }
 
-Error KernelHandle::Fcntl(int request, char* arg, int* result) {
+Error KernelHandle::Fcntl(int request, int* result, ...) {
+  va_list ap;
+  va_start(ap, result);
+  Error rtn = VFcntl(request, result, ap);
+  va_end(ap);
+  return rtn;
+}
+
+Error KernelHandle::VFcntl(int request, int* result, va_list args) {
   switch (request) {
     case F_GETFL: {
       *result = handle_data_.flags;
@@ -121,7 +129,7 @@ Error KernelHandle::Fcntl(int request, char* arg, int* result) {
     }
     case F_SETFL: {
       AUTO_LOCK(handle_lock_);
-      int flags = reinterpret_cast<int>(arg);
+      int flags = va_arg(args, int);
       if (!(flags & O_APPEND) && (handle_data_.flags & O_APPEND)) {
         // Attempt to clear O_APPEND.
         return EPERM;

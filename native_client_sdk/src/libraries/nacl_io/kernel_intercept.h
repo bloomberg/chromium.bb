@@ -5,6 +5,8 @@
 #ifndef LIBRARIES_NACL_IO_KERNEL_INTERCEPT_H_
 #define LIBRARIES_NACL_IO_KERNEL_INTERCEPT_H_
 
+#include <stdarg.h>
+
 #include <ppapi/c/ppb.h>
 #include <ppapi/c/pp_instance.h>
 
@@ -64,8 +66,8 @@ void* ki_mmap(void* addr, size_t length, int prot, int flags, int fd,
               off_t offset);
 int ki_munmap(void* addr, size_t length);
 int ki_open_resource(const char* file);
-int ki_fcntl(int d, int request, char* argp);
-int ki_ioctl(int d, int request, char* argp);
+int ki_fcntl(int d, int request, va_list args);
+int ki_ioctl(int d, int request, va_list args);
 int ki_chown(const char* path, uid_t owner, gid_t group);
 int ki_fchown(int fd, uid_t owner, gid_t group);
 int ki_lchown(const char* path, uid_t owner, gid_t group);

@@ -177,7 +177,7 @@ TEST_F(KernelWrapTest, fchown) {
 
 TEST_F(KernelWrapTest, fcntl) {
   char buffer[] = "fcntl";
-  EXPECT_CALL(mock, fcntl(kDummyInt, kDummyInt2, buffer))
+  EXPECT_CALL(mock, fcntl(kDummyInt, kDummyInt2, _))
       .WillOnce(Return(kDummyInt3));
   EXPECT_EQ(kDummyInt3, fcntl(kDummyInt, kDummyInt2, buffer));
 }
@@ -244,7 +244,7 @@ TEST_F(KernelWrapTest, getwd) {
 
 TEST_F(KernelWrapTest, ioctl) {
   char buffer[] = "ioctl";
-  EXPECT_CALL(mock, ioctl(kDummyInt, kDummyInt2, buffer))
+  EXPECT_CALL(mock, ioctl(kDummyInt, kDummyInt2, _))
       .WillOnce(Return(kDummyInt3));
   EXPECT_EQ(kDummyInt3, ioctl(kDummyInt, kDummyInt2, buffer));
 }

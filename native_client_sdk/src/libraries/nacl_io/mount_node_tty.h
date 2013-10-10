@@ -23,8 +23,7 @@ class MountNodeTty : public MountNodeCharDevice {
 
   virtual EventEmitter* GetEventEmitter();
 
-  virtual Error Ioctl(int request,
-                      char* arg);
+  virtual Error VIoctl(int request, va_list args);
 
   virtual Error Read(const HandleAttr& attr,
                      void* buf,

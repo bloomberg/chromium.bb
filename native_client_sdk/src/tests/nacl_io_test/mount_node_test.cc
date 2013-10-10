@@ -161,7 +161,7 @@ TEST(MountNodeTest, FTruncate) {
   EXPECT_EQ(0, memcmp(buffer, data, 100));
 }
 
-TEST(MountTest, Fcntl) {
+TEST(MountNodeTest, Fcntl) {
   MockNode* node = new MockNode();
   ScopedMount mnt(new MockMount());
   ScopedMountNode file(node);
@@ -171,19 +171,19 @@ TEST(MountTest, Fcntl) {
   // Test F_GETFL
   ASSERT_EQ(0, node->Init(S_IREAD | S_IWRITE));
   int flags = 0;
-  ASSERT_EQ(0, handle.Fcntl(F_GETFL, NULL, &flags));
+  ASSERT_EQ(0, handle.Fcntl(F_GETFL, &flags));
   ASSERT_EQ(O_CREAT|O_APPEND, flags);
 
   // Test F_SETFL
   // Test adding of O_NONBLOCK
   flags = O_NONBLOCK|O_APPEND;
-  ASSERT_EQ(0, handle.Fcntl(F_SETFL, reinterpret_cast<char*>(flags), NULL));
-  ASSERT_EQ(0, handle.Fcntl(F_GETFL, NULL, &flags));
+  ASSERT_EQ(0, handle.Fcntl(F_SETFL, NULL, flags));
+  ASSERT_EQ(0, handle.Fcntl(F_GETFL, &flags));
   ASSERT_EQ(O_CREAT|O_APPEND|O_NONBLOCK, flags);
 
   // Clearing of O_APPEND should generate EPERM;
   flags = O_NONBLOCK;
-  ASSERT_EQ(EPERM, handle.Fcntl(F_SETFL, reinterpret_cast<char*>(flags), NULL));
+  ASSERT_EQ(EPERM, handle.Fcntl(F_SETFL, NULL, flags));
 }
 
 TEST(MountNodeTest, Directory) {

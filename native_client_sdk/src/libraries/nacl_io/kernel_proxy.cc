@@ -538,7 +538,7 @@ int KernelProxy::isatty(int fd) {
   return 0;
 }
 
-int KernelProxy::ioctl(int fd, int request, char* argp) {
+int KernelProxy::ioctl(int fd, int request, va_list args) {
   ScopedKernelHandle handle;
   Error error = AcquireHandle(fd, &handle);
   if (error) {
@@ -546,7 +546,7 @@ int KernelProxy::ioctl(int fd, int request, char* argp) {
     return -1;
   }
 
-  error = handle->node()->Ioctl(request, argp);
+  error = handle->node()->VIoctl(request, args);
   if (error) {
     errno = error;
     return -1;
@@ -623,7 +623,7 @@ int KernelProxy::fchmod(int fd, int mode) {
   return 0;
 }
 
-int KernelProxy::fcntl(int fd, int request, char *argp) {
+int KernelProxy::fcntl(int fd, int request, va_list args) {
   ScopedKernelHandle handle;
   Error error = AcquireHandle(fd, &handle);
   if (error) {
@@ -632,7 +632,7 @@ int KernelProxy::fcntl(int fd, int request, char *argp) {
   }
 
   int rtn = 0;
-  error = handle->Fcntl(request, argp, &rtn);
+  error = handle->VFcntl(request, &rtn, args);
   if (error) {
     errno = error;
     return -1;

@@ -77,7 +77,15 @@ Error MountNode::GetStat(struct stat* pstat) {
   return 0;
 }
 
-Error MountNode::Ioctl(int request, char* arg) { return EINVAL; }
+Error MountNode::Ioctl(int request, ...) {
+  va_list ap;
+  va_start(ap, request);
+  Error rtn = VIoctl(request, ap);
+  va_end(ap);
+  return rtn;
+}
+
+Error MountNode::VIoctl(int request, va_list args) { return EINVAL; }
 
 Error MountNode::Read(const HandleAttr& attr,
                       void* buf,
