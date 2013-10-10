@@ -185,6 +185,8 @@ void PrintingMessageFilter::OnAllocateTempFileForPrinting(
 #elif defined(OS_ANDROID)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
+  if (!wc)
+    return;
   printing::PrintViewManagerBasic* print_view_manager =
       printing::PrintViewManagerBasic::FromWebContents(wc);
   // The file descriptor is originally created in & passed from the Android
@@ -217,6 +219,8 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_view_id,
 #elif defined(OS_ANDROID)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
+  if (!wc)
+    return;
   printing::PrintViewManagerBasic* print_view_manager =
       printing::PrintViewManagerBasic::FromWebContents(wc);
   const base::FileDescriptor& file_descriptor =
@@ -233,6 +237,8 @@ void PrintingMessageFilter::CreatePrintDialogForFile(
     int render_view_id,
     const base::FilePath& path) {
   content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
+  if (!wc)
+    return;
   print_dialog_cloud::CreatePrintDialogForFile(
       wc->GetBrowserContext(),
       wc->GetView()->GetTopLevelNativeWindow(),
@@ -249,7 +255,7 @@ content::WebContents* PrintingMessageFilter::GetWebContentsForRenderView(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::RenderViewHost* view = content::RenderViewHost::FromID(
       render_process_id_, render_view_id);
-  return content::WebContents::FromRenderViewHost(view);
+  return view ? content::WebContents::FromRenderViewHost(view) : NULL;
 }
 
 struct PrintingMessageFilter::GetPrintSettingsForRenderViewParams {
@@ -266,13 +272,28 @@ void PrintingMessageFilter::GetPrintSettingsForRenderView(
     scoped_refptr<printing::PrinterQuery> printer_query) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
+  if (wc) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&printing::PrinterQuery::GetSettings, printer_query,
+                   params.ask_user_for_settings, wc->GetView()->GetNativeView(),
+                   params.expected_page_count, params.has_selection,
+                   params.margin_type, callback));
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PrintingMessageFilter::OnGetPrintSettingsFailed, this,
+                   callback, printer_query));
+  }
+}
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&printing::PrinterQuery::GetSettings, printer_query,
-                 params.ask_user_for_settings, wc->GetView()->GetNativeView(),
-                 params.expected_page_count, params.has_selection,
-                 params.margin_type, callback));
+void PrintingMessageFilter::OnGetPrintSettingsFailed(
+    const base::Closure& callback,
+    scoped_refptr<printing::PrinterQuery> printer_query) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  printer_query->GetSettingsDone(printing::PrintSettings(),
+                                 printing::PrintingContext::FAILED);
+  callback.Run();
 }
 
 void PrintingMessageFilter::OnIsPrintingEnabled(bool* is_enabled) {
@@ -395,6 +416,8 @@ void PrintingMessageFilter::OnScriptedPrintReply(
 void PrintingMessageFilter::UpdateFileDescriptor(int render_view_id, int fd) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
+  if (!wc)
+    return;
   printing::PrintViewManagerBasic* print_view_manager =
       printing::PrintViewManagerBasic::FromWebContents(wc);
   print_view_manager->set_file_descriptor(base::FileDescriptor(fd, false));
