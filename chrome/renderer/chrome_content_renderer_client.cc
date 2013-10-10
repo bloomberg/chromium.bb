@@ -581,77 +581,66 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed: {
-        const char* kPnaclMimeType = "application/x-pnacl";
-        if (actual_mime_type == kPnaclMimeType) {
-          if (CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kDisablePnacl)) {
+        const bool is_nacl_plugin =
+            plugin.name ==
+            ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName);
+        const bool is_nacl_mime_type =
+            actual_mime_type == "application/x-nacl";
+        const bool is_pnacl_mime_type =
+            actual_mime_type == "application/x-pnacl";
+        if (is_nacl_plugin || is_nacl_mime_type || is_pnacl_mime_type) {
+          bool is_nacl_unrestricted = false;
+          if (is_nacl_mime_type) {
+            is_nacl_unrestricted =
+                CommandLine::ForCurrentProcess()->HasSwitch(
+                    switches::kEnableNaCl);
+          } else if (is_pnacl_mime_type) {
+            is_nacl_unrestricted =
+                !CommandLine::ForCurrentProcess()->HasSwitch(
+                    switches::kDisablePnacl);
+          }
+          GURL manifest_url;
+          GURL app_url;
+          if (is_nacl_mime_type || is_pnacl_mime_type) {
+            // Normal NaCl/PNaCl embed. The app URL is the page URL.
+            manifest_url = url;
+            app_url = frame->top()->document().url();
+          } else {
+            // NaCl is being invoked as a content handler. Look up the NaCl
+            // module using the MIME type. The app URL is the manifest URL.
+            manifest_url = GetNaClContentHandlerURL(actual_mime_type, plugin);
+            app_url = manifest_url;
+          }
+          const Extension* extension =
+              g_current_client->extension_dispatcher_->extensions()->
+                  GetExtensionOrAppByURL(manifest_url);
+          if (!IsNaClAllowed(manifest_url,
+                             app_url,
+                             is_nacl_unrestricted,
+                             extension,
+                             &params)) {
+            WebString error_message;
+            if (is_nacl_mime_type) {
+              error_message =
+                  "Only unpacked extensions and apps installed from the Chrome "
+                  "Web Store can load NaCl modules without enabling Native "
+                  "Client in about:flags.";
+            } else if (is_pnacl_mime_type) {
+              error_message =
+                  "Portable Native Client must not be disabled in about:flags.";
+            }
             frame->addMessageToConsole(
-                WebConsoleMessage(
-                    WebConsoleMessage::LevelError,
-                    "Portable Native Client must not be disabled in"
-                    " about:flags."));
+                WebConsoleMessage(WebConsoleMessage::LevelError,
+                                  error_message));
             placeholder = PluginPlaceholder::CreateBlockedPlugin(
                 render_view, frame, params, plugin, identifier, group_name,
                 IDR_BLOCKED_PLUGIN_HTML,
-#if defined(OS_CHROMEOS)
+  #if defined(OS_CHROMEOS)
                 l10n_util::GetStringUTF16(IDS_NACL_PLUGIN_BLOCKED));
-#else
+  #else
                 l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
-#endif
-              break;
-          }
-        } else {
-          const char* kNaClMimeType = "application/x-nacl";
-          const bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
-          const bool is_nacl_plugin =
-              plugin.name ==
-              ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName);
-          bool is_nacl_unrestricted;
-          if (is_nacl_plugin) {
-            is_nacl_unrestricted = CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableNaCl);
-          } else {
-            // If this is an external plugin that handles the NaCl mime type, we
-            // allow Native Client, so Native Client's integration tests work.
-            is_nacl_unrestricted = true;
-          }
-          if (is_nacl_plugin || is_nacl_mime_type) {
-            GURL manifest_url;
-            GURL app_url;
-            if (is_nacl_mime_type) {
-              // Normal NaCl embed. The app URL is the page URL.
-              manifest_url = url;
-              app_url = frame->top()->document().url();
-            } else {
-              // NaCl is being invoked as a content handler. Look up the NaCl
-              // module using the MIME type. The app URL is the manifest URL.
-              manifest_url = GetNaClContentHandlerURL(actual_mime_type, plugin);
-              app_url = manifest_url;
-            }
-            const Extension* extension =
-                g_current_client->extension_dispatcher_->extensions()->
-                    GetExtensionOrAppByURL(manifest_url);
-            if (!IsNaClAllowed(manifest_url,
-                               app_url,
-                               is_nacl_unrestricted,
-                               extension,
-                               &params)) {
-              frame->addMessageToConsole(
-                  WebConsoleMessage(
-                      WebConsoleMessage::LevelError,
-                      "Only unpacked extensions and apps installed from the "
-                      "Chrome Web Store can load NaCl modules without enabling "
-                      "Native Client in about:flags."));
-              placeholder = PluginPlaceholder::CreateBlockedPlugin(
-                  render_view, frame, params, plugin, identifier, group_name,
-                  IDR_BLOCKED_PLUGIN_HTML,
-#if defined(OS_CHROMEOS)
-                  l10n_util::GetStringUTF16(IDS_NACL_PLUGIN_BLOCKED));
-#else
-                  l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
-#endif
-              break;
-            }
+  #endif
+            break;
           }
         }
 
@@ -798,8 +787,8 @@ bool ChromeContentRendererClient::IsNaClAllowed(
        manifest_url.DomainIs("ssl.gstatic.com") &&
        manifest_url_path.find("chat/apps/fx") == 1));
 
-  bool is_extension_from_webstore =
-      extension && extension->from_webstore();
+  bool is_extension_from_webstore = extension &&
+      extension->from_webstore();
 
   bool is_invoked_by_hosted_app = extension &&
       extension->is_hosted_app() &&

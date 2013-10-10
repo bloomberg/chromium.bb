@@ -193,6 +193,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const content::WebPluginInfo& plugin);
+
+  // Determines if a NaCl app is allowed, and modifies params to pass the app's
+  // permissions to the trusted NaCl plugin.
   static bool IsNaClAllowed(const GURL& manifest_url,
                             const GURL& app_url,
                             bool is_nacl_unrestricted,
