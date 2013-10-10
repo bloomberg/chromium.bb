@@ -126,7 +126,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
       video_config.max_frame_rate / 1000;
   DCHECK(max_unacked_frames) << "Invalid argument";
 
-  framer_.reset(new Framer(cast_environment_->Clock(),
+  framer_.reset(new Framer(cast_environment->Clock(),
                            incoming_payload_feedback_.get(),
                            video_config.incoming_ssrc,
                            video_config.decoder_faster_than_max_frame_rate,
@@ -206,10 +206,8 @@ void VideoReceiver::GetEncodedVideoFrame(
   scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
-  // TODO(pwestin): we can deprecate the timeout argument.
-  if (!framer_->GetEncodedVideoFrame(now, encoded_frame.get(), &rtp_timestamp,
+  if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &rtp_timestamp,
                                      &next_frame)) {
     // We have no video frames. Wait for new packet(s).
     queued_encoded_callbacks_.push_back(callback);
@@ -277,11 +275,9 @@ void VideoReceiver::PlayoutTimeout() {
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
-  // TODO(pwestin): we can deprecate the timeout argument.
-  if (!framer_->GetEncodedVideoFrame(now, encoded_frame.get(),
-                                     &rtp_timestamp, &next_frame)) {
+  if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &rtp_timestamp,
+                                     &next_frame)) {
     // We have no video frames. Wait for new packet(s).
     // A timer should not be set unless we have a video frame; and if that frame
     // was pulled early the callback should have been removed.
@@ -360,15 +356,16 @@ void VideoReceiver::IncomingPacket(const uint8* packet, int length,
 void VideoReceiver::IncomingRtpPacket(const uint8* payload_data,
                                       int payload_size,
                                       const RtpCastHeader& rtp_header) {
-  // TODO(pwestin): only release if we have a complete frame
-  framer_->InsertPacket(payload_data, payload_size, rtp_header);
-  if (!queued_encoded_callbacks_.empty()) {
-    VideoFrameEncodedCallback callback = queued_encoded_callbacks_.front();
-    queued_encoded_callbacks_.pop_front();
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&VideoReceiver::GetEncodedVideoFrame,
-            weak_factory_.GetWeakPtr(), callback));
-  }
+  bool complete = framer_->InsertPacket(payload_data, payload_size, rtp_header);
+
+  if (!complete) return;  // Video frame not complete; wait for more packets.
+  if (queued_encoded_callbacks_.empty()) return;  // No pending callback.
+
+  VideoFrameEncodedCallback callback = queued_encoded_callbacks_.front();
+  queued_encoded_callbacks_.pop_front();
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(&VideoReceiver::GetEncodedVideoFrame,
+          weak_factory_.GetWeakPtr(), callback));
 }
 
 // Send a cast feedback message. Actual message created in the framer (cast

@@ -16,8 +16,7 @@ Framer::Framer(base::TickClock* clock,
                uint32 ssrc,
                bool decoder_faster_than_max_frame_rate,
                int max_unacked_frames)
-    : clock_(clock),
-      decoder_faster_than_max_frame_rate_(decoder_faster_than_max_frame_rate),
+    : decoder_faster_than_max_frame_rate_(decoder_faster_than_max_frame_rate),
       cast_msg_builder_(new CastMessageBuilder(clock, incoming_payload_feedback,
           &frame_id_map_, ssrc, decoder_faster_than_max_frame_rate,
           max_unacked_frames)) {
@@ -26,11 +25,11 @@ Framer::Framer(base::TickClock* clock,
 
 Framer::~Framer() {}
 
-void Framer::InsertPacket(const uint8* payload_data,
+bool Framer::InsertPacket(const uint8* payload_data,
                           size_t payload_size,
                           const RtpCastHeader& rtp_header) {
   bool complete = false;
-  if (!frame_id_map_.InsertPacket(rtp_header, &complete)) return;
+  if (!frame_id_map_.InsertPacket(rtp_header, &complete)) return false;
 
   // Does this packet belong to a new frame?
   FrameList::iterator it = frames_.find(rtp_header.frame_id);
@@ -49,11 +48,11 @@ void Framer::InsertPacket(const uint8* payload_data,
     cast_msg_builder_->CompleteFrameReceived(rtp_header.frame_id,
                                              rtp_header.is_key_frame);
   }
+  return complete;
 }
 
 // This does not release the frame.
-bool Framer::GetEncodedAudioFrame(const base::TimeTicks& timeout,
-                                  EncodedAudioFrame* audio_frame,
+bool Framer::GetEncodedAudioFrame(EncodedAudioFrame* audio_frame,
                                   uint32* rtp_timestamp,
                                   bool* next_frame) {
   uint8 frame_id;
@@ -62,8 +61,6 @@ bool Framer::GetEncodedAudioFrame(const base::TimeTicks& timeout,
     // We have our next frame.
     *next_frame = true;
   } else {
-    if (WaitForNextFrame(timeout)) return false;
-
     if (!frame_id_map_.NextAudioFrameAllowingMissingFrames(&frame_id)) {
       return false;
     }
@@ -78,8 +75,7 @@ bool Framer::GetEncodedAudioFrame(const base::TimeTicks& timeout,
 }
 
 // This does not release the frame.
-bool Framer::GetEncodedVideoFrame(const base::TimeTicks& timeout,
-                                  EncodedVideoFrame* video_frame,
+bool Framer::GetEncodedVideoFrame(EncodedVideoFrame* video_frame,
                                   uint32* rtp_timestamp,
                                   bool* next_frame) {
   uint8 frame_id;
@@ -88,8 +84,6 @@ bool Framer::GetEncodedVideoFrame(const base::TimeTicks& timeout,
     // We have our next frame.
     *next_frame = true;
   } else {
-    if (WaitForNextFrame(timeout)) return false;
-
     // Check if we can skip frames when our decoder is too slow.
     if (!decoder_faster_than_max_frame_rate_) return false;
 
@@ -104,14 +98,6 @@ bool Framer::GetEncodedVideoFrame(const base::TimeTicks& timeout,
   if (it == frames_.end())  return false;
 
   return it->second->GetEncodedVideoFrame(video_frame, rtp_timestamp);
-}
-
-bool Framer::WaitForNextFrame(const base::TimeTicks& timeout) const {
-  base::TimeDelta wait_time = timeout - clock_->NowTicks();
-  if (wait_time.InMilliseconds() > 0)
-    return true;
-
-  return false;
 }
 
 void Framer::Reset() {

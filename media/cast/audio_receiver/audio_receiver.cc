@@ -150,19 +150,18 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
                                             rtp_header);
     return;
   }
-  if (audio_buffer_) {
-    DCHECK(!audio_decoder_) << "Invalid internal state";
-    audio_buffer_->InsertPacket(payload_data, payload_size, rtp_header);
-    if (queued_encoded_callbacks_.empty()) {
-      // No pending callback.
-      return;
-    }
-    AudioFrameEncodedCallback callback = queued_encoded_callbacks_.front();
-    queued_encoded_callbacks_.pop_front();
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&AudioReceiver::GetEncodedAudioFrame,
-            weak_factory_.GetWeakPtr(), callback));
-  }
+  DCHECK(audio_buffer_) << "Invalid internal state";
+  DCHECK(!audio_decoder_) << "Invalid internal state";
+  bool complete = audio_buffer_->InsertPacket(payload_data, payload_size,
+                                              rtp_header);
+  if (!complete) return;  // Audio frame not complete; wait for more packets.
+  if (queued_encoded_callbacks_.empty()) return;  // No pending callback.
+
+  AudioFrameEncodedCallback callback = queued_encoded_callbacks_.front();
+  queued_encoded_callbacks_.pop_front();
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(&AudioReceiver::GetEncodedAudioFrame,
+          weak_factory_.GetWeakPtr(), callback));
 }
 
 void AudioReceiver::GetRawAudioFrame(int number_of_10ms_blocks,
@@ -213,9 +212,8 @@ void AudioReceiver::PlayoutTimeout() {
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<EncodedAudioFrame> encoded_frame(new EncodedAudioFrame());
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
-  if (!audio_buffer_->GetEncodedAudioFrame(now, encoded_frame.get(),
+  if (!audio_buffer_->GetEncodedAudioFrame(encoded_frame.get(),
                                            &rtp_timestamp, &next_frame)) {
     // We have no audio frames. Wait for new packet(s).
     DCHECK(false);
@@ -234,9 +232,8 @@ void AudioReceiver::GetEncodedAudioFrame(
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
   scoped_ptr<EncodedAudioFrame> encoded_frame(new EncodedAudioFrame());
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
-  if (!audio_buffer_->GetEncodedAudioFrame(now, encoded_frame.get(),
+  if (!audio_buffer_->GetEncodedAudioFrame(encoded_frame.get(),
                                            &rtp_timestamp, &next_frame)) {
     // We have no audio frames. Wait for new packet(s).
     VLOG(1) << "Wait for more audio packets in frame";

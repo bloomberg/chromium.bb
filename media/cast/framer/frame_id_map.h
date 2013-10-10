@@ -25,7 +25,7 @@ class FrameInfo {
             bool key_frame);
   ~FrameInfo();
 
-  // Returns true if frame is complete after the insert.
+  // Returns true if packet is inserted.
   bool InsertPacket(uint16 packet_id);
   bool Complete() const;
   void GetMissingPackets(bool newest_frame,

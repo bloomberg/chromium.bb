@@ -32,7 +32,9 @@ class Framer {
          int max_unacked_frames);
   ~Framer();
 
-  void InsertPacket(const uint8* payload_data,
+  // Return true when receiving the last packet in a frame, creating a
+  // complete frame.
+  bool InsertPacket(const uint8* payload_data,
                     size_t payload_size,
                     const RtpCastHeader& rtp_header);
 
@@ -40,13 +42,11 @@ class Framer {
   // frame.
   // Returns false if the frame does not exist or if the frame is not complete
   // within the given time frame.
-  bool GetEncodedVideoFrame(const base::TimeTicks& timeout,
-                            EncodedVideoFrame* video_frame,
+  bool GetEncodedVideoFrame(EncodedVideoFrame* video_frame,
                             uint32* rtp_timestamp,
                             bool* next_frame);
 
-  bool GetEncodedAudioFrame(const base::TimeTicks& timeout,
-                            EncodedAudioFrame* audio_frame,
+  bool GetEncodedAudioFrame(EncodedAudioFrame* audio_frame,
                             uint32* rtp_timestamp,
                             bool* next_frame);
 
@@ -58,10 +58,6 @@ class Framer {
   void SendCastMessage();
 
  private:
-  // Return true if we should wait.
-  bool WaitForNextFrame(const base::TimeTicks& timeout) const;
-
-  base::TickClock* const clock_;  // Not owned by this class.
   const bool decoder_faster_than_max_frame_rate_;
   FrameList frames_;
   FrameIdMap frame_id_map_;
