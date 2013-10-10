@@ -46,7 +46,6 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
-#include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -594,6 +593,13 @@ AutofillDialogViews::AccountChooser::AccountChooser(
 
   menu_button_->set_background(NULL);
   menu_button_->set_border(NULL);
+  gfx::Insets insets = GetInsets();
+  menu_button_->set_focus_border(
+      views::FocusBorder::CreateDashedFocusBorder(insets.left(),
+                                                  insets.top(),
+                                                  insets.right(),
+                                                  insets.bottom()));
+  menu_button_->set_focusable(true);
   AddChildView(menu_button_);
 
   link_->set_listener(this);
@@ -1038,10 +1044,20 @@ bool AutofillDialogViews::SectionContainer::ShouldForwardEvent(
 AutofillDialogViews::SuggestedButton::SuggestedButton(
     views::MenuButtonListener* listener)
     : views::MenuButton(NULL, base::string16(), listener, false) {
+  const int kFocusBorderWidth = 1;
   set_border(views::Border::CreateEmptyBorder(kMenuButtonTopInset,
                                               kDialogEdgePadding,
                                               kMenuButtonBottomInset,
-                                              0));
+                                              kFocusBorderWidth));
+  gfx::Insets insets = GetInsets();
+  insets += gfx::Insets(-kFocusBorderWidth, -kFocusBorderWidth,
+                        -kFocusBorderWidth, -kFocusBorderWidth);
+  set_focus_border(
+      views::FocusBorder::CreateDashedFocusBorder(insets.left(),
+                                                  insets.top(),
+                                                  insets.right(),
+                                                  insets.bottom()));
+  set_focusable(true);
 }
 
 AutofillDialogViews::SuggestedButton::~SuggestedButton() {}
@@ -1065,6 +1081,7 @@ void AutofillDialogViews::SuggestedButton::OnPaint(gfx::Canvas* canvas) {
   const gfx::Insets insets = GetInsets();
   canvas->DrawImageInt(*rb.GetImageSkiaNamed(ResourceIDForState()),
                        insets.left(), insets.top());
+  views::View::OnPaintFocusBorder(canvas);
 }
 
 int AutofillDialogViews::SuggestedButton::ResourceIDForState() const {
