@@ -224,7 +224,7 @@ camera.views.Camera = function(context) {
       'click', this.takePicture_.bind(this));
 
   // Load the shutter sound.
-  this.shutterSound_.src = '../sounds/shutter.wav';
+  this.shutterSound_.src = '../sounds/shutter.ogg';
 
   // Start the camera capture.
   // TODO(mtomasz): Consider moving to enter() for a lighter constructor.
