@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/public/system/core.h"
+#include "mojo/public/system/system_export.h"
 
 namespace mojo {
 namespace system {
@@ -22,7 +23,7 @@ class Waiter;
 // object (see simple_dispatcher.* and the explanatory comment in core_impl.cc).
 // This class is thread-unsafe (all concurrent access must be protected by some
 // lock).
-class WaiterList {
+class MOJO_SYSTEM_EXPORT WaiterList {
  public:
   WaiterList();
   ~WaiterList();

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core.h"
+#include "mojo/public/system/system_export.h"
 #include "mojo/system/waiter_list.h"
 
 namespace mojo {
@@ -23,7 +24,8 @@ class Waiter;
 // |MessagePipe| is the secondary object implementing a message pipe (see the
 // explanatory comment in core_impl.cc), and is jointly owned by the two
 // dispatchers passed in to the constructor. This class is thread-safe.
-class MessagePipe : public base::RefCountedThreadSafe<MessagePipe> {
+class MOJO_SYSTEM_EXPORT MessagePipe :
+    public base::RefCountedThreadSafe<MessagePipe> {
  public:
   MessagePipe();
 

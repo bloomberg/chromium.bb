@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include "mojo/public/system/system_export.h"
+
 namespace mojo {
 namespace system {
 
@@ -14,7 +16,8 @@ namespace system {
 // instantiations in the .cc file. This is used by |VerifyUserPointer<T>()|
 // below, and you should use that instead.
 template <size_t size>
-bool VerifyUserPointerForSize(const void* pointer, size_t count);
+bool MOJO_SYSTEM_EXPORT VerifyUserPointerForSize(const void* pointer,
+                                                 size_t count);
 
 // Verify that |count * sizeof(T)| bytes can be read from the user |pointer|
 // insofar as possible/necessary (note: this is done carefully since |count *
