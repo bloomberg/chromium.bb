@@ -79,13 +79,13 @@
 
 #ipconfig-section {
   border-top: 1px solid #eee;
-  margin-bottom: 10px;
-  padding-top: 10px;
+  margin-bottom: 8px;
+  padding-top: 8px;
 }
 
 #ipconfig-dns-section {
   border-top: 1px solid #eee;
-  padding-top: 10px;
+  padding-top: 8px;
 }
 
 #user-dns-settings:not([selected]) {
