@@ -11,6 +11,9 @@ cr.define('options', function() {
   // True if the synced account uses 'encrypt everything'.
   var useEncryptEverything_ = false;
 
+  // Keeps track of whether the settings page is about to be closed.
+  var isPageClosing_ = false;
+
   // An object used as a cache of the arguments passed in while initially
   // displaying the advanced sync settings dialog. Used to switch between the
   // options in the main drop-down menu. Reset when the dialog is closed.
@@ -96,8 +99,13 @@ cr.define('options', function() {
       $('confirm-sync-preferences').hidden = true;
       $('customize-sync-preferences').hidden = true;
 
+      // OptionsPage.closeOverlay() has the side effect of navigating to the
+      // main settings page after closing the visible overlay. If the settings
+      // page is in the process of being closed, say due to a user-initiated
+      // navigation, do not call OptionsPage.closeOverlay(), or it will override
+      // the user-initiated navigation. See crbug.com/278030.
       var overlay = $('sync-setup-overlay');
-      if (!overlay.hidden)
+      if (!this.isPageClosing_ && !overlay.hidden)
         OptionsPage.closeOverlay();
     },
 
@@ -109,6 +117,7 @@ cr.define('options', function() {
     /** @override */
     didClosePage: function() {
       chrome.send('SyncSetupDidClosePage');
+      this.isPageClosing_ = true;
     },
 
     onEncryptionRadioChanged_: function() {
