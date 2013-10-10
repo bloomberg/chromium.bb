@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "grit/generated_resources.h"
 #include "third_party/icu/source/common/unicode/ures.h"
 #include "third_party/icu/source/common/unicode/utypes.h"

@@ -1,13 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_PROVIDER_H_
+#ifndef CHROMEOS_SETTINGS_CROS_SETTINGS_PROVIDER_H_
+#define CHROMEOS_SETTINGS_CROS_SETTINGS_PROVIDER_H_
 
 #include <string>
 
 #include "base/callback.h"
+#include "chromeos/chromeos_export.h"
 
 namespace base {
 class Value;
@@ -15,7 +16,7 @@ class Value;
 
 namespace chromeos {
 
-class CrosSettingsProvider {
+class CHROMEOS_EXPORT CrosSettingsProvider {
  public:
   // The callback type that is called to notify the CrosSettings observers
   // about a setting change.
@@ -75,4 +76,4 @@ class CrosSettingsProvider {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_PROVIDER_H_
+#endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_PROVIDER_H_

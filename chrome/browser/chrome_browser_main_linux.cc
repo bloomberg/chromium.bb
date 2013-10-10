@@ -18,9 +18,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/settings/cros_settings_names.h"
 #else
 #include "chrome/browser/storage_monitor/storage_monitor_linux.h"
 #include "chrome/browser/sxs_linux.h"

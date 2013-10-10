@@ -1,20 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_TIMEZONE_SETTINGS_H_
-#define CHROME_BROWSER_CHROMEOS_SYSTEM_TIMEZONE_SETTINGS_H_
+#ifndef CHROMEOS_SETTINGS_TIMEZONE_SETTINGS_H_
+#define CHROMEOS_SETTINGS_TIMEZONE_SETTINGS_H_
 
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chromeos/settings/cros_settings_provider.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace chromeos {
 namespace system {
 
 // This interface provides access to Chrome OS timezone settings.
-class TimezoneSettings {
+class CHROMEOS_EXPORT TimezoneSettings {
  public:
   class Observer {
    public:
@@ -49,4 +50,4 @@ class TimezoneSettings {
 }  // namespace system
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_TIMEZONE_SETTINGS_H_
+#endif  // CHROMEOS_SETTINGS_TIMEZONE_SETTINGS_H_

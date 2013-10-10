@@ -1,14 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chromeos/settings/timezone_settings.h"
 
 #include <string>
 
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -17,14 +18,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/render_widget_host_iterator.h"
+#include "base/task_runner.h"
+#include "base/threading/worker_pool.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -253,10 +249,6 @@ class TimezoneSettingsBaseImpl : public chromeos::system::TimezoneSettings {
   const icu::TimeZone* GetKnownTimezoneOrNull(
       const icu::TimeZone& timezone) const;
 
-  // Notifies each renderer of the change in timezone to reset cached
-  // information stored in v8 to accelerate date operations.
-  void NotifyRenderers();
-
   ObserverList<Observer> observers_;
   std::vector<icu::TimeZone*> timezones_;
   scoped_ptr<icu::TimeZone> timezone_;
@@ -313,7 +305,6 @@ void TimezoneSettingsBaseImpl::SetTimezoneFromID(const string16& timezone_id) {
   scoped_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone(
       icu::UnicodeString(timezone_id.c_str(), timezone_id.size())));
   SetTimezone(*timezone);
-  NotifyRenderers();
 }
 
 void TimezoneSettingsBaseImpl::AddObserver(Observer* observer) {
@@ -352,17 +343,6 @@ const icu::TimeZone* TimezoneSettingsBaseImpl::GetKnownTimezoneOrNull(
   return known_timezone;
 }
 
-void TimezoneSettingsBaseImpl::NotifyRenderers() {
-  scoped_ptr<content::RenderWidgetHostIterator> widgets(
-      content::RenderWidgetHost::GetRenderWidgetHosts());
-  while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
-    if (widget->IsRenderView()) {
-      content::RenderViewHost* view = content::RenderViewHost::From(widget);
-      view->NotifyTimezoneChange();
-    }
-  }
-}
-
 void TimezoneSettingsImpl::SetTimezone(const icu::TimeZone& timezone) {
   // Replace |timezone| by a known timezone with the same rules. If none exists
   // go on with |timezone|.
@@ -375,8 +355,8 @@ void TimezoneSettingsImpl::SetTimezone(const icu::TimeZone& timezone) {
   VLOG(1) << "Setting timezone to " << id;
   // It's safe to change the timezone config files in the background as the
   // following operations don't depend on the completion of the config change.
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
-                                      base::Bind(&SetTimezoneIDFromString, id));
+  base::WorkerPool::GetTaskRunner(true /* task is slow */)->
+      PostTask(FROM_HERE, base::Bind(&SetTimezoneIDFromString, id));
   icu::TimeZone::setDefault(*known_timezone);
   FOR_EACH_OBSERVER(Observer, observers_, TimezoneChanged(*known_timezone));
 }

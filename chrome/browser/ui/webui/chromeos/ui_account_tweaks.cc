@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 namespace chromeos {

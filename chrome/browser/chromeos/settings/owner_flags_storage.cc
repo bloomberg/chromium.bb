@@ -10,8 +10,8 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/settings/cros_settings_names.h"
 
 namespace chromeos {
 namespace about_flags {
