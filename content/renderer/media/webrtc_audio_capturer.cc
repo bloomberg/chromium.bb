@@ -184,8 +184,6 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
     return false;
   }
 
-  Reconfigure(sample_rate, channel_layout);
-
   // Create and configure the default audio capturing source. The |source_|
   // will be overwritten if an external client later calls SetCapturerSource()
   // providing an alternative media::AudioCapturerSource.
