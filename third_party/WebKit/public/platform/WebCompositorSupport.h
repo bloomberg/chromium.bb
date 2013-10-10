@@ -76,6 +76,7 @@ public:
 
     virtual WebSolidColorLayer* createSolidColorLayer() { return 0; }
 
+    // The ownership of the WebScrollbarThemeGeometry pointer is passed to Chromium.
     virtual WebScrollbarLayer* createScrollbarLayer(WebScrollbar*, WebScrollbarThemePainter, WebScrollbarThemeGeometry*) { return 0; }
 
     virtual WebScrollbarLayer* createSolidColorScrollbarLayer(WebScrollbar::Orientation, int thumbThickness, bool isLeftSideVerticalScrollbar) { return 0; }
