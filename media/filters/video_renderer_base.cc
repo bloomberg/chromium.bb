@@ -40,7 +40,9 @@ VideoRendererBase::VideoRendererBase(
       playback_rate_(0),
       paint_cb_(paint_cb),
       set_opaque_cb_(set_opaque_cb),
-      last_timestamp_(kNoTimestamp()) {
+      last_timestamp_(kNoTimestamp()),
+      frames_decoded_(0),
+      frames_dropped_(0) {
   DCHECK(!paint_cb_.is_null());
 }
 
@@ -238,7 +240,7 @@ void VideoRendererBase::ThreadMain() {
 
     // Remain idle as long as we're not playing.
     if (state_ != kPlaying || playback_rate_ == 0) {
-      frame_available_.TimedWait(kIdleTimeDelta);
+      UpdateStatsAndWait_Locked(kIdleTimeDelta);
       continue;
     }
 
@@ -252,7 +254,7 @@ void VideoRendererBase::ThreadMain() {
         continue;
       }
 
-      frame_available_.TimedWait(kIdleTimeDelta);
+      UpdateStatsAndWait_Locked(kIdleTimeDelta);
       continue;
     }
 
@@ -263,7 +265,7 @@ void VideoRendererBase::ThreadMain() {
     // render the next frame.
     if (remaining_time.InMicroseconds() > 0) {
       remaining_time = std::min(remaining_time, kIdleTimeDelta);
-      frame_available_.TimedWait(remaining_time);
+      UpdateStatsAndWait_Locked(remaining_time);
       continue;
     }
 
@@ -302,6 +304,7 @@ void VideoRendererBase::PaintNextReadyFrame_Locked() {
 
   scoped_refptr<VideoFrame> next_frame = ready_frames_.front();
   ready_frames_.pop_front();
+  frames_decoded_++;
 
   last_timestamp_ = next_frame->GetTimestamp();
 
@@ -322,10 +325,8 @@ void VideoRendererBase::DropNextReadyFrame_Locked() {
 
   last_timestamp_ = ready_frames_.front()->GetTimestamp();
   ready_frames_.pop_front();
-
-  PipelineStatistics statistics;
-  statistics.video_frames_dropped = 1;
-  statistics_cb_.Run(statistics);
+  frames_decoded_++;
+  frames_dropped_++;
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &VideoRendererBase::AttemptRead, weak_this_));
@@ -395,11 +396,6 @@ void VideoRendererBase::FrameReady(VideoFrameStream::Status status,
         ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames)) {
       TransitionToPrerolled_Locked();
     }
-  } else {
-    // We only count frames decoded during normal playback.
-    PipelineStatistics statistics;
-    statistics.video_frames_decoded = 1;
-    statistics_cb_.Run(statistics);
   }
 
   // Always request more decoded video if we have capacity. This serves two
@@ -517,6 +513,25 @@ void VideoRendererBase::TransitionToPrerolled_Locked() {
     PaintNextReadyFrame_Locked();
 
   base::ResetAndReturn(&preroll_cb_).Run(PIPELINE_OK);
+}
+
+void VideoRendererBase::UpdateStatsAndWait_Locked(
+    base::TimeDelta wait_duration) {
+  lock_.AssertAcquired();
+  DCHECK_GE(frames_decoded_, 0);
+  DCHECK_LE(frames_dropped_, frames_decoded_);
+
+  if (frames_decoded_) {
+    PipelineStatistics statistics;
+    statistics.video_frames_decoded = frames_decoded_;
+    statistics.video_frames_dropped = frames_dropped_;
+    statistics_cb_.Run(statistics);
+
+    frames_decoded_ = 0;
+    frames_dropped_ = 0;
+  }
+
+  frame_available_.TimedWait(wait_duration);
 }
 
 }  // namespace media
