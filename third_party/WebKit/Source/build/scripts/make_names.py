@@ -29,34 +29,44 @@
 
 import sys
 
+import hasher
 import in_generator
 import template_expander
+import name_utilities
 
 
 class MakeNamesWriter(in_generator.Writer):
     defaults = {
+        'ImplementedAs': None,
+        'Conditional': None,  # FIXME: Add support for Conditional.
     }
     default_parameters = {
         'namespace': '',
+    }
+    filters = {
+        'hash': hasher.hash,
+        'script_name': name_utilities.script_name,
+        'cpp_name': name_utilities.cpp_name,
+        'to_macro_style': name_utilities.to_macro_style,
     }
 
     def __init__(self, in_file_path, enabled_conditions):
         super(MakeNamesWriter, self).__init__(in_file_path, enabled_conditions)
         namespace = self.in_file.parameters['namespace'].strip('"')
         self._outputs = {
-            (namespace + ".h"): self.generate_header,
-            (namespace + ".cpp"): self.generate_implementation,
+            (namespace + "Names.h"): self.generate_header,
+            (namespace + "Names.cpp"): self.generate_implementation,
         }
         self._template_context = {
             'namespace': namespace,
-            'names': [entry['name'] for entry in self.in_file.name_dictionaries],
+            'entries': self.in_file.name_dictionaries,
         }
 
-    @template_expander.use_jinja("MakeNames.h.tmpl")
+    @template_expander.use_jinja("MakeNames.h.tmpl", filters=filters)
     def generate_header(self):
         return self._template_context
 
-    @template_expander.use_jinja("MakeNames.cpp.tmpl")
+    @template_expander.use_jinja("MakeNames.cpp.tmpl", filters=filters)
     def generate_implementation(self):
         return self._template_context
 

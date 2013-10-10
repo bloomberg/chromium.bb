@@ -174,7 +174,6 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             '../build/scripts/make_runtime_features.py',
-            '../build/scripts/name_utilities.py',
             'page/RuntimeEnabledFeatures.in',
             '../build/scripts/templates/RuntimeEnabledFeatures.cpp.tmpl',
             '../build/scripts/templates/RuntimeEnabledFeatures.h.tmpl',
@@ -373,7 +372,6 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             '../build/scripts/make_event_factory.py',
-            '../build/scripts/name_utilities.py',
             '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
             'events/EventAliases.in',
           ],
@@ -396,7 +394,6 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             '../build/scripts/make_event_factory.py',
-            '../build/scripts/name_utilities.py',
             'events/EventTargetFactory.in',
           ],
           'outputs': [
@@ -406,6 +403,25 @@
           'action': [
             'python',
             '../build/scripts/make_event_factory.py',
+            'events/EventTargetFactory.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
+        {
+          'action_name': 'EventTargetNames',
+          'inputs': [
+            '<@(make_names_files)',
+            '../build/scripts/make_names.py',
+            'events/EventTargetFactory.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_names.py',
             'events/EventTargetFactory.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',

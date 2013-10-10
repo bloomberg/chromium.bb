@@ -1,25 +1,25 @@
 {% from "macros.tmpl" import license -%}
 {{ license() }}
 
-#ifndef {{namespace}}_h
-#define {{namespace}}_h
+#ifndef {{namespace}}Names_h
+#define {{namespace}}Names_h
 
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
-namespace {{namespace}} {
+namespace {{namespace}}Names {
 
-#ifndef {{namespace}}_HIDE_GLOBALS
+#ifndef {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS
 
-{%- for name in names %}
-extern const WTF::AtomicString {{name}};
+{%- for entry in entries|sort %}
+extern const WTF::AtomicString {{entry|cpp_name}};
 {%- endfor %}
 
-#endif // {{namespace}}_HIDE_GLOBALS
+#endif // {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS
 
 void init();
 
-} // {{namespace}}
+} // {{namespace}}Names
 } // WebCore
 
 #endif

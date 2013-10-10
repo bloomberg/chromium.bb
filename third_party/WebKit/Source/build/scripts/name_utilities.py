@@ -26,6 +26,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os.path
+import re
+
+
 ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
 
 
@@ -38,3 +42,18 @@ def lower_first(name):
         if name.startswith(acronym):
             return name.replace(acronym, acronym.lower())
     return name[0].lower() + name[1:]
+
+
+def to_macro_style(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).upper()
+
+
+def script_name(entry):
+    return os.path.basename(entry["name"])
+
+
+def cpp_name(entry):
+    if entry['ImplementedAs']:
+        return entry['ImplementedAs']
+    return script_name(entry)

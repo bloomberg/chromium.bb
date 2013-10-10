@@ -33,20 +33,20 @@ import shutil
 
 from in_file import InFile
 import name_macros
-from name_utilities import lower_first
+import name_utilities
 import license
 
 
 IMPLEMENTATION_TEMPLATE = """%(license)s
 #include "config.h"
-#include "core/events/%(class_name)sFactory.h"
+#include "core/events/%(namespace)sFactory.h"
 
-#include "%(class_name)sHeaders.h"
+#include "%(namespace)sHeaders.h"
 #include "RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 
-PassRefPtr<%(class_name)s> %(class_name)sFactory::create(const String& type)
+PassRefPtr<%(namespace)s> %(namespace)sFactory::create(const String& type)
 {
 %(factory_implementation)s
     return 0;
@@ -68,29 +68,29 @@ class EventFactoryWriter(name_macros.Writer):
 
     def __init__(self, in_file_path, enabled_conditions):
         super(EventFactoryWriter, self).__init__(in_file_path, enabled_conditions)
-        self._outputs[(self.class_name + ".cpp")] = self.generate_implementation
+        self._outputs[(self.namespace + ".cpp")] = self.generate_implementation
 
     def _events(self):
         return self.in_file.name_dictionaries
 
     def _factory_implementation(self, event):
         if event['EnabledAtRuntime']:
-            runtime_condition = ' && RuntimeEnabledFeatures::%s()' % lower_first(event['EnabledAtRuntime'])
+            runtime_condition = ' && RuntimeEnabledFeatures::%s()' % name_utilities.lower_first(event['EnabledAtRuntime'])
         else:
             runtime_condition = ''
-        name = os.path.basename(event['name'])
-        class_name = self._class_name_for_entry(event)
-        implementation = """    if (type == "%(name)s"%(runtime_condition)s)
-        return %(class_name)s::create();""" % {
-            'name': name,
+        script_name = name_utilities.script_name(event)
+        cpp_name = name_utilities.cpp_name(event)
+        implementation = """    if (type == "%(script_name)s"%(runtime_condition)s)
+        return %(cpp_name)s::create();""" % {
+            'script_name': script_name,
             'runtime_condition': runtime_condition,
-            'class_name': class_name,
+            'cpp_name': cpp_name,
         }
         return self.wrap_with_condition(implementation, event['Conditional'])
 
     def generate_implementation(self):
         return IMPLEMENTATION_TEMPLATE % {
-            'class_name': self.class_name,
+            'namespace': self.namespace,
             'license': license.license_for_generated_cpp(),
             'factory_implementation': "\n".join(map(self._factory_implementation, self._events())),
         }

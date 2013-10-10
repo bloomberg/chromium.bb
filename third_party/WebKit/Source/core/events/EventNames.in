@@ -1,4 +1,4 @@
-namespace="EventNames"
+namespace="Event"
 
 DOMActivate
 DOMCharacterDataModified

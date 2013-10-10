@@ -3630,6 +3630,7 @@
             '../build/scripts/in_generator.py',
             '../build/scripts/license.py',
             '../build/scripts/name_macros.py',
+            '../build/scripts/name_utilities.py',
             '../build/scripts/template_expander.py',
             '../build/scripts/templates/macros.tmpl',
         ],

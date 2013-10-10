@@ -29,26 +29,27 @@
 import os.path
 import re
 
-import in_generator
 from in_generator import Maker
+import in_generator
 import license
+import name_utilities
 
 
 HEADER_TEMPLATE = """%(license)s
 
-#ifndef %(class_name)sHeaders_h
-#define %(class_name)sHeaders_h
+#ifndef %(namespace)sHeaders_h
+#define %(namespace)sHeaders_h
 
 %(includes)s
 
-#endif // %(class_name)sHeaders_h
+#endif // %(namespace)sHeaders_h
 """
 
 
 INTERFACES_HEADER_TEMPLATE = """%(license)s
 
-#ifndef %(class_name)sInterfaces_h
-#define %(class_name)sInterfaces_h
+#ifndef %(namespace)sInterfaces_h
+#define %(namespace)sInterfaces_h
 
 %(declare_conditional_macros)s
 
@@ -58,24 +59,19 @@ INTERFACES_HEADER_TEMPLATE = """%(license)s
     \\
 %(conditional_macros)s
 
-#endif // %(class_name)sInterfaces_h
+#endif // %(namespace)sInterfaces_h
 """
-
-
-def _to_macro_style(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).upper()
 
 
 class Writer(in_generator.Writer):
     def __init__(self, in_file_path, enabled_conditions):
         super(Writer, self).__init__(in_file_path, enabled_conditions)
-        self.class_name = self.in_file.parameters['namespace'].strip('"')
+        self.namespace = self.in_file.parameters['namespace'].strip('"')
         self._entries_by_conditional = {}
         self._unconditional_entries = []
         self._sort_entries_by_conditional()
-        self._outputs = {(self.class_name + "Headers.h"): self.generate_headers_header,
-                         (self.class_name + "Interfaces.h"): self.generate_interfaces_header,
+        self._outputs = {(self.namespace + "Headers.h"): self.generate_headers_header,
+                         (self.namespace + "Interfaces.h"): self.generate_interfaces_header,
                         }
 
     def _sort_entries_by_conditional(self):
@@ -83,25 +79,20 @@ class Writer(in_generator.Writer):
         for entry in self.in_file.name_dictionaries:
             conditional = entry['Conditional']
             if not conditional:
-                name = self._class_name_for_entry(entry)
-                if name in unconditional_names:
+                cpp_name = name_utilities.cpp_name(entry)
+                if cpp_name in unconditional_names:
                     continue
-                unconditional_names.add(name)
+                unconditional_names.add(cpp_name)
                 self._unconditional_entries.append(entry)
                 continue
         for entry in self.in_file.name_dictionaries:
-            name = self._class_name_for_entry(entry)
-            if name in unconditional_names:
+            cpp_name = name_utilities.cpp_name(entry)
+            if cpp_name in unconditional_names:
                 continue
             conditional = entry['Conditional']
             if not conditional in self._entries_by_conditional:
                 self._entries_by_conditional[conditional] = []
             self._entries_by_conditional[conditional].append(entry)
-
-    def _class_name_for_entry(self, entry):
-        if entry['ImplementedAs']:
-            return entry['ImplementedAs']
-        return os.path.basename(entry['name'])
 
     def _headers_header_include_path(self, entry):
         if entry['ImplementedAs']:
@@ -116,27 +107,27 @@ class Writer(in_generator.Writer):
     def _headers_header_includes(self, entries):
         includes = dict()
         for entry in entries:
-            class_name = self._class_name_for_entry(entry)
+            cpp_name = name_utilities.cpp_name(entry)
             # Avoid duplicate includes.
-            if class_name in includes:
+            if cpp_name in includes:
                 continue
-            include = '#include "%(path)s"\n#include "V8%(js_name)s.h"' % {
+            include = '#include "%(path)s"\n#include "V8%(script_name)s.h"' % {
                 'path': self._headers_header_include_path(entry),
-                'js_name': os.path.basename(entry['name']),
+                'script_name': name_utilities.script_name(entry),
             }
-            includes[class_name] = self.wrap_with_condition(include, entry['Conditional'])
+            includes[cpp_name] = self.wrap_with_condition(include, entry['Conditional'])
         return includes.values()
 
     def generate_headers_header(self):
         return HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
-            'class_name': self.class_name,
+            'namespace': self.namespace,
             'includes': '\n'.join(self._headers_header_includes(self.in_file.name_dictionaries)),
         }
 
     def _declare_one_conditional_macro(self, conditional, entries):
         macro_name = '%(macro_style_name)s_INTERFACES_FOR_EACH_%(conditional)s' % {
-            'macro_style_name': _to_macro_style(self.class_name),
+            'macro_style_name': name_utilities.to_macro_style(self.namespace),
             'conditional': conditional,
         }
         return self.wrap_with_condition("""#define %(macro_name)s(macro) \\
@@ -146,7 +137,7 @@ class Writer(in_generator.Writer):
 #define %(macro_name)s(macro)""" % {
             'macro_name': macro_name,
             'declarations': '\n'.join(sorted(set([
-                '    macro(%(name)s) \\' % {'name': self._class_name_for_entry(entry)}
+                '    macro(%(cpp_name)s) \\' % {'cpp_name': name_utilities.cpp_name(entry)}
                 for entry in entries]))),
         }, conditional)
 
@@ -156,19 +147,19 @@ class Writer(in_generator.Writer):
             for conditional, entries in self._entries_by_conditional.items()])
 
     def _unconditional_macro(self, entry):
-        return '    macro(%(name)s) \\' % {'name': self._class_name_for_entry(entry)}
+        return '    macro(%(cpp_name)s) \\' % {'cpp_name': name_utilities.cpp_name(entry)}
 
     def _conditional_macros(self, conditional):
         return '    %(macro_style_name)s_INTERFACES_FOR_EACH_%(conditional)s(macro) \\' % {
-            'macro_style_name': _to_macro_style(self.class_name),
+            'macro_style_name': name_utilities.to_macro_style(self.namespace),
             'conditional': conditional,
         }
 
     def generate_interfaces_header(self):
         return INTERFACES_HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
-            'class_name': self.class_name,
-            'macro_style_name': _to_macro_style(self.class_name),
+            'namespace': self.namespace,
+            'macro_style_name': name_utilities.to_macro_style(self.namespace),
             'declare_conditional_macros': self._declare_conditional_macros(),
             'unconditional_macros': '\n'.join(sorted(set(map(self._unconditional_macro, self._unconditional_entries)))),
             'conditional_macros': '\n'.join(map(self._conditional_macros, self._entries_by_conditional.keys())),
