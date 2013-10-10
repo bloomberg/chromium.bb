@@ -329,8 +329,6 @@
         'common/mac/cfbundle_blocker.mm',
         'common/mac/launchd.h',
         'common/mac/launchd.mm',
-        'common/mac/nscoder_util.h',
-        'common/mac/nscoder_util.mm',
         'common/mac/objc_method_swizzle.h',
         'common/mac/objc_method_swizzle.mm',
         'common/mac/objc_zombie.h',
@@ -610,7 +608,6 @@
             # Pull in specific Mac files for iOS (which have been filtered out
             # by file name rules).
             ['include', '^common/chrome_version_info_mac\\.mm$'],
-            ['include', '^common/mac/nscoder_util\\.'],
           ],
         }],
       ],

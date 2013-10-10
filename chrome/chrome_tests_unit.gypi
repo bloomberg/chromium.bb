@@ -1804,7 +1804,6 @@
         'common/mac/cfbundle_blocker_unittest.mm',
         'common/mac/mock_launchd.cc',
         'common/mac/mock_launchd.h',
-        'common/mac/nscoder_util_unittest.mm',
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
         'common/metrics/caching_permuted_entropy_provider_unittest.cc',
@@ -2702,13 +2701,6 @@
         ['enable_app_list==1', {
           'sources': [
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
-          ],
-        }],
-      ],
-      'target_conditions': [
-        ['OS == "ios"', {
-          'sources/': [
-            ['include', '^common/mac/nscoder_util_unittest\\.mm$'],
           ],
         }],
       ],
