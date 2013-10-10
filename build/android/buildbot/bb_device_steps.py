@@ -270,7 +270,7 @@ def RunWebkitLayoutTests(options):
                                      'full_results.json')
     if os.path.exists(full_results_path):
       full_results = json.load(open(full_results_path))
-      unexpected_failures, unexpected_flakes, unexpected_passes = (
+      unexpected_passes, unexpected_flakes, unexpected_failures = (
           _ParseLayoutTestResults(full_results))
       if unexpected_failures:
         _PrintDashboardLink('failed', unexpected_failures,
@@ -281,7 +281,12 @@ def RunWebkitLayoutTests(options):
       if unexpected_flakes:
         _PrintDashboardLink('unexpected flakes', unexpected_flakes,
                             max_tests=10)
+
+      if exit_code == 0 and (unexpected_passes or unexpected_flakes):
+        # If exit_code != 0, RunCmd() will have already printed an error.
+        bb_annotations.PrintWarning()
     else:
+      bb_annotations.PrintError()
       bb_annotations.PrintMsg('?? (results missing)')
 
   if options.factory_properties.get('archive_webkit_results', False):
