@@ -4,6 +4,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -125,6 +126,27 @@ void DrawCell(int32_t x, int32_t y) {
   }
 }
 
+void ProcessTouchEvent(PSEvent* event) {
+  uint32_t count = g_pTouchInput->GetTouchCount(event->as_resource,
+      PP_TOUCHLIST_TYPE_TOUCHES);
+  uint32_t i, j;
+  for (i = 0; i < count; i++) {
+    struct PP_TouchPoint touch = g_pTouchInput->GetTouchByIndex(
+        event->as_resource, PP_TOUCHLIST_TYPE_TOUCHES, i);
+    int radius = (int)touch.radius.x;
+    int x = (int)touch.position.x;
+    int y = (int)touch.position.y;
+    /* num = 1/100th the area of touch point */
+    int num = (int)(M_PI * radius * radius / 100.0f);
+    for (j = 0; j < num; j++) {
+      int dx = rand() % (radius * 2) - radius;
+      int dy = rand() % (radius * 2) - radius;
+      /* only plot random cells within the touch area */
+      if (dx * dx + dy * dy <= radius * radius)
+        DrawCell(x + dx, y + dy);
+    }
+  }
+}
 
 void ProcessEvent(PSEvent* event) {
   switch(event->type) {
@@ -143,23 +165,21 @@ void ProcessEvent(PSEvent* event) {
           g_pInputEvent->GetModifiers(event->as_resource);
 
       switch(type) {
-        case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
+        case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+        case PP_INPUTEVENT_TYPE_MOUSEMOVE: {
           struct PP_Point location =
               g_pMouseInput->GetPosition(event->as_resource);
-          DrawCell(location.x, location.y);
+          /* If the button is down, draw */
+          if (modifiers & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) {
+            DrawCell(location.x, location.y);
+          }
           break;
         }
 
-        case PP_INPUTEVENT_TYPE_MOUSEMOVE: {
-            struct PP_Point location =
-                g_pMouseInput->GetPosition(event->as_resource);
-
-            /* If the button is down, draw */
-            if (modifiers & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) {
-              DrawCell(location.x, location.y);
-            }
+        case PP_INPUTEVENT_TYPE_TOUCHSTART:
+        case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+          ProcessTouchEvent(event);
           break;
-        }
 
         case PP_INPUTEVENT_TYPE_KEYDOWN: {
           PP_Bool fullscreen = g_pFullscreen->IsFullscreen(PSGetInstanceId());
@@ -167,6 +187,7 @@ void ProcessEvent(PSEvent* event) {
                                        fullscreen ? PP_FALSE : PP_TRUE);
           break;
         }
+
         default:
           break;
       }
