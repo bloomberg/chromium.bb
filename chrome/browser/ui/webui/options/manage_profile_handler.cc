@@ -332,7 +332,9 @@ void ManageProfileHandler::SetProfileIconAndName(const ListValue* args) {
   if (!args->GetString(2, &new_profile_name))
     return;
 
-  if (new_profile_name == cache.GetGAIANameOfProfileAtIndex(profile_index)) {
+  if ((new_profile_name ==
+           cache.GetGAIAGivenNameOfProfileAtIndex(profile_index)) ||
+      (new_profile_name == cache.GetGAIANameOfProfileAtIndex(profile_index))) {
     // Set the profile to use the GAIA name as the profile name. Note, this
     // is a little weird if the user typed their GAIA name manually but
     // it's not a big deal.
@@ -391,14 +393,15 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
   if (icon_url != gaia_picture_url_)
     return;
 
-  // If the selection is the GAIA picture then also show the GAIA name in the
-  // text field.
+  // If the selection is the GAIA picture then also show the profile name in the
+  // text field. This will display either the GAIA given name, if available,
+  // or the first name.
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
   if (profile_index == std::string::npos)
     return;
-  string16 gaia_name = cache.GetGAIANameOfProfileAtIndex(profile_index);
+  string16 gaia_name = cache.GetNameOfProfileAtIndex(profile_index);
   if (gaia_name.empty())
     return;
 
