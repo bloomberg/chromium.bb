@@ -25,9 +25,12 @@ def main():
   options, args = parser.parse_args()
 
   version = open(options.version_file, 'r').read().strip()
-  revision = lastchange.FetchVersionInfo(None).revision.strip()
+  revision = lastchange.FetchVersionInfo(None).revision
+  if revision:
+    version += '.' + revision.strip()
+
   global_string_map = {
-      'kChromeDriverVersion': version + '.' + revision
+      'kChromeDriverVersion': version
   }
   cpp_source.WriteSource('version',
                          'chrome/test/chromedriver',
