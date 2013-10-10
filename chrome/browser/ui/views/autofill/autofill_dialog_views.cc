@@ -876,13 +876,10 @@ void AutofillDialogViews::OnWidgetClosing(views::Widget* widget) {
 
 void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
                                                 const gfx::Rect& new_bounds) {
-  // Wait until at least 100ms pass without any bounds change event before
-  // reacting. This way drags don't cause an excessive number of layouts.
-  browser_resize_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(100),
-      base::Bind(&AutofillDialogViews::ContentsPreferredSizeChanged,
-                 base::Unretained(this)));
+  // Notify the web contents of its new auto-resize limits.
+  if (sign_in_delegate_ && sign_in_webview_->visible())
+    sign_in_delegate_->UpdateLimitsAndEnableAutoResize(
+        GetMinimumSignInViewSize(), GetMaximumSignInViewSize());
   HideErrorBubble();
 }
 
@@ -1266,7 +1263,6 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
       updates_scope_(0),
       needs_update_(false),
       window_(NULL),
-      browser_resize_timer_(false, false),
       notification_area_(NULL),
       account_chooser_(NULL),
       sign_in_webview_(NULL),
@@ -1591,13 +1587,17 @@ gfx::Size AutofillDialogViews::GetSize() const {
 
 gfx::Size AutofillDialogViews::GetPreferredSize() {
   if (preferred_size_.IsEmpty())
-    preferred_size_ = CalculatePreferredSize();
+    preferred_size_ = CalculatePreferredSize(false);
 
   return preferred_size_;
 }
 
+gfx::Size AutofillDialogViews::GetMinimumSize() {
+  return CalculatePreferredSize(true);
+}
+
 void AutofillDialogViews::Layout() {
-  gfx::Rect content_bounds = GetContentsBounds();
+  const gfx::Rect content_bounds = GetContentsBounds();
   if (sign_in_webview_->visible()) {
     sign_in_webview_->SetBoundsRect(content_bounds);
     return;
@@ -1618,7 +1618,7 @@ void AutofillDialogViews::Layout() {
   // The rest (the |scrollable_area_|) takes up whatever's left.
   if (scrollable_area_->visible()) {
     int scroll_y = y;
-    if (notification_height > 0)
+    if (notification_height > notification_area_->GetInsets().height())
       scroll_y += notification_height + views::kRelatedControlVerticalSpacing;
 
     int scroll_bottom = content_bounds.bottom();
@@ -1838,20 +1838,20 @@ void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
   group->suggested_button->SetState(state);
 }
 
-gfx::Size AutofillDialogViews::CalculatePreferredSize() {
+gfx::Size AutofillDialogViews::CalculatePreferredSize(bool get_minimum_size) {
   gfx::Insets insets = GetInsets();
   gfx::Size scroll_size = scrollable_area_->contents()->GetPreferredSize();
-  // Width is always set by the scroll area.
+  // The width is always set by the scroll area.
   const int width = scroll_size.width();
 
   if (SignInWebviewDictatesHeight()) {
-    gfx::Size size = static_cast<views::View*>(sign_in_webview_)->
-        GetPreferredSize();
+    const gfx::Size size = static_cast<views::View*>(sign_in_webview_)->
+         GetPreferredSize();
     return gfx::Size(width + insets.width(), size.height() + insets.height());
   }
 
   if (overlay_view_->visible()) {
-    int height = overlay_view_->GetHeightForContentsForWidth(width);
+    const int height = overlay_view_->GetHeightForContentsForWidth(width);
     if (height != 0)
       return gfx::Size(width + insets.width(), height + insets.height());
   }
@@ -1862,56 +1862,38 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize() {
   }
 
   int height = 0;
-  int notification_height = notification_area_->GetHeightForWidth(width);
-  if (notification_height > 0)
+  const int notification_height = notification_area_->GetHeightForWidth(width);
+  if (notification_height > notification_area_->GetInsets().height())
     height += notification_height + views::kRelatedControlVerticalSpacing;
 
-  if (scrollable_area_->visible()) {
-    // Show as much of the scroll view as is possible without going past the
-    // bottom of the browser window.
-    int footnote_height = 0;
-    if (footnote_view_->visible())
-      footnote_height = footnote_view_->GetHeightForWidth(width);
-
-    // TODO(estade): Replace this magic constant with a semantic computation.
-    const int kWindowDecorationHeight = 120;
-    int browser_constrained_scroll_height =
-        GetBrowserViewHeight() - kWindowDecorationHeight - height -
-            footnote_height;
-    int scroll_height = std::min(
-        scroll_size.height(),
-        std::max(kMinimumContentsHeight, browser_constrained_scroll_height));
-
-    height += scroll_height;
-  }
+  if (scrollable_area_->visible())
+    height += get_minimum_size ? kMinimumContentsHeight : scroll_size.height();
 
   return gfx::Size(width + insets.width(), height + insets.height());
 }
 
-int AutofillDialogViews::GetBrowserViewHeight() const {
-  return delegate_->GetWebContents()->GetView()->GetContainerSize().height();
-}
-
-gfx::Size AutofillDialogViews::InsetSize(const gfx::Size& size) const {
-  gfx::Insets insets = GetInsets();
-  return gfx::Size(size.width() - insets.width(),
-                   size.height() - insets.height());
-}
-
 gfx::Size AutofillDialogViews::GetMinimumSignInViewSize() const {
-  return InsetSize(GetDialogClientView()->size());
+  return gfx::Size(GetDialogClientView()->size().width() - GetInsets().width(),
+                   kMinimumContentsHeight);
 }
 
 gfx::Size AutofillDialogViews::GetMaximumSignInViewSize() const {
-  // The sign-in view should never grow beyond the browser window, unless the
-  // minimum dialog height has already exceeded this limit.
-  gfx::Size size = GetDialogClientView()->size();
-  // TODO(isherman): This computation seems to come out about 30 pixels too
-  // large, possibly due to an invisible bubble border.
-  const int non_client_view_height = GetSize().height() - size.height();
-  size.set_height(
-      std::max(size.height(), GetBrowserViewHeight() - non_client_view_height));
-  return InsetSize(size);
+  web_modal::WebContentsModalDialogHost* dialog_host =
+      WebContentsModalDialogManager::FromWebContents(
+          delegate_->GetWebContents())->delegate()->
+              GetWebContentsModalDialogHost();
+
+  // Inset the maximum dialog height to get the maximum content height.
+  int height = dialog_host->GetMaximumDialogSize().height();
+  const int non_client_height = GetWidget()->non_client_view()->height();
+  const int client_height = GetWidget()->client_view()->height();
+  // TODO(msw): Resolve the 12 pixel discrepancy; is that the bubble border?
+  height -= non_client_height - client_height - 12;
+  height = std::max(height, kMinimumContentsHeight);
+
+  // The dialog's width never changes.
+  const int width = GetDialogClientView()->size().width() - GetInsets().width();
+  return gfx::Size(width, height);
 }
 
 void AutofillDialogViews::InitChildViews() {
@@ -2376,10 +2358,12 @@ void AutofillDialogViews::ContentsPreferredSizeChanged() {
 
   preferred_size_ = gfx::Size();
 
-  if (GetWidget()) {
-    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
-    // If the above line does not cause the dialog's size to change, |contents_|
-    // may not be laid out. This will trigger a layout only if it's needed.
+  if (GetWidget() && delegate_ && delegate_->GetWebContents()) {
+    UpdateWebContentsModalDialogPosition(
+        GetWidget(),
+        WebContentsModalDialogManager::FromWebContents(
+            delegate_->GetWebContents())->delegate()->
+                GetWebContentsModalDialogHost());
     SetBoundsRect(bounds());
   }
 }

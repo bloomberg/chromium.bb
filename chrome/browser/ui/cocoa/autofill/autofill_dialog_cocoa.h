@@ -61,8 +61,8 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
-  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
   virtual TestableAutofillDialogView* GetTestableView() OVERRIDE;
+  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
 
   // TestableAutofillDialogView implementation:
   // TODO(groby): Create a separate class to implement the testable interface:

@@ -11,7 +11,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
@@ -115,6 +114,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // views::View implementation.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // views::DialogDelegate implementation:
@@ -494,13 +494,8 @@ class AutofillDialogViews : public AutofillDialogView,
 
   typedef std::map<DialogSection, DetailsGroup> DetailGroupMap;
 
-  gfx::Size CalculatePreferredSize();
-
-  // Returns the height of the initiating WebContents' view.
-  int GetBrowserViewHeight() const;
-
-  // Returns the |size| inset by |GetInsets()|.
-  gfx::Size InsetSize(const gfx::Size& size) const;
+  // Returns the preferred size or minimum size (if |get_minimum_size| is true).
+  gfx::Size CalculatePreferredSize(bool get_minimum_size);
 
   // Returns the minimum size of the sign in view for this dialog.
   gfx::Size GetMinimumSignInViewSize() const;
@@ -628,9 +623,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // The window that displays |contents_|. Weak pointer; may be NULL when the
   // dialog is closing.
   views::Widget* window_;
-
-  // A timer used to coalesce re-layouts due to browser window resizes.
-  base::Timer browser_resize_timer_;
 
   // A DialogSection-keyed map of the DetailGroup structs.
   DetailGroupMap detail_groups_;

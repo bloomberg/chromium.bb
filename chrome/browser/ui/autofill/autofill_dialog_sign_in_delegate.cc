@@ -18,13 +18,11 @@ AutofillDialogSignInDelegate::AutofillDialogSignInDelegate(
     const gfx::Size& maximum_size)
     : WebContentsObserver(web_contents),
       dialog_view_(dialog_view),
-      wrapped_delegate_(wrapped_delegate),
-      minimum_size_(minimum_size),
-      maximum_size_(maximum_size) {
+      wrapped_delegate_(wrapped_delegate) {
   DCHECK(dialog_view_);
   DCHECK(wrapped_delegate_);
   web_contents->SetDelegate(this);
-  EnableAutoResize();
+  UpdateLimitsAndEnableAutoResize(minimum_size, maximum_size);
 }
 
 void AutofillDialogSignInDelegate::ResizeDueToAutoResize(
@@ -56,6 +54,14 @@ void AutofillDialogSignInDelegate::RenderViewCreated(
 
   // Set the initial size as soon as we have an RVH to avoid bad size jumping.
   dialog_view_->OnSignInResize(minimum_size_);
+}
+
+void AutofillDialogSignInDelegate::UpdateLimitsAndEnableAutoResize(
+    const gfx::Size& minimum_size,
+    const gfx::Size& maximum_size) {
+  minimum_size_ = minimum_size;
+  maximum_size_ = maximum_size;
+  EnableAutoResize();
 }
 
 void AutofillDialogSignInDelegate::EnableAutoResize() {

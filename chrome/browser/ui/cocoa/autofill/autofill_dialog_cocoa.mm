@@ -149,12 +149,12 @@ void AutofillDialogCocoa::ModelChanged() {
   [sheet_delegate_ modelChanged];
 }
 
-void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
-  // TODO(groby): Implement Mac support for this.
-}
-
 TestableAutofillDialogView* AutofillDialogCocoa::GetTestableView() {
   return this;
+}
+
+void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
+  // TODO(groby): Implement Mac support for this.
 }
 
 void AutofillDialogCocoa::SubmitForTesting() {

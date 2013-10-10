@@ -45,8 +45,12 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
+  // Updates the size limits and enables auto-resize for this view.
+  void UpdateLimitsAndEnableAutoResize(const gfx::Size& minimum_size,
+                                       const gfx::Size& maximum_size);
+
  private:
-  // Enables auto-resizing for this view, if possible, constrained to the
+  // Enables auto-resizing for this view, if possible, constrained to the latest
   // minimum and maximum size allowed by the delegate.
   void EnableAutoResize();
 
@@ -57,8 +61,8 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
   content::WebContentsDelegate* const wrapped_delegate_;
 
   // The minimum and maximum sizes that the sign-in view may have.
-  const gfx::Size minimum_size_;
-  const gfx::Size maximum_size_;
+  gfx::Size minimum_size_;
+  gfx::Size maximum_size_;
 };
 
 }  // namespace autofill
