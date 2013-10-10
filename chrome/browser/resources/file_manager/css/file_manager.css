@@ -188,7 +188,7 @@ body {
 
 /* Directory tree at the left. */
 .dialog-navigation-list {
-  -webkit-border-end: 1px solid rgb(225, 225, 225);
+  -webkit-border-end: 1px solid rgba(20, 20, 22, 0.1);
   -webkit-box-flex: 0;
   -webkit-box-orient: vertical;
   background-color: #f1f1f1;
@@ -289,7 +289,7 @@ div.splitter {
 }
 
 #middlebar-header {
-  -webkit-border-end: 1px solid rgb(212, 212, 212);
+  -webkit-border-end: 1px solid rgba(20, 20, 22, 0.1);
   -webkit-box-sizing: border-box;
   -webkit-padding-start: 20px;
   color: rgb(100, 100, 100);
@@ -302,7 +302,7 @@ div.splitter {
 }
 
 #directory-tree {
-  -webkit-border-end: 1px solid rgb(212, 212, 212);
+  -webkit-border-end: 1px solid rgba(20, 20, 22, 0.1);
   bottom: 0;
   left: 0;
   overflow-x: hidden;
@@ -450,7 +450,7 @@ div.splitter {
 .dialog-body {
   -webkit-box-flex: 1;
   -webkit-transition: all 180ms ease;
-  border-top: 1px solid rgb(225, 225, 225);
+  border-top: 1px solid rgba(20, 20, 22, 0.1);
   position: relative;
 }
 
@@ -1034,7 +1034,7 @@ input.rename {
   -webkit-transition: background-color 150ms ease;
   background: linear-gradient(
       to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 1));
-  border-top: 1px solid rgb(225, 225, 225);
+  border-top: 1px solid rgba(20, 20, 22, 0.1);
   bottom: 0;
   display: -webkit-box;
   height: 51px;
