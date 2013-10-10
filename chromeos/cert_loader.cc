@@ -297,7 +297,8 @@ void CertLoader::OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
 
 void CertLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
                                          const std::string& token_name,
-                                         const std::string& user_pin) {
+                                         const std::string& user_pin,
+                                         int token_slot) {
   VLOG(1) << "OnPkcs11GetTpmTokenInfo: " << token_name;
 
   if (call_status == DBUS_METHOD_CALL_FAILURE) {
@@ -306,10 +307,7 @@ void CertLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
   }
 
   tpm_token_name_ = token_name;
-  // TODO(stevenjb): The network code expects a slot ID, not a label. See
-  // crbug.com/201101. For now, use a hard coded, well known slot instead.
-  const char kHardcodedTpmSlot[] = "0";
-  tpm_token_slot_ = kHardcodedTpmSlot;
+  tpm_token_slot_ = base::IntToString(token_slot);
   tpm_user_pin_ = user_pin;
   tpm_token_state_ = TPM_TOKEN_INFO_RECEIVED;
 

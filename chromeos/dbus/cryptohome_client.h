@@ -35,11 +35,19 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       AsyncCallStatusWithDataHandler;
   // A callback to handle responses of AsyncXXX methods.
   typedef base::Callback<void(int async_id)> AsyncMethodCallback;
-  // A callback to handle responses of Pkcs11GetTpmTokenInfo method.
+  // A callback to handle responses of Pkcs11GetTpmTokenInfo method.  The result
+  // of the D-Bus call is in |call_status|.  On success, |label| holds the
+  // PKCS #11 token label.  This is not useful in practice to identify a token
+  // but may be meaningful to a user.  The |user_pin| can be used with the
+  // C_Login PKCS #11 function but is not necessary because tokens are logged in
+  // for the duration of a signed-in session.  The |slot| corresponds to a
+  // CK_SLOT_ID for the PKCS #11 API and reliably identifies the token for the
+  // duration of the signed-in session.
   typedef base::Callback<void(
       DBusMethodCallStatus call_status,
       const std::string& label,
-      const std::string& user_pin)> Pkcs11GetTpmTokenInfoCallback;
+      const std::string& user_pin,
+      int slot)> Pkcs11GetTpmTokenInfoCallback;
   // A callback for methods which return both a bool result and data.
   typedef base::Callback<void(DBusMethodCallStatus call_status,
                               bool result,
@@ -186,8 +194,19 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void Pkcs11IsTpmTokenReady(
       const BoolDBusMethodCallback& callback) = 0;
 
-  // Calls Pkcs11GetTpmTokenInfo method.
+  // Calls Pkcs11GetTpmTokenInfo method.  This method is deprecated, you should
+  // use Pkcs11GetTpmTokenInfoForUser instead.  On success |callback| will
+  // receive PKCS #11 token information for the token associated with the user
+  // who originally signed in (i.e. PKCS #11 slot 0).
   virtual void Pkcs11GetTpmTokenInfo(
+      const Pkcs11GetTpmTokenInfoCallback& callback) = 0;
+
+  // Calls Pkcs11GetTpmTokenInfoForUser method.  On success |callback| will
+  // receive PKCS #11 token information for the user identified by |user_email|.
+  // The |user_email| must be a canonical email address as returned by
+  // chromeos::User::email().
+  virtual void Pkcs11GetTpmTokenInfoForUser(
+      const std::string& user_email,
       const Pkcs11GetTpmTokenInfoCallback& callback) = 0;
 
   // Calls InstallAttributesGet method and returns true when the call succeeds.

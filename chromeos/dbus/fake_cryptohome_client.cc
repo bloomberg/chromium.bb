@@ -191,12 +191,20 @@ void FakeCryptohomeClient::Pkcs11IsTpmTokenReady(
 void FakeCryptohomeClient::Pkcs11GetTpmTokenInfo(
     const Pkcs11GetTpmTokenInfoCallback& callback) {
   const char kStubUserPin[] = "012345";
+  const int kStubSlot = 0;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
                  DBUS_METHOD_CALL_SUCCESS,
                  std::string(crypto::kTestTPMTokenName),
-                 std::string(kStubUserPin)));
+                 std::string(kStubUserPin),
+                 kStubSlot));
+}
+
+void FakeCryptohomeClient::Pkcs11GetTpmTokenInfoForUser(
+    const std::string& username,
+    const Pkcs11GetTpmTokenInfoCallback& callback) {
+  Pkcs11GetTpmTokenInfo(callback);
 }
 
 bool FakeCryptohomeClient::InstallAttributesGet(const std::string& name,

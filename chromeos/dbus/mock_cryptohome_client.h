@@ -71,6 +71,9 @@ class MockCryptohomeClient : public CryptohomeClient {
                void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(Pkcs11GetTpmTokenInfo,
                void(const Pkcs11GetTpmTokenInfoCallback& callback));
+  MOCK_METHOD2(Pkcs11GetTpmTokenInfoForUser,
+               void(const std::string& username,
+                    const Pkcs11GetTpmTokenInfoCallback& callback));
   MOCK_METHOD3(InstallAttributesGet,
                bool(const std::string& name,
                     std::vector<uint8>* value,

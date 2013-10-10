@@ -123,7 +123,8 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
                                bool is_tpm_token_ready);
   void OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
                                const std::string& token_name,
-                               const std::string& user_pin);
+                               const std::string& user_pin,
+                               int token_slot);
   void OnTPMTokenInitialized(bool success);
 
   // These calls handle the updating of the certificate list after the TPM token

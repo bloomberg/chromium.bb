@@ -70,6 +70,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const BoolDBusMethodCallback& callback) OVERRIDE;
   virtual void Pkcs11GetTpmTokenInfo(
       const Pkcs11GetTpmTokenInfoCallback& callback) OVERRIDE;
+  virtual void Pkcs11GetTpmTokenInfoForUser(
+      const std::string& username,
+      const Pkcs11GetTpmTokenInfoCallback& callback) OVERRIDE;
   virtual bool InstallAttributesGet(const std::string& name,
                                     std::vector<uint8>* value,
                                     bool* successful) OVERRIDE;
