@@ -1,0 +1,44 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/get-set-stylesheet-text.css">
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.showPanel("elements");
+    testNewElementStyles();
+
+    function testNewElementStyles()
+    {
+        function callback(error, matchedCSSRules)
+        {
+            if (error) {
+                InspectorTest.addResult("error: " + error);
+                return;
+            }
+
+            InspectorTest.addResult("=== Rules for <marquee> ===");
+            InspectorTest.dumpSelectedElementStyles(true, true);
+            InspectorTest.completeTest();
+        }
+
+        function nodeCallback(node)
+        {
+            CSSAgent.getInlineStylesForNode(node.id, callback);
+        }
+
+        InspectorTest.selectNodeWithId("inspected", nodeCallback);
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests that querying -internal-* presentation attribute from the inspector works as expected.</p>
+<marquee scrollamount="1" scrolldelay="50" direction="up" id="inspected">Inspect Me</marquee>
+</body>
+</html>

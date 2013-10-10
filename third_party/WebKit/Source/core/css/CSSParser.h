@@ -564,7 +564,7 @@ private:
     void setStyleSheet(StyleSheetContents* styleSheet) { m_styleSheet = styleSheet; }
 
     inline bool inStrictMode() const { return isStrictParserMode(m_context.mode); }
-    inline bool inQuirksMode() const { return m_context.mode == CSSQuirksMode; }
+    inline bool inQuirksMode() const { return m_context.mode == CSSQuirksMode || m_context.mode == CSSAttributeMode; }
 
     KURL completeURL(const String& url) const;
 

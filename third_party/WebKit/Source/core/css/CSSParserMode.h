@@ -42,6 +42,8 @@ enum CSSParserMode {
     CSSStrictMode,
     // SVG should always be in strict mode. For SVG attributes, the rules differ to strict sometimes.
     SVGAttributeMode,
+    // CSS attribute are parsed in quirks mode. They also allow internal only properties and values.
+    CSSAttributeMode,
     // User agent style sheet should always be in strict mode. Enables internal
     // only properties and values.
     UASheetMode,

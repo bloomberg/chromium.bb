@@ -1,0 +1,15 @@
+Tests that querying -internal-* presentation attribute from the inspector works as expected.
+
+Inspect Me
+=== Rules for <marquee> ===
+[expanded] 
+element.style  { ()
+
+[expanded] 
+marquee[Attributes Style]  { ()
+-internal-marquee-increment: 1px;
+-internal-marquee-speed: 50ms;
+-internal-marquee-direction: up;
+
+
+

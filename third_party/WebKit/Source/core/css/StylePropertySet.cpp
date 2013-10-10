@@ -484,8 +484,8 @@ int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     uint16_t id = static_cast<uint16_t>(propertyID);
     for (int n = propertyCount() - 1 ; n >= 0; --n) {
         if (id == propertyAt(n).propertyMetadata().m_propertyID) {
-            // Only enabled properties should be part of the style.
-            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID));
+            // Only enabled or internal properties should be part of the style.
+            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID) || isInternalProperty(propertyID));
             return n;
         }
     }

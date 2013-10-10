@@ -4,7 +4,7 @@
 
 // The mode argument is used to limit the keyword to be used only for certain
 // CSSParserModes. Values that have the prefix -internal- are automatically
-// only for UASheetMode.
+// only for UASheetMode or CSSAttributeMode.
 
 inherit
 initial

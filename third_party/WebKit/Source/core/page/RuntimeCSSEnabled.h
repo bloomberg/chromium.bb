@@ -40,6 +40,8 @@ namespace WebCore {
 
 class RuntimeCSSEnabled {
 public:
+    // isCSSPropertyEnabled returns false for internal properties
+    // to avoid mistakenly leaking them to the web.
     static bool isCSSPropertyEnabled(CSSPropertyID);
     static void setCSSPropertyEnabled(CSSPropertyID, bool);
 

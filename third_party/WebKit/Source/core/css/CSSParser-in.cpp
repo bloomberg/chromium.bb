@@ -1530,8 +1530,8 @@ bool CSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags, Rel
 
 inline bool CSSParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
 {
-    // Qirks mode and svg presentation attributes accept unit less values.
-    return (unitflags & (FLength | FAngle | FTime)) && (!value->fValue || cssParserMode == CSSQuirksMode || cssParserMode == SVGAttributeMode);
+    // Quirks mode and presentation attributes accept unit less values.
+    return (unitflags & (FLength | FAngle | FTime)) && (!value->fValue || cssParserMode == CSSQuirksMode || cssParserMode == SVGAttributeMode || cssParserMode == CSSAttributeMode);
 }
 
 bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode, ReleaseParsedCalcValueCondition releaseCalc)
@@ -1698,7 +1698,7 @@ void CSSParser::setCurrentProperty(CSSPropertyID propId)
 
 bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 {
-    if (m_context.mode != UASheetMode && isInternalProperty(propId))
+    if ((m_context.mode != UASheetMode && m_context.mode != CSSAttributeMode) && isInternalProperty(propId))
         return false;
 
     // We don't count the UA style sheet in our statistics.
