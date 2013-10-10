@@ -300,4 +300,20 @@ TEST(StringBuilderTest, ToAtomicStringOnEmpty)
     }
 }
 
+TEST(StringBuilderTest, Substring)
+{
+    { // Default constructed.
+        StringBuilder builder;
+        String substring = builder.substring(0, 10);
+        ASSERT_EQ(emptyString(), substring);
+    }
+    { // With capacity.
+        StringBuilder builder;
+        builder.reserveCapacity(64);
+        builder.append("abc");
+        String substring = builder.substring(2, 10);
+        ASSERT_EQ(String("c"), substring);
+    }
+}
+
 } // namespace

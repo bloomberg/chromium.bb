@@ -182,6 +182,8 @@ public:
 
     String substring(unsigned position, unsigned length) const
     {
+        if (!m_length)
+            return emptyString();
         if (!m_string.isNull())
             return m_string.substring(position, length);
         return reifySubstring(position, length);

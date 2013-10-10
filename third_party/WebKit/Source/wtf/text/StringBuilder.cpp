@@ -69,7 +69,7 @@ String StringBuilder::reifySubstring(unsigned position, unsigned length) const
 {
     ASSERT(m_string.isNull());
     ASSERT(m_buffer);
-    unsigned substringLength = std::min(length, m_length);
+    unsigned substringLength = std::min(length, m_length - position);
     return m_buffer->substring(position, substringLength);
 }
 
