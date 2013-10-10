@@ -181,9 +181,9 @@ body.gallery #toolbar {
 
 #error .icon {
   background: center center no-repeat url(../images/no_camera.svg);
-  height: 120px;
+  height: 60px;
   margin-bottom: 20px;
-  width: 180px;
+  width: 90px;
 }
 
 body.has-error #error {
