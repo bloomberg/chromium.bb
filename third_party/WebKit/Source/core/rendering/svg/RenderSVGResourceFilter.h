@@ -85,7 +85,8 @@ public:
 private:
     bool fitsInMaximumImageSize(const FloatSize&, FloatSize&);
 
-    HashMap<RenderObject*, FilterData*> m_filter;
+    typedef HashMap<RenderObject*, OwnPtr<FilterData> > FilterMap;
+    FilterMap m_filter;
 };
 
 inline RenderSVGResourceFilter* toRenderSVGResourceFilter(RenderObject* object)
