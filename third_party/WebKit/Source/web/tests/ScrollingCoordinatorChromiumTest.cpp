@@ -254,7 +254,8 @@ TEST_F(ScrollingCoordinatorChromiumTest, nonFastScrollableRegion)
     WebLayer* rootScrollLayer = getRootScrollLayer();
     WebVector<WebRect> nonFastScrollableRegion = rootScrollLayer->nonFastScrollableRegion();
 
-    ASSERT_EQ(0u, nonFastScrollableRegion.size());
+    ASSERT_EQ(1u, nonFastScrollableRegion.size());
+    ASSERT_EQ(WebRect(8, 8, 10, 10), nonFastScrollableRegion[0]);
 }
 
 TEST_F(ScrollingCoordinatorChromiumTest, wheelEventHandler)
