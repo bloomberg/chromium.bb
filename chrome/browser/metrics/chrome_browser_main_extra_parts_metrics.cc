@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
+#include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/about_flags.h"
@@ -50,13 +52,15 @@ enum UMATouchEventsState {
   UMA_TOUCH_EVENTS_STATE_COUNT
 };
 
-void RecordIntelMicroArchitecture() {
+void RecordMicroArchitectureStats() {
 #if defined(ARCH_CPU_X86_FAMILY)
   base::CPU cpu;
   base::CPU::IntelMicroArchitecture arch = cpu.GetIntelMicroArchitecture();
   UMA_HISTOGRAM_ENUMERATION("Platform.IntelMaxMicroArchitecture", arch,
                             base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
 #endif  // defined(ARCH_CPU_X86_FAMILY)
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Platform.LogicalCpuCount",
+                              base::SysInfo::NumberOfProcessors());
 }
 
 void RecordDefaultBrowserUMAStat() {
@@ -128,7 +132,7 @@ ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
-  RecordIntelMicroArchitecture();
+  RecordMicroArchitectureStats();
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {

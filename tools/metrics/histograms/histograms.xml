@@ -11357,6 +11357,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Platform.LogicalCpuCount">
+  <summary>
+    Number of logical processors. This includes Hyperthreaded cores.
+  </summary>
+</histogram>
+
 <histogram name="Platform.LotIdEnum" enum="Exynos5250LotIdEnum">
   <summary>
     Chrome OS (ARM Chromebooks using Exynos 5250 only) indication about whether
