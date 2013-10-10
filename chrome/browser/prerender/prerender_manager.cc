@@ -114,7 +114,8 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
       final_status != FINAL_STATUS_CANCELLED &&
       final_status != FINAL_STATUS_DEVTOOLS_ATTACHED &&
       final_status != FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING &&
-      final_status != FINAL_STATUS_PAGE_BEING_CAPTURED;
+      final_status != FINAL_STATUS_PAGE_BEING_CAPTURED &&
+      final_status != FINAL_STATUS_NAVIGATION_UNCOMMITTED;
 }
 
 void CheckIfCookiesExistForDomainResultOnUIThread(
@@ -435,8 +436,11 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
     // there is a pending entry, it may not commit.
     // TODO(creis): If there is a pending navigation and no last committed
     // entry, we might be able to transfer the network request instead.
-    if (!new_web_contents->GetController().CanPruneAllButVisible())
+    if (!new_web_contents->GetController().CanPruneAllButVisible()) {
+      // Abort this prerender so it is not used later. http://crbug.com/292121
+      prerender_data->contents()->Destroy(FINAL_STATUS_NAVIGATION_UNCOMMITTED);
       return false;
+    }
   }
 
   // Do not use the prerendered version if there is an opener object.

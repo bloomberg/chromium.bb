@@ -57,6 +57,7 @@ const char* kFinalStatusNames[] = {
   "Creating Audio Stream",
   "Page Being Captured",
   "Bad Deferred Redirect",
+  "Navigation Uncommitted",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

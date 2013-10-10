@@ -136,6 +136,7 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
     case FINAL_STATUS_CANCELLED:
     case FINAL_STATUS_DEVTOOLS_ATTACHED:
     case FINAL_STATUS_PAGE_BEING_CAPTURED:
+    case FINAL_STATUS_NAVIGATION_UNCOMMITTED:
       return true;
     default:
       return false;
@@ -1225,7 +1226,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
                   !prerender_contents->prerendering_has_started());
 
       if (expected_final_status != FINAL_STATUS_WOULD_HAVE_BEEN_USED) {
-        // Not a dummy PrerenderContents, so test that the refering
+        // Not a dummy PrerenderContents, so test that the referring
         // page received events.
         EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
         if (check_load_events_) {
@@ -1520,20 +1521,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
       base::Bind(&CreateNeverStartProtocolHandlerOnIO, kNoCommitUrl));
   DisableJavascriptCalls();
   PrerenderTestURL(kNoCommitUrl,
-                   FINAL_STATUS_CANCELLED,
+                   FINAL_STATUS_NAVIGATION_UNCOMMITTED,
                    0);
 
   // Navigate to the URL, but assume the contents won't be swapped in.
   NavigateToDestURLWithDisposition(CURRENT_TAB, false);
-
-  // Confirm that the prerendered version of the URL is not swapped in,
-  // since it never committed.
-  EXPECT_TRUE(UrlIsInPrerenderManager(kNoCommitUrl));
-
-  // Post a task to cancel all the prerenders, so that we don't wait further.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
-  content::RunMessageLoop();
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
