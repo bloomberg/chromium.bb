@@ -308,12 +308,6 @@ GERRIT_ON_BORG_LABELS = {
     'Verified': 'VRIF',
 }
 
-
-# Some files need permissions set for several distinct groups. A google storage
-# acl (xml) file will be necessary in those cases. Make available well known
-# locations and standardize.
-KNOWN_ACL_FILES = {'slave': os.path.expanduser('~/slave_archive_acl')}
-
 # Environment variables that should be exposed to all children processes
 # invoked via cros_build_lib.RunCommand.
 ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR)

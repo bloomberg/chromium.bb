@@ -6,7 +6,6 @@
 
 from datetime import datetime
 import fnmatch
-import getpass
 import glob
 import logging
 import multiprocessing
@@ -42,7 +41,6 @@ _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
                              'chromeos/binhost')
 _GSUTIL_PATH = '/b/build/scripts/slave/gsutil'
-_GS_ACL = '/home/%(user)s/slave_archive_acl' % {'user' : getpass.getuser()}
 _BINHOST_PACKAGE_FILE = ('/usr/share/dev-install/portage/make.profile/'
                          'package.installable')
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
@@ -1166,7 +1164,6 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
     else:
       cmds = (
           [_GSUTIL_PATH, 'cp', full_filename, full_url],
-          [_GSUTIL_PATH, 'setacl', _GS_ACL, full_url],
       )
 
     try:
