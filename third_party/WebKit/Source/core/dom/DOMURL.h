@@ -28,7 +28,7 @@
 #define DOMURL_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/html/DOMURLUtils.h"
+#include "core/dom/DOMURLUtils.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"

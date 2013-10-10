@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/html/DOMURL.h"
+#include "core/dom/DOMURL.h"
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"

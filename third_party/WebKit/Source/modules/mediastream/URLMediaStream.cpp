@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/mediastream/URLMediaStream.h"
 
-#include "core/html/DOMURL.h"
+#include "core/dom/DOMURL.h"
 #include "modules/mediastream/MediaStream.h"
 #include "wtf/MainThread.h"
 

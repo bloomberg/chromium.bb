@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/html/DOMURLUtils.h"
+#include "core/dom/DOMURLUtils.h"
 
 #include "weborigin/KURL.h"
 #include "weborigin/KnownPorts.h"
