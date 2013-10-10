@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import json
+import logging
 import os
 import unittest
 
@@ -9,7 +10,7 @@ from telemetry.core import browser_finder
 from telemetry.core import exceptions
 from telemetry.core import extension_to_load
 from telemetry.core import util
-from telemetry.core.chrome import cros_interface
+from telemetry.core.backends.chrome import cros_interface
 from telemetry.unittest import options_for_unittests
 
 class CrOSAutoTest(unittest.TestCase):
@@ -40,6 +41,7 @@ class CrOSAutoTest(unittest.TestCase):
           browser_type=options.browser_type,
           is_component=True)
       options.extensions_to_load = [self._load_extension]
+      options.browser_options.create_browser_with_oobe = True
 
     browser_to_create = browser_finder.FindBrowser(options)
     self.assertTrue(browser_to_create)
@@ -52,6 +54,19 @@ class CrOSAutoTest(unittest.TestCase):
     extension = browser.extensions[self._load_extension]
     self.assertTrue(extension)
     return extension
+
+  def _GetLoginStatus(self, browser):
+      extension = self._GetAutotestExtension(browser)
+      self.assertTrue(extension.EvaluateJavaScript(
+          "typeof('chrome.autotestPrivate') != 'undefined'"))
+      extension.ExecuteJavaScript('''
+        window.__login_status = null;
+        chrome.autotestPrivate.loginStatus(function(s) {
+          window.__login_status = s;
+        });
+      ''')
+      return util.WaitFor(
+          lambda: extension.EvaluateJavaScript('window.__login_status'), 10)
 
   def testCryptohomeMounted(self):
     """Verifies cryptohome mount status for regular and guest user and when
@@ -78,19 +93,63 @@ class CrOSAutoTest(unittest.TestCase):
   def testLoginStatus(self):
     """Tests autotestPrivate.loginStatus"""
     with self._CreateBrowser(True) as b:
-      extension = self._GetAutotestExtension(b)
-      extension.ExecuteJavaScript('''
-        chrome.autotestPrivate.loginStatus(function(s) {
-          window.__autotest_result = s;
-        });
-      ''')
-      login_status = extension.EvaluateJavaScript('window.__autotest_result')
+      login_status = self._GetLoginStatus(b)
       self.assertEquals(type(login_status), dict)
 
       self.assertEquals(not self._is_guest, login_status['isRegularUser'])
       self.assertEquals(self._is_guest, login_status['isGuest'])
       self.assertEquals(login_status['email'], self._email)
       self.assertFalse(login_status['isScreenLocked'])
+
+  def _IsScreenLocked(self, browser):
+    return self._GetLoginStatus(browser)['isScreenLocked']
+
+  def _LockScreen(self, browser):
+      self.assertFalse(self._IsScreenLocked(browser))
+
+      extension = self._GetAutotestExtension(browser)
+      self.assertTrue(extension.EvaluateJavaScript(
+          "typeof chrome.autotestPrivate.lockScreen == 'function'"))
+      logging.info('Locking screen')
+      extension.ExecuteJavaScript('chrome.autotestPrivate.lockScreen();')
+
+      logging.info('Waiting for the lock screen')
+      def ScreenLocked():
+        return (browser.oobe and
+            browser.oobe.EvaluateJavaScript("typeof Oobe == 'function'") and
+            browser.oobe.EvaluateJavaScript(
+            "typeof Oobe.authenticateForTesting == 'function'"))
+      util.WaitFor(ScreenLocked, 10)
+      self.assertTrue(self._IsScreenLocked(browser))
+
+  def _AttemptUnlockBadPassword(self, browser):
+      logging.info('Trying a bad password')
+      def ErrorBubbleVisible():
+        return not browser.oobe.EvaluateJavaScript('''
+            document.getElementById('bubble').hidden
+        ''')
+      self.assertFalse(ErrorBubbleVisible())
+      browser.oobe.ExecuteJavaScript('''
+          Oobe.authenticateForTesting('test@test.test', 'bad');
+      ''')
+      util.WaitFor(ErrorBubbleVisible, 10)
+      self.assertTrue(self._IsScreenLocked(browser))
+
+  def _UnlockScreen(self, browser):
+      logging.info('Unlocking')
+      browser.oobe.ExecuteJavaScript('''
+          Oobe.authenticateForTesting('test@test.test', '');
+      ''')
+      util.WaitFor(lambda: not browser.oobe, 10)
+      self.assertFalse(self._IsScreenLocked(browser))
+
+  def testScreenLock(self):
+    """Tests autotestPrivate.screenLock"""
+    with self._CreateBrowser(True) as browser:
+      self._LockScreen(browser)
+      self._AttemptUnlockBadPassword(browser)
+      self._UnlockScreen(browser)
+
 
   def testLogout(self):
     """Tests autotestPrivate.logout"""
