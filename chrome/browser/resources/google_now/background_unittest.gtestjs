@@ -526,7 +526,7 @@ TEST_F(
 
 TEST_F(
     'GoogleNowBackgroundUnitTest',
-    'Initialize_ToastStateEmpty3',
+    'DISABLED_Initialize_ToastStateEmpty3',
     function() {
       // Tests the case when NOTIFICATION_CARDS_URL is set, getAuthToken
       // succeeds, and the user has never responded to the toast.
@@ -606,7 +606,10 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
   initialize();
 });
 
-TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'DISABLED_Initialize_NoGeolocation',
+    function() {
   // Tests the case where everything is in place except for the
   // Geolocation Preference after the user responded to the toast.
 

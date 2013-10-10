@@ -17,10 +17,7 @@
  * 4. Showing the received cards as notifications.
  */
 
-// TODO(vadimt): Use background permission to show notifications even when all
-// browser windows are closed.
 // TODO(vadimt): Decide what to do in incognito mode.
-// TODO(vadimt): Honor the flag the enables Google Now integration.
 // TODO(vadimt): Figure out the final values of the constants.
 // TODO(vadimt): Remove 'console' calls.
 // TODO(vadimt): Consider sending JS stacks for malformed server responses.
@@ -582,10 +579,16 @@ function requestLocation() {
         parseInt(params && params.minTimeInMilliseconds, 10) ||
         180000;  // 3 minutes.
 
-    chrome.location.watchLocation(LOCATION_WATCH_NAME, {
-      minDistanceInMeters: minDistanceInMeters,
-      minTimeInMilliseconds: minTimeInMilliseconds
-    });
+    // TODO(vadimt): Uncomment/remove watchLocation and remove invoking
+    // updateNotificationsCards once state machine design is finalized.
+//    chrome.location.watchLocation(LOCATION_WATCH_NAME, {
+//      minDistanceInMeters: minDistanceInMeters,
+//      minTimeInMilliseconds: minTimeInMilliseconds
+//    });
+    // We need setTimeout to avoid recursive task creation. This is a temporary
+    // code, and it will be removed once we finally decide to send or not send
+    // client location to the server.
+    setTimeout(wrapper.wrapCallback(updateNotificationsCards, true), 0);
   });
 }
 
@@ -978,11 +981,13 @@ function updateRunningState(
     userRespondedToToast,
     enableBackground,
     callback) {
-
   console.log(
       'State Update signedIn=' + signedIn + ' ' +
       'geolocationEnabled=' + geolocationEnabled + ' ' +
       'userRespondedToToast=' + userRespondedToToast);
+
+  // TODO(vadimt): Remove this line once state machine design is finalized.
+  geolocationEnabled = userRespondedToToast = true;
 
   var shouldSetToastVisible = false;
   var shouldPollCards = false;
