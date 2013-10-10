@@ -34,13 +34,14 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
 struct HTMLConstructionSiteTask {
     enum Operation {
         Insert,
-        InsertAlreadyParsedChild,
+        InsertAlreadyParsedChild, // Insert w/o calling begin/end parsing.
         Reparent,
         TakeAllChildren,
     };
@@ -74,10 +75,12 @@ template<> struct VectorTraits<WebCore::HTMLConstructionSiteTask> : SimpleClassV
 
 namespace WebCore {
 
+// Note: These are intentionally ordered so that when we concatonate
+// strings and whitespaces the resulting whitespace is ws = min(ws1, ws2).
 enum WhitespaceMode {
-    AllWhitespace,
+    WhitespaceUnknown,
     NotAllWhitespace,
-    WhitespaceUnknown
+    AllWhitespace,
 };
 
 class AtomicHTMLToken;
@@ -96,6 +99,7 @@ public:
     void executeQueuedTasks();
 
     void setDefaultCompatibilityMode();
+    void processEndOfFile();
     void finishedParsing();
 
     void insertDoctype(AtomicHTMLToken*);
@@ -196,6 +200,7 @@ private:
     void dispatchDocumentElementAvailableIfNeeded();
 
     void executeTask(HTMLConstructionSiteTask&);
+    void queueTask(const HTMLConstructionSiteTask&);
 
     Document* m_document;
 

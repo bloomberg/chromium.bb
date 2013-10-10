@@ -2178,7 +2178,7 @@ void Document::cancelParsing()
     // We have to clear the parser to avoid possibly triggering
     // the onload handler when closing as a side effect of a cancel-style
     // change, such as opening a new document or closing the window while
-    // still parsing
+    // still parsing.
     detachParser();
     explicitClose();
 }

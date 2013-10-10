@@ -390,31 +390,31 @@ void HTMLTreeBuilder::constructTree(AtomicHTMLToken* token)
 
 void HTMLTreeBuilder::processToken(AtomicHTMLToken* token)
 {
+    if (token->type() == HTMLToken::Character) {
+        processCharacter(token);
+        return;
+    }
+
+    m_shouldSkipLeadingNewline = false;
+
     switch (token->type()) {
     case HTMLToken::Uninitialized:
+    case HTMLToken::Character:
         ASSERT_NOT_REACHED();
         break;
     case HTMLToken::DOCTYPE:
-        m_shouldSkipLeadingNewline = false;
         processDoctypeToken(token);
         break;
     case HTMLToken::StartTag:
-        m_shouldSkipLeadingNewline = false;
         processStartTag(token);
         break;
     case HTMLToken::EndTag:
-        m_shouldSkipLeadingNewline = false;
         processEndTag(token);
         break;
     case HTMLToken::Comment:
-        m_shouldSkipLeadingNewline = false;
         processComment(token);
-        return;
-    case HTMLToken::Character:
-        processCharacter(token);
         break;
     case HTMLToken::EndOfFile:
-        m_shouldSkipLeadingNewline = false;
         processEndOfFile(token);
         break;
     }
@@ -2526,8 +2526,7 @@ void HTMLTreeBuilder::processEndOfFile(AtomicHTMLToken* token)
             return;
         break;
     }
-    ASSERT(m_tree.currentNode());
-    m_tree.openElements()->popAll();
+    m_tree.processEndOfFile();
 }
 
 void HTMLTreeBuilder::defaultForInitial()

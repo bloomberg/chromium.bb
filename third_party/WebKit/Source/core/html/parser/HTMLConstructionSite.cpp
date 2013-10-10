@@ -157,6 +157,11 @@ void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task)
     ASSERT_NOT_REACHED();
 }
 
+void HTMLConstructionSite::queueTask(const HTMLConstructionSiteTask& task)
+{
+    m_taskQueue.append(task);
+}
+
 void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtr<Node> prpChild, bool selfClosing)
 {
     ASSERT(scriptingContentIsAllowed(m_parserContentPolicy) || !prpChild.get()->isElementNode() || !toScriptLoaderIfPossible(toElement(prpChild.get())));
@@ -177,7 +182,7 @@ void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtr<Node> p
         task.parent = task.parent->parentNode();
 
     ASSERT(task.parent);
-    m_taskQueue.append(task);
+    queueTask(task);
 }
 
 void HTMLConstructionSite::executeQueuedTasks()
@@ -221,6 +226,9 @@ HTMLConstructionSite::HTMLConstructionSite(DocumentFragment* fragment, ParserCon
 
 HTMLConstructionSite::~HTMLConstructionSite()
 {
+    // Depending on why we're being destroyed it might be OK
+    // to forget queued tasks, but currently we don't expect to.
+    ASSERT(m_taskQueue.isEmpty());
 }
 
 void HTMLConstructionSite::detach()
@@ -391,8 +399,15 @@ void HTMLConstructionSite::setCompatibilityModeFromDoctype(const String& name, c
     setCompatibilityMode(Document::NoQuirksMode);
 }
 
+void HTMLConstructionSite::processEndOfFile()
+{
+    ASSERT(currentNode());
+    openElements()->popAll();
+}
+
 void HTMLConstructionSite::finishedParsing()
 {
+    ASSERT(m_taskQueue.isEmpty());
     m_document->finishedParsing();
 }
 
@@ -574,7 +589,7 @@ void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, 
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Reparent);
     task.parent = newParent->node();
     task.child = child->node();
-    m_taskQueue.append(task);
+    queueTask(task);
 }
 
 void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, HTMLStackItem* child)
@@ -582,7 +597,7 @@ void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, 
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Reparent);
     task.parent = newParent->node();
     task.child = child->node();
-    m_taskQueue.append(task);
+    queueTask(task);
 }
 
 void HTMLConstructionSite::insertAlreadyParsedChild(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* child)
@@ -595,7 +610,7 @@ void HTMLConstructionSite::insertAlreadyParsedChild(HTMLStackItem* newParent, HT
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::InsertAlreadyParsedChild);
     task.parent = newParent->node();
     task.child = child->node();
-    m_taskQueue.append(task);
+    queueTask(task);
 }
 
 void HTMLConstructionSite::takeAllChildren(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* oldParent)
@@ -603,7 +618,7 @@ void HTMLConstructionSite::takeAllChildren(HTMLStackItem* newParent, HTMLElement
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::TakeAllChildren);
     task.parent = newParent->node();
     task.child = oldParent->node();
-    m_taskQueue.append(task);
+    queueTask(task);
 }
 
 PassRefPtr<Element> HTMLConstructionSite::createElement(AtomicHTMLToken* token, const AtomicString& namespaceURI)
@@ -745,8 +760,7 @@ void HTMLConstructionSite::fosterParent(PassRefPtr<Node> node)
     findFosterSite(task);
     task.child = node;
     ASSERT(task.parent);
-
-    m_taskQueue.append(task);
+    queueTask(task);
 }
 
 }
