@@ -159,6 +159,7 @@ void FileReaderLoader::cleanup()
         m_rawData = 0;
         m_stringResult = "";
         m_isRawDataConverted = true;
+        m_decoder = 0;
     }
 }
 
@@ -259,7 +260,7 @@ void FileReaderLoader::didReceiveData(const char* data, int dataLength)
 
 void FileReaderLoader::didFinishLoading(unsigned long, double)
 {
-    if (m_readType != ReadByClient && m_variableLength && m_totalBytes > m_bytesLoaded) {
+    if (m_readType != ReadByClient && m_rawData && m_rawData->byteLength() > m_bytesLoaded) {
         RefPtr<ArrayBuffer> newData = m_rawData->slice(0, m_bytesLoaded);
 
         m_rawData = newData;
