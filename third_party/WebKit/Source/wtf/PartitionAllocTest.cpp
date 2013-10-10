@@ -218,20 +218,30 @@ TEST(WTF_PartitionAlloc, PageTransitions)
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
 
     WTF::PartitionPageHeader* page1 = GetFullPage(kTestAllocSize);
+    EXPECT_EQ(page1, bucket->currPage);
+    EXPECT_EQ(page1, page1->next);
+    EXPECT_EQ(page1, page1->prev);
     WTF::PartitionPageHeader* page2 = GetFullPage(kTestAllocSize);
     EXPECT_EQ(page2, bucket->currPage);
-    EXPECT_EQ(page1, page2->next);
-    EXPECT_EQ(page1, page2->prev);
+    EXPECT_EQ(page2, page2->next);
+    EXPECT_EQ(page2, page2->prev);
+
+    // Bounce page1 back into the non-full list then fill it up again.
+    char* ptr = reinterpret_cast<char*>(page1) + sizeof(WTF::PartitionPageHeader);
+    partitionFree(ptr);
+    (void) partitionAlloc(allocator.root(), kTestAllocSize);
+    EXPECT_EQ(page1, bucket->currPage);
+
     // Allocating another page at this point should cause us to scan over page1
     // (which is both full and NOT our current page), and evict it from the
     // freelist. Older code had a O(n^2) condition due to failure to do this.
     WTF::PartitionPageHeader* page3 = GetFullPage(kTestAllocSize);
     EXPECT_EQ(page3, bucket->currPage);
-    EXPECT_EQ(page2, page3->next);
-    EXPECT_EQ(page3, page2->next);
+    EXPECT_EQ(page3, page3->next);
+    EXPECT_EQ(page3, page3->next);
 
     // Work out a pointer into page2 and free it.
-    char* ptr = reinterpret_cast<char*>(page2) + sizeof(WTF::PartitionPageHeader);
+    ptr = reinterpret_cast<char*>(page2) + sizeof(WTF::PartitionPageHeader);
     partitionFree(ptr);
     // Trying to allocate at this time should cause us to cycle around to page2
     // and find the recently freed slot.
@@ -469,10 +479,16 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     WTF::PartitionPageHeader* page2 = reinterpret_cast<WTF::PartitionPageHeader*>(reinterpret_cast<size_t>(ptr4) & WTF::kPartitionPageBaseMask);
     EXPECT_EQ(1, page2->numAllocatedSlots);
 
+    // Churn things a little whilst there's a partial page freelist.
+    partitionFree(ptr);
+    ptr = partitionAlloc(allocator.root(), bigSize);
+    void* ptr5 = partitionAlloc(allocator.root(), bigSize);
+
     partitionFree(ptr);
     partitionFree(ptr2);
     partitionFree(ptr3);
     partitionFree(ptr4);
+    partitionFree(ptr5);
     EXPECT_TRUE(bucket->freePages);
     EXPECT_EQ(page, bucket->freePages->page);
     EXPECT_TRUE(page2->freelistHead);
@@ -525,6 +541,42 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     partitionFree(ptr);
     EXPECT_TRUE(page->freelistHead);
     EXPECT_EQ(0, page->numAllocatedSlots);
+
+    TestShutdown();
+}
+
+// Test some of the fragmentation-resistant properties of the allocator.
+TEST(WTF_PartitionAlloc, PageRefilling)
+{
+    TestSetup();
+    size_t bucketIdx = kTestAllocSize >> WTF::kBucketShift;
+    WTF::PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
+
+    // Grab two full pages and a non-full page.
+    WTF::PartitionPageHeader* page1 = GetFullPage(kTestAllocSize);
+    WTF::PartitionPageHeader* page2 = GetFullPage(kTestAllocSize);
+    void* ptr = partitionAlloc(allocator.root(), kTestAllocSize);
+    EXPECT_TRUE(ptr);
+    EXPECT_NE(page1, bucket->currPage);
+    EXPECT_NE(page2, bucket->currPage);
+    WTF::PartitionPageHeader* page = reinterpret_cast<WTF::PartitionPageHeader*>(reinterpret_cast<size_t>(ptr) & WTF::kPartitionPageBaseMask);
+    EXPECT_EQ(1, page->numAllocatedSlots);
+
+    // Work out a pointer into page2 and free it; and then page1 and free it.
+    char* ptr2 = reinterpret_cast<char*>(page1) + sizeof(WTF::PartitionPageHeader);
+    partitionFree(ptr2);
+    ptr2 = reinterpret_cast<char*>(page2) + sizeof(WTF::PartitionPageHeader);
+    partitionFree(ptr2);
+
+    // If we perform two allocations from the same bucket now, we expect to
+    // refill both the nearly full pages.
+    (void) partitionAlloc(allocator.root(), kTestAllocSize);
+    (void) partitionAlloc(allocator.root(), kTestAllocSize);
+    EXPECT_EQ(1, page->numAllocatedSlots);
+
+    FreeFullPage(page2, kTestAllocSize);
+    FreeFullPage(page1, kTestAllocSize);
+    partitionFree(ptr);
 
     TestShutdown();
 }
