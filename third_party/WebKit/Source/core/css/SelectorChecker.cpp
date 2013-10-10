@@ -50,7 +50,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/RenderObject.h"

@@ -3682,7 +3682,7 @@ HTMLFrameOwnerElement* Document::ownerElement() const
 
 String Document::cookie(ExceptionState& es) const
 {
-    if (page() && !page()->settings().cookieEnabled())
+    if (settings() && !settings()->cookieEnabled())
         return String();
 
     // FIXME: The HTML5 DOM spec states that this attribute can raise an
@@ -3709,7 +3709,7 @@ String Document::cookie(ExceptionState& es) const
 
 void Document::setCookie(const String& value, ExceptionState& es)
 {
-    if (page() && !page()->settings().cookieEnabled())
+    if (settings() && !settings()->cookieEnabled())
         return;
 
     // FIXME: The HTML5 DOM spec states that this attribute can raise an

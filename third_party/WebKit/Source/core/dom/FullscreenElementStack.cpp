@@ -184,12 +184,13 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         //   An algorithm is allowed to show a pop-up if, in the task in which the algorithm is running, either:
         //   - an activation behavior is currently being processed whose click event was trusted, or
         //   - the event listener for a trusted click event is being handled.
-        if (!UserGestureIndicator::processingUserGesture() && (!element->isMediaElement() || document()->page()->settings().mediaFullscreenRequiresUserGesture()))
+        // FIXME: Does this need to null-check settings()?
+        if (!UserGestureIndicator::processingUserGesture() && (!element->isMediaElement() || document()->settings()->mediaFullscreenRequiresUserGesture()))
             break;
         UserGestureIndicator::consumeUserGesture();
 
         // There is a previously-established user preference, security risk, or platform limitation.
-        if (!document()->page() || !document()->page()->settings().fullScreenEnabled())
+        if (!document()->settings() || !document()->settings()->fullScreenEnabled())
             break;
 
         // 2. Let doc be element's node document. (i.e. "this")
@@ -358,10 +359,10 @@ void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* elemen
     ASSERT(element);
 
     // Protect against being called after the document has been removed from the page.
-    if (!document()->page())
+    if (!document()->settings())
         return;
 
-    ASSERT(document()->page()->settings().fullScreenEnabled());
+    ASSERT(document()->settings()->fullScreenEnabled());
 
     if (m_fullScreenRenderer)
         m_fullScreenRenderer->unwrapRenderer();

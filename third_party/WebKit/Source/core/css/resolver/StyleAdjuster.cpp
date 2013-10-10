@@ -40,7 +40,6 @@
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/page/FrameView.h"
-#include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Length.h"
 #include "core/rendering/Pagination.h"
@@ -278,7 +277,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         || style->hasFilter()
         || style->hasBlendMode()
         || style->position() == StickyPosition
-        || (style->position() == FixedPosition && e && e->document().page() && e->document().page()->settings().fixedPositionCreatesStackingContext())
+        || (style->position() == FixedPosition && e && e->document().settings() && e->document().settings()->fixedPositionCreatesStackingContext())
         || isInTopLayer(e, style)
         ))
         style->setZIndex(0);

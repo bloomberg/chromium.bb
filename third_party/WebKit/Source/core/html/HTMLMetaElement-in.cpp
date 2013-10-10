@@ -25,7 +25,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/page/Page.h"
 #include "core/page/Settings.h"
 
 namespace WebCore {
@@ -196,7 +195,7 @@ Length HTMLMetaElement::parseViewportValueAsLength(const String& keyString, cons
     if (value < 0)
         return Length(); // auto
 
-    if (!value && document().page() && document().page()->settings().viewportMetaZeroValuesQuirk()) {
+    if (!value && document().settings() && document().settings()->viewportMetaZeroValuesQuirk()) {
         if (keyString == "width")
             return Length(100, ViewportPercentageWidth);
         if (keyString == "height")
@@ -239,7 +238,7 @@ float HTMLMetaElement::parseViewportValueAsZoom(const String& keyString, const S
     if (value > 10.0)
         reportViewportWarning(MaximumScaleTooLargeError, String(), String());
 
-    if (!value && document().page() && document().page()->settings().viewportMetaZeroValuesQuirk())
+    if (!value && document().settings() && document().settings()->viewportMetaZeroValuesQuirk())
         return ViewportDescription::ValueAuto;
 
     return clampScaleValue(value);
@@ -399,7 +398,7 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
 {
     ASSERT(!content.isNull());
 
-    if (!document().page() || !document().shouldOverrideLegacyViewport(origin))
+    if (!document().settings() || !document().shouldOverrideLegacyViewport(origin))
         return;
 
     ViewportDescription newDescriptionFromLegacyTag(origin);
@@ -413,12 +412,12 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
         newDescriptionFromLegacyTag.minZoom = std::min(newDescriptionFromLegacyTag.minZoom, float(5));
     }
 
-    const Settings& settings = document().page()->settings();
+    const Settings* settings = document().settings();
 
     if (newDescriptionFromLegacyTag.maxWidth.isAuto()) {
         if (newDescriptionFromLegacyTag.zoom == ViewportDescription::ValueAuto) {
             newDescriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
-            newDescriptionFromLegacyTag.maxWidth = Length(settings.layoutFallbackWidth(), Fixed);
+            newDescriptionFromLegacyTag.maxWidth = Length(settings->layoutFallbackWidth(), Fixed);
         } else if (newDescriptionFromLegacyTag.maxHeight.isAuto()) {
             newDescriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
             newDescriptionFromLegacyTag.maxWidth = Length(ExtendToZoom);

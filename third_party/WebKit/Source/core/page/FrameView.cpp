@@ -584,7 +584,7 @@ void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, S
     }
 
     bool ignoreOverflowHidden = false;
-    if (m_frame->page()->settings().ignoreMainFrameOverflowHiddenQuirk() && m_frame->page()->mainFrame() == m_frame)
+    if (m_frame->settings()->ignoreMainFrameOverflowHiddenQuirk() && m_frame->page()->mainFrame() == m_frame)
         ignoreOverflowHidden = true;
 
     switch (overflowX) {
@@ -2706,8 +2706,8 @@ void FrameView::notifyPageThatContentAreaWillPaint() const
 
 bool FrameView::scrollAnimatorEnabled() const
 {
-    if (Page* page = m_frame->page())
-        return page->settings().scrollAnimatorEnabled();
+    if (m_frame->settings())
+        return m_frame->settings()->scrollAnimatorEnabled();
     return false;
 }
 

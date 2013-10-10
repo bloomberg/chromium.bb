@@ -25,7 +25,6 @@
 
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
-#include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
@@ -229,7 +228,7 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     effectiveTransform.multiply(filterData->shearFreeAbsoluteTransform);
 
     OwnPtr<ImageBuffer> sourceGraphic;
-    RenderingMode renderingMode = object->document().page()->settings().acceleratedFiltersEnabled() ? Accelerated : Unaccelerated;
+    RenderingMode renderingMode = object->document().settings()->acceleratedFiltersEnabled() ? Accelerated : Unaccelerated;
     if (!createImageBuffer(filterData->drawingRegion, effectiveTransform, sourceGraphic, renderingMode)) {
         ASSERT(!m_filter.contains(object));
         filterData->savedContext = context;
