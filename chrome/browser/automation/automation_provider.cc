@@ -598,7 +598,7 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
       }
     } else {
       // There is no UI, Chrome probably runs as Chrome-Frame mode.
-      // Try to get WebContents and call its override_encoding method.
+      // Try to get WebContents and call its SetOverrideEncoding method.
       WebContents* contents = nav->GetWebContents();
       if (!contents)
         return;

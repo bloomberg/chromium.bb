@@ -456,7 +456,6 @@ void FillNavigateParamsFromOpenURLParams(chrome::NavigateParams* nav_params,
   nav_params->referrer = params.referrer;
   nav_params->extra_headers = params.extra_headers;
   nav_params->disposition = params.disposition;
-  nav_params->override_encoding = params.override_encoding;
   nav_params->is_renderer_initiated = params.is_renderer_initiated;
   nav_params->transferred_global_request_id =
       params.transferred_global_request_id;

@@ -68,9 +68,6 @@ struct CONTENT_EXPORT OpenURLParams {
   // Whether this navigation is initiated by the renderer process.
   bool is_renderer_initiated;
 
-  // The override encoding of the URL contents to be opened.
-  std::string override_encoding;
-
   // Reference to the old request id in case this is a navigation that is being
   // transferred to a new renderer.
   GlobalRequestID transferred_global_request_id;
