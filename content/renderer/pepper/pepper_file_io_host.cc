@@ -138,7 +138,6 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       quota_policy_(quota::kQuotaLimitTypeUnknown),
-      is_running_in_process_(host->IsRunningInProcess()),
       open_flags_(0),
       routing_id_(RenderThreadImpl::current()->GenerateRoutingID()),
       weak_factory_(this) {
@@ -391,7 +390,7 @@ int32_t PepperFileIOHost::OnHostMsgClose(
 
 int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
     ppapi::host::HostMessageContext* context) {
-  if (!is_running_in_process_ &&
+  if (open_flags_ != PP_FILEOPENFLAG_READ &&
       quota_policy_ != quota::kQuotaLimitTypeUnlimited)
     return PP_ERROR_FAILED;
 

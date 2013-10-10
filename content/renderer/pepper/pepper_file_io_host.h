@@ -115,8 +115,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   // of type PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY} is opened.
   scoped_ptr<QuotaFileIO> quota_file_io_;
 
-  bool is_running_in_process_;
-
   int32_t open_flags_;
 
   ppapi::FileIOStateManager state_manager_;
