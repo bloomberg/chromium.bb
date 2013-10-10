@@ -2743,6 +2743,8 @@ void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {
   }
   if (render_widget_host_)
     render_widget_host_->ViewDestroyed();
+  if (base::win::IsTSFAwareRequired())
+    ui::TSFBridge::GetInstance()->RemoveFocusedClient(this);
   delete this;
 }
 
