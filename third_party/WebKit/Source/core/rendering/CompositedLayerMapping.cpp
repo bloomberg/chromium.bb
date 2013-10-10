@@ -395,9 +395,9 @@ void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
         if (flags & IsUpdateRoot) {
             updateGraphicsLayerGeometry();
             layerCompositor->updateRootLayerPosition();
-            RenderLayer* stackingContainer = m_owningLayer->enclosingStackingContainer();
-            if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainer && (stackingContainer != m_owningLayer))
-                layerCompositor->updateCompositingDescendantGeometry(stackingContainer, stackingContainer, flags & CompositingChildrenOnly);
+            RenderLayer* stackingContainerLayer = m_owningLayer->enclosingStackingContainerLayer();
+            if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainerLayer && (stackingContainerLayer != m_owningLayer))
+                layerCompositor->updateCompositingDescendantGeometry(stackingContainerLayer, stackingContainerLayer, flags & CompositingChildrenOnly);
         }
     }
 
@@ -411,7 +411,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     RenderObject* renderer = this->renderer();
 
     m_owningLayer->updateDescendantDependentFlags();
-    m_owningLayer->updateZOrderLists();
+    m_owningLayer->stackingNode()->updateZOrderLists();
 
     bool layerConfigChanged = false;
     setBackgroundLayerPaintsFixedRootBackground(compositor->needsFixedRootBackgroundLayer(m_owningLayer));
@@ -506,7 +506,7 @@ static IntRect clipBox(RenderBox* renderer)
 void CompositedLayerMapping::updateGraphicsLayerGeometry()
 {
     // If we haven't built z-order lists yet, wait until later.
-    if (m_owningLayer->isStackingContainer() && m_owningLayer->m_zOrderListsDirty)
+    if (m_owningLayer->stackingNode()->isStackingContainer() && m_owningLayer->stackingNode()->zOrderListsDirty())
         return;
 
     // Set transform property, if it is not animating. We have to do this here because the transform
@@ -1194,7 +1194,7 @@ float CompositedLayerMapping::compositingOpacity(float rendererOpacity) const
     for (RenderLayer* curr = m_owningLayer->parent(); curr; curr = curr->parent()) {
         // We only care about parents that are stacking contexts.
         // Recall that opacity creates stacking context.
-        if (!curr->isStackingContainer())
+        if (!curr->stackingNode()->isStackingContainer())
             continue;
 
         // If we found a composited layer, regardless of whether it actually
@@ -1334,13 +1334,13 @@ bool CompositedLayerMapping::isSimpleContainerCompositingLayer() const
 static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
 {
     // FIXME: We shouldn't be called with a stale z-order lists. See bug 85512.
-    parent->updateLayerListsIfNeeded();
+    parent->stackingNode()->updateLayerListsIfNeeded();
 
 #if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(parent);
+    LayerListMutationDetector mutationChecker(parent->stackingNode());
 #endif
 
-    if (Vector<RenderLayer*>* normalFlowList = parent->normalFlowList()) {
+    if (Vector<RenderLayer*>* normalFlowList = parent->stackingNode()->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
             RenderLayer* curLayer = normalFlowList->at(i);
@@ -1350,12 +1350,12 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
         }
     }
 
-    if (parent->isStackingContainer()) {
+    if (parent->stackingNode()->isStackingContainer()) {
         if (!parent->hasVisibleDescendant())
             return false;
 
         // Use the m_hasCompositingDescendant bit to optimize?
-        if (Vector<RenderLayer*>* negZOrderList = parent->negZOrderList()) {
+        if (Vector<RenderLayer*>* negZOrderList = parent->stackingNode()->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = negZOrderList->at(i);
@@ -1365,7 +1365,7 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
             }
         }
 
-        if (Vector<RenderLayer*>* posZOrderList = parent->posZOrderList()) {
+        if (Vector<RenderLayer*>* posZOrderList = parent->stackingNode()->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = posZOrderList->at(i);

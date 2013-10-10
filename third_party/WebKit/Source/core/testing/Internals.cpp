@@ -1674,7 +1674,7 @@ String Internals::elementLayerTreeAsText(Element* element, ExceptionState& es) c
     return elementLayerTreeAsText(element, 0, es);
 }
 
-static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionState& es, RenderLayer::PaintOrderListType type)
+static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionState& es, RenderLayerStackingNode::PaintOrderListType type)
 {
     if (!element) {
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
@@ -1696,18 +1696,18 @@ static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionState& es,
     }
 
     Vector<RefPtr<Node> > nodes;
-    layer->computePaintOrderList(type, nodes);
+    layer->stackingNode()->computePaintOrderList(type, nodes);
     return StaticNodeList::adopt(nodes);
 }
 
 PassRefPtr<NodeList> Internals::paintOrderListBeforePromote(Element* element, ExceptionState& es)
 {
-    return paintOrderList(element, es, RenderLayer::BeforePromote);
+    return paintOrderList(element, es, RenderLayerStackingNode::BeforePromote);
 }
 
 PassRefPtr<NodeList> Internals::paintOrderListAfterPromote(Element* element, ExceptionState& es)
 {
-    return paintOrderList(element, es, RenderLayer::AfterPromote);
+    return paintOrderList(element, es, RenderLayerStackingNode::AfterPromote);
 }
 
 bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, ExceptionState& es)
