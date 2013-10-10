@@ -202,7 +202,8 @@ webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/text-text-05-t.svg [ ImageO
 webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ ImageOnlyFailure ]
 
 # Many WIN and Linux SVG tests containing text are flaky. It seems different fonts are used at different times.
-webkit.org/b/83303 [ Linux ] svg/zoom/text/zoom-hixie-mixed-009.xml [ ImageOnlyFailure Pass ]
+crbug.com/306190 [ Linux Win ] svg/zoom/page/zoom-hixie-mixed-009.xml [ ImageOnlyFailure Pass ]
+crbug.com/306190 [ Linux Win ] svg/zoom/text/zoom-hixie-mixed-009.xml [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/hixie/mixed/009.xml [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/text/scaling-font-with-geometric-precision.html [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/transforms/text-with-mask-with-svg-transform.svg [ ImageOnlyFailure Pass ]
@@ -1126,15 +1127,11 @@ crbug.com/298188 [ Linux Win ] virtual/implsidepainting/inspector/timeline/timel
 
 crbug.com/267888 [ Android ] crypto [ Skip ]
 
-# Transient. Removes as https://codereview.chromium.org/23597036/ lands.
-crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ ImageOnlyFailure ]
-
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
 crbug.com/304952 fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
 
-# Flaky.
 crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Pass ]
 
 crbug.com/304993 fast/regions/autoheight-regions-mark.html [ Failure Pass ]
@@ -1154,13 +1151,10 @@ crbug.com/304841 [ Win ] inspector/styles/override-screen-size.html [ Failure ]
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
 
-# Test crashes flakily.
-crbug.com/305476 [ Linux ] fast/encoding/api/streaming-decode.html [ Crash ]
+crbug.com/305476 [ Linux ] fast/encoding/api/streaming-decode.html [ Pass Crash ]
 
 crbug.com/305708 [ Linux ] fast/text/international/hindi-spacing.html [ Pass ImageOnlyFailure ]
 
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
-# Should be fixed with the next Skia roll.
-crbug.com/304968 [ Win Debug ] fast/url/idna2003.html [ Crash ]
-crbug.com/304968 [ Win Debug ] fast/text/midword-break-before-surrogate-pair.html [ Crash ]
+crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
