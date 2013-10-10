@@ -20,6 +20,7 @@
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/scheduler/delay_based_time_source.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -29,6 +30,13 @@
 using std::set;
 using std::string;
 using std::vector;
+
+namespace {
+
+const size_t kGpuLatencyHistorySize = 60;
+const double kGpuLatencyEstimationPercentile = 100.0;
+
+}
 
 namespace cc {
 
@@ -44,7 +52,8 @@ OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
       external_stencil_test_enabled_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this),
+      gpu_latency_history_(kGpuLatencyHistorySize) {}
 
 OutputSurface::OutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
@@ -59,7 +68,8 @@ OutputSurface::OutputSurface(
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
       external_stencil_test_enabled_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this),
+      gpu_latency_history_(kGpuLatencyHistorySize) {}
 
 OutputSurface::OutputSurface(
     scoped_refptr<ContextProvider> context_provider,
@@ -76,7 +86,8 @@ OutputSurface::OutputSurface(
       client_(NULL),
       check_for_retroactive_begin_frame_pending_(false),
       external_stencil_test_enabled_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this),
+      gpu_latency_history_(kGpuLatencyHistorySize) {}
 
 void OutputSurface::InitializeBeginFrameEmulation(
     base::SingleThreadTaskRunner* task_runner,
@@ -220,6 +231,8 @@ void OutputSurface::DidLoseOutputSurface() {
   skipped_begin_frame_args_ = BeginFrameArgs();
   if (frame_rate_controller_)
     frame_rate_controller_->SetActive(false);
+  pending_gpu_latency_query_ids_.clear();
+  available_gpu_latency_query_ids_.clear();
   client_->DidLoseOutputSurface();
 }
 
@@ -371,6 +384,7 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(context_provider_);
   DCHECK(frame->gl_frame_data);
 
+  UpdateAndMeasureGpuLatency();
   if (frame->gl_frame_data->sub_buffer_rect ==
       gfx::Rect(frame->gl_frame_data->size)) {
     // Note that currently this has the same effect as SwapBuffers; we should
@@ -389,6 +403,51 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     PostSwapBuffersComplete();
 
   DidSwapBuffers();
+}
+
+base::TimeDelta OutputSurface::GpuLatencyEstimate() {
+  if (context_provider_ && !capabilities_.adjust_deadline_for_parent)
+    return gpu_latency_history_.Percentile(kGpuLatencyEstimationPercentile);
+  else
+    return base::TimeDelta();
+}
+
+void OutputSurface::UpdateAndMeasureGpuLatency() {
+  // We only care about GPU latency for surfaces that do not have a parent
+  // compositor, since surfaces that do have a parent compositor can use
+  // mailboxes or delegated rendering to send frames to their parent without
+  // incurring GPU latency.
+  if (capabilities_.adjust_deadline_for_parent)
+    return;
+
+  while (pending_gpu_latency_query_ids_.size()) {
+    unsigned query_id = pending_gpu_latency_query_ids_.front();
+    unsigned query_complete = 1;
+    context_provider_->Context3d()->getQueryObjectuivEXT(
+        query_id, GL_QUERY_RESULT_AVAILABLE_EXT, &query_complete);
+    if (!query_complete)
+      break;
+
+    unsigned value = 0;
+    context_provider_->Context3d()->getQueryObjectuivEXT(
+        query_id, GL_QUERY_RESULT_EXT, &value);
+    pending_gpu_latency_query_ids_.pop_front();
+    available_gpu_latency_query_ids_.push_back(query_id);
+    gpu_latency_history_.InsertSample(base::TimeDelta::FromMicroseconds(value));
+  }
+
+  unsigned gpu_latency_query_id;
+  if (available_gpu_latency_query_ids_.size()) {
+    gpu_latency_query_id = available_gpu_latency_query_ids_.front();
+    available_gpu_latency_query_ids_.pop_front();
+  } else {
+    gpu_latency_query_id = context_provider_->Context3d()->createQueryEXT();
+  }
+
+  context_provider_->Context3d()->beginQueryEXT(GL_LATENCY_QUERY_CHROMIUM,
+                                                gpu_latency_query_id);
+  context_provider_->Context3d()->endQueryEXT(GL_LATENCY_QUERY_CHROMIUM);
+  pending_gpu_latency_query_ids_.push_back(gpu_latency_query_id);
 }
 
 void OutputSurface::PostSwapBuffersComplete() {
