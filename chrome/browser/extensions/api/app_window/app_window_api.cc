@@ -210,8 +210,9 @@ bool AppWindowCreateFunction::RunImpl() {
 
     if (options->frame.get()) {
       if (*options->frame == kHtmlFrameOption &&
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalExtensionApis)) {
+          (GetExtension()->HasAPIPermission(APIPermission::kExperimental) ||
+           CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kEnableExperimentalExtensionApis))) {
         create_params.frame = ShellWindow::FRAME_NONE;
         inject_html_titlebar = true;
       } else if (*options->frame == kNoneFrameOption) {
@@ -222,8 +223,9 @@ bool AppWindowCreateFunction::RunImpl() {
     }
 
     if (options->transparent_background.get() &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalExtensionApis)) {
+        (GetExtension()->HasAPIPermission(APIPermission::kExperimental) ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableExperimentalExtensionApis))) {
       create_params.transparent_background = *options->transparent_background;
     }
 
