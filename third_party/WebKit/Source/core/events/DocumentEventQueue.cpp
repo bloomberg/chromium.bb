@@ -87,7 +87,7 @@ void DocumentEventQueue::enqueueScrollEventForNode(Node* target)
         return;
 
     // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
-    RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventNames::scroll) : Event::create(EventNames::scroll);
+    RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventTypeNames::scroll) : Event::create(EventTypeNames::scroll);
     scrollEvent->setTarget(target);
     enqueueEvent(scrollEvent.release());
 }
