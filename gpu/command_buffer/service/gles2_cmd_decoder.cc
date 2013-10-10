@@ -401,7 +401,10 @@ class BackTexture {
 // Encapsulates an OpenGL render buffer of any format.
 class BackRenderbuffer {
  public:
-  explicit BackRenderbuffer(GLES2DecoderImpl* decoder);
+  explicit BackRenderbuffer(
+      RenderbufferManager* renderbuffer_manager,
+      MemoryTracker* memory_tracker,
+      ContextState* state);
   ~BackRenderbuffer();
 
   // Create a new render buffer.
@@ -427,8 +430,9 @@ class BackRenderbuffer {
   }
 
  private:
-  GLES2DecoderImpl* decoder_;
+  RenderbufferManager* renderbuffer_manager_;
   MemoryTypeTracker memory_tracker_;
+  ContextState* state_;
   size_t bytes_allocated_;
   GLuint id_;
   DISALLOW_COPY_AND_ASSIGN(BackRenderbuffer);
@@ -642,7 +646,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   friend class ScopedFrameBufferBinder;
   friend class ScopedResolvedFrameBufferBinder;
   friend class BackTexture;
-  friend class BackRenderbuffer;
   friend class BackFramebuffer;
 
   // Initialize or re-initialize the shader translator.
@@ -1916,9 +1919,13 @@ void BackTexture::Invalidate() {
   id_ = 0;
 }
 
-BackRenderbuffer::BackRenderbuffer(GLES2DecoderImpl* decoder)
-    : decoder_(decoder),
-      memory_tracker_(decoder->memory_tracker(), MemoryTracker::kUnmanaged),
+BackRenderbuffer::BackRenderbuffer(
+    RenderbufferManager* renderbuffer_manager,
+    MemoryTracker* memory_tracker,
+    ContextState* state)
+    : renderbuffer_manager_(renderbuffer_manager),
+      memory_tracker_(memory_tracker, MemoryTracker::kUnmanaged),
+      state_(state),
       bytes_allocated_(0),
       id_(0) {
 }
@@ -1932,7 +1939,7 @@ BackRenderbuffer::~BackRenderbuffer() {
 
 void BackRenderbuffer::Create() {
   ScopedGLErrorSuppressor suppressor("BackRenderbuffer::Create",
-                                     decoder_->GetErrorState());
+                                     state_->GetErrorState());
   Destroy();
   glGenRenderbuffersEXT(1, &id_);
 }
@@ -1940,11 +1947,11 @@ void BackRenderbuffer::Create() {
 bool BackRenderbuffer::AllocateStorage(const gfx::Size& size, GLenum format,
                                        GLsizei samples) {
   ScopedGLErrorSuppressor suppressor(
-      "BackRenderbuffer::AllocateStorage", decoder_->GetErrorState());
-  ScopedRenderBufferBinder binder(&decoder_->state_, id_);
+      "BackRenderbuffer::AllocateStorage", state_->GetErrorState());
+  ScopedRenderBufferBinder binder(state_, id_);
 
   uint32 estimated_size = 0;
-  if (!decoder_->renderbuffer_manager()->ComputeEstimatedRenderbufferSize(
+  if (!renderbuffer_manager_->ComputeEstimatedRenderbufferSize(
            size.width(), size.height(), samples, format, &estimated_size)) {
     return false;
   }
@@ -1975,8 +1982,10 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size, GLenum format,
   }
   bool success = glGetError() == GL_NO_ERROR;
   if (success) {
+    // Mark the previously allocated bytes as free.
     memory_tracker_.TrackMemFree(bytes_allocated_);
     bytes_allocated_ = estimated_size;
+    // Track the newly allocated bytes.
     memory_tracker_.TrackMemAlloc(bytes_allocated_);
   }
   return success;
@@ -1985,7 +1994,7 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size, GLenum format,
 void BackRenderbuffer::Destroy() {
   if (id_ != 0) {
     ScopedGLErrorSuppressor suppressor("BackRenderbuffer::Destroy",
-                                       decoder_->GetErrorState());
+                                       state_->GetErrorState());
     glDeleteRenderbuffersEXT(1, &id_);
     id_ = 0;
   }
@@ -2321,15 +2330,18 @@ bool GLES2DecoderImpl::Initialize(
     // attached to the offscreen frame buffer.  The render buffer has more
     // limited formats available to it, but the texture can't do multisampling.
     if (IsOffscreenBufferMultisampled()) {
-      offscreen_target_color_render_buffer_.reset(new BackRenderbuffer(this));
+      offscreen_target_color_render_buffer_.reset(new BackRenderbuffer(
+          renderbuffer_manager(), memory_tracker(), &state_));
       offscreen_target_color_render_buffer_->Create();
     } else {
       offscreen_target_color_texture_.reset(new BackTexture(this));
       offscreen_target_color_texture_->Create();
     }
-    offscreen_target_depth_render_buffer_.reset(new BackRenderbuffer(this));
+    offscreen_target_depth_render_buffer_.reset(new BackRenderbuffer(
+        renderbuffer_manager(), memory_tracker(), &state_));
     offscreen_target_depth_render_buffer_->Create();
-    offscreen_target_stencil_render_buffer_.reset(new BackRenderbuffer(this));
+    offscreen_target_stencil_render_buffer_.reset(new BackRenderbuffer(
+        renderbuffer_manager(), memory_tracker(), &state_));
     offscreen_target_stencil_render_buffer_->Create();
 
     // Create the saved offscreen texture. The target frame buffer is copied
