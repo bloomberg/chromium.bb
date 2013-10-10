@@ -212,6 +212,17 @@ class TouchSelectionControllerImpl::EditingHandleView
     }
   }
 
+  virtual void SetVisible(bool visible) OVERRIDE {
+    // We simply show/hide the container widget.
+    if (visible != widget_->IsVisible()) {
+      if (visible)
+        widget_->Show();
+      else
+        widget_->Hide();
+    }
+    View::SetVisible(visible);
+  }
+
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size image_size = GetHandleImageSize();
     return gfx::Size(image_size.width() + 2 * kSelectionHandleHorizPadding,
@@ -220,15 +231,6 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   bool IsWidgetVisible() const {
     return widget_->IsVisible();
-  }
-
-  void SetWidgetVisible(bool visible) {
-    if (widget_->IsVisible() == visible)
-      return;
-    if (visible)
-      widget_->Show();
-    else
-      widget_->Hide();
   }
 
   void SetSelectionRectInScreen(const gfx::Rect& rect) {
@@ -335,35 +337,27 @@ void TouchSelectionControllerImpl::SelectionChanged() {
       EditingHandleView* non_dragging_handle =
           dragging_handle_ == selection_handle_1_.get()?
               selection_handle_2_.get() : selection_handle_1_.get();
-      non_dragging_handle->SetWidgetVisible(
-          client_view_->GetBounds().Contains(r1));
-      if (non_dragging_handle->IsWidgetVisible())
-        non_dragging_handle->SetSelectionRectInScreen(screen_rect_1);
+      non_dragging_handle->SetSelectionRectInScreen(screen_rect_1);
+      non_dragging_handle->SetVisible(client_view_->GetBounds().Contains(r1));
     }
   } else {
     UpdateContextMenu(r1.origin(), r2.origin());
 
     // Check if there is any selection at all.
     if (IsEmptySelection(screen_pos_2, screen_pos_1)) {
-      selection_handle_1_->SetWidgetVisible(false);
-      selection_handle_2_->SetWidgetVisible(false);
-      cursor_handle_->SetWidgetVisible(client_view_->GetBounds().Contains(r1));
-      if (cursor_handle_->IsWidgetVisible())
-        cursor_handle_->SetSelectionRectInScreen(screen_rect_1);
+      selection_handle_1_->SetVisible(false);
+      selection_handle_2_->SetVisible(false);
+      cursor_handle_->SetSelectionRectInScreen(screen_rect_1);
+      cursor_handle_->SetVisible(true);
       return;
     }
 
-    cursor_handle_->SetWidgetVisible(false);
+    cursor_handle_->SetVisible(false);
+    selection_handle_1_->SetSelectionRectInScreen(screen_rect_1);
+    selection_handle_1_->SetVisible(client_view_->GetBounds().Contains(r1));
 
-    selection_handle_1_->SetWidgetVisible(
-        client_view_->GetBounds().Contains(r1));
-    if (selection_handle_1_->IsWidgetVisible())
-      selection_handle_1_->SetSelectionRectInScreen(screen_rect_1);
-
-    selection_handle_2_->SetWidgetVisible(
-        client_view_->GetBounds().Contains(r2));
-    if (selection_handle_2_->IsWidgetVisible())
-      selection_handle_2_->SetSelectionRectInScreen(screen_rect_2);
+    selection_handle_2_->SetSelectionRectInScreen(screen_rect_2);
+    selection_handle_2_->SetVisible(client_view_->GetBounds().Contains(r2));
   }
 }
 
