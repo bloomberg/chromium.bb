@@ -40,8 +40,6 @@ namespace base {
 
 class Time;
 
-extern bool g_bug108724_debug;
-
 //-----------------------------------------------------------------------------
 // Functions that involve filesystem access or modification:
 

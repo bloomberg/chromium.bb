@@ -32,8 +32,6 @@ static const int kMaxUniqueFiles = 100;
 
 }  // namespace
 
-bool g_bug108724_debug = false;
-
 int64 ComputeDirectorySize(const FilePath& root_path) {
   int64 running_size = 0;
   FileEnumerator file_iter(root_path, true, FileEnumerator::FILES);
