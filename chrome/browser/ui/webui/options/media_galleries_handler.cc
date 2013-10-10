@@ -11,7 +11,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
-#include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -24,13 +23,16 @@
 
 namespace options {
 
-MediaGalleriesHandler::MediaGalleriesHandler()
-    : weak_ptr_factory_(this) {
-}
+MediaGalleriesHandler::MediaGalleriesHandler() : weak_ptr_factory_(this) {}
 
 MediaGalleriesHandler::~MediaGalleriesHandler() {
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  preferences->RemoveGalleryChangeObserver(this);
 }
 
 void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
@@ -47,29 +49,22 @@ void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
                 IDS_MEDIA_GALLERY_MANAGE_TITLE);
 }
 
+void MediaGalleriesHandler::InitializeHandler() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesHandler::InitializeHandlerOnMediaGalleriesPreferencesInit,
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
 void MediaGalleriesHandler::InitializePage() {
   Profile* profile = Profile::FromWebUI(web_ui());
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
   preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesHandler::InitializeOnMediaGalleriesPreferencesInit,
+      &MediaGalleriesHandler::InitializePageOnMediaGalleriesPreferencesInit,
       weak_ptr_factory_.GetWeakPtr()));
-}
-
-void MediaGalleriesHandler::InitializeOnMediaGalleriesPreferencesInit() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!MediaGalleriesPreferences::APIHasBeenUsed(profile))
-    return;
-
-  if (pref_change_registrar_.IsEmpty()) {
-    pref_change_registrar_.Init(profile->GetPrefs());
-    pref_change_registrar_.Add(
-        prefs::kMediaGalleriesRememberedGalleries,
-        base::Bind(&MediaGalleriesHandler::OnGalleriesChanged,
-                   base::Unretained(this)));
-  }
-
-  OnGalleriesChanged();
 }
 
 void MediaGalleriesHandler::RegisterMessages() {
@@ -92,14 +87,27 @@ void MediaGalleriesHandler::RegisterOnPreferencesInit() {
                  base::Unretained(this)));
 }
 
-void MediaGalleriesHandler::OnGalleriesChanged() {
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
-  Profile* profile = Profile::FromWebUI(web_ui());
-  MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+void MediaGalleriesHandler::OnGalleryAdded(MediaGalleriesPreferences* pref,
+                                           MediaGalleryPrefId /*pref_id*/) {
+  OnGalleriesChanged(pref);
+}
 
+void MediaGalleriesHandler::OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                                             MediaGalleryPrefId /*pref_id*/) {
+  OnGalleriesChanged(pref);
+}
+
+void MediaGalleriesHandler::OnGalleryInfoUpdated(
+    MediaGalleriesPreferences* pref,
+    MediaGalleryPrefId /*pref_id*/) {
+  OnGalleriesChanged(pref);
+}
+
+void MediaGalleriesHandler::OnGalleriesChanged(
+    MediaGalleriesPreferences* pref) {
+  DCHECK(pref->IsInitialized());
   ListValue list;
-  const MediaGalleriesPrefInfoMap& galleries = preferences->known_galleries();
+  const MediaGalleriesPrefInfoMap& galleries = pref->known_galleries();
   for (MediaGalleriesPrefInfoMap::const_iterator iter = galleries.begin();
        iter != galleries.end(); ++iter) {
     const MediaGalleryPrefInfo& gallery = iter->second;
@@ -115,6 +123,26 @@ void MediaGalleriesHandler::OnGalleriesChanged() {
 
   web_ui()->CallJavascriptFunction(
       "options.MediaGalleriesManager.setAvailableMediaGalleries", list);
+}
+
+void MediaGalleriesHandler::InitializeHandlerOnMediaGalleriesPreferencesInit() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!MediaGalleriesPreferences::APIHasBeenUsed(profile))
+    return;
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+
+  preferences->AddGalleryChangeObserver(this);
+}
+
+void MediaGalleriesHandler::InitializePageOnMediaGalleriesPreferencesInit() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!MediaGalleriesPreferences::APIHasBeenUsed(profile))
+    return;
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+
+  OnGalleriesChanged(preferences);
 }
 
 void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {

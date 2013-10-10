@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -15,14 +16,17 @@
 namespace options {
 
 // Handles messages related to adding or removing media galleries.
-class MediaGalleriesHandler : public OptionsPageUIHandler,
-                              public ui::SelectFileDialog::Listener {
+class MediaGalleriesHandler
+    : public OptionsPageUIHandler,
+      public ui::SelectFileDialog::Listener,
+      public MediaGalleriesPreferences::GalleryChangeObserver {
  public:
   MediaGalleriesHandler();
   virtual ~MediaGalleriesHandler();
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(base::DictionaryValue* values) OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
@@ -30,6 +34,14 @@ class MediaGalleriesHandler : public OptionsPageUIHandler,
   virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
+
+  // MediaGalleriesPreferences::GalleryChangeObserver overrides.
+  virtual void OnGalleryAdded(MediaGalleriesPreferences* pref,
+                              MediaGalleryPrefId pref_id) OVERRIDE;
+  virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                                MediaGalleryPrefId pref_id) OVERRIDE;
+  virtual void OnGalleryInfoUpdated(MediaGalleriesPreferences* pref,
+                                    MediaGalleryPrefId pref_id) OVERRIDE;
 
  private:
   // Handles the "addNewGallery" message (no arguments).
@@ -39,17 +51,16 @@ class MediaGalleriesHandler : public OptionsPageUIHandler,
   void HandleForgetGallery(const base::ListValue* args);
 
   // Called when the list of known galleries has changed; updates the page.
-  void OnGalleriesChanged();
+  void OnGalleriesChanged(MediaGalleriesPreferences* pref);
 
-  // Bottom half of |InitializePage()| after async call to initialize
-  // MediaGalleriesPreferences.
-  void InitializeOnMediaGalleriesPreferencesInit();
+  // Bottom half of |InitializeHandler()| and |InitializePage()|, respectively,
+  // after async call to initialize MediaGalleriesPreferences.
+  void InitializeHandlerOnMediaGalleriesPreferencesInit();
+  void InitializePageOnMediaGalleriesPreferencesInit();
 
   // Bottom half of |RegisterMessages()| after async call to initialize
   // MediaGalleriesPreferences.
   void RegisterOnPreferencesInit();
-
-  PrefChangeRegistrar pref_change_registrar_;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
