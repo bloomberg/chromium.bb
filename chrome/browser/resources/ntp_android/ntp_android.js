@@ -2155,7 +2155,7 @@ cr.define('ntp', function() {
     currentPane = pane;
     currentPaneIndex = paneIndex;
 
-    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
 
     var panelPrefix = sectionPrefixes[paneIndex];
     var title = templateData[panelPrefix + '_document_title'];
