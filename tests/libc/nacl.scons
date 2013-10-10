@@ -39,6 +39,7 @@ def AddLibcTest(env, src, exit_status='0', golden_file=None, test_suffix='',
 
 AddLibcTest(env, 'memcpy_move_set.c', '0',
             golden_file=env.File('memcpy_move_set.stdout'))
+AddLibcTest(env, 'malloc_realloc_calloc_free.c', '0')
 
 AddLibcTest(env, 'strtoll.c', '0')
 AddLibcTest(env, 'strtoull.c', '0')
