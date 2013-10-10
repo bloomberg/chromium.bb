@@ -642,8 +642,6 @@ crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timin
 crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Timeout ]
 crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Pass Timeout ]
 
-webkit.org/b/103148 [ Linux ] fast/text/atsui-small-caps-punctuation-size.html [ Failure ImageOnlyFailure Pass ]
-
 webkit.org/b/104283 [ Win7 ] fonts/monospace.html [ Failure Pass ]
 
 webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]

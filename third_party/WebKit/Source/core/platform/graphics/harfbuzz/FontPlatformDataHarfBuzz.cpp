@@ -123,7 +123,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
     , m_fakeItalic(src.m_fakeItalic)
     , m_orientation(src.m_orientation)
     , m_style(src.m_style)
-    , m_harfBuzzFace(src.m_harfBuzzFace)
+    , m_harfBuzzFace(0)
     , m_isHashTableDeletedValue(false)
 {
 }
@@ -149,7 +149,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_fakeBold(src.m_fakeBold)
     , m_fakeItalic(src.m_fakeItalic)
     , m_orientation(src.m_orientation)
-    , m_harfBuzzFace(src.m_harfBuzzFace)
+    , m_harfBuzzFace(0)
     , m_isHashTableDeletedValue(false)
 {
     querySystemForRenderStyle();
@@ -175,7 +175,7 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
     m_textSize = src.m_textSize;
     m_fakeBold = src.m_fakeBold;
     m_fakeItalic = src.m_fakeItalic;
-    m_harfBuzzFace = src.m_harfBuzzFace;
+    m_harfBuzzFace = 0;
     m_orientation = src.m_orientation;
     m_style = src.m_style;
     m_emSizeInFontUnits = src.m_emSizeInFontUnits;
