@@ -1169,6 +1169,7 @@ crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
 
 crbug.com/306249 media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
+crbug.com/306280 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 crbug.com/305476 [ Linux ] fast/encoding/api/streaming-decode.html [ Pass Crash ]
 
 crbug.com/305708 [ Linux ] fast/text/international/hindi-spacing.html [ Pass ImageOnlyFailure ]
