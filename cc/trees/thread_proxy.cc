@@ -444,6 +444,8 @@ bool ThreadProxy::ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
 
   if (!layer_tree_host_->contents_texture_manager())
     return false;
+  if (!layer_tree_host_impl_->resource_provider())
+    return false;
 
   bool reduce_result = layer_tree_host_->contents_texture_manager()->
       ReduceMemoryOnImplThread(limit_bytes,

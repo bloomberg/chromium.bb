@@ -12,6 +12,7 @@
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
 
@@ -122,6 +123,9 @@ class FakeOutputSurface : public OutputSurface {
     has_external_stencil_test_ = has_test;
   }
 
+  void SetMemoryPolicyToSetAtBind(
+      scoped_ptr<cc::ManagedMemoryPolicy> memory_policy_to_set_at_bind);
+
  protected:
   FakeOutputSurface(
       scoped_refptr<ContextProvider> context_provider,
@@ -146,6 +150,7 @@ class FakeOutputSurface : public OutputSurface {
   bool has_external_stencil_test_;
   TransferableResourceArray resources_held_by_parent_;
   base::WeakPtrFactory<FakeOutputSurface> fake_weak_ptr_factory_;
+  scoped_ptr<cc::ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
 };
 
 static inline scoped_ptr<OutputSurface> CreateFakeOutputSurface() {

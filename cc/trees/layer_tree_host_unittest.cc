@@ -4938,4 +4938,91 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoQuadsForEmptyLayer);
 
 }  // namespace
 
+class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
+    : public LayerTreeHostTest {
+ protected:
+  LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface()
+      : first_output_surface_memory_limit_(4321234),
+        second_output_surface_memory_limit_(1234321) {}
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
+    if (!first_context_provider_) {
+      first_context_provider_ = TestContextProvider::Create();
+    } else {
+      EXPECT_FALSE(second_context_provider_);
+      second_context_provider_ = TestContextProvider::Create();
+    }
+
+    scoped_ptr<FakeOutputSurface> output_surface(
+        FakeOutputSurface::Create3d(
+            second_context_provider_ ?
+                second_context_provider_ :
+                first_context_provider_));
+    output_surface->SetMemoryPolicyToSetAtBind(make_scoped_ptr(
+        new cc::ManagedMemoryPolicy(
+            second_context_provider_ ?
+                second_output_surface_memory_limit_ :
+                first_output_surface_memory_limit_,
+            cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+            0,
+            cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+            cc::ManagedMemoryPolicy::kDefaultNumResourcesLimit)));
+    return output_surface.PassAs<OutputSurface>();
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    root_ = FakeContentLayer::Create(&client_);
+    root_->SetBounds(gfx::Size(20, 20));
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    // Lost context sometimes takes two frames to recreate. The third frame
+    // is sometimes aborted, so wait until the fourth frame to verify that
+    // the memory has been set, and the fifth frame to end the test.
+    if (layer_tree_host()->source_frame_number() < 5) {
+      layer_tree_host()->SetNeedsCommit();
+    } else if (layer_tree_host()->source_frame_number() == 5) {
+      EndTest();
+    }
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl *impl, bool result)
+      OVERRIDE {
+    switch (impl->active_tree()->source_frame_number()) {
+      case 1:
+        EXPECT_EQ(first_output_surface_memory_limit_,
+                  impl->memory_allocation_limit_bytes());
+        // Lose the output surface.
+        first_context_provider_->TestContext3d()->loseContextCHROMIUM(
+            GL_GUILTY_CONTEXT_RESET_ARB,
+            GL_INNOCENT_CONTEXT_RESET_ARB);
+        break;
+      case 4:
+        EXPECT_EQ(second_output_surface_memory_limit_,
+                  impl->memory_allocation_limit_bytes());
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  scoped_refptr<TestContextProvider> first_context_provider_;
+  scoped_refptr<TestContextProvider> second_context_provider_;
+  size_t first_output_surface_memory_limit_;
+  size_t second_output_surface_memory_limit_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_;
+};
+
+// No output to copy for delegated renderers.
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface);
+
 }  // namespace cc

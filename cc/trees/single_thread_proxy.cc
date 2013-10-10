@@ -320,6 +320,8 @@ bool SingleThreadProxy::ReduceContentsTextureMemoryOnImplThread(
   DCHECK(IsImplThread());
   if (!layer_tree_host_->contents_texture_manager())
     return false;
+  if (!layer_tree_host_impl_->resource_provider())
+    return false;
 
   return layer_tree_host_->contents_texture_manager()->ReduceMemoryOnImplThread(
       limit_bytes, priority_cutoff, layer_tree_host_impl_->resource_provider());
