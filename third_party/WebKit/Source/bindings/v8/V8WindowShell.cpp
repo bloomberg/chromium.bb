@@ -58,7 +58,7 @@
 #include "platform/TraceEvent.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"
 #include <algorithm>
@@ -276,7 +276,7 @@ void V8WindowShell::createContext()
 
     // Dynamically tell v8 about our extensions now.
     const V8Extensions& extensions = ScriptController::registeredExtensions();
-    OwnArrayPtr<const char*> extensionNames = adoptArrayPtr(new const char*[extensions.size()]);
+    OwnPtr<const char*[]> extensionNames = adoptArrayPtr(new const char*[extensions.size()]);
     int index = 0;
     int extensionGroup = m_world->extensionGroup();
     int worldId = m_world->worldId();

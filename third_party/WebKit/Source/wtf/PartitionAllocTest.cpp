@@ -31,7 +31,8 @@
 #include "config.h"
 #include "wtf/PartitionAlloc.h"
 
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 #include <stdlib.h>
 #include <string.h>
@@ -275,7 +276,7 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
 
     size_t numToFillFreeListPage = (WTF::kPartitionPageSize - sizeof(WTF::PartitionPageHeader)) / sizeof(WTF::PartitionMetadataBucketEntrySize);
-    OwnArrayPtr<WTF::PartitionPageHeader*> pages = adoptArrayPtr(new WTF::PartitionPageHeader*[numToFillFreeListPage + 1]);
+    OwnPtr<WTF::PartitionPageHeader*[]> pages = adoptArrayPtr(new WTF::PartitionPageHeader*[numToFillFreeListPage + 1]);
     size_t i;
     // The +1 is because we need to account for the fact that the current page
     // never gets thrown on the freelist.
@@ -339,7 +340,7 @@ TEST(WTF_PartitionAlloc, MultiPageAllocs)
     // partition page "slot" will be taken up by a guard page.
     size_t numPagesNeeded = WTF::kSuperPageSize / WTF::kPartitionPageSize;
     EXPECT_GT(numPagesNeeded, 1u);
-    OwnArrayPtr<WTF::PartitionPageHeader*> pages;
+    OwnPtr<WTF::PartitionPageHeader*[]> pages;
     pages = adoptArrayPtr(new WTF::PartitionPageHeader*[numPagesNeeded]);
     uintptr_t firstSuperPageBase = 0;
     size_t i;
@@ -589,8 +590,8 @@ TEST(WTF_PartitionAlloc, MappingCollision)
     TestSetup();
     // The -1 is because the first super page allocated with have its first partition page marked as a guard page.
     size_t numPartitionPagesNeeded = (WTF::kSuperPageSize / WTF::kPartitionPageSize) - 1;
-    OwnArrayPtr<WTF::PartitionPageHeader*> firstSuperPagePages = adoptArrayPtr(new WTF::PartitionPageHeader*[numPartitionPagesNeeded]);
-    OwnArrayPtr<WTF::PartitionPageHeader*> secondSuperPagePages = adoptArrayPtr(new WTF::PartitionPageHeader*[numPartitionPagesNeeded]);
+    OwnPtr<WTF::PartitionPageHeader*[]> firstSuperPagePages = adoptArrayPtr(new WTF::PartitionPageHeader*[numPartitionPagesNeeded]);
+    OwnPtr<WTF::PartitionPageHeader*[]> secondSuperPagePages = adoptArrayPtr(new WTF::PartitionPageHeader*[numPartitionPagesNeeded]);
 
     size_t i;
     for (i = 0; i < numPartitionPagesNeeded; ++i)

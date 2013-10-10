@@ -41,7 +41,6 @@
 #include "bindings/v8/V8Utilities.h"
 
 #include <v8.h>
-#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 
@@ -135,7 +134,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
     ASSERT(value->IsFunction());
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    OwnArrayPtr<v8::Handle<v8::Value> > args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
+    OwnPtr<v8::Handle<v8::Value>[]> args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i) {
         args[i] = m_arguments[i].v8Value();
         ASSERT(!args[i].IsEmpty());
@@ -170,7 +169,7 @@ ScriptObject ScriptFunctionCall::construct(bool& hadException, bool reportExcept
     ASSERT(value->IsFunction());
 
     v8::Local<v8::Function> constructor = v8::Local<v8::Function>::Cast(value);
-    OwnArrayPtr<v8::Handle<v8::Value> > args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
+    OwnPtr<v8::Handle<v8::Value>[]> args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i)
         args[i] = m_arguments[i].v8Value();
 
@@ -200,7 +199,7 @@ ScriptValue ScriptCallback::call()
     v8::Handle<v8::Object> object = v8::Context::GetCurrent()->Global();
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(m_function.v8Value());
 
-    OwnArrayPtr<v8::Handle<v8::Value> > args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
+    OwnPtr<v8::Handle<v8::Value>[]> args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i)
         args[i] = m_arguments[i].v8Value();
 

@@ -78,8 +78,8 @@
 #include "platform/NotImplemented.h"
 #include "platform/geometry/IntSize.h"
 
-#include "wtf/OwnArrayPtr.h"
-#include "wtf/PassOwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Uint32Array.h"
 #include "wtf/text/StringBuilder.h"
 

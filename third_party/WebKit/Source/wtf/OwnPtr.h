@@ -1,5 +1,6 @@
 /*
  *  Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ *  Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -31,7 +32,6 @@
 namespace WTF {
 
     template<typename T> class PassOwnPtr;
-    template<typename T> PassOwnPtr<T> adoptPtr(T*);
 
     template<typename T> class OwnPtr {
 #if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
@@ -41,13 +41,14 @@ namespace WTF {
 #endif
         WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(OwnPtr);
     public:
-        typedef T ValueType;
+        typedef typename RemoveExtent<T>::Type ValueType;
         typedef ValueType* PtrType;
 
         OwnPtr() : m_ptr(0) { }
         OwnPtr(std::nullptr_t) : m_ptr(0) { }
 
         // See comment in PassOwnPtr.h for why this takes a const reference.
+        OwnPtr(const PassOwnPtr<T>&);
         template<typename U> OwnPtr(const PassOwnPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
 
 #if !COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
@@ -55,12 +56,12 @@ namespace WTF {
         // transients for assigning a PassOwnPtr<T> object to a stack-allocated
         // OwnPtr<T> object. It should never be called explicitly and gcc
         // should optimize away the constructor when generating code.
-        OwnPtr(const OwnPtr<ValueType>&);
+        OwnPtr(const OwnPtr&);
 #endif
 
         ~OwnPtr()
         {
-            deleteOwnedPtr(m_ptr);
+            OwnedPtrDeleter<T>::deletePtr(m_ptr);
             m_ptr = 0;
         }
 
@@ -72,6 +73,8 @@ namespace WTF {
 
         ValueType& operator*() const { ASSERT(m_ptr); return *m_ptr; }
         PtrType operator->() const { ASSERT(m_ptr); return m_ptr; }
+
+        ValueType& operator[](std::ptrdiff_t i) const;
 
         bool operator!() const { return !m_ptr; }
 
@@ -109,23 +112,29 @@ namespace WTF {
         PtrType m_ptr;
     };
 
+    template<typename T> inline OwnPtr<T>::OwnPtr(const PassOwnPtr<T>& o)
+        : m_ptr(o.leakPtr())
+    {
+    }
+
     template<typename T> template<typename U> inline OwnPtr<T>::OwnPtr(const PassOwnPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
         : m_ptr(o.leakPtr())
     {
+        COMPILE_ASSERT(!IsArray<T>::value, Pointers_to_array_must_never_be_converted);
     }
 
     template<typename T> inline void OwnPtr<T>::clear()
     {
         PtrType ptr = m_ptr;
         m_ptr = 0;
-        deleteOwnedPtr(ptr);
+        OwnedPtrDeleter<T>::deletePtr(ptr);
     }
 
     template<typename T> inline PassOwnPtr<T> OwnPtr<T>::release()
     {
         PtrType ptr = m_ptr;
         m_ptr = 0;
-        return adoptPtr(ptr);
+        return PassOwnPtr<T>(ptr);
     }
 
     template<typename T> inline typename OwnPtr<T>::PtrType OwnPtr<T>::leakPtr()
@@ -135,21 +144,30 @@ namespace WTF {
         return ptr;
     }
 
+    template<typename T> inline typename OwnPtr<T>::ValueType& OwnPtr<T>::operator[](std::ptrdiff_t i) const
+    {
+        COMPILE_ASSERT(IsArray<T>::value, Elements_access_is_possible_for_arrays_only);
+        ASSERT(m_ptr);
+        ASSERT(i >= 0);
+        return m_ptr[i];
+    }
+
     template<typename T> inline OwnPtr<T>& OwnPtr<T>::operator=(const PassOwnPtr<T>& o)
     {
         PtrType ptr = m_ptr;
         m_ptr = o.leakPtr();
         ASSERT(!ptr || m_ptr != ptr);
-        deleteOwnedPtr(ptr);
+        OwnedPtrDeleter<T>::deletePtr(ptr);
         return *this;
     }
 
     template<typename T> template<typename U> inline OwnPtr<T>& OwnPtr<T>::operator=(const PassOwnPtr<U>& o)
     {
+        COMPILE_ASSERT(!IsArray<T>::value, Pointers_to_array_must_never_be_converted);
         PtrType ptr = m_ptr;
         m_ptr = o.leakPtr();
         ASSERT(!ptr || m_ptr != ptr);
-        deleteOwnedPtr(ptr);
+        OwnedPtrDeleter<T>::deletePtr(ptr);
         return *this;
     }
 
@@ -162,6 +180,7 @@ namespace WTF {
     template<typename T> template<typename U> inline OwnPtr<T>::OwnPtr(OwnPtr<U>&& o)
         : m_ptr(o.leakPtr())
     {
+        COMPILE_ASSERT(!IsArray<T>::value, Pointers_to_array_must_never_be_converted);
     }
 
     template<typename T> inline OwnPtr<T>& OwnPtr<T>::operator=(OwnPtr<T>&& o)
@@ -169,17 +188,18 @@ namespace WTF {
         PtrType ptr = m_ptr;
         m_ptr = o.leakPtr();
         ASSERT(!ptr || m_ptr != ptr);
-        deleteOwnedPtr(ptr);
+        OwnedPtrDeleter<T>::deletePtr(ptr);
 
         return *this;
     }
 
     template<typename T> template<typename U> inline OwnPtr<T>& OwnPtr<T>::operator=(OwnPtr<U>&& o)
     {
+        COMPILE_ASSERT(!IsArray<T>::value, Pointers_to_array_must_never_be_converted);
         PtrType ptr = m_ptr;
         m_ptr = o.leakPtr();
         ASSERT(!ptr || m_ptr != ptr);
-        deleteOwnedPtr(ptr);
+        OwnedPtrDeleter<T>::deletePtr(ptr);
 
         return *this;
     }

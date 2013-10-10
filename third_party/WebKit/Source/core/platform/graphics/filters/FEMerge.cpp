@@ -30,7 +30,7 @@
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "platform/text/TextStream.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -64,8 +64,8 @@ PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder* bui
 {
     unsigned size = numberOfEffectInputs();
 
-    OwnArrayPtr<RefPtr<SkImageFilter> > inputRefs = adoptArrayPtr(new RefPtr<SkImageFilter>[size]);
-    OwnArrayPtr<SkImageFilter*> inputs = adoptArrayPtr(new SkImageFilter*[size]);
+    OwnPtr<RefPtr<SkImageFilter>[]> inputRefs = adoptArrayPtr(new RefPtr<SkImageFilter>[size]);
+    OwnPtr<SkImageFilter*[]> inputs = adoptArrayPtr(new SkImageFilter*[size]);
     for (unsigned i = 0; i < size; ++i) {
         inputRefs[i] = builder->build(inputEffect(i), operatingColorSpace());
         inputs[i] = inputRefs[i].get();

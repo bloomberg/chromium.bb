@@ -34,6 +34,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
 namespace WTF {

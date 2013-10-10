@@ -40,7 +40,7 @@
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 
 #include "core/platform/PlatformInstrumentation.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 #include "png.h"
@@ -211,7 +211,7 @@ private:
     png_bytep m_interlaceBuffer;
 #if USE(QCMSLIB)
     qcms_transform* m_transform;
-    OwnArrayPtr<png_byte> m_rowBuffer;
+    OwnPtr<png_byte[]> m_rowBuffer;
 #endif
 };
 

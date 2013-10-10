@@ -2,6 +2,7 @@
  * Copyright (C) 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2009 Torch Mobile, Inc.
  * Copyright (C) 2010 Company 100 Inc.
+ * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,11 +31,28 @@
 
 namespace WTF {
 
-    template <typename T> inline void deleteOwnedPtr(T* ptr)
+template <typename T>
+struct OwnedPtrDeleter {
+    static void deletePtr(T* ptr)
     {
         COMPILE_ASSERT(sizeof(T) > 0, TypeMustBeComplete);
         delete ptr;
     }
+};
+
+template <typename T>
+struct OwnedPtrDeleter<T[]> {
+    static void deletePtr(T* ptr)
+    {
+        COMPILE_ASSERT(sizeof(T) > 0, TypeMustBeComplete);
+        delete[] ptr;
+    }
+};
+
+template <class T, int n>
+struct OwnedPtrDeleter<T[n]> {
+    COMPILE_ASSERT(sizeof(T) < 0, DoNotUseArrayWithSizeAsType);
+};
 
 } // namespace WTF
 

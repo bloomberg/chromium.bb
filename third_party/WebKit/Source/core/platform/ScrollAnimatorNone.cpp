@@ -36,7 +36,7 @@
 #include "core/platform/ScrollableArea.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 #include "platform/TraceEvent.h"

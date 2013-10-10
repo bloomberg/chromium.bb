@@ -37,7 +37,7 @@
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -77,7 +77,7 @@ short V8NodeFilterCondition::acceptNode(ScriptState* state, Node* node) const
         callback = v8::Handle<v8::Function>::Cast(value);
     }
 
-    OwnArrayPtr<v8::Handle<v8::Value> > args = adoptArrayPtr(new v8::Handle<v8::Value>[1]);
+    OwnPtr<v8::Handle<v8::Value>[]> args = adoptArrayPtr(new v8::Handle<v8::Value>[1]);
     args[0] = toV8(node, v8::Handle<v8::Object>(), state->isolate());
 
     v8::Handle<v8::Object> object = v8::Context::GetCurrent()->Global();

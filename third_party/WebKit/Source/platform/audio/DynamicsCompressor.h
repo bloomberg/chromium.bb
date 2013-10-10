@@ -33,7 +33,7 @@
 #include "platform/audio/DynamicsCompressorKernel.h"
 #include "platform/audio/ZeroPole.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -104,8 +104,8 @@ protected:
     Vector<OwnPtr<ZeroPoleFilterPack4> > m_preFilterPacks;
     Vector<OwnPtr<ZeroPoleFilterPack4> > m_postFilterPacks;
 
-    OwnArrayPtr<const float*> m_sourceChannels;
-    OwnArrayPtr<float*> m_destinationChannels;
+    OwnPtr<const float*[]> m_sourceChannels;
+    OwnPtr<float*[]> m_destinationChannels;
 
     void setEmphasisStageParameters(unsigned stageIndex, float gain, float normalizedFrequency /* 0 -> 1 */);
     void setEmphasisParameters(float gain, float anchorFreq, float filterStageRatio);

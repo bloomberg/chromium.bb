@@ -68,7 +68,7 @@
 #include "core/storage/Storage.h"
 #include "core/workers/SharedWorkerRepository.h"
 #include "wtf/ArrayBuffer.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -116,7 +116,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     OwnPtr<ScheduledAction> action;
     if (function->IsFunction()) {
         int paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
-        OwnArrayPtr<v8::Local<v8::Value> > params;
+        OwnPtr<v8::Local<v8::Value>[]> params;
         if (paramCount > 0) {
             params = adoptArrayPtr(new v8::Local<v8::Value>[paramCount]);
             for (int i = 0; i < paramCount; i++) {

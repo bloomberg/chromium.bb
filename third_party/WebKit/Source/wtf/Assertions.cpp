@@ -35,7 +35,8 @@
 #include "Assertions.h"
 
 #include "Compiler.h"
-#include "OwnArrayPtr.h"
+#include "OwnPtr.h"
+#include "PassOwnPtr.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -150,7 +151,7 @@ static void vprintf_stderr_with_prefix(const char* prefix, const char* format, v
 {
     size_t prefixLength = strlen(prefix);
     size_t formatLength = strlen(format);
-    OwnArrayPtr<char> formatWithPrefix = adoptArrayPtr(new char[prefixLength + formatLength + 1]);
+    OwnPtr<char[]> formatWithPrefix = adoptArrayPtr(new char[prefixLength + formatLength + 1]);
     memcpy(formatWithPrefix.get(), prefix, prefixLength);
     memcpy(formatWithPrefix.get() + prefixLength, format, formatLength);
     formatWithPrefix[prefixLength + formatLength] = 0;
@@ -166,7 +167,7 @@ static void vprintf_stderr_with_trailing_newline(const char* format, va_list arg
         return;
     }
 
-    OwnArrayPtr<char> formatWithNewline = adoptArrayPtr(new char[formatLength + 2]);
+    OwnPtr<char[]> formatWithNewline = adoptArrayPtr(new char[formatLength + 2]);
     memcpy(formatWithNewline.get(), format, formatLength);
     formatWithNewline[formatLength] = '\n';
     formatWithNewline[formatLength + 1] = 0;

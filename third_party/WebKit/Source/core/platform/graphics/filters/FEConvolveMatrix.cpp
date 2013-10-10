@@ -29,7 +29,7 @@
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "platform/text/TextStream.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/ParallelJobs.h"
 #include "wtf/Uint8ClampedArray.h"
 
@@ -526,7 +526,7 @@ PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBui
     SkIPoint target = SkIPoint::Make(m_targetOffset.x(), m_targetOffset.y());
     SkMatrixConvolutionImageFilter::TileMode tileMode = toSkiaTileMode(m_edgeMode);
     bool convolveAlpha = !m_preserveAlpha;
-    OwnArrayPtr<SkScalar> kernel = adoptArrayPtr(new SkScalar[numElements]);
+    OwnPtr<SkScalar[]> kernel = adoptArrayPtr(new SkScalar[numElements]);
     for (int i = 0; i < numElements; ++i)
         kernel[i] = SkFloatToScalar(m_kernelMatrix[numElements - 1 - i]);
     return adoptRef(new SkMatrixConvolutionImageFilter(kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha, input.get()));

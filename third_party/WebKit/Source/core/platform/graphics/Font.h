@@ -335,7 +335,9 @@ inline float Font::tabWidth(const SimpleFontData& fontData, unsigned tabSize, fl
 
 namespace WTF {
 
-template <> void deleteOwnedPtr<WebCore::TextLayout>(WebCore::TextLayout*);
+template <> struct OwnedPtrDeleter<WebCore::TextLayout> {
+    static void deletePtr(WebCore::TextLayout*);
+};
 
 }
 

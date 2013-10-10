@@ -40,7 +40,7 @@ using namespace Unicode;
 namespace WTF {
 
 // allow compilation of OwnPtr<TextLayout> in source files that don't have access to the TextLayout class definition
-template <> void deleteOwnedPtr<WebCore::TextLayout>(WebCore::TextLayout* ptr)
+void OwnedPtrDeleter<WebCore::TextLayout>::deletePtr(WebCore::TextLayout* ptr)
 {
     WebCore::Font::deleteLayout(ptr);
 }

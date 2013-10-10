@@ -27,7 +27,8 @@
 
 #include "platform/graphics/angle/ANGLEPlatformBridge.h"
 
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
@@ -199,7 +200,7 @@ bool ANGLEPlatformBridge::compileShaderSource(const char* shaderSource, ANGLESha
     if (!validateSuccess) {
         int logSize = getValidationResultValue(compiler, SH_INFO_LOG_LENGTH);
         if (logSize > 1) {
-            OwnArrayPtr<char> logBuffer = adoptArrayPtr(new char[logSize]);
+            OwnPtr<char[]> logBuffer = adoptArrayPtr(new char[logSize]);
             if (logBuffer) {
                 ShGetInfoLog(compiler, logBuffer.get());
                 shaderValidationLog = logBuffer.get();
@@ -210,7 +211,7 @@ bool ANGLEPlatformBridge::compileShaderSource(const char* shaderSource, ANGLESha
 
     int translationLength = getValidationResultValue(compiler, SH_OBJECT_CODE_LENGTH);
     if (translationLength > 1) {
-        OwnArrayPtr<char> translationBuffer = adoptArrayPtr(new char[translationLength]);
+        OwnPtr<char[]> translationBuffer = adoptArrayPtr(new char[translationLength]);
         if (!translationBuffer)
             return false;
         ShGetObjectCode(compiler, translationBuffer.get());

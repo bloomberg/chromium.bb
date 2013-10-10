@@ -49,8 +49,8 @@
 #include <time.h>
 #include "wtf/CurrentTime.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnArrayPtr.h"
-#include "wtf/PassOwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/WTFExport.h"

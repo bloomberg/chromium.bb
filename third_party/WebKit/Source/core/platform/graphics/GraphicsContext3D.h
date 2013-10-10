@@ -36,9 +36,8 @@
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnArrayPtr.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnArrayPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

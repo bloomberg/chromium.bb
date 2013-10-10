@@ -36,7 +36,6 @@
 #include "hb.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnArrayPtr.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -133,7 +132,7 @@ private:
     GlyphBufferAdvance createGlyphBufferAdvance(float, float);
 
     const Font* m_font;
-    OwnArrayPtr<UChar> m_normalizedBuffer;
+    OwnPtr<UChar[]> m_normalizedBuffer;
     unsigned m_normalizedBufferLength;
     const TextRun& m_run;
 

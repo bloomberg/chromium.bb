@@ -43,7 +43,7 @@
 #include "core/page/DOMWindowTimers.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/websockets/WebSocket.h"
-#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -73,7 +73,7 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
         action = adoptPtr(new ScheduledAction(v8Context, toWebCoreString(function.As<v8::String>()), workerGlobalScope->url(), args.GetIsolate()));
     } else if (function->IsFunction()) {
         size_t paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
-        OwnArrayPtr<v8::Local<v8::Value> > params;
+        OwnPtr<v8::Local<v8::Value>[]> params;
         if (paramCount > 0) {
             params = adoptArrayPtr(new v8::Local<v8::Value>[paramCount]);
             for (size_t i = 0; i < paramCount; ++i)
