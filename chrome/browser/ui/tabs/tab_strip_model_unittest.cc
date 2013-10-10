@@ -2284,6 +2284,65 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
   }
 }
 
+// Tests that moving a tab forgets all groups referencing it.
+TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetGroups) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+
+  // Open page A as a new tab and then A1 in the background from A.
+  WebContents* page_a_contents = CreateWebContents();
+  strip.AddWebContents(page_a_contents, -1,
+                       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                       TabStripModel::ADD_ACTIVE);
+  WebContents* page_a1_contents = CreateWebContents();
+  strip.AddWebContents(page_a1_contents, -1, content::PAGE_TRANSITION_LINK,
+                       TabStripModel::ADD_NONE);
+
+  // Likewise, open pages B and B1.
+  WebContents* page_b_contents = CreateWebContents();
+  strip.AddWebContents(page_b_contents, -1,
+                       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                       TabStripModel::ADD_ACTIVE);
+  WebContents* page_b1_contents = CreateWebContents();
+  strip.AddWebContents(page_b1_contents, -1, content::PAGE_TRANSITION_LINK,
+                       TabStripModel::ADD_NONE);
+
+  EXPECT_EQ(page_a_contents, strip.GetWebContentsAt(0));
+  EXPECT_EQ(page_a1_contents, strip.GetWebContentsAt(1));
+  EXPECT_EQ(page_b_contents, strip.GetWebContentsAt(2));
+  EXPECT_EQ(page_b1_contents, strip.GetWebContentsAt(3));
+
+  // Move page B to the start of the tab strip.
+  strip.MoveSelectedTabsTo(0);
+
+  // Open page B2 in the background from B. It should end up after B.
+  WebContents* page_b2_contents = CreateWebContents();
+  strip.AddWebContents(page_b2_contents, -1, content::PAGE_TRANSITION_LINK,
+                       TabStripModel::ADD_NONE);
+  EXPECT_EQ(page_b_contents, strip.GetWebContentsAt(0));
+  EXPECT_EQ(page_b2_contents, strip.GetWebContentsAt(1));
+  EXPECT_EQ(page_a_contents, strip.GetWebContentsAt(2));
+  EXPECT_EQ(page_a1_contents, strip.GetWebContentsAt(3));
+  EXPECT_EQ(page_b1_contents, strip.GetWebContentsAt(4));
+
+  // Switch to A.
+  strip.ActivateTabAt(2, true);
+  EXPECT_EQ(page_a_contents, strip.GetActiveWebContents());
+
+  // Open page A2 in the background from A. It should end up after A1.
+  WebContents* page_a2_contents = CreateWebContents();
+  strip.AddWebContents(page_a2_contents, -1, content::PAGE_TRANSITION_LINK,
+                       TabStripModel::ADD_NONE);
+  EXPECT_EQ(page_b_contents, strip.GetWebContentsAt(0));
+  EXPECT_EQ(page_b2_contents, strip.GetWebContentsAt(1));
+  EXPECT_EQ(page_a_contents, strip.GetWebContentsAt(2));
+  EXPECT_EQ(page_a1_contents, strip.GetWebContentsAt(3));
+  EXPECT_EQ(page_a2_contents, strip.GetWebContentsAt(4));
+  EXPECT_EQ(page_b1_contents, strip.GetWebContentsAt(5));
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, CloseSelectedTabs) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());

@@ -1242,6 +1242,8 @@ void TabStripModel::MoveWebContentsAtImpl(int index,
     selection_model_.SetSelectedIndex(to_position);
   }
 
+  ForgetOpenersAndGroupsReferencing(moved_data->contents);
+
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabMoved(moved_data->contents, index, to_position));
 }
