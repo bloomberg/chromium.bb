@@ -609,6 +609,20 @@ RenderBoxModelObject* RenderObject::enclosingBoxModelObject() const
     return 0;
 }
 
+RenderBox* RenderObject::enclosingScrollableBox() const
+{
+    for (RenderObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
+        if (!ancestor->isBox())
+            continue;
+
+        RenderBox* ancestorBox = toRenderBox(ancestor);
+        if (ancestorBox->canBeScrolledAndHasScrollableArea())
+            return ancestorBox;
+    }
+
+    return 0;
+}
+
 RenderFlowThread* RenderObject::locateFlowThreadContainingBlock() const
 {
     ASSERT(flowThreadState() != NotInsideFlowThread);

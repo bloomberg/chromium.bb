@@ -1120,10 +1120,8 @@ RenderLayer* RenderLayer::enclosingPositionedAncestor() const
 
 RenderLayer* RenderLayer::enclosingScrollableLayer() const
 {
-    for (RenderLayer* nextLayer = parent(); nextLayer; nextLayer = nextLayer->parent()) {
-        if (nextLayer->renderer()->isBox() && toRenderBox(nextLayer->renderer())->canBeScrolledAndHasScrollableArea())
-            return nextLayer;
-    }
+    if (RenderBox* enclosingScrollableBox = renderer()->enclosingScrollableBox())
+        return enclosingScrollableBox->layer();
 
     return 0;
 }
@@ -2208,16 +2206,6 @@ void RenderLayer::autoscroll(const IntPoint& position)
 
     IntPoint currentDocumentPosition = frameView->windowToContents(position);
     scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
-}
-
-ScrollableArea* RenderLayer::enclosingScrollableArea() const
-{
-    if (RenderLayer* scrollableLayer = enclosingScrollableLayer())
-        return scrollableLayer->scrollableArea();
-
-    // FIXME: We should return the frame view here (or possibly an ancestor frame view,
-    // if the frame view isn't scrollable.
-    return 0;
 }
 
 void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)

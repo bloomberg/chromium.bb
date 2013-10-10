@@ -133,7 +133,12 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
 
 ScrollableArea* RenderLayerScrollableArea::enclosingScrollableArea() const
 {
-    return layer()->enclosingScrollableArea();
+    if (RenderBox* enclosingScrollableBox = m_box->enclosingScrollableBox())
+        return enclosingScrollableBox->layer()->scrollableArea();
+
+    // FIXME: We should return the frame view here (or possibly an ancestor frame view,
+    // if the frame view isn't scrollable.
+    return 0;
 }
 
 void RenderLayerScrollableArea::updateNeedsCompositedScrolling()

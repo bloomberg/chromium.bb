@@ -667,8 +667,6 @@ private:
 
     // Start of ScrollableArea interface
     // To be moved to RenderLayerScrollableArea
-    ScrollableArea* enclosingScrollableArea() const;
-
     void updateNeedsCompositedScrolling();
 
 public:
