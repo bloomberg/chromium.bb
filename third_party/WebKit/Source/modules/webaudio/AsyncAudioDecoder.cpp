@@ -54,8 +54,11 @@ void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, Pa
     if (!audioData)
         return;
 
+    // Add a ref to keep audioData alive until completion of decoding.
+    RefPtr<ArrayBuffer> audioDataRef(audioData);
+
     // The leak references to successCallback and errorCallback are picked up on notifyComplete.
-    m_thread->postTask(new Task(WTF::bind(&AsyncAudioDecoder::decode, audioData, sampleRate, successCallback.leakRef(), errorCallback.leakRef())));
+    m_thread->postTask(new Task(WTF::bind(&AsyncAudioDecoder::decode, audioDataRef.release().leakRef(), sampleRate, successCallback.leakRef(), errorCallback.leakRef())));
 }
 
 void AsyncAudioDecoder::decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
