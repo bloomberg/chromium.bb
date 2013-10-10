@@ -227,6 +227,9 @@ void DoGetActiveIntervals(ListValue* results,
                           const base::Time& start,
                           const base::Time& end) {
   Database* db = PerformanceMonitor::GetInstance()->database();
+  if (db == NULL)
+    return;
+
   std::vector<TimeRange> intervals = db->GetActiveIntervals(start, end);
 
   for (std::vector<TimeRange>::iterator it = intervals.begin();
@@ -246,6 +249,8 @@ void DoGetEvents(ListValue* results,
                  const base::Time& start,
                  const base::Time& end) {
   Database* db = PerformanceMonitor::GetInstance()->database();
+  if (db == NULL)
+    return;
 
   for (std::set<EventType>::const_iterator iter = event_types.begin();
        iter != event_types.end(); ++iter) {
@@ -312,6 +317,9 @@ void DoGetMetrics(ListValue* results,
                   const base::TimeDelta& resolution,
                   AggregationMethod aggregation_method) {
   Database* db = PerformanceMonitor::GetInstance()->database();
+  if (db == NULL)
+    return;
+
   std::vector<TimeRange> intervals = db->GetActiveIntervals(start, end);
 
   // For each metric type, populate a new dictionary and append it to results.
