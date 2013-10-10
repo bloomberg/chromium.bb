@@ -22,3 +22,4 @@ Local Additions:
 * ChromiumEnv wraps low-level I/O calls that may be interrupted with a
   HANDLE_EINTR macro that retries the call.
 * TRACE macros/thread name for chrome://tracing diagnostics
+* Handle in-process exclusive file locks, based on src/util/env_posix.cc

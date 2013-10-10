@@ -207,6 +207,7 @@ class ChromiumRandomAccessFile: public RandomAccessFile {
 class ChromiumFileLock : public FileLock {
  public:
   ::base::PlatformFile file_;
+  std::string name_;
 };
 
 class Retrier {
@@ -680,9 +681,7 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
   Status result;
   int flags = ::base::PLATFORM_FILE_OPEN_ALWAYS |
               ::base::PLATFORM_FILE_READ |
-              ::base::PLATFORM_FILE_WRITE |
-              ::base::PLATFORM_FILE_EXCLUSIVE_READ |
-              ::base::PLATFORM_FILE_EXCLUSIVE_WRITE;
+              ::base::PLATFORM_FILE_WRITE;
   bool created;
   ::base::PlatformFileError error_code;
   ::base::PlatformFile file;
@@ -711,21 +710,55 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
     result = MakeIOError(
         fname, PlatformFileErrorString(error_code), kLockFile, error_code);
     RecordOSError(kLockFile, error_code);
-  } else {
-    ChromiumFileLock* my_lock = new ChromiumFileLock;
-    my_lock->file_ = file;
-    *lock = my_lock;
+    return result;
   }
+
+  if (!locks_.Insert(fname)) {
+    result = MakeIOError(fname, "Lock file already locked.", kLockFile);
+    ::base::ClosePlatformFile(file);
+    return result;
+  }
+
+  Retrier lock_retrier = Retrier(kLockFile, this);
+  do {
+    error_code = ::base::LockPlatformFile(file);
+  } while (error_code != ::base::PLATFORM_FILE_OK &&
+           retrier.ShouldKeepTrying(error_code));
+
+  if (error_code != ::base::PLATFORM_FILE_OK) {
+    ::base::ClosePlatformFile(file);
+    locks_.Remove(fname);
+    result = MakeIOError(
+        fname, PlatformFileErrorString(error_code), kLockFile, error_code);
+    RecordOSError(kLockFile, error_code);
+    return result;
+  }
+
+  ChromiumFileLock* my_lock = new ChromiumFileLock;
+  my_lock->file_ = file;
+  my_lock->name_ = fname;
+  *lock = my_lock;
   return result;
 }
 
 Status ChromiumEnv::UnlockFile(FileLock* lock) {
   ChromiumFileLock* my_lock = reinterpret_cast<ChromiumFileLock*>(lock);
   Status result;
-  if (!::base::ClosePlatformFile(my_lock->file_)) {
-    result = MakeIOError("Could not close lock file.", "", kUnlockFile);
+
+  ::base::PlatformFileError error_code =
+      ::base::UnlockPlatformFile(my_lock->file_);
+  if (error_code != ::base::PLATFORM_FILE_OK) {
+    result =
+        MakeIOError(my_lock->name_, "Could not unlock lock file.", kUnlockFile);
+    RecordOSError(kUnlockFile, error_code);
+    ::base::ClosePlatformFile(my_lock->file_);
+  } else if (!::base::ClosePlatformFile(my_lock->file_)) {
+    result =
+        MakeIOError(my_lock->name_, "Could not close lock file.", kUnlockFile);
     RecordErrorAt(kUnlockFile);
   }
+  bool removed = locks_.Remove(my_lock->name_);
+  DCHECK(removed);
   delete my_lock;
   return result;
 }

@@ -16,6 +16,8 @@
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/env_idb.h"
 
 namespace content {
 
@@ -241,6 +243,30 @@ TEST(LevelDBDatabaseTest, TransactionCommitTest) {
   EXPECT_TRUE(success);
   EXPECT_TRUE(found);
   EXPECT_EQ(value3, got_value);
+}
+
+TEST(LevelDB, Locking) {
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+
+  leveldb::Env* env = leveldb::IDBEnv();
+  base::FilePath file = temp_directory.path().AppendASCII("LOCK");
+  leveldb::FileLock* lock;
+  leveldb::Status status = env->LockFile(file.AsUTF8Unsafe(), &lock);
+  EXPECT_TRUE(status.ok());
+
+  status = env->UnlockFile(lock);
+  EXPECT_TRUE(status.ok());
+
+  status = env->LockFile(file.AsUTF8Unsafe(), &lock);
+  EXPECT_TRUE(status.ok());
+
+  leveldb::FileLock* lock2;
+  status = env->LockFile(file.AsUTF8Unsafe(), &lock2);
+  EXPECT_FALSE(status.ok());
+
+  status = env->UnlockFile(lock);
+  EXPECT_TRUE(status.ok());
 }
 
 }  // namespace

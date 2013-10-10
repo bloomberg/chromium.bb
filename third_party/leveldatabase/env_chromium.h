@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <set>
 
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
@@ -14,6 +15,8 @@
 #include "leveldb/env.h"
 #include "leveldb/slice.h"
 #include "leveldb/status.h"
+#include "port/port_chromium.h"
+#include "util/mutexlock.h"
 
 namespace leveldb_env {
 
@@ -158,6 +161,23 @@ class ChromiumEnv : public leveldb::Env,
   std::string name_;
 
  private:
+  // File locks may not be exclusive within a process (e.g. on POSIX). Track
+  // locks held by the ChromiumEnv to prevent access within the process.
+  class LockTable {
+   public:
+    bool Insert(const std::string& fname) {
+      leveldb::MutexLock l(&mu_);
+      return locked_files_.insert(fname).second;
+    }
+    bool Remove(const std::string& fname) {
+      leveldb::MutexLock l(&mu_);
+      return locked_files_.erase(fname) == 1;
+    }
+   private:
+    leveldb::port::Mutex mu_;
+    std::set<std::string> locked_files_;
+  };
+
   std::map<std::string, bool> needs_sync_map_;
   base::Lock map_lock_;
 
@@ -198,6 +218,7 @@ class ChromiumEnv : public leveldb::Env,
   };
   typedef std::deque<BGItem> BGQueue;
   BGQueue queue_;
+  LockTable locks_;
 };
 
 }  // namespace leveldb_env

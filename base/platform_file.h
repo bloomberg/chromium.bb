@@ -24,6 +24,8 @@ namespace base {
 // or creating a file.
 // PLATFORM_FILE_(WRITE|APPEND) are mutually exclusive. This is so that APPEND
 // behavior will be consistent with O_APPEND on POSIX.
+// PLATFORM_FILE_EXCLUSIVE_(READ|WRITE) only grant exclusive access to the file
+// on creation on POSIX; for existing files, consider using LockPlatformFile().
 enum PlatformFileFlags {
   PLATFORM_FILE_OPEN = 1 << 0,             // Opens a file, only if it exists.
   PLATFORM_FILE_CREATE = 1 << 1,           // Creates a new file, only if it
@@ -209,6 +211,31 @@ BASE_EXPORT bool TouchPlatformFile(PlatformFile file,
 
 // Returns some information for the given file.
 BASE_EXPORT bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info);
+
+// Attempts to take an exclusive write lock on the file. Returns immediately
+// (i.e. does not wait for another process to unlock the file). If the lock
+// was obtained, the result will be PLATFORM_FILE_OK. A lock only guarantees
+// that other processes may not also take a lock on the same file with the
+// same API - it may still be opened, renamed, unlinked, etc.
+//
+// Common semantics:
+//  * Locks are held by processes, but not inherited by child processes.
+//  * Locks are released by the OS on file handle close or process termination.
+//  * Locks are reliable only on local filesystems.
+//  * Duplicated file handles may also write to locked files.
+// Windows-specific semantics:
+//  * Locks are mandatory for read/write APIs, advisory for mapping APIs.
+//  * Within a process, locking the same file (by the same or new handle)
+//    will fail.
+// POSIX-specific semantics:
+//  * Locks are advisory only.
+//  * Within a process, locking the same file (by the same or new handle)
+//    will succeed.
+//  * Closing any descriptor on a given file releases the lock.
+BASE_EXPORT PlatformFileError LockPlatformFile(PlatformFile file);
+
+// Unlock a file previously locked with LockPlatformFile.
+BASE_EXPORT PlatformFileError UnlockPlatformFile(PlatformFile file);
 
 // Use this class to pass ownership of a PlatformFile to a receiver that may or
 // may not want to accept it.  This class does not own the storage for the

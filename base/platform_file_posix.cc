@@ -83,6 +83,17 @@ static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
   return futimes(file, times);
 #endif
 }
+
+static PlatformFileError CallFctnlFlock(PlatformFile file, bool do_lock) {
+  struct flock lock;
+  lock.l_type = F_WRLCK;
+  lock.l_whence = SEEK_SET;
+  lock.l_start = 0;
+  lock.l_len = 0;  // Lock entire file.
+  if (HANDLE_EINTR(fcntl(file, do_lock ? F_SETLK : F_UNLCK, &lock)) == -1)
+    return ErrnoToPlatformFileError(errno);
+  return PLATFORM_FILE_OK;
+}
 #else  // defined(OS_NACL)
 // TODO(bbudge) Remove DoPread, DoPwrite when NaCl implements pread, pwrite.
 static int DoPread(PlatformFile file, char* data, int size, int64 offset) {
@@ -116,6 +127,11 @@ static int CallFsync(PlatformFile file) {
 static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
   NOTIMPLEMENTED();  // NaCl doesn't implement futimes.
   return 0;
+}
+
+static PlatformFileError CallFctnlFlock(PlatformFile file, bool do_lock) {
+  NOTIMPLEMENTED();  // NaCl doesn't implement flock struct.
+  return PLATFORM_FILE_ERROR_INVALID_OPERATION;
 }
 #endif  // defined(OS_NACL)
 
@@ -424,6 +440,14 @@ bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
       base::TimeDelta::FromMicroseconds(creation_time_nsec /
                                         base::Time::kNanosecondsPerMicrosecond);
   return true;
+}
+
+PlatformFileError LockPlatformFile(PlatformFile file) {
+  return CallFctnlFlock(file, true);
+}
+
+PlatformFileError UnlockPlatformFile(PlatformFile file) {
+  return CallFctnlFlock(file, false);
 }
 
 PlatformFileError ErrnoToPlatformFileError(int saved_errno) {

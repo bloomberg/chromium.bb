@@ -262,6 +262,20 @@ bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
   return true;
 }
 
+PlatformFileError LockPlatformFile(PlatformFile file) {
+  BOOL result = LockFile(file, 0, 0, MAXDWORD, MAXDWORD);
+  if (!result)
+    return LastErrorToPlatformFileError(GetLastError());
+  return PLATFORM_FILE_OK;
+}
+
+PlatformFileError UnlockPlatformFile(PlatformFile file) {
+  BOOL result = UnlockFile(file, 0, 0, MAXDWORD, MAXDWORD);
+  if (!result)
+    return LastErrorToPlatformFileError(GetLastError());
+  return PLATFORM_FILE_OK;
+}
+
 PlatformFileError LastErrorToPlatformFileError(DWORD last_error) {
   switch (last_error) {
     case ERROR_SHARING_VIOLATION:
