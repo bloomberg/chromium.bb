@@ -240,13 +240,11 @@ const char kUseMinimalAddresses[] = "use_minimal_addresses";
 WalletClient::FullWalletRequest::FullWalletRequest(
     const std::string& instrument_id,
     const std::string& address_id,
-    const GURL& source_url,
     const std::string& google_transaction_id,
     const std::vector<RiskCapability> risk_capabilities,
     bool new_wallet_user)
     : instrument_id(instrument_id),
       address_id(address_id),
-      source_url(source_url),
       google_transaction_id(google_transaction_id),
       risk_capabilities(risk_capabilities),
       new_wallet_user(new_wallet_user) {}
@@ -254,9 +252,12 @@ WalletClient::FullWalletRequest::FullWalletRequest(
 WalletClient::FullWalletRequest::~FullWalletRequest() {}
 
 WalletClient::WalletClient(net::URLRequestContextGetter* context_getter,
-                           WalletClientDelegate* delegate)
+                           WalletClientDelegate* delegate,
+                           const GURL& source_url)
     : context_getter_(context_getter),
       delegate_(delegate),
+      user_index_(0U),
+      source_url_(source_url),
       request_type_(NO_PENDING_REQUEST),
       one_time_pad_(kOneTimePadLength),
       weak_ptr_factory_(this) {
@@ -268,8 +269,7 @@ WalletClient::~WalletClient() {}
 
 void WalletClient::AcceptLegalDocuments(
     const std::vector<WalletItems::LegalDocument*>& documents,
-    const std::string& google_transaction_id,
-    const GURL& source_url) {
+    const std::string& google_transaction_id) {
   if (documents.empty())
     return;
 
@@ -277,7 +277,7 @@ void WalletClient::AcceptLegalDocuments(
   for (size_t i = 0; i < documents.size(); ++i) {
     document_ids.push_back(documents[i]->id());
   }
-  DoAcceptLegalDocuments(document_ids, google_transaction_id, source_url);
+  DoAcceptLegalDocuments(document_ids, google_transaction_id);
 }
 
 void WalletClient::AuthenticateInstrument(
@@ -310,7 +310,7 @@ void WalletClient::AuthenticateInstrument(
       net::EscapeUrlEncodedData(json_payload, true).c_str(),
       escaped_card_verification_number.c_str());
 
-  MakeWalletRequest(GetAuthenticateInstrumentUrl(),
+  MakeWalletRequest(GetAuthenticateInstrumentUrl(user_index_),
                     post_body,
                     kFormEncodedMimeType);
 }
@@ -338,7 +338,7 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
   request_dict.SetString(kSelectedAddressIdKey, full_wallet_request.address_id);
   request_dict.SetString(
       kMerchantDomainKey,
-      full_wallet_request.source_url.GetWithEmptyPath().spec());
+      source_url_.GetWithEmptyPath().spec());
   request_dict.SetString(kGoogleTransactionIdKey,
                          full_wallet_request.google_transaction_id);
   request_dict.SetString(kFeatureKey, "REQUEST_AUTOCOMPLETE");
@@ -367,19 +367,19 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
       base::HexEncode(&num_bits, 1).c_str(),
       base::HexEncode(&(one_time_pad_[0]), one_time_pad_.size()).c_str());
 
-  MakeWalletRequest(GetGetFullWalletUrl(), post_body, kFormEncodedMimeType);
+  MakeWalletRequest(GetGetFullWalletUrl(user_index_),
+                    post_body,
+                    kFormEncodedMimeType);
 }
 
 void WalletClient::SaveToWallet(scoped_ptr<Instrument> instrument,
-                                scoped_ptr<Address> address,
-                                const GURL& source_url) {
+                                scoped_ptr<Address> address) {
   DCHECK(instrument || address);
   if (HasRequestInProgress()) {
     pending_requests_.push(base::Bind(&WalletClient::SaveToWallet,
                                       base::Unretained(this),
                                       base::Passed(&instrument),
-                                      base::Passed(&address),
-                                      source_url));
+                                      base::Passed(&address)));
     return;
   }
 
@@ -390,7 +390,7 @@ void WalletClient::SaveToWallet(scoped_ptr<Instrument> instrument,
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
   request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
   request_dict.SetString(kMerchantDomainKey,
-                         source_url.GetWithEmptyPath().spec());
+                         source_url_.GetWithEmptyPath().spec());
   request_dict.SetBoolean(kUseMinimalAddresses, false);
   request_dict.SetBoolean(kPhoneNumberRequired, true);
 
@@ -457,19 +457,20 @@ void WalletClient::SaveToWallet(scoped_ptr<Instrument> instrument,
           net::EscapeUrlEncodedData(json_payload, true).c_str(),
           card_verification_number.c_str());
     }
-    MakeWalletRequest(GetSaveToWalletUrl(), post_body, kFormEncodedMimeType);
+    MakeWalletRequest(GetSaveToWalletUrl(user_index_),
+                      post_body,
+                      kFormEncodedMimeType);
   } else {
-    MakeWalletRequest(GetSaveToWalletNoEscrowUrl(),
+    MakeWalletRequest(GetSaveToWalletNoEscrowUrl(user_index_),
                       json_payload,
                       kJsonMimeType);
   }
 }
 
-void WalletClient::GetWalletItems(const GURL& source_url) {
+void WalletClient::GetWalletItems() {
   if (HasRequestInProgress()) {
     pending_requests_.push(base::Bind(&WalletClient::GetWalletItems,
-                                      base::Unretained(this),
-                                      source_url));
+                                      base::Unretained(this)));
     return;
   }
 
@@ -479,7 +480,7 @@ void WalletClient::GetWalletItems(const GURL& source_url) {
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
   request_dict.SetString(kMerchantDomainKey,
-                         source_url.GetWithEmptyPath().spec());
+                         source_url_.GetWithEmptyPath().spec());
   request_dict.SetBoolean(kShippingAddressRequired,
                           delegate_->IsShippingAddressRequired());
   request_dict.SetBoolean(kUseMinimalAddresses, false);
@@ -488,7 +489,9 @@ void WalletClient::GetWalletItems(const GURL& source_url) {
   std::string post_body;
   base::JSONWriter::Write(&request_dict, &post_body);
 
-  MakeWalletRequest(GetGetWalletItemsUrl(), post_body, kJsonMimeType);
+  MakeWalletRequest(GetGetWalletItemsUrl(user_index_),
+                    post_body,
+                    kJsonMimeType);
 }
 
 bool WalletClient::HasRequestInProgress() const {
@@ -505,14 +508,12 @@ void WalletClient::CancelRequests() {
 
 void WalletClient::DoAcceptLegalDocuments(
     const std::vector<std::string>& document_ids,
-    const std::string& google_transaction_id,
-    const GURL& source_url) {
+    const std::string& google_transaction_id) {
   if (HasRequestInProgress()) {
     pending_requests_.push(base::Bind(&WalletClient::DoAcceptLegalDocuments,
                                       base::Unretained(this),
                                       document_ids,
-                                      google_transaction_id,
-                                      source_url));
+                                      google_transaction_id));
     return;
   }
 
@@ -523,7 +524,7 @@ void WalletClient::DoAcceptLegalDocuments(
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
   request_dict.SetString(kGoogleTransactionIdKey, google_transaction_id);
   request_dict.SetString(kMerchantDomainKey,
-                         source_url.GetWithEmptyPath().spec());
+                         source_url_.GetWithEmptyPath().spec());
   scoped_ptr<base::ListValue> docs_list(new base::ListValue());
   for (std::vector<std::string>::const_iterator it = document_ids.begin();
        it != document_ids.end(); ++it) {
@@ -535,7 +536,9 @@ void WalletClient::DoAcceptLegalDocuments(
   std::string post_body;
   base::JSONWriter::Write(&request_dict, &post_body);
 
-  MakeWalletRequest(GetAcceptLegalDocumentsUrl(), post_body, kJsonMimeType);
+  MakeWalletRequest(GetAcceptLegalDocumentsUrl(user_index_),
+                    post_body,
+                    kJsonMimeType);
 }
 
 void WalletClient::MakeWalletRequest(const GURL& url,
@@ -686,6 +689,7 @@ void WalletClient::OnURLFetchComplete(
     }
 
     case GET_WALLET_ITEMS: {
+      NOTIMPLEMENTED() << data;
       scoped_ptr<WalletItems> wallet_items(
           WalletItems::CreateWalletItems(*response_dict));
       if (wallet_items) {

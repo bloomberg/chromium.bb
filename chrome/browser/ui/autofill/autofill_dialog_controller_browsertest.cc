@@ -80,12 +80,12 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                scoped_refptr<content::MessageLoopRunner> runner)
       : AutofillDialogControllerImpl(contents,
                                      form_data,
-                                     GURL(),
+                                     form_data.origin,
                                      base::Bind(&MockCallback)),
         metric_logger_(metric_logger),
         mock_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
-                GetRequestContext(), this),
+                GetRequestContext(), this, form_data.origin),
         message_loop_runner_(runner),
         use_validation_(false),
         weak_ptr_factory_(this) {}
@@ -561,7 +561,9 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
 // Tests that credit card number is disabled while editing a Wallet instrument.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
-  controller()->OnUserNameFetchSuccess("user@example.com");
+  std::vector<std::string> usernames;
+  usernames.push_back("user@example.com");
+  controller()->OnUserNameFetchSuccess(usernames);
   controller()->OnDidFetchWalletCookieValue(std::string());
 
   scoped_ptr<wallet::WalletItems> wallet_items =
@@ -729,7 +731,9 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
 
   // Set up some Wallet state.
-  controller()->OnUserNameFetchSuccess("user@example.com");
+  std::vector<std::string> usernames;
+  usernames.push_back("user@example.com");
+  controller()->OnUserNameFetchSuccess(usernames);
   controller()->OnDidFetchWalletCookieValue(std::string());
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));

@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_SIGNIN_HELPER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -92,9 +93,10 @@ class WalletSigninHelper : public net::URLFetcherDelegate {
   bool ParseSignInResponse();
 
   // Attempts to parse the GetAccountInfo response from the server.
-  // Returns true on success; the obtained email address is stored into |email|.
+  // Returns true on success; the obtained email addresses are stored into
+  // |emails|.
   bool ParseGetAccountInfoResponse(const net::URLFetcher* fetcher,
-                                   std::string* email);
+                                   std::vector<std::string>* emails);
 
   // Callback for when the Google Wallet cookie has been retrieved.
   void ReturnWalletCookieValue(const std::string& cookie_value);
@@ -108,8 +110,8 @@ class WalletSigninHelper : public net::URLFetcherDelegate {
   // While passive login/merge session URL fetches are going on:
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
-  // User account name (email) fetched from OnGetUserInfoSuccess().
-  std::string username_;
+  // User account names (emails) fetched from OnGetUserInfoSuccess().
+  std::vector<std::string> emails_;
 
   // Current internal state of the helper.
   State state_;

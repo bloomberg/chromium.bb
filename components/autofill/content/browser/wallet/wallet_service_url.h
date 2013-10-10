@@ -5,20 +5,25 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_SERVICE_URL_H_
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_SERVICE_URL_H_
 
+#include <stddef.h>
+
 class GURL;
 
 namespace autofill {
 namespace wallet {
 
-GURL GetGetWalletItemsUrl();
-GURL GetGetFullWalletUrl();
-GURL GetManageInstrumentsUrl();
-GURL GetManageAddressesUrl();
-GURL GetAcceptLegalDocumentsUrl();
-GURL GetAuthenticateInstrumentUrl();
-GURL GetSendStatusUrl();
-GURL GetSaveToWalletNoEscrowUrl();
-GURL GetSaveToWalletUrl();
+// |user_index| is the index into the list of signed-in GAIA profiles for which
+// this request is being made.
+GURL GetGetWalletItemsUrl(size_t user_index);
+GURL GetGetFullWalletUrl(size_t user_index);
+GURL GetManageInstrumentsUrl(size_t user_index);
+GURL GetManageAddressesUrl(size_t user_index);
+GURL GetAcceptLegalDocumentsUrl(size_t user_index);
+GURL GetAuthenticateInstrumentUrl(size_t user_index);
+GURL GetSendStatusUrl(size_t user_index);
+GURL GetSaveToWalletNoEscrowUrl(size_t user_index);
+GURL GetSaveToWalletUrl(size_t user_index);
+// This URL attempts to passively refresh all users.
 GURL GetPassiveAuthUrl();
 
 // URL to visit for presenting the user with a sign-in dialog.

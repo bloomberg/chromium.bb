@@ -690,7 +690,9 @@ class WalletClientTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     wallet_client_.reset(
-        new WalletClient(browser_context_.GetRequestContext(), &delegate_));
+        new WalletClient(browser_context_.GetRequestContext(),
+                         &delegate_,
+                         GURL(kMerchantUrl)));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -818,7 +820,7 @@ class WalletClientTest : public testing::Test {
     delegate_.ExpectBaselineMetrics();
     delegate_.ExpectWalletErrorMetric(expected_autofill_metric);
 
-    wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+    wallet_client_->GetWalletItems();
     std::string buyer_error;
     if (!message_type_for_buyer_string.empty()) {
       buyer_error = base::StringPrintf("\"message_type_for_buyer\":\"%s\",",
@@ -961,7 +963,7 @@ TEST_F(WalletClientTest, WalletErrorResponseMissing) {
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_UNKNOWN_ERROR);
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
   VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kGetWalletItemsValidRequest,
                          kErrorTypeMissingInResponse);
@@ -974,7 +976,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
   VerifyAndFinishRequest(net::HTTP_UNAUTHORIZED,
                          kGetWalletItemsValidRequest,
                          std::string());
@@ -987,7 +989,7 @@ TEST_F(WalletClientTest, RequestError) {
   delegate_.ExpectBaselineMetrics();
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_BAD_REQUEST);
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
   VerifyAndFinishRequest(net::HTTP_BAD_REQUEST,
                          kGetWalletItemsValidRequest,
                          std::string());
@@ -1000,7 +1002,6 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
-      GURL(kMerchantUrl),
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>(),
       false);
@@ -1020,7 +1021,6 @@ TEST_F(WalletClientTest, GetFullWalletSuccessNewuser) {
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
-      GURL(kMerchantUrl),
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>(),
       true);
@@ -1042,7 +1042,6 @@ TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
-      GURL(kMerchantUrl),
       "google_transaction_id",
       risk_capabilities,
       false);
@@ -1068,7 +1067,6 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
-      GURL(kMerchantUrl),
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>(),
       false);
@@ -1101,8 +1099,7 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   docs.push_back(
       WalletItems::LegalDocument::CreatePrivacyPolicyDocument().release());
   wallet_client_->AcceptLegalDocuments(docs.get(),
-                                       kGoogleTransactionId,
-                                       GURL(kMerchantUrl));
+                                       kGoogleTransactionId);
   VerifyAndFinishRequest(net::HTTP_OK,
                          kAcceptLegalDocumentsValidRequest,
                          ")}'");  // Invalid JSON. Should be ignored.
@@ -1164,7 +1161,7 @@ TEST_F(WalletClientTest, GetWalletItems) {
                                            1);
   delegate_.ExpectBaselineMetrics();
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsValidRequest,
@@ -1178,7 +1175,7 @@ TEST_F(WalletClientTest, GetWalletItemsRespectsDelegateForShippingRequired) {
   delegate_.ExpectBaselineMetrics();
   delegate_.SetIsShippingAddressRequired(false);
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsNoShippingRequest,
@@ -1197,8 +1194,7 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressValidResponse);
@@ -1228,8 +1224,7 @@ TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressWithRequiredActionsValidResponse);
@@ -1245,8 +1240,7 @@ TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
@@ -1262,8 +1256,7 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveInvalidResponse);
@@ -1280,8 +1273,7 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentValidRequest,
@@ -1313,8 +1305,7 @@ TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishFormEncodedRequest(
       net::HTTP_OK,
@@ -1334,8 +1325,7 @@ TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentValidRequest,
@@ -1353,8 +1343,7 @@ TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentValidRequest,
@@ -1376,8 +1365,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentAndAddressValidRequest,
@@ -1412,8 +1400,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
 
   VerifyAndFinishFormEncodedRequest(
       net::HTTP_OK,
@@ -1435,8 +1422,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveToWallet(instrument.Pass(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kSaveInstrumentAndAddressValidRequest,
@@ -1457,8 +1443,7 @@ TEST_F(WalletClientTest, UpdateAddressSucceeded) {
   address->set_object_id("shipping_address_id");
 
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateAddressValidResponse);
@@ -1489,8 +1474,7 @@ TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
   address->set_object_id("shipping_address_id");
 
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateWithRequiredActionsValidResponse);
@@ -1508,8 +1492,7 @@ TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
   address->set_object_id("shipping_address_id");
 
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kSaveWithInvalidRequiredActionsResponse);
@@ -1527,8 +1510,7 @@ TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
   address->set_object_id("shipping_address_id");
 
   wallet_client_->SaveToWallet(scoped_ptr<Instrument>(),
-                               address.Pass(),
-                               GURL(kMerchantUrl));
+                               address.Pass());
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateAddressValidRequest,
                          kUpdateMalformedResponse);
@@ -1545,8 +1527,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
   delegate_.ExpectBaselineMetrics();
 
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
@@ -1564,8 +1545,7 @@ TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
   delegate_.ExpectBaselineMetrics();
 
   wallet_client_->SaveToWallet(GetTestExpirationDateChangeInstrument(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kUpdateInstrumentExpirationDateValidRequest,
@@ -1584,8 +1564,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
   delegate_.ExpectBaselineMetrics();
 
   wallet_client_->SaveToWallet(GetTestAddressNameChangeInstrument(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishFormEncodedRequest(
       net::HTTP_OK,
@@ -1618,8 +1597,7 @@ TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
                                 form_errors)).Times(1);
 
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
@@ -1636,8 +1614,7 @@ TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
   delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
@@ -1654,8 +1631,7 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   delegate_.ExpectLogWalletMalformedResponse(AutofillMetrics::SAVE_TO_WALLET);
 
   wallet_client_->SaveToWallet(GetTestAddressUpgradeInstrument(),
-                               scoped_ptr<Address>(),
-                               GURL(kMerchantUrl));
+                               scoped_ptr<Address>());
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kUpdateInstrumentAddressValidRequest,
@@ -1668,7 +1644,7 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
                                            1);
   delegate_.ExpectBaselineMetrics();
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
 
   VerifyAndFinishRequest(net::HTTP_OK,
@@ -1682,11 +1658,11 @@ TEST_F(WalletClientTest, PendingRequest) {
 
   // Shouldn't queue the first request.
   delegate_.ExpectBaselineMetrics();
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
   EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
   testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
   EXPECT_EQ(1U, wallet_client_->pending_requests_.size());
 
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
@@ -1717,9 +1693,9 @@ TEST_F(WalletClientTest, CancelRequests) {
                                            0);
   delegate_.ExpectBaselineMetrics();
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems();
+  wallet_client_->GetWalletItems();
   EXPECT_EQ(2U, wallet_client_->pending_requests_.size());
 
   wallet_client_->CancelRequests();

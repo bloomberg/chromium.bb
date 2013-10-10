@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/format_macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/stringprintf.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
@@ -20,7 +22,7 @@ const char kProdWalletServiceUrl[] = "https://wallet.google.com/";
 
 // TODO(ahutter): Remove this once production is ready.
 const char kSandboxWalletServiceUrl[] =
-    "https://payments-form-dogfood.sandbox.google.com/";
+    "https://wallet-web.sandbox.google.com/";
 
 // TODO(ahutter): Remove this once production is ready.
 const char kSandboxWalletSecureServiceUrl[] =
@@ -50,12 +52,13 @@ GURL GetWalletHostUrl() {
   return GURL(kSandboxWalletServiceUrl);
 }
 
-GURL GetBaseWalletUrl() {
-  return GetWalletHostUrl().Resolve("online/v2/");
+GURL GetBaseWalletUrl(size_t user_index) {
+  std::string path = base::StringPrintf("online/v2/u/%" PRIuS "/", user_index);
+  return GetWalletHostUrl().Resolve(path);
 }
 
-GURL GetBaseAutocheckoutUrl() {
-  return GetBaseWalletUrl().Resolve("wallet/autocheckout/v1/");
+GURL GetBaseAutocheckoutUrl(size_t user_index) {
+  return GetBaseWalletUrl(user_index).Resolve("wallet/autocheckout/v1/");
 }
 
 GURL GetBaseSecureUrl() {
@@ -69,59 +72,67 @@ GURL GetBaseSecureUrl() {
   return GURL(kSandboxWalletSecureServiceUrl);
 }
 
-GURL GetBaseEncryptedFrontendUrl() {
+GURL GetBaseEncryptedFrontendUrl(size_t user_index) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   // TODO(ahutter): Stop checking these switches once we switch over to prod.
   GURL base_url = IsWalletProductionEnabled() ||
       command_line.HasSwitch(switches::kWalletServiceUrl) ?
           GetWalletHostUrl() : GetBaseSecureUrl();
-  return base_url.Resolve("online-secure/v2/autocheckout/v1/");
+  std::string path =
+      base::StringPrintf("online-secure/v2/u/%" PRIuS "/autocheckout/v1/",
+                         user_index);
+  return base_url.Resolve(path);
 }
 
 }  // namespace
 
 namespace wallet {
 
-GURL GetGetWalletItemsUrl() {
-  return GetBaseAutocheckoutUrl().Resolve("getWalletItemsJwtless");
+GURL GetGetWalletItemsUrl(size_t user_index) {
+  return GetBaseAutocheckoutUrl(user_index).Resolve("getWalletItemsJwtless");
 }
 
-GURL GetGetFullWalletUrl() {
-  return GetBaseEncryptedFrontendUrl().Resolve("getFullWalletJwtless?s7e=otp");
+GURL GetGetFullWalletUrl(size_t user_index) {
+  return GetBaseEncryptedFrontendUrl(user_index)
+      .Resolve("getFullWalletJwtless?s7e=otp");
 }
 
-GURL GetManageInstrumentsUrl() {
-  return GetBaseSecureUrl().Resolve("manage/paymentMethods");
+GURL GetManageInstrumentsUrl(size_t user_index) {
+  std::string path =
+      base::StringPrintf("manage/w/%" PRIuS "/paymentMethods", user_index);
+  return GetBaseSecureUrl().Resolve(path);
 }
 
-GURL GetManageAddressesUrl() {
-  return GetBaseSecureUrl().Resolve("manage/settings/addresses");
+GURL GetManageAddressesUrl(size_t user_index) {
+  std::string path =
+      base::StringPrintf("manage/w/%" PRIuS "/settings/addresses", user_index);
+  return GetBaseSecureUrl().Resolve(path);
 }
 
-GURL GetAcceptLegalDocumentsUrl() {
-  return GetBaseAutocheckoutUrl().Resolve("acceptLegalDocument");
+GURL GetAcceptLegalDocumentsUrl(size_t user_index) {
+  return GetBaseAutocheckoutUrl(user_index).Resolve("acceptLegalDocument");
 }
 
-GURL GetAuthenticateInstrumentUrl() {
-  return GetBaseEncryptedFrontendUrl()
+GURL GetAuthenticateInstrumentUrl(size_t user_index) {
+  return GetBaseEncryptedFrontendUrl(user_index)
       .Resolve("authenticateInstrument?s7e=cvn");
 }
 
-GURL GetSendStatusUrl() {
-  return GetBaseAutocheckoutUrl().Resolve("reportStatus");
+GURL GetSendStatusUrl(size_t user_index) {
+  return GetBaseAutocheckoutUrl(user_index).Resolve("reportStatus");
 }
 
-GURL GetSaveToWalletNoEscrowUrl() {
-  return GetBaseAutocheckoutUrl().Resolve("saveToWallet");
+GURL GetSaveToWalletNoEscrowUrl(size_t user_index) {
+  return GetBaseAutocheckoutUrl(user_index).Resolve("saveToWallet");
 }
 
-GURL GetSaveToWalletUrl() {
-  return GetBaseEncryptedFrontendUrl()
+GURL GetSaveToWalletUrl(size_t user_index) {
+  return GetBaseEncryptedFrontendUrl(user_index)
       .Resolve("saveToWallet?s7e=card_number%3Bcvn");
 }
 
 GURL GetPassiveAuthUrl() {
-  return GetBaseWalletUrl().Resolve("passiveauth?isChromePayments=true");
+  return GetBaseWalletUrl(0).Resolve("passiveauth?isChromePayments=true");
 }
 
 GURL GetSignInUrl() {

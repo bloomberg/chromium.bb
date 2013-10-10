@@ -214,10 +214,12 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void UpdateAccountChooserView() OVERRIDE;
 
   // wallet::WalletSigninHelperDelegate implementation.
-  virtual void OnPassiveSigninSuccess(const std::string& username) OVERRIDE;
+  virtual void OnPassiveSigninSuccess(const std::vector<std::string>& username)
+      OVERRIDE;
   virtual void OnPassiveSigninFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnUserNameFetchSuccess(const std::string& username) OVERRIDE;
+  virtual void OnUserNameFetchSuccess(const std::vector<std::string>& username)
+      OVERRIDE;
   virtual void OnUserNameFetchFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnDidFetchWalletCookieValue(

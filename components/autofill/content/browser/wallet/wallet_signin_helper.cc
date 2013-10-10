@@ -32,7 +32,8 @@ namespace {
 
 // Toolbar::GetAccountInfo API URL (JSON).
 const char kGetAccountInfoUrlFormat[] =
-    "https://clients1.google.com/tbproxy/getaccountinfo?key=%d&rv=2&requestor=chrome";
+    "https://clients1.google.com/tbproxy/getaccountinfo?key=%d&rv=2"
+    "&requestor=chrome";
 
 const char kWalletCookieName[] = "gdtoken";
 
@@ -44,9 +45,13 @@ void GetGoogleCookiesCallback(
     const net::CookieList& cookies) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
+  // Cookies for parent domains will also be returned; we only want cookies with
+  // exact host matches.
+  std::string host = wallet::GetPassiveAuthUrl().host();
   std::string wallet_cookie;
   for (size_t i = 0; i < cookies.size(); ++i) {
-    if (LowerCaseEqualsASCII(cookies[i].Name(), kWalletCookieName)) {
+    if (LowerCaseEqualsASCII(cookies[i].Name(), kWalletCookieName) &&
+        LowerCaseEqualsASCII(cookies[i].Domain(), host.c_str())) {
       wallet_cookie = cookies[i].Value();
       break;
     }
@@ -66,22 +71,10 @@ void GetGoogleCookies(
 
   net::URLRequestContext* url_request_context =
       request_context_getter->GetURLRequestContext();
-  if (!url_request_context) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                     FROM_HERE,
-                                     base::Bind(callback, std::string()));
-    return;
-  }
-
-  net::CookieStore* cookie_store = url_request_context->cookie_store();
-  if (!cookie_store) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                     FROM_HERE,
-                                     base::Bind(callback, std::string()));
-    return;
-  }
-
-  net::CookieMonster* cookie_monster = cookie_store->GetCookieMonster();
+  net::CookieStore* cookie_store = url_request_context ?
+      url_request_context->cookie_store() : NULL;
+  net::CookieMonster* cookie_monster = cookie_store ?
+      cookie_store->GetCookieMonster() : NULL;
   if (!cookie_monster) {
     content::BrowserThread::PostTask(content::BrowserThread::UI,
                                      FROM_HERE,
@@ -117,7 +110,7 @@ void WalletSigninHelper::StartPassiveSignin() {
   DCHECK(!url_fetcher_);
 
   state_ = PASSIVE_EXECUTING_SIGNIN;
-  username_.clear();
+  emails_.clear();
   const GURL& url = wallet::GetPassiveAuthUrl();
   url_fetcher_.reset(net::URLFetcher::Create(
       0, url, net::URLFetcher::GET, this));
@@ -130,7 +123,7 @@ void WalletSigninHelper::StartUserNameFetch() {
   DCHECK(!url_fetcher_);
 
   state_ = USERNAME_FETCHING_USERINFO;
-  username_.clear();
+  emails_.clear();
   StartFetchingUserNameFromSession();
 }
 
@@ -224,24 +217,22 @@ void WalletSigninHelper::StartFetchingUserNameFromSession() {
 }
 
 void WalletSigninHelper::ProcessGetAccountInfoResponseAndFinish() {
-  std::string email;
-  if (!ParseGetAccountInfoResponse(url_fetcher_.get(), &email)) {
-    LOG(ERROR) << "failed to get the user email";
+  if (!ParseGetAccountInfoResponse(url_fetcher_.get(), &emails_)) {
+    LOG(ERROR) << "failed to get the user emails";
     OnOtherError();
     return;
   }
 
-  username_ = email;
   const State finishing_state = state_;
   state_ = IDLE;
   url_fetcher_.reset();
   switch(finishing_state) {
     case USERNAME_FETCHING_USERINFO:
-      delegate_->OnUserNameFetchSuccess(username_);
+      delegate_->OnUserNameFetchSuccess(emails_);
       break;
 
     case PASSIVE_FETCHING_USERINFO:
-      delegate_->OnPassiveSigninSuccess(username_);
+      delegate_->OnPassiveSigninSuccess(emails_);
       break;
 
     default:
@@ -272,8 +263,8 @@ bool WalletSigninHelper::ParseSignInResponse() {
 }
 
 bool WalletSigninHelper::ParseGetAccountInfoResponse(
-    const net::URLFetcher* fetcher, std::string* email) {
-  DCHECK(email);
+    const net::URLFetcher* fetcher, std::vector<std::string>* emails) {
+  DCHECK(emails);
 
   std::string data;
   if (!fetcher->GetResponseAsString(&data)) {
@@ -294,21 +285,30 @@ bool WalletSigninHelper::ParseGetAccountInfoResponse(
     return false;
   }
 
-  // |user_info| will contain each signed in user in the cookie jar.
-  // We only support the first user at the moment. http://crbug.com/259543
-  // will change that.
-  base::DictionaryValue* user_info_detail;
-  if (!user_info->GetDictionary(0, &user_info_detail)) {
+  if (user_info->empty()) {
     DVLOG(1) << "empty list in JSON response";
     return false;
   }
 
-  if (!user_info_detail->GetStringWithoutPathExpansion("email", email)) {
-    DVLOG(1) << "no email in JSON response";
-    return false;
+  // |user_info| will contain each signed in user in the cookie jar.
+  for (size_t i = 0; i < user_info->GetSize(); ++i) {
+    base::DictionaryValue* user_info_detail;
+    if (!user_info->GetDictionary(i, &user_info_detail)) {
+      DVLOG(1) << "malformed dictionary in JSON response";
+      return false;
+    }
+
+    std::string email;
+    if (!user_info_detail->GetStringWithoutPathExpansion("email", &email) ||
+        email.empty()) {
+      DVLOG(1) << "no email in JSON response";
+      return false;
+    }
+
+    emails->push_back(email);
   }
 
-  return !email->empty();
+  return true;
 }
 
 void WalletSigninHelper::ReturnWalletCookieValue(

@@ -43,8 +43,10 @@ const char kGetAccountInfoValidResponseFormat[] =
 
 class MockWalletSigninHelperDelegate : public WalletSigninHelperDelegate {
  public:
-  MOCK_METHOD1(OnPassiveSigninSuccess, void(const std::string& username));
-  MOCK_METHOD1(OnUserNameFetchSuccess, void(const std::string& username));
+  MOCK_METHOD1(OnPassiveSigninSuccess,
+               void(const std::vector<std::string>& usernames));
+  MOCK_METHOD1(OnUserNameFetchSuccess,
+               void(const std::vector<std::string>& usernames));
   MOCK_METHOD1(OnPassiveSigninFailure,
                void(const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnUserNameFetchFailure,
@@ -154,7 +156,9 @@ class WalletSigninHelperTest : public testing::Test {
 };
 
 TEST_F(WalletSigninHelperTest, PassiveSigninSuccessful) {
-  EXPECT_CALL(mock_delegate_, OnPassiveSigninSuccess("user@gmail.com"));
+  std::vector<std::string> usernames;
+  usernames.push_back("user@gmail.com");
+  EXPECT_CALL(mock_delegate_, OnPassiveSigninSuccess(usernames));
   signin_helper_->StartPassiveSignin();
   MockSuccessfulPassiveSignInResponse();
   MockSuccessfulGetAccountInfoResponse("user@gmail.com");
@@ -180,7 +184,9 @@ TEST_F(WalletSigninHelperTest, PassiveSigninFailedUserInfo) {
 }
 
 TEST_F(WalletSigninHelperTest, PassiveUserInfoSuccessful) {
-  EXPECT_CALL(mock_delegate_, OnUserNameFetchSuccess("user@gmail.com"));
+  std::vector<std::string> usernames;
+  usernames.push_back("user@gmail.com");
+  EXPECT_CALL(mock_delegate_, OnUserNameFetchSuccess(usernames));
   signin_helper_->StartUserNameFetch();
   MockSuccessfulGetAccountInfoResponse("user@gmail.com");
 }

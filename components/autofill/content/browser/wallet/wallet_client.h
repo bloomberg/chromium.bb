@@ -104,7 +104,6 @@ class WalletClient : public net::URLFetcherDelegate {
    public:
     FullWalletRequest(const std::string& instrument_id,
                       const std::string& address_id,
-                      const GURL& source_url,
                       const std::string& google_transaction_id,
                       const std::vector<RiskCapability> risk_capabilities,
                       bool new_wallet_user);
@@ -117,9 +116,6 @@ class WalletClient : public net::URLFetcherDelegate {
     // The ID of the shipping address. Should have been selected by the user
     // in some UI.
     std::string address_id;
-
-    // The URL that Online Wallet usage is being initiated on.
-    GURL source_url;
 
     // The transaction ID from GetWalletItems.
     std::string google_transaction_id;
@@ -135,16 +131,18 @@ class WalletClient : public net::URLFetcherDelegate {
   };
 
   // |context_getter| is reference counted so it has no lifetime or ownership
-  // requirements. |delegate| must outlive |this|.
+  // requirements. |delegate| must outlive |this|. |source_url| is the url
+  // of the merchant page.
   WalletClient(net::URLRequestContextGetter* context_getter,
-               WalletClientDelegate* delegate);
+               WalletClientDelegate* delegate,
+               const GURL& source_url);
 
   virtual ~WalletClient();
 
   // GetWalletItems retrieves the user's online wallet. The WalletItems
   // returned may require additional action such as presenting legal documents
   // to the user to be accepted.
-  virtual void GetWalletItems(const GURL& source_url);
+  virtual void GetWalletItems();
 
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.
@@ -153,8 +151,7 @@ class WalletClient : public net::URLFetcherDelegate {
   // a corresponding |OnDidAcceptLegalDocuments()| call.
   virtual void AcceptLegalDocuments(
       const std::vector<WalletItems::LegalDocument*>& documents,
-      const std::string& google_transaction_id,
-      const GURL& source_url);
+      const std::string& google_transaction_id);
 
   // Authenticates that |card_verification_number| is for the backing instrument
   // with |instrument_id|. |obfuscated_gaia_id| is used as a key when escrowing
@@ -171,13 +168,17 @@ class WalletClient : public net::URLFetcherDelegate {
   // does not have to be complete if its being used to update an existing
   // instrument, like in the case of expiration date or address only updates.
   virtual void SaveToWallet(scoped_ptr<Instrument> instrument,
-                            scoped_ptr<Address> address,
-                            const GURL& source_url);
+                            scoped_ptr<Address> address);
 
   bool HasRequestInProgress() const;
 
   // Cancels and clears the current |request_| and |pending_requests_| (if any).
   void CancelRequests();
+
+  size_t user_index() const { return user_index_; }
+  void set_user_index(size_t user_index) {
+    user_index_ = user_index;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WalletClientTest, PendingRequest);
@@ -195,8 +196,7 @@ class WalletClient : public net::URLFetcherDelegate {
   // Like AcceptLegalDocuments, but takes a vector of document ids.
   void DoAcceptLegalDocuments(
       const std::vector<std::string>& document_ids,
-      const std::string& google_transaction_id,
-      const GURL& source_url);
+      const std::string& google_transaction_id);
 
   // Posts |post_body| to |url| with content type |mime_type| and notifies
   // |delegate_| when the request is complete.
@@ -231,6 +231,13 @@ class WalletClient : public net::URLFetcherDelegate {
   // Observer class that has its various On* methods called based on the results
   // of a request to Online Wallet.
   WalletClientDelegate* const delegate_;  // must outlive |this|.
+
+  // The index of the user account we're making requests for. The index is into
+  // GAIA's list of signed in users.
+  size_t user_index_;
+
+  // The URL of the page we're making requests on behalf of.
+  GURL source_url_;
 
   // The current request object.
   scoped_ptr<net::URLFetcher> request_;

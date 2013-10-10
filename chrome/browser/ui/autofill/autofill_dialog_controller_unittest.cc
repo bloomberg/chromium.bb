@@ -236,8 +236,8 @@ class TestAccountChooserModel : public AccountChooserModel {
       : AccountChooserModel(delegate, prefs, metric_logger) {}
   virtual ~TestAccountChooserModel() {}
 
-  using AccountChooserModel::kActiveWalletItemId;
   using AccountChooserModel::kAutofillItemId;
+  using AccountChooserModel::kWalletAccountsStartId;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAccountChooserModel);
@@ -261,7 +261,7 @@ class TestAutofillDialogController
         metric_logger_(metric_logger),
         mock_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
-                GetRequestContext(), this),
+                GetRequestContext(), this, source_url),
         mock_new_card_bubble_controller_(mock_new_card_bubble_controller),
         submit_button_delay_count_(0) {}
 
@@ -457,8 +457,10 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
         mock_new_card_bubble_controller_.get()))->AsWeakPtr();
     controller_->Init(profile());
     controller_->Show();
-    controller_->OnUserNameFetchSuccess(kFakeEmail);
-    EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
+    std::vector<std::string> usernames;
+    usernames.push_back(kFakeEmail);
+    controller_->OnUserNameFetchSuccess(usernames);
+    EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
     controller_->OnDidFetchWalletCookieValue(std::string());
     controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   }
@@ -512,13 +514,12 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SwitchToAutofill() {
-    controller_->MenuModelForAccountChooser()->ActivatedAt(
-        TestAccountChooserModel::kAutofillItemId);
+    ui::MenuModel* model = controller_->MenuModelForAccountChooser();
+    model->ActivatedAt(model->GetItemCount() - 1);
   }
 
   void SwitchToWallet() {
-    controller_->MenuModelForAccountChooser()->ActivatedAt(
-        TestAccountChooserModel::kActiveWalletItemId);
+    controller_->MenuModelForAccountChooser()->ActivatedAt(0);
   }
 
   void SimulateSigninError() {
@@ -1230,7 +1231,7 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
 
 TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              AcceptLegalDocuments(_, _, _)).Times(1);
+              AcceptLegalDocuments(_, _)).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
   EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(1);
@@ -1343,8 +1344,7 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveToWalletMock(testing::IsNull(),
-                               testing::NotNull(),
-                               _)).Times(1);
+                               testing::NotNull())).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
@@ -1367,8 +1367,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveToWalletMock(testing::NotNull(),
-                               testing::IsNull(),
-                               _)).Times(1);
+                               testing::IsNull())).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
@@ -1380,8 +1379,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveToWalletMock(testing::NotNull(),
-                               testing::IsNull(),
-                               _)).Times(1);
+                               testing::IsNull())).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
@@ -1393,8 +1391,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
 TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveToWalletMock(testing::NotNull(),
-                               testing::NotNull(),
-                               _)).Times(1);
+                               testing::NotNull())).Times(1);
 
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
@@ -1414,8 +1411,7 @@ MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
 TEST_F(AutofillDialogControllerTest, BillingForShipping) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveToWalletMock(testing::IsNull(),
-                               testing::NotNull(),
-                               _)).Times(1);
+                               testing::NotNull())).Times(1);
 
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   // Select "Same as billing" in the address menu.
@@ -1428,7 +1424,7 @@ TEST_F(AutofillDialogControllerTest, BillingForShipping) {
 // matched shipping address, then a shipping address should not be added.
 TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(_, _, _)).Times(0);
+              SaveToWalletMock(_, _)).Times(0);
 
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
@@ -1483,14 +1479,13 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentSameAsBilling) {
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveToWalletMock(testing::NotNull(),
-                               UsesLocalBillingAddress(),
-                               _)).Times(1);
+                               UsesLocalBillingAddress())).Times(1);
   AcceptAndLoadFakeFingerprint();
 }
 
 TEST_F(AutofillDialogControllerTest, CancelNoSave) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveToWalletMock(_, _, _)).Times(0);
+              SaveToWalletMock(_, _)).Times(0);
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
@@ -2119,7 +2114,7 @@ TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::REQUIRED_ACTION).size());
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              GetWalletItems(_)).Times(1);
+              GetWalletItems()).Times(1);
   controller()->OnDidGetFullWallet(
       CreateFullWallet("choose_another_instrument_or_address"));
   EXPECT_EQ(1U, NotificationsOfType(
@@ -2193,7 +2188,7 @@ TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
   // Simulate switching away from the tab and back.  This should issue a request
   // for wallet items.
   controller()->ClearLastWalletItemsFetchTimestampForTesting();
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
   controller()->TabActivated();
 
   // Simulate a response that includes different items.
@@ -2243,7 +2238,7 @@ TEST_F(AutofillDialogControllerTest,
   // Simulate switching away from the tab and back.  This should issue a request
   // for wallet items.
   controller()->ClearLastWalletItemsFetchTimestampForTesting();
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
   controller()->TabActivated();
 
   // Simulate a response that includes different default values.
@@ -2282,7 +2277,7 @@ TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
   controller()->ClearLastWalletItemsFetchTimestampForTesting();
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
   controller()->TabActivated();
 
   controller()->OnDidGetWalletItems(

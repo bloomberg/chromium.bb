@@ -751,7 +751,7 @@ string16 AutofillDialogControllerImpl::AccountChooserText() const {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAYING_WITHOUT_WALLET);
 
   if (SignedInState() == SIGNED_IN)
-    return account_chooser_model_.active_wallet_account_name();
+    return account_chooser_model_.GetActiveWalletAccountName();
 
   // In this case, the account chooser should be showing the signin link.
   return string16();
@@ -962,7 +962,7 @@ void AutofillDialogControllerImpl::GetWalletItems() {
   // The "Loading..." page should be showing now, which should cause the
   // account chooser to hide.
   view_->UpdateAccountChooser();
-  GetWalletClient()->GetWalletItems(source_url_);
+  GetWalletClient()->GetWalletItems();
 }
 
 void AutofillDialogControllerImpl::HideSignIn() {
@@ -998,7 +998,7 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
   switch (SignedInState()) {
     case SIGNED_IN:
       // Start fetching the user name if we don't know it yet.
-      if (account_chooser_model_.active_wallet_account_name().empty()) {
+      if (!account_chooser_model_.HasAccountsToChoose()) {
         DCHECK(!username_fetcher_);
         username_fetcher_.reset(new wallet::WalletSigninHelper(
             this, profile_->GetRequestContext()));
@@ -1019,7 +1019,7 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
     case REQUIRES_PASSIVE_SIGN_IN:
       // Cancel any pending username fetch and clear any stale username data.
       username_fetcher_.reset();
-      account_chooser_model_.ClearActiveWalletAccountName();
+      account_chooser_model_.ClearWalletAccounts();
 
       // Attempt to passively sign in the user.
       DCHECK(!signin_helper_);
@@ -1314,6 +1314,8 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSection(
 ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // If there were unrecoverable Wallet errors, or if there are choices other
   // than "Pay without the wallet", show the full menu.
+  // TODO(estade): this can present a braindead menu (only 1 option) when
+  // there's a wallet error.
   if (wallet_error_notification_ ||
       (SignedInState() == SIGNED_IN &&
        account_chooser_model_.HasAccountsToChoose())) {
@@ -2133,6 +2135,7 @@ void AutofillDialogControllerImpl::Observe(
   content::LoadCommittedDetails* load_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
+    // TODO(estade): will need to update this when we fix <crbug.com/247755>.
     account_chooser_model_.SelectActiveWalletAccount();
     FetchWalletCookieAndUserName();
     HideSignIn();
@@ -2157,8 +2160,10 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
       // data is refreshed as soon as the user switches back to this tab after
       // potentially editing his data.
       last_wallet_items_fetch_timestamp_ = base::TimeTicks();
+      size_t user_index = account_chooser_model_.GetActiveWalletAccountIndex();
       url = SectionForSuggestionsMenuModel(*model) == SECTION_SHIPPING ?
-          wallet::GetManageAddressesUrl() : wallet::GetManageInstrumentsUrl();
+          wallet::GetManageAddressesUrl(user_index) :
+          wallet::GetManageInstrumentsUrl(user_index);
     }
 
     OpenTabWithUrl(url);
@@ -2249,18 +2254,26 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
 }
 
 void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
-    const std::string& username) {
-  const string16 username16 = UTF8ToUTF16(username);
+    const std::vector<std::string>& usernames) {
+  // TODO(estade): for now, we still only support single user login.
+  std::vector<std::string> username;
+  if (!usernames.empty())
+    username.push_back(usernames[0]);
+  account_chooser_model_.SetWalletAccounts(username);
   signin_helper_->StartWalletCookieValueFetch();
-  account_chooser_model_.SetActiveWalletAccountName(username16);
 }
 
 void AutofillDialogControllerImpl::OnUserNameFetchSuccess(
-    const std::string& username) {
+    const std::vector<std::string>& usernames) {
   ScopedViewUpdates updates(view_.get());
-  const string16 username16 = UTF8ToUTF16(username);
+
+  // TODO(estade): for now, we still only support single user login.
+  std::vector<std::string> username;
+  if (!usernames.empty())
+    username.push_back(usernames[0]);
+
+  account_chooser_model_.SetWalletAccounts(username);
   username_fetcher_.reset();
-  account_chooser_model_.SetActiveWalletAccountName(username16);
   OnWalletOrSigninUpdate();
 }
 
@@ -2341,14 +2354,24 @@ void AutofillDialogControllerImpl::OnPersonalDataChanged() {
 
 void AutofillDialogControllerImpl::AccountChoiceChanged() {
   ScopedViewUpdates updates(view_.get());
+  wallet::WalletClient* client = GetWalletClient();
 
   if (is_submitting_)
-    GetWalletClient()->CancelRequests();
+    client->CancelRequests();
 
   SetIsSubmitting(false);
 
-  SuggestionsUpdated();
-  UpdateAccountChooserView();
+  size_t selected_user_index =
+      account_chooser_model_.GetActiveWalletAccountIndex();
+  if (account_chooser_model_.WalletIsSelected() &&
+      client->user_index() != selected_user_index) {
+    client->CancelRequests();
+    client->set_user_index(selected_user_index);
+    GetWalletItems();
+  } else {
+    SuggestionsUpdated();
+    UpdateAccountChooserView();
+  }
 }
 
 void AutofillDialogControllerImpl::UpdateAccountChooserView() {
@@ -2427,7 +2450,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       source_url_(source_url),
       callback_(callback),
       account_chooser_model_(this, profile_->GetPrefs(), metric_logger_),
-      wallet_client_(profile_->GetRequestContext(), this),
+      wallet_client_(profile_->GetRequestContext(), this, source_url),
       suggested_cc_(this),
       suggested_billing_(this),
       suggested_cc_billing_(this),
@@ -2617,7 +2640,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
             kManageItemsKey,
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_DIALOG_MANAGE_BILLING_DETAILS),
-                UTF8ToUTF16(wallet::GetManageInstrumentsUrl().host()));
+                UTF8ToUTF16(wallet::GetManageInstrumentsUrl(0U).host()));
       }
 
       // Determine which instrument item should be selected.
@@ -2685,7 +2708,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     suggested_shipping_.AddKeyedItemWithMinorText(
         kManageItemsKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS),
-        UTF8ToUTF16(wallet::GetManageAddressesUrl().host()));
+        UTF8ToUTF16(wallet::GetManageAddressesUrl(0U).host()));
   }
 
   if (!IsPayingWithWallet()) {
@@ -2751,7 +2774,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     // address.
     if (section == SECTION_CC_BILLING) {
       SetOutputForFieldsOfType(
-          EMAIL_ADDRESS, account_chooser_model_.active_wallet_account_name());
+          EMAIL_ADDRESS, account_chooser_model_.GetActiveWalletAccountName());
     }
   } else {
     // The user manually input data. If using Autofill, save the info as new or
@@ -3037,8 +3060,7 @@ void AutofillDialogControllerImpl::AcceptLegalDocuments() {
   } else {
     GetWalletClient()->AcceptLegalDocuments(
         wallet_items_->legal_documents(),
-        wallet_items_->google_transaction_id(),
-        source_url_);
+        wallet_items_->google_transaction_id());
   }
 }
 
@@ -3103,8 +3125,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   }
 
   GetWalletClient()->SaveToWallet(inputted_instrument.Pass(),
-                                  inputted_address.Pass(),
-                                  source_url_);
+                                  inputted_address.Pass());
 }
 
 scoped_ptr<wallet::Instrument> AutofillDialogControllerImpl::
@@ -3149,7 +3170,6 @@ void AutofillDialogControllerImpl::GetFullWallet() {
   GetWalletClient()->GetFullWallet(wallet::WalletClient::FullWalletRequest(
       active_instrument_id_,
       active_address_id_,
-      source_url_,
       wallet_items_->google_transaction_id(),
       capabilities,
       wallet_items_->HasRequiredAction(wallet::SETUP_WALLET)));
