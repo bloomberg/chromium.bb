@@ -8,6 +8,7 @@
 #include <CoreServices/CoreServices.h>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -233,7 +234,8 @@ PasswordForm::Scheme SchemeForAuthType(SecAuthenticationType auth_type) {
 
 bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
                                       const SecKeychainItemRef& keychain_item,
-                                      PasswordForm* form) {
+                                      PasswordForm* form,
+                                      bool extract_password_data) {
   DCHECK(form);
 
   SecKeychainAttributeInfo attrInfo;
@@ -252,11 +254,18 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
 
   SecKeychainAttributeList *attrList;
   UInt32 password_length;
-  void* password_data;
+
+  // If |extract_password_data| is false, do not pass in a reference to
+  // |password_data|. ItemCopyAttributesAndData will then extract only the
+  // attributes of |keychain_item| (doesn't require OS authorization), and not
+  // attempt to extract its password data (requires OS authorization).
+  void* password_data = NULL;
+  void** password_data_ref = extract_password_data ? &password_data : NULL;
+
   OSStatus result = keychain.ItemCopyAttributesAndData(keychain_item, &attrInfo,
                                                        NULL, &attrList,
                                                        &password_length,
-                                                       &password_data);
+                                                       password_data_ref);
 
   if (result != noErr) {
     // We don't log errSecAuthFailed because that just means that the user
@@ -267,8 +276,10 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
     return false;
   }
 
-  UTF8ToUTF16(static_cast<const char *>(password_data), password_length,
-              &(form->password_value));
+  if (extract_password_data) {
+    UTF8ToUTF16(static_cast<const char *>(password_data), password_length,
+                &(form->password_value));
+  }
 
   int port = kAnyPort;
   std::string server;
@@ -330,7 +341,8 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
   // kSecNegativeItemAttr doesn't seem to actually be in widespread use. In
   // practice, other browsers seem to use a "" or " " password (and a special
   // user name) to indicated blacklist entries.
-  if (form->password_value.empty() || EqualsASCII(form->password_value, " ")) {
+  if (extract_password_data && (form->password_value.empty() ||
+                                EqualsASCII(form->password_value, " "))) {
     form->blacklisted_by_user = true;
   }
 
@@ -443,17 +455,50 @@ void MergePasswordForms(std::vector<PasswordForm*>* keychain_forms,
   DeleteVectorElementsInSet(keychain_forms, used_keychain_forms);
 }
 
+std::vector<ItemFormPair> ExtractAllKeychainItemAttributesIntoPasswordForms(
+    std::vector<SecKeychainItemRef>* keychain_items,
+    const AppleKeychain& keychain) {
+  DCHECK(keychain_items);
+  MacKeychainPasswordFormAdapter keychain_adapter(&keychain);
+  *keychain_items = keychain_adapter.GetAllPasswordFormKeychainItems();
+  std::vector<ItemFormPair> item_form_pairs;
+  for (std::vector<SecKeychainItemRef>::iterator i = keychain_items->begin();
+       i != keychain_items->end(); ++i) {
+    PasswordForm* form_without_password = new PasswordForm();
+    internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+        keychain,
+        *i,
+        form_without_password,
+        false);  // Load password attributes, but not password data.
+    item_form_pairs.push_back(std::make_pair(&(*i), form_without_password));
+  }
+  return item_form_pairs;
+}
+
 std::vector<PasswordForm*> GetPasswordsForForms(
     const AppleKeychain& keychain,
     std::vector<PasswordForm*>* database_forms) {
-  MacKeychainPasswordFormAdapter keychain_adapter(&keychain);
+  // First load the attributes of all items in the keychain without loading
+  // their password data, and then match items in |database_forms| against them.
+  // This avoids individually searching through the keychain for passwords
+  // matching each form in |database_forms|, and results in a significant
+  // performance gain, replacing O(N) keychain search operations with a single
+  // operation that loads all keychain items, and then selective reads of only
+  // the relevant passwords. See crbug.com/263685.
+  std::vector<SecKeychainItemRef> keychain_items;
+  std::vector<ItemFormPair> item_form_pairs =
+      ExtractAllKeychainItemAttributesIntoPasswordForms(&keychain_items,
+                                                        keychain);
 
+  // Next, compare the attributes of the PasswordForms in |database_forms|
+  // against those in |item_form_pairs|, and extract password data for each
+  // matching PasswordForm using its corresponding SecKeychainItemRef.
   std::vector<PasswordForm*> merged_forms;
   for (std::vector<PasswordForm*>::iterator i = database_forms->begin();
        i != database_forms->end();) {
     std::vector<PasswordForm*> db_form_container(1, *i);
     std::vector<PasswordForm*> keychain_matches =
-        keychain_adapter.PasswordsMergeableWithForm(**i);
+        ExtractPasswordsMergeableWithForm(keychain, item_form_pairs, **i);
     MergePasswordForms(&keychain_matches, &db_form_container, &merged_forms);
     if (db_form_container.empty()) {
       i = database_forms->erase(i);
@@ -462,7 +507,79 @@ std::vector<PasswordForm*> GetPasswordsForForms(
     }
     STLDeleteElements(&keychain_matches);
   }
+
+  // Clean up temporary PasswordForms and SecKeychainItemRefs.
+  STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
+                                       item_form_pairs.end());
+  for (std::vector<SecKeychainItemRef>::iterator i = keychain_items.begin();
+       i != keychain_items.end(); ++i) {
+    keychain.Free(*i);
+  }
   return merged_forms;
+}
+
+// TODO(stuartmorgan): signon_realm for proxies is not yet supported.
+bool ExtractSignonRealmComponents(
+    const std::string& signon_realm, std::string* server, int* port,
+    bool* is_secure, std::string* security_domain) {
+  // The signon_realm will be the Origin portion of a URL for an HTML form,
+  // and the same but with the security domain as a path for HTTP auth.
+  GURL realm_as_url(signon_realm);
+  if (!realm_as_url.is_valid()) {
+    return false;
+  }
+
+  if (server)
+    *server = realm_as_url.host();
+  if (is_secure)
+    *is_secure = realm_as_url.SchemeIsSecure();
+  if (port)
+    *port = realm_as_url.has_port() ? atoi(realm_as_url.port().c_str()) : 0;
+  if (security_domain) {
+    // Strip the leading '/' off of the path to get the security domain.
+    if (realm_as_url.path().length() > 0)
+      *security_domain = realm_as_url.path().substr(1);
+    else
+      security_domain->clear();
+  }
+  return true;
+}
+
+bool FormIsValidAndMatchesOtherForm(const PasswordForm& query_form,
+                                    const PasswordForm& other_form) {
+  std::string server;
+  std::string security_domain;
+  int port;
+  bool is_secure;
+  if (!ExtractSignonRealmComponents(query_form.signon_realm, &server, &port,
+                                    &is_secure, &security_domain)) {
+    return false;
+  }
+  return internal_keychain_helpers::FormsMatchForMerge(query_form, other_form);
+}
+
+std::vector<PasswordForm*> ExtractPasswordsMergeableWithForm(
+    const AppleKeychain& keychain,
+    const std::vector<ItemFormPair>& item_form_pairs,
+    const PasswordForm& query_form) {
+  std::vector<PasswordForm*> matches;
+  for (std::vector<ItemFormPair>::const_iterator i = item_form_pairs.begin();
+       i != item_form_pairs.end(); ++i) {
+    if (FormIsValidAndMatchesOtherForm(query_form, *(i->second))) {
+      // Create a new object, since the caller is responsible for deleting the
+      // returned forms.
+      scoped_ptr<PasswordForm> form_with_password(new PasswordForm());
+      internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+          keychain,
+          *(i->first),
+          form_with_password.get(),
+          true);  // Load password attributes and data.
+      // Do not include blacklisted items found in the keychain.
+      if (!form_with_password->blacklisted_by_user)
+        matches.push_back(form_with_password.release());
+    }
+  }
+  return matches;
 }
 
 }  // namespace internal_keychain_helpers
@@ -484,17 +601,6 @@ std::vector<PasswordForm*>
   return ConvertKeychainItemsToForms(&keychain_items);
 }
 
-std::vector<PasswordForm*>
-    MacKeychainPasswordFormAdapter::PasswordsMergeableWithForm(
-        const PasswordForm& query_form) {
-  std::string username = UTF16ToUTF8(query_form.username_value);
-  std::vector<SecKeychainItemRef> keychain_items =
-      MatchingKeychainItems(query_form.signon_realm, query_form.scheme,
-                            NULL, username.c_str());
-
-  return ConvertKeychainItemsToForms(&keychain_items);
-}
-
 PasswordForm* MacKeychainPasswordFormAdapter::PasswordExactlyMatchingForm(
     const PasswordForm& query_form) {
   SecKeychainItemRef keychain_item = KeychainItemForForm(query_form);
@@ -502,7 +608,8 @@ PasswordForm* MacKeychainPasswordFormAdapter::PasswordExactlyMatchingForm(
     PasswordForm* form = new PasswordForm();
     internal_keychain_helpers::FillPasswordFormFromKeychainItem(*keychain_,
                                                                 keychain_item,
-                                                                form);
+                                                                form,
+                                                                true);
     keychain_->Free(keychain_item);
     return form;
   }
@@ -523,8 +630,8 @@ bool MacKeychainPasswordFormAdapter::HasPasswordsMergeableWithForm(
   return !matches.empty();
 }
 
-std::vector<PasswordForm*>
-    MacKeychainPasswordFormAdapter::GetAllPasswordFormPasswords() {
+std::vector<SecKeychainItemRef>
+    MacKeychainPasswordFormAdapter::GetAllPasswordFormKeychainItems() {
   SecAuthenticationType supported_auth_types[] = {
     kSecAuthenticationTypeHTMLForm,
     kSecAuthenticationTypeHTTPBasic,
@@ -538,8 +645,13 @@ std::vector<PasswordForm*>
                          NULL, NULL, NULL, CreatorCodeForSearch());
     keychain_search.FindMatchingItems(&matches);
   }
+  return matches;
+}
 
-  return ConvertKeychainItemsToForms(&matches);
+std::vector<PasswordForm*>
+    MacKeychainPasswordFormAdapter::GetAllPasswordFormPasswords() {
+  std::vector<SecKeychainItemRef> items = GetAllPasswordFormKeychainItems();
+  return ConvertKeychainItemsToForms(&items);
 }
 
 bool MacKeychainPasswordFormAdapter::AddPassword(const PasswordForm& form) {
@@ -550,8 +662,8 @@ bool MacKeychainPasswordFormAdapter::AddPassword(const PasswordForm& form) {
   std::string security_domain;
   int port;
   bool is_secure;
-  if (!ExtractSignonRealmComponents(form.signon_realm, &server, &port,
-                                    &is_secure, &security_domain)) {
+  if (!internal_keychain_helpers::ExtractSignonRealmComponents(
+           form.signon_realm, &server, &port, &is_secure, &security_domain)) {
     return false;
   }
   std::string username = UTF16ToUTF8(form.username_value);
@@ -607,8 +719,8 @@ std::vector<PasswordForm*>
   for (std::vector<SecKeychainItemRef>::const_iterator i = items->begin();
        i != items->end(); ++i) {
     PasswordForm* form = new PasswordForm();
-    if (internal_keychain_helpers::FillPasswordFormFromKeychainItem(*keychain_,
-                                                                    *i, form)) {
+    if (internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+            *keychain_, *i, form, true)) {
       keychain_forms.push_back(form);
     }
     keychain_->Free(*i);
@@ -652,8 +764,8 @@ std::vector<SecKeychainItemRef>
   std::string security_domain;
   int port;
   bool is_secure;
-  if (!ExtractSignonRealmComponents(signon_realm, &server, &port,
-                                    &is_secure, &security_domain)) {
+  if (!internal_keychain_helpers::ExtractSignonRealmComponents(
+           signon_realm, &server, &port, &is_secure, &security_domain)) {
     // TODO(stuartmorgan): Proxies will currently fail here, since their
     // signon_realm is not a URL. We need to detect the proxy case and handle
     // it specially.
@@ -669,33 +781,6 @@ std::vector<SecKeychainItemRef>
                        auth_domain, path, username, CreatorCodeForSearch());
   keychain_search.FindMatchingItems(&matches);
   return matches;
-}
-
-// TODO(stuartmorgan): signon_realm for proxies is not yet supported.
-bool MacKeychainPasswordFormAdapter::ExtractSignonRealmComponents(
-    const std::string& signon_realm, std::string* server, int* port,
-    bool* is_secure, std::string* security_domain) {
-  // The signon_realm will be the Origin portion of a URL for an HTML form,
-  // and the same but with the security domain as a path for HTTP auth.
-  GURL realm_as_url(signon_realm);
-  if (!realm_as_url.is_valid()) {
-    return false;
-  }
-
-  if (server)
-    *server = realm_as_url.host();
-  if (is_secure)
-    *is_secure = realm_as_url.SchemeIsSecure();
-  if (port)
-    *port = realm_as_url.has_port() ? atoi(realm_as_url.port().c_str()) : 0;
-  if (security_domain) {
-    // Strip the leading '/' off of the path to get the security domain.
-    if (realm_as_url.path().length() > 0)
-      *security_domain = realm_as_url.path().substr(1);
-    else
-      security_domain->clear();
-  }
-  return true;
 }
 
 // Returns the Keychain SecAuthenticationType type corresponding to |scheme|.

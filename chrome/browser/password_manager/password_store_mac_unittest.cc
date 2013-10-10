@@ -280,7 +280,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainToFormTranslation) {
         reinterpret_cast<SecKeychainItemRef>(i + 1);
     PasswordForm form;
     bool parsed = internal_keychain_helpers::FillPasswordFormFromKeychainItem(
-        *keychain_, keychain_item, &form);
+        *keychain_, keychain_item, &form, true);
 
     EXPECT_TRUE(parsed) << "In iteration " << i;
 
@@ -319,7 +319,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainToFormTranslation) {
     SecKeychainItemRef keychain_item = reinterpret_cast<SecKeychainItemRef>(99);
     PasswordForm form;
     bool parsed = internal_keychain_helpers::FillPasswordFormFromKeychainItem(
-        *keychain_, keychain_item, &form);
+        *keychain_, keychain_item, &form, true);
     EXPECT_FALSE(parsed);
   }
 }
@@ -388,8 +388,21 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainSearch) {
     // Check matches treating the form as a merging target.
     EXPECT_EQ(test_data[i].expected_merge_matches > 0,
               keychain_adapter.HasPasswordsMergeableWithForm(*query_form));
-    matching_items = keychain_adapter.PasswordsMergeableWithForm(*query_form);
+    std::vector<SecKeychainItemRef> keychain_items;
+    std::vector<internal_keychain_helpers::ItemFormPair> item_form_pairs =
+        internal_keychain_helpers::
+            ExtractAllKeychainItemAttributesIntoPasswordForms(&keychain_items,
+                                                              *keychain_);
+    matching_items =
+        internal_keychain_helpers::ExtractPasswordsMergeableWithForm(
+            *keychain_, item_form_pairs, *query_form);
     EXPECT_EQ(test_data[i].expected_merge_matches, matching_items.size());
+    STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
+                                         item_form_pairs.end());
+    for (std::vector<SecKeychainItemRef>::iterator i = keychain_items.begin();
+         i != keychain_items.end(); ++i) {
+      keychain_->Free(*i);
+    }
     STLDeleteElements(&matching_items);
 
     // None of the pre-seeded items are owned by us, so none should match an
@@ -558,7 +571,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainAdd) {
     PasswordForm stored_form;
     internal_keychain_helpers::FillPasswordFormFromKeychainItem(*keychain_,
                                                                 keychain_item,
-                                                                &stored_form);
+                                                                &stored_form,
+                                                                true);
     EXPECT_EQ(update_form->password_value, stored_form.password_value);
   }
 }
@@ -860,6 +874,107 @@ TEST_F(PasswordStoreMacInternalsTest, TestPasswordBulkLookup) {
 
   STLDeleteElements(&database_forms);
   STLDeleteElements(&merged_forms);
+}
+
+TEST_F(PasswordStoreMacInternalsTest, TestBlacklistedFiltering) {
+  PasswordFormData db_data[] = {
+    { PasswordForm::SCHEME_HTML, "http://dont.remember.com/",
+      "http://dont.remember.com/",
+      "http://dont.remember.com/handlepage.cgi",
+      L"submit", L"username", L"password", L"joe_user", L"non_empty_password",
+      true, false, 1240000000 },
+    { PasswordForm::SCHEME_HTML, "https://dont.remember.com/",
+      "https://dont.remember.com/",
+      "https://dont.remember.com/handlepage_secure.cgi",
+      L"submit", L"username", L"password", L"joe_user", L"non_empty_password",
+      true, false, 1240000000 },
+  };
+  std::vector<PasswordForm*> database_forms;
+  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(db_data); ++i) {
+    database_forms.push_back(CreatePasswordFormFromData(db_data[i]));
+  }
+  std::vector<PasswordForm*> merged_forms =
+      internal_keychain_helpers::GetPasswordsForForms(*keychain_,
+                                                      &database_forms);
+  EXPECT_EQ(2U, database_forms.size());
+  ASSERT_EQ(0U, merged_forms.size());
+
+  STLDeleteElements(&database_forms);
+  STLDeleteElements(&merged_forms);
+}
+
+TEST_F(PasswordStoreMacInternalsTest, TestFillPasswordFormFromKeychainItem) {
+  // When |extract_password_data| is false, the password field must be empty,
+  // and |blacklisted_by_user| must be false.
+  SecKeychainItemRef keychain_item = reinterpret_cast<SecKeychainItemRef>(1);
+  PasswordForm form_without_extracted_password;
+  bool parsed = internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+      *keychain_,
+      keychain_item,
+      &form_without_extracted_password,
+      false);  // Do not extract password.
+  EXPECT_TRUE(parsed);
+  ASSERT_TRUE(form_without_extracted_password.password_value.empty());
+  ASSERT_FALSE(form_without_extracted_password.blacklisted_by_user);
+
+  // When |extract_password_data| is true and the keychain entry has a non-empty
+  // password, the password field must be non-empty, and the value of
+  // |blacklisted_by_user| must be false.
+  keychain_item = reinterpret_cast<SecKeychainItemRef>(1);
+  PasswordForm form_with_extracted_password;
+  parsed = internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+      *keychain_,
+      keychain_item,
+      &form_with_extracted_password,
+      true);  // Extract password.
+  EXPECT_TRUE(parsed);
+  ASSERT_EQ(ASCIIToUTF16("sekrit"),
+            form_with_extracted_password.password_value);
+  ASSERT_FALSE(form_with_extracted_password.blacklisted_by_user);
+
+  // When |extract_password_data| is true and the keychain entry has an empty
+  // username and password (""), the password field must be empty, and the value
+  // of |blacklisted_by_user| must be true.
+  keychain_item = reinterpret_cast<SecKeychainItemRef>(4);
+  PasswordForm negative_form;
+  parsed = internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+      *keychain_,
+      keychain_item,
+      &negative_form,
+      true);  // Extract password.
+  EXPECT_TRUE(parsed);
+  ASSERT_TRUE(negative_form.username_value.empty());
+  ASSERT_TRUE(negative_form.password_value.empty());
+  ASSERT_TRUE(negative_form.blacklisted_by_user);
+
+  // When |extract_password_data| is true and the keychain entry has an empty
+  // password (""), the password field must be empty (""), and the value of
+  // |blacklisted_by_user| must be true.
+  keychain_item = reinterpret_cast<SecKeychainItemRef>(5);
+  PasswordForm form_with_empty_password_a;
+  parsed = internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+      *keychain_,
+      keychain_item,
+      &form_with_empty_password_a,
+      true);  // Extract password.
+  EXPECT_TRUE(parsed);
+  ASSERT_TRUE(form_with_empty_password_a.password_value.empty());
+  ASSERT_TRUE(form_with_empty_password_a.blacklisted_by_user);
+
+  // When |extract_password_data| is true and the keychain entry has a single
+  // space password (" "), the password field must be a single space (" "), and
+  // the value of |blacklisted_by_user| must be true.
+  keychain_item = reinterpret_cast<SecKeychainItemRef>(6);
+  PasswordForm form_with_empty_password_b;
+  parsed = internal_keychain_helpers::FillPasswordFormFromKeychainItem(
+      *keychain_,
+      keychain_item,
+      &form_with_empty_password_b,
+      true);  // Extract password.
+  EXPECT_TRUE(parsed);
+  ASSERT_EQ(ASCIIToUTF16(" "),
+            form_with_empty_password_b.password_value);
+  ASSERT_TRUE(form_with_empty_password_b.blacklisted_by_user);
 }
 
 TEST_F(PasswordStoreMacInternalsTest, TestPasswordGetAll) {
