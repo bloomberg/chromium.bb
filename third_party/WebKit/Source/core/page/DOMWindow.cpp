@@ -983,6 +983,8 @@ int DOMWindow::outerHeight() const
     if (!page)
         return 0;
 
+    if (page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(page->chrome().windowRect().height() * page->deviceScaleFactor());
     return static_cast<int>(page->chrome().windowRect().height());
 }
 
@@ -995,6 +997,8 @@ int DOMWindow::outerWidth() const
     if (!page)
         return 0;
 
+    if (page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(page->chrome().windowRect().width() * page->deviceScaleFactor());
     return static_cast<int>(page->chrome().windowRect().width());
 }
 
@@ -1039,6 +1043,8 @@ int DOMWindow::screenX() const
     if (!page)
         return 0;
 
+    if (page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(page->chrome().windowRect().x() * page->deviceScaleFactor());
     return static_cast<int>(page->chrome().windowRect().x());
 }
 
@@ -1051,6 +1057,8 @@ int DOMWindow::screenY() const
     if (!page)
         return 0;
 
+    if (page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(page->chrome().windowRect().y() * page->deviceScaleFactor());
     return static_cast<int>(page->chrome().windowRect().y());
 }
 

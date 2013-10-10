@@ -197,6 +197,11 @@ void WebSettingsImpl::setIgnoreMainFrameOverflowHiddenQuirk(bool ignoreMainFrame
     m_settings->setIgnoreMainFrameOverflowHiddenQuirk(ignoreMainFrameOverflowHiddenQuirk);
 }
 
+void WebSettingsImpl::setReportScreenSizeInPhysicalPixelsQuirk(bool reportScreenSizeInPhysicalPixelsQuirk)
+{
+    m_settings->setReportScreenSizeInPhysicalPixelsQuirk(reportScreenSizeInPhysicalPixelsQuirk);
+}
+
 void WebSettingsImpl::setSupportsMultipleWindows(bool supportsMultipleWindows)
 {
     m_settings->setSupportsMultipleWindows(supportsMultipleWindows);

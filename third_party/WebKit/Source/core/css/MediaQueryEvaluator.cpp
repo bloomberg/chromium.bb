@@ -357,9 +357,13 @@ static bool computeLength(CSSValue* value, bool strict, RenderStyle* initialStyl
 static bool deviceHeightMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix op)
 {
     if (value) {
-        FloatRect sg = screenRect(frame->page()->mainFrame()->view());
         int length;
-        return computeLength(value, !frame->document()->inQuirksMode(), style, length) && compareValue(static_cast<int>(sg.height()), length, op);
+        if (!computeLength(value, !frame->document()->inQuirksMode(), style, length))
+            return false;
+        int height = static_cast<int>(screenRect(frame->page()->mainFrame()->view()).height());
+        if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
+            height = lroundf(height * frame->page()->deviceScaleFactor());
+        return compareValue(height, length, op);
     }
     // ({,min-,max-}device-height)
     // assume if we have a device, assume non-zero
@@ -369,9 +373,13 @@ static bool deviceHeightMediaFeatureEval(CSSValue* value, RenderStyle* style, Fr
 static bool deviceWidthMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix op)
 {
     if (value) {
-        FloatRect sg = screenRect(frame->page()->mainFrame()->view());
         int length;
-        return computeLength(value, !frame->document()->inQuirksMode(), style, length) && compareValue(static_cast<int>(sg.width()), length, op);
+        if (!computeLength(value, !frame->document()->inQuirksMode(), style, length))
+            return false;
+        int width = static_cast<int>(screenRect(frame->page()->mainFrame()->view()).width());
+        if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
+            width = lroundf(width * frame->page()->deviceScaleFactor());
+        return compareValue(width, length, op);
     }
     // ({,min-,max-}device-width)
     // assume if we have a device, assume non-zero

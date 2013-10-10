@@ -171,6 +171,10 @@ viewportMetaZeroValuesQuirk initial=false
 # See http://crbug.com/295287
 ignoreMainFrameOverflowHiddenQuirk initial=false
 
+# Yet another Android SDK <= 18 quirk, removable 2015.
+# See http://crbug.com/305236
+reportScreenSizeInPhysicalPixelsQuirk initial=false
+
 # This quirk is to maintain compatibility with Android apps.
 # It will be possible to remove it once WebSettings.{get|set}UseWideViewPort
 # API function will be removed.

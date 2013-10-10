@@ -33,6 +33,8 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "core/platform/PlatformScreen.h"
 #include "platform/geometry/FloatRect.h"
 
@@ -48,6 +50,9 @@ unsigned Screen::height() const
 {
     if (!m_frame)
         return 0;
+    Page* page = m_frame->page();
+    if (page && page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(screenRect(m_frame->view()).height() * page->deviceScaleFactor());
     return static_cast<unsigned>(screenRect(m_frame->view()).height());
 }
 
@@ -55,6 +60,9 @@ unsigned Screen::width() const
 {
     if (!m_frame)
         return 0;
+    Page* page = m_frame->page();
+    if (page && page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(screenRect(m_frame->view()).width() * page->deviceScaleFactor());
     return static_cast<unsigned>(screenRect(m_frame->view()).width());
 }
 
@@ -76,6 +84,9 @@ int Screen::availLeft() const
 {
     if (!m_frame)
         return 0;
+    Page* page = m_frame->page();
+    if (page && page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(screenAvailableRect(m_frame->view()).x() * page->deviceScaleFactor());
     return static_cast<int>(screenAvailableRect(m_frame->view()).x());
 }
 
@@ -83,6 +94,9 @@ int Screen::availTop() const
 {
     if (!m_frame)
         return 0;
+    Page* page = m_frame->page();
+    if (page && page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(screenAvailableRect(m_frame->view()).y() * page->deviceScaleFactor());
     return static_cast<int>(screenAvailableRect(m_frame->view()).y());
 }
 
@@ -90,6 +104,9 @@ unsigned Screen::availHeight() const
 {
     if (!m_frame)
         return 0;
+    Page* page = m_frame->page();
+    if (page && page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(screenAvailableRect(m_frame->view()).height() * page->deviceScaleFactor());
     return static_cast<unsigned>(screenAvailableRect(m_frame->view()).height());
 }
 
@@ -97,6 +114,9 @@ unsigned Screen::availWidth() const
 {
     if (!m_frame)
         return 0;
+    Page* page = m_frame->page();
+    if (page && page->settings().reportScreenSizeInPhysicalPixelsQuirk())
+        return lroundf(screenAvailableRect(m_frame->view()).width() * page->deviceScaleFactor());
     return static_cast<unsigned>(screenAvailableRect(m_frame->view()).width());
 }
 

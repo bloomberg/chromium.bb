@@ -134,6 +134,7 @@ public:
     virtual void setPluginsEnabled(bool);
     virtual void setPrivilegedWebGLExtensionsEnabled(bool);
     virtual void setRenderVSyncNotificationEnabled(bool);
+    virtual void setReportScreenSizeInPhysicalPixelsQuirk(bool);
     virtual void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON);
     virtual void setSelectTrailingWhitespaceEnabled(bool);
     virtual void setSelectionIncludesAltImageText(bool);
