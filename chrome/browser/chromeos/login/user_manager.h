@@ -382,6 +382,11 @@ class UserManager {
   // Returns profile dir for the user identified by |email|.
   virtual base::FilePath GetUserProfileDir(const std::string& email) const = 0;
 
+  // Changes browser locale (selects best suitable locale from different
+  // user settings).
+  virtual void RespectLocalePreference(Profile* profile,
+                                       const User* user) const = 0;
+
  private:
   friend class ScopedUserManagerEnabler;
 

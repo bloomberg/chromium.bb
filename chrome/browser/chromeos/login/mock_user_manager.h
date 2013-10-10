@@ -119,6 +119,8 @@ class MockUserManager : public UserManager {
 
   virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
   virtual UserFlow* GetUserFlow(const std::string&) const OVERRIDE;
+  virtual void RespectLocalePreference(Profile* profile, const User* user) const
+      OVERRIDE;
 
   // Sets a new User instance.
   void SetActiveUser(const std::string& email);

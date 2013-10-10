@@ -189,7 +189,7 @@ class User {
   }
 
   // Setters are private so only UserManager can call them.
-  void SetAccountLocale(const std::string& raw_account_locale);
+  void SetAccountLocale(const std::string& resolved_account_locale);
 
   void SetImage(const UserImage& user_image, int image_index);
 

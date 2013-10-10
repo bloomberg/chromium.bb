@@ -41,6 +41,8 @@ class MultiProfileUserController;
 class RemoveUserDelegate;
 class SessionLengthLimiter;
 
+struct UpdateUserAccountDataCallbackData;
+
 // Implementation of the UserManager.
 class UserManagerImpl
     : public UserManager,
@@ -162,8 +164,8 @@ class UserManagerImpl
   virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
 
-  // Wait untill we have sufficient information on user locale and apply it.
-  void RespectLocalePreference(Profile* profile, const User* user) const;
+  virtual void RespectLocalePreference(Profile* profile, const User* user) const
+      OVERRIDE;
 
  private:
   friend class UserManager;
@@ -322,6 +324,17 @@ class UserManagerImpl
   void UpdateUserAccountDataImpl(const std::string& username,
                                  const string16& display_name,
                                  const std::string* locale);
+
+  // Account locale needs to be translated to device locale.
+  // This might be called as callback after FILE thread translates locale.
+  void UpdateUserAccountDataImplCallback(
+      const std::string& username,
+      const string16& display_name,
+      const std::string* resolved_account_locale);
+
+  // Decorator to the previous function.
+  void UpdateUserAccountDataImplCallbackDecorator(
+      const scoped_ptr<UpdateUserAccountDataCallbackData>& data);
 
   Profile* GetProfileByUser(const User* user) const;
 

@@ -77,4 +77,8 @@ User* MockUserManager::CreatePublicAccountUser(const std::string& email) {
   return user_;
 }
 
+void MockUserManager::RespectLocalePreference(Profile* profile,
+                                              const User* user) const {
+}
+
 }  // namespace chromeos

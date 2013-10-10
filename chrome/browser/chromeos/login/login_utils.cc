@@ -252,6 +252,10 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
+  User* user = UserManager::Get()->GetUserByProfile(profile);
+  if (user != NULL)
+    UserManager::Get()->RespectLocalePreference(profile, user);
+
   if (!UserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
     UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
     return;
