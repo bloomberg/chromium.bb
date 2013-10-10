@@ -24,59 +24,59 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMURL_h
-#define DOMURL_h
+#ifndef DOMURLUtils_h
+#define DOMURLUtils_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/html/DOMURLUtils.h"
-#include "weborigin/KURL.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Blob;
-class ExceptionState;
-class ScriptExecutionContext;
-class URLRegistrable;
+class KURL;
 
-class DOMURL : public ScriptWrappable, public DOMURLUtils, public RefCounted<DOMURL> {
-
+class DOMURLUtils {
 public:
-    static PassRefPtr<DOMURL> create(const String& url, ExceptionState& es)
-    {
-        return adoptRef(new DOMURL(url, blankURL(), es));
-    }
-    static PassRefPtr<DOMURL> create(const String& url, const String& base, ExceptionState& es)
-    {
-        return adoptRef(new DOMURL(url, KURL(KURL(), base), es));
-    }
-    static PassRefPtr<DOMURL> create(const String& url, PassRefPtr<DOMURL> base, ExceptionState& es)
-    {
-        ASSERT(base);
-        return adoptRef(new DOMURL(url, base->m_url, es));
-    }
+    virtual KURL url() const = 0;
+    virtual void setURL(const KURL&) = 0;
 
-    static String createObjectURL(ScriptExecutionContext*, Blob*);
-    static void revokeObjectURL(ScriptExecutionContext*, const String&);
+    virtual String input() const = 0;
+    virtual void setInput(const String&) = 0;
 
-    static String createPublicURL(ScriptExecutionContext*, URLRegistrable*);
+    static String href(DOMURLUtils*);
+    static void setHref(DOMURLUtils*, const String&);
 
-    virtual KURL url() const OVERRIDE { return m_url; }
-    virtual void setURL(const KURL& url) OVERRIDE { m_url = url; }
+    static String toString(DOMURLUtils*);
 
-    virtual String input() const OVERRIDE { return m_input; }
-    virtual void setInput(const String&) OVERRIDE;
+    static String origin(DOMURLUtils*);
 
-private:
-    DOMURL(const String& url, const KURL& base, ExceptionState&);
+    static String protocol(DOMURLUtils*);
+    static void setProtocol(DOMURLUtils*, const String&);
 
-    KURL m_url;
-    String m_input;
+    static String username(DOMURLUtils*);
+    static void setUsername(DOMURLUtils*, const String&);
+
+    static String password(DOMURLUtils*);
+    static void setPassword(DOMURLUtils*, const String&);
+
+    static String host(DOMURLUtils*);
+    static void setHost(DOMURLUtils*, const String&);
+
+    static String hostname(DOMURLUtils*);
+    static void setHostname(DOMURLUtils*, const String&);
+
+    static String port(DOMURLUtils*);
+    static void setPort(DOMURLUtils*, const String&);
+
+    static String pathname(DOMURLUtils*);
+    static void setPathname(DOMURLUtils*, const String&);
+
+    static String search(DOMURLUtils*);
+    static void setSearch(DOMURLUtils*, const String&);
+
+    static String hash(DOMURLUtils*);
+    static void setHash(DOMURLUtils*, const String&);
 };
 
 } // namespace WebCore
 
-#endif // DOMURL_h
+#endif // DOMURLUtils_h

@@ -21,19 +21,10 @@
 interface HTMLAreaElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString alt;
     [Reflect, TreatNullAs=NullString] attribute DOMString coords;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString href;
     [Reflect] attribute boolean noHref;
     [Reflect, TreatNullAs=NullString] attribute DOMString ping;
     [Reflect, TreatNullAs=NullString] attribute DOMString shape;
     [Reflect, TreatNullAs=NullString] attribute DOMString target;
-
-    // IE Extensions
-    readonly attribute DOMString hash;
-    readonly attribute DOMString host;
-    readonly attribute DOMString hostname;
-    readonly attribute DOMString pathname;
-    readonly attribute DOMString port;
-    readonly attribute DOMString protocol;
-    readonly attribute DOMString search;
 };
 
+HTMLAreaElement implements URLUtils;

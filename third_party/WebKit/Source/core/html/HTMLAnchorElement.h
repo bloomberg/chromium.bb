@@ -25,6 +25,7 @@
 #define HTMLAnchorElement_h
 
 #include "HTMLNames.h"
+#include "core/html/DOMURLUtils.h"
 #include "core/html/HTMLElement.h"
 #include "platform/LinkHash.h"
 
@@ -53,7 +54,7 @@ enum {
 //     RelationUp          = 0x00020000,
 };
 
-class HTMLAnchorElement : public HTMLElement {
+class HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 public:
     static PassRefPtr<HTMLAnchorElement> create(Document&);
     static PassRefPtr<HTMLAnchorElement> create(const QualifiedName&, Document&);
@@ -65,32 +66,13 @@ public:
 
     const AtomicString& name() const;
 
-    String hash() const;
-    void setHash(const String&);
+    virtual KURL url() const OVERRIDE;
+    virtual void setURL(const KURL&) OVERRIDE;
 
-    String host() const;
-    void setHost(const String&);
-
-    String hostname() const;
-    void setHostname(const String&);
-
-    String pathname() const;
-    void setPathname(const String&);
-
-    String port() const;
-    void setPort(const String&);
-
-    String protocol() const;
-    void setProtocol(const String&);
-
-    String search() const;
-    void setSearch(const String&);
-
-    String origin() const;
+    virtual String input() const OVERRIDE;
+    virtual void setInput(const String&) OVERRIDE;
 
     String text();
-
-    String toString() const;
 
     bool isLiveLink() const;
 

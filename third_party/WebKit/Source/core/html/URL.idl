@@ -26,9 +26,14 @@
 
 [
     GlobalContext=Window&WorkerGlobalScope,
-    Constructor,
+    ConstructorRaisesException,
+    Constructor(DOMString url),
+    Constructor(DOMString url, URL base),
+    Constructor(DOMString url, DOMString base),
     ImplementedAs=DOMURL
 ] interface URL {
     [CallWith=ScriptExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(Blob? blob);
     [CallWith=ScriptExecutionContext] static void revokeObjectURL(DOMString url);
 };
+
+URL implements URLUtils;

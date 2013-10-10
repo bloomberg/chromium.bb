@@ -25,18 +25,43 @@
  */
 
 #include "config.h"
-
 #include "core/html/DOMURL.h"
 
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/html/PublicURLManager.h"
-#include "weborigin/KURL.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
+
+DOMURL::DOMURL(const String& url, const KURL& base, ExceptionState& es)
+{
+    ScriptWrappable::init(this);
+    if (!base.isValid())
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToConstruct("URL", "Invalid base URL"));
+
+    m_url = KURL(base, url);
+    if (!m_url.isValid())
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToConstruct("URL", "Invalid URL"));
+}
+
+void DOMURL::setInput(const String& value)
+{
+    KURL url(blankURL(), value);
+    if (url.isValid()) {
+        m_url = url;
+        m_input = String();
+    } else {
+        m_url = KURL();
+        m_input = value;
+    }
+}
 
 String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, Blob* blob)
 {

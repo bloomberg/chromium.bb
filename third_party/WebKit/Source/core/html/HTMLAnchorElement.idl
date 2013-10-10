@@ -22,7 +22,6 @@ interface HTMLAnchorElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString charset;
     [Reflect, TreatNullAs=NullString] attribute DOMString coords;
     [Reflect, TreatNullAs=NullString] attribute DOMString download;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString href;
     [Reflect, TreatNullAs=NullString] attribute DOMString hreflang;
     [Reflect, TreatNullAs=NullString] attribute DOMString name;
     [Reflect, TreatNullAs=NullString] attribute DOMString ping;
@@ -32,18 +31,7 @@ interface HTMLAnchorElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString target;
     [Reflect, TreatNullAs=NullString] attribute DOMString type;
 
-    attribute DOMString hash;
-    attribute DOMString host;
-    attribute DOMString hostname;
-    attribute DOMString pathname;
-    attribute DOMString port;
-    attribute DOMString protocol;
-    attribute DOMString search;
-
-    readonly attribute DOMString origin;
-
     readonly attribute DOMString text;
-
-    [NotEnumerable] DOMString toString();
 };
 
+HTMLAnchorElement implements URLUtils;

@@ -1,13 +1,13 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<script src="../../js/resources/js-test-pre.js"></script>
+<script src="../js/resources/js-test-pre.js"></script>
 </head>
 <body>
 <script>
 description("Test instanceof functions and properties of URL and webkitURL.");
 
-var url = new URL;
+var url = new URL('http://www.domain.com/');
 
 shouldBeTrue("'createObjectURL' in URL");
 shouldBeTrue("'revokeObjectURL' in URL");
@@ -25,6 +25,6 @@ shouldBeDefined("window.webkitURL.createObjectURL");
 shouldBeDefined("window.webkitURL.revokeObjectURL");
 
 </script>
-<script src="../../js/resources/js-test-post.js"></script>
+<script src="../js/resources/js-test-post.js"></script>
 </body>
 </html>
