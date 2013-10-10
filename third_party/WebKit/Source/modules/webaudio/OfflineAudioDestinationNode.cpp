@@ -32,8 +32,6 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
 #include "modules/webaudio/AudioContext.h"
-#include "platform/Task.h"
-#include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
 using namespace std;
@@ -45,6 +43,7 @@ const size_t renderQuantumSize = 128;
 OfflineAudioDestinationNode::OfflineAudioDestinationNode(AudioContext* context, AudioBuffer* renderTarget)
     : AudioDestinationNode(context, renderTarget->sampleRate())
     , m_renderTarget(renderTarget)
+    , m_renderThread(0)
     , m_startedRendering(false)
 {
     m_renderBus = AudioBus::create(renderTarget->numberOfChannels(), renderQuantumSize);
@@ -68,8 +67,10 @@ void OfflineAudioDestinationNode::uninitialize()
     if (!isInitialized())
         return;
 
-    if (m_renderThread)
-        m_renderThread.clear();
+    if (m_renderThread) {
+        waitForThreadCompletion(m_renderThread);
+        m_renderThread = 0;
+    }
 
     AudioNode::uninitialize();
 }
@@ -84,9 +85,16 @@ void OfflineAudioDestinationNode::startRendering()
     if (!m_startedRendering) {
         m_startedRendering = true;
         ref(); // See corresponding deref() call in notifyCompleteDispatch().
-        m_renderThread = adoptPtr(WebKit::Platform::current()->createThread("Offline Audio Renderer"));
-        m_renderThread->postTask(new Task(WTF::bind(&OfflineAudioDestinationNode::offlineRender, this)));
+        m_renderThread = createThread(OfflineAudioDestinationNode::offlineRenderEntry, this, "offline renderer");
     }
+}
+
+// Do offline rendering in this thread.
+void OfflineAudioDestinationNode::offlineRenderEntry(void* threadData)
+{
+    OfflineAudioDestinationNode* destinationNode = reinterpret_cast<OfflineAudioDestinationNode*>(threadData);
+    ASSERT(destinationNode);
+    destinationNode->offlineRender();
 }
 
 void OfflineAudioDestinationNode::offlineRender()
