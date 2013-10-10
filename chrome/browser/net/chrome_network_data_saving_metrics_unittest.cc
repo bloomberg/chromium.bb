@@ -15,7 +15,7 @@
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 const size_t kNumDaysInHistory = 60;
 
 int64 GetListPrefInt64Value(
@@ -28,7 +28,7 @@ int64 GetListPrefInt64Value(
   return value;
 }
 
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 // Test UpdateContentLengthPrefs.
 class ChromeNetworkDataSavingMetricsTest : public testing::Test {
@@ -40,7 +40,7 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
     registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
     registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
     registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
     registry->RegisterListPref(prefs::kDailyHttpReceivedContentLength);
     registry->RegisterListPref(
@@ -53,7 +53,7 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
         prefs::kDailyContentLengthViaDataReductionProxy);
     registry->RegisterInt64Pref(
         prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
   }
 
   TestingPrefServiceSimple pref_service_;
@@ -81,7 +81,7 @@ TEST_F(ChromeNetworkDataSavingMetricsTest, TotalLengths) {
             pref_service_.GetInt64(prefs::kHttpOriginalContentLength));
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 
 // The initial last update time used in test. There is no leap second a few
 // days around this time used in the test.
@@ -478,6 +478,6 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardTwoDays) {
       original, 1, received, 1,
       original, 1, received, 1);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 }  // namespace

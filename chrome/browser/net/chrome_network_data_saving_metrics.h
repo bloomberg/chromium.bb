@@ -11,7 +11,7 @@ class PrefService;
 
 namespace chrome_browser_net {
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 // This is only exposed for testing. It is normally called by
 // UpdateContentLengthPrefs.
 void UpdateContentLengthPrefsForDataReductionProxy(

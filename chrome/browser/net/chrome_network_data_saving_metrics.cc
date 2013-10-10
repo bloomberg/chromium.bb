@@ -10,7 +10,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 namespace {
 
 // The number of days of history stored in the content lengths prefs.
@@ -230,11 +230,11 @@ class DailyDataSavingUpdate {
 };
 
 }  // namespace
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 namespace chrome_browser_net {
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 void UpdateContentLengthPrefsForDataReductionProxy(
     int received_content_length, int original_content_length,
     bool with_data_reduction_proxy_enabled, bool via_data_reduction_proxy,
@@ -314,7 +314,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     }
   }
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 void UpdateContentLengthPrefs(
     int received_content_length, int original_content_length,
@@ -327,7 +327,7 @@ void UpdateContentLengthPrefs(
   prefs->SetInt64(prefs::kHttpReceivedContentLength, total_received);
   prefs->SetInt64(prefs::kHttpOriginalContentLength, total_original);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   UpdateContentLengthPrefsForDataReductionProxy(
       received_content_length,
       original_content_length,
@@ -335,7 +335,7 @@ void UpdateContentLengthPrefs(
       via_data_reduction_proxy,
       base::Time::Now(),
       prefs);
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 }
 
