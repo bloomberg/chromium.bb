@@ -75,7 +75,7 @@ static size_t gEpsilonDelayNanos = 0;
 
 static pthread_key_t gNaClTestTsdKey;
 
-#define dprintf(args)                           \
+#define DPRINTF(args)                           \
   do {                                          \
     if (gVerbosity > 1) {                       \
       printf args;                              \
@@ -273,13 +273,13 @@ size_t EventQueueLengthMu(struct WorkState *ws) {
 }
 
 void EnqueueEvent(struct WorkState *ws, struct Event *ev) {
-  dprintf(("EnqueueEvent: %d %d %d\n", ev->type, ev->thread_id, ev->file_id));
+  DPRINTF(("EnqueueEvent: %d %d %d\n", ev->type, ev->thread_id, ev->file_id));
   pthread_mutex_lock(&ws->mu);
   ev->next = NULL;
   *ws->qend = ev;
   ws->qend = &ev->next;
   pthread_cond_broadcast(&ws->cv);
-  dprintf(("EventQueueLength -> %d\n", (int) EventQueueLengthMu(ws)));
+  DPRINTF(("EventQueueLength -> %d\n", (int) EventQueueLengthMu(ws)));
   pthread_mutex_unlock(&ws->mu);
 }
 
@@ -324,7 +324,7 @@ struct Event *EventFactory(enum EventType type, int thread_id, int file_id) {
   ev->type = type;
   ev->thread_id = thread_id;
   ev->file_id = file_id;
-  dprintf(("EventFactory(%d, %d, %d)\n", type, thread_id, file_id));
+  DPRINTF(("EventFactory(%d, %d, %d)\n", type, thread_id, file_id));
   return ev;
 }
 
@@ -337,7 +337,7 @@ void EventQueueDiscardMu(struct WorkState *ws) {
   struct Event *p;
   struct Event *rest;
 
-  dprintf(("EventQueueDiscardMu\n"));
+  DPRINTF(("EventQueueDiscardMu\n"));
   for (p = ws->q; p != NULL; p = rest) {
     rest = p->next;
     free(p);
@@ -352,11 +352,11 @@ int GetWork(struct ThreadState *ts,
   int actor_thread;
   int has_work;
 
-  dprintf(("GetWork(%d)\n", ts->this_thread));
+  DPRINTF(("GetWork(%d)\n", ts->this_thread));
   pthread_mutex_lock(&ts->ws->mu);
   while (WORK_ENDED != (actor_thread = ts->ws->actor_thread) &&
          actor_thread != ts->this_thread) {
-    dprintf(("GetWork(%d) waiting\n", ts->this_thread));
+    DPRINTF(("GetWork(%d) waiting\n", ts->this_thread));
     pthread_cond_wait(&ts->ws->cv, &ts->ws->mu);
   }
   has_work = (actor_thread == ts->this_thread);
@@ -366,14 +366,14 @@ int GetWork(struct ThreadState *ts,
     ts->ws->actor_thread = WORK_ACCEPTED;
   }
   pthread_mutex_unlock(&ts->ws->mu);
-  dprintf(("GetWork(%d) returning %d\n", ts->this_thread, has_work));
+  DPRINTF(("GetWork(%d) returning %d\n", ts->this_thread, has_work));
   return has_work;
 }
 
 void PutWork(struct WorkState *ws, int actor_thread,
              void (*action_functor)(void *functor_state),
              void *functor_state) {
-  dprintf(("PutWork(thread=%d)\n", actor_thread));
+  DPRINTF(("PutWork(thread=%d)\n", actor_thread));
   pthread_mutex_lock(&ws->mu);
   while (ws->actor_thread != WORK_PENDING &&
          ws->actor_thread != WORK_ACCEPTED) {
@@ -384,7 +384,7 @@ void PutWork(struct WorkState *ws, int actor_thread,
   ws->functor_state = functor_state;
   pthread_cond_broadcast(&ws->cv);
   pthread_mutex_unlock(&ws->mu);
-  dprintf(("PutWork(thread=%d) done\n", actor_thread));
+  DPRINTF(("PutWork(thread=%d) done\n", actor_thread));
 }
 
 void WaitForWorkAcceptance(struct WorkState *ws) {
@@ -396,18 +396,18 @@ void WaitForWorkAcceptance(struct WorkState *ws) {
 }
 
 void AnnounceEndOfWork(struct WorkState *ws) {
-  dprintf(("AnnounceEndOfWork\n"));
+  DPRINTF(("AnnounceEndOfWork\n"));
   pthread_mutex_lock(&ws->mu);
   /*
    * ensure all previous work is accepted, allowing for no-work programs.
    */
   while (ws->actor_thread != WORK_ACCEPTED &&
          ws->actor_thread != WORK_PENDING) {
-    dprintf(("AnnounceEndOfWork: waiting for work to drain\n"));
+    DPRINTF(("AnnounceEndOfWork: waiting for work to drain\n"));
     pthread_cond_wait(&ws->cv, &ws->mu);
   }
   ws->actor_thread = WORK_ENDED;
-  dprintf(("AnnounceEndOfWork: broadcast!\n"));
+  DPRINTF(("AnnounceEndOfWork: broadcast!\n"));
   pthread_cond_broadcast(&ws->cv);
   pthread_mutex_unlock(&ws->mu);
 }
@@ -420,7 +420,7 @@ void *ThreadFunc(void *vstate) {
   /* set ts in TSD */
   pthread_setspecific(gNaClTestTsdKey, ts);
 
-  dprintf(("thread %d\n", ts->this_thread));
+  DPRINTF(("thread %d\n", ts->this_thread));
   while (GetWork(ts, &functor, &functor_state)) {
     (*functor)(functor_state);
   }
@@ -776,7 +776,7 @@ struct NaClSexpNode *SubImpl(struct NaClSexpCons *cons,
 
 static struct NaClSexpNode *MatcherResult(int64_t matcher_position,
                                           uint64_t matched_bitset) {
-  dprintf(("MatcherResult(%"NACL_PRId64", 0x%"NACL_PRIx64")\n",
+  DPRINTF(("MatcherResult(%"NACL_PRId64", 0x%"NACL_PRIx64")\n",
            matcher_position, matched_bitset));
   return NaClSexpNodeWrapCons(
       NaClSexpConsCons(NaClSexpNodeWrapInt(matcher_position),
@@ -810,15 +810,15 @@ struct NaClSexpNode *EpsilonMatcherImpl(struct NaClSexpCons *cons,
   if (NaClSexpListLength(cons) != 1) {
     crash_cons(ws, "epsilon built-in should have no arguments", cons);
   }
-  dprintf(("Epsilon\n"));
+  DPRINTF(("Epsilon\n"));
   /*
    * Check that the event queue is empty.
    */
   if (EventQueueLengthMu(ws) == 0) {
-    dprintf(("epsilon: success -- empty event queue\n"));
+    DPRINTF(("epsilon: success -- empty event queue\n"));
     return MatcherResult(-1, 0);
   }
-  dprintf(("epsilon: fail -- non-zero length event queue\n"));
+  DPRINTF(("epsilon: fail -- non-zero length event queue\n"));
   return NULL;
 }
 
@@ -864,7 +864,7 @@ struct WorkItem *WorkItemFactory(struct WorkState *ws,
 static void WorkOnWorkItem(void *functor_state) {
   struct WorkItem *wi = (struct WorkItem *) functor_state;
 
-  dprintf(("WorkOnWorkItem: entered\n"));
+  DPRINTF(("WorkOnWorkItem: entered\n"));
   switch (wi->type) {
     case kTakeLock:
       NaClFileLockManagerLock(&wi->ws->flm, wi->desc);
@@ -873,7 +873,7 @@ static void WorkOnWorkItem(void *functor_state) {
       NaClFileLockManagerUnlock(&wi->ws->flm, wi->desc);
       break;
   }
-  dprintf(("WorkOnWorkItem: done\n"));
+  DPRINTF(("WorkOnWorkItem: done\n"));
   free(wi);
 }
 
@@ -966,7 +966,7 @@ struct NaClSexpNode *EventQueueEventMatcher(struct NaClSexpCons *cons,
   expected_file_id = NaClSexpNodeToInt(n);
   NaClSexpFreeNode(n);
 
-  dprintf(("locked/unlocked matcher: %s, thread %d, file %d\n",
+  DPRINTF(("locked/unlocked matcher: %s, thread %d, file %d\n",
            (expected_event == kLocked) ? "locked" : "unlocked",
            expected_thread_id, expected_file_id));
 
@@ -1196,7 +1196,7 @@ struct NaClSexpNode *AllMatcherImpl(struct NaClSexpCons *cons,
     }
 
     if (!MatchResultExtract(&submatch_index, &submatch_pos, match_result)) {
-      dprintf(("submatcher failed\n"));
+      DPRINTF(("submatcher failed\n"));
       NaClSexpFreeNode(match_result);
       free(matcher_entries);
       return NULL;
@@ -1263,7 +1263,7 @@ struct NaClSexpNode *AnyMatcherImpl(struct NaClSexpCons *cons,
     }
 
     if (MatchResultExtract((int64_t *) NULL, &submatch_pos, match_result)) {
-      dprintf(("submatcher succeeded\n"));
+      DPRINTF(("submatcher succeeded\n"));
       NaClSexpFreeNode(match_result);
       match_result = MatcherResult(mx, submatch_pos);
       break;
@@ -1290,7 +1290,7 @@ struct NaClSexpNode *MatchMatcherImpl(struct NaClSexpCons *cons,
   int64_t which_match;
   uint64_t match_set;
 
-  dprintf(("MatchMatcherImpl\n"));
+  DPRINTF(("MatchMatcherImpl\n"));
   if (NaClSexpListLength(cons) != 2) {
     error_cons(ws, "match takes a single matcher as argument", cons);
     return NULL;
@@ -1305,16 +1305,16 @@ struct NaClSexpNode *MatchMatcherImpl(struct NaClSexpCons *cons,
   }
   result = (*matcher[0]->fn)(NaClSexpNodeToCons(cons->cdr->car), ws);
   if (!MatchResultExtract(&which_match, &match_set, result)) {
-    dprintf(("did not match\n"));
+    DPRINTF(("did not match\n"));
     NaClSexpFreeNode(result);
     result = NULL;
   } else if (match_set != ((((uint64_t) 1) << EventQueueLengthMu(ws)) - 1)) {
     /* did not match all entries */
-    dprintf(("match set incomplete\n"));
+    DPRINTF(("match set incomplete\n"));
     NaClSexpFreeNode(result);
     result = NULL;
   } else {
-    dprintf(("matched all events\n"));
+    DPRINTF(("matched all events\n"));
     EventQueueDiscardMu(ws);
     NaClSexpFreeNode(result);
     result = NaClSexpNodeWrapInt(which_match);
@@ -1348,7 +1348,7 @@ struct NaClSexpNode *Eval(struct NaClSexpNode *n, struct WorkState *ws) {
                cons);
   }
   token = NaClSexpNodeToToken(car);
-  dprintf(("function %s\n", token));
+  DPRINTF(("function %s\n", token));
   for (ix = 0; ix < sizeof g_symtab / sizeof g_symtab[0]; ++ix) {
     if (!strcmp(token, g_symtab[ix].name)) {
       if (!g_symtab[ix].is_matcher) {
@@ -1386,19 +1386,19 @@ struct NaClSexpNode *Eval(struct NaClSexpNode *n, struct WorkState *ws) {
          * lock becomes available.  We need to think about scoping in
          * that case.
          */
-        dprintf(("Matcher found\n"));
+        DPRINTF(("Matcher found\n"));
         pthread_mutex_lock(&ws->mu);
         last_match = 0;
         ComputeAbsTimeout(&timeout_time, gEpsilonDelayNanos);
 
         wait_for_more = 0;
         while (!last_match) {
-          dprintf(("Checking EventQueueLengthMu -> %d\n",
+          DPRINTF(("Checking EventQueueLengthMu -> %d\n",
                    (int) EventQueueLengthMu(ws)));
           if (EventQueueLengthMu(ws) == 0 || wait_for_more) {
-            dprintf(("Waiting for event\n"));
+            DPRINTF(("Waiting for event\n"));
             if (!WaitForEventMu(ws, &timeout_time)) {
-              dprintf(("Event timed out\n"));
+              DPRINTF(("Event timed out\n"));
               last_match = 1;
             }
           }
@@ -1422,7 +1422,7 @@ struct NaClSexpNode *Eval(struct NaClSexpNode *n, struct WorkState *ws) {
             val = NULL;
             break;
           }
-          dprintf(("match failed, waiting for more events\n"));
+          DPRINTF(("match failed, waiting for more events\n"));
           wait_for_more = 1;
         }
 
