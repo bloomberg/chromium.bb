@@ -331,8 +331,8 @@ class HostNPScriptObject {
   // Plugin state used for both Ir2Me and Me2Me.
 
   // Used to cancel pending tasks for this object when it is destroyed.
-  base::WeakPtrFactory<HostNPScriptObject> weak_factory_;
   base::WeakPtr<HostNPScriptObject> weak_ptr_;
+  base::WeakPtrFactory<HostNPScriptObject> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostNPScriptObject);
 };

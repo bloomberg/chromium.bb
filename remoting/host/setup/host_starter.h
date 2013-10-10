@@ -97,8 +97,8 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   // be logged, but the error will still be reported as START_ERROR.
   bool unregistering_host_;
 
-  base::WeakPtrFactory<HostStarter> weak_ptr_factory_;
   base::WeakPtr<HostStarter> weak_ptr_;
+  base::WeakPtrFactory<HostStarter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostStarter);
 };

@@ -113,8 +113,8 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   ChromotingStats stats_;
 
   // WeakPtr used to avoid tasks accessing the client after it is deleted.
-  base::WeakPtrFactory<ChromotingClient> weak_factory_;
   base::WeakPtr<ChromotingClient> weak_ptr_;
+  base::WeakPtrFactory<ChromotingClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

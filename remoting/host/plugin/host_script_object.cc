@@ -642,9 +642,10 @@ HostNPScriptObject::HostNPScriptObject(
       plugin_task_runner_(plugin_task_runner),
       am_currently_logging_(false),
       state_(kDisconnected),
-      weak_factory_(this),
-      weak_ptr_(weak_factory_.GetWeakPtr()) {
+      weak_factory_(this) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // Set the thread task runner for the plugin thread so that timers and other
   // code using |base::ThreadTaskRunnerHandle| could be used on the plugin
