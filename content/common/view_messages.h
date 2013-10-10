@@ -1214,10 +1214,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
 IPC_MESSAGE_ROUTED0(ViewMsg_WorkerCreated)
 
 // The response to ViewHostMsg_AsyncOpenPepperFile.
-IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenPepperFile_ACK,
+IPC_MESSAGE_ROUTED2(ViewMsg_AsyncOpenPepperFile_ACK,
                     base::PlatformFileError /* error_code */,
-                    IPC::PlatformFileForTransit /* file descriptor */,
-                    int /* message_id */)
+                    IPC::PlatformFileForTransit /* file descriptor */)
 
 // Tells the renderer that the network state has changed and that
 // window.navigator.onLine should be updated for all WebViews.
@@ -1931,11 +1930,10 @@ IPC_MESSAGE_CONTROL2(ViewHostMsg_OpenChannelToPpapiBroker,
 
 // Opens a Pepper file asynchronously. The response returns a file descriptor
 // and an error code from base/platform_file.h.
-IPC_MESSAGE_CONTROL4(ViewHostMsg_AsyncOpenPepperFile,
+IPC_MESSAGE_CONTROL3(ViewHostMsg_AsyncOpenPepperFile,
                      int /* routing_id */,
                      base::FilePath /* file path */,
-                     int /* pp_open_flags */,
-                     int /* message_id */)
+                     int /* pp_open_flags */)
 
 // A renderer sends this to the browser process when it wants to access a PPAPI
 // broker. In contrast to ViewHostMsg_OpenChannelToPpapiBroker, this is called

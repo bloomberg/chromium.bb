@@ -987,8 +987,7 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
 
 void RenderMessageFilter::OnAsyncOpenPepperFile(int routing_id,
                                                 const base::FilePath& path,
-                                                int pp_open_flags,
-                                                int message_id) {
+                                                int pp_open_flags) {
   int platform_file_flags = 0;
   if (!CanOpenWithPepperFlags(pp_open_flags, render_process_id_, path) ||
       !ppapi::PepperFileOpenFlagsToPlatformFileFlags(
@@ -1010,7 +1009,7 @@ void RenderMessageFilter::OnAsyncOpenPepperFile(int routing_id,
           IPC::InvalidPlatformFileForTransit();
 
   Send(new ViewMsg_AsyncOpenPepperFile_ACK(
-      routing_id, error_code, file_for_transit, message_id));
+      routing_id, error_code, file_for_transit));
 }
 
 void RenderMessageFilter::OnMediaLogEvents(

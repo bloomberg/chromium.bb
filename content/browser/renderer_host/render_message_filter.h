@@ -225,8 +225,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
       IPC::Message* reply_msg);
   void OnAsyncOpenPepperFile(int routing_id,
                              const base::FilePath& path,
-                             int pp_open_flags,
-                             int message_id);
+                             int pp_open_flags);
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
   // Check the policy for getting cookies. Gets the cookies if allowed.

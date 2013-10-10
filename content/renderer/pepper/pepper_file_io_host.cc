@@ -183,16 +183,13 @@ bool PepperFileIOHost::OnMessageReceived(const IPC::Message& msg) {
 
 void PepperFileIOHost::OnAsyncFileOpened(
     base::PlatformFileError error_code,
-    IPC::PlatformFileForTransit file_for_transit,
-    int message_id) {
-  AsyncOpenFileCallback* callback =
-      pending_async_open_files_.Lookup(message_id);
-  DCHECK(callback);
-  pending_async_open_files_.Remove(message_id);
-
+    IPC::PlatformFileForTransit file_for_transit) {
+  DCHECK(!pending_open_callback_.is_null());
   base::PlatformFile file =
       IPC::PlatformFileForTransitToPlatformFile(file_for_transit);
-  callback->Run(error_code, base::PassPlatformFile(&file));
+  if (!pending_open_callback_.is_null())
+    pending_open_callback_.Run(error_code, base::PassPlatformFile(&file));
+
   // Make sure we won't leak file handle if the requester has died.
   if (file != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
@@ -200,7 +197,7 @@ void PepperFileIOHost::OnAsyncFileOpened(
         file,
         base::FileUtilProxy::StatusCallback());
   }
-  delete callback;
+  pending_open_callback_.Reset();
 }
 
 int32_t PepperFileIOHost::OnHostMsgOpen(
@@ -212,7 +209,6 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   if (rv != PP_OK)
     return rv;
 
-  open_flags_ = open_flags;
   if (!ppapi::PepperFileOpenFlagsToPlatformFileFlags(open_flags, NULL))
     return PP_ERROR_BADARGUMENT;
 
@@ -220,10 +216,15 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
       renderer_ppapi_host_->GetPpapiHost()->GetResourceHost(file_ref_resource);
   if (!resource_host || !resource_host->IsFileRefHost())
     return PP_ERROR_BADRESOURCE;
+
   PepperFileRefRendererHost* file_ref_host =
       static_cast<PepperFileRefRendererHost*>(resource_host);
+  if (file_ref_host->GetFileSystemType() == PP_FILESYSTEMTYPE_INVALID)
+    return PP_ERROR_FAILED;
 
+  open_flags_ = open_flags;
   file_system_type_ = file_ref_host->GetFileSystemType();
+
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
     file_system_url_ = file_ref_host->GetFileSystemURL();
     FileSystemDispatcher* file_system_dispatcher =
@@ -238,15 +239,14 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
         base::Bind(&DidOpenFileSystemURL, callback),
         base::Bind(&DidFailOpenFileSystemURL, callback));
   } else {
-    int message_id = pending_async_open_files_.Add(new AsyncOpenFileCallback(
+    pending_open_callback_ =
         base::Bind(&PepperFileIOHost::ExecutePlatformOpenFileCallback,
-                    weak_factory_.GetWeakPtr(),
-                    context->MakeReplyMessageContext())));
+                   weak_factory_.GetWeakPtr(),
+                   context->MakeReplyMessageContext());
     RenderThreadImpl::current()->Send(new ViewHostMsg_AsyncOpenPepperFile(
         routing_id_,
         file_ref_host->GetExternalFilePath(),
-        open_flags_,
-        message_id));
+        open_flags_));
   }
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
   return PP_OK_COMPLETIONPENDING;
@@ -269,8 +269,8 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
         PPTimeToTime(last_access_time),
         PPTimeToTime(last_modified_time),
         base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                    weak_factory_.GetWeakPtr(),
-                    context->MakeReplyMessageContext()));
+                   weak_factory_.GetWeakPtr(),
+                   context->MakeReplyMessageContext()));
     state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
     return PP_OK_COMPLETIONPENDING;
   }
