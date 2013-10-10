@@ -92,8 +92,6 @@ private:
     explicit MutationObserver(PassRefPtr<MutationCallback>);
     void deliver();
 
-    static bool validateOptions(MutationObserverOptions);
-
     RefPtr<MutationCallback> m_callback;
     Vector<RefPtr<MutationRecord> > m_records;
     HashSet<MutationObserverRegistration*> m_registrations;

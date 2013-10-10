@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -73,18 +74,10 @@ MutationObserver::~MutationObserver()
     ASSERT(m_registrations.isEmpty());
 }
 
-bool MutationObserver::validateOptions(MutationObserverOptions options)
-{
-    return (options & (Attributes | CharacterData | ChildList))
-        && ((options & Attributes) || !(options & AttributeOldValue))
-        && ((options & Attributes) || !(options & AttributeFilter))
-        && ((options & CharacterData) || !(options & CharacterDataOldValue));
-}
-
 void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionState& es)
 {
     if (!node) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The provided node was null."));
         return;
     }
 
@@ -110,8 +103,22 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
     if (optionsDictionary.get("attributeFilter", attributeFilter))
         options |= AttributeFilter;
 
-    if (!validateOptions(options)) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+    if (!(options & (Attributes | CharacterData | ChildList))) {
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object must set at least one of 'attributes', 'characterData', or 'childList' to true."));
+        return;
+    }
+    if (!(options & Attributes)) {
+        if (options & AttributeOldValue) {
+            es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'attributeOldValue' to true when 'attributes' is also true."));
+            return;
+        }
+        if (options & AttributeFilter) {
+            es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'attributeFilter' when 'attributes' is also true."));
+            return;
+        }
+    }
+    if (!((options & CharacterData) || !(options & CharacterDataOldValue))) {
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("observe", "MutationObserver", "The options object may only set 'characterDataOldValue' to true when 'characterData' is also true."));
         return;
     }
 

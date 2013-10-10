@@ -7,14 +7,14 @@ PASS observer.observe() threw exception TypeError: Failed to execute 'observe' o
 PASS observer.observe(null) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': 2 arguments required, but only 1 present..
 PASS observer.observe(undefined) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': 2 arguments required, but only 1 present..
 PASS observer.observe(document.body) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': 2 arguments required, but only 1 present..
-PASS observer.observe(document.body, null) threw exception SyntaxError: An invalid or illegal string was specified..
-PASS observer.observe(document.body, undefined) threw exception SyntaxError: An invalid or illegal string was specified..
-PASS observer.observe(null, {attributes: true}) threw exception NotFoundError: An attempt was made to reference a Node in a context where it does not exist..
-PASS observer.observe(undefined, {attributes: true}) threw exception NotFoundError: An attempt was made to reference a Node in a context where it does not exist..
-PASS observer.observe(document.body, {subtree: true}) threw exception SyntaxError: An invalid or illegal string was specified..
-PASS observer.observe(document.body, {childList: true, attributeOldValue: true}) threw exception SyntaxError: An invalid or illegal string was specified..
-PASS observer.observe(document.body, {attributes: true, characterDataOldValue: true}) threw exception SyntaxError: An invalid or illegal string was specified..
-PASS observer.observe(document.body, {characterData: true, attributeFilter: ["id"]}) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS observer.observe(document.body, null) threw exception SyntaxError: Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true..
+PASS observer.observe(document.body, undefined) threw exception SyntaxError: Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true..
+PASS observer.observe(null, {attributes: true}) threw exception NotFoundError: Failed to execute 'observe' on 'MutationObserver': The provided node was null..
+PASS observer.observe(undefined, {attributes: true}) threw exception NotFoundError: Failed to execute 'observe' on 'MutationObserver': The provided node was null..
+PASS observer.observe(document.body, {subtree: true}) threw exception SyntaxError: Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true..
+PASS observer.observe(document.body, {childList: true, attributeOldValue: true}) threw exception SyntaxError: Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeOldValue' to true when 'attributes' is also true..
+PASS observer.observe(document.body, {attributes: true, characterDataOldValue: true}) threw exception SyntaxError: Failed to execute 'observe' on 'MutationObserver': The options object may only set 'characterDataOldValue' to true when 'characterData' is also true..
+PASS observer.observe(document.body, {characterData: true, attributeFilter: ["id"]}) threw exception SyntaxError: Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeFilter' when 'attributes' is also true..
 PASS successfullyParsed is true
 
 TEST COMPLETE
