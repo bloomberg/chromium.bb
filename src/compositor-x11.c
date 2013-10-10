@@ -203,6 +203,7 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 	xcb_xkb_per_client_flags_reply_t *pcf_reply;
 	xcb_xkb_get_state_cookie_t state;
 	xcb_xkb_get_state_reply_t *state_reply;
+	uint32_t values[1] = { XCB_EVENT_MASK_PROPERTY_CHANGE };
 
 	c->has_xkb = 0;
 	c->xkb_event_base = 0;
@@ -282,8 +283,25 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 
 	free(state_reply);
 
+	xcb_change_window_attributes(c->conn, c->screen->root,
+				     XCB_CW_EVENT_MASK, values);
+
 	c->has_xkb = 1;
 #endif
+}
+
+static void
+update_xkb_keymap(struct x11_compositor *c)
+{
+	struct xkb_keymap *keymap;
+
+	keymap = x11_compositor_get_keymap(c);
+	if (!keymap) {
+		weston_log("failed to get XKB keymap\n");
+		return;
+	}
+	weston_seat_update_keymap(&c->core_seat, keymap);
+	xkb_keymap_unref(keymap);
 }
 
 static int
@@ -1291,12 +1309,20 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		}
 
 #ifdef HAVE_XCB_XKB
-		if (c->has_xkb &&
-		    response_type == c->xkb_event_base) {
-			xcb_xkb_state_notify_event_t *state =
-				(xcb_xkb_state_notify_event_t *) event;
-			if (state->xkbType == XCB_XKB_STATE_NOTIFY)
-				update_xkb_state(c, state);
+		if (c->has_xkb) {
+			if (response_type == c->xkb_event_base) {
+				xcb_xkb_state_notify_event_t *state =
+					(xcb_xkb_state_notify_event_t *) event;
+				if (state->xkbType == XCB_XKB_STATE_NOTIFY)
+					update_xkb_state(c, state);
+			} else if (response_type == XCB_PROPERTY_NOTIFY) {
+				xcb_property_notify_event_t *prop_notify =
+					(xcb_property_notify_event_t *) event;
+				if (prop_notify->window == c->screen->root &&
+				    prop_notify->atom == c->atom.xkb_names &&
+				    prop_notify->state == XCB_PROPERTY_NEW_VALUE)
+					update_xkb_keymap(c);
+			}
 		}
 #endif
 
