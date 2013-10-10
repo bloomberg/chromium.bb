@@ -46,7 +46,7 @@ void KeyEventConverterOzone::OnFileCanReadWithoutBlocking(int fd) {
     const input_event& input = inputs[i];
     if (input.type == EV_KEY) {
       scoped_ptr<KeyEvent> key(
-          new KeyEvent(input.value == 1 ? ET_KEY_PRESSED : ET_KEY_RELEASED,
+          new KeyEvent(input.value == 0 ? ET_KEY_RELEASED : ET_KEY_PRESSED,
                        KeyboardCodeFromButton(input.code),
                        0,
                        true));
