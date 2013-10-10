@@ -62,7 +62,12 @@
   var durationSeconds = 0.001;
   var iterationCount = 0.5;
   var delaySeconds = 0;
-  var cssText = '';
+  var cssText = '.test:hover:before {\n' +
+      '  content: attr(description);\n' +
+      '  position: absolute;\n' +
+      '  z-index: 1000;\n' +
+      '  background: gold;\n' +
+      '}\n';
   var fragment = document.createDocumentFragment();
   var style = document.createElement('style');
   var afterTestCallback = null;
@@ -150,24 +155,32 @@
     }));
   }
 
+  function describeTest(params) {
+    return params.property + ': from [' + params.from + '] to [' + params.to + ']';
+  }
+
   function assertInterpolation(params, expectations) {
-    var keyframeId = defineKeyframes(params);
-    var nextTestId = 0;
+    var testId = defineKeyframes(params);
+    var nextCaseId = 0;
+    var testContainer = document.createElement('div');
+    testContainer.setAttribute('description', describeTest(params));
+    testContainer.classList.add('test', testId);
+    fragment.appendChild(testContainer);
     expectations.forEach(function(expectation) {
-      makeInterpolationTest(
-          expectation.at, keyframeId, ++nextTestId, params, expectation.is);
+      testContainer.appendChild(makeInterpolationTest(
+          expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
     });
     maybeScheduleUpdate();
   }
 
   var nextKeyframeId = 0;
   function defineKeyframes(params) {
-    var id = 'test-' + ++nextKeyframeId;
-    cssText += '@' + webkitPrefix + 'keyframes ' + id + ' { \n' +
+    var testId = 'test-' + ++nextKeyframeId;
+    cssText += '@' + webkitPrefix + 'keyframes ' + testId + ' { \n' +
         '  0% { ' + params.property + ': ' + params.from + '; }\n' +
         '  100% { ' + params.property + ': ' + params.to + '; }\n' +
         '}\n';
-    return id;
+    return testId;
   }
 
   function normalizeValue(value) {
@@ -206,7 +219,7 @@
     return targetContainer;
   }
 
-  function makeInterpolationTest(fraction, keyframeId, testId, params, expectation) {
+  function makeInterpolationTest(fraction, testId, caseId, params, expectation) {
     console.assert(expectation === undefined || !isRefTest);
     // If the prefixed property is not supported, try to unprefix it.
     if (/^-[^-]+-/.test(params.property) && !CSS.supports(params.property, expectation)) {
@@ -215,13 +228,12 @@
         params.property = unprefixed;
       }
     }
-    var id = keyframeId + '-' + testId;
-    var targetContainer = createTargetContainer(id);
+    var targetContainer = createTargetContainer(caseId);
     var target = targetContainer.querySelector('.target') || targetContainer;
     target.classList.add('active');
     var replicaContainer, replica;
     if (expectation !== undefined) {
-      replicaContainer = createTargetContainer(id);
+      replicaContainer = createTargetContainer(caseId);
       replica = replicaContainer.querySelector('.target') || replicaContainer;
       replica.classList.add('replica');
       replica.style.setProperty(params.property, expectation);
@@ -248,16 +260,18 @@
       this.style[params.property] = getComputedStyle(this).getPropertyValue(params.property);
     };
     var easing = createEasing(fraction);
-    cssText += '.' + id + '.active {\n' +
-        '  ' + webkitPrefix + 'animation: ' + keyframeId + ' ' + durationSeconds + 's forwards;\n' +
+    cssText += '.' + testId + ' .' + caseId + '.active {\n' +
+        '  ' + webkitPrefix + 'animation: ' + testId + ' ' + durationSeconds + 's forwards;\n' +
         '  ' + webkitPrefix + 'animation-timing-function: ' + easing + ';\n' +
         '  ' + webkitPrefix + 'animation-iteration-count: ' + iterationCount + ';\n' +
         '  ' + webkitPrefix + 'animation-delay: ' + delaySeconds + 's;\n' +
         '}\n';
     testCount++;
-    fragment.appendChild(targetContainer);
-    replica && fragment.appendChild(replicaContainer);
-    fragment.appendChild(document.createTextNode('\n'));
+    var testFragment = document.createDocumentFragment();
+    testFragment.appendChild(targetContainer);
+    replica && testFragment.appendChild(replicaContainer);
+    testFragment.appendChild(document.createTextNode('\n'));
+    return testFragment;
   }
 
   var finished = false;

@@ -13,8 +13,6 @@
  
  
  
- 
- 
  PASS: border-spacing from [0px] to [10px] was [0px 0px] at -0.3
 PASS: border-spacing from [0px] to [10px] was [0px 0px] at 0
 PASS: border-spacing from [0px] to [10px] was [3px 3px] at 0.3
