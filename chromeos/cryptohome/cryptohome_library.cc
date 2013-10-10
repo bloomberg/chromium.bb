@@ -4,105 +4,60 @@
 
 #include "chromeos/cryptohome/cryptohome_library.h"
 
-#include <map>
-
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
-
 namespace {
 
-const char kStubSystemSalt[] = "stub_system_salt";
+CryptohomeLibrary* g_cryptohome_library = NULL;
 
 }  // namespace
 
-// This class handles the interaction with the ChromeOS cryptohome library APIs.
-class CryptohomeLibraryImpl : public CryptohomeLibrary {
- public:
-  CryptohomeLibraryImpl() {
+CryptohomeLibrary::CryptohomeLibrary() {
+}
+
+CryptohomeLibrary::~CryptohomeLibrary() {
+}
+
+void CryptohomeLibrary::GetSystemSalt(
+    const GetSystemSaltCallback& callback) {
+  // TODO(hashimoto): Stop using GetSystemSaltSynt(). crbug.com/141009
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, GetSystemSaltSync()));
+}
+
+std::string CryptohomeLibrary::GetSystemSaltSync() {
+  LoadSystemSalt();  // no-op if it's already loaded.
+  return system_salt_;
+}
+
+std::string CryptohomeLibrary::GetCachedSystemSalt() {
+  return system_salt_;
+}
+
+void CryptohomeLibrary::LoadSystemSalt() {
+  if (!system_salt_.empty())
+    return;
+  std::vector<uint8> salt;
+  DBusThreadManager::Get()->GetCryptohomeClient()->GetSystemSalt(&salt);
+  if (salt.empty() || salt.size() % 2 != 0U) {
+    LOG(WARNING) << "System salt not available";
+    return;
   }
-
-  virtual ~CryptohomeLibraryImpl() {
-  }
-
-  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) OVERRIDE {
-    // TODO(hashimoto): Stop using GetSystemSaltSynt(). crbug.com/141009
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, GetSystemSaltSync()));
-  }
-
-  virtual std::string GetSystemSaltSync() OVERRIDE {
-    LoadSystemSalt();  // no-op if it's already loaded.
-    return system_salt_;
-  }
-
-  virtual std::string GetCachedSystemSalt() OVERRIDE {
-    return system_salt_;
-  }
-
- private:
-  void LoadSystemSalt() {
-    if (!system_salt_.empty())
-      return;
-    std::vector<uint8> salt;
-    DBusThreadManager::Get()->GetCryptohomeClient()->GetSystemSalt(&salt);
-    if (salt.empty() || salt.size() % 2 != 0U) {
-      LOG(WARNING) << "System salt not available";
-      return;
-    }
-    system_salt_ = StringToLowerASCII(base::HexEncode(
-        reinterpret_cast<const void*>(salt.data()), salt.size()));
-  }
-
-  std::string system_salt_;
-
-  DISALLOW_COPY_AND_ASSIGN(CryptohomeLibraryImpl);
-};
-
-class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
- public:
-  CryptohomeLibraryStubImpl() {}
-  virtual ~CryptohomeLibraryStubImpl() {}
-
-  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) OVERRIDE {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, kStubSystemSalt));
-  }
-
-  virtual std::string GetSystemSaltSync() OVERRIDE {
-    return kStubSystemSalt;
-  }
-
-  virtual std::string GetCachedSystemSalt() OVERRIDE {
-    return kStubSystemSalt;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CryptohomeLibraryStubImpl);
-};
-
-CryptohomeLibrary::CryptohomeLibrary() {}
-CryptohomeLibrary::~CryptohomeLibrary() {}
-
-static CryptohomeLibrary* g_cryptohome_library = NULL;
-static CryptohomeLibrary* g_test_cryptohome_library = NULL;
+  system_salt_ = StringToLowerASCII(base::HexEncode(
+      reinterpret_cast<const void*>(salt.data()), salt.size()));
+}
 
 // static
 void CryptohomeLibrary::Initialize() {
   CHECK(!g_cryptohome_library);
-  if (base::SysInfo::IsRunningOnChromeOS())
-    g_cryptohome_library = new CryptohomeLibraryImpl();
-  else
-    g_cryptohome_library = new CryptohomeLibraryStubImpl();
+  g_cryptohome_library = new CryptohomeLibrary();
 }
 
 // static
@@ -119,22 +74,9 @@ void CryptohomeLibrary::Shutdown() {
 
 // static
 CryptohomeLibrary* CryptohomeLibrary::Get() {
-  CHECK(g_cryptohome_library || g_test_cryptohome_library)
+  CHECK(g_cryptohome_library)
       << "CryptohomeLibrary::Get() called before Initialize()";
-  if (g_test_cryptohome_library)
-    return g_test_cryptohome_library;
   return g_cryptohome_library;
-}
-
-// static
-void CryptohomeLibrary::SetForTest(CryptohomeLibrary* impl) {
-  CHECK(!g_test_cryptohome_library || !impl);
-  g_test_cryptohome_library = impl;
-}
-
-// static
-CryptohomeLibrary* CryptohomeLibrary::GetTestImpl() {
-  return new CryptohomeLibraryStubImpl();
 }
 
 }  // namespace chromeos

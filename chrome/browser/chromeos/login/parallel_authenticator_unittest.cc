@@ -58,7 +58,8 @@ class ParallelAuthenticatorTest : public testing::Test {
         password_("fakepass"),
         hash_ascii_("0a010000000000a0" + std::string(16, '0')),
         user_manager_enabler_(new MockUserManager),
-        mock_caller_(NULL) {
+        mock_caller_(NULL),
+        mock_dbus_thread_manager_(new MockDBusThreadManagerWithoutGMock) {
   }
 
   virtual ~ParallelAuthenticatorTest() {
@@ -71,6 +72,8 @@ class ParallelAuthenticatorTest : public testing::Test {
     mock_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);
 
+    // Ownership of mock_dbus_thread_manager_ is taken.
+    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
     CryptohomeLibrary::Initialize();
 
     auth_ = new ParallelAuthenticator(&consumer_);
@@ -87,6 +90,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   // Tears down the test fixture.
   virtual void TearDown() {
     CryptohomeLibrary::Shutdown();
+    DBusThreadManager::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_caller_ = NULL;
@@ -207,6 +211,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   MockConsumer consumer_;
   scoped_refptr<ParallelAuthenticator> auth_;
   scoped_ptr<TestAttemptState> state_;
+  MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
 };
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
@@ -307,11 +312,8 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   LoginFailure failure = LoginFailure(LoginFailure::OWNER_REQUIRED);
   ExpectLoginFailure(failure);
 
-  MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager =
-      new MockDBusThreadManagerWithoutGMock;
-  DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
   FakeCryptohomeClient* fake_cryptohome_client  =
-      mock_dbus_thread_manager->fake_cryptohome_client();
+      mock_dbus_thread_manager_->fake_cryptohome_client();
   fake_cryptohome_client->set_unmount_result(true);
 
   CrosSettingsProvider* device_settings_provider;
@@ -363,7 +365,6 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   EXPECT_TRUE(
       CrosSettings::Get()->RemoveSettingsProvider(&stub_settings_provider));
   CrosSettings::Get()->AddSettingsProvider(device_settings_provider);
-  DBusThreadManager::Get()->Shutdown();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveFailedMount) {
