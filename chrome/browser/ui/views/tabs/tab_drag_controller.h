@@ -398,9 +398,8 @@ class TabDragController : public content::WebContentsDelegate,
   // WebContents of the dragged tabs. Returns an empty vector if not attached.
   std::vector<Tab*> GetTabsMatchingDraggedContents(TabStrip* tabstrip);
 
-  // Returns the bounds for the tabs based on the attached tab strip. The
-  // x-coordinate of each tab is offset by |x_offset|.
-  std::vector<gfx::Rect> CalculateBoundsForDraggedTabs(int x_offset);
+  // Returns the bounds for the tabs based on the attached tab strip.
+  std::vector<gfx::Rect> CalculateBoundsForDraggedTabs();
 
   // Does the work for EndDrag. If we actually started a drag and |how_end| is
   // not TAB_DESTROYED then one of EndDrag or RevertDrag is invoked.
@@ -513,8 +512,8 @@ class TabDragController : public content::WebContentsDelegate,
   // DraggedTabView is constructed.
   gfx::Point start_point_in_screen_;
 
-  // This is the offset of the mouse from the top left of the Tab where
-  // dragging begun. This is used to ensure that the dragged view is always
+  // This is the offset of the mouse from the top left of the first Tab where
+  // dragging began. This is used to ensure that the dragged view is always
   // positioned at the correct location during the drag, and to ensure that the
   // detached window is created at the right location.
   gfx::Point mouse_offset_;
