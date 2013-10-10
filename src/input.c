@@ -901,6 +901,86 @@ update_modifier_state(struct weston_seat *seat, uint32_t serial, uint32_t key,
 
 	notify_modifiers(seat, serial);
 }
+
+static void
+send_keymap(struct wl_resource *resource, struct weston_xkb_info *xkb_info)
+{
+	wl_keyboard_send_keymap(resource,
+				WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
+				xkb_info->keymap_fd,
+				xkb_info->keymap_size);
+}
+
+static void
+send_modifiers(struct wl_resource *resource, uint32_t serial, struct weston_keyboard *keyboard)
+{
+	wl_keyboard_send_modifiers(resource, serial,
+				   keyboard->modifiers.mods_depressed,
+				   keyboard->modifiers.mods_latched,
+				   keyboard->modifiers.mods_locked,
+				   keyboard->modifiers.group);
+}
+
+static struct weston_xkb_info *
+weston_xkb_info_create(struct xkb_keymap *keymap);
+static void
+weston_xkb_info_destroy(struct weston_xkb_info *xkb_info);
+
+static void
+update_keymap(struct weston_seat *seat)
+{
+	struct wl_resource *resource;
+	struct weston_xkb_info *xkb_info;
+	struct xkb_state *state;
+	xkb_mod_mask_t latched_mods;
+	xkb_mod_mask_t locked_mods;
+
+	xkb_info = weston_xkb_info_create(seat->pending_keymap);
+
+	xkb_keymap_unref(seat->pending_keymap);
+	seat->pending_keymap = NULL;
+
+	if (!xkb_info) {
+		weston_log("failed to create XKB info\n");
+		return;
+	}
+
+	state = xkb_state_new(xkb_info->keymap);
+	if (!state) {
+		weston_log("failed to initialise XKB state\n");
+		weston_xkb_info_destroy(xkb_info);
+		return;
+	}
+
+	latched_mods = xkb_state_serialize_mods(seat->xkb_state.state, XKB_STATE_MODS_LATCHED);
+	locked_mods = xkb_state_serialize_mods(seat->xkb_state.state, XKB_STATE_MODS_LOCKED);
+	xkb_state_update_mask(state,
+			      0, /* depressed */
+			      latched_mods,
+			      locked_mods,
+			      0, 0, 0);
+
+	weston_xkb_info_destroy(seat->xkb_info);
+	seat->xkb_info = xkb_info;
+
+	xkb_state_unref(seat->xkb_state.state);
+	seat->xkb_state.state = state;
+
+	wl_resource_for_each(resource, &seat->keyboard->resource_list)
+		send_keymap(resource, xkb_info);
+	wl_resource_for_each(resource, &seat->keyboard->focus_resource_list)
+		send_keymap(resource, xkb_info);
+
+	notify_modifiers(seat, wl_display_next_serial(seat->compositor->wl_display));
+
+	if (!latched_mods && !locked_mods)
+		return;
+
+	wl_resource_for_each(resource, &seat->keyboard->resource_list)
+		send_modifiers(resource, wl_display_get_serial(seat->compositor->wl_display), seat->keyboard);
+	wl_resource_for_each(resource, &seat->keyboard->focus_resource_list)
+		send_modifiers(resource, wl_display_get_serial(seat->compositor->wl_display), seat->keyboard);
+}
 #else
 WL_EXPORT void
 notify_modifiers(struct weston_seat *seat, uint32_t serial)
@@ -910,6 +990,11 @@ notify_modifiers(struct weston_seat *seat, uint32_t serial)
 static void
 update_modifier_state(struct weston_seat *seat, uint32_t serial, uint32_t key,
 		      enum wl_keyboard_key_state state)
+{
+}
+
+static void
+update_keymap(struct weston_seat *seat)
 {
 }
 #endif
@@ -960,6 +1045,10 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 	}
 
 	grab->interface->key(grab, time, key, state);
+
+	if (seat->pending_keymap &&
+	    keyboard->keys.size == 0)
+		update_keymap(seat);
 
 	if (update_state == STATE_UPDATE_AUTOMATIC) {
 		update_modifier_state(seat,
@@ -1636,6 +1725,24 @@ weston_compositor_xkb_destroy(struct weston_compositor *ec)
 }
 #endif
 
+WL_EXPORT void
+weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap)
+{
+	if (!seat->keyboard || !keymap)
+		return;
+
+#ifdef ENABLE_XKBCOMMON
+	if (!seat->compositor->use_xkbcommon)
+		return;
+
+	xkb_keymap_unref(seat->pending_keymap);
+	seat->pending_keymap = xkb_keymap_ref(keymap);
+
+	if (seat->keyboard->keys.size == 0)
+		update_keymap(seat);
+#endif
+}
+
 WL_EXPORT int
 weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 {
@@ -1808,6 +1915,8 @@ weston_seat_release(struct weston_seat *seat)
 			xkb_state_unref(seat->xkb_state.state);
 		if (seat->xkb_info)
 			weston_xkb_info_destroy(seat->xkb_info);
+		if (seat->pending_keymap)
+			xkb_keymap_unref (seat->pending_keymap);
 	}
 #endif
 

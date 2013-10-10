@@ -485,6 +485,7 @@ struct weston_seat {
 		struct xkb_state *state;
 		enum weston_led leds;
 	} xkb_state;
+	struct xkb_keymap *pending_keymap;
 
 	struct input_method *input_method;
 	char *seat_name;
@@ -1179,6 +1180,8 @@ void
 weston_seat_release_touch(struct weston_seat *seat);
 void
 weston_seat_repick(struct weston_seat *seat);
+void
+weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap);
 
 void
 weston_seat_release(struct weston_seat *seat);
