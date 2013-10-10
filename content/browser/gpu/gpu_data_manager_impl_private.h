@@ -247,9 +247,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool use_software_compositor_;
 
-  // True if all future Initialize calls should be ignored.
-  bool finalized_;
-
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };
 
