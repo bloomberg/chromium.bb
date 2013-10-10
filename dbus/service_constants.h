@@ -1472,6 +1472,21 @@ const char kGetChannel[] = "GetChannel";
 
 // Signals.
 const char kStatusUpdate[] = "StatusUpdate";
+
+// Operations contained in StatusUpdate signals.
+const char kUpdateStatusIdle[] = "UPDATE_STATUS_IDLE";
+const char kUpdateStatusCheckingForUpdate[] =
+    "UPDATE_STATUS_CHECKING_FOR_UPDATE";
+const char kUpdateStatusUpdateAvailable[] = "UPDATE_STATUS_UPDATE_AVAILABLE";
+const char kUpdateStatusDownloading[] = "UPDATE_STATUS_DOWNLOADING";
+const char kUpdateStatusVerifying[] = "UPDATE_STATUS_VERIFYING";
+const char kUpdateStatusFinalizing[] = "UPDATE_STATUS_FINALIZING";
+const char kUpdateStatusUpdatedNeedReboot[] =
+    "UPDATE_STATUS_UPDATED_NEED_REBOOT";
+const char kUpdateStatusReportingErrorEvent[] =
+    "UPDATE_STATUS_REPORTING_ERROR_EVENT";
+const char kUpdateStatusAttemptingRollback[] =
+    "UPDATE_STATUS_ATTEMPTING_ROLLBACK";
 }  // namespace update_engine
 
 namespace debugd {
