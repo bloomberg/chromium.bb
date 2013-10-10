@@ -293,26 +293,39 @@ class GSContext(object):
                       '%s/%s' % (remote_dir, os.path.basename(filename)),
                       acl=acl, version=version)
 
-  def _RunCommand(self, cmd, **kwargs):
-    kwargs.setdefault('redirect_stderr', True)
-    try:
-      return cros_build_lib.RunCommand(cmd, **kwargs)
-    # gsutil uses the same exit code for any failure, so we are left to
-    # parse the output as needed.
-    except cros_build_lib.RunCommandError as e:
-      error = e.result.error
-      if error:
-        if 'GSResponseError' in error:
-          if 'code=PreconditionFailed' in error:
-            raise GSContextPreconditionFailed(e)
-          if 'code=NoSuchKey' in error:
-            raise GSNoSuchKey(e)
-        # If the file does not exist, one of the following errors occurs.
-        if ('InvalidUriError:' in error or
-            'CommandException: No URIs matched' in error or
-            'CommandException: One or more URIs matched no objects' in error):
+  def _RetryFilter(self, e):
+    """Function to filter retry-able RunCommandError exceptions.
+
+    Args:
+      e: Exception object to filter. Exception may be re-raised as
+         as different type, if _RetryFilter determines a more appropriate
+         exception type based on the contents of e.
+    Returns: True for exceptions thrown by a RunCommand gsutil
+             that should be retried.
+    """
+    if not cros_build_lib.ShouldRetryCommandCommon(e):
+      return False
+
+    # e is guaranteed by above filter to be a RunCommandError
+
+    if e.result.returncode < 0:
+      logging.info('Child process received signal %d; not retrying.',
+                   -e.result.returncode)
+      return False
+
+    error = e.result.error
+    if error:
+      if 'GSResponseError' in error:
+        if 'code=PreconditionFailed' in error:
+          raise GSContextPreconditionFailed(e)
+        if 'code=NoSuchKey' in error:
           raise GSNoSuchKey(e)
-      raise
+      # If the file does not exist, one of the following errors occurs.
+      if ('InvalidUriError:' in error or
+          'CommandException: No URIs matched' in error or
+          'CommandException: One or more URIs matched no objects' in error):
+        raise GSNoSuchKey(e)
+    return True
 
   def DoCommand(self, gsutil_cmd, headers=(), retries=None, **kwargs):
     """Run a gsutil command, suppressing output, and setting retry/sleep.
@@ -320,6 +333,9 @@ class GSContext(object):
     Returns:
       A RunCommandResult object.
     """
+    kwargs = kwargs.copy()
+    kwargs.setdefault('redirect_stderr', True)
+
     cmd = [self.gsutil_bin]
     for header in headers:
       cmd += ['-h', header]
@@ -335,9 +351,10 @@ class GSContext(object):
       logging.debug("%s: would've run: %s", self.__class__.__name__,
                     ' '.join(map(repr, cmd)))
     else:
-      return cros_build_lib.RetryCommand(
-          self._RunCommand, retries, cmd, sleep=self._sleep_time,
-          extra_env=extra_env, **kwargs)
+      return cros_build_lib.GenericRetry(self._RetryFilter,
+                                         retries, cros_build_lib.RunCommand,
+                                         cmd, sleep=self._sleep_time,
+                                         extra_env=extra_env, **kwargs)
 
   def Copy(self, src_path, dest_path, acl=None, version=None, **kwargs):
     """Copy to/from GS bucket.

@@ -219,15 +219,30 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
                       acl_file=self.bad_path)
 
 
-class GSContextTest(AbstractGSContextTest):
-  """Tests for GSContext()"""
+class GSDoCommandTest(cros_test_lib.TestCase):
+  """Tests of gs.DoCommand behavior.
+
+  This test class inherits from cros_test_lib.TestCase instead of from
+  AbstractGSContextTest, because the latter unnecessarily mocks out
+  cros_build_lib.RunCommand, in a way that breaks _testDoCommand (changing
+  cros_build_lib.RunCommand to refer to a mock instance after the
+  GenericRetry mock has already been set up to expect a reference to the
+  original RunCommand).
+  """
+
+  def setUp(self):
+    self.ctx = gs.GSContext()
 
   def _testDoCommand(self, ctx, retries, sleep):
-    with mock.patch.object(cros_build_lib, 'RetryCommand', autospec=True):
+    with mock.patch.object(cros_build_lib, 'GenericRetry', autospec=True):
       ctx.Copy('/blah', 'gs://foon')
       cmd = [self.ctx.gsutil_bin, 'cp', '--', '/blah', 'gs://foon']
-      cros_build_lib.RetryCommand.assert_called_once_with(
-          mock.ANY, retries, cmd, sleep=sleep,
+
+      cros_build_lib.GenericRetry.assert_called_once_with(
+          ctx._RetryFilter, retries,
+          cros_build_lib.RunCommand,
+          cmd, sleep=sleep,
+          redirect_stderr=True,
           extra_env={'BOTO_CONFIG': mock.ANY})
 
   def testDoCommandDefault(self):
@@ -239,6 +254,10 @@ class GSContextTest(AbstractGSContextTest):
     """Test that retries and sleep parameters are honored."""
     ctx = gs.GSContext(retries=4, sleep=1)
     self._testDoCommand(ctx, retries=4, sleep=1)
+
+
+class GSContextTest(AbstractGSContextTest):
+  """Tests for GSContext()"""
 
   def testSetAclError(self):
     """Ensure SetACL blows up if the acl isn't specified."""

@@ -703,10 +703,7 @@ def RetryCommand(functor, max_retry, *args, **kwds):
   values = kwds.pop('retry_on', None)
   def ShouldRetry(exc):
     """Return whether we should retry on a given exception."""
-    if not isinstance(exc, RunCommandError):
-      return False
-    if exc.result.returncode is None:
-      logging.info('Child process failed to launch; not retrying.')
+    if not ShouldRetryCommandCommon(exc):
       return False
     if values is None and exc.result.returncode < 0:
       logging.info('Child process received signal %d; not retrying.',
@@ -714,6 +711,16 @@ def RetryCommand(functor, max_retry, *args, **kwds):
       return False
     return values is None or exc.result.returncode in values
   return GenericRetry(ShouldRetry, max_retry, functor, *args, **kwds)
+
+
+def ShouldRetryCommandCommon(exc):
+  """Returns whether any RunCommand should retry on a given exception."""
+  if not isinstance(exc, RunCommandError):
+    return False
+  if exc.result.returncode is None:
+    logging.info('Child process failed to launch; not retrying.')
+    return False
+  return True
 
 
 def RunCommandWithRetries(max_retry, *args, **kwds):
