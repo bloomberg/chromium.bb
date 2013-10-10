@@ -391,6 +391,8 @@ TabDragController::TabDragController()
       tab_strip_to_attach_to_after_exit_(NULL),
       move_loop_widget_(NULL),
       is_mutating_(false),
+      attach_x_(-1),
+      attach_index_(-1),
       weak_factory_(this) {
   instance_ = this;
 }
@@ -993,26 +995,55 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
     TabStripModel* attached_model = GetModel(attached_tabstrip_);
     gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_point);
     int to_index = GetInsertionIndexForDraggedBounds(bounds);
-    WebContents* last_contents = drag_data_[drag_data_.size() - 1].contents;
-    int index_of_last_item =
-          attached_model->GetIndexOfWebContents(last_contents);
-    if (initial_move_) {
-      // TabStrip determines if the tabs needs to be animated based on model
-      // position. This means we need to invoke LayoutDraggedTabsAt before
-      // changing the model.
-      attached_tabstrip_->LayoutDraggedTabsAt(
-          tabs, source_tab_drag_data()->attached_tab, dragged_view_point,
-          initial_move_);
-      did_layout = true;
+    bool do_move = true;
+    // While dragging within a tabstrip the expectation is the insertion index
+    // is based on the left edge of the tabs being dragged. OTOH when dragging
+    // into a new tabstrip (attaching) the expectation is the insertion index is
+    // based on the cursor. This proves problematic as insertion may change the
+    // size of the tabs, resulting in the index calculated before the insert
+    // differing from the index calculated after the insert. To alleviate this
+    // the index is chosen before insertion, and subsequently a new index is
+    // only used once the mouse moves enough such that the index changes based
+    // on the direction the mouse moved relative to |attach_x_| (smaller
+    // x-coordinate should yield a smaller index or larger x-coordinate yields a
+    // larger index).
+    if (attach_index_ != -1) {
+      gfx::Point tab_strip_point(point_in_screen);
+      views::View::ConvertPointToTarget(NULL, attached_tabstrip_,
+                                        &tab_strip_point);
+      const int new_x =
+          attached_tabstrip_->GetMirroredXInView(tab_strip_point.x());
+      if (new_x < attach_x_)
+        to_index = std::min(to_index, attach_index_);
+      else
+        to_index = std::max(to_index, attach_index_);
+      if (to_index != attach_index_)
+        attach_index_ = -1;  // Once a valid move is detected, don't constrain.
+      else
+        do_move = false;
     }
-    attached_model->MoveSelectedTabsTo(to_index);
+    if (do_move) {
+      WebContents* last_contents = drag_data_[drag_data_.size() - 1].contents;
+      int index_of_last_item =
+          attached_model->GetIndexOfWebContents(last_contents);
+      if (initial_move_) {
+        // TabStrip determines if the tabs needs to be animated based on model
+        // position. This means we need to invoke LayoutDraggedTabsAt before
+        // changing the model.
+        attached_tabstrip_->LayoutDraggedTabsAt(
+            tabs, source_tab_drag_data()->attached_tab, dragged_view_point,
+            initial_move_);
+        did_layout = true;
+      }
+      attached_model->MoveSelectedTabsTo(to_index);
 
-    // Move may do nothing in certain situations (such as when dragging pinned
-    // tabs). Make sure the tabstrip actually changed before updating
-    // last_move_screen_loc_.
-    if (index_of_last_item !=
-        attached_model->GetIndexOfWebContents(last_contents)) {
-      last_move_screen_loc_ = point_in_screen.x();
+      // Move may do nothing in certain situations (such as when dragging pinned
+      // tabs). Make sure the tabstrip actually changed before updating
+      // last_move_screen_loc_.
+      if (index_of_last_item !=
+          attached_model->GetIndexOfWebContents(last_contents)) {
+        last_move_screen_loc_ = point_in_screen.x();
+      }
     }
   }
 
@@ -1209,9 +1240,11 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
                                       &tab_strip_point);
     tab_strip_point.set_x(
         attached_tabstrip_->GetMirroredXInView(tab_strip_point.x()));
-    tab_strip_point.Offset(-mouse_offset_.x(), -mouse_offset_.y());
+    tab_strip_point.Offset(0, -mouse_offset_.y());
     gfx::Rect bounds = GetDraggedViewTabStripBounds(tab_strip_point);
     int index = GetInsertionIndexForDraggedBounds(bounds);
+    attach_index_ = index;
+    attach_x_ = tab_strip_point.x();
     base::AutoReset<bool> setter(&is_mutating_, true);
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       int add_types = TabStripModel::ADD_NONE;
@@ -1266,6 +1299,8 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
 }
 
 void TabDragController::Detach(ReleaseCapture release_capture) {
+  attach_index_ = -1;
+
   // When the user detaches we assume they want to reorder.
   move_behavior_ = REORDER;
 

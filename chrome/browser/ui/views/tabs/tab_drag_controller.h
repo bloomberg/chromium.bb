@@ -629,6 +629,15 @@ class TabDragController : public content::WebContentsDelegate,
   // See description above getter.
   bool is_mutating_;
 
+  // |attach_x_| and |attach_index_| are set to the x-coordinate of the mouse
+  // (in terms of the tabstrip) and the insertion index at the time tabs are
+  // dragged into a new browser (attached). They are used to ensure we don't
+  // shift the tabs around in the wrong direction. The two are only valid if
+  // |attach_index_| is not -1.
+  // See comment around use for more details.
+  int attach_x_;
+  int attach_index_;
+
   base::WeakPtrFactory<TabDragController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabDragController);
