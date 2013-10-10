@@ -9,6 +9,6 @@ if (window.testRunner) {
 }
 </script>
 <p>Test passes if xss auditor does not mistakenly fire in the middle of chunked content</p>
-<iframe src="/security/xssAuditor/resources/chunked-big-script.pl?a=1,&q=<script>"></iframe>
+<iframe src="/security/xssAuditor/resources/chunked-big-script.pl?aaaaaaaaaaaaaaaa=999999,&q=<script>"></iframe>
 </body>
 </html>

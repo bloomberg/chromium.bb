@@ -18,9 +18,9 @@ if (!$pre_chunked) {
     print "Transfer-encoding: chunked\r\n";
 }
 print "\r\n";
-print_maybe_chunked "<!DOCTYPE html><html><script>var a; var b; a=1,a=1,a=1,a=1,a=1,a=1,a=1,a";
+print_maybe_chunked "<!DOCTYPE html><html><script>var aaaaaaaaaaaaaaaa; var b; aaaaaaaaaaaaaaaa";
 for ($count = 0; $count < 256; $count++) {
-    print_maybe_chunked "=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a=1,a";
+    print_maybe_chunked "=999999,aaaaaaaaaaaaaaaa=999999,aaaaaaaaaaaaaaaa=999999,aaaaaaaaaaaaaaaa";
 }
-print_maybe_chunked "=1;</script>The End</html>\r\n";
+print_maybe_chunked "=999999;</script>The End</html>\r\n";
 print_maybe_chunked "";
