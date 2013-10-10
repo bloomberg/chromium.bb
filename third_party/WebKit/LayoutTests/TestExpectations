@@ -1157,6 +1157,9 @@ crbug.com/303444 animations/unsigned-underflow.html [ Timeout ]
 crbug.com/303444 virtual/threaded/animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
 crbug.com/303444 virtual/threaded/animations/unsigned-underflow.html [ Timeout ]
 
+crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
+crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
+
 # Win has no support for overlay scrollbars required for this test to pass.
 crbug.com/304841 [ Win ] inspector/styles/override-screen-size.html [ Failure ]
 
