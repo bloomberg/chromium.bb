@@ -3597,7 +3597,10 @@ void Document::enqueueDocumentEvent(PassRefPtr<Event> event)
 
 void Document::enqueueScrollEventForNode(Node* target)
 {
-    m_eventQueue->enqueueScrollEventForNode(target);
+    // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
+    RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventNames::scroll) : Event::create(EventNames::scroll);
+    scrollEvent->setTarget(target);
+    ensureScriptedAnimationController().scheduleEvent(scrollEvent.release());
 }
 
 PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState& es)
@@ -4860,7 +4863,7 @@ void Document::loadEventDelayTimerFired(Timer<Document>*)
         frame()->loader()->checkCompleted();
 }
 
-int Document::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
+ScriptedAnimationController& Document::ensureScriptedAnimationController()
 {
     if (!m_scriptedAnimationController) {
         m_scriptedAnimationController = ScriptedAnimationController::create(this);
@@ -4868,8 +4871,12 @@ int Document::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> ca
         if (!page())
             m_scriptedAnimationController->suspend();
     }
+    return *m_scriptedAnimationController;
+}
 
-    return m_scriptedAnimationController->registerCallback(callback);
+int Document::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
+{
+    return ensureScriptedAnimationController().registerCallback(callback);
 }
 
 void Document::cancelAnimationFrame(int id)

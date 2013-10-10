@@ -1068,6 +1068,7 @@ private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
 
+    ScriptedAnimationController& ensureScriptedAnimationController();
     virtual EventQueue* eventQueue() const FINAL;
 
     void updateDistributionIfNeeded();
