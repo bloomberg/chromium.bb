@@ -5,6 +5,7 @@
 import hashlib
 import json
 import logging
+import posixpath
 import re
 import traceback
 
@@ -147,7 +148,8 @@ class SamplesDataSource(object):
 
         manifest_data = self._GetDataFromManifest(sample_path, file_system)
         if manifest_data['icon'] is None:
-          icon_path = '%s/static/%s' % (self._base_path, DEFAULT_ICON_PATH)
+          icon_path = posixpath.join(
+              self._base_path, 'static', DEFAULT_ICON_PATH)
         else:
           icon_path = '%s/%s' % (icon_base, manifest_data['icon'])
         manifest_data.update({
