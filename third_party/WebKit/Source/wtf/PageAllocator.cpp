@@ -31,7 +31,7 @@
 #include "config.h"
 #include "wtf/PageAllocator.h"
 
-#include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/ProcessID.h"
 #include "wtf/SpinLock.h"
 
 #if OS(POSIX)
@@ -140,13 +140,59 @@ void decommitSystemPages(void* addr, size_t len)
 #endif
 }
 
+// This is the same PRNG as used by tcmalloc for mapping address randomness;
+// see http://burtleburtle.net/bob/rand/smallprng.html
+struct ranctx {
+    int lock;
+    bool initialized;
+    uint32_t a;
+    uint32_t b;
+    uint32_t c;
+    uint32_t d;
+};
+
+#define rot(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
+
+uint32_t ranvalInternal(ranctx* x)
+{
+    uint32_t e = x->a - rot(x->b, 27);
+    x->a = x->b ^ rot(x->c, 17);
+    x->b = x->c + x->d;
+    x->c = x->d + e;
+    x->d = e + x->a;
+    return x->d;
+}
+
+#undef rot
+
+uint32_t ranval(ranctx* x)
+{
+    spinLockLock(&x->lock);
+    if (UNLIKELY(!x->initialized)) {
+        x->initialized = true;
+        char c;
+        uint32_t seed = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&c));
+        seed ^= static_cast<uint32_t>(getCurrentProcessID());
+        x->a = 0xf1ea5eed;
+        x->b = x->c = x->d = seed;
+        for (int i = 0; i < 20; ++i) {
+            (void) ranvalInternal(x);
+        }
+    }
+    uint32_t ret = ranvalInternal(x);
+    spinLockUnlock(&x->lock);
+    return ret;
+}
+
 char* getRandomSuperPageBase()
 {
+    static struct ranctx ranctx;
+
     uintptr_t random;
-    random = static_cast<uintptr_t>(cryptographicallyRandomNumber());
+    random = static_cast<uintptr_t>(ranval(&ranctx));
 #if CPU(X86_64)
     random <<= 32UL;
-    random |= static_cast<uintptr_t>(cryptographicallyRandomNumber());
+    random |= static_cast<uintptr_t>(ranval(&ranctx));
     // This address mask gives a low liklihood of address space collisions.
     // We handle the situation gracefully if there is a collision.
 #if OS(WIN)
