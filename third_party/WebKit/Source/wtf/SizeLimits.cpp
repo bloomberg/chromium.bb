@@ -40,13 +40,17 @@
 
 namespace WTF {
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || SECURITY_ASSERT_ENABLED
+// The debug/assertion version may get bigger.
 struct SameSizeAsRefCounted {
     int a;
+#if SECURITY_ASSERT_ENABLED
     bool b;
+#endif
+#if !defined(NDEBUG)
     bool c;
     ThreadRestrictionVerifier d;
-    // The debug version may get bigger.
+#endif
 };
 #else
 struct SameSizeAsRefCounted {

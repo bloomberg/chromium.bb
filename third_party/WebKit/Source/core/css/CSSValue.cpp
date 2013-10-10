@@ -66,7 +66,7 @@ struct SameSizeAsCSSValue : public RefCounted<SameSizeAsCSSValue> {
     uint32_t bitfields;
 };
 
-COMPILE_ASSERT(sizeof(CSSValue) == sizeof(SameSizeAsCSSValue), CSS_value_should_stay_small);
+COMPILE_ASSERT(sizeof(CSSValue) <= sizeof(SameSizeAsCSSValue), CSS_value_should_stay_small);
 
 class TextCloneCSSValue : public CSSValue {
 public:

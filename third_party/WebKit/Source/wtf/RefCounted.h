@@ -55,17 +55,17 @@ public:
         // that the verification needs to change. See ThreadRestrictionVerifier for
         // the different modes.
         ASSERT(m_verifier.isSafeToUse());
-        ASSERT(!m_deletionHasBegun);
         ASSERT(!m_adoptionIsRequired);
 #endif
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
         ++m_refCount;
     }
 
     bool hasOneRef() const
     {
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
         ASSERT(m_verifier.isSafeToUse());
-        ASSERT(!m_deletionHasBegun);
 #endif
         return m_refCount == 1;
     }
@@ -80,8 +80,8 @@ public:
 
     void relaxAdoptionRequirement()
     {
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
-        ASSERT(!m_deletionHasBegun);
         ASSERT(m_adoptionIsRequired);
         m_adoptionIsRequired = false;
 #endif
@@ -90,8 +90,10 @@ public:
 protected:
     RefCountedBase()
         : m_refCount(1)
-#if CHECK_REF_COUNTED_LIFECYCLE
+#if SECURITY_ASSERT_ENABLED
         , m_deletionHasBegun(false)
+#endif
+#if CHECK_REF_COUNTED_LIFECYCLE
         , m_adoptionIsRequired(true)
 #endif
     {
@@ -99,8 +101,8 @@ protected:
 
     ~RefCountedBase()
     {
+        ASSERT_WITH_SECURITY_IMPLICATION(m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
-        ASSERT(m_deletionHasBegun);
         ASSERT(!m_adoptionIsRequired);
 #endif
     }
@@ -108,15 +110,15 @@ protected:
     // Returns whether the pointer should be freed or not.
     bool derefBase()
     {
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
         ASSERT(m_verifier.isSafeToUse());
-        ASSERT(!m_deletionHasBegun);
         ASSERT(!m_adoptionIsRequired);
 #endif
 
         ASSERT(m_refCount > 0);
         if (m_refCount == 1) {
-#if CHECK_REF_COUNTED_LIFECYCLE
+#if SECURITY_ASSERT_ENABLED
             m_deletionHasBegun = true;
 #endif
             return true;
@@ -141,25 +143,29 @@ protected:
 
 private:
 
-#if CHECK_REF_COUNTED_LIFECYCLE
+#if CHECK_REF_COUNTED_LIFECYCLE || SECURITY_ASSERT_ENABLED
     friend void adopted(RefCountedBase*);
 #endif
 
     int m_refCount;
-#if CHECK_REF_COUNTED_LIFECYCLE
+#if SECURITY_ASSERT_ENABLED
     bool m_deletionHasBegun;
+#endif
+#if CHECK_REF_COUNTED_LIFECYCLE
     bool m_adoptionIsRequired;
     ThreadRestrictionVerifier m_verifier;
 #endif
 };
 
-#if CHECK_REF_COUNTED_LIFECYCLE
+#if CHECK_REF_COUNTED_LIFECYCLE || SECURITY_ASSERT_ENABLED
 inline void adopted(RefCountedBase* object)
 {
     if (!object)
         return;
-    ASSERT(!object->m_deletionHasBegun);
+    ASSERT_WITH_SECURITY_IMPLICATION(!object->m_deletionHasBegun);
+#if CHECK_REF_COUNTED_LIFECYCLE
     object->m_adoptionIsRequired = false;
+#endif
 }
 #endif
 
