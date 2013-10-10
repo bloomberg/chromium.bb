@@ -148,7 +148,7 @@ void WorkerThread::runEventLoop()
     m_runLoop.run(m_workerGlobalScope.get());
 }
 
-class WorkerThreadShutdownFinishTask : public ScriptExecutionContext::Task {
+class WorkerThreadShutdownFinishTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<WorkerThreadShutdownFinishTask> create()
     {
@@ -166,7 +166,7 @@ public:
     virtual bool isCleanupTask() const { return true; }
 };
 
-class WorkerThreadShutdownStartTask : public ScriptExecutionContext::Task {
+class WorkerThreadShutdownStartTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<WorkerThreadShutdownStartTask> create()
     {
@@ -222,7 +222,7 @@ bool WorkerThread::isCurrentThread() const
     return m_threadID == currentThread();
 }
 
-class ReleaseFastMallocFreeMemoryTask : public ScriptExecutionContext::Task {
+class ReleaseFastMallocFreeMemoryTask : public ExecutionContextTask {
     virtual void performTask(ScriptExecutionContext*) OVERRIDE { WTF::releaseFastMallocFreeMemory(); }
 };
 

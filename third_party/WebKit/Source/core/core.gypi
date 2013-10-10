@@ -1756,6 +1756,8 @@
         ],
         'webcore_dom_files': [
             'dom/ActiveDOMObject.cpp',
+            'dom/AddConsoleMessageTask.cpp',
+            'dom/AddConsoleMessageTask.h',
             'dom/Attr.cpp',
             'dom/CDATASection.cpp',
             'dom/CDATASection.h',
@@ -1835,6 +1837,8 @@
             'dom/ElementRareData.h',
             'dom/ElementTraversal.h',
             'dom/Entity.h',
+            'dom/ExecutionContextTask.cpp',
+            'dom/ExecutionContextTask.h',
             'dom/FullscreenElementStack.cpp',
             'dom/FullscreenElementStack.h',
             'dom/IconURL.cpp',

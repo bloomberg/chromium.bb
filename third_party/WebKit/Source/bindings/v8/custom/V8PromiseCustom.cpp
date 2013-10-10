@@ -42,6 +42,7 @@
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/page/DOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Task.h"
@@ -188,7 +189,7 @@ void addToDerived(v8::Handle<v8::Object> internal, v8::Handle<v8::Object> derive
     ASSERT(fulfillCallbacks->Length() == rejectCallbacks->Length() && rejectCallbacks->Length() == derivedPromises->Length());
 }
 
-class CallHandlerTask : public ScriptExecutionContext::Task {
+class CallHandlerTask : public ExecutionContextTask {
 public:
     CallHandlerTask(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, v8::Isolate* isolate)
         : m_promise(isolate, promise)
@@ -238,7 +239,7 @@ void CallHandlerTask::performTask(ScriptExecutionContext* context)
     }
 }
 
-class UpdateDerivedTask : public ScriptExecutionContext::Task {
+class UpdateDerivedTask : public ExecutionContextTask {
 public:
     UpdateDerivedTask(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Function> onRejected, v8::Handle<v8::Object> originatorValueObject, v8::Isolate* isolate)
         : m_promise(isolate, promise)

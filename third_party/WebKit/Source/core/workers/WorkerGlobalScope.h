@@ -81,7 +81,7 @@ namespace WebCore {
 
         WorkerThread* thread() const { return m_thread; }
 
-        virtual void postTask(PassOwnPtr<Task>) OVERRIDE; // Executes the task on context's thread asynchronously.
+        virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE; // Executes the task on context's thread asynchronously.
 
         // WorkerGlobalScope
         WorkerGlobalScope* self() { return this; }

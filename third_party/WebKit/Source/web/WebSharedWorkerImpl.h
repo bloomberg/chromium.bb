@@ -86,9 +86,9 @@ public:
     virtual WebView* view() const { return m_webView; }
 
     // WebCore::WorkerLoaderProxy methods:
-    virtual void postTaskToLoader(PassOwnPtr<WebCore::ScriptExecutionContext::Task>);
+    virtual void postTaskToLoader(PassOwnPtr<WebCore::ExecutionContextTask>);
     virtual bool postTaskForModeToWorkerGlobalScope(
-        PassOwnPtr<WebCore::ScriptExecutionContext::Task>, const WTF::String& mode);
+        PassOwnPtr<WebCore::ExecutionContextTask>, const WTF::String& mode);
     virtual WebWorkerBase* toWebWorkerBase() OVERRIDE;
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.

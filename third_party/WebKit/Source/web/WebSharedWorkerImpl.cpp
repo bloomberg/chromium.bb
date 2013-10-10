@@ -315,14 +315,14 @@ void WebSharedWorkerImpl::workerGlobalScopeDestroyedTask(ScriptExecutionContext*
 
 // WorkerLoaderProxy -----------------------------------------------------------
 
-void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ScriptExecutionContext::Task> task)
+void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
     ASSERT(m_loadingDocument->isDocument());
     m_loadingDocument->postTask(task);
 }
 
 bool WebSharedWorkerImpl::postTaskForModeToWorkerGlobalScope(
-    PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
+    PassOwnPtr<ExecutionContextTask> task, const String& mode)
 {
     m_workerThread->runLoop().postTaskForMode(task, mode);
     return true;

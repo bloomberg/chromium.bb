@@ -398,9 +398,9 @@ WorkerThreadableWebSocketChannel::Bridge::~Bridge()
     disconnect();
 }
 
-class WorkerThreadableWebSocketChannel::WorkerGlobalScopeDidInitializeTask : public ScriptExecutionContext::Task {
+class WorkerThreadableWebSocketChannel::WorkerGlobalScopeDidInitializeTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<ScriptExecutionContext::Task> create(WorkerThreadableWebSocketChannel::Peer* peer, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
+    static PassOwnPtr<ExecutionContextTask> create(WorkerThreadableWebSocketChannel::Peer* peer, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
     {
         return adoptPtr(new WorkerGlobalScopeDidInitializeTask(peer, loaderProxy, workerClientWrapper));
     }

@@ -28,6 +28,7 @@
 #ifndef SQLCallbackWrapper_h
 #define SQLCallbackWrapper_h
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "wtf/ThreadingPrimitives.h"
 
@@ -86,7 +87,7 @@ public:
     bool hasCallback() const { return m_callback; }
 
 private:
-    class SafeReleaseTask : public ScriptExecutionContext::Task {
+    class SafeReleaseTask : public ExecutionContextTask {
     public:
         static PassOwnPtr<SafeReleaseTask> create(T* callbackToRelease)
         {

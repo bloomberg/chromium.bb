@@ -33,6 +33,7 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/Event.h"
@@ -59,7 +60,7 @@
 
 namespace WebCore {
 
-class CloseWorkerGlobalScopeTask : public ScriptExecutionContext::Task {
+class CloseWorkerGlobalScopeTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<CloseWorkerGlobalScopeTask> create()
     {
@@ -177,7 +178,7 @@ WorkerNavigator* WorkerGlobalScope::navigator() const
     return m_navigator.get();
 }
 
-void WorkerGlobalScope::postTask(PassOwnPtr<Task> task)
+void WorkerGlobalScope::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
     thread()->runLoop().postTask(task);
 }

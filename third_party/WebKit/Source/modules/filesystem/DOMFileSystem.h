@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/EntriesCallback.h"
@@ -86,7 +87,7 @@ private:
 
     // A helper template to schedule a callback task.
     template <typename CB, typename CBArg>
-    class DispatchCallbacRefPtrArgTask : public ScriptExecutionContext::Task {
+    class DispatchCallbacRefPtrArgTask : public ExecutionContextTask {
     public:
         DispatchCallbacRefPtrArgTask(PassRefPtr<CB> callback, PassRefPtr<CBArg> arg)
             : m_callback(callback)
@@ -105,7 +106,7 @@ private:
     };
 
     template <typename CB, typename CBArg>
-    class DispatchCallbackNonPtrArgTask : public ScriptExecutionContext::Task {
+    class DispatchCallbackNonPtrArgTask : public ExecutionContextTask {
     public:
         DispatchCallbackNonPtrArgTask(PassRefPtr<CB> callback, const CBArg& arg)
             : m_callback(callback)

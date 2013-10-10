@@ -31,6 +31,7 @@
 #ifndef CrossThreadTask_h
 #define CrossThreadTask_h
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/CrossThreadCopier.h"
 #include "wtf/PassOwnPtr.h"
@@ -57,7 +58,7 @@ template<typename T> struct CrossThreadTaskTraits<PassOwnPtr<T> > {
 };
 
 template<typename P1, typename MP1>
-class CrossThreadTask1 : public ScriptExecutionContext::Task {
+class CrossThreadTask1 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ScriptExecutionContext*, MP1);
     typedef CrossThreadTask1<P1, MP1> CrossThreadTask;
@@ -86,7 +87,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2>
-class CrossThreadTask2 : public ScriptExecutionContext::Task {
+class CrossThreadTask2 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ScriptExecutionContext*, MP1, MP2);
     typedef CrossThreadTask2<P1, MP1, P2, MP2> CrossThreadTask;
@@ -118,7 +119,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
-class CrossThreadTask3 : public ScriptExecutionContext::Task {
+class CrossThreadTask3 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3);
     typedef CrossThreadTask3<P1, MP1, P2, MP2, P3, MP3> CrossThreadTask;
@@ -153,7 +154,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
-class CrossThreadTask4 : public ScriptExecutionContext::Task {
+class CrossThreadTask4 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4);
     typedef CrossThreadTask4<P1, MP1, P2, MP2, P3, MP3, P4, MP4> CrossThreadTask;
@@ -191,7 +192,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
-class CrossThreadTask5 : public ScriptExecutionContext::Task {
+class CrossThreadTask5 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5);
     typedef CrossThreadTask5<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5> CrossThreadTask;
@@ -232,7 +233,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6>
-class CrossThreadTask6 : public ScriptExecutionContext::Task {
+class CrossThreadTask6 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6);
     typedef CrossThreadTask6<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6> CrossThreadTask;
@@ -276,7 +277,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7>
-class CrossThreadTask7 : public ScriptExecutionContext::Task {
+class CrossThreadTask7 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7);
     typedef CrossThreadTask7<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6, P7, MP7> CrossThreadTask;
@@ -323,7 +324,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7, typename P8, typename MP8>
-class CrossThreadTask8 : public ScriptExecutionContext::Task {
+class CrossThreadTask8 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8);
     typedef CrossThreadTask8<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6, P7, MP7, P8, MP8> CrossThreadTask;
@@ -373,7 +374,7 @@ private:
 };
 
 template<typename P1, typename MP1>
-PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCallbackTask(
     void (*method)(ScriptExecutionContext*, MP1),
     const P1& parameter1)
 {
@@ -383,7 +384,7 @@ PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2>
-PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCallbackTask(
     void (*method)(ScriptExecutionContext*, MP1, MP2),
     const P1& parameter1, const P2& parameter2)
 {
@@ -393,7 +394,7 @@ PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
-PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCallbackTask(
     void (*method)(ScriptExecutionContext*, MP1, MP2, MP3),
     const P1& parameter1, const P2& parameter2, const P3& parameter3)
 {
@@ -404,7 +405,7 @@ PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
-PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCallbackTask(
     void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4)
 {
@@ -416,7 +417,7 @@ PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
-PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCallbackTask(
     void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5)
 {
@@ -429,7 +430,7 @@ PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6>
-PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCallbackTask(
     void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6)
 {
@@ -442,7 +443,7 @@ PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7>
-PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCallbackTask(
     void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6, const P7& parameter7)
 {
@@ -457,7 +458,7 @@ PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7, typename P8, typename MP8>
-PassOwnPtr<ScriptExecutionContext::Task> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCallbackTask(
                                                             void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8),
                                                             const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6, const P7& parameter7, const P8& parameter8)
 {

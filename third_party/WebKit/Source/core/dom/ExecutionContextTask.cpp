@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -7,10 +7,6 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
@@ -28,34 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebWorkerBase_h
-#define WebWorkerBase_h
+#ifndef ExecutionContextTask_h
+#define ExecutionContextTask_h
 
-#include "WebCommonWorkerClient.h"
-#include "core/dom/ScriptExecutionContext.h"
-#include "core/workers/WorkerLoaderProxy.h"
-#include "core/workers/WorkerObjectProxy.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/RefPtr.h"
+#include "config.h"
+#include "core/dom/ExecutionContextTask.h"
+
+namespace WebCore {
 
 
-namespace WebKit {
-class WebView;
-
-// Base class for WebSharedWorkerImpl, WebWorkerClientImpl and (defunct) WebWorkerImpl
-// containing common interface for shared workers and dedicated in-proc workers implementation.
-//
-// FIXME: Rename this class into WebWorkerBase, merge existing WebWorkerBase and WebSharedWorker.
-class WebWorkerBase {
-public:
-    virtual WebCore::WorkerLoaderProxy* workerLoaderProxy() = 0;
-    virtual WebCommonWorkerClient* commonClient() = 0;
-    virtual WebView* view() const = 0;
-
-    // Executes the given task on the main thread.
-    static void dispatchTaskToMainThread(PassOwnPtr<WebCore::ExecutionContextTask>);
-};
-
-} // namespace WebKit
+} // namespace
 
 #endif

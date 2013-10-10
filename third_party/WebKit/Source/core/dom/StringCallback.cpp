@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/dom/StringCallback.h"
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "wtf/text/WTFString.h"
 
@@ -38,7 +39,7 @@ namespace WebCore {
 
 namespace {
 
-class DispatchCallbackTask : public ScriptExecutionContext::Task {
+class DispatchCallbackTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<DispatchCallbackTask> create(PassRefPtr<StringCallback> callback, const String& data)
     {

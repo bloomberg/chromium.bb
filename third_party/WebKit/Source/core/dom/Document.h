@@ -868,7 +868,7 @@ public:
     bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
     void parseDNSPrefetchControlHeader(const String&);
 
-    virtual void postTask(PassOwnPtr<Task>); // Executes the task on context's thread asynchronously.
+    virtual void postTask(PassOwnPtr<ExecutionContextTask>); // Executes the task on context's thread asynchronously.
 
     void suspendScriptedAnimationControllerCallbacks();
     void resumeScriptedAnimationControllerCallbacks();
@@ -1339,7 +1339,7 @@ private:
     RefPtr<ScriptedAnimationController> m_scriptedAnimationController;
 
     Timer<Document> m_pendingTasksTimer;
-    Vector<OwnPtr<Task> > m_pendingTasks;
+    Vector<OwnPtr<ExecutionContextTask> > m_pendingTasks;
 
     OwnPtr<TextAutosizer> m_textAutosizer;
 

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
@@ -94,7 +95,7 @@ void DatabaseTracker::addOpenDatabase(DatabaseBackendBase* database)
     databaseSet->add(database);
 }
 
-class NotifyDatabaseObserverOnCloseTask : public ScriptExecutionContext::Task {
+class NotifyDatabaseObserverOnCloseTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(PassRefPtr<DatabaseBackendBase> database)
     {
@@ -202,7 +203,7 @@ void DatabaseTracker::interruptAllDatabasesForContext(const DatabaseBackendConte
     }
 }
 
-class DatabaseTracker::CloseOneDatabaseImmediatelyTask : public ScriptExecutionContext::Task {
+class DatabaseTracker::CloseOneDatabaseImmediatelyTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originIdentifier, const String& name, DatabaseBackendBase* database)
     {

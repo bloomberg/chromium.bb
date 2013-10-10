@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
@@ -38,7 +39,7 @@
 
 namespace WebCore {
 
-class NotifyDatabaseChangedTask : public ScriptExecutionContext::Task {
+class NotifyDatabaseChangedTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<NotifyDatabaseChangedTask> create(DatabaseBackendBase *database)
     {

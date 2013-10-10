@@ -33,7 +33,7 @@ namespace WebKit {
 
 namespace {
 
-class TaskForwarder : public ScriptExecutionContext::Task {
+class TaskForwarder : public ExecutionContextTask {
 public:
     static PassOwnPtr<TaskForwarder> create(PassOwnPtr<WebWorkerRunLoop::Task> task)
     {

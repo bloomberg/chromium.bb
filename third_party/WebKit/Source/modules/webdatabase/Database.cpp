@@ -82,7 +82,7 @@ Database::Database(PassRefPtr<DatabaseBackendContext> databaseContext,
     ASSERT(m_databaseContext->databaseThread());
 }
 
-class DerefContextTask : public ScriptExecutionContext::Task {
+class DerefContextTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<DerefContextTask> create(PassRefPtr<ScriptExecutionContext> context)
     {
@@ -201,7 +201,7 @@ void Database::runTransaction(PassRefPtr<SQLTransactionCallback> callback, PassR
     }
 }
 
-class DeliverPendingCallbackTask : public ScriptExecutionContext::Task {
+class DeliverPendingCallbackTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<DeliverPendingCallbackTask> create(PassRefPtr<SQLTransaction> transaction)
     {

@@ -27,8 +27,9 @@
 #include "config.h"
 #include "core/workers/WorkerEventQueue.h"
 
-#include "core/events/Event.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/events/Event.h"
 
 namespace WebCore {
 
@@ -48,7 +49,7 @@ WorkerEventQueue::~WorkerEventQueue()
     close();
 }
 
-class WorkerEventQueue::EventDispatcherTask : public ScriptExecutionContext::Task {
+class WorkerEventQueue::EventDispatcherTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<EventDispatcherTask> create(PassRefPtr<Event> event, WorkerEventQueue* eventQueue)
     {

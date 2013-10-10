@@ -54,6 +54,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
@@ -69,6 +70,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NamedFlowCollection.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
@@ -346,7 +348,7 @@ static void printNavigationErrorMessage(Frame* frame, const KURL& activeURL, con
 uint64_t Document::s_globalTreeVersion = 0;
 
 // This class should be passed only to Document::postTask.
-class CheckFocusedElementTask FINAL : public ScriptExecutionContext::Task {
+class CheckFocusedElementTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<CheckFocusedElementTask> create()
     {
@@ -4663,14 +4665,14 @@ void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, Mess
 struct PerformTaskContext {
     WTF_MAKE_NONCOPYABLE(PerformTaskContext); WTF_MAKE_FAST_ALLOCATED;
 public:
-    PerformTaskContext(WeakPtr<Document> document, PassOwnPtr<ScriptExecutionContext::Task> task)
+    PerformTaskContext(WeakPtr<Document> document, PassOwnPtr<ExecutionContextTask> task)
         : documentReference(document)
         , task(task)
     {
     }
 
     WeakPtr<Document> documentReference;
-    OwnPtr<ScriptExecutionContext::Task> task;
+    OwnPtr<ExecutionContextTask> task;
 };
 
 void Document::didReceiveTask(void* untypedContext)
@@ -4693,7 +4695,7 @@ void Document::didReceiveTask(void* untypedContext)
     context->task->performTask(document);
 }
 
-void Document::postTask(PassOwnPtr<Task> task)
+void Document::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
     callOnMainThread(didReceiveTask, new PerformTaskContext(m_weakFactory.createWeakPtr(), task));
 }
@@ -4701,7 +4703,7 @@ void Document::postTask(PassOwnPtr<Task> task)
 void Document::pendingTasksTimerFired(Timer<Document>*)
 {
     while (!m_pendingTasks.isEmpty()) {
-        OwnPtr<Task> task = m_pendingTasks[0].release();
+        OwnPtr<ExecutionContextTask> task = m_pendingTasks[0].release();
         m_pendingTasks.remove(0);
         task->performTask(this);
     }

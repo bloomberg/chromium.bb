@@ -44,14 +44,14 @@ namespace WebKit {
 
 static void invokeTaskMethod(void* param)
 {
-    ScriptExecutionContext::Task* task =
-        static_cast<ScriptExecutionContext::Task*>(param);
+    ExecutionContextTask* task =
+        static_cast<ExecutionContextTask*>(param);
     task->performTask(0);
     delete task;
 }
 
 
-void WebWorkerBase::dispatchTaskToMainThread(PassOwnPtr<ScriptExecutionContext::Task> task)
+void WebWorkerBase::dispatchTaskToMainThread(PassOwnPtr<ExecutionContextTask> task)
 {
     callOnMainThread(invokeTaskMethod, task.leakPtr());
 }

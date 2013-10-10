@@ -29,6 +29,7 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorDatabaseInstrumentation.h"
 #include "platform/Logging.h"
@@ -68,7 +69,7 @@ DatabaseManager::DatabaseManager()
     ASSERT(m_server); // We should always have a server to work with.
 }
 
-class DatabaseCreationCallbackTask : public ScriptExecutionContext::Task {
+class DatabaseCreationCallbackTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtr<Database> database, PassRefPtr<DatabaseCallback> creationCallback)
     {

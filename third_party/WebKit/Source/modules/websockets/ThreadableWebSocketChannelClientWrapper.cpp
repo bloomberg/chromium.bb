@@ -228,9 +228,9 @@ void ThreadableWebSocketChannelClientWrapper::processPendingTasks()
         m_context->postTask(createCallbackTask(&ThreadableWebSocketChannelClientWrapper::processPendingTasksCallback, this));
         return;
     }
-    Vector<OwnPtr<ScriptExecutionContext::Task> > tasks;
+    Vector<OwnPtr<ExecutionContextTask> > tasks;
     tasks.swap(m_pendingTasks);
-    for (Vector<OwnPtr<ScriptExecutionContext::Task> >::const_iterator iter = tasks.begin(); iter != tasks.end(); ++iter)
+    for (Vector<OwnPtr<ExecutionContextTask> >::const_iterator iter = tasks.begin(); iter != tasks.end(); ++iter)
         (*iter)->performTask(0);
 }
 

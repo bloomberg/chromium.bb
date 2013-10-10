@@ -112,7 +112,7 @@ private:
     WebSocketChannel::SendResult m_sendRequestResult;
     unsigned long m_bufferedAmount;
     bool m_suspended;
-    Vector<OwnPtr<ScriptExecutionContext::Task> > m_pendingTasks;
+    Vector<OwnPtr<ExecutionContextTask> > m_pendingTasks;
 };
 
 } // namespace WebCore

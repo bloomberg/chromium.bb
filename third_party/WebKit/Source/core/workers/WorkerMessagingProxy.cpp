@@ -53,7 +53,7 @@
 
 namespace WebCore {
 
-class MessageWorkerGlobalScopeTask : public ScriptExecutionContext::Task {
+class MessageWorkerGlobalScopeTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<MessageWorkerGlobalScopeTask> create(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
     {
@@ -81,7 +81,7 @@ private:
     OwnPtr<MessagePortChannelArray> m_channels;
 };
 
-class MessageWorkerTask : public ScriptExecutionContext::Task {
+class MessageWorkerTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<MessageWorkerTask> create(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, WorkerMessagingProxy* messagingProxy)
     {
@@ -112,7 +112,7 @@ private:
     WorkerMessagingProxy* m_messagingProxy;
 };
 
-class WorkerExceptionTask : public ScriptExecutionContext::Task {
+class WorkerExceptionTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<WorkerExceptionTask> create(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, WorkerMessagingProxy* messagingProxy)
     {
@@ -151,7 +151,7 @@ private:
     WorkerMessagingProxy* m_messagingProxy;
 };
 
-class WorkerGlobalScopeDestroyedTask : public ScriptExecutionContext::Task {
+class WorkerGlobalScopeDestroyedTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<WorkerGlobalScopeDestroyedTask> create(WorkerMessagingProxy* messagingProxy)
     {
@@ -172,7 +172,7 @@ private:
     WorkerMessagingProxy* m_messagingProxy;
 };
 
-class WorkerTerminateTask : public ScriptExecutionContext::Task {
+class WorkerTerminateTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<WorkerTerminateTask> create(WorkerMessagingProxy* messagingProxy)
     {
@@ -193,7 +193,7 @@ private:
     WorkerMessagingProxy* m_messagingProxy;
 };
 
-class WorkerThreadActivityReportTask : public ScriptExecutionContext::Task {
+class WorkerThreadActivityReportTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<WorkerThreadActivityReportTask> create(WorkerMessagingProxy* messagingProxy, bool confirmingMessage, bool hasPendingActivity)
     {
@@ -218,7 +218,7 @@ private:
     bool m_hasPendingActivity;
 };
 
-class PostMessageToPageInspectorTask : public ScriptExecutionContext::Task {
+class PostMessageToPageInspectorTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<PostMessageToPageInspectorTask> create(WorkerMessagingProxy* messagingProxy, const String& message)
     {
@@ -296,7 +296,7 @@ void WorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedS
         m_queuedEarlyTasks.append(MessageWorkerGlobalScopeTask::create(message, channels));
 }
 
-bool WorkerMessagingProxy::postTaskForModeToWorkerGlobalScope(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
+bool WorkerMessagingProxy::postTaskForModeToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task, const String& mode)
 {
     if (m_askedToTerminate)
         return false;
@@ -306,7 +306,7 @@ bool WorkerMessagingProxy::postTaskForModeToWorkerGlobalScope(PassOwnPtr<ScriptE
     return true;
 }
 
-void WorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ScriptExecutionContext::Task> task)
+void WorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
     // FIXME: In case of nested workers, this should go directly to the root Document context.
     ASSERT(m_scriptExecutionContext->isDocument());

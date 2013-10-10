@@ -28,10 +28,12 @@
 #include "config.h"
 #include "core/dom/ScriptExecutionContext.h"
 
+#include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/ContextLifecycleNotifier.h"
+#include "core/dom/ExecutionContextTask.h"
+#include "core/dom/MessagePort.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
-#include "core/dom/MessagePort.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -43,7 +45,7 @@
 
 namespace WebCore {
 
-class ProcessMessagesSoonTask : public ScriptExecutionContext::Task {
+class ProcessMessagesSoonTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<ProcessMessagesSoonTask> create()
     {
@@ -73,11 +75,6 @@ public:
     String m_sourceURL;
     RefPtr<ScriptCallStack> m_callStack;
 };
-
-void ScriptExecutionContext::AddConsoleMessageTask::performTask(ScriptExecutionContext* context)
-{
-    context->addConsoleMessage(m_source, m_level, m_message);
-}
 
 ScriptExecutionContext::ScriptExecutionContext()
     : m_circularSequentialID(0)
@@ -313,10 +310,6 @@ PassOwnPtr<LifecycleNotifier> ScriptExecutionContext::createLifecycleNotifier()
 bool ScriptExecutionContext::isIteratingOverObservers() const
 {
     return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
-}
-
-ScriptExecutionContext::Task::~Task()
-{
 }
 
 void ScriptExecutionContext::setDatabaseContext(DatabaseContext* databaseContext)

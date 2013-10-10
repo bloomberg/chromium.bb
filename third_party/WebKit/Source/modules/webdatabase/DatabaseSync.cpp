@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "platform/Logging.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
@@ -190,7 +191,7 @@ void DatabaseSync::markAsDeletedAndClose()
     // FIXME: need to do something similar to closeImmediately(), but in a sync way
 }
 
-class CloseSyncDatabaseOnContextThreadTask : public ScriptExecutionContext::Task {
+class CloseSyncDatabaseOnContextThreadTask : public ExecutionContextTask {
 public:
     static PassOwnPtr<CloseSyncDatabaseOnContextThreadTask> create(PassRefPtr<DatabaseSync> database)
     {
