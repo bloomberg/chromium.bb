@@ -718,5 +718,11 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "traverseNavigationList")));
 
+INSTANTIATE_TEST_CASE_P(
+    TabIndex,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "searchBoxFocus")));
+
 }  // namespace
 }  // namespace file_manager
