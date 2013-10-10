@@ -234,11 +234,11 @@ void SpellCheckMessageFilterMac::CombineResults(
     }
 
     // Unless local and remote result coincide, result is GRAMMAR.
-    remote_iter->type = SpellCheckResult::GRAMMAR;
+    remote_iter->decoration = SpellCheckResult::GRAMMAR;
     if (local_iter != local_results.end() &&
         local_iter->location == remote_iter->location &&
         local_iter->length == remote_iter->length) {
-      remote_iter->type = SpellCheckResult::SPELLING;
+      remote_iter->decoration = SpellCheckResult::SPELLING;
     }
   }
 }

@@ -36,9 +36,9 @@ TEST(SpellcheckMessageFilterMacTest, CombineResults) {
   SpellCheckMessageFilterMac::CombineResults(&remote_results, local_results);
 
   ASSERT_EQ(2U, remote_results.size());
-  EXPECT_EQ(SpellCheckResult::GRAMMAR, remote_results[0].type);
+  EXPECT_EQ(SpellCheckResult::GRAMMAR, remote_results[0].decoration);
   EXPECT_EQ(0, remote_results[0].location);
-  EXPECT_EQ(SpellCheckResult::SPELLING, remote_results[1].type);
+  EXPECT_EQ(SpellCheckResult::SPELLING, remote_results[1].decoration);
   EXPECT_EQ(20, remote_results[1].location);
   EXPECT_EQ(remote_suggestion, remote_results[1].replacement);
 }

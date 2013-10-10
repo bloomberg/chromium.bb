@@ -77,7 +77,7 @@ void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
   text_check_completions_.Remove(identifier);
   std::vector<WebKit::WebTextCheckingResult> results;
   results.push_back(WebKit::WebTextCheckingResult(
-      WebKit::WebTextCheckingTypeSpelling,
+      WebKit::WebTextDecorationTypeSpelling,
       0, 5, WebKit::WebString("hello")));
   completion->didFinishCheckingText(results);
   last_request_ = text;

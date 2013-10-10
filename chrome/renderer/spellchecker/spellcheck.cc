@@ -18,11 +18,12 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
+#include "third_party/WebKit/public/web/WebTextDecorationType.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebVector;
 using WebKit::WebTextCheckingResult;
-using WebKit::WebTextCheckingType;
+using WebKit::WebTextDecorationType;
 
 namespace {
 
@@ -226,7 +227,7 @@ bool SpellCheck::SpellCheckParagraph(
             text, misspelling_start + offset, misspelling_length)) {
       string16 replacement;
       textcheck_results.push_back(WebTextCheckingResult(
-          WebKit::WebTextCheckingTypeSpelling,
+          WebKit::WebTextDecorationTypeSpelling,
           misspelling_start + offset,
           misspelling_length,
           replacement));
@@ -355,23 +356,22 @@ void SpellCheck::CreateTextCheckingResults(
   const char16* text = line_text.c_str();
   std::vector<WebTextCheckingResult> list;
   for (size_t i = 0; i < spellcheck_results.size(); ++i) {
-    WebTextCheckingType type =
-        static_cast<WebTextCheckingType>(spellcheck_results[i].type);
+    SpellCheckResult::Decoration decoration = spellcheck_results[i].decoration;
     int word_location = spellcheck_results[i].location;
     int word_length = spellcheck_results[i].length;
     int misspelling_start = 0;
     int misspelling_length = 0;
-    if (type == WebKit::WebTextCheckingTypeSpelling &&
+    if (decoration == SpellCheckResult::SPELLING &&
         filter == USE_NATIVE_CHECKER) {
       if (SpellCheckWord(text + word_location, word_length, 0,
                          &misspelling_start, &misspelling_length, NULL)) {
-        type = WebKit::WebTextCheckingTypeGrammar;
+        decoration = SpellCheckResult::GRAMMAR;
       }
     }
     if (!custom_dictionary_.SpellCheckWord(
             line_text, word_location, word_length)) {
       list.push_back(WebTextCheckingResult(
-          type,
+          static_cast<WebTextDecorationType>(decoration),
           word_location + line_offset,
           word_length,
           spellcheck_results[i].replacement,

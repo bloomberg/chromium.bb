@@ -60,6 +60,6 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
   EXPECT_EQ(1U, sent_results.size());
   EXPECT_EQ(sent_results[0].location, 0);
   EXPECT_EQ(sent_results[0].length, 2);
-  EXPECT_EQ(sent_results[0].type,
+  EXPECT_EQ(sent_results[0].decoration,
             SpellCheckResult::SPELLING);
 }

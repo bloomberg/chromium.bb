@@ -13,10 +13,10 @@
 
 #define IPC_MESSAGE_START SpellCheckMsgStart
 
-IPC_ENUM_TRAITS(SpellCheckResult::Type)
+IPC_ENUM_TRAITS(SpellCheckResult::Decoration)
 
 IPC_STRUCT_TRAITS_BEGIN(SpellCheckResult)
-  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(decoration)
   IPC_STRUCT_TRAITS_MEMBER(location)
   IPC_STRUCT_TRAITS_MEMBER(length)
   IPC_STRUCT_TRAITS_MEMBER(replacement)

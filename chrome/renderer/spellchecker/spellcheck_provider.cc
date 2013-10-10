@@ -16,20 +16,22 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
-#include "third_party/WebKit/public/web/WebTextCheckingType.h"
+#include "third_party/WebKit/public/web/WebTextDecorationType.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextCheckingCompletion;
 using WebKit::WebTextCheckingResult;
-using WebKit::WebTextCheckingType;
+using WebKit::WebTextDecorationType;
 using WebKit::WebVector;
 
-COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeSpelling) ==
+COMPILE_ASSERT(int(WebKit::WebTextDecorationTypeSpelling) ==
                int(SpellCheckResult::SPELLING), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeGrammar) ==
+COMPILE_ASSERT(int(WebKit::WebTextDecorationTypeGrammar) ==
                int(SpellCheckResult::GRAMMAR), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextDecorationTypeInvisibleSpellcheck) ==
+               int(SpellCheckResult::INVISIBLE), mismatching_enums);
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
@@ -344,7 +346,7 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
     if (result_size > 0) {
       WebKit::WebVector<WebKit::WebTextCheckingResult> results(result_size);
       for (size_t i = 0; i < result_size; ++i) {
-        results[i].type = last_results_[i].type;
+        results[i].setDecoration(last_results_[i].getDecoration());
         results[i].location = last_results_[i].location;
         results[i].length = last_results_[i].length;
         results[i].replacement = last_results_[i].replacement;
