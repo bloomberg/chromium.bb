@@ -83,7 +83,7 @@ namespace WebCore {
         // ScrollView protected methods:
         virtual void paintContents(GraphicsContext*, const IntRect&);
         virtual void contentsResized();
-        virtual void visibleContentsResized();
+        virtual void scrollbarExistenceDidChange();
 
     private:
         FramelessScrollViewClient* m_client;

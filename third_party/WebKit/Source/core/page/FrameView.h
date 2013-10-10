@@ -108,6 +108,15 @@ public:
     void setNeedsLayout();
     void setViewportConstrainedObjectsNeedLayout();
 
+    // Methods for getting/setting the size Blink should use to layout the contents.
+    IntSize layoutSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+    void setLayoutSize(const IntSize&);
+
+    // If this is set to false, the layout size will need to be explicitly set by the owner.
+    // E.g. WebViewImpl sets its mainFrame's layout size manually
+    void setLayoutSizeFixedToFrameSize(bool isFixed) { m_layoutSizeFixedToFrameSize = isFixed; }
+    bool layoutSizeFixedToFrameSize() { return m_layoutSizeFixedToFrameSize; }
+
     bool needsFullRepaint() const { return m_doFullRepaint; }
 
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
@@ -358,6 +367,7 @@ private:
     void reset();
     void init();
 
+    virtual void frameRectsChanged();
     virtual bool isFrameView() const OVERRIDE { return true; }
 
     friend class RenderWidget;
@@ -383,7 +393,7 @@ private:
 
     virtual void repaintContentRectangle(const IntRect&);
     virtual void contentsResized() OVERRIDE;
-    virtual void visibleContentsResized();
+    virtual void scrollbarExistenceDidChange();
 
     // Override ScrollView methods to do point conversion via renderers, in order to
     // take transforms into account.
@@ -435,6 +445,8 @@ private:
     void removeFromAXObjectCache();
 
     bool isMainFrame() const;
+
+    void setLayoutSizeInternal(const IntSize&);
 
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
     static bool s_inPaintContents;
@@ -546,6 +558,8 @@ private:
     float m_inputEventsScaleFactorForEmulation;
 
     PartialLayoutState m_partialLayout;
+    IntSize m_layoutSize;
+    bool m_layoutSizeFixedToFrameSize;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

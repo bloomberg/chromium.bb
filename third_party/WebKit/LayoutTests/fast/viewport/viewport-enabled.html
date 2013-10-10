@@ -7,7 +7,6 @@
 
         document.write("Width with viewport disabled. (should be 800): " + document.documentElement.offsetWidth + "<br>");
 
-        testRunner.enableFixedLayoutMode(true);
         internals.settings.setViewportEnabled(true);
 
         document.write("Width from meta viewport (should be 320): " + document.documentElement.offsetWidth);

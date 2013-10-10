@@ -68,13 +68,13 @@ public:
     virtual LayoutUnit availableLogicalHeight(AvailableLogicalHeightType) const OVERRIDE;
 
     // The same as the FrameView's layoutHeight/layoutWidth but with null check guards.
-    int viewHeight(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
-    int viewWidth(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
-    int viewLogicalWidth(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const
+    int viewHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
+    int viewWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
+    int viewLogicalWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const
     {
         return style()->isHorizontalWritingMode() ? viewWidth(scrollbarInclusion) : viewHeight(scrollbarInclusion);
     }
-    int viewLogicalHeight(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
+    int viewLogicalHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
 
     float zoomFactor() const;
 
