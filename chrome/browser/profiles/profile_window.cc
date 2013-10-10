@@ -26,19 +26,24 @@ using content::UserMetricsAction;
 namespace {
 
 void OpenBrowserWindowForProfile(bool always_create,
+                                 bool is_new_profile,
                                  chrome::HostDesktopType desktop_type,
                                  Profile* profile,
                                  Profile::CreateStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    profiles::FindOrCreateNewWindowForProfile(
-        profile,
-        chrome::startup::IS_NOT_PROCESS_STARTUP,
-        chrome::startup::IS_NOT_FIRST_RUN,
-        desktop_type,
-        always_create);
-  }
+  if (status != Profile::CREATE_STATUS_INITIALIZED)
+    return;
+
+  // If this is a brand new profile, then start a first run window.
+  profiles::FindOrCreateNewWindowForProfile(
+      profile,
+      is_new_profile ? chrome::startup::IS_PROCESS_STARTUP :
+          chrome::startup::IS_NOT_PROCESS_STARTUP,
+      is_new_profile ? chrome::startup::IS_FIRST_RUN :
+          chrome::startup::IS_NOT_FIRST_RUN,
+      desktop_type,
+      always_create);
 }
 
 }  // namespace
@@ -81,6 +86,7 @@ void SwitchToProfile(
       path,
       base::Bind(&OpenBrowserWindowForProfile,
                  always_create,
+                 false,
                  desktop_type),
       string16(),
       string16(),
@@ -88,15 +94,14 @@ void SwitchToProfile(
 }
 
 void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
-  profile_manager->CreateProfileAsync(new_path,
-                                      base::Bind(&OpenBrowserWindowForProfile,
-                                                 true,
-                                                 desktop_type),
-                                      string16(),
-                                      string16(),
-                                      std::string());
+  ProfileManager::CreateMultiProfileAsync(
+      string16(),
+      string16(),
+      base::Bind(&OpenBrowserWindowForProfile,
+                 true,
+                 true,
+                 desktop_type),
+      std::string());
 }
 
 void CloseGuestProfileWindows() {
