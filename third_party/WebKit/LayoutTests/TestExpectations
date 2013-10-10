@@ -25,11 +25,6 @@ crbug.com/256518 [ Win7 Debug ] pointer-lock/mouse-event-delivery.html [ Pass Cr
 # Sometimes the output includes an empty line, sometimes it doesn't. Flake.
 crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
 
-crbug.com/293220 fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
-crbug.com/293220 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
-crbug.com/293220 fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
-crbug.com/293220 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
-
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Timeout ]
 
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Crash Failure Pass ]
