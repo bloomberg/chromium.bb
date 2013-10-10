@@ -2774,6 +2774,8 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 		       uint32_t format, int fd, uint32_t size)
 {
 	struct input *input = data;
+	struct xkb_keymap *keymap;
+	struct xkb_state *state;
 	char *map_str;
 
 	if (!data) {
@@ -2792,25 +2794,29 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 		return;
 	}
 
-	input->xkb.keymap = xkb_map_new_from_string(input->display->xkb_context,
-						    map_str,
-						    XKB_KEYMAP_FORMAT_TEXT_V1,
-						    0);
+	keymap = xkb_map_new_from_string(input->display->xkb_context,
+					 map_str,
+					 XKB_KEYMAP_FORMAT_TEXT_V1,
+					 0);
 	munmap(map_str, size);
 	close(fd);
 
-	if (!input->xkb.keymap) {
+	if (!keymap) {
 		fprintf(stderr, "failed to compile keymap\n");
 		return;
 	}
 
-	input->xkb.state = xkb_state_new(input->xkb.keymap);
-	if (!input->xkb.state) {
+	state = xkb_state_new(keymap);
+	if (!state) {
 		fprintf(stderr, "failed to create XKB state\n");
-		xkb_map_unref(input->xkb.keymap);
-		input->xkb.keymap = NULL;
+		xkb_map_unref(keymap);
 		return;
 	}
+
+	xkb_keymap_unref(input->xkb.keymap);
+	xkb_state_unref(input->xkb.state);
+	input->xkb.keymap = keymap;
+	input->xkb.state = state;
 
 	input->xkb.control_mask =
 		1 << xkb_map_mod_get_index(input->xkb.keymap, "Control");
