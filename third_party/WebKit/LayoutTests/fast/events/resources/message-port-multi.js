@@ -15,8 +15,8 @@ channel.port1.postMessage("zero ports", []);
 channel.port1.postMessage("two ports", [channel2.port1, channel2.port2]);
 
 // Now test various failure cases
-shouldThrow('channel.port1.postMessage("same port", [channel.port1])', "'DataCloneError: An object could not be cloned.'");
-shouldThrow('channel.port1.postMessage("entangled port", [channel.port2])', "'DataCloneError: An object could not be cloned.'");
+shouldThrow('channel.port1.postMessage("same port", [channel.port1])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Item #0 in the array of ports contains the source port."');
+shouldThrow('channel.port1.postMessage("entangled port", [channel.port2])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Item #0 in the array of ports contains the target port."');
 shouldThrow('channel.port1.postMessage("null port", [channel3.port1, null, channel3.port2])', "'DataCloneError: An object could not be cloned.'");
 shouldThrow('channel.port1.postMessage("notAPort", [channel3.port1, {}, channel3.port2])', "'DataCloneError: An object could not be cloned.'");
 shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channel3.port1])', "'DataCloneError: An object could not be cloned.'");

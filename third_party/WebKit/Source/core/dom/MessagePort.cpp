@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/dom/MessagePort.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
@@ -69,7 +70,7 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
         for (unsigned int i = 0; i < ports->size(); ++i) {
             MessagePort* dataPort = (*ports)[i].get();
             if (dataPort == this || m_entangledChannel->isConnectedTo(dataPort)) {
-                es.throwUninformativeAndGenericDOMException(DataCloneError);
+                es.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("postMessage", "MessagePort", "Item #" + String::number(i) + " in the array of ports contains the " + (dataPort == this ? "source" : "target") + " port."));
                 return;
             }
         }
@@ -194,7 +195,14 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
     for (unsigned int i = 0; i < ports->size(); ++i) {
         MessagePort* port = (*ports)[i].get();
         if (!port || port->isNeutered() || portSet.contains(port)) {
-            es.throwUninformativeAndGenericDOMException(DataCloneError);
+            String type;
+            if (!port)
+                type = "null";
+            else if (port->isNeutered())
+                type = "already neutered";
+            else
+                type = "a duplicate";
+            es.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("disentanglePorts", "MessagePort", "Item #"  + String::number(i) + " in the array of ports is " + type + "."));
             return nullptr;
         }
         portSet.add(port);

@@ -3,9 +3,9 @@ Tests various use cases when cloning MessagePorts.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS channel.port1.postMessage('msg', [channel.port1]) threw exception DataCloneError: An object could not be cloned..
-PASS channel.port1.postMessage('msg', [channel.port2]) threw exception DataCloneError: An object could not be cloned..
-PASS channel.port1.postMessage('msg', [channel2.port1]) threw exception DataCloneError: An object could not be cloned..
+PASS channel.port1.postMessage('msg', [channel.port1]) threw exception DataCloneError: Failed to execute 'postMessage' on 'MessagePort': Item #0 in the array of ports contains the source port..
+PASS channel.port1.postMessage('msg', [channel.port2]) threw exception DataCloneError: Failed to execute 'postMessage' on 'MessagePort': Item #0 in the array of ports contains the target port..
+PASS channel.port1.postMessage('msg', [channel2.port1]) threw exception DataCloneError: Failed to execute 'disentanglePorts' on 'MessagePort': Item #0 in the array of ports is already neutered..
 PASS testEvent.ports.length is 1
 PASS parseInt(testEvent.data) is 1
 PASS parseInt(testEvent.data) is 2
