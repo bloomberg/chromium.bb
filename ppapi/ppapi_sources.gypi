@@ -137,7 +137,6 @@
       'c/trusted/ppb_broker_trusted.h',
       'c/trusted/ppb_browser_font_trusted.h',
       'c/trusted/ppb_file_chooser_trusted.h',
-      'c/trusted/ppb_file_io_trusted.h',
       'c/trusted/ppb_url_loader_trusted.h',
       'c/trusted/ppp_broker.h',
 
@@ -352,8 +351,6 @@
       'cpp/trusted/browser_font_trusted.h',
       'cpp/trusted/file_chooser_trusted.cc',
       'cpp/trusted/file_chooser_trusted.h',
-      'cpp/trusted/file_io_trusted.cc',
-      'cpp/trusted/file_io_trusted.h',
 
       # Extensions interfaces.
       'cpp/extensions/dict_field.h',

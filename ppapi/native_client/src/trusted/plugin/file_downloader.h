@@ -170,7 +170,6 @@ class FileDownloader {
   void URLLoadFinishNotify(int32_t pp_error);
   void URLReadBodyNotify(int32_t pp_error);
   void StreamFinishNotify(int32_t pp_error);
-
   void GotFileHandleNotify(int32_t pp_error, PP_FileHandle handle);
 
   Plugin* instance_;

@@ -268,14 +268,6 @@ void FileIOResource::Close() {
   Post(RENDERER, PpapiHostMsg_FileIO_Close());
 }
 
-int32_t FileIOResource::GetOSFileDescriptor() {
-  int32_t file_descriptor;
-  // Only available when running in process.
-  SyncCall<PpapiPluginMsg_FileIO_GetOSFileDescriptorReply>(
-      RENDERER, PpapiHostMsg_FileIO_GetOSFileDescriptor(), &file_descriptor);
-  return file_descriptor;
-}
-
 int32_t FileIOResource::RequestOSFileHandle(
     PP_FileHandle* handle,
     scoped_refptr<TrackedCallback> callback) {

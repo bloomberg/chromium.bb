@@ -58,7 +58,6 @@ class PPAPI_PROXY_EXPORT FileIOResource
                             scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual int32_t GetOSFileDescriptor() OVERRIDE;
   virtual int32_t RequestOSFileHandle(
       PP_FileHandle* handle,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;

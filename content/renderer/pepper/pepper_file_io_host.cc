@@ -166,8 +166,6 @@ int32_t PepperFileIOHost::OnResourceMessageReceived(
                                         OnHostMsgFlush)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_Close,
                                         OnHostMsgClose)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_GetOSFileDescriptor,
-                                        OnHostMsgGetOSFileDescriptor)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_RequestOSFileHandle,
                                         OnHostMsgRequestOSFileHandle)
   IPC_END_MESSAGE_MAP()
@@ -414,25 +412,6 @@ int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
   reply_context.params.AppendHandle(file_handle);
   host()->SendReply(reply_context,
                     PpapiPluginMsg_FileIO_RequestOSFileHandleReply());
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t PepperFileIOHost::OnHostMsgGetOSFileDescriptor(
-    ppapi::host::HostMessageContext* context) {
-  if (!is_running_in_process_)
-    return PP_ERROR_FAILED;
-
-  int32_t fd =
-#if defined(OS_POSIX)
-      file_;
-#elif defined(OS_WIN)
-      reinterpret_cast<uintptr_t>(file_);
-#else
-      -1;
-#endif
-
-  host()->SendReply(context->MakeReplyMessageContext(),
-                    PpapiPluginMsg_FileIO_GetOSFileDescriptorReply(fd));
   return PP_OK_COMPLETIONPENDING;
 }
 

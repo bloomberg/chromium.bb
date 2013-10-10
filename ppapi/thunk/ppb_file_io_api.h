@@ -45,9 +45,6 @@ class PPAPI_THUNK_EXPORT PPB_FileIO_API {
   virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) = 0;
   virtual void Close() = 0;
 
-  // Trusted API.
-  virtual int32_t GetOSFileDescriptor() = 0;
-
   // Private API.
   virtual int32_t RequestOSFileHandle(
       PP_FileHandle* handle,

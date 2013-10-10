@@ -47,7 +47,6 @@ class TestPartition(unittest.TestCase):
   def testIgnoreTrusted(self):
     filenames = [
         os.path.join('ppapi', 'c', 'trusted', 'ppb_broker_trusted.h'),
-        os.path.join('ppapi', 'c', 'trusted', 'ppb_file_io_trusted.h'),
         os.path.join('ppapi', 'cpp', 'trusted', 'file_chooser_trusted.cc'),
     ]
     result = verify_ppapi.PartitionFiles(filenames)

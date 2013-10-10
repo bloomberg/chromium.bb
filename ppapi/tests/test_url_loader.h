@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ppapi/c/trusted/ppb_file_io_trusted.h"
+#include "ppapi/c/private/ppb_file_io_private.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/tests/test_case.h"
 
@@ -73,7 +73,7 @@ class TestURLLoader : public TestCase {
   std::string TestUntendedLoad();
   std::string TestPrefetchBufferThreshold();
 
-  const PPB_FileIOTrusted* file_io_trusted_interface_;
+  const PPB_FileIO_Private* file_io_private_interface_;
   const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
 };
 

@@ -23,7 +23,6 @@
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
-#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/completion_callback.h"
 
 #include "ppapi/native_client/src/trusted/plugin/utility.h"

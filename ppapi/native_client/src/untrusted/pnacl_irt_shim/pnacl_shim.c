@@ -119,7 +119,6 @@
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/c/trusted/ppb_char_set_trusted.h"
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
-#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 
 /* Use local strcmp to avoid dependency on libc. */
@@ -1618,8 +1617,6 @@ static void Pnacl_M14_PPP_Messaging_HandleMessage(PP_Instance instance, struct P
 /* Not generating wrapper methods for PPB_FileChooserTrusted_0_5 */
 
 /* Not generating wrapper methods for PPB_FileChooserTrusted_0_6 */
-
-/* Not generating wrapper methods for PPB_FileIOTrusted_0_4 */
 
 /* Not generating wrapper methods for PPB_URLLoaderTrusted_0_3 */
 
@@ -4512,8 +4509,6 @@ struct PPP_Messaging_1_0 Pnacl_Wrappers_PPP_Messaging_1_0 = {
 /* Not generating wrapper interface for PPB_FileChooserTrusted_0_5 */
 
 /* Not generating wrapper interface for PPB_FileChooserTrusted_0_6 */
-
-/* Not generating wrapper interface for PPB_FileIOTrusted_0_4 */
 
 /* Not generating wrapper interface for PPB_URLLoaderTrusted_0_3 */
 
