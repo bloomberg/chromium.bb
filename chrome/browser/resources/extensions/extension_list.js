@@ -59,11 +59,8 @@ cr.define('options', function() {
         // the way at the top. That way it is clear that there are more elements
         // above the element being scrolled to.
         var scrollFudge = 1.2;
-        var offset = $(idToHighlight).offsetTop -
-                     (scrollFudge * $(idToHighlight).clientHeight);
-        var wrapper = this.parentNode;
-        var list = wrapper.parentNode;
-        list.scrollTop = offset;
+        document.documentElement.scrollTop = $(idToHighlight).offsetTop -
+            scrollFudge * $(idToHighlight).clientHeight;
       }
 
       if (this.data_.extensions.length == 0)
@@ -339,7 +336,7 @@ cr.define('options', function() {
         var pad = parseInt(getComputedStyle(node, null).marginTop, 10);
         if (!isNaN(pad))
           topScroll -= pad / 2;
-        document.body.scrollTop = topScroll;
+        document.documentElement.scrollTop = topScroll;
       }
     },
   };
