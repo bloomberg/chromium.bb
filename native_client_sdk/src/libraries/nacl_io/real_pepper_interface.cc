@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "nacl_io/real_pepper_interface.h"
+
 #include <assert.h>
 #include <stdio.h>
-
 #include <ppapi/c/pp_errors.h>
+
+#include "nacl_io/dbgprint.h"
 
 namespace nacl_io {
 
@@ -79,10 +81,15 @@ RealPepperInterface::RealPepperInterface(PP_Instance instance,
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
-#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    BaseClass##interface_ = new Real##BaseClass( \
-        static_cast<const PPInterface*>( \
-            get_browser_interface(InterfaceString)));
+#define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) { \
+    const PPInterface* iface = static_cast<const PPInterface*>( \
+        get_browser_interface(InterfaceString)); \
+    BaseClass##interface_ = NULL; \
+    if (iface) \
+      BaseClass##interface_ = new Real##BaseClass(iface); \
+    else \
+      dbgprintf("nacl_io: interface missing: %s\n", InterfaceString); \
+  }
 #include "nacl_io/pepper/all_interfaces.h"
 }
 
