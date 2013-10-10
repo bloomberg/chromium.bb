@@ -37,7 +37,7 @@ bool SyncDispatcher::SetupService(InterceptionManager* manager,
                                   int service) {
   bool ret = false;
   static const wchar_t* kWin32SyncDllName =
-      base::win::GetVersion() >= base::win::VERSION_WIN8 ? kKernelBasedllName :
+      base::win::GetVersion() >= base::win::VERSION_WIN7 ? kKernelBasedllName :
           kKerneldllName;
 
   // We need to intercept kernelbase.dll on Windows 8 and beyond and
