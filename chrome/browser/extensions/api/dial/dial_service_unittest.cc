@@ -62,7 +62,7 @@ TEST_F(DialServiceTest, TestSendMultipleRequests) {
   dial_service_.discovery_active_ = true;
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(4);
   EXPECT_CALL(mock_observer_, OnDiscoveryFinished(A<DialService*>())).Times(1);
-  dial_service_.BindSocketAndSendRequest(mock_ip_);
+  dial_service_.BindSocketAndSendRequest();
   loop.RunUntilIdle();
   dial_service_.FinishDiscovery();
 }

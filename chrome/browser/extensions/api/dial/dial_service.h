@@ -116,16 +116,13 @@ class DialServiceImpl : public DialService,
   // Establishes the UDP socket that is used for requests and responses,
   // establishes a read callback on the socket, and sends the first discovery
   // request.  Returns true if successful.
-  bool BindSocketAndSendRequest(const net::IPAddressNumber& bind_ip_address);
+  bool BindSocketAndSendRequest();
 
   // Sends a single discovery request over the socket.
   void SendOneRequest();
 
   // Callback invoked for socket writes.
   void OnSocketWrite(int result);
-
-  // Send the network list to IO thread.
-  void SendNetworkList(const net::NetworkInterfaceList& list);
 
   // Establishes the callback to read from the socket.  Returns true if
   // successful.
