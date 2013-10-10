@@ -107,9 +107,10 @@ struct WebRTCIdentityStoreBackend::PendingFindRequest {
 class WebRTCIdentityStoreBackend::SqlLiteStorage
     : public base::RefCountedThreadSafe<SqlLiteStorage> {
  public:
-  SqlLiteStorage(const base::FilePath& path,
+  SqlLiteStorage(base::TimeDelta validity_period,
+                 const base::FilePath& path,
                  quota::SpecialStoragePolicy* policy)
-      : special_storage_policy_(policy) {
+      : validity_period_(validity_period), special_storage_policy_(policy) {
     if (!path.empty())
       path_ = path.Append(kWebRTCIdentityStoreDirectory);
   }
@@ -122,9 +123,13 @@ class WebRTCIdentityStoreBackend::SqlLiteStorage
   void DeleteIdentity(const GURL& origin,
                       const std::string& identity_name,
                       const Identity& identity);
-  void DeleteBetween(base::Time delete_begin,
-                     base::Time delete_end,
-                     const base::Closure& callback);
+  void DeleteBetween(base::Time delete_begin, base::Time delete_end);
+
+  void SetValidityPeriodForTesting(base::TimeDelta validity_period) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    DCHECK(!db_.get());
+    validity_period_ = validity_period;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<SqlLiteStorage>;
@@ -158,6 +163,7 @@ class WebRTCIdentityStoreBackend::SqlLiteStorage
                       const Identity& identity);
   void Commit();
 
+  base::TimeDelta validity_period_;
   // The file path of the DB. Empty if temporary.
   base::FilePath path_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
@@ -170,9 +176,11 @@ class WebRTCIdentityStoreBackend::SqlLiteStorage
 
 WebRTCIdentityStoreBackend::WebRTCIdentityStoreBackend(
     const base::FilePath& path,
-    quota::SpecialStoragePolicy* policy)
-    : state_(NOT_STARTED),
-      sql_lite_storage_(new SqlLiteStorage(path, policy)) {}
+    quota::SpecialStoragePolicy* policy,
+    base::TimeDelta validity_period)
+    : validity_period_(validity_period),
+      state_(NOT_STARTED),
+      sql_lite_storage_(new SqlLiteStorage(validity_period, path, policy)) {}
 
 bool WebRTCIdentityStoreBackend::FindIdentity(
     const GURL& origin,
@@ -213,13 +221,20 @@ bool WebRTCIdentityStoreBackend::FindIdentity(
   IdentityKey key(origin, identity_name);
   IdentityMap::iterator iter = identities_.find(key);
   if (iter != identities_.end() && iter->second.common_name == common_name) {
-    // Identity found.
-    return BrowserThread::PostTask(BrowserThread::IO,
-                                   FROM_HERE,
-                                   base::Bind(callback,
-                                              net::OK,
-                                              iter->second.certificate,
-                                              iter->second.private_key));
+    base::TimeDelta age = base::Time::Now() - base::Time::FromInternalValue(
+                                                  iter->second.creation_time);
+    if (age < validity_period_) {
+      // Identity found.
+      return BrowserThread::PostTask(BrowserThread::IO,
+                                     FROM_HERE,
+                                     base::Bind(callback,
+                                                net::OK,
+                                                iter->second.certificate,
+                                                iter->second.private_key));
+    }
+    // Removes the expired identity from the in-memory cache. The copy in the
+    // database will be removed on the next load.
+    identities_.erase(iter);
   }
 
   return BrowserThread::PostTask(
@@ -286,30 +301,50 @@ void WebRTCIdentityStoreBackend::DeleteBetween(base::Time delete_begin,
                                                base::Time delete_end,
                                                const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (state_ == CLOSED)
+    return;
+
   // Delete the in-memory cache.
   IdentityMap::iterator it = identities_.begin();
   while (it != identities_.end()) {
     if (it->second.creation_time >= delete_begin.ToInternalValue() &&
-        it->second.creation_time <= delete_end.ToInternalValue())
+        it->second.creation_time <= delete_end.ToInternalValue()) {
       identities_.erase(it++);
-    else
-      it++;
+    } else {
+      ++it;
+    }
   }
-
   BrowserThread::PostTaskAndReply(BrowserThread::DB,
                                   FROM_HERE,
                                   base::Bind(&SqlLiteStorage::DeleteBetween,
                                              sql_lite_storage_,
                                              delete_begin,
-                                             delete_end,
-                                             callback),
+                                             delete_end),
                                   callback);
+}
+
+void WebRTCIdentityStoreBackend::SetValidityPeriodForTesting(
+    base::TimeDelta validity_period) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  validity_period_ = validity_period;
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&SqlLiteStorage::SetValidityPeriodForTesting,
+                 sql_lite_storage_,
+                 validity_period));
 }
 
 WebRTCIdentityStoreBackend::~WebRTCIdentityStoreBackend() {}
 
 void WebRTCIdentityStoreBackend::OnLoaded(scoped_ptr<IdentityMap> out_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (state_ != LOADING)
+    return;
+
+  DVLOG(2) << "WebRTC identity store has loaded.";
+
   state_ = LOADED;
   identities_.swap(*out_map);
 
@@ -356,6 +391,9 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Load(IdentityMap* out_map) {
   }
 
   db_->Preload();
+
+  // Delete expired identities.
+  DeleteBetween(base::Time(), base::Time::Now() - validity_period_);
 
   // Slurp all the identities into the out_map.
   sql::Statement stmt(db_->GetUniqueStatement(
@@ -409,6 +447,35 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::DeleteIdentity(
   if (!db_.get())
     return;
   BatchOperation(DELETE_IDENTITY, origin, identity_name, identity);
+}
+
+void WebRTCIdentityStoreBackend::SqlLiteStorage::DeleteBetween(
+    base::Time delete_begin,
+    base::Time delete_end) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  if (!db_.get())
+    return;
+
+  // Commit pending operations first.
+  Commit();
+
+  sql::Statement del_stmt(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "DELETE FROM webrtc_identity_store"
+      " WHERE creation_time >= ? AND creation_time <= ?"));
+  CHECK(del_stmt.is_valid());
+
+  del_stmt.BindInt64(0, delete_begin.ToInternalValue());
+  del_stmt.BindInt64(1, delete_end.ToInternalValue());
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin()) {
+    DLOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  CHECK(del_stmt.Run());
+  transaction.Commit();
 }
 
 void WebRTCIdentityStoreBackend::SqlLiteStorage::OnDatabaseError(
@@ -511,36 +578,6 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Commit() {
   }
   transaction.Commit();
   pending_operations_.clear();
-}
-
-void WebRTCIdentityStoreBackend::SqlLiteStorage::DeleteBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
-    const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (!db_.get())
-    return;
-
-  // Commit pending operations first.
-  Commit();
-
-  sql::Statement del_stmt(db_->GetCachedStatement(
-      SQL_FROM_HERE,
-      "DELETE FROM webrtc_identity_store"
-      " WHERE creation_time >= ? AND creation_time <= ?"));
-  CHECK(del_stmt.is_valid());
-
-  del_stmt.BindInt64(0, delete_begin.ToInternalValue());
-  del_stmt.BindInt64(1, delete_end.ToInternalValue());
-
-  sql::Transaction transaction(db_.get());
-  if (!transaction.Begin()) {
-    DLOG(ERROR) << "Failed to begin the transaction.";
-    return;
-  }
-
-  CHECK(del_stmt.Run());
-  transaction.Commit();
 }
 
 }  // namespace content

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "content/browser/media/webrtc_identity_store.h"
@@ -15,8 +16,7 @@
 namespace content {
 
 // TODO(jiayl): the tests fail on Android since the openssl version of
-// CreateSelfSignedCert is not implemented. We should mock out this dependency
-// and remove the if-defined.
+// CreateSelfSignedCert is not implemented.
 #if !defined(OS_ANDROID)
 
 static const char* kFakeOrigin = "http://foo.com";
@@ -55,6 +55,10 @@ class WebRTCIdentityStoreTest : public testing::Test {
     pool_owner_->pool()->Shutdown();
   }
 
+  void SetValidityPeriod(base::TimeDelta validity_period) {
+    webrtc_identity_store_->SetValidityPeriodForTesting(validity_period);
+  }
+
   void RunUntilIdle() {
     RunAllPendingInMessageLoop(BrowserThread::DB);
     RunAllPendingInMessageLoop(BrowserThread::IO);
@@ -76,6 +80,11 @@ class WebRTCIdentityStoreTest : public testing::Test {
     EXPECT_FALSE(cancel_callback.is_null());
     RunUntilIdle();
     return cancel_callback;
+  }
+
+  void Restart(const base::FilePath& path) {
+    webrtc_identity_store_ = new WebRTCIdentityStore(path, NULL);
+    webrtc_identity_store_->SetTaskRunnerForTesting(pool_owner_->pool());
   }
 
  protected:
@@ -272,6 +281,70 @@ TEST_F(WebRTCIdentityStoreTest, DeleteDataAndGenerateNewIdentity) {
   EXPECT_TRUE(completed_2);
   EXPECT_NE(cert_1, cert_2);
   EXPECT_NE(key_1, key_2);
+}
+
+TEST_F(WebRTCIdentityStoreTest, ExpiredIdentityDeleted) {
+  // The identities will expire immediately after creation.
+  SetValidityPeriod(base::TimeDelta::FromMilliseconds(0));
+
+  bool completed_1 = false;
+  bool completed_2 = false;
+  std::string cert_1, cert_2, key_1, key_2;
+
+  base::Closure cancel_callback_1 =
+      RequestIdentityAndRunUtilIdle(kFakeOrigin,
+                                    kFakeIdentityName1,
+                                    kFakeCommonName1,
+                                    &completed_1,
+                                    &cert_1,
+                                    &key_1);
+  EXPECT_TRUE(completed_1);
+
+  // Check that the old identity is not returned.
+  base::Closure cancel_callback_2 =
+      RequestIdentityAndRunUtilIdle(kFakeOrigin,
+                                    kFakeIdentityName1,
+                                    kFakeCommonName1,
+                                    &completed_2,
+                                    &cert_2,
+                                    &key_2);
+  EXPECT_TRUE(completed_2);
+  EXPECT_NE(cert_1, cert_2);
+  EXPECT_NE(key_1, key_2);
+}
+
+TEST_F(WebRTCIdentityStoreTest, IdentityPersistentAcrossRestart) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  Restart(temp_dir.path());
+
+  bool completed_1 = false;
+  bool completed_2 = false;
+  std::string cert_1, cert_2, key_1, key_2;
+
+  // Creates an identity.
+  base::Closure cancel_callback_1 =
+      RequestIdentityAndRunUtilIdle(kFakeOrigin,
+                                    kFakeIdentityName1,
+                                    kFakeCommonName1,
+                                    &completed_1,
+                                    &cert_1,
+                                    &key_1);
+  EXPECT_TRUE(completed_1);
+
+  Restart(temp_dir.path());
+
+  // Check that the same identity is returned after the restart.
+  base::Closure cancel_callback_2 =
+      RequestIdentityAndRunUtilIdle(kFakeOrigin,
+                                    kFakeIdentityName1,
+                                    kFakeCommonName1,
+                                    &completed_2,
+                                    &cert_2,
+                                    &key_2);
+  EXPECT_TRUE(completed_2);
+  EXPECT_EQ(cert_1, cert_2);
+  EXPECT_EQ(key_1, key_2);
 }
 
 #endif
