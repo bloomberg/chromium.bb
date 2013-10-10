@@ -48,6 +48,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "platform/NotImplemented.h"
+#include "platform/text/TextBreakIterator.h"
 #include <limits>
 
 namespace WebCore {
@@ -80,6 +81,11 @@ static bool shouldUseLengthLimit(const ContainerNode* node)
     return !node->hasTagName(scriptTag)
         && !node->hasTagName(styleTag)
         && !node->hasTagName(SVGNames::scriptTag);
+}
+
+static unsigned textLengthLimitForContainer(const ContainerNode* node)
+{
+    return shouldUseLengthLimit(node) ? Text::defaultLengthLimit : std::numeric_limits<unsigned>::max();
 }
 
 static inline bool isAllWhitespace(const String& string)
@@ -155,6 +161,45 @@ void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task)
         return executeTakeAllChildrenTask(task);
 
     ASSERT_NOT_REACHED();
+}
+
+// This is only needed for TextDocuments where we might have text nodes
+// approaching the default length limit (~64k) and we don't want to
+// break a text node in the middle of a combining character.
+static unsigned findBreakIndexBetween(const String& string, unsigned currentPosition, unsigned proposedBreakIndex)
+{
+    ASSERT(currentPosition < proposedBreakIndex);
+    ASSERT(proposedBreakIndex <= string.length());
+    // The end of the string is always a valid break.
+    if (proposedBreakIndex == string.length())
+        return proposedBreakIndex;
+
+    // Latin-1 does not have breakable boundaries. If we ever moved to a differnet 8-bit encoding this could be wrong.
+    if (string.is8Bit())
+        return proposedBreakIndex;
+
+    const UChar* breakSearchCharacters = string.characters16() + currentPosition;
+    // We need at least two characters look-ahead to account for UTF-16 surrogates, but can't search off the end of the buffer!
+    unsigned breakSearchLength = std::min(proposedBreakIndex - currentPosition + 2, string.length() - currentPosition);
+    NonSharedCharacterBreakIterator it(breakSearchCharacters, breakSearchLength);
+
+    if (it.isBreak(proposedBreakIndex - currentPosition))
+        return proposedBreakIndex;
+
+    int adjustedBreakIndexInSubstring = it.preceding(proposedBreakIndex - currentPosition);
+    if (adjustedBreakIndexInSubstring > 0)
+        return currentPosition + adjustedBreakIndexInSubstring;
+    // We failed to find a breakable point, let the caller figure out what to do.
+    return 0;
+}
+
+static String atomizeIfAllWhitespace(const String& string, WhitespaceMode whitespaceMode)
+{
+    // Strings composed entirely of whitespace are likely to be repeated.
+    // Turn them into AtomicString so we share a single string for each.
+    if (whitespaceMode == AllWhitespace || (whitespaceMode == WhitespaceUnknown && isAllWhitespace(string)))
+        return AtomicString(string).string();
+    return string;
 }
 
 void HTMLConstructionSite::queueTask(const HTMLConstructionSiteTask& task)
@@ -539,48 +584,64 @@ void HTMLConstructionSite::insertForeignElement(AtomicHTMLToken* token, const At
         m_openElements.push(HTMLStackItem::create(element.release(), token, namespaceURI));
 }
 
-void HTMLConstructionSite::insertTextNode(const String& characters, WhitespaceMode whitespaceMode)
+void HTMLConstructionSite::insertTextNode(const String& string, WhitespaceMode whitespaceMode)
 {
-    HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
-    task.parent = currentNode();
+    HTMLConstructionSiteTask protoTask(HTMLConstructionSiteTask::Insert);
+    protoTask.parent = currentNode();
 
     if (shouldFosterParent())
-        findFosterSite(task);
+        findFosterSite(protoTask);
 
-    if (task.parent->hasTagName(templateTag))
-        task.parent = toHTMLTemplateElement(task.parent.get())->content();
+    // FIXME: This probably doesn't need to be done both here and in insert(Task).
+    if (protoTask.parent->hasTagName(templateTag))
+        protoTask.parent = toHTMLTemplateElement(protoTask.parent.get())->content();
 
-    // Strings composed entirely of whitespace are likely to be repeated.
-    // Turn them into AtomicString so we share a single string for each.
-    bool shouldUseAtomicString = whitespaceMode == AllWhitespace
-        || (whitespaceMode == WhitespaceUnknown && isAllWhitespace(characters));
-
+    // Splitting text nodes into smaller chunks contradicts HTML5 spec, but is necessary
+    // for performance, see: https://bugs.webkit.org/show_bug.cgi?id=55898
+    unsigned lengthLimit = textLengthLimitForContainer(protoTask.parent.get());
     unsigned currentPosition = 0;
-    unsigned lengthLimit = shouldUseLengthLimit(task.parent.get()) ? Text::defaultLengthLimit : std::numeric_limits<unsigned>::max();
 
-    // FIXME: Splitting text nodes into smaller chunks contradicts HTML5 spec, but is currently necessary
-    // for performance, see <https://bugs.webkit.org/show_bug.cgi?id=55898>.
-
-    Node* previousChild = task.nextChild ? task.nextChild->previousSibling() : task.parent->lastChild();
+    // Merge text nodes into previous ones if possible:
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#insert-a-character
+    Node* previousChild = protoTask.nextChild ? protoTask.nextChild->previousSibling() : protoTask.parent->lastChild();
     if (previousChild && previousChild->isTextNode()) {
-        // FIXME: We're only supposed to append to this text node if it
-        // was the last text node inserted by the parser.
-        currentPosition = toCharacterData(previousChild)->parserAppendData(characters, 0, lengthLimit);
+        Text* previousText = toText(previousChild);
+        unsigned appendLengthLimit = lengthLimit - previousText->length();
+
+        unsigned proposedBreakIndex = std::min(currentPosition + appendLengthLimit, string.length());
+        unsigned breakIndex = findBreakIndexBetween(string, currentPosition, proposedBreakIndex);
+        ASSERT(breakIndex <= string.length());
+        // If we didn't find a breable piece to append, forget it.
+        if (breakIndex) {
+            String substring = string.substring(currentPosition, breakIndex - currentPosition);
+            substring = atomizeIfAllWhitespace(substring, whitespaceMode);
+            previousText->parserAppendData(substring);
+            currentPosition += substring.length();
+        }
     }
 
-    while (currentPosition < characters.length()) {
-        RefPtr<Text> textNode = Text::createWithLengthLimit(task.parent->document(), shouldUseAtomicString ? AtomicString(characters).string() : characters, currentPosition, lengthLimit);
-        // If we have a whole string of unbreakable characters the above could lead to an infinite loop. Exceeding the length limit is the lesser evil.
-        if (!textNode->length()) {
-            String substring = characters.substring(currentPosition);
-            textNode = Text::create(task.parent->document(), shouldUseAtomicString ? AtomicString(substring).string() : substring);
-        }
+    while (currentPosition < string.length()) {
+        unsigned proposedBreakIndex = std::min(currentPosition + lengthLimit, string.length());
+        unsigned breakIndex = findBreakIndexBetween(string, currentPosition, proposedBreakIndex);
+        // We failed to find a breakable boudary between the minimum and the proposed, just give up and break at the proposed index.
+        // We could go searching after the proposed index, but current callers are attempting to break after 65k chars!
+        // 65k of unbreakable characters isn't worth trying to handle "correctly".
+        if (!breakIndex)
+            breakIndex = proposedBreakIndex;
+        ASSERT(breakIndex <= string.length());
+        String substring = string.substring(currentPosition, breakIndex - currentPosition);
+        substring = atomizeIfAllWhitespace(substring, whitespaceMode);
 
-        currentPosition += textNode->length();
-        ASSERT(currentPosition <= characters.length());
-        task.child = textNode.release();
+        HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
+        task.parent = protoTask.parent;
+        task.nextChild = protoTask.nextChild;
+        task.child = Text::create(task.parent->document(), substring);
+        queueTask(task);
 
-        m_taskQueue.append(task);
+        ASSERT(breakIndex > currentPosition);
+        ASSERT(breakIndex - currentPosition == substring.length());
+        ASSERT(toText(task.child.get())->length() == substring.length());
+        currentPosition = breakIndex;
     }
 }
 

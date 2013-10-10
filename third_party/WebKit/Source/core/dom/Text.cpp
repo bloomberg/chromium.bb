@@ -355,19 +355,6 @@ PassRefPtr<Text> Text::cloneWithData(const String& data)
     return create(document(), data);
 }
 
-PassRefPtr<Text> Text::createWithLengthLimit(Document& document, const String& data, unsigned start, unsigned lengthLimit)
-{
-    unsigned dataLength = data.length();
-
-    if (!start && dataLength <= lengthLimit)
-        return create(document, data);
-
-    RefPtr<Text> result = Text::create(document, String());
-    result->parserAppendData(data, start, lengthLimit);
-
-    return result;
-}
-
 #ifndef NDEBUG
 void Text::formatForDebugger(char *buffer, unsigned length) const
 {

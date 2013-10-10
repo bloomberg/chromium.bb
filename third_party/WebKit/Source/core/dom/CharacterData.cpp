@@ -34,7 +34,6 @@
 #include "core/events/MutationEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "platform/text/TextBreakIterator.h"
 
 using namespace std;
 
@@ -69,33 +68,10 @@ String CharacterData::substringData(unsigned offset, unsigned count, ExceptionSt
     return m_data.substring(offset, count);
 }
 
-unsigned CharacterData::parserAppendData(const String& string, unsigned offset, unsigned lengthLimit)
+void CharacterData::parserAppendData(const String& string)
 {
     unsigned oldLength = m_data.length();
-
-    ASSERT(lengthLimit >= oldLength);
-
-    unsigned characterLength = string.length() - offset;
-    unsigned characterLengthLimit = min(characterLength, lengthLimit - oldLength);
-
-    // Check that we are not on an unbreakable boundary.
-    // Some text break iterator implementations work best if the passed buffer is as small as possible,
-    // see <https://bugs.webkit.org/show_bug.cgi?id=29092>.
-    // We need at least two characters look-ahead to account for UTF-16 surrogates.
-    ASSERT(!string.is8Bit() || string.containsOnlyLatin1()); // Latin-1 doesn't have unbreakable boundaries.
-    if (characterLengthLimit < characterLength && !string.is8Bit()) {
-        NonSharedCharacterBreakIterator it(string.characters16() + offset, (characterLengthLimit + 2 > characterLength) ? characterLength : characterLengthLimit + 2);
-        if (!it.isBreak(characterLengthLimit))
-            characterLengthLimit = it.preceding(characterLengthLimit);
-    }
-
-    if (!characterLengthLimit)
-        return 0;
-
-    if (string.is8Bit())
-        m_data.append(string.characters8() + offset, characterLengthLimit);
-    else
-        m_data.append(string.characters16() + offset, characterLengthLimit);
+    m_data.append(string);
 
     ASSERT(!renderer() || isTextNode());
     if (isTextNode())
@@ -105,8 +81,6 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
 
     if (parentNode())
         parentNode()->childrenChanged();
-
-    return characterLengthLimit;
 }
 
 void CharacterData::appendData(const String& data)
