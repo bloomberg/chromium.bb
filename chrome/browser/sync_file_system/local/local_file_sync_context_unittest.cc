@@ -519,12 +519,9 @@ TEST_F(LocalFileSyncContextTest, PrepareSync_WriteDuringSync_Snapshot) {
 
 // LocalFileSyncContextTest.PrepareSyncWhileWriting is flaky on android.
 // http://crbug.com/239793
-#if defined(OS_ANDROID)
-#define MAYBE_PrepareSyncWhileWriting DISABLED_PrepareSyncWhileWriting
-#else
-#define MAYBE_PrepareSyncWhileWriting PrepareSyncWhileWriting
-#endif
-TEST_F(LocalFileSyncContextTest, MAYBE_PrepareSyncWhileWriting) {
+// It is also flaky on the TSAN v2 bots, and hangs other bots.
+// http://crbug.com/305905.
+TEST_F(LocalFileSyncContextTest, DISABLED_PrepareSyncWhileWriting) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
