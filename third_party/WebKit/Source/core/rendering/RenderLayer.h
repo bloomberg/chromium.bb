@@ -141,9 +141,6 @@ public:
 
     LayoutRect rect() const { return LayoutRect(location(), size()); }
 
-    // See comments on isPointInResizeControl.
-    IntRect resizerCornerRect(const IntRect& bounds, ResizerHitTestType) const;
-
     int scrollWidth() const;
     int scrollHeight() const;
 
@@ -564,7 +561,8 @@ public:
 
     void addLayerHitTestRects(LayerHitTestRects&) const;
 
-    ScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
+    // FIXME: This should probably return a ScrollableArea but a lot of internal methods are mistakenly exposed.
+    RenderLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
     RenderLayerRepainter& repainter() { return m_repainter; }
 
 private:
@@ -828,8 +826,6 @@ private:
     friend class CompositedLayerMapping;
     friend class RenderLayerCompositor;
     friend class RenderLayerModelObject;
-
-    bool overflowControlsIntersectRect(const IntRect& localRect) const;
 
 protected:
     unsigned m_zOrderListsDirty : 1;

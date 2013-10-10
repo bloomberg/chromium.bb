@@ -132,6 +132,10 @@ public:
     bool inResizeMode() const { return m_inResizeMode; }
     void setInResizeMode(bool inResizeMode) { m_inResizeMode = inResizeMode; }
 
+    IntRect touchResizerCornerRect(const IntRect& bounds) const
+    {
+        return resizerCornerRect(bounds, ResizerForTouch);
+    }
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -172,6 +176,7 @@ private:
     void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
 
+    // See comments on isPointInResizeControl.
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
     IntRect scrollCornerAndResizerRect() const;
     bool overflowControlsIntersectRect(const IntRect& localRect) const;

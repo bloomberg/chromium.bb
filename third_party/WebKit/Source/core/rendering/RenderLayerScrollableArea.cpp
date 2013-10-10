@@ -363,7 +363,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     bool requiresRepaint = true;
 
-    if (layer()->compositor()->inCompositingMode() && layer()->usesCompositedScrolling())
+    if (m_box->view()->compositor()->inCompositingMode() && layer()->usesCompositedScrolling())
         requiresRepaint = false;
 
     // Just schedule a full repaint of our object.
@@ -719,7 +719,7 @@ LayoutUnit RenderLayerScrollableArea::horizontalScrollbarStart(int minX) const
 {
     int x = minX + m_box->borderLeft();
     if (m_box->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        x += m_vBar ? m_vBar->width() : layer()->resizerCornerRect(m_box->pixelSnappedBorderBoxRect(), ResizerForPointer).width();
+        x += m_vBar ? m_vBar->width() : resizerCornerRect(m_box->pixelSnappedBorderBoxRect(), ResizerForPointer).width();
     return x;
 }
 
@@ -866,7 +866,7 @@ void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFr
         m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));
 
     if (m_box->compositedLayerMapping())
-        layer()->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
+        m_box->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
 }
 
 void RenderLayerScrollableArea::updateScrollCornerStyle()
@@ -913,7 +913,7 @@ void RenderLayerScrollableArea::paintOverflowControls(GraphicsContext* context, 
             return;
         IntRect localDamgeRect = damageRect;
         localDamgeRect.moveBy(-paintOffset);
-        if (!layer()->overflowControlsIntersectRect(localDamgeRect))
+        if (!overflowControlsIntersectRect(localDamgeRect))
             return;
 
         RenderView* renderView = m_box->view();

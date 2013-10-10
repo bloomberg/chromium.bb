@@ -5533,14 +5533,6 @@ void RenderLayer::paintScrollCorner(GraphicsContext* context, const IntPoint& pa
         m_scrollableArea->paintScrollCorner(context, paintOffset, damageRect);
 }
 
-IntRect RenderLayer::resizerCornerRect(const IntRect& bounds, ResizerHitTestType resizerHitTestType) const
-{
-    if (!m_scrollableArea)
-        return IntRect();
-
-    return m_scrollableArea->resizerCornerRect(bounds, resizerHitTestType);
-}
-
 bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const
 {
     if (!m_scrollableArea)
@@ -5567,14 +5559,6 @@ void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOf
 {
     if (m_scrollableArea)
         m_scrollableArea->paintResizer(context, paintOffset, damageRect);
-}
-
-bool RenderLayer::overflowControlsIntersectRect(const IntRect& localRect) const
-{
-    if (!m_scrollableArea)
-        return false;
-
-    return m_scrollableArea->overflowControlsIntersectRect(localRect);
 }
 
 } // namespace WebCore
