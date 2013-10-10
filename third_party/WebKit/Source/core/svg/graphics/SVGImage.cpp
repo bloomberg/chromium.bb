@@ -361,6 +361,8 @@ void SVGImage::resetAnimation()
 
 bool SVGImage::dataChanged(bool allDataReceived)
 {
+    TRACE_EVENT0("webkit", "SVGImage::dataChanged");
+
     // Don't do anything if is an empty image.
     if (!data()->size())
         return true;

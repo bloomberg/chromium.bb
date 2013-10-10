@@ -237,6 +237,8 @@ bool BitmapImage::getHotSpot(IntPoint& hotSpot) const
 
 bool BitmapImage::dataChanged(bool allDataReceived)
 {
+    TRACE_EVENT0("webkit", "BitmapImage::dataChanged");
+
     // Clear all partially-decoded frames. For most image formats, there is only
     // one frame, but at least GIF and ICO can have more. With GIFs, the frames
     // come in order and we ask to decode them in order, waiting to request a
