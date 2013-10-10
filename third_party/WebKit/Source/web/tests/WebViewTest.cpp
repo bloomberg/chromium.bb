@@ -108,29 +108,6 @@ private:
     TestData m_testData;
 };
 
-class FormChangeWebViewClient : public WebViewClient {
-public:
-    // WebViewClient methods
-    virtual void didChangeFormState(const WebNode& node)
-    {
-        m_focused = node.focused();
-        m_called = true;
-    }
-
-    // Local methods
-    void reset()
-    {
-        m_called = false;
-        m_focused = false;
-    }
-    bool called() { return m_called; }
-    bool focused() { return m_focused; }
-
-private:
-    bool m_called;
-    bool m_focused;
-};
-
 class TapHandlingWebViewClient : public WebViewClient {
 public:
     // WebViewClient methods
@@ -572,21 +549,6 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterConfirmComposition)
     EXPECT_EQ(-1, info.compositionStart);
     EXPECT_EQ(-1, info.compositionEnd);
     EXPECT_EQ("0123\n456789abcdefghijklmnopqrstuvwxyz", std::string(info.value.utf8().data()));
-}
-
-TEST_F(WebViewTest, FormChange)
-{
-    FormChangeWebViewClient client;
-    client.reset();
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_set_value_while_focused.html"));
-    m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_set_value_while_focused.html", true, 0, &client);
-    EXPECT_TRUE(client.called());
-    EXPECT_TRUE(client.focused());
-    client.reset();
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_set_value_while_not_focused.html"));
-    m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_set_value_while_not_focused.html", true, 0, &client);
-    EXPECT_TRUE(client.called());
-    EXPECT_FALSE(client.focused());
 }
 
 TEST_F(WebViewTest, ExtendSelectionAndDelete)
