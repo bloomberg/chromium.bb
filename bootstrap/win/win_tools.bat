@@ -43,6 +43,7 @@ rmdir /S /Q "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%"
 echo Installing git (avg 1-2 min download) ...
 :: git is not accessible; check it out and create 'proxy' files.
 if exist "%~dp0git.zip" del "%~dp0git.zip"
+echo Fetching from %WIN_TOOLS_ROOT_URL%/third_party/git-1.8.0_bin.zip
 cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/git-1.8.0_bin.zip "%~dp0git.zip"
 if errorlevel 1 goto :GIT_FAIL
 :: Cleanup svn directory if it was existing.
@@ -85,6 +86,7 @@ goto :PYTHON_CHECK
 echo Installing subversion ...
 :: svn is not accessible; check it out and create 'proxy' files.
 if exist "%~dp0svn.zip" del "%~dp0svn.zip"
+echo Fetching from %WIN_TOOLS_ROOT_URL%/third_party/svn_bin.zip
 cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/svn_bin.zip "%~dp0svn.zip"
 if errorlevel 1 goto :SVN_FAIL
 :: Cleanup svn directory if it was existing.
@@ -124,7 +126,29 @@ goto :END
 
 
 :PYTHON_INSTALL
-echo Installing python ...
+if "%DEPOT_TOOLS_PYTHON_275%" == "1" goto :PY275_INSTALL
+goto :PY26_INSTALL
+
+
+:PY275_INSTALL
+echo Installing python 2.7.5...
+:: Cleanup python directory if it was existing.
+if exist "%WIN_TOOLS_ROOT_DIR%\python275_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python275_bin"
+if exist "%~dp0python275.zip" del "%~dp0python275.zip"
+echo Fetching from %WIN_TOOLS_ROOT_URL%/third_party/python275_bin.zip
+cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/python275_bin.zip "%~dp0python275_bin.zip"
+if errorlevel 1 goto :PYTHON_FAIL
+:: Will create python275_bin\...
+cscript //nologo //e:jscript "%~dp0unzip.js" "%~dp0python275_bin.zip" "%WIN_TOOLS_ROOT_DIR%"
+:: Create the batch files.
+call copy /y "%~dp0python275.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
+call copy /y "%~dp0pylint.new.bat" "%WIN_TOOLS_ROOT_DIR%\pylint.bat" 1>nul
+set ERRORLEVEL=0
+goto :END
+
+
+:PY26_INSTALL
+echo Installing python 2.6...
 :: Cleanup python directory if it was existing.
 if exist "%WIN_TOOLS_ROOT_DIR%\python_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python_bin"
 call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python_26 "%WIN_TOOLS_ROOT_DIR%\python_bin"
@@ -138,7 +162,7 @@ goto :END
 
 :PYTHON_FAIL
 echo ... Failed to checkout python automatically.
-echo Please visit http://python.org to download the latest python 2.x client before
+echo Please visit http://python.org to download the latest python 2.7.x client before
 echo continuing.
 echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/third_party/
 set ERRORLEVEL=1
