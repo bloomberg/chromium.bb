@@ -23,8 +23,6 @@ void DataSource::set_host(DataSourceHost* host) {
   host_ = host;
 }
 
-void DataSource::SetPlaybackRate(float playback_rate) {}
-
 DataSourceHost* DataSource::host() { return host_; }
 
 }  // namespace media

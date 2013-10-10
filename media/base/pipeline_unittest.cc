@@ -180,7 +180,6 @@ class PipelineTest : public ::testing::Test {
 
     if (start_status == PIPELINE_OK) {
       EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kHaveMetadata));
-      EXPECT_CALL(*demuxer_, SetPlaybackRate(0.0f));
 
       if (audio_stream_) {
         EXPECT_CALL(*audio_renderer_, SetPlaybackRate(0.0f));
@@ -228,7 +227,6 @@ class PipelineTest : public ::testing::Test {
     // Every filter should receive a call to Seek().
     EXPECT_CALL(*demuxer_, Seek(seek_time, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
-    EXPECT_CALL(*demuxer_, SetPlaybackRate(_));
 
     if (audio_stream_) {
       EXPECT_CALL(*audio_renderer_, Pause(_))
@@ -615,7 +613,6 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   EXPECT_EQ(0, pipeline_->GetMediaTime().ToInternalValue());
 
   float playback_rate = 1.0f;
-  EXPECT_CALL(*demuxer_, SetPlaybackRate(playback_rate));
   EXPECT_CALL(*video_renderer_, SetPlaybackRate(playback_rate));
   EXPECT_CALL(*audio_renderer_, SetPlaybackRate(playback_rate));
   pipeline_->SetPlaybackRate(playback_rate);
@@ -653,7 +650,6 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
   InitializePipeline(PIPELINE_OK);
 
   float playback_rate = 1.0f;
-  EXPECT_CALL(*demuxer_, SetPlaybackRate(playback_rate));
   EXPECT_CALL(*audio_renderer_, SetPlaybackRate(playback_rate));
   pipeline_->SetPlaybackRate(playback_rate);
   message_loop_.RunUntilIdle();
@@ -788,7 +784,6 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
   InitializePipeline(PIPELINE_OK);
 
   float playback_rate = 1.0f;
-  EXPECT_CALL(*demuxer_, SetPlaybackRate(playback_rate));
   EXPECT_CALL(*audio_renderer_, SetPlaybackRate(playback_rate));
   pipeline_->SetPlaybackRate(playback_rate);
   message_loop_.RunUntilIdle();
@@ -814,7 +809,6 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
       .WillOnce(RunClosure<0>());
   EXPECT_CALL(*audio_renderer_, Preroll(seek_time, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*demuxer_, SetPlaybackRate(_));
   EXPECT_CALL(*audio_renderer_, SetPlaybackRate(_));
   EXPECT_CALL(*audio_renderer_, SetVolume(_));
   EXPECT_CALL(*audio_renderer_, Play(_))
@@ -999,7 +993,6 @@ class PipelineTeardownTest : public PipelineTest {
     EXPECT_CALL(*video_renderer_, Preroll(base::TimeDelta(), _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
 
-    EXPECT_CALL(*demuxer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*audio_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*audio_renderer_, SetVolume(1.0f));
@@ -1108,7 +1101,6 @@ class PipelineTeardownTest : public PipelineTest {
         .WillOnce(RunCallback<1>(PIPELINE_OK));
 
     // Playback rate and volume are updated prior to starting.
-    EXPECT_CALL(*demuxer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*audio_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*audio_renderer_, SetVolume(1.0f));

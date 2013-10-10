@@ -345,11 +345,6 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
       base::Bind(&FFmpegDemuxer::OnSeekFrameDone, weak_this_, cb));
 }
 
-void FFmpegDemuxer::SetPlaybackRate(float playback_rate) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  data_source_->SetPlaybackRate(playback_rate);
-}
-
 void FFmpegDemuxer::OnAudioRendererDisabled() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   audio_disabled_ = true;

@@ -304,7 +304,7 @@ void WebMediaPlayerImpl::play() {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   paused_ = false;
-  pipeline_->SetPlaybackRate(playback_rate_);
+  SetPlaybackRate(playback_rate_);
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
 
@@ -316,7 +316,7 @@ void WebMediaPlayerImpl::pause() {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   paused_ = true;
-  pipeline_->SetPlaybackRate(0.0f);
+  SetPlaybackRate(0.0f);
   paused_time_ = pipeline_->GetMediaTime();
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
@@ -383,7 +383,7 @@ void WebMediaPlayerImpl::setRate(double rate) {
 
   playback_rate_ = rate;
   if (!paused_) {
-    pipeline_->SetPlaybackRate(rate);
+    SetPlaybackRate(rate);
   }
 }
 
@@ -1241,6 +1241,12 @@ void WebMediaPlayerImpl::FrameReady(
   pending_repaint_ = true;
   main_loop_->PostTask(FROM_HERE, base::Bind(
       &WebMediaPlayerImpl::Repaint, AsWeakPtr()));
+}
+
+void WebMediaPlayerImpl::SetPlaybackRate(float playback_rate) {
+  pipeline_->SetPlaybackRate(playback_rate);
+  if (data_source_)
+    data_source_->SetPlaybackRate(playback_rate);
 }
 
 }  // namespace content

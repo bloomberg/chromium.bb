@@ -760,8 +760,6 @@ void Pipeline::PlaybackRateChangedTask(float playback_rate) {
     clock_->SetPlaybackRate(playback_rate);
   }
 
-  if (demuxer_)
-    demuxer_->SetPlaybackRate(playback_rate);
   if (audio_renderer_)
     audio_renderer_->SetPlaybackRate(playback_rate_);
   if (video_renderer_)

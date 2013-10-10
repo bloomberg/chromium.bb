@@ -46,9 +46,6 @@ class MEDIA_EXPORT DataSource {
   virtual void Read(int64 position, int size, uint8* data,
                     const DataSource::ReadCB& read_cb) = 0;
 
-  // Notifies the DataSource of a change in the current playback rate.
-  virtual void SetPlaybackRate(float playback_rate);
-
   // Stops the DataSource. Once this is called all future Read() calls will
   // return an error.
   virtual void Stop(const base::Closure& callback) = 0;

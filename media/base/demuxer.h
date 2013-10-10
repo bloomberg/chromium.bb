@@ -47,19 +47,16 @@ class MEDIA_EXPORT Demuxer {
   virtual void Initialize(DemuxerHost* host,
                           const PipelineStatusCB& status_cb) = 0;
 
-  // The pipeline playback rate has been changed.  Demuxers may implement this
-  // method if they need to respond to this call.
-  virtual void SetPlaybackRate(float playback_rate);
-
   // Carry out any actions required to seek to the given time, executing the
   // callback upon completion.
-  virtual void Seek(base::TimeDelta time, const PipelineStatusCB& status_cb);
+  virtual void Seek(base::TimeDelta time,
+                    const PipelineStatusCB& status_cb) = 0;
 
   // Starts stopping this demuxer, executing the callback upon completion.
   //
   // After the callback completes the demuxer may be destroyed. It is illegal to
   // call any method (including Stop()) after a demuxer has stopped.
-  virtual void Stop(const base::Closure& callback);
+  virtual void Stop(const base::Closure& callback) = 0;
 
   // This method is called from the pipeline when the audio renderer
   // is disabled. Demuxers can ignore the notification if they do not
@@ -67,7 +64,7 @@ class MEDIA_EXPORT Demuxer {
   //
   // TODO(acolwell): Change to generic DisableStream(DemuxerStream::Type).
   // TODO(scherkus): this might not be needed http://crbug.com/234708
-  virtual void OnAudioRendererDisabled();
+  virtual void OnAudioRendererDisabled() = 0;
 
   // Returns the given stream type, or NULL if that type is not present.
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) = 0;
