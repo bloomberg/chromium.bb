@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "mojo/system/limits.h"
-#include "mojo/system/memory.h"
 #include "mojo/system/message_in_transit.h"
 
 namespace mojo {
@@ -72,6 +70,7 @@ void MessagePipe::Close(unsigned port) {
   }
 }
 
+// TODO(vtl): Handle flags.
 MojoResult MessagePipe::WriteMessage(
     unsigned port,
     const void* bytes, uint32_t num_bytes,
@@ -80,23 +79,6 @@ MojoResult MessagePipe::WriteMessage(
   DCHECK(port == 0 || port == 1);
 
   unsigned destination_port = DestinationPortFromSourcePort(port);
-
-  if (!VerifyUserPointer<void>(bytes, num_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (num_bytes > kMaxMessageNumBytes)
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-  if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (num_handles > kMaxMessageNumHandles)
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-  if (num_handles > 0) {
-    // TODO(vtl): Verify each handle.
-    NOTIMPLEMENTED();
-    return MOJO_RESULT_UNIMPLEMENTED;
-  }
-
-  // TODO(vtl): Handle flags.
 
   base::AutoLock locker(lock_);
   DCHECK(is_open_[port]);
@@ -130,12 +112,8 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
   DCHECK(port == 0 || port == 1);
 
   const uint32_t max_bytes = num_bytes ? *num_bytes : 0;
-  if (!VerifyUserPointer<void>(bytes, max_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  const uint32_t max_handles = num_handles ? *num_handles : 0;
-  if (!VerifyUserPointer<MojoHandle>(handles, max_handles))
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  // TODO(vtl): We'll need this later:
+  //  const uint32_t max_handles = num_handles ? *num_handles : 0;
 
   base::AutoLock locker(lock_);
   DCHECK(is_open_[port]);

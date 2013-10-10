@@ -5,6 +5,8 @@
 #include "mojo/system/message_pipe_dispatcher.h"
 
 #include "base/logging.h"
+#include "mojo/system/limits.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/message_pipe.h"
 
 namespace mojo {
@@ -44,6 +46,22 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
     const MojoHandle* handles, uint32_t num_handles,
     MojoWriteMessageFlags flags) {
   lock().AssertAcquired();
+
+  if (!VerifyUserPointer<void>(bytes, num_bytes))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (num_bytes > kMaxMessageNumBytes)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (num_handles > kMaxMessageNumHandles)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  if (num_handles > 0) {
+    // TODO(vtl): Verify each handle.
+    NOTIMPLEMENTED();
+    return MOJO_RESULT_UNIMPLEMENTED;
+  }
+
   return message_pipe_->WriteMessage(port_,
                                      bytes, num_bytes,
                                      handles, num_handles,
@@ -55,6 +73,16 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
     MojoHandle* handles, uint32_t* num_handles,
     MojoReadMessageFlags flags) {
   lock().AssertAcquired();
+
+  // TODO(vtl): I suppose we should verify |num_bytes| and |num_handles| (i.e.,
+  // those pointers themselves). Hmmm.
+
+  if (num_bytes && !VerifyUserPointer<void>(bytes, *num_bytes))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (num_handles && !VerifyUserPointer<MojoHandle>(handles, *num_handles))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   return message_pipe_->ReadMessage(port_,
                                     bytes, num_bytes,
                                     handles, num_handles,

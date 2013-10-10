@@ -10,6 +10,8 @@
 
 #include <string.h>
 
+#include <limits>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
@@ -109,6 +111,70 @@ TEST(MessagePipeDispatcherTest, Basic) {
     EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
     EXPECT_EQ(MOJO_RESULT_OK, d_1->Close());
   }
+}
+
+TEST(MessagePipeDispatcherTest, InvalidParams) {
+  char buffer[1];
+  MojoHandle handles[1];
+
+  scoped_refptr<MessagePipeDispatcher> d_0(new MessagePipeDispatcher());
+  scoped_refptr<MessagePipeDispatcher> d_1(new MessagePipeDispatcher());
+  {
+    scoped_refptr<MessagePipe> mp(new MessagePipe());
+    d_0->Init(mp, 0);
+    d_1->Init(mp, 1);
+  }
+
+  // |WriteMessage|:
+  // Null buffer with nonzero buffer size.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d_0->WriteMessage(NULL, 1,
+                              NULL, 0,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // Huge buffer size.
+  EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
+            d_0->WriteMessage(buffer, std::numeric_limits<uint32_t>::max(),
+                              NULL, 0,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // Null handles with nonzero handle count.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d_0->WriteMessage(buffer, sizeof(buffer),
+                              NULL, 1,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // Huge handle count (implausibly big on some systems -- more than can be
+  // stored in a 32-bit address space).
+  // Note: This may return either |MOJO_RESULT_INVALID_ARGUMENT| or
+  // |MOJO_RESULT_RESOURCE_EXHAUSTED|, depending on whether it's plausible or
+  // not.
+  EXPECT_NE(MOJO_RESULT_OK,
+            d_0->WriteMessage(buffer, sizeof(buffer),
+                              handles, std::numeric_limits<uint32_t>::max(),
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // Huge handle count (plausibly big).
+  EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
+            d_0->WriteMessage(buffer, sizeof(buffer),
+                              handles, std::numeric_limits<uint32_t>::max() /
+                                  sizeof(handles[0]),
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // |ReadMessage|:
+  // Null buffer with nonzero buffer size.
+  uint32_t buffer_size = 1;
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d_0->ReadMessage(NULL, &buffer_size,
+                             NULL, NULL,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+  // Null handles with nonzero handle count.
+  buffer_size = static_cast<uint32_t>(sizeof(buffer));
+  uint32_t handle_count = 1;
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            d_0->ReadMessage(buffer, &buffer_size,
+                             NULL, &handle_count,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+
+  EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
+  EXPECT_EQ(MOJO_RESULT_OK, d_1->Close());
 }
 
 // Test what happens when one end is closed (single-threaded test).

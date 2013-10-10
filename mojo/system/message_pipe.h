@@ -31,10 +31,14 @@ class MessagePipe : public base::RefCountedThreadSafe<MessagePipe> {
   // corresponding names. In all cases, the port |port| must be open.
   void CancelAllWaiters(unsigned port);
   void Close(unsigned port);
+  // Unlike |MessagePipeDispatcher::WriteMessage()|, this does not validate its
+  // arguments. |bytes|/|num_bytes| and |handles|/|num_handles| must be valid.
   MojoResult WriteMessage(unsigned port,
                           const void* bytes, uint32_t num_bytes,
                           const MojoHandle* handles, uint32_t num_handles,
                           MojoWriteMessageFlags flags);
+  // Unlike |MessagePipeDispatcher::ReadMessage()|, this does not validate its
+  // arguments. |bytes|/|num_bytes| and |handles|/|num_handles| must be valid.
   MojoResult ReadMessage(unsigned port,
                          void* bytes, uint32_t* num_bytes,
                          MojoHandle* handles, uint32_t* num_handles,

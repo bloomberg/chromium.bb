@@ -4,8 +4,6 @@
 
 #include "mojo/system/message_pipe.h"
 
-#include <limits>
-
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/time/time.h"
@@ -321,71 +319,6 @@ TEST(MessagePipeTest, DiscardMode) {
                             buffer, &buffer_size,
                             NULL, NULL,
                             MOJO_READ_MESSAGE_FLAG_MAY_DISCARD));
-
-  mp->Close(0);
-  mp->Close(1);
-}
-
-TEST(MessagePipeTest, InvalidParams) {
-  scoped_refptr<MessagePipe> mp(new MessagePipe());
-
-  char buffer[1];
-  MojoHandle handles[1];
-
-  // |WriteMessage|:
-  // Null buffer with nonzero buffer size.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            mp->WriteMessage(0,
-                             NULL, 1,
-                             NULL, 0,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-  // Huge buffer size.
-  EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            mp->WriteMessage(0,
-                             buffer, std::numeric_limits<uint32_t>::max(),
-                             NULL, 0,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-  // Null handles with nonzero handle count.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            mp->WriteMessage(0,
-                             buffer, sizeof(buffer),
-                             NULL, 1,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-  // Huge handle count (implausibly big on some systems -- more than can be
-  // stored in a 32-bit address space).
-  // Note: This may return either |MOJO_RESULT_INVALID_ARGUMENT| or
-  // |MOJO_RESULT_RESOURCE_EXHAUSTED|, depending on whether it's plausible or
-  // not.
-  EXPECT_NE(MOJO_RESULT_OK,
-            mp->WriteMessage(0,
-                             buffer, sizeof(buffer),
-                             handles, std::numeric_limits<uint32_t>::max(),
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-  // Huge handle count (plausibly big).
-  EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            mp->WriteMessage(0,
-                             buffer, sizeof(buffer),
-                             handles, std::numeric_limits<uint32_t>::max() /
-                                 sizeof(handles[0]),
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-  // |ReadMessage|:
-  // Null buffer with nonzero buffer size.
-  uint32_t buffer_size = 1;
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            mp->ReadMessage(0,
-                            NULL, &buffer_size,
-                            NULL, NULL,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
-  // Null handles with nonzero handle count.
-  buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  uint32_t handle_count = 1;
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            mp->ReadMessage(0,
-                            buffer, &buffer_size,
-                            NULL, &handle_count,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
 
   mp->Close(0);
   mp->Close(1);
