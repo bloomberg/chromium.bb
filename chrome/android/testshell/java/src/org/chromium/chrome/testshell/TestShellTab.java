@@ -8,6 +8,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.common.CleanupReference;
@@ -98,6 +99,19 @@ public class TestShellTab extends TabBase {
             nativeDestroy(mNativeTestShellTab);
         }
     }
+
+    @Override
+    protected AutoLoginProcessor createAutoLoginProcessor() {
+       return new AutoLoginProcessor() {
+           @Override
+           public void processAutoLoginResult(String accountName,
+                   String authToken, boolean success, String result) {
+               getInfoBarContainer().processAutoLogin(accountName, authToken,
+                       success, result);
+           }
+       };
+    }
+
 
     private class TestShellTabBaseChromeWebContentsDelegateAndroid
             extends TabBaseChromeWebContentsDelegateAndroid {

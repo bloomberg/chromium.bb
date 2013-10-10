@@ -160,7 +160,7 @@ public class InfoBarContainer extends LinearLayout {
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, determineGravity());
     }
 
-    private void removeFromParentView() {
+    public void removeFromParentView() {
         if (getParent() != null) {
             ((ViewGroup) getParent()).removeView(this);
         }

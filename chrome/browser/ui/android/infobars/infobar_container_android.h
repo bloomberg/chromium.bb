@@ -35,11 +35,6 @@ class InfoBarContainerAndroid : public InfoBarContainer {
     return weak_java_infobar_container_;
   }
 
-  // The prerender is swapping the web contents.
-// TODO(miguelg) Move this out of infobar container.
-  void OnWebContentsReplaced(content::WebContents* old_web_contents,
-                             content::WebContents* new_web_contents);
-
  private:
   virtual ~InfoBarContainerAndroid() OVERRIDE;
 

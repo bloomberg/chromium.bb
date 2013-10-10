@@ -34,15 +34,6 @@ void InfoBarContainerAndroid::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-void InfoBarContainerAndroid::OnWebContentsReplaced(
-    content::WebContents* old_web_contents,
-    content::WebContents* new_web_contents) {
-  InfoBarService* new_infobar_service = new_web_contents ?
-      InfoBarService::FromWebContents(new_web_contents) : NULL;
-  if (new_infobar_service)
-    ChangeInfoBarService(new_infobar_service);
-}
-
 void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(InfoBar* infobar,
                                                          size_t position) {
   DCHECK(infobar);

@@ -11,6 +11,8 @@ import android.view.View;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.content.browser.ContentView;
@@ -67,6 +69,9 @@ public abstract class TabBase implements NavigationClient {
 
     /** The {@link ContentView} showing the current page or {@code null} if the tab is frozen. */
     private ContentView mContentView;
+
+    /** InfoBar container to show infobars for this tab */
+    private InfoBarContainer mInfoBarContainer;
 
     /**
      * The {@link ContentViewCore} for the current page, provided for convenience. This always
@@ -242,6 +247,20 @@ public abstract class TabBase implements NavigationClient {
     protected Context getApplicationContext() {
         return mApplicationContext;
     }
+
+    /**
+     *
+     * @return The infobar container.
+     */
+    public final InfoBarContainer getInfoBarContainer() {
+        return mInfoBarContainer;
+    }
+
+    /**
+     * Create an {@code AutoLoginProcessor} to decide how to handle login
+     * requests.
+     */
+    protected abstract AutoLoginProcessor createAutoLoginProcessor();
 
     /**
      * Reloads the current page content if it is a {@link ContentView}.
@@ -444,6 +463,18 @@ public abstract class TabBase implements NavigationClient {
         assert mNativeTabAndroid != 0;
         nativeInitWebContents(
                 mNativeTabAndroid, mId, mIncognito, mContentViewCore, mWebContentsDelegate);
+
+        // In the case where restoring a Tab or showing a prerendered one we already have a
+        // valid infobar container, no need to recreate one.
+        if (mInfoBarContainer == null) {
+            // The InfoBarContainer needs to be created after the ContentView has been natively
+            // initialized.
+            mInfoBarContainer = new InfoBarContainer(
+                    (Activity) mContext, createAutoLoginProcessor(), getId(), getContentView(),
+                    nativeWebContents);
+        } else {
+            mInfoBarContainer.onParentViewChanged(getId(), getContentView());
+        }
     }
 
     /**
@@ -456,6 +487,10 @@ public abstract class TabBase implements NavigationClient {
 
         destroyNativePageInternal();
         destroyContentView(true);
+        if (mInfoBarContainer != null) {
+            mInfoBarContainer.destroy();
+            mInfoBarContainer = null;
+        }
     }
 
     private void destroyNativePageInternal() {
@@ -474,6 +509,9 @@ public abstract class TabBase implements NavigationClient {
 
         destroyContentViewInternal(mContentView);
 
+        if (mInfoBarContainer != null && mInfoBarContainer.getParent() != null) {
+            mInfoBarContainer.removeFromParentView();
+        }
         if (mContentViewCore != null) mContentViewCore.destroy();
 
         mContentView = null;
@@ -578,6 +616,11 @@ public abstract class TabBase implements NavigationClient {
     private void setNativePtr(int nativePtr) {
         assert mNativeTabAndroid == 0;
         mNativeTabAndroid = nativePtr;
+    }
+
+    @CalledByNative
+    private int getNativeInfoBarContainer() {
+        return getInfoBarContainer().getNative();
     }
 
     /**

@@ -26,6 +26,7 @@
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
+#include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
@@ -158,6 +159,18 @@ browser_sync::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                                  content::WebContents* new_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
+
+  // We need to notify the native InfobarContainer so infobars can be swapped.
+  InfoBarContainerAndroid* infobar_container =
+      reinterpret_cast<InfoBarContainerAndroid*>(
+          Java_TabBase_getNativeInfoBarContainer(
+              env,
+              weak_java_tab_.get(env).obj()));
+  InfoBarService* new_infobar_service = new_contents ?
+      InfoBarService::FromWebContents(new_contents) : NULL;
+  if (new_infobar_service)
+    infobar_container->ChangeInfoBarService(new_infobar_service);
+
   Java_TabBase_swapWebContents(
       env,
       weak_java_tab_.get(env).obj(),
