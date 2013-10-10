@@ -644,6 +644,11 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
       CURSOR_RIGHT : CURSOR_LEFT;
 }
 
+SizeF RenderText::GetStringSizeF() {
+  const Size size = GetStringSize();
+  return SizeF(size.width(), size.height());
+}
+
 int RenderText::GetContentWidth() {
   return GetStringSize().width() + (cursor_enabled_ ? 1 : 0);
 }

@@ -18,25 +18,16 @@ namespace gfx {
 
 namespace {
 
-// Mac-specific code for string size computations. This is a verbatim copy
-// of the old implementation that used to be in canvas_mac.mm.
-void CanvasMac_SizeStringInt(const base::string16& text,
-                             const FontList& font_list,
-                             int* width,
-                             int* height,
-                             int line_height,
-                             int flags) {
-  DLOG_IF(WARNING, line_height != 0) << "Line heights not implemented.";
-  DLOG_IF(WARNING, flags & Canvas::MULTI_LINE) << "Multi-line not implemented.";
-
+// Returns the pixel width of the string via calling the native method
+// -sizeWithAttributes.
+float GetStringNativeWidth(const base::string16& text,
+                           const FontList& font_list) {
   NSFont* native_font = font_list.GetPrimaryFont().GetNativeFont();
   NSString* ns_string = base::SysUTF16ToNSString(text);
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:native_font
                                   forKey:NSFontAttributeName];
-  NSSize string_size = [ns_string sizeWithAttributes:attributes];
-  *width = std::ceil(string_size.width);
-  *height = font_list.GetHeight();
+  return [ns_string sizeWithAttributes:attributes].width;
 }
 
 }  // namespace
@@ -49,36 +40,49 @@ class CanvasTestMac : public testing::Test {
   // without specified line height, since that is all the platform
   // implementation supports.
   void CompareSizes(const char* text) {
-    const int kReallyLargeNumber = 12345678;
+    const float kReallyLargeNumber = 12345678;
     FontList font_list(font_);
     base::string16 text16 = base::UTF8ToUTF16(text);
 
-    int mac_width = kReallyLargeNumber;
-    int mac_height = kReallyLargeNumber;
-    CanvasMac_SizeStringInt(text16, font_list, &mac_width, &mac_height, 0, 0);
+    float mac_width = GetStringNativeWidth(text16, font_list);
+    int mac_height = font_list.GetHeight();
 
-    int canvas_width = kReallyLargeNumber;
-    int canvas_height = kReallyLargeNumber;
-    Canvas::SizeStringInt(
+    float canvas_width = kReallyLargeNumber;
+    float canvas_height = kReallyLargeNumber;
+    Canvas::SizeStringFloat(
         text16, font_list, &canvas_width, &canvas_height, 0, 0);
 
     EXPECT_NE(kReallyLargeNumber, mac_width) << "no width for " << text;
     EXPECT_NE(kReallyLargeNumber, mac_height) << "no height for " << text;
     EXPECT_EQ(mac_width, canvas_width) << " width for " << text;
-    EXPECT_EQ(mac_height, canvas_height) << " height for " << text;
+    // FontList::GetHeight returns a truncated height.
+    EXPECT_EQ(mac_height,
+              static_cast<int>(canvas_height)) << " height for " << text;
   }
 
  private:
   Font font_;
 };
 
- // Tests that Canvas' SizeStringInt yields result consistent with a native
+ // Tests that Canvas' SizeStringFloat yields result consistent with a native
  // implementation.
  TEST_F(CanvasTestMac, StringSizeIdenticalForSkia) {
   CompareSizes("");
   CompareSizes("Foo");
   CompareSizes("Longword");
   CompareSizes("This is a complete sentence.");
+}
+
+TEST_F(CanvasTestMac, FractionalWidth) {
+  const float kReallyLargeNumber = 12345678;
+  float width = kReallyLargeNumber;
+  float height = kReallyLargeNumber;
+
+  FontList font_list;
+  Canvas::SizeStringFloat(
+      base::UTF8ToUTF16("Test"), font_list, &width, &height, 0, 0);
+
+  EXPECT_GT(width, static_cast<int>(width));
 }
 
 }  // namespace gfx

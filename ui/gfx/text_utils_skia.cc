@@ -12,4 +12,8 @@ int GetStringWidth(const base::string16& text, const FontList& font_list) {
   return Canvas::GetStringWidth(text, font_list);
 }
 
+float GetStringWidthF(const base::string16& text, const FontList& font_list) {
+  return Canvas::GetStringWidthF(text, font_list);
+}
+
 }  // namespace gfx

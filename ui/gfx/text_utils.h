@@ -27,6 +27,10 @@ GFX_EXPORT base::string16 RemoveAcceleratorChar(const base::string16& s,
 GFX_EXPORT int GetStringWidth(const base::string16& text,
                               const FontList& font_list);
 
+// This is same as GetStringWidth except that fractional width is returned.
+GFX_EXPORT float GetStringWidthF(const base::string16& text,
+                                 const FontList& font_list);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_TEXT_UTILS_H_

@@ -4,6 +4,7 @@
 
 #include "ui/gfx/canvas.h"
 
+#include <cmath>
 #include <limits>
 
 #include "base/i18n/rtl.h"
@@ -84,6 +85,21 @@ void Canvas::RecreateBackingCanvas(const Size& size,
 
 // static
 void Canvas::SizeStringInt(const base::string16& text,
+                           const FontList& font_list,
+                           int* width,
+                           int* height,
+                           int line_height,
+                           int flags) {
+  float fractional_width = *width;
+  float factional_height = *height;
+  SizeStringFloat(text, font_list, &fractional_width,
+                  &factional_height, line_height, flags);
+  *width = std::ceil(fractional_width);
+  *height = std::ceil(factional_height);
+}
+
+// static
+void Canvas::SizeStringInt(const base::string16& text,
                            const Font& font,
                            int* width,
                            int* height,
@@ -97,6 +113,14 @@ int Canvas::GetStringWidth(const base::string16& text,
                            const FontList& font_list) {
   int width = 0, height = 0;
   SizeStringInt(text, font_list, &width, &height, 0, NO_ELLIPSIS);
+  return width;
+}
+
+// static
+float Canvas::GetStringWidthF(const base::string16& text,
+                              const FontList& font_list) {
+  float width = 0, height = 0;
+  SizeStringFloat(text, font_list, &width, &height, 0, NO_ELLIPSIS);
   return width;
 }
 

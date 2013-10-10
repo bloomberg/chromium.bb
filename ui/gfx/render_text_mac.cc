@@ -25,6 +25,11 @@ RenderTextMac::~RenderTextMac() {
 
 Size RenderTextMac::GetStringSize() {
   EnsureLayout();
+  return Size(std::ceil(string_size_.width()), string_size_.height());
+}
+
+SizeF RenderTextMac::GetStringSizeF() {
+  EnsureLayout();
   return string_size_;
 }
 
@@ -149,7 +154,7 @@ void RenderTextMac::EnsureLayout() {
   CGFloat font_list_baseline = font_list().GetBaseline();
   ascent = std::max(ascent, font_list_baseline);
   descent = std::max(descent, font_list_height - font_list_baseline);
-  string_size_ = Size(std::ceil(width), ascent + descent + leading);
+  string_size_ = SizeF(width, ascent + descent + leading);
   common_baseline_ = ascent;
 }
 

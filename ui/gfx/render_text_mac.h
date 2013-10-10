@@ -27,6 +27,7 @@ class RenderTextMac : public RenderText {
 
   // Overridden from RenderText:
   virtual Size GetStringSize() OVERRIDE;
+  virtual SizeF GetStringSizeF() OVERRIDE;
   virtual int GetBaseline() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
   virtual std::vector<FontSpan> GetFontSpansForTesting() OVERRIDE;
@@ -81,7 +82,7 @@ class RenderTextMac : public RenderText {
   base::ScopedCFTypeRef<CFMutableArrayRef> attributes_;
 
   // Visual dimensions of the text. Computed by |EnsureLayout()|.
-  Size string_size_;
+  SizeF string_size_;
 
   // Common baseline for this line of text. Computed by |EnsureLayout()|.
   SkScalar common_baseline_;

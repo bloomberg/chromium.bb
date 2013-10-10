@@ -13,6 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/text_utils.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -41,36 +43,22 @@ struct TestData {
 };
 
 void RunUrlTest(Testcase* testcases, size_t num_testcases) {
-  static const gfx::Font font;
+  static const FontList font_list;
   for (size_t i = 0; i < num_testcases; ++i) {
     const GURL url(testcases[i].input);
     // Should we test with non-empty language list?
     // That's kinda redundant with net_util_unittests.
+    const float available_width =
+        GetStringWidthF(UTF8ToUTF16(testcases[i].output), font_list);
     EXPECT_EQ(UTF8ToUTF16(testcases[i].output),
-              ElideUrl(url, font,
-                       font.GetStringWidth(UTF8ToUTF16(testcases[i].output)),
-                       std::string()));
+              ElideUrl(url, font_list, available_width, std::string()));
   }
-}
-
-gfx::Font GetTestingFont() {
-  gfx::Font font;
-#if defined(OS_MACOSX)
-  // Use a specific font for certain tests on Mac.
-  // 1) Different Mac machines might be configured with different default font.
-  //    The number of extra pixels needed to make ElideEmail/TestFilenameEliding
-  //    tests work might vary per the default font.
-  // 2) This specific font helps expose the line width exceeding problem as in
-  //    ElideRectangleTextCheckLineWidth.
-  font = gfx::Font("LucidaGrande", 12);
-#endif
-  return font;
 }
 
 }  // namespace
 
-// TODO(ios): Complex eliding is off by one for some of those tests on iOS.
-// See crbug.com/154019
+// TODO(ios): This test fails on iOS because iOS version of GetStringWidthF
+// that calls [NSString sizeWithFont] returns the rounded string width.
 #if defined(OS_IOS)
 #define MAYBE_ElideEmail DISABLED_ElideEmail
 #else
@@ -121,22 +109,14 @@ TEST(TextEliderTest, MAYBE_ElideEmail) {
       {"mmmmm@llllllllll", "m" + kEllipsisStr + "@l" + kEllipsisStr},
   };
 
-  const gfx::Font font = GetTestingFont();
+  const FontList font_list;
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     const string16 expected_output = UTF8ToUTF16(testcases[i].output);
-    int available_width = font.GetStringWidth(expected_output);
-#if defined(OS_MACOSX)
-    // Give two extra pixels to offset the ceiling width returned by
-    // GetStringWidth on Mac. This workaround will no longer be needed once
-    // the floating point width is adopted (http://crbug.com/288987).
-    // Note that we need one more pixel than TestFilenameEliding because
-    // multiple strings are elided and we need to offset more.
-    available_width += 2;
-#endif
     EXPECT_EQ(expected_output,
-              ElideEmail(UTF8ToUTF16(testcases[i].input),
-                         font,
-                         available_width));
+              ElideEmail(
+                  UTF8ToUTF16(testcases[i].input),
+                  font_list,
+                  GetStringWidthF(expected_output, font_list)));
   }
 }
 
@@ -153,7 +133,7 @@ TEST(TextEliderTest, ElideEmailMoreSpace) {
       "supermegalongusername@withasuperlonnnggggdomain.gouv.qc.ca",
   };
 
-  const gfx::Font font;
+  const Font font;
   for (size_t i = 0; i < arraysize(test_width_factors); ++i) {
     const int test_width = test_width_factors[i] *
                            font.GetAverageCharacterWidth();
@@ -199,23 +179,26 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
   const std::string kEllipsisStr(kEllipsis);
 
   // Very little space, would cause double ellipsis.
-  gfx::Font font;
+  FontList font_list;
   GURL url("http://battersbox.com/directory/foo/peter_paul_and_mary.html");
-  int available_width = font.GetStringWidth(
-      UTF8ToUTF16("battersbox.com/" + kEllipsisStr + "/" + kEllipsisStr));
+  float available_width = GetStringWidthF(
+      UTF8ToUTF16("battersbox.com/" + kEllipsisStr + "/" + kEllipsisStr),
+      font_list);
 
   // Create the expected string, after elision. Depending on font size, the
   // directory might become /dir... or /di... or/d... - it never should be
   // shorter than that. (If it is, the font considers d... to be longer
   // than .../... -  that should never happen).
-  ASSERT_GT(font.GetStringWidth(UTF8ToUTF16(kEllipsisStr + "/" + kEllipsisStr)),
-      font.GetStringWidth(UTF8ToUTF16("d" + kEllipsisStr)));
+  ASSERT_GT(GetStringWidthF(UTF8ToUTF16(kEllipsisStr + "/" + kEllipsisStr),
+                            font_list),
+            GetStringWidthF(UTF8ToUTF16("d" + kEllipsisStr), font_list));
   GURL long_url("http://battersbox.com/directorynameisreallylongtoforcetrunc");
-  string16 expected = ElideUrl(long_url, font, available_width, std::string());
+  string16 expected =
+      ElideUrl(long_url, font_list, available_width, std::string());
   // Ensure that the expected result still contains part of the directory name.
   ASSERT_GT(expected.length(), std::string("battersbox.com/d").length());
   EXPECT_EQ(expected,
-             ElideUrl(url, font, available_width, std::string()));
+             ElideUrl(url, font_list, available_width, std::string()));
 
   // More space available - elide directories, partially elide filename.
   Testcase testcases[] = {
@@ -288,8 +271,8 @@ TEST(TextEliderTest, TestFileURLEliding) {
   RunUrlTest(testcases, arraysize(testcases));
 }
 
-// TODO(ios): Complex eliding is off by one for some of those tests on iOS.
-// See crbug.com/154019
+// TODO(ios): This test fails on iOS because iOS version of GetStringWidthF
+// that calls [NSString sizeWithFont] returns the rounded string width.
 #if defined(OS_IOS)
 #define MAYBE_TestFilenameEliding DISABLED_TestFilenameEliding
 #else
@@ -334,28 +317,22 @@ TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
       "file.name.re" + kEllipsisStr + "emelylongext"}
   };
 
-  static const gfx::Font font = GetTestingFont();
+  static const FontList font_list;
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     base::FilePath filepath(testcases[i].input);
     string16 expected = UTF8ToUTF16(testcases[i].output);
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
-    int available_width = font.GetStringWidth(UTF8ToUTF16(testcases[i].output));
-#if defined(OS_MACOSX)
-    // Give one extra pixel to offset the ceiling width returned by
-    // GetStringWidth on Mac. This workaround will no longer be needed once
-    // the floating point width is adopted (http://crbug.com/288987).
-    available_width += 1;
-#endif
-    EXPECT_EQ(expected, ElideFilename(filepath, font, available_width));
+    EXPECT_EQ(expected, ElideFilename(filepath, font_list,
+        GetStringWidthF(UTF8ToUTF16(testcases[i].output), font_list)));
   }
 }
 
 TEST(TextEliderTest, ElideTextTruncate) {
-  const gfx::Font font;
-  const int kTestWidth = font.GetStringWidth(ASCIIToUTF16("Test"));
+  const FontList font_list;
+  const float kTestWidth = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
   struct TestData {
     const char* input;
-    int width;
+    float width;
     const char* output;
   } cases[] = {
     { "", 0, "" },
@@ -367,20 +344,21 @@ TEST(TextEliderTest, ElideTextTruncate) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    string16 result = ElideText(UTF8ToUTF16(cases[i].input), font,
+    string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
                                 cases[i].width, TRUNCATE_AT_END);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
   }
 }
 
 TEST(TextEliderTest, ElideTextEllipsis) {
-  const gfx::Font font;
-  const int kTestWidth = font.GetStringWidth(ASCIIToUTF16("Test"));
+  const FontList font_list;
+  const float kTestWidth = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
   const char* kEllipsis = "\xE2\x80\xA6";
-  const int kEllipsisWidth = font.GetStringWidth(UTF8ToUTF16(kEllipsis));
+  const float kEllipsisWidth =
+      GetStringWidthF(UTF8ToUTF16(kEllipsis), font_list);
   struct TestData {
     const char* input;
-    int width;
+    float width;
     const char* output;
   } cases[] = {
     { "", 0, "" },
@@ -392,7 +370,7 @@ TEST(TextEliderTest, ElideTextEllipsis) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    string16 result = ElideText(UTF8ToUTF16(cases[i].input), font,
+    string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
                                 cases[i].width, ELIDE_AT_END);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
   }
@@ -418,27 +396,27 @@ static void CheckSurrogatePairs(const string16& text,
 }
 
 TEST(TextEliderTest, ElideTextSurrogatePairs) {
-  const gfx::Font font;
+  const FontList font_list;
   // The below is 'MUSICAL SYMBOL G CLEF', which is represented in UTF-16 as
   // two characters forming a surrogate pair 0x0001D11E.
   const std::string kSurrogate = "\xF0\x9D\x84\x9E";
   const string16 kTestString =
       UTF8ToUTF16(kSurrogate + "ab" + kSurrogate + kSurrogate + "cd");
-  const int kTestStringWidth = font.GetStringWidth(kTestString);
+  const float kTestStringWidth = GetStringWidthF(kTestString, font_list);
   const char16 kSurrogateFirstChar = kTestString[0];
   const char16 kSurrogateSecondChar = kTestString[1];
   string16 result;
 
   // Elide |kTextString| to all possible widths and check that no instance of
   // |kSurrogate| was split in two.
-  for (int width = 0; width <= kTestStringWidth; width++) {
-    result = ElideText(kTestString, font, width, TRUNCATE_AT_END);
+  for (float width = 0; width <= kTestStringWidth; width++) {
+    result = ElideText(kTestString, font_list, width, TRUNCATE_AT_END);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
 
-    result = ElideText(kTestString, font, width, ELIDE_AT_END);
+    result = ElideText(kTestString, font_list, width, ELIDE_AT_END);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
 
-    result = ElideText(kTestString, font, width, ELIDE_IN_MIDDLE);
+    result = ElideText(kTestString, font_list, width, ELIDE_IN_MIDDLE);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
   }
 }
@@ -467,17 +445,19 @@ TEST(TextEliderTest, ElideTextLongStrings) {
      {data_scheme + million_a,          long_string_end},
   };
 
-  const gfx::Font font;
-  int ellipsis_width = font.GetStringWidth(kEllipsisStr);
+  const FontList font_list;
+  float ellipsis_width = GetStringWidthF(kEllipsisStr, font_list);
   for (size_t i = 0; i < arraysize(testcases_end); ++i) {
     // Compare sizes rather than actual contents because if the test fails,
     // output is rather long.
     EXPECT_EQ(testcases_end[i].output.size(),
-              ElideText(testcases_end[i].input, font,
-                        font.GetStringWidth(testcases_end[i].output),
-                        ELIDE_AT_END).size());
+              ElideText(
+                  testcases_end[i].input,
+                  font_list,
+                  GetStringWidthF(testcases_end[i].output, font_list),
+                  ELIDE_AT_END).size());
     EXPECT_EQ(kEllipsisStr,
-              ElideText(testcases_end[i].input, font, ellipsis_width,
+              ElideText(testcases_end[i].input, font_list, ellipsis_width,
                         ELIDE_AT_END));
   }
 
@@ -498,11 +478,13 @@ TEST(TextEliderTest, ElideTextLongStrings) {
     // Compare sizes rather than actual contents because if the test fails,
     // output is rather long.
     EXPECT_EQ(testcases_middle[i].output.size(),
-              ElideText(testcases_middle[i].input, font,
-                        font.GetStringWidth(testcases_middle[i].output),
-                        ELIDE_AT_END).size());
+              ElideText(
+                  testcases_middle[i].input,
+                  font_list,
+                  GetStringWidthF(testcases_middle[i].output, font_list),
+                  ELIDE_AT_END).size());
     EXPECT_EQ(kEllipsisStr,
-              ElideText(testcases_middle[i].input, font, ellipsis_width,
+              ElideText(testcases_middle[i].input, font_list, ellipsis_width,
                         ELIDE_AT_END));
   }
 }
@@ -580,13 +562,13 @@ TEST(TextEliderTest, ElideString) {
 }
 
 TEST(TextEliderTest, ElideRectangleText) {
-  const gfx::Font font;
-  const int line_height = font.GetHeight();
-  const int test_width = font.GetStringWidth(ASCIIToUTF16("Test"));
+  const FontList font_list;
+  const int line_height = font_list.GetHeight();
+  const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
 
   struct TestData {
     const char* input;
-    int available_pixel_width;
+    float available_pixel_width;
     int available_pixel_height;
     bool truncated_y;
     const char* output;
@@ -622,7 +604,7 @@ TEST(TextEliderTest, ElideRectangleText) {
     std::vector<string16> lines;
     EXPECT_EQ(cases[i].truncated_y ? INSUFFICIENT_SPACE_VERTICAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
-                                 font,
+                                 font_list,
                                  cases[i].available_pixel_width,
                                  cases[i].available_pixel_height,
                                  TRUNCATE_LONG_WORDS,
@@ -637,14 +619,14 @@ TEST(TextEliderTest, ElideRectangleText) {
 }
 
 TEST(TextEliderTest, ElideRectangleTextPunctuation) {
-  const gfx::Font font;
-  const int line_height = font.GetHeight();
-  const int test_width = font.GetStringWidth(ASCIIToUTF16("Test"));
-  const int test_t_width = font.GetStringWidth(ASCIIToUTF16("Test T"));
+  const FontList font_list;
+  const int line_height = font_list.GetHeight();
+  const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
+  const float test_t_width = GetStringWidthF(ASCIIToUTF16("Test T"), font_list);
 
   struct TestData {
     const char* input;
-    int available_pixel_width;
+    float available_pixel_width;
     int available_pixel_height;
     bool wrap_words;
     bool truncated_x;
@@ -662,7 +644,7 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
         (cases[i].wrap_words ? WRAP_LONG_WORDS : TRUNCATE_LONG_WORDS);
     EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
-                                 font,
+                                 font_list,
                                  cases[i].available_pixel_width,
                                  cases[i].available_pixel_height,
                                  wrap_behavior,
@@ -677,15 +659,15 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
 }
 
 TEST(TextEliderTest, ElideRectangleTextLongWords) {
-  const gfx::Font font;
+  const FontList font_list;
   const int kAvailableHeight = 1000;
   const string16 kElidedTesting = UTF8ToUTF16(std::string("Tes") + kEllipsis);
-  const int elided_width = font.GetStringWidth(kElidedTesting);
-  const int test_width = font.GetStringWidth(ASCIIToUTF16("Test"));
+  const float elided_width = GetStringWidthF(kElidedTesting, font_list);
+  const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
 
   struct TestData {
     const char* input;
-    int available_pixel_width;
+    float available_pixel_width;
     WordWrapBehavior wrap_behavior;
     bool truncated_x;
     const char* output;
@@ -723,7 +705,7 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
     std::vector<string16> lines;
     EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
-                                 font,
+                                 font_list,
                                  cases[i].available_pixel_width,
                                  kAvailableHeight,
                                  cases[i].wrap_behavior,
@@ -735,35 +717,30 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
   }
 }
 
-// TODO(ios): Complex eliding is off by one for some of those tests on iOS.
-// See crbug.com/154019
-#if defined(OS_IOS)
-#define MAYBE_ElideRectangleTextCheckLineWidth \
-    DISABLED_ElideRectangleTextCheckLineWidth
-#else
-#define MAYBE_ElideRectangleTextCheckLineWidth ElideRectangleTextCheckLineWidth
-#endif
-
 // This test is to make sure that the width of each wrapped line does not
 // exceed the available width. On some platform like Mac, this test used to
 // fail because the truncated integer width is returned for the string
 // and the accumulation of the truncated values causes the elide function
 // to wrap incorrectly.
-TEST(TextEliderTest, MAYBE_ElideRectangleTextCheckLineWidth) {
-  gfx::Font font = GetTestingFont();
-  const int kAvailableWidth = 235;
+TEST(TextEliderTest, ElideRectangleTextCheckLineWidth) {
+  FontList font_list;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Use a specific font to expose the line width exceeding problem.
+  font_list = FontList(Font("LucidaGrande", 12));
+#endif
+  const float kAvailableWidth = 235;
   const int kAvailableHeight = 1000;
   const char text[] = "that Russian place we used to go to after fencing";
   std::vector<string16> lines;
   EXPECT_EQ(0, ElideRectangleText(UTF8ToUTF16(text),
-                                  font,
+                                  font_list,
                                   kAvailableWidth,
                                   kAvailableHeight,
                                   WRAP_LONG_WORDS,
                                   &lines));
   ASSERT_EQ(2u, lines.size());
-  EXPECT_LE(font.GetStringWidth(lines[0]), kAvailableWidth);
-  EXPECT_LE(font.GetStringWidth(lines[1]), kAvailableWidth);
+  EXPECT_LE(GetStringWidthF(lines[0], font_list), kAvailableWidth);
+  EXPECT_LE(GetStringWidthF(lines[1], font_list), kAvailableWidth);
 }
 
 TEST(TextEliderTest, ElideRectangleString) {

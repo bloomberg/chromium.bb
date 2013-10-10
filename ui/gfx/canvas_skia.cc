@@ -155,11 +155,11 @@ void UpdateRenderText(const Rect& rect,
 }  // namespace
 
 // static
-void Canvas::SizeStringInt(const base::string16& text,
-                           const FontList& font_list,
-                           int* width, int* height,
-                           int line_height,
-                           int flags) {
+void Canvas::SizeStringFloat(const base::string16& text,
+                             const FontList& font_list,
+                             float* width, float* height,
+                             int line_height,
+                             int flags) {
   DCHECK_GE(*width, 0);
   DCHECK_GE(*height, 0);
 
@@ -184,12 +184,12 @@ void Canvas::SizeStringInt(const base::string16& text,
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
 
-    int h = 0;
-    int w = 0;
+    float h = 0;
+    float w = 0;
     for (size_t i = 0; i < strings.size(); ++i) {
       StripAcceleratorChars(flags, &strings[i]);
       render_text->SetText(strings[i]);
-      const Size& string_size = render_text->GetStringSize();
+      const SizeF& string_size = render_text->GetStringSizeF();
       w = std::max(w, string_size.width());
       h += (i > 0 && line_height > 0) ? line_height : string_size.height();
     }
@@ -208,7 +208,7 @@ void Canvas::SizeStringInt(const base::string16& text,
       StripAcceleratorChars(flags, &adjusted_text);
       UpdateRenderText(rect, adjusted_text, font_list, flags, 0,
                        render_text.get());
-      const Size& string_size = render_text->GetStringSize();
+      const SizeF& string_size = render_text->GetStringSizeF();
       *width = string_size.width();
       *height = string_size.height();
     }

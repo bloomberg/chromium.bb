@@ -9,12 +9,12 @@
 namespace gfx {
 
 // static
-void Canvas::SizeStringInt(const base::string16& text,
-                           const FontList& font_list,
-                           int* width,
-                           int* height,
-                           int line_height,
-                           int flags) {
+void Canvas::SizeStringFloat(const base::string16& text,
+                             const FontList& font_list,
+                             float* width,
+                             float* height,
+                             int line_height,
+                             int flags) {
   NOTIMPLEMENTED();
 }
 
