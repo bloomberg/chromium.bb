@@ -13,12 +13,8 @@
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -48,46 +44,29 @@ using content::WebContents;
 
 @end
 
-// A helper class to monitor tab hidden and closed notifications. If we receive
-// such a notification, we stop the animation.
-class DownloadAnimationWebObserver : public content::NotificationObserver {
+// A helper class to monitor the hiding and closing of WebContents. In those
+// cases we stop the animation.
+class DownloadAnimationWebObserver : public content::WebContentsObserver {
  public:
   DownloadAnimationWebObserver(DownloadStartedAnimationMac* owner,
                                WebContents* web_contents)
-      : owner_(owner),
-        web_contents_(web_contents) {
-    registrar_.Add(this,
-                   content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                   content::Source<WebContents>(web_contents_));
-    registrar_.Add(this,
-                   content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   content::Source<WebContents>(web_contents_));
+      : content::WebContentsObserver(web_contents),
+        owner_(owner) {
   }
 
-  // Runs when a tab is hidden or destroyed. Let our owner know we should end
-  // the animation.
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
-    if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
-      bool visible = *content::Details<bool>(details).ptr();
-      if (visible)
-        return;
-    }
+  virtual void WasHidden() OVERRIDE {
+    // This ends up deleting us.
+    [owner_ closeAnimation];
+  }
+
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
     // This ends up deleting us.
     [owner_ closeAnimation];
   }
 
  private:
-  // The object we need to inform when we get a notification. Weak.
+  // The object we need to inform. Weak.
   DownloadStartedAnimationMac* owner_;
-
-  // The tab we are observing. Weak.
-  WebContents* web_contents_;
-
-  // Used for registering to receive notifications and automatic clean up.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadAnimationWebObserver);
 };
