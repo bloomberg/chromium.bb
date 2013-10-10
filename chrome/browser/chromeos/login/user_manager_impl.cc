@@ -196,6 +196,17 @@ void ParseUserList(const ListValue& users_list,
   }
 }
 
+class UserHashMatcher {
+ public:
+  explicit UserHashMatcher(const std::string& h) : username_hash(h) {}
+  bool operator()(const User* user) const {
+    return user->username_hash() == username_hash;
+  }
+
+ private:
+  const std::string& username_hash;
+};
+
 }  // namespace
 
 // static
@@ -693,6 +704,22 @@ const User* UserManagerImpl::GetPrimaryUser() const {
   return primary_user_;
 }
 
+User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (ProfileHelper::IsSigninProfile(profile))
+    return NULL;
+
+  if (IsMultipleProfilesAllowed()) {
+    const std::string username_hash =
+        ProfileHelper::GetUserIdHashFromProfile(profile);
+    const UserList& users = GetUsers();
+    const UserList::const_iterator pos = std::find_if(
+        users.begin(), users.end(), UserHashMatcher(username_hash));
+    return (pos != users.end()) ? *pos : NULL;
+  }
+  return active_user_;
+}
+
 void UserManagerImpl::SaveUserOAuthStatus(
     const std::string& username,
     User::OAuthTokenStatus oauth_token_status) {
@@ -891,33 +918,6 @@ void UserManagerImpl::RespectLocalePreference(Profile* profile,
   // that input method preferences are synced, so users can use their
   // farovite input methods as soon as the preferences are synced.
   chromeos::LanguageSwitchMenu::SwitchLanguage(pref_locale);
-}
-
-class UserHashMatcher {
- public:
-  explicit UserHashMatcher(const std::string& h) : username_hash(h) {}
-  bool operator()(const User* user) const {
-    return user->username_hash() == username_hash;
-  }
-
- private:
-  const std::string& username_hash;
-};
-
-// Returns NULL if user is not created
-User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
-  if (ProfileHelper::IsSigninProfile(profile))
-    return NULL;
-
-  if (IsMultipleProfilesAllowed()) {
-    const std::string username_hash =
-        ProfileHelper::GetUserIdHashFromProfile(profile);
-    const UserList& users = GetUsers();
-    const UserList::const_iterator pos = std::find_if(
-        users.begin(), users.end(), UserHashMatcher(username_hash));
-    return (pos != users.end()) ? *pos : NULL;
-  }
-  return active_user_;
 }
 
 Profile* UserManagerImpl::GetProfileByUser(const User* user) const {

@@ -80,6 +80,7 @@ class UserManagerImpl
   virtual const User* GetActiveUser() const OVERRIDE;
   virtual User* GetActiveUser() OVERRIDE;
   virtual const User* GetPrimaryUser() const OVERRIDE;
+  virtual User* GetUserByProfile(Profile* profile) const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
@@ -321,9 +322,6 @@ class UserManagerImpl
   void UpdateUserAccountDataImpl(const std::string& username,
                                  const string16& display_name,
                                  const std::string* locale);
-
-  // Returns NULL if User is not created.
-  User* GetUserByProfile(Profile* profile) const;
 
   Profile* GetProfileByUser(const User* user) const;
 

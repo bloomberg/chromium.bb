@@ -212,6 +212,9 @@ class UserManager {
   // first signed-in user and does not change thereafter.
   virtual const User* GetPrimaryUser() const = 0;
 
+  // Returns NULL if User is not created.
+  virtual User* GetUserByProfile(Profile* profile) const = 0;
+
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
       const std::string& username,
