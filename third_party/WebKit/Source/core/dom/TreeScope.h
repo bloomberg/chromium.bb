@@ -152,7 +152,7 @@ private:
     virtual void dispose() { }
 
     int refCount() const;
-#ifndef NDEBUG
+#if SECURITY_ASSERT_ENABLED
     bool deletionHasBegun();
     void beginDeletion();
 #else

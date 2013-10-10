@@ -87,7 +87,7 @@ inline void removeDetachedChildrenInContainer(GenericNodeContainer* container)
     GenericNode* n;
     GenericNode* next;
     while ((n = head) != 0) {
-        ASSERT(n->m_deletionHasBegun);
+        ASSERT_WITH_SECURITY_IMPLICATION(n->m_deletionHasBegun);
 
         next = n->nextSibling();
         n->setNextSibling(0);
@@ -157,7 +157,7 @@ namespace Private {
         // We have to tell all children that their parent has died.
         GenericNode* next = 0;
         for (GenericNode* n = container->firstChild(); n != 0; n = next) {
-            ASSERT(!n->m_deletionHasBegun);
+            ASSERT_WITH_SECURITY_IMPLICATION(!n->m_deletionHasBegun);
 
             next = n->nextSibling();
             n->setNextSibling(0);
@@ -167,7 +167,7 @@ namespace Private {
                 next->setPreviousSibling(0);
 
             if (!n->refCount()) {
-#ifndef NDEBUG
+#if SECURITY_ASSERT_ENABLED
                 n->m_deletionHasBegun = true;
 #endif
                 // Add the node to the list of nodes to be deleted.

@@ -27,7 +27,7 @@
 
 namespace WebCore {
 
-#ifndef NDEBUG
+#if SECURITY_ASSERT_ENABLED
 template<typename NodeType> class TreeShared;
 template<typename NodeType> void adopted(TreeShared<NodeType>*);
 #endif
@@ -37,10 +37,12 @@ template<typename NodeType> class TreeShared {
 protected:
     TreeShared()
         : m_refCount(1)
-#ifndef NDEBUG
+#if SECURITY_ASSERT_ENABLED
         , m_deletionHasBegun(false)
+#if !ASSERT_DISABLED
         , m_inRemovedLastRefFunction(false)
         , m_adoptionIsRequired(true)
+#endif
 #endif
     {
         ASSERT(isMainThread());
@@ -50,7 +52,7 @@ protected:
     {
         ASSERT(isMainThread());
         ASSERT(!m_refCount);
-        ASSERT(m_deletionHasBegun);
+        ASSERT_WITH_SECURITY_IMPLICATION(m_deletionHasBegun);
         ASSERT(!m_adoptionIsRequired);
     }
 
@@ -58,7 +60,7 @@ public:
     void ref()
     {
         ASSERT(isMainThread());
-        ASSERT(!m_deletionHasBegun);
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
         ASSERT(!m_inRemovedLastRefFunction);
         ASSERT(!m_adoptionIsRequired);
         ++m_refCount;
@@ -68,12 +70,12 @@ public:
     {
         ASSERT(isMainThread());
         ASSERT(m_refCount >= 0);
-        ASSERT(!m_deletionHasBegun);
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
         ASSERT(!m_inRemovedLastRefFunction);
         ASSERT(!m_adoptionIsRequired);
         NodeType* thisNode = static_cast<NodeType*>(this);
         if (--m_refCount <= 0 && !thisNode->hasTreeSharedParent()) {
-#ifndef NDEBUG
+#if !ASSERT_DISABLED
             m_inRemovedLastRefFunction = true;
 #endif
             thisNode->removedLastRef();
@@ -82,7 +84,7 @@ public:
 
     bool hasOneRef() const
     {
-        ASSERT(!m_deletionHasBegun);
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
         ASSERT(!m_inRemovedLastRefFunction);
         return m_refCount == 1;
     }
@@ -95,27 +97,30 @@ public:
 private:
     int m_refCount;
 
-#ifndef NDEBUG
+#if SECURITY_ASSERT_ENABLED
 public:
     bool m_deletionHasBegun;
+#if !ASSERT_DISABLED
     bool m_inRemovedLastRefFunction;
+
 private:
     friend void adopted<>(TreeShared<NodeType>*);
     bool m_adoptionIsRequired;
 #endif
+#endif
 };
 
-#ifndef NDEBUG
-
+#if SECURITY_ASSERT_ENABLED
 template<typename NodeType> inline void adopted(TreeShared<NodeType>* object)
 {
     if (!object)
         return;
-    ASSERT(!object->m_deletionHasBegun);
+    ASSERT_WITH_SECURITY_IMPLICATION(!object->m_deletionHasBegun);
+#if !ASSERT_DISABLED
     ASSERT(!object->m_inRemovedLastRefFunction);
     object->m_adoptionIsRequired = false;
+#endif
 }
-
 #endif
 
 }

@@ -125,7 +125,7 @@ SVGElementInstance::~SVGElementInstance()
 // delete an SVGElementInstance at each deref call site.
 void SVGElementInstance::removedLastRef()
 {
-#ifndef NDEBUG
+#if SECURITY_ASSERT_ENABLED
     m_deletionHasBegun = true;
 #endif
     delete this;

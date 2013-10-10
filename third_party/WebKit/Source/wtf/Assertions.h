@@ -244,6 +244,12 @@ WTF_EXPORT void WTFInstallReportBacktraceOnCrashHook();
 
 #endif
 
+#if defined(ADDRESS_SANITIZER) || !ASSERT_DISABLED
+#define SECURITY_ASSERT_ENABLED 1
+#else
+#define SECURITY_ASSERT_ENABLED 0
+#endif
+
 /* ASSERT_WITH_MESSAGE */
 
 #if ASSERT_MSG_DISABLED

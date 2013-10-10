@@ -571,7 +571,7 @@ Document::~Document()
 
 void Document::dispose()
 {
-    ASSERT(!m_deletionHasBegun);
+    ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
     // We must make sure not to be retaining any of our children through
     // these extra pointers or we will create a reference cycle.
     m_docType = 0;

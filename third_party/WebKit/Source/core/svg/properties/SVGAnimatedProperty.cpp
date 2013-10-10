@@ -53,7 +53,7 @@ SVGAnimatedProperty::~SVGAnimatedProperty()
 void SVGAnimatedProperty::commitChange()
 {
     ASSERT(m_contextElement);
-    ASSERT(!m_contextElement->m_deletionHasBegun);
+    ASSERT_WITH_SECURITY_IMPLICATION(!m_contextElement->m_deletionHasBegun);
     m_contextElement->invalidateSVGAttributes();
     m_contextElement->svgAttributeChanged(m_attributeName);
 }

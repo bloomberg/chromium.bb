@@ -338,7 +338,7 @@ void TreeScope::adoptIfNeeded(Node* node)
     ASSERT(this);
     ASSERT(node);
     ASSERT(!node->isDocumentNode());
-    ASSERT(!node->m_deletionHasBegun);
+    ASSERT_WITH_SECURITY_IMPLICATION(!node->m_deletionHasBegun);
     TreeScopeAdopter adopter(node, this);
     if (adopter.needsScopeChange())
         adopter.execute();
@@ -459,7 +459,7 @@ TreeScope* commonTreeScope(Node* nodeA, Node* nodeB)
     return treeScopesA[indexA] == treeScopesB[indexB] ? treeScopesA[indexA] : 0;
 }
 
-#ifndef NDEBUG
+#if SECURITY_ASSERT_ENABLED
 bool TreeScope::deletionHasBegun()
 {
     return rootNode() && rootNode()->m_deletionHasBegun;

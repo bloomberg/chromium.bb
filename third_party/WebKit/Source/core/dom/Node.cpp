@@ -2429,7 +2429,7 @@ bool Node::willRespondToTouchEvents()
 // This is here for inlining
 inline void TreeScope::removedLastRefToScope()
 {
-    ASSERT(!deletionHasBegun());
+    ASSERT_WITH_SECURITY_IMPLICATION(!deletionHasBegun());
     if (m_guardRefCount) {
         // If removing a child removes the last self-only ref, we don't
         // want the scope to be destructed until after
@@ -2437,14 +2437,16 @@ inline void TreeScope::removedLastRefToScope()
         // extra self-only ref.
         guardRef();
         dispose();
-#ifndef NDEBUG
+#if !ASSERT_DISABLED
         // We need to do this right now since guardDeref() can delete this.
         rootNode()->m_inRemovedLastRefFunction = false;
 #endif
         guardDeref();
     } else {
-#ifndef NDEBUG
+#if !ASSERT_DISABLED
         rootNode()->m_inRemovedLastRefFunction = false;
+#endif
+#if SECURITY_ASSERT_ENABLED
         beginDeletion();
 #endif
         delete this;
@@ -2463,7 +2465,7 @@ void Node::removedLastRef()
         return;
     }
 
-#ifndef NDEBUG
+#if SECURITY_ASSERT_ENABLED
     m_deletionHasBegun = true;
 #endif
     delete this;
