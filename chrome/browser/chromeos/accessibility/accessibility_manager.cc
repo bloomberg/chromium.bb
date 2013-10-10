@@ -383,6 +383,10 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
 
   spoken_feedback_enabled_ = enabled;
 
+  Speak(l10n_util::GetStringUTF8(
+      enabled ? IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED :
+      IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED).c_str());
+
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
 
@@ -392,10 +396,6 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
       chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
       content::NotificationService::AllSources(),
       content::Details<AccessibilityStatusEventDetails>(&details));
-
-  Speak(l10n_util::GetStringUTF8(
-      enabled ? IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED :
-      IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED).c_str());
 
   if (enabled)
     LoadChromeVox();
