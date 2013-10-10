@@ -60,6 +60,17 @@ Study CreateStudyWithFlagGroups(int default_group_probability,
   return study;
 }
 
+// Tests whether a field trial is active (i.e. group() has been called on it).
+bool IsFieldTrialActive(const std::string& trial_name) {
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  for (size_t i = 0; i < active_groups.size(); ++i) {
+    if (active_groups[i].trial_name == trial_name)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 TEST(VariationsSeedProcessorTest, CheckStudyChannel) {
@@ -526,6 +537,51 @@ TEST(VariationsSeedProcessorTest, VariationParams) {
   experiment2->set_probability_weight(1);
   seed_processor.CreateTrialFromStudy(study, false);
   EXPECT_EQ(std::string(), GetVariationParamValue("Study2", "x"));
+}
+
+TEST(VariationsSeedProcessorTest, StartsActive) {
+  base::FieldTrialList field_trial_list(NULL);
+
+  VariationsSeed seed;
+  Study* study1 = seed.add_study();
+  study1->set_name("A");
+  study1->set_default_experiment_name("Default");
+  AddExperiment("AA", 100, study1);
+  AddExperiment("Default", 0, study1);
+
+  Study* study2 = seed.add_study();
+  study2->set_name("B");
+  study2->set_default_experiment_name("Default");
+  AddExperiment("BB", 100, study2);
+  AddExperiment("Default", 0, study2);
+  study2->set_activation_type(Study_ActivationType_ACTIVATION_AUTO);
+
+  Study* study3 = seed.add_study();
+  study3->set_name("C");
+  study3->set_default_experiment_name("Default");
+  AddExperiment("CC", 100, study3);
+  AddExperiment("Default", 0, study3);
+  study3->set_activation_type(Study_ActivationType_ACTIVATION_EXPLICIT);
+
+  VariationsSeedProcessor seed_processor;
+  seed_processor.CreateTrialsFromSeed(seed, "en-CA", base::Time::Now(),
+                                      base::Version("20.0.0.0"),
+                                      Study_Channel_STABLE);
+
+  // Non-specified and ACTIVATION_EXPLICIT should not start active, but
+  // ACTIVATION_AUTO should.
+  EXPECT_FALSE(IsFieldTrialActive("A"));
+  EXPECT_TRUE(IsFieldTrialActive("B"));
+  EXPECT_FALSE(IsFieldTrialActive("C"));
+
+  EXPECT_EQ("AA", base::FieldTrialList::FindFullName("A"));
+  EXPECT_EQ("BB", base::FieldTrialList::FindFullName("B"));
+  EXPECT_EQ("CC", base::FieldTrialList::FindFullName("C"));
+
+  // Now, all studies should be active.
+  EXPECT_TRUE(IsFieldTrialActive("A"));
+  EXPECT_TRUE(IsFieldTrialActive("B"));
+  EXPECT_TRUE(IsFieldTrialActive("C"));
 }
 
 }  // namespace chrome_variations

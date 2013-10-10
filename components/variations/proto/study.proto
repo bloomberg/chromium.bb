@@ -11,7 +11,7 @@ package chrome_variations;
 // This defines the Protocol Buffer representation of a Chrome Variations study
 // as sent to clients of the Variations server.
 //
-// Next tag: 12
+// Next tag: 13
 message Study {
   // The name of the study. Should not contain spaces or special characters.
   // Ex: "my_study"
@@ -159,4 +159,18 @@ message Study {
   // Randomization seed to be used when |consistency| is set to PERMANENT. If
   // not specified, randomization will be done using the trial name.
   optional uint32 randomization_seed = 11;
+
+  // Specifies whether the study starts as active initially, or whether it
+  // requires the client to query its state before it is marked as active.
+  enum ActivationType {
+    // The study will be activated when its state is queried by the client.
+    // This is recommended for most studies that include client code.
+    ACTIVATION_EXPLICIT  = 0;
+    // The study will be automatically activated when it is created. This
+    // is recommended for studies that do not have any client logic.
+    ACTIVATION_AUTO      = 1;
+  }
+
+  // Activation type for this study. Defaults to ACTIVATION_EXPLICIT if omitted.
+  optional ActivationType activation_type = 12;
 }

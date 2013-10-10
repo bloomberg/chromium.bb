@@ -233,6 +233,8 @@ void VariationsSeedProcessor::CreateTrialFromStudy(const Study& study,
   trial->SetForced();
   if (is_expired)
     trial->Disable();
+  else if (study.activation_type() == Study_ActivationType_ACTIVATION_AUTO)
+    trial->group();
 }
 
 bool VariationsSeedProcessor::IsStudyExpired(const Study& study,
