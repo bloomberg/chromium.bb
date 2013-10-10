@@ -198,7 +198,7 @@ bool Editor::canEditRichly() const
     return m_frame->selection().isContentRichlyEditable();
 }
 
-// WinIE uses onbeforecut and onbeforepaste to enables the cut and paste menu items.  They
+// WinIE uses onbeforecut and onbeforepaste to enables the cut and paste menu items. They
 // also send onbeforecopy, apparently for symmetry, but it doesn't affect the menu items.
 // We need to use onbeforecopy as a real menu enabler because we allow elements that are not
 // normally selectable to implement copy/paste (like divs, or a document body).
@@ -740,16 +740,16 @@ void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
     dispatchEditableContentChangedEvents(composition->startingRootEditableElement(), composition->endingRootEditableElement());
     VisibleSelection newSelection(cmd->endingSelection());
 
-    // Don't clear the typing style with this selection change.  We do those things elsewhere if necessary.
+    // Don't clear the typing style with this selection change. We do those things elsewhere if necessary.
     changeSelectionAfterCommand(newSelection, 0);
 
     if (!cmd->preservesTypingStyle())
         m_frame->selection().clearTypingStyle();
 
     // Command will be equal to last edit command only in the case of typing
-    if (m_lastEditCommand.get() == cmd)
+    if (m_lastEditCommand.get() == cmd) {
         ASSERT(cmd->isTypingCommand());
-    else {
+    } else {
         // Only register a new undo command if the command passed in is
         // different from the last command
         m_lastEditCommand = cmd;
@@ -1132,7 +1132,7 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
     // The basic approach is to search in two phases - from the selection end to the end of the doc, and
     // then we wrap and search from the doc start to (approximately) where we started.
 
-    // Start at the end of the selection, search to edge of document.  Starting at the selection end makes
+    // Start at the end of the selection, search to edge of document. Starting at the selection end makes
     // repeated "check spelling" commands work.
     VisibleSelection selection(frame().selection().selection());
     RefPtr<Range> spellingSearchRange(rangeOfContents(frame().document()));
@@ -1145,8 +1145,9 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
             // We match AppKit's rule: Start 1 character before the selection.
             VisiblePosition oneBeforeStart = start.previous();
             setStart(spellingSearchRange.get(), oneBeforeStart.isNotNull() ? oneBeforeStart : start);
-        } else
+        } else {
             setStart(spellingSearchRange.get(), selection.visibleEnd());
+        }
     }
 
     Position position = spellingSearchRange->startPosition();
@@ -1184,7 +1185,7 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
         return; // nothing to search in
 
     // We go to the end of our first range instead of the start of it, just to be sure
-    // we don't get foiled by any word boundary problems at the start.  It means we might
+    // we don't get foiled by any word boundary problems at the start. It means we might
     // do a tiny bit more searching.
     Node* searchEndNodeAfterWrap = spellingSearchRange->endContainer();
     int searchEndOffsetAfterWrap = spellingSearchRange->endOffset();
@@ -1354,8 +1355,9 @@ void Editor::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart,
         if (textCheckingOptions & TextCheckingTypeGrammar) {
             VisibleSelection selectedSentence = VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart));
             markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedRange().get(), selectedSentence.toNormalizedRange().get());
-        } else
+        } else {
             markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedRange().get(), adjacentWords.toNormalizedRange().get());
+        }
         return;
     }
 
@@ -1843,8 +1845,9 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     if (m_frame->selection().typingStyle()) {
         typingStyle = m_frame->selection().typingStyle()->copy();
         typingStyle->overrideWithStyle(style);
-    } else
+    } else {
         typingStyle = EditingStyle::create(style);
+    }
 
     typingStyle->prepareToApplyAt(m_frame->selection().selection().visibleStart().deepEquivalent(), EditingStyle::PreserveWritingDirection);
 
@@ -2106,8 +2109,8 @@ bool Editor::selectionStartHasMarkerFor(DocumentMarker::MarkerType markerType, i
     if (!node)
         return false;
 
-    unsigned int startOffset = static_cast<unsigned int>(from);
-    unsigned int endOffset = static_cast<unsigned int>(from + length);
+    unsigned startOffset = static_cast<unsigned>(from);
+    unsigned endOffset = static_cast<unsigned>(from + length);
     Vector<DocumentMarker*> markers = m_frame->document()->markers()->markersFor(node);
     for (size_t i = 0; i < markers.size(); ++i) {
         DocumentMarker* marker = markers[i];
