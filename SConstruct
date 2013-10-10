@@ -2071,6 +2071,7 @@ def MakeBaseTrustedEnv():
       'src/trusted/validator_x86/build.scons',
       'src/trusted/weak_ref/build.scons',
       'tests/common/build.scons',
+      'tests/lock_manager/build.scons',
       'tests/performance/build.scons',
       'tests/python_version/build.scons',
       'tests/sel_ldr_seccomp/build.scons',

@@ -7,7 +7,6 @@
 
 import os
 import platform
-import sys
 
 Import('env')
 
@@ -86,6 +85,7 @@ if env.Bit('posix'):
     'posix/nacl_threads.c',
     'posix/nacl_time.c',
     'posix/nacl_timestamp.c',
+    'posix/nacl_file_lock.c',  # only used on Linux, but built/tested on Posix
     ]
 
 platform_inputs += [
