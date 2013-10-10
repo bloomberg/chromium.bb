@@ -609,7 +609,6 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	xcb_configure_notify_event_t *configure_notify = 
 		(xcb_configure_notify_event_t *) event;
 	struct weston_wm_window *window;
-	int x, y;
 
 	wm_log("XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d\n",
 	       configure_notify->window,
@@ -617,7 +616,6 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	       configure_notify->width, configure_notify->height);
 
 	window = hash_table_lookup(wm->window_hash, configure_notify->window);
-	weston_wm_window_get_child_position(window, &x, &y);
 	window->x = configure_notify->x;
 	window->y = configure_notify->y;
 	if (window->override_redirect) {
