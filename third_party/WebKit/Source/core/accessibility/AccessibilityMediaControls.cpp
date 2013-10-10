@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityMediaControls.h"
 
-#include "platform/LocalizedStrings.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLocalizedString.h"
 
@@ -260,6 +259,13 @@ bool AccessibilityMediaControlsContainer::computeAccessibilityIsIgnored() const
 
 //
 // AccessibilityMediaTimeline
+
+static String localizedMediaTimeDescription(float /*time*/)
+{
+    // FIXME: To be fixed. See
+    // http://trac.webkit.org/browser/trunk/Source/WebCore/platform/LocalizedStrings.cpp#L928
+    return String();
+}
 
 AccessibilityMediaTimeline::AccessibilityMediaTimeline(RenderObject* renderer)
     : AccessibilitySlider(renderer)

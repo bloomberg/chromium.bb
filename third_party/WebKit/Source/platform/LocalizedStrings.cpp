@@ -56,46 +56,6 @@ static String query(WebLocalizedString::Name name, const WebString& parameter1, 
     return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
 }
 
-String AXButtonActionVerb()
-{
-    return query(WebLocalizedString::AXButtonActionVerb);
-}
-
-String AXRadioButtonActionVerb()
-{
-    return query(WebLocalizedString::AXRadioButtonActionVerb);
-}
-
-String AXTextFieldActionVerb()
-{
-    return query(WebLocalizedString::AXTextFieldActionVerb);
-}
-
-String AXCheckedCheckBoxActionVerb()
-{
-    return query(WebLocalizedString::AXCheckedCheckBoxActionVerb);
-}
-
-String AXUncheckedCheckBoxActionVerb()
-{
-    return query(WebLocalizedString::AXUncheckedCheckBoxActionVerb);
-}
-
-String AXLinkActionVerb()
-{
-    return query(WebLocalizedString::AXLinkActionVerb);
-}
-
-String AXMenuListPopupActionVerb()
-{
-    return String();
-}
-
-String AXMenuListActionVerb()
-{
-    return String();
-}
-
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 String AXAMPMFieldText()
 {
@@ -156,12 +116,6 @@ String missingPluginText()
 String blockedPluginByContentSecurityPolicyText()
 {
     return query(WebLocalizedString::BlockedPluginText);
-}
-
-String localizedMediaTimeDescription(float /*time*/)
-{
-    // FIXME: to be fixed.
-    return String();
 }
 
 } // namespace WebCore

@@ -66,9 +66,11 @@
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
-#include "platform/LocalizedStrings.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebLocalizedString.h"
 #include "wtf/StdLibExtras.h"
 
+using WebKit::WebLocalizedString;
 using namespace std;
 
 namespace WebCore {
@@ -858,21 +860,26 @@ KURL AccessibilityRenderObject::url() const
 // Properties of interactive elements.
 //
 
+static String queryString(WebLocalizedString::Name name)
+{
+    return WebKit::Platform::current()->queryLocalizedString(name);
+}
+
 String AccessibilityRenderObject::actionVerb() const
 {
     switch (roleValue()) {
     case ButtonRole:
     case ToggleButtonRole:
-        return AXButtonActionVerb();
+        return queryString(WebLocalizedString::AXButtonActionVerb);
     case TextFieldRole:
     case TextAreaRole:
-        return AXTextFieldActionVerb();
+        return queryString(WebLocalizedString::AXTextFieldActionVerb);
     case RadioButtonRole:
-        return AXRadioButtonActionVerb();
+        return queryString(WebLocalizedString::AXRadioButtonActionVerb);
     case CheckBoxRole:
-        return isChecked() ? AXCheckedCheckBoxActionVerb() : AXUncheckedCheckBoxActionVerb();
+        return queryString(isChecked() ? WebLocalizedString::AXCheckedCheckBoxActionVerb : WebLocalizedString::AXUncheckedCheckBoxActionVerb);
     case LinkRole:
-        return AXLinkActionVerb();
+        return queryString(WebLocalizedString::AXLinkActionVerb);
     default:
         return emptyString();
     }

@@ -33,16 +33,7 @@
 
 namespace WebCore {
 
-    // FIXME: Use Locale::queryString instead of the following functions.
-
-PLATFORM_EXPORT String AXButtonActionVerb();
-PLATFORM_EXPORT String AXRadioButtonActionVerb();
-PLATFORM_EXPORT String AXTextFieldActionVerb();
-PLATFORM_EXPORT String AXCheckedCheckBoxActionVerb();
-PLATFORM_EXPORT String AXUncheckedCheckBoxActionVerb();
-PLATFORM_EXPORT String AXMenuListActionVerb();
-PLATFORM_EXPORT String AXMenuListPopupActionVerb();
-PLATFORM_EXPORT String AXLinkActionVerb();
+// FIXME: Use Locale::queryString instead of the following functions.
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 PLATFORM_EXPORT String AXAMPMFieldText();
@@ -59,8 +50,6 @@ PLATFORM_EXPORT String AXYearFieldText();
 
 PLATFORM_EXPORT String missingPluginText();
 PLATFORM_EXPORT String blockedPluginByContentSecurityPolicyText();
-
-PLATFORM_EXPORT String localizedMediaTimeDescription(float);
 
 } // namespace WebCore
 
