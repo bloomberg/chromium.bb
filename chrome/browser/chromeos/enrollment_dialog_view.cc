@@ -217,6 +217,11 @@ DialogEnrollmentDelegate::~DialogEnrollmentDelegate() {}
 
 bool DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
                                       const base::Closure& post_action) {
+  if (uri_list.empty()) {
+    NET_LOG_EVENT("No enrollment URIs", network_name_);
+    return false;
+  }
+
   // Keep the closure for later activation if we notice that
   // a certificate has been added.
 
@@ -229,16 +234,18 @@ bool DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
     if (uri.IsStandard() || uri.scheme() == extensions::kExtensionScheme) {
       // If this is a "standard" scheme, like http, ftp, etc., then open that in
       // the enrollment dialog.
+      NET_LOG_EVENT("Showing enrollment dialog", network_name_);
       EnrollmentDialogView::ShowDialog(owning_window_,
                                        network_name_,
                                        profile_,
                                        uri, post_action);
       return true;
     }
+    NET_LOG_DEBUG("Nonstandard URI: " + uri.spec(), network_name_);
   }
 
   // No appropriate scheme was found.
-  NET_LOG_EVENT("No usable enrollment URI", network_name_);
+  NET_LOG_ERROR("No usable enrollment URI", network_name_);
   return false;
 }
 
@@ -269,8 +276,10 @@ bool CreateDialog(const std::string& service_path,
 
   const CertificatePattern& certificate_pattern =
       network->ui_data().certificate_pattern();
-  if (certificate_pattern.Empty())
+  if (certificate_pattern.Empty()) {
+    NET_LOG_EVENT("No certificate pattern found", service_path);
     return false;
+  }
 
   NET_LOG_USER("Enrolling", service_path);
 
