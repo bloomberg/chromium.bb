@@ -77,7 +77,7 @@ scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->SetBoolean("javascriptEnabled", true);
   caps->SetBoolean("takesScreenshot", true);
   caps->SetBoolean("handlesAlerts", true);
-  caps->SetBoolean("databaseEnabled", true);
+  caps->SetBoolean("databaseEnabled", false);
   caps->SetBoolean("locationContextEnabled", true);
   caps->SetBoolean("applicationCacheEnabled", false);
   caps->SetBoolean("browserConnectionEnabled", false);
