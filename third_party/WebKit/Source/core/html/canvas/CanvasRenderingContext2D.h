@@ -34,6 +34,7 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Path.h"
+#include "core/svg/SVGMatrix.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
@@ -116,6 +117,12 @@ public:
 
     void save() { ++m_unrealizedSaveCount; }
     void restore();
+
+    SVGMatrix currentTransform() const
+    {
+        return SVGMatrix(state().m_transform);
+    }
+    void setCurrentTransform(const SVGMatrix&);
 
     void scale(float sx, float sy);
     void rotate(float angleInRadians);

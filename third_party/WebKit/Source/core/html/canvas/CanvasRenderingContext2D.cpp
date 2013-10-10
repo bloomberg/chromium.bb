@@ -596,6 +596,11 @@ void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operati
     c->setCompositeOperation(op, blendMode);
 }
 
+void CanvasRenderingContext2D::setCurrentTransform(const SVGMatrix& matrix)
+{
+    setTransform(matrix.a(), matrix.b(), matrix.c(), matrix.d(), matrix.e(), matrix.f());
+}
+
 void CanvasRenderingContext2D::scale(float sx, float sy)
 {
     GraphicsContext* c = drawingContext();
@@ -698,12 +703,12 @@ void CanvasRenderingContext2D::transform(float m11, float m12, float m21, float 
 
     realizeSaves();
 
+    modifiableState().m_transform = newTransform;
     if (!newTransform.isInvertible()) {
         modifiableState().m_invertibleCTM = false;
         return;
     }
 
-    modifiableState().m_transform = newTransform;
     c->concatCTM(transform);
     m_path.transform(transform.inverse());
 }
