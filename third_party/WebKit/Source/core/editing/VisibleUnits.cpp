@@ -487,9 +487,9 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
 
     SimplifiedBackwardsTextIterator it(searchRange.get());
     unsigned next = 0;
-    bool inTextSecurityMode = start.deprecatedNode() && start.deprecatedNode()->renderer() && start.deprecatedNode()->renderer()->style()->textSecurity() != TSNONE;
     bool needMoreContext = false;
     while (!it.atEnd()) {
+        bool inTextSecurityMode = it.node() && it.node()->renderer() && it.node()->renderer()->style()->textSecurity() != TSNONE;
         // iterate to get chunks until the searchFunction returns a non-zero value.
         if (!inTextSecurityMode)
             it.prependTextTo(string);
@@ -562,11 +562,11 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     TextIterator it(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     const unsigned invalidOffset = static_cast<unsigned>(-1);
     unsigned next = invalidOffset;
-    bool inTextSecurityMode = start.deprecatedNode() && start.deprecatedNode()->renderer() && start.deprecatedNode()->renderer()->style()->textSecurity() != TSNONE;
     bool needMoreContext = false;
     while (!it.atEnd()) {
         // Keep asking the iterator for chunks until the search function
         // returns an end value not equal to the length of the string passed to it.
+        bool inTextSecurityMode = it.node() && it.node()->renderer() && it.node()->renderer()->style()->textSecurity() != TSNONE;
         if (!inTextSecurityMode)
             it.appendTextTo(string);
         else {

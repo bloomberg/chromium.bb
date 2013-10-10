@@ -224,6 +224,8 @@ public:
 
     int length() const { return m_textLength; }
 
+    Node* node() const { return m_node; }
+
     template<typename BufferType>
     void prependTextTo(BufferType& output)
     {
