@@ -265,8 +265,6 @@ TEST_F(GLES2DecoderTest1, BlendFuncSeparateValidArgs) {
 }
 // TODO(gman): BufferData
 
-// TODO(gman): BufferDataImmediate
-
 // TODO(gman): BufferSubData
 
 // TODO(gman): BufferSubDataImmediate
@@ -1920,6 +1918,23 @@ TEST_F(GLES2DecoderTest1, HintInvalidArgs0_0) {
   cmd.Init(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, IsBufferValidArgs) {
+  SpecializedSetup<cmds::IsBuffer, 0>(true);
+  cmds::IsBuffer cmd;
+  cmd.Init(client_buffer_id_, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, IsBufferInvalidArgsBadSharedMemoryId) {
+  SpecializedSetup<cmds::IsBuffer, 0>(false);
+  cmds::IsBuffer cmd;
+  cmd.Init(client_buffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(client_buffer_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_
 

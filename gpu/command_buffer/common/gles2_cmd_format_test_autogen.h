@@ -271,7 +271,6 @@ TEST_F(GLES2FormatTest, BufferData) {
       next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Implement test for BufferDataImmediate
 TEST_F(GLES2FormatTest, BufferSubData) {
   cmds::BufferSubData& cmd = *GetBufferAs<cmds::BufferSubData>();
   void* next_cmd = cmd.Set(

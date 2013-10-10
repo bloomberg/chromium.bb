@@ -1265,7 +1265,7 @@ _FUNCTION_INFO = {
   },
   'BufferData': {
     'type': 'Manual',
-    'immediate': True,
+    'immediate': False,
     'client_test': False,
   },
   'BufferSubData': {
@@ -3644,19 +3644,14 @@ class DataHandler(TypeHandler):
   def WriteImmediateCmdGetTotalSize(self, func, file):
     """Overrriden from TypeHandler."""
     # TODO(gman): Move this data to _FUNCTION_INFO?
-    if func.name == 'BufferDataImmediate':
-      file.Write("    uint32 total_size = ComputeSize(_size);\n")
-    elif func.name == 'BufferSubDataImmediate':
+    if func.name == 'BufferSubDataImmediate':
         file.Write("    uint32 total_size = ComputeSize(_size);\n")
     elif func.name == 'CompressedTexSubImage2DImmediate':
         file.Write("    uint32 total_size = ComputeSize(_imageSize);\n")
 
   def WriteImmediateCmdSizeTest(self, func, file):
     """Overrriden from TypeHandler."""
-    # TODO(gman): Move this data to _FUNCTION_INFO?
-    if func.name == 'BufferDataImmediate':
-      file.Write("    uint32 total_size = cmd.ComputeSize(cmd.size);\n")
-    elif func.name == 'BufferSubDataImmediate':
+    if func.name == 'BufferSubDataImmediate':
         file.Write("    uint32 total_size = cmd.ComputeSize(cmd.size);\n")
     elif func.name == 'CompressedTexSubImage2DImmediate':
         file.Write("    uint32 total_size = cmd.ComputeSize(cmd.imageSize);\n")

@@ -641,52 +641,6 @@ COMPILE_ASSERT(offsetof(BufferData, data_shm_offset) == 16,
 COMPILE_ASSERT(offsetof(BufferData, usage) == 20,
                OffsetOf_BufferData_usage_not_20);
 
-struct BufferDataImmediate {
-  typedef BufferDataImmediate ValueType;
-  static const CommandId kCmdId = kBufferDataImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-
-  static uint32 ComputeSize(uint32 size_in_bytes) {
-    return static_cast<uint32>(
-        sizeof(ValueType) +  // NOLINT
-        RoundSizeToMultipleOfEntries(size_in_bytes));
-  }
-
-  void SetHeader(uint32 size_in_bytes) {
-    header.SetCmdByTotalSize<ValueType>(size_in_bytes);
-  }
-
-  void Init(GLenum _target, GLsizeiptr _size, GLenum _usage) {
-    uint32 total_size = 0;  // TODO(gman): get correct size.
-    SetHeader(total_size);
-    target = _target;
-    size = _size;
-    usage = _usage;
-  }
-
-  void* Set(void* cmd, GLenum _target, GLsizeiptr _size, GLenum _usage) {
-    uint32 total_size = 0;  // TODO(gman): get correct size.
-    static_cast<ValueType*>(cmd)->Init(_target, _size, _usage);
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
-  }
-
-  gpu::CommandHeader header;
-  uint32 target;
-  int32 size;
-  uint32 usage;
-};
-
-COMPILE_ASSERT(sizeof(BufferDataImmediate) == 16,
-               Sizeof_BufferDataImmediate_is_not_16);
-COMPILE_ASSERT(offsetof(BufferDataImmediate, header) == 0,
-               OffsetOf_BufferDataImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(BufferDataImmediate, target) == 4,
-               OffsetOf_BufferDataImmediate_target_not_4);
-COMPILE_ASSERT(offsetof(BufferDataImmediate, size) == 8,
-               OffsetOf_BufferDataImmediate_size_not_8);
-COMPILE_ASSERT(offsetof(BufferDataImmediate, usage) == 12,
-               OffsetOf_BufferDataImmediate_usage_not_12);
-
 struct BufferSubData {
   typedef BufferSubData ValueType;
   static const CommandId kCmdId = kBufferSubData;

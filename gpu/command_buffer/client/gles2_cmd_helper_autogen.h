@@ -131,15 +131,6 @@
     }
   }
 
-  void BufferDataImmediate(GLenum target, GLsizeiptr size, GLenum usage) {
-    const uint32 s = 0;  // TODO(gman): compute correct size
-    gles2::cmds::BufferDataImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::BufferDataImmediate>(s);
-    if (c) {
-      c->Init(target, size, usage);
-    }
-  }
-
   void BufferSubData(
       GLenum target, GLintptr offset, GLsizeiptr size, uint32 data_shm_id,
       uint32 data_shm_offset) {
