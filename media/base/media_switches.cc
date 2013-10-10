@@ -33,6 +33,9 @@ const char kEnableMP3StreamParser[] = "enable-mp3-stream-parser";
 const char kDisableInfobarForProtectedMediaIdentifier[] =
     "disable-infobar-for-protected-media-identifier";
 
+// Enables use of MediaDrm for Encrypted Media Extensions implementation.
+const char kEnableMediaDrm[] = "enable-mediadrm";
+
 // Enables use of non-compositing MediaDrm decoding by default for Encrypted
 // Media Extensions implementation.
 const char kMediaDrmEnableNonCompositing[] = "mediadrm-enable-non-compositing";

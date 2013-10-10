@@ -6,9 +6,11 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/render_thread.h"
+#include "media/base/media_switches.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
@@ -244,7 +246,8 @@ void AddChromeKeySystems(std::vector<KeySystemInfo>* key_systems_info) {
 #if defined(ENABLE_PEPPER_CDMS)
   AddPepperBasedWidevine(key_systems_info);
 #elif defined(OS_ANDROID)
-  AddAndroidWidevine(key_systems_info);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableMediaDrm))
+    AddAndroidWidevine(key_systems_info);
 #endif
 #endif
 }
