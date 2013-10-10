@@ -12,3 +12,7 @@ Copied files:
 https://github.com/liuliu/ccv/blob/unstable/js/ccv.js
 https://github.com/liuliu/ccv/blob/unstable/js/face.js
 https://github.com/liuliu/ccv/blob/unstable/COPYING
+
+Local Modifications:
+Fixed the path in ccv.js for the web worker to work in the Camera app's
+directory structure.
