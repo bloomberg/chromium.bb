@@ -372,7 +372,6 @@ class SessionModelAssociator
   // During integration tests, we sometimes need to block until a local change
   // is made.
   bool waiting_for_change_;
-  base::WeakPtrFactory<SessionModelAssociator> test_weak_factory_;
 
   // Profile being synced. Weak pointer.
   Profile* const profile_;
@@ -381,6 +380,8 @@ class SessionModelAssociator
 
   // Our favicon cache.
   FaviconCache favicon_cache_;
+
+  base::WeakPtrFactory<SessionModelAssociator> test_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionModelAssociator);
 };

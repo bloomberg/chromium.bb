@@ -141,13 +141,12 @@ NonBlockingInvalidator::NonBlockingInvalidator(
     const WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info)
-        : weak_ptr_factory_(this),
-          core_(
-              new Core(MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()))),
-          parent_task_runner_(
-              base::ThreadTaskRunnerHandle::Get()),
-          network_task_runner_(notifier_options.request_context_getter->
-              GetNetworkTaskRunner()) {
+    : parent_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      network_task_runner_(
+          notifier_options.request_context_getter->GetNetworkTaskRunner()),
+      weak_ptr_factory_(this) {
+  core_ = new Core(MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()));
+
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(

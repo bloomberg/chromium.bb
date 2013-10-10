@@ -65,7 +65,9 @@ class SyncInvalidationScheduler : public invalidation::Scheduler {
       invalidation::SystemResources* resources) OVERRIDE;
 
  private:
-  base::WeakPtrFactory<SyncInvalidationScheduler> weak_factory_;
+  // Runs the task, deletes it, and removes it from |posted_tasks_|.
+  void RunPostedTask(invalidation::Closure* task);
+
   // Holds all posted tasks that have not yet been run.
   std::set<invalidation::Closure*> posted_tasks_;
 
@@ -73,8 +75,7 @@ class SyncInvalidationScheduler : public invalidation::Scheduler {
   bool is_started_;
   bool is_stopped_;
 
-  // Runs the task, deletes it, and removes it from |posted_tasks_|.
-  void RunPostedTask(invalidation::Closure* task);
+  base::WeakPtrFactory<SyncInvalidationScheduler> weak_factory_;
 };
 
 class SyncStorage : public invalidation::Storage {

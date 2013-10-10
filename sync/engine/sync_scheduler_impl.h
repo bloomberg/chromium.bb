@@ -239,14 +239,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   virtual void OnActionableError(const sessions::SyncSessionSnapshot& snapshot);
 
-  base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
-
-  // A second factory specially for weak_handle_this_, to allow the handle
-  // to be const and alleviate threading concerns.
-  base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_for_weak_handle_;
-
   // For certain methods that need to worry about X-thread posting.
-  const WeakHandle<SyncSchedulerImpl> weak_handle_this_;
+  WeakHandle<SyncSchedulerImpl> weak_handle_this_;
 
   // Used for logging.
   const std::string name_;
@@ -315,6 +309,12 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // The change is to remember that poll timer just fired and retry poll job
   // after credentials are updated.
   bool do_poll_after_credentials_updated_;
+
+  base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
+
+  // A second factory specially for weak_handle_this_, to allow the handle
+  // to be const and alleviate threading concerns.
+  base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_for_weak_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSchedulerImpl);
 };

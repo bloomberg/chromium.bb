@@ -71,8 +71,6 @@ class SessionChangeProcessor : public ChangeProcessor,
 
   void StartObserving();
 
-  base::WeakPtrFactory<SessionChangeProcessor> weak_ptr_factory_;
-
   SessionModelAssociator* session_model_associator_;
   content::NotificationRegistrar notification_registrar_;
 
@@ -81,6 +79,8 @@ class SessionChangeProcessor : public ChangeProcessor,
 
   // To bypass some checks/codepaths not applicable in tests.
   bool setup_for_test_;
+
+  base::WeakPtrFactory<SessionChangeProcessor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionChangeProcessor);
 };

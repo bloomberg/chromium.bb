@@ -66,8 +66,6 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
  private:
   class Core;
 
-  base::WeakPtrFactory<NonBlockingInvalidator> weak_ptr_factory_;
-
   InvalidatorRegistrar registrar_;
 
   // The real guts of NonBlockingInvalidator, which allows this class to live
@@ -75,6 +73,8 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
   scoped_refptr<Core> core_;
   scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+
+  base::WeakPtrFactory<NonBlockingInvalidator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingInvalidator);
 };

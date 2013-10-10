@@ -893,8 +893,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
-
   // This allows us to gracefully handle an ABORTED return code from the
   // DataTypeManager in the event that the server informed us to cease and
   // desist syncing immediately.
@@ -977,6 +975,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // access token with exponential backoff.
   base::OneShotTimer<ProfileSyncService> request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
+
+  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

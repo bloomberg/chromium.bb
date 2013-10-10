@@ -519,8 +519,6 @@ class SyncBackendHost
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
-  base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
-
   content::NotificationRegistrar notification_registrar_;
 
   // A reference to the MessageLoop used to construct |this|, so we know how
@@ -580,6 +578,8 @@ class SyncBackendHost
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_;
+
+  base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

@@ -138,8 +138,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // valid value only when |needs_reconfigure_| is set.
   syncer::ConfigureReason last_configure_reason_;
 
-  base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
-
   // The last time Restart() was called.
   base::Time last_restart_time_;
 
@@ -186,6 +184,8 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // Association and time stats of data type configuration.
   std::vector<syncer::DataTypeConfigurationStats> configuration_stats_;
+
+  base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };

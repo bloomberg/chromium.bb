@@ -265,8 +265,6 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
-
   ObserverList<SyncEncryptionHandler::Observer> observers_;
 
   // The current user share (for creating transactions).
@@ -306,6 +304,8 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
   // if there is no custom passphrase or the custom passphrase was set
   // before support for this field was added.
   base::Time custom_passphrase_time_;
+
+  base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEncryptionHandlerImpl);
 };

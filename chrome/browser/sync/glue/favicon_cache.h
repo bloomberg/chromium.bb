@@ -214,9 +214,6 @@ class FaviconCache : public syncer::SyncableService,
   // TODO(zea): consider creating a favicon handler here for fetching unsynced
   // favicons from the web.
 
-  // Weak pointer factory for favicon loads.
-  base::WeakPtrFactory<FaviconCache> weak_ptr_factory_;
-
   scoped_ptr<syncer::SyncChangeProcessor> favicon_images_sync_processor_;
   scoped_ptr<syncer::SyncChangeProcessor> favicon_tracking_sync_processor_;
 
@@ -225,6 +222,9 @@ class FaviconCache : public syncer::SyncableService,
 
   // Maximum number of favicons to sync. 0 means no limit.
   const size_t max_sync_favicon_limit_;
+
+  // Weak pointer factory for favicon loads.
+  base::WeakPtrFactory<FaviconCache> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconCache);
 };

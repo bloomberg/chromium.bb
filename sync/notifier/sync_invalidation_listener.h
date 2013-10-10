@@ -165,7 +165,6 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
   // AckTracker::Delegate implementation.
   virtual void OnTimeout(const ObjectIdSet& ids) OVERRIDE;
 
-  base::WeakPtrFactory<SyncInvalidationListener> weak_ptr_factory_;
   AckTracker ack_tracker_;
 
   // Owned by |sync_system_resources_|.
@@ -182,6 +181,8 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
   // The states of the ticl and the push client.
   InvalidatorState ticl_state_;
   InvalidatorState push_client_state_;
+
+  base::WeakPtrFactory<SyncInvalidationListener> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncInvalidationListener);
 };

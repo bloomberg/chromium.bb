@@ -97,7 +97,7 @@ ModelSafeRoutingInfo TypesToRoutingInfo(ModelTypeSet types) {
 static const size_t kMinNumSamples = 5;
 class SyncSchedulerTest : public testing::Test {
  public:
-  SyncSchedulerTest() : weak_ptr_factory_(this), syncer_(NULL), delay_(NULL) {}
+  SyncSchedulerTest() : syncer_(NULL), delay_(NULL), weak_ptr_factory_(this) {}
 
   class MockDelayProvider : public BackoffDelayProvider {
    public:
@@ -222,7 +222,6 @@ class SyncSchedulerTest : public testing::Test {
   }
 
   base::MessageLoop loop_;
-  base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
   TestDirectorySetterUpper dir_maker_;
   CancelationSignal cancelation_signal_;
   scoped_ptr<MockConnectionManager> connection_;
@@ -233,6 +232,7 @@ class SyncSchedulerTest : public testing::Test {
   std::vector<scoped_refptr<FakeModelWorker> > workers_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   ModelSafeRoutingInfo routing_info_;
+  base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
 };
 
 void RecordSyncShareImpl(SyncShareTimes* times) {

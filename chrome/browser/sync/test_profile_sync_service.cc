@@ -43,13 +43,13 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     syncer::StorageOption storage_option)
     : browser_sync::SyncBackendHost(
         profile->GetDebugName(), profile, sync_prefs),
-      weak_ptr_factory_(this),
       id_factory_(id_factory),
       callback_(callback),
       fail_initial_download_(fail_initial_download),
       set_initial_sync_ended_on_init_(set_initial_sync_ended_on_init),
       synchronous_init_(synchronous_init),
-      storage_option_(storage_option) {}
+      storage_option_(storage_option),
+      weak_ptr_factory_(this) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 

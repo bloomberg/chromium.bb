@@ -210,12 +210,12 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
     Encryptor* encryptor,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping)
-    : weak_ptr_factory_(this),
-      user_share_(user_share),
+    : user_share_(user_share),
       vault_unsafe_(encryptor, SensitiveTypes()),
       encrypt_everything_(false),
       passphrase_type_(IMPLICIT_PASSPHRASE),
-      nigori_overwrite_count_(0) {
+      nigori_overwrite_count_(0),
+      weak_ptr_factory_(this) {
   // Restore the cryptographer's previous keys. Note that we don't add the
   // keystore keys into the cryptographer here, in case a migration was pending.
   vault_unsafe_.cryptographer.Bootstrap(restored_key_for_bootstrapping);

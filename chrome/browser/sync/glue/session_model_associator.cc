@@ -123,11 +123,11 @@ SessionModelAssociator::SessionModelAssociator(
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       setup_for_test_(false),
       waiting_for_change_(false),
-      test_weak_factory_(this),
       profile_(sync_service->profile()),
       error_handler_(error_handler),
       favicon_cache_(profile_,
-                     sync_service->current_experiments().favicon_sync_limit) {
+                     sync_service->current_experiments().favicon_sync_limit),
+      test_weak_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
@@ -141,10 +141,10 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       setup_for_test_(setup_for_test),
       waiting_for_change_(false),
-      test_weak_factory_(this),
       profile_(sync_service->profile()),
       error_handler_(NULL),
-      favicon_cache_(profile_, kMaxSyncFavicons) {
+      favicon_cache_(profile_, kMaxSyncFavicons),
+      test_weak_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);

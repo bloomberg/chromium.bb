@@ -152,11 +152,7 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
                                      BackoffDelayProvider* delay_provider,
                                      sessions::SyncSessionContext* context,
                                      Syncer* syncer)
-    : weak_ptr_factory_(this),
-      weak_ptr_factory_for_weak_handle_(this),
-      weak_handle_this_(MakeWeakHandle(
-          weak_ptr_factory_for_weak_handle_.GetWeakPtr())),
-      name_(name),
+    : name_(name),
       started_(false),
       syncer_short_poll_interval_seconds_(
           TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds)),
@@ -169,7 +165,11 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
       syncer_(syncer),
       session_context_(context),
       no_scheduling_allowed_(false),
-      do_poll_after_credentials_updated_(false) {
+      do_poll_after_credentials_updated_(false),
+      weak_ptr_factory_(this),
+      weak_ptr_factory_for_weak_handle_(this) {
+  weak_handle_this_ = MakeWeakHandle(
+      weak_ptr_factory_for_weak_handle_.GetWeakPtr());
 }
 
 SyncSchedulerImpl::~SyncSchedulerImpl() {

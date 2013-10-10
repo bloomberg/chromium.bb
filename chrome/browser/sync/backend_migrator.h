@@ -96,9 +96,9 @@ class BackendMigrator {
 
   syncer::ModelTypeSet to_migrate_;
 
-  base::WeakPtrFactory<BackendMigrator> weak_ptr_factory_;
-
   base::Closure migration_done_callback_;
+
+  base::WeakPtrFactory<BackendMigrator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackendMigrator);
 };

@@ -31,8 +31,8 @@ BackendMigrator::BackendMigrator(const std::string& name,
                                  const base::Closure &migration_done_callback)
     : name_(name), user_share_(user_share), service_(service),
       manager_(manager), state_(IDLE),
-      weak_ptr_factory_(this),
-      migration_done_callback_(migration_done_callback) {
+      migration_done_callback_(migration_done_callback),
+      weak_ptr_factory_(this) {
 }
 
 BackendMigrator::~BackendMigrator() {

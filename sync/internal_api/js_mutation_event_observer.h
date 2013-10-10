@@ -55,12 +55,13 @@ class SYNC_EXPORT_PRIVATE JsMutationEventObserver
       ModelTypeSet models_with_changes) OVERRIDE;
 
  private:
-  base::WeakPtrFactory<JsMutationEventObserver> weak_ptr_factory_;
   WeakHandle<JsEventHandler> event_handler_;
 
   void HandleJsEvent(
     const tracked_objects::Location& from_here,
     const std::string& name, const JsEventDetails& details);
+
+  base::WeakPtrFactory<JsMutationEventObserver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JsMutationEventObserver);
 };

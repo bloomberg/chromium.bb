@@ -167,7 +167,6 @@ ProfileSyncService::ProfileSyncService(
       is_auth_in_progress_(false),
       signin_(signin_manager),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
-      weak_factory_(this),
       expect_sync_configuration_aborted_(false),
       encrypted_types_(syncer::SyncEncryptionHandler::SensitiveTypes()),
       encrypt_everything_(false),
@@ -177,7 +176,8 @@ ProfileSyncService::ProfileSyncService(
       setup_in_progress_(false),
       use_oauth2_token_(false),
       oauth2_token_service_(oauth2_token_service),
-      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy) {
+      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
+      weak_factory_(this) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds

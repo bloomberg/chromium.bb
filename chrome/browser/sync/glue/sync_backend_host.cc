@@ -291,8 +291,6 @@ class SyncBackendHost::Core
   // The top-level syncapi entry point.  Lives on the sync thread.
   scoped_ptr<syncer::SyncManager> sync_manager_;
 
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
-
   // These signals allow us to send requests to shut down the HttpBridgeFactory
   // and ServerConnectionManager without having to wait for those classes to
   // finish initializing first.
@@ -301,6 +299,8 @@ class SyncBackendHost::Core
   syncer::CancelationSignal release_request_context_signal_;
   syncer::CancelationSignal stop_syncing_signal_;
 
+  base::WeakPtrFactory<Core> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
@@ -308,30 +308,30 @@ SyncBackendHost::SyncBackendHost(
     const std::string& name,
     Profile* profile,
     const base::WeakPtr<SyncPrefs>& sync_prefs)
-    : weak_ptr_factory_(this),
-      frontend_loop_(base::MessageLoop::current()),
+    : frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_(name),
-      core_(new Core(name_, profile_->GetPath().Append(kSyncDataFolderName),
-                     weak_ptr_factory_.GetWeakPtr())),
       initialization_state_(NOT_ATTEMPTED),
       sync_prefs_(sync_prefs),
       frontend_(NULL),
       cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE),
       invalidator_(
           invalidation::InvalidationServiceFactory::GetForProfile(profile)),
-      invalidation_handler_registered_(false) {
+      invalidation_handler_registered_(false),
+      weak_ptr_factory_(this) {
+  core_ = new Core(name_, profile_->GetPath().Append(kSyncDataFolderName),
+                   weak_ptr_factory_.GetWeakPtr());
 }
 
 SyncBackendHost::SyncBackendHost(Profile* profile)
-    : weak_ptr_factory_(this),
-      frontend_loop_(base::MessageLoop::current()),
+    : frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_("Unknown"),
       initialization_state_(NOT_ATTEMPTED),
       frontend_(NULL),
       cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE),
-      invalidation_handler_registered_(false) {
+      invalidation_handler_registered_(false),
+      weak_ptr_factory_(this) {
 }
 
 SyncBackendHost::~SyncBackendHost() {

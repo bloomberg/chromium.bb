@@ -28,10 +28,10 @@ std::string DeviceInfoLookupString(const std::string& cache_guid) {
 SyncedDeviceTracker::SyncedDeviceTracker(syncer::UserShare* user_share,
                                          const std::string& cache_guid)
   : ChangeProcessor(NULL),
-    weak_factory_(this),
     user_share_(user_share),
     cache_guid_(cache_guid),
-    local_device_info_tag_(DeviceInfoLookupString(cache_guid)) {
+    local_device_info_tag_(DeviceInfoLookupString(cache_guid)),
+    weak_factory_(this) {
   observers_ = new ObserverListThreadSafe<Observer>;
 }
 

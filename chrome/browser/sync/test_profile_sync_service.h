@@ -87,8 +87,6 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
           debug_info_listener,
       syncer::ModelTypeSet restored_types);
 
-  base::WeakPtrFactory<SyncBackendHostForProfileSyncTest> weak_ptr_factory_;
-
   syncer::TestIdFactory& id_factory_;
 
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
@@ -107,6 +105,8 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   bool set_initial_sync_ended_on_init_;
   bool synchronous_init_;
   syncer::StorageOption storage_option_;
+
+  base::WeakPtrFactory<SyncBackendHostForProfileSyncTest> weak_ptr_factory_;
 };
 
 }  // namespace browser_sync

@@ -75,8 +75,6 @@ class SyncedDeviceTracker : public ChangeProcessor {
   void WriteDeviceInfo(const sync_pb::DeviceInfoSpecifics& specifics,
                        const std::string& tag);
 
-  base::WeakPtrFactory<SyncedDeviceTracker> weak_factory_;
-
   syncer::UserShare* user_share_;
   const std::string cache_guid_;
   const std::string local_device_info_tag_;
@@ -85,6 +83,8 @@ class SyncedDeviceTracker : public ChangeProcessor {
   // on sync thread and the observers could be on any thread.
   typedef ObserverListThreadSafe<Observer> ObserverList;
   scoped_refptr<ObserverList> observers_;
+
+  base::WeakPtrFactory<SyncedDeviceTracker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncedDeviceTracker);
 };

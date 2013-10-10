@@ -33,13 +33,13 @@ SyncInvalidationListener::Delegate::~Delegate() {}
 SyncInvalidationListener::SyncInvalidationListener(
     base::TickClock* tick_clock,
     scoped_ptr<notifier::PushClient> push_client)
-    : weak_ptr_factory_(this),
-      ack_tracker_(tick_clock, this),
+    : ack_tracker_(tick_clock, this),
       push_client_(push_client.get()),
       sync_system_resources_(push_client.Pass(), this),
       delegate_(NULL),
       ticl_state_(DEFAULT_INVALIDATION_ERROR),
-      push_client_state_(DEFAULT_INVALIDATION_ERROR) {
+      push_client_state_(DEFAULT_INVALIDATION_ERROR),
+      weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   push_client_->AddObserver(this);
 }

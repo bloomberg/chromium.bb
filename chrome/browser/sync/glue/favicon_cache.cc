@@ -227,8 +227,8 @@ bool FaviconInfoHasValidTypeData(const SyncedFaviconInfo& favicon_info,
 
 FaviconCache::FaviconCache(Profile* profile, int max_sync_favicon_limit)
     : profile_(profile),
-      weak_ptr_factory_(this),
-      max_sync_favicon_limit_(max_sync_favicon_limit) {
+      max_sync_favicon_limit_(max_sync_favicon_limit),
+      weak_ptr_factory_(this) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                               content::Source<Profile>(profile_));

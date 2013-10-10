@@ -61,10 +61,10 @@ void SyncLogger::SetSystemResources(invalidation::SystemResources* resources) {
 }
 
 SyncInvalidationScheduler::SyncInvalidationScheduler()
-    : weak_factory_(this),
-      created_on_loop_(base::MessageLoop::current()),
+    : created_on_loop_(base::MessageLoop::current()),
       is_started_(false),
-      is_stopped_(false) {
+      is_stopped_(false),
+      weak_factory_(this) {
   CHECK(created_on_loop_);
 }
 

@@ -168,14 +168,14 @@ class NudgeStrategy {
 
 SyncManagerImpl::SyncManagerImpl(const std::string& name)
     : name_(name),
-      weak_ptr_factory_(this),
       change_delegate_(NULL),
       initialized_(false),
       observing_network_connectivity_changes_(false),
       invalidator_state_(DEFAULT_INVALIDATION_ERROR),
       traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord),
       encryptor_(NULL),
-      report_unrecoverable_error_function_(NULL) {
+      report_unrecoverable_error_function_(NULL),
+      weak_ptr_factory_(this) {
   // Pre-fill |notification_info_map_|.
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     notification_info_map_.insert(

@@ -143,8 +143,8 @@ class SyncEngine : public RemoteFileSyncService,
   ObserverList<FileStatusObserver> file_status_observers_;
   RemoteChangeProcessor* remote_change_processor_;
 
-  base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
   SyncTaskManager task_manager_;
+  base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);
 };

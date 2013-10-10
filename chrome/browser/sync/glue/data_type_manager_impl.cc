@@ -62,12 +62,12 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
       last_configure_reason_(syncer::CONFIGURE_REASON_UNKNOWN),
-      weak_ptr_factory_(this),
       debug_info_listener_(debug_info_listener),
       model_association_manager_(controllers, this),
       observer_(observer),
       failed_data_types_handler_(failed_data_types_handler),
-      encryption_handler_(encryption_handler) {
+      encryption_handler_(encryption_handler),
+      weak_ptr_factory_(this) {
   DCHECK(failed_data_types_handler_);
   DCHECK(configurer_);
   DCHECK(observer_);
