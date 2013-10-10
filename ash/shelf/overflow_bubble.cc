@@ -285,6 +285,9 @@ void OverflowBubble::Hide() {
 }
 
 void OverflowBubble::HideBubbleAndRefreshButton() {
+  if (!IsShowing())
+    return;
+
   views::View* anchor = anchor_;
   Hide();
   // Update overflow button (|anchor|) status when overflow bubble is hidden
