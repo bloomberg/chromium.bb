@@ -63,7 +63,7 @@ body {
   background-color: rgba(24, 24, 24, 0.9);
   border: 2px solid #7f7f7f;
   border-radius: 4px;
-  color: rgb(151, 151, 150);
+  color: rgb(151, 151, 151);
   display: -webkit-box;
   font-size: 75%;
   font-weight: bold;
@@ -112,7 +112,6 @@ body {
 .keyboard-overlay-key.pressed {
   border-color: #fff;
   color: #fff;
-  font-size: 85%;
 }
 
 .keyboard-overlay-key.pressed.is-shift {
@@ -173,11 +172,17 @@ body {
   -webkit-box-flex: 1;
   -webkit-box-ordinal-group: 1;
   color: #fff;
+  padding: 1px 3px 0;
   text-align: center;
+  text-shadow: #000 0 0 2px;
 }
 
 .keyboard-overlay-key-text {
   -webkit-box-ordinal-group: 2;
-  padding-bottom: 1px;
+  padding: 0 3px 2px;
   text-align: center;
+}
+
+.keyboard-overlay-key.is-shortcut .keyboard-overlay-key-text {
+  opacity: 0.25;
 }
