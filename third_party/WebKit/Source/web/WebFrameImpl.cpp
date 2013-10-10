@@ -2249,7 +2249,7 @@ WebFrameImpl* WebFrameImpl::fromFrame(Frame* frame)
 {
     if (!frame)
         return 0;
-    return static_cast<FrameLoaderClientImpl*>(frame->loader()->client())->webFrame();
+    return toFrameLoaderClientImpl(frame->loader()->client())->webFrame();
 }
 
 WebFrameImpl* WebFrameImpl::fromFrameOwnerElement(Element* element)

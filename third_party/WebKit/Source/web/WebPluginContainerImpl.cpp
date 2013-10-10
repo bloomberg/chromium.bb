@@ -702,7 +702,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
     Page* page = parentView->frame().page();
     if (!page)
         return;
-    ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(&page->chrome().client());
+    ChromeClientImpl* chromeClient = toChromeClientImpl(page->chrome().client());
     chromeClient->setCursorForPlugin(cursorInfo);
 }
 

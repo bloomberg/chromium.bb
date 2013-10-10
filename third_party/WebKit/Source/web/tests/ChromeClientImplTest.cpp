@@ -90,7 +90,7 @@ protected:
         m_webView = toWebViewImpl(WebView::create(&m_webViewClient));
         m_mainFrame = WebFrame::create(&m_webFrameClient);
         m_webView->setMainFrame(m_mainFrame);
-        m_chromeClientImpl = static_cast<ChromeClientImpl*>(&m_webView->page()->chrome().client());
+        m_chromeClientImpl = toChromeClientImpl(m_webView->page()->chrome().client());
         m_result = WebNavigationPolicyIgnore;
     }
 

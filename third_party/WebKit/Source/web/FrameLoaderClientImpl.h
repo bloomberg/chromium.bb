@@ -156,12 +156,20 @@ public:
     virtual void didStopAllLoaders() OVERRIDE;
 
 private:
+    virtual bool isFrameLoaderClientImpl() const OVERRIDE { return true; }
+
     PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver();
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.
     WebFrameImpl* m_webFrame;
 };
+
+inline FrameLoaderClientImpl* toFrameLoaderClientImpl(WebCore::FrameLoaderClient* client)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!client || client->isFrameLoaderClientImpl());
+    return static_cast<FrameLoaderClientImpl*>(client);
+}
 
 } // namespace WebKit
 

@@ -221,6 +221,8 @@ class FetchRequest;
         virtual WebKit::WebServiceWorkerRegistry* serviceWorkerRegistry() = 0;
 
         virtual void didStopAllLoaders() { }
+
+        virtual bool isFrameLoaderClientImpl() const { return false; }
     };
 
 } // namespace WebCore

@@ -188,6 +188,8 @@ public:
     virtual void didAssociateFormControls(const Vector<RefPtr<WebCore::Element> >&) OVERRIDE;
 
 private:
+    virtual bool isChromeClientImpl() const OVERRIDE { return true; }
+
     WebNavigationPolicy getNavigationPolicy();
     void getPopupMenuInfo(WebCore::PopupContainer*, WebPopupMenuInfo*);
     void setCursor(const WebCursorInfo&);
@@ -216,6 +218,12 @@ private:
     WebViewImpl* m_webView;
 };
 #endif
+
+inline ChromeClientImpl* toChromeClientImpl(WebCore::ChromeClient& client)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(client.isChromeClientImpl());
+    return static_cast<ChromeClientImpl*>(&client);
+}
 
 } // namespace WebKit
 
