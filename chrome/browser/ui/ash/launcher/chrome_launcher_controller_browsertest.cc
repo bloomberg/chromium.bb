@@ -1724,6 +1724,39 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());  // And it remains that way.
   EXPECT_EQ(-1, GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT));
+
+  // Test #6: Ripping out the application when the overflow button exists.
+  // After ripping out, overflow button should be removed.
+  int items_added = 0;
+  EXPECT_FALSE(test.IsOverflowButtonVisible());
+
+  // Create fake app shortcuts until overflow button is created.
+  while (!test.IsOverflowButtonVisible()) {
+    std::string fake_app_id = base::StringPrintf("fake_app_%d", items_added);
+    PinFakeApp(fake_app_id);
+
+    ++items_added;
+    ASSERT_LT(items_added, 10000);
+  }
+  // Make one more item after creating a overflow button.
+  std::string fake_app_id = base::StringPrintf("fake_app_%d", items_added);
+  PinFakeApp(fake_app_id);
+
+  int total_count = model_->item_count();
+  app_index = GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT);
+  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
+  // When an item is ripped off from the launcher that has overflow button
+  // (see crbug.com/3050787), it was hidden accidentally and was then
+  // suppressing any further events. If handled correctly the operation will
+  // however correctly done and the item will get removed (as well as the
+  // overflow button).
+  EXPECT_EQ(total_count - 1, model_->item_count());
+  EXPECT_TRUE(test.IsOverflowButtonVisible());
+
+  // Rip off again and the overflow button should has disappeared.
+  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
+  EXPECT_EQ(total_count - 2, model_->item_count());
+  EXPECT_FALSE(test.IsOverflowButtonVisible());
 }
 
 // Check that clicking on an app launcher item launches a new browser.

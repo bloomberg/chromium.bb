@@ -799,12 +799,13 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
         shelf->PrimaryAxisValue(w, width()),
         shelf->PrimaryAxisValue(height(), h)));
   }
-  if (ash::switches::UseAlternateShelfLayout())
+  if (ash::switches::UseAlternateShelfLayout()) {
     last_visible_index_ = DetermineLastVisibleIndex(
         end_position - button_size);
-  else
+  } else {
     last_visible_index_ = DetermineLastVisibleIndex(
         end_position - inset - 2 * button_size);
+  }
   last_hidden_index_ = DetermineFirstVisiblePanelIndex(end_position) - 1;
   bool show_overflow =
       ((ash::switches::UseAlternateShelfLayout() ? 0 : 1) +
@@ -820,6 +821,12 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     // Always show the app list.
     if (!ash::switches::UseAlternateShelfLayout())
       visible |= (i == last_button_index);
+    // To receive drag event continously from |drag_view_| during the dragging
+    // off from the shelf, don't make |drag_view_| invisible. It will be
+    // eventually invisible and removed from the |view_model_| by
+    // FinalizeRipOffDrag().
+    if (dragged_off_shelf_ && view_model_->view_at(i) == drag_view_)
+      continue;
     view_model_->view_at(i)->SetVisible(visible);
   }
 
@@ -1111,6 +1118,7 @@ bool LauncherView::HandleRipOffDrag(const ui::LocatedEvent& event) {
                         gfx::Vector2d(0, 0),
                         kDragAndDropProxyScale);
     drag_view_->layer()->SetOpacity(0.0f);
+    dragged_off_shelf_ = true;
     if (RemovableByRipOff(current_index) == REMOVABLE) {
       // Move the item to the end of the launcher and hide it.
       model_->Move(current_index, model_->FirstPanelIndex() - 1);
@@ -1119,7 +1127,6 @@ bool LauncherView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       // dropped.
       drag_image_->SetOpacity(0.5f);
     }
-    dragged_off_shelf_ = true;
     return true;
   }
   return false;
