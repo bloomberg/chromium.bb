@@ -46,12 +46,6 @@ bool ShouldRunCompositingFieldTrial() {
   return false;
 #endif
 
-#if defined(OS_WIN)
-  // Don't run the trial on Windows XP.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
-#endif
-
 #if defined(OS_MACOSX)
   // Browser and content shell tests hang on 10.7 when the Apple software
   // renderer is used. These tests ignore the blacklist (which disables
