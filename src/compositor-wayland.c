@@ -517,7 +517,11 @@ input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
 		return;
 	}
 
-	weston_seat_init_keyboard(&input->base, keymap);
+	if (input->base.keyboard)
+		weston_seat_update_keymap(&input->base, keymap);
+	else
+		weston_seat_init_keyboard(&input->base, keymap);
+
 	xkb_map_unref(keymap);
 }
 
