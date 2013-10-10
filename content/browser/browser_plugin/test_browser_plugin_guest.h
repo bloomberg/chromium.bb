@@ -27,11 +27,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
 
   WebContentsImpl* web_contents() const;
 
-  // NotificationObserver method override.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void OnHandleInputEvent(int instance_id,
@@ -42,6 +37,9 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   virtual void SetDamageBuffer(
       const BrowserPluginHostMsg_ResizeGuest_Params& params) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
+
+  // Overridden from WebContentsObserver.
+  virtual void WasHidden() OVERRIDE;
 
   // Test utilities to wait for a event we are interested in.
   // Waits until UpdateRect message is sent from the guest, meaning it is

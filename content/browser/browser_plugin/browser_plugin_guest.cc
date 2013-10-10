@@ -32,12 +32,11 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/media_stream_request.h"
@@ -302,28 +301,34 @@ static std::string RetrieveDownloadURLFromRequestId(
 
 }  // namespace
 
-class BrowserPluginGuest::EmbedderRenderViewHostObserver
-    : public RenderViewHostObserver {
+class BrowserPluginGuest::EmbedderWebContentsObserver
+    : public WebContentsObserver {
  public:
-  explicit EmbedderRenderViewHostObserver(BrowserPluginGuest* guest)
-      : RenderViewHostObserver(
-          guest->embedder_web_contents()->GetRenderViewHost()),
+  explicit EmbedderWebContentsObserver(BrowserPluginGuest* guest)
+      : WebContentsObserver(guest->embedder_web_contents()),
         browser_plugin_guest_(guest) {
   }
 
-  virtual ~EmbedderRenderViewHostObserver() {
+  virtual ~EmbedderWebContentsObserver() {
   }
 
-  // RenderViewHostObserver:
-  virtual void RenderViewHostDestroyed(
-      RenderViewHost* render_view_host) OVERRIDE {
+  // WebContentsObserver:
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
     browser_plugin_guest_->EmbedderDestroyed();
+  }
+
+  virtual void WasShown() OVERRIDE {
+    browser_plugin_guest_->EmbedderVisibilityChanged(true);
+  }
+
+  virtual void WasHidden() OVERRIDE {
+    browser_plugin_guest_->EmbedderVisibilityChanged(false);
   }
 
  private:
   BrowserPluginGuest* browser_plugin_guest_;
 
-  DISALLOW_COPY_AND_ASSIGN(EmbedderRenderViewHostObserver);
+  DISALLOW_COPY_AND_ASSIGN(EmbedderWebContentsObserver);
 };
 
 BrowserPluginGuest::BrowserPluginGuest(
@@ -573,14 +578,7 @@ void BrowserPluginGuest::Initialize(
   // Disable "client blocked" error page for browser plugin.
   renderer_prefs->disable_client_blocked_error_page = true;
 
-  // Listen to embedder visibility changes so that the guest is in a 'shown'
-  // state if both the embedder is visible and the BrowserPlugin is marked as
-  // visible.
-  notification_registrar_.Add(
-      this, NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-      Source<WebContents>(embedder_web_contents_));
-
-  embedder_rvh_observer_.reset(new EmbedderRenderViewHostObserver(this));
+  embedder_web_contents_observer_.reset(new EmbedderWebContentsObserver(this));
 
   OnSetSize(instance_id_, params.auto_size_params, params.resize_guest_params);
 
@@ -689,20 +687,9 @@ gfx::Rect BrowserPluginGuest::ToGuestRect(const gfx::Rect& bounds) {
   return guest_rect;
 }
 
-void BrowserPluginGuest::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  switch (type) {
-    case NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED: {
-      DCHECK_EQ(Source<WebContents>(source).ptr(), embedder_web_contents_);
-      embedder_visible_ = *Details<bool>(details).ptr();
-      UpdateVisibility();
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification sent.";
-      break;
-  }
+void BrowserPluginGuest::EmbedderVisibilityChanged(bool visible) {
+  embedder_visible_ = visible;
+  UpdateVisibility();
 }
 
 void BrowserPluginGuest::AddNewContents(WebContents* source,

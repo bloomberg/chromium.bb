@@ -8,7 +8,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
-#include "content/public/browser/notification_types.h"
 
 namespace content {
 
@@ -30,10 +29,6 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       load_stop_observed_(false),
       waiting_for_damage_buffer_with_size_(false),
       last_damage_buffer_size_(gfx::Size()) {
-  // Listen to visibility changes so that a test can wait for these changes.
-  notification_registrar_.Add(this,
-                              NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                              Source<WebContents>(web_contents));
 }
 
 TestBrowserPluginGuest::~TestBrowserPluginGuest() {
@@ -41,24 +36,6 @@ TestBrowserPluginGuest::~TestBrowserPluginGuest() {
 
 WebContentsImpl* TestBrowserPluginGuest::web_contents() const {
   return static_cast<WebContentsImpl*>(BrowserPluginGuest::web_contents());
-}
-
-void TestBrowserPluginGuest::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
-  switch (type) {
-    case NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED: {
-      bool visible = *Details<bool>(details).ptr();
-      if (!visible) {
-        was_hidden_observed_ = true;
-        if (was_hidden_message_loop_runner_.get())
-          was_hidden_message_loop_runner_->Quit();
-      }
-      return;
-    }
-  }
-
-  BrowserPluginGuest::Observe(type, source, details);
 }
 
 void TestBrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
@@ -245,6 +222,12 @@ void TestBrowserPluginGuest::DidStopLoading(
   load_stop_observed_ = true;
   if (load_stop_message_loop_runner_.get())
     load_stop_message_loop_runner_->Quit();
+}
+
+void TestBrowserPluginGuest::WasHidden() {
+  was_hidden_observed_ = true;
+  if (was_hidden_message_loop_runner_.get())
+    was_hidden_message_loop_runner_->Quit();
 }
 
 }  // namespace content

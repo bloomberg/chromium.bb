@@ -33,8 +33,6 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -85,7 +83,6 @@ struct MediaStreamRequest;
 // which means it can share storage and can script this guest.
 class CONTENT_EXPORT BrowserPluginGuest
     : public JavaScriptDialogManager,
-      public NotificationObserver,
       public WebContentsDelegate,
       public WebContentsObserver,
       public base::SupportsWeakPtr<BrowserPluginGuest> {
@@ -104,9 +101,12 @@ class CONTENT_EXPORT BrowserPluginGuest
       BrowserPluginGuest* opener,
       bool has_render_view);
 
-  // Called when the embedder RenderViewHost is destroyed to give the
+  // Called when the embedder WebContents is destroyed to give the
   // BrowserPluginGuest an opportunity to clean up after itself.
   void EmbedderDestroyed();
+
+  // Called when the embedder WebContents changes visibility.
+  void EmbedderVisibilityChanged(bool visible);
 
   // Destroys the guest WebContents and all its associated state, including
   // this BrowserPluginGuest, and its new unattached windows.
@@ -148,11 +148,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   bool UnlockMouseIfNecessary(const NativeWebKeyboardEvent& event);
 
   void UpdateVisibility();
-
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
@@ -297,7 +292,7 @@ class CONTENT_EXPORT BrowserPluginGuest
                                   const std::string& user_input);
 
  private:
-  class EmbedderRenderViewHostObserver;
+  class EmbedderWebContentsObserver;
   friend class TestBrowserPluginGuest;
 
   class DownloadRequest;
@@ -476,8 +471,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Static factory instance (always NULL for non-test).
   static BrowserPluginHostFactory* factory_;
 
-  NotificationRegistrar notification_registrar_;
-  scoped_ptr<EmbedderRenderViewHostObserver> embedder_rvh_observer_;
+  scoped_ptr<EmbedderWebContentsObserver> embedder_web_contents_observer_;
   WebContentsImpl* embedder_web_contents_;
 
   std::map<int, int> bridge_id_to_request_id_map_;
