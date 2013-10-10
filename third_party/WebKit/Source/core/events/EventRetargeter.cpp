@@ -95,7 +95,7 @@ void EventRetargeter::calculateEventPath(Node* node, Event* event)
             eventPath.append(adoptPtr(new EventContext(walker.node(), eventTargetRespectingTargetRules(walker.node()), eventTargetRespectingTargetRules(walker.adjustedTarget()))));
         if (!inDocument)
             break;
-        if (walker.node()->isShadowRoot() && determineDispatchBehavior(event, toShadowRoot(walker.node()), walker.adjustedTarget()) == StayInsideShadowDOM)
+        if (walker.node()->isShadowRoot() && determineDispatchBehavior(event, toShadowRoot(walker.node()), node) == StayInsideShadowDOM)
             break;
     }
 }
