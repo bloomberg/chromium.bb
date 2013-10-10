@@ -22,7 +22,7 @@ import cmd_helper
 import constants
 import io_stats_parser
 try:
-  import pexpect
+  from pylib import pexpect
 except:
   pexpect = None
 

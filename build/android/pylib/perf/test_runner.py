@@ -45,12 +45,12 @@ options:
 
 import datetime
 import logging
-import pexpect
 import pickle
 import os
 import sys
 
 from pylib import constants
+from pylib import pexpect
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 

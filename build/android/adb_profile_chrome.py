@@ -8,13 +8,13 @@ import gzip
 import logging
 import optparse
 import os
-import pexpect
 import re
 import sys
 import time
 
 from pylib import android_commands
 from pylib import constants
+from pylib import pexpect
 
 
 def _GetSupportedBrowsers():
