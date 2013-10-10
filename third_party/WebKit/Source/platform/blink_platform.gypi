@@ -1,7 +1,6 @@
 {
   'variables': {
     'platform_files': [
-      'AsyncFileSystem.h',
       'Clock.cpp',
       'Clock.h',
       'ContentType.cpp',

@@ -32,9 +32,11 @@
 #define AsyncFileSystemCallbacks_h
 
 #include "core/platform/network/BlobData.h"
-#include "platform/AsyncFileSystem.h"
 #include "platform/FileMetadata.h"
+#include "platform/FileSystemType.h"
 #include "public/platform/WebFileWriter.h"
+#include "wtf/Assertions.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
