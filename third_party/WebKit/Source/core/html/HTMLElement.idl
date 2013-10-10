@@ -21,22 +21,22 @@
 [
     CustomToV8
 ] interface HTMLElement : Element {
-             [Reflect, TreatNullAs=NullString] attribute DOMString title;
-             [Reflect, TreatNullAs=NullString] attribute DOMString lang;
-             attribute boolean             translate;
-             [Reflect, TreatNullAs=NullString] attribute DOMString dir;
+    [Reflect, TreatNullAs=NullString] attribute DOMString title;
+    [Reflect, TreatNullAs=NullString] attribute DOMString lang;
+    attribute boolean             translate;
+    [Reflect, TreatNullAs=NullString] attribute DOMString dir;
 
-             [CustomElementCallbacks] attribute long              tabIndex;
-             [CustomElementCallbacks] attribute boolean           draggable;
-             [Reflect, TreatNullAs=NullString] attribute DOMString webkitdropzone;
-             [Reflect] attribute boolean hidden;
-             [Reflect, TreatNullAs=NullString] attribute DOMString accessKey;
+    [CustomElementCallbacks] attribute long              tabIndex;
+    [CustomElementCallbacks] attribute boolean           draggable;
+    [Reflect, TreatNullAs=NullString] attribute DOMString webkitdropzone;
+    [Reflect] attribute boolean hidden;
+    [Reflect, TreatNullAs=NullString] attribute DOMString accessKey;
 
     // Extensions
-             [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
-             [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString innerText;
-             [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString outerHTML;
-             [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString outerText;
+    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString innerText;
+    [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString outerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString outerText;
 
     [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
                                   [Default=Undefined] optional Element element);
@@ -54,4 +54,3 @@
 
     void click();
 };
-
