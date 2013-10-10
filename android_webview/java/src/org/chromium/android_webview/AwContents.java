@@ -439,6 +439,7 @@ public class AwContents {
         }
     }
 
+    //--------------------------------------------------------------------------------------------
     private class AwComponentCallbacks implements ComponentCallbacks2 {
           @Override
           public void onTrimMemory(int level) {
@@ -454,6 +455,16 @@ public class AwContents {
           public void onConfigurationChanged(Configuration configuration) {
           }
     };
+
+    //--------------------------------------------------------------------------------------------
+    private class AwLayoutChangeListener implements View.OnLayoutChangeListener {
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            assert v == mContainerView;
+            mLayoutSizer.onLayoutChange();
+        }
+    }
 
     /**
      * @param browserContext the browsing context to associate this view contents with.
@@ -509,7 +520,7 @@ public class AwContents {
         mInternalAccessAdapter = internalAccessAdapter;
         mContentsClient = contentsClient;
         mLayoutSizer = layoutSizer;
-        mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
+        mDIPScale = DeviceDisplayInfo.create(mContainerView.getContext()).getDIPScale();
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
         mLayoutSizer.setDIPScale(mDIPScale);
         mWebContentsDelegate = new AwWebContentsDelegateAdapter(contentsClient, mContainerView);
@@ -518,7 +529,7 @@ public class AwContents {
         mIoThreadClient = new IoThreadClientImpl();
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
 
-        boolean hasInternetPermission = containerView.getContext().checkPermission(
+        boolean hasInternetPermission = mContainerView.getContext().checkPermission(
                     android.Manifest.permission.INTERNET,
                     Process.myPid(),
                     Process.myUid()) == PackageManager.PERMISSION_GRANTED;
@@ -541,6 +552,7 @@ public class AwContents {
 
         setOverScrollMode(mContainerView.getOverScrollMode());
         setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
+        mContainerView.addOnLayoutChangeListener(new AwLayoutChangeListener());
 
         setNewAwContents(nativeInit(browserContext));
 
@@ -1578,9 +1590,11 @@ public class AwContents {
     public void onSizeChanged(int w, int h, int ow, int oh) {
         if (mNativeAwContents == 0) return;
         mScrollOffsetManager.setContainerViewSize(w, h);
+        // The AwLayoutSizer needs to go first so that if we're in fixedLayoutSize mode the update
+        // to enter fixedLayoutSize mode is sent before the first resize update.
+        mLayoutSizer.onSizeChanged(w, h, ow, oh);
         mContentViewCore.onPhysicalBackingSizeChanged(w, h);
         mContentViewCore.onSizeChanged(w, h, ow, oh);
-        mLayoutSizer.onSizeChanged(w, h, ow, oh);
         nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
     }
 

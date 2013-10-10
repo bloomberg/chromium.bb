@@ -62,7 +62,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         }
 
         @Override
-        public void onPageScaleChanged(double pageScaleFactor) {
+        public void onPageScaleChanged(float pageScaleFactor) {
             super.onPageScaleChanged(pageScaleFactor);
             mOnPageScaleChangedHelper.notifyCalled();
         }
