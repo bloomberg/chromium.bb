@@ -3,12 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
@@ -63,6 +68,9 @@ class WebrtcBrowserTest : public WebRtcTestBase {
   void EstablishCall(content::WebContents* from_tab,
                      content::WebContents* to_tab,
                      bool enable_logging = false) {
+    ConnectToPeerConnectionServer("peer 1", from_tab);
+    ConnectToPeerConnectionServer("peer 2", to_tab);
+
     std::string javascript = enable_logging ?
         base::StringPrintf("preparePeerConnection(\"%s\")",
             kTestLoggingSessionId) :
@@ -79,6 +87,9 @@ class WebrtcBrowserTest : public WebRtcTestBase {
                                  "active", from_tab));
     EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
                                  "active", to_tab));
+
+    AssertNoAsynchronousErrors(from_tab);
+    AssertNoAsynchronousErrors(to_tab);
   }
 
   void StartDetectingVideo(content::WebContents* tab_contents,
@@ -144,6 +155,61 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     }
   }
 
+  std::string GetWebrtcInternalsData(
+      content::WebContents* webrtc_internals_tab) {
+    return ExecuteJavascript(
+        "window.domAutomationController.send("
+        "    JSON.stringify(peerConnectionDataStore));",
+        webrtc_internals_tab);
+  }
+
+  void PrintInternalMetrics(const std::string& all_stats_json) {
+    base::Value* parsed_json = base::JSONReader::Read(all_stats_json);
+    ASSERT_TRUE(parsed_json != NULL) <<
+        "Received bad JSON from webrtc-internals!";
+    const base::DictionaryValue* json_dict;
+    ASSERT_TRUE(parsed_json->GetAsDictionary(&json_dict));
+
+    base::DictionaryValue::Iterator iterator(*json_dict);
+    ASSERT_FALSE(iterator.IsAtEnd()) << "Didn't capture data about any peer "
+         "connections in webrtc-internals.";
+
+    const base::DictionaryValue* first_pc_dict;
+    ASSERT_TRUE(iterator.value().GetAsDictionary(&first_pc_dict));
+
+    std::string value;
+    ASSERT_TRUE(first_pc_dict->GetString(
+        "stats.bweforvideo-googAvailableSendBandwidth.values", &value));
+    perf_test::PrintResult("bwe_stats", "", "available_send_bw", value, "bytes",
+                           false);
+    ASSERT_TRUE(first_pc_dict->GetString(
+        "stats.bweforvideo-googAvailableReceiveBandwidth.values", &value));
+    perf_test::PrintResult("bwe_stats", "", "available_recv_bw", value, "bytes",
+                           false);
+    ASSERT_TRUE(first_pc_dict->GetString(
+        "stats.bweforvideo-googTargetEncBitrate.values", &value));
+    perf_test::PrintResult("bwe_stats", "", "target_enc_bitrate",
+                           value, "bytes", false);
+    ASSERT_TRUE(first_pc_dict->GetString(
+        "stats.bweforvideo-googActualEncBitrate.values", &value));
+    perf_test::PrintResult("bwe_stats", "", "actual_enc_bitrate",
+                           value, "bytes", false);
+    ASSERT_TRUE(first_pc_dict->GetString(
+        "stats.bweforvideo-googTransmitBitrate.values", &value));
+    perf_test::PrintResult("bwe_stats", "", "transmit_bitrate", value, "bytes",
+                           false);
+  }
+
+  content::WebContents* OpenTestPageAndGetUserMediaInNewTab() {
+    chrome::AddBlankTabAt(browser(), -1, true);
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
+    content::WebContents* left_tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    GetUserMediaAndAccept(left_tab);
+    return left_tab;
+  }
+
   PeerConnectionServerRunner peerconnection_server_;
 };
 
@@ -152,26 +218,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  content::WebContents* left_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMediaAndAccept(left_tab);
-
-  chrome::AddBlankTabAt(browser(), -1, true);
-  content::WebContents* right_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  GetUserMediaAndAccept(right_tab);
-
-  ConnectToPeerConnectionServer("peer 1", left_tab);
-  ConnectToPeerConnectionServer("peer 2", right_tab);
+  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
+  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
 
   EstablishCall(left_tab, right_tab);
-
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
 
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
@@ -196,10 +246,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   base::FilePath results_file;
   ASSERT_TRUE(file_util::CreateTemporaryFile(&results_file));
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  content::WebContents* left_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
 
 #if defined(OS_MACOSX)
   // Don't measure renderer CPU on mac: requires a mach broker we don't have
@@ -222,22 +269,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   browser_process_metrics->GetCPUUsage();
 #endif
 
-  GetUserMediaAndAccept(left_tab);
-
-  chrome::AddBlankTabAt(browser(), -1, true);
-  content::WebContents* right_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  GetUserMediaAndAccept(right_tab);
-
-  ConnectToPeerConnectionServer("peer 1", left_tab);
-  ConnectToPeerConnectionServer("peer 2", right_tab);
+  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
 
   EstablishCall(left_tab, right_tab);
-
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
 
   SleepInJavascript(left_tab, 15000);
 
@@ -261,26 +295,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  content::WebContents* left_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMediaAndAccept(left_tab);
-
-  chrome::AddBlankTabAt(browser(), -1, true);
-  content::WebContents* right_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  GetUserMediaAndAccept(right_tab);
-
-  ConnectToPeerConnectionServer("peer 1", left_tab);
-  ConnectToPeerConnectionServer("peer 2", right_tab);
+  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
+  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
 
   EstablishCall(left_tab, right_tab);
-
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
 
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
@@ -295,6 +313,46 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   EXPECT_EQ("ok-video-toggled-to-true", ToggleLocalVideoTrack(left_tab));
 
   WaitForVideoToPlay(right_tab);
+
+  HangUp(left_tab);
+  WaitUntilHangupVerified(left_tab);
+  WaitUntilHangupVerified(right_tab);
+
+  AssertNoAsynchronousErrors(left_tab);
+  AssertNoAsynchronousErrors(right_tab);
+
+  ASSERT_TRUE(peerconnection_server_.Stop());
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       MANUAL_RunsAudioVideoCall20SecsAndLogsInternalMetrics) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(peerconnection_server_.Start());
+
+  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
+  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
+
+  EstablishCall(left_tab, right_tab);
+
+  StartDetectingVideo(left_tab, "remote-view");
+  StartDetectingVideo(right_tab, "remote-view");
+
+  WaitForVideoToPlay(left_tab);
+  WaitForVideoToPlay(right_tab);
+
+  // Let values stabilize, bandwidth ramp up, etc.
+  SleepInJavascript(left_tab, 10000);
+
+  // Start measurements.
+  chrome::AddBlankTabAt(browser(), -1, true);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://webrtc-internals"));
+  content::WebContents* webrtc_internals_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  SleepInJavascript(left_tab, 10000);
+
+  std::string all_stats_json = GetWebrtcInternalsData(webrtc_internals_tab);
+  PrintInternalMetrics(all_stats_json);
 
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
@@ -370,7 +428,7 @@ private:
 // an extension API. Move test to extension tests.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        DISABLED_RunsAudioVideoWebRTCCallInTwoTabsWithLogging) {
-  EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
   // Add command line switch that forces allowing log uploads.
@@ -381,26 +439,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   std::string multipart;
   g_browser_process->webrtc_log_uploader()->
       OverrideUploadWithBufferForTesting(&multipart);
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  content::WebContents* left_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMediaAndAccept(left_tab);
 
-  chrome::AddBlankTabAt(browser(), -1, true);
-  content::WebContents* right_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  GetUserMediaAndAccept(right_tab);
-
-  ConnectToPeerConnectionServer("peer 1", left_tab);
-  ConnectToPeerConnectionServer("peer 2", right_tab);
+  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
+  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
 
   EstablishCall(left_tab, right_tab, true);
-
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
 
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
