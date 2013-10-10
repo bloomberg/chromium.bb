@@ -1,1 +1,3 @@
 sadrul@chromium.org
+per-file latency_info.*=jbauman@chromium.org
+per-file latency_info_unittest.cc=jbauman@chromium.org
