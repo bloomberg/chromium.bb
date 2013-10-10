@@ -127,6 +127,8 @@ void PrerenderHandle::OnPrerenderCreatedMatchCompleteReplacement(
 
   contents->RemoveObserver(this);
   replacement->AddObserver(this);
+  if (observer_)
+    observer_->OnPrerenderCreatedMatchCompleteReplacement(this);
 }
 
 bool PrerenderHandle::RepresentingSamePrerenderAs(

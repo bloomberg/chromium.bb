@@ -8,7 +8,9 @@
 
     <script language="javascript" type="text/javascript">
       window.onload = function() {
-        alert("Testing prerender");
+        // Delay the alert by an event loop iteration so the alert
+        // happens after the page has loaded, rather than just before.
+        setTimeout(alert, 0, "Testing prerender");
       };
     </script>
   </head>

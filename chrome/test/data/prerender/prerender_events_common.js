@@ -26,12 +26,13 @@ function PrerenderStartHandler(index) {
 
 function PrerenderLoadHandler(index) {
   if (!receivedPrerenderStartEvents[index] ||
-      receivedPrerenderLoadEvents[index] ||
       receivedPrerenderStopEvents[index]) {
     hadPrerenderEventErrors = true;
     return;
   }
-  receivedPrerenderLoadEvents[index] = true;
+  if (!receivedPrerenderLoadEvents[index])
+    receivedPrerenderLoadEvents[index] = 0;
+  receivedPrerenderLoadEvents[index]++;
 }
 
 function PrerenderStopHandler(index) {

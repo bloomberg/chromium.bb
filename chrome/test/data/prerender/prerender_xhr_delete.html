@@ -33,7 +33,10 @@
         xhr.send(null);
       }
 
-      do_xhr();
+      // Fire the XHR after onload so to consistently abort after
+      // webkitprerenderload, rather than racily abort on one side or the
+      // other.
+      window.onload = setTimeout.bind(null, do_xhr);
     </script>
   </head>
   <body>

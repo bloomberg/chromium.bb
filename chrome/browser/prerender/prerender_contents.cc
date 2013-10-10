@@ -614,6 +614,11 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   prerender_manager_->AddToHistory(this);
   prerender_manager_->MoveEntryToPendingDelete(this, final_status);
 
+  // Note that if this PrerenderContents was made into a MatchComplete
+  // replacement by MoveEntryToPendingDelete, NotifyPrerenderStop will
+  // not reach the PrerenderHandle. Rather
+  // OnPrerenderCreatedMatchCompleteReplacement will propogate that
+  // information to the referer.
   if (!prerender_manager_->IsControlGroup(experiment_id()) &&
       (prerendering_has_started() ||
        match_complete_status() == MATCH_COMPLETE_REPLACEMENT)) {

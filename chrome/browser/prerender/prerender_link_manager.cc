@@ -153,7 +153,8 @@ PrerenderLinkManager::LinkPrerender::LinkPrerender(
                                size(size),
                                render_view_route_id(render_view_route_id),
                                creation_time(creation_time),
-                               handle(NULL) {
+                               handle(NULL),
+                               is_match_complete_replacement(false) {
 }
 
 PrerenderLinkManager::LinkPrerender::~LinkPrerender() {
@@ -332,10 +333,29 @@ void PrerenderLinkManager::OnPrerenderStop(
   if (!prerender)
     return;
 
-  Send(prerender->launcher_child_id,
-       new PrerenderMsg_OnPrerenderStop(prerender->prerender_id));
+  // If the prerender became a match complete replacement, the stop
+  // message has already been sent.
+  if (!prerender->is_match_complete_replacement) {
+    Send(prerender->launcher_child_id,
+         new PrerenderMsg_OnPrerenderStop(prerender->prerender_id));
+  }
   RemovePrerender(prerender);
   StartPrerenders();
+}
+
+void PrerenderLinkManager::OnPrerenderCreatedMatchCompleteReplacement(
+    PrerenderHandle* prerender_handle) {
+  LinkPrerender* prerender = FindByPrerenderHandle(prerender_handle);
+  if (!prerender)
+    return;
+
+  DCHECK(!prerender->is_match_complete_replacement);
+  prerender->is_match_complete_replacement = true;
+  Send(prerender->launcher_child_id,
+       new PrerenderMsg_OnPrerenderStop(prerender->prerender_id));
+  // Do not call RemovePrerender here. The replacement needs to stay connected
+  // to the HTMLLinkElement in the renderer so it notices renderer-triggered
+  // cancelations.
 }
 
 }  // namespace prerender

@@ -95,6 +95,10 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
     // Initially NULL, |handle| is set once we start this prerender. It is owned
     // by this struct, and must be deleted before destructing this struct.
     PrerenderHandle* handle;
+
+    // True if this prerender has become a MatchComplete replacement. This state
+    // is maintained so the renderer is not notified of a stop twice.
+    bool is_match_complete_replacement;
   };
 
   bool IsEmpty() const;
@@ -121,6 +125,8 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
   virtual void OnPrerenderStopLoading(PrerenderHandle* prerender_handle)
       OVERRIDE;
   virtual void OnPrerenderStop(PrerenderHandle* prerender_handle) OVERRIDE;
+  virtual void OnPrerenderCreatedMatchCompleteReplacement(
+      PrerenderHandle* handle) OVERRIDE;
 
   bool has_shutdown_;
 
