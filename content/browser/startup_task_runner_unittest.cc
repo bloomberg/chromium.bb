@@ -23,7 +23,8 @@ using testing::Assign;
 using testing::Invoke;
 using testing::WithArg;
 
-bool observer_called = false;
+int observer_calls = 0;
+int task_count = 0;
 int observer_result;
 base::Closure task;
 
@@ -35,7 +36,7 @@ bool SaveTaskArg(const Closure& arg) {
 }
 
 void Observer(int result) {
-  observer_called = true;
+  observer_calls++;
   observer_result = result;
 }
 
@@ -44,22 +45,26 @@ class StartupTaskRunnerTest : public testing::Test {
 
   virtual void SetUp() {
     last_task_ = 0;
-    observer_called = false;
+    observer_calls = 0;
+    task_count = 0;
   }
 
   int Task1() {
     last_task_ = 1;
+    task_count++;
     return 0;
   }
 
   int Task2() {
     last_task_ = 2;
+    task_count++;
     return 0;
   }
 
   int FailingTask() {
     // Task returning failure
     last_task_ = 3;
+    task_count++;
     return 1;
   }
 
@@ -133,8 +138,18 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecution) {
   // On an immediate StartupTaskRunner the tasks should now all have run.
   EXPECT_EQ(GetLastTask(), 2);
 
-  EXPECT_TRUE(observer_called);
+  EXPECT_EQ(task_count, 2);
+  EXPECT_EQ(observer_calls, 1);
   EXPECT_EQ(observer_result, 0);
+
+  // Running the tasks asynchronously shouldn't do anything
+  // In particular Post... should not be called
+  runner.StartRunningTasksAsync();
+
+  // No more tasks should be run and the observer should not have been called
+  // again
+  EXPECT_EQ(task_count, 2);
+  EXPECT_EQ(observer_calls, 1);
 }
 
 TEST_F(StartupTaskRunnerTest, NullObserver) {
@@ -160,8 +175,16 @@ TEST_F(StartupTaskRunnerTest, NullObserver) {
 
   // On an immediate StartupTaskRunner the tasks should now all have run.
   EXPECT_EQ(GetLastTask(), 2);
+  EXPECT_EQ(task_count, 2);
 
-  EXPECT_FALSE(observer_called);
+  // Running the tasks asynchronously shouldn't do anything
+  // In particular Post... should not be called
+  runner.StartRunningTasksAsync();
+
+  // No more tasks should have been run
+  EXPECT_EQ(task_count, 2);
+
+  EXPECT_EQ(observer_calls, 0);
 }
 
 TEST_F(StartupTaskRunnerTest, SynchronousExecutionFailedTask) {
@@ -187,9 +210,18 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecutionFailedTask) {
 
   // Only the first task should have run, since it failed
   EXPECT_EQ(GetLastTask(), 3);
-
-  EXPECT_TRUE(observer_called);
+  EXPECT_EQ(task_count, 1);
+  EXPECT_EQ(observer_calls, 1);
   EXPECT_EQ(observer_result, 1);
+
+  // After a failed task all remaining tasks should be cancelled
+  // In particular Post... should not be called by running asynchronously
+  runner.StartRunningTasksAsync();
+
+  // The observer should only be called the first time the queue completes and
+  // no more tasks should have run
+  EXPECT_EQ(observer_calls, 1);
+  EXPECT_EQ(task_count, 1);
 }
 
 TEST_F(StartupTaskRunnerTest, AsynchronousExecution) {
@@ -224,12 +256,19 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecution) {
   // be added to the queue, hence updating "task". The loop should actually run
   // at most 3 times (once for each task plus possibly once for the observer),
   // the "4" is a backstop.
-  for (int i = 0; i < 4 && !observer_called; i++) {
+  for (int i = 0; i < 4 && observer_calls == 0; i++) {
     task.Run();
     EXPECT_EQ(i + 1, GetLastTask());
   }
-  EXPECT_TRUE(observer_called);
+  EXPECT_EQ(task_count, 2);
+  EXPECT_EQ(observer_calls, 1);
   EXPECT_EQ(observer_result, 0);
+
+  // Check that running synchronously now doesn't do anything
+
+  runner.RunAllTasksNow();
+  EXPECT_EQ(task_count, 2);
+  EXPECT_EQ(observer_calls, 1);
 }
 
 TEST_F(StartupTaskRunnerTest, AsynchronousExecutionFailedTask) {
@@ -264,13 +303,19 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecutionFailedTask) {
   // be added to the queue, hence updating "task". The loop should actually run
   // at most twice (once for the failed task plus possibly once for the
   // observer), the "4" is a backstop.
-  for (int i = 0; i < 4 && !observer_called; i++) {
+  for (int i = 0; i < 4 && observer_calls == 0; i++) {
     task.Run();
   }
   EXPECT_EQ(GetLastTask(), 3);
+  EXPECT_EQ(task_count, 1);
 
-  EXPECT_TRUE(observer_called);
+  EXPECT_EQ(observer_calls, 1);
   EXPECT_EQ(observer_result, 1);
+
+  // Check that running synchronously now doesn't do anything
+  runner.RunAllTasksNow();
+  EXPECT_EQ(observer_calls, 1);
+  EXPECT_EQ(task_count, 1);
 }
 }  // namespace
 }  // namespace content

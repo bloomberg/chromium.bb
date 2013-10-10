@@ -27,6 +27,8 @@ void StartupTaskRunner::StartRunningTasksAsync() {
   if (task_list_.empty()) {
     if (!startup_complete_callback_.is_null()) {
       startup_complete_callback_.Run(result);
+      // Clear the callback to prevent it being called a second time
+      startup_complete_callback_.Reset();
     }
   } else {
     const base::Closure next_task =
@@ -43,8 +45,11 @@ void StartupTaskRunner::RunAllTasksNow() {
     result = it->Run();
     if (result > 0) break;
   }
+  task_list_.clear();
   if (!startup_complete_callback_.is_null()) {
     startup_complete_callback_.Run(result);
+    // Clear the callback to prevent it being called a second time
+    startup_complete_callback_.Reset();
   }
 }
 
@@ -57,9 +62,15 @@ void StartupTaskRunner::WrappedTask() {
   }
   int result = task_list_.front().Run();
   task_list_.pop_front();
-  if (result > 0 || task_list_.empty()) {
+  if (result > 0) {
+    // Stop now and throw away the remaining tasks
+    task_list_.clear();
+  }
+  if (task_list_.empty()) {
     if (!startup_complete_callback_.is_null()) {
       startup_complete_callback_.Run(result);
+      // Clear the callback to prevent it being called a second time
+      startup_complete_callback_.Reset();
     }
   } else {
     const base::Closure next_task =
