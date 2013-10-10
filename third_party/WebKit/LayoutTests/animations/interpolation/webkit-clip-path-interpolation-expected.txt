@@ -1,12 +1,12 @@
      
      
-FAIL: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(-7.5px, -7.5px, 115px, 115px, -3px, -3px)] at -0.3, expected [rectangle(-7.5px, -7.5px, 115px, 115px, 0px, 0px)]
+PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(-7.5px, -7.5px, 115px, 115px, 0px, 0px)] at -0.3
 PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(0px, 0px, 100px, 100px)] at 0
 PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(7.5px, 7.5px, 85px, 85px, 3px, 3px)] at 0.3
 PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(15px, 15px, 70px, 70px, 6px, 6px)] at 0.6
 PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] at 1
 PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(37.5px, 37.5px, 25px, 25px, 15px, 15px)] at 1.5
-FAIL: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 50px)] was [circle(17.5px, 82.5px, -2px)] at -0.3, expected [circle(17.5px, 82.5px, 0px)]
+PASS: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 50px)] was [circle(17.5px, 82.5px, 0px)] at -0.3
 PASS: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 50px)] was [circle(25px, 75px, 10px)] at 0
 PASS: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 50px)] was [circle(32.5px, 67.5px, 22px)] at 0.3
 PASS: -webkit-clip-path from [circle(25px, 75px, 10px)] to [circle(50px, 50px, 50px)] was [circle(40px, 60px, 34px)] at 0.6

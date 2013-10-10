@@ -70,7 +70,7 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
                 adoptPtr(new CalcExpressionLength(Length(10, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(20, WebCore::Fixed))),
                 CalcAdd)),
-            CalculationRangeAll)),
+            ValueRangeAll)),
         style.get());
     EXPECT_TRUE(actual->equals(*expected.get()));
 
@@ -84,7 +84,7 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
                 adoptPtr(new CalcExpressionLength(Length(30, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionNumber(40)),
                 CalcMultiply)),
-            CalculationRangeAll)),
+            ValueRangeAll)),
         style.get());
     EXPECT_TRUE(actual->equals(*expected.get()));
 
@@ -101,7 +101,7 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
     actual = CSSCalcValue::createExpressionNode(
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBlendLength(Length(50, WebCore::Fixed), Length(60, WebCore::Fixed), 0.75)),
-            CalculationRangeAll)),
+            ValueRangeAll)),
         style.get());
     EXPECT_TRUE(actual->equals(*expected.get()));
 }

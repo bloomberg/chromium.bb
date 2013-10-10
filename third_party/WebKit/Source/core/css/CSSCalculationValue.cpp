@@ -772,7 +772,7 @@ PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(const Lengt
     return 0;
 }
 
-PassRefPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserValueList* parserValueList, CalculationPermittedValueRange range)
+PassRefPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserValueList* parserValueList, ValueRange range)
 {
     CSSCalcExpressionNodeParser parser;
     RefPtr<CSSCalcExpressionNode> expression;
@@ -784,7 +784,7 @@ PassRefPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserVal
     return expression ? adoptRef(new CSSCalcValue(expression, range)) : 0;
 }
 
-PassRefPtr<CSSCalcValue> CSSCalcValue::create(PassRefPtr<CSSCalcExpressionNode> expression, CalculationPermittedValueRange range)
+PassRefPtr<CSSCalcValue> CSSCalcValue::create(PassRefPtr<CSSCalcExpressionNode> expression, ValueRange range)
 {
     return adoptRef(new CSSCalcValue(expression, range));
 }

@@ -132,7 +132,7 @@ static bool isCompatibleWithRange(const CSSPrimitiveValue* primitiveValue, Numbe
     if (range == AllValues)
         return true;
     if (primitiveValue->isCalculated())
-        return primitiveValue->cssCalcValue()->permittedValueRange() == CalculationRangeNonNegative;
+        return primitiveValue->cssCalcValue()->permittedValueRange() == ValueRangeNonNegative;
     return primitiveValue->getDoubleValue() >= 0;
 }
 
@@ -141,7 +141,7 @@ PassRefPtr<CSSPrimitiveValue> AnimatableLength::toCSSPrimitiveValue(NumberRange 
     ASSERT(m_unitType != UnitTypeInvalid);
     if (!m_cachedCSSPrimitiveValue || !isCompatibleWithRange(m_cachedCSSPrimitiveValue.get(), range)) {
         if (m_isCalc)
-            m_cachedCSSPrimitiveValue = CSSPrimitiveValue::create(CSSCalcValue::create(m_calcExpression, range == AllValues ? CalculationRangeAll : CalculationRangeNonNegative));
+            m_cachedCSSPrimitiveValue = CSSPrimitiveValue::create(CSSCalcValue::create(m_calcExpression, range == AllValues ? ValueRangeAll : ValueRangeNonNegative));
         else
             m_cachedCSSPrimitiveValue = CSSPrimitiveValue::create(clampedNumber(range), static_cast<CSSPrimitiveValue::UnitTypes>(numberTypeToPrimitiveUnit(m_unitType)));
     }

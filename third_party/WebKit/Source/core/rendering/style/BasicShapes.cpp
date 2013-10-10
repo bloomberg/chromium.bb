@@ -73,12 +73,12 @@ PassRefPtr<BasicShape> BasicShapeRectangle::blend(const BasicShape* other, doubl
 
     const BasicShapeRectangle* o = static_cast<const BasicShapeRectangle*>(other);
     RefPtr<BasicShapeRectangle> result =  BasicShapeRectangle::create();
-    result->setX(m_x.blend(o->x(), progress));
-    result->setY(m_y.blend(o->y(), progress));
-    result->setWidth(m_width.blend(o->width(), progress));
-    result->setHeight(m_height.blend(o->height(), progress));
-    result->setCornerRadiusX(m_cornerRadiusX.blend(o->cornerRadiusX(), progress));
-    result->setCornerRadiusY(m_cornerRadiusY.blend(o->cornerRadiusY(), progress));
+    result->setX(m_x.blend(o->x(), progress, ValueRangeAll));
+    result->setY(m_y.blend(o->y(), progress, ValueRangeAll));
+    result->setWidth(m_width.blend(o->width(), progress, ValueRangeNonNegative));
+    result->setHeight(m_height.blend(o->height(), progress, ValueRangeNonNegative));
+    result->setCornerRadiusX(m_cornerRadiusX.blend(o->cornerRadiusX(), progress, ValueRangeNonNegative));
+    result->setCornerRadiusY(m_cornerRadiusY.blend(o->cornerRadiusY(), progress, ValueRangeNonNegative));
     return result.release();
 }
 
@@ -103,9 +103,9 @@ PassRefPtr<BasicShape> BasicShapeCircle::blend(const BasicShape* other, double p
 
     const BasicShapeCircle* o = static_cast<const BasicShapeCircle*>(other);
     RefPtr<BasicShapeCircle> result =  BasicShapeCircle::create();
-    result->setCenterX(m_centerX.blend(o->centerX(), progress));
-    result->setCenterY(m_centerY.blend(o->centerY(), progress));
-    result->setRadius(m_radius.blend(o->radius(), progress));
+    result->setCenterX(m_centerX.blend(o->centerX(), progress, ValueRangeAll));
+    result->setCenterY(m_centerY.blend(o->centerY(), progress, ValueRangeAll));
+    result->setRadius(m_radius.blend(o->radius(), progress, ValueRangeNonNegative));
     return result.release();
 }
 
@@ -130,10 +130,10 @@ PassRefPtr<BasicShape> BasicShapeEllipse::blend(const BasicShape* other, double 
 
     const BasicShapeEllipse* o = static_cast<const BasicShapeEllipse*>(other);
     RefPtr<BasicShapeEllipse> result =  BasicShapeEllipse::create();
-    result->setCenterX(m_centerX.blend(o->centerX(), progress));
-    result->setCenterY(m_centerY.blend(o->centerY(), progress));
-    result->setRadiusX(m_radiusX.blend(o->radiusX(), progress));
-    result->setRadiusY(m_radiusY.blend(o->radiusY(), progress));
+    result->setCenterX(m_centerX.blend(o->centerX(), progress, ValueRangeAll));
+    result->setCenterY(m_centerY.blend(o->centerY(), progress, ValueRangeAll));
+    result->setRadiusX(m_radiusX.blend(o->radiusX(), progress, ValueRangeNonNegative));
+    result->setRadiusY(m_radiusY.blend(o->radiusY(), progress, ValueRangeNonNegative));
     return result.release();
 }
 
@@ -171,8 +171,8 @@ PassRefPtr<BasicShape> BasicShapePolygon::blend(const BasicShape* other, double 
     result->setWindRule(o->windRule());
 
     for (size_t i = 0; i < length; i = i + 2) {
-        result->appendPoint(m_values.at(i).blend(o->values().at(i), progress),
-            m_values.at(i + 1).blend(o->values().at(i + 1), progress));
+        result->appendPoint(m_values.at(i).blend(o->values().at(i), progress, ValueRangeAll),
+            m_values.at(i + 1).blend(o->values().at(i + 1), progress, ValueRangeAll));
     }
 
     return result.release();
@@ -203,12 +203,12 @@ PassRefPtr<BasicShape> BasicShapeInsetRectangle::blend(const BasicShape* other, 
 
     const BasicShapeInsetRectangle* o = static_cast<const BasicShapeInsetRectangle*>(other);
     RefPtr<BasicShapeInsetRectangle> result =  BasicShapeInsetRectangle::create();
-    result->setTop(m_top.blend(o->top(), progress));
-    result->setRight(m_right.blend(o->right(), progress));
-    result->setBottom(m_bottom.blend(o->bottom(), progress));
-    result->setLeft(m_left.blend(o->left(), progress));
-    result->setCornerRadiusX(m_cornerRadiusX.blend(o->cornerRadiusX(), progress));
-    result->setCornerRadiusY(m_cornerRadiusY.blend(o->cornerRadiusY(), progress));
+    result->setTop(m_top.blend(o->top(), progress, ValueRangeNonNegative));
+    result->setRight(m_right.blend(o->right(), progress, ValueRangeNonNegative));
+    result->setBottom(m_bottom.blend(o->bottom(), progress, ValueRangeNonNegative));
+    result->setLeft(m_left.blend(o->left(), progress, ValueRangeNonNegative));
+    result->setCornerRadiusX(m_cornerRadiusX.blend(o->cornerRadiusX(), progress, ValueRangeNonNegative));
+    result->setCornerRadiusY(m_cornerRadiusY.blend(o->cornerRadiusY(), progress, ValueRangeNonNegative));
     return result.release();
 }
 }

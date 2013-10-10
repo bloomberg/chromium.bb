@@ -286,7 +286,7 @@ public:
     PassRefPtr<CSSValue> parseTextIndent();
 
     bool parseLineBoxContain(bool important);
-    bool parseCalculation(CSSParserValue*, CalculationPermittedValueRange);
+    bool parseCalculation(CSSParserValue*, ValueRange);
 
     bool parseFontFeatureTag(CSSValueList*);
     bool parseFontFeatureSettings(bool important);

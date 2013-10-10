@@ -93,8 +93,8 @@ protected:
 
 class CSSCalcValue : public CSSValue {
 public:
-    static PassRefPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, CalculationPermittedValueRange);
-    static PassRefPtr<CSSCalcValue> create(PassRefPtr<CSSCalcExpressionNode>, CalculationPermittedValueRange = CalculationRangeAll);
+    static PassRefPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, ValueRange);
+    static PassRefPtr<CSSCalcValue> create(PassRefPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
     static PassRefPtr<CSSCalcValue> create(const CalculationValue* value, const RenderStyle* style) { return adoptRef(new CSSCalcValue(value, style)); }
 
     static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtr<CSSPrimitiveValue>, bool isInteger = false);
@@ -104,13 +104,13 @@ public:
 
     PassRefPtr<CalculationValue> toCalcValue(const RenderStyle* style, const RenderStyle* rootStyle, double zoom = 1.0) const
     {
-        return CalculationValue::create(m_expression->toCalcValue(style, rootStyle, zoom), m_nonNegative ? CalculationRangeNonNegative : CalculationRangeAll);
+        return CalculationValue::create(m_expression->toCalcValue(style, rootStyle, zoom), m_nonNegative ? ValueRangeNonNegative : ValueRangeAll);
     }
     CalculationCategory category() const { return m_expression->category(); }
     bool isInt() const { return m_expression->isInteger(); }
     double doubleValue() const;
     bool isNegative() const { return m_expression->doubleValue() < 0; }
-    CalculationPermittedValueRange permittedValueRange() { return m_nonNegative ? CalculationRangeNonNegative : CalculationRangeAll; }
+    ValueRange permittedValueRange() { return m_nonNegative ? ValueRangeNonNegative : ValueRangeAll; }
     double computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier = 1.0, bool computingFontSize = false) const;
     CSSCalcExpressionNode* expressionNode() const { return m_expression.get(); }
 
@@ -120,10 +120,10 @@ public:
     bool hasVariableReference() const;
 
 private:
-    CSSCalcValue(PassRefPtr<CSSCalcExpressionNode> expression, CalculationPermittedValueRange range)
+    CSSCalcValue(PassRefPtr<CSSCalcExpressionNode> expression, ValueRange range)
         : CSSValue(CalculationClass)
         , m_expression(expression)
-        , m_nonNegative(range == CalculationRangeNonNegative)
+        , m_nonNegative(range == ValueRangeNonNegative)
     {
     }
     CSSCalcValue(const CalculationValue* value, const RenderStyle* style)

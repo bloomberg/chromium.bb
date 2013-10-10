@@ -118,11 +118,11 @@ PassRefPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* fr
     LengthType lengthType = m_stdDeviation.type();
 
     if (blendToPassthrough)
-        return BlurFilterOperation::create(Length(lengthType).blend(m_stdDeviation, progress), m_type);
+        return BlurFilterOperation::create(Length(lengthType).blend(m_stdDeviation, progress, ValueRangeNonNegative), m_type);
 
     const BlurFilterOperation* fromOp = static_cast<const BlurFilterOperation*>(from);
     Length fromLength = fromOp ? fromOp->m_stdDeviation : Length(lengthType);
-    return BlurFilterOperation::create(m_stdDeviation.blend(fromLength, progress), m_type);
+    return BlurFilterOperation::create(m_stdDeviation.blend(fromLength, progress, ValueRangeNonNegative), m_type);
 }
 
 PassRefPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* from, double progress, bool blendToPassthrough)

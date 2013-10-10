@@ -1492,7 +1492,7 @@ bool CSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags, Rel
 {
     bool mustBeNonNegative = unitflags & FNonNeg;
 
-    if (!parseCalculation(value, mustBeNonNegative ? CalculationRangeNonNegative : CalculationRangeAll))
+    if (!parseCalculation(value, mustBeNonNegative ? ValueRangeNonNegative : ValueRangeAll))
         return false;
 
     bool b = false;
@@ -9405,7 +9405,7 @@ bool CSSParser::parseFontVariantLigatures(bool important)
     return true;
 }
 
-bool CSSParser::parseCalculation(CSSParserValue* value, CalculationPermittedValueRange range)
+bool CSSParser::parseCalculation(CSSParserValue* value, ValueRange range)
 {
     ASSERT(isCalculation(value));
 

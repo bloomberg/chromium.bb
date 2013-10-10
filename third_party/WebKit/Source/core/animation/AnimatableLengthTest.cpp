@@ -178,7 +178,7 @@ TEST_F(AnimatableLengthTest, ToLength)
                 adoptPtr(new CalcExpressionLength(Length(-5, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
-            CalculationRangeAll)),
+            ValueRangeAll)),
         create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1));
     EXPECT_EQ(
         Length(CalculationValue::create(
@@ -186,7 +186,7 @@ TEST_F(AnimatableLengthTest, ToLength)
                 adoptPtr(new CalcExpressionLength(Length(-15, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
-            CalculationRangeAll)),
+            ValueRangeAll)),
         create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3));
     EXPECT_EQ(
         Length(CalculationValue::create(
@@ -194,7 +194,7 @@ TEST_F(AnimatableLengthTest, ToLength)
                 adoptPtr(new CalcExpressionLength(Length(-5, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
-            CalculationRangeNonNegative)),
+            ValueRangeNonNegative)),
         create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1, NonNegativeValues));
     EXPECT_EQ(
         Length(CalculationValue::create(
@@ -202,7 +202,7 @@ TEST_F(AnimatableLengthTest, ToLength)
                 adoptPtr(new CalcExpressionLength(Length(-15, WebCore::Fixed))),
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
-            CalculationRangeNonNegative)),
+            ValueRangeNonNegative)),
         create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3, NonNegativeValues));
 }
 

@@ -176,16 +176,9 @@ Length::Length(PassRefPtr<CalculationValue> calc)
     m_intValue = calcHandles().insert(calc);
 }
 
-Length Length::blendMixedTypes(const Length& from, double progress) const
+Length Length::blendMixedTypes(const Length& from, double progress, ValueRange range) const
 {
-    if (progress <= 0.0)
-        return from;
-
-    if (progress >= 1.0)
-        return *this;
-
-    OwnPtr<CalcExpressionNode> blend = adoptPtr(new CalcExpressionBlendLength(from, *this, progress));
-    return Length(CalculationValue::create(blend.release(), CalculationRangeAll));
+    return Length(CalculationValue::create(adoptPtr(new CalcExpressionBlendLength(from, *this, progress)), range));
 }
 
 CalculationValue* Length::calculationValue() const

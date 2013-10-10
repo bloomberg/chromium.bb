@@ -47,11 +47,6 @@ enum CalcOperator {
     CalcDivide = '/'
 };
 
-enum CalculationPermittedValueRange {
-    CalculationRangeAll,
-    CalculationRangeNonNegative
-};
-
 enum CalcExpressionNodeType {
     CalcExpressionNodeUndefined,
     CalcExpressionNodeNumber,
@@ -83,7 +78,7 @@ protected:
 
 class CalculationValue : public RefCounted<CalculationValue> {
 public:
-    static PassRefPtr<CalculationValue> create(PassOwnPtr<CalcExpressionNode> value, CalculationPermittedValueRange);
+    static PassRefPtr<CalculationValue> create(PassOwnPtr<CalcExpressionNode> value, ValueRange);
     float evaluate(float maxValue) const;
 
     bool operator==(const CalculationValue& o) const
@@ -95,9 +90,9 @@ public:
     const CalcExpressionNode* expression() const { return m_value.get(); }
 
 private:
-    CalculationValue(PassOwnPtr<CalcExpressionNode> value, CalculationPermittedValueRange range)
+    CalculationValue(PassOwnPtr<CalcExpressionNode> value, ValueRange range)
         : m_value(value)
-        , m_isNonNegative(range == CalculationRangeNonNegative)
+        , m_isNonNegative(range == ValueRangeNonNegative)
     {
     }
 

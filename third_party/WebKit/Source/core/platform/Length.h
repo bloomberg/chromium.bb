@@ -44,6 +44,11 @@ enum LengthType {
     Undefined
 };
 
+enum ValueRange {
+    ValueRangeAll,
+    ValueRangeNonNegative
+};
+
 class CalculationValue;
 
 struct Length {
@@ -233,17 +238,22 @@ public:
     bool isFillAvailable() const { return type() == FillAvailable; }
     bool isFitContent() const { return type() == FitContent; }
 
-    Length blend(const Length& from, double progress) const
+    Length blend(const Length& from, double progress, ValueRange range) const
     {
-        if (isUndefined() || from.isUndefined())
+        if (progress == 0.0)
+            return from;
+
+        if (progress == 1.0)
             return *this;
 
-        // Blend two lengths to produce a new length that is in between them.  Used for animation.
+        if (isUndefined() || from.isUndefined())
+            return progress < 0.5 ? from : *this;
+
         if (from.type() == Calculated || type() == Calculated)
-            return blendMixedTypes(from, progress);
+            return blendMixedTypes(from, progress, range);
 
         if (!from.isZero() && !isZero() && from.type() != type())
-            return blendMixedTypes(from, progress);
+            return blendMixedTypes(from, progress, range);
 
         if (from.isZero() && isZero())
             return *this;
@@ -252,15 +262,10 @@ public:
         if (isZero())
             resultType = from.type();
 
-        if (resultType == Percent) {
-            float fromPercent = from.isZero() ? 0 : from.percent();
-            float toPercent = isZero() ? 0 : percent();
-            return Length(WebCore::blend(fromPercent, toPercent, progress), Percent);
-        }
-
-        float fromValue = from.isZero() ? 0 : from.value();
-        float toValue = isZero() ? 0 : value();
-        return Length(WebCore::blend(fromValue, toValue, progress), resultType);
+        float blendedValue = WebCore::blend(from.value(), value(), progress);
+        if (range == ValueRangeNonNegative)
+            blendedValue = clampTo<float>(blendedValue, 0);
+        return Length(blendedValue, resultType);
     }
 
     float getFloatValue() const
@@ -294,7 +299,7 @@ private:
             incrementCalculatedRef();
     }
 
-    Length blendMixedTypes(const Length& from, double progress) const;
+    Length blendMixedTypes(const Length& from, double progress, ValueRange) const;
 
     int calculationHandle() const
     {
