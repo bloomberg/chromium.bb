@@ -11,8 +11,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
-#include "chrome/browser/ui/chrome_style.h"
-#include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
@@ -307,7 +305,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     // animation looks odd. However, replacing the contentView for constrained
     // windows does not work - it does custom rendering.
     base::scoped_nsobject<NSView> flippedContentView(
-        [[FlippedView alloc] initWithFrame:NSZeroRect]);
+        [[FlippedView alloc] initWithFrame:
+            [[[self window] contentView] frame]]);
     [flippedContentView setSubviews:
         @[accountChooser_,
           titleTextField_,
@@ -360,7 +359,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   NSSize size = NSMakeSize(
       std::max(contentSize.width, headerSize.width),
       contentSize.height + headerSize.height + autofill::kDetailTopPadding);
-  size.width += 2 * chrome_style::kHorizontalPadding;
   size.height += chrome_style::kClientBottomPadding +
                  chrome_style::kTitleTopPadding;
 
@@ -390,8 +388,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (void)performLayout {
   NSRect contentRect = NSZeroRect;
   contentRect.size = [self preferredSize];
-  NSRect clientRect = NSInsetRect(
-      contentRect, chrome_style::kHorizontalPadding, 0);
+  NSRect clientRect = contentRect;
   clientRect.origin.y = chrome_style::kClientBottomPadding;
   clientRect.size.height -= chrome_style::kTitleTopPadding +
                             chrome_style::kClientBottomPadding;
@@ -405,6 +402,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
                kAccountChooserHeight, NSMinYEdge);
   NSDivideRect(mainRect, &dummyRect, &mainRect,
                autofill::kDetailTopPadding, NSMinYEdge);
+  headerRect = NSInsetRect(
+      headerRect, chrome_style::kHorizontalPadding, 0);
   NSDivideRect(headerRect, &titleRect, &headerRect,
                NSWidth([titleTextField_ frame]), NSMinXEdge);
 

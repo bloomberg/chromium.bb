@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 
 @interface AutofillNotificationView : NSView {
@@ -166,7 +167,9 @@
   if ([[self notificationView] hasArrow])
     bounds.size.height -= autofill::kArrowHeight;
 
-  NSRect textFrame = NSInsetRect(bounds, 0, autofill::kNotificationPadding);
+  NSRect textFrame = NSInsetRect(bounds,
+                                 chrome_style::kHorizontalPadding,
+                                 autofill::kNotificationPadding);
   if (![checkbox_ isHidden]) {
     // Temporarily resize checkbox to just the box, no extra clickable area.
     textFrame.origin.x += checkboxSizeWithoutTitle_.width;
@@ -174,7 +177,9 @@
     textFrame.size = [[textfield_ cell] cellSizeForBounds:textFrame];
 
     NSRect checkboxFrame =
-        NSMakeRect(0, 0, NSMaxX(textFrame), NSHeight(textFrame));
+        NSMakeRect(chrome_style::kHorizontalPadding,
+                   NSMaxY(textFrame) - checkboxSizeWithoutTitle_.height,
+                   NSMaxX(textFrame), NSHeight(textFrame));
     [checkbox_ setFrame:checkboxFrame];
   }
   [textfield_ setFrame:textFrame];

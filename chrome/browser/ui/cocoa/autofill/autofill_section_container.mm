@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
+#include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_pop_up_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_view.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_suggestion_container.h"
@@ -216,7 +217,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   if (showSuggestions_)
     controlHeight = [suggestContainer_ preferredSize].height;
 
-  return NSMakeSize(kDetailsWidth,
+  return NSMakeSize(kDetailsWidth + 2 * chrome_style::kHorizontalPadding,
                     labelSize.height + kVerticalHeaderPadding +
                         controlHeight + 2 * kDetailSectionInset);
 }
@@ -234,7 +235,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   NSRect viewFrame = NSZeroRect;
   viewFrame.size = [self preferredSize];
 
-  NSRect contentFrame = NSInsetRect(viewFrame, 0, kDetailSectionInset);
+  NSRect contentFrame = NSInsetRect(viewFrame,
+                                    chrome_style::kHorizontalPadding,
+                                    kDetailSectionInset);
   NSRect controlFrame, labelFrame, buttonFrame;
 
   // Label is top left, suggestion button is top right, controls are below that.
