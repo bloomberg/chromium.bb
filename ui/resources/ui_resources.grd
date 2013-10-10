@@ -187,6 +187,10 @@
       <structure type="chrome_scaled_image" name="IDR_RADIO_HOVER" file="common/radio_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO_PRESSED" file="common/radio_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE" file="common/text_selection_handle_small.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_COPY" file="common/drag_tip_copy.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_MOVE" file="common/drag_tip_move.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_LINK" file="common/drag_tip_link.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_NODROP" file="common/drag_tip_nodrop.png" />
       <if expr="pp_ifdef('desktop_linux')">
         <structure type="chrome_scaled_image" name="IDR_CLOSE" file="linux/linux_close.png" />
       </if>

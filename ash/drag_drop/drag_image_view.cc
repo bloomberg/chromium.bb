@@ -4,8 +4,10 @@
 
 #include "ash/drag_drop/drag_image_view.h"
 
+#include "grit/ui_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/aura/window.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/size_conversions.h"
@@ -36,7 +38,11 @@ Widget* CreateDragWidget(gfx::NativeView context) {
 }
 }
 
-DragImageView::DragImageView(gfx::NativeView context) : views::ImageView() {
+DragImageView::DragImageView(gfx::NativeView context,
+                             ui::DragDropTypes::DragEventSource event_source)
+    : views::ImageView(),
+      drag_event_source_(event_source),
+      touch_drag_operation_(ui::DragDropTypes::DRAG_NONE) {
   widget_.reset(CreateDragWidget(context));
   widget_->SetContentsView(this);
   widget_->SetAlwaysOnTop(true);
@@ -71,6 +77,27 @@ void DragImageView::SetWidgetVisible(bool visible) {
   }
 }
 
+void DragImageView::SetTouchDragOperationHintOff() {
+  // Simply set the drag type to non-touch so that no hint is drawn.
+  drag_event_source_ = ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  SchedulePaint();
+}
+
+void DragImageView::SetTouchDragOperation(int operation) {
+  if (touch_drag_operation_ == operation)
+    return;
+  touch_drag_operation_ = operation;
+  SchedulePaint();
+}
+
+void DragImageView::SetTouchDragOperationHintPosition(
+    const gfx::Point& position) {
+  if (touch_drag_operation_indicator_position_ == position)
+    return;
+  touch_drag_operation_indicator_position_ = position;
+  SchedulePaint();
+}
+
 void DragImageView::SetOpacity(float visibility) {
   DCHECK_GE(visibility, 0.0f);
   DCHECK_LE(visibility, 1.0f);
@@ -102,6 +129,45 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
         scaled_widget_size.width(), scaled_widget_size.height());
     gfx::ImageSkia image_skia(gfx::ImageSkiaRep(scaled, device_scale));
     canvas->DrawImageInt(image_skia, 0, 0);
+  }
+
+  if (drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)
+    return;
+
+  // Select appropriate drag hint.
+  gfx::Image* drag_hint =
+      &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_TOUCH_DRAG_TIP_NODROP);
+  if (touch_drag_operation_ & ui::DragDropTypes::DRAG_COPY) {
+    drag_hint = &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_TOUCH_DRAG_TIP_COPY);
+  } else if (touch_drag_operation_ & ui::DragDropTypes::DRAG_MOVE) {
+    drag_hint = &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_TOUCH_DRAG_TIP_MOVE);
+  } else if (touch_drag_operation_ & ui::DragDropTypes::DRAG_LINK) {
+    drag_hint = &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_TOUCH_DRAG_TIP_LINK);
+  }
+  if (!drag_hint->IsEmpty()) {
+    gfx::Size drag_hint_size = drag_hint->Size();
+
+    // Enlarge widget if required to fit the drag hint image.
+    if (drag_hint_size.width() > widget_size_.width() ||
+        drag_hint_size.height() > widget_size_.height()) {
+      gfx::Size new_widget_size = widget_size_;
+      new_widget_size.SetToMax(drag_hint_size);
+      widget_->SetSize(new_widget_size);
+    }
+
+    // Make sure drag hint image is positioned within the widget.
+    gfx::Point drag_hint_position = touch_drag_operation_indicator_position_;
+    drag_hint_position.Offset(-drag_hint_size.width() / 2, 0);
+    gfx::Rect drag_hint_bounds(drag_hint_position, drag_hint_size);
+    drag_hint_bounds.AdjustToFit(gfx::Rect(widget_size_));
+
+    // Draw image.
+    canvas->DrawImageInt(*(drag_hint->ToImageSkia()),
+        drag_hint_bounds.x(), drag_hint_bounds.y());
   }
 }
 

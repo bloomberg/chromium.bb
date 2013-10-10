@@ -578,7 +578,8 @@ void LauncherView::CreateDragIconProxy(
     float scale_factor) {
   drag_replaced_view_ = replaced_view;
   drag_image_.reset(new ash::internal::DragImageView(
-      drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow()));
+      drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow(),
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE));
   drag_image_->SetImage(icon);
   gfx::Size size = drag_image_->GetPreferredSize();
   size.set_width(size.width() * scale_factor);
