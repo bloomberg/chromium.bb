@@ -52,7 +52,7 @@ public:
     void getIncludedIntervals(int y1, int y2, IntShapeIntervals& result) const;
     void getExcludedIntervals(int y1, int y2, IntShapeIntervals& result) const;
     bool firstIncludedIntervalY(int minY, const IntSize& minSize, LayoutUnit& result) const;
-    PassOwnPtr<RasterShapeIntervals> computeShapeMarginIntervals(int margin) const;
+    PassOwnPtr<RasterShapeIntervals> computeShapeMarginIntervals(unsigned margin) const;
 
 private:
     int size() const { return m_intervalLists.size(); }

@@ -36,7 +36,7 @@ namespace WebCore {
 
 class MarginIntervalGenerator {
 public:
-    MarginIntervalGenerator(int radius);
+    MarginIntervalGenerator(unsigned radius);
     void set(int y, int x1, int x2);
     IntShapeInterval intervalAt(int y) const;
 
@@ -47,15 +47,14 @@ private:
     int m_x2;
 };
 
-MarginIntervalGenerator::MarginIntervalGenerator(int radius)
+MarginIntervalGenerator::MarginIntervalGenerator(unsigned radius)
     : m_y(0)
     , m_x1(0)
     , m_x2(0)
 {
-    ASSERT(radius >= 0);
     m_xIntercepts.resize(radius + 1);
-    int radiusSquared = radius * radius;
-    for (int y = 0; y <= radius; y++)
+    unsigned radiusSquared = radius * radius;
+    for (unsigned y = 0; y <= radius; y++)
         m_xIntercepts[y] = sqrt(static_cast<double>(radiusSquared - y * y));
 }
 
@@ -220,7 +219,7 @@ void RasterShapeIntervals::getExcludedIntervals(int y1, int y2, IntShapeInterval
     }
 }
 
-PassOwnPtr<RasterShapeIntervals> RasterShapeIntervals::computeShapeMarginIntervals(int margin) const
+PassOwnPtr<RasterShapeIntervals> RasterShapeIntervals::computeShapeMarginIntervals(unsigned margin) const
 {
     OwnPtr<RasterShapeIntervals> result = adoptPtr(new RasterShapeIntervals(size() + margin));
     MarginIntervalGenerator intervalGenerator(margin);
@@ -229,8 +228,8 @@ PassOwnPtr<RasterShapeIntervals> RasterShapeIntervals::computeShapeMarginInterva
         const IntShapeIntervals& intervalsAtY = getIntervals(y);
         if (intervalsAtY.isEmpty())
             continue;
-        int marginY0 = std::max(0, y - margin);
-        int marginY1 = std::min(result->size() - 1, y + margin);
+        int marginY0 = std::max(0, clampToPositiveInteger(y - margin));
+        int marginY1 = std::min(result->size() - 1, clampToPositiveInteger(y + margin));
         intervalGenerator.set(y, intervalsAtY[0].x1(), intervalsAtY.last().x2());
         for (int marginY = marginY0; marginY <= marginY1; ++marginY)
             result->uniteMarginInterval(marginY, intervalGenerator.intervalAt(marginY));
@@ -245,7 +244,7 @@ const RasterShapeIntervals& RasterShape::marginIntervals() const
     if (!shapeMargin())
         return *m_intervals;
 
-    int marginBoundaryRadius = std::min(clampToInteger(shapeMargin()), std::max(m_imageSize.width(), m_imageSize.height()));
+    unsigned marginBoundaryRadius = std::min(clampToUnsigned(ceil(shapeMargin())), std::max<unsigned>(m_imageSize.width(), m_imageSize.height()));
     if (!m_marginIntervals)
         m_marginIntervals = m_intervals->computeShapeMarginIntervals(marginBoundaryRadius);
 
