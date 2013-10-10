@@ -64,14 +64,14 @@
             else
               return;
           }
-          this.super();
+          this.super([event]);
         },
 
         out: function(event) {
           // Sliding off the shift key while chording is treated as a key-up.
           if (state == KEY_STATES.CHORDING && event.pointerId == chordingId) {
             state = KEY_STATES.UNLOCKED;
-            var detail = this.populateDetails();
+            var detail = this.populateDetails('out');
             this.fire("key-out", detail);
           }
         },
@@ -98,7 +98,7 @@
           }
           chordingId = event.pointerId;
           // Trigger parent behaviour.
-          this.super();
+          this.super([event]);
           this.fire('enable-sel');
           // Populate double click transition details.
           var detail = {};
@@ -163,8 +163,8 @@
            return detail;
         },
 
-        populateDetails: function() {
-          var detail = this.super();
+        populateDetails: function(caller) {
+          var detail = this.super([caller]);
           switch(state) {
             case(KEY_STATES.LOCKED):
               detail.toKeyset = this.upperCaseKeysetId;

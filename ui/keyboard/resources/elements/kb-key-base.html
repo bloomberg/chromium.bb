@@ -109,11 +109,7 @@
         }
       },
       down: function(event) {
-        var detail = this.populateDetails();
-        if (this.keysetRules && this.keysetRules.down != undefined) {
-          detail.toKeyset = this.keysetRules.down[TO_KEYSET - OFFSET];
-          detail.nextKeyset = this.keysetRules.down[NEXT_KEYSET - OFFSET];
-        }
+        var detail = this.populateDetails('down');
         this.fire('key-down', detail);
         this.longPressTimer = this.generateLongPressTimer();
       },
@@ -123,11 +119,7 @@
       },
       up: function(event) {
         clearTimeout(this.longPressTimer);
-        var detail = this.populateDetails();
-        if (this.keysetRules && this.keysetRules.up != undefined) {
-          detail.toKeyset = this.keysetRules.up[TO_KEYSET - OFFSET];
-          detail.nextKeyset = this.keysetRules.up[NEXT_KEYSET - OFFSET];
-        }
+        var detail = this.populateDetails('up');
         this.fire('key-up', detail);
       },
 
@@ -149,12 +141,35 @@
         return this.invert? (this.char || this.textContent) : this.hintText;
       },
 
-      populateDetails: function() {
-         return {
-            char: this.charValue,
-            toLayout: this.toLayout,
-            repeat: this.repeat
-         };
+      /**
+       * Returns a subset of the key attributes.
+       * @param {string} caller The id of the function which called
+       *     populateDetails.
+       */
+      populateDetails: function(caller) {
+        var detail = {
+          char: this.charValue,
+          toLayout: this.toLayout,
+          repeat: this.repeat
+        };
+
+        switch (caller) {
+          case ('up'):
+            if (this.keysetRules && this.keysetRules.up != undefined) {
+              detail.toKeyset = this.keysetRules.up[TO_KEYSET - OFFSET];
+              detail.nextKeyset = this.keysetRules.up[NEXT_KEYSET - OFFSET];
+            }
+            break;
+          case ('down'):
+            if (this.keysetRules && this.keysetRules.down != undefined) {
+              detail.toKeyset = this.keysetRules.down[TO_KEYSET - OFFSET];
+              detail.nextKeyset = this.keysetRules.down[NEXT_KEYSET - OFFSET];
+            }
+            break;
+          default:
+            break;
+        }
+        return detail;
       },
 
       generateLongPressTimer: function() {

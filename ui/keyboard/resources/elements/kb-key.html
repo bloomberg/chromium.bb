@@ -43,10 +43,12 @@
 
       /**
        * Returns a subset of the key attributes.
+       * @param {string} caller The id of the function that called
+       *     populateDetails.
        * @return {Object} Mapping of attributes for the key element.
        */
-      populateDetails: function() {
-        var details = this.super();
+      populateDetails: function(caller) {
+        var details = this.super([caller]);
         details.keyCode = this.keyCode;
         details.shiftModifier = this.shiftModifier;
         return details;
@@ -60,11 +62,16 @@
     extends="kb-key">
   <script>
     Polymer('kb-abc-key', {
-      // TODO(rsadam@): Move this logic into populateDetails.
-      down: function(event) {
-        var detail = this.populateDetails();
-        detail.relegateToShift = true;
-        this.fire('key-down', detail);
+      populateDetails: function(caller) {
+        var detail = this.super([caller]);
+        switch (caller) {
+          case ('down'):
+            detail.relegateToShift = true;
+            break;
+          default:
+            break;
+        }
+        return detail;
       }
     });
   </script>
