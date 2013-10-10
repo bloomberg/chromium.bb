@@ -14,6 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/login/login_state.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/message_center/message_center.h"
 
@@ -40,6 +41,7 @@ class NetworkStateNotifierTest : public AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     DBusThreadManager::InitializeWithStub();
+    chromeos::LoginState::Initialize();
     SetupDefaultShillState();
     RunAllPendingInMessageLoop();
     AshTestBase::SetUp();
@@ -47,6 +49,7 @@ class NetworkStateNotifierTest : public AshTestBase {
 
   virtual void TearDown() OVERRIDE {
     AshTestBase::TearDown();
+    chromeos::LoginState::Shutdown();
     DBusThreadManager::Shutdown();
   }
 

@@ -15,6 +15,7 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
@@ -80,6 +81,18 @@ bool VPNRequiresCredentials(const std::string& service_path,
   return false;
 }
 
+std::string GetDefaultProfilePath(const NetworkState* network) {
+  if (!NetworkHandler::IsInitialized() ||
+      !LoginState::Get()->IsUserAuthenticated() ||
+      (network && network->type() == shill::kTypeWifi &&
+       network->security() == shill::kSecurityNone)) {
+    return NetworkProfileHandler::kSharedProfilePath;
+  }
+  const NetworkProfile* profile  =
+      NetworkHandler::Get()->network_profile_handler()->GetDefaultUserProfile();
+  return profile ? profile->path : NetworkProfileHandler::kSharedProfilePath;
+}
+
 }  // namespace
 
 const char NetworkConnectionHandler::kErrorNotFound[] = "not-found";
@@ -104,9 +117,11 @@ const char NetworkConnectionHandler::kErrorConnectCanceled[] =
 
 struct NetworkConnectionHandler::ConnectRequest {
   ConnectRequest(const std::string& service_path,
+                 const std::string& profile_path,
                  const base::Closure& success,
                  const network_handler::ErrorCallback& error)
       : service_path(service_path),
+        profile_path(profile_path),
         connect_state(CONNECT_REQUESTED),
         success_callback(success),
         error_callback(error) {
@@ -117,6 +132,7 @@ struct NetworkConnectionHandler::ConnectRequest {
     CONNECT_CONNECTING = 2
   };
   std::string service_path;
+  std::string profile_path;
   ConnectState connect_state;
   base::Closure success_callback;
   network_handler::ErrorCallback error_callback;
@@ -237,10 +253,18 @@ void NetworkConnectionHandler::ConnectToNetwork(
     }
   }
 
+  // If the network does not have a profile path, specify the correct default
+  // profile here and set it once connected. Otherwise leave it empty to
+  // indicate that it does not need to be set.
+  std::string profile_path;
+  if (!network || network->profile_path().empty())
+    profile_path = GetDefaultProfilePath(network);
+
   // All synchronous checks passed, add |service_path| to connecting list.
   pending_requests_.insert(std::make_pair(
       service_path,
-      ConnectRequest(service_path, success_callback, error_callback)));
+      ConnectRequest(service_path, profile_path,
+                     success_callback, error_callback)));
 
   // Connect immediately to 'connectable' networks.
   // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
@@ -395,7 +419,8 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
         }
         NET_LOG_EVENT("Connect Request Queued", service_path);
         queued_connect_.reset(new ConnectRequest(
-            service_path, request->success_callback, request->error_callback));
+            service_path, request->profile_path,
+            request->success_callback, request->error_callback));
         pending_requests_.erase(service_path);
         return;
       }
@@ -541,6 +566,13 @@ void NetworkConnectionHandler::CheckPendingRequest(
   }
   if (network->IsConnectedState()) {
     NET_LOG_EVENT("Connect Request Succeeded", service_path);
+    if (!request->profile_path.empty()) {
+      // If a profile path was specified, set it on a successful connection.
+      network_configuration_handler_->SetNetworkProfile(
+          service_path, request->profile_path,
+          base::Bind(&base::DoNothing),
+          chromeos::network_handler::ErrorCallback());
+    }
     if (!request->success_callback.is_null())
       request->success_callback.Run();
     pending_requests_.erase(service_path);
