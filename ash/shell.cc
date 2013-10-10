@@ -121,8 +121,8 @@
 #include "gpu/config/gpu_feature_type.h"
 #endif  // defined(USE_X11)
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
+#include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/system/chromeos/power/power_status.h"
-#include "ash/system/chromeos/power/suspend_observer.h"
 #include "ash/system/chromeos/power/user_activity_notifier.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
 #endif  // defined(OS_CHROMEOS)
@@ -884,7 +884,7 @@ void Shell::Init() {
       scoped_ptr<ash::BrightnessControlDelegate>(
           new ash::system::BrightnessControllerChromeos).Pass());
 
-  suspend_observer_.reset(new internal::SuspendObserver());
+  power_event_observer_.reset(new internal::PowerEventObserver());
   user_activity_notifier_.reset(
       new internal::UserActivityNotifier(user_activity_detector_.get()));
   video_activity_notifier_.reset(

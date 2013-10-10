@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
+#include "chrome/browser/chromeos/extensions/extension_system_event_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -56,8 +57,6 @@
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/power_prefs.h"
-#include "chrome/browser/chromeos/power/resume_observer.h"
-#include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/screensaver/screensaver_controller.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
@@ -591,8 +590,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Initialize the brightness observer so that we'll display an onscreen
   // indication of brightness changes during login.
   brightness_observer_.reset(new BrightnessObserver());
-  resume_observer_.reset(new ResumeObserver());
-  screen_lock_observer_.reset(new ScreenLockObserver());
+  extension_system_event_observer_.reset(new ExtensionSystemEventObserver());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableScreensaverExtensions)) {
     screensaver_controller_.reset(new ScreensaverController());
@@ -705,8 +703,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
-  screen_lock_observer_.reset();
-  resume_observer_.reset();
+  extension_system_event_observer_.reset();
   brightness_observer_.reset();
   retail_mode_power_save_blocker_.reset();
   peripheral_battery_observer_.reset();

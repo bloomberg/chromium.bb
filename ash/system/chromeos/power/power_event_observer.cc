@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/power/suspend_observer.h"
+#include "ash/system/chromeos/power/power_event_observer.h"
 
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/power_button_controller.h"
 #include "ash/wm/user_activity_detector.h"
 #include "base/prefs/pref_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -14,24 +16,26 @@
 namespace ash {
 namespace internal {
 
-SuspendObserver::SuspendObserver()
-    : power_client_(
-          chromeos::DBusThreadManager::Get()->GetPowerManagerClient()),
-      session_client_(
-          chromeos::DBusThreadManager::Get()->GetSessionManagerClient()),
-      screen_locked_(false) {
-  power_client_->AddObserver(this);
-  session_client_->AddObserver(this);
+PowerEventObserver::PowerEventObserver() {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      AddObserver(this);
 }
 
-SuspendObserver::~SuspendObserver() {
-  session_client_->RemoveObserver(this);
-  session_client_ = NULL;
-  power_client_->RemoveObserver(this);
-  power_client_ = NULL;
+PowerEventObserver::~PowerEventObserver() {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      RemoveObserver(this);
 }
 
-void SuspendObserver::SuspendImminent() {
+void PowerEventObserver::BrightnessChanged(int level, bool user_initiated) {
+  Shell::GetInstance()->power_button_controller()->OnScreenBrightnessChanged(
+      static_cast<double>(level));
+}
+
+void PowerEventObserver::SuspendImminent() {
   Shell* shell = Shell::GetInstance();
   SessionStateDelegate* delegate = shell->session_state_delegate();
 
@@ -39,16 +43,23 @@ void SuspendObserver::SuspendImminent() {
   // suspend and ask the session manager to lock the screen.
   if (!screen_locked_ && delegate->ShouldLockScreenBeforeSuspending() &&
       delegate->CanLockScreen()) {
-    screen_lock_callback_ = power_client_->GetSuspendReadinessCallback();
-    VLOG(1) << "Requesting screen lock from SuspendObserver";
-    session_client_->RequestLockScreen();
+    screen_lock_callback_ = chromeos::DBusThreadManager::Get()->
+        GetPowerManagerClient()->GetSuspendReadinessCallback();
+    VLOG(1) << "Requesting screen lock from PowerEventObserver";
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        RequestLockScreen();
   }
 
   shell->user_activity_detector()->OnDisplayPowerChanging();
   shell->output_configurator()->SuspendDisplays();
 }
 
-void SuspendObserver::ScreenIsLocked() {
+void PowerEventObserver::SystemResumed(const base::TimeDelta& sleep_duration) {
+  Shell::GetInstance()->output_configurator()->ResumeDisplays();
+  Shell::GetInstance()->system_tray_notifier()->NotifyRefreshClock();
+}
+
+void PowerEventObserver::ScreenIsLocked() {
   screen_locked_ = true;
 
   // Stop blocking suspend after the screen is locked.
@@ -64,7 +75,7 @@ void SuspendObserver::ScreenIsLocked() {
   }
 }
 
-void SuspendObserver::ScreenIsUnlocked() {
+void PowerEventObserver::ScreenIsUnlocked() {
   screen_locked_ = false;
 }
 

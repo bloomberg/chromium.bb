@@ -5,9 +5,7 @@
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 
 #include "ash/shell.h"
-#include "ash/wm/power_button_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/extensions/api/system_private/system_private_api.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -22,10 +20,6 @@ BrightnessObserver::~BrightnessObserver() {
 }
 
 void BrightnessObserver::BrightnessChanged(int level, bool user_initiated) {
-  extensions::DispatchBrightnessChangedEvent(level, user_initiated);
-  ash::Shell::GetInstance()->power_button_controller()->
-      OnScreenBrightnessChanged(static_cast<double>(level));
-
   // When the user is idle, the power manager dims the screen, turns off the
   // screen and eventually locks the screen (if screen lock on idle and suspend
   // is enabled). For Public Accounts, the session should be terminated instead

@@ -122,6 +122,7 @@ class LocaleNotificationController;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
 class OverlayEventFilter;
+class PowerEventObserver;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
@@ -129,7 +130,6 @@ class ScopedTargetRootWindow;
 class ScreenPositionController;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
-class SuspendObserver;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class TouchObserverHUD;
@@ -626,7 +626,7 @@ class ASH_EXPORT Shell
       locale_notification_controller_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<internal::SuspendObserver> suspend_observer_;
+  scoped_ptr<internal::PowerEventObserver> power_event_observer_;
   scoped_ptr<internal::UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<internal::VideoActivityNotifier> video_activity_notifier_;
 #if defined(USE_X11)

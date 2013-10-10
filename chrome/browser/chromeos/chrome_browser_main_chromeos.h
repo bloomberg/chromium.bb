@@ -23,13 +23,12 @@ namespace chromeos {
 class BrightnessObserver;
 class DataPromoNotification;
 class DisplayConfigurationObserver;
+class ExtensionSystemEventObserver;
 class IdleActionWarningObserver;
 class MagnificationManager;
 class PeripheralBatteryObserver;
 class PowerButtonObserver;
 class PowerPrefs;
-class ResumeObserver;
-class ScreenLockObserver;
 class ScreensaverController;
 class SessionManagerObserver;
 class SwapMetrics;
@@ -70,8 +69,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<BrightnessObserver> brightness_observer_;
   scoped_ptr<DisplayConfigurationObserver> display_configuration_observer_;
   scoped_ptr<default_app_order::ExternalLoader> app_order_loader_;
-  scoped_ptr<ResumeObserver> resume_observer_;
-  scoped_ptr<ScreenLockObserver> screen_lock_observer_;
+  scoped_ptr<ExtensionSystemEventObserver> extension_system_event_observer_;
   scoped_ptr<ScreensaverController> screensaver_controller_;
   scoped_ptr<PeripheralBatteryObserver> peripheral_battery_observer_;
   scoped_ptr<PowerPrefs> power_prefs_;
