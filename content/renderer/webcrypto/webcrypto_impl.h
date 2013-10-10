@@ -35,6 +35,11 @@ class CONTENT_EXPORT WebCryptoImpl
       const unsigned char* data,
       unsigned data_size,
       WebKit::WebCryptoResult result);
+  virtual void generateKey(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      bool extractable,
+      WebKit::WebCryptoKeyUsageMask usage,
+      WebKit::WebCryptoResult result);
   virtual void importKey(
       WebKit::WebCryptoKeyFormat format,
       const unsigned char* key_data,
@@ -80,6 +85,10 @@ class CONTENT_EXPORT WebCryptoImpl
       const unsigned char* data,
       unsigned data_size,
       WebKit::WebArrayBuffer* buffer);
+  bool GenerateKeyInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      scoped_ptr<WebKit::WebCryptoKeyHandle>* key,
+      WebKit::WebCryptoKeyType* type);
   bool ImportKeyInternal(
       WebKit::WebCryptoKeyFormat format,
       const unsigned char* key_data,

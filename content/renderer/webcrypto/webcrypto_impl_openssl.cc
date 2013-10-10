@@ -119,6 +119,15 @@ bool WebCryptoImpl::DigestInternal(const WebKit::WebCryptoAlgorithm& algorithm,
   return true;
 }
 
+bool WebCryptoImpl::GenerateKeyInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    scoped_ptr<WebKit::WebCryptoKeyHandle>* key,
+    WebKit::WebCryptoKeyType* type) {
+  // TODO(ellyjones): Placeholder for OpenSSL implementation.
+  // Issue http://crbug.com/267888.
+  return false;
+}
+
 bool WebCryptoImpl::ImportKeyInternal(
     WebKit::WebCryptoKeyFormat format,
     const unsigned char* key_data,

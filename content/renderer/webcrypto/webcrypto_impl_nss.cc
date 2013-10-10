@@ -166,6 +166,48 @@ bool AesCbcEncryptDecrypt(
   return true;
 }
 
+CK_MECHANISM_TYPE HmacAlgorithmToGenMechanism(
+    const WebKit::WebCryptoAlgorithm& algorithm) {
+  DCHECK_EQ(algorithm.id(), WebKit::WebCryptoAlgorithmIdHmac);
+  const WebKit::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+  DCHECK(params);
+  switch (params->hash().id()) {
+    case WebKit::WebCryptoAlgorithmIdSha1:
+      return CKM_SHA_1_HMAC;
+    case WebKit::WebCryptoAlgorithmIdSha256:
+      return CKM_SHA256_HMAC;
+    default:
+      return CKM_INVALID_MECHANISM;
+  }
+}
+
+CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
+    const WebKit::WebCryptoAlgorithm& algorithm) {
+  switch (algorithm.id()) {
+    case WebKit::WebCryptoAlgorithmIdAesCbc:
+      return CKM_AES_KEY_GEN;
+    case WebKit::WebCryptoAlgorithmIdHmac:
+      return HmacAlgorithmToGenMechanism(algorithm);
+    default:
+      return CKM_INVALID_MECHANISM;
+  }
+}
+
+unsigned int WebCryptoHmacAlgorithmToBlockSize(
+    const WebKit::WebCryptoAlgorithm& algorithm) {
+  DCHECK_EQ(algorithm.id(), WebKit::WebCryptoAlgorithmIdHmac);
+  const WebKit::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+  DCHECK(params);
+  switch (params->hash().id()) {
+    case WebKit::WebCryptoAlgorithmIdSha1:
+      return 512;
+    case WebKit::WebCryptoAlgorithmIdSha256:
+      return 512;
+    default:
+      return 0;
+  }
+}
+
 }  // namespace
 
 void WebCryptoImpl::Init() {
@@ -233,6 +275,69 @@ bool WebCryptoImpl::DigestInternal(
 
   return result_length == hash_result_length;
 }
+
+bool WebCryptoImpl::GenerateKeyInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    scoped_ptr<WebKit::WebCryptoKeyHandle>* key,
+    WebKit::WebCryptoKeyType* type) {
+
+  CK_MECHANISM_TYPE mech = WebCryptoAlgorithmToGenMechanism(algorithm);
+  unsigned int keylen_bytes = 0;
+  WebKit::WebCryptoKeyType key_type = WebKit::WebCryptoKeyTypeSecret;
+
+  if (mech == CKM_INVALID_MECHANISM) {
+    return false;
+  }
+
+  switch (algorithm.id()) {
+    case WebKit::WebCryptoAlgorithmIdAesCbc: {
+      const WebKit::WebCryptoAesKeyGenParams* params =
+          algorithm.aesKeyGenParams();
+      DCHECK(params);
+      keylen_bytes = params->length() / 8;
+      if (params->length() % 8)
+        return false;
+      key_type = WebKit::WebCryptoKeyTypeSecret;
+      break;
+    }
+    case WebKit::WebCryptoAlgorithmIdHmac: {
+      const WebKit::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+      DCHECK(params);
+      if (!params->getLength(keylen_bytes)) {
+        keylen_bytes = WebCryptoHmacAlgorithmToBlockSize(algorithm) / 8;
+      }
+
+      key_type = WebKit::WebCryptoKeyTypeSecret;
+      break;
+    }
+
+    default: {
+      return false;
+    }
+  }
+
+  if (keylen_bytes == 0) {
+    return false;
+  }
+
+  crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
+  if (!slot) {
+    return false;
+  }
+
+  crypto::ScopedPK11SymKey pk11_key(
+      PK11_KeyGen(slot.get(), mech, NULL, keylen_bytes, NULL));
+
+  if (!pk11_key) {
+    return false;
+  }
+
+  key->reset(new SymKeyHandle(pk11_key.Pass()));
+  *type = key_type;
+
+  return true;
+}
+
 
 bool WebCryptoImpl::ImportKeyInternal(
     WebKit::WebCryptoKeyFormat format,

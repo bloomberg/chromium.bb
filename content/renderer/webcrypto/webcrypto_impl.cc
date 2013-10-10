@@ -56,6 +56,23 @@ void WebCryptoImpl::digest(
   }
 }
 
+void WebCryptoImpl::generateKey(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    bool exportable,
+    WebKit::WebCryptoKeyUsageMask usage,
+    WebKit::WebCryptoResult result) {
+  scoped_ptr<WebKit::WebCryptoKeyHandle> handle;
+  WebKit::WebCryptoKeyType type;
+  if (!GenerateKeyInternal(algorithm, &handle, &type)) {
+    result.completeWithError();
+  } else {
+    WebKit::WebCryptoKey key(
+        WebKit::WebCryptoKey::create(handle.release(), type, exportable,
+                                     algorithm, usage));
+    result.completeWithKey(key);
+  }
+}
+
 void WebCryptoImpl::importKey(
     WebKit::WebCryptoKeyFormat format,
     const unsigned char* key_data,
