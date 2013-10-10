@@ -35,14 +35,23 @@ class ExtensionSet {
       ++it_;
       return *this;
     }
-    const scoped_refptr<const extensions::Extension> operator*() {
+    const_iterator operator++(int) {
+      const const_iterator old(*this);
+      ++it_;
+      return old;
+    }
+    const scoped_refptr<const extensions::Extension>& operator*() const {
       return it_->second;
     }
-    const scoped_refptr<const extensions::Extension>* operator->() {
+    const scoped_refptr<const extensions::Extension>* operator->() const {
       return &it_->second;
     }
-    bool operator!=(const const_iterator& other) { return it_ != other.it_; }
-    bool operator==(const const_iterator& other) { return it_ == other.it_; }
+    bool operator!=(const const_iterator& other) const {
+      return it_ != other.it_;
+    }
+    bool operator==(const const_iterator& other) const {
+      return it_ == other.it_;
+    }
 
    private:
     ExtensionMap::const_iterator it_;
