@@ -28,7 +28,12 @@ var ProgressCenterEvent = Object.freeze({
   /**
    * Background page notifies item update to application windows.
    */
-  ITEM_UPDATED: 'itemUpdated'
+  ITEM_UPDATED: 'itemUpdated',
+
+  /**
+   * Background page notifies all the items are cleared.
+   */
+  RESET: 'reset'
 });
 
 /**
@@ -39,7 +44,8 @@ var ProgressCenterEvent = Object.freeze({
 var ProgressItemState = Object.freeze({
   PROGRESSING: 'progressing',
   COMPLETE: 'complete',
-  ERROR: 'error'
+  ERROR: 'error',
+  CANCELED: 'canceled'
 });
 
 /**
@@ -70,7 +76,7 @@ var ProgressCenterItem = function() {
    * Max value of the progress.
    * @type {number}
    */
-  this.progressMax = 1;
+  this.progressMax = 0;
 
   /**
    * Current value of the progress.
@@ -83,6 +89,12 @@ var ProgressCenterItem = function() {
    * @type {ProgressItemContainer}
    */
   this.container = ProgressItemContainer.CLIENT;
+
+  /**
+   * Whether the item is summarized item or not.
+   * @type {boolean}
+   */
+  this.summarized = false;
 
   Object.seal(this);
 };

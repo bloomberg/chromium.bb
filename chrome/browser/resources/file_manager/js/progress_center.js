@@ -31,6 +31,48 @@ var ProgressCenter = function() {
    * @private
    */
   this.items_ = [];
+
+  /**
+   * Timeout callback to remove items.
+   * @type {TimeoutManager}
+   * @private
+   */
+  this.resetTimeout_ = new ProgressCenter.TimeoutManager(
+      this.reset_.bind(this));
+};
+
+/**
+ * The default amount of milliseconds time, before a progress item will reset
+ * after the last complete.
+ * @type {number}
+ * @private
+ * @const
+ */
+ProgressCenter.RESET_DELAY_TIME_MS_ = 5000;
+
+/**
+ * Utility for timeout callback.
+ *
+ * @param {function(*):*} callback Callbakc function.
+ * @constructor
+ */
+ProgressCenter.TimeoutManager = function(callback) {
+  this.callback_ = callback;
+  this.id_ = null;
+  Object.seal(this);
+};
+
+/**
+ * Requests timeout. Previous request is canceled.
+ * @param {number} milliseconds Time to invoke the callback function.
+ */
+ProgressCenter.TimeoutManager.prototype.request = function(milliseconds) {
+  if (this.id_)
+    clearTimeout(this.id_);
+  this.id_ = setTimeout(function() {
+    this.id_ = null;
+    this.callback_();
+  }.bind(this), milliseconds);
 };
 
 ProgressCenter.prototype = {
@@ -58,6 +100,9 @@ ProgressCenter.prototype.addItem = function(item) {
   item.container = this.targetContainer_;
   this.items_.push(item);
 
+  if (item.status !== ProgressItemState.PROGRESSING)
+    this.resetTimeout_.request(ProgressCenter.RESET_DELAY_TIME_MS_);
+
   var event = new cr.Event(ProgressCenterEvent.ITEM_ADDED);
   event.item = item;
   this.dispatchEvent(event);
@@ -73,6 +118,9 @@ ProgressCenter.prototype.updateItem = function(item) {
   if (index === -1)
     return;
   this.items_[index] = item;
+
+  if (item.status !== ProgressItemState.PROGRESSING)
+    this.resetTimeout_.request(ProgressCenter.RESET_DELAY_TIME_MS_);
 
   var event = new cr.Event(ProgressCenterEvent.ITEM_UPDATED);
   event.item = item;
@@ -119,6 +167,59 @@ ProgressCenter.prototype.getItemIndex_ = function(id) {
 };
 
 /**
+ * Obtains the summarized item to be displayed in the closed progress center
+ * panel.
+ * @return {ProgressCenterItem} Summarized item. Returns null if there is no
+ *     item.
+ */
+ProgressCenter.prototype.getSummarizedItem = function() {
+  var applicationItems = this.applicationItems;
+  if (applicationItems.length == 0)
+    return null;
+  if (applicationItems.length == 1)
+    return applicationItems[0];
+  var summarizedItem = new ProgressCenterItem();
+  summarizedItem.summarized = true;
+  var completeCount = 0;
+  var progressingCount = 0;
+  var canceledCount = 0;
+  var errorCount = 0;
+  for (var i = 0; i < applicationItems.length; i++) {
+    switch (applicationItems[i].state) {
+      case ProgressItemState.COMPLETE:
+        completeCount++;
+        break;
+      case ProgressItemState.PROGRESSING:
+        progressingCount++;
+        break;
+      case ProgressItemState.ERROR:
+        errorCount++;
+        continue;
+      case ProgressItemState.CANCELED:
+        canceledCount++;
+        continue;
+    }
+    summarizedItem.progressMax += applicationItems[i].progressMax;
+    summarizedItem.progressValue += applicationItems[i].progressValue;
+  }
+  var messages = [];
+  if (completeCount)
+    messages.push(completeCount + ' complete');
+  if (progressingCount)
+    messages.push(progressingCount + ' active');
+  if (canceledCount)
+    messages.push(canceledCount + ' canceled');
+  if (errorCount)
+    messages.push(errorCount + ' error');
+  summarizedItem.message = messages.join(', ') + '.';
+  summarizedItem.state =
+      completeCount + progressingCount == 0 ? ProgressItemState.CANCELED :
+      progressingCount > 0 ? ProgressItemState.PROGRESSING :
+      ProgressItemState.COMPLETE;
+  return summarizedItem;
+};
+
+/**
  * Passes the item to the ChromeOS's message center.
  *
  * TODO(hirono): Implement the method.
@@ -127,6 +228,24 @@ ProgressCenter.prototype.getItemIndex_ = function(id) {
  */
 ProgressCenter.prototype.passItemsToNotification_ = function() {
 
+};
+
+/**
+ * Hides the progress center if there is no progressing items.
+ * @private
+ */
+ProgressCenter.prototype.reset_ = function() {
+  // If we have a progressing item, stop reset.
+  for (var i = 0; i < this.items_.length; i++) {
+    if (this.items_[i].state == ProgressItemState.PROGRESSING)
+      return;
+  }
+
+  // Reset items.
+  this.items_.splice(0, this.items_.length);
+
+  // Dispatch a event.
+  this.dispatchEvent(new cr.Event(ProgressCenterEvent.RESET));
 };
 
 /**
@@ -225,6 +344,7 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
       this.deletingItem_ = new ProgressCenterItem();
       // TODO(hirono): Specifying the correct message.
       this.deletingItem_.message = 'Deleting...';
+      this.deletingItem_.progressMax = 100;
       progressCenter.addItem(this.deletingItem_);
       break;
 

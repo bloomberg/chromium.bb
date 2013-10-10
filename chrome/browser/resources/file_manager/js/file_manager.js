@@ -773,20 +773,33 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // Initialize progress center panel.
     this.progressCenterPanel_ = new ProgressCenterPanel(
-        dom.querySelector('#progress-center'));
+        dom.querySelector('#progress-center'),
+        function(id) {
+        }.bind(this));
     var initialItems = this.backgroundPage_.progressCenter.applicationItems;
     for (var i = 0; i < initialItems.length; i++) {
-      this.progressCenterPanel_.addItem(initialItems[i]);
+      this.progressCenterPanel_.updateItem(
+          initialItems[i],
+          this.backgroundPage_.progressCenter.getSummarizedItem());
     }
     this.backgroundPage_.progressCenter.addEventListener(
         ProgressCenterEvent.ITEM_ADDED,
         function(event) {
-          this.progressCenterPanel_.updateItem(event.item);
+          this.progressCenterPanel_.updateItem(
+              event.item,
+              this.backgroundPage_.progressCenter.getSummarizedItem());
         }.bind(this));
     this.backgroundPage_.progressCenter.addEventListener(
         ProgressCenterEvent.ITEM_UPDATED,
         function(event) {
-          this.progressCenterPanel_.updateItem(event.item);
+          this.progressCenterPanel_.updateItem(
+              event.item,
+              this.backgroundPage_.progressCenter.getSummarizedItem());
+        }.bind(this));
+    this.backgroundPage_.progressCenter.addEventListener(
+        ProgressCenterEvent.RESET,
+        function(event) {
+          this.progressCenterPanel_.reset();
         }.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));

@@ -1997,6 +1997,7 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   -webkit-padding-start: 20px;
   display: block;
   flex: none;
+  height: 33px;
   margin-bottom: 20px;
 }
 
@@ -2004,7 +2005,6 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   color: #777;
   display: block;
   height: 17px;
-  margin-bottom: 4px;
   opacity: 1;
   white-space: nowrap;
 }
@@ -2016,6 +2016,12 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 #progress-center .progress-frame {
   align-items: center;
   display: flex;
+  margin-top: 4px;
+}
+
+#progress-center li.error .progress-bar,
+#progress-center li.canceled .progress-bar {
+  visibility: hidden;
 }
 
 #progress-center .progress-bar {
@@ -2081,12 +2087,21 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
  * If the progress center only one item,
  * toggle button turned into cancel button the item.
  */
-#progress-center.single button.toggle,
+#progress-center-close-view.single button.toggle,
 #progress-center button.cancel {
   background: -webkit-image-set(
       url(../images/files/ui/close_bar.png) 1x,
       url(../images/files/ui/2x/close_bar.png) 2x)
       no-repeat;
+}
+
+#progress-center-close-view.single li.error button.toggle,
+#progress-center-close-view.single li.canceled button.toggle,
+#progress-center-close-view.single li.complete button.toggle,
+#progress-center li.error button.cancel,
+#progress-center li.canceled button.cancel,
+#progress-center li.complete button.cancel {
+  visibility: hidden;
 }
 
 #progress-center.opened button.toggle {

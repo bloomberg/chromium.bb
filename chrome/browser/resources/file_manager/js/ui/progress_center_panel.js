@@ -8,12 +8,15 @@
  * Progress center panel.
  *
  * @param {HTMLElement} element DOM Element of the process center panel.
+ * @param {function(number)} cancelCallback Callback to becalled with the ID of
+ *     the progress item when the cancel button is clicked.
  * @constructor
  */
-var ProgressCenterPanel = function(element) {
+var ProgressCenterPanel = function(element, cancelCallback) {
   this.element_ = element;
   this.openView_ = this.element_.querySelector('#progress-center-open-view');
   this.closeView_ = this.element_.querySelector('#progress-center-close-view');
+  this.cancelCallback_ = cancelCallback;
 
   /**
    * Only progress item in the close view.
@@ -22,28 +25,14 @@ var ProgressCenterPanel = function(element) {
    */
   this.closeViewItem_ = this.closeView_.querySelector('li');
 
-  /**
-   * Timeout callback to remove items.
-   * @type {TimeoutManager}
-   * @private
-   */
-  this.hidingTimeout_ = new ProgressCenterPanel.TimeoutManager(
-      this.hideByTimeout_.bind(this));
-
   Object.freeze(this);
 
   // Register event handlers.
   element.addEventListener('click', this.onClick_.bind(this));
-};
+  element.addEventListener(
+      'webkitTransitionEnd', this.onItemTransitionEnd_.bind(this));
 
-/**
- * The default amount of milliseconds time, before a progress item will hide
- * after the last update.
- * @type {number}
- * @private
- * @const
- */
-ProgressCenterPanel.HIDE_DELAY_TIME_MS_ = 2000;
+};
 
 /**
  * Whether to use the new progress center UI or not.
@@ -55,31 +44,6 @@ ProgressCenterPanel.HIDE_DELAY_TIME_MS_ = 2000;
 ProgressCenterPanel.ENABLED_ = false;
 
 /**
- * Utility for timeout callback.
- *
- * @param {function(*):*} callback Callbakc function.
- * @constructor
- */
-ProgressCenterPanel.TimeoutManager = function(callback) {
-  this.callback_ = callback;
-  this.id_ = null;
-  Object.seal(this);
-};
-
-/**
- * Requests timeout. Previous request is canceled.
- * @param {number} milliseconds Time to invoke the callback function.
- */
-ProgressCenterPanel.TimeoutManager.prototype.request = function(milliseconds) {
-  if (this.id_)
-    clearTimeout(this.id_);
-  this.id_ = setTimeout(function() {
-    this.id_ = null;
-    this.callback_();
-  }.bind(this), milliseconds);
-};
-
-/**
  * Update item element.
  * @param {HTMLElement} element Element to be updated.
  * @param {ProgressCenterItem} item Progress center item.
@@ -88,10 +52,12 @@ ProgressCenterPanel.TimeoutManager.prototype.request = function(milliseconds) {
 ProgressCenterPanel.updateItemElement_ = function(element, item) {
   var additionalClass = item.state === ProgressItemState.COMPLETE ? 'complete' :
                         item.state === ProgressItemState.ERROR ? 'error' :
+                        item.state === ProgressItemState.CANCELED ? 'canceled' :
                         '';
+  var previousWidthRate =
+      parseInt(element.querySelector('.progress-track').style.width);
   if (item.state === ProgressItemState.COMPLETE &&
-      parseInt(element.querySelector('.progress-track').style.width) ===
-          item.progressRateByPercent) {
+      previousWidthRate === item.progressRateByPercent) {
     // Stop to update the message until the transition ends.
     element.setAttribute('data-complete-message', item.message);
     // The class pre-complete means that the actual operation is already done
@@ -99,9 +65,20 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
     additionalClass = 'pre-complete';
   } else {
     element.querySelector('label').textContent = item.message;
+    element.removeAttribute('data-complete-message');
   }
-  element.querySelector('.progress-track').style.width =
-      item.progressRateByPercent + '%';
+  // To commit the property change and to trigger the transition even if the
+  // change is done synchronously, assign the width value asynchronously.
+  setTimeout(function() {
+    var track = element.querySelector('.progress-track');
+    // When the progress rate is reverted, we does not use the transition
+    // animation. Specifying '0' overrides the CSS settings and specifying null
+    // re-enables it.
+    track.style.transitionDuration =
+        previousWidthRate > item.progressRateByPercent ? '0' : null;
+    track.style.width = item.progressRateByPercent + '%';
+  }, 0);
+  // track.style.transitionDuration = null;
   element.setAttribute('data-progress-id', item.id);
   element.setAttribute('data-progress-max', item.progressMax);
   element.setAttribute('data-progress-value', item.progressValue);
@@ -111,30 +88,29 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
 /**
  * Updates an item to the progress center panel.
  * @param {ProgressCenterItem} item Item including new contents.
+ * @param {ProgressCenterItem} summarizedItem Item to be desplayed in the close
+ *     view.
  */
-ProgressCenterPanel.prototype.updateItem = function(item) {
+ProgressCenterPanel.prototype.updateItem = function(item, summarizedItem) {
   var itemElement = this.getItemElement_(item.id);
   if (!itemElement) {
     itemElement = this.createNewItemElement_();
     this.openView_.insertBefore(itemElement, this.openView_.firstNode);
   }
   ProgressCenterPanel.updateItemElement_(itemElement, item);
-  if (item.state !== ProgressItemState.PROGRESSING)
-    this.hidingTimeout_.request(ProgressCenterPanel.HIDE_DELAY_TIME_MS_);
-  this.updateCloseView_();
+
+  // Update close view.
+  this.closeView_.classList.toggle('single', !summarizedItem.summarized);
+  ProgressCenterPanel.updateItemElement_(this.closeViewItem_, summarizedItem);
+
   if (ProgressCenterPanel.ENABLED_)
     this.element_.hidden = false;
 };
 
 /**
- * Hides the progress center if there is no progressing items.
- * @private
+ * Remove all the items.
  */
-ProgressCenterPanel.prototype.hideByTimeout_ = function() {
-  // If there are still progressing items, return the function.
-  if (this.openView_.querySelectorAll('li:not(.complete):not(.error)').length)
-    return;
-
+ProgressCenterPanel.prototype.reset = function() {
   // Clear the all compete item.
   this.openView_.innerHTML = '';
 
@@ -144,50 +120,14 @@ ProgressCenterPanel.prototype.hideByTimeout_ = function() {
 };
 
 /**
- * Updates close view summarizing the progress tasks.
- * @private
- */
-ProgressCenterPanel.prototype.updateCloseView_ = function() {
-  var itemElements = this.openView_.querySelectorAll('li:not(.error)');
-  var activeElements = this.openView_.querySelectorAll(
-      'li:not(.error):not(.complete)');
-  var errorCount = this.openView_.querySelectorAll('li.error').length;
-  var totalProgressMax = 0;
-  var totalProgressValue = 0;
-  for (var i = 0; i < itemElements.length; i++) {
-    totalProgressMax += ~~itemElements[i].getAttribute('data-progress-max');
-    totalProgressValue += ~~itemElements[i].getAttribute('data-progress-value');
-  }
-  var item = new ProgressCenterItem();
-  item.progressMax = totalProgressMax;
-  item.progressValue = totalProgressValue;
-  item.state = errorCount ?
-      ProgressItemState.ERROR : ProgressItemState.PROGRESSING;
-
-  // TODO(hirono): Replace the messages with a string asset.
-  if (activeElements.length == 0)
-    if (errorCount > 1)
-      item.message = errorCount + ' errors';
-    else if (errorCount == 1)
-      item.message = errorCount + ' error';
-    else
-      item.message = 'Complete';
-  else if (activeElements.length == 1)
-    item.message = activeElements[0].querySelector('label').textContent;
-  else
-    item.message = activeElements.length + ' active process';
-  ProgressCenterPanel.updateItemElement_(this.closeViewItem_, item);
-};
-
-/**
- * Get an item element having the specified ID.
+ * Gets an item element having the specified ID.
  * @param {number} id progress item ID.
  * @return {HTMLElement} Item element having the ID.
  * @private
  */
 ProgressCenterPanel.prototype.getItemElement_ = function(id) {
   var query = 'li[data-progress-id="$ID"]'.replace('$ID', id);
-  return this.element_.querySelector(query);
+  return this.openView_.querySelector(query);
 };
 
 /**
@@ -219,9 +159,6 @@ ProgressCenterPanel.prototype.createNewItemElement_ = function() {
   itemElement.appendChild(label);
   itemElement.appendChild(progressFrame);
 
-  itemElement.addEventListener(
-      'webkitTransitionEnd', this.onItemTransitionEnd_.bind(this));
-
   return itemElement;
 };
 
@@ -231,17 +168,15 @@ ProgressCenterPanel.prototype.createNewItemElement_ = function() {
  * @private
  */
 ProgressCenterPanel.prototype.onItemTransitionEnd_ = function(event) {
-  console.debug(event);
-  if (event.currentTarget.className !== 'pre-complete' ||
+  var itemElement = event.target.parentNode.parentNode.parentNode;
+  if (itemElement.className !== 'pre-complete' ||
       event.propertyName !== 'width')
     return;
-  var completeMessage =
-      event.currentTarget.getAttribute('data-complete-message');
+  var completeMessage = itemElement.getAttribute('data-complete-message');
   if (!completeMessage)
     return;
-  event.currentTarget.className = 'complete';
-  event.currentTarget.querySelector('label').textContent = completeMessage;
-  this.updateCloseView_();
+  itemElement.className = 'complete';
+  itemElement.querySelector('label').textContent = completeMessage;
 };
 
 /**
@@ -250,7 +185,12 @@ ProgressCenterPanel.prototype.onItemTransitionEnd_ = function(event) {
  * @private
  */
 ProgressCenterPanel.prototype.onClick_ = function(event) {
-  if (event.target.classList.contains('toggle')) {
+  if (event.target.classList.contains('toggle') &&
+      !this.closeView_.classList.contains('single'))
     this.element_.classList.toggle('opened');
-  }
+  else if ((event.target.classList.contains('toggle') &&
+            this.closeView_.classList.contains('single')) ||
+           event.target.classList.contains('cancel'))
+    this.cancelCallback_(parseInt(
+        event.target.parentNode.parentNode.getAttribute('data-progress-id')));
 };
