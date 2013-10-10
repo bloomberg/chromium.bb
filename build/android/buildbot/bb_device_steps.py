@@ -6,6 +6,7 @@
 import collections
 import glob
 import hashlib
+import json
 import multiprocessing
 import os
 import random
@@ -45,6 +46,7 @@ GS_URL = 'https://storage.googleapis.com'
 I_TEST = collections.namedtuple('InstrumentationTest', [
     'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'host_driven_root',
     'annotation', 'exclude_annotation', 'extra_flags'])
+
 
 def I(name, apk, apk_package, test_apk, test_data, host_driven_root=None,
       annotation=None, exclude_annotation=None, extra_flags=None):
@@ -141,16 +143,18 @@ def RunTestSuites(options, suites):
       cmd.append('--num_retries=1')
     RunCmd(cmd)
 
+
 def RunChromeDriverTests(options):
   """Run all the steps for running chromedriver tests."""
   bb_annotations.PrintNamedStep('chromedriver_annotation')
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
           '--android-packages=%s,%s,%s' %
-           (constants.PACKAGE_INFO['chromium_test_shell'].package,
-            constants.PACKAGE_INFO['chrome_stable'].package,
-            constants.PACKAGE_INFO['chrome_beta'].package),
+          (constants.PACKAGE_INFO['chromium_test_shell'].package,
+           constants.PACKAGE_INFO['chrome_stable'].package,
+           constants.PACKAGE_INFO['chrome_beta'].package),
           '--revision=%s' % _GetRevision(options),
           '--update-log'])
+
 
 def InstallApk(options, test, print_step=False):
   """Install an apk to all phones.
@@ -227,20 +231,20 @@ def RunWebkitLayoutTests(options):
   """Run layout tests on an actual device."""
   bb_annotations.PrintNamedStep('webkit_tests')
   cmd_args = [
-        '--no-show-results',
-        '--no-new-test-results',
-        '--full-results-html',
-        '--clobber-old-results',
-        '--exit-after-n-failures', '5000',
-        '--exit-after-n-crashes-or-timeouts', '100',
-        '--debug-rwt-logging',
-        '--results-directory', '../layout-test-results',
-        '--target', options.target,
-        '--builder-name', options.build_properties.get('buildername', ''),
-        '--build-number', str(options.build_properties.get('buildnumber', '')),
-        '--master-name', 'ChromiumWebkit', # TODO: Get this from the cfg.
-        '--build-name', options.build_properties.get('buildername', ''),
-        '--platform=android']
+      '--no-show-results',
+      '--no-new-test-results',
+      '--full-results-html',
+      '--clobber-old-results',
+      '--exit-after-n-failures', '5000',
+      '--exit-after-n-crashes-or-timeouts', '100',
+      '--debug-rwt-logging',
+      '--results-directory', '../layout-test-results',
+      '--target', options.target,
+      '--builder-name', options.build_properties.get('buildername', ''),
+      '--build-number', str(options.build_properties.get('buildnumber', '')),
+      '--master-name', 'ChromiumWebkit',  # TODO: Get this from the cfg.
+      '--build-name', options.build_properties.get('buildername', ''),
+      '--platform=android']
 
   for flag in 'test_results_server', 'driver_name', 'additional_drt_flag':
     if flag in options.factory_properties:
@@ -257,26 +261,99 @@ def RunWebkitLayoutTests(options):
     cmd_args.extend(
         ['--additional-expectations=%s' % os.path.join(CHROME_SRC_DIR, *f)])
 
-  RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] + cmd_args)
+  exit_code = RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] +
+                     cmd_args)
+  if exit_code == 254:  # AKA -1, internal error.
+    bb_annotations.PrintMsg('?? (crashed or hung)')
+  else:
+    full_results_path = os.path.join('..', 'layout-test-results',
+                                     'full_results.json')
+    if os.path.exists(full_results_path):
+      full_results = json.load(open(full_results_path))
+      unexpected_failures, unexpected_flakes, unexpected_passes = (
+          _ParseLayoutTestResults(full_results))
+      if unexpected_failures:
+        _PrintDashboardLink('failed', unexpected_failures,
+                            max_tests=25)
+      elif unexpected_passes:
+        _PrintDashboardLink('unexpected passes', unexpected_passes,
+                            max_tests=10)
+      if unexpected_flakes:
+        _PrintDashboardLink('unexpected flakes', unexpected_flakes,
+                            max_tests=10)
+    else:
+      bb_annotations.PrintMsg('?? (results missing)')
 
   if options.factory_properties.get('archive_webkit_results', False):
     bb_annotations.PrintNamedStep('archive_webkit_results')
     base = 'https://storage.googleapis.com/chromium-layout-test-archives'
     builder_name = options.build_properties.get('buildername', '')
     build_number = str(options.build_properties.get('buildnumber', ''))
-    bb_annotations.PrintLink('results',
-        '%s/%s/%s/layout-test-results/results.html' % (
-        base, EscapeBuilderName(builder_name), build_number))
+    results_link = '%s/%s/%s/layout-test-results/results.html' % (
+        base, EscapeBuilderName(builder_name), build_number)
+    bb_annotations.PrintLink('results', results_link)
     bb_annotations.PrintLink('(zip)', '%s/%s/%s/layout-test-results.zip' % (
         base, EscapeBuilderName(builder_name), build_number))
     gs_bucket = 'gs://chromium-layout-test-archives'
     RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'chromium',
                          'archive_layout_test_results.py'),
-        '--results-dir', '../../layout-test-results',
-        '--build-dir', CHROME_OUT_DIR,
-        '--build-number', build_number,
-        '--builder-name', builder_name,
-        '--gs-bucket', gs_bucket])
+            '--results-dir', '../../layout-test-results',
+            '--build-dir', CHROME_OUT_DIR,
+            '--build-number', build_number,
+            '--builder-name', builder_name,
+            '--gs-bucket', gs_bucket])
+
+
+def _ParseLayoutTestResults(results):
+  """Extract the failures from the test run."""
+  # Cloned from third_party/WebKit/Tools/Scripts/print-json-test-results
+  tests = _ConvertTrieToFlatPaths(results['tests'])
+  failures = {}
+  flakes = {}
+  passes = {}
+  for (test, result) in tests.iteritems():
+    if result.get('is_unexpected'):
+      actual_result = result['actual']
+      if ' PASS' in actual_result:
+        flakes[test] = actual_result
+      elif actual_result == 'PASS':
+        passes[test] = result
+      else:
+        failures[test] = actual_result
+
+  return (passes, failures, flakes)
+
+
+def _ConvertTrieToFlatPaths(trie, prefix=None):
+  """Flatten the trie of failures into a list."""
+  # Cloned from third_party/WebKit/Tools/Scripts/print-json-test-results
+  result = {}
+  for name, data in trie.iteritems():
+    if prefix:
+      name = prefix + '/' + name
+
+    if len(data) and 'actual' not in data and 'expected' not in data:
+      result.update(_ConvertTrieToFlatPaths(data, name))
+    else:
+      result[name] = data
+
+  return result
+
+
+def _PrintDashboardLink(link_text, tests, max_tests):
+  """Add a link to the flakiness dashboard in the step annotations."""
+  if len(tests) > max_tests:
+    test_list_text = ' '.join(tests[:max_tests]) + ' and more'
+  else:
+    test_list_text = ' '.join(tests)
+
+  dashboard_base = ('http://test-results.appspot.com'
+                    '/dashboards/flakiness_dashboard.html#'
+                    'master=ChromiumWebkit&tests=')
+
+  bb_annotations.PrintLink('%d %s: %s' %
+                           (len(tests), link_text, test_list_text),
+                           dashboard_base + ','.join(tests))
 
 
 def EscapeBuilderName(builder_name):
@@ -291,6 +368,7 @@ def SpawnLogcatMonitor():
 
   # Wait for logcat_monitor to pull existing logcat
   RunCmd(['sleep', '5'])
+
 
 def ProvisionDevices(options):
   bb_annotations.PrintNamedStep('provision_devices')
@@ -317,8 +395,8 @@ def DeviceStatusCheck(_):
 
 def GetDeviceSetupStepCmds():
   return [
-    ('provision_devices', ProvisionDevices),
-    ('device_status_check', DeviceStatusCheck),
+      ('provision_devices', ProvisionDevices),
+      ('device_status_check', DeviceStatusCheck),
   ]
 
 
@@ -378,7 +456,7 @@ def UploadHTML(options, gs_base_dir, dir_to_upload, link_text,
   gs_path = '%s/%s/%s/%s' % (gs_base_dir, bot_id, revision, randhash)
   RunCmd([bb_utils.GSUTIL_PATH, 'cp', '-R', dir_to_upload, 'gs://%s' % gs_path])
   bb_annotations.PrintLink(link_text,
-      '%s/%s/%s' % (gs_url, gs_path, link_rel_path))
+                           '%s/%s/%s' % (gs_url, gs_path, link_rel_path))
 
 
 def GenerateJavaCoverageReport(options):
@@ -465,8 +543,8 @@ def GetDeviceStepsOptParser():
                           'only run if this is set.'))
   parser.add_option(
       '--flakiness-server',
-      help='The flakiness dashboard server to which the results should be '
-           'uploaded.')
+      help=('The flakiness dashboard server to which the results should be '
+            'uploaded.'))
   parser.add_option(
       '--auto-reconnect', action='store_true',
       help='Push script to device which restarts adbd on disconnections.')
