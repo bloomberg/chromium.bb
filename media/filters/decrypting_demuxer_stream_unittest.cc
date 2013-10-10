@@ -194,6 +194,12 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     }
   }
 
+  void SatisfyPendingDemuxerReadCB(DemuxerStream::Status status) {
+    scoped_refptr<DecoderBuffer> buffer =
+        (status == DemuxerStream::kOk) ? encrypted_buffer_ : NULL;
+    base::ResetAndReturn(&pending_demuxer_read_cb_).Run(status, buffer);
+  }
+
   void Reset() {
     EXPECT_CALL(*decryptor_, CancelDecrypt(Decryptor::kAudio))
         .WillRepeatedly(InvokeWithoutArgs(
@@ -362,8 +368,7 @@ TEST_F(DecryptingDemuxerStreamTest, Reset_DuringPendingDemuxerRead) {
   EXPECT_CALL(*this, BufferReady(DemuxerStream::kAborted, IsNull()));
 
   Reset();
-  base::ResetAndReturn(&pending_demuxer_read_cb_).Run(DemuxerStream::kOk,
-                                                      encrypted_buffer_);
+  SatisfyPendingDemuxerReadCB(DemuxerStream::kOk);
   message_loop_.RunUntilIdle();
 }
 
@@ -406,9 +411,8 @@ TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_Aborted) {
   ReadAndExpectBufferReadyWith(DemuxerStream::kAborted, NULL);
 }
 
-// Test aborted read on the input demuxer stream when the
-// DecryptingDemuxerStream is being reset.
-TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_AbortedDuringReset) {
+// Test resetting when DecryptingDemuxerStream is waiting for an aborted read.
+TEST_F(DecryptingDemuxerStreamTest, Reset_DuringAbortedDemuxerRead) {
   Initialize();
   EnterPendingReadState();
 
@@ -416,8 +420,7 @@ TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_AbortedDuringReset) {
   EXPECT_CALL(*this, BufferReady(DemuxerStream::kAborted, IsNull()));
 
   Reset();
-  base::ResetAndReturn(&pending_demuxer_read_cb_).Run(DemuxerStream::kAborted,
-                                                      NULL);
+  SatisfyPendingDemuxerReadCB(DemuxerStream::kAborted);
   message_loop_.RunUntilIdle();
 }
 
@@ -435,6 +438,20 @@ TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_ConfigChanged) {
                                scoped_refptr<DecoderBuffer>()));
 
   ReadAndExpectBufferReadyWith(DemuxerStream::kConfigChanged, NULL);
+}
+
+// Test resetting when DecryptingDemuxerStream is waiting for an config changed
+// read.
+TEST_F(DecryptingDemuxerStreamTest, Reset_DuringConfigChangedDemuxerRead) {
+  Initialize();
+  EnterPendingReadState();
+
+  // Make sure we get a |kConfigChanged| instead of a |kAborted|.
+  EXPECT_CALL(*this, BufferReady(DemuxerStream::kConfigChanged, IsNull()));
+
+  Reset();
+  SatisfyPendingDemuxerReadCB(DemuxerStream::kConfigChanged);
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace media

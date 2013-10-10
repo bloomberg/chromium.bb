@@ -95,12 +95,14 @@ void VideoFrameStream::Reset(const base::Closure& closure) {
   // During decoder reinitialization, VideoDecoder does not need to be and
   // cannot be Reset(). |decrypting_demuxer_stream_| was reset before decoder
   // reinitialization.
-  // During pending demuxer read, VideoDecoder will be reset after demuxer read
-  // is returned (in OnBufferReady()).
-  if (state_ == STATE_REINITIALIZING_DECODER ||
-      state_ == STATE_PENDING_DEMUXER_READ) {
+  if (state_ == STATE_REINITIALIZING_DECODER)
     return;
-  }
+
+  // During pending demuxer read and when not using DecryptingDemuxerStream,
+  // VideoDecoder will be reset after demuxer read is returned
+  // (in OnBufferReady()).
+  if (state_ == STATE_PENDING_DEMUXER_READ && !decrypting_demuxer_stream_)
+    return;
 
   // VideoDecoder API guarantees that if VideoDecoder::Reset() is called during
   // a pending decode, the decode callback must be fired before the reset
@@ -315,7 +317,10 @@ void VideoFrameStream::OnBufferReady(
     state_ = STATE_FLUSHING_DECODER;
     if (!reset_cb_.is_null()) {
       AbortRead();
-      Reset(base::ResetAndReturn(&reset_cb_));
+      // If we are using DecryptingDemuxerStream, we already called DDS::Reset()
+      // which will continue the resetting process in it's callback.
+      if (!decrypting_demuxer_stream_)
+        Reset(base::ResetAndReturn(&reset_cb_));
       // Reinitialization will continue after Reset() is done.
     } else {
       FlushDecoder();
@@ -325,7 +330,10 @@ void VideoFrameStream::OnBufferReady(
 
   if (!reset_cb_.is_null()) {
     AbortRead();
-    Reset(base::ResetAndReturn(&reset_cb_));
+    // If we are using DecryptingDemuxerStream, we already called DDS::Reset()
+    // which will continue the resetting process in it's callback.
+    if (!decrypting_demuxer_stream_)
+      Reset(base::ResetAndReturn(&reset_cb_));
     return;
   }
 

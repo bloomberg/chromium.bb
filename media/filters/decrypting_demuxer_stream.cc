@@ -170,19 +170,8 @@ void DecryptingDemuxerStream::DecryptBuffer(
   DCHECK(!read_cb_.is_null());
   DCHECK_EQ(buffer.get() != NULL, status == kOk) << status;
 
-  if (!reset_cb_.is_null()) {
-    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
-    DoReset();
-    return;
-  }
-
-  if (status == kAborted) {
-    DVLOG(2) << "DoDecryptBuffer() - kAborted.";
-    state_ = kIdle;
-    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
-    return;
-  }
-
+  // Even when |!reset_cb_.is_null()|, we need to pass |kConfigChanged| back to
+  // the caller so that the downstream decoder can be properly reinitialized.
   if (status == kConfigChanged) {
     DVLOG(2) << "DoDecryptBuffer() - kConfigChanged.";
     DCHECK_EQ(demuxer_stream_->type() == AUDIO, audio_config_.IsValidConfig());
@@ -193,6 +182,21 @@ void DecryptingDemuxerStream::DecryptBuffer(
     InitializeDecoderConfig();
     state_ = kIdle;
     base::ResetAndReturn(&read_cb_).Run(kConfigChanged, NULL);
+    if (!reset_cb_.is_null())
+      DoReset();
+    return;
+  }
+
+  if (!reset_cb_.is_null()) {
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+    DoReset();
+    return;
+  }
+
+  if (status == kAborted) {
+    DVLOG(2) << "DoDecryptBuffer() - kAborted.";
+    state_ = kIdle;
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
     return;
   }
 

@@ -428,6 +428,12 @@ TEST_P(VideoFrameStreamTest, Reset_AfterDemuxerRead_ConfigChange) {
   Read();
 }
 
+TEST_P(VideoFrameStreamTest, Reset_DuringNoKeyRead) {
+  Initialize();
+  EnterPendingState(DECRYPTOR_NO_KEY);
+  Reset();
+}
+
 TEST_P(VideoFrameStreamTest, Stop_BeforeInitialization) {
   pending_stop_ = true;
   video_frame_stream_->Stop(
