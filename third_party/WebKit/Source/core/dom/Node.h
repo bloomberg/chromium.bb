@@ -167,7 +167,6 @@ public:
     // DOM methods & attributes for Node
 
     bool hasTagName(const QualifiedName&) const;
-    bool hasLocalName(const AtomicString&) const;
     virtual String nodeName() const = 0;
     virtual String nodeValue() const;
     virtual void setNodeValue(const String&);
@@ -179,8 +178,6 @@ public:
     PassRefPtr<NodeList> childNodes();
     Node* firstChild() const;
     Node* lastChild() const;
-    bool hasAttributes() const;
-    NamedNodeMap* attributes() const;
 
     // ChildNode interface API
     Element* previousElementSibling() const;

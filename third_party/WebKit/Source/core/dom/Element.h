@@ -824,21 +824,6 @@ inline bool Node::hasTagName(const QualifiedName& name) const
     return isElementNode() && toElement(this)->hasTagName(name);
 }
 
-inline bool Node::hasLocalName(const AtomicString& name) const
-{
-    return isElementNode() && toElement(this)->hasLocalName(name);
-}
-
-inline bool Node::hasAttributes() const
-{
-    return isElementNode() && toElement(this)->hasAttributes();
-}
-
-inline NamedNodeMap* Node::attributes() const
-{
-    return isElementNode() ? toElement(this)->attributes() : 0;
-}
-
 inline Element* Node::parentElement() const
 {
     ContainerNode* parent = parentNode();
