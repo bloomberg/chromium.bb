@@ -204,7 +204,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
 
   // Push user styles down into WebCore
   RenderThread::Get()->EnsureWebKitInitialized();
-  WebView::removeAllUserContent();
+  WebView::removeInjectedStyleSheets();
   for (size_t i = 0; i < scripts_.size(); ++i) {
     UserScript* script = scripts_[i];
     if (script->css_scripts().empty())
@@ -227,13 +227,12 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
       const UserScript::File& file = scripts_[i]->css_scripts()[j];
       std::string content = file.GetContent().as_string();
 
-      WebView::addUserStyleSheet(
+      WebView::injectStyleSheet(
           WebString::fromUTF8(content),
           patterns,
            script->match_all_frames() ?
-              WebView::UserContentInjectInAllFrames :
-              WebView::UserContentInjectInTopFrameOnly,
-          WebView::UserStyleInjectInExistingDocuments);
+              WebView::InjectStyleInAllFrames :
+              WebView::InjectStyleInTopFrameOnly);
     }
   }
 

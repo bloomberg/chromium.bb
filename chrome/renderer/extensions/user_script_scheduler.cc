@@ -240,7 +240,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
     } else {
       child_frame->document().insertUserStyleSheet(
           WebString::fromUTF8(params.code),
-          // Author level is consistent with WebView::addUserStyleSheet.
+          // Author level is consistent with WebView::injectStyleSheet.
           WebDocument::UserStyleAuthorLevel);
     }
   }
