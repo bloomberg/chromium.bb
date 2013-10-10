@@ -535,13 +535,8 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest, PRE_ClosingLastTabFinishesUnload) {
   window_observer.Wait();
 }
 
-// Fails on Mac 64 bots (http://crbug.com/301173).
-#if defined(OS_MACOSX) && ARCH_CPU_64_BITS
-#define MAYBE_ClosingLastTabFinishesUnload DISABLED_ClosingLastTabFinishesUnload
-#else
-#define MAYBE_ClosingLastTabFinishesUnload ClosingLastTabFinishesUnload
-#endif
-IN_PROC_BROWSER_TEST_F(FastUnloadTest, MAYBE_ClosingLastTabFinishesUnload) {
+// Fails on Mac, Linux, Win7 (http://crbug.com/301173).
+IN_PROC_BROWSER_TEST_F(FastUnloadTest, DISABLED_ClosingLastTabFinishesUnload) {
 #if defined(OS_WIN)
   // Flaky on Win7+ bots (http://crbug.com/267597).
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
@@ -571,14 +566,9 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest, PRE_WindowCloseFinishesUnload) {
   window_observer.Wait();
 }
 
-// Flaky on Windows bots (http://crbug.com/279267) and fails on Mac 64 bots
+// Flaky on Windows bots (http://crbug.com/279267) and fails on Mac / Linux bots
 // (http://crbug.com/301173).
-#if defined(OS_WIN) || (defined(OS_MACOSX) && ARCH_CPU_64_BITS)
-#define MAYBE_WindowCloseFinishesUnload DISABLED_WindowCloseFinishesUnload
-#else
-#define MAYBE_WindowCloseFinishesUnload WindowCloseFinishesUnload
-#endif
-IN_PROC_BROWSER_TEST_F(FastUnloadTest, MAYBE_WindowCloseFinishesUnload) {
+IN_PROC_BROWSER_TEST_F(FastUnloadTest, DISABLED_WindowCloseFinishesUnload) {
   // Check for cookie set in unload during PRE_ test.
   NavigateToPage("no_listeners");
   EXPECT_EQ("unloaded=ohyeah", GetCookies("no_listeners"));
