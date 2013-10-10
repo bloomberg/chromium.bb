@@ -180,12 +180,10 @@ class GFX_EXPORT Transform {
   // this function if the transform does not represent only a 2d translation.
   Vector2dF To2dTranslation() const;
 
-  // Applies the transformation on the point. Returns true if the point is
-  // transformed successfully.
+  // Applies the transformation to the point.
   void TransformPoint(Point3F* point) const;
 
-  // Applies the transformation on the point. Returns true if the point is
-  // transformed successfully. Rounds the result to the nearest point.
+  // Applies the transformation to the point.
   void TransformPoint(Point* point) const;
 
   // Applies the reverse transformation on the point. Returns true if the

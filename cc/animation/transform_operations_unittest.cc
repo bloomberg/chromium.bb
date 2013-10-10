@@ -4,6 +4,7 @@
 
 #include <limits>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/test/geometry_test_utils.h"
@@ -838,6 +839,217 @@ TEST(TransformOperationTest, BlendedBoundsWithZeroScale) {
   EXPECT_TRUE(zero_scale.BlendedBoundsForBox(
       box, zero_scale, min_progress, max_progress, &bounds));
   EXPECT_EQ(gfx::BoxF().ToString(), bounds.ToString());
+}
+
+TEST(TransformOperationTest, BlendedBoundsForRotationTrivial) {
+  TransformOperations operations_from;
+  operations_from.AppendRotate(0.f, 0.f, 1.f, 0.f);
+  TransformOperations operations_to;
+  operations_to.AppendRotate(0.f, 0.f, 1.f, 360.f);
+
+  float sqrt_2 = sqrt(2.f);
+  gfx::BoxF box(
+      -sqrt_2, -sqrt_2, 0.f, sqrt_2, sqrt_2, 0.f);
+  gfx::BoxF bounds;
+
+  // Since we're rotating 360 degrees, any box with dimensions between 0 and
+  // 2 * sqrt(2) should give the same result.
+  float sizes[] = { 0.f, 0.1f, sqrt_2, 2.f * sqrt_2 };
+  for (size_t i = 0; i < arraysize(sizes); ++i) {
+    box.set_size(sizes[i], sizes[i], 0.f);
+    SkMScalar min_progress = 0.f;
+    SkMScalar max_progress = 1.f;
+    EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+        box, operations_from, min_progress, max_progress, &bounds));
+    EXPECT_EQ(gfx::BoxF(-2.f, -2.f, 0.f, 4.f, 4.f, 0.f).ToString(),
+              bounds.ToString());
+  }
+}
+
+TEST(TransformOperationTest, BlendedBoundsForRotationAllExtrema) {
+  // If the normal is out of the plane, we can have up to 6 extrema (a min/max
+  // in each dimension) between the endpoints of the arc. This test ensures that
+  // we consider all 6.
+  TransformOperations operations_from;
+  operations_from.AppendRotate(1.f, 1.f, 1.f, 30.f);
+  TransformOperations operations_to;
+  operations_to.AppendRotate(1.f, 1.f, 1.f, 390.f);
+
+  gfx::BoxF box(1.f, 0.f, 0.f, 0.f, 0.f, 0.f);
+  gfx::BoxF bounds;
+
+  float min = -1.f / 3.f;
+  float max = 1.f;
+  float size = max - min;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, 0.f, 1.f, &bounds));
+  EXPECT_EQ(gfx::BoxF(min, min, min, size, size, size).ToString(),
+            bounds.ToString());
+}
+
+TEST(TransformOperationTest, BlendedBoundsForRotationPointOnAxis) {
+  // Checks that if the point to rotate is sitting on the axis of rotation, that
+  // it does not get affected.
+  TransformOperations operations_from;
+  operations_from.AppendRotate(1.f, 1.f, 1.f, 30.f);
+  TransformOperations operations_to;
+  operations_to.AppendRotate(1.f, 1.f, 1.f, 390.f);
+
+  gfx::BoxF box(1.f, 1.f, 1.f, 0.f, 0.f, 0.f);
+  gfx::BoxF bounds;
+
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, 0.f, 1.f, &bounds));
+  EXPECT_EQ(box.ToString(), bounds.ToString());
+}
+
+// This would have been best as anonymous structs, but |arraysize| does not get
+// along with anonymous structs (and using ARRAYSIZE_UNSAFE seemed like a worse
+// option).
+struct ProblematicAxisTest {
+  float x;
+  float y;
+  float z;
+  gfx::BoxF expected;
+};
+
+TEST(TransformOperationTest, BlendedBoundsForRotationProblematicAxes) {
+  // Zeros in the components of the axis of rotation turned out to be tricky to
+  // deal with in practice. This function tests some potentially problematic
+  // axes to ensure sane behavior.
+
+  // Some common values used in the expected boxes.
+  float dim1 = 0.292893f;
+  float dim2 = sqrt(2.f);
+  float dim3 = 2.f * dim2;
+
+  ProblematicAxisTest tests[] = {
+    { 0.f, 0.f, 0.f, gfx::BoxF(1.f, 1.f, 1.f, 0.f, 0.f, 0.f) },
+    { 1.f, 0.f, 0.f, gfx::BoxF(1.f, -dim2, -dim2, 0.f, dim3, dim3) },
+    { 0.f, 1.f, 0.f, gfx::BoxF(-dim2, 1.f, -dim2, dim3, 0.f, dim3) },
+    { 0.f, 0.f, 1.f, gfx::BoxF(-dim2, -dim2, 1.f, dim3, dim3, 0.f) },
+    { 1.f, 1.f, 0.f, gfx::BoxF(dim1, dim1, -1.f, dim2, dim2, 2.f) },
+    { 0.f, 1.f, 1.f, gfx::BoxF(-1.f, dim1, dim1, 2.f, dim2, dim2) },
+    { 1.f, 0.f, 1.f, gfx::BoxF(dim1, -1.f, dim1, dim2, 2.f, dim2) }
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    float x = tests[i].x;
+    float y = tests[i].y;
+    float z = tests[i].z;
+    TransformOperations operations_from;
+    operations_from.AppendRotate(x, y, z, 0.f);
+    TransformOperations operations_to;
+    operations_to.AppendRotate(x, y, z, 360.f);
+    gfx::BoxF box(1.f, 1.f, 1.f, 0.f, 0.f, 0.f);
+    gfx::BoxF bounds;
+
+    EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+        box, operations_from, 0.f, 1.f, &bounds));
+    EXPECT_EQ(tests[i].expected.ToString(), bounds.ToString());
+  }
+}
+
+// These would have been best as anonymous structs, but |arraysize| does not get
+// along with anonymous structs (and using ARRAYSIZE_UNSAFE seemed like a worse
+// option).
+struct TestAxis {
+  float x;
+  float y;
+  float z;
+};
+
+struct TestAngles {
+  float theta_from;
+  float theta_to;
+};
+
+TEST(TransformOperationsTest, BlendedBoundsForRotationEmpiricalTests) {
+  // Sets up various axis angle combinations, computes the bounding box and
+  // empirically tests that the transformed bounds are indeed contained by the
+  // computed bounding box.
+
+  TestAxis axes[] = {
+    { 1.f, 1.f, 1.f },
+    { -1.f, -1.f, -1.f },
+    { -1.f, 2.f, 3.f },
+    { 1.f, -2.f, 3.f },
+    { 1.f, 2.f, -3.f },
+    { 0.f, 0.f, 0.f },
+    { 1.f, 0.f, 0.f },
+    { 0.f, 1.f, 0.f },
+    { 0.f, 0.f, 1.f },
+    { 1.f, 1.f, 0.f },
+    { 0.f, 1.f, 1.f },
+    { 1.f, 0.f, 1.f },
+    { -1.f, 0.f, 0.f },
+    { 0.f, -1.f, 0.f },
+    { 0.f, 0.f, -1.f },
+    { -1.f, -1.f, 0.f },
+    { 0.f, -1.f, -1.f },
+    { -1.f, 0.f, -1.f }
+  };
+
+  TestAngles angles[] = {
+    { 5.f, 10.f },
+    { 10.f, 5.f },
+    { 0.f, 360.f },
+    { 20.f, 180.f },
+    { -20.f, -180.f },
+    { 180.f, -220.f },
+    { 220.f, 320.f }
+  };
+
+  size_t num_steps = 100;
+  for (size_t i = 0; i < arraysize(axes); ++i) {
+    for (size_t j = 0; j < arraysize(angles); ++j) {
+      float x = axes[i].x;
+      float y = axes[i].y;
+      float z = axes[i].z;
+      TransformOperations operations_from;
+      operations_from.AppendRotate(x, y, z, angles[j].theta_from);
+      TransformOperations operations_to;
+      operations_to.AppendRotate(x, y, z, angles[j].theta_to);
+
+      gfx::BoxF box(2.f, 5.f, 6.f, 1.f, 3.f, 2.f);
+      gfx::BoxF bounds;
+
+      EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+          box, operations_from, 0.f, 1.f, &bounds));
+
+      bool first_point = true;
+      gfx::BoxF empirical_bounds;
+      for (size_t k = 0; k < num_steps; ++k) {
+        float t = k / (num_steps - 1.f);
+        gfx::Transform partial_rotation =
+            operations_to.Blend(operations_from, t);
+
+        for (int corner = 0; corner < 8; ++corner) {
+          gfx::Point3F point = box.origin();
+          point += gfx::Vector3dF(corner & 1 ? box.width() : 0.f,
+                                  corner & 2 ? box.height() : 0.f,
+                                  corner & 4 ? box.depth() : 0.f);
+          partial_rotation.TransformPoint(&point);
+          if (first_point) {
+            empirical_bounds.set_origin(point);
+            first_point = false;
+          } else {
+            empirical_bounds.ExpandTo(point);
+          }
+        }
+      }
+
+      // Our empirical estimate will be a little rough since we're only doing
+      // 100 samples.
+      static const float kTolerance = 1e-2f;
+      EXPECT_NEAR(empirical_bounds.x(), bounds.x(), kTolerance);
+      EXPECT_NEAR(empirical_bounds.y(), bounds.y(), kTolerance);
+      EXPECT_NEAR(empirical_bounds.z(), bounds.z(), kTolerance);
+      EXPECT_NEAR(empirical_bounds.width(), bounds.width(), kTolerance);
+      EXPECT_NEAR(empirical_bounds.height(), bounds.height(), kTolerance);
+      EXPECT_NEAR(empirical_bounds.depth(), bounds.depth(), kTolerance);
+    }
+  }
 }
 
 TEST(TransformOperationTest, BlendedBoundsForSequence) {
