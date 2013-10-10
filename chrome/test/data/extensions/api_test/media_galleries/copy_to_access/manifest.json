@@ -4,7 +4,7 @@
   "description": "test copyTo access for chrome.mediaGalleries.getMediaFileSystems",
   "app": {
     "background": {
-      "scripts": ["no_access/copy_to_common.js", "test.js"]
+      "scripts": ["common_injected.js", "test.js"]
     }
   },
   "permissions": [{"mediaGalleries": ["copyTo", "allAutoDetected"]}]
