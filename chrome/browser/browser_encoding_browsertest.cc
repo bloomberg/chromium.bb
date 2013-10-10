@@ -53,12 +53,7 @@ const EncodingTestData kEncodingTestDatas[] = {
   { "UTF-8.html", "UTF-8" },
   { "UTF-16LE.html", "UTF-16LE" },
   { "windows-874.html", "windows-874" },
-#if 0
-   // TODO(jungshik): Temporarily disable this. Reenable it once
-   // Blink rolls to include https://codereview.chromium.org/25870005/
-   // (it's reverted so that it has to be landed again).
   { "EUC-KR.html", "EUC-KR" },
-#endif
   { "windows-1250.html", "windows-1250" },
   { "windows-1251.html", "windows-1251" },
   { "windows-1252.html", "windows-1252" },
@@ -269,14 +264,9 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
       { "UTF-8_with_no_encoding_specified.html",
         "expected_UTF-8_saved_from_no_encoding_specified.html",
         "UTF-8" },
-#if 0
-      // TODO(jungshik): Temporarily disable this. Reenable it once
-      // Blink rolls to include https://codereview.chromium.org/25870005/
-      // (it's reverted so that it has to be landed again).
       { "EUC-KR_with_no_encoding_specified.html",
         "expected_EUC-KR_saved_from_no_encoding_specified.html",
         "EUC-KR" },
-#endif
       { "windows-1251_with_no_encoding_specified.html",
         "expected_windows-1251_saved_from_no_encoding_specified.html",
         "windows-1251" },
