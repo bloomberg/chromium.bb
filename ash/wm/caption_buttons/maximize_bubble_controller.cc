@@ -210,7 +210,9 @@ class BubbleMouseWatcherHost: public views::MouseWatcherHost {
 class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
                                          public views::MouseWatcherListener {
  public:
-  explicit Bubble(MaximizeBubbleController* owner, int appearance_delay_ms_);
+  Bubble(MaximizeBubbleController* owner,
+         int appearance_delay_ms,
+         SnapType initial_snap_type);
   virtual ~Bubble() {}
 
   // The window of the menu under which the SnapSizer will get created.
@@ -322,7 +324,8 @@ class BubbleContentsButtonRow : public views::View,
 // A class which creates the content of the bubble: The buttons, and the label.
 class BubbleContentsView : public views::View {
  public:
-  explicit BubbleContentsView(MaximizeBubbleController::Bubble* bubble);
+  BubbleContentsView(MaximizeBubbleController::Bubble* bubble,
+                     SnapType initial_snap_type);
 
   virtual ~BubbleContentsView() {}
 
@@ -376,7 +379,8 @@ class BubbleDialogButton : public views::ImageButton {
 
 MaximizeBubbleController::Bubble::Bubble(
     MaximizeBubbleController* owner,
-    int appearance_delay_ms)
+    int appearance_delay_ms,
+    SnapType initial_snap_type)
     : views::BubbleDelegateView(owner->frame_maximize_button(),
                                 views::BubbleBorder::TOP_RIGHT),
       shutting_down_(false),
@@ -405,7 +409,7 @@ MaximizeBubbleController::Bubble::Bubble(
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, 0, kLayoutSpacing));
 
-  contents_view_ = new BubbleContentsView(this);
+  contents_view_ = new BubbleContentsView(this, initial_snap_type);
   AddChildView(contents_view_);
 
   // Note that the returned widget has an observer which points to our
@@ -680,7 +684,8 @@ void BubbleContentsButtonRow::AddMinimizeButton() {
 }
 
 BubbleContentsView::BubbleContentsView(
-    MaximizeBubbleController::Bubble* bubble)
+    MaximizeBubbleController::Bubble* bubble,
+    SnapType initial_snap_type)
     : bubble_(bubble),
       buttons_view_(NULL),
       label_view_(NULL) {
@@ -693,7 +698,7 @@ BubbleContentsView::BubbleContentsView(
   AddChildView(buttons_view_);
 
   label_view_ = new views::Label();
-  SetSnapType(SNAP_NONE);
+  SetSnapType(initial_snap_type);
   label_view_->SetBackgroundColor(kBubbleBackgroundColor);
   label_view_->SetEnabledColor(kBubbleTextColor);
   label_view_->set_border(views::Border::CreateEmptyBorder(
@@ -744,6 +749,7 @@ MaximizeBubbleController::MaximizeBubbleController(
     : frame_maximize_button_(frame_maximize_button),
       bubble_(NULL),
       maximize_type_(maximize_type),
+      snap_type_for_creation_(SNAP_NONE),
       appearance_delay_ms_(appearance_delay_ms) {
   // Create the task which will create the bubble delayed.
   base::OneShotTimer<MaximizeBubbleController>* new_timer =
@@ -770,8 +776,13 @@ MaximizeBubbleController::~MaximizeBubbleController() {
 }
 
 void MaximizeBubbleController::SetSnapType(SnapType snap_type) {
-  if (bubble_)
+  if (bubble_) {
     bubble_->SetSnapType(snap_type);
+  } else {
+    // The bubble has not been created yet. This can occur if bubble creation is
+    // delayed.
+    snap_type_for_creation_ = snap_type;
+  }
 }
 
 aura::Window* MaximizeBubbleController::GetBubbleWindow() {
@@ -808,7 +819,7 @@ void MaximizeBubbleController::RequestDestructionThroughOwner() {
 
 void MaximizeBubbleController::CreateBubble() {
   if (!bubble_)
-    bubble_ = new Bubble(this, appearance_delay_ms_);
+    bubble_ = new Bubble(this, appearance_delay_ms_, snap_type_for_creation_);
 
   timer_->Stop();
 }

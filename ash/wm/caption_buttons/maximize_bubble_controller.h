@@ -87,6 +87,11 @@ class ASH_EXPORT MaximizeBubbleController {
   // The current maximize state of the owning window.
   const MaximizeBubbleFrameState maximize_type_;
 
+  // The snap type with which the bubble is created. This is needed because the
+  // creation of the bubble can be delayed and SetSnapType() may be called
+  // before the bubble is created.
+  SnapType snap_type_for_creation_;
+
   // The timer for the delayed creation of the menu.
   scoped_ptr<base::Timer> timer_;
 
