@@ -509,6 +509,28 @@ std::string EventTypesToString(const EventFilterRecorder::Events& events) {
 
 }  // namespace
 
+// Verifies a repost mouse event targets the window with capture (if there is
+// one).
+TEST_F(RootWindowTest, RepostTargetsCaptureWindow) {
+  // Set capture on |window| generate a mouse event (that is reposted) and not
+  // over |window| and verify |window| gets it (|window| gets it because it has
+  // capture).
+  EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
+  scoped_ptr<Window> window(CreateNormalWindow(1, root_window(), NULL));
+  window->SetBounds(gfx::Rect(20, 20, 40, 30));
+  EventFilterRecorder* recorder = new EventFilterRecorder;
+  window->SetEventFilter(recorder);  // Takes ownership.
+  window->SetCapture();
+  const ui::MouseEvent press_event(
+      ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+      ui::EF_LEFT_MOUSE_BUTTON);
+  root_window()->RepostEvent(press_event);
+  RunAllPendingInMessageLoop();  // Necessitated by RepostEvent().
+  // Mouse moves/enters may be generated. We only care about a pressed.
+  EXPECT_TRUE(EventTypesToString(recorder->events()).find("MOUSE_PRESSED") !=
+              std::string::npos) << EventTypesToString(recorder->events());
+}
+
 TEST_F(RootWindowTest, MouseMovesHeld) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership

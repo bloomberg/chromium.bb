@@ -1042,12 +1042,19 @@ bool RootWindow::DispatchMouseEventImpl(ui::MouseEvent* event) {
   return DispatchMouseEventToTarget(event, target);
 }
 
-bool RootWindow::DispatchMouseEventRepost(ui::MouseEvent* event) {
+void RootWindow::DispatchMouseEventRepost(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
-    return false;
-  mouse_pressed_handler_ = NULL;
-  Window* target = GetEventHandlerForPoint(event->location());
-  return DispatchMouseEventToTarget(event, target);
+    return;
+  Window* target = client::GetCaptureWindow(this);
+  RootWindow* root = this;
+  if (!target) {
+    target = GetEventHandlerForPoint(event->location());
+  } else {
+    root = target->GetRootWindow();
+    CHECK(root);  // Capture window better be in valid root.
+  }
+  root->mouse_pressed_handler_ = NULL;
+  root->DispatchMouseEventToTarget(event, target);
 }
 
 bool RootWindow::DispatchGestureEventRepost(ui::GestureEvent* event) {

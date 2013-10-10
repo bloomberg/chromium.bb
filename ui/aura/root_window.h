@@ -398,7 +398,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // methods dispatch events from RootWindowHost the coordinates are in terms of
   // the root.
   bool DispatchMouseEventImpl(ui::MouseEvent* event);
-  bool DispatchMouseEventRepost(ui::MouseEvent* event);
+  void DispatchMouseEventRepost(ui::MouseEvent* event);
   bool DispatchMouseEventToTarget(ui::MouseEvent* event, Window* target);
   bool DispatchTouchEventImpl(ui::TouchEvent* event);
   // Reposts the gesture event to the Window which is a target for the event
