@@ -270,7 +270,8 @@ public:
 
     bool isPlaying() const { return m_playing; }
 
-    virtual bool hasPendingActivity() const;
+    // ActiveDOMObject functions.
+    virtual bool hasPendingActivity() const OVERRIDE;
     virtual void contextDestroyed() OVERRIDE;
 
 #if ENABLE(WEB_AUDIO)
@@ -349,8 +350,6 @@ private:
 
     // ActiveDOMObject functions.
     virtual bool canSuspend() const;
-    virtual void suspend(ReasonForSuspension);
-    virtual void resume();
     virtual void stop();
 
     virtual void updateDisplayState() { }

@@ -269,7 +269,6 @@ void FrameLoader::clear(ClearOptions options)
 
     m_frame->editor().clear();
     m_frame->document()->cancelParsing();
-    m_frame->document()->stopActiveDOMObjects();
     m_frame->document()->prepareForDestruction();
     m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
 
@@ -1123,7 +1122,6 @@ void FrameLoader::frameDetached()
     // stopAllLoaders can detach the Frame, so protect it.
     RefPtr<Frame> protect(m_frame);
     stopAllLoaders();
-    m_frame->document()->stopActiveDOMObjects();
     detachFromParent();
 }
 

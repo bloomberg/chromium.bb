@@ -54,8 +54,7 @@ public:
     // to stop the object. Exact semantics of suspend is up to the object then.
     enum ReasonForSuspension {
         JavaScriptDebuggerPaused,
-        WillDeferLoading,
-        DocumentWillBecomeInactive
+        WillDeferLoading
     };
     virtual bool canSuspend() const;
     virtual void suspend(ReasonForSuspension);

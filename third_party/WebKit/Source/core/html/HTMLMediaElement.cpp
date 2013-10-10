@@ -3489,42 +3489,6 @@ void HTMLMediaElement::stop()
     m_asyncEventQueue->close();
 }
 
-void HTMLMediaElement::suspend(ReasonForSuspension why)
-{
-    LOG(Media, "HTMLMediaElement::suspend");
-
-    switch (why)
-    {
-        case DocumentWillBecomeInactive:
-            stop();
-            break;
-        case JavaScriptDebuggerPaused:
-        case WillDeferLoading:
-            // Do nothing, we don't pause media playback in these cases.
-            break;
-    }
-}
-
-void HTMLMediaElement::resume()
-{
-    LOG(Media, "HTMLMediaElement::resume");
-
-    m_inActiveDocument = true;
-    setPausedInternal(false);
-
-    if (m_error && m_error->code() == MediaError::MEDIA_ERR_ABORTED) {
-        // Restart the load if it was aborted in the middle by moving the document to the page cache.
-        // m_error is only left at MEDIA_ERR_ABORTED when the document becomes inactive (it is set to
-        //  MEDIA_ERR_ABORTED while the abortEvent is being sent, but cleared immediately afterwards).
-        // This behavior is not specified but it seems like a sensible thing to do.
-        // As it is not safe to immedately start loading now, let's schedule a load.
-        scheduleDelayedAction(LoadMediaResource);
-    }
-
-    if (renderer())
-        renderer()->updateFromElement();
-}
-
 bool HTMLMediaElement::hasPendingActivity() const
 {
     return (hasAudio() && isPlaying()) || m_asyncEventQueue->hasPendingEvents();

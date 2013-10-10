@@ -48,7 +48,7 @@
 namespace WebCore {
 
 Prerenderer::Prerenderer(Document* document)
-    : ActiveDOMObject(document)
+    : DocumentLifecycleObserver(document)
     , m_initializedClient(false)
     , m_client(0)
 {
@@ -68,7 +68,6 @@ Prerenderer* Prerenderer::from(Document* document)
     Prerenderer* prerenderer = static_cast<Prerenderer*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
     if (!prerenderer) {
         prerenderer = new Prerenderer(document);
-        prerenderer->suspendIfNeeded();
         Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(prerenderer));
     }
     return prerenderer;
@@ -96,39 +95,12 @@ PassRefPtr<Prerender> Prerenderer::render(PrerenderClient* prerenderClient, cons
     return prerender;
 }
 
-void Prerenderer::stop()
+void Prerenderer::documentWasDetached()
 {
     while (!m_activePrerenders.isEmpty()) {
         RefPtr<Prerender> prerender = m_activePrerenders[0].release();
         m_activePrerenders.remove(0);
         prerender->abandon();
-    }
-    while (!m_suspendedPrerenders.isEmpty()) {
-        RefPtr<Prerender> prerender = m_suspendedPrerenders[0].release();
-        m_suspendedPrerenders.remove(0);
-        prerender->abandon();
-    }
-}
-
-void Prerenderer::suspend(ReasonForSuspension reason)
-{
-    if (reason == DocumentWillBecomeInactive) {
-        while (!m_activePrerenders.isEmpty()) {
-            RefPtr<Prerender> prerender = m_activePrerenders[0].release();
-            m_activePrerenders.remove(0);
-            prerender->suspend();
-            m_suspendedPrerenders.append(prerender);
-        }
-    }
-}
-
-void Prerenderer::resume()
-{
-    while (!m_suspendedPrerenders.isEmpty()) {
-        RefPtr<Prerender> prerender = m_suspendedPrerenders[0].release();
-        m_suspendedPrerenders.remove(0);
-        prerender->resume();
-        m_activePrerenders.append(prerender);
     }
 }
 

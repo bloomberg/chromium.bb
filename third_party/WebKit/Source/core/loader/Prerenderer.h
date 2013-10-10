@@ -32,7 +32,7 @@
 #ifndef Prerenderer_h
 #define Prerenderer_h
 
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DocumentLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
@@ -48,7 +48,7 @@ class Prerender;
 class PrerendererClient;
 class Page;
 
-class Prerenderer : public ActiveDOMObject, public Supplement<ScriptExecutionContext> {
+class Prerenderer : public DocumentLifecycleObserver, public Supplement<ScriptExecutionContext> {
     WTF_MAKE_NONCOPYABLE(Prerenderer);
 public:
     virtual ~Prerenderer();
@@ -58,11 +58,8 @@ public:
     static const char* supplementName();
     static Prerenderer* from(Document*);
 
-    // From ActiveDOMObject:
-    virtual bool canSuspend() const OVERRIDE { return true; }
-    virtual void stop() OVERRIDE;
-    virtual void suspend(ReasonForSuspension) OVERRIDE;
-    virtual void resume() OVERRIDE;
+    // From DocumentLifecycleObserver:
+    virtual void documentWasDetached() OVERRIDE;
 
 private:
     typedef Vector<RefPtr<Prerender> > PrerenderVector;
@@ -76,7 +73,6 @@ private:
     bool m_initializedClient;
     PrerendererClient* m_client;
     PrerenderVector m_activePrerenders;
-    PrerenderVector m_suspendedPrerenders;
 };
 
 }
