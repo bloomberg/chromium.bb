@@ -404,7 +404,7 @@ SelectionData Clipboard::AuraX11Details::RequestAndWaitForTypes(
     SelectionRequestor* receiver = GetSelectionRequestorForBuffer(buffer);
 
     std::vector< ::Atom> intersection;
-    ui::GetAtomIntersection(targets.target_list(), types, &intersection);
+    ui::GetAtomIntersection(types, targets.target_list(), &intersection);
     return receiver->RequestAndWaitForTypes(intersection);
   }
 
