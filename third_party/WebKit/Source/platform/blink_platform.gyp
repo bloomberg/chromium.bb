@@ -34,6 +34,21 @@
     'blink_platform.gypi',
   ],
   'targets': [{
+    'target_name': 'blink_platform_derived',
+    'type': 'static_library',
+    'dependencies': [
+      'platform_derived_sources.gyp:make_derived_sources',
+      '../config.gyp:config',
+      '../wtf/wtf.gyp:wtf',      
+    ],
+    'include_dirs': [
+      '<(SHARED_INTERMEDIATE_DIR)/blink',
+    ],
+    'sources': [
+      # Additional .cpp files from make_derived_sources actions.
+      '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
+    ],
+  }, {
     'target_name': 'blink_common',
     'type': '<(component)',
     'variables': { 'enable_wexit_time_destructors': 1 },
@@ -71,6 +86,7 @@
       '<(DEPTH)/url/url.gyp:url_lib',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+      'blink_platform_derived',
       'blink_common',
     ],
     'export_dependent_settings': [
