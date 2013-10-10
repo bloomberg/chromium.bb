@@ -334,7 +334,7 @@ static bool paintMediaToggleClosedCaptionsButton(RenderObject* object, const Pai
     static Image* mediaClosedCaptionButton = platformResource("mediaplayerClosedCaption");
     static Image* mediaClosedCaptionButtonDisabled = platformResource("mediaplayerClosedCaptionDisabled");
 
-    if (mediaElement->webkitClosedCaptionsVisible())
+    if (mediaElement->closedCaptionsVisible())
         return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButton);
 
     return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButtonDisabled);

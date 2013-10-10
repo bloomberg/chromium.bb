@@ -44,7 +44,7 @@ attribute DOMString preload;
 
 readonly attribute TimeRanges buffered;
 void load();
-    DOMString canPlayType([Default=Undefined] optional DOMString type, [Default=Undefined, TreatNullAs=NullString, TreatUndefinedAs=NullString] optional DOMString keySystem);
+DOMString canPlayType([Default=Undefined] optional DOMString type, [Default=Undefined, TreatNullAs=NullString, TreatUndefinedAs=NullString] optional DOMString keySystem);
 
 // ready state
 const unsigned short HAVE_NOTHING = 0;
@@ -71,15 +71,21 @@ readonly attribute boolean ended;
 void play();
 void pause();
 
+// media controller
+[Reflect, TreatNullAs=NullString] attribute DOMString mediaGroup;
+[CustomSetter] attribute MediaController controller;
+
 // controls
 attribute boolean controls;
 [SetterRaisesException] attribute double volume;
 attribute boolean muted;
 [Reflect=muted] attribute boolean defaultMuted;
 
+// tracks
+[EnabledAtRuntime=VideoTrack] readonly attribute TextTrackList textTracks;
+[EnabledAtRuntime=VideoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
+
 // WebKit extensions
-readonly attribute boolean webkitHasClosedCaptions;
-attribute boolean webkitClosedCaptionsVisible;
 
 // The number of bytes consumed by the media decoder.
 readonly attribute unsigned long webkitAudioDecodedByteCount;
@@ -96,10 +102,4 @@ readonly attribute unsigned long webkitVideoDecodedByteCount;
 [EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitneedkey;
 
 [EnabledAtRuntime=EncryptedMedia, Conditional=ENCRYPTED_MEDIA_V2] attribute MediaKeys mediaKeys;
-
-[EnabledAtRuntime=VideoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
-[EnabledAtRuntime=VideoTrack] readonly attribute TextTrackList textTracks;
-
-[Reflect, TreatNullAs=NullString, TreatNullAs=NullString] attribute DOMString mediaGroup;
-[CustomSetter] attribute MediaController controller;
 };

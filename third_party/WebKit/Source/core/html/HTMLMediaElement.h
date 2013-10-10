@@ -142,11 +142,6 @@ public:
     void play();
     void pause();
 
-// captions
-    bool webkitHasClosedCaptions() const;
-    bool webkitClosedCaptionsVisible() const;
-    void setWebkitClosedCaptionsVisible(bool);
-
 // Statistics
     unsigned webkitAudioDecodedByteCount() const;
     unsigned webkitVideoDecodedByteCount() const;

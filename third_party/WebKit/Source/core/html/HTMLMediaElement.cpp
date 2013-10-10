@@ -3591,22 +3591,6 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
     }
 }
 
-void HTMLMediaElement::setWebkitClosedCaptionsVisible(bool visible)
-{
-    setClosedCaptionsVisible(visible);
-}
-
-bool HTMLMediaElement::webkitClosedCaptionsVisible() const
-{
-    return closedCaptionsVisible();
-}
-
-
-bool HTMLMediaElement::webkitHasClosedCaptions() const
-{
-    return hasClosedCaptions();
-}
-
 unsigned HTMLMediaElement::webkitAudioDecodedByteCount() const
 {
     if (!m_player)
