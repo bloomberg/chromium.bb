@@ -84,32 +84,19 @@ void EventRetargeter::calculateEventPath(Node* node, Event* event)
     EventPath& eventPath = event->eventPath();
     eventPath.clear();
     bool inDocument = node->inDocument();
-    bool isSVGElement = node->isSVGElement();
     bool isMouseOrFocusEvent = event->isMouseEvent() || event->isFocusEvent();
     bool isTouchEvent = event->isTouchEvent();
-    Vector<EventTarget*, 32> targetStack;
     for (EventPathWalker walker(node); walker.node(); walker.moveToParent()) {
-        Node* node = walker.node();
-        if (targetStack.isEmpty())
-            targetStack.append(eventTargetRespectingTargetRules(node));
-        else if (walker.isVisitingInsertionPointInReprojection())
-            targetStack.append(targetStack.last());
         if (isMouseOrFocusEvent)
-            eventPath.append(adoptPtr(new MouseOrFocusEventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
+            eventPath.append(adoptPtr(new MouseOrFocusEventContext(walker.node(), eventTargetRespectingTargetRules(walker.node()), eventTargetRespectingTargetRules(walker.adjustedTarget()))));
         else if (isTouchEvent)
-            eventPath.append(adoptPtr(new TouchEventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
+            eventPath.append(adoptPtr(new TouchEventContext(walker.node(), eventTargetRespectingTargetRules(walker.node()), eventTargetRespectingTargetRules(walker.adjustedTarget()))));
         else
-            eventPath.append(adoptPtr(new EventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
+            eventPath.append(adoptPtr(new EventContext(walker.node(), eventTargetRespectingTargetRules(walker.node()), eventTargetRespectingTargetRules(walker.adjustedTarget()))));
         if (!inDocument)
             break;
-        if (!node->isShadowRoot())
-            continue;
-        if (determineDispatchBehavior(event, toShadowRoot(node), targetStack.last()) == StayInsideShadowDOM)
+        if (walker.node()->isShadowRoot() && determineDispatchBehavior(event, toShadowRoot(walker.node()), walker.adjustedTarget()) == StayInsideShadowDOM)
             break;
-        if (!isSVGElement) {
-            ASSERT(!targetStack.isEmpty());
-            targetStack.removeLast();
-        }
     }
 }
 
@@ -242,23 +229,11 @@ void EventRetargeter::calculateAdjustedNodes(const Node* node, const Node* relat
 
 void EventRetargeter::buildRelatedNodeMap(const Node* relatedNode, RelatedNodeMap& relatedNodeMap)
 {
-    Vector<Node*, 32> relatedNodeStack;
     TreeScope* lastTreeScope = 0;
     for (EventPathWalker walker(relatedNode); walker.node(); walker.moveToParent()) {
-        Node* node = walker.node();
-        if (relatedNodeStack.isEmpty())
-            relatedNodeStack.append(node);
-        else if (walker.isVisitingInsertionPointInReprojection())
-            relatedNodeStack.append(relatedNodeStack.last());
-        TreeScope* scope = &node->treeScope();
-        // Skips adding a node to the map if treeScope does not change. Just for the performance optimization.
-        if (scope != lastTreeScope)
-            relatedNodeMap.add(scope, relatedNodeStack.last());
-        lastTreeScope = scope;
-        if (node->isShadowRoot()) {
-            ASSERT(!relatedNodeStack.isEmpty());
-            relatedNodeStack.removeLast();
-        }
+        if (&walker.node()->treeScope() != lastTreeScope)
+            relatedNodeMap.add(&walker.node()->treeScope(), walker.adjustedTarget());
+        lastTreeScope = &walker.node()->treeScope();
     }
 }
 

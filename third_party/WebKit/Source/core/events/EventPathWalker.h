@@ -27,6 +27,8 @@
 #ifndef EventPathWalker_h
 #define EventPathWalker_h
 
+#include "wtf/Vector.h"
+
 namespace WebCore {
 
 class Node;
@@ -35,15 +37,37 @@ class EventPathWalker {
 public:
     explicit EventPathWalker(const Node*);
     static Node* parent(const Node*);
-    void moveToParent();
-    Node* node() const { return const_cast<Node*>(m_node); }
-    bool isVisitingInsertionPointInReprojection() { return m_isVisitingInsertionPointInReprojection; }
+    void moveToParent() { ++m_index; };
+    Node* node() const;
+    Node* adjustedTarget();
 
 private:
-    const Node* m_node;
-    const Node* m_distributedNode;
-    bool m_isVisitingInsertionPointInReprojection;
+    void calculateAdjustedTargets();
+    size_t m_index;
+    Vector<const Node*> m_path;
+    Vector<const Node*> m_adjustedTargets;
 };
+
+inline Node* EventPathWalker::node() const
+{
+    ASSERT(m_index <= m_path.size());
+    return m_index == m_path.size() ? 0 : const_cast<Node*>(m_path[m_index]);
+}
+
+inline Node* EventPathWalker::adjustedTarget()
+{
+    if (m_adjustedTargets.isEmpty())
+        calculateAdjustedTargets();
+    ASSERT(m_index <= m_adjustedTargets.size());
+    return m_index == m_adjustedTargets.size() ? 0 : const_cast<Node*>(m_adjustedTargets[m_index]);
+}
+
+inline Node* EventPathWalker::parent(const Node* node)
+{
+    EventPathWalker walker(node);
+    walker.moveToParent();
+    return walker.node();
+}
 
 } // namespace
 

@@ -32,11 +32,11 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/events/EventPathWalker.h"
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/EventPathWalker.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLLabelElement.h"
@@ -361,24 +361,15 @@ Element* TreeScope::adjustedFocusedElement()
         element = focusedFrameOwnerElement(document.page()->focusController().focusedFrame(), document.frame());
     if (!element)
         return 0;
-    Vector<Node*> targetStack;
+
     for (EventPathWalker walker(element); walker.node(); walker.moveToParent()) {
-        Node* node = walker.node();
-        if (targetStack.isEmpty())
-            targetStack.append(node);
-        else if (walker.isVisitingInsertionPointInReprojection())
-            targetStack.append(targetStack.last());
-        if (node == rootNode()) {
-            // targetStack.last() is one of the followings:
+        if (walker.node() == rootNode()) {
+            // walker.adjustedTarget() is one of the followings:
             // - InsertionPoint
             // - shadow host
             // - Document::focusedElement()
             // So, it's safe to do toElement().
-            return toElement(targetStack.last());
-        }
-        if (node->isShadowRoot()) {
-            ASSERT(!targetStack.isEmpty());
-            targetStack.removeLast();
+            return toElement(walker.adjustedTarget());
         }
     }
     return 0;

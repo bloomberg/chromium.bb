@@ -34,49 +34,86 @@
 namespace WebCore {
 
 EventPathWalker::EventPathWalker(const Node* node)
-    : m_node(node)
-    , m_distributedNode(node)
-    , m_isVisitingInsertionPointInReprojection(false)
+    : m_index(0)
 {
     ASSERT(node);
     node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(node));
-}
-
-Node* EventPathWalker::parent(const Node* node)
-{
-    EventPathWalker walker(node);
-    walker.moveToParent();
-    return walker.node();
-}
-
-void EventPathWalker::moveToParent()
-{
-    ASSERT(m_node);
-    ASSERT(m_distributedNode);
-    if (ElementShadow* shadow = shadowOfParent(m_node)) {
-        if (InsertionPoint* insertionPoint = shadow->findInsertionPointFor(m_distributedNode)) {
-            m_node = insertionPoint;
-            m_isVisitingInsertionPointInReprojection = true;
-            return;
+    const Node* current = node;
+    const Node* distributedNode = node;
+    while (current) {
+        m_path.append(current);
+        if (ElementShadow* shadow = shadowOfParent(current)) {
+            if (InsertionPoint* insertionPoint = shadow->findInsertionPointFor(distributedNode)) {
+                current = insertionPoint;
+                continue;
+            }
         }
-    }
-    if (!m_node->isShadowRoot()) {
-        m_node = m_node->parentNode();
-        if (!(m_node && m_node->isShadowRoot() && toShadowRoot(m_node)->insertionPoint()))
-            m_distributedNode = m_node;
-        m_isVisitingInsertionPointInReprojection = false;
-        return;
-    }
+        if (!current->isShadowRoot()) {
+            current = current->parentNode();
+            if (!(current && current->isShadowRoot() && toShadowRoot(current)->insertionPoint()))
+                distributedNode = current;
+            continue;
+        }
 
-    const ShadowRoot* shadowRoot = toShadowRoot(m_node);
-    if (InsertionPoint* insertionPoint = shadowRoot->insertionPoint()) {
-        m_node = insertionPoint;
-        m_isVisitingInsertionPointInReprojection = true;
-        return;
+        const ShadowRoot* shadowRoot = toShadowRoot(current);
+        if (InsertionPoint* insertionPoint = shadowRoot->insertionPoint()) {
+            current = insertionPoint;
+            continue;
+        }
+        current = shadowRoot->host();
+        distributedNode = current;
     }
-    m_node = shadowRoot->host();
-    m_distributedNode = m_node;
-    m_isVisitingInsertionPointInReprojection = false;
+}
+
+static inline bool movedFromParentToChild(const TreeScope* lastTreeScope, const TreeScope* currentTreeScope)
+{
+    return currentTreeScope->parentTreeScope() == lastTreeScope;
+}
+
+static inline bool movedFromChildToParent(const TreeScope* lastTreeScope, const TreeScope* currentTreeScope)
+{
+    return lastTreeScope->parentTreeScope() == currentTreeScope;
+}
+
+static inline bool movedFromOlderToYounger(const TreeScope* lastTreeScope, const TreeScope* currentTreeScope)
+{
+    Node* rootNode = lastTreeScope->rootNode();
+    return rootNode->isShadowRoot() && toShadowRoot(rootNode)->youngerShadowRoot() == currentTreeScope->rootNode();
+}
+
+void EventPathWalker::calculateAdjustedTargets()
+{
+    ASSERT(m_adjustedTargets.isEmpty());
+    Vector<const Node*, 32> targetStack;
+    const TreeScope* lastTreeScope = 0;
+    bool isSVGElement = m_path[0]->isSVGElement();
+    for (size_t i = 0; i < m_path.size(); ++i) {
+        const Node* current = m_path[i];
+        const TreeScope* currentTreeScope = &current->treeScope();
+        if (targetStack.isEmpty()) {
+            targetStack.append(current);
+        } else if (lastTreeScope != currentTreeScope && !isSVGElement) {
+            if (movedFromParentToChild(lastTreeScope, currentTreeScope)) {
+                targetStack.append(targetStack.last());
+            } else if (movedFromChildToParent(lastTreeScope, currentTreeScope)) {
+                ASSERT(!targetStack.isEmpty());
+                targetStack.removeLast();
+                if (targetStack.isEmpty())
+                    targetStack.append(current);
+            } else if (movedFromOlderToYounger(lastTreeScope, currentTreeScope)) {
+                ASSERT(!targetStack.isEmpty());
+                targetStack.removeLast();
+                if (targetStack.isEmpty())
+                    targetStack.append(current);
+                else
+                    targetStack.append(targetStack.last());
+            } else {
+                ASSERT_NOT_REACHED();
+            }
+        }
+        m_adjustedTargets.append(targetStack.last());
+        lastTreeScope = currentTreeScope;
+    }
 }
 
 } // namespace
