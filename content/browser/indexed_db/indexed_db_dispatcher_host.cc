@@ -284,18 +284,9 @@ void IndexedDBDispatcherHost::FinishTransaction(int64 host_transaction_id,
       database_dispatcher_host_->transaction_database_map_;
   if (committed)
     Context()->TransactionComplete(transaction_url_map[host_transaction_id]);
-  // It's unclear if std::map::erase(key) has defined behavior if the
-  // key is not found.
-  // TODO(alecflett): Remove if it is proven that it is safe.
-  if (transaction_url_map.find(host_transaction_id) !=
-      transaction_url_map.end())
-    transaction_url_map.erase(host_transaction_id);
-  if (transaction_size_map.find(host_transaction_id) !=
-      transaction_size_map.end())
-    transaction_size_map.erase(host_transaction_id);
-  if (transaction_database_map.find(host_transaction_id) !=
-      transaction_database_map.end())
-    transaction_database_map.erase(host_transaction_id);
+  transaction_url_map.erase(host_transaction_id);
+  transaction_size_map.erase(host_transaction_id);
+  transaction_database_map.erase(host_transaction_id);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -349,9 +340,8 @@ IndexedDBDispatcherHost::DatabaseDispatcherHost::DatabaseDispatcherHost(
 }
 
 IndexedDBDispatcherHost::DatabaseDispatcherHost::~DatabaseDispatcherHost() {
-  // TODO(alecflett): uncomment these when we find the source of these leaks.
-  // DCHECK(transaction_size_map_.empty());
-  // DCHECK(transaction_url_map_.empty());
+  DCHECK(transaction_size_map_.empty());
+  DCHECK(transaction_url_map_.empty());
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
