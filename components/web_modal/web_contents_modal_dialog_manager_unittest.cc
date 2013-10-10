@@ -8,10 +8,6 @@
 #include "components/web_modal/native_web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -211,11 +207,9 @@ TEST_F(WebContentsModalDialogManagerTest, ShowDialogs) {
             native_manager->GetDialogState(dialog3));
 }
 
-// Test that the dialog is shown/hidden on
-// NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED.
+// Test that the dialog is shown/hidden when the WebContents is shown/hidden.
 TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
   const NativeWebContentsModalDialog dialog1 = MakeFakeDialog();
-  bool web_contents_visible = true;
 
   manager->ShowDialog(dialog1);
 
@@ -224,20 +218,14 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::SHOWN,
             native_manager->GetDialogState(dialog1));
 
-  web_contents_visible = false;
-  manager->Observe(content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                   content::NotificationService::AllSources(),
-                   content::Details<bool>(&web_contents_visible));
+  test_api->WebContentsWasHidden();
 
   EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::HIDDEN,
             native_manager->GetDialogState(dialog1));
 
-  web_contents_visible = true;
-  manager->Observe(content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                   content::NotificationService::AllSources(),
-                   content::Details<bool>(&web_contents_visible));
+  test_api->WebContentsWasShown();
 
   EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());

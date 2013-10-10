@@ -9,8 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/web_modal/native_web_contents_modal_dialog_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/native_widget_types.h"
@@ -23,8 +21,7 @@ class WebContentsModalDialogManagerDelegate;
 class WebContentsModalDialogManager
     : public NativeWebContentsModalDialogManagerDelegate,
       public content::WebContentsObserver,
-      public content::WebContentsUserData<WebContentsModalDialogManager>,
-      public content::NotificationObserver {
+      public content::WebContentsUserData<WebContentsModalDialogManager> {
  public:
   virtual ~WebContentsModalDialogManager();
 
@@ -54,11 +51,6 @@ class WebContentsModalDialogManager
   // Called when a WebContentsModalDialogs we own is about to be closed.
   virtual void WillClose(NativeWebContentsModalDialog dialog) OVERRIDE;
 
-  // content::NotificationObserver overrides
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // For testing.
   class TestApi {
    public:
@@ -70,6 +62,8 @@ class WebContentsModalDialogManager
     void ResetNativeManager(NativeWebContentsModalDialogManager* delegate) {
       manager_->native_manager_.reset(delegate);
     }
+    void WebContentsWasShown() { manager_->WasShown(); }
+    void WebContentsWasHidden() { manager_->WasHidden(); }
 
    private:
     WebContentsModalDialogManager* manager_;
@@ -107,6 +101,8 @@ class WebContentsModalDialogManager
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetIgnoredUIEvent() OVERRIDE;
+  virtual void WasShown() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
 
@@ -121,9 +117,6 @@ class WebContentsModalDialogManager
 
   // True while closing the dialogs on WebContents close.
   bool closing_all_dialogs_;
-
-  // A scoped container for notification registries.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogManager);
 };
