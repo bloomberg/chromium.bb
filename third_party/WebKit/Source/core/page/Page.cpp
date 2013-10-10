@@ -608,6 +608,7 @@ Page::PageClients::PageClients()
     , editorClient(0)
     , dragClient(0)
     , inspectorClient(0)
+    , backForwardClient(0)
 {
 }
 
