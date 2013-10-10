@@ -55,6 +55,29 @@ pan_south_east.cur
 pan_south_west.cur
 pan_west.cur
 textarea_resize_corner.png
+alias_cursor.png
+cell_cursor.png
+east_resize_cursor.png
+east_west_resize_cursor.png
+help_cursor.png
+link_cursor.png
+move_cursor.png
+none_cursor.png
+north_east_resize_cursor.png
+north_east_south_west_resize_cursor.png
+north_resize_cursor.png
+north_south_resize_cursor.png
+north_west_resize_cursor.png
+north_west_south_east_resize_cursor.png
+progress_cursor.png
+south_east_resize_cursor.png
+south_resize_cursor.png
+south_west_resize_cursor.png
+vertical_text_cursor.png
+wait_cursor.png
+west_resize_cursor.png
+zoom_in_cursor.png
+zoom_out_cursor.png
 
 // ***** BEGIN LICENSE BLOCK *****
 

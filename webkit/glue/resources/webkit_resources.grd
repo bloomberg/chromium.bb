@@ -58,6 +58,30 @@
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_OVERHANG_PATTERN" file="overhang_pattern.png" />
         <structure type="chrome_scaled_image" name="IDR_OVERHANG_SHADOW" file="overhang_shadow.png" />
+        <!-- TODO(adamk): Remove _NEW prefixes once dups of these resources are gone from blink_resources.grd -->
+        <structure type="chrome_scaled_image" name="IDR_ALIAS_CURSOR_NEW" file="alias_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_CELL_CURSOR_NEW" file="cell_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_EAST_RESIZE_CURSOR_NEW" file="east_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_EASTWEST_RESIZE_CURSOR_NEW" file="east_west_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_HELP_CURSOR_NEW" file="help_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_LINK_CURSOR_NEW" file="link_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_MOVE_CURSOR_NEW" file="move_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_NONE_CURSOR_NEW" file="none_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_NORTHEAST_RESIZE_CURSOR_NEW" file="north_east_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_NORTHEASTSOUTHWEST_RESIZE_CURSOR_NEW" file="north_east_south_west_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_NORTH_RESIZE_CURSOR_NEW" file="north_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_NORTHSOUTH_RESIZE_CURSOR_NEW" file="north_south_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_NORTHWEST_RESIZE_CURSOR_NEW" file="north_west_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_NORTHWESTSOUTHEAST_RESIZE_CURSOR_NEW" file="north_west_south_east_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_CURSOR_NEW" file="progress_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_SOUTHEAST_RESIZE_CURSOR_NEW" file="south_east_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_SOUTH_RESIZE_CURSOR_NEW" file="south_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_SOUTHWEST_RESIZE_CURSOR_NEW" file="south_west_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_VERTICALTEXT_CURSOR_NEW" file="vertical_text_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_WAIT_CURSOR_NEW" file="wait_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEST_RESIZE_CURSOR_NEW" file="west_resize_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_ZOOMIN_CURSOR_NEW" file="zoom_in_cursor.png" />
+        <structure type="chrome_scaled_image" name="IDR_ZOOMOUT_CURSOR_NEW" file="zoom_out_cursor.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PAN_SCROLL_ICON" file="pan_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_CANCEL" file="search_cancel.png" />
