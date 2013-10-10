@@ -14,7 +14,7 @@ namespace api {
 /* static */
 void DeviceId::GetMachineId(const IdCallback& callback) {
   chromeos::CryptohomeLibrary* c_home = chromeos::CryptohomeLibrary::Get();
-  std::string result = c_home->GetSystemSalt();
+  std::string result = c_home->GetSystemSaltSync();
   if (result.empty()) {
     // cryptohome must not be running; re-request after a delay.
     const int64 kRequestSystemSaltDelayMs = 500;

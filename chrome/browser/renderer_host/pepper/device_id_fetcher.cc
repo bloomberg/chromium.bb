@@ -41,7 +41,7 @@ void GetMachineIDAsync(const DeviceIDFetcher::IDCallback& callback) {
 #if defined(OS_WIN) && defined(ENABLE_RLZ)
   rlz_lib::GetMachineId(&result);
 #elif defined(OS_CHROMEOS)
-  result = chromeos::CryptohomeLibrary::Get()->GetSystemSalt();
+  result = chromeos::CryptohomeLibrary::Get()->GetSystemSaltSync();
   if (result.empty()) {
     // cryptohome must not be running; re-request after a delay.
     const int64 kRequestSystemSaltDelayMs = 500;

@@ -186,7 +186,7 @@ void CheckKey(AuthAttemptState* attempt,
 std::string HashPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii
   // of password, then end.
-  std::string ascii_salt = CryptohomeLibrary::Get()->GetSystemSalt();
+  std::string ascii_salt = CryptohomeLibrary::Get()->GetSystemSaltSync();
   // TODO(stevenjb/nkostylev): Handle empty system salt gracefully.
   CHECK(!ascii_salt.empty());
   char passhash_buf[kPasswordHashLength];

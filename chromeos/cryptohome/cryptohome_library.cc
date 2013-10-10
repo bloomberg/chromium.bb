@@ -7,7 +7,9 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -32,7 +34,13 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   virtual ~CryptohomeLibraryImpl() {
   }
 
-  virtual std::string GetSystemSalt() OVERRIDE {
+  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) OVERRIDE {
+    // TODO(hashimoto): Stop using GetSystemSaltSynt(). crbug.com/141009
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GetSystemSaltSync()));
+  }
+
+  virtual std::string GetSystemSaltSync() OVERRIDE {
     LoadSystemSalt();  // no-op if it's already loaded.
     return system_salt_;
   }
@@ -65,7 +73,12 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   CryptohomeLibraryStubImpl() {}
   virtual ~CryptohomeLibraryStubImpl() {}
 
-  virtual std::string GetSystemSalt() OVERRIDE {
+  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) OVERRIDE {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, kStubSystemSalt));
+  }
+
+  virtual std::string GetSystemSaltSync() OVERRIDE {
     return kStubSystemSalt;
   }
 
