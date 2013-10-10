@@ -3657,16 +3657,6 @@ void WebView::removeInjectedStyleSheets()
     PageGroup::sharedGroup()->removeInjectedStyleSheets();
 }
 
-void WebView::addUserStyleSheet(const WebString& sourceCode, const WebVector<WebString>& patternsIn, WebView::UserContentInjectIn injectIn, WebView::UserStyleInjectionTime)
-{
-    injectStyleSheet(sourceCode, patternsIn, injectIn == UserContentInjectInAllFrames ? InjectStyleInAllFrames : InjectStyleInTopFrameOnly);
-}
-
-void WebView::removeAllUserContent()
-{
-    removeInjectedStyleSheets();
-}
-
 void WebViewImpl::didCommitLoad(bool* isNewNavigation, bool isNavigationWithinPage)
 {
     if (isNewNavigation)

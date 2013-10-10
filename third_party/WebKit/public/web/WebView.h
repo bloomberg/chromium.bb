@@ -79,20 +79,6 @@ public:
         InjectStyleInTopFrameOnly
     };
 
-    // FIXME: Remove this enum once callers have switched to StyleInjectionTarget
-    // Controls which frames user content is injected into.
-    enum UserContentInjectIn {
-        UserContentInjectInAllFrames,
-        UserContentInjectInTopFrameOnly
-    };
-
-    // FIXME: Remove this enum once callers stop referring to it.
-    // Controls which documents user styles are injected into.
-    enum UserStyleInjectionTime {
-        UserStyleInjectInExistingDocuments,
-        UserStyleInjectInSubsequentDocuments
-    };
-
 
     // Initialization ------------------------------------------------------
 
@@ -486,15 +472,11 @@ public:
                                     unsigned inactiveForegroundColor) = 0;
 
     // Injected style ------------------------------------------------------
+
+    // Treats |sourceCode| as a CSS author style sheet and injects it into all Documents whose URLs match |patterns|,
+    // in the frames specified by the last argument.
     BLINK_EXPORT static void injectStyleSheet(const WebString& sourceCode, const WebVector<WebString>& patterns, StyleInjectionTarget);
     BLINK_EXPORT static void removeInjectedStyleSheets();
-
-    // FIXME: Remove these two methods once their callers have switched to the new names above.
-    BLINK_EXPORT static void addUserStyleSheet(const WebString& sourceCode,
-                                                const WebVector<WebString>& patterns,
-                                                UserContentInjectIn injectIn,
-                                                UserStyleInjectionTime injectionTime = UserStyleInjectInSubsequentDocuments);
-    BLINK_EXPORT static void removeAllUserContent();
 
     // Modal dialog support ------------------------------------------------
 

@@ -362,7 +362,7 @@ void TestRunner::reset()
         // them from this file.)
         m_webView->setSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
 #endif
-        m_webView->removeAllUserContent();
+        m_webView->removeInjectedStyleSheets();
         m_webView->setVisibilityState(WebPageVisibilityStateVisible, true);
 
         if (m_pageOverlay) {
