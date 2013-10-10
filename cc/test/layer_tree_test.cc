@@ -76,6 +76,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {
     test_hooks_->WillBeginImplFrameOnThread(this, args);
     LayerTreeHostImpl::BeginFrame(args);
+    test_hooks_->DidBeginImplFrameOnThread(this, args);
   }
 
   virtual void BeginCommit() OVERRIDE {

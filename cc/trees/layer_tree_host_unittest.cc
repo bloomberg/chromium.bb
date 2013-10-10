@@ -843,16 +843,31 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
+  virtual void BeginCommitOnThread(LayerTreeHostImpl *impl) OVERRIDE {
+    EXPECT_EQ(frame_count_with_pending_tree_, 0);
+    impl->BlockNotifyReadyToActivateForTesting(true);
+  }
+
+  virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
                                           const BeginFrameArgs& args) OVERRIDE {
-    if (host_impl->pending_tree())
+    if (impl->pending_tree())
       frame_count_with_pending_tree_++;
-    host_impl->BlockNotifyReadyToActivateForTesting(
-        frame_count_with_pending_tree_ <= 1);
+
+    if (frame_count_with_pending_tree_ == 2)
+      impl->BlockNotifyReadyToActivateForTesting(false);
+  }
+
+  virtual void DidBeginImplFrameOnThread(LayerTreeHostImpl* impl,
+                                         const BeginFrameArgs& args) OVERRIDE {
+    if (frame_count_with_pending_tree_ == 1) {
+      EXPECT_EQ(first_frame_time_.ToInternalValue(), 0);
+      first_frame_time_ = impl->CurrentFrameTimeTicks();
+    }
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     if (frame_count_with_pending_tree_ > 1) {
+      EXPECT_NE(first_frame_time_.ToInternalValue(), 0);
       EXPECT_NE(first_frame_time_.ToInternalValue(),
                 impl->CurrentFrameTimeTicks().ToInternalValue());
       EndTest();
@@ -874,9 +889,8 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   base::TimeTicks first_frame_time_;
 };
 
-// Flaky: http://crbug.com/304251
-// SINGLE_AND_MULTI_THREAD_TEST_F(
-//    LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
 
 // This test verifies that LayerTreeHostImpl's current frame time gets
 // updated in consecutive frames when it draws in each frame.

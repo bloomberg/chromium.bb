@@ -33,6 +33,8 @@ class TestHooks : public AnimationDelegate {
 
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                           const BeginFrameArgs& args) {}
+  virtual void DidBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
+                                          const BeginFrameArgs& args) {}
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) {}
