@@ -33,6 +33,7 @@
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentLifecycle.h"
+#include "core/dom/DocumentSupplementable.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/MutationObserver.h"
@@ -206,7 +207,7 @@ enum DocumentClass {
 
 typedef unsigned char DocumentClassFlags;
 
-class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext {
+class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext, public DocumentSupplementable {
 public:
     static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {

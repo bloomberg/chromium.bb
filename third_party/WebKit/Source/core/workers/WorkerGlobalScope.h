@@ -36,6 +36,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"
+#include "core/workers/WorkerSupplementable.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -57,7 +58,7 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ScriptExecutionContext, public EventTarget {
+    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ScriptExecutionContext, public WorkerSupplementable, public EventTarget {
     public:
         virtual ~WorkerGlobalScope();
 

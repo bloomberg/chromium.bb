@@ -52,10 +52,10 @@ const char* WorkerGlobalScopeNotifications::supplementName()
 
 WorkerGlobalScopeNotifications* WorkerGlobalScopeNotifications::from(WorkerGlobalScope* context)
 {
-    WorkerGlobalScopeNotifications* supplement = static_cast<WorkerGlobalScopeNotifications*>(Supplement<ScriptExecutionContext>::from(context, supplementName()));
+    WorkerGlobalScopeNotifications* supplement = static_cast<WorkerGlobalScopeNotifications*>(WorkerSupplement::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopeNotifications(context);
-        Supplement<ScriptExecutionContext>::provideTo(context, supplementName(), adoptPtr(supplement));
+        WorkerSupplement::provideTo(context, supplementName(), adoptPtr(supplement));
     }
     return supplement;
 }

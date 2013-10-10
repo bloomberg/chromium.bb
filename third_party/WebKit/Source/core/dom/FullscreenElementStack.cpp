@@ -66,7 +66,7 @@ FullscreenElementStack* FullscreenElementStack::from(Document* document)
     FullscreenElementStack* fullscreen = fromIfExists(document);
     if (!fullscreen) {
         fullscreen = new FullscreenElementStack(document);
-        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(fullscreen));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(fullscreen));
     }
 
     return fullscreen;
@@ -74,7 +74,7 @@ FullscreenElementStack* FullscreenElementStack::from(Document* document)
 
 FullscreenElementStack* FullscreenElementStack::fromIfExistsSlow(Document* document)
 {
-    return static_cast<FullscreenElementStack*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    return static_cast<FullscreenElementStack*>(DocumentSupplement::from(document, supplementName()));
 }
 
 Element* FullscreenElementStack::fullscreenElementFrom(Document* document)

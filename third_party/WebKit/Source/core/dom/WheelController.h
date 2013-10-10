@@ -26,15 +26,16 @@
 #ifndef WheelController_h
 #define WheelController_h
 
+#include "core/dom/DocumentSupplementable.h"
 #include "core/events/Event.h"
 #include "core/page/DOMWindowLifecycleObserver.h"
-#include "platform/Supplementable.h"
+
 
 namespace WebCore {
 
 class DOMWindow;
 
-class WheelController : public Supplement<ScriptExecutionContext>, public DOMWindowLifecycleObserver {
+class WheelController : public DocumentSupplement, public DOMWindowLifecycleObserver {
 
 public:
     virtual ~WheelController();

@@ -65,10 +65,10 @@ const char* Prerenderer::supplementName()
 
 Prerenderer* Prerenderer::from(Document* document)
 {
-    Prerenderer* prerenderer = static_cast<Prerenderer*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    Prerenderer* prerenderer = static_cast<Prerenderer*>(DocumentSupplement::from(document, supplementName()));
     if (!prerenderer) {
         prerenderer = new Prerenderer(document);
-        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(prerenderer));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(prerenderer));
     }
     return prerenderer;
 }

@@ -58,10 +58,10 @@ const char* NewDeviceOrientationController::supplementName()
 
 NewDeviceOrientationController* NewDeviceOrientationController::from(Document* document)
 {
-    NewDeviceOrientationController* controller = static_cast<NewDeviceOrientationController*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    NewDeviceOrientationController* controller = static_cast<NewDeviceOrientationController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new NewDeviceOrientationController(document);
-        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(controller));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
     }
     return controller;
 }

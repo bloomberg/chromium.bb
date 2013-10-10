@@ -54,10 +54,10 @@ const char* TouchController::supplementName()
 
 TouchController* TouchController::from(Document* document)
 {
-    TouchController* controller = static_cast<TouchController*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    TouchController* controller = static_cast<TouchController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new TouchController(document);
-        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(controller));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
     }
     return controller;
 }

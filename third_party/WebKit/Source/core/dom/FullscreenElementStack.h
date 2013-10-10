@@ -47,7 +47,7 @@ class RenderStyle;
 class ScriptExecutionContext;
 
 class FullscreenElementStack
-    : public Supplement<ScriptExecutionContext>
+    : public DocumentSupplement
     , public DocumentLifecycleObserver {
 public:
     virtual ~FullscreenElementStack();

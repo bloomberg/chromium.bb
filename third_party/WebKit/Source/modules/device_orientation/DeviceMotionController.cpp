@@ -61,10 +61,10 @@ const char* DeviceMotionController::supplementName()
 
 DeviceMotionController* DeviceMotionController::from(Document* document)
 {
-    DeviceMotionController* controller = static_cast<DeviceMotionController*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    DeviceMotionController* controller = static_cast<DeviceMotionController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new DeviceMotionController(document);
-        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(controller));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
     }
     return controller;
 }

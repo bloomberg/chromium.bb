@@ -35,7 +35,6 @@
 #include "core/page/ConsoleTypes.h"
 #include "core/page/DOMTimer.h"
 #include "core/platform/LifecycleContext.h"
-#include "platform/Supplementable.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -59,7 +58,7 @@ class PublicURLManager;
 class ScriptCallStack;
 class ScriptState;
 
-class ScriptExecutionContext : public LifecycleContext, public SecurityContext, public Supplementable<ScriptExecutionContext> {
+class ScriptExecutionContext : public LifecycleContext, public SecurityContext {
 public:
     ScriptExecutionContext();
     virtual ~ScriptExecutionContext();

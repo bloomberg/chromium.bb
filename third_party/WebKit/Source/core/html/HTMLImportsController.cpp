@@ -43,7 +43,7 @@ void HTMLImportsController::provideTo(Document* master)
     DEFINE_STATIC_LOCAL(const char*, name, ("HTMLImportsController"));
     OwnPtr<HTMLImportsController> controller = adoptPtr(new HTMLImportsController(master));
     master->setImport(controller.get());
-    Supplement<ScriptExecutionContext>::provideTo(master, name, controller.release());
+    DocumentSupplement::provideTo(master, name, controller.release());
 }
 
 HTMLImportsController::HTMLImportsController(Document* master)

@@ -32,7 +32,6 @@
 
 #include "modules/performance/WorkerGlobalScopePerformance.h"
 
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/performance/WorkerPerformance.h"
 
@@ -51,9 +50,9 @@ const char* WorkerGlobalScopePerformance::supplementName()
     return "WorkerGlobalScopePerformance";
 }
 
-WorkerGlobalScopePerformance* WorkerGlobalScopePerformance::from(ScriptExecutionContext* context)
+WorkerGlobalScopePerformance* WorkerGlobalScopePerformance::from(WorkerGlobalScope* context)
 {
-    WorkerGlobalScopePerformance* supplement = static_cast<WorkerGlobalScopePerformance*>(Supplement<ScriptExecutionContext>::from(context, supplementName()));
+    WorkerGlobalScopePerformance* supplement = static_cast<WorkerGlobalScopePerformance*>(WorkerSupplement::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopePerformance();
         provideTo(context, supplementName(), adoptPtr(supplement));
@@ -61,12 +60,12 @@ WorkerGlobalScopePerformance* WorkerGlobalScopePerformance::from(ScriptExecution
     return supplement;
 }
 
-WorkerPerformance* WorkerGlobalScopePerformance::performance(ScriptExecutionContext* context)
+WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope* context)
 {
     return from(context)->getPerformance(context);
 }
 
-WorkerPerformance* WorkerGlobalScopePerformance::getPerformance(ScriptExecutionContext* context)
+WorkerPerformance* WorkerGlobalScopePerformance::getPerformance(WorkerGlobalScope* context)
 {
     if (!m_performance)
         m_performance = WorkerPerformance::create(context);

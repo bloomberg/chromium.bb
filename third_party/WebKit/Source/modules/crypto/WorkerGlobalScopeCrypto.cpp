@@ -49,9 +49,9 @@ const char* WorkerGlobalScopeCrypto::supplementName()
     return "WorkerGlobalScopeCrypto";
 }
 
-WorkerGlobalScopeCrypto* WorkerGlobalScopeCrypto::from(ScriptExecutionContext* context)
+WorkerGlobalScopeCrypto* WorkerGlobalScopeCrypto::from(WorkerSupplementable* context)
 {
-    WorkerGlobalScopeCrypto* supplement = static_cast<WorkerGlobalScopeCrypto*>(Supplement<ScriptExecutionContext>::from(context, supplementName()));
+    WorkerGlobalScopeCrypto* supplement = static_cast<WorkerGlobalScopeCrypto*>(WorkerSupplement::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopeCrypto();
         provideTo(context, supplementName(), adoptPtr(supplement));
@@ -59,7 +59,7 @@ WorkerGlobalScopeCrypto* WorkerGlobalScopeCrypto::from(ScriptExecutionContext* c
     return supplement;
 }
 
-WorkerCrypto* WorkerGlobalScopeCrypto::crypto(ScriptExecutionContext* context)
+WorkerCrypto* WorkerGlobalScopeCrypto::crypto(WorkerSupplementable* context)
 {
     return WorkerGlobalScopeCrypto::from(context)->crypto();
 }

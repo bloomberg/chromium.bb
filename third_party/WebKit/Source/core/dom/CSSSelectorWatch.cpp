@@ -54,10 +54,10 @@ CSSSelectorWatch::CSSSelectorWatch(Document& document)
 
 CSSSelectorWatch& CSSSelectorWatch::from(Document& document)
 {
-    CSSSelectorWatch* watch = static_cast<CSSSelectorWatch*>(Supplement<ScriptExecutionContext>::from(&document, kSupplementName));
+    CSSSelectorWatch* watch = static_cast<CSSSelectorWatch*>(DocumentSupplement::from(&document, kSupplementName));
     if (!watch) {
         watch = new CSSSelectorWatch(document);
-        Supplement<ScriptExecutionContext>::provideTo(&document, kSupplementName, adoptPtr(watch));
+        DocumentSupplement::provideTo(&document, kSupplementName, adoptPtr(watch));
     }
     return *watch;
 }

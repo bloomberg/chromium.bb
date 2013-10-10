@@ -40,7 +40,7 @@ using namespace WebCore;
 
 namespace WebKit {
 
-class ContextFeaturesCache : public Supplement<ScriptExecutionContext> {
+class ContextFeaturesCache : public DocumentSupplement {
 public:
     class Entry {
     public:
@@ -101,10 +101,10 @@ const char* ContextFeaturesCache::supplementName()
 
 ContextFeaturesCache* ContextFeaturesCache::from(Document* document)
 {
-    ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(DocumentSupplement::from(document, supplementName()));
     if (!cache) {
         cache = new ContextFeaturesCache();
-        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(cache));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(cache));
     }
 
     return cache;

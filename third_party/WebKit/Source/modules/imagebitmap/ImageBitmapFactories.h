@@ -36,6 +36,7 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/workers/WorkerSupplementable.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/Forward.h"
@@ -54,7 +55,7 @@ class ImageBitmap;
 class ImageData;
 class ScriptExecutionContext;
 
-class ImageBitmapFactories : public Supplement<DOMWindow>, public Supplement<ScriptExecutionContext> {
+class ImageBitmapFactories : public Supplement<DOMWindow>, public WorkerSupplement {
 
 class ImageBitmapLoader;
 

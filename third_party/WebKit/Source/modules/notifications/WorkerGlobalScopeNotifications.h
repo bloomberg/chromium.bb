@@ -29,7 +29,7 @@
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "platform/Supplementable.h"
+#include "core/workers/WorkerSupplementable.h"
 
 namespace WebCore {
 
@@ -37,7 +37,7 @@ class NotificationCenter;
 class ScriptExecutionContext;
 class WorkerGlobalScope;
 
-class WorkerGlobalScopeNotifications : public Supplement<ScriptExecutionContext> {
+class WorkerGlobalScopeNotifications : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopeNotifications();
 

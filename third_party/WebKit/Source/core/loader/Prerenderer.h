@@ -33,6 +33,7 @@
 #define Prerenderer_h
 
 #include "core/dom/DocumentLifecycleObserver.h"
+#include "core/dom/DocumentSupplementable.h"
 #include "platform/Supplementable.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
@@ -42,13 +43,12 @@
 
 namespace WebCore {
 
-class Document;
 class PrerenderClient;
 class Prerender;
 class PrerendererClient;
 class Page;
 
-class Prerenderer : public DocumentLifecycleObserver, public Supplement<ScriptExecutionContext> {
+class Prerenderer : public DocumentLifecycleObserver, public DocumentSupplement {
     WTF_MAKE_NONCOPYABLE(Prerenderer);
 public:
     virtual ~Prerenderer();

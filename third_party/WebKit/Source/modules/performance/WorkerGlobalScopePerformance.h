@@ -31,24 +31,23 @@
 #ifndef WorkerGlobalScopePerformance_h
 #define WorkerGlobalScopePerformance_h
 
-#include "platform/Supplementable.h"
+#include "core/workers/WorkerSupplementable.h"
 
 namespace WebCore {
 
-class ScriptExecutionContext;
 class WorkerPerformance;
 
-class WorkerGlobalScopePerformance : public Supplement<ScriptExecutionContext> {
+class WorkerGlobalScopePerformance : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopePerformance();
-    static WorkerGlobalScopePerformance* from(ScriptExecutionContext*);
+    static WorkerGlobalScopePerformance* from(WorkerGlobalScope*);
 
-    static WorkerPerformance* performance(ScriptExecutionContext*);
+    static WorkerPerformance* performance(WorkerGlobalScope*);
 
 private:
     WorkerGlobalScopePerformance();
 
-    WorkerPerformance* getPerformance(ScriptExecutionContext*);
+    WorkerPerformance* getPerformance(WorkerGlobalScope*);
     static const char* supplementName();
 
     RefPtr<WorkerPerformance> m_performance;

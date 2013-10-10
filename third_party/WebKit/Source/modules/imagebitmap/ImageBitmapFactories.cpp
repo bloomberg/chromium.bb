@@ -44,6 +44,7 @@
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/ImageBitmap.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/ImageSource.h"
@@ -278,7 +279,7 @@ ImageBitmapFactories* ImageBitmapFactories::from(EventTarget* eventTarget)
         return fromInternal(window);
 
     ASSERT(eventTarget->scriptExecutionContext()->isWorkerGlobalScope());
-    return fromInternal(eventTarget->scriptExecutionContext());
+    return fromInternal(toWorkerGlobalScope(eventTarget->scriptExecutionContext()));
 }
 
 template <class T>

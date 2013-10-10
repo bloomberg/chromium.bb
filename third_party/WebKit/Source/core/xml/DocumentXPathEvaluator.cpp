@@ -27,7 +27,7 @@
 #include "core/xml/DocumentXPathEvaluator.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/Document.h"
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathExpression.h"
 #include "core/xml/XPathNSResolver.h"
@@ -43,38 +43,38 @@ DocumentXPathEvaluator::~DocumentXPathEvaluator()
 {
 }
 
-DocumentXPathEvaluator* DocumentXPathEvaluator::from(ScriptExecutionContext* context)
+DocumentXPathEvaluator* DocumentXPathEvaluator::from(DocumentSupplementable* document)
 {
-    DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(Supplement<ScriptExecutionContext>::from(context, supplementName()));
+    DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(DocumentSupplement::from(document, supplementName()));
     if (!cache) {
         cache = new DocumentXPathEvaluator();
-        Supplement<ScriptExecutionContext>::provideTo(context, supplementName(), adoptPtr(cache));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(cache));
     }
     return cache;
 }
 
-PassRefPtr<XPathExpression> DocumentXPathEvaluator::createExpression(ScriptExecutionContext* context,
+PassRefPtr<XPathExpression> DocumentXPathEvaluator::createExpression(DocumentSupplementable* document,
     const String& expression, XPathNSResolver* resolver, ExceptionState& es)
 {
-    DocumentXPathEvaluator* suplement = from(context);
+    DocumentXPathEvaluator* suplement = from(document);
     if (!suplement->m_xpathEvaluator)
         suplement->m_xpathEvaluator = XPathEvaluator::create();
     return suplement->m_xpathEvaluator->createExpression(expression, resolver, es);
 }
 
-PassRefPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(ScriptExecutionContext* context, Node* nodeResolver)
+PassRefPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(DocumentSupplementable* document, Node* nodeResolver)
 {
-    DocumentXPathEvaluator* suplement = from(context);
+    DocumentXPathEvaluator* suplement = from(document);
     if (!suplement->m_xpathEvaluator)
         suplement->m_xpathEvaluator = XPathEvaluator::create();
     return suplement->m_xpathEvaluator->createNSResolver(nodeResolver);
 }
 
-PassRefPtr<XPathResult> DocumentXPathEvaluator::evaluate(ScriptExecutionContext* context, const String& expression,
+PassRefPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSupplementable* document, const String& expression,
     Node* contextNode, XPathNSResolver* resolver, unsigned short type,
     XPathResult* result, ExceptionState& es)
 {
-    DocumentXPathEvaluator* suplement = from(context);
+    DocumentXPathEvaluator* suplement = from(document);
     if (!suplement->m_xpathEvaluator)
         suplement->m_xpathEvaluator = XPathEvaluator::create();
     return suplement->m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, es);

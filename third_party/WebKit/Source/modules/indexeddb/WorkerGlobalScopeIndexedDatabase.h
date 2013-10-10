@@ -27,7 +27,7 @@
 #ifndef WorkerGlobalScopeIndexedDatabase_h
 #define WorkerGlobalScopeIndexedDatabase_h
 
-#include "platform/Supplementable.h"
+#include "core/workers/WorkerSupplementable.h"
 
 namespace WebCore {
 
@@ -35,12 +35,12 @@ class IDBFactory;
 class IDBFactoryBackendInterface;
 class ScriptExecutionContext;
 
-class WorkerGlobalScopeIndexedDatabase : public Supplement<ScriptExecutionContext> {
+class WorkerGlobalScopeIndexedDatabase : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopeIndexedDatabase();
-    static WorkerGlobalScopeIndexedDatabase* from(ScriptExecutionContext*);
+    static WorkerGlobalScopeIndexedDatabase* from(WorkerSupplementable*);
 
-    static IDBFactory* indexedDB(ScriptExecutionContext*);
+    static IDBFactory* indexedDB(WorkerSupplementable*);
 
 private:
     WorkerGlobalScopeIndexedDatabase();

@@ -32,7 +32,7 @@
 #define CSSSelectorWatch_h
 
 #include "core/css/StyleRule.h"
-#include "platform/Supplementable.h"
+#include "core/dom/DocumentSupplementable.h"
 #include "platform/Timer.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
@@ -42,10 +42,7 @@
 
 namespace WebCore {
 
-class Document;
-class ScriptExecutionContext;
-
-class CSSSelectorWatch : public Supplement<ScriptExecutionContext> {
+class CSSSelectorWatch : public DocumentSupplement {
 public:
     virtual ~CSSSelectorWatch() { }
 

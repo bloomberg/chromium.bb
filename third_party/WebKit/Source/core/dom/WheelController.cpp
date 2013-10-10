@@ -52,10 +52,10 @@ const char* WheelController::supplementName()
 
 WheelController* WheelController::from(Document* document)
 {
-    WheelController* controller = static_cast<WheelController*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    WheelController* controller = static_cast<WheelController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new WheelController(document);
-        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(controller));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
     }
     return controller;
 }
