@@ -368,7 +368,7 @@ body.gallery #picture-preview {
 }
 
 #gallery .padder {
-  padding: 20px;
+  padding: 8px;
 }
 
 #gallery img {
@@ -376,7 +376,7 @@ body.gallery #picture-preview {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   margin: 10px;
   transition: -webkit-transform 50ms;
-  width: 240px;
+  width: 170px;
 }
 
 #gallery img.selected {
