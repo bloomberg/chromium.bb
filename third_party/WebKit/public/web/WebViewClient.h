@@ -165,24 +165,10 @@ public:
 
     // These methods allow the client to intercept and overrule editing
     // operations.
-    virtual bool shouldBeginEditing(const WebRange&) { return true; }
-    virtual bool shouldEndEditing(const WebRange&) { return true; }
-    virtual bool shouldInsertNode(
-        const WebNode&, const WebRange&, WebEditingAction) { return true; }
-    virtual bool shouldInsertText(
-        const WebString&, const WebRange&, WebEditingAction) { return true; }
-    virtual bool shouldChangeSelectedRange(
-        const WebRange& from, const WebRange& to, WebTextAffinity,
-        bool stillSelecting) { return true; }
-    virtual bool shouldDeleteRange(const WebRange&) { return true; }
-    virtual bool shouldApplyStyle(const WebString& style, const WebRange&) { return true; }
-
-    virtual void didBeginEditing() { }
     virtual void didCancelCompositionOnSelectionChange() { }
     virtual void didChangeSelection(bool isSelectionEmpty) { }
     virtual void didChangeContents() { }
     virtual void didExecuteCommand(const WebString& commandName) { }
-    virtual void didEndEditing() { }
     virtual void didChangeFormState(const WebNode&) { }
 
     // This method is called in response to WebView's handleInputEvent()

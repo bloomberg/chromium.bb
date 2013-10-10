@@ -218,7 +218,7 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& 
     }
 
     newSelection.setIsDirectional(isDirectional); // Adjusting base and extent will make newSelection always directional
-    if (m_selection == newSelection || !shouldChangeSelection(newSelection))
+    if (m_selection == newSelection)
         return;
 
     setSelection(newSelection, granularity);
@@ -957,10 +957,6 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
         trialFrameSelection.setSelection(m_selection);
         trialFrameSelection.modify(alter, direction, granularity, NotUserTriggered);
 
-        bool change = shouldChangeSelection(trialFrameSelection.selection());
-        if (!change)
-            return false;
-
         if (trialFrameSelection.selection().isRange() && m_selection.isCaret() && !dispatchSelectStart())
             return false;
     }
@@ -1074,10 +1070,6 @@ bool FrameSelection::modify(EAlteration alter, unsigned verticalDistance, Vertic
         FrameSelection trialFrameSelection;
         trialFrameSelection.setSelection(m_selection);
         trialFrameSelection.modify(alter, verticalDistance, direction, NotUserTriggered);
-
-        bool change = shouldChangeSelection(trialFrameSelection.selection());
-        if (!change)
-            return false;
     }
 
     willBeModified(alter, direction == DirectionUp ? DirectionBackward : DirectionForward);
@@ -1462,10 +1454,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
 
     // Focus on the parent frame, and then select from before this element to after.
     VisibleSelection newSelection(beforeOwnerElement, afterOwnerElement);
-    if (parent->selection().shouldChangeSelection(newSelection)) {
-        page->focusController().setFocusedFrame(parent);
-        parent->selection().setSelection(newSelection);
-    }
+    page->focusController().setFocusedFrame(parent);
+    parent->selection().setSelection(newSelection);
 }
 
 void FrameSelection::selectAll()
@@ -1504,10 +1494,7 @@ void FrameSelection::selectAll()
         return;
 
     VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root.get()));
-
-    if (shouldChangeSelection(newSelection))
-        setSelection(newSelection);
-
+    setSelection(newSelection);
     selectFrameElementInParentIfFullySelected();
     notifyRendererOfSelectionChange(UserTriggered);
 }
@@ -1815,11 +1802,6 @@ String FrameSelection::selectedTextForClipboard() const
     return selectedText();
 }
 
-bool FrameSelection::shouldDeleteSelection(const VisibleSelection& selection) const
-{
-    return m_frame->editor().client().shouldDeleteRange(selection.toNormalizedRange().get());
-}
-
 FloatRect FrameSelection::bounds(bool clipToVisibleContent) const
 {
     RenderView* root = m_frame->contentRenderer();
@@ -1932,11 +1914,6 @@ void FrameSelection::setSelectionFromNone()
         node = NodeTraversal::next(node);
     if (node)
         setSelection(VisibleSelection(firstPositionInOrBeforeNode(node), DOWNSTREAM));
-}
-
-bool FrameSelection::shouldChangeSelection(const VisibleSelection& newSelection) const
-{
-    return m_frame->editor().shouldChangeSelection(selection(), newSelection, newSelection.affinity(), false);
 }
 
 bool FrameSelection::dispatchSelectStart()

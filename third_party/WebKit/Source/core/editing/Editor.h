@@ -107,10 +107,7 @@ public:
     void outdent();
     void transpose();
 
-    bool shouldInsertFragment(PassRefPtr<DocumentFragment>, PassRefPtr<Range>, EditorInsertAction);
-    bool shouldInsertText(const String&, Range*, EditorInsertAction) const;
     bool shouldDeleteRange(Range*) const;
-    bool shouldApplyStyle(StylePropertySet*, Range*);
 
     void respondToChangedContents(const VisibleSelection& endingSelection);
 
@@ -202,9 +199,6 @@ public:
     void advanceToNextMisspelling(bool startBeforeSelection = false);
     void showSpellingGuessPanel();
 
-    bool shouldBeginEditing(Range*);
-    bool shouldEndEditing(Range*);
-
     void clearUndoRedoOperations();
     bool canUndo();
     void undo();
@@ -212,7 +206,6 @@ public:
     void redo();
 
     void didBeginEditing(Element*);
-    void didEndEditing();
 
     void setBaseWritingDirection(WritingDirection);
 
@@ -265,7 +258,6 @@ public:
     IntRect firstRectForRange(Range*) const;
 
     void respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
-    bool shouldChangeSelection(const VisibleSelection& oldSelection, const VisibleSelection& newSelection, EAffinity, bool stillSelecting) const;
 
     void spellCheckAfterBlur();
     void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords, const VisibleSelection& newSelectedSentence);

@@ -266,25 +266,14 @@ public:
     EmptyEditorClient() { }
     virtual ~EmptyEditorClient() { }
 
-    virtual bool shouldDeleteRange(Range*) OVERRIDE { return false; }
     virtual bool smartInsertDeleteEnabled() OVERRIDE { return false; }
     virtual bool isSelectTrailingWhitespaceEnabled() OVERRIDE { return false; }
     virtual bool isContinuousSpellCheckingEnabled() OVERRIDE { return false; }
     virtual void toggleContinuousSpellChecking() OVERRIDE { }
     virtual bool isGrammarCheckingEnabled() OVERRIDE { return false; }
 
-    virtual bool shouldBeginEditing(Range*) OVERRIDE { return false; }
-    virtual bool shouldEndEditing(Range*) OVERRIDE { return false; }
-    virtual bool shouldInsertNode(Node*, Range*, EditorInsertAction) OVERRIDE { return false; }
-    virtual bool shouldInsertText(const String&, Range*, EditorInsertAction) OVERRIDE { return false; }
-    virtual bool shouldChangeSelectedRange(Range*, Range*, EAffinity, bool) OVERRIDE { return false; }
-
-    virtual bool shouldApplyStyle(StylePropertySet*, Range*) OVERRIDE { return false; }
-
-    virtual void didBeginEditing() OVERRIDE { }
     virtual void respondToChangedContents() OVERRIDE { }
     virtual void respondToChangedSelection(Frame*) OVERRIDE { }
-    virtual void didEndEditing() OVERRIDE { }
     virtual void didCancelCompositionOnSelectionChange() OVERRIDE { }
 
     virtual void registerUndoStep(PassRefPtr<UndoStep>) OVERRIDE;

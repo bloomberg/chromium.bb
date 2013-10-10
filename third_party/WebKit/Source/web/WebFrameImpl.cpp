@@ -1243,8 +1243,6 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     RefPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
     if (!markerRange)
         return;
-    if (!frame()->selection().shouldChangeSelection(markerRange.get()))
-        return;
     frame()->selection().setSelection(markerRange.get(), CharacterGranularity);
     frame()->editor().replaceSelectionWithText(text, false, false);
 }
@@ -1305,10 +1303,8 @@ void WebFrameImpl::selectWordAroundPosition(Frame* frame, VisiblePosition positi
     VisibleSelection selection(position);
     selection.expandUsingGranularity(WordGranularity);
 
-    if (frame->selection().shouldChangeSelection(selection)) {
-        TextGranularity granularity = selection.isRange() ? WordGranularity : CharacterGranularity;
-        frame->selection().setSelection(selection, granularity);
-    }
+    TextGranularity granularity = selection.isRange() ? WordGranularity : CharacterGranularity;
+    frame->selection().setSelection(selection, granularity);
 }
 
 bool WebFrameImpl::selectWordAroundCaret()
@@ -1342,8 +1338,7 @@ void WebFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& exte
     VisiblePosition basePosition = visiblePositionForWindowPoint(base);
     VisiblePosition extentPosition = visiblePositionForWindowPoint(extent);
     VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
-    if (frame()->selection().shouldChangeSelection(newSelection))
-        frame()->selection().setSelection(newSelection, CharacterGranularity);
+    frame()->selection().setSelection(newSelection, CharacterGranularity);
 }
 
 void WebFrameImpl::moveCaretSelection(const WebPoint& point)
@@ -1353,8 +1348,7 @@ void WebFrameImpl::moveCaretSelection(const WebPoint& point)
         return;
 
     VisiblePosition position = visiblePositionForWindowPoint(point);
-    if (frame()->selection().shouldChangeSelection(position))
-        frame()->selection().moveTo(position, UserTriggered);
+    frame()->selection().moveTo(position, UserTriggered);
 }
 
 void WebFrameImpl::setCaretVisible(bool visible)

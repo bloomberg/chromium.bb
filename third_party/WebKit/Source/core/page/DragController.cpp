@@ -495,9 +495,8 @@ bool DragController::concludeEditDrag(DragData* dragData)
     if (dragIsMove(innerFrame->selection(), dragData) || dragCaret.isContentRichlyEditable()) {
         bool chosePlainText = false;
         RefPtr<DocumentFragment> fragment = documentFragmentFromDragData(dragData, innerFrame.get(), range, true, chosePlainText);
-        if (!fragment || !innerFrame->editor().shouldInsertFragment(fragment, range, EditorInsertActionDropped)) {
+        if (!fragment)
             return false;
-        }
 
         if (dragIsMove(innerFrame->selection(), dragData)) {
             // NSTextView behavior is to always smart delete on moving a selection,
@@ -518,9 +517,8 @@ bool DragController::concludeEditDrag(DragData* dragData)
         }
     } else {
         String text = dragData->asPlainText(innerFrame.get());
-        if (text.isEmpty() || !innerFrame->editor().shouldInsertText(text, range.get(), EditorInsertActionDropped)) {
+        if (text.isEmpty())
             return false;
-        }
 
         if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point)) {
             ASSERT(m_documentUnderMouse);

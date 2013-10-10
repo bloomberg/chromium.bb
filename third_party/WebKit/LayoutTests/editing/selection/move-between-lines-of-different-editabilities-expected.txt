@@ -1,7 +1,6 @@
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
-EDITING DELEGATE: webViewDidEndEditing:WebViewDidEndEditingNotification
 This test moves caret between lines of different editabilities.
 
 Initial condition:

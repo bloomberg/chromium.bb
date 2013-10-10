@@ -161,14 +161,6 @@ protected:
     void didAutoResize(const WebKit::WebSize&);
     void postAccessibilityEvent(const WebKit::WebAXObject&, WebKit::WebAXEvent);
     void startDragging(WebKit::WebFrame*, const WebKit::WebDragData&, WebKit::WebDragOperationsMask, const WebKit::WebImage&, const WebKit::WebPoint&);
-    bool shouldBeginEditing(const WebKit::WebRange&);
-    bool shouldEndEditing(const WebKit::WebRange&);
-    bool shouldInsertNode(const WebKit::WebNode&, const WebKit::WebRange&, WebKit::WebEditingAction);
-    bool shouldInsertText(const WebKit::WebString& text, const WebKit::WebRange&, WebKit::WebEditingAction);
-    bool shouldChangeSelectedRange(const WebKit::WebRange& fromRange, const WebKit::WebRange& toRange, WebKit::WebTextAffinity, bool stillSelecting);
-    bool shouldDeleteRange(const WebKit::WebRange&);
-    bool shouldApplyStyle(const WebKit::WebString& style, const WebKit::WebRange&);
-    void didBeginEditing();
     void didChangeSelection(bool isEmptySelection);
     void didChangeContents();
     void didEndEditing();
@@ -325,46 +317,6 @@ public:
         WebTestProxyBase::startDragging(frame, data, mask, image, point);
         // Don't forward this call to Base because we don't want to do a real drag-and-drop.
     }
-    virtual bool shouldBeginEditing(const WebKit::WebRange& range)
-    {
-        WebTestProxyBase::shouldBeginEditing(range);
-        return Base::shouldBeginEditing(range);
-    }
-    virtual bool shouldEndEditing(const WebKit::WebRange& range)
-    {
-        WebTestProxyBase::shouldEndEditing(range);
-        return Base::shouldEndEditing(range);
-    }
-    virtual bool shouldInsertNode(const WebKit::WebNode& node, const WebKit::WebRange& range, WebKit::WebEditingAction action)
-    {
-        WebTestProxyBase::shouldInsertNode(node, range, action);
-        return Base::shouldInsertNode(node, range, action);
-    }
-    virtual bool shouldInsertText(const WebKit::WebString& text, const WebKit::WebRange& range, WebKit::WebEditingAction action)
-    {
-        WebTestProxyBase::shouldInsertText(text, range, action);
-        return Base::shouldInsertText(text, range, action);
-    }
-    virtual bool shouldChangeSelectedRange(const WebKit::WebRange& fromRange, const WebKit::WebRange& toRange, WebKit::WebTextAffinity affinity, bool stillSelecting)
-    {
-        WebTestProxyBase::shouldChangeSelectedRange(fromRange, toRange, affinity, stillSelecting);
-        return Base::shouldChangeSelectedRange(fromRange, toRange, affinity, stillSelecting);
-    }
-    virtual bool shouldDeleteRange(const WebKit::WebRange& range)
-    {
-        WebTestProxyBase::shouldDeleteRange(range);
-        return Base::shouldDeleteRange(range);
-    }
-    virtual bool shouldApplyStyle(const WebKit::WebString& style, const WebKit::WebRange& range)
-    {
-        WebTestProxyBase::shouldApplyStyle(style, range);
-        return Base::shouldApplyStyle(style, range);
-    }
-    virtual void didBeginEditing()
-    {
-        WebTestProxyBase::didBeginEditing();
-        Base::didBeginEditing();
-    }
     virtual void didChangeSelection(bool isEmptySelection)
     {
         WebTestProxyBase::didChangeSelection(isEmptySelection);
@@ -374,11 +326,6 @@ public:
     {
         WebTestProxyBase::didChangeContents();
         Base::didChangeContents();
-    }
-    virtual void didEndEditing()
-    {
-        WebTestProxyBase::didEndEditing();
-        Base::didEndEditing();
     }
     virtual WebKit::WebView* createView(WebKit::WebFrame* creator, const WebKit::WebURLRequest& request, const WebKit::WebWindowFeatures& features, const WebKit::WebString& frameName, WebKit::WebNavigationPolicy policy)
     {

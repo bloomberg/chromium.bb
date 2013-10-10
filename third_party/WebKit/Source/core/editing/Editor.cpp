@@ -391,8 +391,7 @@ bool Editor::tryDHTMLPaste(PasteMode pasteMode)
 void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
 {
     String text = pasteboard->plainText();
-    if (client().shouldInsertText(text, selectedRange().get(), EditorInsertActionPasted))
-        pasteAsPlainText(text, canSmartReplaceWithPasteboard(pasteboard));
+    pasteAsPlainText(text, canSmartReplaceWithPasteboard(pasteboard));
 }
 
 void Editor::pasteWithPasteboard(Pasteboard* pasteboard, bool allowPlainText)
@@ -400,7 +399,7 @@ void Editor::pasteWithPasteboard(Pasteboard* pasteboard, bool allowPlainText)
     RefPtr<Range> range = selectedRange();
     bool chosePlainText;
     RefPtr<DocumentFragment> fragment = pasteboard->documentFragment(m_frame, range, allowPlainText, chosePlainText);
-    if (fragment && shouldInsertFragment(fragment, range, EditorInsertActionPasted))
+    if (fragment)
         pasteAsFragment(fragment, canSmartReplaceWithPasteboard(pasteboard), chosePlainText);
 }
 
@@ -436,17 +435,6 @@ bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPoli
 bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard)
 {
     return client().smartInsertDeleteEnabled() && pasteboard->canSmartReplace();
-}
-
-bool Editor::shouldInsertFragment(PassRefPtr<DocumentFragment> fragment, PassRefPtr<Range> replacingDOMRange, EditorInsertAction givenAction)
-{
-    if (fragment) {
-        Node* child = fragment->firstChild();
-        if (child && fragment->lastChild() == child && child->isCharacterDataNode())
-            return client().shouldInsertText(toCharacterData(child)->data(), replacingDOMRange.get(), givenAction);
-    }
-
-    return client().shouldInsertNode(fragment.get(), replacingDOMRange.get(), givenAction);
 }
 
 void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment, bool selectReplacement, bool smartReplace, bool matchStyle)
@@ -494,15 +482,7 @@ bool Editor::shouldDeleteRange(Range* range) const
     if (!range || range->collapsed(IGNORE_EXCEPTION))
         return false;
 
-    if (!canDeleteRange(range))
-        return false;
-
-    return client().shouldDeleteRange(range);
-}
-
-bool Editor::shouldInsertText(const String& text, Range* range, EditorInsertAction action) const
-{
-    return client().shouldInsertText(text, range, action);
+    return canDeleteRange(range);
 }
 
 void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
@@ -675,11 +655,6 @@ void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
     }
 }
 
-bool Editor::shouldApplyStyle(StylePropertySet* style, Range* range)
-{
-    return client().shouldApplyStyle(style, range);
-}
-
 void Editor::applyParagraphStyle(StylePropertySet* style, EditAction editingAction)
 {
     switch (m_frame->selection().selectionType()) {
@@ -701,8 +676,7 @@ void Editor::applyStyleToSelection(StylePropertySet* style, EditAction editingAc
     if (!style || style->isEmpty() || !canEditRichly())
         return;
 
-    if (client().shouldApplyStyle(style, m_frame->selection().toNormalizedRange().get()))
-        applyStyle(style, editingAction);
+    applyStyle(style, editingAction);
 }
 
 void Editor::applyParagraphStyleToSelection(StylePropertySet* style, EditAction editingAction)
@@ -710,8 +684,7 @@ void Editor::applyParagraphStyleToSelection(StylePropertySet* style, EditAction 
     if (!style || style->isEmpty() || !canEditRichly())
         return;
 
-    if (client().shouldApplyStyle(style, m_frame->selection().toNormalizedRange().get()))
-        applyParagraphStyle(style, editingAction);
+    applyParagraphStyle(style, editingAction);
 }
 
 bool Editor::selectionStartHasStyle(CSSPropertyID propertyID, const String& value) const
@@ -856,9 +829,6 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
         return false;
     RefPtr<Range> range = selection.toNormalizedRange();
 
-    if (!shouldInsertText(text, range.get(), EditorInsertActionTyped))
-        return true;
-
     if (!text.isEmpty())
         updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
 
@@ -893,9 +863,6 @@ bool Editor::insertLineBreak()
     if (!canEdit())
         return false;
 
-    if (!shouldInsertText("\n", m_frame->selection().toNormalizedRange().get(), EditorInsertActionTyped))
-        return true;
-
     VisiblePosition caret = m_frame->selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
     ASSERT(m_frame->document());
@@ -912,9 +879,6 @@ bool Editor::insertParagraphSeparator()
 
     if (!canEditRichly())
         return insertLineBreak();
-
-    if (!shouldInsertText("\n", m_frame->selection().toNormalizedRange().get(), EditorInsertActionTyped))
-        return true;
 
     VisiblePosition caret = m_frame->selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
@@ -1051,16 +1015,6 @@ bool Editor::isGrammarCheckingEnabled()
     return client().isGrammarCheckingEnabled();
 }
 
-bool Editor::shouldEndEditing(Range* range)
-{
-    return client().shouldEndEditing(range);
-}
-
-bool Editor::shouldBeginEditing(Range* range)
-{
-    return client().shouldBeginEditing(range);
-}
-
 void Editor::clearUndoRedoOperations()
 {
     client().clearUndoRedoOperations();
@@ -1115,12 +1069,6 @@ void Editor::elementDidBeginEditing(Element* element)
 void Editor::didBeginEditing(Element* rootEditableElement)
 {
     elementDidBeginEditing(rootEditableElement);
-    client().didBeginEditing();
-}
-
-void Editor::didEndEditing()
-{
-    client().didEndEditing();
 }
 
 void Editor::setBaseWritingDirection(WritingDirection direction)
@@ -1430,13 +1378,9 @@ void Editor::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart,
     if (!autocorrectedString.isEmpty()) {
         VisibleSelection newSelection(misspellingRange.get(), DOWNSTREAM);
         if (newSelection != frame().selection().selection()) {
-            if (!frame().selection().shouldChangeSelection(newSelection))
-                return;
             frame().selection().setSelection(newSelection);
         }
 
-        if (!frame().editor().shouldInsertText(autocorrectedString, misspellingRange.get(), EditorInsertActionTyped))
-            return;
         frame().editor().replaceSelectionWithText(autocorrectedString, false, false);
 
         // Reset the charet one character further.
@@ -1817,15 +1761,10 @@ void Editor::transpose()
     String transposed = text.right(1) + text.left(1);
 
     // Select the two characters.
-    if (newSelection != m_frame->selection().selection()) {
-        if (!m_frame->selection().shouldChangeSelection(newSelection))
-            return;
+    if (newSelection != m_frame->selection().selection())
         m_frame->selection().setSelection(newSelection);
-    }
 
     // Insert the transposed characters.
-    if (!shouldInsertText(transposed, range.get(), EditorInsertActionTyped))
-        return;
     replaceSelectionWithText(transposed, false, false);
 }
 
@@ -1848,13 +1787,9 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
     if (newSelection.start().isOrphan() || newSelection.end().isOrphan())
         return;
 
-    // If there is no selection change, don't bother sending shouldChangeSelection, but still call setSelection,
-    // because there is work that it must do in this situation.
-    // The old selection can be invalid here and calling shouldChangeSelection can produce some strange calls.
     // See <rdar://problem/5729315> Some shouldChangeSelectedDOMRange contain Ranges for selections that are no longer valid
     bool selectionDidNotChangeDOMPosition = newSelection == m_frame->selection().selection();
-    if (selectionDidNotChangeDOMPosition || m_frame->selection().shouldChangeSelection(newSelection))
-        m_frame->selection().setSelection(newSelection, options);
+    m_frame->selection().setSelection(newSelection, options);
 
     // Some editing operations change the selection visually without affecting its position within the DOM.
     // For example when you press return in the following (the caret is marked by ^):
@@ -1894,11 +1829,6 @@ IntRect Editor::firstRectForRange(Range* range) const
         startCaretRect.y(),
         startCaretRect.width() + extraWidthToEndOfLine,
         startCaretRect.height());
-}
-
-bool Editor::shouldChangeSelection(const VisibleSelection& oldSelection, const VisibleSelection& newSelection, EAffinity affinity, bool stillSelecting) const
-{
-    return client().shouldChangeSelectedRange(oldSelection.toNormalizedRange().get(), newSelection.toNormalizedRange().get(), affinity, stillSelecting);
 }
 
 void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editingAction)

@@ -944,87 +944,6 @@ void WebTestProxyBase::startDragging(WebFrame*, const WebDragData& data, WebDrag
 // The output from these methods in layout test mode should match that
 // expected by the layout tests. See EditingDelegate.m in DumpRenderTree.
 
-bool WebTestProxyBase::shouldBeginEditing(const WebRange& range)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks()) {
-        m_delegate->printMessage("EDITING DELEGATE: shouldBeginEditingInDOMRange:");
-        printRangeDescription(m_delegate, range);
-        m_delegate->printMessage("\n");
-    }
-    return true;
-}
-
-bool WebTestProxyBase::shouldEndEditing(const WebRange& range)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks()) {
-        m_delegate->printMessage("EDITING DELEGATE: shouldEndEditingInDOMRange:");
-        printRangeDescription(m_delegate, range);
-        m_delegate->printMessage("\n");
-    }
-    return true;
-}
-
-bool WebTestProxyBase::shouldInsertNode(const WebNode& node, const WebRange& range, WebEditingAction action)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks()) {
-        m_delegate->printMessage("EDITING DELEGATE: shouldInsertNode:");
-        printNodeDescription(m_delegate, node, 0);
-        m_delegate->printMessage(" replacingDOMRange:");
-        printRangeDescription(m_delegate, range);
-        m_delegate->printMessage(string(" givenAction:") + editingActionDescription(action) + "\n");
-    }
-    return true;
-}
-
-bool WebTestProxyBase::shouldInsertText(const WebString& text, const WebRange& range, WebEditingAction action)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks()) {
-        m_delegate->printMessage(string("EDITING DELEGATE: shouldInsertText:") + text.utf8().data() + " replacingDOMRange:");
-        printRangeDescription(m_delegate, range);
-        m_delegate->printMessage(string(" givenAction:") + editingActionDescription(action) + "\n");
-    }
-    return true;
-}
-
-bool WebTestProxyBase::shouldChangeSelectedRange(
-    const WebRange& fromRange, const WebRange& toRange, WebTextAffinity affinity, bool stillSelecting)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks()) {
-        m_delegate->printMessage("EDITING DELEGATE: shouldChangeSelectedDOMRange:");
-        printRangeDescription(m_delegate, fromRange);
-        m_delegate->printMessage(" toDOMRange:");
-        printRangeDescription(m_delegate, toRange);
-        m_delegate->printMessage(string(" affinity:") + textAffinityDescription(affinity) + " stillSelecting:" + (stillSelecting ? "TRUE" : "FALSE") + "\n");
-    }
-    return true;
-}
-
-bool WebTestProxyBase::shouldDeleteRange(const WebRange& range)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks()) {
-        m_delegate->printMessage("EDITING DELEGATE: shouldDeleteDOMRange:");
-        printRangeDescription(m_delegate, range);
-        m_delegate->printMessage("\n");
-    }
-    return true;
-}
-
-bool WebTestProxyBase::shouldApplyStyle(const WebString& style, const WebRange& range)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks()) {
-        m_delegate->printMessage(string("EDITING DELEGATE: shouldApplyStyle:") + style.utf8().data() + " toElementsInDOMRange:");
-        printRangeDescription(m_delegate, range);
-        m_delegate->printMessage("\n");
-    }
-    return true;
-}
-
-void WebTestProxyBase::didBeginEditing()
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks())
-        m_delegate->printMessage("EDITING DELEGATE: webViewDidBeginEditing:WebViewDidBeginEditingNotification\n");
-}
-
 void WebTestProxyBase::didChangeSelection(bool isEmptySelection)
 {
     if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks())
@@ -1035,12 +954,6 @@ void WebTestProxyBase::didChangeContents()
 {
     if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks())
         m_delegate->printMessage("EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification\n");
-}
-
-void WebTestProxyBase::didEndEditing()
-{
-    if (m_testInterfaces->testRunner()->shouldDumpEditingCallbacks())
-        m_delegate->printMessage("EDITING DELEGATE: webViewDidEndEditing:WebViewDidEndEditingNotification\n");
 }
 
 bool WebTestProxyBase::createView(WebFrame*, const WebURLRequest& request, const WebWindowFeatures&, const WebString&, WebNavigationPolicy)

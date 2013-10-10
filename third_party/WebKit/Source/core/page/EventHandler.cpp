@@ -369,7 +369,7 @@ void EventHandler::nodeWillBeRemoved(Node* nodeToBeRemoved)
 
 static void setSelectionIfNeeded(FrameSelection& selection, const VisibleSelection& newSelection)
 {
-    if (selection.selection() != newSelection && selection.shouldChangeSelection(newSelection))
+    if (selection.selection() != newSelection)
         selection.setSelection(newSelection);
 }
 
@@ -3809,8 +3809,7 @@ bool EventHandler::passMousePressEventToSubframe(MouseEventWithHitTestResults& m
         VisiblePosition visiblePos(
             mev.targetNode()->renderer()->positionForPoint(mev.localPoint()));
         VisibleSelection newSelection(visiblePos);
-        if (m_frame->selection().shouldChangeSelection(newSelection))
-            m_frame->selection().setSelection(newSelection);
+        m_frame->selection().setSelection(newSelection);
     }
 
     subframe->eventHandler()->handleMousePressEvent(mev.event());

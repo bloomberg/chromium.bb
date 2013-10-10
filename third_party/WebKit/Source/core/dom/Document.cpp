@@ -304,12 +304,7 @@ static bool acceptsEditingFocus(Element* element)
     ASSERT(element);
     ASSERT(element->rendererIsEditable());
 
-    Element* root = element->rootEditableElement();
-    Frame* frame = element->document().frame();
-    if (!frame || !root)
-        return false;
-
-    return frame->editor().shouldBeginEditing(rangeOfContents(root).get());
+    return element->document().frame() && element->rootEditableElement();
 }
 
 static bool canAccessAncestor(const SecurityOrigin* activeSecurityOrigin, Frame* targetFrame)
@@ -3310,9 +3305,6 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
             focusChangeBlocked = true;
             newFocusedElement = 0;
         }
-
-        if (oldFocusedElement->isRootEditableElement())
-            frame()->editor().didEndEditing();
 
         if (view()) {
             Widget* oldWidget = widgetForElement(oldFocusedElement.get());

@@ -58,25 +58,14 @@ class EditorClient {
 public:
     virtual ~EditorClient() {  }
 
-    virtual bool shouldDeleteRange(Range*) = 0;
     virtual bool smartInsertDeleteEnabled() = 0;
     virtual bool isSelectTrailingWhitespaceEnabled() = 0;
     virtual bool isContinuousSpellCheckingEnabled() = 0;
     virtual void toggleContinuousSpellChecking() = 0;
     virtual bool isGrammarCheckingEnabled() = 0;
 
-    virtual bool shouldBeginEditing(Range*) = 0;
-    virtual bool shouldEndEditing(Range*) = 0;
-    virtual bool shouldInsertNode(Node*, Range*, EditorInsertAction) = 0;
-    virtual bool shouldInsertText(const String&, Range*, EditorInsertAction) = 0;
-    virtual bool shouldChangeSelectedRange(Range* fromRange, Range* toRange, EAffinity, bool stillSelecting) = 0;
-
-    virtual bool shouldApplyStyle(StylePropertySet*, Range*) = 0;
-
-    virtual void didBeginEditing() = 0;
     virtual void respondToChangedContents() = 0;
     virtual void respondToChangedSelection(Frame*) = 0;
-    virtual void didEndEditing() = 0;
     virtual void didCancelCompositionOnSelectionChange() = 0;
 
     virtual void registerUndoStep(PassRefPtr<UndoStep>) = 0;

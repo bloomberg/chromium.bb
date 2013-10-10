@@ -164,81 +164,6 @@ bool EditorClientImpl::isGrammarCheckingEnabled()
     return frame && frame->settings() && (frame->settings()->asynchronousSpellCheckingEnabled() || frame->settings()->unifiedTextCheckerEnabled());
 }
 
-bool EditorClientImpl::shouldBeginEditing(Range* range)
-{
-    if (m_webView->client())
-        return m_webView->client()->shouldBeginEditing(WebRange(range));
-    return true;
-}
-
-bool EditorClientImpl::shouldEndEditing(Range* range)
-{
-    if (m_webView->client())
-        return m_webView->client()->shouldEndEditing(WebRange(range));
-    return true;
-}
-
-bool EditorClientImpl::shouldInsertNode(Node* node,
-                                        Range* range,
-                                        EditorInsertAction action)
-{
-    if (m_webView->client()) {
-        return m_webView->client()->shouldInsertNode(WebNode(node),
-                                                     WebRange(range),
-                                                     static_cast<WebEditingAction>(action));
-    }
-    return true;
-}
-
-bool EditorClientImpl::shouldInsertText(const String& text,
-                                        Range* range,
-                                        EditorInsertAction action)
-{
-    if (m_webView->client()) {
-        return m_webView->client()->shouldInsertText(WebString(text),
-                                                     WebRange(range),
-                                                     static_cast<WebEditingAction>(action));
-    }
-    return true;
-}
-
-
-bool EditorClientImpl::shouldDeleteRange(Range* range)
-{
-    if (m_webView->client())
-        return m_webView->client()->shouldDeleteRange(WebRange(range));
-    return true;
-}
-
-bool EditorClientImpl::shouldChangeSelectedRange(Range* fromRange,
-                                                 Range* toRange,
-                                                 EAffinity affinity,
-                                                 bool stillSelecting)
-{
-    if (m_webView->client()) {
-        return m_webView->client()->shouldChangeSelectedRange(WebRange(fromRange),
-                                                              WebRange(toRange),
-                                                              static_cast<WebTextAffinity>(affinity),
-                                                              stillSelecting);
-    }
-    return true;
-}
-
-bool EditorClientImpl::shouldApplyStyle(StylePropertySet* style, Range* range)
-{
-    if (m_webView->client()) {
-        // FIXME: Pass a reference to the CSSStyleDeclaration somehow.
-        return m_webView->client()->shouldApplyStyle(WebString(), WebRange(range));
-    }
-    return true;
-}
-
-void EditorClientImpl::didBeginEditing()
-{
-    if (m_webView->client())
-        m_webView->client()->didBeginEditing();
-}
-
 void EditorClientImpl::respondToChangedSelection(Frame* frame)
 {
     if (m_webView->client() && frame)
@@ -249,12 +174,6 @@ void EditorClientImpl::respondToChangedContents()
 {
     if (m_webView->client())
         m_webView->client()->didChangeContents();
-}
-
-void EditorClientImpl::didEndEditing()
-{
-    if (m_webView->client())
-        m_webView->client()->didEndEditing();
 }
 
 void EditorClientImpl::didCancelCompositionOnSelectionChange()

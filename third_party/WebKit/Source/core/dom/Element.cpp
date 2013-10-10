@@ -2150,11 +2150,8 @@ void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
 
         // FIXME: We should restore the previous selection if there is one.
         VisibleSelection newSelection = VisibleSelection(firstPositionInOrBeforeNode(this), DOWNSTREAM);
-
-        if (frame->selection().shouldChangeSelection(newSelection)) {
-            frame->selection().setSelection(newSelection);
-            frame->selection().revealSelection();
-        }
+        frame->selection().setSelection(newSelection);
+        frame->selection().revealSelection();
     } else if (renderer() && !renderer()->isWidget())
         renderer()->scrollRectToVisible(boundingBox());
 }

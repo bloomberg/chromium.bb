@@ -217,8 +217,6 @@ static bool expandSelectionToGranularity(Frame& frame, TextGranularity granulari
         return false;
     RefPtr<Range> oldRange = frame.selection().selection().toNormalizedRange();
     EAffinity affinity = frame.selection().affinity();
-    if (!frame.editor().client().shouldChangeSelectedRange(oldRange.get(), newRange.get(), affinity, false))
-        return false;
     frame.selection().setSelectedRange(newRange.get(), affinity, true);
     return true;
 }

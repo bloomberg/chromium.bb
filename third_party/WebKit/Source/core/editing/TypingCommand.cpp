@@ -479,7 +479,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
     if (selectionToDelete.isNone())
         return;
 
-    if (selectionToDelete.isCaret() || !frame->selection().shouldDeleteSelection(selectionToDelete))
+    if (selectionToDelete.isCaret())
         return;
 
     if (killRing)
@@ -572,7 +572,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
     if (selectionToDelete.isNone())
         return;
 
-    if (selectionToDelete.isCaret() || !frame->selection().shouldDeleteSelection(selectionToDelete))
+    if (selectionToDelete.isCaret())
         return;
 
     if (killRing)

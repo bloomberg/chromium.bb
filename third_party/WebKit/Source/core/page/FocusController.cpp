@@ -380,8 +380,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, bool
     if (caretBrowsing) {
         Position position = firstPositionInOrBeforeNode(element);
         VisibleSelection newSelection(position, position, DOWNSTREAM);
-        if (frame->selection().shouldChangeSelection(newSelection))
-            frame->selection().setSelection(newSelection);
+        frame->selection().setSelection(newSelection);
     }
 
     element->focus(false, direction);
@@ -559,13 +558,7 @@ static bool relinquishesEditingFocus(Node *node)
 {
     ASSERT(node);
     ASSERT(node->rendererIsEditable());
-
-    Node* root = node->rootEditableElement();
-    Frame* frame = node->document().frame();
-    if (!frame || !root)
-        return false;
-
-    return frame->editor().shouldEndEditing(rangeOfContents(root).get());
+    return node->document().frame() && node->rootEditableElement();
 }
 
 static void clearSelectionIfNeeded(Frame* oldFocusedFrame, Frame* newFocusedFrame, Node* newFocusedNode)
