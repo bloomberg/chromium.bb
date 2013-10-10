@@ -347,6 +347,27 @@ bool Channel::ChannelImpl::Connect() {
   return did_connect;
 }
 
+void Channel::ChannelImpl::CloseFileDescriptors(Message* msg) {
+#if defined(OS_MACOSX)
+  // There is a bug on OSX which makes it dangerous to close
+  // a file descriptor while it is in transit. So instead we
+  // store the file descriptor in a set and send a message to
+  // the recipient, which is queued AFTER the message that
+  // sent the FD. The recipient will reply to the message,
+  // letting us know that it is now safe to close the file
+  // descriptor. For more information, see:
+  // http://crbug.com/298276
+  std::vector<int> to_close;
+  msg->file_descriptor_set()->ReleaseFDsToClose(&to_close);
+  for (size_t i = 0; i < to_close.size(); i++) {
+    fds_to_close_.insert(to_close[i]);
+    QueueCloseFDMessage(to_close[i], 2);
+  }
+#else
+  msg->file_descriptor_set()->CommitAll();
+#endif
+}
+
 bool Channel::ChannelImpl::ProcessOutgoingMessages() {
   DCHECK(!waiting_connect_);  // Why are we trying to send messages if there's
                               // no connection?
@@ -419,7 +440,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
         msgh.msg_iov = &iov;
         msgh.msg_controllen = 0;
         if (bytes_written > 0) {
-          msg->file_descriptor_set()->CommitAll();
+          CloseFileDescriptors(msg);
         }
       }
 #endif  // IPC_USES_READWRITE
@@ -440,7 +461,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       }
     }
     if (bytes_written > 0)
-      msg->file_descriptor_set()->CommitAll();
+      CloseFileDescriptors(msg);
 
     if (bytes_written < 0 && !SocketWriteErrorIsRecoverable()) {
 #if defined(OS_MACOSX)
@@ -575,6 +596,17 @@ void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
 
   // Close any outstanding, received file descriptors.
   ClearInputFDs();
+
+#if defined(OS_MACOSX)
+  // Clear any outstanding, sent file descriptors.
+  for (std::set<int>::iterator i = fds_to_close_.begin();
+       i != fds_to_close_.end();
+       ++i) {
+    if (HANDLE_EINTR(close(*i)) < 0)
+      PLOG(ERROR) << "close";
+  }
+  fds_to_close_.clear();
+#endif
 }
 
 // static
@@ -592,7 +624,6 @@ void Channel::ChannelImpl::SetGlobalPid(int pid) {
 
 // Called by libevent when we can read from the pipe without blocking.
 void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
-  bool send_server_hello_msg = false;
   if (fd == server_listen_pipe_) {
     int new_pipe = 0;
     if (!ServerAcceptConnection(server_listen_pipe_, &new_pipe) ||
@@ -631,18 +662,16 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
     if (!AcceptConnection()) {
       NOTREACHED() << "AcceptConnection should not fail on server";
     }
-    send_server_hello_msg = true;
     waiting_connect_ = false;
   } else if (fd == pipe_) {
     if (waiting_connect_ && (mode_ & MODE_SERVER_FLAG)) {
-      send_server_hello_msg = true;
       waiting_connect_ = false;
     }
     if (!ProcessIncomingMessages()) {
       // ClosePipeOnError may delete this object, so we mustn't call
       // ProcessOutgoingMessages.
-      send_server_hello_msg = false;
       ClosePipeOnError();
+      return;
     }
   } else {
     NOTREACHED() << "Unknown pipe " << fd;
@@ -651,8 +680,8 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
   // If we're a server and handshaking, then we want to make sure that we
   // only send our handshake message after we've processed the client's.
   // This gives us a chance to kill the client if the incoming handshake
-  // is invalid.
-  if (send_server_hello_msg) {
+  // is invalid. This also flushes any closefd messagse.
+  if (!is_blocked_on_write_) {
     ProcessOutgoingMessages();
   }
 }
@@ -902,29 +931,80 @@ void Channel::ChannelImpl::ClearInputFDs() {
   input_fds_.clear();
 }
 
-void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
+void Channel::ChannelImpl::QueueCloseFDMessage(int fd, int hops) {
+  switch (hops) {
+    case 1:
+    case 2: {
+      // Create the message
+      scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
+                                          CLOSE_FD_MESSAGE_TYPE,
+                                          IPC::Message::PRIORITY_NORMAL));
+      if (!msg->WriteInt(hops - 1) || !msg->WriteInt(fd)) {
+        NOTREACHED() << "Unable to pickle close fd.";
+      }
+      // Send(msg.release());
+      output_queue_.push(msg.release());
+      break;
+    }
+
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void Channel::ChannelImpl::HandleInternalMessage(const Message& msg) {
   // The Hello message contains only the process id.
   PickleIterator iter(msg);
-  int pid;
-  if (!msg.ReadInt(&iter, &pid))
-    NOTREACHED();
+
+  switch (msg.type()) {
+    default:
+      NOTREACHED();
+      break;
+
+    case Channel::HELLO_MESSAGE_TYPE:
+      int pid;
+      if (!msg.ReadInt(&iter, &pid))
+        NOTREACHED();
 
 #if defined(IPC_USES_READWRITE)
-  if (mode_ & MODE_SERVER_FLAG) {
-    // With IPC_USES_READWRITE, the Hello message from the client to the
-    // server also contains the fd_pipe_, which  will be used for all
-    // subsequent file descriptor passing.
-    DCHECK_EQ(msg.file_descriptor_set()->size(), 1U);
-    base::FileDescriptor descriptor;
-    if (!msg.ReadFileDescriptor(&iter, &descriptor)) {
-      NOTREACHED();
-    }
-    fd_pipe_ = descriptor.fd;
-    CHECK(descriptor.auto_close);
-  }
+      if (mode_ & MODE_SERVER_FLAG) {
+        // With IPC_USES_READWRITE, the Hello message from the client to the
+        // server also contains the fd_pipe_, which  will be used for all
+        // subsequent file descriptor passing.
+        DCHECK_EQ(msg.file_descriptor_set()->size(), 1U);
+        base::FileDescriptor descriptor;
+        if (!msg.ReadFileDescriptor(&iter, &descriptor)) {
+          NOTREACHED();
+        }
+        fd_pipe_ = descriptor.fd;
+        CHECK(descriptor.auto_close);
+      }
 #endif  // IPC_USES_READWRITE
-  peer_pid_ = pid;
-  listener()->OnChannelConnected(pid);
+      peer_pid_ = pid;
+      listener()->OnChannelConnected(pid);
+      break;
+
+#if defined(OS_MACOSX)
+    case Channel::CLOSE_FD_MESSAGE_TYPE:
+      int fd, hops;
+      if (!msg.ReadInt(&iter, &hops))
+        NOTREACHED();
+      if (!msg.ReadInt(&iter, &fd))
+        NOTREACHED();
+      if (hops == 0) {
+        if (fds_to_close_.erase(fd) > 0) {
+          if (HANDLE_EINTR(close(fd)) < 0)
+            PLOG(ERROR) << "close";
+        } else {
+          NOTREACHED();
+        }
+      } else {
+        QueueCloseFDMessage(fd, hops);
+      }
+      break;
+#endif
+  }
 }
 
 void Channel::ChannelImpl::Close() {

@@ -41,7 +41,7 @@ class Channel::ChannelImpl : public internal::ChannelReader,
                              int* bytes_read) OVERRIDE;
   virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
   bool DidEmptyInputBuffers() OVERRIDE;
-  virtual void HandleHelloMessage(const Message& msg) OVERRIDE;
+  virtual void HandleInternalMessage(const Message& msg) OVERRIDE;
 
   static const string16 PipeName(const std::string& channel_id,
                                  int32* secret);

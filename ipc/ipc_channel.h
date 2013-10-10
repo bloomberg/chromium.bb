@@ -75,15 +75,22 @@ class IPC_EXPORT Channel : public Sender {
 #endif
   };
 
-  // The Hello message is internal to the Channel class.  It is sent
-  // by the peer when the channel is connected.  The message contains
-  // just the process id (pid).  The message has a special routing_id
-  // (MSG_ROUTING_NONE) and type (HELLO_MESSAGE_TYPE).
+  // Messages internal to the IPC implementation are defined here.
+  // Uses Maximum value of message type (uint16), to avoid conflicting
+  // with normal message types, which are enumeration constants starting from 0.
   enum {
-    HELLO_MESSAGE_TYPE = kuint16max  // Maximum value of message type (uint16),
-                                     // to avoid conflicting with normal
-                                     // message types, which are enumeration
-                                     // constants starting from 0.
+    // The Hello message is sent by the peer when the channel is connected.
+    // The message contains just the process id (pid).
+    // The message has a special routing_id (MSG_ROUTING_NONE)
+    // and type (HELLO_MESSAGE_TYPE).
+    HELLO_MESSAGE_TYPE = kuint16max,
+    // The CLOSE_FD_MESSAGE_TYPE is used in the IPC class to
+    // work around a bug in sendmsg() on Mac. When an FD is sent
+    // over the socket, a CLOSE_FD_MESSAGE is sent with hops = 2.
+    // The client will return the message with hops = 1, *after* it
+    // has received the message that contains the FD. When we
+    // receive it again on the sender side, we close the FD.
+    CLOSE_FD_MESSAGE_TYPE = HELLO_MESSAGE_TYPE - 1
   };
 
   // The maximum message size in bytes. Attempting to receive a message of this
