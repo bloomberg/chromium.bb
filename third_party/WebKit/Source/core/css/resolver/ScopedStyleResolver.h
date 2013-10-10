@@ -60,7 +60,7 @@ public:
     void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
     ScopedStyleResolver* parent() { return m_parent; }
 
-    bool hasOnlyEmptyRuleSets() const { return !m_authorStyle->ruleCount() && m_atHostRules.isEmpty(); }
+    bool hasOnlyEmptyRuleSets() const { return (!m_authorStyle || !m_authorStyle->ruleCount()) && m_atHostRules.isEmpty(); }
 
 public:
     bool checkRegionStyle(Element*);
