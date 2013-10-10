@@ -8,6 +8,7 @@
 
 import os
 import sys
+import types
 import unittest
 import mox
 
@@ -179,7 +180,24 @@ class PortageManipulationsTest(mox.MoxTestBase):
 
     self.mox.VerifyAll()
 
+class PortageAPITest(unittest.TestCase):
+  """Ensures that required portage API exists."""
+  def runTest(self):
+    try:
+      import portage
+    except ImportError:
+      self.skipTest('Portage not available in test environment. Re-run test '
+                    'in chroot.')
+    try:
+      # pylint: disable-msg=E1101
+      f = portage.vardbapi.writeContentsToContentsFile
+    except AttributeError:
+      self.fail('Required writeContentsToContentsFile function does '
+                'not exist.')
 
+    self.assertIsInstance(f, types.UnboundMethodType,
+                          'Required writeContentsToContentsFile is not '
+                          'a function.')
 
 if __name__ == '__main__':
   cros_test_lib.main()
