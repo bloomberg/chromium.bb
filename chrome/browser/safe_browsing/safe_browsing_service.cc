@@ -277,10 +277,12 @@ SafeBrowsingService::database_manager() const {
 }
 
 SafeBrowsingProtocolManager* SafeBrowsingService::protocol_manager() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return protocol_manager_;
 }
 
 SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return ping_manager_;
 }
 

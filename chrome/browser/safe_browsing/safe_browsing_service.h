@@ -83,6 +83,7 @@ class SafeBrowsingService
 
   safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() const {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     return csd_service_.get();
   }
 
@@ -90,6 +91,7 @@ class SafeBrowsingService
   // is destroyed.
   safe_browsing::DownloadProtectionService*
       download_protection_service() const {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     return download_service_.get();
   }
 
@@ -169,17 +171,17 @@ class SafeBrowsingService
   static SafeBrowsingServiceFactory* factory_;
 
   // The SafeBrowsingURLRequestContextGetter used to access
-  // |url_request_context_|.
+  // |url_request_context_|. Accessed on UI thread.
   scoped_refptr<net::URLRequestContextGetter>
       url_request_context_getter_;
 
-  // The SafeBrowsingURLRequestContext.
+  // The SafeBrowsingURLRequestContext. Accessed on IO thread.
   scoped_ptr<net::URLRequestContext> url_request_context_;
 
-  // Handles interaction with SafeBrowsing servers.
+  // Handles interaction with SafeBrowsing servers. Accessed on IO thread.
   SafeBrowsingProtocolManager* protocol_manager_;
 
-  // Provides phishing and malware statistics.
+  // Provides phishing and malware statistics. Accessed on IO thread.
   SafeBrowsingPingManager* ping_manager_;
 
   // Whether the service is running. 'enabled_' is used by SafeBrowsingService
@@ -189,6 +191,7 @@ class SafeBrowsingService
   // Tracks existing PrefServices, and the safe browsing preference on each.
   // This is used to determine if any profile is currently using the safe
   // browsing service, and to start it up or shut it down accordingly.
+  // Accessed on UI thread.
   std::map<PrefService*, PrefChangeRegistrar*> prefs_map_;
 
   // Used to track creation and destruction of profiles on the UI thread.
@@ -196,16 +199,20 @@ class SafeBrowsingService
 
   // The ClientSideDetectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.
+  // Accessed on UI thread.
   scoped_ptr<safe_browsing::ClientSideDetectionService> csd_service_;
 
   // The DownloadProtectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.
+  // Accessed on UI thread.
   scoped_ptr<safe_browsing::DownloadProtectionService> download_service_;
 
-  // The UI manager handles showing interstitials.
+  // The UI manager handles showing interstitials.  Accessed on both UI and IO
+  // thread.
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
 
-  // The database manager handles the database and download logic.
+  // The database manager handles the database and download logic.  Accessed on
+  // both UI and IO thread.
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
