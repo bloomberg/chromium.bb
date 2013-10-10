@@ -64,7 +64,6 @@
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "wtf/TemporaryChange.h"
-#include "wtf/text/StringBuilder.h"
 
 #if !LOG_DISABLED
 #include "wtf/CurrentTime.h"
@@ -1341,12 +1340,8 @@ String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 
     // The true root layer is not included in the dump, so if we want to report
     // its repaint rects, they must be included here.
-    if (flags & LayerTreeIncludesRepaintRects) {
-        StringBuilder layerTreeTextWithRootRepaintRects;
-        layerTreeTextWithRootRepaintRects.append(m_renderView->frameView()->trackedRepaintRectsAsText());
-        layerTreeTextWithRootRepaintRects.append(layerTreeText);
-        return layerTreeTextWithRootRepaintRects.toString();
-    }
+    if (flags & LayerTreeIncludesRepaintRects)
+        return m_renderView->frameView()->trackedRepaintRectsAsText() + layerTreeText;
 
     return layerTreeText;
 }

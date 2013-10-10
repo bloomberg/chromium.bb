@@ -1367,17 +1367,17 @@ void RenderText::secureText(UChar mask)
         return;
 
     int lastTypedCharacterOffsetToReveal = -1;
-    StringBuilder revealedText;
+    UChar revealedText;
     SecureTextTimer* secureTextTimer = gSecureTextTimers ? gSecureTextTimers->get(this) : 0;
     if (secureTextTimer && secureTextTimer->isActive()) {
         lastTypedCharacterOffsetToReveal = secureTextTimer->lastTypedCharacterOffset();
         if (lastTypedCharacterOffsetToReveal >= 0)
-            revealedText.append(m_text[lastTypedCharacterOffsetToReveal]);
+            revealedText = m_text[lastTypedCharacterOffsetToReveal];
     }
 
     m_text.fill(mask);
     if (lastTypedCharacterOffsetToReveal >= 0) {
-        m_text.replace(lastTypedCharacterOffsetToReveal, 1, revealedText.toString());
+        m_text.replace(lastTypedCharacterOffsetToReveal, 1, String(&revealedText, 1));
         // m_text may be updated later before timer fires. We invalidate the lastTypedCharacterOffset to avoid inconsistency.
         secureTextTimer->invalidate();
     }
