@@ -70,8 +70,8 @@ UserImageScreen::~UserImageScreen() {
 
 void UserImageScreen::OnScreenReady() {
   is_screen_ready_ = true;
-  if (actor_ && !IsWaitingForSync())
-    actor_->HideCurtain();
+  if (!IsWaitingForSync())
+    HideCurtain();
 }
 
 void UserImageScreen::OnPhotoTaken(const std::string& raw_data) {
@@ -99,6 +99,13 @@ void UserImageScreen::OnCameraPresenceCheckDone() {
   }
 }
 
+void UserImageScreen::HideCurtain() {
+  if (actor_)
+    actor_->HideCurtain();
+  AccessibilityManager::Get()->MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
+}
+
 
 void UserImageScreen::OnImageDecoded(const ImageDecoder* decoder,
                                      const SkBitmap& decoded_image) {
@@ -119,8 +126,8 @@ void UserImageScreen::OnInitialSync(bool local_image_updated) {
   UserManager::Get()->GetUserImageManager()->GetSyncObserver()->
       RemoveObserver(this);
   if (!local_image_updated) {
-    if (is_screen_ready_ && actor_)
-      actor_->HideCurtain();
+    if (is_screen_ready_)
+      HideCurtain();
     return;
   }
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
@@ -130,8 +137,8 @@ void UserImageScreen::OnSyncTimeout() {
   sync_timer_.reset();
   UserManager::Get()->GetUserImageManager()->GetSyncObserver()->
       RemoveObserver(this);
-  if (is_screen_ready_ && actor_)
-    actor_->HideCurtain();
+  if (is_screen_ready_)
+    HideCurtain();
 }
 
 bool UserImageScreen::IsWaitingForSync() const {
@@ -262,9 +269,6 @@ void UserImageScreen::Show() {
     UserManager::Get()->GetUserImageManager()->
         DownloadProfileImage(kProfileDownloadReason);
   }
-
-  AccessibilityManager::Get()->MaybeSpeak(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
 }
 
 void UserImageScreen::Hide() {

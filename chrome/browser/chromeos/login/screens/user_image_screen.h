@@ -82,6 +82,9 @@ class UserImageScreen: public WizardScreen,
   // Called when the camera presence check has been completed.
   void OnCameraPresenceCheckDone();
 
+  // Called when it's decided not to skip the screen.
+  void HideCurtain();
+
   content::NotificationRegistrar registrar_;
 
   UserImageScreenActor* actor_;
