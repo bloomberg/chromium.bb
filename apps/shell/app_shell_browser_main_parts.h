@@ -13,6 +13,9 @@
 namespace content {
 class ShellBrowserContext;
 struct MainFunctionParams;
+}
+
+namespace shell {
 class MinimalShell;
 }
 
@@ -45,7 +48,7 @@ class AppShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<content::ShellBrowserContext> browser_context_;
 
   // Enable a minimal set of views::corewm to be initialized.
-  scoped_ptr<content::MinimalShell> minimal_shell_;
+  scoped_ptr<shell::MinimalShell> minimal_shell_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShellBrowserMainParts);
 };

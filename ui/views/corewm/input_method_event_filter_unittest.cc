@@ -12,7 +12,6 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_event_handler.h"
-#include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_windows.h"
 
 #if !defined(OS_WIN) && !defined(USE_X11)

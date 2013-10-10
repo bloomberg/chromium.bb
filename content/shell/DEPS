@@ -23,3 +23,9 @@ include_rules = [
   # For WebTestRunner library
   "+third_party/WebKit/public/testing",
 ]
+
+specific_include_rules = {
+  "shell_aura\.cc": [
+    "+ui/shell"
+  ],
+}

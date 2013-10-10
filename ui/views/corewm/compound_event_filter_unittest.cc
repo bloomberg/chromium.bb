@@ -10,7 +10,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/events/event.h"

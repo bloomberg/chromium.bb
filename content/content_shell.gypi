@@ -77,8 +77,6 @@
         'shell/app/webkit_test_platform_support_linux.cc',
         'shell/app/webkit_test_platform_support_mac.mm',
         'shell/app/webkit_test_platform_support_win.cc',
-        'shell/browser/minimal_shell.cc',
-        'shell/browser/minimal_shell.h',
         'shell/browser/notify_done_forwarder.cc',
         'shell/browser/notify_done_forwarder.h',
         'shell/browser/shell_android.cc',
@@ -233,6 +231,7 @@
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
+            '../ui/shell/shell.gyp:shell',
            ],
         }], # chromeos==1
         ['use_ash==1', {

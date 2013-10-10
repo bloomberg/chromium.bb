@@ -25,11 +25,11 @@ namespace aura {
 class RootWindow;
 class TestScreen;
 namespace client {
+class DefaultActivationClient;
 class DefaultCaptureClient;
 class FocusClient;
 }
 namespace test {
-class TestActivationClient;
 class TestStackingClient;
 
 // A helper class owned by tests that does common initialization required for
@@ -61,7 +61,7 @@ class AuraTestHelper {
   bool owns_root_window_;
   scoped_ptr<RootWindow> root_window_;
   scoped_ptr<TestStackingClient> stacking_client_;
-  scoped_ptr<TestActivationClient> test_activation_client_;
+  scoped_ptr<client::DefaultActivationClient> activation_client_;
   scoped_ptr<client::DefaultCaptureClient> capture_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
   scoped_ptr<client::FocusClient> focus_client_;

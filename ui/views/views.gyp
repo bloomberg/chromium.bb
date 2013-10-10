@@ -1036,6 +1036,7 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
+        '../shell/shell.gyp:shell',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         'views',

@@ -1,12 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_TEST_ACTIVATION_CLIENT_H_
-#define UI_AURA_TEST_TEST_ACTIVATION_CLIENT_H_
+#ifndef UI_AURA_CLIENT_DEFAULT_ACTIVATION_CLIENT_H_
+#define UI_AURA_CLIENT_DEFAULT_ACTIVATION_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "ui/aura/aura_export.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/window_observer.h"
 
@@ -16,13 +17,16 @@ namespace client {
 class ActivationChangeObserver;
 }
 
-namespace test {
+namespace client {
 
-class TestActivationClient : public client::ActivationClient,
-                             public WindowObserver {
+// Simple ActivationClient implementation for use by tests and other targets
+// that just need basic behavior (e.g. activate windows whenever requested,
+// restack windows at the top when they're activated, etc.).
+class AURA_EXPORT DefaultActivationClient : public client::ActivationClient,
+                                            public WindowObserver {
  public:
-  explicit TestActivationClient(RootWindow* root_window);
-  virtual ~TestActivationClient();
+  explicit DefaultActivationClient(RootWindow* root_window);
+  virtual ~DefaultActivationClient();
 
   // Overridden from client::ActivationClient:
   virtual void AddObserver(client::ActivationChangeObserver* observer) OVERRIDE;
@@ -54,10 +58,10 @@ class TestActivationClient : public client::ActivationClient,
 
   ObserverList<client::ActivationChangeObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestActivationClient);
+  DISALLOW_COPY_AND_ASSIGN(DefaultActivationClient);
 };
 
-}  // namespace test
+}  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_TEST_TEST_ACTIVATION_CLIENT_H_
+#endif  // UI_AURA_CLIENT_DEFAULT_ACTIVATION_CLIENT_H_

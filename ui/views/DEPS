@@ -11,3 +11,9 @@ include_rules = [
   "+ui/gfx",
   "+ui/native_theme",
 ]
+
+specific_include_rules = {
+  "examples_browser_main_parts\.cc": [
+    "+ui/shell"
+  ],
+}

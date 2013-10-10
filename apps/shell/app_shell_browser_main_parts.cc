@@ -7,11 +7,11 @@
 #include "apps/shell/web_view_window.h"
 #include "base/run_loop.h"
 #include "content/public/common/result_codes.h"
-#include "content/shell/browser/minimal_shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
+#include "ui/shell/minimal_shell.h"
 
 namespace apps {
 
@@ -42,7 +42,7 @@ void AppShellBrowserMainParts::PreMainMessageLoopRun() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
   // Set up basic pieces of views::corewm.
-  minimal_shell_.reset(new content::MinimalShell(gfx::Size(800, 600)));
+  minimal_shell_.reset(new shell::MinimalShell(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.
   minimal_shell_->root_window()->ShowRootWindow();
 

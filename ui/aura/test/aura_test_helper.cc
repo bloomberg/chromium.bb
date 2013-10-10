@@ -7,12 +7,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/default_activation_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/base/ime/dummy_input_method.h"
@@ -73,8 +73,8 @@ void AuraTestHelper::SetUp() {
   focus_client_.reset(new FocusManager);
   client::SetFocusClient(root_window_.get(), focus_client_.get());
   stacking_client_.reset(new TestStackingClient(root_window_.get()));
-  test_activation_client_.reset(
-      new test::TestActivationClient(root_window_.get()));
+  activation_client_.reset(
+      new client::DefaultActivationClient(root_window_.get()));
   capture_client_.reset(new client::DefaultCaptureClient(root_window_.get()));
   test_input_method_.reset(new ui::DummyInputMethod);
   root_window_->SetProperty(
@@ -90,7 +90,7 @@ void AuraTestHelper::TearDown() {
   teardown_called_ = true;
   test_input_method_.reset();
   stacking_client_.reset();
-  test_activation_client_.reset();
+  activation_client_.reset();
   capture_client_.reset();
   focus_client_.reset();
   root_window_.reset();

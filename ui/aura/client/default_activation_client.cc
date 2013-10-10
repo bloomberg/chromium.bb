@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/test/test_activation_client.h"
+#include "ui/aura/client/default_activation_client.h"
 
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
@@ -10,36 +10,36 @@
 #include "ui/aura/window.h"
 
 namespace aura {
-namespace test {
+namespace client {
 
 ////////////////////////////////////////////////////////////////////////////////
-// TestActivationClient, public:
+// DefaultActivationClient, public:
 
-TestActivationClient::TestActivationClient(RootWindow* root_window)
+DefaultActivationClient::DefaultActivationClient(RootWindow* root_window)
     : last_active_(NULL) {
   client::SetActivationClient(root_window, this);
 }
 
-TestActivationClient::~TestActivationClient() {
+DefaultActivationClient::~DefaultActivationClient() {
   for (unsigned int i = 0; i < active_windows_.size(); ++i) {
     active_windows_[i]->RemoveObserver(this);
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TestActivationClient, client::ActivationClient implementation:
+// DefaultActivationClient, client::ActivationClient implementation:
 
-void TestActivationClient::AddObserver(
+void DefaultActivationClient::AddObserver(
     client::ActivationChangeObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void TestActivationClient::RemoveObserver(
+void DefaultActivationClient::RemoveObserver(
     client::ActivationChangeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void TestActivationClient::ActivateWindow(Window* window) {
+void DefaultActivationClient::ActivateWindow(Window* window) {
   Window* last_active = GetActiveWindow();
   if (last_active == window)
     return;
@@ -63,7 +63,7 @@ void TestActivationClient::ActivateWindow(Window* window) {
     observer->OnWindowActivated(window, last_active);
 }
 
-void TestActivationClient::DeactivateWindow(Window* window) {
+void DefaultActivationClient::DeactivateWindow(Window* window) {
   aura::client::ActivationChangeObserver* observer =
       aura::client::GetActivationChangeObserver(window);
   if (observer)
@@ -72,33 +72,33 @@ void TestActivationClient::DeactivateWindow(Window* window) {
     ActivateWindow(last_active_);
 }
 
-Window* TestActivationClient::GetActiveWindow() {
+Window* DefaultActivationClient::GetActiveWindow() {
   if (active_windows_.empty())
     return NULL;
   return active_windows_.back();
 }
 
-Window* TestActivationClient::GetActivatableWindow(Window* window) {
+Window* DefaultActivationClient::GetActivatableWindow(Window* window) {
   return NULL;
 }
 
-Window* TestActivationClient::GetToplevelWindow(Window* window) {
+Window* DefaultActivationClient::GetToplevelWindow(Window* window) {
   return NULL;
 }
 
-bool TestActivationClient::OnWillFocusWindow(Window* window,
-                                             const ui::Event* event) {
+bool DefaultActivationClient::OnWillFocusWindow(Window* window,
+                                                const ui::Event* event) {
   return true;
 }
 
-bool TestActivationClient::CanActivateWindow(Window* window) const {
+bool DefaultActivationClient::CanActivateWindow(Window* window) const {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TestActivationClient, WindowObserver implementation:
+// DefaultActivationClient, WindowObserver implementation:
 
-void TestActivationClient::OnWindowDestroyed(Window* window) {
+void DefaultActivationClient::OnWindowDestroyed(Window* window) {
   if (window == last_active_)
     last_active_ = NULL;
 
@@ -116,7 +116,7 @@ void TestActivationClient::OnWindowDestroyed(Window* window) {
   RemoveActiveWindow(window);
 }
 
-void TestActivationClient::RemoveActiveWindow(Window* window) {
+void DefaultActivationClient::RemoveActiveWindow(Window* window) {
   for (unsigned int i = 0; i < active_windows_.size(); ++i) {
     if (active_windows_[i] == window) {
       active_windows_.erase(active_windows_.begin() + i);
@@ -126,5 +126,5 @@ void TestActivationClient::RemoveActiveWindow(Window* window) {
   }
 }
 
-}  // namespace test
+}  // namespace client
 }  // namespace aura

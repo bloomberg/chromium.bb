@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/browser/minimal_shell.h"
+#include "ui/shell/minimal_shell.h"
 
+#include "ui/aura/client/default_activation_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/test_activation_client.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 
-namespace content {
+namespace shell {
 
 MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
   aura::Env::CreateInstance();
@@ -35,8 +35,8 @@ MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
       root_window_.get());
   root_window_event_filter_->AddHandler(input_method_filter_.get());
 
-  test_activation_client_.reset(
-      new aura::test::TestActivationClient(root_window_.get()));
+  activation_client_.reset(
+      new aura::client::DefaultActivationClient(root_window_.get()));
 
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(root_window_.get()));
@@ -53,4 +53,4 @@ aura::Window* MinimalShell::GetDefaultParent(
   return root_window_.get();
 }
 
-}  // namespace content
+}  // namespace shell
