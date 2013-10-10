@@ -2452,7 +2452,17 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	if (!bo_gem)
 		return NULL;
 
-	bo_gem->bo.size = size;
+	/* Determine size of bo.  The fd-to-handle ioctl really should
+	 * return the size, but it doesn't.  If we have kernel 3.12 or
+	 * later, we can lseek on the prime fd to get the size.  Older
+	 * kernels will just fail, in which case we fall back to the
+	 * provided (estimated or guess size). */
+	ret = lseek(prime_fd, 0, SEEK_END);
+	if (ret != -1)
+		bo_gem->bo.size = ret;
+	else
+		bo_gem->bo.size = size;
+
 	bo_gem->bo.handle = handle;
 	bo_gem->bo.bufmgr = bufmgr;
 
