@@ -124,6 +124,8 @@ public:
     bool unionPath(const Path& other);
 
 private:
+    void addEllipse(const FloatPoint&, float radiusX, float radiusY, float startAngle, float endAngle, bool anticlockwise);
+
     SkPath m_path;
 };
 

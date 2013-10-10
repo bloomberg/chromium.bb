@@ -277,7 +277,7 @@ void Path::closeSubpath()
     m_path.close();
 }
 
-void Path::addArc(const FloatPoint& p, float radius, float startAngle, float endAngle, bool anticlockwise)
+void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float startAngle, float endAngle, bool anticlockwise)
 {
     ASSERT(std::abs(endAngle - startAngle) < 4 * piFloat);
     ASSERT(startAngle >= 0 && startAngle < 2 * piFloat);
@@ -285,11 +285,12 @@ void Path::addArc(const FloatPoint& p, float radius, float startAngle, float end
 
     SkScalar cx = WebCoreFloatToSkScalar(p.x());
     SkScalar cy = WebCoreFloatToSkScalar(p.y());
-    SkScalar radiusScalar = WebCoreFloatToSkScalar(radius);
+    SkScalar radiusXScalar = WebCoreFloatToSkScalar(radiusX);
+    SkScalar radiusYScalar = WebCoreFloatToSkScalar(radiusY);
     SkScalar s360 = SkIntToScalar(360);
 
     SkRect oval;
-    oval.set(cx - radiusScalar, cy - radiusScalar, cx + radiusScalar, cy + radiusScalar);
+    oval.set(cx - radiusXScalar, cy - radiusYScalar, cx + radiusXScalar, cy + radiusYScalar);
 
     float sweep = endAngle - startAngle;
     SkScalar startDegrees = WebCoreFloatToSkScalar(startAngle * 180 / piFloat);
@@ -314,6 +315,11 @@ void Path::addArc(const FloatPoint& p, float radius, float startAngle, float end
     }
 
     m_path.arcTo(oval, startDegrees, sweepDegrees, false);
+}
+
+void Path::addArc(const FloatPoint& p, float radius, float startAngle, float endAngle, bool anticlockwise)
+{
+    addEllipse(p, radius, radius, startAngle, endAngle, anticlockwise);
 }
 
 void Path::addRect(const FloatRect& rect)
@@ -343,11 +349,11 @@ void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float r
     }
 
     // Add an arc after the relevant transform.
-    AffineTransform ellipseTransform = AffineTransform::translation(p.x(), p.y()).rotate(rad2deg(rotation)).scale(radiusX, radiusY);
+    AffineTransform ellipseTransform = AffineTransform::translation(p.x(), p.y()).rotate(rad2deg(rotation));
     ASSERT(ellipseTransform.isInvertible());
     AffineTransform inverseEllipseTransform = ellipseTransform.inverse();
     transform(inverseEllipseTransform);
-    addArc(FloatPoint::zero(), 1 /* unit circle */, startAngle, endAngle, anticlockwise);
+    addEllipse(FloatPoint::zero(), radiusX, radiusY, startAngle, endAngle, anticlockwise);
     transform(ellipseTransform);
 }
 
