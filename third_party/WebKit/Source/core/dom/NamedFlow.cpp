@@ -204,16 +204,6 @@ void NamedFlow::setRenderer(RenderNamedFlowThread* parentFlowThread)
     m_parentFlowThread = parentFlowThread;
 }
 
-EventTargetData* NamedFlow::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* NamedFlow::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void NamedFlow::dispatchRegionLayoutUpdateEvent()
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());

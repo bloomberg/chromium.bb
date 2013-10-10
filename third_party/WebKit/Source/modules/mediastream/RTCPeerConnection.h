@@ -56,7 +56,7 @@ class RTCSessionDescriptionCallback;
 class RTCStatsCallback;
 class VoidCallback;
 
-class RTCPeerConnection : public RefCounted<RTCPeerConnection>, public ScriptWrappable, public RTCPeerConnectionHandlerClient, public EventTarget, public ActiveDOMObject {
+class RTCPeerConnection : public RefCounted<RTCPeerConnection>, public ScriptWrappable, public RTCPeerConnectionHandlerClient, public EventTargetWithInlineData, public ActiveDOMObject {
 public:
     static PassRefPtr<RTCPeerConnection> create(ScriptExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
     ~RTCPeerConnection();
@@ -140,11 +140,8 @@ private:
     bool hasLocalStreamWithTrackId(const String& trackId);
 
     // EventTarget implementation.
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    EventTargetData m_eventTargetData;
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void changeSignalingState(SignalingState);
     void changeIceGatheringState(IceGatheringState);

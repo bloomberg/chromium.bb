@@ -49,7 +49,7 @@ class IDBObjectStore;
 class IDBOpenDBRequest;
 struct IDBObjectStoreMetadata;
 
-class IDBTransaction : public ScriptWrappable, public RefCounted<IDBTransaction>, public EventTarget, public ActiveDOMObject {
+class IDBTransaction : public ScriptWrappable, public RefCounted<IDBTransaction>, public EventTargetWithInlineData, public ActiveDOMObject {
 public:
     static PassRefPtr<IDBTransaction> create(ScriptExecutionContext*, int64_t, const Vector<String>& objectStoreNames, IndexedDB::TransactionMode, IDBDatabase*);
     static PassRefPtr<IDBTransaction> create(ScriptExecutionContext*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
@@ -94,8 +94,8 @@ public:
     virtual void onComplete();
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     using EventTarget::dispatchEvent;
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
@@ -114,10 +114,8 @@ private:
     void enqueueEvent(PassRefPtr<Event>);
 
     // EventTarget
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     enum State {
         Inactive, // Created or started, but not in an event callback
@@ -147,8 +145,6 @@ private:
     typedef HashMap<RefPtr<IDBObjectStore>, IDBObjectStoreMetadata> IDBObjectStoreMetadataMap;
     IDBObjectStoreMetadataMap m_objectStoreCleanupMap;
     IDBDatabaseMetadata m_previousMetadata;
-
-    EventTargetData m_eventTargetData;
 };
 
 } // namespace WebCore

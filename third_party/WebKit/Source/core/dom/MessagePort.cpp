@@ -231,14 +231,4 @@ PassOwnPtr<MessagePortArray> MessagePort::entanglePorts(ScriptExecutionContext& 
     return portArray.release();
 }
 
-EventTargetData* MessagePort::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* MessagePort::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 } // namespace WebCore

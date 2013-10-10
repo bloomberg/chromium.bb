@@ -44,7 +44,7 @@ class SpeechRecognitionError;
 class SpeechRecognitionResult;
 class SpeechRecognitionResultList;
 
-class SpeechRecognition : public RefCounted<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
+class SpeechRecognition : public RefCounted<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
 public:
     static PassRefPtr<SpeechRecognition> create(ScriptExecutionContext*);
     ~SpeechRecognition();
@@ -110,16 +110,12 @@ private:
     // EventTarget
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
 
     RefPtr<SpeechGrammarList> m_grammars;
     String m_lang;
     bool m_continuous;
     bool m_interimResults;
     unsigned long m_maxAlternatives;
-
-    EventTargetData m_eventTargetData;
 
     SpeechRecognitionController* m_controller;
     bool m_stoppedByActiveDOMObject;

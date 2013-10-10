@@ -131,7 +131,7 @@ namespace WebCore {
         virtual ~EventTarget();
 
         virtual EventTargetData* eventTargetData() = 0;
-        virtual EventTargetData* ensureEventTargetData() = 0;
+        virtual EventTargetData& ensureEventTargetData() = 0;
 
     private:
         virtual void refEventTarget() = 0;
@@ -144,6 +144,14 @@ namespace WebCore {
         bool clearAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);
 
         friend class EventListenerIterator;
+    };
+
+    class EventTargetWithInlineData : public EventTarget {
+    protected:
+        virtual EventTargetData* eventTargetData() OVERRIDE FINAL { return &m_eventTargetData; }
+        virtual EventTargetData& ensureEventTargetData() OVERRIDE FINAL { return m_eventTargetData; }
+    private:
+        EventTargetData m_eventTargetData;
     };
 
     // FIXME: These macros should be split into separate DEFINE and DECLARE

@@ -421,14 +421,4 @@ PassRefPtr<MessageEvent> EventSource::createMessageEvent()
     return event.release();
 }
 
-EventTargetData* EventSource::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* EventSource::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 } // namespace WebCore

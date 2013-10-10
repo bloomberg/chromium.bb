@@ -143,16 +143,6 @@ void RTCDTMFSender::stop()
     m_handler->setClient(0);
 }
 
-EventTargetData* RTCDTMFSender::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* RTCDTMFSender::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void RTCDTMFSender::scheduleDispatchEvent(PassRefPtr<Event> event)
 {
     m_scheduledEvents.append(event);

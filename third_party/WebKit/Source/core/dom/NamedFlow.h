@@ -45,7 +45,7 @@ class NodeList;
 class RenderNamedFlowThread;
 class ScriptExecutionContext;
 
-class NamedFlow : public RefCounted<NamedFlow>, public ScriptWrappable, public EventTarget {
+class NamedFlow : public RefCounted<NamedFlow>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
     static PassRefPtr<NamedFlow> create(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName);
 
@@ -61,8 +61,8 @@ public:
     using RefCounted<NamedFlow>::ref;
     using RefCounted<NamedFlow>::deref;
 
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     // This function is called from the JS binding code to determine if the NamedFlow object is reachable or not.
     // If the object has listeners, the object should only be discarded if the parent Document is not reachable.
@@ -84,19 +84,14 @@ private:
     NamedFlow(PassRefPtr<NamedFlowCollection>, const AtomicString&);
 
     // EventTarget implementation.
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     // The name of the flow thread as specified in CSS.
     AtomicString m_flowThreadName;
 
     RefPtr<NamedFlowCollection> m_flowManager;
     RenderNamedFlowThread* m_parentFlowThread;
-
-    EventTargetData m_eventTargetData;
 };
 
 }

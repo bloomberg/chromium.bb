@@ -43,7 +43,7 @@ class ExceptionState;
 class MediaStreamComponent;
 class MediaStreamTrackSourcesCallback;
 
-class MediaStreamTrack : public RefCounted<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTarget, public MediaStreamSource::Observer {
+class MediaStreamTrack : public RefCounted<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MediaStreamSource::Observer {
 public:
     static PassRefPtr<MediaStreamTrack> create(ScriptExecutionContext*, MediaStreamComponent*);
     virtual ~MediaStreamTrack();
@@ -83,11 +83,8 @@ private:
     MediaStreamTrack(ScriptExecutionContext*, MediaStreamComponent*);
 
     // EventTarget
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    EventTargetData m_eventTargetData;
 
     // MediaStreamSourceObserver
     virtual void sourceChangedState() OVERRIDE;

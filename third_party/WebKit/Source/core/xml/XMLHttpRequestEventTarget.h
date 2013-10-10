@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class XMLHttpRequestEventTarget : public EventTarget {
+class XMLHttpRequestEventTarget : public EventTargetWithInlineData {
 public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
@@ -44,13 +44,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(timeout);
-
-protected:
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
-
-private:
-    EventTargetData m_eventTargetData;
 };
 
 } // namespace WebCore

@@ -50,7 +50,7 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
+class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
 public:
     static const char* subProtocolSeperator();
     static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, ExceptionState&);
@@ -133,10 +133,8 @@ private:
     // to drop the reference for protection asynchronously.
     void dropProtection(Timer<WebSocket>*);
 
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     size_t getFramingOverhead(size_t payloadSize);
 
@@ -157,7 +155,6 @@ private:
 
     State m_state;
     KURL m_url;
-    EventTargetData m_eventTargetData;
     unsigned long m_bufferedAmount;
     unsigned long m_bufferedAmountAfterClose;
     BinaryType m_binaryType;

@@ -43,7 +43,7 @@ class ExceptionState;
 class HTMLMediaElement;
 class ScriptExecutionContext;
 
-class MediaController : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTarget {
+class MediaController : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTargetWithInlineData {
 public:
     static PassRefPtr<MediaController> create(ScriptExecutionContext*);
     virtual ~MediaController();
@@ -125,13 +125,10 @@ private:
     void startTimeupdateTimer();
 
     // EventTarget
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return m_scriptExecutionContext; };
-    virtual EventTargetData* eventTargetData() { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() { return &m_eventTargetData; }
-    EventTargetData m_eventTargetData;
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return m_scriptExecutionContext; }
 
     friend class HTMLMediaElement;
     friend class MediaControllerEventListener;

@@ -40,7 +40,7 @@ class MediaStreamTrack;
 class RTCDTMFSenderHandler;
 class RTCPeerConnectionHandler;
 
-class RTCDTMFSender : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTarget, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
+class RTCDTMFSender : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
 public:
     static PassRefPtr<RTCDTMFSender> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
     ~RTCDTMFSender();
@@ -74,11 +74,8 @@ private:
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
 
     // EventTarget
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    EventTargetData m_eventTargetData;
 
     // RTCDTMFSenderHandlerClient
     virtual void didPlayTone(const String&) OVERRIDE;

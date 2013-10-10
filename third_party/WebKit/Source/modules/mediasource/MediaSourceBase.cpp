@@ -303,16 +303,6 @@ ScriptExecutionContext* MediaSourceBase::scriptExecutionContext() const
     return ActiveDOMObject::scriptExecutionContext();
 }
 
-EventTargetData* MediaSourceBase::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* MediaSourceBase::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 URLRegistry& MediaSourceBase::registry() const
 {
     return MediaSourceRegistry::registry();

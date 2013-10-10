@@ -59,7 +59,7 @@ class ResourceResponse;
 class ScriptExecutionContext;
 class ThreadableLoader;
 
-class Notification : public RefCounted<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
+class Notification : public RefCounted<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     Notification();
@@ -115,9 +115,9 @@ public:
     using RefCounted<Notification>::deref;
 
     // EventTarget interface
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return ActiveDOMObject::scriptExecutionContext(); }
-    virtual bool dispatchEvent(PassRefPtr<Event>);
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
+    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
     // ActiveDOMObject interface
     virtual void contextDestroyed();
@@ -142,10 +142,8 @@ private:
     void setBody(const String& body) { m_body = body; }
 
     // EventTarget interface
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void startLoadingIcon();
     void finishLoadingIcon();
@@ -170,8 +168,6 @@ private:
     NotificationState m_state;
 
     NotificationClient* m_notificationClient;
-
-    EventTargetData m_eventTargetData;
 
     OwnPtr<Timer<Notification> > m_taskTimer;
 };

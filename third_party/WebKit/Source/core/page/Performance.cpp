@@ -248,16 +248,6 @@ bool Performance::isResourceTimingBufferFull()
     return m_resourceTimingBuffer.size() >= m_resourceTimingBufferSize;
 }
 
-EventTargetData* Performance::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* Performance::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void Performance::mark(const String& markName, ExceptionState& es)
 {
     if (!m_userTiming)

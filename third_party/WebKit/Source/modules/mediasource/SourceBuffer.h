@@ -54,7 +54,7 @@ class MediaSource;
 class Stream;
 class TimeRanges;
 
-class SourceBuffer : public RefCounted<SourceBuffer>, public ActiveDOMObject, public EventTarget, public ScriptWrappable, public FileReaderLoaderClient {
+class SourceBuffer : public RefCounted<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public ScriptWrappable, public FileReaderLoaderClient {
 public:
     static PassRefPtr<SourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, MediaSource*, GenericEventQueue*);
 
@@ -92,8 +92,6 @@ public:
 
 protected:
     // EventTarget interface
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
@@ -122,7 +120,6 @@ private:
     OwnPtr<SourceBufferPrivate> m_private;
     MediaSource* m_source;
     GenericEventQueue* m_asyncEventQueue;
-    EventTargetData m_eventTargetData;
 
     bool m_updating;
     double m_timestampOffset;

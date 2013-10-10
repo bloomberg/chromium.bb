@@ -635,8 +635,8 @@ public:
 
     virtual Node* toNode();
 
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
     virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
@@ -676,8 +676,8 @@ public:
     using TreeShared<Node>::ref;
     using TreeShared<Node>::deref;
 
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
+    virtual EventTargetData* eventTargetData() OVERRIDE;
+    virtual EventTargetData& ensureEventTargetData() OVERRIDE;
 
     void getRegisteredMutationObserversOfType(HashMap<MutationObserver*, MutationRecordDeliveryOptions>&, MutationObserver::MutationType, const QualifiedName* attributeName);
     void registerMutationObserver(MutationObserver*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
@@ -833,8 +833,8 @@ private:
     // Used to share code between lazyAttach and setNeedsStyleRecalc.
     void markAncestorsWithChildNeedsStyleRecalc();
 
-    virtual void refEventTarget();
-    virtual void derefEventTarget();
+    virtual void refEventTarget() OVERRIDE;
+    virtual void derefEventTarget() OVERRIDE;
 
     virtual RenderStyle* nonRendererStyle() const { return 0; }
 

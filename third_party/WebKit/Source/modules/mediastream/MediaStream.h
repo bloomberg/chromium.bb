@@ -40,7 +40,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTarget, public ContextLifecycleObserver {
+class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver {
 public:
     static PassRefPtr<MediaStream> create(ScriptExecutionContext*);
     static PassRefPtr<MediaStream> create(ScriptExecutionContext*, PassRefPtr<MediaStream>);
@@ -86,10 +86,6 @@ public:
 protected:
     MediaStream(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
 
-    // EventTarget
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
-
     // ContextLifecycleObserver
     virtual void contextDestroyed();
 
@@ -106,8 +102,6 @@ private:
     void scheduledEventTimerFired(Timer<MediaStream>*);
 
     bool m_stopped;
-
-    EventTargetData m_eventTargetData;
 
     MediaStreamTrackVector m_audioTracks;
     MediaStreamTrackVector m_videoTracks;

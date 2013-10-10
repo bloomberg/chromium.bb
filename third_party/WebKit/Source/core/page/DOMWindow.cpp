@@ -1543,16 +1543,6 @@ void DOMWindow::finishedLoading()
     }
 }
 
-EventTargetData* DOMWindow::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* DOMWindow::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void DOMWindow::setLocation(const String& urlString, DOMWindow* activeWindow, DOMWindow* firstWindow, SetLocationLocking locking)
 {
     if (!isCurrentlyDisplayedInFrame())

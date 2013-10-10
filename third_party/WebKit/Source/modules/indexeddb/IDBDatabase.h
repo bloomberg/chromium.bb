@@ -47,7 +47,7 @@ class DOMError;
 class ExceptionState;
 class ScriptExecutionContext;
 
-class IDBDatabase : public RefCounted<IDBDatabase>, public ScriptWrappable, public EventTarget, public ActiveDOMObject {
+class IDBDatabase : public RefCounted<IDBDatabase>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
 public:
     static PassRefPtr<IDBDatabase> create(ScriptExecutionContext*, PassRefPtr<IDBDatabaseBackendInterface>, PassRefPtr<IDBDatabaseCallbacks>);
     ~IDBDatabase();
@@ -86,8 +86,8 @@ public:
     virtual void stop() OVERRIDE;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     bool isClosePending() const { return m_closePending; }
     void forceClose();
@@ -128,10 +128,8 @@ private:
     IDBDatabase(ScriptExecutionContext*, PassRefPtr<IDBDatabaseBackendInterface>, PassRefPtr<IDBDatabaseCallbacks>);
 
     // EventTarget
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void closeConnection();
 
@@ -143,8 +141,6 @@ private:
 
     bool m_closePending;
     bool m_contextStopped;
-
-    EventTargetData m_eventTargetData;
 
     // Keep track of the versionchange events waiting to be fired on this
     // database so that we can cancel them if the database closes.

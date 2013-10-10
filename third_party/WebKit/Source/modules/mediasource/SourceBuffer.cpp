@@ -382,16 +382,6 @@ const AtomicString& SourceBuffer::interfaceName() const
     return eventNames().interfaceForSourceBuffer;
 }
 
-EventTargetData* SourceBuffer::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* SourceBuffer::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 bool SourceBuffer::isRemoved() const
 {
     return !m_source;

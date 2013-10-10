@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-class MIDIPort : public RefCounted<MIDIPort>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
+class MIDIPort : public RefCounted<MIDIPort>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
 public:
     enum MIDIPortTypeCode {
         MIDIPortTypeInput,
@@ -75,15 +75,12 @@ private:
     // EventTarget
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
 
     String m_id;
     String m_manufacturer;
     String m_name;
     MIDIPortTypeCode m_type;
     String m_version;
-    EventTargetData m_eventTargetData;
 };
 
 typedef Vector<RefPtr<MIDIPort> > MIDIPortVector;

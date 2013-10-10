@@ -51,7 +51,7 @@ class MediaKeys;
 // it may outlive any references to it as long as the MediaKeys object is alive.
 // The ContentDecryptionModuleSession has the same lifetime as this object.
 class MediaKeySession
-    : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTarget, public ContextLifecycleObserver
+    : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTargetWithInlineData, public ContextLifecycleObserver
     , private ContentDecryptionModuleSessionClient {
 public:
     static PassRefPtr<MediaKeySession> create(ScriptExecutionContext*, ContentDecryptionModule*, MediaKeys*);
@@ -110,11 +110,6 @@ private:
 private:
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
-
-    EventTargetData m_eventTargetData;
 };
 
 }

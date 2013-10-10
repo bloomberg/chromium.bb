@@ -2104,14 +2104,14 @@ EventTargetData* Node::eventTargetData()
     return hasEventTargetData() ? eventTargetDataMap().get(this) : 0;
 }
 
-EventTargetData* Node::ensureEventTargetData()
+EventTargetData& Node::ensureEventTargetData()
 {
     if (hasEventTargetData())
-        return eventTargetDataMap().get(this);
+        return *eventTargetDataMap().get(this);
     setHasEventTargetData(true);
     EventTargetData* data = new EventTargetData;
     eventTargetDataMap().set(this, adoptPtr(data));
-    return data;
+    return *data;
 }
 
 void Node::clearEventTargetData()

@@ -47,7 +47,7 @@ class Blob;
 class ExceptionState;
 class ScriptExecutionContext;
 
-class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTarget, public WebKit::WebFileWriterClient {
+class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebKit::WebFileWriterClient {
 public:
     static PassRefPtr<FileWriter> create(ScriptExecutionContext*);
 
@@ -74,8 +74,8 @@ public:
     virtual void stop();
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return ActiveDOMObject::scriptExecutionContext(); }
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
 
     using RefCounted<FileWriterBase>::ref;
     using RefCounted<FileWriterBase>::deref;
@@ -100,10 +100,8 @@ private:
     virtual ~FileWriter();
 
     // EventTarget
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData() { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() { return &m_eventTargetData; }
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void completeAbort();
 
@@ -116,7 +114,6 @@ private:
     void setError(FileError::ErrorCode, ExceptionState&);
 
     RefPtr<FileError> m_error;
-    EventTargetData m_eventTargetData;
     ReadyState m_readyState;
     Operation m_operationInProgress;
     Operation m_queuedOperation;

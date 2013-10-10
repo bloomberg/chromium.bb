@@ -537,14 +537,4 @@ void IDBRequest::enqueueEvent(PassRefPtr<Event> event)
         m_enqueuedEvents.append(event);
 }
 
-EventTargetData* IDBRequest::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* IDBRequest::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 } // namespace WebCore

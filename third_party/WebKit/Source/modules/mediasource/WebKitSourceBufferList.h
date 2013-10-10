@@ -41,7 +41,7 @@ namespace WebCore {
 class WebKitSourceBuffer;
 class GenericEventQueue;
 
-class WebKitSourceBufferList : public RefCounted<WebKitSourceBufferList>, public ScriptWrappable, public EventTarget {
+class WebKitSourceBufferList : public RefCounted<WebKitSourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
     static PassRefPtr<WebKitSourceBufferList> create(ScriptExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
@@ -63,10 +63,6 @@ public:
     using RefCounted<WebKitSourceBufferList>::ref;
     using RefCounted<WebKitSourceBufferList>::deref;
 
-protected:
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
-
 private:
     WebKitSourceBufferList(ScriptExecutionContext*, GenericEventQueue*);
 
@@ -75,7 +71,6 @@ private:
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
-    EventTargetData m_eventTargetData;
     ScriptExecutionContext* m_scriptExecutionContext;
     GenericEventQueue* m_asyncEventQueue;
 

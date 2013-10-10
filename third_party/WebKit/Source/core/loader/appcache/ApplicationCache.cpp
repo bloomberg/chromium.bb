@@ -127,14 +127,4 @@ const AtomicString& ApplicationCache::toEventType(ApplicationCacheHost::EventID 
     return EventTypeNames::error;
 }
 
-EventTargetData* ApplicationCache::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* ApplicationCache::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 } // namespace WebCore

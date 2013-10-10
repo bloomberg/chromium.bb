@@ -269,16 +269,6 @@ ScriptExecutionContext* MediaStream::scriptExecutionContext() const
     return ContextLifecycleObserver::scriptExecutionContext();
 }
 
-EventTargetData* MediaStream::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* MediaStream::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 {
     ASSERT(component && !component->stream());

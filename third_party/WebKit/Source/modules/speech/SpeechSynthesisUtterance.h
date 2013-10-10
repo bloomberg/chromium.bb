@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class SpeechSynthesisUtterance : public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public RefCounted<SpeechSynthesisUtterance>, public ContextLifecycleObserver, public EventTarget {
+class SpeechSynthesisUtterance : public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public RefCounted<SpeechSynthesisUtterance>, public ContextLifecycleObserver, public EventTargetWithInlineData {
 public:
     static PassRefPtr<SpeechSynthesisUtterance> create(ScriptExecutionContext*, const String&);
 
@@ -84,13 +84,9 @@ private:
     RefPtr<SpeechSynthesisVoice> m_voice;
 
     // EventTarget
-    EventTargetData m_eventTargetData;
-
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
 };
 
 } // namespace WebCore

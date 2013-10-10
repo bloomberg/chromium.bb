@@ -42,7 +42,7 @@ class ExceptionState;
 class RTCDataChannelHandler;
 class RTCPeerConnectionHandler;
 
-class RTCDataChannel : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTarget, public RTCDataChannelHandlerClient {
+class RTCDataChannel : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDataChannelHandlerClient {
 public:
     static PassRefPtr<RTCDataChannel> create(ScriptExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
     static PassRefPtr<RTCDataChannel> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, const String& label, const WebKit::WebRTCDataChannelInit&, ExceptionState&);
@@ -93,11 +93,8 @@ private:
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
     // EventTarget
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    EventTargetData m_eventTargetData;
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
     ScriptExecutionContext* m_scriptExecutionContext;
 
     // RTCDataChannelHandlerClient

@@ -264,16 +264,6 @@ bool WorkerGlobalScope::isJSExecutionForbidden() const
     return m_script->isExecutionForbidden();
 }
 
-EventTargetData* WorkerGlobalScope::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* WorkerGlobalScope::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 WorkerGlobalScope::Observer::Observer(WorkerGlobalScope* context)
     : m_context(context)
 {

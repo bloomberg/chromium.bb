@@ -74,7 +74,7 @@ class WaveShaperNode;
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
-class AudioContext : public ActiveDOMObject, public ScriptWrappable, public ThreadSafeRefCounted<AudioContext>, public EventTarget {
+class AudioContext : public ActiveDOMObject, public ScriptWrappable, public ThreadSafeRefCounted<AudioContext>, public EventTargetWithInlineData {
 public:
     // Create an AudioContext for rendering to the audio hardware.
     static PassRefPtr<AudioContext> create(Document*);
@@ -233,10 +233,8 @@ public:
     void removeMarkedSummingJunction(AudioSummingJunction*);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
-    virtual EventTargetData* eventTargetData() { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() { return &m_eventTargetData; }
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
 
@@ -333,9 +331,8 @@ private:
     RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 
     // EventTarget
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    EventTargetData m_eventTargetData;
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     RefPtr<AudioBuffer> m_renderTarget;
 

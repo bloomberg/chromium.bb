@@ -166,16 +166,6 @@ Document* FontFaceSet::document() const
     return toDocument(scriptExecutionContext());
 }
 
-EventTargetData* FontFaceSet::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* FontFaceSet::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 const AtomicString& FontFaceSet::interfaceName() const
 {
     return eventNames().interfaceForFontFaceSet;

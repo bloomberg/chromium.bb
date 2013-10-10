@@ -277,16 +277,6 @@ void RTCDataChannel::stop()
     m_scriptExecutionContext = 0;
 }
 
-EventTargetData* RTCDataChannel::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* RTCDataChannel::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void RTCDataChannel::scheduleDispatchEvent(PassRefPtr<Event> event)
 {
     m_scheduledEvents.append(event);

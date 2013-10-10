@@ -102,14 +102,4 @@ ScriptExecutionContext* WebKitSourceBufferList::scriptExecutionContext() const
     return m_scriptExecutionContext;
 }
 
-EventTargetData* WebKitSourceBufferList::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* WebKitSourceBufferList::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 } // namespace WebCore

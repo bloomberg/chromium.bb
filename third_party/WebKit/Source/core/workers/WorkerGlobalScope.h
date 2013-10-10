@@ -58,7 +58,7 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ScriptExecutionContext, public WorkerSupplementable, public EventTarget {
+    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ScriptExecutionContext, public WorkerSupplementable, public EventTargetWithInlineData {
     public:
         virtual ~WorkerGlobalScope();
 
@@ -149,8 +149,6 @@ namespace WebCore {
 
         virtual void refEventTarget() OVERRIDE { ref(); }
         virtual void derefEventTarget() OVERRIDE { deref(); }
-        virtual EventTargetData* eventTargetData() OVERRIDE;
-        virtual EventTargetData* ensureEventTargetData() OVERRIDE;
 
         virtual const KURL& virtualURL() const OVERRIDE;
         virtual KURL virtualCompleteURL(const String&) const;
@@ -172,7 +170,6 @@ namespace WebCore {
         mutable RefPtr<DOMURL> m_domURL;
         OwnPtr<WorkerInspectorController> m_workerInspectorController;
         bool m_closing;
-        EventTargetData m_eventTargetData;
 
         HashSet<Observer*> m_workerObservers;
 

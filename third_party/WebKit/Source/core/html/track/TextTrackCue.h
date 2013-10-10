@@ -69,7 +69,7 @@ protected:
 
 // ----------------------------
 
-class TextTrackCue : public RefCounted<TextTrackCue>, public ScriptWrappable, public EventTarget {
+class TextTrackCue : public RefCounted<TextTrackCue>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
     static PassRefPtr<TextTrackCue> create(ScriptExecutionContext* context, double start, double end, const String& content)
     {
@@ -150,8 +150,8 @@ public:
 
     int calculateComputedLinePosition();
 
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     std::pair<double, double> getCSSPosition() const;
 
@@ -199,9 +199,6 @@ public:
     using RefCounted<TextTrackCue>::deref;
 
 protected:
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
-
     TextTrackCue(ScriptExecutionContext*, double start, double end, const String& content);
 
     Document* ownerDocument() { return toDocument(m_scriptExecutionContext); }
@@ -222,8 +219,8 @@ private:
     void cueWillChange();
     void cueDidChange();
 
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     enum CueSetting {
         None,
@@ -256,7 +253,6 @@ private:
     RefPtr<DocumentFragment> m_webVTTNodeTree;
     TextTrack* m_track;
 
-    EventTargetData m_eventTargetData;
     ScriptExecutionContext* m_scriptExecutionContext;
 
     bool m_isActive;

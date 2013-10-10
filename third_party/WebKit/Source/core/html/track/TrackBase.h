@@ -33,15 +33,15 @@ namespace WebCore {
 
 class ScriptExecutionContext;
 
-class TrackBase : public RefCounted<TrackBase>, public EventTarget {
+class TrackBase : public RefCounted<TrackBase>, public EventTargetWithInlineData {
 public:
     virtual ~TrackBase();
 
     enum Type { BaseTrack, TextTrack, AudioTrack, VideoTrack };
     Type type() const { return m_type; }
 
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     using RefCounted<TrackBase>::ref;
     using RefCounted<TrackBase>::deref;
@@ -49,17 +49,13 @@ public:
 protected:
     TrackBase(ScriptExecutionContext*, Type);
 
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
-
 private:
     Type m_type;
 
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     ScriptExecutionContext* m_scriptExecutionContext;
-    EventTargetData m_eventTargetData;
 };
 
 } // namespace WebCore

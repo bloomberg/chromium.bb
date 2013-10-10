@@ -1213,16 +1213,6 @@ ScriptExecutionContext* TextTrackCue::scriptExecutionContext() const
     return m_scriptExecutionContext;
 }
 
-EventTargetData* TextTrackCue::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* TextTrackCue::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 bool TextTrackCue::operator==(const TextTrackCue& cue) const
 {
     if (cueType() != cue.cueType())

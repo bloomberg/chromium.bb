@@ -47,7 +47,7 @@ class ExceptionState;
 class KURL;
 class ScriptExecutionContext;
 
-class AbstractWorker : public RefCounted<AbstractWorker>, public EventTarget, public ActiveDOMObject {
+class AbstractWorker : public RefCounted<AbstractWorker>, public EventTargetWithInlineData, public ActiveDOMObject {
 public:
     // EventTarget APIs
     virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
@@ -69,10 +69,6 @@ protected:
 private:
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
-
-    EventTargetData m_eventTargetData;
 };
 
 } // namespace WebCore

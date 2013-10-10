@@ -83,8 +83,7 @@ inline DOMWindow* EventTarget::executingWindow()
 
 bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
-    EventTargetData* d = ensureEventTargetData();
-    return d->eventListenerMap.add(eventType, listener, useCapture);
+    return ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture);
 }
 
 bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)

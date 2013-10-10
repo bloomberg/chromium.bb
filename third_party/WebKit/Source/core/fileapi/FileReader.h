@@ -47,7 +47,7 @@ class Blob;
 class ExceptionState;
 class ScriptExecutionContext;
 
-class FileReader : public RefCounted<FileReader>, public ScriptWrappable, public ActiveDOMObject, public EventTarget, public FileReaderLoaderClient {
+class FileReader : public RefCounted<FileReader>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient {
 public:
     static PassRefPtr<FileReader> create(ScriptExecutionContext*);
 
@@ -79,8 +79,8 @@ public:
     virtual void stop();
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return ActiveDOMObject::scriptExecutionContext(); }
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
 
     // FileReaderLoaderClient
     virtual void didStartLoading();
@@ -102,10 +102,8 @@ private:
     FileReader(ScriptExecutionContext*);
 
     // EventTarget
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData() { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() { return &m_eventTargetData; }
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void terminate();
     void readInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);
@@ -122,8 +120,6 @@ private:
         LoadingStateAborted
     };
     LoadingState m_loadingState;
-
-    EventTargetData m_eventTargetData;
 
     RefPtr<Blob> m_blob;
     FileReaderLoader::ReadType m_readType;

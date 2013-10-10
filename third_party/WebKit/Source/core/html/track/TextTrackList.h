@@ -40,7 +40,7 @@ class HTMLMediaElement;
 class TextTrack;
 class TextTrackList;
 
-class TextTrackList : public RefCounted<TextTrackList>, public ScriptWrappable, public EventTarget {
+class TextTrackList : public RefCounted<TextTrackList>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
     static PassRefPtr<TextTrackList> create(HTMLMediaElement* owner, ScriptExecutionContext* context)
     {
@@ -58,10 +58,10 @@ public:
     void remove(TextTrack*);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
     using RefCounted<TextTrackList>::ref;
     using RefCounted<TextTrackList>::deref;
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return m_context; }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return m_context; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
 
@@ -74,10 +74,8 @@ private:
     TextTrackList(HTMLMediaElement*, ScriptExecutionContext*);
 
     // EventTarget
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData() { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() { return &m_eventTargetData; }
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void scheduleAddTrackEvent(PassRefPtr<TextTrack>);
     void asyncEventTimerFired(Timer<TextTrackList>*);
@@ -90,7 +88,6 @@ private:
     Vector<RefPtr<Event> > m_pendingEvents;
     Timer<TextTrackList> m_pendingEventTimer;
 
-    EventTargetData m_eventTargetData;
     Vector<RefPtr<TextTrack> > m_addTrackTracks;
     Vector<RefPtr<TextTrack> > m_elementTracks;
     Vector<RefPtr<TextTrack> > m_inbandTracks;

@@ -49,7 +49,7 @@ class ScriptExecutionContext;
 // The overwhelmingly common case is sending a single port, so handle that efficiently with an inline buffer of size 1.
 typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 
-class MessagePort : public RefCounted<MessagePort>, public ScriptWrappable, public EventTarget {
+class MessagePort : public RefCounted<MessagePort>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
     static PassRefPtr<MessagePort> create(ScriptExecutionContext& scriptExecutionContext) { return adoptRef(new MessagePort(scriptExecutionContext)); }
     virtual ~MessagePort();
@@ -102,8 +102,6 @@ private:
 
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
 
     RefPtr<MessagePortChannel> m_entangledChannel;
 
@@ -111,7 +109,6 @@ private:
     bool m_closed;
 
     ScriptExecutionContext* m_scriptExecutionContext;
-    EventTargetData m_eventTargetData;
 };
 
 } // namespace WebCore

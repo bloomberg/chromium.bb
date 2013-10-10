@@ -638,16 +638,6 @@ void RTCPeerConnection::stop()
         (*i)->stop();
 }
 
-EventTargetData* RTCPeerConnection::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* RTCPeerConnection::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void RTCPeerConnection::changeSignalingState(SignalingState signalingState)
 {
     if (m_signalingState != SignalingStateClosed && m_signalingState != signalingState) {

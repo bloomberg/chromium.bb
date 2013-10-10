@@ -47,7 +47,7 @@ namespace WebCore {
 class ScriptExecutionContext;
 class MIDIAccessPromise;
 
-class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTarget, public MIDIAccessorClient {
+class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
 public:
     virtual ~MIDIAccess();
     static PassRefPtr<MIDIAccess> create(ScriptExecutionContext*, MIDIAccessPromise*);
@@ -90,12 +90,9 @@ private:
     // EventTarget
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
 
     MIDIInputVector m_inputs;
     MIDIOutputVector m_outputs;
-    EventTargetData m_eventTargetData;
     MIDIAccessPromise* m_promise;
 
     OwnPtr<MIDIAccessor> m_accessor;

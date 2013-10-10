@@ -81,7 +81,7 @@ namespace WebCore {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTarget, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext {
+    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext {
     public:
         static PassRefPtr<DOMWindow> create(Frame* frame) { return adoptRef(new DOMWindow(frame)); }
         virtual ~DOMWindow();
@@ -95,8 +95,8 @@ namespace WebCore {
         // the network load. See also SecurityContext::isSecureTransitionTo.
         void setDocument(PassRefPtr<Document>);
 
-        virtual const AtomicString& interfaceName() const;
-        virtual ScriptExecutionContext* scriptExecutionContext() const;
+        virtual const AtomicString& interfaceName() const OVERRIDE;
+        virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
         virtual DOMWindow* toDOMWindow();
 
@@ -247,9 +247,9 @@ namespace WebCore {
 
         // Events
         // EventTarget API
-        virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
-        virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
-        virtual void removeAllEventListeners();
+        virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture) OVERRIDE;
+        virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture) OVERRIDE;
+        virtual void removeAllEventListeners() OVERRIDE;
 
         using EventTarget::dispatchEvent;
         bool dispatchEvent(PassRefPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget);
@@ -392,10 +392,8 @@ namespace WebCore {
         virtual void frameDestroyed() OVERRIDE;
         virtual void willDetachPage() OVERRIDE;
 
-        virtual void refEventTarget() { ref(); }
-        virtual void derefEventTarget() { deref(); }
-        virtual EventTargetData* eventTargetData();
-        virtual EventTargetData* ensureEventTargetData();
+        virtual void refEventTarget() OVERRIDE { ref(); }
+        virtual void derefEventTarget() OVERRIDE { deref(); }
 
         void resetDOMWindowProperties();
         void willDestroyDocumentInFrame();
@@ -418,8 +416,6 @@ namespace WebCore {
         mutable RefPtr<Navigator> m_navigator;
         mutable RefPtr<Location> m_location;
         mutable RefPtr<StyleMedia> m_media;
-
-        EventTargetData m_eventTargetData;
 
         String m_status;
         String m_defaultStatus;

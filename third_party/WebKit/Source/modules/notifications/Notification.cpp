@@ -167,16 +167,6 @@ void Notification::close()
     }
 }
 
-EventTargetData* Notification::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* Notification::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void Notification::contextDestroyed()
 {
     ActiveDOMObject::contextDestroyed();

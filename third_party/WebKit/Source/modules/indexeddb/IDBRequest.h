@@ -48,7 +48,7 @@ class ExceptionState;
 class IDBTransaction;
 class SharedBuffer;
 
-class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTarget, public ActiveDOMObject {
+class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTargetWithInlineData, public ActiveDOMObject {
 public:
     static PassRefPtr<IDBRequest> create(ScriptExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     static PassRefPtr<IDBRequest> create(ScriptExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
@@ -93,9 +93,9 @@ public:
     virtual void stop() OVERRIDE;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
-    virtual void uncaughtExceptionInEventHandler();
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual void uncaughtExceptionInEventHandler() OVERRIDE;
 
     using EventTarget::dispatchEvent;
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
@@ -134,14 +134,11 @@ protected:
 
 private:
     // EventTarget
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void setResultCursor(PassRefPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
     void checkForReferenceCycle();
-
 
     RefPtr<IDBAny> m_source;
     const IDBDatabaseBackendInterface::TaskType m_taskType;
@@ -159,7 +156,6 @@ private:
     bool m_didFireUpgradeNeededEvent;
     bool m_preventPropagation;
 
-    EventTargetData m_eventTargetData;
     DOMRequestState m_requestState;
 };
 

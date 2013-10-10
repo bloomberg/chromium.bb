@@ -49,15 +49,5 @@ ScriptExecutionContext* TrackBase::scriptExecutionContext() const
     return m_scriptExecutionContext;
 }
 
-EventTargetData* TrackBase::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* TrackBase::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 } // namespace WebCore
 

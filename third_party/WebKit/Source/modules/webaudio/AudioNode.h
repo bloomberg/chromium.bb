@@ -50,7 +50,7 @@ class ExceptionState;
 // An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
-class AudioNode : public ScriptWrappable, public EventTarget {
+class AudioNode : public ScriptWrappable, public EventTargetWithInlineData {
 public:
     enum { ProcessingSizeInFrames = 128 };
 
@@ -182,8 +182,6 @@ public:
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
 
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.
@@ -205,8 +203,6 @@ private:
     float m_sampleRate;
     Vector<OwnPtr<AudioNodeInput> > m_inputs;
     Vector<OwnPtr<AudioNodeOutput> > m_outputs;
-
-    EventTargetData m_eventTargetData;
 
     double m_lastProcessingTime;
     double m_lastNonSilentTime;
