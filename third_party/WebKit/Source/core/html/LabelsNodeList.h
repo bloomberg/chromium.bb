@@ -30,17 +30,18 @@
 
 namespace WebCore {
 
-class LabelsNodeList : public LiveNodeList {
+class LabelsNodeList FINAL : public LiveNodeList {
 public:
-    static PassRefPtr<LabelsNodeList> create(Node* forNode, CollectionType type, const AtomicString&)
+    static PassRefPtr<LabelsNodeList> create(Node* ownerNode, CollectionType type, const AtomicString&)
     {
         ASSERT_UNUSED(type, type == LabelsNodeListType);
-        return adoptRef(new LabelsNodeList(forNode));
+        return adoptRef(new LabelsNodeList(ownerNode));
     }
-    ~LabelsNodeList();
+
+    virtual ~LabelsNodeList();
 
 protected:
-    LabelsNodeList(Node* forNode);
+    explicit LabelsNodeList(Node*);
 
     virtual bool nodeMatches(Element*) const;
 };

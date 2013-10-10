@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class NamedNodesCollection : public NodeList {
+class NamedNodesCollection FINAL : public NodeList {
 public:
     static PassRefPtr<NodeList> create(const Vector<RefPtr<Node> >& nodes)
     {

@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class ClassNodeList : public LiveNodeList {
+class ClassNodeList FINAL : public LiveNodeList {
 public:
     static PassRefPtr<ClassNodeList> create(PassRefPtr<Node> rootNode, const String& classNames)
     {
@@ -51,7 +51,7 @@ public:
 private:
     ClassNodeList(PassRefPtr<Node> rootNode, const String& classNames);
 
-    virtual bool nodeMatches(Element*) const;
+    virtual bool nodeMatches(Element*) const OVERRIDE;
 
     SpaceSplitString m_classNames;
     String m_originalClassNames;

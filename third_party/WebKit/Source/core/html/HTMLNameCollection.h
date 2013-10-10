@@ -31,7 +31,7 @@ namespace WebCore {
 
 class Document;
 
-class HTMLNameCollection : public HTMLCollection {
+class HTMLNameCollection FINAL : public HTMLCollection {
 public:
     static PassRefPtr<HTMLNameCollection> create(Node* document, CollectionType type, const AtomicString& name)
     {

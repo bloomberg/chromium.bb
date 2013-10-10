@@ -36,7 +36,7 @@ class QualifiedName;
 // This class is just a big hack to find form elements even in malformed HTML elements.
 // The famous <table><tr><form><td> problem.
 
-class HTMLFormControlsCollection : public HTMLCollection {
+class HTMLFormControlsCollection FINAL : public HTMLCollection {
 public:
     static PassRefPtr<HTMLFormControlsCollection> create(Node*, CollectionType);
 
@@ -46,9 +46,9 @@ public:
     void namedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Node>&);
 
 private:
-    HTMLFormControlsCollection(Node*);
+    explicit HTMLFormControlsCollection(Node*);
 
-    virtual void updateNameCache() const;
+    virtual void updateNameCache() const OVERRIDE;
 
     const Vector<FormAssociatedElement*>& formControlElements() const;
     const Vector<HTMLImageElement*>& formImageElements() const;

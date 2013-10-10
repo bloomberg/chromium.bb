@@ -56,7 +56,7 @@ protected:
     AtomicString m_localName;
 };
 
-class HTMLTagNodeList : public TagNodeList {
+class HTMLTagNodeList FINAL : public TagNodeList {
 public:
     static PassRefPtr<HTMLTagNodeList> create(PassRefPtr<Node> rootNode, CollectionType type, const AtomicString& localName)
     {
@@ -69,7 +69,7 @@ public:
 private:
     HTMLTagNodeList(PassRefPtr<Node> rootNode, const AtomicString& localName);
 
-    virtual bool nodeMatches(Element*) const;
+    virtual bool nodeMatches(Element*) const OVERRIDE;
 
     AtomicString m_loweredLocalName;
 };

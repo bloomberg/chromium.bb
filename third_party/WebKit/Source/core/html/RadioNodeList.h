@@ -32,25 +32,24 @@
 
 namespace WebCore {
 
-class RadioNodeList : public LiveNodeList {
+class RadioNodeList FINAL : public LiveNodeList {
 public:
-    static PassRefPtr<RadioNodeList> create(Node* rootNode, CollectionType type, const AtomicString& name)
+    static PassRefPtr<RadioNodeList> create(Node* ownerNode, CollectionType type, const AtomicString& name)
     {
         ASSERT_UNUSED(type, type == RadioNodeListType);
-        return adoptRef(new RadioNodeList(rootNode, name));
+        return adoptRef(new RadioNodeList(ownerNode, name));
     }
 
-    ~RadioNodeList();
+    virtual ~RadioNodeList();
 
     String value() const;
     void setValue(const String&);
 
-protected:
-    virtual bool nodeMatches(Element*) const;
-
 private:
     RadioNodeList(Node*, const AtomicString& name);
     bool checkElementMatchesRadioNodeListFilter(Element*) const;
+
+    virtual bool nodeMatches(Element*) const OVERRIDE;
 
     AtomicString m_name;
 };

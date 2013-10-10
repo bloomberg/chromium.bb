@@ -30,27 +30,27 @@
 
 namespace WebCore {
 
-    class Node;
+class Node;
 
-    class NodeList : public ScriptWrappable, public RefCounted<NodeList> {
-    public:
-        virtual ~NodeList() { }
+class NodeList : public ScriptWrappable, public RefCounted<NodeList> {
+public:
+    virtual ~NodeList() { }
 
-        // DOM methods & attributes for NodeList
-        virtual unsigned length() const = 0;
-        virtual Node* item(unsigned index) const = 0;
-        virtual Node* namedItem(const AtomicString&) const = 0;
+    // DOM methods & attributes for NodeList
+    virtual unsigned length() const = 0;
+    virtual Node* item(unsigned index) const = 0;
+    virtual Node* namedItem(const AtomicString&) const = 0;
 
-        // Other methods (not part of DOM)
-        virtual bool isLiveNodeList() const { return false; }
-        void anonymousNamedGetter(const AtomicString&, bool&, RefPtr<Node>&, bool&, unsigned&);
+    // Other methods (not part of DOM)
+    virtual bool isLiveNodeList() const { return false; }
+    void anonymousNamedGetter(const AtomicString&, bool&, RefPtr<Node>&, bool&, unsigned&);
 
-    protected:
-        NodeList()
-        {
-            ScriptWrappable::init(this);
-        }
-    };
+protected:
+    NodeList()
+    {
+        ScriptWrappable::init(this);
+    }
+};
 
 } // namespace WebCore
 

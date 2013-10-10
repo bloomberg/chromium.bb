@@ -36,7 +36,7 @@ namespace WebCore {
 class HTMLTableElement;
 class HTMLTableRowElement;
 
-class HTMLTableRowsCollection : public HTMLCollection {
+class HTMLTableRowsCollection FINAL : public HTMLCollection {
 public:
     static PassRefPtr<HTMLTableRowsCollection> create(Node*, CollectionType);
 
@@ -44,7 +44,7 @@ public:
     static HTMLTableRowElement* lastRow(HTMLTableElement*);
 
 private:
-    HTMLTableRowsCollection(Node*);
+    explicit HTMLTableRowsCollection(Node*);
 
     virtual Element* virtualItemAfter(unsigned& offsetInArray, Element*) const OVERRIDE;
 };

@@ -29,20 +29,20 @@
 
 namespace WebCore {
 
-    class ChildNodeList : public LiveNodeList {
-    public:
-        static PassRefPtr<ChildNodeList> create(PassRefPtr<Node> rootNode)
-        {
-            return adoptRef(new ChildNodeList(rootNode));
-        }
+class ChildNodeList FINAL : public LiveNodeList {
+public:
+    static PassRefPtr<ChildNodeList> create(PassRefPtr<Node> rootNode)
+    {
+        return adoptRef(new ChildNodeList(rootNode));
+    }
 
-        virtual ~ChildNodeList();
+    virtual ~ChildNodeList();
 
-    protected:
-        explicit ChildNodeList(PassRefPtr<Node> rootNode);
+protected:
+    explicit ChildNodeList(PassRefPtr<Node> rootNode);
 
-        virtual bool nodeMatches(Element*) const;
-    };
+    virtual bool nodeMatches(Element*) const OVERRIDE;
+};
 
 } // namespace WebCore
 

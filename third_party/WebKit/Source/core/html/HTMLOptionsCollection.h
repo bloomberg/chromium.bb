@@ -32,7 +32,7 @@ class ExceptionState;
 class HTMLOptionElement;
 class HTMLSelectElement;
 
-class HTMLOptionsCollection : public HTMLCollection {
+class HTMLOptionsCollection FINAL : public HTMLCollection {
 public:
     static PassRefPtr<HTMLOptionsCollection> create(Node*, CollectionType);
 
@@ -50,7 +50,7 @@ public:
     bool anonymousIndexedSetterRemove(unsigned, ExceptionState&);
 
 private:
-    HTMLOptionsCollection(Node*);
+    explicit HTMLOptionsCollection(Node*);
 };
 
 } //namespace
