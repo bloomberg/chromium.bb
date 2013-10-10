@@ -47,6 +47,7 @@
             '../third_party/skia/src/opts/SkBlitRect_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_SSE2.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
             '../third_party/skia/src/opts/SkBitmapFilter_opts_SSE2.cpp',
           ],
           'dependencies': [
@@ -104,6 +105,7 @@
             '../third_party/skia/src/opts/SkBlitMask_opts_none.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
           ],
         }],
         [ 'target_arch == "arm" and arm_version >= 6', {
@@ -112,6 +114,7 @@
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.h',
             '../third_party/skia/src/opts/opts_check_arm.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
           ],
         }],
         [ 'target_arch == "mipsel"',{
@@ -123,6 +126,7 @@
             '../third_party/skia/src/opts/SkBlitMask_opts_none.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
           ],
         }],
       ],
@@ -184,6 +188,7 @@
         '../third_party/skia/src/opts/SkBlitMask_opts_none.cpp',
         '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
         '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
+        '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
       ],
     },
   ],
