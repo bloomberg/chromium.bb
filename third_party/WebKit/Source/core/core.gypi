@@ -875,6 +875,8 @@
             'editing/SimplifyMarkupCommand.cpp',
             'editing/SmartReplaceCF.cpp',
             'editing/SmartReplaceICU.cpp',
+            'editing/SpellChecker.cpp',
+            'editing/SpellChecker.h',
             'editing/SpellCheckRequester.cpp',
             'editing/SpellCheckRequester.h',
             'editing/SpellingCorrectionCommand.cpp',

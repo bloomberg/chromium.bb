@@ -41,6 +41,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/TypingCommand.h"
 #include "core/editing/VisibleUnits.h"
@@ -1549,7 +1550,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     if (activeAndFocused)
         setSelectionFromNone();
     else
-        m_frame->editor().spellCheckAfterBlur();
+        m_frame->spellChecker().spellCheckAfterBlur();
     setCaretVisibility(activeAndFocused ? Visible : Hidden);
 
     // Update for caps lock state

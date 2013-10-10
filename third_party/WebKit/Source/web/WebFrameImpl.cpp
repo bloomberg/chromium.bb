@@ -124,7 +124,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
-#include "core/editing/SpellCheckRequester.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
@@ -1170,9 +1170,9 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebNode& node)
         result = frame()->editor().command(AtomicString("ForwardDelete")).execute();
     } else if (command == "AdvanceToNextMisspelling") {
         // Wee need to pass false here or else the currently selected word will never be skipped.
-        frame()->editor().advanceToNextMisspelling(false);
+        frame()->spellChecker().advanceToNextMisspelling(false);
     } else if (command == "ToggleSpellPanel") {
-        frame()->editor().showSpellingGuessPanel();
+        frame()->spellChecker().showSpellingGuessPanel();
     } else {
         result = frame()->editor().command(command).execute();
     }
@@ -1196,7 +1196,7 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebString& value,
         return viewImpl()->propagateScroll(ScrollDown, ScrollByDocument);
 
     if (webName == "showGuessPanel") {
-        frame()->editor().showSpellingGuessPanel();
+        frame()->spellChecker().showSpellingGuessPanel();
         return true;
     }
 
@@ -1213,20 +1213,19 @@ void WebFrameImpl::enableContinuousSpellChecking(bool enable)
 {
     if (enable == isContinuousSpellCheckingEnabled())
         return;
-    frame()->editor().toggleContinuousSpellChecking();
+    frame()->spellChecker().toggleContinuousSpellChecking();
 }
 
 bool WebFrameImpl::isContinuousSpellCheckingEnabled() const
 {
-    return frame()->editor().isContinuousSpellCheckingEnabled();
+    return frame()->spellChecker().isContinuousSpellCheckingEnabled();
 }
 
 void WebFrameImpl::requestTextChecking(const WebElement& webElement)
 {
     if (webElement.isNull())
         return;
-    RefPtr<Range> rangeToCheck = rangeOfContents(const_cast<Element*>(webElement.constUnwrap<Element>()));
-    frame()->editor().spellCheckRequester().requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
+    frame()->spellChecker().requestTextChecking(*webElement.constUnwrap<Element>());
 }
 
 void WebFrameImpl::replaceMisspelledRange(const WebString& text)
@@ -2049,7 +2048,7 @@ bool WebFrameImpl::selectionStartHasSpellingMarkerFor(int from, int length) cons
 {
     if (!frame())
         return false;
-    return frame()->editor().selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
+    return frame()->spellChecker().selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
 
 WebString WebFrameImpl::layerTreeAsText(bool showDebugInfo) const

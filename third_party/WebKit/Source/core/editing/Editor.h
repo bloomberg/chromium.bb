@@ -38,7 +38,6 @@
 #include "core/editing/WritingDirection.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/platform/chromium/PasteMode.h"
-#include "platform/text/TextChecking.h"
 
 namespace WebCore {
 
@@ -55,13 +54,9 @@ class KillRing;
 class Pasteboard;
 class SharedBuffer;
 class SimpleFontData;
-class SpellCheckRequest;
-class SpellCheckRequester;
+class SpellChecker;
 class StylePropertySet;
 class Text;
-class TextCheckerClient;
-class TextCheckingParagraph;
-struct TextCheckingResult;
 class TextEvent;
 
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM, CommandFromDOMWithUserInterface };
@@ -73,7 +68,6 @@ public:
     ~Editor();
 
     EditorClient& client() const;
-    TextCheckerClient& textChecker() const;
 
     Frame& frame() const { return *m_frame; }
 
@@ -178,26 +172,8 @@ public:
     bool insertLineBreak();
     bool insertParagraphSeparator();
 
-    bool isContinuousSpellCheckingEnabled() const;
-    void toggleContinuousSpellChecking();
-    bool isGrammarCheckingEnabled();
-    void ignoreSpelling();
-    String misspelledWordAtCaretOrRange(Node* clickedNode) const;
-    bool isSpellCheckingEnabledInFocusedNode() const;
-    bool isSpellCheckingEnabledFor(Node*) const;
-    void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);
-    void markMisspellings(const VisibleSelection&, RefPtr<Range>& firstMisspellingRange);
-    void markBadGrammar(const VisibleSelection&);
-    void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection);
-    void markAndReplaceFor(PassRefPtr<SpellCheckRequest>, const Vector<TextCheckingResult>&);
-
     bool isOverwriteModeEnabled() const { return m_overwriteModeEnabled; }
     void toggleOverwriteModeEnabled();
-
-    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, Range* spellingRange, Range* grammarRange);
-
-    void advanceToNextMisspelling(bool startBeforeSelection = false);
-    void showSpellingGuessPanel();
 
     void clearUndoRedoOperations();
     bool canUndo();
@@ -227,7 +203,6 @@ public:
     VisibleSelection selectionForCommand(Event*);
 
     KillRing* killRing() const { return m_killRing.get(); }
-    SpellCheckRequester& spellCheckRequester() const { return *m_spellCheckRequester; }
 
     EditingBehavior behavior() const;
 
@@ -237,9 +212,6 @@ public:
 
     void pasteAsFragment(PassRefPtr<DocumentFragment>, bool smartReplace, bool matchStyle);
     void pasteAsPlainText(const String&, bool smartReplace);
-
-    void clearMisspellingsAndBadGrammar(const VisibleSelection&);
-    void markMisspellingsAndBadGrammar(const VisibleSelection&);
 
     Node* findEventTargetFrom(const VisibleSelection&) const;
 
@@ -259,9 +231,6 @@ public:
 
     void respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
 
-    void spellCheckAfterBlur();
-    void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords, const VisibleSelection& newSelectedSentence);
-
     bool markedTextMatchesAreHighlighted() const;
     void setMarkedTextMatchesAreHighlighted(bool);
 
@@ -269,16 +238,11 @@ public:
     void textFieldDidEndEditing(Element*);
     void textDidChangeInTextField(Element*);
     bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*);
-    WritingDirection baseWritingDirectionForSelectionStart() const;
 
     void replaceSelectionWithFragment(PassRefPtr<DocumentFragment>, bool selectReplacement, bool smartReplace, bool matchStyle);
     void replaceSelectionWithText(const String&, bool selectReplacement, bool smartReplace);
-    bool selectionStartHasMarkerFor(DocumentMarker::MarkerType, int from, int length) const;
-    void updateMarkersForWordsAffectedByEditing(bool onlyHandleWordsContainingSelection);
 
     void simplifyMarkup(Node* startNode, Node* endNode);
-
-    void deviceScaleFactorChanged();
 
     EditorParagraphSeparator defaultParagraphSeparator() const { return m_defaultParagraphSeparator; }
     void setDefaultParagraphSeparator(EditorParagraphSeparator separator) { m_defaultParagraphSeparator = separator; }
@@ -293,8 +257,6 @@ public:
     };
     friend class RevealSelectionScope;
 
-    void elementDidBeginEditing(Element*);
-
 private:
     RefPtr<CompositeEditCommand> m_lastEditCommand;
     RefPtr<Node> m_removedAnchor;
@@ -302,7 +264,6 @@ private:
     bool m_shouldStartNewKillRingSequence;
     bool m_shouldStyleWithCSS;
     OwnPtr<KillRing> m_killRing;
-    const OwnPtr<SpellCheckRequester> m_spellCheckRequester;
     VisibleSelection m_mark;
     bool m_areMarkedTextMatchesHighlighted;
     EditorParagraphSeparator m_defaultParagraphSeparator;
@@ -320,18 +281,13 @@ private:
     bool dispatchCPPEvent(const AtomicString&, ClipboardAccessPolicy, PasteMode = AllMimeTypes);
 
     void revealSelectionAfterEditingOperation(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);
-    void markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling, RefPtr<Range>& firstMisspellingRange);
-    TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);
-
     void changeSelectionAfterCommand(const VisibleSelection& newSelection, FrameSelection::SetSelectionOptions);
     void notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
 
     Node* findEventTargetFromSelection() const;
 
-    bool unifiedTextCheckerEnabled() const;
-
-    void chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck, bool asynchronous);
-    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, Range* checkingRange, Range* paragraphRange, bool asynchronous, int requestNumber, int* checkingLength = 0);
+    SpellChecker& spellChecker() const;
+    bool isContinuousSpellCheckingEnabled() const;
 };
 
 inline void Editor::setStartNewKillRingSequence(bool flag)

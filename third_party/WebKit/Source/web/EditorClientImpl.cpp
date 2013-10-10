@@ -48,7 +48,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/editing/Editor.h"
-#include "core/editing/SpellCheckRequester.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/TextCheckingHelper.h"
 #include "core/editing/UndoStep.h"
 #include "core/events/KeyboardEvent.h"
@@ -106,8 +106,7 @@ bool EditorClientImpl::shouldSpellcheckByDefault()
     const Frame* frame = m_webView->focusedWebCoreFrame();
     if (!frame)
         return false;
-    const Editor& editor = frame->editor();
-    if (editor.isSpellCheckingEnabledInFocusedNode())
+    if (frame->spellChecker().isSpellCheckingEnabledInFocusedNode())
         return true;
     const Document* document = frame->document();
     if (!document)
@@ -152,7 +151,7 @@ void EditorClientImpl::toggleContinuousSpellChecking()
             VisibleSelection frameSelection = frame->selection().selection();
             // If a selection is in an editable element spell check its content.
             if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
-                frame->editor().elementDidBeginEditing(rootEditableElement);
+                frame->editor().didBeginEditing(rootEditableElement);
             }
         }
     }

@@ -42,6 +42,7 @@
 #include "core/editing/IndentOutdentCommand.h"
 #include "core/editing/InsertListCommand.h"
 #include "core/editing/ReplaceSelectionCommand.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/TypingCommand.h"
 #include "core/editing/UnlinkCommand.h"
 #include "core/editing/markup.h"
@@ -467,7 +468,7 @@ static bool executeForwardDelete(Frame& frame, Event*, EditorCommandSource sourc
 
 static bool executeIgnoreSpelling(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    frame.editor().ignoreSpelling();
+    frame.spellChecker().ignoreSpelling();
     return true;
 }
 

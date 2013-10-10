@@ -30,8 +30,7 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
-#include "core/editing/Editor.h"
-#include "core/page/EditorClient.h"
+#include "core/editing/SpellChecker.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
@@ -136,7 +135,7 @@ SpellCheckRequester::~SpellCheckRequester()
 
 TextCheckerClient& SpellCheckRequester::client() const
 {
-    return m_frame.editor().client().textChecker();
+    return m_frame.spellChecker().textChecker();
 }
 
 void SpellCheckRequester::timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*)
@@ -236,7 +235,7 @@ void SpellCheckRequester::didCheck(int sequence, const Vector<TextCheckingResult
         return;
     }
 
-    m_frame.editor().markAndReplaceFor(m_processingRequest, results);
+    m_frame.spellChecker().markAndReplaceFor(m_processingRequest, results);
 
     if (m_lastProcessedSequence < sequence)
         m_lastProcessedSequence = sequence;

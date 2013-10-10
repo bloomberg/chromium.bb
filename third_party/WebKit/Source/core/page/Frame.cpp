@@ -38,6 +38,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -107,6 +108,7 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
     , m_ownerElement(ownerElement)
     , m_script(adoptPtr(new ScriptController(this)))
     , m_editor(adoptPtr(new Editor(*this)))
+    , m_spellChecker(SpellChecker::create(*this))
     , m_selection(adoptPtr(new FrameSelection(this)))
     , m_eventHandler(adoptPtr(new EventHandler(this)))
     , m_animationController(adoptPtr(new AnimationController(this)))

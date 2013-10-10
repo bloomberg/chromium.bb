@@ -35,7 +35,7 @@
 #include "core/editing/InsertLineBreakCommand.h"
 #include "core/editing/InsertParagraphSeparatorCommand.h"
 #include "core/editing/InsertTextCommand.h"
-#include "core/editing/SpellCheckRequester.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -154,7 +154,7 @@ void TypingCommand::insertText(Document& document, const String& text, Options o
     ASSERT(frame);
 
     if (!text.isEmpty())
-        document.frame()->editor().updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
+        document.frame()->spellChecker().updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
 
     insertText(document, text, frame->selection().selection(), options, composition);
 }
@@ -285,10 +285,10 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
     if (!frame)
         return;
 
-    if (!frame->editor().isContinuousSpellCheckingEnabled())
+    if (!frame->spellChecker().isContinuousSpellCheckingEnabled())
         return;
 
-    frame->editor().spellCheckRequester().cancelCheck();
+    frame->spellChecker().cancelCheck();
 
     // Take a look at the selection that results after typing and determine whether we need to spellcheck.
     // Since the word containing the current selection is never marked, this does a check to
@@ -300,7 +300,7 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
         VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
         VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
         if (p1 != p2)
-            frame->editor().markMisspellingsAfterTypingToWord(p1, endingSelection());
+            frame->spellChecker().markMisspellingsAfterTypingToWord(p1, endingSelection());
     }
 }
 
@@ -396,7 +396,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
     if (!frame)
         return;
 
-    frame->editor().updateMarkersForWordsAffectedByEditing(false);
+    frame->spellChecker().updateMarkersForWordsAffectedByEditing(false);
 
     VisibleSelection selectionToDelete;
     VisibleSelection selectionAfterUndo;
@@ -500,7 +500,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
     if (!frame)
         return;
 
-    frame->editor().updateMarkersForWordsAffectedByEditing(false);
+    frame->spellChecker().updateMarkersForWordsAffectedByEditing(false);
 
     VisibleSelection selectionToDelete;
     VisibleSelection selectionAfterUndo;

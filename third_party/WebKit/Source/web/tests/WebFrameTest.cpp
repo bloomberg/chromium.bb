@@ -63,7 +63,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/SpellCheckRequester.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -3956,7 +3956,7 @@ TEST_F(WebFrameTest, CancelSpellingRequestCrash)
 
     element->focus();
     frame->frame()->editor().replaceSelectionWithText("A", false, false);
-    frame->frame()->editor().spellCheckRequester().cancelCheck();
+    frame->frame()->spellChecker().cancelCheck();
 }
 
 TEST_F(WebFrameTest, SpellcheckResultErasesMarkers)

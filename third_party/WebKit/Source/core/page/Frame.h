@@ -63,6 +63,7 @@ namespace WebCore {
     class TreeScope;
     class ScriptController;
     class Settings;
+    class SpellChecker;
     class TreeScope;
     class VisiblePosition;
     class Widget;
@@ -104,6 +105,7 @@ namespace WebCore {
         InputMethodController& inputMethodController() const;
         FetchContext& fetchContext() const { return loader()->fetchContext(); }
         ScriptController* script();
+        SpellChecker& spellChecker() const;
 
         RenderView* contentRenderer() const; // Root of the render tree for the document contained in this frame.
         RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
@@ -181,6 +183,7 @@ namespace WebCore {
 
         OwnPtr<ScriptController> m_script;
         const OwnPtr<Editor> m_editor;
+        const OwnPtr<SpellChecker> m_spellChecker;
         const OwnPtr<FrameSelection> m_selection;
         OwnPtr<EventHandler> m_eventHandler;
         OwnPtr<AnimationController> m_animationController;
@@ -234,6 +237,11 @@ namespace WebCore {
     inline Editor& Frame::editor() const
     {
         return *m_editor;
+    }
+
+    inline SpellChecker& Frame::spellChecker() const
+    {
+        return *m_spellChecker;
     }
 
     inline AnimationController* Frame::animation() const
