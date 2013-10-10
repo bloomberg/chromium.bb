@@ -123,6 +123,8 @@ body.expanded #corner-buttons button {
 
 #corner-buttons button {
   pointer-events: auto;
+  position: relative;
+  z-index: 2;  /* Hack to enable touch scrolling in gallery. */
 }
 
 body:not(.gallery) #corner-buttons {
@@ -362,6 +364,7 @@ body.gallery #picture-preview {
   position: absolute;
   right: 0;
   top: 0;
+  z-index: 1;  /* Hack to enable touch scrolling in gallery. */
 }
 
 #gallery .padder {
