@@ -11,17 +11,21 @@ call gclient runhooks --force
 rmdir /s /q %~dp0..\tools\toolchain
 
 setlocal
+echo @@@BUILD_STEP install mingw@@@
+call python.bat buildbot\buildbot_mingw_install.py
+if errorlevel 1 exit 1
+
+echo @@@BUILD_STEP buildbot_windows-glibc-makefile@@@
+
 call "%~dp0msvs_env.bat" 64
 call "%~dp0cygwin_env.bat"
 set CYGWIN=nodosfilewarning %CYGWIN%
-call "%~dp0mingw_env.bat"
 
-bash buildbot/buildbot_windows-glibc-makefile.sh
+"%~dp0..\cygwin\bin\bash" "buildbot/buildbot_windows-glibc-makefile.sh"
 if errorlevel 1 exit 1
 endlocal
 
 :: Run tests
 
 set INSIDE_TOOLCHAIN=1
-python buildbot\buildbot_standard.py opt 64 glibc
-
+call python.bat buildbot\buildbot_standard.py opt 64 glibc
