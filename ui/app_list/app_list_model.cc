@@ -72,10 +72,7 @@ AppListItemModel* AppListModel::FindItem(const std::string& id) {
 
 void AppListModel::AddItem(AppListItemModel* item) {
   std::string sort_order = item->GetSortOrder();
-  // Note: currently items are not gauranteed to be sorted (e.g. once moved),
-  // so do a linear search. TODO(stevenjb): Moving an item should fix sort
-  // ordering and new items without a saved location should be appended to
-  // the end.
+  // Note: ui::ListModel is not a sorted list.
   size_t index = 0;
   for (; index < apps_->item_count(); ++index) {
     if (sort_order < apps_->GetItemAt(index)->GetSortOrder())

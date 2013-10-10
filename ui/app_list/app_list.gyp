@@ -29,6 +29,8 @@
         'app_list_constants.cc',
         'app_list_constants.h',
         'app_list_export.h',
+        'app_list_folder_item.cc',
+        'app_list_folder_item.h',
         'app_list_item_model.cc',
         'app_list_item_model.h',
         'app_list_item_model_observer.h',
