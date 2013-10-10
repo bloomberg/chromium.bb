@@ -98,7 +98,13 @@ Stream status=experimental
 StyleScoped status=experimental
 SubpixelFontScaling
 SVGPaintOrder status=experimental
+
+// Many websites disable mouse support when touch APIs are available.  We'd
+// like to enable this always but can't until more websites fix this bug.
+// Chromium sets this conditionally (eg. based on the presence of a
+// touchscreen) in ApplyWebPreferences.
 Touch status=stable
+
 UserSelectAll status=experimental
 Vibration status=experimental
 VideoTrack status=stable

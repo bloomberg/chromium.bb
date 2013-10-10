@@ -1,3 +1,26 @@
+# Defines properties which are available on the Settings object.
+#
+# Please think carefully before adding a new Setting.  Some questions to
+# consider are:
+# - Should this be a RuntimeEnabledFeature instead? Settings are for things
+#   which we support either values of at runtime.  Features are set at renderer
+#   process startup and are never changed. Features also tend to be set to a
+#   value based on the platform or the stability of the code in question, where
+#   as settings both codepaths need to be stable.
+# - How will you ensure test coverage of all relevant values of your setting?
+# - Is the default value appropriate for other platforms or ports which may
+#   not be aware of your setting?
+# - Can your setting result in behavior differences observable to web
+#   developers?
+# - Should this setting ideally be removed in the future?  If so please file
+#   a bug and reference it in the comments for your setting.
+#
+# One reason to add a Setting is to manage the risk associated with adding a
+# new feature.  For example, we may choose to ship a new UI behavior or
+# performance optimization to ChromeOS users first (in order to gather feedback
+# and metrics on its use from the wild) before attempting to ship it to
+# Windows.
+#
 # FIXME: Add support for global settings.
 # FIXME: Add support for custom getters/setters.
 
@@ -89,6 +112,7 @@ acceleratedCompositingForFixedRootBackgroundEnabled initial=false
 forceCompositingMode initial=false
 
 # Works only in conjunction with forceCompositingMode.
+# crbug.com/304900 tracks removal once enabled on all platforms.
 acceleratedCompositingForScrollableFramesEnabled initial=false
 compositedScrollingForFramesEnabled initial=false
 
@@ -122,10 +146,22 @@ scrollAnimatorEnabled initial=true
 
 shouldRespectImageOrientation initial=false
 
+# Limited use by features which behave differently depending on the input
+# devices available.  For example, the pointer and hover media queries.
+# Note that we need to be careful when basing behavior or UI on this -
+# just because a device is present doesn't mean the user cares about it
+# or uses it (i.e. Chromebook Pixel users generally don't want to give up
+# screen real estate just because they happen to have a touchscreen).
 deviceSupportsTouch initial=false
 deviceSupportsMouse initial=true
 
+# Whether touch gestures should be "fuzzed" to nearest touch targets.
+# It's expected that this is enabled everywhere by default, but it may be
+# disabled for testing purposes as the algorithm is not yet perfect.
+# crbug.com/304895 tracks removal once we're satisfied with the algorithm.
 touchAdjustmentEnabled initial=true
+
+# A mostly-stable performance optimization. crbug.com/304518 tracks removal.
 compositorTouchHitTesting initial=true
 
 fixedPositionCreatesStackingContext initial=false
@@ -148,6 +184,7 @@ spatialNavigationEnabled initial=false
 
 # This setting adds a means to enable/disable touch initiated drag & drop. If
 # enabled, the user can initiate drag using long press.
+# crbug.com/304894 tracks removal once it's been enabled on all platforms.
 touchDragDropEnabled initial=false
 
 unifiedTextCheckerEnabled initial=defaultUnifiedTextCheckerEnabled
@@ -181,11 +218,18 @@ reportScreenSizeInPhysicalPixelsQuirk initial=false
 # See http://crbug.com/288037.
 wideViewportQuirkEnabled initial=false
 
-# This setting enables touch based text selection and editing.
+# Touch based text selection and editing on desktop.
+# crbug.com/304873 tracks removal once it's been enabled on all platforms.
 touchEditingEnabled initial=false
 
 experimentalWebSocketEnabled initial=false
 
+# Settings for experimental desktop pinch-zoom support (with semantics
+# optimized for large screens).  Pinch-zoom generally is implemented mainly
+# outside of blink (in the compositor) and doesn't require any settings.
+# These settings are for an experimental modification to how pinch-zoom
+# behaves.  TODO(wjmaclean): link to design document.
+# crbug.com/304869 tracks removal.
 pinchVirtualViewportEnabled initial=false
 useSolidColorScrollbars initial=false
 
