@@ -74,13 +74,13 @@ HTMLFormElement::HTMLFormElement(const QualifiedName& tagName, Document& documen
 
 PassRefPtr<HTMLFormElement> HTMLFormElement::create(Document& document)
 {
-    UseCounter::count(&document, UseCounter::FormElement);
+    UseCounter::count(document, UseCounter::FormElement);
     return adoptRef(new HTMLFormElement(formTag, document));
 }
 
 PassRefPtr<HTMLFormElement> HTMLFormElement::create(const QualifiedName& tagName, Document& document)
 {
-    UseCounter::count(&document, UseCounter::FormElement);
+    UseCounter::count(document, UseCounter::FormElement);
     return adoptRef(new HTMLFormElement(tagName, document));
 }
 
@@ -791,7 +791,7 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& retur
 void HTMLFormElement::setDemoted(bool demoted)
 {
     if (demoted)
-        UseCounter::count(&document(), UseCounter::DemotedFormElement);
+        UseCounter::count(document(), UseCounter::DemotedFormElement);
     m_wasDemoted = demoted;
 }
 

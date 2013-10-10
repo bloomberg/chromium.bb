@@ -785,7 +785,7 @@ XMLDocumentParser::XMLDocumentParser(Document* document, FrameView* frameView)
     , m_parsingFragment(false)
 {
     // This is XML being used as a document resource.
-    UseCounter::count(document, UseCounter::XMLDocument);
+    UseCounter::count(*document, UseCounter::XMLDocument);
 }
 
 XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parentElement, ParserContentPolicy parserContentPolicy)

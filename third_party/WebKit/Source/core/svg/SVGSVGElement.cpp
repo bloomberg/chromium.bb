@@ -94,7 +94,7 @@ inline SVGSVGElement::SVGSVGElement(const QualifiedName& tagName, Document& doc)
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSVGElement();
 
-    UseCounter::count(&doc, UseCounter::SVGSVGElement);
+    UseCounter::count(doc, UseCounter::SVGSVGElement);
 }
 
 PassRefPtr<SVGSVGElement> SVGSVGElement::create(const QualifiedName& tagName, Document& document)
