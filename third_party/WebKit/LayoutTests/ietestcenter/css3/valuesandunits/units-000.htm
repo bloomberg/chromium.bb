@@ -26,6 +26,10 @@
  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 -->
+
+<!-- This test case has been modified to use 20px instead of 16px font-size to work
+     around font rendering issues for the Ahem font in Blink. -->
+
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>CSS Test: All unit and function values</title>
@@ -34,22 +38,24 @@
         <meta name="flags" content="" />
         <meta name="assert" content="Verifying that all unit values and functions are supported." />
         <style type="text/css">
+            html { font-size: 20px; }
+            body { font-size: 16px; }
             body div
             {
-                font: 16px/1em ahem;
+                font: 20px/1em ahem;
                 color: green;
-                height: 16px;
+                height: 20px;
             }
             #parent
             {
-                height: 272px;
+                height: 340px;
             }
             #parent
             {
                 background: red;
                 position: relative;
                 overflow: hidden;
-                width: 1in;
+                width: 1.25in;
             }
             #div1:before
             {
@@ -59,80 +65,80 @@
             }
             #div2
             {
-                border-right: solid green 2.54cm;
-                height: 16px;
+                border-right: solid green 3.175cm;
+                height: 20px;
                 width: 0;
             }
             #div3
             {
-                border-right: solid green 25.4mm;
-                height: 16px;
+                border-right: solid green 31.75mm;
+                height: 20px;
                 width: 0;
             }
             #div4
             {
-                border-right: solid green 1in;
-                height: 16px;
+                border-right: solid green 1.25in;
+                height: 20px;
                 width: 0;
             }
             #div5
             {
-                border-right: solid green 72pt;
-                height: 16px;
+                border-right: solid green 90pt;
+                height: 20px;
                 width: 0;
             }
             #div6
             {
-                border-right: solid green 6pc;
-                height: 16px;
+                border-right: solid green 7.5pc;
+                height: 20px;
                 width: 0;
             }
             #div7
             {
                 border-right: solid green 6em;
-                height: 16px;
+                height: 20px;
                 width: 0;
             }
             #div8
             {
                 border-right: solid green 7.5ex;
-                height: 16px;
+                height: 20px;
                 width: 0;
             }
             #div9
             {
                 border-right: solid green 6rem;
-                height: 16px;
+                height: 20px;
                 width: 0;
             }
             #div10
             {
                 border-right: solid green 100vw;
-                height: 16px;
+                height: 20px;
                 width: 0;
             }
             #div11
             {
                 border-right: solid green 100vh;
-                height: 16px;
+                height: 20px;
                 width: 0;
             }
             #div12
             {
-                border-right: solid green 100vm;
-                height: 16px;
+                border-right: solid green 100vmin;
+                height: 20px;
                 width: 0;
             }
             #div13
             {
                 border-right: solid green 6ch;
-                height: 16px;
+                height: 20px;
                 width: 0;
             }
             #div14
             {
-                border-right: solid green calc(0.5in*2);
-                height: 16px;
+                border-right: solid green calc(0.625in*2);
+                height: 20px;
                 width: 0;
             }
             #div15:before
@@ -142,12 +148,12 @@
             }
             #div16
             {
-                width: 0.5in;
+                width: 0.625in;
             }
             #div16 div
             {
                 background: green;
-                height: 16px;
+                height: 20px;
                 width: 200%;
             }
             #div17:before

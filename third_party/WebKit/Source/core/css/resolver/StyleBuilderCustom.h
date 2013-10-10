@@ -69,7 +69,7 @@ T StyleBuilderConverter::convertLineWidth(StyleResolverState& state, CSSValue* v
     if (valueID == CSSValueThick)
         return 5;
     if (primitiveValue->isViewportPercentageLength())
-        return primitiveValue->viewportPercentageLength().value();
+        return intValueForLength(primitiveValue->viewportPercentageLength(), 0, state.document().renderView());
     if (valueID == CSSValueInvalid) {
         float zoom = state.style()->effectiveZoom();
         // Any original result that was >= 1 should not be allowed to fall below 1.
