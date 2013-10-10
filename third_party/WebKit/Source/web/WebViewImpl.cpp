@@ -1577,7 +1577,7 @@ PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& or
 
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypePage);
     ASSERT(popupWidget);
-    m_pagePopup = static_cast<WebPagePopupImpl*>(popupWidget);
+    m_pagePopup = toWebPagePopupImpl(popupWidget);
     if (!m_pagePopup->initialize(this, client, originBoundsInRootView)) {
         m_pagePopup->closePopup();
         m_pagePopup = 0;
@@ -1588,7 +1588,7 @@ PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& or
 void WebViewImpl::closePagePopup(PagePopup* popup)
 {
     ASSERT(popup);
-    WebPagePopupImpl* popupImpl = static_cast<WebPagePopupImpl*>(popup);
+    WebPagePopupImpl* popupImpl = toWebPagePopupImpl(popup);
     ASSERT(m_pagePopup.get() == popupImpl);
     if (m_pagePopup.get() != popupImpl)
         return;
@@ -1608,7 +1608,7 @@ WebHelperPluginImpl* WebViewImpl::createHelperPlugin(const String& pluginType, c
 {
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypeHelperPlugin);
     ASSERT(popupWidget);
-    WebHelperPluginImpl* helperPlugin = static_cast<WebHelperPluginImpl*>(popupWidget);
+    WebHelperPluginImpl* helperPlugin = toWebHelperPluginImpl(popupWidget);
 
     if (!helperPlugin->initialize(pluginType, hostDocument, this)) {
         helperPlugin->closeHelperPlugin();
@@ -3803,7 +3803,7 @@ void WebViewImpl::refreshAutofillPopup()
 
     WebRect newWidgetRect = m_autofillPopup->refresh(focusedElement()->pixelSnappedBoundingBox());
     // Let's resize the backing window if necessary.
-    WebPopupMenuImpl* popupMenu = static_cast<WebPopupMenuImpl*>(m_autofillPopup->client());
+    WebPopupMenuImpl* popupMenu = toWebPopupMenuImpl(m_autofillPopup->client());
     if (popupMenu && popupMenu->client()->windowRect() != newWidgetRect)
         popupMenu->client()->setWindowRect(newWidgetRect);
 }

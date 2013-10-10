@@ -73,6 +73,7 @@ private:
     virtual void close() OVERRIDE;
     virtual bool handleInputEvent(const WebInputEvent&) OVERRIDE;
     virtual void setFocus(bool) OVERRIDE;
+    virtual bool isPagePopup() const OVERRIDE { return true; }
 
     // PageWidgetEventHandler functions
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
@@ -94,6 +95,19 @@ private:
     friend class WebPagePopup;
     friend class PagePopupChromeClient;
 };
+
+inline WebPagePopupImpl* toWebPagePopupImpl(WebWidget* widget)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPagePopup());
+    return static_cast<WebPagePopupImpl*>(widget);
+}
+
+inline WebPagePopupImpl* toWebPagePopupImpl(WebCore::PagePopup* popup)
+{
+    // WebPagePopupImpl is the only implementation of WebCore::PagePopup, so
+    // no further checking required.
+    return static_cast<WebPagePopupImpl*>(popup);
+}
 
 } // namespace WebKit
 #endif // WebPagePopupImpl_h

@@ -86,6 +86,7 @@ public:
     virtual bool caretOrSelectionRange(size_t* location, size_t* length) OVERRIDE;
     virtual void setTextDirection(WebTextDirection) OVERRIDE;
     virtual bool isAcceleratedCompositingActive() const OVERRIDE { return false; }
+    virtual bool isPopupMenu() const OVERRIDE { return true; }
 
     // WebPopupMenuImpl
     void initialize(WebCore::FramelessScrollView* widget, const WebRect& bounds);
@@ -133,6 +134,19 @@ public:
     // before it is destroyed.
     WebCore::FramelessScrollView* m_widget;
 };
+
+inline WebPopupMenuImpl* toWebPopupMenuImpl(WebWidget* widget)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPopupMenu());
+    return static_cast<WebPopupMenuImpl*>(widget);
+}
+
+inline WebPopupMenuImpl* toWebPopupMenuImpl(WebCore::FramelessScrollViewClient* client)
+{
+    // WebPopupMenuImpl is the only implementation of FramelessScrollViewClient,
+    // so no need for further checking.
+    return static_cast<WebPopupMenuImpl*>(client);
+}
 
 } // namespace WebKit
 
