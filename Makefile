@@ -51,7 +51,7 @@ SRC_RESOURCES= \
 	src/js/view.js \
 	src/js/views/camera.js \
 	src/js/views/gallery.js \
-	src/sounds/shutter.wav \
+	src/sounds/shutter.ogg \
 	src/views/main.html \
 
 # Path for the Camera resources. Relative, with a trailing slash.
