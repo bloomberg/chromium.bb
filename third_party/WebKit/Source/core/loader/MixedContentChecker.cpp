@@ -92,7 +92,8 @@ bool MixedContentChecker::canRunInsecureContent(SecurityOrigin* securityOrigin, 
 void MixedContentChecker::logWarning(bool allowed, const String& action, const KURL& target) const
 {
     String message = String(allowed ? "" : "[blocked] ") + "The page at '" + m_frame->document()->url().elidedString() + "' was loaded over HTTPS, but " + action + " insecure content from '" + target.elidedString() + "': this content should also be loaded over HTTPS.\n";
-    m_frame->document()->addConsoleMessage(SecurityMessageSource, WarningMessageLevel, message);
+    MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
+    m_frame->document()->addConsoleMessage(SecurityMessageSource, messageLevel, message);
 }
 
 } // namespace WebCore
