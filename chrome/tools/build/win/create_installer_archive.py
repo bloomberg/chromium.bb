@@ -349,6 +349,29 @@ def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
   modified_manifest_file.close()
 
 
+def CopyIfChanged(src, target_dir):
+  """Copy specified |src| file to |target_dir|, but only write to target if
+  the file has changed. This avoids a problem during packaging where parts of
+  the build have not completed and have the runtime DLL locked when we try to
+  copy over it. See http://crbug.com/305877 for details."""
+  assert os.path.isdir(target_dir)
+  dest = os.path.join(target_dir, os.path.basename(src))
+  if os.path.exists(dest):
+    # We assume the files are OK to buffer fully into memory since we know
+    # they're only 1-2M.
+    with open(src, 'rb') as fsrc:
+      src_data = fsrc.read()
+    with open(dest, 'rb') as fdest:
+      dest_data = fdest.read()
+    if src_data != dest_data:
+      # This may still raise if we get here, but this really should almost
+      # never happen (it would mean that the contents of e.g. msvcr100d.dll
+      # had been changed).
+      shutil.copyfile(src, dest)
+  else:
+    shutil.copyfile(src, dest)
+
+
 # Copy the relevant CRT DLLs to |build_dir|. We copy DLLs from all versions
 # of VS installed to make sure we have the correct CRT version, unused DLLs
 # should not conflict with the others anyways.
@@ -399,7 +422,7 @@ def CopyVisualStudioRuntimeDLLs(build_dir, target_arch):
            "may not run on a system that doesn't have those DLLs.")
 
   for dll in crt_dlls:
-    shutil.copy(dll, build_dir)
+    CopyIfChanged(dll, build_dir)
 
 
 # Copies component build DLLs and generates required config files and manifests
