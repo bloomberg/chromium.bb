@@ -367,6 +367,25 @@
           ],
         },
         {
+          'action_name': 'EventNames',
+          'inputs': [
+            '<@(make_names_files)',
+            '../build/scripts/make_names.py',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_names.py',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
+        {
           'action_name': 'EventTargetFactory',
           'inputs': [
             '<@(scripts_for_in_files)',
@@ -491,7 +510,7 @@
           ],
         },
         {
-          'action_name': 'EventNames',
+          'action_name': 'EventTypeNames',
           'inputs': [
             '<@(make_names_files)',
             'events/EventTypeNames.in',

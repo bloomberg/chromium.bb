@@ -37,8 +37,9 @@ import name_utilities
 
 class MakeNamesWriter(in_generator.Writer):
     defaults = {
-        'ImplementedAs': None,
         'Conditional': None,  # FIXME: Add support for Conditional.
+        'EnabledAtRuntime': None,
+        'ImplementedAs': None,
     }
     default_parameters = {
         'namespace': '',
