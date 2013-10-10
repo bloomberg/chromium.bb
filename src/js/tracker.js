@@ -215,7 +215,33 @@ camera.Tracker.prototype = {
  * Requests face detection on the current frame.
  */
 camera.Tracker.prototype.detect = function() {
-  // TODO(mtomasz): Implement it.
+  if (this.busy_)
+    return;
+  this.busy_ = true;
+
+  var result = ccv.detect_objects({
+    canvas: this.input_,
+    cascade: cascade,
+    interval: 5,
+    min_neighbors: 1,
+    worker: 1,
+    async: true
+  })(function(result) {
+    if (result.length) {
+      result.sort(function(a, b) {
+        return a.confidence < b.confidence;
+      });
+
+      this.face_.targetX = result[0].x / this.input_.width;
+      this.face_.targetY = result[0].y / this.input_.height;
+      this.face_.targetWidth = result[0].width / this.input_.width;
+      this.face_.targetHeight = result[0].height / this.input_.height;
+      this.face_.targetConfidence = 1;
+    } else {
+      this.face_.targetConfidence = 0;
+    }
+    this.busy_ = false;
+  }.bind(this));
 };
 
 /**
