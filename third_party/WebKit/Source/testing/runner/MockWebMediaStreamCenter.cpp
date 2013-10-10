@@ -79,6 +79,13 @@ bool MockWebMediaStreamCenter::didRemoveMediaStreamTrack(const WebMediaStream&, 
 
 void MockWebMediaStreamCenter::didStopLocalMediaStream(const WebMediaStream& stream)
 {
+    WebVector<WebMediaStreamTrack> tracks;
+    stream.audioTracks(tracks);
+    for (size_t i = 0; i < tracks.size(); ++i)
+        tracks[i].source().setReadyState(WebMediaStreamSource::ReadyStateEnded);
+    stream.videoTracks(tracks);
+    for (size_t i = 0; i < tracks.size(); ++i)
+        tracks[i].source().setReadyState(WebMediaStreamSource::ReadyStateEnded);
 }
 
 bool MockWebMediaStreamCenter::didStopMediaStreamTrack(const WebKit::WebMediaStreamTrack& track)

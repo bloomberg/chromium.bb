@@ -88,13 +88,8 @@ bool MediaStreamCenter::didRemoveMediaStreamTrack(MediaStreamDescriptor* stream,
 
 void MediaStreamCenter::didStopLocalMediaStream(MediaStreamDescriptor* stream)
 {
-    if (m_private) {
+    if (m_private)
         m_private->didStopLocalMediaStream(stream);
-        for (unsigned i = 0; i < stream->numberOfAudioComponents(); i++)
-            stream->audioComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
-        for (unsigned i = 0; i < stream->numberOfVideoComponents(); i++)
-            stream->videoComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
-    }
 }
 
 bool MediaStreamCenter::didStopMediaStreamTrack(MediaStreamComponent* track)
