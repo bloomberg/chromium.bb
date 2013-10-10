@@ -118,7 +118,7 @@ bool {{v8_class_name}}::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::I
 {% block create_wrapper_and_deref_object %}
 v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_name}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(impl.get());
+    ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<{{v8_class_name}}>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());

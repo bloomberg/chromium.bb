@@ -22,8 +22,10 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     {# Special cases #}
     {% if attribute.is_check_security_for_node %}
     {# FIXME: consider using a local variable to not call getter twice #}
-    if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}})) {
+    ExceptionState es(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}}, es)) {
         v8SetReturnValueNull(info);
+        es.throwIfNeeded();
         return;
     }
     {% endif %}
@@ -45,7 +47,7 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     {# End special cases #}
     {% if attribute.is_keep_alive_for_gc %}
     {{attribute.cpp_type}} result = {{attribute.cpp_value}};
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
+    if (result && DOMDataStore::setReturnValueFromWrapper<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
