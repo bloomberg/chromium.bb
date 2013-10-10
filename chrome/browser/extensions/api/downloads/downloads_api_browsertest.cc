@@ -2539,10 +2539,16 @@ IN_PROC_BROWSER_TEST_F(
       "    \"current\": \"complete\"}}]",
       result_id)));
 }
-
+#if defined(OS_WIN)
+#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_ReservedFilename\
+  DISABLED_DownloadExtensionTest_OnDeterminingFilename_ReservedFilename
+#else
+#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_ReservedFilename\
+  DownloadExtensionTest_OnDeterminingFilename_ReservedFilename
+#endif
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    DownloadExtensionTest_OnDeterminingFilename_ReservedFilename) {
+    MAYBE_DownloadExtensionTest_OnDeterminingFilename_ReservedFilename) {
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
