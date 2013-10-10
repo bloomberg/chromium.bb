@@ -1027,7 +1027,7 @@ bool HTMLSelectElement::appendFormData(FormDataList& list, bool)
     return successful;
 }
 
-void HTMLSelectElement::reset()
+void HTMLSelectElement::resetImpl()
 {
     HTMLOptionElement* firstOption = 0;
     HTMLOptionElement* selectedOption = 0;

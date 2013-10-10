@@ -55,7 +55,7 @@ private:
     virtual bool isEnumeratable() const OVERRIDE { return true; }
     virtual bool supportLabels() const OVERRIDE { return true; }
 
-    virtual void reset() OVERRIDE;
+    virtual void resetImpl() OVERRIDE;
     virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE { return false; }
 
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;

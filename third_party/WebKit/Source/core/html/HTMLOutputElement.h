@@ -60,7 +60,7 @@ private:
     virtual bool supportLabels() const OVERRIDE { return true; }
     virtual bool supportsFocus() const;
     virtual void childrenChanged(bool createdByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
-    virtual void reset();
+    virtual void resetImpl() OVERRIDE;
 
     void setTextContentInternal(const String&);
 

@@ -209,9 +209,6 @@ public:
 
     bool multiple() const;
 
-    bool isAutofilled() const { return m_isAutofilled; }
-    void setAutofilled(bool = true);
-
     FileList* files();
     void setFiles(PassRefPtr<FileList>);
 
@@ -335,7 +332,7 @@ private:
 
     virtual bool isSuccessfulSubmitButton() const;
 
-    virtual void reset();
+    virtual void resetImpl() OVERRIDE;
 
     virtual void* preDispatchEventHandler(Event*);
     virtual void postDispatchEventHandler(Event*, void* dataFromPreDispatch);
@@ -392,7 +389,6 @@ private:
     bool m_hasType : 1;
     bool m_isActivatedSubmit : 1;
     unsigned m_autocomplete : 2; // AutoCompleteSetting
-    bool m_isAutofilled : 1;
     bool m_hasNonEmptyList : 1;
     bool m_stateRestored : 1;
     bool m_parsingInProgress : 1;

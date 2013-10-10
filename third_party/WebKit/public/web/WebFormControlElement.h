@@ -61,6 +61,9 @@ public:
 
     BLINK_EXPORT void dispatchFormControlChangeEvent();
 
+    BLINK_EXPORT bool isAutofilled() const;
+    BLINK_EXPORT void setAutofilled(bool);
+
     // Returns the name that should be used for the specified |element| when
     // storing autofill data.  This is either the field name or its id, an empty
     // string if it has no name and no id.

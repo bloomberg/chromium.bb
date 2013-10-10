@@ -97,7 +97,7 @@ const AtomicString& HTMLKeygenElement::formControlType() const
     return keygen;
 }
 
-void HTMLKeygenElement::reset()
+void HTMLKeygenElement::resetImpl()
 {
     shadowSelect()->reset();
 }

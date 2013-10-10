@@ -109,7 +109,6 @@ HTMLInputElement::HTMLInputElement(const QualifiedName& tagName, Document& docum
     , m_hasType(false)
     , m_isActivatedSubmit(false)
     , m_autocomplete(Uninitialized)
-    , m_isAutofilled(false)
     , m_hasNonEmptyList(false)
     , m_stateRestored(false)
     , m_parsingInProgress(createdByParser)
@@ -840,12 +839,11 @@ bool HTMLInputElement::appendFormData(FormDataList& encoding, bool multipart)
     return m_inputType->isFormDataAppendable() && m_inputType->appendFormData(encoding, multipart);
 }
 
-void HTMLInputElement::reset()
+void HTMLInputElement::resetImpl()
 {
     if (m_inputType->storesValueSeparateFromAttribute())
         setValue(String());
 
-    setAutofilled(false);
     setChecked(hasAttribute(checkedAttr));
     m_reflectsCheckedAttribute = true;
 }
@@ -1320,15 +1318,6 @@ void HTMLInputElement::setSize(unsigned size, ExceptionState& es)
 KURL HTMLInputElement::src() const
 {
     return document().completeURL(fastGetAttribute(srcAttr));
-}
-
-void HTMLInputElement::setAutofilled(bool autofilled)
-{
-    if (autofilled == m_isAutofilled)
-        return;
-
-    m_isAutofilled = autofilled;
-    setNeedsStyleRecalc();
 }
 
 FileList* HTMLInputElement::files()

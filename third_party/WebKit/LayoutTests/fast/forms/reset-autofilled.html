@@ -1,4 +1,3 @@
-<html>
 <head>
     <script src="../js/resources/js-test-pre.js"></script>
     <script>
@@ -12,14 +11,18 @@
         }
 
         var field = document.getElementById('field');
+        var select = document.getElementById('select');
+        var textarea = document.getElementById('textarea');
         if (window.internals) {
             window.internals.setAutofilled(field, true);
+            window.internals.setAutofilled(select, true);
+            window.internals.setAutofilled(textarea, true);
         } else {
             testFailed('This test requires a LayoutTestController.');
             return;
         }
 
-        shouldBe('countAutofilledElements()', '1');
+        shouldBe('countAutofilledElements()', '3');
 
         var form = document.getElementById('form');
         form.reset();
@@ -36,10 +39,11 @@
     </style>
 </head>
 <body onload="test()">
-    This tests that a field's autofilled state is reverted when the form is reset.  It can only be run using DumpRenderTree.<br>
+    This tests that a field's autofilled state is reverted when the form is reset.  It can only be run using the test harness.<br>
     <form id="form">
-        <input type="text" id="field" />
+        <input type="text" id="field">
+        <select id="select"></select>
+        <textarea id="textarea"></textarea>
     </form>
     <div id="console"></div>
 </body>
-</html>

@@ -667,7 +667,7 @@ input[type="file"] {
     text-align: start !important;
 }
 
-input:-webkit-autofill {
+input:-webkit-autofill, textarea:-webkit-autofill {
     background-color: #FAFFBD !important;
     background-image:none !important;
     color: #000000 !important;

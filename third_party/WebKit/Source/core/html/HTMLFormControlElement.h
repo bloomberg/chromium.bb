@@ -53,7 +53,7 @@ public:
 
     void ancestorDisabledStateWasChanged();
 
-    virtual void reset() { }
+    void reset();
 
     virtual bool formControlValueMatchesRenderer() const { return m_valueMatchesRenderer; }
     virtual void setFormControlValueMatchesRenderer(bool b) { m_valueMatchesRenderer = b; }
@@ -101,6 +101,9 @@ public:
     void setAutofocused() { m_hasAutofocused = true; }
     bool isAutofocusable() const;
 
+    bool isAutofilled() const { return m_isAutofilled; }
+    void setAutofilled(bool = true);
+
     static HTMLFormControlElement* enclosingFormControlElement(Node*);
 
     using Node::ref;
@@ -131,6 +134,8 @@ protected:
     void setNeedsWillValidateCheck();
     virtual bool recalcWillValidate() const;
 
+    virtual void resetImpl() { }
+
 private:
     virtual void refFormAssociatedElement() { ref(); }
     virtual void derefFormAssociatedElement() { deref(); }
@@ -147,6 +152,7 @@ private:
 
     OwnPtr<ValidationMessage> m_validationMessage;
     bool m_disabled : 1;
+    bool m_isAutofilled : 1;
     bool m_isReadOnly : 1;
     bool m_isRequired : 1;
     bool m_valueMatchesRenderer : 1;

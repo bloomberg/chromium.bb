@@ -223,7 +223,7 @@ bool HTMLTextAreaElement::appendFormData(FormDataList& encoding, bool)
     return true;
 }
 
-void HTMLTextAreaElement::reset()
+void HTMLTextAreaElement::resetImpl()
 {
     setNonDirtyValue(defaultValue());
 }

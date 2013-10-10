@@ -1,4 +1,3 @@
-<html>
 <head>
     <script src="../js/resources/js-test-pre.js"></script>
     <script>
@@ -7,40 +6,75 @@
             testRunner.dumpAsText();
         }
 
-        var tf = document.getElementById('tf');
-        var computedStyle = document.defaultView.getComputedStyle(tf);
-        var originalForeground = computedStyle.color;
-        var originalBackground = computedStyle.backgroundColor;
+        if (!window.internals) {
+            testFailed('This test requires the test harness to run.');
+            return;
+        }
+
+        var field = document.getElementById('field');
+        var textarea = document.getElementById('textarea');
+
+        var computedStyleField = document.defaultView.getComputedStyle(field);
+        var computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
+        var originalForeground = computedStyleField.color;
+        var originalBackground = computedStyleField.backgroundColor;
+
+        if (originalForeground != computedStyleTextarea.color) {
+            testFailed('Unexpected initial foreground color for <textarea> field.');
+            return;
+        }
+        if (originalForeground != computedStyleTextarea.backgroundColor) {
+            testFailed('Unexpected initial background color for <textarea> field.');
+            return;
+        }
 
         if (window.internals) {
-            window.internals.setAutofilled(tf, true);
+            window.internals.setAutofilled(field, true);
+            window.internals.setAutofilled(textarea, true);
         }
 
         // Both the foreground and background colors should change.
-        computedStyle = document.defaultView.getComputedStyle(tf);
-        var autofilledForeground = computedStyle.color;
-        var autofilledBackground = computedStyle.backgroundColor;
-        if (autofilledForeground == originalForeground) {
-            testFailed('Foreground color did not change when autofilled.');
+        computedStyleField = document.defaultView.getComputedStyle(field);
+        computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
+        if (computedStyleField.color == originalForeground) {
+            testFailed('Foreground color for <input> element did not change when autofilled.');
             return;
         }
-        if (autofilledBackground == originalBackground) {
-            testFailed('Background color did not change when autofilled.');
+        if (computedStyleField.backgroundColor == originalBackground) {
+            testFailed('Background color for <input> element did not change when autofilled.');
+            return;
+        }
+        if (computedStyleTextarea.color == originalForeground) {
+            testFailed('Foreground color for <textarea> element did not change when autofilled.');
+            return;
+        }
+        if (computedStyleTextarea.backgroundColor == originalBackground) {
+            testFailed('Background color for <textarea> element did not change when autofilled.');
             return;
         }
 
         if (window.internals) {
-            window.internals.setAutofilled(tf, false);
+            window.internals.setAutofilled(field, false);
+            window.internals.setAutofilled(textarea, false);
         }
 
         // Colors should be restored.
-        computedStyle = document.defaultView.getComputedStyle(tf);
-        if (computedStyle.color != originalForeground) {
-            testFailed('Foreground color did not revert when un-autofilled.');
+        computedStyleField = document.defaultView.getComputedStyle(field);
+        computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
+        if (computedStyleField.color != originalForeground) {
+            testFailed('Foreground color for <input> element did not revert when un-autofilled.');
             return;
         }
-        if (computedStyle.backgroundColor != originalBackground) {
-            testFailed('Background color did not revert when un-autofilled.');
+        if (computedStyleField.backgroundColor != originalBackground) {
+            testFailed('Background color for <input> element did not revert when un-autofilled.');
+            return;
+        }
+        if (computedStyleTextarea.color != originalForeground) {
+            testFailed('Foreground color for <textarea> element did not revert when un-autofilled.');
+            return;
+        }
+        if (computedStyleTextarea.backgroundColor != originalBackground) {
+            testFailed('Background color for <textarea> element did not revert when un-autofilled.');
             return;
         }
 
@@ -49,17 +83,17 @@
     </script>
 
     <style>
-    #tf {
+    #field, #textarea {
       color: #FFFFFF;
       background-color: #FFFFFF;
     }
     </style>
 </head>
 <body onload="test()">
-    This tests that foreground and background colors properly change for autofilled inputs.  It can only be run using DumpRenderTree.<br>
+    This tests that foreground and background colors properly change for autofilled inputs.  It can only be run using the test harness.<br>
     <form name="fm">
-        <input type="text" id="tf" value="Field value" />
+        <input type="text" id="field" value="Field value">
+        <textarea id="textarea"></textarea>
     </form>
     <div id="console"></div>
 </body>
-</html>

@@ -93,7 +93,7 @@ void HTMLOutputElement::childrenChanged(bool createdByParser, Node* beforeChange
         m_defaultValue = textContent();
 }
 
-void HTMLOutputElement::reset()
+void HTMLOutputElement::resetImpl()
 {
     // The reset algorithm for output elements is to set the element's
     // value mode flag to "default" and then to set the element's textContent

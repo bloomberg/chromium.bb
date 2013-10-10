@@ -48,6 +48,7 @@ using namespace std;
 HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
     : LabelableElement(tagName, document)
     , m_disabled(false)
+    , m_isAutofilled(false)
     , m_isReadOnly(false)
     , m_isRequired(false)
     , m_valueMatchesRenderer(false)
@@ -119,6 +120,12 @@ void HTMLFormControlElement::ancestorDisabledStateWasChanged()
 {
     m_ancestorDisabledState = AncestorDisabledStateUnknown;
     disabledAttributeChanged();
+}
+
+void HTMLFormControlElement::reset()
+{
+    setAutofilled(false);
+    resetImpl();
 }
 
 void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -198,6 +205,15 @@ bool HTMLFormControlElement::isAutofocusable() const
     if (isHTMLTextAreaElement(this))
         return true;
     return false;
+}
+
+void HTMLFormControlElement::setAutofilled(bool autofilled)
+{
+    if (autofilled == m_isAutofilled)
+        return;
+
+    m_isAutofilled = autofilled;
+    setNeedsStyleRecalc();
 }
 
 static bool shouldAutofocusOnAttach(const HTMLFormControlElement* element)

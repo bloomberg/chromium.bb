@@ -64,6 +64,16 @@ void WebFormControlElement::dispatchFormControlChangeEvent()
     unwrap<HTMLFormControlElement>()->dispatchFormControlChangeEvent();
 }
 
+bool WebFormControlElement::isAutofilled() const
+{
+    return constUnwrap<HTMLFormControlElement>()->isAutofilled();
+}
+
+void WebFormControlElement::setAutofilled(bool autofilled)
+{
+    unwrap<HTMLFormControlElement>()->setAutofilled(autofilled);
+}
+
 WebString WebFormControlElement::nameForAutofill() const
 {
     String name = constUnwrap<HTMLFormControlElement>()->name();

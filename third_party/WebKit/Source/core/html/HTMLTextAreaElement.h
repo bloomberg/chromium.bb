@@ -105,7 +105,7 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool appendFormData(FormDataList&, bool);
-    virtual void reset();
+    virtual void resetImpl() OVERRIDE;
     virtual bool hasCustomFocusLogic() const OVERRIDE;
     virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;

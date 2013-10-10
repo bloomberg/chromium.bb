@@ -615,9 +615,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoAutofill:
             if (!element || !element->isFormControlElement())
                 break;
-            if (element->hasTagName(inputTag))
-                return toHTMLInputElement(element)->isAutofilled();
-            break;
+            return toHTMLFormControlElement(element)->isAutofilled();
         case CSSSelector::PseudoAnyLink:
         case CSSSelector::PseudoLink:
             // :visited and :link matches are separated later when applying the style. Here both classes match all links...

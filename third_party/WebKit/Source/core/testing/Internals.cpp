@@ -1080,11 +1080,11 @@ void Internals::setEditingValue(Element* element, const String& value, Exception
 
 void Internals::setAutofilled(Element* element, bool enabled, ExceptionState& es)
 {
-    if (!element->hasTagName(inputTag)) {
+    if (!element->isFormControlElement()) {
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
-    toHTMLInputElement(element)->setAutofilled(enabled);
+    toHTMLFormControlElement(element)->setAutofilled(enabled);
 }
 
 void Internals::scrollElementToRect(Element* element, long x, long y, long w, long h, ExceptionState& es)

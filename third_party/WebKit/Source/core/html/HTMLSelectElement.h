@@ -51,7 +51,7 @@ public:
     virtual String validationMessage() const OVERRIDE;
     virtual bool valueMissing() const OVERRIDE;
 
-    virtual void reset() OVERRIDE;
+    virtual void resetImpl() OVERRIDE;
 
     unsigned length() const;
 
