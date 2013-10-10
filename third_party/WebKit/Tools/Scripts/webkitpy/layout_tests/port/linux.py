@@ -46,7 +46,7 @@ class LinuxPort(base.Port):
     FALLBACK_PATHS = { 'x86_64': [ 'linux' ] + win.WinPort.latest_platform_fallback_path() }
     FALLBACK_PATHS['x86'] = ['linux-x86'] + FALLBACK_PATHS['x86_64']
 
-    DEFAULT_BUILD_DIRECTORIES = ('sconsbuild', 'out')
+    DEFAULT_BUILD_DIRECTORIES = ('out',)
 
     @classmethod
     def _determine_driver_path_statically(cls, host, options):
@@ -62,7 +62,7 @@ class LinuxPort(base.Port):
             configuration = options.configuration
         else:
             configuration = config_object.default_configuration()
-        return cls._static_build_path(host.filesystem, build_directory, chromium_base, webkit_base, configuration, [driver_name])
+        return cls._static_build_path(host.filesystem, build_directory, chromium_base, configuration, [driver_name])
 
     @staticmethod
     def _determine_architecture(filesystem, executive, driver_path):

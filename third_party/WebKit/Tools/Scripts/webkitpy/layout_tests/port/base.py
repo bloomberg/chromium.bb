@@ -133,7 +133,7 @@ class Port(object):
         return cls.FALLBACK_PATHS[cls.SUPPORTED_VERSIONS[-1]]
 
     @classmethod
-    def _static_build_path(cls, filesystem, build_directory, chromium_base, webkit_base, configuration, comps):
+    def _static_build_path(cls, filesystem, build_directory, chromium_base, configuration, comps):
         if build_directory:
             return filesystem.join(build_directory, configuration, *comps)
 
@@ -1673,7 +1673,7 @@ class Port(object):
         # fast.
         configuration = configuration or self.get_option('configuration')
         return self._static_build_path(self._filesystem, self.get_option('build_directory'),
-            self.path_from_chromium_base(), self.path_from_webkit_base(), configuration, comps)
+            self.path_from_chromium_base(), configuration, comps)
 
     def _check_driver_build_up_to_date(self, configuration):
         if configuration in ('Debug', 'Release'):
