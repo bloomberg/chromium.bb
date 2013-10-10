@@ -21,6 +21,7 @@
 #include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
@@ -73,6 +74,28 @@ const char kMediaGalleriesTypeBlackListedValue[] = "blackListed";
 const char kIPhotoGalleryName[] = "iPhoto";
 const char kITunesGalleryName[] = "iTunes";
 const char kPicasaGalleryName[] = "Picasa";
+
+int NumberExtensionsUsingMediaGalleries(Profile* profile) {
+  int count = 0;
+  if (!profile)
+    return count;
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!extension_service)
+    return count;
+
+  const ExtensionSet* extensions = extension_service->extensions();
+  for (ExtensionSet::const_iterator i = extensions->begin();
+       i != extensions->end(); ++i) {
+    if (extensions::PermissionsData::HasAPIPermission(
+            *i, extensions::APIPermission::kMediaGalleries) ||
+        extensions::PermissionsData::HasAPIPermission(
+            *i, extensions::APIPermission::kMediaGalleriesPrivate)) {
+      count++;
+    }
+  }
+  return count;
+}
 
 bool GetPrefId(const DictionaryValue& dict, MediaGalleryPrefId* value) {
   std::string string_id;
@@ -380,6 +403,13 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   // synchronously, decrement the counter to 0, and prematurely trigger
   // FinishInitialization.
   pre_initialization_callbacks_waiting_ = 3;
+
+  // Check whether we should be initializing -- are there any extensions that
+  // are using media galleries?
+  media_galleries::UsageCount(media_galleries::PREFS_INITIALIZED);
+  if (NumberExtensionsUsingMediaGalleries(profile_) == 0) {
+    media_galleries::UsageCount(media_galleries::PREFS_INITIALIZED_ERROR);
+  }
 
   // We determine the freshness of the profile here, before any of the finders
   // return and add media galleries to it.
