@@ -491,23 +491,21 @@ gfx::Image GetGeneratedCardImage(const base::string16& card_number,
   canvas.DrawRoundRect(display_rect, 8, paint);
 
   display_rect.Inset(20, 0, 0, 0);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::Font monospace(
-      UTF16ToUTF8(rb.GetLocalizedString(IDS_FIXED_FONT_FAMILY)), 18);
+  gfx::Font font(l10n_util::GetStringUTF8(IDS_FIXED_FONT_FAMILY), 18);
+  gfx::FontList font_list(font);
   gfx::ShadowValues shadows;
   shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1), 1.0, SK_ColorBLACK));
-  // TODO(estade): use DrawStringRectWithShadows().
-  canvas.DrawStringWithShadows(
+  canvas.DrawStringRectWithShadows(
       card_number,
-      monospace,
+      font_list,
       SK_ColorWHITE,
       display_rect, 0, 0, shadows);
 
   base::string16 capitalized_name = base::i18n::ToUpper(name);
   display_rect.Inset(0, size.height() / 2, 0, 0);
-  canvas.DrawStringWithShadows(
+  canvas.DrawStringRectWithShadows(
       capitalized_name,
-      monospace,
+      font_list,
       SK_ColorWHITE,
       display_rect, 0, 0, shadows);
 
@@ -2611,7 +2609,6 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         }
       }
 
-      // TODO(estade): this should have a URL sublabel.
       suggested_cc_billing_.AddKeyedItem(
           kAddNewItemKey,
           l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_DETAILS));
