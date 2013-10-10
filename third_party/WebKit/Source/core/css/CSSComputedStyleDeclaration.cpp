@@ -564,7 +564,7 @@ static PassRefPtr<CSSPrimitiveValue> zoomAdjustedPixelValueForLength(const Lengt
 {
     if (length.isFixed())
         return zoomAdjustedPixelValue(length.value(), style);
-    return cssValuePool().createValue(length);
+    return cssValuePool().createValue(length, style);
 }
 
 static PassRefPtr<CSSValue> valueForReflection(const StyleReflection* reflection, const RenderStyle* style)
