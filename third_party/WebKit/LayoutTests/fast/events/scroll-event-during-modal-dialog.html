@@ -1,40 +1,32 @@
-<!DOCTYPE html>
-
-<style>
-#scrollable {
-    height: 200px;
-    width: 200px;
-    overflow: scroll;
-}
-#scrollable div {
-    height: 1000px;
-}
-</style>
-
+<html>
 <script src="../js/resources/js-test-pre.js"></script>
-
-<div id="scrollable"><div></div></div>
+<body style="min-height: 2000px"> 
 
 <script type="text/javascript">
 if (window.testRunner)
     testRunner.setCanOpenWindows();
 
-var jsTestIsAsync = true;
-var scrollable = document.getElementById('scrollable');
-
 description('Tests that scroll events are not fired while modal dialogs are displayed.');
 
-scrollable.onscroll = function() {
+var triggeredCaptureListener = false;
+var triggeredBubbleListener = false;
+
+onscroll = function()
+{
     debug('Scroll handler fired');
-    dialog.close();
+    finishJSTest();
 }
 
-onload = function() {
+onload = function()
+{
+    debug('Scrolling window');
+    window.scrollTo(200, 200);
     debug('Showing modal dialog');
     showModalDialog('resources/scroll-event-modal-dialog.html');
     debug('Returned from modal dialog');
-    finishJSTest();
 }
+var jsTestIsAsync = true;
 </script>
-
 <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

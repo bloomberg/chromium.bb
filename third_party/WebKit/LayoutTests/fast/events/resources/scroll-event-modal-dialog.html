@@ -1,8 +1,17 @@
-<!DOCTYPE html>
-
+<html>
+<head>
 <script>
-    onload = function() {
-        window.opener.document.getElementById('scrollable').scrollTop = 200;
-        window.opener.dialog = this;
+    function closeWindow()
+    {
+        if (window.testRunner) {
+            testRunner.abortModal();
+        }
+        close();
     }
 </script>
+</head>
+
+<body onload="closeWindow()">
+    This is a modal dialog.
+</body>
+</html>

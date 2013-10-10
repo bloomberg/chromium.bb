@@ -78,6 +78,20 @@ bool DocumentEventQueue::enqueueEvent(PassRefPtr<Event> event)
     return true;
 }
 
+void DocumentEventQueue::enqueueScrollEventForNode(Node* target)
+{
+    if (!target->document().hasListenerType(Document::SCROLL_LISTENER))
+        return;
+
+    if (!m_nodesWithQueuedScrollEvents.add(target).isNewEntry)
+        return;
+
+    // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
+    RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventNames::scroll) : Event::create(EventNames::scroll);
+    scrollEvent->setTarget(target);
+    enqueueEvent(scrollEvent.release());
+}
+
 bool DocumentEventQueue::cancelEvent(Event* event)
 {
     ListHashSet<RefPtr<Event>, 16>::iterator it = m_queuedEvents.find(event);
@@ -100,6 +114,8 @@ void DocumentEventQueue::pendingEventTimerFired()
 {
     ASSERT(!m_pendingEventTimer->isActive());
     ASSERT(!m_queuedEvents.isEmpty());
+
+    m_nodesWithQueuedScrollEvents.clear();
 
     // Insert a marker for where we should stop.
     ASSERT(!m_queuedEvents.contains(0));
