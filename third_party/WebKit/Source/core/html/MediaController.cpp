@@ -188,7 +188,7 @@ void MediaController::unpause()
     // the user agent must change the MediaController into a playing media controller,
     m_paused = false;
     // queue a task to fire a simple event named play at the MediaController,
-    scheduleEvent(EventNames::play);
+    scheduleEvent(EventTypeNames::play);
     // and then report the controller state of the MediaController.
     reportControllerState();
 }
@@ -213,7 +213,7 @@ void MediaController::pause()
     // then the user agent must change the MediaController into a paused media controller,
     m_paused = true;
     // queue a task to fire a simple event named pause at the MediaController,
-    scheduleEvent(EventNames::pause);
+    scheduleEvent(EventTypeNames::pause);
     // and then report the controller state of the MediaController.
     reportControllerState();
 }
@@ -228,7 +228,7 @@ void MediaController::setDefaultPlaybackRate(double rate)
     m_defaultPlaybackRate = rate;
 
     // then queue a task to fire a simple event named ratechange at the MediaController.
-    scheduleEvent(EventNames::ratechange);
+    scheduleEvent(EventTypeNames::ratechange);
 }
 
 double MediaController::playbackRate() const
@@ -249,7 +249,7 @@ void MediaController::setPlaybackRate(double rate)
         m_mediaElements[index]->updatePlaybackRate();
 
     // then queue a task to fire a simple event named ratechange at the MediaController.
-    scheduleEvent(EventNames::ratechange);
+    scheduleEvent(EventTypeNames::ratechange);
 }
 
 void MediaController::setVolume(double level, ExceptionState& es)
@@ -269,7 +269,7 @@ void MediaController::setVolume(double level, ExceptionState& es)
     m_volume = level;
 
     // and queue a task to fire a simple event named volumechange at the MediaController.
-    scheduleEvent(EventNames::volumechange);
+    scheduleEvent(EventTypeNames::volumechange);
 
     for (size_t index = 0; index < m_mediaElements.size(); ++index)
         m_mediaElements[index]->updateVolume();
@@ -285,7 +285,7 @@ void MediaController::setMuted(bool flag)
     m_muted = flag;
 
     // and queue a task to fire a simple event named volumechange at the MediaController.
-    scheduleEvent(EventNames::volumechange);
+    scheduleEvent(EventTypeNames::volumechange);
 
     for (size_t index = 0; index < m_mediaElements.size(); ++index)
         m_mediaElements[index]->updateVolume();
@@ -334,15 +334,15 @@ static AtomicString eventNameForReadyState(MediaControllerInterface::ReadyState 
 {
     switch (state) {
     case MediaControllerInterface::HAVE_NOTHING:
-        return EventNames::emptied;
+        return EventTypeNames::emptied;
     case MediaControllerInterface::HAVE_METADATA:
-        return EventNames::loadedmetadata;
+        return EventTypeNames::loadedmetadata;
     case MediaControllerInterface::HAVE_CURRENT_DATA:
-        return EventNames::loadeddata;
+        return EventTypeNames::loadeddata;
     case MediaControllerInterface::HAVE_FUTURE_DATA:
-        return EventNames::canplay;
+        return EventTypeNames::canplay;
     case MediaControllerInterface::HAVE_ENOUGH_DATA:
-        return EventNames::canplaythrough;
+        return EventTypeNames::canplaythrough;
     default:
         ASSERT_NOT_REACHED();
         return nullAtom;
@@ -433,7 +433,7 @@ void MediaController::updatePlaybackState()
             m_paused = true;
 
             // and then fires a simple event named pause at the MediaController object.
-            scheduleEvent(EventNames::pause);
+            scheduleEvent(EventTypeNames::pause);
         }
     }
 
@@ -443,17 +443,17 @@ void MediaController::updatePlaybackState()
     AtomicString eventName;
     switch (newPlaybackState) {
     case WAITING:
-        eventName = EventNames::waiting;
+        eventName = EventTypeNames::waiting;
         m_clock->stop();
         m_timeupdateTimer.stop();
         break;
     case ENDED:
-        eventName = EventNames::ended;
+        eventName = EventTypeNames::ended;
         m_clock->stop();
         m_timeupdateTimer.stop();
         break;
     case PLAYING:
-        eventName = EventNames::playing;
+        eventName = EventTypeNames::playing;
         m_clock->start();
         startTimeupdateTimer();
         break;
@@ -657,6 +657,6 @@ void MediaController::scheduleTimeupdateEvent()
     if (timedelta < maxTimeupdateEventFrequency)
         return;
 
-    scheduleEvent(EventNames::timeupdate);
+    scheduleEvent(EventTypeNames::timeupdate);
     m_previousTimeupdateTime = now;
 }

@@ -46,7 +46,7 @@ PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(const AtomicSt
 
 PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const Vector<RefPtr<SpeechRecognitionResult> >& results)
 {
-    return adoptRef(new SpeechRecognitionEvent(EventNames::result, resultIndex, SpeechRecognitionResultList::create(results)));
+    return adoptRef(new SpeechRecognitionEvent(EventTypeNames::result, resultIndex, SpeechRecognitionResultList::create(results)));
 }
 
 PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(PassRefPtr<SpeechRecognitionResult> result)
@@ -54,10 +54,10 @@ PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(PassRef
     if (result) {
         Vector<RefPtr<SpeechRecognitionResult> > results;
         results.append(result);
-        return adoptRef(new SpeechRecognitionEvent(EventNames::nomatch, 0, SpeechRecognitionResultList::create(results)));
+        return adoptRef(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, SpeechRecognitionResultList::create(results)));
     }
 
-    return adoptRef(new SpeechRecognitionEvent(EventNames::nomatch, 0, 0));
+    return adoptRef(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, 0));
 }
 
 const AtomicString& SpeechRecognitionEvent::interfaceName() const

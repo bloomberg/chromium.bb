@@ -250,7 +250,7 @@ void MediaStream::streamEnded()
         return;
 
     m_descriptor->setEnded();
-    scheduleDispatchEvent(Event::create(EventNames::ended));
+    scheduleDispatchEvent(Event::create(EventTypeNames::ended));
 }
 
 void MediaStream::contextDestroyed()
@@ -298,7 +298,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component)
     }
     m_descriptor->addComponent(component);
 
-    scheduleDispatchEvent(MediaStreamTrackEvent::create(EventNames::addtrack, false, false, track));
+    scheduleDispatchEvent(MediaStreamTrackEvent::create(EventTypeNames::addtrack, false, false, track));
 }
 
 void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
@@ -330,7 +330,7 @@ void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
 
     RefPtr<MediaStreamTrack> track = (*tracks)[index];
     tracks->remove(index);
-    scheduleDispatchEvent(MediaStreamTrackEvent::create(EventNames::removetrack, false, false, track));
+    scheduleDispatchEvent(MediaStreamTrackEvent::create(EventTypeNames::removetrack, false, false, track));
 }
 
 void MediaStream::scheduleDispatchEvent(PassRefPtr<Event> event)

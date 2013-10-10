@@ -38,7 +38,7 @@ OverflowEventInit::OverflowEventInit()
 }
 
 OverflowEvent::OverflowEvent()
-    : Event(EventNames::overflowchanged, false, false)
+    : Event(EventTypeNames::overflowchanged, false, false)
     , m_orient(VERTICAL)
     , m_horizontalOverflow(false)
     , m_verticalOverflow(false)
@@ -47,7 +47,7 @@ OverflowEvent::OverflowEvent()
 }
 
 OverflowEvent::OverflowEvent(bool horizontalOverflowChanged, bool horizontalOverflow, bool verticalOverflowChanged, bool verticalOverflow)
-    : Event(EventNames::overflowchanged, false, false)
+    : Event(EventTypeNames::overflowchanged, false, false)
     , m_horizontalOverflow(horizontalOverflow)
     , m_verticalOverflow(verticalOverflow)
 {

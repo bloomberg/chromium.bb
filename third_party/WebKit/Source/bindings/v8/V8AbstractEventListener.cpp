@@ -115,7 +115,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
     v8::Local<v8::Value> returnValue;
 
     // In beforeunload/unload handlers, we want to avoid sleeps which do tight loops of calling Date.getTime().
-    if (DateExtension::get() && (event->type() == EventNames::beforeunload || event->type() == EventNames::unload))
+    if (DateExtension::get() && (event->type() == EventTypeNames::beforeunload || event->type() == EventTypeNames::unload))
         DateExtension::get()->setAllowSleep(false, v8Context->GetIsolate());
 
     double eventStart = currentTime();
@@ -152,7 +152,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
         tryCatch.Reset();
     }
 
-    if (event->type() == EventNames::beforeunload || event->type() == EventNames::unload) {
+    if (event->type() == EventTypeNames::beforeunload || event->type() == EventTypeNames::unload) {
         double eventEnd = currentTime();
         WebKit::Platform::current()->histogramCustomCounts("Renderer.unloadEventsDurationMS", (eventEnd - eventStart) * 1000, 0, 5000, 30);
         if (DateExtension::get())

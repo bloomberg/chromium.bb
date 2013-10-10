@@ -84,17 +84,17 @@ void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent,
     gNodesDispatchingSimulatedClicks->add(node);
 
     if (mouseEventOptions == SendMouseOverUpDownEvents)
-        EventDispatcher(node, SimulatedMouseEvent::create(EventNames::mouseover, node->document().defaultView(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mouseover, node->document().defaultView(), underlyingEvent)).dispatch();
 
     if (mouseEventOptions != SendNoEvents)
-        EventDispatcher(node, SimulatedMouseEvent::create(EventNames::mousedown, node->document().defaultView(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mousedown, node->document().defaultView(), underlyingEvent)).dispatch();
     node->setActive(true, visualOptions == ShowPressedLook);
     if (mouseEventOptions != SendNoEvents)
-        EventDispatcher(node, SimulatedMouseEvent::create(EventNames::mouseup, node->document().defaultView(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mouseup, node->document().defaultView(), underlyingEvent)).dispatch();
     node->setActive(false);
 
     // always send click
-    EventDispatcher(node, SimulatedMouseEvent::create(EventNames::click, node->document().defaultView(), underlyingEvent)).dispatch();
+    EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::click, node->document().defaultView(), underlyingEvent)).dispatch();
 
     gNodesDispatchingSimulatedClicks->remove(node);
 }

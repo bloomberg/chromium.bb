@@ -148,7 +148,7 @@ void MediaDocument::defaultEventHandler(Event* event)
     if (!targetNode)
         return;
 
-    if (event->type() == EventNames::keydown && event->isKeyboardEvent()) {
+    if (event->type() == EventTypeNames::keydown && event->isKeyboardEvent()) {
         HTMLVideoElement* video = descendentVideoElement(targetNode);
         if (!video)
             return;

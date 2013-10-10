@@ -618,29 +618,29 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
 {
     // standard events
     if (name == onloadAttr)
-        setAttributeEventListener(EventNames::load, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::load, createAttributeEventListener(this, name, value));
     else if (name == onclickAttr)
-        setAttributeEventListener(EventNames::click, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::click, createAttributeEventListener(this, name, value));
     else if (name == onmousedownAttr)
-        setAttributeEventListener(EventNames::mousedown, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::mousedown, createAttributeEventListener(this, name, value));
     else if (name == onmouseenterAttr)
-        setAttributeEventListener(EventNames::mouseenter, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::mouseenter, createAttributeEventListener(this, name, value));
     else if (name == onmouseleaveAttr)
-        setAttributeEventListener(EventNames::mouseleave, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::mouseleave, createAttributeEventListener(this, name, value));
     else if (name == onmousemoveAttr)
-        setAttributeEventListener(EventNames::mousemove, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::mousemove, createAttributeEventListener(this, name, value));
     else if (name == onmouseoutAttr)
-        setAttributeEventListener(EventNames::mouseout, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::mouseout, createAttributeEventListener(this, name, value));
     else if (name == onmouseoverAttr)
-        setAttributeEventListener(EventNames::mouseover, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::mouseover, createAttributeEventListener(this, name, value));
     else if (name == onmouseupAttr)
-        setAttributeEventListener(EventNames::mouseup, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::mouseup, createAttributeEventListener(this, name, value));
     else if (name == SVGNames::onfocusinAttr)
-        setAttributeEventListener(EventNames::focusin, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::focusin, createAttributeEventListener(this, name, value));
     else if (name == SVGNames::onfocusoutAttr)
-        setAttributeEventListener(EventNames::focusout, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::focusout, createAttributeEventListener(this, name, value));
     else if (name == SVGNames::onactivateAttr)
-        setAttributeEventListener(EventNames::DOMActivate, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::DOMActivate, createAttributeEventListener(this, name, value));
     else if (name == HTMLNames::classAttr) {
         // SVG animation has currently requires special storage of values so we set
         // the className here. svgAttributeChanged actually causes the resulting
@@ -842,11 +842,11 @@ bool SVGElement::removeEventListener(const AtomicString& eventType, EventListene
 
 static bool hasLoadListener(Element* element)
 {
-    if (element->hasEventListeners(EventNames::load))
+    if (element->hasEventListeners(EventTypeNames::load))
         return true;
 
     for (element = element->parentOrShadowHostElement(); element; element = element->parentOrShadowHostElement()) {
-        const EventListenerVector& entry = element->getEventListeners(EventNames::load);
+        const EventListenerVector& entry = element->getEventListeners(EventTypeNames::load);
         for (size_t i = 0; i < entry.size(); ++i) {
             if (entry[i].useCapture)
                 return true;
@@ -870,7 +870,7 @@ void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
         if (sendParentLoadEvents)
             parent = currentTarget->parentOrShadowHostElement(); // save the next parent to dispatch too incase dispatching the event changes the tree
         if (hasLoadListener(currentTarget.get()))
-            currentTarget->dispatchEvent(Event::create(EventNames::load));
+            currentTarget->dispatchEvent(Event::create(EventTypeNames::load));
         currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : RefPtr<SVGElement>();
         SVGElement* element = toSVGElement(currentTarget.get());
         if (!element || !element->isOutermostSVGSVGElement())
@@ -1057,7 +1057,7 @@ RenderStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
 
 bool SVGElement::hasFocusEventListeners() const
 {
-    return hasEventListeners(EventNames::focusin) || hasEventListeners(EventNames::focusout);
+    return hasEventListeners(EventTypeNames::focusin) || hasEventListeners(EventTypeNames::focusout);
 }
 
 bool SVGElement::isKeyboardFocusable() const

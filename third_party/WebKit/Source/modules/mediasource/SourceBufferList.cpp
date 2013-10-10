@@ -52,7 +52,7 @@ SourceBufferList::~SourceBufferList()
 void SourceBufferList::add(PassRefPtr<SourceBuffer> buffer)
 {
     m_list.append(buffer);
-    scheduleEvent(EventNames::addsourcebuffer);
+    scheduleEvent(EventTypeNames::addsourcebuffer);
 }
 
 void SourceBufferList::remove(SourceBuffer* buffer)
@@ -61,13 +61,13 @@ void SourceBufferList::remove(SourceBuffer* buffer)
     if (index == kNotFound)
         return;
     m_list.remove(index);
-    scheduleEvent(EventNames::removesourcebuffer);
+    scheduleEvent(EventTypeNames::removesourcebuffer);
 }
 
 void SourceBufferList::clear()
 {
     m_list.clear();
-    scheduleEvent(EventNames::removesourcebuffer);
+    scheduleEvent(EventTypeNames::removesourcebuffer);
 }
 
 void SourceBufferList::scheduleEvent(const AtomicString& eventName)

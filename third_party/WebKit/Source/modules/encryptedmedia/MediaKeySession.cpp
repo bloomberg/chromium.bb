@@ -149,7 +149,7 @@ void MediaKeySession::addKeyTimerFired(Timer<MediaKeySession>*)
 
 void MediaKeySession::keyAdded()
 {
-    RefPtr<Event> event = Event::create(EventNames::webkitkeyadded);
+    RefPtr<Event> event = Event::create(EventTypeNames::webkitkeyadded);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
@@ -174,7 +174,7 @@ void MediaKeySession::keyError(MediaKeyErrorCode errorCode, unsigned long system
     m_error = MediaKeyError::create(mediaKeyErrorCode, systemCode);
 
     // 3. queue a task to fire a simple event named keyerror at the MediaKeySession object.
-    RefPtr<Event> event = Event::create(EventNames::webkitkeyerror);
+    RefPtr<Event> event = Event::create(EventTypeNames::webkitkeyerror);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
@@ -188,7 +188,7 @@ void MediaKeySession::keyMessage(const unsigned char* message, size_t messageLen
     init.message = Uint8Array::create(message, messageLength);
     init.destinationURL = destinationURL;
 
-    RefPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventNames::webkitkeymessage, init);
+    RefPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::webkitkeymessage, init);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }

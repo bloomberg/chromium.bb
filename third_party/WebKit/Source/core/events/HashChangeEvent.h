@@ -75,7 +75,7 @@ private:
     }
 
     HashChangeEvent(const String& oldURL, const String& newURL)
-        : Event(EventNames::hashchange, false, false)
+        : Event(EventTypeNames::hashchange, false, false)
         , m_oldURL(oldURL)
         , m_newURL(newURL)
     {

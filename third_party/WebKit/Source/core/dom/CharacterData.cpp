@@ -222,7 +222,7 @@ void CharacterData::didModifyData(const String& oldData)
 
     if (!isInShadowTree()) {
         if (document().hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))
-            dispatchScopedEvent(MutationEvent::create(EventNames::DOMCharacterDataModified, true, 0, oldData, m_data));
+            dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMCharacterDataModified, true, 0, oldData, m_data));
         dispatchSubtreeModifiedEvent();
     }
     InspectorInstrumentation::characterDataModified(&document(), this);

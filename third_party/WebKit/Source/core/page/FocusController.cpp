@@ -139,19 +139,19 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
         RefPtr<Element> focusedElement(document->focusedElement());
         focusedElement->dispatchBlurEvent(0);
         if (focusedElement == document->focusedElement()) {
-            focusedElement->dispatchFocusOutEvent(EventNames::focusout, 0);
+            focusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, 0);
             if (focusedElement == document->focusedElement())
-                focusedElement->dispatchFocusOutEvent(EventNames::DOMFocusOut, 0);
+                focusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, 0);
         }
     }
-    document->dispatchWindowEvent(Event::create(focused ? EventNames::focus : EventNames::blur));
+    document->dispatchWindowEvent(Event::create(focused ? EventTypeNames::focus : EventTypeNames::blur));
     if (focused && document->focusedElement()) {
         RefPtr<Element> focusedElement(document->focusedElement());
         focusedElement->dispatchFocusEvent(0, FocusDirectionPage);
         if (focusedElement == document->focusedElement()) {
-            document->focusedElement()->dispatchFocusInEvent(EventNames::focusin, 0);
+            document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, 0);
             if (focusedElement == document->focusedElement())
-                document->focusedElement()->dispatchFocusInEvent(EventNames::DOMFocusIn, 0);
+                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, 0);
         }
     }
 }
@@ -236,12 +236,12 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
     // Now that the frame is updated, fire events and update the selection focused states of both frames.
     if (oldFrame && oldFrame->view()) {
         oldFrame->selection().setFocused(false);
-        oldFrame->document()->dispatchWindowEvent(Event::create(EventNames::blur));
+        oldFrame->document()->dispatchWindowEvent(Event::create(EventTypeNames::blur));
     }
 
     if (newFrame && newFrame->view() && isFocused()) {
         newFrame->selection().setFocused(true);
-        newFrame->document()->dispatchWindowEvent(Event::create(EventNames::focus));
+        newFrame->document()->dispatchWindowEvent(Event::create(EventTypeNames::focus));
     }
 
     m_isChangingFocusedFrame = false;

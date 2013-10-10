@@ -525,7 +525,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     // The FrameLoaderClient might block creation of a new WebGL context despite the page settings; in
     // particular, if WebGL contexts were lost one or more times via the GL_ARB_robustness extension.
     if (!frame->loader()->client()->allowWebGL(settings && settings->webGLEnabled())) {
-        canvas->dispatchEvent(WebGLContextEvent::create(EventNames::webglcontextcreationerror, false, true, "Web page was not allowed to create a WebGL context."));
+        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Web page was not allowed to create a WebGL context."));
         return nullptr;
     }
 
@@ -540,7 +540,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     RefPtr<GraphicsContext3D> context(GraphicsContext3D::create(attributes));
 
     if (!context || !context->makeContextCurrent()) {
-        canvas->dispatchEvent(WebGLContextEvent::create(EventNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
+        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
         return nullptr;
     }
 
@@ -552,7 +552,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     renderingContext->suspendIfNeeded();
 
     if (renderingContext->m_drawingBuffer->isZeroSized()) {
-        canvas->dispatchEvent(WebGLContextEvent::create(EventNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
+        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
         return nullptr;
     }
 
@@ -5338,7 +5338,7 @@ void WebGLRenderingContext::vertexAttribfvImpl(const char* functionName, GC3Duin
 
 void WebGLRenderingContext::dispatchContextLostEvent(Timer<WebGLRenderingContext>*)
 {
-    RefPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventNames::webglcontextlost, false, true, "");
+    RefPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
     canvas()->dispatchEvent(event);
     m_restoreAllowed = event->defaultPrevented();
     deactivateContext(this, m_contextLostMode != RealLostContext && m_restoreAllowed);
@@ -5401,7 +5401,7 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
 
     setupFlags();
     initializeNewContext();
-    canvas()->dispatchEvent(WebGLContextEvent::create(EventNames::webglcontextrestored, false, true, ""));
+    canvas()->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextrestored, false, true, ""));
 }
 
 String WebGLRenderingContext::ensureNotNull(const String& text) const

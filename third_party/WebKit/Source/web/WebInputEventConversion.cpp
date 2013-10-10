@@ -370,13 +370,13 @@ inline PlatformTouchPoint::State toPlatformTouchPointState(const WebTouchPoint::
 
 inline WebTouchPoint::State toWebTouchPointState(const AtomicString& type)
 {
-    if (type == EventNames::touchend)
+    if (type == EventTypeNames::touchend)
         return WebTouchPoint::StateReleased;
-    if (type == EventNames::touchcancel)
+    if (type == EventTypeNames::touchcancel)
         return WebTouchPoint::StateCancelled;
-    if (type == EventNames::touchstart)
+    if (type == EventTypeNames::touchstart)
         return WebTouchPoint::StatePressed;
-    if (type == EventNames::touchmove)
+    if (type == EventTypeNames::touchmove)
         return WebTouchPoint::StateMoved;
     return WebTouchPoint::StateUndefined;
 }
@@ -453,17 +453,17 @@ static void updateWebMouseEventFromWebCoreMouseEvent(const MouseRelatedEvent& ev
 
 WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const MouseEvent& event)
 {
-    if (event.type() == EventNames::mousemove)
+    if (event.type() == EventTypeNames::mousemove)
         type = WebInputEvent::MouseMove;
-    else if (event.type() == EventNames::mouseout)
+    else if (event.type() == EventTypeNames::mouseout)
         type = WebInputEvent::MouseLeave;
-    else if (event.type() == EventNames::mouseover)
+    else if (event.type() == EventTypeNames::mouseover)
         type = WebInputEvent::MouseEnter;
-    else if (event.type() == EventNames::mousedown)
+    else if (event.type() == EventTypeNames::mousedown)
         type = WebInputEvent::MouseDown;
-    else if (event.type() == EventNames::mouseup)
+    else if (event.type() == EventTypeNames::mouseup)
         type = WebInputEvent::MouseUp;
-    else if (event.type() == EventNames::contextmenu)
+    else if (event.type() == EventTypeNames::contextmenu)
         type = WebInputEvent::ContextMenu;
     else
         return; // Skip all other mouse events.
@@ -505,7 +505,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::
     if (!event.touches())
         return;
     if (event.touches()->length() != 1) {
-        if (event.touches()->length() || event.type() != EventNames::touchend || !event.changedTouches() || event.changedTouches()->length() != 1)
+        if (event.touches()->length() || event.type() != EventTypeNames::touchend || !event.changedTouches() || event.changedTouches()->length() != 1)
             return;
     }
 
@@ -513,11 +513,11 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::
     if (touch->identifier())
         return;
 
-    if (event.type() == EventNames::touchstart)
+    if (event.type() == EventTypeNames::touchstart)
         type = MouseDown;
-    else if (event.type() == EventNames::touchmove)
+    else if (event.type() == EventTypeNames::touchmove)
         type = MouseMove;
-    else if (event.type() == EventNames::touchend)
+    else if (event.type() == EventTypeNames::touchend)
         type = MouseUp;
     else
         return;
@@ -581,7 +581,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const WebCore::Widget* widget, const 
 
 WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const WheelEvent& event)
 {
-    if (event.type() != EventNames::wheel && event.type() != EventNames::mousewheel)
+    if (event.type() != EventTypeNames::wheel && event.type() != EventTypeNames::mousewheel)
         return;
     type = WebInputEvent::MouseWheel;
     updateWebMouseEventFromWebCoreMouseEvent(event, *widget, *renderObject, *this);
@@ -594,11 +594,11 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
 
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
 {
-    if (event.type() == EventNames::keydown)
+    if (event.type() == EventTypeNames::keydown)
         type = KeyDown;
-    else if (event.type() == EventNames::keyup)
+    else if (event.type() == EventTypeNames::keyup)
         type = WebInputEvent::KeyUp;
-    else if (event.type() == EventNames::keypress)
+    else if (event.type() == EventTypeNames::keypress)
         type = WebInputEvent::Char;
     else
         return; // Skip all other keyboard events.
@@ -699,13 +699,13 @@ static void addTouchPoints(const Widget* widget, const AtomicString& touchType, 
 
 WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const TouchEvent& event)
 {
-    if (event.type() == EventNames::touchstart)
+    if (event.type() == EventTypeNames::touchstart)
         type = TouchStart;
-    else if (event.type() == EventNames::touchmove)
+    else if (event.type() == EventTypeNames::touchmove)
         type = TouchMove;
-    else if (event.type() == EventNames::touchend)
+    else if (event.type() == EventTypeNames::touchend)
         type = TouchEnd;
-    else if (event.type() == EventNames::touchcancel)
+    else if (event.type() == EventTypeNames::touchcancel)
         type = TouchCancel;
     else {
         ASSERT_NOT_REACHED();
@@ -723,17 +723,17 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const WebCore::
 
 WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const GestureEvent& event)
 {
-    if (event.type() == EventNames::gesturetap)
+    if (event.type() == EventTypeNames::gesturetap)
         type = GestureTap;
-    else if (event.type() == EventNames::gestureshowpress)
+    else if (event.type() == EventTypeNames::gestureshowpress)
         type = GestureShowPress;
-    else if (event.type() == EventNames::gesturetapdown)
+    else if (event.type() == EventTypeNames::gesturetapdown)
         type = GestureTapDown;
-    else if (event.type() == EventNames::gesturescrollstart)
+    else if (event.type() == EventTypeNames::gesturescrollstart)
         type = GestureScrollBegin;
-    else if (event.type() == EventNames::gesturescrollend)
+    else if (event.type() == EventTypeNames::gesturescrollend)
         type = GestureScrollEnd;
-    else if (event.type() == EventNames::gesturescrollupdate) {
+    else if (event.type() == EventTypeNames::gesturescrollupdate) {
         type = GestureScrollUpdate;
         data.scrollUpdate.deltaX = event.deltaX();
         data.scrollUpdate.deltaY = event.deltaY();

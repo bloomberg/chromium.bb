@@ -52,7 +52,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(bool lengthCompu
 {
     if (m_deferEvents) {
         // Only store the latest progress event while suspended.
-        m_deferredProgressEvent = XMLHttpRequestProgressEvent::create(EventNames::progress, lengthComputable, loaded, total);
+        m_deferredProgressEvent = XMLHttpRequestProgressEvent::create(EventTypeNames::progress, lengthComputable, loaded, total);
         return;
     }
 
@@ -64,7 +64,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(bool lengthCompu
         ASSERT(!m_loaded);
         ASSERT(!m_total);
 
-        dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::progress, lengthComputable, loaded, total));
+        dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, lengthComputable, loaded, total));
         startRepeating(minimumProgressEventDispatchingIntervalInSeconds);
         return;
     }
@@ -87,7 +87,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchEvent(PassRefPtr<Event> event)
 {
     ASSERT(event);
     if (m_deferEvents) {
-        if (m_deferredEvents.size() > 1 && event->type() == EventNames::readystatechange && event->type() == m_deferredEvents.last()->type()) {
+        if (m_deferredEvents.size() > 1 && event->type() == EventTypeNames::readystatechange && event->type() == m_deferredEvents.last()->type()) {
             // Readystatechange events are state-less so avoid repeating two identical events in a row on resume.
             return;
         }
@@ -98,10 +98,10 @@ void XMLHttpRequestProgressEventThrottle::dispatchEvent(PassRefPtr<Event> event)
 
 void XMLHttpRequestProgressEventThrottle::dispatchEventAndLoadEnd(PassRefPtr<Event> event)
 {
-    ASSERT(event->type() == EventNames::load || event->type() == EventNames::abort || event->type() == EventNames::error || event->type() == EventNames::timeout);
+    ASSERT(event->type() == EventTypeNames::load || event->type() == EventTypeNames::abort || event->type() == EventTypeNames::error || event->type() == EventTypeNames::timeout);
 
     dispatchEvent(event);
-    dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::loadend));
+    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadend));
 }
 
 void XMLHttpRequestProgressEventThrottle::flushProgressEvent()
@@ -116,7 +116,7 @@ void XMLHttpRequestProgressEventThrottle::flushProgressEvent()
     if (!hasEventToDispatch())
         return;
 
-    PassRefPtr<Event> event = XMLHttpRequestProgressEvent::create(EventNames::progress, m_lengthComputable, m_loaded, m_total);
+    PassRefPtr<Event> event = XMLHttpRequestProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
     m_loaded = 0;
     m_total = 0;
 
@@ -159,7 +159,7 @@ void XMLHttpRequestProgressEventThrottle::fired()
         return;
     }
 
-    dispatchEvent(XMLHttpRequestProgressEvent::create(EventNames::progress, m_lengthComputable, m_loaded, m_total));
+    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total));
     m_total = 0;
     m_loaded = 0;
 }
@@ -186,7 +186,7 @@ void XMLHttpRequestProgressEventThrottle::suspend()
     // If we have a progress event waiting to be dispatched,
     // just defer it.
     if (hasEventToDispatch()) {
-        m_deferredProgressEvent = XMLHttpRequestProgressEvent::create(EventNames::progress, m_lengthComputable, m_loaded, m_total);
+        m_deferredProgressEvent = XMLHttpRequestProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
         m_total = 0;
         m_loaded = 0;
     }

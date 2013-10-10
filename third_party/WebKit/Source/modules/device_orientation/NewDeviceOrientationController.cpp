@@ -48,7 +48,7 @@ NewDeviceOrientationController::~NewDeviceOrientationController()
 
 void NewDeviceOrientationController::didChangeDeviceOrientation(DeviceOrientationData* deviceOrientationData)
 {
-    dispatchDeviceEvent(DeviceOrientationEvent::create(EventNames::deviceorientation, deviceOrientationData));
+    dispatchDeviceEvent(DeviceOrientationEvent::create(EventTypeNames::deviceorientation, deviceOrientationData));
 }
 
 const char* NewDeviceOrientationController::supplementName()
@@ -73,7 +73,7 @@ bool NewDeviceOrientationController::hasLastData()
 
 PassRefPtr<Event> NewDeviceOrientationController::getLastEvent()
 {
-    return DeviceOrientationEvent::create(EventNames::deviceorientation,
+    return DeviceOrientationEvent::create(EventTypeNames::deviceorientation,
         DeviceOrientationDispatcher::instance().latestDeviceOrientationData());
 }
 
@@ -89,20 +89,20 @@ void NewDeviceOrientationController::unregisterWithDispatcher()
 
 bool NewDeviceOrientationController::isNullEvent(Event* event)
 {
-    ASSERT(event->type() == EventNames::deviceorientation);
+    ASSERT(event->type() == EventTypeNames::deviceorientation);
     DeviceOrientationEvent* orientationEvent = static_cast<DeviceOrientationEvent*>(event);
     return !orientationEvent->orientation()->canProvideEventData();
 }
 
 void NewDeviceOrientationController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType == EventNames::deviceorientation && RuntimeEnabledFeatures::deviceOrientationEnabled())
+    if (eventType == EventTypeNames::deviceorientation && RuntimeEnabledFeatures::deviceOrientationEnabled())
         startUpdating();
 }
 
 void NewDeviceOrientationController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType == EventNames::deviceorientation)
+    if (eventType == EventTypeNames::deviceorientation)
         stopUpdating();
 }
 

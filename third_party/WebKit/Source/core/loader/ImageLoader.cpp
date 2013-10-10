@@ -42,19 +42,19 @@ namespace WebCore {
 
 static ImageEventSender& beforeLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventNames::beforeload));
+    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventTypeNames::beforeload));
     return sender;
 }
 
 static ImageEventSender& loadEventSender()
 {
-    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventNames::load));
+    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventTypeNames::load));
     return sender;
 }
 
 static ImageEventSender& errorEventSender()
 {
-    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventNames::error));
+    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventTypeNames::error));
     return sender;
 }
 
@@ -363,11 +363,11 @@ void ImageLoader::dispatchPendingEvent(ImageEventSender* eventSender)
 {
     ASSERT(eventSender == &beforeLoadEventSender() || eventSender == &loadEventSender() || eventSender == &errorEventSender());
     const AtomicString& eventType = eventSender->eventType();
-    if (eventType == EventNames::beforeload)
+    if (eventType == EventTypeNames::beforeload)
         dispatchPendingBeforeLoadEvent();
-    if (eventType == EventNames::load)
+    if (eventType == EventTypeNames::load)
         dispatchPendingLoadEvent();
-    if (eventType == EventNames::error)
+    if (eventType == EventTypeNames::error)
         dispatchPendingErrorEvent();
 }
 
@@ -421,7 +421,7 @@ void ImageLoader::dispatchPendingErrorEvent()
         return;
     m_hasPendingErrorEvent = false;
     if (element()->document().frame())
-        element()->dispatchEvent(Event::create(EventNames::error));
+        element()->dispatchEvent(Event::create(EventTypeNames::error));
 
     // Only consider updating the protection ref-count of the Element immediately before returning
     // from this function as doing so might result in the destruction of this ImageLoader.

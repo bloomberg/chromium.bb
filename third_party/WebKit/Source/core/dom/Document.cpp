@@ -1093,7 +1093,7 @@ void Document::setReadyState(ReadyState readyState)
     }
 
     m_readyState = readyState;
-    dispatchEvent(Event::create(EventNames::readystatechange));
+    dispatchEvent(Event::create(EventTypeNames::readystatechange));
 }
 
 String Document::encodingName() const
@@ -1377,7 +1377,7 @@ bool Document::webkitHidden() const
 
 void Document::dispatchVisibilityStateChangeEvent()
 {
-    dispatchEvent(Event::create(EventNames::webkitvisibilitychange));
+    dispatchEvent(Event::create(EventTypeNames::webkitvisibilitychange));
 }
 
 DOMSecurityPolicy* Document::securityPolicy()
@@ -2436,7 +2436,7 @@ void Document::dispatchUnloadEvents()
             toHTMLInputElement(currentFocusedElement)->endEditing();
         if (m_loadEventProgress < PageHideInProgress) {
             m_loadEventProgress = PageHideInProgress;
-            dispatchWindowEvent(PageTransitionEvent::create(EventNames::pagehide, false), this);
+            dispatchWindowEvent(PageTransitionEvent::create(EventTypeNames::pagehide, false), this);
             if (!m_frame)
                 return;
 
@@ -2445,7 +2445,7 @@ void Document::dispatchUnloadEvents()
             // time into freed memory.
             RefPtr<DocumentLoader> documentLoader =  m_frame->loader()->provisionalDocumentLoader();
             m_loadEventProgress = UnloadEventInProgress;
-            RefPtr<Event> unloadEvent(Event::create(EventNames::unload));
+            RefPtr<Event> unloadEvent(Event::create(EventTypeNames::unload));
             if (documentLoader && !documentLoader->timing()->unloadEventStart() && !documentLoader->timing()->unloadEventEnd()) {
                 DocumentLoadTiming* timing = documentLoader->timing();
                 ASSERT(timing->navigationStart());
@@ -3297,10 +3297,10 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
             newFocusedElement = 0;
         }
 
-        oldFocusedElement->dispatchFocusOutEvent(EventNames::focusout, newFocusedElement.get()); // DOM level 3 name for the bubbling blur event.
+        oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, newFocusedElement.get()); // DOM level 3 name for the bubbling blur event.
         // FIXME: We should remove firing DOMFocusOutEvent event when we are sure no content depends
         // on it, probably when <rdar://problem/8503958> is resolved.
-        oldFocusedElement->dispatchFocusOutEvent(EventNames::DOMFocusOut, newFocusedElement.get()); // DOM level 2 name for compatibility.
+        oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, newFocusedElement.get()); // DOM level 2 name for compatibility.
 
         if (m_focusedElement) {
             // handler shifted focus
@@ -3340,7 +3340,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
             goto SetFocusedElementDone;
         }
 
-        m_focusedElement->dispatchFocusInEvent(EventNames::focusin, oldFocusedElement.get()); // DOM level 3 bubbling focus event.
+        m_focusedElement->dispatchFocusInEvent(EventTypeNames::focusin, oldFocusedElement.get()); // DOM level 3 bubbling focus event.
 
         if (m_focusedElement != newFocusedElement) {
             // handler shifted focus
@@ -3350,7 +3350,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
 
         // FIXME: We should remove firing DOMFocusInEvent event when we are sure no content depends
         // on it, probably when <rdar://problem/8503958> is m.
-        m_focusedElement->dispatchFocusInEvent(EventNames::DOMFocusIn, oldFocusedElement.get()); // DOM level 2 for compatibility.
+        m_focusedElement->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, oldFocusedElement.get()); // DOM level 2 for compatibility.
 
         if (m_focusedElement != newFocusedElement) {
             // handler shifted focus
@@ -3600,7 +3600,7 @@ void Document::enqueueDocumentEvent(PassRefPtr<Event> event)
 void Document::enqueueScrollEventForNode(Node* target)
 {
     // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
-    RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventNames::scroll) : Event::create(EventNames::scroll);
+    RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventTypeNames::scroll) : Event::create(EventTypeNames::scroll);
     scrollEvent->setTarget(target);
     ensureScriptedAnimationController().scheduleEvent(scrollEvent.release());
 }
@@ -3632,38 +3632,38 @@ void Document::addMutationEventListenerTypeIfEnabled(ListenerType listenerType)
 
 void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
 {
-    if (eventType == EventNames::DOMSubtreeModified) {
+    if (eventType == EventTypeNames::DOMSubtreeModified) {
         UseCounter::count(this, UseCounter::DOMSubtreeModifiedEvent);
         addMutationEventListenerTypeIfEnabled(DOMSUBTREEMODIFIED_LISTENER);
-    } else if (eventType == EventNames::DOMNodeInserted) {
+    } else if (eventType == EventTypeNames::DOMNodeInserted) {
         UseCounter::count(this, UseCounter::DOMNodeInsertedEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEINSERTED_LISTENER);
-    } else if (eventType == EventNames::DOMNodeRemoved) {
+    } else if (eventType == EventTypeNames::DOMNodeRemoved) {
         UseCounter::count(this, UseCounter::DOMNodeRemovedEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEREMOVED_LISTENER);
-    } else if (eventType == EventNames::DOMNodeRemovedFromDocument) {
+    } else if (eventType == EventTypeNames::DOMNodeRemovedFromDocument) {
         UseCounter::count(this, UseCounter::DOMNodeRemovedFromDocumentEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEREMOVEDFROMDOCUMENT_LISTENER);
-    } else if (eventType == EventNames::DOMNodeInsertedIntoDocument) {
+    } else if (eventType == EventTypeNames::DOMNodeInsertedIntoDocument) {
         UseCounter::count(this, UseCounter::DOMNodeInsertedIntoDocumentEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEINSERTEDINTODOCUMENT_LISTENER);
-    } else if (eventType == EventNames::DOMCharacterDataModified) {
+    } else if (eventType == EventTypeNames::DOMCharacterDataModified) {
         UseCounter::count(this, UseCounter::DOMCharacterDataModifiedEvent);
         addMutationEventListenerTypeIfEnabled(DOMCHARACTERDATAMODIFIED_LISTENER);
-    } else if (eventType == EventNames::overflowchanged) {
+    } else if (eventType == EventTypeNames::overflowchanged) {
         addListenerType(OVERFLOWCHANGED_LISTENER);
-    } else if (eventType == EventNames::webkitAnimationStart || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventNames::animationstart)) {
+    } else if (eventType == EventTypeNames::webkitAnimationStart || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventTypeNames::animationstart)) {
         addListenerType(ANIMATIONSTART_LISTENER);
-    } else if (eventType == EventNames::webkitAnimationEnd || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventNames::animationend)) {
+    } else if (eventType == EventTypeNames::webkitAnimationEnd || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventTypeNames::animationend)) {
         addListenerType(ANIMATIONEND_LISTENER);
-    } else if (eventType == EventNames::webkitAnimationIteration || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventNames::animationiteration)) {
+    } else if (eventType == EventTypeNames::webkitAnimationIteration || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventTypeNames::animationiteration)) {
         addListenerType(ANIMATIONITERATION_LISTENER);
-    } else if (eventType == EventNames::webkitTransitionEnd || eventType == EventNames::transitionend) {
+    } else if (eventType == EventTypeNames::webkitTransitionEnd || eventType == EventTypeNames::transitionend) {
         addListenerType(TRANSITIONEND_LISTENER);
-    } else if (eventType == EventNames::beforeload) {
+    } else if (eventType == EventTypeNames::beforeload) {
         UseCounter::count(this, UseCounter::BeforeLoadEvent);
         addListenerType(BEFORELOAD_LISTENER);
-    } else if (eventType == EventNames::scroll) {
+    } else if (eventType == EventTypeNames::scroll) {
         addListenerType(SCROLL_LISTENER);
     }
 }
@@ -4285,7 +4285,7 @@ void Document::finishedParsing()
     setParsing(false);
     if (!m_documentTiming.domContentLoadedEventStart)
         m_documentTiming.domContentLoadedEventStart = monotonicallyIncreasingTime();
-    dispatchEvent(Event::createBubble(EventNames::DOMContentLoaded));
+    dispatchEvent(Event::createBubble(EventTypeNames::DOMContentLoaded));
     if (!m_documentTiming.domContentLoadedEventEnd)
         m_documentTiming.domContentLoadedEventEnd = monotonicallyIncreasingTime();
 
@@ -4778,7 +4778,7 @@ template void Document::displayBufferModifiedByEncodingInternal<UChar>(UChar*, u
 void Document::enqueuePageshowEvent(PageshowEventPersistence persisted)
 {
     // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs to fire asynchronously.
-    dispatchWindowEvent(PageTransitionEvent::create(EventNames::pageshow, persisted), this);
+    dispatchWindowEvent(PageTransitionEvent::create(EventTypeNames::pageshow, persisted), this);
 }
 
 void Document::enqueueHashchangeEvent(const String& oldURL, const String& newURL)
@@ -5187,7 +5187,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     bool ancestorHasCapturingMouseleaveListener = false;
     if (event && newHoverNode != oldHoverNode.get()) {
         for (Node* node = oldHoverNode.get(); node; node = node->parentOrShadowHostNode()) {
-            if (node->hasCapturingEventListeners(EventNames::mouseleave)) {
+            if (node->hasCapturingEventListeners(EventTypeNames::mouseleave)) {
                 ancestorHasCapturingMouseleaveListener = true;
                 break;
             }
@@ -5197,14 +5197,14 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     size_t removeCount = nodesToRemoveFromChain.size();
     for (size_t i = 0; i < removeCount; ++i) {
         nodesToRemoveFromChain[i]->setHovered(false);
-        if (event && (ancestorHasCapturingMouseleaveListener || nodesToRemoveFromChain[i]->hasEventListeners(EventNames::mouseleave)))
-            nodesToRemoveFromChain[i]->dispatchMouseEvent(*event, EventNames::mouseleave, 0, newHoverNode);
+        if (event && (ancestorHasCapturingMouseleaveListener || nodesToRemoveFromChain[i]->hasEventListeners(EventTypeNames::mouseleave)))
+            nodesToRemoveFromChain[i]->dispatchMouseEvent(*event, EventTypeNames::mouseleave, 0, newHoverNode);
     }
 
     bool ancestorHasCapturingMouseenterListener = false;
     if (event && newHoverNode != oldHoverNode.get()) {
         for (Node* node = newHoverNode; node; node = node->parentOrShadowHostNode()) {
-            if (node->hasCapturingEventListeners(EventNames::mouseenter)) {
+            if (node->hasCapturingEventListeners(EventTypeNames::mouseenter)) {
                 ancestorHasCapturingMouseenterListener = true;
                 break;
             }
@@ -5221,8 +5221,8 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
             nodesToAddToChain[i]->setActive(true);
         if (!sawCommonAncestor) {
             nodesToAddToChain[i]->setHovered(true);
-            if (event && (ancestorHasCapturingMouseenterListener || nodesToAddToChain[i]->hasEventListeners(EventNames::mouseenter)))
-                nodesToAddToChain[i]->dispatchMouseEvent(*event, EventNames::mouseenter, 0, oldHoverNode.get());
+            if (event && (ancestorHasCapturingMouseenterListener || nodesToAddToChain[i]->hasEventListeners(EventTypeNames::mouseenter)))
+                nodesToAddToChain[i]->dispatchMouseEvent(*event, EventTypeNames::mouseenter, 0, oldHoverNode.get());
         }
     }
 

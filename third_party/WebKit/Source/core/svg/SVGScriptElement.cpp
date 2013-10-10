@@ -83,7 +83,7 @@ void SVGScriptElement::parseAttribute(const QualifiedName& name, const AtomicStr
     }
 
     if (name == HTMLNames::onerrorAttr) {
-        setAttributeEventListener(EventNames::error, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::error, createAttributeEventListener(this, name, value));
         return;
     }
 

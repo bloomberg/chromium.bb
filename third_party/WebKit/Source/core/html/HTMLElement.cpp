@@ -204,83 +204,83 @@ AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrNam
     typedef HashMap<AtomicString, AtomicString> StringToStringMap;
     DEFINE_STATIC_LOCAL(StringToStringMap, attributeNameToEventNameMap, ());
     if (!attributeNameToEventNameMap.size()) {
-        attributeNameToEventNameMap.set(onanimationstartAttr.localName(), EventNames::animationstart);
-        attributeNameToEventNameMap.set(onanimationiterationAttr.localName(), EventNames::animationiteration);
-        attributeNameToEventNameMap.set(onanimationendAttr.localName(), EventNames::animationend);
-        attributeNameToEventNameMap.set(onclickAttr.localName(), EventNames::click);
-        attributeNameToEventNameMap.set(oncontextmenuAttr.localName(), EventNames::contextmenu);
-        attributeNameToEventNameMap.set(ondblclickAttr.localName(), EventNames::dblclick);
-        attributeNameToEventNameMap.set(onmousedownAttr.localName(), EventNames::mousedown);
-        attributeNameToEventNameMap.set(onmouseenterAttr.localName(), EventNames::mouseenter);
-        attributeNameToEventNameMap.set(onmouseleaveAttr.localName(), EventNames::mouseleave);
-        attributeNameToEventNameMap.set(onmousemoveAttr.localName(), EventNames::mousemove);
-        attributeNameToEventNameMap.set(onmouseoutAttr.localName(), EventNames::mouseout);
-        attributeNameToEventNameMap.set(onmouseoverAttr.localName(), EventNames::mouseover);
-        attributeNameToEventNameMap.set(onmouseupAttr.localName(), EventNames::mouseup);
-        attributeNameToEventNameMap.set(onmousewheelAttr.localName(), EventNames::mousewheel);
-        attributeNameToEventNameMap.set(onwheelAttr.localName(), EventNames::wheel);
-        attributeNameToEventNameMap.set(onfocusAttr.localName(), EventNames::focus);
-        attributeNameToEventNameMap.set(onfocusinAttr.localName(), EventNames::focusin);
-        attributeNameToEventNameMap.set(onfocusoutAttr.localName(), EventNames::focusout);
-        attributeNameToEventNameMap.set(onblurAttr.localName(), EventNames::blur);
-        attributeNameToEventNameMap.set(onkeydownAttr.localName(), EventNames::keydown);
-        attributeNameToEventNameMap.set(onkeypressAttr.localName(), EventNames::keypress);
-        attributeNameToEventNameMap.set(onkeyupAttr.localName(), EventNames::keyup);
-        attributeNameToEventNameMap.set(onscrollAttr.localName(), EventNames::scroll);
-        attributeNameToEventNameMap.set(onbeforecutAttr.localName(), EventNames::beforecut);
-        attributeNameToEventNameMap.set(oncutAttr.localName(), EventNames::cut);
-        attributeNameToEventNameMap.set(onbeforecopyAttr.localName(), EventNames::beforecopy);
-        attributeNameToEventNameMap.set(oncopyAttr.localName(), EventNames::copy);
-        attributeNameToEventNameMap.set(onbeforepasteAttr.localName(), EventNames::beforepaste);
-        attributeNameToEventNameMap.set(onpasteAttr.localName(), EventNames::paste);
-        attributeNameToEventNameMap.set(ondragenterAttr.localName(), EventNames::dragenter);
-        attributeNameToEventNameMap.set(ondragoverAttr.localName(), EventNames::dragover);
-        attributeNameToEventNameMap.set(ondragleaveAttr.localName(), EventNames::dragleave);
-        attributeNameToEventNameMap.set(ondropAttr.localName(), EventNames::drop);
-        attributeNameToEventNameMap.set(ondragstartAttr.localName(), EventNames::dragstart);
-        attributeNameToEventNameMap.set(ondragAttr.localName(), EventNames::drag);
-        attributeNameToEventNameMap.set(ondragendAttr.localName(), EventNames::dragend);
-        attributeNameToEventNameMap.set(onselectstartAttr.localName(), EventNames::selectstart);
-        attributeNameToEventNameMap.set(onsubmitAttr.localName(), EventNames::submit);
-        attributeNameToEventNameMap.set(onerrorAttr.localName(), EventNames::error);
-        attributeNameToEventNameMap.set(onwebkitanimationstartAttr.localName(), EventNames::webkitAnimationStart);
-        attributeNameToEventNameMap.set(onwebkitanimationiterationAttr.localName(), EventNames::webkitAnimationIteration);
-        attributeNameToEventNameMap.set(onwebkitanimationendAttr.localName(), EventNames::webkitAnimationEnd);
-        attributeNameToEventNameMap.set(onwebkittransitionendAttr.localName(), EventNames::webkitTransitionEnd);
-        attributeNameToEventNameMap.set(ontransitionendAttr.localName(), EventNames::webkitTransitionEnd);
-        attributeNameToEventNameMap.set(oninputAttr.localName(), EventNames::input);
-        attributeNameToEventNameMap.set(oninvalidAttr.localName(), EventNames::invalid);
-        attributeNameToEventNameMap.set(ontouchstartAttr.localName(), EventNames::touchstart);
-        attributeNameToEventNameMap.set(ontouchmoveAttr.localName(), EventNames::touchmove);
-        attributeNameToEventNameMap.set(ontouchendAttr.localName(), EventNames::touchend);
-        attributeNameToEventNameMap.set(ontouchcancelAttr.localName(), EventNames::touchcancel);
-        attributeNameToEventNameMap.set(onwebkitfullscreenchangeAttr.localName(), EventNames::webkitfullscreenchange);
-        attributeNameToEventNameMap.set(onwebkitfullscreenerrorAttr.localName(), EventNames::webkitfullscreenerror);
-        attributeNameToEventNameMap.set(onabortAttr.localName(), EventNames::abort);
-        attributeNameToEventNameMap.set(oncanplayAttr.localName(), EventNames::canplay);
-        attributeNameToEventNameMap.set(oncanplaythroughAttr.localName(), EventNames::canplaythrough);
-        attributeNameToEventNameMap.set(onchangeAttr.localName(), EventNames::change);
-        attributeNameToEventNameMap.set(ondurationchangeAttr.localName(), EventNames::durationchange);
-        attributeNameToEventNameMap.set(onemptiedAttr.localName(), EventNames::emptied);
-        attributeNameToEventNameMap.set(onendedAttr.localName(), EventNames::ended);
-        attributeNameToEventNameMap.set(onloadeddataAttr.localName(), EventNames::loadeddata);
-        attributeNameToEventNameMap.set(onloadedmetadataAttr.localName(), EventNames::loadedmetadata);
-        attributeNameToEventNameMap.set(onloadstartAttr.localName(), EventNames::loadstart);
-        attributeNameToEventNameMap.set(onpauseAttr.localName(), EventNames::pause);
-        attributeNameToEventNameMap.set(onplayAttr.localName(), EventNames::play);
-        attributeNameToEventNameMap.set(onplayingAttr.localName(), EventNames::playing);
-        attributeNameToEventNameMap.set(onprogressAttr.localName(), EventNames::progress);
-        attributeNameToEventNameMap.set(onratechangeAttr.localName(), EventNames::ratechange);
-        attributeNameToEventNameMap.set(onresetAttr.localName(), EventNames::reset);
-        attributeNameToEventNameMap.set(onseekedAttr.localName(), EventNames::seeked);
-        attributeNameToEventNameMap.set(onseekingAttr.localName(), EventNames::seeking);
-        attributeNameToEventNameMap.set(onselectAttr.localName(), EventNames::select);
-        attributeNameToEventNameMap.set(onstalledAttr.localName(), EventNames::stalled);
-        attributeNameToEventNameMap.set(onsuspendAttr.localName(), EventNames::suspend);
-        attributeNameToEventNameMap.set(ontimeupdateAttr.localName(), EventNames::timeupdate);
-        attributeNameToEventNameMap.set(onvolumechangeAttr.localName(), EventNames::volumechange);
-        attributeNameToEventNameMap.set(onwaitingAttr.localName(), EventNames::waiting);
-        attributeNameToEventNameMap.set(onloadAttr.localName(), EventNames::load);
+        attributeNameToEventNameMap.set(onanimationstartAttr.localName(), EventTypeNames::animationstart);
+        attributeNameToEventNameMap.set(onanimationiterationAttr.localName(), EventTypeNames::animationiteration);
+        attributeNameToEventNameMap.set(onanimationendAttr.localName(), EventTypeNames::animationend);
+        attributeNameToEventNameMap.set(onclickAttr.localName(), EventTypeNames::click);
+        attributeNameToEventNameMap.set(oncontextmenuAttr.localName(), EventTypeNames::contextmenu);
+        attributeNameToEventNameMap.set(ondblclickAttr.localName(), EventTypeNames::dblclick);
+        attributeNameToEventNameMap.set(onmousedownAttr.localName(), EventTypeNames::mousedown);
+        attributeNameToEventNameMap.set(onmouseenterAttr.localName(), EventTypeNames::mouseenter);
+        attributeNameToEventNameMap.set(onmouseleaveAttr.localName(), EventTypeNames::mouseleave);
+        attributeNameToEventNameMap.set(onmousemoveAttr.localName(), EventTypeNames::mousemove);
+        attributeNameToEventNameMap.set(onmouseoutAttr.localName(), EventTypeNames::mouseout);
+        attributeNameToEventNameMap.set(onmouseoverAttr.localName(), EventTypeNames::mouseover);
+        attributeNameToEventNameMap.set(onmouseupAttr.localName(), EventTypeNames::mouseup);
+        attributeNameToEventNameMap.set(onmousewheelAttr.localName(), EventTypeNames::mousewheel);
+        attributeNameToEventNameMap.set(onwheelAttr.localName(), EventTypeNames::wheel);
+        attributeNameToEventNameMap.set(onfocusAttr.localName(), EventTypeNames::focus);
+        attributeNameToEventNameMap.set(onfocusinAttr.localName(), EventTypeNames::focusin);
+        attributeNameToEventNameMap.set(onfocusoutAttr.localName(), EventTypeNames::focusout);
+        attributeNameToEventNameMap.set(onblurAttr.localName(), EventTypeNames::blur);
+        attributeNameToEventNameMap.set(onkeydownAttr.localName(), EventTypeNames::keydown);
+        attributeNameToEventNameMap.set(onkeypressAttr.localName(), EventTypeNames::keypress);
+        attributeNameToEventNameMap.set(onkeyupAttr.localName(), EventTypeNames::keyup);
+        attributeNameToEventNameMap.set(onscrollAttr.localName(), EventTypeNames::scroll);
+        attributeNameToEventNameMap.set(onbeforecutAttr.localName(), EventTypeNames::beforecut);
+        attributeNameToEventNameMap.set(oncutAttr.localName(), EventTypeNames::cut);
+        attributeNameToEventNameMap.set(onbeforecopyAttr.localName(), EventTypeNames::beforecopy);
+        attributeNameToEventNameMap.set(oncopyAttr.localName(), EventTypeNames::copy);
+        attributeNameToEventNameMap.set(onbeforepasteAttr.localName(), EventTypeNames::beforepaste);
+        attributeNameToEventNameMap.set(onpasteAttr.localName(), EventTypeNames::paste);
+        attributeNameToEventNameMap.set(ondragenterAttr.localName(), EventTypeNames::dragenter);
+        attributeNameToEventNameMap.set(ondragoverAttr.localName(), EventTypeNames::dragover);
+        attributeNameToEventNameMap.set(ondragleaveAttr.localName(), EventTypeNames::dragleave);
+        attributeNameToEventNameMap.set(ondropAttr.localName(), EventTypeNames::drop);
+        attributeNameToEventNameMap.set(ondragstartAttr.localName(), EventTypeNames::dragstart);
+        attributeNameToEventNameMap.set(ondragAttr.localName(), EventTypeNames::drag);
+        attributeNameToEventNameMap.set(ondragendAttr.localName(), EventTypeNames::dragend);
+        attributeNameToEventNameMap.set(onselectstartAttr.localName(), EventTypeNames::selectstart);
+        attributeNameToEventNameMap.set(onsubmitAttr.localName(), EventTypeNames::submit);
+        attributeNameToEventNameMap.set(onerrorAttr.localName(), EventTypeNames::error);
+        attributeNameToEventNameMap.set(onwebkitanimationstartAttr.localName(), EventTypeNames::webkitAnimationStart);
+        attributeNameToEventNameMap.set(onwebkitanimationiterationAttr.localName(), EventTypeNames::webkitAnimationIteration);
+        attributeNameToEventNameMap.set(onwebkitanimationendAttr.localName(), EventTypeNames::webkitAnimationEnd);
+        attributeNameToEventNameMap.set(onwebkittransitionendAttr.localName(), EventTypeNames::webkitTransitionEnd);
+        attributeNameToEventNameMap.set(ontransitionendAttr.localName(), EventTypeNames::webkitTransitionEnd);
+        attributeNameToEventNameMap.set(oninputAttr.localName(), EventTypeNames::input);
+        attributeNameToEventNameMap.set(oninvalidAttr.localName(), EventTypeNames::invalid);
+        attributeNameToEventNameMap.set(ontouchstartAttr.localName(), EventTypeNames::touchstart);
+        attributeNameToEventNameMap.set(ontouchmoveAttr.localName(), EventTypeNames::touchmove);
+        attributeNameToEventNameMap.set(ontouchendAttr.localName(), EventTypeNames::touchend);
+        attributeNameToEventNameMap.set(ontouchcancelAttr.localName(), EventTypeNames::touchcancel);
+        attributeNameToEventNameMap.set(onwebkitfullscreenchangeAttr.localName(), EventTypeNames::webkitfullscreenchange);
+        attributeNameToEventNameMap.set(onwebkitfullscreenerrorAttr.localName(), EventTypeNames::webkitfullscreenerror);
+        attributeNameToEventNameMap.set(onabortAttr.localName(), EventTypeNames::abort);
+        attributeNameToEventNameMap.set(oncanplayAttr.localName(), EventTypeNames::canplay);
+        attributeNameToEventNameMap.set(oncanplaythroughAttr.localName(), EventTypeNames::canplaythrough);
+        attributeNameToEventNameMap.set(onchangeAttr.localName(), EventTypeNames::change);
+        attributeNameToEventNameMap.set(ondurationchangeAttr.localName(), EventTypeNames::durationchange);
+        attributeNameToEventNameMap.set(onemptiedAttr.localName(), EventTypeNames::emptied);
+        attributeNameToEventNameMap.set(onendedAttr.localName(), EventTypeNames::ended);
+        attributeNameToEventNameMap.set(onloadeddataAttr.localName(), EventTypeNames::loadeddata);
+        attributeNameToEventNameMap.set(onloadedmetadataAttr.localName(), EventTypeNames::loadedmetadata);
+        attributeNameToEventNameMap.set(onloadstartAttr.localName(), EventTypeNames::loadstart);
+        attributeNameToEventNameMap.set(onpauseAttr.localName(), EventTypeNames::pause);
+        attributeNameToEventNameMap.set(onplayAttr.localName(), EventTypeNames::play);
+        attributeNameToEventNameMap.set(onplayingAttr.localName(), EventTypeNames::playing);
+        attributeNameToEventNameMap.set(onprogressAttr.localName(), EventTypeNames::progress);
+        attributeNameToEventNameMap.set(onratechangeAttr.localName(), EventTypeNames::ratechange);
+        attributeNameToEventNameMap.set(onresetAttr.localName(), EventTypeNames::reset);
+        attributeNameToEventNameMap.set(onseekedAttr.localName(), EventTypeNames::seeked);
+        attributeNameToEventNameMap.set(onseekingAttr.localName(), EventTypeNames::seeking);
+        attributeNameToEventNameMap.set(onselectAttr.localName(), EventTypeNames::select);
+        attributeNameToEventNameMap.set(onstalledAttr.localName(), EventTypeNames::stalled);
+        attributeNameToEventNameMap.set(onsuspendAttr.localName(), EventTypeNames::suspend);
+        attributeNameToEventNameMap.set(ontimeupdateAttr.localName(), EventTypeNames::timeupdate);
+        attributeNameToEventNameMap.set(onvolumechangeAttr.localName(), EventTypeNames::volumechange);
+        attributeNameToEventNameMap.set(onwaitingAttr.localName(), EventTypeNames::waiting);
+        attributeNameToEventNameMap.set(onloadAttr.localName(), EventTypeNames::load);
     }
 
     return attributeNameToEventNameMap.get(attrName.localName());
@@ -633,10 +633,10 @@ bool HTMLElement::supportsSpatialNavigationFocus() const
 
     if (!document().settings() || !document().settings()->spatialNavigationEnabled())
         return false;
-    return hasEventListeners(EventNames::click)
-        || hasEventListeners(EventNames::keydown)
-        || hasEventListeners(EventNames::keypress)
-        || hasEventListeners(EventNames::keyup);
+    return hasEventListeners(EventTypeNames::click)
+        || hasEventListeners(EventTypeNames::keydown)
+        || hasEventListeners(EventTypeNames::keypress)
+        || hasEventListeners(EventTypeNames::keyup);
 }
 
 bool HTMLElement::supportsFocus() const
@@ -1082,7 +1082,7 @@ void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropert
 
 void HTMLElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == EventNames::keypress && event->isKeyboardEvent()) {
+    if (event->type() == EventTypeNames::keypress && event->isKeyboardEvent()) {
         handleKeypressEvent(toKeyboardEvent(event));
         if (event->defaultHandled())
             return;

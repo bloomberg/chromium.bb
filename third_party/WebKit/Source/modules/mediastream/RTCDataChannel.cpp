@@ -216,10 +216,10 @@ void RTCDataChannel::didChangeReadyState(ReadyState newState)
 
     switch (m_readyState) {
     case ReadyStateOpen:
-        scheduleDispatchEvent(Event::create(EventNames::open));
+        scheduleDispatchEvent(Event::create(EventTypeNames::open));
         break;
     case ReadyStateClosed:
-        scheduleDispatchEvent(Event::create(EventNames::close));
+        scheduleDispatchEvent(Event::create(EventTypeNames::close));
         break;
     default:
         break;
@@ -256,7 +256,7 @@ void RTCDataChannel::didDetectError()
     if (m_stopped)
         return;
 
-    scheduleDispatchEvent(Event::create(EventNames::error));
+    scheduleDispatchEvent(Event::create(EventTypeNames::error));
 }
 
 const AtomicString& RTCDataChannel::interfaceName() const

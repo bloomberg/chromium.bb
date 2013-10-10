@@ -54,7 +54,7 @@ using namespace HTMLNames;
 
 static LinkEventSender& linkLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(LinkEventSender, sharedLoadEventSender, (EventNames::load));
+    DEFINE_STATIC_LOCAL(LinkEventSender, sharedLoadEventSender, (EventTypeNames::load));
     return sharedLoadEventSender;
 }
 
@@ -105,7 +105,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
         if (LinkStyle* link = linkStyle())
             link->setDisabledState(!value.isNull());
     } else if (name == onbeforeloadAttr)
-        setAttributeEventListener(EventNames::beforeload, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
     else {
         if (name == titleAttr) {
             if (LinkStyle* link = linkStyle())
@@ -240,32 +240,32 @@ bool HTMLLinkElement::styleSheetIsLoading() const
 
 void HTMLLinkElement::linkLoaded()
 {
-    dispatchEvent(Event::create(EventNames::load));
+    dispatchEvent(Event::create(EventTypeNames::load));
 }
 
 void HTMLLinkElement::linkLoadingErrored()
 {
-    dispatchEvent(Event::create(EventNames::error));
+    dispatchEvent(Event::create(EventTypeNames::error));
 }
 
 void HTMLLinkElement::didStartLinkPrerender()
 {
-    dispatchEvent(Event::create(EventNames::webkitprerenderstart));
+    dispatchEvent(Event::create(EventTypeNames::webkitprerenderstart));
 }
 
 void HTMLLinkElement::didStopLinkPrerender()
 {
-    dispatchEvent(Event::create(EventNames::webkitprerenderstop));
+    dispatchEvent(Event::create(EventTypeNames::webkitprerenderstop));
 }
 
 void HTMLLinkElement::didSendLoadForLinkPrerender()
 {
-    dispatchEvent(Event::create(EventNames::webkitprerenderload));
+    dispatchEvent(Event::create(EventTypeNames::webkitprerenderload));
 }
 
 void HTMLLinkElement::didSendDOMContentLoadedForLinkPrerender()
 {
-    dispatchEvent(Event::create(EventNames::webkitprerenderdomcontentloaded));
+    dispatchEvent(Event::create(EventTypeNames::webkitprerenderdomcontentloaded));
 }
 
 bool HTMLLinkElement::sheetLoaded()

@@ -47,7 +47,7 @@ PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort> prpPort)
 {
     RefPtr<MessagePort> port = prpPort;
     RefPtr<MessageEvent> event = MessageEvent::create(adoptPtr(new MessagePortArray(1, port)), String(), String(), port);
-    event->initEvent(EventNames::connect, false, false);
+    event->initEvent(EventTypeNames::connect, false, false);
     return event.release();
 }
 

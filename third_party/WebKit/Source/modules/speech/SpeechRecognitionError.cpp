@@ -72,7 +72,7 @@ PassRefPtr<SpeechRecognitionError> SpeechRecognitionError::create(const AtomicSt
 }
 
 SpeechRecognitionError::SpeechRecognitionError(const String& error, const String& message)
-    : Event(EventNames::error, /*canBubble=*/false, /*cancelable=*/false)
+    : Event(EventTypeNames::error, /*canBubble=*/false, /*cancelable=*/false)
     , m_error(error)
     , m_message(message)
 {

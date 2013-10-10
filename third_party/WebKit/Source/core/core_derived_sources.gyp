@@ -517,16 +517,16 @@
           'action_name': 'EventNames',
           'inputs': [
             '<@(make_names_files)',
-            'events/EventNames.in',
+            'events/EventTypeNames.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTypeNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTypeNames.h',
           ],
           'action': [
             'python',
             '../build/scripts/make_names.py',
-            'events/EventNames.in',
+            'events/EventTypeNames.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],

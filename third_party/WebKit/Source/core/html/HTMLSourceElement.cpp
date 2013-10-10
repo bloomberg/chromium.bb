@@ -114,7 +114,7 @@ void HTMLSourceElement::cancelPendingErrorEvent()
 void HTMLSourceElement::errorEventTimerFired(Timer<HTMLSourceElement>*)
 {
     LOG(Media, "HTMLSourceElement::errorEventTimerFired - %p", this);
-    dispatchEvent(Event::createCancelable(EventNames::error));
+    dispatchEvent(Event::createCancelable(EventTypeNames::error));
 }
 
 bool HTMLSourceElement::isURLAttribute(const Attribute& attribute) const

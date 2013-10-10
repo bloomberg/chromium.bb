@@ -164,7 +164,7 @@ void RangeInputType::handleTouchEvent(TouchEvent* event)
     if (element()->isDisabledOrReadOnly())
         return;
 
-    if (event->type() == EventNames::touchend) {
+    if (event->type() == EventTypeNames::touchend) {
         event->setDefaultHandled();
         return;
     }

@@ -64,7 +64,7 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     PassRefPtr<AbstractView> view, const IntPoint& screenLocation, const IntPoint& pageLocation,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice)
-    : MouseEvent(EventNames::wheel,
+    : MouseEvent(EventTypeNames::wheel,
                  true, true, view, 0, screenLocation.x(), screenLocation.y(),
                  pageLocation.x(), pageLocation.y(),
                  0, 0,
@@ -86,7 +86,7 @@ void WheelEvent::initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<Abstrac
     if (dispatched())
         return;
 
-    initUIEvent(EventNames::wheel, true, true, view, 0);
+    initUIEvent(EventTypeNames::wheel, true, true, view, 0);
 
     m_screenLocation = IntPoint(screenX, screenY);
     m_ctrlKey = ctrlKey;

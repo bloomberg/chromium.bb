@@ -376,9 +376,9 @@ void ImageDocument::dispose()
 
 void ImageEventListener::handleEvent(ScriptExecutionContext*, Event* event)
 {
-    if (event->type() == EventNames::resize)
+    if (event->type() == EventTypeNames::resize)
         m_doc->windowSizeChanged();
-    else if (event->type() == EventNames::click && event->isMouseEvent()) {
+    else if (event->type() == EventTypeNames::click && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
         m_doc->imageClicked(mouseEvent->x(), mouseEvent->y());
     }

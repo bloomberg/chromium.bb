@@ -950,7 +950,7 @@ void SVGUseElement::notifyFinished(Resource* resource)
 
     invalidateShadowTree();
     if (resource->errorOccurred())
-        dispatchEvent(Event::create(EventNames::error));
+        dispatchEvent(Event::create(EventTypeNames::error));
     else if (!resource->wasCanceled())
         SVGExternalResourcesRequired::dispatchLoadEvent(this);
 }

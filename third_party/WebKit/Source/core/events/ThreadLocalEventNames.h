@@ -23,8 +23,9 @@
 #define ThreadLocalEventNames_h
 
 #include "EventInterfaces.h"
-#include "EventNames.h"
 #include "EventTargetInterfaces.h"
+#include "EventTargetNames.h"
+#include "EventTypeNames.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "wtf/text/AtomicString.h"
 
@@ -51,10 +52,10 @@ namespace WebCore {
 
     inline bool isTouchEventType(const AtomicString& eventType)
     {
-        return eventType == EventNames::touchstart
-            || eventType == EventNames::touchmove
-            || eventType == EventNames::touchend
-            || eventType == EventNames::touchcancel;
+        return eventType == EventTypeNames::touchstart
+            || eventType == EventTypeNames::touchmove
+            || eventType == EventTypeNames::touchend
+            || eventType == EventTypeNames::touchcancel;
     }
 
 }

@@ -143,8 +143,8 @@ bool PopupListBox::handleMouseReleaseEvent(const PlatformMouseEvent& event)
     // be removed in acceptIndex() calling because of event handler.
     bool isSelectPopup = m_popupClient->menuStyle().menuType() == PopupMenuStyle::SelectPopup;
     if (acceptIndex(pointToRowIndex(event.position())) && m_focusedElement && isSelectPopup) {
-        m_focusedElement->dispatchMouseEvent(event, EventNames::mouseup);
-        m_focusedElement->dispatchMouseEvent(event, EventNames::click);
+        m_focusedElement->dispatchMouseEvent(event, EventTypeNames::mouseup);
+        m_focusedElement->dispatchMouseEvent(event, EventTypeNames::click);
 
         // Clear m_focusedElement here, because we cannot clear in hidePopup()
         // which is called before dispatchMouseEvent() is called.

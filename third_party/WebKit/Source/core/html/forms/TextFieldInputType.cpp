@@ -181,9 +181,9 @@ void TextFieldInputType::forwardEvent(Event* event)
             return;
     }
 
-    if (element()->renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(eventNames().interfaceForWheelEvent) || event->type() == EventNames::blur || event->type() == EventNames::focus)) {
+    if (element()->renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(eventNames().interfaceForWheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
         RenderTextControlSingleLine* renderTextControl = toRenderTextControlSingleLine(element()->renderer());
-        if (event->type() == EventNames::blur) {
+        if (event->type() == EventTypeNames::blur) {
             if (RenderBox* innerTextRenderer = innerTextElement()->renderBox()) {
                 if (RenderLayer* innerLayer = innerTextRenderer->layer()) {
                     IntSize scrollOffset(!renderTextControl->style()->isLeftToRightDirection() ? innerLayer->scrollWidth() : 0, 0);
@@ -192,7 +192,7 @@ void TextFieldInputType::forwardEvent(Event* event)
             }
 
             renderTextControl->capsLockStateMayHaveChanged();
-        } else if (event->type() == EventNames::focus) {
+        } else if (event->type() == EventTypeNames::focus) {
             renderTextControl->capsLockStateMayHaveChanged();
         }
 
@@ -214,7 +214,7 @@ void TextFieldInputType::handleBlurEvent()
 
 bool TextFieldInputType::shouldSubmitImplicitly(Event* event)
 {
-    return (event->type() == EventNames::textInput && event->hasInterface(eventNames().interfaceForTextEvent) && toTextEvent(event)->data() == "\n") || InputType::shouldSubmitImplicitly(event);
+    return (event->type() == EventTypeNames::textInput && event->hasInterface(eventNames().interfaceForTextEvent) && toTextEvent(event)->data() == "\n") || InputType::shouldSubmitImplicitly(event);
 }
 
 RenderObject* TextFieldInputType::createRenderer(RenderStyle*) const

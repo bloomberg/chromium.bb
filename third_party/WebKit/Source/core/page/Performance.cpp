@@ -160,7 +160,7 @@ void Performance::webkitSetResourceTimingBufferSize(unsigned size)
 {
     m_resourceTimingBufferSize = size;
     if (isResourceTimingBufferFull())
-        dispatchEvent(Event::create(EventNames::webkitresourcetimingbufferfull));
+        dispatchEvent(Event::create(EventTypeNames::webkitresourcetimingbufferfull));
 }
 
 static bool passesTimingAllowCheck(const ResourceResponse& response, Document* requestingDocument)
@@ -240,7 +240,7 @@ void Performance::addResourceTimingBuffer(PassRefPtr<PerformanceEntry> entry)
     m_resourceTimingBuffer.append(entry);
 
     if (isResourceTimingBufferFull())
-        dispatchEvent(Event::create(EventNames::webkitresourcetimingbufferfull));
+        dispatchEvent(Event::create(EventTypeNames::webkitresourcetimingbufferfull));
 }
 
 bool Performance::isResourceTimingBufferFull()

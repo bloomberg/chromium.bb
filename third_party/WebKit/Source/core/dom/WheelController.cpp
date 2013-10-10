@@ -102,7 +102,7 @@ void WheelController::didRemoveWheelEventHandler(Document* document)
 
 void WheelController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType != EventNames::wheel && eventType != EventNames::mousewheel)
+    if (eventType != EventTypeNames::wheel && eventType != EventTypeNames::mousewheel)
         return;
 
     Document* document = window->document();
@@ -111,7 +111,7 @@ void WheelController::didAddEventListener(DOMWindow* window, const AtomicString&
 
 void WheelController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType != EventNames::wheel && eventType != EventNames::mousewheel)
+    if (eventType != EventTypeNames::wheel && eventType != EventTypeNames::mousewheel)
         return;
 
     Document* document = window->document();

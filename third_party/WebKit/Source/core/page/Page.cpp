@@ -76,7 +76,7 @@ void Page::networkStateChanged(bool online)
         InspectorInstrumentation::networkStateChanged(*it, online);
     }
 
-    AtomicString eventName = online ? EventNames::online : EventNames::offline;
+    AtomicString eventName = online ? EventTypeNames::online : EventTypeNames::offline;
     for (unsigned i = 0; i < frames.size(); i++)
         frames[i]->document()->dispatchWindowEvent(Event::create(eventName));
 }

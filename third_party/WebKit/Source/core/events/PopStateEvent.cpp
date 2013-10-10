@@ -34,7 +34,7 @@
 namespace WebCore {
 
 PopStateEvent::PopStateEvent()
-    : Event(EventNames::popstate, false, true)
+    : Event(EventTypeNames::popstate, false, true)
     , m_serializedState(0)
     , m_history(0)
 {
@@ -49,7 +49,7 @@ PopStateEvent::PopStateEvent(const AtomicString& type, const PopStateEventInit& 
 }
 
 PopStateEvent::PopStateEvent(PassRefPtr<SerializedScriptValue> serializedState, PassRefPtr<History> history)
-    : Event(EventNames::popstate, false, true)
+    : Event(EventTypeNames::popstate, false, true)
     , m_serializedState(serializedState)
     , m_history(history)
 {

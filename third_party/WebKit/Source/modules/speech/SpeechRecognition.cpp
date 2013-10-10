@@ -79,32 +79,32 @@ void SpeechRecognition::abort()
 
 void SpeechRecognition::didStartAudio()
 {
-    dispatchEvent(Event::create(EventNames::audiostart));
+    dispatchEvent(Event::create(EventTypeNames::audiostart));
 }
 
 void SpeechRecognition::didStartSound()
 {
-    dispatchEvent(Event::create(EventNames::soundstart));
+    dispatchEvent(Event::create(EventTypeNames::soundstart));
 }
 
 void SpeechRecognition::didStartSpeech()
 {
-    dispatchEvent(Event::create(EventNames::speechstart));
+    dispatchEvent(Event::create(EventTypeNames::speechstart));
 }
 
 void SpeechRecognition::didEndSpeech()
 {
-    dispatchEvent(Event::create(EventNames::speechend));
+    dispatchEvent(Event::create(EventTypeNames::speechend));
 }
 
 void SpeechRecognition::didEndSound()
 {
-    dispatchEvent(Event::create(EventNames::soundend));
+    dispatchEvent(Event::create(EventTypeNames::soundend));
 }
 
 void SpeechRecognition::didEndAudio()
 {
-    dispatchEvent(Event::create(EventNames::audioend));
+    dispatchEvent(Event::create(EventTypeNames::audioend));
 }
 
 void SpeechRecognition::didReceiveResults(const Vector<RefPtr<SpeechRecognitionResult> >& newFinalResults, const Vector<RefPtr<SpeechRecognitionResult> >& currentInterimResults)
@@ -134,7 +134,7 @@ void SpeechRecognition::didReceiveError(PassRefPtr<SpeechRecognitionError> error
 
 void SpeechRecognition::didStart()
 {
-    dispatchEvent(Event::create(EventNames::start));
+    dispatchEvent(Event::create(EventTypeNames::start));
 }
 
 void SpeechRecognition::didEnd()
@@ -142,7 +142,7 @@ void SpeechRecognition::didEnd()
     m_started = false;
     m_stopping = false;
     if (!m_stoppedByActiveDOMObject)
-        dispatchEvent(Event::create(EventNames::end));
+        dispatchEvent(Event::create(EventTypeNames::end));
     unsetPendingActivity(this);
 }
 

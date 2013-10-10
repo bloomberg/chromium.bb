@@ -2185,27 +2185,27 @@ bool Element::isMouseFocusable() const
 
 void Element::dispatchFocusEvent(Element* oldFocusedElement, FocusDirection)
 {
-    RefPtr<FocusEvent> event = FocusEvent::create(EventNames::focus, false, false, document().defaultView(), 0, oldFocusedElement);
+    RefPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::focus, false, false, document().defaultView(), 0, oldFocusedElement);
     EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(event.release()));
 }
 
 void Element::dispatchBlurEvent(Element* newFocusedElement)
 {
-    RefPtr<FocusEvent> event = FocusEvent::create(EventNames::blur, false, false, document().defaultView(), 0, newFocusedElement);
+    RefPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::blur, false, false, document().defaultView(), 0, newFocusedElement);
     EventDispatcher::dispatchEvent(this, BlurEventDispatchMediator::create(event.release()));
 }
 
 void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-    ASSERT(eventType == EventNames::focusin || eventType == EventNames::DOMFocusIn);
+    ASSERT(eventType == EventTypeNames::focusin || eventType == EventTypeNames::DOMFocusIn);
     dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document().defaultView(), 0, oldFocusedElement)));
 }
 
 void Element::dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-    ASSERT(eventType == EventNames::focusout || eventType == EventNames::DOMFocusOut);
+    ASSERT(eventType == EventTypeNames::focusout || eventType == EventTypeNames::DOMFocusOut);
     dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document().defaultView(), 0, newFocusedElement)));
 }
 

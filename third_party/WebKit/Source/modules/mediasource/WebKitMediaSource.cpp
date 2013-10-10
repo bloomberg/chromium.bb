@@ -151,17 +151,17 @@ void WebKitMediaSource::onReadyStateChange(const AtomicString& oldState, const A
     if (isClosed()) {
         m_sourceBuffers->clear();
         m_activeSourceBuffers->clear();
-        scheduleEvent(EventNames::webkitsourceclose);
+        scheduleEvent(EventTypeNames::webkitsourceclose);
         return;
     }
 
     if (oldState == openKeyword() && newState == endedKeyword()) {
-        scheduleEvent(EventNames::webkitsourceended);
+        scheduleEvent(EventTypeNames::webkitsourceended);
         return;
     }
 
     if (isOpen()) {
-        scheduleEvent(EventNames::webkitsourceopen);
+        scheduleEvent(EventTypeNames::webkitsourceopen);
         return;
     }
 }

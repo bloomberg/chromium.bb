@@ -68,7 +68,7 @@ private:
     }
 
     explicit BeforeLoadEvent(const String& url)
-        : Event(EventNames::beforeload, false, true)
+        : Event(EventTypeNames::beforeload, false, true)
         , m_url(url)
     {
         ScriptWrappable::init(this);

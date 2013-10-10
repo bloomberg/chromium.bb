@@ -111,37 +111,37 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
     } else if (name == bordercolorAttr)
         m_borderColorSet = !value.isEmpty();
     else if (name == onloadAttr)
-        document().setWindowAttributeEventListener(EventNames::load, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::load, createAttributeEventListener(document().frame(), name, value));
     else if (name == onbeforeunloadAttr)
-        document().setWindowAttributeEventListener(EventNames::beforeunload, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::beforeunload, createAttributeEventListener(document().frame(), name, value));
     else if (name == onunloadAttr)
-        document().setWindowAttributeEventListener(EventNames::unload, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::unload, createAttributeEventListener(document().frame(), name, value));
     else if (name == onblurAttr)
-        document().setWindowAttributeEventListener(EventNames::blur, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::blur, createAttributeEventListener(document().frame(), name, value));
     else if (name == onfocusAttr)
-        document().setWindowAttributeEventListener(EventNames::focus, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::focus, createAttributeEventListener(document().frame(), name, value));
     else if (name == onfocusinAttr)
-        document().setWindowAttributeEventListener(EventNames::focusin, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::focusin, createAttributeEventListener(document().frame(), name, value));
     else if (name == onfocusoutAttr)
-        document().setWindowAttributeEventListener(EventNames::focusout, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::focusout, createAttributeEventListener(document().frame(), name, value));
 #if ENABLE(ORIENTATION_EVENTS)
     else if (name == onorientationchangeAttr)
-        document().setWindowAttributeEventListener(EventNames::orientationchange, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::orientationchange, createAttributeEventListener(document().frame(), name, value));
 #endif
     else if (name == onhashchangeAttr)
-        document().setWindowAttributeEventListener(EventNames::hashchange, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::hashchange, createAttributeEventListener(document().frame(), name, value));
     else if (name == onresizeAttr)
-        document().setWindowAttributeEventListener(EventNames::resize, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::resize, createAttributeEventListener(document().frame(), name, value));
     else if (name == onscrollAttr)
-        document().setWindowAttributeEventListener(EventNames::scroll, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::scroll, createAttributeEventListener(document().frame(), name, value));
     else if (name == onstorageAttr)
-        document().setWindowAttributeEventListener(EventNames::storage, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::storage, createAttributeEventListener(document().frame(), name, value));
     else if (name == ononlineAttr)
-        document().setWindowAttributeEventListener(EventNames::online, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::online, createAttributeEventListener(document().frame(), name, value));
     else if (name == onofflineAttr)
-        document().setWindowAttributeEventListener(EventNames::offline, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::offline, createAttributeEventListener(document().frame(), name, value));
     else if (name == onpopstateAttr)
-        document().setWindowAttributeEventListener(EventNames::popstate, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::popstate, createAttributeEventListener(document().frame(), name, value));
     else
         HTMLElement::parseAttribute(name, value);
 }

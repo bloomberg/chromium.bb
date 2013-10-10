@@ -528,7 +528,7 @@ void WebSocket::didConnect()
         return;
 
     ASSERT(scriptExecutionContext());
-    dispatchEvent(Event::create(EventNames::open));
+    dispatchEvent(Event::create(EventTypeNames::open));
 }
 
 void WebSocket::didReceiveMessage(const String& msg)
@@ -578,7 +578,7 @@ void WebSocket::didReceiveMessageError()
         return;
 
     ASSERT(scriptExecutionContext());
-    dispatchEvent(Event::create(EventNames::error));
+    dispatchEvent(Event::create(EventTypeNames::error));
 }
 
 void WebSocket::didUpdateBufferedAmount(unsigned long bufferedAmount)

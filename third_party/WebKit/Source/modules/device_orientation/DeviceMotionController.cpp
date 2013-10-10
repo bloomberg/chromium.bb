@@ -51,7 +51,7 @@ DeviceMotionController::~DeviceMotionController()
 
 void DeviceMotionController::didChangeDeviceMotion(DeviceMotionData* deviceMotionData)
 {
-    dispatchDeviceEvent(DeviceMotionEvent::create(EventNames::devicemotion, deviceMotionData));
+    dispatchDeviceEvent(DeviceMotionEvent::create(EventTypeNames::devicemotion, deviceMotionData));
 }
 
 const char* DeviceMotionController::supplementName()
@@ -76,7 +76,7 @@ bool DeviceMotionController::hasLastData()
 
 PassRefPtr<Event> DeviceMotionController::getLastEvent()
 {
-    return DeviceMotionEvent::create(EventNames::devicemotion, DeviceMotionDispatcher::instance().latestDeviceMotionData());
+    return DeviceMotionEvent::create(EventTypeNames::devicemotion, DeviceMotionDispatcher::instance().latestDeviceMotionData());
 }
 
 void DeviceMotionController::registerWithDispatcher()
@@ -91,14 +91,14 @@ void DeviceMotionController::unregisterWithDispatcher()
 
 bool DeviceMotionController::isNullEvent(Event* event)
 {
-    ASSERT(event->type() == EventNames::devicemotion);
+    ASSERT(event->type() == EventTypeNames::devicemotion);
     DeviceMotionEvent* motionEvent = static_cast<DeviceMotionEvent*>(event);
     return !motionEvent->deviceMotionData()->canProvideEventData();
 }
 
 void DeviceMotionController::didAddEventListener(DOMWindow*, const AtomicString& eventType)
 {
-    if (eventType == EventNames::devicemotion && RuntimeEnabledFeatures::deviceMotionEnabled()) {
+    if (eventType == EventTypeNames::devicemotion && RuntimeEnabledFeatures::deviceMotionEnabled()) {
         if (page() && page()->visibilityState() == PageVisibilityStateVisible)
             startUpdating();
         m_hasEventListener = true;
@@ -107,7 +107,7 @@ void DeviceMotionController::didAddEventListener(DOMWindow*, const AtomicString&
 
 void DeviceMotionController::didRemoveEventListener(DOMWindow*, const AtomicString& eventType)
 {
-    if (eventType == EventNames::devicemotion) {
+    if (eventType == EventTypeNames::devicemotion) {
         stopUpdating();
         m_hasEventListener = false;
     }

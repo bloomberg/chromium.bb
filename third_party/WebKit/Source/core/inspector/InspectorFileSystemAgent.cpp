@@ -394,9 +394,9 @@ public:
 
     virtual void handleEvent(ScriptExecutionContext*, Event* event) OVERRIDE
     {
-        if (event->type() == EventNames::load)
+        if (event->type() == EventTypeNames::load)
             didRead();
-        else if (event->type() == EventNames::error)
+        else if (event->type() == EventTypeNames::error)
             didHitError(m_reader->error().get());
     }
 

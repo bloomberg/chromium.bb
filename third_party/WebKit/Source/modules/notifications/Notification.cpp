@@ -194,27 +194,27 @@ void Notification::finalize()
 void Notification::dispatchShowEvent()
 {
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    dispatchEvent(Event::create(EventNames::display));
+    dispatchEvent(Event::create(EventTypeNames::display));
 #endif
-    dispatchEvent(Event::create(EventNames::show));
+    dispatchEvent(Event::create(EventTypeNames::show));
 }
 
 void Notification::dispatchClickEvent()
 {
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
     WindowFocusAllowedIndicator windowFocusAllowed;
-    dispatchEvent(Event::create(EventNames::click));
+    dispatchEvent(Event::create(EventTypeNames::click));
 }
 
 void Notification::dispatchCloseEvent()
 {
-    dispatchEvent(Event::create(EventNames::close));
+    dispatchEvent(Event::create(EventTypeNames::close));
     finalize();
 }
 
 void Notification::dispatchErrorEvent()
 {
-    dispatchEvent(Event::create(EventNames::error));
+    dispatchEvent(Event::create(EventTypeNames::error));
 }
 
 void Notification::taskTimerFired(Timer<Notification>* timer)

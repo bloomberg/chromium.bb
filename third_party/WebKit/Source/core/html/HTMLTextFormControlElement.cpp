@@ -91,7 +91,7 @@ void HTMLTextFormControlElement::dispatchBlurEvent(Element* newFocusedElement)
 
 void HTMLTextFormControlElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == EventNames::webkitEditableContentChanged && renderer() && renderer()->isTextControl()) {
+    if (event->type() == EventTypeNames::webkitEditableContentChanged && renderer() && renderer()->isTextControl()) {
         m_lastChangeWasUserEdit = true;
         subtreeHasChanged();
         return;
@@ -102,7 +102,7 @@ void HTMLTextFormControlElement::defaultEventHandler(Event* event)
 
 void HTMLTextFormControlElement::forwardEvent(Event* event)
 {
-    if (event->type() == EventNames::blur || event->type() == EventNames::focus)
+    if (event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)
         return;
     innerTextElement()->defaultEventHandler(event);
 }
@@ -482,7 +482,7 @@ void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
 
     if (Frame* frame = document().frame()) {
         if (frame->selection().isRange() && userTriggered)
-            dispatchEvent(Event::createBubble(EventNames::select));
+            dispatchEvent(Event::createBubble(EventTypeNames::select));
     }
 }
 

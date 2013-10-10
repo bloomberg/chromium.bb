@@ -51,7 +51,7 @@ void HTMLImageLoader::dispatchLoadEvent()
     bool errorOccurred = image()->errorOccurred();
     if (!errorOccurred && image()->response().httpStatusCode() >= 400)
         errorOccurred = element()->hasTagName(HTMLNames::objectTag); // An <object> considers a 404 to be an error and should fire onerror.
-    element()->dispatchEvent(Event::create(errorOccurred ? EventNames::error : EventNames::load));
+    element()->dispatchEvent(Event::create(errorOccurred ? EventTypeNames::error : EventTypeNames::load));
 }
 
 String HTMLImageLoader::sourceURI(const AtomicString& attr) const

@@ -157,7 +157,7 @@ void StorageAreaProxy::dispatchLocalStorageEvent(const String& key, const String
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
             Storage* storage = frame->domWindow()->optionalLocalStorage();
             if (storage && frame->document()->securityOrigin()->equal(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
-                frame->document()->enqueueWindowEvent(StorageEvent::create(EventNames::storage, key, oldValue, newValue, pageURL, storage));
+                frame->document()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
         }
         InspectorInstrumentation::didDispatchDOMStorageEvent(*it, key, oldValue, newValue, LocalStorage, securityOrigin);
     }
@@ -187,7 +187,7 @@ void StorageAreaProxy::dispatchSessionStorageEvent(const String& key, const Stri
     for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         Storage* storage = frame->domWindow()->optionalSessionStorage();
         if (storage && frame->document()->securityOrigin()->equal(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
-            frame->document()->enqueueWindowEvent(StorageEvent::create(EventNames::storage, key, oldValue, newValue, pageURL, storage));
+            frame->document()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
     }
     InspectorInstrumentation::didDispatchDOMStorageEvent(page, key, oldValue, newValue, SessionStorage, securityOrigin);
 }

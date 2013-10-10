@@ -86,10 +86,10 @@ public:
 
     void setOnmessage(PassRefPtr<EventListener> listener, DOMWrapperWorld* world)
     {
-        setAttributeEventListener(EventNames::message, listener, world);
+        setAttributeEventListener(EventTypeNames::message, listener, world);
         start();
     }
-    EventListener* onmessage(DOMWrapperWorld* world) { return getAttributeEventListener(EventNames::message, world); }
+    EventListener* onmessage(DOMWrapperWorld* world) { return getAttributeEventListener(EventTypeNames::message, world); }
 
     // A port starts out its life entangled, and remains entangled until it is closed or is cloned.
     bool isEntangled() { return !m_closed && !isNeutered(); }

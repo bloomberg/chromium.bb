@@ -265,7 +265,7 @@ void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
     m_objectStoreCleanupMap.clear();
 
     // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
-    enqueueEvent(Event::createBubble(EventNames::abort));
+    enqueueEvent(Event::createBubble(EventTypeNames::abort));
 
     // If script has stopped and GC has completed, database may have last reference to this object.
     RefPtr<IDBTransaction> protect(this);
@@ -280,7 +280,7 @@ void IDBTransaction::onComplete()
     m_objectStoreCleanupMap.clear();
 
     // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
-    enqueueEvent(Event::create(EventNames::complete));
+    enqueueEvent(Event::create(EventTypeNames::complete));
 
     // If script has stopped and GC has completed, database may have last reference to this object.
     RefPtr<IDBTransaction> protect(this);
@@ -359,7 +359,7 @@ bool IDBTransaction::dispatchEvent(PassRefPtr<Event> event)
     targets.append(db());
 
     // FIXME: When we allow custom event dispatching, this will probably need to change.
-    ASSERT(event->type() == EventNames::complete || event->type() == EventNames::abort);
+    ASSERT(event->type() == EventTypeNames::complete || event->type() == EventTypeNames::abort);
     bool returnValue = IDBEventDispatcher::dispatch(event.get(), targets);
     // FIXME: Try to construct a test where |this| outlives openDBRequest and we
     // get a crash.

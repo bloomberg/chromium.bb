@@ -684,7 +684,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // FIXME: ignore for the moment
     } else if (name == onsearchAttr) {
         // Search field and slider attributes all just cause updateFromElement to be called through style recalcing.
-        setAttributeEventListener(EventNames::search, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::search, createAttributeEventListener(this, name, value));
     } else if (name == resultsAttr) {
         int oldResults = m_maxResults;
         m_maxResults = !value.isNull() ? std::min(value.toInt(), maxSavedResults) : -1;
@@ -747,7 +747,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         }
         UseCounter::count(&document(), UseCounter::PrefixedSpeechAttribute);
     } else if (name == onwebkitspeechchangeAttr)
-        setAttributeEventListener(EventNames::webkitspeechchange, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::webkitspeechchange, createAttributeEventListener(this, name, value));
 #endif
     else if (name == webkitdirectoryAttr) {
         HTMLTextFormControlElement::parseAttribute(name, value);
@@ -1091,11 +1091,11 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
 
 void* HTMLInputElement::preDispatchEventHandler(Event* event)
 {
-    if (event->type() == EventNames::textInput && m_inputTypeView->shouldSubmitImplicitly(event)) {
+    if (event->type() == EventTypeNames::textInput && m_inputTypeView->shouldSubmitImplicitly(event)) {
         event->stopPropagation();
         return 0;
     }
-    if (event->type() != EventNames::click)
+    if (event->type() != EventTypeNames::click)
         return 0;
     if (!event->isMouseEvent() || toMouseEvent(event)->button() != LeftButton)
         return 0;
@@ -1113,7 +1113,7 @@ void HTMLInputElement::postDispatchEventHandler(Event* event, void* dataFromPreD
 
 void HTMLInputElement::defaultEventHandler(Event* evt)
 {
-    if (evt->isMouseEvent() && evt->type() == EventNames::click && toMouseEvent(evt)->button() == LeftButton) {
+    if (evt->isMouseEvent() && evt->type() == EventTypeNames::click && toMouseEvent(evt)->button() == LeftButton) {
         m_inputTypeView->handleClickEvent(toMouseEvent(evt));
         if (evt->defaultHandled())
             return;
@@ -1125,7 +1125,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
             return;
     }
 
-    if (evt->isKeyboardEvent() && evt->type() == EventNames::keydown) {
+    if (evt->isKeyboardEvent() && evt->type() == EventTypeNames::keydown) {
         m_inputTypeView->handleKeydownEvent(toKeyboardEvent(evt));
         if (evt->defaultHandled())
             return;
@@ -1133,7 +1133,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
 
     // Call the base event handler before any of our own event handling for almost all events in text fields.
     // Makes editing keyboard handling take precedence over the keydown and keypress handling in this function.
-    bool callBaseClassEarly = isTextField() && (evt->type() == EventNames::keydown || evt->type() == EventNames::keypress);
+    bool callBaseClassEarly = isTextField() && (evt->type() == EventTypeNames::keydown || evt->type() == EventTypeNames::keypress);
     if (callBaseClassEarly) {
         HTMLTextFormControlElement::defaultEventHandler(evt);
         if (evt->defaultHandled())
@@ -1144,7 +1144,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
     // actually submitting the form. For reset inputs, the form is reset. These events are sent when the user clicks
     // on the element, or presses enter while it is the active element. JavaScript code wishing to activate the element
     // must dispatch a DOMActivate event - a click event will not do the job.
-    if (evt->type() == EventNames::DOMActivate) {
+    if (evt->type() == EventTypeNames::DOMActivate) {
         m_inputType->handleDOMActivateEvent(evt);
         if (evt->defaultHandled())
             return;
@@ -1152,13 +1152,13 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
 
     // Use key press event here since sending simulated mouse events
     // on key down blocks the proper sending of the key press event.
-    if (evt->isKeyboardEvent() && evt->type() == EventNames::keypress) {
+    if (evt->isKeyboardEvent() && evt->type() == EventTypeNames::keypress) {
         m_inputTypeView->handleKeypressEvent(toKeyboardEvent(evt));
         if (evt->defaultHandled())
             return;
     }
 
-    if (evt->isKeyboardEvent() && evt->type() == EventNames::keyup) {
+    if (evt->isKeyboardEvent() && evt->type() == EventTypeNames::keyup) {
         m_inputTypeView->handleKeyupEvent(toKeyboardEvent(evt));
         if (evt->defaultHandled())
             return;
@@ -1184,7 +1184,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
     if (evt->isBeforeTextInsertedEvent())
         m_inputTypeView->handleBeforeTextInsertedEvent(static_cast<BeforeTextInsertedEvent*>(evt));
 
-    if (evt->isMouseEvent() && evt->type() == EventNames::mousedown) {
+    if (evt->isMouseEvent() && evt->type() == EventTypeNames::mousedown) {
         m_inputTypeView->handleMouseDownEvent(toMouseEvent(evt));
         if (evt->defaultHandled())
             return;
@@ -1403,7 +1403,7 @@ void HTMLInputElement::onSearch()
     ASSERT(isSearchField());
     if (m_inputType)
         static_cast<SearchInputType*>(m_inputType.get())->stopSearchEventTimer();
-    dispatchEvent(Event::createBubble(EventNames::search));
+    dispatchEvent(Event::createBubble(EventTypeNames::search));
 }
 
 void HTMLInputElement::updateClearButtonVisibility()

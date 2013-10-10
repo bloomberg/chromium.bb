@@ -192,9 +192,9 @@ void FileReader::doAbort()
 
     m_error = FileError::create(FileError::ABORT_ERR);
 
-    fireEvent(EventNames::error);
-    fireEvent(EventNames::abort);
-    fireEvent(EventNames::loadend);
+    fireEvent(EventTypeNames::error);
+    fireEvent(EventTypeNames::abort);
+    fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
     unsetPendingActivity(this);
@@ -212,7 +212,7 @@ void FileReader::terminate()
 
 void FileReader::didStartLoading()
 {
-    fireEvent(EventNames::loadstart);
+    fireEvent(EventTypeNames::loadstart);
 }
 
 void FileReader::didReceiveData()
@@ -222,7 +222,7 @@ void FileReader::didReceiveData()
     if (!m_lastProgressNotificationTimeMS)
         m_lastProgressNotificationTimeMS = now;
     else if (now - m_lastProgressNotificationTimeMS > progressNotificationIntervalMS) {
-        fireEvent(EventNames::progress);
+        fireEvent(EventTypeNames::progress);
         m_lastProgressNotificationTimeMS = now;
     }
 }
@@ -238,13 +238,13 @@ void FileReader::didFinishLoading()
     // if we're still loading (therefore we need abort process) or not.
     m_loadingState = LoadingStateNone;
 
-    fireEvent(EventNames::progress);
+    fireEvent(EventTypeNames::progress);
 
     ASSERT(m_state != DONE);
     m_state = DONE;
 
-    fireEvent(EventNames::load);
-    fireEvent(EventNames::loadend);
+    fireEvent(EventTypeNames::load);
+    fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
     unsetPendingActivity(this);
@@ -261,8 +261,8 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
     m_state = DONE;
 
     m_error = FileError::create(static_cast<FileError::ErrorCode>(errorCode));
-    fireEvent(EventNames::error);
-    fireEvent(EventNames::loadend);
+    fireEvent(EventTypeNames::error);
+    fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
     unsetPendingActivity(this);

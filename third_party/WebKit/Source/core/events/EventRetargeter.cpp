@@ -59,15 +59,15 @@ static inline EventDispatchBehavior determineDispatchBehavior(Event* event, Shad
     // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
     const AtomicString eventType = event->type();
     if (inTheSameScope(shadowRoot, target)
-        && (eventType == EventNames::abort
-            || eventType == EventNames::change
-            || eventType == EventNames::error
-            || eventType == EventNames::load
-            || eventType == EventNames::reset
-            || eventType == EventNames::resize
-            || eventType == EventNames::scroll
-            || eventType == EventNames::select
-            || eventType == EventNames::selectstart))
+        && (eventType == EventTypeNames::abort
+            || eventType == EventTypeNames::change
+            || eventType == EventTypeNames::error
+            || eventType == EventTypeNames::load
+            || eventType == EventTypeNames::reset
+            || eventType == EventTypeNames::resize
+            || eventType == EventTypeNames::scroll
+            || eventType == EventTypeNames::select
+            || eventType == EventTypeNames::selectstart))
         return StayInsideShadowDOM;
 
     return RetargetEvent;

@@ -277,17 +277,17 @@ bool KeyframeAnimation::shouldSendEventForListener(Document::ListenerType listen
 
 void KeyframeAnimation::onAnimationStart(double elapsedTime)
 {
-    sendAnimationEvent(EventNames::animationstart, elapsedTime);
+    sendAnimationEvent(EventTypeNames::animationstart, elapsedTime);
 }
 
 void KeyframeAnimation::onAnimationIteration(double elapsedTime)
 {
-    sendAnimationEvent(EventNames::animationiteration, elapsedTime);
+    sendAnimationEvent(EventTypeNames::animationiteration, elapsedTime);
 }
 
 void KeyframeAnimation::onAnimationEnd(double elapsedTime)
 {
-    sendAnimationEvent(EventNames::animationend, elapsedTime);
+    sendAnimationEvent(EventTypeNames::animationend, elapsedTime);
     // End the animation if we don't fill forwards. Forward filling
     // animations are ended properly in the class destructor.
     if (!m_animation->fillsForwards())
@@ -297,12 +297,12 @@ void KeyframeAnimation::onAnimationEnd(double elapsedTime)
 bool KeyframeAnimation::sendAnimationEvent(const AtomicString& eventType, double elapsedTime)
 {
     Document::ListenerType listenerType;
-    if (eventType == EventNames::animationiteration)
+    if (eventType == EventTypeNames::animationiteration)
         listenerType = Document::ANIMATIONITERATION_LISTENER;
-    else if (eventType == EventNames::animationend)
+    else if (eventType == EventTypeNames::animationend)
         listenerType = Document::ANIMATIONEND_LISTENER;
     else {
-        ASSERT(eventType == EventNames::animationstart);
+        ASSERT(eventType == EventTypeNames::animationstart);
         if (m_startEventDispatched)
             return false;
         m_startEventDispatched = true;
@@ -322,7 +322,7 @@ bool KeyframeAnimation::sendAnimationEvent(const AtomicString& eventType, double
         m_compAnim->animationController()->addEventToDispatch(element, eventType, m_keyframes.animationName(), elapsedTime);
 
         // Restore the original (unanimated) style
-        if (eventType == EventNames::animationend && element->renderer())
+        if (eventType == EventTypeNames::animationend && element->renderer())
             setNeedsStyleRecalc(element.get());
 
         return true; // Did dispatch an event

@@ -154,12 +154,12 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& es)
 void MediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicString& newState)
 {
     if (isOpen()) {
-        scheduleEvent(EventNames::sourceopen);
+        scheduleEvent(EventTypeNames::sourceopen);
         return;
     }
 
     if (oldState == openKeyword() && newState == endedKeyword()) {
-        scheduleEvent(EventNames::sourceended);
+        scheduleEvent(EventTypeNames::sourceended);
         return;
     }
 
@@ -172,7 +172,7 @@ void MediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicS
         m_sourceBuffers->item(i)->removedFromMediaSource();
     m_sourceBuffers->clear();
 
-    scheduleEvent(EventNames::sourceclose);
+    scheduleEvent(EventTypeNames::sourceclose);
 }
 
 Vector<RefPtr<TimeRanges> > MediaSource::activeRanges() const

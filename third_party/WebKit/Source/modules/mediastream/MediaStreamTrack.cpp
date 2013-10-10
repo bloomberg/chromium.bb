@@ -149,13 +149,13 @@ void MediaStreamTrack::sourceChangedState()
 
     switch (m_component->source()->readyState()) {
     case MediaStreamSource::ReadyStateLive:
-        dispatchEvent(Event::create(EventNames::unmute));
+        dispatchEvent(Event::create(EventTypeNames::unmute));
         break;
     case MediaStreamSource::ReadyStateMuted:
-        dispatchEvent(Event::create(EventNames::mute));
+        dispatchEvent(Event::create(EventTypeNames::mute));
         break;
     case MediaStreamSource::ReadyStateEnded:
-        dispatchEvent(Event::create(EventNames::ended));
+        dispatchEvent(Event::create(EventTypeNames::ended));
         didEndTrack();
         break;
     }

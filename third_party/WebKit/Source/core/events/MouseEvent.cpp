@@ -54,7 +54,7 @@ PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRef
 {
     ASSERT(event.type() == PlatformEvent::MouseMoved || event.button() != NoButton);
 
-    bool isMouseEnterOrLeave = eventType == EventNames::mouseenter || eventType == EventNames::mouseleave;
+    bool isMouseEnterOrLeave = eventType == EventTypeNames::mouseenter || eventType == EventTypeNames::mouseleave;
     bool isCancelable = !isMouseEnterOrLeave;
     bool isBubbling = !isMouseEnterOrLeave;
 
@@ -171,8 +171,8 @@ bool MouseEvent::isMouseEvent() const
 bool MouseEvent::isDragEvent() const
 {
     const AtomicString& t = type();
-    return t == EventNames::dragenter || t == EventNames::dragover || t == EventNames::dragleave || t == EventNames::drop
-               || t == EventNames::dragstart|| t == EventNames::drag || t == EventNames::dragend;
+    return t == EventTypeNames::dragenter || t == EventTypeNames::dragover || t == EventTypeNames::dragleave || t == EventTypeNames::drop
+               || t == EventTypeNames::dragstart|| t == EventTypeNames::drag || t == EventTypeNames::dragend;
 }
 
 int MouseEvent::which() const
@@ -188,7 +188,7 @@ int MouseEvent::which() const
 Node* MouseEvent::toElement() const
 {
     // MSIE extension - "the object toward which the user is moving the mouse pointer"
-    if (type() == EventNames::mouseout || type() == EventNames::mouseleave)
+    if (type() == EventTypeNames::mouseout || type() == EventTypeNames::mouseleave)
         return relatedTarget() ? relatedTarget()->toNode() : 0;
 
     return target() ? target()->toNode() : 0;
@@ -197,7 +197,7 @@ Node* MouseEvent::toElement() const
 Node* MouseEvent::fromElement() const
 {
     // MSIE extension - "object from which activation or the mouse pointer is exiting during the event" (huh?)
-    if (type() != EventNames::mouseout && type() != EventNames::mouseleave)
+    if (type() != EventTypeNames::mouseout && type() != EventTypeNames::mouseleave)
         return relatedTarget() ? relatedTarget()->toNode() : 0;
 
     return target() ? target()->toNode() : 0;
@@ -268,14 +268,14 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) cons
     dispatcher->dispatch();
     bool swallowEvent = event()->defaultHandled() || event()->defaultPrevented();
 
-    if (event()->type() != EventNames::click || event()->detail() != 2)
+    if (event()->type() != EventTypeNames::click || event()->detail() != 2)
         return !swallowEvent;
 
     // Special case: If it's a double click event, we also send the dblclick event. This is not part
     // of the DOM specs, but is used for compatibility with the ondblclick="" attribute. This is treated
     // as a separate event in other DOM-compliant browsers like Firefox, and so we do the same.
     RefPtr<MouseEvent> doubleClickEvent = MouseEvent::create();
-    doubleClickEvent->initMouseEvent(EventNames::dblclick, event()->bubbles(), event()->cancelable(), event()->view(),
+    doubleClickEvent->initMouseEvent(EventTypeNames::dblclick, event()->bubbles(), event()->cancelable(), event()->view(),
                                      event()->detail(), event()->screenX(), event()->screenY(), event()->clientX(), event()->clientY(),
                                      event()->ctrlKey(), event()->altKey(), event()->shiftKey(), event()->metaKey(),
                                      event()->button(), relatedTarget);

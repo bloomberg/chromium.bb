@@ -85,7 +85,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
         return;
     }
 
-    if (event->type() == EventNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
+    if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (renderer() && renderer()->visibleToHitTesting()) {
             if (Frame* frame = document().frame()) {
                 frame->eventHandler()->setCapturingMouseEventsNode(this);
@@ -95,7 +95,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
         m_clearButtonOwner->focusAndSelectClearButtonOwner();
         event->setDefaultHandled();
     }
-    if (event->type() == EventNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
+    if (event->type() == EventTypeNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (m_capturing) {
             if (Frame* frame = document().frame()) {
                 frame->eventHandler()->setCapturingMouseEventsNode(0);

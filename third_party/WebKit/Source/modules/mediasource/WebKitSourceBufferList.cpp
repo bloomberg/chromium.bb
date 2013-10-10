@@ -59,7 +59,7 @@ WebKitSourceBuffer* WebKitSourceBufferList::item(unsigned index) const
 void WebKitSourceBufferList::add(PassRefPtr<WebKitSourceBuffer> buffer)
 {
     m_list.append(buffer);
-    createAndFireEvent(EventNames::webkitaddsourcebuffer);
+    createAndFireEvent(EventTypeNames::webkitaddsourcebuffer);
 }
 
 bool WebKitSourceBufferList::remove(WebKitSourceBuffer* buffer)
@@ -70,7 +70,7 @@ bool WebKitSourceBufferList::remove(WebKitSourceBuffer* buffer)
 
     buffer->removedFromMediaSource();
     m_list.remove(index);
-    createAndFireEvent(EventNames::webkitremovesourcebuffer);
+    createAndFireEvent(EventTypeNames::webkitremovesourcebuffer);
     return true;
 }
 
@@ -79,7 +79,7 @@ void WebKitSourceBufferList::clear()
     for (size_t i = 0; i < m_list.size(); ++i)
         m_list[i]->removedFromMediaSource();
     m_list.clear();
-    createAndFireEvent(EventNames::webkitremovesourcebuffer);
+    createAndFireEvent(EventTypeNames::webkitremovesourcebuffer);
 }
 
 void WebKitSourceBufferList::createAndFireEvent(const AtomicString& eventName)

@@ -359,7 +359,7 @@ bool HTMLFormControlElement::shouldHaveFocusAppearance() const
 
 void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event)
 {
-    if (!event.isKeyboardEvent() || event.type() != EventNames::keydown)
+    if (!event.isKeyboardEvent() || event.type() != EventTypeNames::keydown)
         return;
     if (!m_wasFocusedByMouse)
         return;
@@ -450,7 +450,7 @@ bool HTMLFormControlElement::checkValidity(Vector<RefPtr<FormAssociatedElement> 
     // An event handler can deref this object.
     RefPtr<HTMLFormControlElement> protector(this);
     RefPtr<Document> originalDocument(&document());
-    bool needsDefaultAction = dispatchEvent(Event::createCancelable(EventNames::invalid));
+    bool needsDefaultAction = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
     if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == &document())
         unhandledInvalidControls->append(this);
     return false;

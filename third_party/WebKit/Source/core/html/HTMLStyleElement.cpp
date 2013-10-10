@@ -40,7 +40,7 @@ using namespace HTMLNames;
 
 static StyleEventSender& styleLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(StyleEventSender, sharedLoadEventSender, (EventNames::load));
+    DEFINE_STATIC_LOCAL(StyleEventSender, sharedLoadEventSender, (EventTypeNames::load));
     return sharedLoadEventSender;
 }
 
@@ -256,7 +256,7 @@ void HTMLStyleElement::dispatchPendingLoadEvents()
 void HTMLStyleElement::dispatchPendingEvent(StyleEventSender* eventSender)
 {
     ASSERT_UNUSED(eventSender, eventSender == &styleLoadEventSender());
-    dispatchEvent(Event::create(m_loadedSheet ? EventNames::load : EventNames::error));
+    dispatchEvent(Event::create(m_loadedSheet ? EventTypeNames::load : EventTypeNames::error));
 }
 
 void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred)

@@ -74,7 +74,7 @@ public:
 
 private:
     CloseEvent()
-        : Event(EventNames::close, false, false)
+        : Event(EventTypeNames::close, false, false)
         , m_wasClean(false)
         , m_code(0)
     {
@@ -82,7 +82,7 @@ private:
     }
 
     CloseEvent(bool wasClean, int code, const String& reason)
-        : Event(EventNames::close, false, false)
+        : Event(EventTypeNames::close, false, false)
         , m_wasClean(wasClean)
         , m_code(code)
         , m_reason(reason)

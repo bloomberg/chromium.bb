@@ -117,7 +117,7 @@ String DateTimeNumericFieldElement::formatValue(int value) const
 void DateTimeNumericFieldElement::handleKeyboardEvent(KeyboardEvent* keyboardEvent)
 {
     ASSERT(!isDisabled());
-    if (keyboardEvent->type() != EventNames::keypress)
+    if (keyboardEvent->type() != EventTypeNames::keypress)
         return;
 
     UChar charCode = static_cast<UChar>(keyboardEvent->charCode());

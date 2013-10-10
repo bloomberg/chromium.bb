@@ -538,7 +538,7 @@ void RTCPeerConnection::close(ExceptionState& es)
 
 void RTCPeerConnection::negotiationNeeded()
 {
-    scheduleDispatchEvent(Event::create(EventNames::negotiationneeded));
+    scheduleDispatchEvent(Event::create(EventTypeNames::negotiationneeded));
 }
 
 void RTCPeerConnection::didGenerateIceCandidate(WebKit::WebRTCICECandidate webCandidate)
@@ -580,7 +580,7 @@ void RTCPeerConnection::didAddRemoteStream(PassRefPtr<MediaStreamDescriptor> str
     RefPtr<MediaStream> stream = MediaStream::create(scriptExecutionContext(), streamDescriptor);
     m_remoteStreams.append(stream);
 
-    scheduleDispatchEvent(MediaStreamEvent::create(EventNames::addstream, false, false, stream.release()));
+    scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::addstream, false, false, stream.release()));
 }
 
 void RTCPeerConnection::didRemoveRemoteStream(MediaStreamDescriptor* streamDescriptor)
@@ -598,7 +598,7 @@ void RTCPeerConnection::didRemoveRemoteStream(MediaStreamDescriptor* streamDescr
     ASSERT(pos != kNotFound);
     m_remoteStreams.remove(pos);
 
-    scheduleDispatchEvent(MediaStreamEvent::create(EventNames::removestream, false, false, stream.release()));
+    scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::removestream, false, false, stream.release()));
 }
 
 void RTCPeerConnection::didAddRemoteDataChannel(PassOwnPtr<RTCDataChannelHandler> handler)
@@ -611,7 +611,7 @@ void RTCPeerConnection::didAddRemoteDataChannel(PassOwnPtr<RTCDataChannelHandler
     RefPtr<RTCDataChannel> channel = RTCDataChannel::create(scriptExecutionContext(), handler);
     m_dataChannels.append(channel);
 
-    scheduleDispatchEvent(RTCDataChannelEvent::create(EventNames::datachannel, false, false, channel.release()));
+    scheduleDispatchEvent(RTCDataChannelEvent::create(EventTypeNames::datachannel, false, false, channel.release()));
 }
 
 const AtomicString& RTCPeerConnection::interfaceName() const
@@ -652,7 +652,7 @@ void RTCPeerConnection::changeSignalingState(SignalingState signalingState)
 {
     if (m_signalingState != SignalingStateClosed && m_signalingState != signalingState) {
         m_signalingState = signalingState;
-        scheduleDispatchEvent(Event::create(EventNames::signalingstatechange));
+        scheduleDispatchEvent(Event::create(EventTypeNames::signalingstatechange));
     }
 }
 
@@ -665,7 +665,7 @@ void RTCPeerConnection::changeIceConnectionState(IceConnectionState iceConnectio
 {
     if (m_iceConnectionState != IceConnectionStateClosed && m_iceConnectionState != iceConnectionState) {
         m_iceConnectionState = iceConnectionState;
-        scheduleDispatchEvent(Event::create(EventNames::iceconnectionstatechange));
+        scheduleDispatchEvent(Event::create(EventTypeNames::iceconnectionstatechange));
     }
 }
 

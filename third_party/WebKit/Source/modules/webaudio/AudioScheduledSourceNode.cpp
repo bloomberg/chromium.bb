@@ -167,7 +167,7 @@ void AudioScheduledSourceNode::noteOff(double when)
 void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld)
 {
     m_hasEndedListener = listener;
-    setAttributeEventListener(EventNames::ended, listener, isolatedWorld);
+    setAttributeEventListener(EventTypeNames::ended, listener, isolatedWorld);
 }
 
 void AudioScheduledSourceNode::finish()
@@ -200,7 +200,7 @@ AudioScheduledSourceNode::NotifyEndedTask::NotifyEndedTask(PassRefPtr<AudioSched
 
 void AudioScheduledSourceNode::NotifyEndedTask::notifyEnded()
 {
-    RefPtr<Event> event = Event::create(EventNames::ended);
+    RefPtr<Event> event = Event::create(EventTypeNames::ended);
     event->setTarget(m_scheduledNode);
     m_scheduledNode->dispatchEvent(event.get());
 }
