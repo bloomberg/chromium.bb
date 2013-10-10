@@ -62,6 +62,7 @@ FileReaderLoader::FileReaderLoader(ReadType readType, FileReaderLoaderClient* cl
     , m_isRawDataConverted(false)
     , m_stringResult("")
     , m_variableLength(false)
+    , m_finishedLoading(false)
     , m_bytesLoaded(0)
     , m_totalBytes(0)
     , m_hasRange(false)
@@ -266,6 +267,9 @@ void FileReaderLoader::didFinishLoading(unsigned long, double)
 
         m_totalBytes = m_bytesLoaded;
     }
+
+    m_finishedLoading = true;
+
     cleanup();
     if (m_client)
         m_client->didFinishLoading();
@@ -308,11 +312,11 @@ PassRefPtr<ArrayBuffer> FileReaderLoader::arrayBufferResult() const
     if (!m_rawData || m_errorCode)
         return 0;
 
-    // If completed, we can simply return our buffer.
-    if (isCompleted())
+    // If m_rawData is fully used, we can simply return it.
+    if (m_rawData->byteLength() == m_bytesLoaded)
         return m_rawData;
 
-    // Otherwise, return a copy.
+    // Otherwise, return a sliced copy.
     return m_rawData->slice(0, m_bytesLoaded);
 }
 
@@ -341,7 +345,7 @@ String FileReaderLoader::stringResult()
         break;
     case ReadAsDataURL:
         // Partial data is not supported when reading as data URL.
-        if (isCompleted())
+        if (m_finishedLoading)
             convertToDataURL();
         break;
     default:
@@ -370,7 +374,7 @@ void FileReaderLoader::convertToText()
         m_decoder = TextResourceDecoder::create("text/plain", m_encoding.isValid() ? m_encoding : UTF8Encoding());
     builder.append(m_decoder->decode(static_cast<const char*>(m_rawData->data()), m_bytesLoaded));
 
-    if (isCompleted())
+    if (m_finishedLoading)
         builder.append(m_decoder->flush());
 
     m_stringResult = builder.toString();
@@ -397,11 +401,6 @@ void FileReaderLoader::convertToDataURL()
     builder.append(out.data());
 
     m_stringResult = builder.toString();
-}
-
-bool FileReaderLoader::isCompleted() const
-{
-    return m_bytesLoaded == m_totalBytes;
 }
 
 void FileReaderLoader::setEncoding(const String& encoding)

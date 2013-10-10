@@ -92,8 +92,6 @@ private:
     void convertToText();
     void convertToDataURL();
 
-    bool isCompleted() const;
-
     static FileError::ErrorCode httpStatusCodeToErrorCode(int);
 
     ReadType m_readType;
@@ -115,6 +113,7 @@ private:
     RefPtr<TextResourceDecoder> m_decoder;
 
     bool m_variableLength;
+    bool m_finishedLoading;
     unsigned m_bytesLoaded;
     unsigned m_totalBytes;
 
