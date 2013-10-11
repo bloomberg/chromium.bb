@@ -155,6 +155,41 @@ function testPersistantCapitalizationAsync(testDoneCallback) {
      runTest, testDoneCallback);
 }
 
+/**
+ * Tests that changing the input type changes the layout. The test is run
+ * asynchronously since the keyboard loads keysets dynamically.
+ * @param {function} testDoneCallBack The function to be called on completion.
+ */
+function testInputTypeResponsivenessAsync(testDoneCallback) {
+  var runTest = function() {
+    // Check initial state.
+    assertEquals('qwerty-lower', keyboard.activeKeysetId,
+        "Unexpected initial active keyset");
+    // Check that capitalization is not persistant
+    var lowerShift = getShiftKey('left', 'lower');
+    var upperShift = getShiftKey('left', 'upper');
+    var mockEvent = {isPrimary: true, pointerId: 1};
+    lowerShift.down(mockEvent);
+    mockTimer.tick(1000);
+    upperShift.up(mockEvent);
+    assertEquals('qwerty-upper', keyboard.activeKeysetId,
+        "Unexpected transition on long press.");
+    keyboard.inputTypeValue = 'text';
+    assertEquals('qwerty-lower', keyboard.activeKeysetId,
+        "Did not reset keyboard on focus change.");
+    // Check numeric keyboard.
+    keyboard.inputTypeValue = 'number';
+    assertEquals('numeric-symbol', keyboard.activeKeysetId,
+        "Did not transition to numeric layout.");
+    // Clean up.
+    keyboard.inputTypeValue = 'text';
+    assertEquals('qwerty-lower', keyboard.activeKeysetId,
+        "Did not reset keyboard when inputType changes.");
+  };
+  onKeyboardReady('testInputTypeResponsivenessAsync',
+      runTest, testDoneCallback);
+}
+
  /**
  * Tests that keyset transitions work as expected.
  * The test is run asynchronously since the keyboard loads keysets dynamically.
