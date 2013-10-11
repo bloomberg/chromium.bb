@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "net/quic/quic_protocol.h"
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
@@ -50,7 +51,7 @@ IPAddressNumber QuicSocketUtils::GetAddressFromMsghdr(struct msghdr *hdr) {
 
 // static
 bool QuicSocketUtils::GetOverflowFromMsghdr(struct msghdr *hdr,
-                                      int *dropped_packets) {
+                                            int *dropped_packets) {
   if (hdr->msg_controllen > 0) {
     struct cmsghdr *cmsg;
     for (cmsg = CMSG_FIRSTHDR(hdr);
@@ -79,9 +80,9 @@ int QuicSocketUtils::SetGetAddressInfo(int fd, int address_family) {
 
 // static
 int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
-                          int* dropped_packets,
-                          IPAddressNumber* self_address,
-                          IPEndPoint* peer_address) {
+                                int* dropped_packets,
+                                IPAddressNumber* self_address,
+                                IPEndPoint* peer_address) {
   CHECK(peer_address != NULL);
   const int kSpaceForOverflowAndIp =
       CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(in6_pktinfo));
@@ -135,10 +136,11 @@ int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
 }
 
 // static
-int QuicSocketUtils::WritePacket(int fd, const char* buffer, size_t buf_len,
-                                 const IPAddressNumber& self_address,
-                                 const IPEndPoint& peer_address,
-                                 int* error) {
+WriteResult QuicSocketUtils::WritePacket(int fd,
+                                         const char* buffer,
+                                         size_t buf_len,
+                                         const IPAddressNumber& self_address,
+                                         const IPEndPoint& peer_address) {
   sockaddr_storage raw_address;
   socklen_t address_len = sizeof(raw_address);
   CHECK(peer_address.ToSockAddr(
@@ -190,8 +192,11 @@ int QuicSocketUtils::WritePacket(int fd, const char* buffer, size_t buf_len,
   }
 
   int rc = sendmsg(fd, &hdr, 0);
-  *error = (rc >= 0) ? 0 : errno;
-  return rc;
+  if (rc >= 0) {
+    return WriteResult(WRITE_STATUS_OK, rc);
+  }
+  return WriteResult((errno == EAGAIN || errno == EWOULDBLOCK) ?
+      WRITE_STATUS_BLOCKED : WRITE_STATUS_ERROR, errno);
 }
 
 }  // namespace tools

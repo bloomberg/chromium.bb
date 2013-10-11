@@ -6,10 +6,12 @@
 #define NET_TOOLS_QUIC_QUIC_PACKET_WRITER_H_
 
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_protocol.h"
 
 namespace net {
 
 class QuicBlockedWriterInterface;
+struct WriteResult;
 
 namespace tools {
 
@@ -20,11 +22,11 @@ class QuicPacketWriter {
  public:
   virtual ~QuicPacketWriter() {}
 
-  virtual int WritePacket(const char* buffer, size_t buf_len,
-                          const net::IPAddressNumber& self_address,
-                          const net::IPEndPoint& peer_address,
-                          QuicBlockedWriterInterface* blocked_writer,
-                          int* error) = 0;
+  virtual WriteResult WritePacket(
+      const char* buffer, size_t buf_len,
+      const net::IPAddressNumber& self_address,
+      const net::IPEndPoint& peer_address,
+      QuicBlockedWriterInterface* blocked_writer) = 0;
 };
 
 }  // namespace tools
