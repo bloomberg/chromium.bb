@@ -65,26 +65,26 @@ int findNextWordFromIndex(const UChar* chars, int len, int position, bool forwar
     TextBreakIterator* it = wordBreakIterator(chars, len);
 
     if (forward) {
-        position = textBreakFollowing(it, position);
+        position = it->following(position);
         while (position != TextBreakDone) {
             // We stop searching when the character preceeding the break
             // is alphanumeric.
             if (position < len && isAlphanumeric(chars[position - 1]))
                 return position;
 
-            position = textBreakFollowing(it, position);
+            position = it->following(position);
         }
 
         return len;
     } else {
-        position = textBreakPreceding(it, position);
+        position = it->preceding(position);
         while (position != TextBreakDone) {
             // We stop searching when the character following the break
             // is alphanumeric.
             if (position > 0 && isAlphanumeric(chars[position]))
                 return position;
 
-            position = textBreakPreceding(it, position);
+            position = it->preceding(position);
         }
 
         return 0;
@@ -94,10 +94,10 @@ int findNextWordFromIndex(const UChar* chars, int len, int position, bool forwar
 void findWordBoundary(const UChar* chars, int len, int position, int* start, int* end)
 {
     TextBreakIterator* it = wordBreakIterator(chars, len);
-    *end = textBreakFollowing(it, position);
+    *end = it->following(position);
     if (*end < 0)
-        *end = textBreakLast(it);
-    *start = textBreakPrevious(it);
+        *end = it->last();
+    *start = it->previous();
 }
 
 
