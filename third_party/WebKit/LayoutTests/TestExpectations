@@ -1174,6 +1174,8 @@ crbug.com/305708 [ Linux ] fast/text/international/hindi-spacing.html [ Pass Ima
 
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
+crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
+
 crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
 crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
 
