@@ -26,6 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace file_manager {
 namespace file_tasks {
@@ -471,6 +472,82 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
                      "image/png"));
   tasks.clear();
   FindFileHandlerTasks(&test_profile_, path_mime_set, &tasks);
+  // Confirm no tasks are found.
+  ASSERT_TRUE(tasks.empty());
+}
+
+// The basic logic is similar to a test case for FindDriveAppTasks above.
+TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
+  // Copied from FindFileHandlerTasks test above.
+  const char kFooId[] = "hhgbjpmdppecanaaogonaigmmifgpaph";
+  const char kBarId[] = "odlhccgofgkadkkhcmhgnhgahonahoca";
+
+  // Foo.app can handle ".txt" and ".html".
+  // This one is an extension, and has "file_browser_handlers"
+  extensions::ExtensionBuilder foo_app;
+  foo_app.SetManifest(extensions::DictionaryBuilder()
+                      .Set("name", "Foo")
+                      .Set("version", "1.0.0")
+                      .Set("manifest_version", 2)
+                      .Set("file_browser_handlers",
+                           extensions::ListBuilder()
+                           .Append(extensions::DictionaryBuilder()
+                                   .Set("id", "open")
+                                   .Set("default_title", "open")
+                                   .Set("file_filters",
+                                        extensions::ListBuilder()
+                                        .Append("filesystem:*.txt")
+                                        .Append("filesystem:*.html")))));
+  foo_app.SetID(kFooId);
+  extension_service_->AddExtension(foo_app.Build().get());
+
+  // Bar.app can only handle ".txt".
+  extensions::ExtensionBuilder bar_app;
+  bar_app.SetManifest(extensions::DictionaryBuilder()
+                      .Set("name", "Bar")
+                      .Set("version", "1.0.0")
+                      .Set("manifest_version", 2)
+                      .Set("file_browser_handlers",
+                           extensions::ListBuilder()
+                           .Append(extensions::DictionaryBuilder()
+                                   .Set("id", "open")
+                                   .Set("default_title", "open")
+                                   .Set("file_filters",
+                                        extensions::ListBuilder()
+                                        .Append("filesystem:*.txt")))));
+  bar_app.SetID(kBarId);
+  extension_service_->AddExtension(bar_app.Build().get());
+
+  // Find apps for a ".txt" file. Foo.app and Bar.app should be found.
+  std::vector<GURL> file_urls;
+  file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.txt"));
+
+  std::vector<FullTaskDescriptor> tasks;
+  FindFileBrowserHandlerTasks(&test_profile_, file_urls, &tasks);
+  ASSERT_EQ(2U, tasks.size());
+  // Sort the app IDs, as the order is not guaranteed.
+  std::vector<std::string> app_ids;
+  app_ids.push_back(tasks[0].task_descriptor().app_id);
+  app_ids.push_back(tasks[1].task_descriptor().app_id);
+  std::sort(app_ids.begin(), app_ids.end());
+  // Confirm that both Foo.app and Bar.app are found.
+  EXPECT_EQ(kFooId, app_ids[0]);
+  EXPECT_EQ(kBarId, app_ids[1]);
+
+  // Find apps for ".txt" and ".html" files. Only Foo.app should be found.
+  file_urls.clear();
+  file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.txt"));
+  file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.html"));
+  tasks.clear();
+  FindFileBrowserHandlerTasks(&test_profile_, file_urls, &tasks);
+  ASSERT_EQ(1U, tasks.size());
+  // Confirm that only Foo.app is found.
+  EXPECT_EQ(kFooId, tasks[0].task_descriptor().app_id);
+
+  // Add an ".png" file. No tasks should be found.
+  file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.png"));
+  tasks.clear();
+  FindFileBrowserHandlerTasks(&test_profile_, file_urls, &tasks);
   // Confirm no tasks are found.
   ASSERT_TRUE(tasks.empty());
 }
