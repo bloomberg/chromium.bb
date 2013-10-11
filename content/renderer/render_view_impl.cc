@@ -602,6 +602,20 @@ static bool ShouldUseAcceleratedCompositingForOverflowScroll(
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
+static bool ShouldUseUniversalAcceleratedCompositingForOverflowScroll() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(
+          switches::kDisableUniversalAcceleratedOverflowScroll))
+    return false;
+
+  if (command_line.HasSwitch(
+          switches::kEnableUniversalAcceleratedOverflowScroll))
+    return true;
+
+  return false;
+}
+
 static bool ShouldUseAcceleratedCompositingForScrollableFrames(
     float device_scale_factor) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -923,6 +937,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       ShouldUseFixedPositionCompositing(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
       ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
+  webview()->settings()->setCompositorDrivenAcceleratedScrollingEnabled(
+      ShouldUseUniversalAcceleratedCompositingForOverflowScroll());
   webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
       ShouldUseTransitionCompositing(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForFixedRootBackgroundEnabled(

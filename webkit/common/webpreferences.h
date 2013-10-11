@@ -105,6 +105,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool privileged_webgl_extensions_enabled;
   bool webgl_errors_to_console_enabled;
   bool accelerated_compositing_for_overflow_scroll_enabled;
+  bool universal_accelerated_compositing_for_overflow_scroll_enabled;
   bool accelerated_compositing_for_scrollable_frames_enabled;
   bool composited_scrolling_for_frames_enabled;
   bool mock_scrollbars_enabled;
