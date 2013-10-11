@@ -409,17 +409,16 @@ void RtcpReceiver::HandlePayloadSpecificCastItem(RtcpParser* rtcp_parser) {
 
 void RtcpReceiver::HandlePayloadSpecificCastNackItem(
     const RtcpField* rtcp_field,
-    std::map<uint8, std::set<uint16> >* missing_frames_and_packets) {
+    MissingFramesAndPacketsMap* missing_frames_and_packets) {
 
-  std::map<uint8, std::set<uint16> >::iterator frame_it =
+  MissingFramesAndPacketsMap::iterator frame_it =
       missing_frames_and_packets->find(rtcp_field->cast_nack_item.frame_id);
 
   if (frame_it == missing_frames_and_packets->end()) {
     // First missing packet in a frame.
-    std::set<uint16> empty_set;
-    std::pair<std::map<uint8, std::set<uint16> >::iterator, bool> ret;
-    ret = missing_frames_and_packets->insert(
-        std::pair<uint8, std::set<uint16> >(
+    PacketIdSet empty_set;
+    std::pair<MissingFramesAndPacketsMap::iterator, bool> ret =
+        missing_frames_and_packets->insert(std::pair<uint8, PacketIdSet>(
             rtcp_field->cast_nack_item.frame_id, empty_set));
     frame_it = ret.first;
     DCHECK(frame_it != missing_frames_and_packets->end()) << "Invalid state";

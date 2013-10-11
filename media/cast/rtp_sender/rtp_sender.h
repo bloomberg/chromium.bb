@@ -24,8 +24,6 @@ namespace cast {
 class PacedPacketSender;
 struct RtcpSenderInfo;
 
-typedef std::map<uint8, std::set<uint16> > MissingFramesAndPackets;
-
 // This object is only called from the main cast thread.
 // This class handles splitting encoded audio and video frames into packets and
 // add an RTP header to each packet. The sent packets are stored until they are
@@ -47,7 +45,7 @@ class RtpSender {
   void IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
                                  const base::TimeTicks& recorded_time);
 
-  void ResendPackets(const MissingFramesAndPackets& missing_packets);
+  void ResendPackets(const MissingFramesAndPacketsMap& missing_packets);
 
   void RtpStatistics(const base::TimeTicks& now, RtcpSenderInfo* sender_info);
 

@@ -87,7 +87,7 @@ class RtcpReceiver {
   void HandlePayloadSpecificCastItem(RtcpParser* rtcp_parser);
   void HandlePayloadSpecificCastNackItem(
       const RtcpField* rtcp_field,
-      std::map<uint8, std::set<uint16> >* missing_frames_and_packets);
+      MissingFramesAndPacketsMap* missing_frames_and_packets);
 
   const uint32 ssrc_;
   uint32 remote_ssrc_;

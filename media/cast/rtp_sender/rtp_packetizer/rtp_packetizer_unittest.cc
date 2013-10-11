@@ -63,21 +63,22 @@ class TestRtpPacketTransport : public PacedPacketSender {
         rtp_header.reference_frame_id);
   }
 
-  virtual bool SendPacket(const std::vector<uint8>& packet,
-                          int num_packets) OVERRIDE {
-    EXPECT_EQ(expected_number_of_packets_, num_packets);
-    ++packets_sent_;
-    RtpHeaderParser parser(packet.data(), packet.size());
-    RtpCastHeader rtp_header;
-    parser.Parse(&rtp_header);
-    VerifyRtpHeader(rtp_header);
-    ++sequence_number_;
-    ++expected_packet_id_;
+  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
+    EXPECT_EQ(expected_number_of_packets_, packets.size());
+    PacketList::const_iterator it = packets.begin();
+    for (; it != packets.end(); ++it) {
+      ++packets_sent_;
+      RtpHeaderParser parser(it->data(), it->size());
+      RtpCastHeader rtp_header;
+      parser.Parse(&rtp_header);
+      VerifyRtpHeader(rtp_header);
+      ++sequence_number_;
+      ++expected_packet_id_;
+    }
     return true;
   }
 
-  virtual bool ResendPacket(const std::vector<uint8>& packet,
-                            int num_of_packets) OVERRIDE {
+  virtual bool ResendPackets(const PacketList& packets) OVERRIDE {
     EXPECT_TRUE(false);
     return false;
   }

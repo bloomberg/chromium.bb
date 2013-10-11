@@ -81,59 +81,64 @@ bool RtpPacketizer::LastSentTimestamp(base::TimeTicks* time_sent,
 void RtpPacketizer::Cast(bool is_key,
                          uint8 reference_frame_id,
                          uint32 timestamp,
-                         std::vector<uint8> data) {
+                         Packet data) {
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
 
   // Split the payload evenly (round number up).
-  // TODO(hclam): Fix the use of static_cast here.
-  uint32 num_packets =
-      static_cast<uint32>((data.size() + max_length) / max_length);
+  size_t num_packets = (data.size() + max_length) / max_length;
   size_t payload_length = (data.size() + num_packets) / num_packets;
   DCHECK_LE(payload_length, max_length) << "Invalid argument";
 
-  std::vector<uint8> packet;
-  packet.reserve(kIpPacketSize);
+  PacketList packets;
+
   size_t remaining_size = data.size();
   uint8* data_ptr = data.data();
   while (remaining_size > 0) {
-    packet.clear();
+    Packet packet;
+
     if (remaining_size < payload_length) {
       payload_length = remaining_size;
     }
     remaining_size -= payload_length;
     BuildCommonRTPheader(&packet, remaining_size == 0, timestamp);
+
     // Build Cast header.
     packet.push_back(
         (is_key ? kCastKeyFrameBitMask : 0) | kCastReferenceFrameIdBitMask);
     packet.push_back(frame_id_);
-    size_t start_size = packet.size();
+    int start_size = packet.size();
     packet.resize(start_size + 4);
-    net::BigEndianWriter big_endian_writer(&((packet)[start_size]), 4);
+    net::BigEndianWriter big_endian_writer(packet.data() + start_size, 4);
     big_endian_writer.WriteU16(packet_id_);
     big_endian_writer.WriteU16(num_packets - 1);
     packet.push_back(reference_frame_id);
 
     // Copy payload data.
     packet.insert(packet.end(), data_ptr, data_ptr + payload_length);
+
     // Store packet.
-    packet_storage_->StorePacket(frame_id_, packet_id_, packet);
-    // Send to network.
-    transport_->SendPacket(packet, num_packets);
+    packet_storage_->StorePacket(frame_id_, packet_id_, &packet);
     ++packet_id_;
     data_ptr += payload_length;
+
     // Update stats.
     ++send_packets_count_;
     send_octet_count_ += payload_length;
+    packets.push_back(packet);
   }
   DCHECK(packet_id_ == num_packets) << "Invalid state";
+
+  // Send to network.
+  transport_->SendPackets(packets);
+
   // Prepare for next frame.
   packet_id_ = 0;
   frame_id_ = static_cast<uint8>(frame_id_ + 1);
 }
 
 void RtpPacketizer::BuildCommonRTPheader(
-    std::vector<uint8>* packet, bool marker_bit, uint32 time_stamp) {
+    Packet* packet, bool marker_bit, uint32 time_stamp) {
   packet->push_back(0x80);
   packet->push_back(static_cast<uint8>(config_.payload_type) |
                     (marker_bit ? kRtpMarkerBitMask : 0));

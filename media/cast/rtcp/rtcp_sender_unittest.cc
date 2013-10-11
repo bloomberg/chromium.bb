@@ -24,20 +24,18 @@ class TestRtcpTransport : public PacedPacketSender {
         packet_count_(0) {
   }
 
-  virtual bool SendRtcpPacket(const std::vector<uint8>& packet) OVERRIDE {
+  virtual bool SendRtcpPacket(const Packet& packet) OVERRIDE {
     EXPECT_EQ(expected_packet_length_, packet.size());
     EXPECT_EQ(0, memcmp(expected_packet_, &(packet[0]), packet.size()));
     packet_count_++;
     return true;
   }
 
-  virtual bool SendPacket(const std::vector<uint8>& packet,
-                          int num_of_packets) OVERRIDE {
+  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
     return false;
   }
 
-  virtual bool ResendPacket(const std::vector<uint8>& packet,
-                            int num_of_packets) OVERRIDE {
+  virtual bool ResendPackets(const PacketList& packets) OVERRIDE {
     return false;
   }
 
@@ -228,7 +226,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
 
   RtcpCastMessage cast_message(kMediaSsrc);
   cast_message.ack_frame_id_ = kAckFrameId;
-  std::set<uint16> missing_packets;
+  PacketIdSet missing_packets;
   cast_message.missing_frames_and_packets_[
       kLostFrameId] = missing_packets;
 

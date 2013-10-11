@@ -56,7 +56,7 @@ class AudioSenderTest : public ::testing::Test {
 };
 
 TEST_F(AudioSenderTest, Encode20ms) {
-  EXPECT_CALL(mock_transport_, SendPacket(_, _)).Times(1);
+  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(1);
 
   PcmAudioFrame* audio_frame = new PcmAudioFrame();
   audio_frame->channels = 2;

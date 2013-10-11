@@ -46,13 +46,11 @@ class LocalRtcpTransport : public PacedPacketSender {
     return true;
   }
 
-  virtual bool SendPacket(const std::vector<uint8>& packet,
-                          int num_of_packets) OVERRIDE {
+  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
     return false;
   }
 
-  virtual bool ResendPacket(const std::vector<uint8>& packet,
-                            int num_of_packets) OVERRIDE {
+  virtual bool ResendPackets(const PacketList& packets) OVERRIDE {
     return false;
   }
 
@@ -207,7 +205,7 @@ TEST_F(RtcpTest, BasicCast) {
   rtcp.SetRemoteSSRC(kSenderSsrc);
   RtcpCastMessage cast_message(kSenderSsrc);
   cast_message.ack_frame_id_ = kAckFrameId;
-  std::set<uint16> missing_packets;
+  PacketIdSet missing_packets;
   cast_message.missing_frames_and_packets_[
       kLostFrameId] = missing_packets;
 

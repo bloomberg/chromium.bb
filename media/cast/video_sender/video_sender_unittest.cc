@@ -122,7 +122,7 @@ class VideoSenderTest : public ::testing::Test {
 };
 
 TEST_F(VideoSenderTest, BuiltInEncoder) {
-  EXPECT_CALL(mock_transport_, SendPacket(_, _)).Times(1);
+  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(1);
 
   InitEncoder(false);
   I420VideoFrame* video_frame = AllocateNewVideoFrame();
@@ -135,7 +135,7 @@ TEST_F(VideoSenderTest, BuiltInEncoder) {
 }
 
 TEST_F(VideoSenderTest, ExternalEncoder) {
-  EXPECT_CALL(mock_transport_, SendPacket(_, _)).Times(1);
+  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(1);
   EXPECT_CALL(mock_video_encoder_controller_, SkipNextFrame(false)).Times(1);
   InitEncoder(true);
 
@@ -165,8 +165,8 @@ TEST_F(VideoSenderTest, RtcpTimer) {
 }
 
 TEST_F(VideoSenderTest, ResendTimer) {
-  EXPECT_CALL(mock_transport_, SendPacket(_, _)).Times(2);
-  EXPECT_CALL(mock_transport_, ResendPacket(_, _)).Times(1);
+  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(2);
+  EXPECT_CALL(mock_transport_, ResendPackets(_)).Times(1);
 
   InitEncoder(false);
 

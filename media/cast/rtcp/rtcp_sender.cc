@@ -491,7 +491,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
        std::min<int>(kRtcpMaxCastLossFields,
                      (kIpPacketSize - static_cast<int>(packet->size())) / 4);
 
-  std::map<uint8, std::set<uint16> >::const_iterator frame_it =
+  MissingFramesAndPacketsMap::const_iterator frame_it =
       cast->missing_frames_and_packets_.begin();
 
   for (; frame_it != cast->missing_frames_and_packets_.end() &&
@@ -507,7 +507,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
       big_endian_nack_writer.WriteU8(0);
       ++number_of_loss_fields;
     } else {
-      std::set<uint16>::const_iterator packet_it = frame_it->second.begin();
+      PacketIdSet::const_iterator packet_it = frame_it->second.begin();
       while (packet_it != frame_it->second.end()) {
         uint16 packet_id = *packet_it;
 

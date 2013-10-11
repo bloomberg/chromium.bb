@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/pacing/mock_packet_sender.h"
 #include "media/cast/pacing/paced_sender.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,6 +20,34 @@ static const size_t kSize4 = 103;
 static const size_t kNackSize = 104;
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
+class TestPacketSender : public PacketSender {
+ public:
+  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
+    PacketList::const_iterator it = packets.begin();
+    for (; it != packets.end(); ++it) {
+      EXPECT_FALSE(expected_packet_size_.empty());
+      int expected_packet_size = expected_packet_size_.front();
+      expected_packet_size_.pop_front();
+      VLOG(0) << "Check " << it->size();
+      EXPECT_EQ(expected_packet_size, it->size());
+    }
+    return true;
+  }
+
+  virtual bool SendPacket(const Packet& packet) OVERRIDE {
+    return true;
+  }
+
+  void AddExpectedSize(int expected_packet_size, int repeat_count) {
+    for (int i = 0; i < repeat_count; ++i) {
+      expected_packet_size_.push_back(expected_packet_size);
+    }
+  }
+
+ private:
+  std::list<int> expected_packet_size_;
+};
+
 class PacedSenderTest : public ::testing::Test {
  protected:
   PacedSenderTest() {
@@ -37,62 +64,57 @@ class PacedSenderTest : public ::testing::Test {
     paced_sender_.reset(new PacedSender(cast_environment_, &mock_transport_));
   }
 
+  PacketList CreatePacketList(size_t packet_size, int num_of_packets_in_frame) {
+    PacketList packets;
+    for (int i = 0; i < num_of_packets_in_frame; ++i) {
+      packets.push_back(Packet(packet_size, kValue));
+    }
+    return packets;
+  }
+
   base::SimpleTestTickClock testing_clock_;
-  MockPacketSender mock_transport_;
+  TestPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PacedSender> paced_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;
 };
 
 TEST_F(PacedSenderTest, PassThroughRtcp) {
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(1).WillRepeatedly(
-      testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize1, 1);
+  PacketList packets = CreatePacketList(kSize1, 1);
 
-  std::vector<uint8> packet(kSize1, kValue);
-  int num_of_packets = 1;
-  EXPECT_TRUE(paced_sender_->SendPacket(packet, num_of_packets));
+  EXPECT_TRUE(paced_sender_->SendPackets(packets));
+  EXPECT_TRUE(paced_sender_->ResendPackets(packets));
 
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(0);
-  EXPECT_TRUE(paced_sender_->ResendPacket(packet, num_of_packets));
-
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(1).WillRepeatedly(
-      testing::Return(true));
-  EXPECT_TRUE(paced_sender_->SendRtcpPacket(packet));
+  mock_transport_.AddExpectedSize(kSize2, 1);
+  EXPECT_TRUE(paced_sender_->SendRtcpPacket(Packet(kSize2, kValue)));
 }
 
 TEST_F(PacedSenderTest, BasicPace) {
-  std::vector<uint8> packet(kSize1, kValue);
   int num_of_packets = 9;
+  PacketList packets = CreatePacketList(kSize1, num_of_packets);
 
-  EXPECT_CALL(mock_transport_,
-      SendPacket(_, kSize1)).Times(3).WillRepeatedly(testing::Return(true));
-  for (int i = 0; i < num_of_packets; ++i) {
-    EXPECT_TRUE(paced_sender_->SendPacket(packet, num_of_packets));
-  }
-  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(10);
+  mock_transport_.AddExpectedSize(kSize1, 3);
+  EXPECT_TRUE(paced_sender_->SendPackets(packets));
 
   // Check that we get the next burst.
-  EXPECT_CALL(mock_transport_,
-      SendPacket(_, kSize1)).Times(3).WillRepeatedly(testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize1, 3);
 
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(10);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // If we call process too early make sure we don't send any packets.
   timeout = base::TimeDelta::FromMilliseconds(5);
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(0);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // Check that we get the next burst.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(3).WillRepeatedly(
-      testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize1, 3);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // Check that we don't get any more packets.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(0);
-  timeout = base::TimeDelta::FromMilliseconds(10);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 }
@@ -100,75 +122,61 @@ TEST_F(PacedSenderTest, BasicPace) {
 TEST_F(PacedSenderTest, PaceWithNack) {
   // Testing what happen when we get multiple NACK requests for a fully lost
   // frames just as we sent the first packets in a frame.
-  std::vector<uint8> firts_packet(kSize1, kValue);
-  std::vector<uint8> second_packet(kSize2, kValue);
-  std::vector<uint8> nack_packet(kNackSize, kValue);
   int num_of_packets_in_frame = 9;
   int num_of_packets_in_nack = 9;
 
-  // Check that the first burst of the frame go out on the wire.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(3).WillRepeatedly(
-      testing::Return(true));
-  for (int i = 0; i < num_of_packets_in_frame; ++i) {
-    EXPECT_TRUE(paced_sender_->SendPacket(firts_packet,
-                                          num_of_packets_in_frame));
-  }
-  // Add first NACK request.
-  for (int i = 0; i < num_of_packets_in_nack; ++i) {
-    EXPECT_TRUE(paced_sender_->ResendPacket(nack_packet,
-                                            num_of_packets_in_nack));
-  }
-  // Check that we get the first NACK burst.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kNackSize)).Times(5).
-      WillRepeatedly(testing::Return(true));
+  PacketList first_frame_packets =
+      CreatePacketList(kSize1, num_of_packets_in_frame);
 
+  PacketList second_frame_packets =
+      CreatePacketList(kSize2, num_of_packets_in_frame);
+
+  PacketList nack_packets =
+      CreatePacketList(kNackSize, num_of_packets_in_nack);
+
+  // Check that the first burst of the frame go out on the wire.
+  mock_transport_.AddExpectedSize(kSize1, 3);
+  EXPECT_TRUE(paced_sender_->SendPackets(first_frame_packets));
+
+  // Add first NACK request.
+  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets));
+
+  // Check that we get the first NACK burst.
+  mock_transport_.AddExpectedSize(kNackSize, 5);
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(10);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // Add second NACK request.
-  for (int i = 0; i < num_of_packets_in_nack; ++i) {
-    EXPECT_TRUE(paced_sender_->ResendPacket(nack_packet,
-                                           num_of_packets_in_nack));
-  }
+  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets));
 
   // Check that we get the next NACK burst.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kNackSize)).Times(7)
-      .WillRepeatedly(testing::Return(true));
+  mock_transport_.AddExpectedSize(kNackSize, 7);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // End of NACK plus a packet from the oldest frame.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kNackSize)).Times(6)
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(1)
-      .WillRepeatedly(testing::Return(true));
+  mock_transport_.AddExpectedSize(kNackSize, 6);
+  mock_transport_.AddExpectedSize(kSize1, 1);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // Add second frame.
   // Make sure we don't delay the second frame due to the previous packets.
-  for (int i = 0; i < num_of_packets_in_frame; ++i) {
-    EXPECT_TRUE(paced_sender_->SendPacket(second_packet,
-                                         num_of_packets_in_frame));
-  }
+  EXPECT_TRUE(paced_sender_->SendPackets(second_frame_packets));
 
   // Last packets of frame 1 and the first packets of frame 2.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(5).WillRepeatedly(
-      testing::Return(true));
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize2)).Times(2).WillRepeatedly(
-      testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize1, 5);
+  mock_transport_.AddExpectedSize(kSize2, 2);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // Last packets of frame 2.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize2)).Times(7).WillRepeatedly(
-      testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize2, 7);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 
   // No more packets.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize2)).Times(0);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
 }
@@ -176,86 +184,71 @@ TEST_F(PacedSenderTest, PaceWithNack) {
 TEST_F(PacedSenderTest, PaceWith60fps) {
   // Testing what happen when we get multiple NACK requests for a fully lost
   // frames just as we sent the first packets in a frame.
-  std::vector<uint8> firts_packet(kSize1, kValue);
-  std::vector<uint8> second_packet(kSize2, kValue);
-  std::vector<uint8> third_packet(kSize3, kValue);
-  std::vector<uint8> fourth_packet(kSize4, kValue);
-  base::TimeDelta timeout_10ms = base::TimeDelta::FromMilliseconds(10);
   int num_of_packets_in_frame = 9;
 
-  // Check that the first burst of the frame go out on the wire.
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(3).WillRepeatedly(
-      testing::Return(true));
-  for (int i = 0; i < num_of_packets_in_frame; ++i) {
-    EXPECT_TRUE(paced_sender_->SendPacket(firts_packet,
-                                          num_of_packets_in_frame));
-  }
+  PacketList first_frame_packets =
+      CreatePacketList(kSize1, num_of_packets_in_frame);
 
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(3).
-      WillRepeatedly(testing::Return(true));
+  PacketList second_frame_packets =
+      CreatePacketList(kSize2, num_of_packets_in_frame);
+
+  PacketList third_frame_packets =
+      CreatePacketList(kSize3, num_of_packets_in_frame);
+
+  PacketList fourth_frame_packets =
+      CreatePacketList(kSize4, num_of_packets_in_frame);
+
+  base::TimeDelta timeout_10ms = base::TimeDelta::FromMilliseconds(10);
+
+  // Check that the first burst of the frame go out on the wire.
+  mock_transport_.AddExpectedSize(kSize1, 3);
+  EXPECT_TRUE(paced_sender_->SendPackets(first_frame_packets));
+
+  mock_transport_.AddExpectedSize(kSize1, 3);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(6));
 
   // Add second frame, after 16 ms.
-  for (int i = 0; i < num_of_packets_in_frame; ++i) {
-    EXPECT_TRUE(paced_sender_->SendPacket(second_packet,
-                                         num_of_packets_in_frame));
-  }
+  EXPECT_TRUE(paced_sender_->SendPackets(second_frame_packets));
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(4));
 
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize1)).Times(3)
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize2)).Times(1)
-      .WillRepeatedly(testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize1, 3);
+  mock_transport_.AddExpectedSize(kSize2, 1);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize2)).Times(4)
-      .WillRepeatedly(testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize2, 4);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(3));
 
   // Add third frame, after 33 ms.
-  for (int i = 0; i < num_of_packets_in_frame; ++i) {
-    EXPECT_TRUE(paced_sender_->SendPacket(third_packet,
-                                         num_of_packets_in_frame));
-  }
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize2)).Times(4)
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize3)).Times(1)
-      .WillRepeatedly(testing::Return(true));
+  EXPECT_TRUE(paced_sender_->SendPackets(third_frame_packets));
+  mock_transport_.AddExpectedSize(kSize2, 4);
+  mock_transport_.AddExpectedSize(kSize3, 1);
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(7));
   task_runner_->RunTasks();
 
   // Add fourth frame, after 50 ms.
-  for (int i = 0; i < num_of_packets_in_frame; ++i) {
-    EXPECT_TRUE(paced_sender_->SendPacket(fourth_packet,
-                                         num_of_packets_in_frame));
-  }
+  EXPECT_TRUE(paced_sender_->SendPackets(fourth_frame_packets));
 
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize3)).Times(6)
-      .WillRepeatedly(testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize3, 6);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize3)).Times(2)
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize4)).Times(4)
-      .WillRepeatedly(testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize3, 2);
+  mock_transport_.AddExpectedSize(kSize4, 4);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize4)).Times(5)
-      .WillRepeatedly(testing::Return(true));
+  mock_transport_.AddExpectedSize(kSize4, 5);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 
-  EXPECT_CALL(mock_transport_, SendPacket(_, kSize4)).Times(0);
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
 }

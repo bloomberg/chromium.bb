@@ -50,8 +50,6 @@
             'framer/cast_message_builder_unittest.cc',
             'framer/frame_buffer_unittest.cc',
             'framer/framer_unittest.cc',
-            'pacing/mock_packet_sender.cc',
-            'pacing/mock_packet_sender.h',
             'pacing/mock_paced_packet_sender.cc',
             'pacing/mock_paced_packet_sender.h',
             'pacing/paced_sender_unittest.cc',

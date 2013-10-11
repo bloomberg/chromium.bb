@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_CAST_CONFIG_H_
 #define MEDIA_CAST_CAST_CONFIG_H_
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -172,11 +173,16 @@ struct EncodedAudioFrame {
   std::vector<uint8> data;
 };
 
+typedef std::vector<uint8> Packet;
+typedef std::vector<Packet> PacketList;
+
 class PacketSender {
  public:
-  // All packets to be sent to the network will be delivered via this function.
-  virtual bool SendPacket(const uint8* packet, int length) = 0;
-  virtual bool SendPacket(const std::vector<uint8>& packet);
+  // All packets to be sent to the network will be delivered via these
+  // functions.
+  virtual bool SendPackets(const PacketList& packets) = 0;
+
+  virtual bool SendPacket(const Packet& packet) = 0;
 
   virtual ~PacketSender() {}
 };

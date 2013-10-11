@@ -57,61 +57,56 @@ void RtpSender::IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
 }
 
 void RtpSender::ResendPackets(
-    const MissingFramesAndPackets& missing_frames_and_packets) {
-  std::vector<uint8> packet;
+    const MissingFramesAndPacketsMap& missing_frames_and_packets) {
   // Iterate over all frames in the list.
-  for (std::map<uint8, std::set<uint16> >::const_iterator it =
+  for (MissingFramesAndPacketsMap::const_iterator it =
        missing_frames_and_packets.begin();
        it != missing_frames_and_packets.end(); ++it) {
+    PacketList packets_to_resend;
     uint8 frame_id = it->first;
-    // Iterate over all of the packets in the frame.
-    const std::set<uint16>& packets = it->second;
-    if (packets.empty()) {
+    const PacketIdSet& packets_set = it->second;
+    bool success = false;
+
+    if (packets_set.empty()) {
       VLOG(1) << "Missing all packets in frame " << static_cast<int>(frame_id);
 
-      bool success = false;
-      uint16 packet_id = 0;
       do {
         // Get packet from storage.
-        packet.clear();
-        success = storage_->GetPacket(frame_id, packet_id, &packet);
+        uint16 packet_id = 0;
+        success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
 
         // Resend packet to the network.
         if (success) {
-          VLOG(1) << "Resend packet:" << static_cast<int>(frame_id)
-                  << ":" << packet_id << " size: " << packets.size();
+          VLOG(1) << "Resend " << static_cast<int>(frame_id)
+                  << ":" << packet_id;
           // Set a unique incremental sequence number for every packet.
+          Packet& packet = packets_to_resend.back();
           UpdateSequenceNumber(&packet);
           // Set the size as correspond to each frame.
-          transport_->ResendPacket(packet, static_cast<int>(packets.size()));
           ++packet_id;
         }
       } while (success);
-
     } else {
-      for (std::set<uint16>::const_iterator set_it = packets.begin();
-          set_it != packets.end(); ++set_it) {
+      // Iterate over all of the packets in the frame.
+      for (PacketIdSet::const_iterator set_it = packets_set.begin();
+          set_it != packets_set.end(); ++set_it) {
         uint16 packet_id = *set_it;
-        // Get packet from storage.
-        packet.clear();
-        bool success = storage_->GetPacket(frame_id, packet_id, &packet);
+        success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
+
         // Resend packet to the network.
         if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id) << ":"
-              << packet_id << " size: " << packet.size();
+          VLOG(1) << "Resend " << static_cast<int>(frame_id)
+                  << ":" << packet_id;
+          Packet& packet = packets_to_resend.back();
           UpdateSequenceNumber(&packet);
-          // Set the size as correspond to each frame.
-          transport_->ResendPacket(packet, static_cast<int>(packets.size()));
-        } else {
-          VLOG(1) << "Failed to resend " << static_cast<int>(frame_id) << ":"
-              << packet_id;
         }
       }
     }
+    transport_->ResendPackets(packets_to_resend);
   }
 }
 
-void RtpSender::UpdateSequenceNumber(std::vector<uint8>* packet) {
+void RtpSender::UpdateSequenceNumber(Packet* packet) {
   uint16 new_sequence_number = packetizer_->NextSequenceNumber();
   int index = 2;
   (*packet)[index] = (static_cast<uint8>(new_sequence_number));

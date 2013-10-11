@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/cast_config.h"
 
 namespace media {
 namespace cast {
@@ -29,14 +30,10 @@ class PacketStorage {
   PacketStorage(base::TickClock* clock, int max_time_stored_ms);
   virtual ~PacketStorage();
 
-  void StorePacket(uint8 frame_id,
-                   uint16 packet_id,
-                   const std::vector<uint8>& packet);
+  void StorePacket(uint8 frame_id, uint16 packet_id, const Packet* packet);
 
   // Copies packet into the buffer pointed to by rtp_buffer.
-  bool GetPacket(uint8 frame_id,
-                 uint16 packet_id,
-                 std::vector<uint8>* packet);
+  bool GetPacket(uint8 frame_id, uint16 packet_id, PacketList* packets);
 
  private:
   void CleanupOldPackets(base::TimeTicks now);
