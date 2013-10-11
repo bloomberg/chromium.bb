@@ -96,6 +96,12 @@ var ProgressCenterItem = function() {
    */
   this.summarized = false;
 
+  /**
+   * Callback function to cancel the item.
+   * @type {function()}
+   */
+  this.cancelCallback = null;
+
   Object.seal(this);
 };
 
@@ -125,5 +131,15 @@ ProgressCenterItem.prototype = {
    */
   get progressRateByPercent() {
     return ~~(100 * this.progressValue / this.progressMax);
+  },
+
+  /**
+   * Whether the item can be canceled or not.
+   * @return {boolean} True if the item can be canceled.
+   */
+  get cancelable() {
+    return !!(this.state == ProgressItemState.PROGRESSING &&
+              this.cancelCallback &&
+              !this.summarized);
   }
 };

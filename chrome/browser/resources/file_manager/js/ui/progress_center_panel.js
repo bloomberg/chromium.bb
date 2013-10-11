@@ -54,6 +54,8 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
                         item.state === ProgressItemState.ERROR ? 'error' :
                         item.state === ProgressItemState.CANCELED ? 'canceled' :
                         '';
+  if (item.cancelable)
+    additionalClass += ' cancelable';
   var previousWidthRate =
       parseInt(element.querySelector('.progress-track').style.width);
   if (item.state === ProgressItemState.COMPLETE &&

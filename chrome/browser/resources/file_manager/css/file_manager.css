@@ -2095,12 +2095,8 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
       no-repeat;
 }
 
-#progress-center-close-view.single li.error button.toggle,
-#progress-center-close-view.single li.canceled button.toggle,
-#progress-center-close-view.single li.complete button.toggle,
-#progress-center li.error button.cancel,
-#progress-center li.canceled button.cancel,
-#progress-center li.complete button.cancel {
+#progress-center-close-view.single li:not(.cancelable) button.toggle,
+#progress-center li:not(.cancelable) button.cancel {
   visibility: hidden;
 }
 

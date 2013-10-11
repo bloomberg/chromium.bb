@@ -774,8 +774,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Initialize progress center panel.
     this.progressCenterPanel_ = new ProgressCenterPanel(
         dom.querySelector('#progress-center'),
-        function(id) {
-        }.bind(this));
+        this.backgroundPage_.progressCenter.requestCancel.bind(
+            this.backgroundPage_.progressCenter));
     var initialItems = this.backgroundPage_.progressCenter.applicationItems;
     for (var i = 0; i < initialItems.length; i++) {
       this.progressCenterPanel_.updateItem(

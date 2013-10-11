@@ -128,6 +128,16 @@ ProgressCenter.prototype.updateItem = function(item) {
 };
 
 /**
+ * Requests to cancel the progress item.
+ * @param {number} id Progress ID to be requested to cancel.
+ */
+ProgressCenter.prototype.requestCancel = function(id) {
+  var index = this.getItemIndex_(id);
+  if (this.items_[index].cancelCallback)
+    this.items_[index].cancelCallback();
+};
+
+/**
  * Switches the default container.
  * @param {ProgressItemContainer} newContainer New value of the default
  *     container.
@@ -269,6 +279,20 @@ var ProgressCenterHandler = function(fileOperationManager, progressCenter) {
    */
   this.deletingItem_ = null;
 
+  /**
+   * File operation manager.
+   * @type {FileOperationManager}
+   * @private
+   */
+  this.fileOperationManager_ = fileOperationManager;
+
+  /**
+   * Progress center.
+   * @type {progressCenter}
+   * @private
+   */
+  this.progressCenter_ = progressCenter;
+
   // Seal the object.
   Object.seal(this);
 
@@ -285,6 +309,7 @@ var ProgressCenterHandler = function(fileOperationManager, progressCenter) {
  * @private
  */
 ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
+  var progressCenter = this.progressCenter_;
   switch (event.reason) {
     case 'BEGIN':
       if (this.copyingItem_) {
@@ -296,6 +321,15 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
       this.copyingItem_.message = 'Copying ...';
       this.copyingItem_.progressMax = event.status.totalBytes;
       this.copyingItem_.progressValue = event.status.processedBytes;
+      this.copyingItem_.cancelCallback = function() {
+        this.fileOperationManager_.requestCancel(function() {
+          this.copyingItem_.message = 'Canceled.';
+          this.copyingItem_.state = ProgressItemState.CANCELED;
+          progressCenter.updateItem(this.copyingItem_);
+          this.copyingItem_ = null;
+        }.bind(this));
+      }.bind(this);
+
       progressCenter.addItem(this.copyingItem_);
       break;
 
