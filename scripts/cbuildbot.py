@@ -445,6 +445,76 @@ class SimpleBuilder(Builder):
     stage_objs = [self._GetStageInstance(*x, config=config) for x in stage_list]
     self._RunParallelStages(stage_objs + [archive_stage])
 
+  def _RunChrootBuilderTypeBuild(self):
+    """Runs through stages of a CHROOT_BUILDER_TYPE build."""
+    self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
+    self._RunStage(stages.InitSDKStage)
+    self._RunStage(stages.SetupBoardStage, [constants.CHROOT_BUILDER_BOARD])
+    self._RunStage(stages.SyncChromeStage)
+    self._RunStage(stages.PatchChromeStage)
+    self._RunStage(stages.SDKPackageStage)
+    self._RunStage(stages.SDKTestStage)
+    self._RunStage(stages.UploadPrebuiltsStage,
+                   constants.CHROOT_BUILDER_BOARD, None)
+
+  def _RunRefreshPackagesTypeBuild(self):
+    """Runs through the stages of a REFRESH_PACKAGES_TYPE build."""
+    self._RunStage(stages.InitSDKStage)
+    self._RunStage(stages.SetupBoardStage)
+    self._RunStage(stages.RefreshPackageStatusStage)
+
+  def _RunDefaultTypeBuild(self):
+    """Runs through the stages of a non-special-type build."""
+    self._RunStage(stages.InitSDKStage)
+    self._RunStage(stages.UprevStage)
+    self._RunStage(stages.SetupBoardStage)
+
+    # We need a handle to this stage to extract info from it.
+    # TODO(mtennant): Just have _RunStage return the stage object, since
+    # nothing uses the return value of _RunStage now, and the Run method
+    # of stage objects does not appear to return anything, either.
+    sync_chrome_stage = self._GetStageInstance(stages.SyncChromeStage)
+    sync_chrome_stage.Run()
+    self._RunStage(stages.PatchChromeStage)
+
+    # Prepare stages to run in background.
+    configs = self.build_config['child_configs'] or [self.build_config]
+    tasks = []
+    for config in configs:
+      for board in config['boards']:
+        archive_stage = self._GetStageInstance(
+            stages.ArchiveStage, board, self.release_tag, config=config,
+            chrome_version=sync_chrome_stage.chrome_version)
+        board_config = BoardConfig(board, config['name'])
+        self.archive_stages[board_config] = archive_stage
+        tasks.append((config, board, archive_stage))
+
+    # Set up a process pool to run test/archive stages in the background.
+    # This process runs task(board) for each board added to the queue.
+    task_runner = self._RunBackgroundStagesForBoard
+    with parallel.BackgroundTaskRunner(task_runner) as queue:
+      for config, board, archive_stage in tasks:
+        compilecheck = config['compilecheck'] or self.options.compilecheck
+        if not compilecheck:
+          # Run BuildPackages and BuildImage in the foreground, generating
+          # or using PGO data if requested.
+          kwargs = {'archive_stage': archive_stage, 'config': config}
+          if config['pgo_generate']:
+            kwargs['pgo_generate'] = True
+          elif config['pgo_use']:
+            kwargs['pgo_use'] = True
+
+          self._RunStage(stages.BuildPackagesStage, board, **kwargs)
+          self._RunStage(stages.BuildImageStage, board, **kwargs)
+
+          if config['pgo_generate']:
+            suite = cbuildbot_config.PGORecordTest()
+            self._RunStage(stages.HWTestStage, board, archive_stage, suite,
+                           config=config)
+
+        # Kick off our background stages.
+        queue.put([config, board, compilecheck])
+
   def RunStages(self):
     """Runs through build process."""
     # TODO(sosa): Split these out into classes.
@@ -453,69 +523,11 @@ class SimpleBuilder(Builder):
     elif self.build_config['build_type'] == constants.CREATE_BRANCH_TYPE:
       self._RunStage(stages.BranchUtilStage)
     elif self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
-      self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
-      self._RunStage(stages.InitSDKStage)
-      self._RunStage(stages.SetupBoardStage, [constants.CHROOT_BUILDER_BOARD])
-      self._RunStage(stages.SyncChromeStage)
-      self._RunStage(stages.PatchChromeStage)
-      self._RunStage(stages.SDKPackageStage)
-      self._RunStage(stages.SDKTestStage)
-      self._RunStage(stages.UploadPrebuiltsStage,
-                     constants.CHROOT_BUILDER_BOARD, None)
+      self._RunChrootBuilderTypeBuild()
     elif self.build_config['build_type'] == constants.REFRESH_PACKAGES_TYPE:
-      self._RunStage(stages.InitSDKStage)
-      self._RunStage(stages.SetupBoardStage)
-      self._RunStage(stages.RefreshPackageStatusStage)
+      self._RunRefreshPackagesTypeBuild()
     else:
-      self._RunStage(stages.InitSDKStage)
-      self._RunStage(stages.UprevStage)
-      self._RunStage(stages.SetupBoardStage)
-
-      # We need a handle to this stage to extract info from it.
-      # TODO(mtennant): Just have _RunStage return the stage object, since
-      # nothing uses the return value of _RunStage now, and the Run method
-      # of stage objects does not appear to return anything, either.
-      sync_chrome_stage = self._GetStageInstance(stages.SyncChromeStage)
-      sync_chrome_stage.Run()
-      self._RunStage(stages.PatchChromeStage)
-
-      # Prepare stages to run in background.
-      configs = self.build_config['child_configs'] or [self.build_config]
-      tasks = []
-      for config in configs:
-        for board in config['boards']:
-          archive_stage = self._GetStageInstance(
-              stages.ArchiveStage, board, self.release_tag, config=config,
-              chrome_version=sync_chrome_stage.chrome_version)
-          board_config = BoardConfig(board, config['name'])
-          self.archive_stages[board_config] = archive_stage
-          tasks.append((config, board, archive_stage))
-
-      # Set up a process pool to run test/archive stages in the background.
-      # This process runs task(board) for each board added to the queue.
-      task_runner = self._RunBackgroundStagesForBoard
-      with parallel.BackgroundTaskRunner(task_runner) as queue:
-        for config, board, archive_stage in tasks:
-          compilecheck = config['compilecheck'] or self.options.compilecheck
-          if not compilecheck:
-            # Run BuildPackages and BuildImage in the foreground, generating
-            # or using PGO data if requested.
-            kwargs = {'archive_stage': archive_stage, 'config': config}
-            if config['pgo_generate']:
-              kwargs['pgo_generate'] = True
-            elif config['pgo_use']:
-              kwargs['pgo_use'] = True
-
-            self._RunStage(stages.BuildPackagesStage, board, **kwargs)
-            self._RunStage(stages.BuildImageStage, board, **kwargs)
-
-            if config['pgo_generate']:
-              suite = cbuildbot_config.PGORecordTest()
-              self._RunStage(stages.HWTestStage, board, archive_stage, suite,
-                             config=config)
-
-          # Kick off our background stages.
-          queue.put([config, board, compilecheck])
+      self._RunDefaultTypeBuild()
 
 
 class DistributedBuilder(SimpleBuilder):
