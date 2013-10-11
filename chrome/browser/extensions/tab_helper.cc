@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
+#include "chrome/browser/extensions/webstore_inline_installer_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -86,7 +87,8 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       pending_web_app_action_(NONE),
       script_executor_(new ScriptExecutor(web_contents,
                                           &script_execution_observers_)),
-      image_loader_ptr_factory_(this) {
+      image_loader_ptr_factory_(this),
+      webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);
@@ -108,7 +110,6 @@ TabHelper::TabHelper(content::WebContents* web_contents)
     script_bubble_controller_.reset(
         new ScriptBubbleController(web_contents, this));
   }
-
 
   // If more classes need to listen to global content script activity, then
   // a separate routing class with an observer interface should be written.
@@ -300,7 +301,7 @@ void TabHelper::OnInlineWebstoreInstall(
       base::Bind(&TabHelper::OnInlineInstallComplete, base::Unretained(this),
                  install_id, return_route_id);
   scoped_refptr<WebstoreInlineInstaller> installer(
-      new WebstoreInlineInstaller(
+      webstore_inline_installer_factory_->CreateInstaller(
           web_contents(),
           webstore_item_id,
           requestor_url,
@@ -415,6 +416,11 @@ void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
 void TabHelper::SetAppIcon(const SkBitmap& app_icon) {
   extension_app_icon_ = app_icon;
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
+}
+
+void TabHelper::SetWebstoreInlineInstallerFactoryForTests(
+    WebstoreInlineInstallerFactory* factory) {
+  webstore_inline_installer_factory_.reset(factory);
 }
 
 void TabHelper::OnImageLoaded(const gfx::Image& image) {
