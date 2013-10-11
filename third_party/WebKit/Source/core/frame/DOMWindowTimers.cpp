@@ -34,7 +34,7 @@
 #include "core/frame/DOMWindowTimers.h"
 
 #include "core/events/EventTarget.h"
-#include "core/page/DOMTimer.h"
+#include "core/frame/DOMTimer.h"
 
 namespace WebCore {
 

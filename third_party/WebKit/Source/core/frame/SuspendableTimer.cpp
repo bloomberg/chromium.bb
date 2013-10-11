@@ -10,7 +10,7 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
@@ -25,24 +25,62 @@
  */
 
 #include "config.h"
-
-#include "core/page/WorkerNavigator.h"
+#include "core/frame/SuspendableTimer.h"
 
 namespace WebCore {
 
-WorkerNavigator::WorkerNavigator(const String& userAgent)
-    : m_userAgent(userAgent)
+SuspendableTimer::SuspendableTimer(ScriptExecutionContext* context)
+    : ActiveDOMObject(context)
+    , m_nextFireInterval(0)
+    , m_repeatInterval(0)
+    , m_active(false)
+#if !ASSERT_DISABLED
+    , m_suspended(false)
+#endif
 {
-    ScriptWrappable::init(this);
 }
 
-WorkerNavigator::~WorkerNavigator()
+SuspendableTimer::~SuspendableTimer()
 {
 }
 
-String WorkerNavigator::userAgent() const
+bool SuspendableTimer::hasPendingActivity() const
 {
-    return m_userAgent;
+    return isActive();
+}
+
+void SuspendableTimer::stop()
+{
+    TimerBase::stop();
+}
+
+void SuspendableTimer::suspend(ReasonForSuspension)
+{
+#if !ASSERT_DISABLED
+    ASSERT(!m_suspended);
+    m_suspended = true;
+#endif
+    m_active = isActive();
+    if (m_active) {
+        m_nextFireInterval = nextUnalignedFireInterval();
+        m_repeatInterval = repeatInterval();
+        TimerBase::stop();
+    }
+}
+
+void SuspendableTimer::resume()
+{
+#if !ASSERT_DISABLED
+    ASSERT(m_suspended);
+    m_suspended = false;
+#endif
+    if (m_active)
+        start(m_nextFireInterval, m_repeatInterval);
+}
+
+bool SuspendableTimer::canSuspend() const
+{
+    return true;
 }
 
 } // namespace WebCore

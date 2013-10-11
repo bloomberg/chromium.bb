@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/page/DOMTimer.h"
+#include "core/frame/DOMTimer.h"
 
 #include "bindings/v8/ScheduledAction.h"
 #include "core/dom/ScriptExecutionContext.h"

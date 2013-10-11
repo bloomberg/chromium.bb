@@ -33,7 +33,7 @@
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/page/DOMTimer.h"
+#include "core/frame/DOMTimer.h"
 #include "core/platform/LifecycleContext.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashSet.h"

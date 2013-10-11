@@ -32,7 +32,7 @@
 #define WorkerNavigatorStorageQuota_h
 
 #include "core/frame/DOMWindowProperty.h"
-#include "core/page/WorkerNavigator.h"
+#include "core/workers/WorkerNavigator.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {

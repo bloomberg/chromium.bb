@@ -46,7 +46,7 @@
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
-#include "core/page/WorkerNavigator.h"
+#include "core/workers/WorkerNavigator.h"
 #include "platform/NotImplemented.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerLocation.h"

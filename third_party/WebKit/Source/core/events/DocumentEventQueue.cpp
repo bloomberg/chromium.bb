@@ -31,7 +31,7 @@
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/DOMWindow.h"
-#include "core/page/SuspendableTimer.h"
+#include "core/frame/SuspendableTimer.h"
 
 namespace WebCore {
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/page/DOMSecurityPolicy.h"
+#include "core/frame/DOMSecurityPolicy.h"
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"

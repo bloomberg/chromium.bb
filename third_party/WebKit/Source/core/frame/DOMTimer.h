@@ -28,7 +28,7 @@
 #define DOMTimer_h
 
 #include "bindings/v8/ScheduledAction.h"
-#include "core/page/SuspendableTimer.h"
+#include "core/frame/SuspendableTimer.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/Compiler.h"
 #include "wtf/OwnPtr.h"

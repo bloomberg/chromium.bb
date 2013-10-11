@@ -37,7 +37,7 @@
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/DOMTimer.h"
+#include "core/frame/DOMTimer.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/webdatabase/DatabaseContext.h"

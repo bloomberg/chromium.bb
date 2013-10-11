@@ -37,7 +37,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuController.h"
-#include "core/page/DOMTimer.h"
+#include "core/frame/DOMTimer.h"
 #include "core/page/DragController.h"
 #include "core/page/FocusController.h"
 #include "core/frame/Frame.h"

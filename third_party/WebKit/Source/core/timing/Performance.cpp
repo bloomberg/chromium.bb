@@ -34,7 +34,7 @@
 
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/ResourceTimingInfo.h"
+#include "core/timing/ResourceTimingInfo.h"
 #include "core/timing/MemoryInfo.h"
 #include "core/timing/PerformanceEntry.h"
 #include "core/timing/PerformanceNavigation.h"

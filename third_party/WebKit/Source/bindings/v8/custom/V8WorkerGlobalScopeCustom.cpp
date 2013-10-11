@@ -39,7 +39,7 @@
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/DOMTimer.h"
+#include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindowTimers.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/websockets/WebSocket.h"
