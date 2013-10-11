@@ -429,20 +429,8 @@ void InputType::createShadowSubtree()
 
 void InputType::destroyShadowSubtree()
 {
-    ShadowRoot* root = element()->userAgentShadowRoot();
-    if (!root)
-        return;
-
-    root->removeChildren();
-
-    // It's ok to clear contents of all other UA ShadowRoots because they must
-    // have been created by InputFieldPasswordGeneratorButtonElement.
-    // FIXME: Remove the PasswordGeneratorButtonElement's shadow root and then
-    // remove this loop.
-    while ((root = root->youngerShadowRoot()) && root->type() == ShadowRoot::UserAgentShadowRoot) {
+    if (ShadowRoot* root = element()->userAgentShadowRoot())
         root->removeChildren();
-        root->appendChild(HTMLShadowElement::create(shadowTag, element()->document()));
-    }
 }
 
 Decimal InputType::parseToNumber(const String&, const Decimal& defaultValue) const
