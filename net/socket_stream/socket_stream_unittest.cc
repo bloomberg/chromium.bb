@@ -160,6 +160,8 @@ class SocketStreamEventRecorder : public SocketStream::Delegate {
   void SetAuthInfo(const AuthCredentials& credentials) {
     credentials_ = credentials;
   }
+  // Wakes up the SocketStream waiting for completion of OnStartOpenConnection()
+  // of its delegate.
   void CompleteConnection(int result) {
     connection_callback_.Run(result);
   }
@@ -290,6 +292,9 @@ class SocketStreamTest : public PlatformTest {
     return mock_socket_factory_.get();
   }
 
+  // Functions for SocketStreamEventRecorder to handle calls to the
+  // SocketStream::Delegate methods from the SocketStream.
+
   virtual void DoSendWebSocketHandshake(SocketStreamEvent* event) {
     event->socket->SendData(
         handshake_request_.data(), handshake_request_.size());
@@ -336,6 +341,8 @@ class SocketStreamTest : public PlatformTest {
     return ERR_PROTOCOL_SWITCHED;
   }
 
+  // Notifies |io_test_callback_| of that this method is called, and keeps the
+  // SocketStream waiting.
   virtual int DoIOPending(SocketStreamEvent* event) {
     io_test_callback_.callback().Run(OK);
     return ERR_IO_PENDING;
@@ -421,6 +428,9 @@ TEST_F(SocketStreamTest, CloseFlushPendingWrite) {
   socket_stream->Connect();
 
   test_callback.WaitForResult();
+
+  EXPECT_TRUE(data_provider.at_read_eof());
+  EXPECT_TRUE(data_provider.at_write_eof());
 
   const std::vector<SocketStreamEvent>& events = delegate->GetSeenEvents();
   ASSERT_EQ(7U, events.size());
@@ -698,13 +708,13 @@ TEST_F(SocketStreamTest, IOPending) {
 
   scoped_ptr<SocketStreamEventRecorder> delegate(
       new SocketStreamEventRecorder(test_callback.callback()));
+  delegate->SetOnStartOpenConnection(base::Bind(
+      &SocketStreamTest::DoIOPending, base::Unretained(this)));
   delegate->SetOnConnected(base::Bind(
       &SocketStreamTest::DoSendWebSocketHandshake, base::Unretained(this)));
   delegate->SetOnReceivedData(base::Bind(
       &SocketStreamTest::DoCloseFlushPendingWriteTest,
       base::Unretained(this)));
-  delegate->SetOnStartOpenConnection(base::Bind(
-      &SocketStreamTest::DoIOPending, base::Unretained(this)));
 
   TestURLRequestContext context;
 
@@ -743,6 +753,9 @@ TEST_F(SocketStreamTest, IOPending) {
   delegate->CompleteConnection(OK);
 
   EXPECT_EQ(OK, test_callback.WaitForResult());
+
+  EXPECT_TRUE(data_provider.at_read_eof());
+  EXPECT_TRUE(data_provider.at_write_eof());
 
   const std::vector<SocketStreamEvent>& events = delegate->GetSeenEvents();
   ASSERT_EQ(7U, events.size());
@@ -802,6 +815,7 @@ TEST_F(SocketStreamTest, SwitchAfterPending) {
 
   socket_stream->Connect();
   io_test_callback_.WaitForResult();
+
   EXPECT_EQ(SocketStream::STATE_RESOLVE_PROTOCOL_COMPLETE,
             socket_stream->next_state_);
   delegate->CompleteConnection(ERR_PROTOCOL_SWITCHED);
@@ -986,13 +1000,13 @@ TEST_F(SocketStreamTest, NullContextSocketStreamShouldNotCrash) {
   TestURLRequestContext context;
   scoped_refptr<SocketStream> socket_stream(
       new SocketStream(GURL("ws://example.com/demo"), delegate.get()));
+  delegate->SetOnStartOpenConnection(base::Bind(
+      &SocketStreamTest::DoIOPending, base::Unretained(this)));
   delegate->SetOnConnected(base::Bind(
       &SocketStreamTest::DoSendWebSocketHandshake, base::Unretained(this)));
   delegate->SetOnReceivedData(base::Bind(
       &SocketStreamTest::DoCloseFlushPendingWriteTestWithSetContextNull,
       base::Unretained(this)));
-  delegate->SetOnStartOpenConnection(base::Bind(
-      &SocketStreamTest::DoIOPending, base::Unretained(this)));
 
   socket_stream->set_context(&context);
 
@@ -1017,8 +1031,19 @@ TEST_F(SocketStreamTest, NullContextSocketStreamShouldNotCrash) {
   io_test_callback_.WaitForResult();
   delegate->CompleteConnection(OK);
   EXPECT_EQ(OK, test_callback.WaitForResult());
+
   EXPECT_TRUE(data_provider.at_read_eof());
   EXPECT_TRUE(data_provider.at_write_eof());
+
+  const std::vector<SocketStreamEvent>& events = delegate->GetSeenEvents();
+  ASSERT_EQ(5U, events.size());
+
+  EXPECT_EQ(SocketStreamEvent::EVENT_START_OPEN_CONNECTION,
+            events[0].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_CONNECTED, events[1].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_SENT_DATA, events[2].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_RECEIVED_DATA, events[3].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[4].event_type);
 }
 
 }  // namespace net
