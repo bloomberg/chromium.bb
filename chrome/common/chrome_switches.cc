@@ -766,6 +766,9 @@ const char kEnableSpellingServiceFeedback[] =
 // Enables the stacked tabstrip.
 const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 
+// Enables an experimental hosted app experience.
+const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
+
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 

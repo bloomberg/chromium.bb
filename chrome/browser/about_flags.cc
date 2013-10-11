@@ -1786,6 +1786,13 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableCompositedScrollingForFrames,
                                switches::kDisableCompositedScrollingForFrames)
   },
+  {
+    "enable-streamlined-hosted-apps",
+    IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME,
+    IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableStreamlinedHostedApps)
+  },
 };
 
 const Experiment* experiments = kExperiments;

@@ -5629,7 +5629,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disable compositor touch hit testing.
       </message>
       <message name="IDS_FLAGS_DISABLE_COMPOSITOR_TOUCH_HIT_TESTING_DESCRIPTION" desc="Description of the disable compositor touch hit testing flags.">
-        Disables an optimization intended to improve touch scrolling responsiveness.  Forces all touch events to go to the blink main thread to look for handlers, instead of potentially short-circuiting from the compositor thread.  
+        Disables an optimization intended to improve touch scrolling responsiveness.  Forces all touch events to go to the blink main thread to look for handlers, instead of potentially short-circuiting from the compositor thread.
       </message>
       <message name="IDS_ENABLE_BACKLOADER_NAME" desc="Title of the enable background loader flag." >
         Enable background loader component for hosted applications
@@ -6811,6 +6811,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_COMPOSITED_SCROLLING_FOR_FRAMES_DESCRIPTION" desc="Description for the flag to enable composited scrolling for frames.">
         Enable accelerated scrolling by the compositer for frames.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME" desc="Name of the flag to enable streamlined hosted apps.">
+        Enable experimental streamlined hosted apps.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_DESCRIPTION" desc="Description for the flag to enable streamlined hosted apps.">
+        Enables an experimental, more streamlined hosted app experience.
       </message>
 
       <!-- Crashes -->
