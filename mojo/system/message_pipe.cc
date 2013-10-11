@@ -126,9 +126,9 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
   bool not_enough_space = false;
   MessageInTransit* const message = message_queues_[port].front();
   if (num_bytes)
-    *num_bytes = message->size();
-  if (message->size() <= max_bytes)
-    memcpy(bytes, message->data(), message->size());
+    *num_bytes = message->data_size();
+  if (message->data_size() <= max_bytes)
+    memcpy(bytes, message->data(), message->data_size());
   else
     not_enough_space = true;
 

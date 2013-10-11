@@ -9,13 +9,14 @@
 #include <stdlib.h>  // For |free()|.
 
 #include "base/basictypes.h"
+#include "mojo/public/system/system_export.h"
 
 namespace mojo {
 namespace system {
 
 // This class is used to represent data in transit. It is thread-unsafe.
 // Note: This class is POD.
-class MessageInTransit {
+class MOJO_SYSTEM_EXPORT MessageInTransit {
  public:
   // Creates a |MessageInTransit| with the data given by |bytes|/|num_bytes|.
   static MessageInTransit* Create(const void* bytes, uint32_t num_bytes);
@@ -27,7 +28,7 @@ class MessageInTransit {
   }
 
   // Gets the size of the data (in number of bytes).
-  uint32_t size() const {
+  uint32_t data_size() const {
     return size_;
   }
 
@@ -36,7 +37,20 @@ class MessageInTransit {
     return reinterpret_cast<const char*>(this) + sizeof(*this);
   }
 
+  size_t size_with_header_and_padding() const {
+    return RoundUpMessageAlignment(sizeof(*this) + size_);
+  }
+
   // TODO(vtl): Add whatever's necessary to transport handles.
+
+  // Messages (the header and data) must always be aligned to a multiple of this
+  // quantity (which must be a power of 2).
+  static const size_t kMessageAlignment = 8;
+
+  // Rounds |n| up to a multiple of |kMessageAlignment|.
+  static inline size_t RoundUpMessageAlignment(size_t n) {
+    return (n + kMessageAlignment - 1) & ~(kMessageAlignment - 1);
+  }
 
  private:
   explicit MessageInTransit(uint32_t size)
