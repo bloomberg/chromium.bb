@@ -215,8 +215,7 @@ function getRequiredElement(id) {
 // Handle click on a link. If the link points to a chrome: or file: url, then
 // call into the browser to do the navigation.
 document.addEventListener('click', function(e) {
-  // Allow preventDefault to work.
-  if (!e.defaultPrevented)
+  if (e.defaultPrevented)
     return;
 
   var el = e.target;
