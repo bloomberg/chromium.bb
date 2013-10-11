@@ -22580,12 +22580,6 @@ other types of suffix sets.
   <int value="15" label="RECOVERY_EVENT_FAILED_ICON_MAPPING_INSERT">
     Failed to copy recovery icon_mapping table.
   </int>
-  <int value="16" label="RECOVERY_EVENT_RECOVERED_VERSION6">
-    Successful recovery of version 6 database.
-  </int>
-  <int value="17" label="RECOVERY_EVENT_FAILED_META_INIT">
-    Failed sql::MetaTable::Init().
-  </int>
 </enum>
 
 <enum name="HttpAuthCount" type="int">

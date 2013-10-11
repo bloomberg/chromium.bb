@@ -50,17 +50,6 @@ const GURL kIconUrl3 = GURL("http://www.google.com/touch.ico");
 const gfx::Size kSmallSize = gfx::Size(16, 16);
 const gfx::Size kLargeSize = gfx::Size(32, 32);
 
-// Create the test database at |db_path| from the golden file at
-// |ascii_path| in the "History/" subdir of the test data dir.
-WARN_UNUSED_RESULT bool CreateDatabaseFromSQL(const base::FilePath &db_path,
-                                              const char* ascii_path) {
-  base::FilePath sql_path;
-  if (!PathService::Get(chrome::DIR_TEST_DATA, &sql_path))
-    return false;
-  sql_path = sql_path.AppendASCII("History").AppendASCII(ascii_path);
-  return sql::test::CreateDatabaseFromSQL(db_path, sql_path);
-}
-
 int GetPageSize(sql::Connection* db) {
   sql::Statement s(db->GetUniqueStatement("PRAGMA page_size"));
   EXPECT_TRUE(s.Step());
@@ -213,7 +202,14 @@ class ThumbnailDatabaseTest : public testing::Test {
   // Initialize a thumbnail database instance from the SQL file at
   // |golden_path| in the "History/" subdirectory of test data.
   scoped_ptr<ThumbnailDatabase> LoadFromGolden(const char* golden_path) {
-    if (!CreateDatabaseFromSQL(file_name_, golden_path)) {
+    base::FilePath sql_path;
+    if (!PathService::Get(chrome::DIR_TEST_DATA, &sql_path)) {
+      ADD_FAILURE() << "Failed loading " << golden_path;
+      return scoped_ptr<ThumbnailDatabase>();
+    }
+
+    sql_path = sql_path.AppendASCII("History").AppendASCII(golden_path);
+    if (!sql::test::CreateDatabaseFromSQL(file_name_, sql_path)) {
       ADD_FAILURE() << "Failed loading " << golden_path;
       return scoped_ptr<ThumbnailDatabase>();
     }
@@ -752,13 +748,34 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   if (!sql::Recovery::FullRecoverySupported())
     return;
 
-  // Create an example database.
-  {
-    EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v7.sql"));
+  chrome::FaviconID id1, id2;
+  GURL page_url1("http://www.google.com");
+  GURL page_url2("http://news.google.com");
+  GURL favicon_url("http://www.google.com/favicon.png");
 
-    sql::Connection raw_db;
-    EXPECT_TRUE(raw_db.Open(file_name_));
-    VerifyTablesAndColumns(&raw_db);
+  // Create an example database.
+  // TODO(shess): Merge with the load-dump code when that lands.
+  {
+    ThumbnailDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+    db.BeginTransaction();
+
+    std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+    scoped_refptr<base::RefCountedBytes> favicon(
+        new base::RefCountedBytes(data));
+
+    id1 = db.AddFavicon(favicon_url, chrome::TOUCH_ICON);
+    base::Time time = base::Time::Now();
+    db.AddFaviconBitmap(id1, favicon, time, kSmallSize);
+    db.AddFaviconBitmap(id1, favicon, time, kLargeSize);
+    EXPECT_LT(0, db.AddIconMapping(page_url1, id1));
+    EXPECT_LT(0, db.AddIconMapping(page_url2, id1));
+
+    id2 = db.AddFavicon(favicon_url, chrome::FAVICON);
+    EXPECT_NE(id1, id2);
+    db.AddFaviconBitmap(id2, favicon, time, kSmallSize);
+    EXPECT_LT(0, db.AddIconMapping(page_url1, id2));
+    db.CommitTransaction();
   }
 
   // Test that the contents make sense after clean open.
@@ -766,16 +783,13 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     ThumbnailDatabase db;
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
 
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl1, chrome::FAVICON,
-                         kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl2, chrome::FAVICON,
-                         kIconUrl2, kLargeSize, sizeof(kBlob2), kBlob2));
+    std::vector<IconMapping> icon_mappings;
+    EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
+    ASSERT_EQ(2u, icon_mappings.size());
+    EXPECT_EQ(id1, icon_mappings[0].icon_id);
+    EXPECT_EQ(id2, icon_mappings[1].icon_id);
   }
 
-  // Corrupt the |icon_mapping.page_url| index by deleting an element
-  // from the backing table but not the index.
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
@@ -795,7 +809,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     {
       const char kDeleteSql[] = "DELETE FROM icon_mapping WHERE page_url = ?";
       sql::Statement statement(raw_db.GetUniqueStatement(kDeleteSql));
-      statement.BindString(0, URLDatabase::GURLToDatabaseURL(kPageUrl2));
+      statement.BindString(0, URLDatabase::GURLToDatabaseURL(page_url2));
       EXPECT_TRUE(statement.Run());
     }
     raw_db.Close();
@@ -803,7 +817,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     EXPECT_TRUE(WritePage(file_name_, idx_root_page, buf.get(), page_size));
   }
 
-  // Database should be corrupt at the SQLite level.
+  // Database should be corrupt.
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
@@ -820,16 +834,16 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     ThumbnailDatabase db;
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
 
-    // Data for kPageUrl2 was deleted, but the index entry remains,
+    // Data for page_url2 was deleted, but the index entry remains,
     // this will throw SQLITE_CORRUPT.  The corruption handler will
     // recover the database and poison the handle, so the outer call
     // fails.
-    EXPECT_FALSE(db.GetIconMappingsForPageURL(kPageUrl2, NULL));
-
+    std::vector<IconMapping> icon_mappings;
+    EXPECT_FALSE(db.GetIconMappingsForPageURL(page_url2, &icon_mappings));
     ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
   }
 
-  // Check that the database is recovered at the SQLite level.
+  // Check that the database is recovered at a SQLite level.
   {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
@@ -837,9 +851,6 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
         raw_db.GetUniqueStatement("PRAGMA integrity_check"));
     EXPECT_TRUE(statement.Step());
     EXPECT_EQ("ok", statement.ColumnString(0));
-
-    // Check that the expected tables exist.
-    VerifyTablesAndColumns(&raw_db);
   }
 
   // Database should also be recovered at higher levels.
@@ -847,13 +858,14 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     ThumbnailDatabase db;
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
 
-    // Now this fails because there is no mapping.
-    EXPECT_FALSE(db.GetIconMappingsForPageURL(kPageUrl2, NULL));
+    std::vector<IconMapping> icon_mappings;
 
-    // Other data was retained by recovery.
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl1, chrome::FAVICON,
-                         kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
+    EXPECT_FALSE(db.GetIconMappingsForPageURL(page_url2, &icon_mappings));
+
+    EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
+    ASSERT_EQ(2u, icon_mappings.size());
+    EXPECT_EQ(id1, icon_mappings[0].icon_id);
+    EXPECT_EQ(id2, icon_mappings[1].icon_id);
   }
 
   // Corrupt the database again by making the actual file shorter than
@@ -889,79 +901,15 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     ThumbnailDatabase db;
     ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
 
-    EXPECT_FALSE(db.GetIconMappingsForPageURL(kPageUrl2, NULL));
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl1, chrome::FAVICON,
-                         kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
+    std::vector<IconMapping> icon_mappings;
 
+    EXPECT_FALSE(db.GetIconMappingsForPageURL(page_url2, &icon_mappings));
+
+    EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
+    ASSERT_EQ(2u, icon_mappings.size());
+    EXPECT_EQ(id1, icon_mappings[0].icon_id);
+    EXPECT_EQ(id2, icon_mappings[1].icon_id);
     ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
-  }
-}
-
-TEST_F(ThumbnailDatabaseTest, Recovery6) {
-  // Create an example database without loading into ThumbnailDatabase
-  // (which would upgrade it).
-  EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v6.sql"));
-
-  // Corrupt the database by making the actual file shorter than the
-  // SQLite header expects.  This form of corruption will cause
-  // immediate failures during Open(), before the migration code runs,
-  // so the version-6 recovery will occur.
-  {
-    int64 db_size = 0;
-    EXPECT_TRUE(file_util::GetFileSize(file_name_, &db_size));
-    {
-      sql::Connection raw_db;
-      EXPECT_TRUE(raw_db.Open(file_name_));
-      EXPECT_TRUE(raw_db.Execute("CREATE TABLE t(x)"));
-    }
-    file_util::ScopedFILE file(file_util::OpenFile(file_name_, "rb+"));
-    ASSERT_TRUE(file.get() != NULL);
-    EXPECT_EQ(0, fseek(file.get(), static_cast<long>(db_size), SEEK_SET));
-    EXPECT_TRUE(file_util::TruncateFile(file.get()));
-  }
-
-  // Database is unusable at the SQLite level.
-  {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
-    sql::Connection raw_db;
-    EXPECT_TRUE(raw_db.Open(file_name_));
-    EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
-  }
-
-  // Database should be recovered during open.
-  {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
-    ThumbnailDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
-
-    // Test that some data is present, copied from
-    // ThumbnailDatabaseTest.Version6 .
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl3, chrome::FAVICON,
-                         kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
-    EXPECT_TRUE(
-        CheckPageHasIcon(&db, kPageUrl3, chrome::TOUCH_ICON,
-                         kIconUrl3, kLargeSize, sizeof(kBlob2), kBlob2));
-
-    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
-  }
-
-  // Check that the database is recovered at a SQLite level, and that
-  // the current schema is in place.
-  {
-    sql::Connection raw_db;
-    EXPECT_TRUE(raw_db.Open(file_name_));
-    sql::Statement statement(
-        raw_db.GetUniqueStatement("PRAGMA integrity_check"));
-    EXPECT_TRUE(statement.Step());
-    EXPECT_EQ("ok", statement.ColumnString(0));
-
-    // Check that the expected tables exist.
-    VerifyTablesAndColumns(&raw_db);
   }
 }
 

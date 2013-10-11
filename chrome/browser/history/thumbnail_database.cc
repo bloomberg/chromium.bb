@@ -67,27 +67,6 @@
 
 namespace {
 
-// For this database, schema migrations are deprecated after two
-// years.  This means that the oldest non-deprecated version should be
-// two years old or greater (thus the migrations to get there are
-// older).  Databases containing deprecated versions will be cleared
-// at startup.  Since this database is a cache, losing old data is not
-// fatal (in fact, very old data may be expired immediately at startup
-// anyhow).
-
-// Version 7: 911a634d/r209424 by qsr@chromium.org on 2013-07-01
-// Version 6: 610f923b/r152367 by pkotwicz@chromium.org on 2012-08-20
-// Version 5: e2ee8ae9/r105004 by groby@chromium.org on 2011-10-12
-// Version 4: 5f104d76/r77288 by sky@chromium.org on 2011-03-08 (deprecated)
-// Version 3: 09911bf3/r15 by initial.commit on 2008-07-26 (deprecated)
-
-// Version number of the database.
-// NOTE(shess): When changing the version, add a new golden file for
-// the new version and a test to verify that Init() works with it.
-const int kCurrentVersionNumber = 7;
-const int kCompatibleVersionNumber = 7;
-const int kDeprecatedVersionNumber = 4;  // and earlier.
-
 void FillIconMapping(const sql::Statement& statement,
                      const GURL& page_url,
                      history::IconMapping* icon_mapping) {
@@ -344,11 +323,11 @@ enum RecoveryEventType {
   RECOVERY_EVENT_FAILED_SCOPER,
   RECOVERY_EVENT_FAILED_META_VERSION_ERROR,
   RECOVERY_EVENT_FAILED_META_VERSION_NONE,
-  RECOVERY_EVENT_FAILED_META_WRONG_VERSION6,  // obsolete
+  RECOVERY_EVENT_FAILED_META_WRONG_VERSION6,
   RECOVERY_EVENT_FAILED_META_WRONG_VERSION5,
   RECOVERY_EVENT_FAILED_META_WRONG_VERSION,
   RECOVERY_EVENT_FAILED_RECOVER_META,
-  RECOVERY_EVENT_FAILED_META_INSERT,  // obsolete
+  RECOVERY_EVENT_FAILED_META_INSERT,
   RECOVERY_EVENT_FAILED_INIT,
   RECOVERY_EVENT_FAILED_RECOVER_FAVICONS,
   RECOVERY_EVENT_FAILED_FAVICONS_INSERT,
@@ -356,8 +335,6 @@ enum RecoveryEventType {
   RECOVERY_EVENT_FAILED_FAVICON_BITMAPS_INSERT,
   RECOVERY_EVENT_FAILED_RECOVER_ICON_MAPPING,
   RECOVERY_EVENT_FAILED_ICON_MAPPING_INSERT,
-  RECOVERY_EVENT_RECOVERED_VERSION6,
-  RECOVERY_EVENT_FAILED_META_INIT,
 
   // Always keep this at the end.
   RECOVERY_EVENT_MAX,
@@ -375,11 +352,6 @@ void RecordRecoveryEvent(RecoveryEventType recovery_event) {
 // opposed to just razing it and starting over whenever corruption is
 // detected.  So this database is a good test subject.
 void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
-  // NOTE(shess): This code is currently specific to the version
-  // number.  I am working on simplifying things to loosen the
-  // dependency, meanwhile contact me if you need to bump the version.
-  DCHECK_EQ(7, kCurrentVersionNumber);
-
   // TODO(shess): Reset back after?
   db->reset_error_callback();
 
@@ -401,7 +373,6 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // Setup the meta recovery table, and check that the version number
   // is covered by the recovery code.
   // TODO(shess): sql::Recovery should provide a helper to handle meta.
-  int version = 0;  // For reporting which version was recovered.
   {
     const char kRecoverySql[] =
         "CREATE VIRTUAL TABLE temp.recover_meta USING recover"
@@ -440,18 +411,20 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
         recovery_version.Clear();
         sql::Recovery::Rollback(recovery.Pass());
         return;
-      }
-      version = recovery_version.ColumnInt(0);
-
-      // Recovery code is generally schema-dependent.  Version 7 and
-      // version 6 are very similar, so can be handled together.
-      // Track version 5, to see whether it's worth writing recovery
-      // code for.
-      if (version != 7 && version != 6) {
-        if (version == 5) {
-          RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION5);
-        } else {
-          RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION);
+      } else if (7 != recovery_version.ColumnInt(0)) {
+        // TODO(shess): Recovery code is generally schema-dependent.
+        // Version 6 should be easy, if the numbers warrant it.
+        // Version 5 is probably not warranted.
+        switch (recovery_version.ColumnInt(0)) {
+          case 6 :
+            RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION6);
+            break;
+          case 5 :
+            RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION5);
+            break;
+          default :
+            RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION);
+            break;
         }
         recovery_version.Clear();
         sql::Recovery::Rollback(recovery.Pass());
@@ -459,12 +432,13 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
       }
     }
 
-    // Either version 6 or version 7 recovers to current.
-    sql::MetaTable recover_meta_table;
-    if (!recover_meta_table.Init(recovery->db(), kCurrentVersionNumber,
-                                 kCompatibleVersionNumber)) {
+    const char kCopySql[] =
+        "INSERT OR REPLACE INTO meta SELECT key, value FROM recover_meta";
+    if (!recovery->db()->Execute(kCopySql)) {
+      // TODO(shess): Earlier the version was queried, unclear what
+      // this failure could mean.
       sql::Recovery::Rollback(recovery.Pass());
-      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_INIT);
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_INSERT);
       return;
     }
   }
@@ -488,19 +462,13 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
 
   // Setup favicons table.
   {
-    // Version 6 had the |sizes| column, version 7 removed it.  The
-    // recover virtual table treats more columns than expected as an
-    // error, but if _fewer_ columns are present, they can be treated
-    // as NULL.  SQLite requires this because ALTER TABLE adds columns
-    // to the schema, but not to the actual table storage.
     const char kRecoverySql[] =
         "CREATE VIRTUAL TABLE temp.recover_favicons USING recover"
         "("
         "corrupt.favicons,"
         "id ROWID,"
         "url TEXT NOT NULL,"
-        "icon_type INTEGER,"
-        "sizes TEXT"
+        "icon_type INTEGER"
         ")";
     if (!recovery->db()->Execute(kRecoverySql)) {
       // TODO(shess): Failure to create the recovery table probably
@@ -514,7 +482,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     // COALESCE().  Either way, the new code has a literal 1 rather
     // than a NULL, right?
     const char kCopySql[] =
-        "INSERT OR REPLACE INTO main.favicons "
+        "INSERT OR REPLACE INTO favicons "
         "SELECT id, url, COALESCE(icon_type, 1) FROM recover_favicons";
     if (!recovery->db()->Execute(kCopySql)) {
       // TODO(shess): The recover_favicons table should mask problems
@@ -548,7 +516,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     }
 
     const char kCopySql[] =
-        "INSERT OR REPLACE INTO main.favicon_bitmaps "
+        "INSERT OR REPLACE INTO favicon_bitmaps "
         "SELECT id, icon_id, COALESCE(last_updated, 0), image_data, "
         " COALESCE(width, 0), COALESCE(height, 0) "
         "FROM recover_favicons_bitmaps";
@@ -581,7 +549,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     }
 
     const char kCopySql[] =
-        "INSERT OR REPLACE INTO main.icon_mapping "
+        "INSERT OR REPLACE INTO icon_mapping "
         "SELECT id, page_url, icon_id FROM recover_icon_mapping";
     if (!recovery->db()->Execute(kCopySql)) {
       // TODO(shess): The recover_icon_mapping table should mask
@@ -604,11 +572,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // collection.
 
   ignore_result(sql::Recovery::Recovered(recovery.Pass()));
-  if (version == 6) {
-    RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED_VERSION6);
-  } else {
-    RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
-  }
+  RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
 }
 
 void DatabaseErrorCallback(sql::Connection* db,
@@ -650,6 +614,27 @@ void DatabaseErrorCallback(sql::Connection* db,
 }  // namespace
 
 namespace history {
+
+// For this database, schema migrations are deprecated after two
+// years.  This means that the oldest non-deprecated version should be
+// two years old or greater (thus the migrations to get there are
+// older).  Databases containing deprecated versions will be cleared
+// at startup.  Since this database is a cache, losing old data is not
+// fatal (in fact, very old data may be expired immediately at startup
+// anyhow).
+
+// Version 7: 911a634d/r209424 by qsr@chromium.org on 2013-07-01
+// Version 6: 610f923b/r152367 by pkotwicz@chromium.org on 2012-08-20
+// Version 5: e2ee8ae9/r105004 by groby@chromium.org on 2011-10-12
+// Version 4: 5f104d76/r77288 by sky@chromium.org on 2011-03-08 (deprecated)
+// Version 3: 09911bf3/r15 by initial.commit on 2008-07-26 (deprecated)
+
+// Version number of the database.
+// NOTE(shess): When changing the version, add a new golden file for
+// the new version and a test to verify that Init() works with it.
+static const int kCurrentVersionNumber = 7;
+static const int kCompatibleVersionNumber = 7;
+static const int kDeprecatedVersionNumber = 4;  // and earlier.
 
 ThumbnailDatabase::IconMappingEnumerator::IconMappingEnumerator() {
 }
