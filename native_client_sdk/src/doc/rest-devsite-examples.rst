@@ -28,7 +28,8 @@ Basic markup
 
 In general, follow the rules from http://sphinx-doc.org/rest.html
 
-Some **bold text** and *italic text* and ``fixed-font text``.
+Some **bold text** and *italic text* and ``fixed-font text``. Non marked-up text
+can follow these immediately by using a backslash: **pexe**\s.
 
 For pleasant collaborative editing, please use the accepted coding guidelines:
 wrap at 80 columns, no tabs, etc.
