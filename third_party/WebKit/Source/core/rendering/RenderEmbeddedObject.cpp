@@ -39,7 +39,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include "platform/LocalizedStrings.h"
+#include "platform/text/PlatformLocale.h"
 
 namespace WebCore {
 
@@ -84,13 +84,14 @@ bool RenderEmbeddedObject::allowsAcceleratedCompositing() const
     return widget() && widget()->isPluginView() && toPluginView(widget())->platformLayer();
 }
 
-static String unavailablePluginReplacementText(RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
+static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
 {
+    Locale& locale = node ? toElement(node)->locale() : *Locale::defaultLocale();
     switch (pluginUnavailabilityReason) {
     case RenderEmbeddedObject::PluginMissing:
-        return missingPluginText();
+        return locale.queryString(WebKit::WebLocalizedString::MissingPluginText);
     case RenderEmbeddedObject::PluginBlockedByContentSecurityPolicy:
-        return blockedPluginByContentSecurityPolicyText();
+        return locale.queryString(WebKit::WebLocalizedString::BlockedPluginText);
     }
 
     ASSERT_NOT_REACHED();
@@ -103,7 +104,7 @@ void RenderEmbeddedObject::setPluginUnavailabilityReason(PluginUnavailabilityRea
     m_showsUnavailablePluginIndicator = true;
     m_pluginUnavailabilityReason = pluginUnavailabilityReason;
 
-    m_unavailablePluginReplacementText = unavailablePluginReplacementText(pluginUnavailabilityReason);
+    m_unavailablePluginReplacementText = unavailablePluginReplacementText(node(), pluginUnavailabilityReason);
 }
 
 bool RenderEmbeddedObject::showsUnavailablePluginIndicator() const

@@ -31,13 +31,4 @@
 #include "public/platform/WebLocalizedString.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
-
-// FIXME: Use Locale::queryString instead of the following functions.
-
-PLATFORM_EXPORT String missingPluginText();
-PLATFORM_EXPORT String blockedPluginByContentSecurityPolicyText();
-
-} // namespace WebCore
-
 #endif // LocalizedStrings_h

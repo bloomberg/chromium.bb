@@ -56,14 +56,4 @@ static String query(WebLocalizedString::Name name, const WebString& parameter1, 
     return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
 }
 
-String missingPluginText()
-{
-    return query(WebLocalizedString::MissingPluginText);
-}
-
-String blockedPluginByContentSecurityPolicyText()
-{
-    return query(WebLocalizedString::BlockedPluginText);
-}
-
 } // namespace WebCore
