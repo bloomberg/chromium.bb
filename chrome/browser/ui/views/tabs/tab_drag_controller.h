@@ -49,7 +49,7 @@ class TabStripModel;
 // can happen (this state is referred to as detached):
 // . If |detach_into_browser_| is true then a new Browser is created and
 //   RunMoveLoop() is invoked on the Widget to drag the browser around. This is
-//   the default on chromeos and can be enabled on windows with a flag.
+//   the default on aura.
 // . If |detach_into_browser_| is false a small representation of the active tab
 //   is created and that is dragged around. This mode does not run a nested
 //   message loop.
@@ -87,14 +87,14 @@ class TabDragController : public content::WebContentsDelegate,
   TabDragController();
   virtual ~TabDragController();
 
-  // Initializes TabDragController to drag the tabs in |tabs| originating
-  // from |source_tabstrip|. |source_tab| is the tab that initiated the drag and
-  // is contained in |tabs|.  |mouse_offset| is the distance of the mouse
-  // pointer from the origin of the first tab in |tabs| and |source_tab_offset|
-  // the offset from |source_tab|. |source_tab_offset| is the horizontal distant
-  // for a horizontal tab strip, and the vertical distance for a vertical tab
-  // strip. |initial_selection_model| is the selection model before the drag
-  // started and is only non-empty if |source_tab| was not initially selected.
+  // Initializes TabDragController to drag the tabs in |tabs| originating from
+  // |source_tabstrip|. |source_tab| is the tab that initiated the drag and is
+  // contained in |tabs|.  |mouse_offset| is the distance of the mouse pointer
+  // from the origin of the first tab in |tabs| and |source_tab_offset| the
+  // offset from |source_tab|. |source_tab_offset| is the horizontal offset of
+  // |mouse_offset| relative to |source_tab|. |initial_selection_model| is the
+  // selection model before the drag started and is only non-empty if
+  // |source_tab| was not initially selected.
   void Init(TabStrip* source_tabstrip,
             Tab* source_tab,
             const std::vector<Tab*>& tabs,
@@ -207,10 +207,9 @@ class TabDragController : public content::WebContentsDelegate,
     // The WebContents being dragged.
     content::WebContents* contents;
 
-    // The original content::WebContentsDelegate of |contents|, before it was
-    // detached from the browser window. We store this so that we can forward
-    // certain delegate notifications back to it if we can't handle them
-    // locally.
+    // content::WebContentsDelegate for |contents| before it was detached from
+    // the browser window. We store this so that we can forward certain delegate
+    // notifications back to it if we can't handle them locally.
     content::WebContentsDelegate* original_delegate;
 
     // This is the index of the tab in |source_tabstrip_| when the drag
@@ -368,7 +367,7 @@ class TabDragController : public content::WebContentsDelegate,
   // |attached_tabstrip_| given the DraggedTabView's bounds |dragged_bounds| in
   // coordinates relative to |attached_tabstrip_| and has had the mirroring
   // transformation applied.
-  // NOTE: this is invoked from |Attach| before the tabs have been inserted.
+  // NOTE: this is invoked from Attach() before the tabs have been inserted.
   int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds) const;
 
   // Returns true if |dragged_bounds| is close enough to the next stacked tab
@@ -401,8 +400,8 @@ class TabDragController : public content::WebContentsDelegate,
   // Returns the bounds for the tabs based on the attached tab strip.
   std::vector<gfx::Rect> CalculateBoundsForDraggedTabs();
 
-  // Does the work for EndDrag. If we actually started a drag and |how_end| is
-  // not TAB_DESTROYED then one of EndDrag or RevertDrag is invoked.
+  // Does the work for EndDrag(). If we actually started a drag and |how_end| is
+  // not TAB_DESTROYED then one of EndDrag() or RevertDrag() is invoked.
   void EndDragImpl(EndDragType how_end);
 
   // Reverts a cancelled drag operation.
@@ -480,7 +479,7 @@ class TabDragController : public content::WebContentsDelegate,
     return (move_behavior_ == MOVE_VISIBILE_TABS) != 0;
   }
 
-  // If true Detaching creates a new browser and enters a nested message loop.
+  // If true detaching creates a new browser and enters a nested message loop.
   bool detach_into_browser_;
 
   // Handles registering for notifications.
@@ -519,7 +518,7 @@ class TabDragController : public content::WebContentsDelegate,
   gfx::Point mouse_offset_;
 
   // Ratio of the x-coordinate of the |source_tab_offset| to the width of the
-  // tab. Not used for vertical tabs.
+  // tab.
   float offset_to_width_ratio_;
 
   // A hint to use when positioning new windows created by detaching Tabs. This
@@ -529,7 +528,7 @@ class TabDragController : public content::WebContentsDelegate,
   gfx::Point window_create_point_;
 
   // Location of the first tab in the source tabstrip in screen coordinates.
-  // This is used to calculate window_create_point_.
+  // This is used to calculate |window_create_point_|.
   gfx::Point first_source_tab_point_;
 
   // The bounds of the browser window before the last Tab was detached. When
@@ -544,8 +543,8 @@ class TabDragController : public content::WebContentsDelegate,
   // drag begins and ends within this same window.
   const int old_focused_view_id_;
 
-  // The position along the major axis of the mouse cursor in screen coordinates
-  // at the time of the last re-order event.
+  // The horizontal position of the mouse cursor in screen coordinates at the
+  // time of the last re-order event.
   int last_move_screen_loc_;
 
   DockInfo dock_info_;
@@ -571,10 +570,10 @@ class TabDragController : public content::WebContentsDelegate,
 
   DragData drag_data_;
 
-  // Index of the source tab in drag_data_.
+  // Index of the source tab in |drag_data_|.
   size_t source_tab_index_;
 
-  // True until |MoveAttached| is invoked once.
+  // True until MoveAttached() is first invoked.
   bool initial_move_;
 
   // The selection model before the drag started. See comment above Init() for
