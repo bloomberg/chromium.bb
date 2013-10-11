@@ -31,10 +31,10 @@ class RoundedImageView;
 class ASH_EXPORT TrayUser : public SystemTrayItem,
                             public UserObserver {
  public:
-  // The given |multiprofile_index| is the number of the user in a multi profile
-  // scenario. Index #0 is the running user, the other indices are other
-  // logged in users (if there are any). Only index #0 will add an icon to
-  // the system tray.
+  // The given |multiprofile_index| is the user number in a multi profile
+  // scenario. Index #0 is the running user, the other indices are other logged
+  // in users (if there are any). Depending on the multi user mode, there will
+  // be either one (index #0) or all users be visible in the system tray.
   TrayUser(SystemTray* system_tray, MultiProfileIndex index);
   virtual ~TrayUser();
 
@@ -67,8 +67,18 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
 
   // Overridden from UserObserver.
   virtual void OnUserUpdate() OVERRIDE;
+  virtual void OnUserAddedToSession() OVERRIDE;
 
   void UpdateAvatarImage(user::LoginStatus status);
+
+  // Get the user index which should be used for the tray icon of this item.
+  MultiProfileIndex GetTrayIndex();
+
+  // Return the radius for the tray item to use.
+  int GetTrayItemRadius();
+
+  // Updates the layout of this item.
+  void UpdateLayoutOfItem();
 
   // The user index to use.
   MultiProfileIndex multiprofile_index_;

@@ -268,6 +268,12 @@ void SystemTrayNotifier::NotifyUserUpdate() {
                     OnUserUpdate());
 }
 
+void SystemTrayNotifier::NotifyUserAddedToSession() {
+  FOR_EACH_OBSERVER(UserObserver,
+                    user_observers_,
+                    OnUserAddedToSession());
+}
+
 #if defined(OS_CHROMEOS)
 
 void SystemTrayNotifier::NotifyRequestToggleWifi() {

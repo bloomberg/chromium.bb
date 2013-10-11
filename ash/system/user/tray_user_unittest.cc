@@ -20,6 +20,10 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/tray/system_tray_notifier.h"
+#endif
+
 namespace ash {
 namespace internal {
 
@@ -235,6 +239,59 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserEmail(1));
   tray()->CloseSystemBubble();
 }
+
+// Make sure that we show items for all users in the tray accordingly.
+TEST_F(TrayUserTest, CheckTrayUserItems) {
+  InitializeParameters(1, true);
+
+  int max_users = delegate()->GetMaximumNumberOfLoggedInUsers();
+  // Checking now for each amount of users that the proper items are visible in
+  // the tray. The proper item is hereby:
+  // 3 -> User #1
+  // 2 -> User #2
+  // 1 -> User #3
+  // 0 -> Separator (never shown)
+  // Note: Tray items are required to populate system tray items as well as the
+  // system tray menu. The system tray menu changes it's appearance with the
+  // addition of more users, but the system tray does not create new items after
+  // it got created. The logic to know if an item is present, not present or
+  // even "only" a "separator" is inside the tray user items. This test tries
+  // to test as close as possible the "real thing" and as such the break is
+  // included.
+  for (int j = 1; j <= max_users; j++) {
+    // We simulate the user addition by telling the delegate the new number of
+    // users, then change all user tray items and finally tell the tray to
+    // re-layout itself.
+    delegate()->set_logged_in_users(j);
+    Shell::GetInstance()->system_tray_notifier()->NotifyUserAddedToSession();
+    tray()->Layout();
+
+    // Check that the tray items are being shown in the reverse order.
+    for (int i = 0; i <= max_users; i++) {
+      gfx::Rect rect = tray()->
+          GetTrayItemViewForTest(tray_user(i))->GetBoundsInScreen();
+      if (max_users - i < j)
+        EXPECT_FALSE(rect.IsEmpty());
+      else
+        EXPECT_TRUE(rect.IsEmpty());
+    }
+  }
+
+  // Click on the last item to see that the user changes.
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.set_async(false);
+
+  // Switch to a new user - again, note that we have to click on the reverse
+  // item in the list (1 -> user 3).
+  gfx::Point point =
+      tray()->GetTrayItemViewForTest(tray_user(1))->
+                         GetBoundsInScreen().CenterPoint();
+
+  generator.MoveMouseTo(point.x(), point.y());
+  generator.ClickLeftButton();
+  EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserEmail(2));
+}
+
 #endif
 
 }  // namespace internal

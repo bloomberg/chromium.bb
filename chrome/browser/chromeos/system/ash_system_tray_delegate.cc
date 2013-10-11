@@ -1197,6 +1197,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetSystemTrayNotifier()->NotifyUserUpdate();
   }
 
+  virtual void UserAddedToSession(const std::string& user_id) OVERRIDE {
+    GetSystemTrayNotifier()->NotifyUserAddedToSession();
+  }
+
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
   scoped_ptr<content::NotificationRegistrar> registrar_;
   scoped_ptr<PrefChangeRegistrar> local_state_registrar_;

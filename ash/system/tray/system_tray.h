@@ -139,6 +139,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
     return tray_accessibility_;
   }
 
+  // Get the tray item view (or NULL) for a given |tray_item| in a unit test.
+  views::View* GetTrayItemViewForTest(SystemTrayItem* tray_item);
+
  private:
   // Creates the default set of items for the sytem tray.
   void CreateItems(SystemTrayDelegate* delegate);

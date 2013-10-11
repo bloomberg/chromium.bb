@@ -111,6 +111,7 @@ public:
   void NotifySessionLengthLimitChanged();
   void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
   void NotifyUserUpdate();
+  void NotifyUserAddedToSession();
 #if defined(OS_CHROMEOS)
   void NotifyRequestToggleWifi();
   void NotifyEnterpriseDomainChanged();

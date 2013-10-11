@@ -634,6 +634,12 @@ void SystemTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
+views::View* SystemTray::GetTrayItemViewForTest(SystemTrayItem* item) {
+  std::map<SystemTrayItem*, views::View*>::iterator it =
+      tray_item_map_.find(item);
+  return it == tray_item_map_.end() ? NULL : it->second;
+}
+
 bool SystemTray::PerformAction(const ui::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).
