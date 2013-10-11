@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 
 #include "base/callback.h"
+#include "base/guid.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -474,10 +476,6 @@ NotificationsApiFunction::MapApiTemplateTypeToType(
   }
 }
 
-const char kNotificationPrefix[] = "extensions.api.";
-
-static uint64 next_id_ = 0;
-
 NotificationsCreateFunction::NotificationsCreateFunction() {
 }
 
@@ -488,17 +486,18 @@ bool NotificationsCreateFunction::RunNotificationsApi() {
   params_ = api::notifications::Create::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  // If the caller provided a notificationId, use that. Otherwise, generate
-  // one. Note that there's nothing stopping an app developer from passing in
-  // arbitrary "extension.api.999" notificationIds that will collide with
-  // future generated IDs. It doesn't seem necessary to try to prevent this; if
-  // developers want to hurt themselves, we'll let them.
   const std::string extension_id(extension_->id());
   std::string notification_id;
-  if (!params_->notification_id.empty())
+  if (!params_->notification_id.empty()) {
+    // If the caller provided a notificationId, use that.
     notification_id = params_->notification_id;
-  else
-    notification_id = kNotificationPrefix + base::Uint64ToString(next_id_++);
+  } else {
+    // Otherwise, use a randomly created GUID. In case that GenerateGUID returns
+    // the empty string, simply generate a random string.
+    notification_id = base::GenerateGUID();
+    if (notification_id.empty())
+      notification_id = base::RandBytesAsString(16);
+  }
 
   SetResult(new base::StringValue(notification_id));
 
