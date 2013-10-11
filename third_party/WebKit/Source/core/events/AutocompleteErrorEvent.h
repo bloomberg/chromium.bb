@@ -53,7 +53,7 @@ public:
 
     const String& reason() const { return m_reason; }
 
-    virtual const AtomicString& interfaceName() const { return eventNames().interfaceForAutocompleteErrorEvent; }
+    virtual const AtomicString& interfaceName() const { return EventNames::AutocompleteErrorEvent; }
 
 private:
     AutocompleteErrorEvent()

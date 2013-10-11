@@ -66,7 +66,7 @@ public:
     double receivedTime() { return m_receivedTime; }
     PassRefPtr<Uint8Array> data() { return m_data; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIMessageEvent; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::MIDIMessageEvent; }
 
 private:
     MIDIMessageEvent()

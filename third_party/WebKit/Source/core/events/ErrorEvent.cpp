@@ -82,7 +82,7 @@ ErrorEvent::~ErrorEvent()
 
 const AtomicString& ErrorEvent::interfaceName() const
 {
-    return eventNames().interfaceForErrorEvent;
+    return EventNames::ErrorEvent;
 }
 
 } // namespace WebCore

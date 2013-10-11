@@ -44,7 +44,7 @@ ClipboardEvent::~ClipboardEvent()
 const AtomicString& ClipboardEvent::interfaceName() const
 {
     // Notice that there is no ClipboardEvent.idl.
-    return eventNames().interfaceForEvent;
+    return EventNames::Event;
 }
 
 bool ClipboardEvent::isClipboardEvent() const

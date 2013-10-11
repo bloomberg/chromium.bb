@@ -416,7 +416,7 @@ void IDBRequest::stop()
 
 const AtomicString& IDBRequest::interfaceName() const
 {
-    return eventNames().interfaceForIDBRequest;
+    return EventTargetNames::IDBRequest;
 }
 
 ExecutionContext* IDBRequest::executionContext() const

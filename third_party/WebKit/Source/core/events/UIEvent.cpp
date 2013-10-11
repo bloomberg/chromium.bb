@@ -77,7 +77,7 @@ bool UIEvent::isUIEvent() const
 
 const AtomicString& UIEvent::interfaceName() const
 {
-    return eventNames().interfaceForUIEvent;
+    return EventNames::UIEvent;
 }
 
 int UIEvent::keyCode() const

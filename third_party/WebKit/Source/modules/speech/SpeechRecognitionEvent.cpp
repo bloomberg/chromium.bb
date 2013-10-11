@@ -62,7 +62,7 @@ PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(PassRef
 
 const AtomicString& SpeechRecognitionEvent::interfaceName() const
 {
-    return eventNames().interfaceForSpeechRecognitionEvent;
+    return EventNames::SpeechRecognitionEvent;
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent()

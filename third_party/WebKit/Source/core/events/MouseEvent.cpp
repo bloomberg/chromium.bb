@@ -160,7 +160,7 @@ void MouseEvent::initMouseEvent(const AtomicString& type, bool canBubble, bool c
 
 const AtomicString& MouseEvent::interfaceName() const
 {
-    return eventNames().interfaceForMouseEvent;
+    return EventNames::MouseEvent;
 }
 
 bool MouseEvent::isMouseEvent() const

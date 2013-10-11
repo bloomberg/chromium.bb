@@ -329,7 +329,7 @@ const AtomicString& IDBTransaction::modeToString(IndexedDB::TransactionMode mode
 
 const AtomicString& IDBTransaction::interfaceName() const
 {
-    return eventNames().interfaceForIDBTransaction;
+    return EventTargetNames::IDBTransaction;
 }
 
 ExecutionContext* IDBTransaction::executionContext() const

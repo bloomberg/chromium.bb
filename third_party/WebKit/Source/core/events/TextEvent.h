@@ -79,7 +79,7 @@ namespace WebCore {
 
 inline TextEvent* toTextEvent(Event* event)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || (event->type() == EventTypeNames::textInput && event->hasInterface(eventNames().interfaceForTextEvent)));
+    ASSERT_WITH_SECURITY_IMPLICATION(!event || (event->type() == EventTypeNames::textInput && event->hasInterface(EventNames::TextEvent)));
     return static_cast<TextEvent*>(event);
 }
 

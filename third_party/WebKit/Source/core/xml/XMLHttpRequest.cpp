@@ -1377,7 +1377,7 @@ void XMLHttpRequest::contextDestroyed()
 
 const AtomicString& XMLHttpRequest::interfaceName() const
 {
-    return eventNames().interfaceForXMLHttpRequest;
+    return EventTargetNames::XMLHttpRequest;
 }
 
 ExecutionContext* XMLHttpRequest::executionContext() const

@@ -182,7 +182,7 @@ void MediaStreamTrack::stop()
 
 const AtomicString& MediaStreamTrack::interfaceName() const
 {
-    return eventNames().interfaceForMediaStreamTrack;
+    return EventTargetNames::MediaStreamTrack;
 }
 
 ExecutionContext* MediaStreamTrack::executionContext() const

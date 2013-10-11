@@ -31,12 +31,10 @@
 #include "config.h"
 #include "WebDOMEvent.h"
 
+#include "EventNames.h"
 #include "core/dom/Node.h"
 #include "core/events/Event.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "wtf/PassRefPtr.h"
-
-using WebCore::eventNames;
 
 namespace WebKit {
 
@@ -125,19 +123,19 @@ bool WebDOMEvent::isKeyboardEvent() const
 bool WebDOMEvent::isMutationEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(WebCore::eventNames().interfaceForMutationEvent);
+    return m_private->hasInterface(WebCore::EventNames::MutationEvent);
 }
 
 bool WebDOMEvent::isTextEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForTextEvent);
+    return m_private->hasInterface(WebCore::EventNames::TextEvent);
 }
 
 bool WebDOMEvent::isCompositionEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForCompositionEvent);
+    return m_private->hasInterface(WebCore::EventNames::CompositionEvent);
 }
 
 bool WebDOMEvent::isDragEvent() const
@@ -155,13 +153,13 @@ bool WebDOMEvent::isClipboardEvent() const
 bool WebDOMEvent::isMessageEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForMessageEvent);
+    return m_private->hasInterface(WebCore::EventNames::MessageEvent);
 }
 
 bool WebDOMEvent::isWheelEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForWheelEvent);
+    return m_private->hasInterface(WebCore::EventNames::WheelEvent);
 }
 
 bool WebDOMEvent::isBeforeTextInsertedEvent() const
@@ -173,37 +171,37 @@ bool WebDOMEvent::isBeforeTextInsertedEvent() const
 bool WebDOMEvent::isOverflowEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForOverflowEvent);
+    return m_private->hasInterface(WebCore::EventNames::OverflowEvent);
 }
 
 bool WebDOMEvent::isPageTransitionEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForPageTransitionEvent);
+    return m_private->hasInterface(WebCore::EventNames::PageTransitionEvent);
 }
 
 bool WebDOMEvent::isPopStateEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForPopStateEvent);
+    return m_private->hasInterface(WebCore::EventNames::PopStateEvent);
 }
 
 bool WebDOMEvent::isProgressEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForProgressEvent);
+    return m_private->hasInterface(WebCore::EventNames::ProgressEvent);
 }
 
 bool WebDOMEvent::isXMLHttpRequestProgressEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForXMLHttpRequestProgressEvent);
+    return m_private->hasInterface(WebCore::EventNames::XMLHttpRequestProgressEvent);
 }
 
 bool WebDOMEvent::isBeforeLoadEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(eventNames().interfaceForBeforeLoadEvent);
+    return m_private->hasInterface(WebCore::EventNames::BeforeLoadEvent);
 }
 
 } // namespace WebKit

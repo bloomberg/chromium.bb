@@ -53,7 +53,7 @@ void V8Event::clipboardDataAttributeGetterCustom(v8::Local<v8::String> name, con
 }
 
 #define TRY_TO_WRAP_WITH_INTERFACE(interfaceName) \
-    if (eventNames().interfaceFor##interfaceName == desiredInterface) \
+    if (EventNames::interfaceName == desiredInterface) \
         return wrap(static_cast<interfaceName*>(event), creationContext, isolate);
 
 v8::Handle<v8::Object> wrap(Event* event, v8::Handle<v8::Object> creationContext, v8::Isolate *isolate)
@@ -63,7 +63,7 @@ v8::Handle<v8::Object> wrap(Event* event, v8::Handle<v8::Object> creationContext
     String desiredInterface = event->interfaceName();
 
     // We need to check Event first to avoid infinite recursion.
-    if (eventNames().interfaceForEvent == desiredInterface)
+    if (EventNames::Event == desiredInterface)
         return V8Event::createWrapper(event, creationContext, isolate);
 
     EVENT_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)

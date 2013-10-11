@@ -148,7 +148,7 @@ void SpeechRecognition::didEnd()
 
 const AtomicString& SpeechRecognition::interfaceName() const
 {
-    return eventNames().interfaceForSpeechRecognition;
+    return EventTargetNames::SpeechRecognition;
 }
 
 ExecutionContext* SpeechRecognition::executionContext() const

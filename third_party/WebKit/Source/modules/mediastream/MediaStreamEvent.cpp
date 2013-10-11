@@ -80,7 +80,7 @@ MediaStream* MediaStreamEvent::stream() const
 
 const AtomicString& MediaStreamEvent::interfaceName() const
 {
-    return eventNames().interfaceForMediaStreamEvent;
+    return EventNames::MediaStreamEvent;
 }
 
 } // namespace WebCore

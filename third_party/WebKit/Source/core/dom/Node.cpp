@@ -1991,7 +1991,7 @@ Node* Node::enclosingLinkEventParentOrSelf()
 
 const AtomicString& Node::interfaceName() const
 {
-    return eventNames().interfaceForNode;
+    return EventTargetNames::Node;
 }
 
 ExecutionContext* Node::executionContext() const
@@ -2364,7 +2364,7 @@ void Node::defaultEventHandler(Event* event)
         if (Page* page = document().page())
             page->contextMenuController().handleContextMenuEvent(event);
     } else if (eventType == EventTypeNames::textInput) {
-        if (event->hasInterface(eventNames().interfaceForTextEvent))
+        if (event->hasInterface(EventNames::TextEvent))
             if (Frame* frame = document().frame())
                 frame->eventHandler()->defaultTextInputEventHandler(static_cast<TextEvent*>(event));
 #if OS(WIN)
@@ -2384,7 +2384,7 @@ void Node::defaultEventHandler(Event* event)
             }
         }
 #endif
-    } else if ((eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) && event->hasInterface(eventNames().interfaceForWheelEvent)) {
+    } else if ((eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) && event->hasInterface(EventNames::WheelEvent)) {
         WheelEvent* wheelEvent = static_cast<WheelEvent*>(event);
 
         // If we don't have a renderer, send the wheel event to the first node we find with a renderer.

@@ -113,7 +113,7 @@ void WheelEvent::initWebKitWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<A
 
 const AtomicString& WheelEvent::interfaceName() const
 {
-    return eventNames().interfaceForWheelEvent;
+    return EventNames::WheelEvent;
 }
 
 bool WheelEvent::isMouseEvent() const

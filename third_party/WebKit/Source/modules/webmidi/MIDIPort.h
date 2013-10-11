@@ -62,7 +62,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIPort; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::MIDIPort; }
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
 
     // ActiveDOMObject

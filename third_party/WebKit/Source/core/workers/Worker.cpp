@@ -82,7 +82,7 @@ Worker::~Worker()
 
 const AtomicString& Worker::interfaceName() const
 {
-    return eventNames().interfaceForWorker;
+    return EventTargetNames::Worker;
 }
 
 void Worker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& es)

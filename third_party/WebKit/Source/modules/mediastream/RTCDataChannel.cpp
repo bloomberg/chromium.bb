@@ -261,7 +261,7 @@ void RTCDataChannel::didDetectError()
 
 const AtomicString& RTCDataChannel::interfaceName() const
 {
-    return eventNames().interfaceForRTCDataChannel;
+    return EventTargetNames::RTCDataChannel;
 }
 
 ExecutionContext* RTCDataChannel::executionContext() const

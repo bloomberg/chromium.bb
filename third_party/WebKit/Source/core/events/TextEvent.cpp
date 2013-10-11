@@ -104,7 +104,7 @@ void TextEvent::initTextEvent(const AtomicString& type, bool canBubble, bool can
 
 const AtomicString& TextEvent::interfaceName() const
 {
-    return eventNames().interfaceForTextEvent;
+    return EventNames::TextEvent;
 }
 
 } // namespace WebCore

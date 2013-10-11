@@ -195,7 +195,7 @@ void MediaKeySession::keyMessage(const unsigned char* message, size_t messageLen
 
 const AtomicString& MediaKeySession::interfaceName() const
 {
-    return eventNames().interfaceForMediaKeySession;
+    return EventTargetNames::MediaKeySession;
 }
 
 ExecutionContext* MediaKeySession::executionContext() const

@@ -200,7 +200,7 @@ void SVGElementInstance::invalidateAllInstancesOfElement(SVGElement* element)
 
 const AtomicString& SVGElementInstance::interfaceName() const
 {
-    return eventNames().interfaceForSVGElementInstance;
+    return EventTargetNames::SVGElementInstance;
 }
 
 ExecutionContext* SVGElementInstance::executionContext() const

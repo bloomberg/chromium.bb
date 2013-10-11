@@ -60,7 +60,7 @@ MediaKeyEvent::~MediaKeyEvent()
 
 const AtomicString& MediaKeyEvent::interfaceName() const
 {
-    return eventNames().interfaceForMediaKeyEvent;
+    return EventNames::MediaKeyEvent;
 }
 
 } // namespace WebCore

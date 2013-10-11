@@ -61,7 +61,7 @@ PageTransitionEvent::~PageTransitionEvent()
 
 const AtomicString& PageTransitionEvent::interfaceName() const
 {
-    return eventNames().interfaceForPageTransitionEvent;
+    return EventNames::PageTransitionEvent;
 }
 
 } // namespace WebCore

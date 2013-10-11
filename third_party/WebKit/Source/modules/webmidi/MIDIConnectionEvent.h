@@ -64,7 +64,7 @@ public:
 
     RefPtr<MIDIPort> port() { return m_port; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIConnectionEvent; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::MIDIConnectionEvent; }
 
 private:
     MIDIConnectionEvent()

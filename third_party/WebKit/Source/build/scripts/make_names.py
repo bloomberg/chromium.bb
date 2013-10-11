@@ -38,7 +38,7 @@ import name_utilities
 class MakeNamesWriter(in_generator.Writer):
     defaults = {
         'Conditional': None,  # FIXME: Add support for Conditional.
-        'RuntimeEnabled': None,
+        'RuntimeEnabled': None,  # What should we do for runtime-enabled features?
         'ImplementedAs': None,
     }
     default_parameters = {

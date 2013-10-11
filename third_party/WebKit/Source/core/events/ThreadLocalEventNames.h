@@ -23,40 +23,21 @@
 #define ThreadLocalEventNames_h
 
 #include "EventInterfaces.h"
+#include "EventNames.h"
 #include "EventTargetInterfaces.h"
 #include "EventTargetNames.h"
 #include "EventTypeNames.h"
-#include "core/platform/ThreadGlobalData.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-    class ThreadLocalEventNames {
-        WTF_MAKE_NONCOPYABLE(ThreadLocalEventNames); WTF_MAKE_FAST_ALLOCATED;
-        int dummy; // Needed to make initialization macro work.
-        // Private to prevent accidental call to ThreadLocalEventNames() instead of eventNames()
-        ThreadLocalEventNames();
-        friend class ThreadGlobalData;
-
-    public:
-        #define EVENT_INTERFACE_DECLARE(name) AtomicString interfaceFor##name;
-        EVENT_INTERFACES_FOR_EACH(EVENT_INTERFACE_DECLARE)
-        EVENT_TARGET_INTERFACES_FOR_EACH(EVENT_INTERFACE_DECLARE)
-        #undef EVENT_INTERFACE_DECLARE
-    };
-
-    inline ThreadLocalEventNames& eventNames()
-    {
-        return threadGlobalData().eventNames();
-    }
-
-    inline bool isTouchEventType(const AtomicString& eventType)
-    {
-        return eventType == EventTypeNames::touchstart
-            || eventType == EventTypeNames::touchmove
-            || eventType == EventTypeNames::touchend
-            || eventType == EventTypeNames::touchcancel;
-    }
+inline bool isTouchEventType(const AtomicString& eventType)
+{
+    return eventType == EventTypeNames::touchstart
+        || eventType == EventTypeNames::touchmove
+        || eventType == EventTypeNames::touchend
+        || eventType == EventTypeNames::touchcancel;
+}
 
 }
 

@@ -232,7 +232,7 @@ void NamedFlow::dispatchRegionOversetChangeEvent()
 
 const AtomicString& NamedFlow::interfaceName() const
 {
-    return eventNames().interfaceForNamedFlow;
+    return EventTargetNames::NamedFlow;
 }
 
 ExecutionContext* NamedFlow::executionContext() const

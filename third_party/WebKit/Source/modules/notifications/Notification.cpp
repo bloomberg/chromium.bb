@@ -134,7 +134,7 @@ PassRefPtr<Notification> Notification::create(ExecutionContext* context, const S
 
 const AtomicString& Notification::interfaceName() const
 {
-    return eventNames().interfaceForNotification;
+    return EventTargetNames::Notification;
 }
 
 void Notification::show()

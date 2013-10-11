@@ -37,7 +37,7 @@
 namespace WebCore {
 
 #define TRY_TO_WRAP_WITH_INTERFACE(interfaceName) \
-    if (eventNames().interfaceFor##interfaceName == desiredInterface) \
+    if (EventTargetNames::interfaceName == desiredInterface) \
         return toV8(static_cast<interfaceName*>(impl), creationContext, isolate);
 
 v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

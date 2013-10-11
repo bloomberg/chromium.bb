@@ -70,7 +70,7 @@ SVGPoint SVGZoomEvent::newTranslate() const
 
 const AtomicString& SVGZoomEvent::interfaceName() const
 {
-    return eventNames().interfaceForSVGZoomEvent;
+    return EventNames::SVGZoomEvent;
 }
 
 } // namespace WebCore

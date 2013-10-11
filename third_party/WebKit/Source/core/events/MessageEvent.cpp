@@ -152,7 +152,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bo
 
 const AtomicString& MessageEvent::interfaceName() const
 {
-    return eventNames().interfaceForMessageEvent;
+    return EventNames::MessageEvent;
 }
 
 } // namespace WebCore

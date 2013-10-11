@@ -59,7 +59,7 @@ public:
 
     const String& url() const { return m_url; }
 
-    virtual const AtomicString& interfaceName() const { return eventNames().interfaceForBeforeLoadEvent; }
+    virtual const AtomicString& interfaceName() const { return EventNames::BeforeLoadEvent; }
 
 private:
     BeforeLoadEvent()

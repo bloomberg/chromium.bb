@@ -616,7 +616,7 @@ void RTCPeerConnection::didAddRemoteDataChannel(PassOwnPtr<RTCDataChannelHandler
 
 const AtomicString& RTCPeerConnection::interfaceName() const
 {
-    return eventNames().interfaceForRTCPeerConnection;
+    return EventTargetNames::RTCPeerConnection;
 }
 
 ExecutionContext* RTCPeerConnection::executionContext() const

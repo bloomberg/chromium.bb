@@ -89,7 +89,7 @@ SpeechRecognitionError::SpeechRecognitionError(const AtomicString& eventName, co
 
 const AtomicString& SpeechRecognitionError::interfaceName() const
 {
-    return eventNames().interfaceForSpeechRecognitionError;
+    return EventNames::SpeechRecognitionError;
 }
 
 SpeechRecognitionErrorInit::SpeechRecognitionErrorInit()

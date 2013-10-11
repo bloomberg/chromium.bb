@@ -168,7 +168,7 @@ Document* FontFaceSet::document() const
 
 const AtomicString& FontFaceSet::interfaceName() const
 {
-    return eventNames().interfaceForFontFaceSet;
+    return EventTargetNames::FontFaceSet;
 }
 
 ExecutionContext* FontFaceSet::executionContext() const

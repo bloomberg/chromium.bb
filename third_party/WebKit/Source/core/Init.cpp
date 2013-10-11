@@ -31,6 +31,8 @@
 #include "config.h"
 #include "Init.h"
 
+#include "EventNames.h"
+#include "EventTargetNames.h"
 #include "EventTypeNames.h"
 #include "FetchInitiatorTypeNames.h"
 #include "FontFamilyNames.h"
@@ -63,9 +65,11 @@ void init()
     MathMLNames::init();
     XMLNSNames::init();
     XMLNames::init();
-    FontFamilyNames::init();
+    EventNames::init();
+    EventTargetNames::init();
     EventTypeNames::init();
     FetchInitiatorTypeNames::init();
+    FontFamilyNames::init();
     MediaFeatureNames::init();
     WTF::StringStatics::init();
     QualifiedName::init();

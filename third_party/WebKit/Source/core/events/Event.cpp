@@ -105,7 +105,7 @@ void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool 
 
 const AtomicString& Event::interfaceName() const
 {
-    return eventNames().interfaceForEvent;
+    return EventNames::Event;
 }
 
 bool Event::hasInterface(const AtomicString& name) const

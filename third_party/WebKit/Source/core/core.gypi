@@ -2077,7 +2077,6 @@
             'events/SecurityPolicyViolationEvent.h',
             'events/TextEvent.cpp',
             'events/TextEvent.h',
-            'events/ThreadLocalEventNames.cpp',
             'events/ThreadLocalEventNames.h',
             'events/TouchEvent.cpp',
             'events/TouchEvent.h',

@@ -60,7 +60,7 @@ const AtomicString& IDBVersionChangeEvent::dataLoss()
 
 const AtomicString& IDBVersionChangeEvent::interfaceName() const
 {
-    return eventNames().interfaceForIDBVersionChangeEvent;
+    return EventNames::IDBVersionChangeEvent;
 }
 
 } // namespace WebCore

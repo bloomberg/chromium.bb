@@ -58,7 +58,7 @@ void CustomEvent::initCustomEvent(const AtomicString& type, bool canBubble, bool
 
 const AtomicString& CustomEvent::interfaceName() const
 {
-    return eventNames().interfaceForCustomEvent;
+    return EventNames::CustomEvent;
 }
 
 } // namespace WebCore

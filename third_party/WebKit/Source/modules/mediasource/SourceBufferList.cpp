@@ -82,7 +82,7 @@ void SourceBufferList::scheduleEvent(const AtomicString& eventName)
 
 const AtomicString& SourceBufferList::interfaceName() const
 {
-    return eventNames().interfaceForSourceBufferList;
+    return EventTargetNames::SourceBufferList;
 }
 
 ExecutionContext* SourceBufferList::executionContext() const

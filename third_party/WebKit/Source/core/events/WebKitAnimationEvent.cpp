@@ -74,7 +74,7 @@ double WebKitAnimationEvent::elapsedTime() const
 
 const AtomicString& WebKitAnimationEvent::interfaceName() const
 {
-    return eventNames().interfaceForWebKitAnimationEvent;
+    return EventNames::WebKitAnimationEvent;
 }
 
 } // namespace WebCore

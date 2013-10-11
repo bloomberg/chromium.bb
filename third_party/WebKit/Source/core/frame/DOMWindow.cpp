@@ -410,7 +410,7 @@ DOMWindow::~DOMWindow()
 
 const AtomicString& DOMWindow::interfaceName() const
 {
-    return eventNames().interfaceForDOMWindow;
+    return EventTargetNames::DOMWindow;
 }
 
 ExecutionContext* DOMWindow::executionContext() const

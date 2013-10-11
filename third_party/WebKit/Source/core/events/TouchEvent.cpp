@@ -82,7 +82,7 @@ void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,
 
 const AtomicString& TouchEvent::interfaceName() const
 {
-    return eventNames().interfaceForTouchEvent;
+    return EventNames::TouchEvent;
 }
 
 bool TouchEvent::isTouchEvent() const

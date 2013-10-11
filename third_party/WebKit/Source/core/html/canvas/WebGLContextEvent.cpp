@@ -59,7 +59,7 @@ WebGLContextEvent::~WebGLContextEvent()
 
 const AtomicString& WebGLContextEvent::interfaceName() const
 {
-    return eventNames().interfaceForWebGLContextEvent;
+    return EventNames::WebGLContextEvent;
 }
 
 } // namespace WebCore

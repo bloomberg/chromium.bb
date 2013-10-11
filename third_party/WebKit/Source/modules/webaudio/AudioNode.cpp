@@ -345,7 +345,7 @@ void AudioNode::updateChannelsForInputs()
 
 const AtomicString& AudioNode::interfaceName() const
 {
-    return eventNames().interfaceForAudioNode;
+    return EventTargetNames::AudioNode;
 }
 
 ExecutionContext* AudioNode::executionContext() const

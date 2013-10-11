@@ -41,7 +41,7 @@ TrackBase::~TrackBase()
 
 const AtomicString& TrackBase::interfaceName() const
 {
-    return eventNames().interfaceForTextTrack;
+    return EventTargetNames::TextTrack;
 }
 
 ExecutionContext* TrackBase::executionContext() const

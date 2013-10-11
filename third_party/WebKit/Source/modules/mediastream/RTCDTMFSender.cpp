@@ -129,7 +129,7 @@ void RTCDTMFSender::didPlayTone(const String& tone)
 
 const AtomicString& RTCDTMFSender::interfaceName() const
 {
-    return eventNames().interfaceForRTCDTMFSender;
+    return EventTargetNames::RTCDTMFSender;
 }
 
 ExecutionContext* RTCDTMFSender::executionContext() const

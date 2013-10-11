@@ -70,7 +70,7 @@ void CompositionEvent::initCompositionEvent(const AtomicString& type, bool canBu
 
 const AtomicString& CompositionEvent::interfaceName() const
 {
-    return eventNames().interfaceForCompositionEvent;
+    return EventNames::CompositionEvent;
 }
 
 } // namespace WebCore

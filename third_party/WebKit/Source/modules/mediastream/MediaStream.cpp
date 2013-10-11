@@ -261,7 +261,7 @@ void MediaStream::contextDestroyed()
 
 const AtomicString& MediaStream::interfaceName() const
 {
-    return eventNames().interfaceForMediaStream;
+    return EventTargetNames::MediaStream;
 }
 
 ExecutionContext* MediaStream::executionContext() const

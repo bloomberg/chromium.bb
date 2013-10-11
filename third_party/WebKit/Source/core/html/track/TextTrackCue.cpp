@@ -1205,7 +1205,7 @@ std::pair<double, double> TextTrackCue::getCSSPosition() const
 
 const AtomicString& TextTrackCue::interfaceName() const
 {
-    return eventNames().interfaceForTextTrackCue;
+    return EventTargetNames::TextTrackCue;
 }
 
 ExecutionContext* TextTrackCue::executionContext() const

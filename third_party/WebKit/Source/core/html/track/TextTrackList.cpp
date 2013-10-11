@@ -232,7 +232,7 @@ bool TextTrackList::contains(TextTrack* track) const
 
 const AtomicString& TextTrackList::interfaceName() const
 {
-    return eventNames().interfaceForTextTrackList;
+    return EventTargetNames::TextTrackList;
 }
 
 void TextTrackList::scheduleAddTrackEvent(PassRefPtr<TextTrack> track)

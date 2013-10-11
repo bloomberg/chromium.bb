@@ -145,7 +145,7 @@ void MessagePort::contextDestroyed()
 
 const AtomicString& MessagePort::interfaceName() const
 {
-    return eventNames().interfaceForMessagePort;
+    return EventTargetNames::MessagePort;
 }
 
 ExecutionContext* MessagePort::executionContext() const

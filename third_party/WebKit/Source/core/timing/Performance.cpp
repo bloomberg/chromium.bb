@@ -66,7 +66,7 @@ Performance::~Performance()
 
 const AtomicString& Performance::interfaceName() const
 {
-    return eventNames().interfaceForPerformance;
+    return EventTargetNames::Performance;
 }
 
 ExecutionContext* Performance::executionContext() const

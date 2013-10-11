@@ -70,7 +70,7 @@ public:
     int columnNumber() const { return m_columnNumber; }
     int statusCode() const { return m_statusCode; }
 
-    virtual const AtomicString& interfaceName() const { return eventNames().interfaceForSecurityPolicyViolationEvent; }
+    virtual const AtomicString& interfaceName() const { return EventNames::SecurityPolicyViolationEvent; }
 
 private:
     SecurityPolicyViolationEvent()

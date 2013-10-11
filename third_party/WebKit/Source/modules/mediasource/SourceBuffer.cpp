@@ -379,7 +379,7 @@ ExecutionContext* SourceBuffer::executionContext() const
 
 const AtomicString& SourceBuffer::interfaceName() const
 {
-    return eventNames().interfaceForSourceBuffer;
+    return EventTargetNames::SourceBuffer;
 }
 
 bool SourceBuffer::isRemoved() const

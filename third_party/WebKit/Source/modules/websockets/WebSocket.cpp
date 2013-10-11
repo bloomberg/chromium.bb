@@ -450,7 +450,7 @@ void WebSocket::setBinaryType(const String& binaryType)
 
 const AtomicString& WebSocket::interfaceName() const
 {
-    return eventNames().interfaceForWebSocket;
+    return EventTargetNames::WebSocket;
 }
 
 ExecutionContext* WebSocket::executionContext() const

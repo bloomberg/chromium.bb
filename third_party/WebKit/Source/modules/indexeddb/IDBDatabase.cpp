@@ -406,7 +406,7 @@ void IDBDatabase::stop()
 
 const AtomicString& IDBDatabase::interfaceName() const
 {
-    return eventNames().interfaceForIDBDatabase;
+    return EventTargetNames::IDBDatabase;
 }
 
 ExecutionContext* IDBDatabase::executionContext() const

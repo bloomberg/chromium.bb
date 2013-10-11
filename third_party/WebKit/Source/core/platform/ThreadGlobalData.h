@@ -38,7 +38,6 @@
 
 namespace WebCore {
 
-    class ThreadLocalEventNames;
     class ThreadLocalInspectorCounters;
     class ThreadTimers;
 
@@ -52,11 +51,9 @@ namespace WebCore {
 
         void destroy(); // called on workers to clean up the ThreadGlobalData before the thread exits.
 
-        ThreadLocalEventNames& eventNames() { return *m_eventNames; }
         ThreadLocalInspectorCounters& inspectorCounters() { return *m_inspectorCounters; }
 
     private:
-        OwnPtr<ThreadLocalEventNames> m_eventNames;
         OwnPtr<ThreadLocalInspectorCounters> m_inspectorCounters;
 
         static ThreadSpecific<ThreadGlobalData>* staticData;

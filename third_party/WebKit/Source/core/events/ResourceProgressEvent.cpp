@@ -48,7 +48,7 @@ const String& ResourceProgressEvent::url() const
 
 const AtomicString& ResourceProgressEvent::interfaceName() const
 {
-    return eventNames().interfaceForResourceProgressEvent;
+    return EventNames::ResourceProgressEvent;
 }
 
 }

@@ -94,7 +94,7 @@ void WebKitSourceBufferList::createAndFireEvent(const AtomicString& eventName)
 
 const AtomicString& WebKitSourceBufferList::interfaceName() const
 {
-    return eventNames().interfaceForWebKitSourceBufferList;
+    return EventTargetNames::WebKitSourceBufferList;
 }
 
 ExecutionContext* WebKitSourceBufferList::executionContext() const

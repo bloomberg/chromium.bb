@@ -210,7 +210,7 @@ bool MediaSource::isTypeSupported(const String& type)
 
 const AtomicString& MediaSource::interfaceName() const
 {
-    return eventNames().interfaceForMediaSource;
+    return EventTargetNames::MediaSource;
 }
 
 } // namespace WebCore

@@ -95,7 +95,7 @@ bool DeviceOrientationEvent::absolute(bool& isNull) const
 
 const AtomicString& DeviceOrientationEvent::interfaceName() const
 {
-    return eventNames().interfaceForDeviceOrientationEvent;
+    return EventNames::DeviceOrientationEvent;
 }
 
 } // namespace WebCore

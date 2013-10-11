@@ -53,7 +53,7 @@ ExecutionContext* SpeechSynthesisUtterance::executionContext() const
 
 const AtomicString& SpeechSynthesisUtterance::interfaceName() const
 {
-    return eventNames().interfaceForSpeechSynthesisUtterance;
+    return EventTargetNames::SpeechSynthesisUtterance;
 }
 
 SpeechSynthesisVoice* SpeechSynthesisUtterance::voice() const

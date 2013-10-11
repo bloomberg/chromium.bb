@@ -181,7 +181,7 @@ void TextFieldInputType::forwardEvent(Event* event)
             return;
     }
 
-    if (element()->renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(eventNames().interfaceForWheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
+    if (element()->renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
         RenderTextControlSingleLine* renderTextControl = toRenderTextControlSingleLine(element()->renderer());
         if (event->type() == EventTypeNames::blur) {
             if (RenderBox* innerTextRenderer = innerTextElement()->renderBox()) {
@@ -214,7 +214,7 @@ void TextFieldInputType::handleBlurEvent()
 
 bool TextFieldInputType::shouldSubmitImplicitly(Event* event)
 {
-    return (event->type() == EventTypeNames::textInput && event->hasInterface(eventNames().interfaceForTextEvent) && toTextEvent(event)->data() == "\n") || InputType::shouldSubmitImplicitly(event);
+    return (event->type() == EventTypeNames::textInput && event->hasInterface(EventNames::TextEvent) && toTextEvent(event)->data() == "\n") || InputType::shouldSubmitImplicitly(event);
 }
 
 RenderObject* TextFieldInputType::createRenderer(RenderStyle*) const

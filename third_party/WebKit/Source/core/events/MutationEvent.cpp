@@ -68,7 +68,7 @@ void MutationEvent::initMutationEvent(const AtomicString& type, bool canBubble, 
 
 const AtomicString& MutationEvent::interfaceName() const
 {
-    return eventNames().interfaceForMutationEvent;
+    return EventNames::MutationEvent;
 }
 
 } // namespace WebCore

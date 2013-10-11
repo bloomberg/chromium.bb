@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/platform/ThreadGlobalData.h"
 
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/InspectorCounters.h"
 #include "platform/PlatformThreadData.h"
 #include "wtf/MainThread.h"
@@ -43,8 +42,7 @@ namespace WebCore {
 ThreadSpecific<ThreadGlobalData>* ThreadGlobalData::staticData;
 
 ThreadGlobalData::ThreadGlobalData()
-    : m_eventNames(adoptPtr(new ThreadLocalEventNames))
-    , m_inspectorCounters(adoptPtr(new ThreadLocalInspectorCounters()))
+    : m_inspectorCounters(adoptPtr(new ThreadLocalInspectorCounters()))
 {
     // This constructor will have been called on the main thread before being called on
     // any other thread, and is only called once per thread - this makes this a convenient
@@ -62,7 +60,6 @@ ThreadGlobalData::~ThreadGlobalData()
 void ThreadGlobalData::destroy()
 {
     m_inspectorCounters.clear();
-    m_eventNames.clear();
     PlatformThreadData::current().destroy();
 }
 

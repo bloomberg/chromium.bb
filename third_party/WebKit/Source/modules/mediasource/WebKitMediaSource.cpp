@@ -199,7 +199,7 @@ bool WebKitMediaSource::isTypeSupported(const String& type)
 
 const AtomicString& WebKitMediaSource::interfaceName() const
 {
-    return eventNames().interfaceForWebKitMediaSource;
+    return EventTargetNames::WebKitMediaSource;
 }
 
 } // namespace WebCore

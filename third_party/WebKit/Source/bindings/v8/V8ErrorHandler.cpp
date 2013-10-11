@@ -51,7 +51,7 @@ V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, v8
 
 v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
 {
-    if (!event->hasInterface(eventNames().interfaceForErrorEvent))
+    if (!event->hasInterface(EventNames::ErrorEvent))
         return V8EventListener::callListenerFunction(context, jsEvent, event);
 
     ErrorEvent* errorEvent = static_cast<ErrorEvent*>(event);

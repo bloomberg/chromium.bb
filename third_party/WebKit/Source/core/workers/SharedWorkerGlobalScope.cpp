@@ -72,7 +72,7 @@ SharedWorkerGlobalScope::~SharedWorkerGlobalScope()
 
 const AtomicString& SharedWorkerGlobalScope::interfaceName() const
 {
-    return eventNames().interfaceForSharedWorkerGlobalScope;
+    return EventTargetNames::SharedWorkerGlobalScope;
 }
 
 SharedWorkerThread* SharedWorkerGlobalScope::thread()

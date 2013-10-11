@@ -202,7 +202,7 @@ int KeyboardEvent::charCode() const
 
 const AtomicString& KeyboardEvent::interfaceName() const
 {
-    return eventNames().interfaceForKeyboardEvent;
+    return EventNames::KeyboardEvent;
 }
 
 bool KeyboardEvent::isKeyboardEvent() const

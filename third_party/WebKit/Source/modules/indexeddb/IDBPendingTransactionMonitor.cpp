@@ -27,6 +27,7 @@
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
 
 using WTF::ThreadSpecific;
 

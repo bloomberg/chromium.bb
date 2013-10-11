@@ -629,7 +629,7 @@ bool MediaController::hasCurrentSrc() const
 
 const AtomicString& MediaController::interfaceName() const
 {
-    return eventNames().interfaceForMediaController;
+    return EventTargetNames::MediaController;
 }
 
 // The spec says to fire periodic timeupdate events (those sent while playing) every

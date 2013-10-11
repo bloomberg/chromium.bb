@@ -107,7 +107,7 @@ double DeviceMotionEvent::interval(bool& isNull) const
 
 const AtomicString& DeviceMotionEvent::interfaceName() const
 {
-    return eventNames().interfaceForDeviceMotionEvent;
+    return EventNames::DeviceMotionEvent;
 }
 
 } // namespace WebCore
