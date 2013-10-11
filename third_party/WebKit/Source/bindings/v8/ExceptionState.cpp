@@ -46,6 +46,10 @@ void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& me
 {
     ASSERT(ec);
     ASSERT(m_isolate);
+
+    // SecurityError is thrown via ::throwSecurityError, and _careful_ consideration must be given to the data exposed to JavaScript via the 'sanitizedMessage'.
+    ASSERT(ec != SecurityError);
+
     m_code = ec;
     setException(V8ThrowException::createDOMException(ec, message, m_isolate));
 }
