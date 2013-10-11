@@ -524,7 +524,7 @@ CommandHandler.COMMANDS_['open-with'] = {
  */
 CommandHandler.COMMANDS_['search'] = {
   execute: function(event, fileManager) {
-    var element = fileManager.document.querySelector('#search-box');
+    var element = fileManager.document.querySelector('#search-box input');
     element.focus();
     element.select();
   },

@@ -877,28 +877,30 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.filePopup_ = null;
 
     this.searchBoxWrapper_ =
-        this.dialogDom_.querySelector('.search-box-wrapper');
-    this.searchBox_ = this.dialogDom_.querySelector('#search-box');
+        this.dialogDom_.querySelector('#search-box');
+    this.searchBox_ = this.dialogDom_.querySelector('#search-box input');
     this.searchBox_.addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
     this.searchBox_.addEventListener(
         'keydown', this.onSearchBoxKeyDown_.bind(this));
     this.searchBox_.addEventListener(
         'focus', function() {
-           this.searchBox_.tabIndex = '99';  // See: go/filesapp-tabindex.
+          this.searchBoxWrapper_.classList.toggle('has-cursor', true);
+          this.searchBox_.tabIndex = '99';  // See: go/filesapp-tabindex.
         }.bind(this));
     this.searchBox_.addEventListener(
         'blur', function() {
-           this.searchBox_.tabIndex = '-1';
+          this.searchBoxWrapper_.classList.toggle('has-cursor', false);
+          this.searchBox_.tabIndex = '-1';
         }.bind(this));
 
     this.searchTextMeasure_ = new TextMeasure(this.searchBox_);
-    this.searchIcon_ = this.dialogDom_.querySelector('#search-icon');
+    this.searchIcon_ = this.dialogDom_.querySelector('#search-box .icon');
     this.searchIcon_.addEventListener(
         'click',
         function() { this.searchBox_.focus(); }.bind(this));
     this.searchClearButton_ =
-        this.dialogDom_.querySelector('#search-clear-button');
+        this.dialogDom_.querySelector('#search-box .clear');
     this.searchClearButton_.addEventListener(
         'click',
         function() {

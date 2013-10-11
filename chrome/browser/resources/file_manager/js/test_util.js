@@ -332,7 +332,7 @@ test.util.async.performAutocompleteAndWait = function(
   // Dispatch a 'focus' event to the search box so that the autocomplete list
   // is attached to the search box. Note that calling searchBox.focus() won't
   // dispatch a 'focus' event.
-  var searchBox = contentWindow.document.querySelector('#search-box');
+  var searchBox = contentWindow.document.querySelector('#search-box input');
   var focusEvent = contentWindow.document.createEvent('Event');
   focusEvent.initEvent('focus', true /* bubbles */, true /* cancelable */);
   searchBox.dispatchEvent(focusEvent);

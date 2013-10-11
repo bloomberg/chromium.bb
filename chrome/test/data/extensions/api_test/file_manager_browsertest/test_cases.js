@@ -1281,11 +1281,8 @@ testcase.hideSearchBox = function() {
       callRemoteTestUtil('waitForStyles',
                          appId,
                          [{
-                            query: '.search-box-wrapper',
-                            styles: {visibility: 'display'}
-                          }, {
-                            query: '#search-clear-button',
-                            styles: {hidden: 'none'}
+                            query: '#search-box',
+                            styles: {visibility: 'hidden'}
                           }],
                          this.next);
     },
@@ -1631,7 +1628,7 @@ testcase.searchBoxFocus = function() {
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil(
-          'waitForElement', appId, ['#search-box:focus'], this.next);
+          'waitForElement', appId, ['#search-box input:focus'], this.next);
     },
     // Press the Tab key.
     function(element) {

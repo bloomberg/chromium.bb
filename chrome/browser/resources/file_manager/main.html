@@ -318,13 +318,14 @@
       <div class="splitter" id="navigation-list-splitter"></div>
       <div class="dialog-main">
         <div class="dialog-header">
-          <div class="search-box-wrapper">
-            <input id="search-box" type="search" tabindex="-1"
-                   i18n-values="aria-label:SEARCH_TEXT_LABEL">
-            <!-- This is placed at the head of search-box -->
-            <div id="search-icon"></div>
+          <div id="search-box">
+            <div class="icon"></div>
+            <div class="full-size">
+              <input type="search" tabindex="-1"
+                     i18n-values="aria-label:SEARCH_TEXT_LABEL">
+            </div>
+            <button class="clear"></button>
           </div>
-          <div id="search-clear-button"></div>
           <div class="topbutton-bar">
             <button class="menubutton gear-button" id="gear-button" tabindex="3"
                     menu="#gear-menu"
