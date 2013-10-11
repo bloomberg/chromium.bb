@@ -449,8 +449,8 @@ void partitionDumpStats(const PartitionRoot& root)
     size_t totalFreeable = 0;
     for (i = 0; i < root.numBuckets; ++i) {
         const PartitionBucket& bucket = root.buckets()[i];
-        if (bucket.currPage == &bucket.root->seedPage && !bucket.freePages) {
-            // Empty bucket with no freelist pages. Skip reporting it.
+        if (bucket.currPage == &bucket.root->seedPage && !bucket.freePages && !bucket.numFullPages) {
+            // Empty bucket with no freelist or full pages. Skip reporting it.
             continue;
         }
         size_t numFreePages = 0;
@@ -461,8 +461,11 @@ void partitionDumpStats(const PartitionRoot& root)
         }
         size_t bucketSlotSize = partitionBucketSize(&bucket);
         size_t bucketNumSlots = partitionBucketSlots(&bucket);
-        size_t numActiveBytes = bucket.numFullPages * bucketSlotSize * bucketNumSlots;
-        size_t numResidentBytes = 0;
+        size_t bucketUsefulStorage = bucketSlotSize * bucketNumSlots;
+        size_t bucketWaste = kPartitionPageSize - bucketUsefulStorage;
+        size_t numActiveBytes = bucket.numFullPages * bucketUsefulStorage;
+        size_t numResidentBytes = bucket.numFullPages * kPartitionPageSize;
+        size_t numFreeableBytes = 0;
         size_t numActivePages = 0;
         const PartitionPageHeader* page = bucket.currPage;
         do {
@@ -473,14 +476,15 @@ void partitionDumpStats(const PartitionRoot& root)
                 // Round up to sub page size.
                 pageBytesResident = (pageBytesResident + kSubPartitionPageMask) & ~kSubPartitionPageMask;
                 numResidentBytes += pageBytesResident;
+                if (!page->numAllocatedSlots)
+                    numFreeableBytes += pageBytesResident;
             }
             page = page->next;
         } while (page != bucket.currPage);
         totalLive += numActiveBytes;
         totalResident += numResidentBytes;
-        if (!numActiveBytes)
-            totalFreeable += numResidentBytes;
-        printf("bucket size %ld: %ld/%ld bytes, %ld/%ld/%ld full/active/free pages\n", bucketSlotSize, numActiveBytes, numResidentBytes, bucket.numFullPages, numActivePages, numFreePages);
+        totalFreeable += numFreeableBytes;
+        printf("bucket size %ld (waste %ld): %ld alloc/%ld commit/%ld freeable bytes, %ld/%ld/%ld full/active/free pages\n", bucketSlotSize, bucketWaste, numActiveBytes, numResidentBytes, numFreeableBytes, bucket.numFullPages, numActivePages, numFreePages);
     }
     printf("total live: %ld bytes\n", totalLive);
     printf("total resident: %ld bytes\n", totalResident);
