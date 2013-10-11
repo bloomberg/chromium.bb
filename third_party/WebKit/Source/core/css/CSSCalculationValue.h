@@ -95,12 +95,12 @@ class CSSCalcValue : public CSSValue {
 public:
     static PassRefPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, ValueRange);
     static PassRefPtr<CSSCalcValue> create(PassRefPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
-    static PassRefPtr<CSSCalcValue> create(const CalculationValue* value, const RenderStyle* style) { return adoptRef(new CSSCalcValue(value, style)); }
+    static PassRefPtr<CSSCalcValue> create(const CalculationValue* value, float zoom) { return adoptRef(new CSSCalcValue(value, zoom)); }
 
     static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtr<CSSPrimitiveValue>, bool isInteger = false);
     static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtr<CSSCalcExpressionNode>, PassRefPtr<CSSCalcExpressionNode>, CalcOperator);
-    static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(const CalcExpressionNode*, const RenderStyle*);
-    static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(const Length&, const RenderStyle*);
+    static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(const CalcExpressionNode*, float zoom);
+    static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(const Length&, float zoom);
 
     PassRefPtr<CalculationValue> toCalcValue(const RenderStyle* style, const RenderStyle* rootStyle, double zoom = 1.0) const
     {
@@ -126,9 +126,9 @@ private:
         , m_nonNegative(range == ValueRangeNonNegative)
     {
     }
-    CSSCalcValue(const CalculationValue* value, const RenderStyle* style)
+    CSSCalcValue(const CalculationValue* value, float zoom)
         : CSSValue(CalculationClass)
-        , m_expression(createExpressionNode(value->expression(), style))
+        , m_expression(createExpressionNode(value->expression(), zoom))
         , m_nonNegative(value->isNonNegative())
     {
     }

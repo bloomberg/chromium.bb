@@ -29,6 +29,7 @@
 #include "CSSValueKeywords.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSValueList.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 
@@ -113,6 +114,11 @@ PassRefPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimiti
     if (!cache[intValue])
         cache[intValue] = CSSPrimitiveValue::create(value, type);
     return cache[intValue];
+}
+
+PassRefPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const RenderStyle* style)
+{
+    return CSSPrimitiveValue::create(value, style->effectiveZoom());
 }
 
 PassRefPtr<CSSPrimitiveValue> CSSValuePool::createFontFamilyValue(const String& familyName)

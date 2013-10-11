@@ -47,7 +47,7 @@ void testExpression(PassRefPtr<CSSCalcExpressionNode> expression, const RenderSt
         expression->equals(
             *CSSCalcValue::createExpressionNode(
                 expression->toCalcValue(style, style, style->effectiveZoom()).get(),
-                style).get()));
+                style->effectiveZoom()).get()));
 }
 
 TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
@@ -57,7 +57,7 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
     RefPtr<CSSCalcExpressionNode> actual;
 
     expected = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX), true);
-    actual = CSSCalcValue::createExpressionNode(Length(10, WebCore::Fixed), style.get());
+    actual = CSSCalcValue::createExpressionNode(Length(10, WebCore::Fixed), style->effectiveZoom());
     EXPECT_TRUE(actual->equals(*expected.get()));
 
     expected = CSSCalcValue::createExpressionNode(
@@ -71,7 +71,7 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
                 adoptPtr(new CalcExpressionLength(Length(20, WebCore::Fixed))),
                 CalcAdd)),
             ValueRangeAll)),
-        style.get());
+        style->effectiveZoom());
     EXPECT_TRUE(actual->equals(*expected.get()));
 
     expected = CSSCalcValue::createExpressionNode(
@@ -85,7 +85,7 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
                 adoptPtr(new CalcExpressionNumber(40)),
                 CalcMultiply)),
             ValueRangeAll)),
-        style.get());
+        style->effectiveZoom());
     EXPECT_TRUE(actual->equals(*expected.get()));
 
     expected = CSSCalcValue::createExpressionNode(
@@ -102,7 +102,7 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLength)
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBlendLength(Length(50, WebCore::Fixed), Length(60, WebCore::Fixed), 0.75)),
             ValueRangeAll)),
-        style.get());
+        style->effectiveZoom());
     EXPECT_TRUE(actual->equals(*expected.get()));
 }
 
