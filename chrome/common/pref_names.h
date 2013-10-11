@@ -408,6 +408,7 @@ extern const char kManagedUsers[];
 extern const char kMessageCenterDisabledExtensionIds[];
 extern const char kMessageCenterDisabledSystemComponentIds[];
 extern const char kMessageCenterEnabledSyncNotifierIds[];
+extern const char kWelcomeNotificationDismissed[];
 extern const char kEnabledSyncedNotificationSendingServices[];
 extern const char kInitializedSyncedNotificationSendingServices[];
 

@@ -1234,6 +1234,10 @@ const char kMessageCenterDisabledSystemComponentIds[] =
 extern const char kMessageCenterEnabledSyncNotifierIds[] =
     "message_center.enabled_sync_notifier_ids";
 
+// Boolean pref indicating the welcome notification was dismissed by the user.
+extern const char kWelcomeNotificationDismissed[] =
+    "message_center.welcome_notification_dismissed";
+
 // List pref containing synced notification sending services that are currently
 // enabled.
 extern const char kEnabledSyncedNotificationSendingServices[] =
