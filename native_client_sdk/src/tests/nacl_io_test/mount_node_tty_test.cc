@@ -138,7 +138,6 @@ static int TtyWrite(int fd, const char* string) {
   struct tioc_nacl_input_string input;
   input.buffer = string;
   input.length = strlen(input.buffer);
-  printf("TtyWrite %d\n", input.length);
   return ki_ioctl_wrapper(fd, TIOCNACLINPUT, &input);
 }
 
