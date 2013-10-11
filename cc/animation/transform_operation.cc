@@ -259,22 +259,17 @@ static float SafeDivide(float numerator, float denominator) {
 static void BoundingBoxForArc(const gfx::Point3F& point,
                               const TransformOperation* from,
                               const TransformOperation* to,
+                              SkMScalar min_progress,
+                              SkMScalar max_progress,
                               gfx::BoxF* box) {
   const TransformOperation* exemplar = from ? from : to;
-  *box = gfx::BoxF();
-  gfx::Point3F point_rotated_from = point;
-  if (from)
-    from->matrix.TransformPoint(&point_rotated_from);
-  gfx::Point3F point_rotated_to = point;
-  if (to)
-    to->matrix.TransformPoint(&point_rotated_to);
+  gfx::Vector3dF axis(exemplar->rotate.axis.x,
+                      exemplar->rotate.axis.y,
+                      exemplar->rotate.axis.z);
 
-  box->set_origin(point_rotated_from);
-  box->ExpandTo(point_rotated_to);
-
-  const bool x_is_zero = exemplar->rotate.axis.x == 0.f;
-  const bool y_is_zero = exemplar->rotate.axis.y == 0.f;
-  const bool z_is_zero = exemplar->rotate.axis.z == 0.f;
+  const bool x_is_zero = axis.x() == 0.f;
+  const bool y_is_zero = axis.y() == 0.f;
+  const bool z_is_zero = axis.z() == 0.f;
 
   // We will have at most 6 angles to test (excluding from->angle and
   // to->angle).
@@ -285,33 +280,43 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
   if (x_is_zero && y_is_zero && z_is_zero)
     return;
 
-  if (x_is_zero && y_is_zero) {
-    FindCandidatesInPlane(point.x(),
-                          point.y(),
-                          exemplar->rotate.axis.z,
-                          candidates,
-                          &num_candidates);
-  } else if (x_is_zero && z_is_zero) {
-    FindCandidatesInPlane(point.z(),
-                          point.x(),
-                          exemplar->rotate.axis.y,
-                          candidates,
-                          &num_candidates);
-  } else if (y_is_zero && z_is_zero) {
-    FindCandidatesInPlane(point.y(),
-                          point.z(),
-                          exemplar->rotate.axis.x,
-                          candidates,
-                          &num_candidates);
-  } else {
-    gfx::Vector3dF normal(exemplar->rotate.axis.x,
-                          exemplar->rotate.axis.y,
-                          exemplar->rotate.axis.z);
-    float normal_length = normal.Length();
-    if (normal_length == 0.f)
-      return;
+  SkMScalar from_angle = from ? from->rotate.angle : 0.f;
+  SkMScalar to_angle = to ? to->rotate.angle : 0.f;
 
-    normal.Scale(1.f / normal_length);
+  float min_degrees =
+      SkMScalarToFloat(BlendSkMScalars(from_angle, to_angle, min_progress));
+  float max_degrees =
+      SkMScalarToFloat(BlendSkMScalars(from_angle, to_angle, max_progress));
+  if (max_degrees < min_degrees)
+    std::swap(min_degrees, max_degrees);
+
+  gfx::Transform from_transform;
+  from_transform.RotateAbout(axis, min_degrees);
+  gfx::Transform to_transform;
+  to_transform.RotateAbout(axis, max_degrees);
+
+  *box = gfx::BoxF();
+
+  gfx::Point3F point_rotated_from = point;
+  from_transform.TransformPoint(&point_rotated_from);
+  gfx::Point3F point_rotated_to = point;
+  to_transform.TransformPoint(&point_rotated_to);
+
+  box->set_origin(point_rotated_from);
+  box->ExpandTo(point_rotated_to);
+
+  if (x_is_zero && y_is_zero) {
+    FindCandidatesInPlane(
+        point.x(), point.y(), axis.z(), candidates, &num_candidates);
+  } else if (x_is_zero && z_is_zero) {
+    FindCandidatesInPlane(
+        point.z(), point.x(), axis.y(), candidates, &num_candidates);
+  } else if (y_is_zero && z_is_zero) {
+    FindCandidatesInPlane(
+        point.y(), point.z(), axis.x(), candidates, &num_candidates);
+  } else {
+    gfx::Vector3dF normal = axis;
+    normal.Scale(1.f / normal.Length());
 
     // First, find center of rotation.
     gfx::Point3F origin;
@@ -360,28 +365,20 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
     candidates[5] = candidates[4] + M_PI;
   }
 
-  double min_theta = from ? DegreesToRadians(from->rotate.angle) : 0.0;
-  double max_theta = to ? DegreesToRadians(to->rotate.angle) : 0.0;
-
-  if (min_theta > max_theta)
-    std::swap(min_theta, max_theta);
-
-  gfx::Vector3dF axis(exemplar->rotate.axis.x,
-                      exemplar->rotate.axis.y,
-                      exemplar->rotate.axis.z);
-  axis.Scale(1.f / axis.Length());
+  double min_radians = DegreesToRadians(min_degrees);
+  double max_radians = DegreesToRadians(max_degrees);
 
   for (int i = 0; i < num_candidates; ++i) {
-    double theta = candidates[i];
-    while (theta < min_theta)
-      theta += 2.0 * M_PI;
-    while (theta > max_theta)
-      theta -= 2.0 * M_PI;
-    if (theta < min_theta)
+    double radians = candidates[i];
+    while (radians < min_radians)
+      radians += 2.0 * M_PI;
+    while (radians > max_radians)
+      radians -= 2.0 * M_PI;
+    if (radians < min_radians)
       continue;
 
     gfx::Transform rotation;
-    rotation.RotateAbout(axis, RadiansToDegrees(theta));
+    rotation.RotateAbout(axis, RadiansToDegrees(radians));
     gfx::Point3F rotated = point;
     rotation.TransformPoint(&rotated);
 
@@ -489,7 +486,8 @@ bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
                                  i & 2 ? box.height() : 0.f,
                                  i & 4 ? box.depth() : 0.f);
         gfx::BoxF box_for_arc;
-        BoundingBoxForArc(corner, from, to, &box_for_arc);
+        BoundingBoxForArc(
+            corner, from, to, min_progress, max_progress, &box_for_arc);
         if (first_point)
           *bounds = box_for_arc;
         else

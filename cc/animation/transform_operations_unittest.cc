@@ -9,6 +9,7 @@
 #include "cc/animation/transform_operations.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/box_f.h"
 #include "ui/gfx/vector3d_f.h"
 
@@ -964,6 +965,11 @@ struct TestAngles {
   float theta_to;
 };
 
+struct TestProgress {
+  float min_progress;
+  float max_progress;
+};
+
 TEST(TransformOperationsTest, BlendedBoundsForRotationEmpiricalTests) {
   // Sets up various axis angle combinations, computes the bounding box and
   // empirically tests that the transformed bounds are indeed contained by the
@@ -1000,54 +1006,68 @@ TEST(TransformOperationsTest, BlendedBoundsForRotationEmpiricalTests) {
     { 220.f, 320.f }
   };
 
-  size_t num_steps = 100;
+  // We can go beyond the range [0, 1] (the bezier might slide out of this range
+  // at either end), but since the first and last knots are at (0, 0) and (1, 1)
+  // we will never go within it, so these tests are sufficient.
+  TestProgress progress[] = {
+    { 0.f, 1.f },
+    { -.25f, 1.25f },
+  };
+
+  size_t num_steps = 150;
   for (size_t i = 0; i < arraysize(axes); ++i) {
     for (size_t j = 0; j < arraysize(angles); ++j) {
-      float x = axes[i].x;
-      float y = axes[i].y;
-      float z = axes[i].z;
-      TransformOperations operations_from;
-      operations_from.AppendRotate(x, y, z, angles[j].theta_from);
-      TransformOperations operations_to;
-      operations_to.AppendRotate(x, y, z, angles[j].theta_to);
+      for (size_t k = 0; k < arraysize(progress); ++k) {
+        float x = axes[i].x;
+        float y = axes[i].y;
+        float z = axes[i].z;
+        TransformOperations operations_from;
+        operations_from.AppendRotate(x, y, z, angles[j].theta_from);
+        TransformOperations operations_to;
+        operations_to.AppendRotate(x, y, z, angles[j].theta_to);
 
-      gfx::BoxF box(2.f, 5.f, 6.f, 1.f, 3.f, 2.f);
-      gfx::BoxF bounds;
+        gfx::BoxF box(2.f, 5.f, 6.f, 1.f, 3.f, 2.f);
+        gfx::BoxF bounds;
 
-      EXPECT_TRUE(operations_to.BlendedBoundsForBox(
-          box, operations_from, 0.f, 1.f, &bounds));
+        EXPECT_TRUE(operations_to.BlendedBoundsForBox(box,
+                                                      operations_from,
+                                                      progress[k].min_progress,
+                                                      progress[k].max_progress,
+                                                      &bounds));
+        bool first_point = true;
+        gfx::BoxF empirical_bounds;
+        for (size_t step = 0; step < num_steps; ++step) {
+          float t = step / (num_steps - 1.f);
+          t = gfx::Tween::FloatValueBetween(
+              t, progress[k].min_progress, progress[k].max_progress);
+          gfx::Transform partial_rotation =
+              operations_to.Blend(operations_from, t);
 
-      bool first_point = true;
-      gfx::BoxF empirical_bounds;
-      for (size_t k = 0; k < num_steps; ++k) {
-        float t = k / (num_steps - 1.f);
-        gfx::Transform partial_rotation =
-            operations_to.Blend(operations_from, t);
-
-        for (int corner = 0; corner < 8; ++corner) {
-          gfx::Point3F point = box.origin();
-          point += gfx::Vector3dF(corner & 1 ? box.width() : 0.f,
-                                  corner & 2 ? box.height() : 0.f,
-                                  corner & 4 ? box.depth() : 0.f);
-          partial_rotation.TransformPoint(&point);
-          if (first_point) {
-            empirical_bounds.set_origin(point);
-            first_point = false;
-          } else {
-            empirical_bounds.ExpandTo(point);
+          for (int corner = 0; corner < 8; ++corner) {
+            gfx::Point3F point = box.origin();
+            point += gfx::Vector3dF(corner & 1 ? box.width() : 0.f,
+                                    corner & 2 ? box.height() : 0.f,
+                                    corner & 4 ? box.depth() : 0.f);
+            partial_rotation.TransformPoint(&point);
+            if (first_point) {
+              empirical_bounds.set_origin(point);
+              first_point = false;
+            } else {
+              empirical_bounds.ExpandTo(point);
+            }
           }
         }
-      }
 
-      // Our empirical estimate will be a little rough since we're only doing
-      // 100 samples.
-      static const float kTolerance = 1e-2f;
-      EXPECT_NEAR(empirical_bounds.x(), bounds.x(), kTolerance);
-      EXPECT_NEAR(empirical_bounds.y(), bounds.y(), kTolerance);
-      EXPECT_NEAR(empirical_bounds.z(), bounds.z(), kTolerance);
-      EXPECT_NEAR(empirical_bounds.width(), bounds.width(), kTolerance);
-      EXPECT_NEAR(empirical_bounds.height(), bounds.height(), kTolerance);
-      EXPECT_NEAR(empirical_bounds.depth(), bounds.depth(), kTolerance);
+        // Our empirical estimate will be a little rough since we're only doing
+        // 100 samples.
+        static const float kTolerance = 1e-2f;
+        EXPECT_NEAR(empirical_bounds.x(), bounds.x(), kTolerance);
+        EXPECT_NEAR(empirical_bounds.y(), bounds.y(), kTolerance);
+        EXPECT_NEAR(empirical_bounds.z(), bounds.z(), kTolerance);
+        EXPECT_NEAR(empirical_bounds.width(), bounds.width(), kTolerance);
+        EXPECT_NEAR(empirical_bounds.height(), bounds.height(), kTolerance);
+        EXPECT_NEAR(empirical_bounds.depth(), bounds.depth(), kTolerance);
+      }
     }
   }
 }
