@@ -205,9 +205,12 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInvokeAlert)) {
 }
 
 // Test passing arguments to a plugin.
+// crbug.com/306318
+#if !defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Arguments)) {
   LoadAndWait(GetURL("arguments.html"));
 }
+#endif
 
 // Test invoking many plugins within a single page.
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(ManyPlugins)) {
