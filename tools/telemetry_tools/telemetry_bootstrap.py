@@ -22,7 +22,7 @@ import urllib
 import urlparse
 
 # Link to file containing the 'davclient' WebDAV client library.
-_DAVCLIENT_URL = ('https://src.chromium.org/viewvc/chrome/trunk/src/tools/' +
+_DAVCLIENT_URL = ('https://src.chromium.org/chrome/trunk/src/tools/' +
                   'telemetry/third_party/davclient/davclient.py')
 
 # Dummy module for Davclient.

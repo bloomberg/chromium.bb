@@ -24,7 +24,7 @@ def BootstrapIfNeeded(module_name, module_path, module_deps_url):
       imp.find_module(module_name)
       return
     except ImportError:
-      bootstrap_txt = urllib.urlopen('http://src.chromium.org/viewvc/chrome/' +
+      bootstrap_txt = urllib.urlopen('http://src.chromium.org/chrome/' +
                                      'trunk/src/tools/telemetry_tools/' +
                                      'telemetry_bootstrap.py').read()
       bootstrap = imp.new_module('bootstrap')
@@ -49,7 +49,7 @@ def ListBootstrapDeps():
 
 def main():
   BootstrapIfNeeded('perf_tools', PERF_DIR,
-                    'http://src.chromium.org/viewvc/chrome/trunk/src/tools'
+                    'http://src.chromium.org/chrome/trunk/src/tools'
                     '/perf/perf_tools/' + DEPS_FILE)
 
   # Add telemetry to sys.path for the import below
