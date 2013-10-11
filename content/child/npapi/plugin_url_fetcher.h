@@ -42,6 +42,8 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
   // Called with the plugin's reply to NPP_URLRedirectNotify.
   void URLRedirectResponse(bool allow);
 
+  bool pending_failure_notification() { return pending_failure_notification_; }
+
  private:
   // webkit_glue::ResourceLoaderBridge::Peer implementation:
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
@@ -70,6 +72,7 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
   bool is_plugin_src_load_;
   unsigned long resource_id_;
   int64 data_offset_;
+  bool pending_failure_notification_;
 
   scoped_ptr<webkit_glue::MultipartResponseDelegate> multipart_delegate_;
 

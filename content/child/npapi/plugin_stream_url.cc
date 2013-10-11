@@ -173,6 +173,16 @@ void PluginStreamUrl::AddRangeRequestResourceId(unsigned long resource_id) {
 }
 
 void PluginStreamUrl::SetDeferLoading(bool value) {
+  // If we determined that the request had failed via the HTTP headers in the
+  // response then we send out a failure notification to the plugin process, as
+  // certain plugins don't handle HTTP failure codes correctly.
+  if (!value &&
+      plugin_url_fetcher_.get() &&
+      plugin_url_fetcher_->pending_failure_notification()) {
+    // This object may be deleted now.
+    DidFail(id_);
+    return;
+  }
   if (id_ > 0)
     instance()->webplugin()->SetDeferResourceLoading(id_, value);
   for (size_t i = 0; i < range_requests_.size(); ++i)

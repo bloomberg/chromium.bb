@@ -89,7 +89,8 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       notify_redirects_(notify_redirects),
       is_plugin_src_load_(is_plugin_src_load),
       resource_id_(resource_id),
-      data_offset_(0) {
+      data_offset_(0),
+      pending_failure_notification_(false) {
   webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
   request_info.method = method;
   request_info.url = url;
@@ -257,7 +258,8 @@ void PluginURLFetcher::OnReceivedResponse(
       last_modified = static_cast<uint32>(temp.ToDoubleT());
 
      // TODO(darin): Shouldn't we also report HTTP version numbers?
-    headers = base::StringPrintf("HTTP %d ", info.headers->response_code());
+    int response_code = info.headers->response_code();
+    headers = base::StringPrintf("HTTP %d ", response_code);
     headers += info.headers->GetStatusText();
     headers += "\n";
 
@@ -267,6 +269,16 @@ void PluginURLFetcher::OnReceivedResponse(
       // TODO(darin): Should we really exclude headers with an empty value?
       if (!name.empty() && !value.empty())
         headers += name + ": " + value + "\n";
+    }
+
+    // Bug http://b/issue?id=925559. The flash plugin would not handle the HTTP
+    // error codes in the stream header and as a result, was unaware of the fate
+    // of the HTTP requests issued via NPN_GetURLNotify. Webkit and FF destroy
+    // the stream and invoke the NPP_DestroyStream function on the plugin if the
+    // HTTPrequest fails.
+    if ((url_.SchemeIs("http") || url_.SchemeIs("https")) &&
+        (response_code < 100 || response_code >= 400)) {
+      pending_failure_notification_ = true;
     }
   }
 
