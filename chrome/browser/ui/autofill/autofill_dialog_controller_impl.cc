@@ -817,9 +817,6 @@ bool AutofillDialogControllerImpl::ShouldSaveInChrome() const {
 }
 
 int AutofillDialogControllerImpl::GetDialogButtons() const {
-  if (waiting_for_explicit_sign_in_response_)
-    return ui::DIALOG_BUTTON_NONE;
-
   if (ShouldShowSpinner())
     return ui::DIALOG_BUTTON_CANCEL;
 
@@ -998,9 +995,6 @@ AutofillDialogControllerImpl::DialogSignedInState
 }
 
 void AutofillDialogControllerImpl::SignedInStateUpdated() {
-  if (!ShouldShowSpinner())
-    waiting_for_explicit_sign_in_response_ = false;
-
   switch (SignedInState()) {
     case SIGNED_IN:
       // Start fetching the user name if we don't know it yet.
@@ -1994,7 +1988,6 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
     // Start sign in.
     DCHECK(!IsPayingWithWallet());
 
-    waiting_for_explicit_sign_in_response_ = true;
     content::Source<content::NavigationController> source(view_->ShowSignIn());
     signin_registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
@@ -2003,7 +1996,6 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
     GetMetricLogger().LogDialogUiEvent(
         AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
   } else {
-    waiting_for_explicit_sign_in_response_ = false;
     HideSignIn();
   }
 }
@@ -2466,7 +2458,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       cares_about_shipping_(true),
       input_showing_popup_(NULL),
       weak_ptr_factory_(this),
-      waiting_for_explicit_sign_in_response_(false),
       has_accepted_legal_documents_(false),
       is_submitting_(false),
       choose_another_instrument_or_address_(false),
