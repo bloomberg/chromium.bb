@@ -5,7 +5,7 @@
 #ifndef MOJO_SYSTEM_MESSAGE_PIPE_H_
 #define MOJO_SYSTEM_MESSAGE_PIPE_H_
 
-#include <list>
+#include <deque>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -63,9 +63,8 @@ class MOJO_SYSTEM_EXPORT MessagePipe :
   // These are *incoming* queues for their corresponding ports. It owns its
   // contents.
   // TODO(vtl): When possible (with C++11), convert the plain pointers to
-  // scoped_ptr/unique_ptr. (Then we'll be able to use an |std::queue| instead
-  // of an |std::list|.)
-  std::list<MessageInTransit*> message_queues_[2];
+  // scoped_ptr/unique_ptr.
+  std::deque<MessageInTransit*> message_queues_[2];
   WaiterList waiter_lists_[2];
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipe);
