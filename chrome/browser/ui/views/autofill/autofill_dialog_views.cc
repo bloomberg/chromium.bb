@@ -77,8 +77,8 @@ const int kSectionContainerWidth = 440;
 // The minimum useful height of the contents area of the dialog.
 const int kMinimumContentsHeight = 101;
 
-// The default height of the loading shield.
-const int kLoadingShieldHeight = 150;
+// The default height of the loading shield, also its minimum size.
+const int kInitialLoadingShieldHeight = 150;
 
 // Horizontal padding between text and other elements (in pixels).
 const int kAroundTextPadding = 4;
@@ -1269,6 +1269,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
       scrollable_area_(NULL),
       details_container_(NULL),
       loading_shield_(NULL),
+      loading_shield_height_(0),
       overlay_view_(NULL),
       button_strip_extra_view_(NULL),
       save_in_chrome_checkbox_(NULL),
@@ -1354,6 +1355,11 @@ void AutofillDialogViews::UpdateAccountChooser() {
 
   bool show_loading = delegate_->ShouldShowSpinner();
   if (show_loading != loading_shield_->visible()) {
+    if (show_loading) {
+      loading_shield_height_ = std::max(kInitialLoadingShieldHeight,
+                                        GetContentsBounds().height());
+    }
+
     loading_shield_->SetVisible(show_loading);
     InvalidateLayout();
     ContentsPreferredSizeChanged();
@@ -1653,9 +1659,6 @@ void AutofillDialogViews::DeleteDelegate() {
 }
 
 int AutofillDialogViews::GetDialogButtons() const {
-  if (SignInWebviewDictatesHeight())
-    return ui::DIALOG_BUTTON_NONE;
-
   return delegate_->GetDialogButtons();
 }
 
@@ -1844,9 +1847,9 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize(bool get_minimum_size) {
   // The width is always set by the scroll area.
   const int width = scroll_size.width();
 
-  if (SignInWebviewDictatesHeight()) {
+  if (sign_in_webview_->visible()) {
     const gfx::Size size = static_cast<views::View*>(sign_in_webview_)->
-         GetPreferredSize();
+        GetPreferredSize();
     return gfx::Size(width + insets.width(), size.height() + insets.height());
   }
 
@@ -1858,7 +1861,7 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize(bool get_minimum_size) {
 
   if (loading_shield_->visible()) {
     return gfx::Size(width + insets.width(),
-                     kLoadingShieldHeight + insets.height());
+                     loading_shield_height_ + insets.height());
   }
 
   int height = 0;
@@ -2426,11 +2429,6 @@ views::Combobox* AutofillDialogViews::ComboboxForInput(
 void AutofillDialogViews::DetailsContainerBoundsChanged() {
   if (error_bubble_)
     error_bubble_->UpdatePosition();
-}
-
-bool AutofillDialogViews::SignInWebviewDictatesHeight() const {
-  return sign_in_webview_->visible() ||
-      (sign_in_webview_->web_contents() && delegate_->ShouldShowSpinner());
 }
 
 void AutofillDialogViews::SetIconsForSection(DialogSection section) {

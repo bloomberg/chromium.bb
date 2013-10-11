@@ -598,11 +598,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // Called when the details container changes in size or position.
   void DetailsContainerBoundsChanged();
 
-  // Returns true when the dialog is showing the sign in webview. Also returns
-  // true if showing the loading indicator (spinner) after having gone through
-  // sign in.
-  bool SignInWebviewDictatesHeight() const;
-
   // Sets the icons in |section| according to the field values. For example,
   // sets the credit card and CVC icons according to the credit card number.
   void SetIconsForSection(DialogSection section);
@@ -648,6 +643,10 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // A view that overlays |this| (for "loading..." messages).
   views::View* loading_shield_;
+
+  // The height for |loading_shield_|. This prevents the height of the dialog
+  // from changing while the loading shield is showing.
+  int loading_shield_height_;
 
   // The view that completely overlays the dialog (used for the splash page).
   OverlayView* overlay_view_;
