@@ -103,7 +103,7 @@ class GestureEventFilterTest : public testing::Test,
 
   void SendInputEventACK(WebInputEvent::Type type,
                          InputEventAckState ack) {
-    filter()->ProcessGestureAck(ack, type);
+    filter()->ProcessGestureAck(ack, type, ui::LatencyInfo());
   }
 
   void RunUntilIdle() {

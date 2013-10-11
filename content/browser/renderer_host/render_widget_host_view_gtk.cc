@@ -1209,7 +1209,8 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
       // recorded.
       web_contents_switch_paint_time_ = base::TimeTicks();
     }
-    software_latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+    software_latency_info_.AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
     render_widget_host->FrameSwapped(software_latency_info_);
     software_latency_info_.Clear();
   } else {

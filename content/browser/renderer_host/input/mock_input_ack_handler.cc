@@ -34,16 +34,16 @@ void MockInputAckHandler::OnKeyboardEventAck(
 }
 
 void MockInputAckHandler::OnWheelEventAck(
-    const WebMouseWheelEvent& event,
-    InputEventAckState ack_result)  {
+    const MouseWheelEventWithLatencyInfo& event,
+    InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
-  acked_wheel_event_ = event;
+  acked_wheel_event_ = event.event;
   RecordAckCalled(ack_result);
 }
 
 void MockInputAckHandler::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
-    InputEventAckState ack_result)  {
+    InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_touch_event_ = event;
   RecordAckCalled(ack_result);
@@ -54,10 +54,10 @@ void MockInputAckHandler::OnTouchEventAck(
 }
 
 void MockInputAckHandler::OnGestureEventAck(
-    const WebGestureEvent& event,
-    InputEventAckState ack_result)  {
+    const GestureEventWithLatencyInfo& event,
+    InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
-  acked_gesture_event_ = event;
+  acked_gesture_event_ = event.event;
   RecordAckCalled(ack_result);
 }
 

@@ -1396,7 +1396,8 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
       web_contents_switch_paint_time_ = TimeTicks();
     }
 
-    software_latency_info_.swap_timestamp = TimeTicks::HighResNow();
+    software_latency_info_.AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
     render_widget_host_->FrameSwapped(software_latency_info_);
     software_latency_info_.Clear();
   } else {

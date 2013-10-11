@@ -847,7 +847,8 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     ReleaseDC(window_, dc);
   }
 
-  latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+  latency_info_.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
 
   hidden_ = false;
 

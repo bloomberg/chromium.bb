@@ -10,25 +10,27 @@ namespace ui {
 
 TEST(LatencyInfoTest, AddTwoSeparateEvent) {
   LatencyInfo info;
-  info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                      0,
                                      1,
                                      base::TimeTicks::FromInternalValue(100),
-                                     1);
+                                     1,
+                                     true);
   info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                      1,
                                      5,
                                      base::TimeTicks::FromInternalValue(1000),
-                                     2);
+                                     2,
+                                     true);
 
   EXPECT_EQ(info.latency_components.size(), 2u);
   LatencyInfo::LatencyComponent component;
   EXPECT_FALSE(
       info.FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &component));
   EXPECT_FALSE(
-      info.FindLatency(INPUT_EVENT_LATENCY_RWH_COMPONENT, 1, &component));
+      info.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, &component));
   EXPECT_TRUE(
-      info.FindLatency(INPUT_EVENT_LATENCY_RWH_COMPONENT, 0, &component));
+      info.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, &component));
   EXPECT_EQ(component.sequence_number, 1);
   EXPECT_EQ(component.event_count, 1u);
   EXPECT_EQ(component.event_time.ToInternalValue(), 100);
@@ -41,25 +43,27 @@ TEST(LatencyInfoTest, AddTwoSeparateEvent) {
 
 TEST(LatencyInfoTest, AddTwoSameEvent) {
   LatencyInfo info;
-  info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                      0,
                                      30,
                                      base::TimeTicks::FromInternalValue(100),
-                                     2);
-  info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                                     2,
+                                     true);
+  info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                      0,
                                      13,
                                      base::TimeTicks::FromInternalValue(200),
-                                     3);
+                                     3,
+                                     true);
 
   EXPECT_EQ(info.latency_components.size(), 1u);
   LatencyInfo::LatencyComponent component;
   EXPECT_FALSE(
       info.FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &component));
   EXPECT_FALSE(
-      info.FindLatency(INPUT_EVENT_LATENCY_RWH_COMPONENT, 1, &component));
+      info.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1, &component));
   EXPECT_TRUE(
-      info.FindLatency(INPUT_EVENT_LATENCY_RWH_COMPONENT, 0, &component));
+      info.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, &component));
   EXPECT_EQ(component.sequence_number, 30);
   EXPECT_EQ(component.event_count, 5u);
   EXPECT_EQ(component.event_time.ToInternalValue(), (100 * 2 + 200 * 3) / 5);
@@ -68,26 +72,28 @@ TEST(LatencyInfoTest, AddTwoSameEvent) {
 TEST(LatencyInfoTest, MergeTwoSeparateEvent) {
   LatencyInfo info1;
   LatencyInfo info2;
-  info1.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  info1.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                       0,
                                       1,
                                       base::TimeTicks::FromInternalValue(100),
-                                      1);
+                                      1,
+                                      true);
   info2.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                       1,
                                       5,
                                       base::TimeTicks::FromInternalValue(1000),
-                                      2);
+                                      2,
+                                      true);
   info1.MergeWith(info2);
 
   EXPECT_EQ(info1.latency_components.size(), 2u);
   LatencyInfo::LatencyComponent component;
   EXPECT_FALSE(
       info1.FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &component));
-  EXPECT_FALSE(
-      info1.FindLatency(INPUT_EVENT_LATENCY_RWH_COMPONENT, 1, &component));
-  EXPECT_TRUE(
-      info1.FindLatency(INPUT_EVENT_LATENCY_RWH_COMPONENT, 0, &component));
+  EXPECT_FALSE(info1.FindLatency(
+      INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, &component));
+  EXPECT_TRUE(info1.FindLatency(
+      INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, &component));
   EXPECT_EQ(component.sequence_number, 1);
   EXPECT_EQ(component.event_count, 1u);
   EXPECT_EQ(component.event_time.ToInternalValue(), 100);
@@ -101,16 +107,18 @@ TEST(LatencyInfoTest, MergeTwoSeparateEvent) {
 TEST(LatencyInfoTest, MergeTwoSameEvent) {
   LatencyInfo info1;
   LatencyInfo info2;
-  info1.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  info1.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                       0,
                                       30,
                                       base::TimeTicks::FromInternalValue(100),
-                                      2);
-  info2.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                                      2,
+                                      true);
+  info2.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                       0,
                                       13,
                                       base::TimeTicks::FromInternalValue(200),
-                                      3);
+                                      3,
+                                      true);
   info1.MergeWith(info2);
 
   EXPECT_EQ(info1.latency_components.size(), 1u);
@@ -118,9 +126,9 @@ TEST(LatencyInfoTest, MergeTwoSameEvent) {
   EXPECT_FALSE(
       info1.FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &component));
   EXPECT_FALSE(
-      info1.FindLatency(INPUT_EVENT_LATENCY_RWH_COMPONENT, 1, &component));
+      info1.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1, &component));
   EXPECT_TRUE(
-      info1.FindLatency(INPUT_EVENT_LATENCY_RWH_COMPONENT, 0, &component));
+      info1.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, &component));
   EXPECT_EQ(component.sequence_number, 30);
   EXPECT_EQ(component.event_count, 5u);
   EXPECT_EQ(component.event_time.ToInternalValue(), (100 * 2 + 200 * 3) / 5);
@@ -128,11 +136,12 @@ TEST(LatencyInfoTest, MergeTwoSameEvent) {
 
 TEST(LatencyInfoTest, ClearEvents) {
   LatencyInfo info;
-  info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                      0,
                                      30,
                                      base::TimeTicks::FromInternalValue(100),
-                                     2);
+                                     2,
+                                     true);
 
   EXPECT_EQ(info.latency_components.size(), 1u);
   info.Clear();

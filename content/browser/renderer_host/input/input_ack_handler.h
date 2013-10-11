@@ -21,11 +21,11 @@ class CONTENT_EXPORT InputAckHandler {
   // Called upon event ack receipt from the renderer.
   virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
                                   InputEventAckState ack_result) = 0;
-  virtual void OnWheelEventAck(const WebKit::WebMouseWheelEvent& event,
+  virtual void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                                InputEventAckState ack_result) = 0;
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                InputEventAckState ack_result) = 0;
-  virtual void OnGestureEventAck(const WebKit::WebGestureEvent& event,
+  virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
                                  InputEventAckState ack_result) = 0;
 
   enum UnexpectedEventAckType {

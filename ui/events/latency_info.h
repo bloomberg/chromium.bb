@@ -15,8 +15,11 @@
 namespace ui {
 
 enum LatencyComponentType {
+  // ---------------------------BEGIN COMPONENT-------------------------------
+  // BEGIN COMPONENT is when we show the latency begin in chrome://tracing.
   // Timestamp when the input event is sent from RenderWidgetHost to renderer.
-  INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+  // ---------------------------NORMAL COMPONENT-------------------------------
   // Timestamp when the scroll update gesture event is sent from RWH to
   // renderer. In Aura, touch event's LatencyInfo is carried over to the gesture
   // event. So gesture event's INPUT_EVENT_LATENCY_RWH_COMPONENT is the
@@ -30,9 +33,25 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
   // Timestamp when the UI event is created.
   INPUT_EVENT_LATENCY_UI_COMPONENT,
-  // Timestamp when the event is acked from renderer. This is currently set
-  // only for touch events.
-  INPUT_EVENT_LATENCY_ACKED_COMPONENT
+  // This is special component indicating there is rendering scheduled for
+  // the event associated with this LatencyInfo.
+  INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT,
+  // Timestamp when the touch event is acked.
+  INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT,
+  // ---------------------------TERMINAL COMPONENT-----------------------------
+  // TERMINAL COMPONENT is when we show the latency end in chrome://tracing.
+  // Timestamp when the mouse event is acked from renderer and it does not
+  // cause any rendering scheduled.
+  INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT,
+  // Timestamp when the touch event is acked from renderer and it does not
+  // cause any rendering schedueld and does not generate any gesture event.
+  INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT,
+  // Timestamp when the gesture event is acked from renderer, and it does not
+  // cause any rendering schedueld.
+  INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT,
+  // Timestamp when the frame is swapped (i.e. when the rendering caused by
+  // input event actually takes effect).
+  INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
 };
 
 struct EVENTS_EXPORT LatencyInfo {
@@ -70,11 +89,13 @@ struct EVENTS_EXPORT LatencyInfo {
 
   // Modifies the current sequence number and adds a certain number of events
   // for a specific component.
+  // TODO(miletus): Remove the |dump_to_trace| once we remove MergeWith().
   void AddLatencyNumberWithTimestamp(LatencyComponentType component,
                                      int64 id,
                                      int64 component_sequence_number,
                                      base::TimeTicks time,
-                                     uint32 event_count);
+                                     uint32 event_count,
+                                     bool dump_to_trace);
 
   // Returns true if the a component with |type| and |id| is found in
   // the latency_components and the component is stored to |output| if
@@ -86,9 +107,10 @@ struct EVENTS_EXPORT LatencyInfo {
   void Clear();
 
   LatencyMap latency_components;
-
-  // This represents the final time that a frame is displayed it.
-  base::TimeTicks swap_timestamp;
+  // The unique id for matching the ASYNC_BEGIN/END trace event.
+  int64 trace_id;
+  // Whether a terminal component has been added.
+  bool terminated;
 };
 
 }  // namespace ui

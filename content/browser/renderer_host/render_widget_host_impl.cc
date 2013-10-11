@@ -1120,7 +1120,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
           GetLatencyComponentId(),
           original_component.sequence_number,
           original_component.event_time,
-          original_component.event_count);
+          original_component.event_count,
+          true);
     }
   }
 
@@ -1164,10 +1165,10 @@ ui::LatencyInfo RenderWidgetHostImpl::CreateRWHLatencyInfoIfNotExist(
     info = *original;
   // In Aura, gesture event will already carry its original touch event's
   // INPUT_EVENT_LATENCY_RWH_COMPONENT.
-  if (!info.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  if (!info.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                         GetLatencyComponentId(),
                         NULL)) {
-    info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+    info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                           GetLatencyComponentId(),
                           ++last_input_number_);
   }
@@ -2187,33 +2188,53 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
 }
 
 void RenderWidgetHostImpl::OnWheelEventAck(
-    const WebKit::WebMouseWheelEvent& wheel_event,
+    const MouseWheelEventWithLatencyInfo& wheel_event,
     InputEventAckState ack_result) {
+  if (!wheel_event.latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, NULL)) {
+    // MouseWheelEvent latency ends when it is acked but does not cause any
+    // rendering scheduled.
+    ui::LatencyInfo latency = wheel_event.latency;
+    latency.AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, 0);
+  }
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (overscroll_controller_)
-    overscroll_controller_->ReceivedEventACK(wheel_event, processed);
-
+    overscroll_controller_->ReceivedEventACK(wheel_event.event, processed);
   if (!processed && !is_hidden() && view_)
-    view_->UnhandledWheelEvent(wheel_event);
+    view_->UnhandledWheelEvent(wheel_event.event);
 }
 
 void RenderWidgetHostImpl::OnGestureEventAck(
-    const WebKit::WebGestureEvent& event,
+    const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
+  if (!event.latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, NULL)) {
+    // GestureEvent latency ends when it is acked but does not cause any
+    // rendering scheduled.
+    ui::LatencyInfo latency = event.latency;
+    latency.AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT, 0 ,0);
+  }
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (overscroll_controller_)
-    overscroll_controller_->ReceivedEventACK(event, processed);
+    overscroll_controller_->ReceivedEventACK(event.event, processed);
 
   if (view_)
-    view_->GestureEventAck(event.type, ack_result);
+    view_->GestureEventAck(event.event.type, ack_result);
 }
 
 void RenderWidgetHostImpl::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
-  ComputeTouchLatency(event.latency);
+  TouchEventWithLatencyInfo touch_event = event;
+  // TouchEvent latency does not end when acked since it could later on
+  // become gesture events.
+  touch_event.latency.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT, 0, 0);
+  ComputeTouchLatency(touch_event.latency);
   if (view_)
-    view_->ProcessAckedTouchEvent(event, ack_result);
+    view_->ProcessAckedTouchEvent(touch_event, ack_result);
 }
 
 void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
@@ -2484,7 +2505,7 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
   if (!latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_UI_COMPONENT,
                                 0,
                                 &ui_component) ||
-      !latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+      !latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                 GetLatencyComponentId(),
                                 &rwh_component))
     return;
@@ -2503,7 +2524,7 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
       20000,
       100);
 
-  if (latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT,
+  if (latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT,
                                0,
                                &acked_component)) {
     DCHECK(acked_component.event_count == 1);
@@ -2526,15 +2547,20 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
   ui::LatencyInfo::LatencyComponent rwh_component;
-  if (!latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  ui::LatencyInfo::LatencyComponent swap_component;
+  if (!latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                 GetLatencyComponentId(),
-                                &rwh_component))
+                                &rwh_component) ||
+      !latency_info.FindLatency(
+          ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
+          0, &swap_component)) {
     return;
+  }
 
   rendering_stats_.input_event_count += rwh_component.event_count;
   rendering_stats_.total_input_latency +=
       rwh_component.event_count *
-      (latency_info.swap_timestamp - rwh_component.event_time);
+      (swap_component.event_time - rwh_component.event_time);
 
   ui::LatencyInfo::LatencyComponent original_component;
   if (latency_info.FindLatency(
@@ -2545,7 +2571,7 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
     // created (averaged if there are multiple) to when the scroll gesture
     // results in final frame swap.
     base::TimeDelta delta =
-        latency_info.swap_timestamp - original_component.event_time;
+        swap_component.event_time - original_component.event_time;
     for (size_t i = 0; i < original_component.event_count; i++) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Event.Latency.TouchToScrollUpdateSwap",
@@ -2557,7 +2583,7 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
     rendering_stats_.scroll_update_count += original_component.event_count;
     rendering_stats_.total_scroll_update_latency +=
         original_component.event_count *
-        (latency_info.swap_timestamp - original_component.event_time);
+        (swap_component.event_time - original_component.event_time);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2576,7 +2602,7 @@ void RenderWidgetHostImpl::CompositorFrameDrawn(
            latency_info.latency_components.begin();
        b != latency_info.latency_components.end();
        ++b) {
-    if (b->first.first != ui::INPUT_EVENT_LATENCY_RWH_COMPONENT)
+    if (b->first.first != ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT)
       continue;
     // Matches with GetLatencyComponentId
     int routing_id = b->first.second & 0xffffffff;

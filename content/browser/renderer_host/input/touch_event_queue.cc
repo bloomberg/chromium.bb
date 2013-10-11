@@ -71,11 +71,11 @@ class CoalescedWebTouchEvent {
     return coalesced_event_;
   }
 
-  WebTouchEventWithLatencyList::const_iterator begin() const {
+  WebTouchEventWithLatencyList::iterator begin() {
     return events_.begin();
   }
 
-  WebTouchEventWithLatencyList::const_iterator end() const {
+  WebTouchEventWithLatencyList::iterator end() {
     return events_.end();
   }
 
@@ -243,14 +243,10 @@ void TouchEventQueue::PopTouchEventToClient(
   base::AutoReset<CoalescedWebTouchEvent*>
       dispatching_touch_ack(&dispatching_touch_ack_, acked_event.get());
 
-  base::TimeTicks now = base::TimeTicks::HighResNow();
-  for (WebTouchEventWithLatencyList::const_iterator iter = acked_event->begin(),
+  for (WebTouchEventWithLatencyList::iterator iter = acked_event->begin(),
        end = acked_event->end();
        iter != end; ++iter) {
-    ui::LatencyInfo* latency = const_cast<ui::LatencyInfo*>(&(iter->latency));
-    latency->AddNewLatencyFrom(renderer_latency_info);
-    latency->AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT, 0, 0, now, 1);
+    iter->latency.AddNewLatencyFrom(renderer_latency_info);
     client_->OnTouchEventAck((*iter), ack_result);
   }
 }

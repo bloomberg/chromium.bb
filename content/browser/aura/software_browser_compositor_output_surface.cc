@@ -19,7 +19,8 @@ SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
 void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   ui::LatencyInfo latency_info = frame->metadata.latency_info;
-  latency_info.swap_timestamp = base::TimeTicks::HighResNow();
+  latency_info.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
   RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
 }
 

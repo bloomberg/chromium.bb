@@ -497,7 +497,8 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     }
   }
 
-  latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+  latency_info_.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
   RenderWidgetHostImpl::CompositorFrameDrawn(latency_info_);
   latency_info_.Clear();
 

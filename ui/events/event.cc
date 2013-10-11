@@ -241,7 +241,8 @@ void Event::InitLatencyInfo() {
                                          0,
                                          base::TimeTicks::FromInternalValue(
                                              time_stamp_.ToInternalValue()),
-                                         1);
+                                         1,
+                                         true);
   latency_.AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 

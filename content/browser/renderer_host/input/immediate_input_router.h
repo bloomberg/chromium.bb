@@ -126,19 +126,21 @@ private:
   // Called by ProcessInputEventAck() to process a wheel event ack message.
   // This could result in a task being posted to allow additional wheel
   // input messages to be coalesced.
-  void ProcessWheelAck(InputEventAckState ack_result);
+  void ProcessWheelAck(InputEventAckState ack_result,
+                       const ui::LatencyInfo& latency);
 
   // Called by ProcessInputEventAck() to process a gesture event ack message.
   // This validates the gesture for suppression of touchpad taps and sends one
   // previously queued coalesced gesture if it exists.
   void ProcessGestureAck(WebKit::WebInputEvent::Type,
-                         InputEventAckState ack_result);
+                         InputEventAckState ack_result,
+                         const ui::LatencyInfo& latency);
 
   // Called on ProcessInputEventAck() to process a touch event ack message.
   // This can result in a gesture event being generated and sent back to the
   // renderer.
   void ProcessTouchAck(InputEventAckState ack_result,
-                       const ui::LatencyInfo& latency_info);
+                       const ui::LatencyInfo& latency);
 
   void HandleGestureScroll(
       const GestureEventWithLatencyInfo& gesture_event);

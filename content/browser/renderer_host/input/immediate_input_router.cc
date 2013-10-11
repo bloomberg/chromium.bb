@@ -311,7 +311,7 @@ void ImmediateInputRouter::OnTouchEventAck(
 void ImmediateInputRouter::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
-  ack_handler_->OnGestureEventAck(event.event, ack_result);
+  ack_handler_->OnGestureEventAck(event, ack_result);
 }
 
 bool ImmediateInputRouter::SendSelectRange(scoped_ptr<IPC::Message> message) {
@@ -390,7 +390,8 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
         // it is never sent to the renderer, and so it won't receive any ACKs.
         // So send the ACK to the gesture event filter immediately, and mark it
         // as having been processed.
-        ProcessGestureAck(input_event.type, INPUT_EVENT_ACK_STATE_CONSUMED);
+        ProcessGestureAck(input_event.type, INPUT_EVENT_ACK_STATE_CONSUMED,
+                          latency_info);
       } else if (WebInputEvent::isTouchEventType(input_event.type)) {
         // During an overscroll gesture initiated by touch-scrolling, the
         // touch-events do not reset or contribute to the overscroll gesture.
@@ -483,11 +484,11 @@ void ImmediateInputRouter::ProcessInputEventAck(
   } else if (WebInputEvent::isKeyboardEventType(type)) {
     ProcessKeyboardAck(event_type, ack_result);
   } else if (type == WebInputEvent::MouseWheel) {
-    ProcessWheelAck(ack_result);
+    ProcessWheelAck(ack_result, latency_info);
   } else if (WebInputEvent::isTouchEventType(type)) {
     ProcessTouchAck(ack_result, latency_info);
   } else if (WebInputEvent::isGestureEventType(type)) {
-    ProcessGestureAck(event_type, ack_result);
+    ProcessGestureAck(event_type, ack_result, latency_info);
   }
 
   // WARNING: |this| may be deleted at this point.
@@ -526,13 +527,16 @@ void ImmediateInputRouter::ProcessKeyboardAck(
   }
 }
 
-void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result) {
-  mouse_wheel_pending_ = false;
-
+void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result,
+                                           const ui::LatencyInfo& latency) {
+  // TODO(miletus): Add renderer side latency to each uncoalesced mouse
+  // wheel event and add terminal component to each of them.
+  current_wheel_event_.latency.AddNewLatencyFrom(latency);
   // Process the unhandled wheel event here before calling
   // ForwardWheelEventWithLatencyInfo() since it will mutate
   // current_wheel_event_.
-  ack_handler_->OnWheelEventAck(current_wheel_event_.event, ack_result);
+  ack_handler_->OnWheelEventAck(current_wheel_event_, ack_result);
+  mouse_wheel_pending_ = false;
 
   // Now send the next (coalesced) mouse wheel event.
   if (!coalesced_mouse_wheel_events_.empty()) {
@@ -544,16 +548,17 @@ void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result) {
 }
 
 void ImmediateInputRouter::ProcessGestureAck(WebInputEvent::Type type,
-                                             InputEventAckState ack_result) {
+                                             InputEventAckState ack_result,
+                                             const ui::LatencyInfo& latency) {
   // |gesture_event_filter_| will forward to OnGestureEventAck when appropriate.
-  gesture_event_filter_->ProcessGestureAck(ack_result, type);
+  gesture_event_filter_->ProcessGestureAck(ack_result, type, latency);
 }
 
 void ImmediateInputRouter::ProcessTouchAck(
     InputEventAckState ack_result,
-    const ui::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency) {
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
-  touch_event_queue_->ProcessTouchAck(ack_result, latency_info);
+  touch_event_queue_->ProcessTouchAck(ack_result, latency);
 }
 
 void ImmediateInputRouter::HandleGestureScroll(

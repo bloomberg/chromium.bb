@@ -74,7 +74,8 @@ class CONTENT_EXPORT GestureEventFilter {
   // with state |ack_result| and event |type|. May send events if the queue is
   // not empty.
   void ProcessGestureAck(InputEventAckState ack_result,
-                         WebKit::WebInputEvent::Type type);
+                         WebKit::WebInputEvent::Type type,
+                         const ui::LatencyInfo& latency);
 
   // Sets the state of the |fling_in_progress_| field to indicate that a fling
   // is definitely not in progress.

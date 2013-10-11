@@ -251,7 +251,8 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
   bool result = gfx::GLSurfaceAdapter::SwapBuffers();
-  latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+  latency_info_.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
 
   if (transport_) {
     DCHECK(!is_swap_buffers_pending_);
@@ -274,7 +275,8 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   SendVSyncUpdateIfAvailable();
   bool result = gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
-  latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+  latency_info_.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
 
   if (transport_) {
     DCHECK(!is_swap_buffers_pending_);

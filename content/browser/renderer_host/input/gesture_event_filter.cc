@@ -251,7 +251,8 @@ bool GestureEventFilter::ShouldForwardForCoalescing(
 }
 
 void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
-                                           WebInputEvent::Type type) {
+                                           WebInputEvent::Type type,
+                                           const ui::LatencyInfo& latency) {
   if (IsGestureEventTypeAsync(type))
     return;
 
@@ -264,7 +265,9 @@ void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
   // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
   // event before the forwarding of queued events below, such additional events
   // can be coalesced with existing queued events prior to dispatch.
-  client_->OnGestureEventAck(GetGestureEventAwaitingAck(), ack_result);
+  GestureEventWithLatencyInfo event_with_latency = GetGestureEventAwaitingAck();
+  event_with_latency.latency.AddNewLatencyFrom(latency);
+  client_->OnGestureEventAck(event_with_latency, ack_result);
 
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (type == WebInputEvent::GestureFlingCancel) {

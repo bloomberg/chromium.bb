@@ -82,7 +82,7 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
   WebKit::WebMouseWheelEvent wheel_event;
   wheel_event.type = WebKit::WebInputEvent::MouseWheel;
   wheel_event.deltaX = 10;
-  latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT, 1, 1);
+  latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, 1);
   events.push_back(new InputEvent(wheel_event, latency, false));
 
   WebKit::WebMouseEvent mouse_event;

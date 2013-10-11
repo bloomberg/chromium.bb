@@ -20,11 +20,11 @@ class MockInputAckHandler : public InputAckHandler {
   // InputAckHandler
   virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
                                   InputEventAckState ack_result) OVERRIDE;
-  virtual void OnWheelEventAck(const WebKit::WebMouseWheelEvent& event,
+  virtual void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                                InputEventAckState ack_result) OVERRIDE;
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                InputEventAckState ack_result) OVERRIDE;
-  virtual void OnGestureEventAck(const WebKit::WebGestureEvent& event,
+  virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
                                  InputEventAckState ack_result) OVERRIDE;
   virtual void OnUnexpectedEventAck(UnexpectedEventAckType type) OVERRIDE;
 
