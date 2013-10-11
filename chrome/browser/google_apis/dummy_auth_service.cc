@@ -6,7 +6,9 @@
 
 namespace google_apis {
 
-DummyAuthService::DummyAuthService() : dummy_token("testtoken") {
+DummyAuthService::DummyAuthService() {
+  set_access_token("dummy");
+  set_refresh_token("dummy");
 }
 
 void DummyAuthService::AddObserver(AuthServiceObserver* observer) {
@@ -19,21 +21,23 @@ void DummyAuthService::StartAuthentication(const AuthStatusCallback& callback) {
 }
 
 bool DummyAuthService::HasAccessToken() const {
-  return true;
+  return !access_token_.empty();
 }
 
 bool DummyAuthService::HasRefreshToken() const {
-  return true;
+  return !refresh_token_.empty();
 }
 
 const std::string& DummyAuthService::access_token() const {
-  return dummy_token;
+  return access_token_;
 }
 
 void DummyAuthService::ClearAccessToken() {
+  access_token_.clear();
 }
 
 void DummyAuthService::ClearRefreshToken() {
+  refresh_token_.clear();
 }
 
 }  // namespace google_apis

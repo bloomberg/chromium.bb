@@ -14,7 +14,14 @@ namespace google_apis {
 // access token.
 class DummyAuthService : public AuthServiceInterface {
  public:
+  // The constructor presets non-empty tokens. When a test for checking auth
+  // failure case (i.e., empty tokens) is needed, explicitly clear them by the
+  // Clear{Access, Refresh}Token methods.
   DummyAuthService();
+
+  void set_access_token(const std::string& token) { access_token_ = token; }
+  void set_refresh_token(const std::string& token) { refresh_token_ = token; }
+  const std::string& refresh_token() const { return refresh_token_; }
 
   // AuthServiceInterface overrides.
   virtual void AddObserver(AuthServiceObserver* observer) OVERRIDE;
@@ -27,7 +34,8 @@ class DummyAuthService : public AuthServiceInterface {
   virtual void ClearRefreshToken() OVERRIDE;
 
  private:
-  const std::string dummy_token;
+  std::string access_token_;
+  std::string refresh_token_;
 };
 
 }  // namespace google_apis
