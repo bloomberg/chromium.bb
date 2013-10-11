@@ -679,6 +679,11 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
 
+  // Set to true when the user presses the sign in link, until we're ready to
+  // show the normal dialog again. This is used to hide the buttons while
+  // the spinner is showing after an explicit sign in.
+  bool waiting_for_explicit_sign_in_response_;
+
   // Whether a user accepted legal documents while this dialog is running.
   bool has_accepted_legal_documents_;
 
