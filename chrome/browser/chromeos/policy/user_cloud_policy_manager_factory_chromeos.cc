@@ -112,7 +112,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   // created as part of the Profile creation, which happens right after
   // sign-in. The just-signed-in User is the active user during that time.
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  chromeos::User* user = user_manager->GetActiveUser();
+  chromeos::User* user = user_manager->GetUserByProfile(profile);
   CHECK(user);
 
   // Only USER_TYPE_REGULAR users have user cloud policy.

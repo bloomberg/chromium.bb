@@ -67,10 +67,8 @@ void ProfilePolicyConnector::Init(
     special_user_policy_provider_->Init();
   } else {
     // |user| should never be NULL except for the signin profile.
-    // TODO(joaodasilva): get the |user| that corresponds to the |profile_|
-    // from the ProfileHelper, once that's ready.
     chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-    user = user_manager->GetActiveUser();
+    user = user_manager->GetUserByProfile(profile_);
     CHECK(user);
     std::string username = user->email();
     is_primary_user_ =
