@@ -507,6 +507,12 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   // changes.
   model->RemoveObserver(this);
 
+  // Notify UI intensive observers of BookmarkModel that we are about to make
+  // potentially significant changes to it, so the updates may be batched. For
+  // example, on Mac, the bookmarks bar displays animations when bookmark items
+  // are added or deleted.
+  model->BeginExtensiveChanges();
+
   // A parent to hold nodes temporarily orphaned by parent deletion.  It is
   // created only if it is needed.
   const BookmarkNode* foster_parent = NULL;
@@ -660,6 +666,12 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 
   // The visibility of the mobile node may need to change.
   model_associator_->UpdatePermanentNodeVisibility();
+
+  // Notify UI intensive observers of BookmarkModel that all updates have been
+  // applied, and that they may now be consumed. This prevents issues like the
+  // one described in crbug.com/281562, where old and new items on the bookmarks
+  // bar would overlap.
+  model->EndExtensiveChanges();
 
   // We are now ready to hear about bookmarks changes again.
   model->AddObserver(this);
