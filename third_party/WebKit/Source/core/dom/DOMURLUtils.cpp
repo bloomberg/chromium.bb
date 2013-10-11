@@ -33,22 +33,9 @@
 
 namespace WebCore {
 
-String DOMURLUtils::href(DOMURLUtils* impl)
-{
-    const KURL& url = impl->url();
-    if (url.isNull())
-        return impl->input();
-    return url.string();
-}
-
 void DOMURLUtils::setHref(DOMURLUtils* impl, const String& value)
 {
     impl->setInput(value);
-}
-
-String DOMURLUtils::toString(DOMURLUtils* impl)
-{
-    return href(impl);
 }
 
 String DOMURLUtils::origin(DOMURLUtils* impl)
@@ -59,11 +46,6 @@ String DOMURLUtils::origin(DOMURLUtils* impl)
 
     RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
     return origin->toString();
-}
-
-String DOMURLUtils::protocol(DOMURLUtils* impl)
-{
-    return impl->url().protocol() + ":";
 }
 
 void DOMURLUtils::setProtocol(DOMURLUtils* impl, const String& value)
@@ -101,16 +83,6 @@ void DOMURLUtils::setPassword(DOMURLUtils* impl, const String& value)
         return;
     url.setPass(value);
     impl->setURL(url);
-}
-
-String DOMURLUtils::host(DOMURLUtils* impl)
-{
-    const KURL& url = impl->url();
-    if (url.hostEnd() == url.pathStart())
-        return url.host();
-    if (isDefaultPortForProtocol(url.port(), url.protocol()))
-        return url.host();
-    return url.host() + ":" + String::number(url.port());
 }
 
 // This function does not allow leading spaces before the port number.
@@ -159,11 +131,6 @@ void DOMURLUtils::setHost(DOMURLUtils* impl, const String& value)
     impl->setURL(url);
 }
 
-String DOMURLUtils::hostname(DOMURLUtils* impl)
-{
-    return impl->url().host();
-}
-
 void DOMURLUtils::setHostname(DOMURLUtils* impl, const String& value)
 {
     KURL url = impl->url();
@@ -185,15 +152,6 @@ void DOMURLUtils::setHostname(DOMURLUtils* impl, const String& value)
     impl->setURL(url);
 }
 
-String DOMURLUtils::port(DOMURLUtils* impl)
-{
-    const KURL& url = impl->url();
-    if (url.hasPort())
-        return String::number(url.port());
-
-    return emptyString();
-}
-
 void DOMURLUtils::setPort(DOMURLUtils* impl, const String& value)
 {
     KURL url = impl->url();
@@ -212,11 +170,6 @@ void DOMURLUtils::setPort(DOMURLUtils* impl, const String& value)
     impl->setURL(url);
 }
 
-String DOMURLUtils::pathname(DOMURLUtils* impl)
-{
-    return impl->url().path();
-}
-
 void DOMURLUtils::setPathname(DOMURLUtils* impl, const String& value)
 {
     KURL url = impl->url();
@@ -231,12 +184,6 @@ void DOMURLUtils::setPathname(DOMURLUtils* impl, const String& value)
     impl->setURL(url);
 }
 
-String DOMURLUtils::search(DOMURLUtils* impl)
-{
-    String query = impl->url().query();
-    return query.isEmpty() ? emptyString() : "?" + query;
-}
-
 void DOMURLUtils::setSearch(DOMURLUtils* impl, const String& value)
 {
     KURL url = impl->url();
@@ -248,14 +195,6 @@ void DOMURLUtils::setSearch(DOMURLUtils* impl, const String& value)
     url.setQuery(newSearch.replaceWithLiteral('#', "%23"));
 
     impl->setURL(url);
-}
-
-String DOMURLUtils::hash(DOMURLUtils* impl)
-{
-    String fragmentIdentifier = impl->url().fragmentIdentifier();
-    if (fragmentIdentifier.isEmpty())
-        return emptyString();
-    return AtomicString(String("#" + fragmentIdentifier));
 }
 
 void DOMURLUtils::setHash(DOMURLUtils* impl, const String& value)

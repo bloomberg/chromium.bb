@@ -28,6 +28,7 @@
 #define WorkerLocation_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/DOMURLUtilsReadOnly.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -36,27 +37,19 @@
 
 namespace WebCore {
 
-class WorkerLocation : public RefCounted<WorkerLocation>, public ScriptWrappable {
+class WorkerLocation : public RefCounted<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
 public:
     static PassRefPtr<WorkerLocation> create(const KURL& url)
     {
         return adoptRef(new WorkerLocation(url));
     }
 
-    const KURL& url() const { return m_url; }
-
-    String href() const;
-
-    // URI decomposition attributes
-    String protocol() const;
-    String host() const;
-    String hostname() const;
-    String port() const;
-    String pathname() const;
-    String search() const;
-    String hash() const;
-
-    String toString() const { return href(); }
+    virtual KURL url() const OVERRIDE { return m_url; }
+    virtual String input() const OVERRIDE
+    {
+        ASSERT_NOT_REACHED();
+        return String();
+    }
 
 private:
     explicit WorkerLocation(const KURL& url) : m_url(url)

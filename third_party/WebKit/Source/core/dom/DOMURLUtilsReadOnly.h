@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2008 Apple Inc.  All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Motorola Mobility Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,9 +11,6 @@
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
- * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
- *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -26,9 +24,33 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    GlobalContext=WorkerGlobalScope
-] interface WorkerLocation {
+#ifndef DOMURLUtilsReadOnly_h
+#define DOMURLUtilsReadOnly_h
+
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
+
+namespace WebCore {
+
+class KURL;
+
+class DOMURLUtilsReadOnly {
+public:
+    virtual KURL url() const = 0;
+    virtual String input() const = 0;
+
+    static String href(DOMURLUtilsReadOnly*);
+    static String toString(DOMURLUtilsReadOnly*);
+
+    static String protocol(DOMURLUtilsReadOnly*);
+    static String host(DOMURLUtilsReadOnly*);
+    static String hostname(DOMURLUtilsReadOnly*);
+    static String port(DOMURLUtilsReadOnly*);
+    static String pathname(DOMURLUtilsReadOnly*);
+    static String search(DOMURLUtilsReadOnly*);
+    static String hash(DOMURLUtilsReadOnly*);
 };
 
-WorkerLocation implements URLUtilsReadOnly;
+} // namespace WebCore
+
+#endif // DOMURLUtilsReadOnly_h
