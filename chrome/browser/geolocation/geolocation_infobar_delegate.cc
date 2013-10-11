@@ -119,6 +119,8 @@ bool GeolocationInfoBarDelegate::LinkClicked(
   const char kGeolocationLearnMoreUrl[] =
 #if defined(OS_CHROMEOS)
       "https://www.google.com/support/chromeos/bin/answer.py?answer=142065";
+#elif defined(OS_ANDROID)
+      "https://support.google.com/chrome/?p=mobile_location";
 #else
       "https://www.google.com/support/chrome/bin/answer.py?answer=142065";
 #endif
