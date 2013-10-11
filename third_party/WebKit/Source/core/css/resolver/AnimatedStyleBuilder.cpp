@@ -372,6 +372,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setColumnRuleColor(toAnimatableColor(value)->color());
         style->setVisitedLinkColumnRuleColor(toAnimatableColor(value)->visitedLinkColor());
         return;
+    case CSSPropertyWebkitColumnWidth:
+        style->setColumnWidth(clampTo(toAnimatableDouble(value)->toDouble(), std::numeric_limits<float>::epsilon()));
+        return;
     case CSSPropertyWebkitColumnRuleWidth:
         style->setColumnRuleWidth(animatableValueRoundClampTo<unsigned short>(value));
         return;

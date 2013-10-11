@@ -1,0 +1,8 @@
+PASS: -webkit-column-width from [1px] to [101px] was [0.00001px] at -0.3
+PASS: -webkit-column-width from [1px] to [101px] was [1px] at 0
+PASS: -webkit-column-width from [1px] to [101px] was [31px] at 0.3
+PASS: -webkit-column-width from [1px] to [101px] was [61px] at 0.6
+PASS: -webkit-column-width from [1px] to [101px] was [101px] at 1
+PASS: -webkit-column-width from [1px] to [101px] was [151px] at 1.5
+PASS: -webkit-column-width from [0px] to [100px] was [20px] at 0
+
