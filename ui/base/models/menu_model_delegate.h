@@ -12,6 +12,10 @@ class MenuModelDelegate {
   // Invoked when an icon has been loaded from history.
   virtual void OnIconChanged(int index) = 0;
 
+  // Invoked after items in |MenuModel| have been removed and/or added,
+  // delegate should assume the entire contents of the model has changed.
+  virtual void OnMenuStructureChanged() {}
+
  protected:
   virtual ~MenuModelDelegate() {}
 };

@@ -758,15 +758,17 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   DISALLOW_COPY_AND_ASSIGN(ZoomView);
 };
 
-// RecentTabsMenuModelDelegate -------------------------------------------------
+// RecentTabsMenuModelDelegate  ------------------------------------------------
 
 // Provides the ui::MenuModelDelegate implementation for RecentTabsSubMenuModel
 // items.
 class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
  public:
-  RecentTabsMenuModelDelegate(ui::MenuModel* model,
+  RecentTabsMenuModelDelegate(WrenchMenu* wrench_menu,
+                              ui::MenuModel* model,
                               views::MenuItemView* menu_item)
-      : model_(model),
+      : wrench_menu_(wrench_menu),
+        model_(model),
         menu_item_(menu_item) {
     model_->SetMenuModelDelegate(this);
   }
@@ -775,21 +777,10 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     model_->SetMenuModelDelegate(NULL);
   }
 
-  // ui::MenuModelDelegate implementation:
-  virtual void OnIconChanged(int index) OVERRIDE {
-    int command_id = model_->GetCommandIdAt(index);
-    views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
-    DCHECK(item);
-    gfx::Image icon;
-    if (model_->GetIconAt(index, &icon))
-      item->SetIcon(*icon.ToImageSkia());
-  }
-
-  // Return the specific menu width of recent tab menu item if |command_id|
-  // refers to one of recent tabs menu items, else return -1.
-  int GetMaxWidthForMenu(MenuItemView* menu) {
-    views::SubmenuView* submenu = menu_item_->GetSubmenu();
-    if (!submenu)
+  // Return the specific menu width of recent tabs submenu if |menu| is the
+  // recent tabs submenu, else return -1.
+  int GetMaxWidthForMenu(views::MenuItemView* menu) {
+    if (!menu_item_->HasSubmenu())
       return -1;
     const int kMaxMenuItemWidth = 320;
     return menu->GetCommand() == menu_item_->GetCommand() ?
@@ -811,7 +802,49 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     return false;
   }
 
+  // ui::MenuModelDelegate implementation:
+
+  virtual void OnIconChanged(int index) OVERRIDE {
+    int command_id = model_->GetCommandIdAt(index);
+    views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
+    DCHECK(item);
+    gfx::Image icon;
+    model_->GetIconAt(index, &icon);
+    item->SetIcon(*icon.ToImageSkia());
+  }
+
+  virtual void OnMenuStructureChanged() OVERRIDE {
+    if (menu_item_->HasSubmenu()) {
+      // Remove all menu items from submenu.
+      views::SubmenuView* submenu = menu_item_->GetSubmenu();
+      while (submenu->child_count() > 0)
+        menu_item_->RemoveMenuItemAt(submenu->child_count() - 1);
+
+      // Remove all elements in |WrenchMenu::command_id_to_entry_| that map to
+      // |model_|.
+      WrenchMenu::CommandIDToEntry::iterator iter =
+          wrench_menu_->command_id_to_entry_.begin();
+      while (iter != wrench_menu_->command_id_to_entry_.end()) {
+        if (iter->second.first == model_)
+          wrench_menu_->command_id_to_entry_.erase(iter++);
+        else
+          ++iter;
+      }
+    }
+
+    // Add all menu items from |model| to submenu.
+    for (int i = 0; i < model_->GetItemCount(); ++i) {
+      wrench_menu_->AddMenuItem(menu_item_, i, model_, i, model_->GetTypeAt(i),
+                                0);
+    }
+
+    // In case recent tabs submenu was open when items were changing, force a
+    // ChildrenChanged().
+    menu_item_->ChildrenChanged();
+  }
+
  private:
+  WrenchMenu* wrench_menu_;
   ui::MenuModel* model_;
   views::MenuItemView* menu_item_;
 
@@ -1130,8 +1163,11 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
          model->GetCommandIdAt(i) == IDC_ZOOM_MINUS))
       height = kMenuItemContainingButtonsHeight;
 
-    MenuItemView* item = AppendMenuItem(
-        parent, model, i, model->GetTypeAt(i), height);
+    // Add the menu item at the end.
+    int menu_index = parent->HasSubmenu() ?
+        parent->GetSubmenu()->child_count() : 0;
+    MenuItemView* item = AddMenuItem(
+        parent, menu_index, model, i, model->GetTypeAt(i), height);
 
     if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU)
       PopulateMenu(item, model->GetSubmenuModelAt(i));
@@ -1175,7 +1211,7 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
       case IDC_RECENT_TABS_MENU:
         DCHECK(!recent_tabs_menu_model_delegate_.get());
         recent_tabs_menu_model_delegate_.reset(
-            new RecentTabsMenuModelDelegate(model->GetSubmenuModelAt(i),
+            new RecentTabsMenuModelDelegate(this, model->GetSubmenuModelAt(i),
                                             item));
         break;
 
@@ -1185,15 +1221,16 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
   }
 }
 
-MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
-                                         MenuModel* model,
-                                         int index,
-                                         MenuModel::ItemType menu_type,
-                                         int height) {
-  int command_id = model->GetCommandIdAt(index);
+MenuItemView* WrenchMenu::AddMenuItem(MenuItemView* parent,
+                                      int menu_index,
+                                      MenuModel* model,
+                                      int model_index,
+                                      MenuModel::ItemType menu_type,
+                                      int height) {
+  int command_id = model->GetCommandIdAt(model_index);
   DCHECK(command_id > -1 ||
          (command_id == -1 &&
-          model->GetTypeAt(index) == MenuModel::TYPE_SEPARATOR));
+          model->GetTypeAt(model_index) == MenuModel::TYPE_SEPARATOR));
 
   if (command_id > -1) {  // Don't add separators to |command_id_to_entry_|.
     // All command ID's should be unique except for IDC_SHOW_HISTORY which is
@@ -1204,7 +1241,7 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
           << "command ID " << command_id << " already exists!";
     }
     command_id_to_entry_[command_id].first = model;
-    command_id_to_entry_[command_id].second = index;
+    command_id_to_entry_[command_id].second = model_index;
   }
 
   MenuItemView* menu_item = NULL;
@@ -1212,21 +1249,21 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
     // For menu items with a special menu height we use our special class to be
     // able to modify the item height.
     menu_item = new ButtonContainerMenuItemView(parent, command_id, height);
-    parent->GetSubmenu()->AddChildView(menu_item);
+    parent->GetSubmenu()->AddChildViewAt(menu_item, menu_index);
   } else {
     // For all other cases we use the more generic way to add menu items.
-    menu_item = views::MenuModelAdapter::AppendMenuItemFromModel(
-        model, index, parent, command_id);
+    menu_item = views::MenuModelAdapter::AddMenuItemFromModelAt(
+        model, model_index, parent, menu_index, command_id);
   }
 
   if (menu_item) {
     // Flush all buttons to the right side of the menu for the new menu type.
     menu_item->set_use_right_margin(!use_new_menu_);
-    menu_item->SetVisible(model->IsVisibleAt(index));
+    menu_item->SetVisible(model->IsVisibleAt(model_index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
       gfx::Image icon;
-      if (model->GetIconAt(index, &icon))
+      if (model->GetIconAt(model_index, &icon))
         menu_item->SetIcon(*icon.ToImageSkia());
     }
   }

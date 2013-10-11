@@ -120,16 +120,21 @@ class WrenchMenu : public views::MenuDelegate,
   void PopulateMenu(views::MenuItemView* parent,
                     ui::MenuModel* model);
 
-  // Adds a new menu to |parent| to represent the MenuModel/index pair passed
-  // in.  The returned item's MenuItemView::GetCommand() is the same as that of
-  // |model|->GetCommandIdAt(|index|).
-  // Fur button containing menu items a |height| override can be specified with
-  // a number bigger then 0.
-  views::MenuItemView* AppendMenuItem(views::MenuItemView* parent,
-                                      ui::MenuModel* model,
-                                      int index,
-                                      ui::MenuModel::ItemType menu_type,
-                                      int height);
+  // Adds a new menu item to |parent| at |menu_index| to represent the item in
+  // |model| at |model_index|:
+  // - |menu_index|: position in |parent| to add the new item.
+  // - |model_index|: position in |model| to retrieve information about the
+  //   new menu item.
+  // - |height|: For button containing menu items, a |height| override can be
+  //   specified with a number bigger then 0.
+  // The returned item's MenuItemView::GetCommand() is the same as that of
+  // |model|->GetCommandIdAt(|model_index|).
+  views::MenuItemView* AddMenuItem(views::MenuItemView* parent,
+                                   int menu_index,
+                                   ui::MenuModel* model,
+                                   int model_index,
+                                   ui::MenuModel::ItemType menu_type,
+                                   int height);
 
   // Invoked from the cut/copy/paste menus. Cancels the current active menu and
   // activates the menu item in |model| at |index|.

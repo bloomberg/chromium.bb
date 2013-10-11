@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 
+#include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/persistent_tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -18,6 +21,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/menu_model_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +53,44 @@ class TestRecentTabsSubMenuModel : public RecentTabsSubMenuModel {
     ++execute_count_;
   }
 
+  int execute_count() const { return execute_count_; }
+  int enable_count() const { return enable_count_; }
+
+ private:
   int execute_count_;
   int mutable enable_count_;  // Mutable because IsCommandIdEnabledAt is const.
+
+  DISALLOW_COPY_AND_ASSIGN(TestRecentTabsSubMenuModel);
+};
+
+class TestRecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
+ public:
+  explicit TestRecentTabsMenuModelDelegate(ui::MenuModel* model)
+      : model_(model),
+        got_changes_(false) {
+    model_->SetMenuModelDelegate(this);
+  }
+
+  virtual ~TestRecentTabsMenuModelDelegate() {
+    model_->SetMenuModelDelegate(NULL);
+  }
+
+  // ui::MenuModelDelegate implementation:
+
+  virtual void OnIconChanged(int index) OVERRIDE {
+  }
+
+  virtual void OnMenuStructureChanged() OVERRIDE {
+    got_changes_ = true;
+  }
+
+  bool got_changes() const { return got_changes_; }
+
+ private:
+  ui::MenuModel* model_;
+  bool got_changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRecentTabsMenuModelDelegate);
 };
 
 }  // namespace
@@ -63,12 +103,19 @@ class RecentTabsSubMenuModelTest : public BrowserWithTestWindowTest {
     associator_.SetCurrentMachineTagForTesting("RecentTabsSubMenuModelTest");
   }
 
+  void WaitForLoadFromLastSession() {
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  }
+
   static BrowserContextKeyedService* GetTabRestoreService(
       content::BrowserContext* browser_context) {
     // Ownership is tranfered to the profile.
     return new PersistentTabRestoreService(
         Profile::FromBrowserContext(browser_context), NULL);;
   }
+
  private:
   TestingProfile testing_profile_;
   testing::NiceMock<ProfileSyncServiceMock> sync_service_;
@@ -77,14 +124,14 @@ class RecentTabsSubMenuModelTest : public BrowserWithTestWindowTest {
   browser_sync::SessionModelAssociator associator_;
 };
 
-// Test disabled "Reopen closed tab" with no foreign tabs.
+// Test disabled "Recently closed" header with no foreign tabs.
 TEST_F(RecentTabsSubMenuModelTest, NoTabs) {
   TestRecentTabsSubMenuModel model(NULL, browser(), NULL);
 
   // Expected menu:
   // Menu index  Menu items
-  // --------------------------------------
-  // 0           Reopen closed tab
+  // ---------------------------------------------
+  // 0           Recently closed header (disabled)
   // 1           <separator>
   // 2           No tabs from other Devices
 
@@ -92,40 +139,139 @@ TEST_F(RecentTabsSubMenuModelTest, NoTabs) {
   EXPECT_EQ(3, num_items);
   EXPECT_FALSE(model.IsEnabledAt(0));
   EXPECT_FALSE(model.IsEnabledAt(2));
-  EXPECT_EQ(0, model.enable_count_);
+  EXPECT_EQ(0, model.enable_count());
 }
 
-// Test enabled "Reopen closed tab" with no foreign tabs.
-TEST_F(RecentTabsSubMenuModelTest, ReopenClosedTab) {
+// Test enabled "Recently closed" header with no foreign tabs.
+TEST_F(RecentTabsSubMenuModelTest, RecentlyClosedTabsFromCurrentSession) {
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
-      browser()->profile(), RecentTabsSubMenuModelTest::GetTabRestoreService);
+      profile(), RecentTabsSubMenuModelTest::GetTabRestoreService);
 
-  // Add a tab and close it.
-  GURL url1("http://foo/1");
-  AddTab(browser(), url1);
-  browser()->tab_strip_model()->CloseWebContentsAt(
-      0, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+  // Add 2 tabs and close them.
+  AddTab(browser(), GURL("http://foo/1"));
+  AddTab(browser(), GURL("http://foo/2"));
+  browser()->tab_strip_model()->CloseAllTabs();
 
   TestRecentTabsSubMenuModel model(NULL, browser(), NULL);
   // Expected menu:
   // Menu index  Menu items
   // --------------------------------------
-  // 0           Recently Closed Header
-  // 1           Single entry to restore
-  // 2           <separator>
-  // 3           No tabs from other Devices
+  // 0           Recently closed header
+  // 1           <tab for http://foo/2>
+  // 2           <tab for http://foo/1>
+  // 3           <separator>
+  // 4           No tabs from other Devices
   int num_items = model.GetItemCount();
-  EXPECT_EQ(4, num_items);
+  EXPECT_EQ(5, num_items);
   EXPECT_FALSE(model.IsEnabledAt(0));
   EXPECT_TRUE(model.IsEnabledAt(1));
+  EXPECT_TRUE(model.IsEnabledAt(2));
   model.ActivatedAt(1);
-  EXPECT_FALSE(model.IsEnabledAt(3));
-  EXPECT_EQ(1, model.enable_count_);
-  EXPECT_EQ(1, model.execute_count_);
+  model.ActivatedAt(2);
+  EXPECT_FALSE(model.IsEnabledAt(4));
+  EXPECT_EQ(2, model.enable_count());
+  EXPECT_EQ(2, model.execute_count());
 }
 
-// Test enabled "Reopen closed tab" with multiple sessions, multiple windows,
-// and multiple enabled tabs from other devices.
+// TODO(sail): enable this test when dynamic model is enabled in
+// RecentTabsSubMenuModel.
+#if defined(OS_MACOSX)
+#define MAYBE_RecentlyClosedTabsAndWindowsFromLastSession \
+    DISABLED_RecentlyClosedTabsAndWindowsFromLastSession
+#else
+#define MAYBE_RecentlyClosedTabsAndWindowsFromLastSession \
+    RecentlyClosedTabsAndWindowsFromLastSession
+#endif
+TEST_F(RecentTabsSubMenuModelTest,
+       MAYBE_RecentlyClosedTabsAndWindowsFromLastSession) {
+  TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), RecentTabsSubMenuModelTest::GetTabRestoreService);
+
+  // Add 2 tabs and close them.
+  AddTab(browser(), GURL("http://wnd/tab0"));
+  AddTab(browser(), GURL("http://wnd/tab1"));
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  // Create a SessionService for the profile (profile owns the service) and add
+  // a window with a tab to this session.
+  SessionService* session_service = new SessionService(profile());
+  SessionServiceFactory::SetForTestProfile(profile(), session_service);
+  SessionID tab_id;
+  SessionID window_id;
+  session_service->SetWindowType(
+      window_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
+  session_service->SetTabWindow(window_id, tab_id);
+  session_service->SetTabIndexInWindow(window_id, tab_id, 0);
+  session_service->SetSelectedTabInWindow(window_id, 0);
+  session_service->UpdateTabNavigation(
+      window_id, tab_id,
+      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+          "http://wnd1/tab0", "title"));
+  // Set this, otherwise previous session won't be loaded.
+  profile()->set_last_session_exited_cleanly(false);
+  // Move this session to the last so that TabRestoreService will load it as the
+  // last session.
+  SessionServiceFactory::GetForProfile(profile())->
+      MoveCurrentSessionToLastSession();
+
+  // Create a new TabRestoreService so that it'll load the recently closed tabs
+  // and windows afresh.
+  TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), RecentTabsSubMenuModelTest::GetTabRestoreService);
+  // Let the shutdown of previous TabRestoreService run.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+
+  TestRecentTabsSubMenuModel model(NULL, browser(), NULL);
+  TestRecentTabsMenuModelDelegate delegate(&model);
+  EXPECT_FALSE(delegate.got_changes());
+
+  // Expected menu before tabs/windows from last session are loaded:
+  // Menu index  Menu items
+  // ----------------------------------------------------------------
+  // 0           Recently closed header
+  // 1           <separator>
+  // 2           No tabs from other Devices
+
+
+  int num_items = model.GetItemCount();
+  EXPECT_EQ(3, num_items);
+  EXPECT_FALSE(model.IsEnabledAt(0));
+  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, model.GetTypeAt(1));
+  EXPECT_FALSE(model.IsEnabledAt(2));
+  EXPECT_EQ(0, model.enable_count());
+
+  // Wait for tabs from last session to be loaded.
+  WaitForLoadFromLastSession();
+
+  // Expected menu after tabs/windows from last session are loaded:
+  // Menu index  Menu items
+  // --------------------------------------------------------------
+  // 0           Recently closed header
+  // 1           <window for the tab http://wnd1/tab0>
+  // 2           <tab for http://wnd0/tab1>
+  // 3           <tab for http://wnd0/tab0>
+  // 4           <separator>
+  // 5           No tabs from other Devices
+
+  EXPECT_TRUE(delegate.got_changes());
+
+  num_items = model.GetItemCount();
+  EXPECT_EQ(6, num_items);
+  EXPECT_FALSE(model.IsEnabledAt(0));
+  EXPECT_TRUE(model.IsEnabledAt(1));
+  EXPECT_TRUE(model.IsEnabledAt(2));
+  EXPECT_TRUE(model.IsEnabledAt(3));
+  model.ActivatedAt(1);
+  model.ActivatedAt(2);
+  model.ActivatedAt(3);
+  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, model.GetTypeAt(4));
+  EXPECT_FALSE(model.IsEnabledAt(5));
+  EXPECT_EQ(3, model.enable_count());
+  EXPECT_EQ(3, model.execute_count());
+}
+
+// Test disabled "Recently closed" header with multiple sessions, multiple
+// windows, and multiple enabled tabs from other devices.
 TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   // Tabs are populated in decreasing timestamp.
   base::Time timestamp = base::Time::Now();
@@ -158,8 +304,8 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   // Expected menu:
   // - first inserted tab is most recent and hence is top
   // Menu index  Menu items
-  // --------------------------------------
-  // 0           Reopen closed tab
+  // -----------------------------------------------------
+  // 0           Recently closed header (disabled)
   // 1           <separator>
   // 2           <section header for 1st session>
   // 3-5         <3 tabs of the only window of session 0>
@@ -188,8 +334,8 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   model.ActivatedAt(10);
   EXPECT_TRUE(model.IsEnabledAt(10));
   EXPECT_TRUE(model.IsEnabledAt(12));
-  EXPECT_EQ(7, model.enable_count_);
-  EXPECT_EQ(7, model.execute_count_);
+  EXPECT_EQ(7, model.enable_count());
+  EXPECT_EQ(7, model.execute_count());
 }
 
 TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {
@@ -206,8 +352,8 @@ TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {
   // Expected menu:
   // - max sessions is 3, so only 3 most-recent sessions will show.
   // Menu index  Menu items
-  // --------------------------------------
-  // 0           Reopen closed tab
+  // ----------------------------------------------------------
+  // 0           Recently closed header (disabled)
   // 1           <separator>
   // 2           <section header for 1st session>
   // 3           <the only tab of the only window of session 3>
@@ -247,8 +393,8 @@ TEST_F(RecentTabsSubMenuModelTest, MaxTabsPerSessionAndRecency) {
   // - max tabs per session is 4, so only 4 most-recent tabs will show,
   //   independent of which window they came from.
   // Menu index  Menu items
-  // --------------------------------------
-  // 0           Reopen closed tab
+  // ---------------------------------------------
+  // 0           Recently closed header (disabled)
   // 1           <separator>
   // 2           <section header for session>
   // 3-6         <4 most-recent tabs of session>
@@ -274,8 +420,8 @@ TEST_F(RecentTabsSubMenuModelTest, MaxWidth) {
   recent_tabs_builder.RegisterRecentTabs(&associator_);
 
   // Menu index  Menu items
-  // --------------------------------------
-  // 0           Reopen closed tab
+  // ----------------------------------------------------------
+  // 0           Recently closed header (disabled)
   // 1           <separator>
   // 2           <section header for 1st session>
   // 3           <the only tab of the only window of session 1>
@@ -293,8 +439,8 @@ TEST_F(RecentTabsSubMenuModelTest, MaxWidth) {
 TEST_F(RecentTabsSubMenuModelTest, MaxWidthNoDevices) {
   // Expected menu:
   // Menu index  Menu items
-  // --------------------------------------
-  // 0           Reopen closed tab
+  // --------------------------------------------
+  // 0           Recently closed heaer (disabled)
   // 1           <separator>
   // 2           No tabs from other Devices
 
