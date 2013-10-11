@@ -39,7 +39,6 @@
 
 #include <wayland-client.h>
 #include "../shared/os-compatibility.h"
-#include "xmalloc.h"
 
 struct device {
 	enum { KEYBOARD, POINTER } type;
@@ -81,6 +80,20 @@ buffer_release(void *data, struct wl_buffer *buffer)
 static const struct wl_buffer_listener buffer_listener = {
 	buffer_release
 };
+
+static inline void *
+xzalloc(size_t s)
+{
+	void *p;
+
+	p = calloc(1, s);
+	if (p == NULL) {
+		fprintf(stderr, "%s: out of memory\n", program_invocation_short_name);
+		exit(EXIT_FAILURE);
+	}
+
+	return p;
+}
 
 static int
 attach_buffer(struct window *window, int width, int height)
