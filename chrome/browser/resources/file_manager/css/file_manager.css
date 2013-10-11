@@ -867,18 +867,18 @@ body[type='full-page'] .detail-name .detail-icon {
 /* Styles specific for the grid view. */
 
 .thumbnail-grid .thumbnail-item {
-  -webkit-margin-start: 8px;
+  -webkit-margin-start: 21px;
   border: 3px solid transparent;  /* Selection will make the border visible. */
-  margin-top: 7px;
+  margin-top: 20px;
   position: relative;
 }
 
 .thumbnail-grid .thumbnail-frame {
   background-color: rgb(245, 245, 245);
-  height: 180px;
+  height: 120px;
   overflow: hidden;
   position: relative;
-  width: 240px;
+  width: 160px;
 }
 
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
@@ -895,22 +895,6 @@ body[type='full-page'] .detail-name .detail-icon {
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
   height: 30px;
-}
-
-/* In the full page mode we can afford to show thumbnails as large as 320x240
-   with no downscaling. */
-body[type='full-page'] .thumbnail-grid .thumbnail-item {
-  -webkit-margin-start: 21px;
-  margin-top: 20px;
-}
-
-body[type='full-page'] .thumbnail-grid .thumbnail-frame {
-  height: 240px;
-  width: 320px;
-}
-
-body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
-  height: 34px;
 }
 
 /* Padding counterweights negative margins of items, thus eliminating scroll
