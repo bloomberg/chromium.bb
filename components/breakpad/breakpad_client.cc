@@ -68,6 +68,12 @@ bool BreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
 int BreakpadClient::GetResultCodeRespawnFailed() {
   return 0;
 }
+
+void BreakpadClient::InitBrowserCrashDumpsRegKey() {
+}
+
+void BreakpadClient::RecordCrashDumpAttempt(bool is_real_crash) {
+}
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)

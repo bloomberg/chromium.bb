@@ -34,6 +34,8 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
   virtual bool GetIsPerUserInstall(const base::FilePath& exe_path) OVERRIDE;
   virtual bool GetShouldDumpLargerDumps(bool is_per_user_install) OVERRIDE;
   virtual int GetResultCodeRespawnFailed() OVERRIDE;
+  virtual void InitBrowserCrashDumpsRegKey() OVERRIDE;
+  virtual void RecordCrashDumpAttempt(bool is_real_crash) OVERRIDE;
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)

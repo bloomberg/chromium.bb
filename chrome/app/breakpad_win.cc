@@ -13,14 +13,12 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/safe_sprintf.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -32,7 +30,6 @@
 #include "base/win/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/app/hard_error_handler_win.h"
-#include "chrome/common/chrome_constants.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -109,74 +106,6 @@ const size_t kMaxDynamicEntries = 256;
 
 // Maximum length for plugin path to include in plugin crash reports.
 const size_t kMaxPluginPathLength = 256;
-
-// The value name prefix will be of the form {chrome-version}-{pid}-{timestamp}
-// (i.e., "#####.#####.#####.#####-########-########") which easily fits into a
-// 63 character buffer.
-const char kBrowserCrashDumpPrefixTemplate[] = "%s-%08x-%08x";
-const size_t kBrowserCrashDumpPrefixLength = 63;
-char g_browser_crash_dump_prefix[kBrowserCrashDumpPrefixLength + 1] = {};
-
-// These registry key to which we'll write a value for each crash dump attempt.
-HKEY g_browser_crash_dump_regkey = NULL;
-
-// A atomic counter to make each crash dump value name unique.
-base::subtle::Atomic32 g_browser_crash_dump_count = 0;
-
-void InitBrowserCrashDumpsRegKey() {
-  DCHECK(g_browser_crash_dump_regkey == NULL);
-
-  base::win::RegKey regkey;
-  if (regkey.Create(HKEY_CURRENT_USER,
-                    chrome::kBrowserCrashDumpAttemptsRegistryPath,
-                    KEY_ALL_ACCESS) != ERROR_SUCCESS) {
-    return;
-  }
-
-  // We use the current process id and the current tick count as a (hopefully)
-  // unique combination for the crash dump value. There's a small chance that
-  // across a reboot we might have a crash dump signal written, and the next
-  // browser process might have the same process id and tick count, but crash
-  // before consuming the signal (overwriting the signal with an identical one).
-  // For now, we're willing to live with that risk.
-  int length = base::strings::SafeSPrintf(g_browser_crash_dump_prefix,
-                                          kBrowserCrashDumpPrefixTemplate,
-                                          chrome::kChromeVersion,
-                                          ::GetCurrentProcessId(),
-                                          ::GetTickCount());
-  if (length <= 0) {
-    NOTREACHED();
-    g_browser_crash_dump_prefix[0] = '\0';
-    return;
-  }
-
-  // Hold the registry key in a global for update on crash dump.
-  g_browser_crash_dump_regkey = regkey.Take();
-}
-
-void RecordCrashDumpAttempt(bool is_real_crash) {
-  // If we're not a browser (or the registry is unavailable to us for some
-  // reason) then there's nothing to do.
-  if (g_browser_crash_dump_regkey == NULL)
-    return;
-
-  // Generate the final value name we'll use (appends the crash number to the
-  // base value name).
-  const size_t kMaxValueSize = 2 * kBrowserCrashDumpPrefixLength;
-  char value_name[kMaxValueSize + 1] = {};
-  int length = base::strings::SafeSPrintf(
-      value_name,
-      "%s-%x",
-      g_browser_crash_dump_prefix,
-      base::subtle::NoBarrier_AtomicIncrement(&g_browser_crash_dump_count, 1));
-
-  if (length > 0) {
-    DWORD value_dword = is_real_crash ? 1 : 0;
-    ::RegSetValueExA(g_browser_crash_dump_regkey, value_name, 0, REG_DWORD,
-                     reinterpret_cast<BYTE*>(&value_dword),
-                     sizeof(value_dword));
-  }
-}
 
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
@@ -477,7 +406,7 @@ volatile LONG handling_exception = 0;
 // to implement it.
 bool FilterCallbackWhenNoCrash(
     void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
-  RecordCrashDumpAttempt(false);
+  breakpad::GetBreakpadClient()->RecordCrashDumpAttempt(false);
   return true;
 }
 
@@ -491,7 +420,7 @@ bool FilterCallback(void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
   if (::InterlockedCompareExchange(&handling_exception, 1, 0) == 1) {
     ::Sleep(INFINITE);
   }
-  RecordCrashDumpAttempt(true);
+  breakpad::GetBreakpadClient()->RecordCrashDumpAttempt(true);
   return true;
 }
 
@@ -809,7 +738,7 @@ void InitCrashReporter() {
 
   if (process_type == L"browser") {
     InitPipeNameEnvVar(is_per_user_install);
-    InitBrowserCrashDumpsRegKey();
+    breakpad::GetBreakpadClient()->InitBrowserCrashDumpsRegKey();
   }
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
