@@ -32,7 +32,6 @@ class DrainableIOBuffer;
 class HttpResponseHeaders;
 class IOBuffer;
 class URLFetcherDelegate;
-class URLFetcherFileWriter;
 class URLFetcherResponseWriter;
 class URLRequestContextGetter;
 class URLRequestThrottlerEntryInterface;
@@ -140,13 +139,6 @@ class URLFetcherCore
  private:
   friend class base::RefCountedThreadSafe<URLFetcherCore>;
 
-  // How should the response be stored?
-  enum ResponseDestinationType {
-    STRING,  // Default: In a std::string
-    PERMANENT_FILE,  // Write to a permanent file.
-    TEMP_FILE,  // Write to a temporary file.
-  };
-
   class Registry {
    public:
     Registry();
@@ -220,18 +212,15 @@ class URLFetcherCore
   URLFetcher::RequestType request_type_;  // What type of request is this?
   URLRequestStatus status_;          // Status of the request
   URLFetcherDelegate* delegate_;     // Object to notify on completion
+  // Task runner for the creating thread. Used to interact with the delegate.
   scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
-                                     // Task runner for the creating thread.
+  // Task runner for network operations.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-                                     // Task runner for download file access.
-  scoped_refptr<base::TaskRunner> file_task_runner_;
-                                     // Task runner for upload file access.
+  // Task runner for upload file access.
   scoped_refptr<base::TaskRunner> upload_file_task_runner_;
   scoped_ptr<URLRequest> request_;   // The actual request this wraps
   int load_flags_;                   // Flags for the load operation
   int response_code_;                // HTTP status code for the request
-  std::string data_;                 // Results of the request, when we are
-                                     // storing the response as a string.
   scoped_refptr<IOBuffer> buffer_;
                                      // Read buffer
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
@@ -281,18 +270,6 @@ class URLFetcherCore
 
   // Writer object to write response to the destination like file and string.
   scoped_ptr<URLFetcherResponseWriter> response_writer_;
-
-  // If writing results to a file, |file_writer_| will manage creation,
-  // writing, and destruction of that file.
-  // |file_writer_| points to the same object as |response_writer_| when writing
-  // response to a file, otherwise, |file_writer_| is NULL.
-  URLFetcherFileWriter* file_writer_;
-
-  // Where should responses be saved?
-  ResponseDestinationType response_destination_;
-
-  // Path to the file where the response is written.
-  base::FilePath response_destination_file_path_;
 
   // By default any server-initiated redirects are automatically followed.  If
   // this flag is set to true, however, a redirect will halt the fetch and call

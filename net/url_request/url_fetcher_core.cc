@@ -80,8 +80,6 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
       upload_range_length_(0),
       is_chunked_upload_(false),
       was_cancelled_(false),
-      file_writer_(NULL),
-      response_destination_(STRING),
       stop_on_redirect_(false),
       stopped_on_redirect_(false),
       automatically_retry_on_5xx_(true),
@@ -267,16 +265,14 @@ void URLFetcherCore::SaveResponseToFileAtPath(
     const base::FilePath& file_path,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-  file_task_runner_ = file_task_runner;
-  response_destination_ = URLFetcherCore::PERMANENT_FILE;
-  response_destination_file_path_ = file_path;
+  response_writer_.reset(new URLFetcherFileWriter(file_task_runner, file_path));
 }
 
 void URLFetcherCore::SaveResponseToTemporaryFile(
     scoped_refptr<base::TaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-  file_task_runner_ = file_task_runner;
-  response_destination_ = URLFetcherCore::TEMP_FILE;
+  response_writer_.reset(
+      new URLFetcherFileWriter(file_task_runner, base::FilePath()));
 }
 
 HttpResponseHeaders* URLFetcherCore::GetResponseHeaders() const {
@@ -324,26 +320,27 @@ void URLFetcherCore::ReceivedContentWasMalformed() {
 
 bool URLFetcherCore::GetResponseAsString(
     std::string* out_response_string) const {
-  if (response_destination_ != URLFetcherCore::STRING)
+  URLFetcherStringWriter* string_writer =
+      response_writer_ ? response_writer_->AsStringWriter() : NULL;
+  if (!string_writer)
     return false;
 
-  *out_response_string = data_;
+  *out_response_string = string_writer->data();
   UMA_HISTOGRAM_MEMORY_KB("UrlFetcher.StringResponseSize",
-                          (data_.length() / 1024));
-
+                          (string_writer->data().length() / 1024));
   return true;
 }
 
 bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
                                            base::FilePath* out_response_path) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-  const bool destination_is_file =
-      response_destination_ == URLFetcherCore::TEMP_FILE ||
-      response_destination_ == URLFetcherCore::PERMANENT_FILE;
-  if (!destination_is_file || !file_writer_)
+
+  URLFetcherFileWriter* file_writer =
+      response_writer_ ? response_writer_->AsFileWriter() : NULL;
+  if (!file_writer)
     return false;
 
-  *out_response_path = file_writer_->file_path();
+  *out_response_path = file_writer->file_path();
 
   if (take_ownership) {
     // Intentionally calling a file_writer_ method directly without posting
@@ -355,7 +352,7 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
     //
     // This direct call should be thread-safe, since DisownFile itself does no
     // file operation. It just flips the state to be referred in destruction.
-    file_writer_->DisownFile();
+    file_writer->DisownFile();
   }
   return true;
 }
@@ -474,31 +471,9 @@ URLFetcherCore::~URLFetcherCore() {
 void URLFetcherCore::StartOnIOThread() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-  switch (response_destination_) {
-    case STRING:
-      response_writer_.reset(new URLFetcherStringWriter(&data_));
-      break;
+  if (!response_writer_)
+    response_writer_.reset(new URLFetcherStringWriter);
 
-    case PERMANENT_FILE:
-    case TEMP_FILE:
-      DCHECK(file_task_runner_.get())
-          << "Need to set the file task runner.";
-
-      file_writer_ = new URLFetcherFileWriter(file_task_runner_);
-
-      // If the file is successfully created,
-      // URLFetcherCore::StartURLRequestWhenAppropriate() will be called.
-      if (response_destination_ == PERMANENT_FILE) {
-        file_writer_->set_destination_file_path(
-            response_destination_file_path_);
-      }
-      response_writer_.reset(file_writer_);
-      break;
-
-    default:
-      NOTREACHED();
-  }
-  DCHECK(response_writer_);
   const int result = response_writer_->Initialize(
       base::Bind(&URLFetcherCore::DidInitializeWriter, this));
   if (result != ERR_IO_PENDING)
@@ -597,13 +572,6 @@ void URLFetcherCore::StartURLRequest() {
   if (!extra_request_headers_.IsEmpty())
     request_->SetExtraRequestHeaders(extra_request_headers_);
 
-  // There might be data left over from a previous request attempt.
-  data_.clear();
-
-  // If we are writing the response to a file, the only caller
-  // of this function should have created it and not written yet.
-  DCHECK(!file_writer_ || file_writer_->total_bytes_written() == 0);
-
   request_->Start();
 }
 
@@ -676,7 +644,6 @@ void URLFetcherCore::CancelURLRequest(int error) {
   url_request_create_data_callback_.Reset();
   was_cancelled_ = true;
   response_writer_.reset();
-  file_writer_ = NULL;
 }
 
 void URLFetcherCore::OnCompletedURLRequest(

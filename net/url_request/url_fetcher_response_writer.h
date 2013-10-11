@@ -21,6 +21,8 @@ namespace net {
 class DrainableIOBuffer;
 class FileStream;
 class IOBuffer;
+class URLFetcherFileWriter;
+class URLFetcherStringWriter;
 
 // This class encapsulates all state involved in writing URLFetcher response
 // bytes to the destination.
@@ -29,7 +31,8 @@ class URLFetcherResponseWriter {
   virtual ~URLFetcherResponseWriter() {}
 
   // Initializes this instance. If ERR_IO_PENDING is returned, |callback| will
-  // be run later with the result.
+  // be run later with the result. Calling this method again after a
+  // Initialize() success results in discarding already written data.
   virtual int Initialize(const CompletionCallback& callback) = 0;
 
   // Writes |num_bytes| bytes in |buffer|, and returns the number of bytes
@@ -42,13 +45,21 @@ class URLFetcherResponseWriter {
   // Finishes writing. If ERR_IO_PENDING is returned, |callback| will be run
   // later with the result.
   virtual int Finish(const CompletionCallback& callback) = 0;
+
+  // Returns this instance's pointer as URLFetcherStringWriter when possible.
+  virtual URLFetcherStringWriter* AsStringWriter();
+
+  // Returns this instance's pointer as URLFetcherFileWriter when possible.
+  virtual URLFetcherFileWriter* AsFileWriter();
 };
 
 // URLFetcherResponseWriter implementation for std::string.
 class URLFetcherStringWriter : public URLFetcherResponseWriter {
  public:
-  URLFetcherStringWriter(std::string* string);
+  URLFetcherStringWriter();
   virtual ~URLFetcherStringWriter();
+
+  const std::string& data() const { return data_; }
 
   // URLFetcherResponseWriter overrides:
   virtual int Initialize(const CompletionCallback& callback) OVERRIDE;
@@ -56,9 +67,10 @@ class URLFetcherStringWriter : public URLFetcherResponseWriter {
                     int num_bytes,
                     const CompletionCallback& callback) OVERRIDE;
   virtual int Finish(const CompletionCallback& callback) OVERRIDE;
+  virtual URLFetcherStringWriter* AsStringWriter() OVERRIDE;
 
  private:
-  std::string* const string_;
+  std::string data_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcherStringWriter);
 };
@@ -66,16 +78,13 @@ class URLFetcherStringWriter : public URLFetcherResponseWriter {
 // URLFetcherResponseWriter implementation for files.
 class URLFetcherFileWriter : public URLFetcherResponseWriter {
  public:
-  URLFetcherFileWriter(scoped_refptr<base::TaskRunner> file_task_runner);
+  // |file_path| is used as the destination path. If |file_path| is empty,
+  // Initialize() will create a temporary file.
+  URLFetcherFileWriter(scoped_refptr<base::TaskRunner> file_task_runner,
+                       const base::FilePath& file_path);
   virtual ~URLFetcherFileWriter();
 
-  // Sets destination file path.
-  // Call this method before Initialize() to set the destination path,
-  // if this method is not called before Initialize(), Initialize() will create
-  // a temporary file.
-  void set_destination_file_path(const base::FilePath& file_path) {
-    file_path_ = file_path;
-  }
+  const base::FilePath& file_path() const { return file_path_; }
 
   // URLFetcherResponseWriter overrides:
   virtual int Initialize(const CompletionCallback& callback) OVERRIDE;
@@ -83,25 +92,19 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
                     int num_bytes,
                     const CompletionCallback& callback) OVERRIDE;
   virtual int Finish(const CompletionCallback& callback) OVERRIDE;
-
-  // Called when a write has been done.
-  void DidWrite(const CompletionCallback& callback, int result);
+  virtual URLFetcherFileWriter* AsFileWriter() OVERRIDE;
 
   // Drops ownership of the file at |file_path_|.
   // This class will not delete it or write to it again.
   void DisownFile();
 
-  // Closes the file if it is open.
-  // |callback| is run with the result upon completion.
-  void CloseFile(const CompletionCallback& callback);
+ private:
+  // Called when a write has been done.
+  void DidWrite(const CompletionCallback& callback, int result);
 
   // Closes the file if it is open and then delete it.
   void CloseAndDeleteFile();
 
-  const base::FilePath& file_path() const { return file_path_; }
-  int64 total_bytes_written() { return total_bytes_written_; }
-
- private:
   // Callback which gets the result of a temporary file creation.
   void DidCreateTempFile(const CompletionCallback& callback,
                          base::FilePath* temp_file_path,
@@ -128,10 +131,6 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
   bool owns_file_;
 
   scoped_ptr<FileStream> file_stream_;
-
-  // We always append to the file.  Track the total number of bytes
-  // written, so that writes know the offset to give.
-  int64 total_bytes_written_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcherFileWriter);
 };
