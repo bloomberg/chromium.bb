@@ -14,11 +14,11 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
-#include "chrome/browser/media_galleries/fileapi/itunes_finder_win.h"
+#include "chrome/browser/media_galleries/fileapi/iapps_finder_impl.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-namespace itunes {
+namespace iapps {
 
 namespace {
 
@@ -192,4 +192,4 @@ IN_PROC_BROWSER_TEST_F(ITunesFinderWinTest, BadCustomLocation) {
 
 }  // namespace
 
-}  // namespace itunes
+}  // namespace iapps
