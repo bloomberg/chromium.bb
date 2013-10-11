@@ -170,41 +170,31 @@ FileError ChangeListProcessor::ApplyEntryMap(
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(about_resource);
 
-  // Create the entry for "My Drive" folder with the latest changestamp.
-  ResourceEntry root =
-      util::CreateMyDriveRootEntry(about_resource->root_folder_id());
-  root.mutable_directory_specific_info()->set_changestamp(changestamp);
+  // Create the entry for "My Drive" directory with the latest changestamp.
+  ResourceEntry root;
+  FileError error = resource_metadata_->GetResourceEntryByPath(
+      util::GetDriveMyDriveRootPath(), &root);
+  switch (error) {
+    case FILE_ERROR_OK:  // Refresh the existing My Drive root entry.
+      root.mutable_directory_specific_info()->set_changestamp(changestamp);
+      error = resource_metadata_->RefreshEntry(root);
+      break;
+    case FILE_ERROR_NOT_FOUND: {  // Add the My Drive root directory.
+      changed_dirs_.insert(util::GetDriveGrandRootPath());
+      changed_dirs_.insert(util::GetDriveMyDriveRootPath());
 
-  if (!is_delta_update) {  // Full update.
-    FileError error = resource_metadata_->Reset();
-    if (error != FILE_ERROR_OK) {
-      LOG(ERROR) << "Failed to reset: " << FileErrorToString(error);
-      return error;
+      root = util::CreateMyDriveRootEntry(about_resource->root_folder_id());
+      root.mutable_directory_specific_info()->set_changestamp(changestamp);
+      std::string local_id;
+      error = resource_metadata_->AddEntry(root, &local_id);
+      break;
     }
-
-    changed_dirs_.insert(util::GetDriveGrandRootPath());
-    changed_dirs_.insert(util::GetDriveMyDriveRootPath());
-
-    // Add the My Drive root directory.
-    std::string local_id;
-    error = resource_metadata_->AddEntry(root, &local_id);
-    if (error != FILE_ERROR_OK)
-      return error;
-  } else {
-    // Refresh the existing root entry.
-    std::string root_local_id;
-    FileError error = resource_metadata_->GetIdByResourceId(root.resource_id(),
-                                                            &root_local_id);
-    if (error != FILE_ERROR_OK) {
-      LOG(ERROR) << "Failed to get root entry: " << FileErrorToString(error);
-      return error;
-    }
-    root.set_local_id(root_local_id);
-    error = resource_metadata_->RefreshEntry(root);
-    if (error != FILE_ERROR_OK) {
-      LOG(ERROR) << "Failed to update root entry: " << FileErrorToString(error);
-      return error;
-    }
+    default:
+      break;
+  }
+  if (error != FILE_ERROR_OK) {
+    LOG(ERROR) << "Failed to update root entry: " << FileErrorToString(error);
+    return error;
   }
 
   // Gather the set of changes in the old path.
