@@ -570,4 +570,9 @@ void HttpAuthController::DisableAuthScheme(HttpAuth::Scheme scheme) {
   disabled_schemes_.insert(scheme);
 }
 
+void HttpAuthController::DisableEmbeddedIdentity() {
+  DCHECK(CalledOnValidThread());
+  embedded_identity_used_ = true;
+}
+
 }  // namespace net

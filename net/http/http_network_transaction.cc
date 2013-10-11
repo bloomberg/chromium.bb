@@ -735,12 +735,15 @@ int HttpNetworkTransaction::DoGenerateProxyAuthTokenComplete(int rv) {
 int HttpNetworkTransaction::DoGenerateServerAuthToken() {
   next_state_ = STATE_GENERATE_SERVER_AUTH_TOKEN_COMPLETE;
   HttpAuth::Target target = HttpAuth::AUTH_SERVER;
-  if (!auth_controllers_[target].get())
+  if (!auth_controllers_[target].get()) {
     auth_controllers_[target] =
         new HttpAuthController(target,
                                AuthURL(target),
                                session_->http_auth_cache(),
                                session_->http_auth_handler_factory());
+    if (request_->load_flags & LOAD_DO_NOT_USE_EMBEDDED_IDENTITY)
+      auth_controllers_[target]->DisableEmbeddedIdentity();
+  }
   if (!ShouldApplyServerAuth())
     return OK;
   return auth_controllers_[target]->MaybeGenerateAuthToken(request_,

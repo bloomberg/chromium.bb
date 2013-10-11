@@ -119,3 +119,8 @@ LOAD_FLAG(DO_NOT_PROMPT_FOR_LOGIN, 1 << 26)
 // explicit user action. This can be used as a hint to treat the
 // request with higher priority.
 LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 27)
+
+// Indicates that the username:password portion of the URL should not
+// be honored, but that other forms of authority may be used.
+LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 28)
+

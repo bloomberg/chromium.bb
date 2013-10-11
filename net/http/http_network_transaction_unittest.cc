@@ -3868,7 +3868,10 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuth1) {
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://172.22.68.17/kids/login.aspx");
-  request.load_flags = 0;
+
+  // Ensure load is not disrupted by flags which suppress behaviour specific
+  // to other auth schemes.
+  request.load_flags = LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
 
   HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom1,
                                                     MockGetHostName);
@@ -4829,6 +4832,86 @@ TEST_P(HttpNetworkTransactionTest, WrongAuthIdentityInURL) {
   // There is no challenge info, since the identity worked.
   EXPECT_TRUE(response->auth_challenge.get() == NULL);
 
+  EXPECT_EQ(100, response->headers->GetContentLength());
+
+  // Empty the current queue.
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+
+// Test the request-challenge-retry sequence for basic auth when there is a
+// correct identity in the URL, but its use is being suppressed. The identity
+// from the URL should never be used.
+TEST_P(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://foo:bar@www.google.com/");
+  request.load_flags = LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY,
+                                 CreateSession(&session_deps_)));
+
+  MockWrite data_writes1[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads1[] = {
+    MockRead("HTTP/1.0 401 Unauthorized\r\n"),
+    MockRead("WWW-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+    MockRead("Content-Length: 10\r\n\r\n"),
+    MockRead(SYNCHRONOUS, ERR_FAILED),
+  };
+
+  // After the challenge above, the transaction will be restarted using the
+  // identity supplied by the user, not the one in the URL, to answer the
+  // challenge.
+  MockWrite data_writes3[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+
+  MockRead data_reads3[] = {
+    MockRead("HTTP/1.0 200 OK\r\n"),
+    MockRead("Content-Length: 100\r\n\r\n"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data3(data_reads3, arraysize(data_reads3),
+                                 data_writes3, arraysize(data_writes3));
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data3);
+
+  TestCompletionCallback callback1;
+  int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv = callback1.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  EXPECT_FALSE(trans->IsReadyToRestartForAuth());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+
+  TestCompletionCallback callback3;
+  rv = trans->RestartWithAuth(
+      AuthCredentials(kFoo, kBar), callback3.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv = callback3.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  EXPECT_FALSE(trans->IsReadyToRestartForAuth());
+
+  response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+
+  // There is no challenge info, since the identity worked.
+  EXPECT_TRUE(response->auth_challenge.get() == NULL);
   EXPECT_EQ(100, response->headers->GetContentLength());
 
   // Empty the current queue.
