@@ -18,6 +18,15 @@
 
 namespace media {
 
+// Helper macro to skip the test if MediaCodecBridge isn't available.
+#define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE() \
+  do { \
+    if (!MediaCodecBridge::IsAvailable()) { \
+      LOG(INFO) << "Could not run test - not supported on device."; \
+      return; \
+    } \
+  } while (0) \
+
 static const int kDefaultDurationInMs = 10000;
 
 static const char kAudioMp4[] = "audio/mp4";
@@ -230,10 +239,7 @@ class MediaSourcePlayerTest : public testing::Test {
 };
 
 TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithValidConfig) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test audio decoder job will be created when codec is successfully started.
   StartAudioDecoderJob();
@@ -242,10 +248,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithValidConfig) {
 }
 
 TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test audio decoder job will not be created when failed to start the codec.
   DemuxerConfigs configs;
@@ -263,10 +266,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
 }
 
 TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test video decoder job will be created when surface is valid.
   StartVideoDecoderJob();
@@ -285,10 +285,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
 }
 
 TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test video decoder job will be created when surface is valid.
   scoped_refptr<gfx::SurfaceTexture> surface_texture(
@@ -311,10 +308,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
 }
 
 TEST_F(MediaSourcePlayerTest, ReadFromDemuxerAfterSeek) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test decoder job will resend a ReadFromDemuxer request after seek.
   StartAudioDecoderJob();
@@ -351,10 +345,7 @@ TEST_F(MediaSourcePlayerTest, ReadFromDemuxerAfterSeek) {
 }
 
 TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test SetVideoSurface() will not cause an extra seek while the player is
   // waiting for demuxer to indicate seek is done.
@@ -385,10 +376,7 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
 }
 
 TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test MediaSourcePlayer can switch multiple surfaces during decoding.
   CreateAndSetVideoSurface();
@@ -414,10 +402,7 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
 }
 
 TEST_F(MediaSourcePlayerTest, StartAfterSeekFinish) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test decoder job will not start until all pending seek event is handled.
   DemuxerConfigs configs;
@@ -449,10 +434,7 @@ TEST_F(MediaSourcePlayerTest, StartAfterSeekFinish) {
 }
 
 TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that if the decoding job is not fully stopped after Pause(),
   // calling Start() will be a noop.
@@ -485,10 +467,7 @@ TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
 }
 
 TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that when Start() is called, video decoder jobs will wait for audio
   // decoder job before start decoding the data.
@@ -530,10 +509,7 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
 }
 
 TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test start time ticks will reset after decoder job underruns.
   StartAudioDecoderJob();
@@ -580,10 +556,7 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
 }
 
 TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test MediaSourcePlayer will not request for new data after input EOS is
   // reached.
@@ -606,10 +579,7 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
 }
 
 TEST_F(MediaSourcePlayerTest, ReplayAfterInputEOS) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test MediaSourcePlayer can replay after input EOS is
   // reached.
@@ -642,10 +612,7 @@ TEST_F(MediaSourcePlayerTest, ReplayAfterInputEOS) {
 }
 
 TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterAbort) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that the decoder will request new data after receiving an aborted
   // access unit.
@@ -668,10 +635,7 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterAbort) {
 }
 
 TEST_F(MediaSourcePlayerTest, DemuxerDataArrivesAfterRelease) {
-  if (!MediaCodecBridge::IsAvailable()) {
-    LOG(INFO) << "Could not run test - not supported on device.";
-    return;
-  }
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that the decoder should not crash if demuxer data arrives after
   // Release().
