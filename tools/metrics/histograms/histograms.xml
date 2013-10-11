@@ -5051,6 +5051,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Installer.OSAgeDays" units="days">
+  <summary>
+    The age of the OS, defined as the age of the /etc/lsb-release file. This is
+    reported on every update check but at most once a day.
+  </summary>
+</histogram>
+
 <histogram name="Installer.PayloadAttemptNumber" units="count">
   <summary>
     The number of update attempts until the update has been applied. This is
