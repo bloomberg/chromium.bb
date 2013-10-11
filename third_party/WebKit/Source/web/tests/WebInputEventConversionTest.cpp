@@ -261,7 +261,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     }
 
     {
-        PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 10), IntPoint(10, 10), 0, IntSize(10, 10), FloatPoint(10, 10), false, false, false, false);
+        PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 10), IntPoint(10, 10), IntSize(10, 10), 0, false, false, false, false, 10, 10, 10, 10);
         RefPtr<GestureEvent> gestureEvent = GestureEvent::create(domWindow, platformGestureEvent);
         WebGestureEventBuilder webGestureBuilder(view, docRenderer, *gestureEvent);
 

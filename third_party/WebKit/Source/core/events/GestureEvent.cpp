@@ -38,6 +38,8 @@ PassRefPtr<GestureEvent> GestureEvent::create()
 PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, const PlatformGestureEvent& event)
 {
     AtomicString eventType;
+    float deltaX = 0;
+    float deltaY = 0;
     switch (event.type()) {
     case PlatformEvent::GestureScrollBegin:
         eventType = EventTypeNames::gesturescrollstart; break;
@@ -45,7 +47,12 @@ PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, con
         eventType = EventTypeNames::gesturescrollend; break;
     case PlatformEvent::GestureScrollUpdate:
     case PlatformEvent::GestureScrollUpdateWithoutPropagation:
-        eventType = EventTypeNames::gesturescrollupdate; break;
+        // Only deltaX/Y are used when converting this
+        // back to a PlatformGestureEvent.
+        eventType = EventTypeNames::gesturescrollupdate;
+        deltaX = event.deltaX();
+        deltaY = event.deltaY();
+        break;
     case PlatformEvent::GestureTap:
         eventType = EventTypeNames::gesturetap; break;
     case PlatformEvent::GestureTapUnconfirmed:
@@ -63,7 +70,7 @@ PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, con
     default:
         return 0;
     }
-    return adoptRef(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.deltaX(), event.deltaY()));
+    return adoptRef(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), deltaX, deltaY));
 }
 
 void GestureEvent::initGestureEvent(const AtomicString& type, PassRefPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY)

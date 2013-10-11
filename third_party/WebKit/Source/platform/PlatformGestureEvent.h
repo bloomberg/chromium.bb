@@ -30,6 +30,8 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
+#include "wtf/Assertions.h"
+#include <string.h>
 
 namespace WebCore {
 
@@ -37,28 +39,25 @@ class PlatformGestureEvent : public PlatformEvent {
 public:
     PlatformGestureEvent()
         : PlatformEvent(PlatformEvent::GestureScrollBegin)
-        , m_deltaX(0)
-        , m_deltaY(0)
     {
+        memset(&m_data, 0, sizeof(m_data));
     }
 
-    PlatformGestureEvent(Type type, const IntPoint& position, const IntPoint& globalPosition, double timestamp, float deltaX, float deltaY, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey)
-        : PlatformEvent(type, shiftKey, ctrlKey, altKey, metaKey, timestamp)
-        , m_position(position)
-        , m_globalPosition(globalPosition)
-        , m_deltaX(deltaX)
-        , m_deltaY(deltaY)
-    {
-    }
-
-    PlatformGestureEvent(Type type, const IntPoint& position, const IntPoint& globalPosition, double timestamp, const IntSize& area, const FloatPoint& delta, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey)
+    PlatformGestureEvent(Type type, const IntPoint& position, const IntPoint& globalPosition, const IntSize& area, double timestamp, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey, float deltaX, float deltaY, float velocityX, float velocityY)
         : PlatformEvent(type, shiftKey, ctrlKey, altKey, metaKey, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
         , m_area(area)
-        , m_deltaX(delta.x())
-        , m_deltaY(delta.y())
     {
+        ASSERT(type == PlatformEvent::GestureScrollBegin
+            || type == PlatformEvent::GestureScrollEnd
+            || type == PlatformEvent::GestureScrollUpdate
+            || type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        memset(&m_data, 0, sizeof(m_data));
+        m_data.m_scrollUpdate.m_deltaX = deltaX;
+        m_data.m_scrollUpdate.m_deltaY = deltaY;
+        m_data.m_scrollUpdate.m_velocityX = velocityX;
+        m_data.m_scrollUpdate.m_velocityY = velocityY;
     }
 
     const IntPoint& position() const { return m_position; } // PlatformWindow coordinates.
@@ -66,15 +65,67 @@ public:
 
     const IntSize& area() const { return m_area; }
 
-    float deltaX() const { return m_deltaX; }
-    float deltaY() const { return m_deltaY; }
+    float deltaX() const
+    {
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
+            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        return m_data.m_scrollUpdate.m_deltaX;
+    }
+
+    float deltaY() const
+    {
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
+            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        return m_data.m_scrollUpdate.m_deltaY;
+    }
+
+    int tapCount() const
+    {
+        ASSERT(m_type == PlatformEvent::GestureTap);
+        return m_data.m_tap.m_tapCount;
+    }
+
+    float velocityX() const
+    {
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
+            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        return m_data.m_scrollUpdate.m_velocityX;
+    }
+
+    float velocityY() const
+    {
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
+            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        return m_data.m_scrollUpdate.m_velocityY;
+    }
+
+    float scale() const
+    {
+        ASSERT(m_type == PlatformEvent::GesturePinchUpdate);
+        return m_data.m_pinchUpdate.m_scale;
+    }
 
 protected:
     IntPoint m_position;
     IntPoint m_globalPosition;
     IntSize m_area;
-    float m_deltaX;
-    float m_deltaY;
+
+    union {
+        struct {
+            int m_tapCount;
+        } m_tap;
+
+        struct {
+            float m_deltaX;
+            float m_deltaY;
+            float m_velocityX;
+            float m_velocityY;
+        } m_scrollUpdate;
+
+        struct {
+            float m_scale;
+        } m_pinchUpdate;
+    } m_data;
 };
 
 } // namespace WebCore

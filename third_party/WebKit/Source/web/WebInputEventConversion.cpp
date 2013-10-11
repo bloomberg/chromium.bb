@@ -162,19 +162,22 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         break;
     case WebInputEvent::GestureScrollUpdate:
         m_type = PlatformEvent::GestureScrollUpdate;
-        m_deltaX = e.data.scrollUpdate.deltaX / scale;
-        m_deltaY = e.data.scrollUpdate.deltaY / scale;
+        m_data.m_scrollUpdate.m_deltaX = e.data.scrollUpdate.deltaX / scale;
+        m_data.m_scrollUpdate.m_deltaY = e.data.scrollUpdate.deltaY / scale;
+        m_data.m_scrollUpdate.m_velocityX = e.data.scrollUpdate.velocityX;
+        m_data.m_scrollUpdate.m_velocityY = e.data.scrollUpdate.velocityY;
         break;
     case WebInputEvent::GestureScrollUpdateWithoutPropagation:
         m_type = PlatformEvent::GestureScrollUpdateWithoutPropagation;
-        m_deltaX = e.data.scrollUpdate.deltaX / scale;
-        m_deltaY = e.data.scrollUpdate.deltaY / scale;
+        m_data.m_scrollUpdate.m_deltaX = e.data.scrollUpdate.deltaX / scale;
+        m_data.m_scrollUpdate.m_deltaY = e.data.scrollUpdate.deltaY / scale;
+        m_data.m_scrollUpdate.m_velocityX = e.data.scrollUpdate.velocityX;
+        m_data.m_scrollUpdate.m_velocityY = e.data.scrollUpdate.velocityY;
         break;
     case WebInputEvent::GestureTap:
         m_type = PlatformEvent::GestureTap;
         m_area = expandedIntSize(FloatSize(e.data.tap.width / scale, e.data.tap.height / scale));
-        // FIXME: PlatformGestureEvent deltaX is overloaded - wkb.ug/93123
-        m_deltaX = static_cast<int>(e.data.tap.tapCount);
+        m_data.m_tap.m_tapCount = e.data.tap.tapCount;
         break;
     case WebInputEvent::GestureTapUnconfirmed:
         m_type = PlatformEvent::GestureTapUnconfirmed;
@@ -217,8 +220,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         break;
     case WebInputEvent::GesturePinchUpdate:
         m_type = PlatformEvent::GesturePinchUpdate;
-        // FIXME: PlatformGestureEvent deltaX is overloaded - wkb.ug/93123
-        m_deltaX = e.data.pinchUpdate.scale;
+        m_data.m_pinchUpdate.m_scale = e.data.pinchUpdate.scale;
         break;
     default:
         ASSERT_NOT_REACHED();

@@ -2361,20 +2361,14 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
         gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
     handleMouseMoveEvent(fakeMouseMove);
 
-    int tapCount = 1;
-    // FIXME: deletaX is overloaded to mean different things for different gestures.
-    // http://wkb.ug/93123
-    if (gestureEvent.deltaX() > 0)
-        tapCount = static_cast<int>(gestureEvent.deltaX());
-
     bool defaultPrevented = false;
     PlatformMouseEvent fakeMouseDown(adjustedPoint, gestureEvent.globalPosition(),
-        LeftButton, PlatformEvent::MousePressed, tapCount,
+        LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
         gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
     defaultPrevented |= handleMousePressEvent(fakeMouseDown);
 
     PlatformMouseEvent fakeMouseUp(adjustedPoint, gestureEvent.globalPosition(),
-        LeftButton, PlatformEvent::MouseReleased, tapCount,
+        LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
     defaultPrevented |= handleMouseReleaseEvent(fakeMouseUp);
 
