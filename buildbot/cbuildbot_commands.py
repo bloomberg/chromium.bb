@@ -155,12 +155,14 @@ def BuildRootGitCleanup(buildroot):
   """
   lock_path = os.path.join(buildroot, '.clean_lock')
 
-  def RunCleanupCommands(cwd):
+  def RunCleanupCommands(project, cwd):
     with locking.FileLock(lock_path, verbose=False).read_lock() as lock:
       # Calculate where the git repository is stored.
       relpath = os.path.relpath(cwd, buildroot)
       projects_dir = os.path.join(buildroot, '.repo', 'projects')
-      repo_store = '%s.git' % os.path.join(projects_dir, relpath)
+      project_objects_dir = os.path.join(buildroot, '.repo', 'project-objects')
+      repo_git_store = '%s.git' % os.path.join(projects_dir, relpath)
+      repo_obj_store = '%s.git' % os.path.join(project_objects_dir, project)
 
       try:
         if os.path.isdir(cwd):
@@ -171,20 +173,18 @@ def BuildRootGitCleanup(buildroot):
         logging.warn('Deleting %s because %s failed', cwd, e.result.cmd)
         lock.write_lock()
         osutils.RmDir(cwd, ignore_missing=True)
-        # Delete the backing store as well for production jobs, because we
-        # want to make sure any corruption is wiped.  Don't do it for
-        # tryjobs so the error is visible and can be debugged.
-        logging.warn('Deleting %s as well', repo_store)
-        osutils.RmDir(repo_store, ignore_missing=True)
-        cros_build_lib.PrintBuildbotStepWarnings()
+        # Delete the backing stores as well.
+        for store in (repo_git_store, repo_obj_store):
+          logging.warn('Deleting %s as well', store)
+          osutils.RmDir(store, ignore_missing=True)
       else:
         # Delete all branches created by cbuildbot.
-        if os.path.isdir(repo_store):
-          git.RunGit(cwd, ['--git-dir', repo_store, 'branch', '-D'] +
+        if os.path.isdir(repo_git_store):
+          git.RunGit(cwd, ['--git-dir', repo_git_store, 'branch', '-D'] +
                           list(constants.CREATED_BRANCHES), error_code_ok=True)
 
   # Cleanup all of the directories.
-  dirs = [[os.path.join(buildroot, attrs['path'])] for attrs in
+  dirs = [[attrs['name'], os.path.join(buildroot, attrs['path'])] for attrs in
           git.ManifestCheckout.Cached(buildroot).projects.values()]
   parallel.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
