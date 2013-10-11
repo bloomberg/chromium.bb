@@ -154,32 +154,12 @@ class SyncClientTest : public testing::Test {
     ASSERT_TRUE(google_apis::test_util::WriteStringToFile(temp_file,
                                                           kLocalContent));
 
-    // Prepare 3 pinned-but-not-present files.
+    // Add file entries to the service.
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("foo"));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["foo"]));
-
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("bar"));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["bar"]));
-
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("baz"));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["baz"]));
-
-    // Prepare a pinned-and-fetched file.
-    const std::string md5_fetched = "md5";
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("fetched"));
-    EXPECT_EQ(FILE_ERROR_OK,
-              cache_->Store(resource_ids_["fetched"], md5_fetched,
-                            temp_file, FileCache::FILE_OPERATION_COPY));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["fetched"]));
-
-    // Prepare a pinned-and-fetched-and-dirty file.
-    const std::string md5_dirty = "";  // Don't care.
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("dirty"));
-    EXPECT_EQ(FILE_ERROR_OK,
-              cache_->Store(resource_ids_["dirty"], md5_dirty,
-                            temp_file, FileCache::FILE_OPERATION_COPY));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["dirty"]));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->MarkDirty(resource_ids_["dirty"]));
 
     // Load data from the service to the metadata.
     FileError error = FILE_ERROR_FAILED;
@@ -193,9 +173,38 @@ class SyncClientTest : public testing::Test {
         google_apis::test_util::CreateCopyResultCallback(&error));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(FILE_ERROR_OK, error);
+
+    // Prepare 3 pinned-but-not-present files.
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(GetLocalId("foo")));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(GetLocalId("bar")));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(GetLocalId("baz")));
+
+    // Prepare a pinned-and-fetched file.
+    const std::string md5_fetched = "md5";
+    EXPECT_EQ(FILE_ERROR_OK,
+              cache_->Store(GetLocalId("fetched"), md5_fetched,
+                            temp_file, FileCache::FILE_OPERATION_COPY));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(GetLocalId("fetched")));
+
+    // Prepare a pinned-and-fetched-and-dirty file.
+    const std::string md5_dirty = "";  // Don't care.
+    EXPECT_EQ(FILE_ERROR_OK,
+              cache_->Store(GetLocalId("dirty"), md5_dirty,
+                            temp_file, FileCache::FILE_OPERATION_COPY));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(GetLocalId("dirty")));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->MarkDirty(GetLocalId("dirty")));
+
   }
 
  protected:
+  std::string GetLocalId(const std::string& title) {
+    EXPECT_EQ(1U, resource_ids_.count(title));
+    std::string local_id;
+    EXPECT_EQ(FILE_ERROR_OK,
+              metadata_->GetIdByResourceId(resource_ids_[title], &local_id));
+    return local_id;
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
@@ -219,58 +228,58 @@ TEST_F(SyncClientTest, StartProcessingBacklog) {
 
   FileCacheEntry cache_entry;
   // Pinned files get downloaded.
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["foo"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["bar"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("bar"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["baz"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("baz"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 
   // Dirty file gets uploaded.
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["dirty"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_dirty());
 }
 
 TEST_F(SyncClientTest, AddFetchTask) {
-  sync_client_->AddFetchTask(resource_ids_["foo"]);
+  sync_client_->AddFetchTask(GetLocalId("foo"));
   base::RunLoop().RunUntilIdle();
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["foo"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 }
 
 TEST_F(SyncClientTest, AddFetchTaskAndCancelled) {
   // Trigger fetching of a file which results in cancellation.
   drive_service_->set_resource_id_to_be_cancelled(resource_ids_["foo"]);
-  sync_client_->AddFetchTask(resource_ids_["foo"]);
+  sync_client_->AddFetchTask(GetLocalId("foo"));
   base::RunLoop().RunUntilIdle();
 
   // The file should be unpinned if the user wants the download to be cancelled.
   FileCacheEntry cache_entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(resource_ids_["foo"], &cache_entry));
+  EXPECT_FALSE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
 }
 
 TEST_F(SyncClientTest, RemoveFetchTask) {
-  sync_client_->AddFetchTask(resource_ids_["foo"]);
-  sync_client_->AddFetchTask(resource_ids_["bar"]);
-  sync_client_->AddFetchTask(resource_ids_["baz"]);
+  sync_client_->AddFetchTask(GetLocalId("foo"));
+  sync_client_->AddFetchTask(GetLocalId("bar"));
+  sync_client_->AddFetchTask(GetLocalId("baz"));
 
-  sync_client_->RemoveFetchTask(resource_ids_["foo"]);
-  sync_client_->RemoveFetchTask(resource_ids_["baz"]);
+  sync_client_->RemoveFetchTask(GetLocalId("foo"));
+  sync_client_->RemoveFetchTask(GetLocalId("baz"));
   base::RunLoop().RunUntilIdle();
 
   // Only "bar" should be fetched.
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["foo"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_present());
 
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["bar"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("bar"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["baz"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("baz"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_present());
 
 }
@@ -285,14 +294,12 @@ TEST_F(SyncClientTest, ExistingPinnedFiles) {
   // The non-dirty one should be synced, but the dirty one should not.
   base::FilePath cache_file;
   std::string content;
-  EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(resource_ids_["fetched"],
-                                           &cache_file));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(GetLocalId("fetched"), &cache_file));
   EXPECT_TRUE(base::ReadFileToString(cache_file, &content));
   EXPECT_EQ(kRemoteContent, content);
   content.clear();
 
-  EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(resource_ids_["dirty"],
-                                           &cache_file));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(GetLocalId("dirty"), &cache_file));
   EXPECT_TRUE(base::ReadFileToString(cache_file, &content));
   EXPECT_EQ(kLocalContent, content);
 }
@@ -312,15 +319,15 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
       TestTimeouts::tiny_timeout());
 
   // Try fetch and upload.
-  sync_client_->AddFetchTask(resource_ids_["foo"]);
-  sync_client_->AddUploadTask(resource_ids_["dirty"]);
+  sync_client_->AddFetchTask(GetLocalId("foo"));
+  sync_client_->AddUploadTask(GetLocalId("dirty"));
   base::RunLoop().RunUntilIdle();
 
   // Not yet fetched nor uploaded.
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["foo"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_present());
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["dirty"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_dirty());
 
   // Switch to online.
@@ -330,9 +337,9 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
   base::RunLoop().RunUntilIdle();
 
   // Fetched and uploaded.
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["foo"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["dirty"], &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_dirty());
 }
 
