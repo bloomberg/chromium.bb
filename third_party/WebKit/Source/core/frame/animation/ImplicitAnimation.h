@@ -31,7 +31,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/dom/Document.h"
-#include "core/page/animation/AnimationBase.h"
+#include "core/frame/animation/AnimationBase.h"
 
 namespace WebCore {
 

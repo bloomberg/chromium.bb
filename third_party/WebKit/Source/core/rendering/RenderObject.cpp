@@ -45,7 +45,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/UseCounter.h"
-#include "core/page/animation/AnimationController.h"
+#include "core/frame/animation/AnimationController.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/CompositedLayerMapping.h"

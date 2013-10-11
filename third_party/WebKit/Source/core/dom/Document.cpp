@@ -156,7 +156,7 @@
 #include "core/page/PageConsole.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/Settings.h"
-#include "core/page/animation/AnimationController.h"
+#include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/network/HTTPParsers.h"

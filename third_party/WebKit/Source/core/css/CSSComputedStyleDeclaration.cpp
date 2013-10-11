@@ -58,7 +58,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
 #include "core/page/RuntimeCSSEnabled.h"
-#include "core/page/animation/AnimationController.h"
+#include "core/frame/animation/AnimationController.h"
 #include "core/platform/graphics/FontFeatureSettings.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"

@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/page/animation/AnimationController.h"
+#include "core/frame/animation/AnimationController.h"
 
 #include "core/dom/PseudoElement.h"
 #include "core/events/ThreadLocalEventNames.h"
@@ -36,10 +36,10 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/animation/AnimationBase.h"
-#include "core/page/animation/AnimationControllerPrivate.h"
-#include "core/page/animation/CSSPropertyAnimation.h"
-#include "core/page/animation/CompositeAnimation.h"
+#include "core/frame/animation/AnimationBase.h"
+#include "core/frame/animation/AnimationControllerPrivate.h"
+#include "core/frame/animation/CSSPropertyAnimation.h"
+#include "core/frame/animation/CompositeAnimation.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/CurrentTime.h"
 

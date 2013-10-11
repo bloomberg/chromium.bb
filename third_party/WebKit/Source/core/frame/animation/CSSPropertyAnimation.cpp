@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/page/animation/CSSPropertyAnimation.h"
+#include "core/frame/animation/CSSPropertyAnimation.h"
 
 #include <algorithm>
 #include "CSSPropertyNames.h"
@@ -38,7 +38,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/fetch/ImageResource.h"
-#include "core/page/animation/AnimationBase.h"
+#include "core/frame/animation/AnimationBase.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/style/RenderStyle.h"

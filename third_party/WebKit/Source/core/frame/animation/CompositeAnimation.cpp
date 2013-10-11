@@ -27,13 +27,13 @@
  */
 
 #include "config.h"
-#include "core/page/animation/CompositeAnimation.h"
+#include "core/frame/animation/CompositeAnimation.h"
 
 #include "CSSPropertyNames.h"
-#include "core/page/animation/AnimationControllerPrivate.h"
-#include "core/page/animation/CSSPropertyAnimation.h"
-#include "core/page/animation/ImplicitAnimation.h"
-#include "core/page/animation/KeyframeAnimation.h"
+#include "core/frame/animation/AnimationControllerPrivate.h"
+#include "core/frame/animation/CSSPropertyAnimation.h"
+#include "core/frame/animation/ImplicitAnimation.h"
+#include "core/frame/animation/KeyframeAnimation.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

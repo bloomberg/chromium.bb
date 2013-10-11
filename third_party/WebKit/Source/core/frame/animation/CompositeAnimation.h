@@ -29,8 +29,8 @@
 #ifndef CompositeAnimation_h
 #define CompositeAnimation_h
 
-#include "core/page/animation/ImplicitAnimation.h"
-#include "core/page/animation/KeyframeAnimation.h"
+#include "core/frame/animation/ImplicitAnimation.h"
+#include "core/frame/animation/KeyframeAnimation.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

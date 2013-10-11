@@ -51,7 +51,7 @@
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Settings.h"
-#include "core/page/animation/AnimationController.h"
+#include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarTheme.h"
