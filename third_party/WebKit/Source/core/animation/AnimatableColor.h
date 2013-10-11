@@ -52,6 +52,10 @@ private:
     float m_blue;
 };
 
+// This class handles both the regular and 'visted link' colors for a given
+// property. Currently it is used for all properties, even those which do not
+// support a separate 'visited link' color (eg SVG properties). This is correct
+// but inefficient.
 class AnimatableColor : public AnimatableValue {
 public:
     static PassRefPtr<AnimatableColor> create(const AnimatableColorImpl&, const AnimatableColorImpl& visitedLinkColor);

@@ -220,10 +220,14 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->flexShrink(), AnimatableDouble::InterpolationIsNonContinuousWithZero);
     case CSSPropertyFlexBasis:
         return createFromLength(style->flexBasis(), style);
+    case CSSPropertyFloodColor:
+        return createFromColor(property, style);
     case CSSPropertyHeight:
         return createFromLength(style->height(), style);
     case CSSPropertyKerning:
         return AnimatableSVGLength::create(style->kerning());
+    case CSSPropertyLightingColor:
+        return createFromColor(property, style);
     case CSSPropertyListStyleImage:
         return AnimatableImage::create(style->listStyleImage());
     case CSSPropertyLeft:
@@ -268,6 +272,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->right(), style);
     case CSSPropertyStrokeWidth:
         return AnimatableSVGLength::create(style->strokeWidth());
+    case CSSPropertyStopColor:
+        return createFromColor(property, style);
     case CSSPropertyStopOpacity:
         return createFromDouble(style->stopOpacity());
     case CSSPropertyStrokeDashoffset:

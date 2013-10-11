@@ -1,0 +1,9 @@
+TTTTTT TTTTTT TTTTTT TTTTTT TTTTTT TTTTTT TTTTTT
+FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at -5, expected [#ffff00]
+FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at -0.4, expected [#ffe700]
+FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at 0, expected [orange]
+FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at 0.2, expected [#cc8433]
+FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at 0.6, expected [#664299]
+FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at 1, expected [blue]
+FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at 1.5, expected [blue]
+

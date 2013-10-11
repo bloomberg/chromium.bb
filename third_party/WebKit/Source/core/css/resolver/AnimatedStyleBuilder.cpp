@@ -252,6 +252,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyFlexBasis:
         style->setFlexBasis(animatableValueToLength(value, state, NonNegativeValues));
         return;
+    case CSSPropertyFloodColor:
+        style->setFloodColor(toAnimatableColor(value)->color());
+        return;
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state));
         return;
@@ -260,6 +263,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyLeft:
         style->setLeft(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyLightingColor:
+        style->setLightingColor(toAnimatableColor(value)->color());
         return;
     case CSSPropertyListStyleImage:
         style->setListStyleImage(toAnimatableImage(value)->toStyleImage());
@@ -324,6 +330,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyStrokeWidth:
         style->setStrokeWidth(animatableValueToNonNegativeSVGLength(value));
+        return;
+    case CSSPropertyStopColor:
+        style->setStopColor(toAnimatableColor(value)->color());
         return;
     case CSSPropertyStopOpacity:
         style->setStopOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
