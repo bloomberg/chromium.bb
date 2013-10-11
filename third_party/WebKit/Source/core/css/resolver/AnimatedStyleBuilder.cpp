@@ -258,7 +258,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setFloodColor(toAnimatableColor(value)->color());
         return;
     case CSSPropertyHeight:
-        style->setHeight(animatableValueToLength(value, state));
+        style->setHeight(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyKerning:
         style->setKerning(toAnimatableSVGLength(value)->toSVGLength());
@@ -435,7 +435,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setWidows(animatableValueRoundClampTo<unsigned short>(value, 1));
         return;
     case CSSPropertyWidth:
-        style->setWidth(animatableValueToLength(value, state));
+        style->setWidth(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyWordSpacing:
         style->setWordSpacing(clampTo<float>(toAnimatableDouble(value)->toDouble()));
