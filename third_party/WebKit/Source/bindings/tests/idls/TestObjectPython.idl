@@ -101,5 +101,11 @@ interface TestObjectPython {
     [Conditional=Condition, CustomGetter] readonly attribute long customGetterReadonlyLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [DeprecateAs=ReadonlyLongAttribute] readonly attribute long deprecatedReadonlyLongAttribute;
+    // FIXME: move to TestActiveDOMObject.idl (=> TestCheckSecurity) once
+    // methods are implemented
+    [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;
+    // [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;  // FIXME: separate readonly attribute once implement setters
+    [DoNotCheckSecurityOnGetter] readonly attribute long doNotCheckSecurityOnGetterReadonlyLongAttribute;
+    [DoNotCheckSecurityOnSetter] readonly attribute long doNotCheckSecurityOnSetterReadonlyLongAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
 };

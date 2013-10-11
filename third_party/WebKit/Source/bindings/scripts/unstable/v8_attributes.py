@@ -67,6 +67,7 @@ def generate_attribute_and_includes(interface, attribute):
     extended_attributes = attribute.extended_attributes
     this_is_keep_alive_for_gc = is_keep_alive_for_gc(attribute)
     contents = {
+        'access_control_list': access_control_list(attribute),
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
@@ -164,3 +165,18 @@ def is_keep_alive_for_gc(attribute):
              # FIXME: Remove these hard-coded hacks.
              idl_type in ['EventHandler', 'Promise', 'Window'] or
              idl_type.startswith('HTML'))))
+
+
+# [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter]
+def access_control_list(attribute):
+    extended_attributes = attribute.extended_attributes
+    if 'DoNotCheckSecurity' in extended_attributes:
+        access_control = ['v8::ALL_CAN_READ']
+        if not attribute.is_read_only:
+            access_control.append('v8::ALL_CAN_WRITE')
+        return access_control
+    if 'DoNotCheckSecurityOnSetter' in extended_attributes:
+        return ['v8::ALL_CAN_WRITE']
+    if 'DoNotCheckSecurityOnGetter' in extended_attributes:
+        return ['v8::ALL_CAN_READ']
+    return ['v8::DEFAULT']
