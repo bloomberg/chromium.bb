@@ -172,6 +172,14 @@ camera.views.Camera = function(context) {
    */
   this.ribbonInitialization_ = true;
 
+  /**
+   * Scroller for the ribbon with effects.
+   * @type {camera.util.SmoothScroller}
+   * @private
+   */
+  this.scroller_ = new camera.util.SmoothScroller(
+      document.querySelector('#effects'));
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -303,7 +311,7 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
       removeAttribute('selected');
   var element = document.querySelector('#effects #effect-' + effectIndex);
   element.setAttribute('selected', '');
-  camera.util.ensureVisible(element, document.querySelector('#effects'));
+  camera.util.ensureVisible(element, this.scroller_);
   if (this.currentEffectIndex_ == effectIndex)
     this.previewProcessors_[effectIndex].effect.randomize();
   this.mainProcessor_.effect = this.previewProcessors_[effectIndex].effect;
@@ -327,16 +335,20 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       this.setCurrentEffect_(
           (this.currentEffectIndex_ + this.previewProcessors_.length - 1) %
               this.previewProcessors_.length);
+      event.preventDefault();
       break;
     case 'Right':
       this.setCurrentEffect_(
           (this.currentEffectIndex_ + 1) % this.previewProcessors_.length);
+      event.preventDefault();
       break;
     case 'Home':
       this.setCurrentEffect_(0);
+      event.preventDefault();
       break;
     case 'End':
       this.setCurrentEffect_(this.previewProcessors_.length - 1);
+      event.preventDefault();
       break;
     case 'Enter':
     case 'U+0020':
@@ -641,8 +653,8 @@ camera.views.Camera.prototype.drawFrame_ = function() {
   // Process effect preview canvases. Ribbon initialization is true before the
   // ribbon is expanded for the first time. This trick is used to fill the
   // ribbon with images as soon as possible.
-  if (this.frame_ % 3 == 0 && this.expanded_ && !this.taking_ ||
-      this.ribbonInitialization_) {
+  if (this.frame_ % 3 == 0 && this.expanded_ && !this.taking_ &&
+      !this.scroller_.animating || this.ribbonInitialization_) {
     for (var index = 0; index < this.previewProcessors_.length; index++) {
       var processor = this.previewProcessors_[index];
       var effectRect = processor.output.getBoundingClientRect();
@@ -656,7 +668,8 @@ camera.views.Camera.prototype.drawFrame_ = function() {
   // Process the full resolution frame. Decrease FPS when expanding for smooth
   // animations.
   if (this.taking_ || this.toolsEffect_.isActive() ||
-      this.mainProcessor_.effect.isSlow()) {
+      this.mainProcessor_.effect.isSlow() ||
+      (this.scroller_.animating && this.expaneded_)) {
     this.mainFastProcessor_.processFrame();
     this.mainCanvas_.parentNode.hidden = true;
     this.mainFastCanvas_.parentNode.hidden = false;
