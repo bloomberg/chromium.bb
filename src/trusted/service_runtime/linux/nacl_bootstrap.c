@@ -64,6 +64,18 @@ extern char TEXT_START[];
  * implementations they are defined using STT_GNU_IFUNC.
  */
 
+/*
+ * Some GCC versions are so clever that they recognize these simple loops
+ * as having the semantics of standard library functions and replace them
+ * with calls.  That defeats the whole purpose, which is to avoid requiring
+ * any C library at all.  Fortunately, this optimization can be disabled
+ * for all (following) functions in the file via #pragma.
+ */
+#if (defined(__GNUC__) && !defined(__clang__) && \
+     (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)))
+# pragma GCC optimize("-fno-tree-loop-distribute-patterns")
+#endif
+
 static void my_bzero(void *buf, size_t n) {
   char *p = buf;
   while (n-- > 0)
