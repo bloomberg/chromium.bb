@@ -57,10 +57,7 @@ WebstoreStandaloneInstaller::~WebstoreStandaloneInstaller() {}
 //
 
 void WebstoreStandaloneInstaller::BeginInstall() {
-  // Add a ref to keep this alive for WebstoreDataFetcher.
-  // All code paths from here eventually lead to either CompleteInstall or
-  // AbortInstall, which both release this ref.
-  AddRef();
+  AddRef();  // Balanced in CompleteInstall or WebContentsDestroyed.
 
   if (!Extension::IdIsValid(id_)) {
     CompleteInstall(kInvalidWebstoreItemId);
@@ -230,14 +227,12 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
 
 void WebstoreStandaloneInstaller::InstallUIAbort(bool user_initiated) {
   CompleteInstall(kUserCancelledError);
-  Release();  // Balanced in ShowInstallUI.
 }
 
 void WebstoreStandaloneInstaller::OnExtensionInstallSuccess(
     const std::string& id) {
   CHECK_EQ(id_, id);
   CompleteInstall(std::string());
-  Release();  // Balanced in ShowInstallUI.
 }
 
 void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
@@ -246,7 +241,6 @@ void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
     WebstoreInstaller::FailureReason cancelled) {
   CHECK_EQ(id_, id);
   CompleteInstall(error);
-  Release();  // Balanced in ShowInstallUI.
 }
 
 void WebstoreStandaloneInstaller::AbortInstall() {
@@ -259,8 +253,13 @@ void WebstoreStandaloneInstaller::AbortInstall() {
 }
 
 void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
+  // Clear webstore_data_fetcher_ so that WebContentsDestroyed will no longer
+  // call Release in case the WebContents is destroyed before this object.
+  scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher(
+      webstore_data_fetcher_.Pass());
   if (!callback_.is_null())
     callback_.Run(error.empty(), error);
+
   Release();  // Matches the AddRef in BeginInstall.
 }
 
@@ -279,11 +278,6 @@ WebstoreStandaloneInstaller::ShowInstallUI() {
     CompleteInstall(kInvalidManifestError);
     return;
   }
-
-  // Keep this alive as long as the install prompt lives.
-  // Balanced in InstallUIAbort or indirectly in InstallUIProceed via
-  // OnExtensionInstallSuccess or OnExtensionInstallFailure.
-  AddRef();
 
   install_ui_ = CreateInstallUI();
   install_ui_->ConfirmStandaloneInstall(
