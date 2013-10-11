@@ -42,12 +42,8 @@ class ChannelReader {
   // data. See ReadData for more.
   bool AsyncReadComplete(int bytes_read);
 
-  // Returns true if the given message is internal to the IPC implementation,
-  // like the "hello" message sent on channel set-up.
-  bool IsInternalMessage(const Message& m) const;
-
-  // Returns true if the given message is an Hello message
-  // sent on channel set-up.
+  // Returns true if the given message is the "hello" message sent on channel
+  // set-up.
   bool IsHelloMessage(const Message& m) const;
 
  protected:
@@ -80,8 +76,8 @@ class ChannelReader {
   // though there could be more data ready to be read from the OS.
   virtual bool DidEmptyInputBuffers() = 0;
 
-  // Handles internal messages, like the hello message sent on channel startup.
-  virtual void HandleInternalMessage(const Message& msg) = 0;
+  // Handles the first message sent over the pipe which contains setup info.
+  virtual void HandleHelloMessage(const Message& msg) = 0;
 
  private:
   // Takes the given data received from the IPC channel and dispatches any

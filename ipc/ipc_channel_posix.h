@@ -10,7 +10,6 @@
 #include <sys/socket.h>  // for CMSG macros
 
 #include <queue>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -81,8 +80,6 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   void ClosePipeOnError();
   int GetHelloMessageProcId();
   void QueueHelloMessage();
-  void CloseFileDescriptors(Message* msg);
-  void QueueCloseFDMessage(int fd, int hops);
 
   // ChannelReader implementation.
   virtual ReadState ReadData(char* buffer,
@@ -90,7 +87,7 @@ class Channel::ChannelImpl : public internal::ChannelReader,
                              int* bytes_read) OVERRIDE;
   virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
   virtual bool DidEmptyInputBuffers() OVERRIDE;
-  virtual void HandleInternalMessage(const Message& msg) OVERRIDE;
+  virtual void HandleHelloMessage(const Message& msg) OVERRIDE;
 
 #if defined(IPC_USES_READWRITE)
   // Reads the next message from the fd_pipe_ and appends them to the
@@ -186,13 +183,6 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   // don't change to something like std::deque<> without changing the
   // implementation!
   std::vector<int> input_fds_;
-
-#if defined(OS_MACOSX)
-  // On OSX, sent FDs must not be closed until we get an ack.
-  // Keep track of sent FDs here to make sure the remote is not
-  // trying to bamboozle us.
-  std::set<int> fds_to_close_;
-#endif
 
   // True if we are responsible for unlinking the unix domain socket file.
   bool must_unlink_;

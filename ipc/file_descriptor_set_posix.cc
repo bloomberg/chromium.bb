@@ -126,16 +126,6 @@ void FileDescriptorSet::CommitAll() {
   consumed_descriptor_highwater_ = 0;
 }
 
-void FileDescriptorSet::ReleaseFDsToClose(std::vector<int>* fds) {
-  for (std::vector<base::FileDescriptor>::iterator
-       i = descriptors_.begin(); i != descriptors_.end(); ++i) {
-    if (i->auto_close)
-      fds->push_back(i->fd);
-  }
-  descriptors_.clear();
-  consumed_descriptor_highwater_ = 0;
-}
-
 void FileDescriptorSet::SetDescriptors(const int* buffer, unsigned count) {
   DCHECK(count <= kMaxDescriptorsPerMessage);
   DCHECK_EQ(descriptors_.size(), 0u);

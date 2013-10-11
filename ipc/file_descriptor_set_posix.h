@@ -77,9 +77,6 @@ class IPC_EXPORT FileDescriptorSet
   // Returns true if any contained file descriptors appear to be handles to a
   // directory.
   bool ContainsDirectoryDescriptor() const;
-  // Fetch all filedescriptors with the "auto close" property.
-  // Used instead of CommitAll() when closing must be handled manually.
-  void ReleaseFDsToClose(std::vector<int>* fds);
 
   // ---------------------------------------------------------------------------
 
