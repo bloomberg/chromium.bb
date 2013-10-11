@@ -46,8 +46,7 @@ const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
 QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
     : expiry_time(QuicWallTime::Zero()),
-      channel_id_enabled(false),
-      p256(false) {}
+      channel_id_enabled(false) { }
 
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     StringPiece source_address_token_secret,
@@ -98,14 +97,9 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
       Curve25519KeyExchange::New(curve25519_private_key));
   StringPiece curve25519_public_value = curve25519->public_value();
 
-  string p256_private_key;
-  StringPiece p256_public_value;
-  scoped_ptr<P256KeyExchange> p256;
-  if (options.p256) {
-    p256_private_key = P256KeyExchange::NewPrivateKey();
-    p256.reset(P256KeyExchange::New(p256_private_key));
-    p256_public_value = p256->public_value();
-  }
+  const string p256_private_key = P256KeyExchange::NewPrivateKey();
+  scoped_ptr<P256KeyExchange> p256(P256KeyExchange::New(p256_private_key));
+  StringPiece p256_public_value = p256->public_value();
 
   string encoded_public_values;
   // First three bytes encode the length of the public value.
@@ -121,11 +115,7 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
                                p256_public_value.size());
 
   msg.set_tag(kSCFG);
-  if (options.p256) {
-    msg.SetTaglist(kKEXS, kC255, kP256, 0);
-  } else {
-    msg.SetTaglist(kKEXS, kC255, 0);
-  }
+  msg.SetTaglist(kKEXS, kC255, kP256, 0);
   msg.SetTaglist(kAEAD, kAESG, 0);
   msg.SetValue(kVERS, static_cast<uint16>(0));
   msg.SetStringPiece(kPUBS, encoded_public_values);
@@ -168,12 +158,9 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
   QuicServerConfigProtobuf::PrivateKey* curve25519_key = config->add_key();
   curve25519_key->set_tag(kC255);
   curve25519_key->set_private_key(curve25519_private_key);
-
-  if (options.p256) {
-    QuicServerConfigProtobuf::PrivateKey* p256_key = config->add_key();
-    p256_key->set_tag(kP256);
-    p256_key->set_private_key(p256_private_key);
-  }
+  QuicServerConfigProtobuf::PrivateKey* p256_key = config->add_key();
+  p256_key->set_tag(kP256);
+  p256_key->set_private_key(p256_private_key);
 
   return config.release();
 }

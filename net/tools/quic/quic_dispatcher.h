@@ -60,11 +60,11 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   virtual ~QuicDispatcher();
 
   // QuicPacketWriter
-  virtual WriteResult WritePacket(
-      const char* buffer, size_t buf_len,
-      const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address,
-      QuicBlockedWriterInterface* writer) OVERRIDE;
+  virtual int WritePacket(const char* buffer, size_t buf_len,
+                          const IPAddressNumber& self_address,
+                          const IPEndPoint& peer_address,
+                          QuicBlockedWriterInterface* writer,
+                          int* error) OVERRIDE;
 
   virtual void ProcessPacket(const IPEndPoint& server_address,
                              const IPEndPoint& client_address,

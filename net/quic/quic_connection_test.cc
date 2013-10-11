@@ -243,9 +243,7 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   TestConnectionHelper(MockClock* clock, MockRandom* random_generator)
       : clock_(clock),
         random_generator_(random_generator),
-        last_packet_size_(0),
         blocked_(false),
-        is_write_blocked_data_buffered_(false),
         is_server_(true),
         use_tagging_decrypter_(false),
         packets_write_attempts_(0) {
@@ -263,8 +261,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
     return random_generator_;
   }
 
-  virtual WriteResult WritePacketToWire(
-      const QuicEncryptedPacket& packet) OVERRIDE {
+  virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
+                                int* error) OVERRIDE {
     ++packets_write_attempts_;
 
     if (packet.length() >= sizeof(final_bytes_of_last_packet_)) {
@@ -295,14 +293,16 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
           *visitor.version_negotiation_packet()));
     }
     if (blocked_) {
-      return WriteResult(WRITE_STATUS_BLOCKED, -1);
+      *error = ERR_IO_PENDING;
+      return -1;
     }
+    *error = 0;
     last_packet_size_ = packet.length();
-    return WriteResult(WRITE_STATUS_OK, last_packet_size_);
+    return last_packet_size_;
   }
 
   virtual bool IsWriteBlockedDataBuffered() OVERRIDE {
-    return is_write_blocked_data_buffered_;
+    return false;
   }
 
   virtual bool IsWriteBlocked(int error) OVERRIDE {
@@ -335,10 +335,6 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
   void set_blocked(bool blocked) { blocked_ = blocked; }
 
-  void set_is_write_blocked_data_buffered(bool buffered) {
-    is_write_blocked_data_buffered_ = buffered;
-  }
-
   void set_is_server(bool is_server) { is_server_ = is_server; }
 
   // final_bytes_of_last_packet_ returns the last four bytes of the previous
@@ -364,7 +360,6 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   scoped_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
   size_t last_packet_size_;
   bool blocked_;
-  bool is_write_blocked_data_buffered_;
   bool is_server_;
   uint32 final_bytes_of_last_packet_;
   bool use_tagging_decrypter_;
@@ -1721,18 +1716,6 @@ TEST_P(QuicConnectionTest, ResumptionAlarmThenWriteBlocked) {
   EXPECT_TRUE(QuicConnectionPeer::IsWriteBlocked(&connection_));
 }
 
-TEST_P(QuicConnectionTest, WriteBlockedThenSent) {
-  helper_->set_blocked(true);
-
-  helper_->set_is_write_blocked_data_buffered(true);
-  connection_.SendStreamData(1, "foo", 0, !kFin);
-  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.OnPacketSent(WriteResult(WRITE_STATUS_OK, 0));
-  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
-}
-
 TEST_P(QuicConnectionTest, LimitPacketsPerNack) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnIncomingAck(12, _, _)).Times(1);
@@ -2746,49 +2729,6 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
   }
 }
 
-TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
-  framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
-
-  QuicPacketHeader header;
-  header.public_header.guid = guid_;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = true;
-  header.entropy_flag = false;
-  header.fec_flag = false;
-  header.packet_sequence_number = 12;
-  header.fec_group = 0;
-
-  QuicFrames frames;
-  QuicFrame frame(&frame1_);
-  frames.push_back(frame);
-  scoped_ptr<QuicPacket> packet(
-      framer_.BuildUnsizedDataPacket(header, frames).packet);
-  scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
-
-  framer_.set_version(QuicVersionMax());
-  connection_.set_is_server(true);
-  helper_->set_blocked(true);
-  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
-  EXPECT_EQ(0u, helper_->last_packet_size());
-  EXPECT_TRUE(connection_.HasQueuedData());
-
-  helper_->set_blocked(false);
-  connection_.OnCanWrite();
-  EXPECT_TRUE(helper_->version_negotiation_packet() != NULL);
-
-  size_t num_versions = arraysize(kSupportedQuicVersions);
-  EXPECT_EQ(num_versions,
-            helper_->version_negotiation_packet()->versions.size());
-
-  // We expect all versions in kSupportedQuicVersions to be
-  // included in the packet.
-  for (size_t i = 0; i < num_versions; ++i) {
-    EXPECT_EQ(kSupportedQuicVersions[i],
-              helper_->version_negotiation_packet()->versions[i]);
-  }
-}
-
 TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   // Start out with some unsupported version.
   QuicConnectionPeer::GetFramer(&connection_)->set_version_for_tests(
@@ -3190,7 +3130,7 @@ class MockQuicConnectionDebugVisitor
                void(QuicPacketSequenceNumber,
                     EncryptionLevel,
                     const QuicEncryptedPacket&,
-                    WriteResult));
+                    int));
 
   MOCK_METHOD2(OnPacketRetransmitted,
                void(QuicPacketSequenceNumber,

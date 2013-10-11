@@ -263,19 +263,22 @@ void QuicTimeWaitListManager::SendOrQueuePacket(QueuedPacket* packet) {
 
 void QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
   DCHECK(!is_write_blocked_);
-  WriteResult result = writer_->WritePacket(
-      queued_packet->packet()->data(),
-      queued_packet->packet()->length(),
-      queued_packet->server_address().address(),
-      queued_packet->client_address(),
-      this);
+  int error;
+  int rc = writer_->WritePacket(queued_packet->packet()->data(),
+                                queued_packet->packet()->length(),
+                                queued_packet->server_address().address(),
+                                queued_packet->client_address(),
+                                this,
+                                &error);
 
-  if (result.status == WRITE_STATUS_BLOCKED) {
-    is_write_blocked_ = true;
-  } else if (result.status == WRITE_STATUS_ERROR) {
-    LOG(WARNING) << "Received unknown error while sending reset packet to "
-                 << queued_packet->client_address().ToString() << ": "
-                 << strerror(result.error_code);
+  if (rc == -1) {
+    if (error == EAGAIN || error == EWOULDBLOCK) {
+      is_write_blocked_ = true;
+    } else {
+      LOG(WARNING) << "Received unknown error while sending reset packet to "
+                   << queued_packet->client_address().ToString() << ": "
+                   << strerror(error);
+    }
   }
 }
 

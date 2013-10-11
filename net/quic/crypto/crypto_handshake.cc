@@ -752,7 +752,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     if (!channel_id_signer_->Sign(server_hostname, hkdf_input,
                                   &key, &signature)) {
       *error_details = "Channel ID signature failed";
-      return QUIC_INVALID_CHANNEL_ID_SIGNATURE;
+      return QUIC_INTERNAL_ERROR;
     }
 
     cetv.SetStringPiece(kCIDK, key);

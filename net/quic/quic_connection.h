@@ -104,7 +104,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface
   virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
                             EncryptionLevel level,
                             const QuicEncryptedPacket& packet,
-                            WriteResult result) = 0;
+                            int rv) = 0;
 
   // Called when the contents of a packet have been retransmitted as
   // a new packet.
@@ -171,10 +171,10 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
 
   // Sends the packet out to the peer, possibly simulating packet
   // loss if FLAGS_fake_packet_loss_percentage is set.  If the write
-  // succeeded, the result's status is WRITE_STATUS_OK and bytes_written is
-  // populated. If the write failed, the result's status is WRITE_STATUS_BLOCKED
-  // or WRITE_STATUS_ERROR and error_code will populated.
-  virtual WriteResult WritePacketToWire(const QuicEncryptedPacket& packet) = 0;
+  // succeeded, returns the number of bytes written.  If the write
+  // failed, returns -1 and the error code will be copied to |*error|.
+  virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
+                                int* error) = 0;
 
   // Returns true if the helper buffers and subsequently rewrites data
   // when an attempt to write results in the underlying socket becoming
@@ -273,9 +273,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Called when the underlying connection becomes writable to allow queued
   // writes to happen.  Returns false if the socket has become blocked.
   virtual bool OnCanWrite() OVERRIDE;
-
-  // Called when a packet has been finally sent to the network.
-  bool OnPacketSent(WriteResult result);
 
   // If the socket is not blocked, this allows queued writes to happen. Returns
   // false if the socket has become blocked.
@@ -458,9 +455,10 @@ class NET_EXPORT_PRIVATE QuicConnection
                    HasRetransmittableData retransmittable,
                    Force force);
 
-  WriteResult WritePacketToWire(QuicPacketSequenceNumber sequence_number,
-                                EncryptionLevel level,
-                                const QuicEncryptedPacket& packet);
+  int WritePacketToWire(QuicPacketSequenceNumber sequence_number,
+                        EncryptionLevel level,
+                        const QuicEncryptedPacket& packet,
+                        int* error);
 
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);
@@ -573,28 +571,6 @@ class NET_EXPORT_PRIVATE QuicConnection
     QuicPacketSequenceNumber sequence_number;
     QuicTime scheduled_time;
     bool for_fec;
-  };
-
-  struct PendingWrite {
-    PendingWrite(QuicPacketSequenceNumber sequence_number,
-                 TransmissionType transmission_type,
-                 HasRetransmittableData retransmittable,
-                 EncryptionLevel level,
-                 bool is_fec_packet,
-                 size_t length)
-        : sequence_number(sequence_number),
-          transmission_type(transmission_type),
-          retransmittable(retransmittable),
-          level(level),
-          is_fec_packet(is_fec_packet),
-          length(length) { }
-
-    QuicPacketSequenceNumber sequence_number;
-    TransmissionType transmission_type;
-    HasRetransmittableData retransmittable;
-    EncryptionLevel level;
-    bool is_fec_packet;
-    size_t length;
   };
 
   class RetransmissionTimeComparator {
@@ -724,17 +700,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // sent with the INITIAL encryption and the CHLO message was lost.
   std::deque<QuicEncryptedPacket*> undecryptable_packets_;
 
-  // When the version negotiation packet could not be sent because the socket
-  // was not writable, this is set to true.
-  bool pending_version_negotiation_packet_;
-
   // When packets could not be sent because the socket was not writable,
   // they are added to this list.  All corresponding frames are in
   // unacked_packets_ if they are to be retransmitted.
   QueuedPacketList queued_packets_;
-
-  // Contains information about the current write in progress, if any.
-  scoped_ptr<PendingWrite> pending_write_;
 
   // True when the socket becomes unwritable.
   bool write_blocked_;
