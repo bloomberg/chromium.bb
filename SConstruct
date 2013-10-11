@@ -3159,6 +3159,7 @@ irt_variant_tests = [
     'tests/tls_segment_x86_32/nacl.scons',
     'tests/toolchain/nacl.scons',
     'tests/toolchain/arm/nacl.scons',
+    'tests/toolchain/mips/nacl.scons',
     'tests/unittests/shared/platform/nacl.scons',
     'tests/untrusted_check/nacl.scons',
     'tests/unwind_restores_regs/nacl.scons',

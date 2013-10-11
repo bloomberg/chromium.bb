@@ -17,7 +17,8 @@ enum PnaclTargetArchitecture {
   PnaclTargetArchitectureX86_32,
   PnaclTargetArchitectureX86_64,
   PnaclTargetArchitectureARM_32,
-  PnaclTargetArchitectureARM_32_Thumb
+  PnaclTargetArchitectureARM_32_Thumb,
+  PnaclTargetArchitectureMips_32
 };
 
 int __builtin_nacl_target_arch(void) asm("llvm.nacl.target.arch");

@@ -1238,7 +1238,7 @@ compiler-rt() {
         CC="${PNACL_CC}" \
         AR="${PNACL_AR}" \
         "SRC_DIR=${src}" \
-        "CFLAGS=-arch ${arch} --pnacl-allow-translate -O3 -fPIC"
+        "CFLAGS=-arch ${arch} -DPNACL_${arch} --pnacl-allow-translate -O3 -fPIC"
 
   StepBanner "compiler rt" "install (${arch})"
   mkdir -p "${installdir}"
