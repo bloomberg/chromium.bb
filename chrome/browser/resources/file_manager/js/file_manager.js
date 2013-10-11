@@ -862,6 +862,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.onThumbnailViewButtonClick_.bind(this));
 
     cr.ui.ComboButton.decorate(this.taskItems_);
+    this.taskItems_.showMenu = function(shouldSetFocus) {
+      // Prevent the empty menu from opening.
+      if (!this.menu.length)
+        return;
+      cr.ui.ComboButton.prototype.showMenu.call(this, shouldSetFocus);
+    };
     this.taskItems_.addEventListener('select',
         this.onTaskItemClicked_.bind(this));
 

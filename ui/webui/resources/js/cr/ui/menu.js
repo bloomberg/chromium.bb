@@ -183,6 +183,10 @@ cr.define('cr.ui', function() {
       function selectNextAvailable(m) {
         var menuItems = self.menuItems;
         var len = menuItems.length;
+        if (!len) {
+          // Edge case when there are no items.
+          return;
+        }
         var i = self.selectedIndex;
         if (i == -1 && m == -1) {
           // Edge case when needed to go the last item first.
