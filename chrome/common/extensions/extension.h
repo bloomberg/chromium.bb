@@ -89,10 +89,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_UNSUPPORTED_REQUIREMENT = 1 << 3,
     DISABLE_SIDELOAD_WIPEOUT = 1 << 4,
     DISABLE_UNKNOWN_FROM_SYNC = 1 << 5,
+
     // Disabled because the user has not yet consented to the permissions,
     // for instance for a default installed item.
     DISABLE_PERMISSIONS_CONSENT = 1 << 6,
-    DISABLE_KNOWN_DISABLED = 1 << 7,
   };
 
   enum InstallType {

@@ -599,9 +599,6 @@ class ExtensionService
   bool IsUnacknowledgedExternalExtension(
       const extensions::Extension* extension);
 
-  // Disable extensions that are known to be disabled yet are currently enabled.
-  void ReconcileKnownDisabled();
-
   // Opens the Extensions page because the user wants to get more details
   // about the alerts.
   void HandleExtensionAlertDetails();
