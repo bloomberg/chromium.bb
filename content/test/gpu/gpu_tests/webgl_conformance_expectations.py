@@ -115,3 +115,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'])
     self.Skip('conformance/rendering/line-loop-tri-fan.html',
         ['lion', 'intel'])
+
+    # Android failures
+    self.Fail('conformance/textures/texture-npot-video.html',
+        ['android'], bug=306485)
