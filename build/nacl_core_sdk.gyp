@@ -20,13 +20,13 @@
         '../src/untrusted/pthread/pthread.gyp:pthread_lib',
       ],
       'conditions': [
-        ['target_arch!="arm"', {
+        ['target_arch!="arm" and target_arch!="mipsel"', {
           'dependencies': [
             # sel_ldr and irt are host-only and not needed when building the
-            # arm components of the SDK.
+            # arm and mips components of the SDK.
             '../src/untrusted/irt/irt.gyp:irt_core_nexe',
             '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
-            # these libraries don't currently exist on arm
+            # these libraries don't currently exist on arm and mips
             '../src/untrusted/valgrind/valgrind.gyp:dynamic_annotations_lib',
             '../src/untrusted/valgrind/valgrind.gyp:valgrind_lib',
           ],

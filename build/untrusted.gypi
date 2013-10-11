@@ -48,7 +48,7 @@
     ]
   },
   'conditions': [
-    ['target_arch!="arm"', {
+    ['target_arch=="ia32" or target_arch=="x64"', {
       # Common defaults for all x86 nacl-gcc targets
       'target_defaults': {
         'conditions': [
@@ -122,7 +122,8 @@
           ],
         },
       },
-    }, {
+    }],
+    ['target_arch=="arm"', {
       # Common defaults for all ARM nacl-gcc targets
       'target_defaults': {
         'defines': [],
@@ -169,7 +170,53 @@
          },
        },
     }],
-    ['target_arch!="arm"', {
+    ['target_arch=="mipsel"', {
+      # Common defaults for all mips pnacl-clang targets
+      'target_defaults': {
+        'defines': [],
+        'sources': [],
+        'compile_flags': [],
+        'link_flags': [],
+        'include_dirs': [],
+        'variables': {
+          'newlib_tls_flags': [],
+          'python_exe': 'python',
+          'nexe_target': '',
+          'nlib_target': '',
+          'nso_target': '',
+          'build_newlib': 0,
+          'build_glibc': 0,
+          'build_irt': 0,
+          'disable_glibc%': 1,
+          'extra_args': [],
+          'enable_x86_32': 0,
+          'enable_x86_64': 0,
+          'enable_arm': 0,
+          'extra_deps_newlib_mips': [],
+          'native_sources': [],
+          'tc_lib_dir_newlib_mips': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libmips',
+          'tc_lib_dir_irt_mips': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/libmips',
+          'tc_include_dir_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
+          'include_dirs': ['<(DEPTH)'],
+          'defines': [
+            '<@(nacl_default_defines)',
+            'NACL_BUILD_ARCH=mips',
+           ],
+           'sources': [],
+           'link_flags': [],
+           'get_sources': [
+             'scan_sources',
+             # This is needed to open the .c filenames, which are given
+             # relative to the .gyp file.
+             '-I.',
+             # This is needed to open the .h filenames, which are given
+             # relative to the native_client directory's parent.
+             '-I<(DEPTH)',
+           ],
+         },
+       },
+    }],
+    ['target_arch=="ia32" or target_arch=="x64"', {
       'target_defaults': {
         # x86-64 newlib nexe action
         'target_conditions': [
@@ -703,7 +750,173 @@
         ], # end target_conditions for arm newlib (nexe/nlib, force_arm_pnacl)
       },
     }], # end target_arch = arm
-    ['target_arch!="arm"', {
+    ['target_arch=="mipsel"', {
+      'target_defaults': {
+        'target_conditions': [
+          # mips newlib nexe action
+          ['nexe_target!="" and build_newlib!=0', {
+            'variables': {
+               'tool_name': 'newlib',
+               'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips.nexe',
+               'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
+               'source_list_newlib_mips%': '<(tool_name)-mips.>(_target_name).source_list.gypcmd',
+            },
+            'actions': [
+              {
+                'action_name': 'build newlib mips nexe',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_mips)',
+                'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps_newlib_mips)',
+                   '>(source_list_newlib_mips)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib_mips)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'mips',
+                  '--build', 'newlib_nexe',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_newlib_mips)',
+                  '--objdir', '>(objdir_newlib_mips)',
+                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags= ^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_newlib_mips) ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_mips) ^(_sources) ^(sources) ^(native_sources))',
+                ],
+              },
+            ],
+          }],
+          # mips newlib library action
+          ['nlib_target!="" and build_newlib!=0', {
+            'variables': {
+              'tool_name': 'newlib',
+              'out_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
+              'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
+              'source_list_newlib_mips%': '<(tool_name)-mips.>(_target_name).source_list.gypcmd',
+            },
+            'actions': [
+              {
+                'action_name': 'build newlib mips nlib',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_mips)',
+                'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps_newlib_mips)',
+                   '>(source_list_newlib_mips)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib_mips)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'mips',
+                  '--build', 'newlib_nlib',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_newlib_mips)',
+                  '--objdir', '>(objdir_newlib_mips)',
+                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags= ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_newlib_mips) ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_mips) ^(_sources) ^(sources))',
+                ],
+              },
+            ],
+          }],
+          # mips irt nexe action
+          ['nexe_target!="" and build_irt!=0', {
+            'variables': {
+               'tool_name': 'irt',
+               'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips.nexe',
+               'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
+               'source_list_newlib_mips%': '<(tool_name)-mips.>(_target_name).source_list.gypcmd',
+            },
+            'actions': [
+              {
+                'action_name': 'build IRT mips nexe',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_mips)',
+                'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps_newlib_mips)',
+                   '>(source_list_newlib_mips)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib_mips)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'mips',
+                  '--build', 'newlib_nexe',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_newlib_mips)',
+                  '--objdir', '>(objdir_newlib_mips)',
+                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags= ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags= -arch mips --pnacl-allow-translate --pnacl-allow-native -Wt,-mtls-use-call --pnacl-disable-abi-check -Wl,-Trodata-segment=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) -B>(tc_lib_dir_irt_mips) ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_mips) ^(_sources) ^(sources))',
+                ],
+              },
+            ],
+          }],
+          # mips IRT library action
+          ['nlib_target!="" and build_irt!=0', {
+            'variables': {
+              'tool_name': 'irt',
+              'out_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
+              'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
+              'source_list_newlib_mips%': '<(tool_name)-mips.>(_target_name).source_list.gypcmd',
+            },
+            'actions': [
+              {
+                'action_name': 'build IRT mips nlib',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_mips)',
+                'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps_newlib_mips)',
+                   '>(source_list_newlib_mips)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib_mips)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'mips',
+                  '--build', 'newlib_nlib',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_newlib_mips)',
+                  '--objdir', '>(objdir_newlib_mips)',
+                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags= ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_irt_mips) ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_mips) ^(_sources) ^(sources))',
+                ],
+              },
+            ],
+          }],
+        ], # end target_conditions for mips newlib
+      },
+    }], # end target_arch = mips
+    ['target_arch=="ia32" or target_arch=="x64"', {
       'target_defaults': {
         # x86-64 glibc nexe action
         'target_conditions': [
@@ -948,7 +1161,7 @@
            }],
         ], # end target_conditions for glibc (nexe/nlib/nso, x86-32/64)
       },
-    }], # end target_arch != arm
+    }], # end target_arch == ia32 or x64
   ],
   # Common defaults for pnacl targets
   'target_defaults': {
@@ -990,6 +1203,7 @@
             'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
             'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
             'out_pnacl_newlib_arm_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm.nexe',
+            'out_pnacl_newlib_mips_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_mips.nexe',
           'tool_name': 'pnacl_newlib',
           'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
           'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',

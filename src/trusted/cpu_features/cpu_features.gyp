@@ -48,7 +48,7 @@
             'arch/x86/cpu_xgetbv.S',
           ],
         }],
-        ['target_arch=="arm" or target_arch=="mips"', {
+        ['target_arch=="arm" or target_arch=="mipsel"', {
           'sources': [
             'arch/arm/cpu_arm.c',
             'arch/mips/cpu_mips.c',

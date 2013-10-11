@@ -37,12 +37,18 @@
           'dependencies': [
             '../src/trusted/validator_arm/validator_arm.gyp:*',
           ],
-        }, {
+        }],
+        ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             '../src/trusted/validator/driver/ncval.gyp:*',
             '../src/trusted/validator_arm/ncval.gyp:*',
             '../src/trusted/validator_x86/ncval.gyp:*',
             '../src/trusted/validator_x86/validator_x86.gyp:*',
+          ],
+        }],
+        ['target_arch=="mipsel"', {
+          'dependencies': [
+            '../src/trusted/validator_mips/validator_mips.gyp:*',
           ],
         }],
       ],

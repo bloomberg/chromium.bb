@@ -204,6 +204,14 @@
           'NACL_TARGET_SUBARCH=32',
         ],
       }],
+      ['target_arch=="mipsel"', {
+        'defines': [
+          'NACL_BUILD_ARCH=mips',
+          'NACL_BUILD_SUBARCH=32',
+          'NACL_TARGET_ARCH=mips',
+          'NACL_TARGET_SUBARCH=32',
+        ],
+      }],
       ['linux2==1', {
         'defines': ['LINUX2=1'],
       }],
@@ -337,7 +345,18 @@
                       ],
                   }],
               ],
-            }, { # else: target_arch != "arm"
+            }],
+            ['target_arch=="mipsel"', {
+              # Copied from chromium build/common.gypi
+              'conditions': [
+                ['mips_arch_variant=="mips32r2"', {
+                  'cflags': ['-mips32r2'],
+                }, {
+                  'cflags': ['-mips32'],
+                }],
+              ],
+            }],
+            ['target_arch=="ia32" or target_arch=="x64"', {
               'conditions': [
                 ['target_arch=="x64"', {
                   'variables': {

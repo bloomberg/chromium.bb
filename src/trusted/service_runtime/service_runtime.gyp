@@ -179,6 +179,20 @@
                 'linux/nacl_signal_arm.c',
               ],
             }],
+            ['target_arch=="mipsel"', {
+              'sources': [
+                'arch/mips/nacl_app.c',
+                'arch/mips/nacl_switch.S',
+                'arch/mips/nacl_switch_to_app_mips.c',
+                'arch/mips/nacl_syscall.S',
+                'arch/mips/nacl_tls.c',
+                'arch/mips/sel_addrspace_mips.c',
+                'arch/mips/sel_ldr_mips.c',
+                'arch/mips/sel_rt.c',
+                'arch/mips/tramp_mips.S',
+                'linux/nacl_signal_mips.c',
+              ],
+            }],
             ['OS=="linux"', {
               'sources': [
                 'linux/nacl_bootstrap_args.c',
@@ -199,6 +213,11 @@
                 ['target_arch=="arm"', {
                   'sources': [
                     'linux/arm/sel_segments.c',
+                  ],
+                }],
+                ['target_arch=="mipsel"', {
+                  'sources': [
+                    'linux/mips/sel_segments.c',
                   ],
                 }],
               ],
@@ -256,6 +275,11 @@
         ['target_arch=="arm"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator_arm/validator_arm.gyp:ncvalidate_arm_v2',
+          ],
+        }],
+        ['target_arch=="mipsel"', {
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator_mips/validator_mips.gyp:ncvalidate_mips',
           ],
         }],
         ['target_arch=="ia32" or target_arch=="x64"', {

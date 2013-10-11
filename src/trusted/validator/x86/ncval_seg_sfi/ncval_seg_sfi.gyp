@@ -172,8 +172,5 @@
           'hard_dependency': 1,
         }],
     }],
-    [ 'target_arch=="arm"', {
-      'targets': []
-    }],
   ],
 }

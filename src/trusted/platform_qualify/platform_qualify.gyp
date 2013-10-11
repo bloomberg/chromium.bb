@@ -68,6 +68,12 @@
               'arch/arm/nacl_qualify_unaligned.c',
             ],
           }],
+          # mips specifics
+          ['target_arch=="mipsel"', {
+            'sources': [
+              'arch/mips/nacl_qualify_fpu.c',
+            ],
+          }],
         ],
       }],
     ],

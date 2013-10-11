@@ -45,7 +45,6 @@
       'type': 'static_library',
       'sources': [
         'address_set.cc',
-        'inst_classes.cc',
         'validator.cc',
         '<(validate_gen_out)/decode.cc'
       ],
@@ -67,24 +66,33 @@
           'msvs_cygwin_shell': 0,
           'inputs': [
             'mips-opt.table',
-            'generate_decoder.py',
-            'dgen_core.py',
-            'dgen_input.py',
-            'dgen_opt.py',
-            'dgen_output.py',
+            'dgen/generate_decoder.py',
+            'dgen/dgen_core.py',
+            'dgen/dgen_input.py',
+            'dgen/dgen_opt.py',
+            'dgen/dgen_output.py',
           ],
           'outputs': [
             '<(validate_gen_out)/decode.cc',
           ],
           'action': [
             '<@(python_exe)',
-            'generate_decoder.py',
+            'dgen/generate_decoder.py',
             'mips-opt.table',
             '<@(_outputs)',
            ],
           'process_outputs_as_sources': 1,
           'message': 'generate decoder.cc',
         },
+      ],
+    },
+    # ----------------------------------------------------------------------
+    {
+      'target_name': 'ncvalidate_mips',
+      'type': 'static_library',
+      'sources': ['ncvalidate.cc'],
+      'dependencies': [
+        'mips_validator_core'
       ],
     },
   ],

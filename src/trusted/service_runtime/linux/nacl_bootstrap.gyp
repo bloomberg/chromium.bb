@@ -25,6 +25,12 @@
         'nacl_reserve_top': '0x40002000',
       }
     }],
+    ['target_arch=="mipsel"', {
+      'variables': {
+        # 1G address space, plus 32K guard area above.
+        'nacl_reserve_top': '0x40008000',
+      }
+    }],
   ],
   'targets': [
     {
@@ -154,6 +160,11 @@
               'variables': {
                 'linker_emulation': 'armelf_linux_eabi',
               }
+            }],
+            ['target_arch=="mipsel"', {
+              'variables': {
+                'linker_emulation': 'elf32ltsmip',
+              },
             }],
           ],
           'action': ['python', 'ld_bfd.py',

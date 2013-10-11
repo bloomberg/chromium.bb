@@ -79,9 +79,6 @@
         },
       ],
     }],
-    [ 'target_arch=="arm" or target_arch=="x64"', {
-      'targets': []
-    }],
   ],
 }
 

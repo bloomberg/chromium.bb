@@ -32,9 +32,6 @@
         },
       ],
     }],
-    [ 'target_arch=="arm" or target_arch=="ia32"', {
-      'targets': []
-    }],
   ],
 }
 

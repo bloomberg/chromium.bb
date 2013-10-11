@@ -169,6 +169,8 @@ class Builder(object):
       self.subarch = ''
       self.tool_prefix = 'arm-nacl-'
       mainarch = 'arm'
+    elif arch == 'mips':
+      self.is_pnacl_toolchain = True
     elif arch == 'pnacl':
       self.subarch = ''
       self.is_pnacl_toolchain = True
@@ -180,6 +182,9 @@ class Builder(object):
 
     if arch == 'arm' and toolname == 'glibc':
       raise Error('arm glibc not yet supported.')
+
+    if arch == 'mips' and toolname == 'glibc':
+      raise Error('mips glibc not supported.')
 
     if arch == 'pnacl' and toolname == 'glibc':
       raise Error('pnacl glibc not yet supported.')
