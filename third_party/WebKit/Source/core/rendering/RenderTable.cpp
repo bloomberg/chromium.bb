@@ -851,10 +851,6 @@ RenderTableCol* RenderTable::firstColumn() const
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isRenderTableCol())
             return toRenderTableCol(child);
-
-        // We allow only table-captions before columns or column-groups.
-        if (!child->isTableCaption())
-            return 0;
     }
 
     return 0;

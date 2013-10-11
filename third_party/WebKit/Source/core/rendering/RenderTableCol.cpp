@@ -153,13 +153,7 @@ RenderTableCol* RenderTableCol::nextColumn() const
     if (!next && parent()->isRenderTableCol())
         next = parent()->nextSibling();
 
-    for (; next && !next->isRenderTableCol(); next = next->nextSibling()) {
-        // We allow captions mixed with columns and column-groups.
-        if (next->isTableCaption())
-            continue;
-
-        return 0;
-    }
+    for (; next && !next->isRenderTableCol(); next = next->nextSibling()) { }
 
     return toRenderTableCol(next);
 }

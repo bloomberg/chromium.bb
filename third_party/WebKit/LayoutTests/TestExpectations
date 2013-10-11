@@ -1176,3 +1176,7 @@ crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidt
 
 crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
 crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
+
+#Below test case need to rebaseline after crbug.com/305169
+crbug.com/305169 [ Win Mac ] tables/mozilla_expected_failures/dom/appendCol1.html [ NeedsRebaseline ]
+crbug.com/305169 [ Win Mac ] tables/mozilla_expected_failures/dom/appendColGroup1.html [ NeedsRebaseline ]
