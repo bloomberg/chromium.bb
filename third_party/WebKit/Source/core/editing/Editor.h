@@ -61,14 +61,15 @@ class TextEvent;
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM, CommandFromDOMWithUserInterface };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
 
-class Editor : public FrameDestructionObserver {
+class Editor {
+    WTF_MAKE_NONCOPYABLE(Editor);
 public:
-    explicit Editor(Frame&);
+    static PassOwnPtr<Editor> create(Frame&);
     ~Editor();
 
     EditorClient& client() const;
 
-    Frame& frame() const { return *m_frame; }
+    Frame& frame() const { return m_frame; }
 
     CompositeEditCommand* lastEditCommand() { return m_lastEditCommand.get(); }
 
@@ -257,6 +258,7 @@ public:
     friend class RevealSelectionScope;
 
 private:
+    Frame& m_frame;
     RefPtr<CompositeEditCommand> m_lastEditCommand;
     RefPtr<Node> m_removedAnchor;
     int m_preventRevealSelection;
@@ -267,6 +269,8 @@ private:
     bool m_areMarkedTextMatchesHighlighted;
     EditorParagraphSeparator m_defaultParagraphSeparator;
     bool m_overwriteModeEnabled;
+
+    explicit Editor(Frame&);
 
     bool canDeleteRange(Range*) const;
 

@@ -1640,12 +1640,12 @@ static const EditorInternalCommand* internalCommand(const String& commandName)
 
 Editor::Command Editor::command(const String& commandName)
 {
-    return Command(internalCommand(commandName), CommandFromMenuOrKeyBinding, m_frame);
+    return Command(internalCommand(commandName), CommandFromMenuOrKeyBinding, &m_frame);
 }
 
 Editor::Command Editor::command(const String& commandName, EditorCommandSource source)
 {
-    return Command(internalCommand(commandName), source, m_frame);
+    return Command(internalCommand(commandName), source, &m_frame);
 }
 
 bool Editor::commandIsSupportedFromMenuOrKeyBinding(const String& commandName)

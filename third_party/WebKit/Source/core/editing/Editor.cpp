@@ -96,14 +96,14 @@ Editor::RevealSelectionScope::~RevealSelectionScope()
     ASSERT(m_editor->m_preventRevealSelection);
     --m_editor->m_preventRevealSelection;
     if (!m_editor->m_preventRevealSelection)
-        m_editor->m_frame->selection().revealSelection(ScrollAlignment::alignToEdgeIfNeeded, RevealExtent);
+        m_editor->m_frame.selection().revealSelection(ScrollAlignment::alignToEdgeIfNeeded, RevealExtent);
 }
 
 // When an event handler has moved the selection outside of a text control
 // we should use the target control's selection for this editing operation.
 VisibleSelection Editor::selectionForCommand(Event* event)
 {
-    VisibleSelection selection = m_frame->selection().selection();
+    VisibleSelection selection = m_frame.selection().selection();
     if (!event)
         return selection;
     // If the target is a text control, and the current selection is outside of its shadow tree,
@@ -120,10 +120,10 @@ VisibleSelection Editor::selectionForCommand(Event* event)
 // Function considers Mac editing behavior a fallback when Page or Settings is not available.
 EditingBehavior Editor::behavior() const
 {
-    if (!m_frame || !m_frame->settings())
+    if (!m_frame.settings())
         return EditingBehavior(EditingMacBehavior);
 
-    return EditingBehavior(m_frame->settings()->editingBehaviorType());
+    return EditingBehavior(m_frame.settings()->editingBehaviorType());
 }
 
 static EditorClient& emptyEditorClient()
@@ -134,7 +134,7 @@ static EditorClient& emptyEditorClient()
 
 EditorClient& Editor::client() const
 {
-    if (Page* page = m_frame->page())
+    if (Page* page = m_frame.page())
         return page->editorClient();
     return emptyEditorClient();
 }
@@ -171,12 +171,12 @@ bool Editor::handleTextEvent(TextEvent* event)
 
 bool Editor::canEdit() const
 {
-    return m_frame->selection().rootEditableElement();
+    return m_frame.selection().rootEditableElement();
 }
 
 bool Editor::canEditRichly() const
 {
-    return m_frame->selection().isContentRichlyEditable();
+    return m_frame.selection().isContentRichlyEditable();
 }
 
 // WinIE uses onbeforecut and onbeforepaste to enables the cut and paste menu items. They
@@ -186,12 +186,12 @@ bool Editor::canEditRichly() const
 
 bool Editor::canDHTMLCut()
 {
-    return !m_frame->selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecut, ClipboardNumb);
+    return !m_frame.selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecut, ClipboardNumb);
 }
 
 bool Editor::canDHTMLCopy()
 {
-    return !m_frame->selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecopy, ClipboardNumb);
+    return !m_frame.selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecopy, ClipboardNumb);
 }
 
 bool Editor::canDHTMLPaste()
@@ -225,9 +225,9 @@ static HTMLImageElement* imageElementFromImageDocument(Document* document)
 
 bool Editor::canCopy() const
 {
-    if (imageElementFromImageDocument(m_frame->document()))
+    if (imageElementFromImageDocument(m_frame.document()))
         return true;
-    FrameSelection& selection = m_frame->selection();
+    FrameSelection& selection = m_frame.selection();
     return selection.isRange() && !selection.isInPasswordField();
 }
 
@@ -238,7 +238,7 @@ bool Editor::canPaste() const
 
 bool Editor::canDelete() const
 {
-    FrameSelection& selection = m_frame->selection();
+    FrameSelection& selection = m_frame.selection();
     return selection.isRange() && selection.rootEditableElement();
 }
 
@@ -269,7 +269,7 @@ bool Editor::smartInsertDeleteEnabled()
 
 bool Editor::canSmartCopyOrDelete()
 {
-    return client().smartInsertDeleteEnabled() && m_frame->selection().granularity() == WordGranularity;
+    return client().smartInsertDeleteEnabled() && m_frame.selection().granularity() == WordGranularity;
 }
 
 bool Editor::isSelectTrailingWhitespaceEnabled()
@@ -282,10 +282,10 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
     if (!canEdit())
         return false;
 
-    if (m_frame->selection().isRange()) {
+    if (m_frame.selection().isRange()) {
         if (isTypingAction) {
-            ASSERT(m_frame->document());
-            TypingCommand::deleteKeyPressed(*m_frame->document(), canSmartCopyOrDelete() ? TypingCommand::SmartDelete : 0, granularity);
+            ASSERT(m_frame.document());
+            TypingCommand::deleteKeyPressed(*m_frame.document(), canSmartCopyOrDelete() ? TypingCommand::SmartDelete : 0, granularity);
             revealSelectionAfterEditingOperation();
         } else {
             if (killRing)
@@ -302,13 +302,13 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
         switch (direction) {
         case DirectionForward:
         case DirectionRight:
-            ASSERT(m_frame->document());
-            TypingCommand::forwardDeleteKeyPressed(*m_frame->document(), options, granularity);
+            ASSERT(m_frame.document());
+            TypingCommand::forwardDeleteKeyPressed(*m_frame.document(), options, granularity);
             break;
         case DirectionBackward:
         case DirectionLeft:
-            ASSERT(m_frame->document());
-            TypingCommand::deleteKeyPressed(*m_frame->document(), options, granularity);
+            ASSERT(m_frame.document());
+            TypingCommand::deleteKeyPressed(*m_frame.document(), options, granularity);
             break;
         }
         revealSelectionAfterEditingOperation();
@@ -325,11 +325,11 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
 
 void Editor::deleteSelectionWithSmartDelete(bool smartDelete)
 {
-    if (m_frame->selection().isNone())
+    if (m_frame.selection().isNone())
         return;
 
-    ASSERT(m_frame->document());
-    DeleteSelectionCommand::create(*m_frame->document(), smartDelete)->apply();
+    ASSERT(m_frame.document());
+    DeleteSelectionCommand::create(*m_frame.document(), smartDelete)->apply();
 }
 
 void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
@@ -337,7 +337,7 @@ void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
     Node* target = findEventTargetFromSelection();
     if (!target)
         return;
-    target->dispatchEvent(TextEvent::createForPlainTextPaste(m_frame->domWindow(), pastingText, smartReplace), IGNORE_EXCEPTION);
+    target->dispatchEvent(TextEvent::createForPlainTextPaste(m_frame.domWindow(), pastingText, smartReplace), IGNORE_EXCEPTION);
 }
 
 void Editor::pasteAsFragment(PassRefPtr<DocumentFragment> pastingFragment, bool smartReplace, bool matchStyle)
@@ -345,12 +345,12 @@ void Editor::pasteAsFragment(PassRefPtr<DocumentFragment> pastingFragment, bool 
     Node* target = findEventTargetFromSelection();
     if (!target)
         return;
-    target->dispatchEvent(TextEvent::createForFragmentPaste(m_frame->domWindow(), pastingFragment, smartReplace, matchStyle), IGNORE_EXCEPTION);
+    target->dispatchEvent(TextEvent::createForFragmentPaste(m_frame.domWindow(), pastingFragment, smartReplace, matchStyle), IGNORE_EXCEPTION);
 }
 
 bool Editor::tryDHTMLCopy()
 {
-    if (m_frame->selection().isInPasswordField())
+    if (m_frame.selection().isInPasswordField())
         return false;
 
     return !dispatchCPPEvent(EventTypeNames::copy, ClipboardWritable);
@@ -358,7 +358,7 @@ bool Editor::tryDHTMLCopy()
 
 bool Editor::tryDHTMLCut()
 {
-    if (m_frame->selection().isInPasswordField())
+    if (m_frame.selection().isInPasswordField())
         return false;
 
     return !dispatchCPPEvent(EventTypeNames::cut, ClipboardWritable);
@@ -379,7 +379,7 @@ void Editor::pasteWithPasteboard(Pasteboard* pasteboard, bool allowPlainText)
 {
     RefPtr<Range> range = selectedRange();
     bool chosePlainText;
-    RefPtr<DocumentFragment> fragment = pasteboard->documentFragment(m_frame, range, allowPlainText, chosePlainText);
+    RefPtr<DocumentFragment> fragment = pasteboard->documentFragment(&m_frame, range, allowPlainText, chosePlainText);
     if (fragment)
         pasteAsFragment(fragment, canSmartReplaceWithPasteboard(pasteboard), chosePlainText);
 }
@@ -420,7 +420,7 @@ bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard)
 
 void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment, bool selectReplacement, bool smartReplace, bool matchStyle)
 {
-    if (m_frame->selection().isNone() || !m_frame->selection().isContentEditable() || !fragment)
+    if (m_frame.selection().isNone() || !m_frame.selection().isContentEditable() || !fragment)
         return;
 
     ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::PreventNesting | ReplaceSelectionCommand::SanitizeFragment;
@@ -430,13 +430,13 @@ void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment,
         options |= ReplaceSelectionCommand::SmartReplace;
     if (matchStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
-    ASSERT(m_frame->document());
-    ReplaceSelectionCommand::create(*m_frame->document(), fragment, options, EditActionPaste)->apply();
+    ASSERT(m_frame.document());
+    ReplaceSelectionCommand::create(*m_frame.document(), fragment, options, EditActionPaste)->apply();
     revealSelectionAfterEditingOperation();
 
-    if (m_frame->selection().isInPasswordField() || !isContinuousSpellCheckingEnabled())
+    if (m_frame.selection().isInPasswordField() || !isContinuousSpellCheckingEnabled())
         return;
-    spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(m_frame->selection().rootEditableElement());
+    spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(m_frame.selection().rootEditableElement());
 }
 
 void Editor::replaceSelectionWithText(const String& text, bool selectReplacement, bool smartReplace)
@@ -446,9 +446,7 @@ void Editor::replaceSelectionWithText(const String& text, bool selectReplacement
 
 PassRefPtr<Range> Editor::selectedRange()
 {
-    if (!m_frame)
-        return 0;
-    return m_frame->selection().toNormalizedRange();
+    return m_frame.selection().toNormalizedRange();
 }
 
 bool Editor::shouldDeleteRange(Range* range) const
@@ -461,7 +459,7 @@ bool Editor::shouldDeleteRange(Range* range) const
 
 void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
 {
-    client().respondToChangedSelection(m_frame);
+    client().respondToChangedSelection(&m_frame);
     setStartNewKillRingSequence(true);
 }
 
@@ -469,7 +467,7 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection)
 {
     if (AXObjectCache::accessibilityEnabled()) {
         Node* node = endingSelection.start().deprecatedNode();
-        if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
+        if (AXObjectCache* cache = m_frame.document()->existingAXObjectCache())
             cache->postNotification(node, AXObjectCache::AXValueChanged, false);
     }
 
@@ -479,12 +477,12 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection)
 
 TriState Editor::selectionUnorderedListState() const
 {
-    if (m_frame->selection().isCaret()) {
-        if (enclosingNodeWithTag(m_frame->selection().selection().start(), ulTag))
+    if (m_frame.selection().isCaret()) {
+        if (enclosingNodeWithTag(m_frame.selection().selection().start(), ulTag))
             return TrueTriState;
-    } else if (m_frame->selection().isRange()) {
-        Node* startNode = enclosingNodeWithTag(m_frame->selection().selection().start(), ulTag);
-        Node* endNode = enclosingNodeWithTag(m_frame->selection().selection().end(), ulTag);
+    } else if (m_frame.selection().isRange()) {
+        Node* startNode = enclosingNodeWithTag(m_frame.selection().selection().start(), ulTag);
+        Node* endNode = enclosingNodeWithTag(m_frame.selection().selection().end(), ulTag);
         if (startNode && endNode && startNode == endNode)
             return TrueTriState;
     }
@@ -494,12 +492,12 @@ TriState Editor::selectionUnorderedListState() const
 
 TriState Editor::selectionOrderedListState() const
 {
-    if (m_frame->selection().isCaret()) {
-        if (enclosingNodeWithTag(m_frame->selection().selection().start(), olTag))
+    if (m_frame.selection().isCaret()) {
+        if (enclosingNodeWithTag(m_frame.selection().selection().start(), olTag))
             return TrueTriState;
-    } else if (m_frame->selection().isRange()) {
-        Node* startNode = enclosingNodeWithTag(m_frame->selection().selection().start(), olTag);
-        Node* endNode = enclosingNodeWithTag(m_frame->selection().selection().end(), olTag);
+    } else if (m_frame.selection().isRange()) {
+        Node* startNode = enclosingNodeWithTag(m_frame.selection().selection().start(), olTag);
+        Node* endNode = enclosingNodeWithTag(m_frame.selection().selection().end(), olTag);
         if (startNode && endNode && startNode == endNode)
             return TrueTriState;
     }
@@ -512,8 +510,8 @@ PassRefPtr<Node> Editor::insertOrderedList()
     if (!canEditRichly())
         return 0;
 
-    ASSERT(m_frame->document());
-    RefPtr<Node> newList = InsertListCommand::insertList(*m_frame->document(), InsertListCommand::OrderedList);
+    ASSERT(m_frame.document());
+    RefPtr<Node> newList = InsertListCommand::insertList(*m_frame.document(), InsertListCommand::OrderedList);
     revealSelectionAfterEditingOperation();
     return newList;
 }
@@ -523,71 +521,71 @@ PassRefPtr<Node> Editor::insertUnorderedList()
     if (!canEditRichly())
         return 0;
 
-    ASSERT(m_frame->document());
-    RefPtr<Node> newList = InsertListCommand::insertList(*m_frame->document(), InsertListCommand::UnorderedList);
+    ASSERT(m_frame.document());
+    RefPtr<Node> newList = InsertListCommand::insertList(*m_frame.document(), InsertListCommand::UnorderedList);
     revealSelectionAfterEditingOperation();
     return newList;
 }
 
 bool Editor::canIncreaseSelectionListLevel()
 {
-    ASSERT(m_frame->document());
-    return canEditRichly() && IncreaseSelectionListLevelCommand::canIncreaseSelectionListLevel(*m_frame->document());
+    ASSERT(m_frame.document());
+    return canEditRichly() && IncreaseSelectionListLevelCommand::canIncreaseSelectionListLevel(*m_frame.document());
 }
 
 bool Editor::canDecreaseSelectionListLevel()
 {
-    ASSERT(m_frame->document());
-    return canEditRichly() && DecreaseSelectionListLevelCommand::canDecreaseSelectionListLevel(*m_frame->document());
+    ASSERT(m_frame.document());
+    return canEditRichly() && DecreaseSelectionListLevelCommand::canDecreaseSelectionListLevel(*m_frame.document());
 }
 
 PassRefPtr<Node> Editor::increaseSelectionListLevel()
 {
-    if (!canEditRichly() || m_frame->selection().isNone())
+    if (!canEditRichly() || m_frame.selection().isNone())
         return 0;
 
-    ASSERT(m_frame->document());
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevel(*m_frame->document());
+    ASSERT(m_frame.document());
+    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevel(*m_frame.document());
     revealSelectionAfterEditingOperation();
     return newList;
 }
 
 PassRefPtr<Node> Editor::increaseSelectionListLevelOrdered()
 {
-    if (!canEditRichly() || m_frame->selection().isNone())
+    if (!canEditRichly() || m_frame.selection().isNone())
         return 0;
 
-    ASSERT(m_frame->document());
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(*m_frame->document());
+    ASSERT(m_frame.document());
+    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(*m_frame.document());
     revealSelectionAfterEditingOperation();
     return newList.release();
 }
 
 PassRefPtr<Node> Editor::increaseSelectionListLevelUnordered()
 {
-    if (!canEditRichly() || m_frame->selection().isNone())
+    if (!canEditRichly() || m_frame.selection().isNone())
         return 0;
 
-    ASSERT(m_frame->document());
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(*m_frame->document());
+    ASSERT(m_frame.document());
+    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(*m_frame.document());
     revealSelectionAfterEditingOperation();
     return newList.release();
 }
 
 void Editor::decreaseSelectionListLevel()
 {
-    if (!canEditRichly() || m_frame->selection().isNone())
+    if (!canEditRichly() || m_frame.selection().isNone())
         return;
 
-    ASSERT(m_frame->document());
-    DecreaseSelectionListLevelCommand::decreaseSelectionListLevel(*m_frame->document());
+    ASSERT(m_frame.document());
+    DecreaseSelectionListLevelCommand::decreaseSelectionListLevel(*m_frame.document());
     revealSelectionAfterEditingOperation();
 }
 
 void Editor::removeFormattingAndStyle()
 {
-    ASSERT(m_frame->document());
-    RemoveFormatCommand::create(*m_frame->document())->apply();
+    ASSERT(m_frame.document());
+    RemoveFormatCommand::create(*m_frame.document())->apply();
 }
 
 void Editor::clearLastEditCommand()
@@ -599,7 +597,7 @@ Node* Editor::findEventTargetFrom(const VisibleSelection& selection) const
 {
     Node* target = selection.start().element();
     if (!target)
-        target = m_frame->document()->body();
+        target = m_frame.document()->body();
     if (!target)
         return 0;
 
@@ -608,12 +606,12 @@ Node* Editor::findEventTargetFrom(const VisibleSelection& selection) const
 
 Node* Editor::findEventTargetFromSelection() const
 {
-    return findEventTargetFrom(m_frame->selection().selection());
+    return findEventTargetFrom(m_frame.selection().selection());
 }
 
 void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
 {
-    switch (m_frame->selection().selectionType()) {
+    switch (m_frame.selection().selectionType()) {
     case VisibleSelection::NoSelection:
         // do nothing
         break;
@@ -622,8 +620,8 @@ void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
         break;
     case VisibleSelection::RangeSelection:
         if (style) {
-            ASSERT(m_frame->document());
-            ApplyStyleCommand::create(*m_frame->document(), EditingStyle::create(style).get(), editingAction)->apply();
+            ASSERT(m_frame.document());
+            ApplyStyleCommand::create(*m_frame.document(), EditingStyle::create(style).get(), editingAction)->apply();
         }
         break;
     }
@@ -631,15 +629,15 @@ void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
 
 void Editor::applyParagraphStyle(StylePropertySet* style, EditAction editingAction)
 {
-    switch (m_frame->selection().selectionType()) {
+    switch (m_frame.selection().selectionType()) {
     case VisibleSelection::NoSelection:
         // do nothing
         break;
     case VisibleSelection::CaretSelection:
     case VisibleSelection::RangeSelection:
         if (style) {
-            ASSERT(m_frame->document());
-            ApplyStyleCommand::create(*m_frame->document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
+            ASSERT(m_frame.document());
+            ApplyStyleCommand::create(*m_frame.document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
         }
         break;
     }
@@ -664,36 +662,36 @@ void Editor::applyParagraphStyleToSelection(StylePropertySet* style, EditAction 
 bool Editor::selectionStartHasStyle(CSSPropertyID propertyID, const String& value) const
 {
     return EditingStyle::create(propertyID, value)->triStateOfStyle(
-        EditingStyle::styleAtSelectionStart(m_frame->selection().selection(), propertyID == CSSPropertyBackgroundColor).get());
+        EditingStyle::styleAtSelectionStart(m_frame.selection().selection(), propertyID == CSSPropertyBackgroundColor).get());
 }
 
 TriState Editor::selectionHasStyle(CSSPropertyID propertyID, const String& value) const
 {
-    return EditingStyle::create(propertyID, value)->triStateOfStyle(m_frame->selection().selection());
+    return EditingStyle::create(propertyID, value)->triStateOfStyle(m_frame.selection().selection());
 }
 
 String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID)
 {
-    RefPtr<EditingStyle> selectionStyle = EditingStyle::styleAtSelectionStart(m_frame->selection().selection(),
+    RefPtr<EditingStyle> selectionStyle = EditingStyle::styleAtSelectionStart(m_frame.selection().selection(),
         propertyID == CSSPropertyBackgroundColor);
     if (!selectionStyle || !selectionStyle->style())
         return String();
 
     if (propertyID == CSSPropertyFontSize)
-        return String::number(selectionStyle->legacyFontSize(m_frame->document()));
+        return String::number(selectionStyle->legacyFontSize(m_frame.document()));
     return selectionStyle->style()->getPropertyValue(propertyID);
 }
 
 void Editor::indent()
 {
-    ASSERT(m_frame->document());
-    IndentOutdentCommand::create(*m_frame->document(), IndentOutdentCommand::Indent)->apply();
+    ASSERT(m_frame.document());
+    IndentOutdentCommand::create(*m_frame.document(), IndentOutdentCommand::Indent)->apply();
 }
 
 void Editor::outdent()
 {
-    ASSERT(m_frame->document());
-    IndentOutdentCommand::create(*m_frame->document(), IndentOutdentCommand::Outdent)->apply();
+    ASSERT(m_frame.document());
+    IndentOutdentCommand::create(*m_frame.document(), IndentOutdentCommand::Outdent)->apply();
 }
 
 static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, PassRefPtr<Element> endRoot)
@@ -707,7 +705,7 @@ static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, 
 void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
 {
     EventQueueScope scope;
-    m_frame->document()->updateLayout();
+    m_frame.document()->updateLayout();
 
     EditCommandComposition* composition = cmd->composition();
     ASSERT(composition);
@@ -718,7 +716,7 @@ void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
     changeSelectionAfterCommand(newSelection, 0);
 
     if (!cmd->preservesTypingStyle())
-        m_frame->selection().clearTypingStyle();
+        m_frame.selection().clearTypingStyle();
 
     // Command will be equal to last edit command only in the case of typing
     if (m_lastEditCommand.get() == cmd) {
@@ -736,7 +734,7 @@ void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
 void Editor::unappliedEditing(PassRefPtr<EditCommandComposition> cmd)
 {
     EventQueueScope scope;
-    m_frame->document()->updateLayout();
+    m_frame.document()->updateLayout();
 
     dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
 
@@ -751,7 +749,7 @@ void Editor::unappliedEditing(PassRefPtr<EditCommandComposition> cmd)
 void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
 {
     EventQueueScope scope;
-    m_frame->document()->updateLayout();
+    m_frame.document()->updateLayout();
 
     dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
 
@@ -763,8 +761,13 @@ void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     respondToChangedContents(newSelection);
 }
 
+PassOwnPtr<Editor> Editor::create(Frame& frame)
+{
+    return adoptPtr(new Editor(frame));
+}
+
 Editor::Editor(Frame& frame)
-    : FrameDestructionObserver(&frame)
+    : m_frame(frame)
     , m_preventRevealSelection(0)
     , m_shouldStartNewKillRingSequence(false)
     // This is off by default, since most editors want this behavior (this matches IE but not FF).
@@ -782,14 +785,14 @@ Editor::~Editor()
 
 void Editor::clear()
 {
-    m_frame->inputMethodController().clear();
+    m_frame.inputMethodController().clear();
     m_shouldStyleWithCSS = false;
     m_defaultParagraphSeparator = EditorParagraphSeparatorIsDiv;
 }
 
 bool Editor::insertText(const String& text, Event* triggeringEvent)
 {
-    return m_frame->eventHandler()->handleTextInputEvent(text, triggeringEvent);
+    return m_frame.eventHandler()->handleTextInputEvent(text, triggeringEvent);
 }
 
 bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectInsertedText, TextEvent* triggeringEvent)
@@ -836,10 +839,10 @@ bool Editor::insertLineBreak()
     if (!canEdit())
         return false;
 
-    VisiblePosition caret = m_frame->selection().selection().visibleStart();
+    VisiblePosition caret = m_frame.selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
-    ASSERT(m_frame->document());
-    TypingCommand::insertLineBreak(*m_frame->document(), 0);
+    ASSERT(m_frame.document());
+    TypingCommand::insertLineBreak(*m_frame.document(), 0);
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
 
     return true;
@@ -853,10 +856,10 @@ bool Editor::insertParagraphSeparator()
     if (!canEditRichly())
         return insertLineBreak();
 
-    VisiblePosition caret = m_frame->selection().selection().visibleStart();
+    VisiblePosition caret = m_frame.selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
-    ASSERT(m_frame->document());
-    TypingCommand::insertParagraphSeparator(*m_frame->document(), 0);
+    ASSERT(m_frame.document());
+    TypingCommand::insertParagraphSeparator(*m_frame.document(), 0);
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
 
     return true;
@@ -871,8 +874,8 @@ void Editor::cut()
     RefPtr<Range> selection = selectedRange();
     if (shouldDeleteRange(selection.get())) {
         spellChecker().updateMarkersForWordsAffectedByEditing(true);
-        String plainText = m_frame->selectedTextForClipboard();
-        if (enclosingTextFormControl(m_frame->selection().start())) {
+        String plainText = m_frame.selectedTextForClipboard();
+        if (enclosingTextFormControl(m_frame.selection().start())) {
             Pasteboard::generalPasteboard()->writePlainText(plainText,
                 canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace : Pasteboard::CannotSmartReplace);
         } else {
@@ -888,29 +891,29 @@ void Editor::copy()
         return; // DHTML did the whole operation
     if (!canCopy())
         return;
-    if (enclosingTextFormControl(m_frame->selection().start())) {
-        Pasteboard::generalPasteboard()->writePlainText(m_frame->selectedTextForClipboard(),
+    if (enclosingTextFormControl(m_frame.selection().start())) {
+        Pasteboard::generalPasteboard()->writePlainText(m_frame.selectedTextForClipboard(),
             canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace : Pasteboard::CannotSmartReplace);
     } else {
-        Document* document = m_frame->document();
+        Document* document = m_frame.document();
         if (HTMLImageElement* imageElement = imageElementFromImageDocument(document))
             Pasteboard::generalPasteboard()->writeImage(imageElement, document->url(), document->title());
         else
-            Pasteboard::generalPasteboard()->writeSelection(selectedRange().get(), canSmartCopyOrDelete(), m_frame->selectedTextForClipboard());
+            Pasteboard::generalPasteboard()->writeSelection(selectedRange().get(), canSmartCopyOrDelete(), m_frame.selectedTextForClipboard());
     }
 }
 
 void Editor::paste()
 {
-    ASSERT(m_frame->document());
+    ASSERT(m_frame.document());
     if (tryDHTMLPaste(AllMimeTypes))
         return; // DHTML did the whole operation
     if (!canPaste())
         return;
     spellChecker().updateMarkersForWordsAffectedByEditing(false);
-    ResourceFetcher* loader = m_frame->document()->fetcher();
+    ResourceFetcher* loader = m_frame.document()->fetcher();
     ResourceCacheValidationSuppressor validationSuppressor(loader);
-    if (m_frame->selection().isContentRichlyEditable())
+    if (m_frame.selection().isContentRichlyEditable())
         pasteWithPasteboard(Pasteboard::generalPasteboard(), true);
     else
         pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
@@ -953,8 +956,8 @@ void Editor::simplifyMarkup(Node* startNode, Node* endNode)
             return;
     }
 
-    ASSERT(m_frame->document());
-    SimplifyMarkupCommand::create(*m_frame->document(), startNode, endNode ? NodeTraversal::next(endNode) : 0)->apply();
+    ASSERT(m_frame.document());
+    SimplifyMarkupCommand::create(*m_frame.document(), startNode, endNode ? NodeTraversal::next(endNode) : 0)->apply();
 }
 
 void Editor::copyImage(const HitTestResult& result)
@@ -1015,7 +1018,7 @@ void Editor::setBaseWritingDirection(WritingDirection direction)
 
 PassRefPtr<Range> Editor::rangeForPoint(const IntPoint& windowPoint)
 {
-    Document* document = m_frame->documentAtPoint(windowPoint);
+    Document* document = m_frame.documentAtPoint(windowPoint);
     if (!document)
         return 0;
 
@@ -1035,12 +1038,12 @@ void Editor::revealSelectionAfterEditingOperation(const ScrollAlignment& alignme
     if (m_preventRevealSelection)
         return;
 
-    m_frame->selection().revealSelection(alignment, revealExtentOption);
+    m_frame.selection().revealSelection(alignment, revealExtentOption);
 }
 
 bool Editor::setSelectionOffsets(int selectionStart, int selectionEnd)
 {
-    Element* rootEditableElement = m_frame->selection().rootEditableElement();
+    Element* rootEditableElement = m_frame.selection().rootEditableElement();
     if (!rootEditableElement)
         return false;
 
@@ -1048,7 +1051,7 @@ bool Editor::setSelectionOffsets(int selectionStart, int selectionEnd)
     if (!range)
         return false;
 
-    return m_frame->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, true);
+    return m_frame.selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, true);
 }
 
 void Editor::transpose()
@@ -1056,7 +1059,7 @@ void Editor::transpose()
     if (!canEdit())
         return;
 
-    VisibleSelection selection = m_frame->selection().selection();
+    VisibleSelection selection = m_frame.selection().selection();
     if (!selection.isCaret())
         return;
 
@@ -1081,8 +1084,8 @@ void Editor::transpose()
     String transposed = text.right(1) + text.left(1);
 
     // Select the two characters.
-    if (newSelection != m_frame->selection().selection())
-        m_frame->selection().setSelection(newSelection);
+    if (newSelection != m_frame.selection().selection())
+        m_frame.selection().setSelection(newSelection);
 
     // Insert the transposed characters.
     replaceSelectionWithText(transposed, false, false);
@@ -1108,8 +1111,8 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
         return;
 
     // See <rdar://problem/5729315> Some shouldChangeSelectedDOMRange contain Ranges for selections that are no longer valid
-    bool selectionDidNotChangeDOMPosition = newSelection == m_frame->selection().selection();
-    m_frame->selection().setSelection(newSelection, options);
+    bool selectionDidNotChangeDOMPosition = newSelection == m_frame.selection().selection();
+    m_frame.selection().setSelection(newSelection, options);
 
     // Some editing operations change the selection visually without affecting its position within the DOM.
     // For example when you press return in the following (the caret is marked by ^):
@@ -1119,7 +1122,7 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
     // does not call EditorClient::respondToChangedSelection(), which, on the Mac, sends selection change notifications and
     // starts a new kill ring sequence, but we want to do these things (matches AppKit).
     if (selectionDidNotChangeDOMPosition)
-        client().respondToChangedSelection(m_frame);
+        client().respondToChangedSelection(&m_frame);
 }
 
 IntRect Editor::firstRectForRange(Range* range) const
@@ -1154,30 +1157,30 @@ IntRect Editor::firstRectForRange(Range* range) const
 void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editingAction)
 {
     if (!style || style->isEmpty()) {
-        m_frame->selection().clearTypingStyle();
+        m_frame.selection().clearTypingStyle();
         return;
     }
 
     // Calculate the current typing style.
     RefPtr<EditingStyle> typingStyle;
-    if (m_frame->selection().typingStyle()) {
-        typingStyle = m_frame->selection().typingStyle()->copy();
+    if (m_frame.selection().typingStyle()) {
+        typingStyle = m_frame.selection().typingStyle()->copy();
         typingStyle->overrideWithStyle(style);
     } else {
         typingStyle = EditingStyle::create(style);
     }
 
-    typingStyle->prepareToApplyAt(m_frame->selection().selection().visibleStart().deepEquivalent(), EditingStyle::PreserveWritingDirection);
+    typingStyle->prepareToApplyAt(m_frame.selection().selection().visibleStart().deepEquivalent(), EditingStyle::PreserveWritingDirection);
 
     // Handle block styles, substracting these from the typing style.
     RefPtr<EditingStyle> blockStyle = typingStyle->extractAndRemoveBlockProperties();
     if (!blockStyle->isEmpty()) {
-        ASSERT(m_frame->document());
-        ApplyStyleCommand::create(*m_frame->document(), blockStyle.get(), editingAction)->apply();
+        ASSERT(m_frame.document());
+        ApplyStyleCommand::create(*m_frame.document(), blockStyle.get(), editingAction)->apply();
     }
 
     // Set the remaining style as the typing style.
-    m_frame->selection().setTypingStyle(typingStyle);
+    m_frame.selection().setTypingStyle(typingStyle);
 }
 
 void Editor::textAreaOrTextFieldDidBeginEditing(Element* e)
@@ -1209,15 +1212,15 @@ bool Editor::findString(const String& target, bool forward, bool caseFlag, bool 
 
 bool Editor::findString(const String& target, FindOptions options)
 {
-    VisibleSelection selection = m_frame->selection().selection();
+    VisibleSelection selection = m_frame.selection().selection();
 
     RefPtr<Range> resultRange = rangeOfString(target, selection.firstRange().get(), options);
 
     if (!resultRange)
         return false;
 
-    m_frame->selection().setSelection(VisibleSelection(resultRange.get(), DOWNSTREAM));
-    m_frame->selection().revealSelection();
+    m_frame.selection().setSelection(VisibleSelection(resultRange.get(), DOWNSTREAM));
+    m_frame.selection().revealSelection();
     return true;
 }
 
@@ -1240,7 +1243,7 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
 
     // Start from an edge of the reference range, if there's a reference range that's not in shadow content. Which edge
     // is used depends on whether we're searching forward or backward, and whether startInSelection is set.
-    RefPtr<Range> searchRange(rangeOfContents(m_frame->document()));
+    RefPtr<Range> searchRange(rangeOfContents(m_frame.document()));
 
     bool forward = !(options & Backwards);
     bool startInReferenceRange = referenceRange && (options & StartInSelection);
@@ -1264,7 +1267,7 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
     // Build a selection with the found range to remove collapsed whitespace.
     // Compare ranges instead of selection objects to ignore the way that the current selection was made.
     if (startInReferenceRange && areRangesEqual(VisibleSelection(resultRange.get()).toNormalizedRange().get(), referenceRange)) {
-        searchRange = rangeOfContents(m_frame->document());
+        searchRange = rangeOfContents(m_frame.document());
         if (forward)
             searchRange->setStart(referenceRange->endPosition());
         else
@@ -1282,7 +1285,7 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
 
     // If nothing was found in the shadow tree, search in main content following the shadow tree.
     if (resultRange->collapsed(ASSERT_NO_EXCEPTION) && shadowTreeRoot) {
-        searchRange = rangeOfContents(m_frame->document());
+        searchRange = rangeOfContents(m_frame.document());
         if (forward)
             searchRange->setStartAfter(shadowTreeRoot->shadowHost());
         else
@@ -1294,7 +1297,7 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
     // If we didn't find anything and we're wrapping, search again in the entire document (this will
     // redundantly re-search the area already searched in some cases).
     if (resultRange->collapsed(ASSERT_NO_EXCEPTION) && options & WrapAround) {
-        searchRange = rangeOfContents(m_frame->document());
+        searchRange = rangeOfContents(m_frame.document());
         resultRange = findPlainText(searchRange.get(), target, options);
         // We used to return false here if we ended up with the same range that we started with
         // (e.g., the reference range was already the only instance of this text). But we decided that
@@ -1310,19 +1313,19 @@ void Editor::setMarkedTextMatchesAreHighlighted(bool flag)
         return;
 
     m_areMarkedTextMatchesHighlighted = flag;
-    m_frame->document()->markers()->repaintMarkers(DocumentMarker::TextMatch);
+    m_frame.document()->markers()->repaintMarkers(DocumentMarker::TextMatch);
 }
 
 void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
 {
     spellChecker().respondToChangedSelection(oldSelection, options);
-    m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
+    m_frame.inputMethodController().cancelCompositionIfSelectionIsInvalid();
     notifyComponentsOnChangedSelection(oldSelection, options);
 }
 
 SpellChecker& Editor::spellChecker() const
 {
-    return m_frame->spellChecker();
+    return m_frame.spellChecker();
 }
 
 bool Editor::isContinuousSpellCheckingEnabled() const
