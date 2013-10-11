@@ -793,26 +793,7 @@ private:
     RefPtr<ElementData> m_elementData;
 };
 
-inline Element* toElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isElementNode());
-    return static_cast<Element*>(node);
-}
-
-inline const Element* toElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isElementNode());
-    return static_cast<const Element*>(node);
-}
-
-inline const Element& toElement(const Node& node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(node.isElementNode());
-    return static_cast<const Element&>(node);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toElement(const Element*);
+DEFINE_NODE_TYPE_CASTS(Element, isElementNode());
 
 inline bool isDisabledFormControl(const Node* node)
 {

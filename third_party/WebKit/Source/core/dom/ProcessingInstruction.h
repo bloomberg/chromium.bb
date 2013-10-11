@@ -85,17 +85,7 @@ private:
     bool m_isXSL;
 };
 
-inline ProcessingInstruction* toProcessingInstruction(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::PROCESSING_INSTRUCTION_NODE);
-    return static_cast<ProcessingInstruction*>(node);
-}
-
-inline const ProcessingInstruction* toProcessingInstruction(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::PROCESSING_INSTRUCTION_NODE);
-    return static_cast<const ProcessingInstruction*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(ProcessingInstruction, nodeType() == Node::PROCESSING_INSTRUCTION_NODE);
 
 } // namespace WebCore
 

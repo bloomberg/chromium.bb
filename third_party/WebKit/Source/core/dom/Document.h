@@ -1409,20 +1409,7 @@ inline const Document* toDocument(const ExecutionContext* executionContext)
     return static_cast<const Document*>(executionContext ? executionContext->client() : 0);
 }
 
-inline Document* toDocument(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isDocumentNode());
-    return static_cast<Document*>(node);
-}
-
-inline const Document* toDocument(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isDocumentNode());
-    return static_cast<const Document*>(node);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toDocument(const Document*);
+DEFINE_NODE_TYPE_CASTS(Document, isDocumentNode());
 
 // Put these methods here, because they require the Document definition, but we really want to inline them.
 

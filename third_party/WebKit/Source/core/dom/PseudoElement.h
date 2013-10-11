@@ -69,20 +69,7 @@ inline bool pseudoElementRendererIsNeeded(const RenderStyle* style)
     return style && style->display() != NONE && (style->styleType() == BACKDROP || style->contentData() || !style->regionThread().isEmpty());
 }
 
-inline PseudoElement* toPseudoElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isPseudoElement());
-    return static_cast<PseudoElement*>(node);
-}
-
-inline const PseudoElement* toPseudoElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isPseudoElement());
-    return static_cast<const PseudoElement*>(node);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toPseudoElement(const PseudoElement*);
+DEFINE_NODE_TYPE_CASTS(PseudoElement, isPseudoElement());
 
 } // namespace
 

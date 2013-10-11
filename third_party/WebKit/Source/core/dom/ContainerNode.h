@@ -162,20 +162,7 @@ private:
 bool childAttachedAllowedWhenAttachingChildren(ContainerNode*);
 #endif
 
-inline ContainerNode* toContainerNode(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isContainerNode());
-    return static_cast<ContainerNode*>(node);
-}
-
-inline const ContainerNode* toContainerNode(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isContainerNode());
-    return static_cast<const ContainerNode*>(node);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toContainerNode(const ContainerNode*);
+DEFINE_NODE_TYPE_CASTS(ContainerNode, isContainerNode());
 
 inline ContainerNode::ContainerNode(TreeScope* treeScope, ConstructionType type)
     : Node(treeScope, type)

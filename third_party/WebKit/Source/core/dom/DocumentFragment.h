@@ -51,17 +51,7 @@ private:
     virtual bool childTypeAllowed(NodeType) const;
 };
 
-inline DocumentFragment* toDocumentFragment(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::DOCUMENT_FRAGMENT_NODE);
-    return static_cast<DocumentFragment*>(node);
-}
-
-inline const DocumentFragment* toDocumentFragment(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::DOCUMENT_FRAGMENT_NODE);
-    return static_cast<const DocumentFragment*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(DocumentFragment, nodeType() == Node::DOCUMENT_FRAGMENT_NODE);
 
 } // namespace WebCore
 

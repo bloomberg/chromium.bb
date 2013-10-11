@@ -95,17 +95,7 @@ private:
     unsigned m_ignoreChildrenChanged;
 };
 
-inline Attr* toAttr(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isAttributeNode());
-    return static_cast<Attr*>(node);
-}
-
-inline const Attr* toAttr(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isAttributeNode());
-    return static_cast<const Attr*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(Attr, isAttributeNode());
 
 } // namespace WebCore
 
