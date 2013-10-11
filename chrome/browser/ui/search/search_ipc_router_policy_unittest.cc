@@ -37,6 +37,19 @@ TEST_F(SearchIPCRouterPolicyTest, ProcessVoiceSearchSupportMsg) {
       ShouldProcessSetVoiceSearchSupport());
 }
 
+TEST_F(SearchIPCRouterPolicyTest, ProcessFocusOmnibox) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessFocusOmnibox());
+}
+
+TEST_F(SearchIPCRouterPolicyTest, DoNotProcessFocusOmnibox) {
+  // Process message only if the underlying page is an InstantNTP.
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessFocusOmnibox());
+}
+
 TEST_F(SearchIPCRouterPolicyTest, SendSetPromoInformation) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
@@ -79,6 +92,8 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
           search_tab_helper->ipc_router().policy());
   policy->set_is_incognito(true);
 
+  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessFocusOmnibox());
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldProcessDeleteMostVisitedItem());
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->

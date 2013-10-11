@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -29,6 +30,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
 
   MOCK_METHOD1(OnInstantSupportDetermined, void(bool supports_instant));
   MOCK_METHOD1(OnSetVoiceSearchSupport, void(bool supports_voice_search));
+  MOCK_METHOD1(FocusOmnibox, void(OmniboxFocusState state));
   MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());

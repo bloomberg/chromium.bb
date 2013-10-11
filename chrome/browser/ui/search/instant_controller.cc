@@ -289,12 +289,6 @@ void InstantController::InstantPageAboutToNavigateMainFrame(
   UpdateInfoForInstantTab();
 }
 
-void InstantController::FocusOmnibox(const content::WebContents* contents,
-                                     OmniboxFocusState state) {
-  DCHECK(IsContentsFrom(instant_tab(), contents));
-  browser_->FocusOmnibox(state);
-}
-
 void InstantController::NavigateToURL(const content::WebContents* contents,
                                       const GURL& url,
                                       content::PageTransition transition,

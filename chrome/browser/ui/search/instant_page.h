@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/search/instant_ipc_sender.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/ntp_logging_events.h"
-#include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_transition_types.h"
 
@@ -53,11 +52,6 @@ class InstantPage : public content::WebContentsObserver,
     virtual void InstantPageAboutToNavigateMainFrame(
         const content::WebContents* contents,
         const GURL& url) = 0;
-
-    // Called when the page wants the omnibox to be focused. |state| specifies
-    // the omnibox focus state.
-    virtual void FocusOmnibox(const content::WebContents* contents,
-                              OmniboxFocusState state) = 0;
 
     // Called when the page wants to navigate to |url|. Usually used by the
     // page to navigate to privileged destinations (e.g. chrome:// URLs) or to
@@ -120,7 +114,6 @@ class InstantPage : public content::WebContentsObserver,
   // choose to ignore some or all of the received messages by overriding these
   // methods.
   virtual bool ShouldProcessAboutToNavigateMainFrame();
-  virtual bool ShouldProcessFocusOmnibox();
   virtual bool ShouldProcessNavigateToURL();
   virtual bool ShouldProcessPasteIntoOmnibox();
 
@@ -162,7 +155,6 @@ class InstantPage : public content::WebContentsObserver,
   // Update the status of Instant support.
   void InstantSupportDetermined(bool supports_instant);
 
-  void OnFocusOmnibox(int page_id, OmniboxFocusState state);
   void OnSearchBoxNavigate(int page_id,
                            const GURL& url,
                            content::PageTransition transition,

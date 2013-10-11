@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -34,6 +35,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
 
   MOCK_METHOD1(OnInstantSupportDetermined, void(bool supports_instant));
   MOCK_METHOD1(OnSetVoiceSearchSupport, void(bool supports_voice_search));
+  MOCK_METHOD1(FocusOmnibox, void(OmniboxFocusState state));
   MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
@@ -44,6 +46,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   virtual ~MockSearchIPCRouterPolicy() {}
 
   MOCK_METHOD0(ShouldProcessSetVoiceSearchSupport, bool());
+  MOCK_METHOD0(ShouldProcessFocusOmnibox, bool());
   MOCK_METHOD0(ShouldProcessDeleteMostVisitedItem, bool());
   MOCK_METHOD0(ShouldProcessUndoMostVisitedDeletion, bool());
   MOCK_METHOD0(ShouldProcessUndoAllMostVisitedDeletions, bool());
@@ -138,6 +141,42 @@ TEST_F(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg) {
           web_contents()->GetRoutingID(),
           web_contents()->GetController().GetVisibleEntry()->GetPageID(),
           true));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, ProcessFocusOmniboxMsg) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*mock_delegate(), FocusOmnibox(OMNIBOX_FOCUS_VISIBLE)).Times(1);
+  EXPECT_CALL(*policy, ShouldProcessFocusOmnibox()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  scoped_ptr<IPC::Message> message(new ChromeViewHostMsg_FocusOmnibox(
+      web_contents()->GetRoutingID(),
+      web_contents()->GetController().GetVisibleEntry()->GetPageID(),
+      OMNIBOX_FOCUS_VISIBLE));
+  GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreFocusOmniboxMsg) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*mock_delegate(), FocusOmnibox(OMNIBOX_FOCUS_VISIBLE)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessFocusOmnibox()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  scoped_ptr<IPC::Message> message(new ChromeViewHostMsg_FocusOmnibox(
+      web_contents()->GetRoutingID(),
+      web_contents()->GetController().GetVisibleEntry()->GetPageID(),
+      OMNIBOX_FOCUS_VISIBLE));
   GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
 }
 
@@ -287,6 +326,11 @@ TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
   message.reset(new ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
       web_contents()->GetRoutingID(), invalid_page_id));
   GetSearchTabHelper(web_contents())->ipc_router().OnMessageReceived(*message);
+
+  EXPECT_CALL(*mock_delegate(), FocusOmnibox(OMNIBOX_FOCUS_VISIBLE)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessFocusOmnibox()).Times(0);
+  message.reset(new ChromeViewHostMsg_FocusOmnibox(
+      web_contents()->GetRoutingID(), invalid_page_id, OMNIBOX_FOCUS_VISIBLE));
 }
 
 TEST_F(SearchIPCRouterTest, SendSetPromoInformationMsg) {

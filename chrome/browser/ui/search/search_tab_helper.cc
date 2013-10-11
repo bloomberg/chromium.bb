@@ -18,6 +18,10 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
@@ -30,6 +34,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -360,6 +365,48 @@ void SearchTabHelper::MaybeRemoveMostVisitedItems(
   chrome::GetOpenUrls(*tab_strip_model, *top_sites, &open_urls);
   history::MostVisitedTilesExperiment::RemoveItemsMatchingOpenTabs(
       open_urls, items);
+#endif
+}
+
+void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
+// iOS and Android doesn't use the Instant framework.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (!browser)
+    return;
+
+  OmniboxView* omnibox_view = browser->window()->GetLocationBar()->
+      GetLocationEntry();
+  // Do not add a default case in the switch block for the following reasons:
+  // (1) Explicitly handle the new states. If new states are added in the
+  // OmniboxFocusState, the compiler will warn the developer to handle the new
+  // states.
+  // (2) An attacker may control the renderer and sends the browser process a
+  // malformed IPC. This function responds to the invalid |state| values by
+  // doing nothing instead of crashing the browser process (intentional no-op).
+  switch (state) {
+    case OMNIBOX_FOCUS_VISIBLE:
+      omnibox_view->SetFocus();
+      omnibox_view->model()->SetCaretVisibility(true);
+      break;
+    case OMNIBOX_FOCUS_INVISIBLE:
+      omnibox_view->SetFocus();
+      omnibox_view->model()->SetCaretVisibility(false);
+      // If the user clicked on the fakebox, any text already in the omnibox
+      // should get cleared when they start typing. Selecting all the existing
+      // text is a convenient way to accomplish this. It also gives a slight
+      // visual cue to users who really understand selection state about what
+      // will happen if they start typing.
+      omnibox_view->SelectAll(false);
+      break;
+    case OMNIBOX_FOCUS_NONE:
+      // Remove focus only if the popup is closed. This will prevent someone
+      // from changing the omnibox value and closing the popup without user
+      // interaction.
+      if (!omnibox_view->model()->popup_model()->IsOpen())
+        web_contents()->GetView()->Focus();
+      break;
+  }
 #endif
 }
 

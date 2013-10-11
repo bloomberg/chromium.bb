@@ -37,9 +37,6 @@ class FakePageDelegate : public InstantPage::Delegate {
   MOCK_METHOD2(InstantPageAboutToNavigateMainFrame,
                void(const content::WebContents* contents,
                     const GURL& url));
-  MOCK_METHOD2(FocusOmnibox,
-               void(const content::WebContents* contents,
-                    OmniboxFocusState state));
   MOCK_METHOD5(NavigateToURL,
                void(const content::WebContents* contents,
                     const GURL& url,

@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class GURL;
@@ -35,6 +36,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // Called upon determination of voice search API support.
     virtual void OnSetVoiceSearchSupport(bool supports_voice_search) = 0;
 
+    // Called when the page wants the omnibox to be focused. |state| specifies
+    // the omnibox focus state.
+    virtual void FocusOmnibox(OmniboxFocusState state) = 0;
+
     // Called when the SearchBox wants to delete a Most Visited item.
     virtual void OnDeleteMostVisitedItem(const GURL& url) = 0;
 
@@ -55,6 +60,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // SearchIPCRouter calls these functions before sending/receiving messages
     // to/from the page.
     virtual bool ShouldProcessSetVoiceSearchSupport() = 0;
+    virtual bool ShouldProcessFocusOmnibox() = 0;
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
@@ -118,6 +124,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SubmitQuery);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            AppropriateMessagesSentToIncognitoPages);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessFocusOmnibox);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, DoNotProcessFocusOmnibox);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendSetPromoInformation);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendSetPromoInformation);
@@ -131,6 +139,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            DoNotProcessMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessFocusOmniboxMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreFocusOmniboxMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            DoNotSendSetPromoInformationMsg);
@@ -155,6 +165,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnInstantSupportDetermined(int page_id, bool supports_instant) const;
   void OnVoiceSearchSupportDetermined(int page_id,
                                       bool supports_voice_search) const;
+  void OnFocusOmnibox(int page_id, OmniboxFocusState state) const;
   void OnDeleteMostVisitedItem(int page_id, const GURL& url) const;
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_id) const;

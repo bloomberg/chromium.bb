@@ -33,7 +33,6 @@ class InstantTab : public InstantPage {
  private:
   // Overridden from InstantPage:
   virtual bool ShouldProcessAboutToNavigateMainFrame() OVERRIDE;
-  virtual bool ShouldProcessFocusOmnibox() OVERRIDE;
   virtual bool ShouldProcessNavigateToURL() OVERRIDE;
   virtual bool ShouldProcessPasteIntoOmnibox() OVERRIDE;
 

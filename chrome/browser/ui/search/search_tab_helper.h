@@ -85,6 +85,8 @@ class SearchTabHelper : public content::NotificationObserver,
                            PageURLDoesntBelongToInstantRenderer);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            ProcessVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessFocusOmnibox);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, DoNotProcessFocusOmnibox);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendSetPromoInformation);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendSetPromoInformation);
@@ -113,6 +115,8 @@ class SearchTabHelper : public content::NotificationObserver,
                            DoNotProcessMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessFocusOmniboxMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreFocusOmniboxMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            DoNotSendSetPromoInformationMsg);
@@ -178,6 +182,7 @@ class SearchTabHelper : public content::NotificationObserver,
   // Overridden from SearchIPCRouter::Delegate:
   virtual void OnInstantSupportDetermined(bool supports_instant) OVERRIDE;
   virtual void OnSetVoiceSearchSupport(bool supports_voice_search) OVERRIDE;
+  virtual void FocusOmnibox(OmniboxFocusState state) OVERRIDE;
   virtual void OnDeleteMostVisitedItem(const GURL& url) OVERRIDE;
   virtual void OnUndoMostVisitedDeletion(const GURL& url) OVERRIDE;
   virtual void OnUndoAllMostVisitedDeletions() OVERRIDE;

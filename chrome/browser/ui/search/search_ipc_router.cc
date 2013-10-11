@@ -82,6 +82,7 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
                         OnInstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetVoiceSearchSupported,
                         OnVoiceSearchSupportDetermined)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
                         OnDeleteMostVisitedItem);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
@@ -109,6 +110,18 @@ void SearchIPCRouter::OnVoiceSearchSupportDetermined(
     return;
 
   delegate_->OnSetVoiceSearchSupport(supports_voice_search);
+}
+
+void SearchIPCRouter::OnFocusOmnibox(int page_id,
+                                     OmniboxFocusState state) const {
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
+  if (!policy_->ShouldProcessFocusOmnibox())
+    return;
+
+  delegate_->FocusOmnibox(state);
 }
 
 void SearchIPCRouter::OnDeleteMostVisitedItem(int page_id,

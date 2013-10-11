@@ -56,9 +56,6 @@ class BrowserInstantController : public SearchModelObserver,
   // this BrowserInstantController.
   InstantController* instant() { return &instant_; }
 
-  // Invoked by |instant_| to change the omnibox focus.
-  void FocusOmnibox(OmniboxFocusState state);
-
   // Invoked by |instant_| to get the currently active tab.
   content::WebContents* GetActiveWebContents() const;
 

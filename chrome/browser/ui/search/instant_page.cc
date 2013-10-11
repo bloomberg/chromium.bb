@@ -70,10 +70,6 @@ bool InstantPage::ShouldProcessAboutToNavigateMainFrame() {
   return false;
 }
 
-bool InstantPage::ShouldProcessFocusOmnibox() {
-  return false;
-}
-
 bool InstantPage::ShouldProcessNavigateToURL() {
   return false;
 }
@@ -88,7 +84,6 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InstantPage, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
                         OnSearchBoxNavigate);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
@@ -142,17 +137,6 @@ void InstantPage::InstantSupportDetermined(bool supports_instant) {
   // If the page doesn't support Instant, stop listening to it.
   if (!supports_instant)
     ClearContents();
-}
-
-void InstantPage::OnFocusOmnibox(int page_id, OmniboxFocusState state) {
-  if (!contents()->IsActiveEntry(page_id))
-    return;
-
-  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
-  if (!ShouldProcessFocusOmnibox())
-    return;
-
-  delegate_->FocusOmnibox(contents(), state);
 }
 
 void InstantPage::OnSearchBoxNavigate(int page_id,
