@@ -101,6 +101,22 @@ Scrollbar::~Scrollbar()
     m_theme->unregisterScrollbar(this);
 }
 
+void Scrollbar::removeFromParent()
+{
+    if (parent())
+        toScrollView(parent())->removeChild(this);
+}
+
+ScrollView* Scrollbar::parentScrollView() const
+{
+    return toScrollView(parent());
+}
+
+ScrollView* Scrollbar::rootScrollView() const
+{
+    return toScrollView(root());
+}
+
 ScrollbarOverlayStyle Scrollbar::scrollbarOverlayStyle() const
 {
     return m_scrollableArea ? m_scrollableArea->scrollbarOverlayStyle() : ScrollbarOverlayStyleDefault;
@@ -480,7 +496,7 @@ void Scrollbar::setFrameRect(const IntRect& rect)
     // if necessary.
     IntRect adjustedRect(rect);
     bool overlapsResizer = false;
-    ScrollView* view = parent();
+    ScrollView* view = parentScrollView();
     if (view && !rect.isEmpty() && !view->windowResizerRect().isEmpty()) {
         IntRect resizerRect = view->convertFromContainingWindow(view->windowResizerRect());
         if (rect.intersects(resizerRect)) {
@@ -508,10 +524,10 @@ void Scrollbar::setFrameRect(const IntRect& rect)
     Widget::setFrameRect(adjustedRect);
 }
 
-void Scrollbar::setParent(ScrollView* parentView)
+void Scrollbar::setParent(Widget* parentView)
 {
-    if (!parentView && m_overlapsResizer && parent())
-        parent()->adjustScrollbarsAvoidingResizerCount(-1);
+    if (!parentView && m_overlapsResizer && parentScrollView())
+        parentScrollView()->adjustScrollbarsAvoidingResizerCount(-1);
     Widget::setParent(parentView);
 }
 
@@ -544,10 +560,10 @@ bool Scrollbar::isWindowActive() const
 
 AXObjectCache* Scrollbar::existingAXObjectCache() const
 {
-    if (!parent())
+    if (!parentScrollView())
         return 0;
 
-    return parent()->axObjectCache();
+    return parentScrollView()->axObjectCache();
 }
 
 void Scrollbar::invalidateRect(const IntRect& rect)

@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class ScrollView;
+class Widget;
 
 class ScrollbarThemeClient {
 public:
@@ -46,8 +46,8 @@ public:
     virtual IntSize size() const = 0;
     virtual IntPoint location() const = 0;
 
-    virtual ScrollView* parent() const = 0;
-    virtual ScrollView* root() const = 0;
+    virtual Widget* parent() const = 0;
+    virtual Widget* root() const = 0;
 
     virtual void setFrameRect(const IntRect&) = 0;
     virtual IntRect frameRect() const = 0;

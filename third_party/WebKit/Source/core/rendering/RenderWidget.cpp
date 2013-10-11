@@ -60,7 +60,7 @@ RenderWidget::UpdateSuspendScope::~UpdateSuspendScope()
         WidgetToParentMap::iterator end = map.end();
         for (WidgetToParentMap::iterator it = map.begin(); it != end; ++it) {
             Widget* child = it->key.get();
-            ScrollView* currentParent = child->parent();
+            ScrollView* currentParent = toScrollView(child->parent());
             FrameView* newParent = it->value;
             if (newParent != currentParent) {
                 if (currentParent)
@@ -79,7 +79,7 @@ static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
         if (parent)
             parent->addChild(child);
         else
-            child->removeFromParent();
+            toScrollView(child->parent())->removeChild(child);
         return;
     }
     widgetNewParentMap().set(child, parent);

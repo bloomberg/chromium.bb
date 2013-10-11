@@ -124,7 +124,7 @@ void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRec
     gc->save();
 
     ASSERT(parent()->isFrameView());
-    ScrollView* view = parent();
+    ScrollView* view =  toScrollView(parent());
 
     // The plugin is positioned in window coordinates, so it needs to be painted
     // in window coordinates.
@@ -246,15 +246,15 @@ void WebPluginContainerImpl::setParentVisible(bool parentVisible)
     m_webPlugin->updateVisibility(isVisible());
 }
 
-void WebPluginContainerImpl::setParent(ScrollView* view)
+void WebPluginContainerImpl::setParent(Widget* widget)
 {
     // We override this function so that if the plugin is windowed, we can call
     // NPP_SetWindow at the first possible moment.  This ensures that
     // NPP_SetWindow is called before the manual load data is sent to a plugin.
     // If this order is reversed, Flash won't load videos.
 
-    Widget::setParent(view);
-    if (view)
+    Widget::setParent(widget);
+    if (widget)
         reportGeometry();
 }
 
@@ -523,7 +523,7 @@ void WebPluginContainerImpl::setWantsWheelEvents(bool wantsWheelEvents)
 
 WebPoint WebPluginContainerImpl::windowToLocalPoint(const WebPoint& point)
 {
-    ScrollView* view = parent();
+    ScrollView* view = toScrollView(parent());
     if (!view)
         return point;
     WebPoint windowPoint = view->windowToContents(point);
@@ -532,7 +532,7 @@ WebPoint WebPluginContainerImpl::windowToLocalPoint(const WebPoint& point)
 
 WebPoint WebPluginContainerImpl::localToWindowPoint(const WebPoint& point)
 {
-    ScrollView* view = parent();
+    ScrollView* view = toScrollView(parent());
     if (!view)
         return point;
     IntPoint absolutePoint = roundedIntPoint(m_element->renderer()->localToAbsolute(LayoutPoint(point), UseTransforms));
@@ -866,7 +866,7 @@ void WebPluginContainerImpl::calculateGeometry(const IntRect& frameRect,
                                                IntRect& clipRect,
                                                Vector<IntRect>& cutOutRects)
 {
-    windowRect = parent()->contentsToWindow(frameRect);
+    windowRect = toScrollView(parent())->contentsToWindow(frameRect);
 
     // Calculate a clip-rect so that we don't overlap the scrollbars, etc.
     clipRect = windowClipRect();

@@ -3198,7 +3198,7 @@ IntPoint FrameView::convertToRenderer(const RenderObject* renderer, const IntPoi
 
 IntRect FrameView::convertToContainingView(const IntRect& localRect) const
 {
-    if (const ScrollView* parentScrollView = parent()) {
+    if (const ScrollView* parentScrollView = toScrollView(parent())) {
         if (parentScrollView->isFrameView()) {
             const FrameView* parentView = toFrameView(parentScrollView);
             // Get our renderer in the parent view
@@ -3221,7 +3221,7 @@ IntRect FrameView::convertToContainingView(const IntRect& localRect) const
 
 IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
 {
-    if (const ScrollView* parentScrollView = parent()) {
+    if (const ScrollView* parentScrollView = toScrollView(parent())) {
         if (parentScrollView->isFrameView()) {
             const FrameView* parentView = toFrameView(parentScrollView);
 
@@ -3245,7 +3245,7 @@ IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
 
 IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
 {
-    if (const ScrollView* parentScrollView = parent()) {
+    if (const ScrollView* parentScrollView = toScrollView(parent())) {
         if (parentScrollView->isFrameView()) {
             const FrameView* parentView = toFrameView(parentScrollView);
 
@@ -3270,7 +3270,7 @@ IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
 
 IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
 {
-    if (const ScrollView* parentScrollView = parent()) {
+    if (const ScrollView* parentScrollView = toScrollView(parent())) {
         if (parentScrollView->isFrameView()) {
             const FrameView* parentView = toFrameView(parentScrollView);
 

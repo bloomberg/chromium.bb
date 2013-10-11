@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/PlatformScreen.h"
 
-#include "core/platform/ScrollView.h"
+#include "core/platform/Widget.h"
 #include "platform/HostWindow.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/Platform.h"
@@ -43,7 +43,7 @@ static HostWindow* toHostWindow(Widget* widget)
 {
     if (!widget)
         return 0;
-    ScrollView* root = widget->root();
+    Widget* root = widget->root();
     if (!root)
         return 0;
     return root->hostWindow();

@@ -59,7 +59,7 @@ static float widgetInputEventsScaleFactor(const Widget* widget)
     if (!widget)
         return 1;
 
-    ScrollView* rootView = widget->root();
+    ScrollView* rootView =  toScrollView(widget->root());
     if (!rootView)
         return 1;
 
@@ -440,7 +440,7 @@ static void updateWebMouseEventFromWebCoreMouseEvent(const MouseRelatedEvent& ev
     webEvent.timeStampSeconds = event.timeStamp() / millisPerSecond;
     webEvent.modifiers = getWebInputModifiers(event);
 
-    ScrollView* view = widget.parent();
+    ScrollView* view =  toScrollView(widget.parent());
     IntPoint windowPoint = IntPoint(event.absoluteLocation().x(), event.absoluteLocation().y());
     if (view)
         windowPoint = view->contentsToWindow(windowPoint);

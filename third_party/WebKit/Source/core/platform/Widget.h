@@ -34,19 +34,19 @@
 
 namespace WebCore {
 
-class AXObjectCache;
 class Cursor;
 class Event;
 class GraphicsContext;
-class ScrollView;
+class HostWindow;
 
 // The Widget class serves as a base class for three kinds of objects:
 // (1) Scrollable areas (ScrollView)
 // (2) Scrollbars (Scrollbar)
 // (3) Plugins (PluginView)
 //
-// Widgets are connected in a hierarchy, with the restriction that plugins and scrollbars are always leaves of the
-// tree.  Only ScrollViews can have children (and therefore the Widget class has no concept of children).
+// Widgets are connected in a hierarchy, with the restriction that plugins and
+// scrollbars are always leaves of the tree. Only ScrollViews can have children
+// (and therefore the Widget class has no concept of children).
 class Widget : public RefCounted<Widget> {
 public:
     Widget();
@@ -90,10 +90,10 @@ public:
     virtual bool isScrollbar() const { return false; }
     virtual bool isScrollView() const { return false; }
 
-    void removeFromParent();
-    virtual void setParent(ScrollView* view);
-    ScrollView* parent() const { return m_parent; }
-    ScrollView* root() const;
+    virtual HostWindow* hostWindow() const;
+    virtual void setParent(Widget*);
+    Widget* parent() const { return m_parent; }
+    Widget* root() const;
 
     virtual void handleEvent(Event*) { }
 
@@ -127,14 +127,15 @@ public:
     virtual IntPoint convertToContainingView(const IntPoint&) const;
     virtual IntPoint convertFromContainingView(const IntPoint&) const;
 
-    // A means to access the AX cache when this object can get a pointer to it.
-    virtual AXObjectCache* axObjectCache() const { return 0; }
+    // Virtual methods to convert points to/from child widgets
+    virtual IntPoint convertChildToSelf(const Widget*, const IntPoint&) const;
+    virtual IntPoint convertSelfToChild(const Widget*, const IntPoint&) const;
 
     // Notifies this widget that it will no longer be receiving events.
     virtual void eventListenersRemoved() { }
 
 private:
-    ScrollView* m_parent;
+    Widget* m_parent;
     IntRect m_frame;
     bool m_selfVisible;
     bool m_parentVisible;

@@ -35,12 +35,14 @@
 
 namespace WebCore {
 
+class AXObjectCache;
 class GraphicsContext;
 class IntRect;
 class PlatformGestureEvent;
 class PlatformMouseEvent;
 class ScrollableArea;
 class ScrollbarTheme;
+class ScrollView;
 
 class Scrollbar : public Widget,
                   public ScrollbarThemeClient {
@@ -58,8 +60,12 @@ public:
     virtual IntSize size() const { return Widget::size(); }
     virtual IntPoint location() const { return Widget::location(); }
 
-    virtual ScrollView* parent() const { return Widget::parent(); }
-    virtual ScrollView* root() const { return Widget::root(); }
+    virtual Widget* parent() const { return Widget::parent(); }
+    virtual Widget* root() const { return Widget::root(); }
+
+    void removeFromParent();
+    ScrollView* parentScrollView() const;
+    ScrollView* rootScrollView() const;
 
     virtual void setFrameRect(const IntRect&);
     virtual IntRect frameRect() const { return Widget::frameRect(); }
@@ -129,7 +135,7 @@ public:
 
     ScrollbarTheme* theme() const { return m_theme; }
 
-    virtual void setParent(ScrollView*);
+    virtual void setParent(Widget*) OVERRIDE;
 
     bool suppressInvalidation() const { return m_suppressInvalidation; }
     void setSuppressInvalidation(bool s) { m_suppressInvalidation = s; }

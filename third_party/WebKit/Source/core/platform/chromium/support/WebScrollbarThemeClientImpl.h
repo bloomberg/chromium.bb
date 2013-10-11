@@ -49,8 +49,8 @@ public:
     virtual int height() const OVERRIDE;
     virtual IntSize size() const OVERRIDE;
     virtual IntPoint location() const OVERRIDE;
-    virtual ScrollView* parent() const OVERRIDE;
-    virtual ScrollView* root() const OVERRIDE;
+    virtual Widget* parent() const OVERRIDE;
+    virtual Widget* root() const OVERRIDE;
     virtual void setFrameRect(const IntRect&) OVERRIDE;
     virtual IntRect frameRect() const OVERRIDE;
     virtual void invalidate() OVERRIDE;

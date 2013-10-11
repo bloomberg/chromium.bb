@@ -197,7 +197,7 @@ public:
     void adjustScrollbarsAvoidingResizerCount(int overlapDelta);
     void windowResizerRectChanged();
 
-    virtual void setParent(ScrollView*); // Overridden to update the overlapping scrollbar count.
+    virtual void setParent(Widget*) OVERRIDE; // Overridden to update the overlapping scrollbar count.
 
     // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
     virtual void frameRectsChanged();
@@ -211,7 +211,7 @@ public:
     // For platforms that need to hit test scrollbars from within the engine's event handlers (like Win32).
     Scrollbar* scrollbarAtPoint(const IntPoint& windowPoint);
 
-    IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const
+    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const
     {
         IntPoint newPoint = point;
         if (!isScrollViewScrollbar(child))
@@ -220,7 +220,7 @@ public:
         return newPoint;
     }
 
-    IntPoint convertSelfToChild(const Widget* child, const IntPoint& point) const
+    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint& point) const
     {
         IntPoint newPoint = point;
         if (!isScrollViewScrollbar(child))
@@ -228,6 +228,9 @@ public:
         newPoint.moveBy(-child->location());
         return newPoint;
     }
+
+    // A means to access the AX cache when this object can get a pointer to it.
+    virtual AXObjectCache* axObjectCache() const { return 0; }
 
     // Widget override. Handles painting of the contents of the view as well as the scrollbars.
     virtual void paint(GraphicsContext*, const IntRect&);
