@@ -29,6 +29,8 @@
 
 #include "client/ios/handler/ios_exception_minidump_generator.h"
 
+#include <pthread.h>
+
 #include "google_breakpad/common/minidump_exception_mac.h"
 #include "client/minidump_file_writer-inl.h"
 #include "common/scoped_ptr.h"
