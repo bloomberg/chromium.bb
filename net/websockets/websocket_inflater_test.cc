@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "net/websockets/websocket_deflater.h"
+#include "net/websockets/websocket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -19,28 +20,6 @@ namespace {
 
 std::string ToString(IOBufferWithSize* buffer) {
   return std::string(buffer->data(), buffer->size());
-}
-
-class LinearCongruentialGenerator {
- public:
-  explicit LinearCongruentialGenerator(uint32_t seed);
-  uint32_t Generate();
-
- private:
-  uint32_t current_;
-
-  static const uint32_t a_ = 1103515245;
-  static const uint32_t c_ = 12345;
-  static const uint32_t m_ = 1 << 31;
-};
-
-LinearCongruentialGenerator::LinearCongruentialGenerator(uint32_t seed)
-    : current_(seed) {}
-
-uint32_t LinearCongruentialGenerator::Generate() {
-  uint32_t result = current_;
-  current_ = (current_ * a_ + c_) % m_;
-  return result;
 }
 
 TEST(WebSocketInflaterTest, Construct) {
