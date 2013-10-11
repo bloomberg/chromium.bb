@@ -1183,9 +1183,7 @@ cr.define('ntp', function() {
    * @param {Object} evt User interface event that triggered the action.
    */
   function executePromoAction(evt) {
-    if (evt.preventDefault)
-      evt.preventDefault();
-    evt.returnValue = false;
+    evt.preventDefault();
     chrome.send('promoActionTriggered');
   }
 

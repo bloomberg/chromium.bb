@@ -216,7 +216,7 @@ function getRequiredElement(id) {
 // call into the browser to do the navigation.
 document.addEventListener('click', function(e) {
   // Allow preventDefault to work.
-  if (!e.returnValue)
+  if (!e.defaultPrevented)
     return;
 
   var el = e.target;
