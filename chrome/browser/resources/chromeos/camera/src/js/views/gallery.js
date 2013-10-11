@@ -46,6 +46,13 @@ camera.views.Gallery = function(context) {
    */
   this.lastFileId_ = 0;
 
+  /**
+   * @type {camera.util.SmoothScroller}
+   * @private
+   */
+  this.scroller_ = new camera.util.SmoothScroller(
+      document.querySelector('#gallery'));
+
   // End of properties, seal the object.
   Object.seal(this);
 };
@@ -226,7 +233,7 @@ camera.views.Gallery.prototype.setCurrentIndex_ = function(index) {
     this.pictures_[index].element.classList.add('selected');
 
   camera.util.ensureVisible(this.pictures_[index].element,
-                            document.querySelector('#gallery'));
+                            this.scroller_);
 };
 
 /**

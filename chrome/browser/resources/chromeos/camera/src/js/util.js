@@ -91,24 +91,29 @@ camera.util.waitForTransitionCompletion = function(
  * Scrolls the parent of the element so the element is visible.
  *
  * @param {HTMLElement} element Element to be visible.
- * @param {HTMLElement=} opt_parent Parent element to be scrolled. If not
- *     provided, then parent of the passed element to be visible willbe used.
+ * @param {camera.util.SmoothScroller} scroller Scroller to be used.
  */
-camera.util.ensureVisible = function(element, opt_parent) {
-  var parent = opt_parent ? opt_parent : element.parentNode;
+camera.util.ensureVisible = function(element, scroller) {
+  var parent = scroller.element;
+  var scrollLeft = parent.scrollLeft;
+  var scrollTop = parent.scrollTop;
   if (element.offsetTop < parent.scrollTop)
-    parent.scrollTop = element.offsetTop - element.offsetHeight * 0.5;
+    scrollTop = element.offsetTop - element.offsetHeight * 0.5;
   if (element.offsetTop + element.offsetHeight >
-      parent.scrollTop + parent.offsetHeight) {
-    parent.scrollTop = element.offsetTop + element.offsetHeight * 1.5 -
+      scrollTop + parent.offsetHeight) {
+    scrollTop = element.offsetTop + element.offsetHeight * 1.5 -
         parent.offsetHeight;
   }
   if (element.offsetLeft < parent.scrollLeft)
-    parent.scrollLeft = element.offsetLeft - element.offsetWidth * 0.5;
+    scrollLeft = element.offsetLeft - element.offsetWidth * 0.5;
   if (element.offsetLeft + element.offsetWidth >
-      parent.scrollLeft + parent.offsetWidth) {
-    parent.scrollLeft = element.offsetLeft + element.offsetWidth * 1.5 -
+      scrollLeft + parent.offsetWidth) {
+    scrollLeft = element.offsetLeft + element.offsetWidth * 1.5 -
         parent.offsetWidth;
+  }
+  if (scrollTop != parent.scrollTop ||
+      scrollLeft != parent.scrollLeft) {
+    scroller.scrollTo(scrollLeft, scrollTop);
   }
 };
 
@@ -165,5 +170,131 @@ camera.util.StyleEffect.prototype.invoke = function(state, callback) {
  */
 camera.util.StyleEffect.prototype.isActive = function() {
   return !!this.callback_;
+};
+
+/**
+ * Performs smooth scrolling of a scrollable dom element.
+ *
+ * @param {HTMLElement} element Element to be scerolled.
+ * @constructor
+ */
+camera.util.SmoothScroller = function(element) {
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.element_ = element;
+
+  /**
+   * Last value of scrollLeft and scrollTop to detect if a the scroll value
+   * has been changed externally while animating.
+   * @type {Array.<number>}
+   * @private
+   */
+  this.lastScrollPosition_ = null;
+
+  /**
+   * Current, not rounded scroll position when animating.
+   * @type {Array.<number>}
+   * @private
+   */
+  this.currentPosition_ = null;
+
+  /**
+   * Target position, set to the value passed to scrollTo().
+   * @type {Array.<number>}
+   * @private
+   */
+  this.targetPosition_ = null;
+
+  // End of properties. Seal the object.
+  Object.seal(this);
+};
+
+/**
+ * Speed of the scrolling animation. Between 0 (slow) and 1 (immediate). Must
+ * be larger than 0.
+ *
+ * @type {number}
+ * @const
+ */
+camera.util.SmoothScroller.SPEED = 0.1;
+
+camera.util.SmoothScroller.prototype = {
+  get element() {
+    return this.element_;
+  },
+  get animating() {
+    return !!this.targetPosition_;
+  }
+};
+
+/**
+ * Animates one frame.
+ * @private
+ */
+camera.util.SmoothScroller.prototype.animate_ = function() {
+  var dx = (this.targetPosition_[0] - this.currentPosition_[0]);
+  var dy = (this.targetPosition_[1] - this.currentPosition_[1]);
+
+  // If the remaining distance is very small, then finish.
+  if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+    this.element_.scrollLeft = Math.round(this.targetPosition_[0]);
+    this.element_.scrollTop = Math.round(this.targetPosition_[1]);
+    this.targetPosition_ = null;
+    return;
+  }
+
+  var previousPosition = this.currentPosition_.slice(0);
+  this.currentPosition_[0] += dx * camera.util.SmoothScroller.SPEED;
+  this.currentPosition_[1] += dy * camera.util.SmoothScroller.SPEED;
+
+  // Terminate the animation if interrupted by a manual scroll change.
+  if (this.element_.scrollLeft != this.lastScrollPosition_[0] ||
+      this.element_.scrollTop != this.lastScrollPosition_[1]) {
+    this.targetPosition_ = null;
+    return;
+  }
+
+  // Calculate the new values to be set.
+  var setX = Math.round(this.currentPosition_[0]);
+  var setY = Math.round(this.currentPosition_[1]);
+
+  // Apply the new values only if they are different than the previous ones.
+  this.element_.scrollLeft = setX;
+  this.element_.scrollTop = setY;
+
+  // Finish if the update didn't change anything, but should.
+  if (this.element_.scrollLeft != setX &&
+      setX != Math.round(previousPosition[0]) &&
+      this.element_.scrollTop != setY &&
+      setY != Math.round(previousPosition[1])) {
+    this.targetPosition_ = null;
+    return;
+  }
+
+  // Remember the last set position and continue the animation.
+  this.lastScrollPosition_[0] = this.element_.scrollLeft;
+  this.lastScrollPosition_[1] = this.element_.scrollTop;
+  webkitRequestAnimationFrame(this.animate_.bind(this));
+};
+
+/**
+ * Scrolls smoothly to specified position.
+ *
+ * @param {number} x X Target scrollLeft value.
+ * @param {number} y Y Target scrollTop value.
+ */
+camera.util.SmoothScroller.prototype.scrollTo = function(x, y) {
+  var isAnimating = this.animating;
+
+  this.targetPosition_ = [x, y];
+  this.lastScrollPosition_ =
+      [this.element_.scrollLeft, this.element_.scrollTop];
+  this.currentPosition_ = this.lastScrollPosition_.slice(0);
+
+  // It is not animating, then fire an animation frame.
+  if (!isAnimating)
+    this.animate_();
 };
 
