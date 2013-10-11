@@ -45,8 +45,13 @@ class RenderingStats(object):
       self.frame_count = rs.get('numFramesSentToScreen', 0)
 
   def initMainThreadStatsFromTimeline(self):
+    # TODO(ernstm): Remove when CL with new event names was rolled into
+    # reference build.
+    event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'
     for event in self.renderer_process.IterAllSlicesOfName(
         'MainThreadRenderingStats::IssueTraceEvent'):
+      event_name = 'MainThreadRenderingStats::IssueTraceEvent'
+    for event in self.renderer_process.IterAllSlicesOfName(event_name):
       if event.start >= self.start and event.end <= self.end:
         if 'data' not in event.args:
           continue
@@ -72,8 +77,13 @@ class RenderingStats(object):
             event.args['data']['recorded_pixel_count'])
 
   def initImplThreadStatsFromTimeline(self):
+    # TODO(ernstm): Remove when CL with new event names was rolled into
+    # reference build.
+    event_name = 'BenchmarkInstrumentation::ImplThreadRenderingStats'
     for event in self.renderer_process.IterAllSlicesOfName(
         'ImplThreadRenderingStats::IssueTraceEvent'):
+      event_name = 'ImplThreadRenderingStats::IssueTraceEvent'
+    for event in self.renderer_process.IterAllSlicesOfName(event_name):
       if event.start >= self.start and event.end <= self.end:
         if 'data' not in event.args:
           continue

@@ -4,7 +4,6 @@
 
 #include "cc/layers/picture_layer.h"
 
-#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
@@ -75,9 +74,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   // Do not early-out of this function so that PicturePile::Update has a chance
   // to record pictures due to changing visibility of this layer.
 
-  TRACE_EVENT1(benchmark_instrumentation::kCategory,
-               benchmark_instrumentation::kPictureLayerUpdate,
-               benchmark_instrumentation::kSourceFrameNumber,
+  TRACE_EVENT1("cc", "PictureLayer::Update",
+               "source_frame_number",
                layer_tree_host()->source_frame_number());
 
   bool updated = Layer::Update(queue, occlusion);

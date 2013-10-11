@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/child/npapi/webplugin.h"
@@ -1487,7 +1488,8 @@ void RenderWidget::DoDeferredUpdate() {
 
   if (!is_accelerated_compositing_active_) {
     legacy_software_mode_stats_->IncrementFrameCount(1, true);
-    legacy_software_mode_stats_->IssueTraceEventForMainThreadStats();
+    cc::BenchmarkInstrumentation::IssueMainThreadRenderingStatsEvent(
+        legacy_software_mode_stats_->main_thread_rendering_stats());
     legacy_software_mode_stats_->AccumulateAndClearMainThreadStats();
   }
 

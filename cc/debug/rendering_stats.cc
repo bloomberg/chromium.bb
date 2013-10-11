@@ -12,13 +12,6 @@ MainThreadRenderingStats::MainThreadRenderingStats()
       painted_pixel_count(0),
       recorded_pixel_count(0) {}
 
-void MainThreadRenderingStats::IssueTraceEvent() const {
-  TRACE_EVENT_INSTANT1("benchmark",
-                       "MainThreadRenderingStats::IssueTraceEvent",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "data", AsTraceableData());
-}
-
 scoped_refptr<base::debug::ConvertableToTraceFormat>
 MainThreadRenderingStats::AsTraceableData() const {
   scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
@@ -41,13 +34,6 @@ void MainThreadRenderingStats::Add(const MainThreadRenderingStats& other) {
 ImplThreadRenderingStats::ImplThreadRenderingStats()
     : frame_count(0),
       rasterized_pixel_count(0) {}
-
-void ImplThreadRenderingStats::IssueTraceEvent() const {
-  TRACE_EVENT_INSTANT1("benchmark",
-                       "ImplThreadRenderingStats::IssueTraceEvent",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "data", AsTraceableData());
-}
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
 ImplThreadRenderingStats::AsTraceableData() const {

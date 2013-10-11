@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/input/input_handler.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
@@ -879,7 +880,8 @@ void ThreadProxy::BeginFrameOnMainThread(
 
     RenderingStatsInstrumentation* stats_instrumentation =
         layer_tree_host_->rendering_stats_instrumentation();
-    stats_instrumentation->IssueTraceEventForMainThreadStats();
+    BenchmarkInstrumentation::IssueMainThreadRenderingStatsEvent(
+        stats_instrumentation->main_thread_rendering_stats());
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }
 

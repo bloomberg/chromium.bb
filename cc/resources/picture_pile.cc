@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "cc/base/region.h"
-#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/picture_pile_impl.h"
 
@@ -114,8 +113,6 @@ bool PicturePile::Update(
          pic != pic_list.end(); ++pic) {
       if (!(*pic)->HasRecording()) {
         modified_pile = true;
-        TRACE_EVENT0(benchmark_instrumentation::kCategory,
-                     benchmark_instrumentation::kRecordLoop);
         base::TimeDelta best_duration = base::TimeDelta::FromInternalValue(
             std::numeric_limits<int64>::max());
         for (int i = 0; i < repeat_count; i++) {

@@ -5,90 +5,8 @@
 import time
 
 from metrics import smoothness
+from metrics.rendering_stats import RenderingStats
 from telemetry.page import page_measurement
-
-class StatsCollector(object):
-  def __init__(self, timeline):
-    """
-    Utility class for collecting rendering stats from timeline model.
-
-    timeline -- The timeline model
-    """
-    self.timeline = timeline
-    self.total_best_rasterize_time = 0
-    self.total_best_record_time = 0
-    self.total_pixels_rasterized = 0
-    self.total_pixels_recorded = 0
-    self.trigger_event = self.FindTriggerEvent()
-    self.renderer_process = self.trigger_event.start_thread.parent
-
-  def FindTriggerEvent(self):
-    events = [s for
-              s in self.timeline.GetAllEventsOfName(
-                  'measureNextFrame')
-              if s.parent_slice == None]
-    if len(events) != 1:
-      raise LookupError, 'no measureNextFrame event found'
-    return events[0]
-
-  def FindFrameNumber(self, trigger_time):
-    start_event = None
-    for event in self.renderer_process.IterAllSlicesOfName(
-        "LayerTreeHost::UpdateLayers"):
-      if event.start > trigger_time:
-        if start_event == None:
-          start_event = event
-        elif event.start < start_event.start:
-          start_event = event
-    if start_event is None:
-      raise LookupError, \
-          'no LayterTreeHost::UpdateLayers after measureNextFrame found'
-    return start_event.args["source_frame_number"]
-
-  def GatherRasterizeStats(self, frame_number):
-    for event in self.renderer_process.IterAllSlicesOfName(
-        "RasterWorkerPoolTaskImpl::RunRasterOnThread"):
-      if event.args["data"]["source_frame_number"] == frame_number and \
-         event.args['data']['resolution'] == 'HIGH_RESOLUTION':
-        for raster_loop_event in event.GetAllSubSlicesOfName("RasterLoop"):
-          best_rasterize_time = float("inf")
-          for raster_event in raster_loop_event.GetAllSubSlicesOfName(
-              "Picture::Raster"):
-            if "num_pixels_rasterized" in raster_event.args:
-              best_rasterize_time = min(best_rasterize_time,
-                                        raster_event.duration)
-              self.total_pixels_rasterized += \
-                  raster_event.args["num_pixels_rasterized"]
-          if best_rasterize_time == float('inf'):
-            best_rasterize_time = 0
-          self.total_best_rasterize_time += best_rasterize_time
-
-  def GatherRecordStats(self, frame_number):
-    for event in self.renderer_process.IterAllSlicesOfName(
-        "PictureLayer::Update"):
-      if event.args["source_frame_number"] == frame_number:
-        for record_loop_event in event.GetAllSubSlicesOfName("RecordLoop"):
-          best_record_time = float('inf')
-          for record_event in record_loop_event.GetAllSubSlicesOfName(
-              "Picture::Record"):
-            best_record_time = min(best_record_time, record_event.duration)
-            self.total_pixels_recorded += (
-                record_event.args["data"]["width"] *
-                record_event.args["data"]["height"])
-          if best_record_time == float('inf'):
-            best_record_time = 0
-          self.total_best_record_time += best_record_time
-
-  def GatherRenderingStats(self):
-    trigger_time = self.trigger_event.start
-    frame_number = self.FindFrameNumber(trigger_time)
-    self.GatherRasterizeStats(frame_number)
-    self.GatherRecordStats(frame_number)
-
-def DivideIfPossibleOrZero(numerator, denominator):
-  if denominator == 0:
-    return 0
-  return numerator / denominator
 
 class RasterizeAndRecord(page_measurement.PageMeasurement):
   def __init__(self):
@@ -96,9 +14,6 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     self._metrics = None
 
   def AddCommandLineOptions(self, parser):
-    parser.add_option('--report-all-results', dest='report_all_results',
-                      action='store_true',
-                      help='Reports all data collected')
     parser.add_option('--raster-record-repeat', dest='raster_record_repeat',
                       default=20,
                       help='Repetitions in raster and record loops.' +
@@ -150,14 +65,15 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
         });
     """)
 
+    time.sleep(float(self.options.stop_wait_time))
     tab.browser.StartTracing('webkit.console,benchmark', 60)
     self._metrics.Start()
 
     tab.ExecuteJavaScript("""
         window.__rafFired = false;
         window.webkitRequestAnimationFrame(function() {
-          console.time("measureNextFrame");
           chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers();
+          console.time("measureNextFrame");
           window.__rafFired  = true;
         });
     """)
@@ -169,26 +85,20 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     tab.ExecuteJavaScript('console.timeEnd("measureNextFrame")')
 
     self._metrics.Stop()
+    rendering_stats_deltas = self._metrics.deltas
     timeline = tab.browser.StopTracing().AsTimelineModel()
+    timeline_marker = smoothness.FindTimelineMarker(timeline,
+                                                    'measureNextFrame')
+    benchmark_stats = RenderingStats(timeline_marker,
+                                     timeline_marker,
+                                     rendering_stats_deltas,
+                                     self._metrics.is_using_gpu_benchmarking)
 
-    collector = StatsCollector(timeline)
-    collector.GatherRenderingStats()
-
-    rendering_stats = self._metrics.end_values
-
-    results.Add('best_rasterize_time', 'seconds',
-                collector.total_best_rasterize_time,
-                data_type='unimportant')
-    results.Add('best_record_time', 'seconds',
-                collector.total_best_record_time,
-                data_type='unimportant')
-    results.Add('total_pixels_rasterized', 'pixels',
-                collector.total_pixels_rasterized,
-                data_type='unimportant')
-    results.Add('total_pixels_recorded', 'pixels',
-                collector.total_pixels_recorded,
-                data_type='unimportant')
-
-    if self.options.report_all_results:
-      for k, v in rendering_stats.iteritems():
-        results.Add(k, '', v)
+    results.Add('rasterize_time', 'ms',
+                max(benchmark_stats.rasterize_time) * 1000.0)
+    results.Add('record_time', 'ms',
+                max(benchmark_stats.record_time) * 1000.0)
+    results.Add('rasterized_pixels', 'pixels',
+                max(benchmark_stats.rasterized_pixel_count))
+    results.Add('recorded_pixels', 'pixels',
+                max(benchmark_stats.recorded_pixel_count))

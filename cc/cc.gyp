@@ -69,6 +69,8 @@
         'base/tiling_data.cc',
         'base/tiling_data.h',
         'base/util.h',
+        'debug/benchmark_instrumentation.cc',
+        'debug/benchmark_instrumentation.h',
         'debug/debug_colors.cc',
         'debug/debug_colors.h',
         'debug/debug_rect_history.cc',

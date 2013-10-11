@@ -7,7 +7,6 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/picture_pile_impl.h"
@@ -103,9 +102,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                          gfx::Size size,
                          int stride) {
     TRACE_EVENT2(
-        benchmark_instrumentation::kCategory,
-        benchmark_instrumentation::kRunRasterOnThread,
-        benchmark_instrumentation::kData,
+        "cc", "RasterWorkerPoolTaskImpl::RunRasterOnThread",
+        "data",
         TracedValue::FromValue(DataAsValue().release()),
         "raster_mode",
         TracedValue::FromValue(RasterModeAsValue(raster_mode_).release()));
@@ -166,14 +164,23 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     canvas.setDrawFilter(draw_filter.get());
 
     base::TimeDelta prev_rasterize_time =
-        rendering_stats_->GetImplThreadRenderingStats().rasterize_time;
+        rendering_stats_->impl_thread_rendering_stats().rasterize_time;
 
-    picture_clone->RasterToBitmap(
-        &canvas, content_rect_, contents_scale_, rendering_stats_);
+    // Only record rasterization time for highres tiles, because
+    // lowres tiles are not required for activation and therefore
+    // introduce noise in the measurement (sometimes they get rasterized
+    // before we draw and sometimes they aren't)
+    if (tile_resolution_ == HIGH_RESOLUTION) {
+      picture_clone->RasterToBitmap(
+          &canvas, content_rect_, contents_scale_, rendering_stats_);
+    } else {
+      picture_clone->RasterToBitmap(
+          &canvas, content_rect_, contents_scale_, NULL);
+    }
 
     if (rendering_stats_->record_rendering_stats()) {
       base::TimeDelta current_rasterize_time =
-          rendering_stats_->GetImplThreadRenderingStats().rasterize_time;
+          rendering_stats_->impl_thread_rendering_stats().rasterize_time;
       HISTOGRAM_CUSTOM_COUNTS(
           "Renderer4.PictureRasterTimeUS",
           (current_rasterize_time - prev_rasterize_time).InMicroseconds(),

@@ -17,6 +17,7 @@
 #include "cc/animation/timing_function.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/debug_rect_history.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/overdraw_metrics.h"
@@ -1357,7 +1358,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   }
   active_tree_->root_layer()->ResetAllChangeTrackingForSubtree();
 
-  rendering_stats_instrumentation_->IssueTraceEventForImplThreadStats();
+  BenchmarkInstrumentation::IssueImplThreadRenderingStatsEvent(
+      rendering_stats_instrumentation_->impl_thread_rendering_stats());
   rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
 }
 

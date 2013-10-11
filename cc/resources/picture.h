@@ -68,10 +68,10 @@ class CC_EXPORT Picture
   bool HasRecording() const { return picture_.get() != NULL; }
 
   // Apply this contents scale and raster the content rect into the canvas.
-  void Raster(SkCanvas* canvas,
-              SkDrawPictureCallback* callback,
-              gfx::Rect content_rect,
-              float contents_scale);
+  int Raster(SkCanvas* canvas,
+             SkDrawPictureCallback* callback,
+             gfx::Rect content_rect,
+             float contents_scale);
 
   // Draw the picture directly into the given canvas, without applying any
   // clip/scale/layer transformations.

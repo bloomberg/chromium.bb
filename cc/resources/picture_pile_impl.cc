@@ -7,7 +7,6 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/base/region.h"
-#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "skia/ext/analysis_canvas.h"
@@ -201,14 +200,14 @@ void PicturePileImpl::RasterCommon(
       base::TimeDelta best_duration =
           base::TimeDelta::FromInternalValue(std::numeric_limits<int64>::max());
       int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
+      int rasterized_pixel_count = 0;
 
-      TRACE_EVENT0(benchmark_instrumentation::kCategory,
-                   benchmark_instrumentation::kRasterLoop);
       for (int j = 0; j < repeat_count; ++j) {
         base::TimeTicks start_time;
         if (rendering_stats_instrumentation)
           start_time = rendering_stats_instrumentation->StartRecording();
-        (*i)->Raster(canvas, callback, content_clip, contents_scale);
+        rasterized_pixel_count =
+            (*i)->Raster(canvas, callback, content_clip, contents_scale);
         if (rendering_stats_instrumentation) {
           base::TimeDelta duration =
               rendering_stats_instrumentation->EndRecording(start_time);
@@ -216,8 +215,6 @@ void PicturePileImpl::RasterCommon(
         }
       }
       if (rendering_stats_instrumentation) {
-        int64 rasterized_pixel_count =
-            repeat_count * content_clip.width() * content_clip.height();
         rendering_stats_instrumentation->AddRaster(best_duration,
                                                    rasterized_pixel_count);
       }

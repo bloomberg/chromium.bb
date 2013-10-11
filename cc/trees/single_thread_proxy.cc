@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
@@ -225,7 +226,8 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 
     RenderingStatsInstrumentation* stats_instrumentation =
         layer_tree_host_->rendering_stats_instrumentation();
-    stats_instrumentation->IssueTraceEventForMainThreadStats();
+    BenchmarkInstrumentation::IssueMainThreadRenderingStatsEvent(
+        stats_instrumentation->main_thread_rendering_stats());
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }
   layer_tree_host_->CommitComplete();

@@ -17,7 +17,6 @@
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
-#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -777,10 +776,8 @@ bool LayerTreeHost::UsingSharedMemoryResources() {
 
 bool LayerTreeHost::UpdateLayers(Layer* root_layer,
                                  ResourceUpdateQueue* queue) {
-  TRACE_EVENT1(benchmark_instrumentation::kCategory,
-               benchmark_instrumentation::kLayerTreeHostUpdateLayers,
-               benchmark_instrumentation::kSourceFrameNumber,
-               source_frame_number());
+  TRACE_EVENT1("cc", "LayerTreeHost::UpdateLayers",
+               "source_frame_number", source_frame_number());
 
   RenderSurfaceLayerList update_list;
   {

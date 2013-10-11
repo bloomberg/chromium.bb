@@ -39,7 +39,6 @@ struct CC_EXPORT MainThreadRenderingStats {
   int64 recorded_pixel_count;
 
   MainThreadRenderingStats();
-  void IssueTraceEvent() const;
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
   void Add(const MainThreadRenderingStats& other);
 };
@@ -53,7 +52,6 @@ struct CC_EXPORT ImplThreadRenderingStats {
   int64 rasterized_pixel_count;
 
   ImplThreadRenderingStats();
-  void IssueTraceEvent() const;
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
   void Add(const ImplThreadRenderingStats& other);
 };

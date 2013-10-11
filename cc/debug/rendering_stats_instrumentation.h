@@ -19,11 +19,11 @@ class CC_EXPORT RenderingStatsInstrumentation {
   virtual ~RenderingStatsInstrumentation();
 
   // Return current main thread rendering stats.
-  MainThreadRenderingStats GetMainThreadRenderingStats() {
+  const MainThreadRenderingStats& main_thread_rendering_stats() {
     return main_stats_;
   }
   // Return current impl thread rendering stats.
-  ImplThreadRenderingStats GetImplThreadRenderingStats() {
+  const ImplThreadRenderingStats& impl_thread_rendering_stats() {
     return impl_stats_;
   }
   // Return the accumulated, combined rendering stats.
@@ -35,15 +35,6 @@ class CC_EXPORT RenderingStatsInstrumentation {
   // Add current impl thread rendering stats to accumulator and
   // clear current stats.
   void AccumulateAndClearImplThreadStats();
-
-  // Issue trace event for current main thread rendering stats.
-  void IssueTraceEventForMainThreadStats() {
-    main_stats_.IssueTraceEvent();
-  }
-  // Issue trace event for current impl thread rendering stats.
-  void IssueTraceEventForImplThreadStats() {
-    impl_stats_.IssueTraceEvent();
-  }
 
   // Read and write access to the record_rendering_stats_ flag is not locked to
   // improve performance. The flag is commonly turned off and hardly changes
@@ -66,6 +57,7 @@ class CC_EXPORT RenderingStatsInstrumentation {
   RenderingStatsInstrumentation();
 
  private:
+  // TODO(ernstm): rename to *_thread_rendering_stats_*
   MainThreadRenderingStats main_stats_;
   MainThreadRenderingStats main_stats_accu_;
   ImplThreadRenderingStats impl_stats_;
