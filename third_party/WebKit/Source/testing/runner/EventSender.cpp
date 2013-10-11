@@ -369,6 +369,7 @@ void EventSender::reset()
     touchPoints.clear();
     m_taskList.revokeAll();
     m_currentGestureLocation = WebPoint(0, 0);
+    mouseEventQueue.clear();
 }
 
 void EventSender::doDragDrop(const WebDragData& dragData, WebDragOperationsMask mask)
