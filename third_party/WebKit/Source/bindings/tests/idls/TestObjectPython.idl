@@ -100,5 +100,6 @@ interface TestObjectPython {
     [Conditional=Condition, Custom] readonly attribute long customReadonlyLongAttribute;
     [Conditional=Condition, CustomGetter] readonly attribute long customGetterReadonlyLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
+    [DeprecateAs=ReadonlyLongAttribute] readonly attribute long deprecatedReadonlyLongAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
 };

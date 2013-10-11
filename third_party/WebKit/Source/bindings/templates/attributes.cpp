@@ -68,6 +68,9 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
 static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    {% if attribute.deprecate_as %}
+    UseCounter::countDeprecation(activeScriptExecutionContext(), UseCounter::{{attribute.deprecate_as}});
+    {% endif %}
     {% if attribute.is_activity_logging_getter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger())

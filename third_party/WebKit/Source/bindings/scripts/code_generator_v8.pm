@@ -1268,7 +1268,6 @@ sub GenerateDeprecationNotification
 {
     my $deprecateAs = shift;
     if ($deprecateAs) {
-        AddToImplIncludes("core/page/PageConsole.h");
         AddToImplIncludes("core/page/UseCounter.h");
         return "    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::${deprecateAs});\n";
     }

@@ -50,6 +50,7 @@
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/page/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -853,6 +854,20 @@ static void customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback(
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void deprecatedReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->deprecatedReadonlyLongAttribute());
+}
+
+static void deprecatedReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    UseCounter::countDeprecation(activeScriptExecutionContext(), UseCounter::ReadonlyLongAttribute);
+    TestObjectPythonV8Internal::deprecatedReadonlyLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void readonlyDocumentFragmentAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -939,6 +954,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"customGetterReadonlyLongAttribute", TestObjectPythonV8Internal::customGetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition)
     {"customElementsCallbacksReadonlyLongAttribute", TestObjectPythonV8Internal::customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"deprecatedReadonlyLongAttribute", TestObjectPythonV8Internal::deprecatedReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyDocumentFragmentAttribute", TestObjectPythonV8Internal::readonlyDocumentFragmentAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 

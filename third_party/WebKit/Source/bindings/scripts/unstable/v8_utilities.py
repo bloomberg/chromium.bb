@@ -136,6 +136,15 @@ def generate_conditional_string(definition_or_member):
     return 'ENABLE(%s)' % conditional
 
 
+# [DeprecateAs]
+def generate_deprecate_as(member, contents, includes):
+    deprecate_as = member.extended_attributes.get('DeprecateAs')
+    if not deprecate_as:
+        return
+    contents['deprecate_as'] = deprecate_as
+    includes.update(['core/page/UseCounter.h'])
+
+
 # [RuntimeEnabled]
 def runtime_enabled_function_name(definition_or_member):
     """Returns the name of the RuntimeEnabledFeatures function.

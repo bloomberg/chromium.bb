@@ -116,9 +116,12 @@ def generate_attribute_and_includes(interface, attribute):
                              'bindings/v8/ExceptionMessages.h',
                              'bindings/v8/ExceptionState.h']))
 
+        includes.add('bindings/v8/BindingSecurity.h')
+    # [DeprecateAs]
+    v8_utilities.generate_deprecate_as(attribute, contents, includes)
 
     contents.update({
-        'is_activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # ActivityLogging=Access|Getter
+        'is_activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # [ActivityLogging=Access|Getter]
         'is_check_security_for_node': is_check_security_for_node,
     })
 
