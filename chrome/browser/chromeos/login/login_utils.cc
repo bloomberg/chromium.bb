@@ -535,8 +535,11 @@ void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
       content::NotificationService::AllSources(),
       content::Details<Profile>(user_profile));
 
-  InitRlzDelayed(user_profile);
-
+  // Initialize RLZ only for primary user.
+  if (UserManager::Get()->GetPrimaryUser() ==
+      UserManager::Get()->GetUserByProfile(user_profile)) {
+    InitRlzDelayed(user_profile);
+  }
   // TODO(altimofeev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before
   // LoginUtilsImpl::PrepareProfile() has set |delegate_| when Chrome is killed
