@@ -25,6 +25,7 @@
       'layers/delegated_frame_provider_unittest.cc',
       'layers/delegated_renderer_layer_impl_unittest.cc',
       'layers/heads_up_display_unittest.cc',
+      'layers/heads_up_display_layer_impl_unittest.cc',
       'layers/layer_impl_unittest.cc',
       'layers/layer_iterator_unittest.cc',
       'layers/layer_position_constraint_unittest.cc',

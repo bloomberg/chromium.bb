@@ -1317,7 +1317,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   // drawn.
   if (active_tree_->hud_layer()) {
     TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
-    active_tree_->hud_layer()->UpdateHudTexture(resource_provider_.get());
+    active_tree_->hud_layer()->UpdateHudTexture(
+        GetDrawMode(output_surface_.get()), resource_provider_.get());
   }
 
   if (output_surface_->ForcedDrawToSoftwareDevice()) {

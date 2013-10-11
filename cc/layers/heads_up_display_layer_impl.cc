@@ -91,8 +91,10 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
   // TODO(danakj): The HUD could swap between two textures instead of creating a
   // texture every frame in ubercompositor.
   if (hud_resource_->size() != content_bounds() ||
-      resource_provider->InUseByConsumer(hud_resource_->id()))
+      (hud_resource_->id() &&
+       resource_provider->InUseByConsumer(hud_resource_->id()))) {
     hud_resource_->Free();
+  }
 
   if (!hud_resource_->id()) {
     hud_resource_->Allocate(content_bounds(),
@@ -133,8 +135,9 @@ void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
 }
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(
+    DrawMode draw_mode,
     ResourceProvider* resource_provider) {
-  if (!hud_resource_->id())
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE || !hud_resource_->id())
     return;
 
   SkISize canvas_size;
