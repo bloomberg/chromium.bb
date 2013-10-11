@@ -323,9 +323,9 @@ float HarfBuzzShaper::HarfBuzzRun::xPositionForOffset(unsigned offset)
     return position;
 }
 
-static void normalizeCharacters(const TextRun& run, UChar* destination, int length)
+static void normalizeCharacters(const TextRun& run, unsigned length, UChar* destination, unsigned* destinationLength)
 {
-    int position = 0;
+    unsigned position = 0;
     bool error = false;
     const UChar* source;
     String stringFor8BitRun;
@@ -335,9 +335,10 @@ static void normalizeCharacters(const TextRun& run, UChar* destination, int leng
     } else
         source = run.characters16();
 
+    *destinationLength = 0;
     while (position < length) {
         UChar32 character;
-        int nextPosition = position;
+        unsigned nextPosition = position;
         U16_NEXT(source, nextPosition, length, character);
         // Don't normalize tabs as they are not treated as spaces for word-end.
         if (Font::treatAsSpace(character) && character != '\t')
@@ -346,6 +347,7 @@ static void normalizeCharacters(const TextRun& run, UChar* destination, int leng
             character = zeroWidthSpace;
         U16_APPEND(destination, position, length, character, error);
         ASSERT_UNUSED(error, !error);
+        *destinationLength += U16_LENGTH(character);
         position = nextPosition;
     }
 }
@@ -363,8 +365,7 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
     , m_toIndex(m_run.length())
 {
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_run.length() + 1]);
-    m_normalizedBufferLength = m_run.length();
-    normalizeCharacters(m_run, m_normalizedBuffer.get(), m_normalizedBufferLength);
+    normalizeCharacters(m_run, m_run.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
     setPadding(m_run.expansion());
     setFontFeatures();
 }
@@ -373,11 +374,12 @@ HarfBuzzShaper::~HarfBuzzShaper()
 {
 }
 
-static void normalizeSpacesAndMirrorChars(const UChar* source, UChar* destination, int length, HarfBuzzShaper::NormalizeMode normalizeMode)
+static void normalizeSpacesAndMirrorChars(const UChar* source, unsigned length, UChar* destination, unsigned* destinationLength, HarfBuzzShaper::NormalizeMode normalizeMode)
 {
     int position = 0;
     bool error = false;
     // Iterate characters in source and mirror character if needed.
+    *destinationLength = 0;
     while (position < length) {
         UChar32 character;
         int nextPosition = position;
@@ -391,6 +393,7 @@ static void normalizeSpacesAndMirrorChars(const UChar* source, UChar* destinatio
             character = u_charMirror(character);
         U16_APPEND(destination, position, length, character, error);
         ASSERT_UNUSED(error, !error);
+        *destinationLength += U16_LENGTH(character);
         position = nextPosition;
     }
 }
@@ -436,16 +439,17 @@ void HarfBuzzShaper::setNormalizedBuffer(NormalizeMode normalizeMode)
     }
 
     const UChar* sourceText;
+    unsigned sourceLength;
     if (normalizedString.isEmpty()) {
-        m_normalizedBufferLength = m_run.length();
+        sourceLength = m_run.length();
         sourceText = runCharacters;
     } else {
-        m_normalizedBufferLength = normalizedString.length();
+        sourceLength = normalizedString.length();
         sourceText = normalizedString.getBuffer();
     }
 
-    m_normalizedBuffer = adoptArrayPtr(new UChar[m_normalizedBufferLength + 1]);
-    normalizeSpacesAndMirrorChars(sourceText, m_normalizedBuffer.get(), m_normalizedBufferLength, normalizeMode);
+    m_normalizedBuffer = adoptArrayPtr(new UChar[sourceLength + 1]);
+    normalizeSpacesAndMirrorChars(sourceText, sourceLength, m_normalizedBuffer.get(), &m_normalizedBufferLength, normalizeMode);
 }
 
 bool HarfBuzzShaper::isWordEnd(unsigned index)
