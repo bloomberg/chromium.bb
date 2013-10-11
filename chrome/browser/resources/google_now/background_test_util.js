@@ -6,10 +6,6 @@
 
 var wrapper = {instrumentChromeApiFunction: emptyMock};
 
-function buildTaskManager() {
-  return {debugSetStepName: emptyMock};
-}
-
 function buildAuthenticationManager() {
   return {
     addListener: emptyMock
@@ -17,6 +13,7 @@ function buildAuthenticationManager() {
 }
 
 var instrumentApiFunction = emptyMock;
+var buildTaskManager = emptyMock;
 var buildAttemptManager = emptyMock;
 var buildCardSet = emptyMock;
 

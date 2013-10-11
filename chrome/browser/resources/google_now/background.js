@@ -168,8 +168,6 @@ wrapper.instrumentChromeApiFunction(
     'preferencesPrivate.googleGeolocationAccessEnabled.onChange.addListener',
     0);
 wrapper.instrumentChromeApiFunction('permissions.contains', 1);
-wrapper.instrumentChromeApiFunction('permissions.remove', 1);
-wrapper.instrumentChromeApiFunction('permissions.request', 1);
 wrapper.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
 wrapper.instrumentChromeApiFunction('runtime.onStartup.addListener', 0);
 wrapper.instrumentChromeApiFunction('tabs.create', 1);
@@ -269,6 +267,7 @@ function showNotificationCards(cards) {
       function(items) {
         console.log('showNotificationCards-get ' +
             JSON.stringify(items));
+        items = items || {};
         items.notificationsData = items.notificationsData || {};
         items.recentDismissals = items.recentDismissals || {};
 
@@ -470,6 +469,7 @@ function parseAndShowNotificationCards(response) {
 
   instrumented.storage.local.get('notificationGroups', function(items) {
     console.log('parseAndShowNotificationCards-get ' + JSON.stringify(items));
+    items = items || {};
     items.notificationGroups = items.notificationGroups || {};
 
     var now = Date.now();
@@ -530,6 +530,7 @@ function requestNotificationCards(position) {
   instrumented.storage.local.get('notificationGroups', function(items) {
     console.log('requestNotificationCards-storage-get ' +
                 JSON.stringify(items));
+    items = items || {};
 
     var requestParameters = '?timeZoneOffsetMs=' +
         (-new Date().getTimezoneOffset() * MS_IN_MINUTE);
@@ -689,6 +690,7 @@ function processPendingDismissals(callbackBoolean) {
       function(items) {
         console.log('processPendingDismissals-storage-get ' +
                     JSON.stringify(items));
+        items = items || {};
         items.pendingDismissals = items.pendingDismissals || [];
         items.recentDismissals = items.recentDismissals || {};
 
@@ -817,6 +819,7 @@ function onNotificationClosed(chromeNotificationId, byUser) {
 
     instrumented.storage.local.get(
         ['pendingDismissals', 'notificationsData'], function(items) {
+      items = items || {};
       items.pendingDismissals = items.pendingDismissals || [];
       items.notificationsData = items.notificationsData || {};
 
@@ -886,11 +889,8 @@ function initialize() {
  * Starts or stops the polling of cards.
  * @param {boolean} shouldPollCardsRequest true to start and
  *     false to stop polling cards.
- * @param {function} callback Called on completion.
  */
-function setShouldPollCards(shouldPollCardsRequest, callback) {
-  tasks.debugSetStepName(
-        'setShouldRun-shouldRun-updateCardsAttemptsIsRunning');
+function setShouldPollCards(shouldPollCardsRequest) {
   updateCardsAttempts.isRunning(function(currentValue) {
     if (shouldPollCardsRequest != currentValue) {
       console.log('Action Taken setShouldPollCards=' + shouldPollCardsRequest);
@@ -902,7 +902,6 @@ function setShouldPollCards(shouldPollCardsRequest, callback) {
       console.log(
           'Action Ignored setShouldPollCards=' + shouldPollCardsRequest);
     }
-    callback();
   });
 }
 
@@ -910,11 +909,8 @@ function setShouldPollCards(shouldPollCardsRequest, callback) {
  * Shows or hides the toast.
  * @param {boolean} visibleRequest true to show the toast and
  *     false to hide the toast.
- * @param {function} callback Called on completion.
  */
-function setToastVisible(visibleRequest, callback) {
-  tasks.debugSetStepName(
-      'setToastVisible-shouldSetToastVisible-getAllNotifications');
+function setToastVisible(visibleRequest) {
   instrumented.notifications.getAll(function(notifications) {
     // TODO(vadimt): Figure out what to do when notifications are disabled for
     // our extension.
@@ -929,8 +925,6 @@ function setToastVisible(visibleRequest, callback) {
     } else {
       console.log('Action Ignored setToastVisible=' + visibleRequest);
     }
-
-    callback();
   });
 }
 
@@ -938,28 +932,18 @@ function setToastVisible(visibleRequest, callback) {
  * Enables or disables the Google Now background permission.
  * @param {boolean} backgroundEnable true to run in the background.
  *     false to not run in the background.
- * @param {function} callback Called on completion.
  */
-function setBackgroundEnable(backgroundEnable, callback) {
+function setBackgroundEnable(backgroundEnable) {
   instrumented.permissions.contains({permissions: ['background']},
       function(hasPermission) {
         if (backgroundEnable != hasPermission) {
           console.log('Action Taken setBackgroundEnable=' + backgroundEnable);
           if (backgroundEnable)
-            instrumented.permissions.request(
-                {permissions: ['background']},
-                function() {
-                  callback();
-                });
+            chrome.permissions.request({permissions: ['background']});
           else
-            instrumented.permissions.remove(
-                {permissions: ['background']},
-                function() {
-                  callback();
-                });
+            chrome.permissions.remove({permissions: ['background']});
         } else {
           console.log('Action Ignored setBackgroundEnable=' + backgroundEnable);
-          callback();
         }
       });
 }
@@ -974,14 +958,12 @@ function setBackgroundEnable(backgroundEnable, callback) {
  *     the user has responded to the toast.
  * @param {boolean} enableBackground true if
  *     the background permission should be requested.
- * @param {function()} callback Call this function on completion.
  */
 function updateRunningState(
     signedIn,
     geolocationEnabled,
     userRespondedToToast,
-    enableBackground,
-    callback) {
+    enableBackground) {
   console.log(
       'State Update signedIn=' + signedIn + ' ' +
       'geolocationEnabled=' + geolocationEnabled + ' ' +
@@ -1023,11 +1005,9 @@ function updateRunningState(
       'setToastVisible=' + shouldSetToastVisible + ' ' +
       'setShouldPollCards=' + shouldPollCards);
 
-  setBackgroundEnable(shouldSetBackground, function() {
-    setToastVisible(shouldSetToastVisible, function() {
-      setShouldPollCards(shouldPollCards, callback);
-    });
-  });
+  setBackgroundEnable(shouldSetBackground);
+  setToastVisible(shouldSetToastVisible);
+  setShouldPollCards(shouldPollCards);
 }
 
 /**
@@ -1035,8 +1015,7 @@ function updateRunningState(
  * Chrome and extension state.
  */
 function onStateChange() {
-  tasks.add(STATE_CHANGED_TASK_NAME, function(callback) {
-    tasks.debugSetStepName('onStateChange-isSignedIn');
+  tasks.add(STATE_CHANGED_TASK_NAME, function() {
     authenticationManager.isSignedIn(function(token) {
       var signedIn = !!token && !!NOTIFICATION_CARDS_URL;
       instrumented.metricsPrivate.getVariationParams(
@@ -1044,15 +1023,11 @@ function onStateChange() {
           function(response) {
             var enableBackground =
                 (!response || (response.enableBackground != 'false'));
-            tasks.debugSetStepName(
-                'onStateChange-get-googleGeolocationAccessEnabledPref');
             instrumented.
                 preferencesPrivate.
                 googleGeolocationAccessEnabled.
                 get({}, function(prefValue) {
                   var geolocationEnabled = !!prefValue.value;
-                  tasks.debugSetStepName(
-                    'onStateChange-get-userRespondedToToast');
                   instrumented.storage.local.get(
                       'userRespondedToToast',
                       function(items) {
@@ -1062,8 +1037,7 @@ function onStateChange() {
                             signedIn,
                             geolocationEnabled,
                             userRespondedToToast,
-                            enableBackground,
-                            callback);
+                            enableBackground);
                       });
                 });
           });

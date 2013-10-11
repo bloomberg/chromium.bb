@@ -137,8 +137,6 @@ function buildCardSet() {
     console.log('cardManager.update ' + JSON.stringify(card) + ' ' +
         previousVersion);
 
-    // TODO(vadimt): Don't clear alarms etc that don't exist. Or make sure doing
-    // this doesn't output an error to console.
     chrome.alarms.clear(cardHidePrefix + cardId);
 
     var cardCreateInfo = {

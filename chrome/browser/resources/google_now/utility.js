@@ -396,7 +396,7 @@ function buildTaskManager(areConflicting) {
   /**
    * Queue of scheduled tasks. The first element, if present, corresponds to the
    * currently running task.
-   * @type {Array.<Object.<string, function(function())>>}
+   * @type {Array.<Object.<string, function()>>}
    */
   var queue = [];
 
@@ -430,7 +430,7 @@ function buildTaskManager(areConflicting) {
     var entry = queue[0];
     console.log('Starting task ' + entry.name);
 
-    entry.task(function() {});  // TODO(vadimt): Don't pass parameter.
+    entry.task();
 
     verify(isInTask, 'startFirst: not in task at exit');
     isInTask = false;
@@ -460,8 +460,7 @@ function buildTaskManager(areConflicting) {
    * If any task in the queue is not compatible with the task, ignores the new
    * task. Otherwise, stores the task for future execution.
    * @param {string} taskName Name of the task.
-   * @param {function(function())} task Function to run. Takes a callback
-   *     parameter. Call this callback on completion.
+   * @param {function()} task Function to run.
    */
   function add(taskName, task) {
     wrapper.checkInWrappedCallback();
@@ -537,8 +536,7 @@ function buildTaskManager(areConflicting) {
   });
 
   return {
-    add: add,
-    debugSetStepName: function() {}  // TODO(vadimt): remove
+    add: add
   };
 }
 

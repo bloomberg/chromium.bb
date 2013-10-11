@@ -471,14 +471,14 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManager2Sequential', function() {
 
   // Step 1. Add 1st task that doesn't create pending callbacks.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task1(ANYTHING);
+  this.mockLocalFunctions.expects(once()).task1();
   // Invocation.
   test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
   Mock4JS.verifyAllMocks();
 
   // Step 2. Add 2nd task.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  this.mockLocalFunctions.expects(once()).task2();
   // Invocation.
   test.tasks.add(taskNameB, this.mockLocalFunctions.functions().task2);
 });
@@ -493,7 +493,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerConflicting', function() {
 
   // Step 1. Add 1st task that creates a pending callback.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+  this.mockLocalFunctions.expects(once()).task1().
       will(callFunction(function() {
         task1PluginInstance = test.pluginFactory();
       }));
@@ -524,7 +524,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerNestedTaskEnqueue', function() {
 
   // Step 1. Add 1st task that creates a pending callback.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+  this.mockLocalFunctions.expects(once()).task1().
       will(callFunction(function() {
         task1PluginInstance = test.pluginFactory();
       }));
@@ -543,7 +543,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerNestedTaskEnqueue', function() {
 
   // Step 4. Leave the callback of task1.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  this.mockLocalFunctions.expects(once()).task2();
   // Invocation.
   task1PluginInstance.epilogue();
 });
@@ -559,7 +559,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerBranching', function() {
 
   // Step 1. Add 1st task that creates a 2 pending callbacks.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+  this.mockLocalFunctions.expects(once()).task1().
       will(callFunction(function() {
         task1PluginInstance1 = test.pluginFactory();
         task1PluginInstance2 = test.pluginFactory();
@@ -586,7 +586,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerBranching', function() {
   // Step 4. Leave 3rd callback of task1. Now task1 is complete, and task2
   // should start.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  this.mockLocalFunctions.expects(once()).task2();
   // Invocation.
   task1PluginInstance3.epilogue();
 });
@@ -601,7 +601,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerSuspendError', function() {
 
   // Step 1. Add a task that creates a pending callback.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+  this.mockLocalFunctions.expects(once()).task1().
       will(callFunction(function() {
         test.pluginFactory();
       }));
@@ -631,7 +631,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerSuspendSuccess', function() {
 
   // Step 1. Add a task that creates a pending callback.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+  this.mockLocalFunctions.expects(once()).task1().
       will(callFunction(function() {
         task1PluginInstance = test.pluginFactory();
       }));
@@ -658,7 +658,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManager3Tasks', function() {
 
   // Step 1. Add 1st task that creates a pending callback.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+  this.mockLocalFunctions.expects(once()).task1().
       will(callFunction(function() {
         task1PluginInstance = test.pluginFactory();
       }));
@@ -678,8 +678,8 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManager3Tasks', function() {
 
   // Step 4. Leave the callback of task1.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
-  this.mockLocalFunctions.expects(once()).task3(ANYTHING);
+  this.mockLocalFunctions.expects(once()).task2();
+  this.mockLocalFunctions.expects(once()).task3();
   // Invocation.
   task1PluginInstance.epilogue();
 });
@@ -694,7 +694,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerNestedNonTask', function() {
 
   // Step 1. Add 1st task that creates a pending callback.
   // Expectations.
-  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+  this.mockLocalFunctions.expects(once()).task1().
       will(callFunction(function() {
         task1PluginInstance = test.pluginFactory();
       }));
@@ -714,7 +714,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerNestedNonTask', function() {
 
   // Step 4. Check that task1 is finished by submitting task2, which should
   // be executed immediately.
-  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  this.mockLocalFunctions.expects(once()).task2();
   test.tasks.add(taskNameC, this.mockLocalFunctions.functions().task2);
 });
 

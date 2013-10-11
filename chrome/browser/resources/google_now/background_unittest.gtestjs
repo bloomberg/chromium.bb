@@ -395,13 +395,8 @@ function expectStateMachineCalls(
           storageGetSavedArgs.match(ANYTHING)).
       will(invokeCallback(storageGetSavedArgs, 1, testUserRespondedToToast));
 
-  var setBackgroundEnableSavedArgs = new SaveMockArguments();
   fixture.mockGlobals.expects(once()).
-      setBackgroundEnable(
-          setBackgroundEnableSavedArgs.match(ANYTHING),
-          setBackgroundEnableSavedArgs.match(ANYTHING)).
-      will(invokeCallback(
-          setBackgroundEnableSavedArgs, 1, {}));
+      setBackgroundEnable(ANYTHING);
 }
 
 /**
