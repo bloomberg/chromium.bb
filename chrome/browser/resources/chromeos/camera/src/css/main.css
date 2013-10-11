@@ -340,17 +340,9 @@ body.gallery #picture-preview {
   border: 6px solid white;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   position: absolute;
+  transition: opacity 1s, -webkit-transform 1s;
+  /* The animation properties are added from views/camera.js */
   width: 100%;
-}
-
-@-webkit-keyframes animatePicture {
-  from {
-    opacity: 1;
-  }
-  to {
-    -webkit-transform: rotate(0) scale(0.2) translate(2500px, 1500px);
-    opacity: 0;
-  }
 }
 
 #gallery {
