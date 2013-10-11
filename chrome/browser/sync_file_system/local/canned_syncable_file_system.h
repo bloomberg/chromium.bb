@@ -55,6 +55,10 @@ class SyncFileSystemBackend;
 class CannedSyncableFileSystem
     : public LocalFileSyncStatus::Observer {
  public:
+  typedef base::Callback<void(const GURL& root,
+                              const std::string& name,
+                              base::PlatformFileError result)>
+      OpenFileSystemCallback;
   typedef base::Callback<void(base::PlatformFileError)> StatusCallback;
   typedef base::Callback<void(int64)> WriteCallback;
   typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
@@ -153,6 +157,7 @@ class CannedSyncableFileSystem
 
   // Operation methods body.
   // They can be also called directly if the caller is already on IO thread.
+  void DoOpenFileSystem(const OpenFileSystemCallback& callback);
   void DoCreateDirectory(const fileapi::FileSystemURL& url,
                          const StatusCallback& callback);
   void DoCreateFile(const fileapi::FileSystemURL& url,
@@ -202,7 +207,8 @@ class CannedSyncableFileSystem
   typedef ObserverListThreadSafe<LocalFileSyncStatus::Observer> ObserverList;
 
   // Callbacks.
-  void DidOpenFileSystem(const GURL& root,
+  void DidOpenFileSystem(base::SingleThreadTaskRunner* original_task_runner,
+                         const GURL& root,
                          const std::string& name,
                          base::PlatformFileError result);
   void DidInitializeFileSystemContext(sync_file_system::SyncStatusCode status);
@@ -225,7 +231,7 @@ class CannedSyncableFileSystem
 
   // Boolean flags mainly for helping debug.
   bool is_filesystem_set_up_;
-  bool is_filesystem_opened_;
+  bool is_filesystem_opened_;  // Should be accessed only on the IO thread.
 
   scoped_refptr<ObserverList> sync_status_observers_;
 

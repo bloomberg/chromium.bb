@@ -270,6 +270,7 @@ void FileSystemContext::OpenFileSystem(
     FileSystemType type,
     OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!callback.is_null());
 
   if (!FileSystemContext::IsSandboxFileSystem(type)) {
@@ -327,7 +328,10 @@ void FileSystemContext::DeleteFileSystem(
     const GURL& origin_url,
     FileSystemType type,
     const DeleteFileSystemCallback& callback) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin_url == origin_url.GetOrigin());
+  DCHECK(!callback.is_null());
+
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend) {
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
