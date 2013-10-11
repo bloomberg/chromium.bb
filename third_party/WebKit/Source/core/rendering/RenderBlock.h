@@ -337,8 +337,8 @@ public:
 
     // Accessors for logical width/height and margins in the containing block's block-flow direction.
     enum ApplyLayoutDeltaMode { ApplyLayoutDelta, DoNotApplyLayoutDelta };
-    LayoutUnit logicalWidthForChild(const RenderBox* child) { return isHorizontalWritingMode() ? child->width() : child->height(); }
-    LayoutUnit logicalHeightForChild(const RenderBox* child) { return isHorizontalWritingMode() ? child->height() : child->width(); }
+    LayoutUnit logicalWidthForChild(const RenderBox* child) const { return isHorizontalWritingMode() ? child->width() : child->height(); }
+    LayoutUnit logicalHeightForChild(const RenderBox* child) const { return isHorizontalWritingMode() ? child->height() : child->width(); }
     LayoutUnit logicalTopForChild(const RenderBox* child) { return isHorizontalWritingMode() ? child->y() : child->x(); }
     void setLogicalLeftForChild(RenderBox* child, LayoutUnit logicalLeft, ApplyLayoutDeltaMode = DoNotApplyLayoutDelta);
     void setLogicalTopForChild(RenderBox* child, LayoutUnit logicalTop, ApplyLayoutDeltaMode = DoNotApplyLayoutDelta);
@@ -428,6 +428,7 @@ public:
     }
     ShapeInsideInfo* layoutShapeInsideInfo() const;
     bool allowsShapeInsideInfoSharing() const { return !isInline() && !isFloating(); }
+    LayoutSize logicalOffsetFromShapeAncestorContainer(const RenderBlock* container) const;
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
 
     // inline-block elements paint all phases atomically. This function ensures that. Certain other elements
@@ -539,7 +540,6 @@ private:
     void updateRegionsAndShapesAfterChildLayout(RenderFlowThread*, bool);
     void updateShapeInsideInfoAfterStyleChange(const ShapeValue*, const ShapeValue* oldShape);
     void relayoutShapeDescendantIfMoved(RenderBlock* child, LayoutSize offset);
-    LayoutSize logicalOffsetFromShapeAncestorContainer(const RenderBlock* container) const;
 
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }

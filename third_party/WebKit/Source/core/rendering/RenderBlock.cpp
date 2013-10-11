@@ -3248,16 +3248,25 @@ LayoutPoint RenderBlock::computeLogicalLocationForFloat(const FloatingObject* fl
     LayoutUnit logicalLeftOffset = logicalLeftOffsetForContent(logicalTopOffset); // Constant part of left offset.
     LayoutUnit logicalRightOffset; // Constant part of right offset.
     // FIXME Bug 102948: This only works for shape outside directly set on this block.
-    ShapeInsideInfo* shapeInsideInfo = this->shapeInsideInfo();
-    // FIXME: We should place the float based on its width/height.
-    if (shapeInsideInfo)
-        shapeInsideInfo->computeSegmentsForLine(logicalTopOffset, childBox->logicalHeight());
-    if (shapeInsideInfo && shapeInsideInfo->hasSegments() && shapeInsideInfo->segments().size() == 1) {
-        // FIXME Bug 102949: Add support for shapes with multipe segments.
+    ShapeInsideInfo* shapeInsideInfo = this->layoutShapeInsideInfo();
+    // FIXME: Implement behavior for right floats.
+    if (shapeInsideInfo) {
+        LayoutSize floatLogicalSize = floatingObject->logicalSize(isHorizontalWritingMode());
+        // floatingObject's logicalSize doesn't contain the actual height at this point, so we need to calculate it
+        floatLogicalSize.setHeight(logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
 
-        // The segment offsets are relative to the content box.
-        logicalRightOffset = logicalLeftOffset + shapeInsideInfo->segments()[0].logicalRight;
-        logicalLeftOffset += shapeInsideInfo->segments()[0].logicalLeft;
+        // FIXME: If the float doesn't fit in the shape we should push it under the content box
+        logicalTopOffset = shapeInsideInfo->computeFirstFitPositionForFloat(floatLogicalSize);
+        if (logicalHeight() > logicalTopOffset)
+            logicalTopOffset = logicalHeight();
+
+        SegmentList segments = shapeInsideInfo->computeSegmentsForLine(logicalTopOffset, floatLogicalSize.height());
+        // FIXME: Add support for shapes with multiple segments.
+        if (segments.size() == 1) {
+            // The segment offsets are relative to the content box.
+            logicalRightOffset = logicalLeftOffset + segments[0].logicalRight;
+            logicalLeftOffset += segments[0].logicalLeft;
+        }
     } else
         logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset);
 

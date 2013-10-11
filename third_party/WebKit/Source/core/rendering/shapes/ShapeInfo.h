@@ -81,7 +81,8 @@ public:
         m_shapeLogicalSize = newLogicalSize;
     }
 
-    virtual bool computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight);
+    SegmentList computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight) const;
+    virtual bool updateSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight);
     void clearSegments() { m_segments.clear(); }
 
     LayoutUnit shapeLogicalTop() const { return computedShapeLogicalBoundingBox().y() + logicalTopOffset(); }

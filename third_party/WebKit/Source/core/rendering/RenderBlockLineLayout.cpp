@@ -1635,7 +1635,7 @@ void RenderBlock::updateShapeAndSegmentsForCurrentLine(ShapeInsideInfo*& shapeIn
     LayoutUnit lineHeight = this->lineHeight(layoutState.lineInfo().isFirstLine(), isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
 
     // FIXME: Bug 95361: It is possible for a line to grow beyond lineHeight, in which case these segments may be incorrect.
-    shapeInsideInfo->computeSegmentsForLine(LayoutSize(lineLeft, lineTop), lineHeight);
+    shapeInsideInfo->updateSegmentsForLine(LayoutSize(lineLeft, lineTop), lineHeight);
 
     pushShapeContentOverflowBelowTheContentBox(this, shapeInsideInfo, lineTop, lineHeight);
 }
@@ -1707,7 +1707,7 @@ void RenderBlock::updateShapeAndSegmentsForCurrentLineInFlowThread(ShapeInsideIn
 
     LayoutUnit lineTop = logicalLineTopInFlowThread - currentRegion->logicalTopForFlowThreadContent() + currentRegion->borderAndPaddingBefore();
     // FIXME: Shape inside on a region does not yet take into account its padding for nested flow blocks
-    shapeInsideInfo->computeSegmentsForLine(LayoutSize(0, lineTop), lineHeight);
+    shapeInsideInfo->updateSegmentsForLine(LayoutSize(0, lineTop), lineHeight);
 
     if (currentRegion->isLastRegion())
         pushShapeContentOverflowBelowTheContentBox(this, shapeInsideInfo, lineTop, lineHeight);
@@ -1716,6 +1716,16 @@ void RenderBlock::updateShapeAndSegmentsForCurrentLineInFlowThread(ShapeInsideIn
 bool RenderBlock::adjustLogicalLineTopAndLogicalHeightIfNeeded(ShapeInsideInfo* shapeInsideInfo, LayoutUnit absoluteLogicalTop, LineLayoutState& layoutState, InlineBidiResolver& resolver, FloatingObject* lastFloatFromPreviousLine, InlineIterator& end, WordMeasurements& wordMeasurements)
 {
     LayoutUnit adjustedLogicalLineTop = adjustLogicalLineTop(shapeInsideInfo, resolver.position(), end, wordMeasurements);
+
+    if (shapeInsideInfo) {
+        lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last() : 0;
+        if (!wordMeasurements.size() && lastFloatFromPreviousLine) {
+            LayoutUnit floatLogicalTopOffset = shapeInsideInfo->computeFirstFitPositionForFloat(lastFloatFromPreviousLine->logicalSize(isHorizontalWritingMode()));
+            if (logicalHeight() < floatLogicalTopOffset)
+                adjustedLogicalLineTop = floatLogicalTopOffset;
+        }
+    }
+
     if (!adjustedLogicalLineTop)
         return false;
 
@@ -1725,7 +1735,6 @@ bool RenderBlock::adjustLogicalLineTopAndLogicalHeightIfNeeded(ShapeInsideInfo* 
         layoutState.setAdjustedLogicalLineTop(adjustedLogicalLineTop);
         newLogicalHeight = logicalHeight();
     }
-
 
     end = restartLayoutRunsAndFloatsInRange(logicalHeight(), newLogicalHeight, lastFloatFromPreviousLine, resolver, end);
     return true;
@@ -2856,6 +2865,47 @@ static inline void nextCharacter(UChar& currentCharacter, UChar& lastCharacter, 
     lastCharacter = currentCharacter;
 }
 
+static void updateSegmentsForShapes(RenderBlock* block, const FloatingObject* lastFloatFromPreviousLine, const WordMeasurements& wordMeasurements, LineWidth& width, bool isFirstLine)
+{
+    ASSERT(lastFloatFromPreviousLine);
+
+    ShapeInsideInfo* shapeInsideInfo = block->layoutShapeInsideInfo();
+    if (!lastFloatFromPreviousLine->isPlaced() || !shapeInsideInfo)
+        return;
+
+    bool isHorizontalWritingMode = block->isHorizontalWritingMode();
+    LayoutUnit logicalOffsetFromShapeContainer = block->logicalOffsetFromShapeAncestorContainer(shapeInsideInfo->owner()).height();
+
+    LayoutUnit lineLogicalTop = block->logicalHeight() + logicalOffsetFromShapeContainer;
+    LayoutUnit lineLogicalHeight = block->lineHeight(isFirstLine, isHorizontalWritingMode ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
+    LayoutUnit lineLogicalBottom = lineLogicalTop + lineLogicalHeight;
+
+    LayoutUnit floatLogicalTop = lastFloatFromPreviousLine->logicalTop(isHorizontalWritingMode);
+    LayoutUnit floatLogicalBottom = lastFloatFromPreviousLine->logicalBottom(isHorizontalWritingMode);
+
+    bool lineOverlapsWithFloat = (floatLogicalTop < lineLogicalBottom) && (lineLogicalTop < floatLogicalBottom);
+    if (!lineOverlapsWithFloat)
+        return;
+
+    float minSegmentWidth = firstPositiveWidth(wordMeasurements);
+
+    LayoutUnit floatLogicalWidth = lastFloatFromPreviousLine->logicalWidth(isHorizontalWritingMode);
+    LayoutUnit availableLogicalWidth = block->logicalWidth() - lastFloatFromPreviousLine->logicalRight(isHorizontalWritingMode);
+    if (availableLogicalWidth < minSegmentWidth)
+        block->setLogicalHeight(floatLogicalBottom);
+
+    if (block->logicalHeight() < floatLogicalTop) {
+        shapeInsideInfo->adjustLogicalLineTop(minSegmentWidth + floatLogicalWidth);
+        block->setLogicalHeight(shapeInsideInfo->logicalLineTop() - logicalOffsetFromShapeContainer);
+    }
+
+    lineLogicalTop = block->logicalHeight() + logicalOffsetFromShapeContainer;
+
+    shapeInsideInfo->updateSegmentsForLine(lineLogicalTop, lineLogicalHeight);
+    width.updateCurrentShapeSegment();
+    width.updateAvailableWidth();
+}
+
 inline bool LineBreaker::BreakingContext::handleText(WordMeasurements& wordMeasurements, bool& hyphenated)
 {
     if (!m_current.m_pos)
@@ -2987,6 +3037,9 @@ inline bool LineBreaker::BreakingContext::handleText(WordMeasurements& wordMeasu
                 m_width.addUncommittedWidth(inlineLogicalWidth(m_current.m_obj, true, false));
                 m_appliedStartWidth = true;
             }
+
+            if (m_lastFloatFromPreviousLine)
+                updateSegmentsForShapes(m_block, m_lastFloatFromPreviousLine, wordMeasurements, m_width, m_lineInfo.isFirstLine());
 
             applyWordSpacing = wordSpacing && m_currentCharacterIsSpace;
 

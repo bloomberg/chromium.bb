@@ -57,6 +57,8 @@ public:
     void applyOverhang(RenderRubyRun*, RenderObject* startRenderer, RenderObject* endRenderer);
     void fitBelowFloats();
 
+    void updateCurrentShapeSegment();
+
     bool shouldIndentText() const { return m_shouldIndentText == IndentText; }
 
 private:

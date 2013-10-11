@@ -44,8 +44,7 @@ LineWidth::LineWidth(RenderBlock& block, bool isFirstLine, IndentTextOrNot shoul
     , m_isFirstLine(isFirstLine)
     , m_shouldIndentText(shouldIndentText)
 {
-    if (ShapeInsideInfo* shapeInsideInfo = m_block.layoutShapeInsideInfo())
-        m_segment = shapeInsideInfo->currentSegment();
+    updateCurrentShapeSegment();
     updateAvailableWidth();
 }
 
@@ -158,6 +157,17 @@ void LineWidth::fitBelowFloats()
         newLineRight = m_block.logicalRightOffsetForLine(floatLogicalBottom, shouldIndentText());
         newLineWidth = max(0.0f, newLineRight - newLineLeft);
         lastFloatLogicalBottom = floatLogicalBottom;
+
+        // FIXME: This code should be refactored to incorporate with the code above.
+        ShapeInsideInfo* shapeInsideInfo = m_block.layoutShapeInsideInfo();
+        if (shapeInsideInfo) {
+            LayoutUnit logicalOffsetFromShapeContainer = m_block.logicalOffsetFromShapeAncestorContainer(shapeInsideInfo->owner()).height();
+            LayoutUnit lineHeight = m_block.lineHeight(false, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
+            shapeInsideInfo->updateSegmentsForLine(lastFloatLogicalBottom + logicalOffsetFromShapeContainer, lineHeight);
+            updateCurrentShapeSegment();
+            updateAvailableWidth();
+        }
+
         if (newLineWidth >= m_uncommittedWidth)
             break;
     }
@@ -168,6 +178,12 @@ void LineWidth::fitBelowFloats()
         m_left = newLineLeft;
         m_right = newLineRight;
     }
+}
+
+void LineWidth::updateCurrentShapeSegment()
+{
+    if (ShapeInsideInfo* shapeInsideInfo = m_block.layoutShapeInsideInfo())
+        m_segment = shapeInsideInfo->currentSegment();
 }
 
 void LineWidth::computeAvailableWidthFromLeftAndRight()
