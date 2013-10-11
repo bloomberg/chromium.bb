@@ -657,7 +657,7 @@ bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, SVGElementInstanc
     while (instance) {
         SVGElement* element = instance->correspondingElement();
 
-        if (element->hasID() && element->getIdAttribute() == targetId && &element->document() == &newTarget->document())
+        if (element->hasID() && element->getIdAttribute() == targetId && element->document() == newTarget->document())
             return true;
 
         instance = instance->parentNode();

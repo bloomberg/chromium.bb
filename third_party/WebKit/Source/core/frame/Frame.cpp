@@ -168,7 +168,7 @@ bool Frame::inScope(TreeScope* scope) const
     HTMLFrameOwnerElement* owner = doc->ownerElement();
     if (!owner)
         return false;
-    return &owner->treeScope() == scope;
+    return owner->treeScope() == scope;
 }
 
 void Frame::addDestructionObserver(FrameDestructionObserver* observer)

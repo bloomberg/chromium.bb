@@ -106,7 +106,7 @@ static bool rulesApplicableInCurrentTreeScope(const Element* element, const Cont
     if (elementApplyAuthorStyles)
         return true;
     // c) the rules comes from a scoped style sheet within the same tree scope
-    if (!scopingNode || &treeScope == &scopingNode->treeScope())
+    if (!scopingNode || treeScope == scopingNode->treeScope())
         return true;
     // d) the rules comes from a scoped style sheet within an active shadow root whose host is the given element
     if (element->isInShadowTree() && (behaviorAtBoundary & SelectorChecker::ScopeIsShadowHost) && scopingNode == element->containingShadowRoot()->host())

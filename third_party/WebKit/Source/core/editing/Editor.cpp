@@ -946,7 +946,7 @@ void Editor::simplifyMarkup(Node* startNode, Node* endNode)
     if (!startNode)
         return;
     if (endNode) {
-        if (&startNode->document() != &endNode->document())
+        if (startNode->document() != endNode->document())
             return;
         // check if start node is before endNode
         Node* node = startNode;

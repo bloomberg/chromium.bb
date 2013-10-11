@@ -59,7 +59,7 @@ void PointerLockController::requestPointerLock(Element* target)
     }
 
     if (m_element) {
-        if (&m_element->document() != &target->document()) {
+        if (m_element->document() != target->document()) {
             enqueueEvent(EventTypeNames::webkitpointerlockerror, target);
             return;
         }
@@ -91,7 +91,7 @@ void PointerLockController::elementRemoved(Element* element)
 
 void PointerLockController::documentDetached(Document* document)
 {
-    if (m_element && &m_element->document() == document) {
+    if (m_element && m_element->document() == document) {
         clearElement();
         requestPointerUnlock();
     }

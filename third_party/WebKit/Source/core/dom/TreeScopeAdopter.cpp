@@ -104,7 +104,7 @@ void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(Document* oldDocument
 inline void TreeScopeAdopter::updateTreeScope(Node* node) const
 {
     ASSERT(!node->isTreeScope());
-    ASSERT(&node->treeScope() == m_oldScope);
+    ASSERT(node->treeScope() == m_oldScope);
     m_newScope->guardRef();
     m_oldScope->guardDeref();
     node->setTreeScope(m_newScope);

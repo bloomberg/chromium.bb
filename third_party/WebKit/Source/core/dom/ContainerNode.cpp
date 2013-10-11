@@ -116,7 +116,7 @@ static inline bool isChildTypeAllowed(ContainerNode* newParent, Node* child)
 static inline bool isInTemplateContent(const Node* node)
 {
     Document& document = node->document();
-    return &document == document.templateDocument();
+    return document == document.templateDocument();
 }
 
 static inline bool containsConsideringHostElements(const Node* newChild, const Node* newParent)
@@ -295,7 +295,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
     if (nextChild->previousSibling() == newChild || nextChild == newChild) // nothing to do
         return;
 
-    if (&document() != &newChild->document())
+    if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
     insertBeforeCommon(nextChild, newChild.get());
@@ -634,7 +634,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ASSERT(!newChild->isDocumentFragment());
     ASSERT(!hasTagName(HTMLNames::templateTag));
 
-    if (&document() != &newChild->document())
+    if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
     Node* last = m_lastChild;

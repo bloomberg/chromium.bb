@@ -1153,7 +1153,7 @@ String AccessibilityRenderObject::textUnderElement() const
         if (Node* node = this->node()) {
             if (Frame* frame = node->document().frame()) {
                 // catch stale WebCoreAXObject (see <rdar://problem/3960196>)
-                if (frame->document() != &node->document())
+                if (frame->document() != node->document())
                     return String();
 
                 return plainText(rangeOfContents(node).get(), textIteratorBehaviorForTextRange());

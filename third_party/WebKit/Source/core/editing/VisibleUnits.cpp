@@ -1366,7 +1366,7 @@ bool inSameDocument(const VisiblePosition &a, const VisiblePosition &b)
     if (an == bn)
         return true;
 
-    return &an->document() == &bn->document();
+    return an->document() == bn->document();
 }
 
 bool isStartOfDocument(const VisiblePosition &p)

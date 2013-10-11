@@ -451,7 +451,7 @@ bool HTMLFormControlElement::checkValidity(Vector<RefPtr<FormAssociatedElement> 
     RefPtr<HTMLFormControlElement> protector(this);
     RefPtr<Document> originalDocument(&document());
     bool needsDefaultAction = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
-    if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == &document())
+    if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);
     return false;
 }

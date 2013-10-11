@@ -170,7 +170,7 @@ void TreeScope::removeElementById(const AtomicString& elementId, Element* elemen
 Node* TreeScope::ancestorInThisScope(Node* node) const
 {
     while (node) {
-        if (&node->treeScope() == this)
+        if (node->treeScope() == this)
             return node;
         if (!node->isInShadowTree())
             return 0;
@@ -377,7 +377,7 @@ Element* TreeScope::adjustedFocusedElement()
 
 unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
 {
-    if (&otherScope == this)
+    if (otherScope == this)
         return Node::DOCUMENT_POSITION_EQUIVALENT;
 
     Vector<const TreeScope*, 16> chain1;
@@ -433,7 +433,7 @@ TreeScope* commonTreeScope(Node* nodeA, Node* nodeB)
     if (!nodeA || !nodeB)
         return 0;
 
-    if (&nodeA->treeScope() == &nodeB->treeScope())
+    if (nodeA->treeScope() == nodeB->treeScope())
         return &nodeA->treeScope();
 
     Vector<TreeScope*, 5> treeScopesA;

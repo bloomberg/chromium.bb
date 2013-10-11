@@ -306,7 +306,7 @@ void FullscreenElementStack::webkitExitFullscreen()
         //    If doc's fullscreen element stack is non-empty and the element now at the top is either
         //    not in a document or its node document is not doc, repeat this substep.
         newTop = fullscreenElementFrom(currentDoc);
-        if (newTop && (!newTop->inDocument() || &newTop->document() != currentDoc))
+        if (newTop && (!newTop->inDocument() || newTop->document() != currentDoc))
             continue;
 
         // 2. Queue a task to fire an event named fullscreenchange with its bubbles attribute set to true

@@ -254,7 +254,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
     RefPtr<Document> elementDocument = &m_element->document();
     if (!m_element->dispatchBeforeLoadEvent(sourceUrl))
         return false;
-    if (!m_element->inDocument() || &m_element->document() != elementDocument)
+    if (!m_element->inDocument() || m_element->document() != elementDocument)
         return false;
 
     ASSERT(!m_resource);

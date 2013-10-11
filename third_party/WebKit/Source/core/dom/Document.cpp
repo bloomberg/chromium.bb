@@ -1876,7 +1876,7 @@ void Document::partialUpdateLayoutIgnorePendingStylesheets(Node* stopLayoutAtNod
 
 PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
 {
-    ASSERT_ARG(element, &element->document() == this);
+    ASSERT_ARG(element, element->document() == this);
     TemporaryChange<bool> ignoreStyleSheets(m_ignorePendingStylesheets, true);
     return styleResolver()->styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
 }
@@ -3172,7 +3172,7 @@ void Document::notifySeamlessChildDocumentsOfStylesheetUpdate() const
     for (Frame* child = frame()->tree()->firstChild(); child; child = child->tree()->nextSibling()) {
         Document* childDocument = child->document();
         if (childDocument->shouldDisplaySeamlesslyWithParent()) {
-            ASSERT(&childDocument->seamlessParentIFrame()->document() == this);
+            ASSERT(childDocument->seamlessParentIFrame()->document() == this);
             childDocument->seamlessParentUpdatedStylesheets();
         }
     }
@@ -3265,7 +3265,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
     RefPtr<Element> newFocusedElement = prpNewFocusedElement;
 
     // Make sure newFocusedNode is actually in this document
-    if (newFocusedElement && (&newFocusedElement->document() != this))
+    if (newFocusedElement && (newFocusedElement->document() != this))
         return true;
 
     if (NodeChildRemovalTracker::isBeingRemoved(newFocusedElement.get()))
@@ -4500,7 +4500,7 @@ bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, con
         return false;
     if (!m_frame->script()->canExecuteScripts(NotAboutToExecuteScript))
         return false;
-    if (node && &node->document() != this && !node->document().allowInlineEventHandlers(node, listener, contextURL, contextLine))
+    if (node && node->document() != this && !node->document().allowInlineEventHandlers(node, listener, contextURL, contextLine))
         return false;
 
     return true;
@@ -4833,7 +4833,7 @@ void Document::webkitExitPointerLock()
     if (!page())
         return;
     if (Element* target = page()->pointerLockController().element()) {
-        if (&target->document() != this)
+        if (target->document() != this)
             return;
     }
     page()->pointerLockController().requestPointerUnlock();
@@ -4844,7 +4844,7 @@ Element* Document::webkitPointerLockElement() const
     if (!page() || page()->pointerLockController().lockPending())
         return 0;
     if (Element* element = page()->pointerLockController().element()) {
-        if (&element->document() == this)
+        if (element->document() == this)
             return element;
     }
     return 0;
@@ -5085,7 +5085,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     ASSERT(!request.readOnly());
 
     Element* innerElementInDocument = innerElement;
-    while (innerElementInDocument && &innerElementInDocument->document() != this) {
+    while (innerElementInDocument && innerElementInDocument->document() != this) {
         innerElementInDocument->document().updateHoverActiveState(request, innerElementInDocument, event);
         innerElementInDocument = innerElementInDocument->document().ownerElement();
     }

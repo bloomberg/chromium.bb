@@ -99,7 +99,7 @@ bool HTMLDetailsElement::childShouldCreateRenderer(const Node& child) const
         return HTMLElement::childShouldCreateRenderer(child);
     if (!child.hasTagName(summaryTag))
         return false;
-    return &child == findMainSummary() && HTMLElement::childShouldCreateRenderer(child);
+    return child == findMainSummary() && HTMLElement::childShouldCreateRenderer(child);
 }
 
 void HTMLDetailsElement::toggleOpen()

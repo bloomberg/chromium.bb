@@ -119,7 +119,7 @@ bool ValidationMessageClientImpl::isValidationMessageVisible(const Element& anch
 
 void ValidationMessageClientImpl::documentDetached(const Document& document)
 {
-    if (m_currentAnchor && &m_currentAnchor->document() == &document)
+    if (m_currentAnchor && m_currentAnchor->document() == document)
         hideValidationMessage(*m_currentAnchor);
 }
 

@@ -884,7 +884,7 @@ bool Node::isDescendantOf(const Node *other) const
     // Return true if other is an ancestor of this, otherwise false
     if (!other || !other->hasChildNodes() || inDocument() != other->inDocument())
         return false;
-    if (&other->treeScope() != &treeScope())
+    if (other->treeScope() != treeScope())
         return false;
     if (other->isTreeScope())
         return !isTreeScope();
@@ -910,7 +910,7 @@ bool Node::containsIncludingShadowDOM(const Node* node) const
     if (this == node)
         return true;
 
-    if (&document() != &node->document())
+    if (document() != node->document())
         return false;
 
     if (inDocument() != node->inDocument())
@@ -922,7 +922,7 @@ bool Node::containsIncludingShadowDOM(const Node* node) const
         return false;
 
     for (; node; node = node->shadowHost()) {
-        if (&treeScope() == &node->treeScope())
+        if (treeScope() == node->treeScope())
             return contains(node);
     }
 
@@ -1659,7 +1659,7 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
     // If one node is in the document and the other is not, we must be disconnected.
     // If the nodes have different owning documents, they must be disconnected.  Note that we avoid
     // comparing Attr nodes here, since they return false from inDocument() all the time (which seems like a bug).
-    if (start1->inDocument() != start2->inDocument() || (treatment == TreatShadowTreesAsDisconnected && &start1->treeScope() != &start2->treeScope())) {
+    if (start1->inDocument() != start2->inDocument() || (treatment == TreatShadowTreesAsDisconnected && start1->treeScope() != start2->treeScope())) {
         unsigned short direction = (this > otherNode) ? DOCUMENT_POSITION_PRECEDING : DOCUMENT_POSITION_FOLLOWING;
         return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
     }
@@ -1680,7 +1680,7 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
         return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
     }
 
-    unsigned connection = &start1->treeScope() != &start2->treeScope() ? DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC : 0;
+    unsigned connection = start1->treeScope() != start2->treeScope() ? DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC : 0;
 
     // Walk the two chains backwards and look for the first difference.
     for (unsigned i = min(index1, index2); i; --i) {

@@ -108,7 +108,7 @@ void StyleEngine::insertTreeScopeInDocumentOrder(TreeScopeSet& treeScopes, TreeS
 
 StyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeScope& treeScope)
 {
-    if (&treeScope == &m_document)
+    if (treeScope == m_document)
         return &m_documentStyleSheetCollection;
 
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(&treeScope, nullptr);
@@ -119,7 +119,7 @@ StyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeScope& tree
 
 StyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& treeScope)
 {
-    if (&treeScope == &m_document)
+    if (treeScope == m_document)
         return &m_documentStyleSheetCollection;
 
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(&treeScope);
@@ -130,7 +130,7 @@ StyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& treeScope)
 
 const Vector<RefPtr<StyleSheet> >& StyleEngine::styleSheetsForStyleSheetList(TreeScope& treeScope)
 {
-    if (&treeScope == &m_document)
+    if (treeScope == m_document)
         return m_documentStyleSheetCollection.styleSheetsForStyleSheetList();
 
     return ensureStyleSheetCollectionFor(treeScope)->styleSheetsForStyleSheetList();
@@ -270,7 +270,7 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendin
     m_pendingStylesheets--;
 
     TreeScope* treeScope = isHTMLStyleElement(styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : &m_document;
-    if (treeScope == &m_document)
+    if (treeScope == m_document)
         m_needsDocumentStyleSheetsUpdate = true;
     else
         m_dirtyTreeScopes.add(treeScope);
@@ -294,13 +294,13 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
         return;
 
     TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
-    ASSERT(isHTMLStyleElement(node) || &treeScope == &m_document);
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
 
     StyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     ASSERT(collection);
     collection->addStyleSheetCandidateNode(node, createdByParser);
 
-    if (&treeScope == &m_document) {
+    if (treeScope == m_document) {
         m_needsDocumentStyleSheetsUpdate = true;
         return;
     }
@@ -312,13 +312,13 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
     TreeScope& treeScope = scopingNode ? scopingNode->treeScope() : m_document;
-    ASSERT(isHTMLStyleElement(node) || &treeScope == &m_document);
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
 
     StyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     ASSERT(collection);
     collection->removeStyleSheetCandidateNode(node, scopingNode);
 
-    if (&treeScope == &m_document) {
+    if (treeScope == m_document) {
         m_needsDocumentStyleSheetsUpdate = true;
         return;
     }
@@ -332,8 +332,8 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
         return;
 
     TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
-    ASSERT(isHTMLStyleElement(node) || &treeScope == &m_document);
-    if (&treeScope == &m_document) {
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    if (treeScope == m_document) {
         m_needsDocumentStyleSheetsUpdate = true;
         return;
     }
@@ -368,7 +368,7 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 
         for (TreeScopeSet::iterator it = treeScopes.begin(); it != treeScopes.end(); ++it) {
             TreeScope* treeScope = *it;
-            ASSERT(treeScope != &m_document);
+            ASSERT(treeScope != m_document);
             ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
             ASSERT(collection);
             collection->updateActiveStyleSheets(this, updateMode);

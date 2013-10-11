@@ -472,7 +472,7 @@ static Position adjustPositionForEnd(const Position& currentPosition, Node* star
 {
     TreeScope& treeScope = startContainerNode->treeScope();
 
-    ASSERT(&currentPosition.containerNode()->treeScope() != &treeScope);
+    ASSERT(currentPosition.containerNode()->treeScope() != treeScope);
 
     if (Node* ancestor = treeScope.ancestorInThisScope(currentPosition.containerNode())) {
         if (ancestor->contains(startContainerNode))
@@ -490,7 +490,7 @@ static Position adjustPositionForStart(const Position& currentPosition, Node* en
 {
     TreeScope& treeScope = endContainerNode->treeScope();
 
-    ASSERT(&currentPosition.containerNode()->treeScope() != &treeScope);
+    ASSERT(currentPosition.containerNode()->treeScope() != treeScope);
 
     if (Node* ancestor = treeScope.ancestorInThisScope(currentPosition.containerNode())) {
         if (ancestor->contains(endContainerNode))
@@ -509,7 +509,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingShadowBoundaries()
     if (m_base.isNull() || m_start.isNull() || m_end.isNull())
         return;
 
-    if (&m_start.anchorNode()->treeScope() == &m_end.anchorNode()->treeScope())
+    if (m_start.anchorNode()->treeScope() == m_end.anchorNode()->treeScope())
         return;
 
     if (m_baseIsFirst) {
@@ -520,7 +520,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingShadowBoundaries()
         m_start = m_extent;
     }
 
-    ASSERT(&m_start.anchorNode()->treeScope() == &m_end.anchorNode()->treeScope());
+    ASSERT(m_start.anchorNode()->treeScope() == m_end.anchorNode()->treeScope());
 }
 
 void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()

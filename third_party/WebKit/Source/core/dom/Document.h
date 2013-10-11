@@ -1411,6 +1411,14 @@ inline const Document* toDocument(const ExecutionContext* executionContext)
 
 DEFINE_NODE_TYPE_CASTS(Document, isDocumentNode());
 
+// All these varations are needed to avoid ambiguous overloads with the Node and TreeScope versions.
+inline bool operator==(const Document& a, const Document& b) { return &a == &b; }
+inline bool operator==(const Document& a, const Document* b) { return &a == b; }
+inline bool operator==(const Document* a, const Document& b) { return a == &b; }
+inline bool operator!=(const Document& a, const Document& b) { return !(a == b); }
+inline bool operator!=(const Document& a, const Document* b) { return !(a == b); }
+inline bool operator!=(const Document* a, const Document& b) { return !(a == b); }
+
 // Put these methods here, because they require the Document definition, but we really want to inline them.
 
 inline bool Node::isDocumentNode() const

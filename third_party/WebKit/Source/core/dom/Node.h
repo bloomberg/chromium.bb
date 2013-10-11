@@ -923,6 +923,14 @@ inline bool shouldRecalcStyle(StyleRecalcChange change, const Node* node)
     return change >= Inherit || node->childNeedsStyleRecalc() || node->needsStyleRecalc();
 }
 
+// Allow equality comparisons of Nodes by reference or pointer, interchangeably.
+inline bool operator==(const Node& a, const Node& b) { return &a == &b; }
+inline bool operator==(const Node& a, const Node* b) { return &a == b; }
+inline bool operator==(const Node* a, const Node& b) { return a == &b; }
+inline bool operator!=(const Node& a, const Node& b) { return !(a == b); }
+inline bool operator!=(const Node& a, const Node* b) { return !(a == b); }
+inline bool operator!=(const Node* a, const Node& b) { return !(a == b); }
+
 // FIXME: Move to more generic place.
 #define DEFINE_TYPE_CASTS(thisType, argumentType, argumentName, pointerPredicate, referencePredicate) \
 inline thisType* to##thisType(argumentType* argumentName) \
@@ -951,7 +959,7 @@ void to##thisType(const thisType&)
 #define DEFINE_NODE_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, Node, node, node->predicate, node.predicate)
 
-} // namespace
+} // namespace WebCore
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.

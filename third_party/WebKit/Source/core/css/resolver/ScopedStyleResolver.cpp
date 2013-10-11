@@ -147,7 +147,7 @@ void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, Vector
     bool applyAuthorStyles = treeScope.applyAuthorStyles();
 
     for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent()) {
-        if (&scopedResolver->treeScope() == &treeScope || (applyAuthorStyles && &scopedResolver->treeScope() == &document))
+        if (scopedResolver->treeScope() == treeScope || (applyAuthorStyles && scopedResolver->treeScope() == document))
             resolvers.append(scopedResolver);
     }
 }
@@ -188,7 +188,7 @@ void ScopedStyleTree::popStyleCache(const ContainerNode& scopingNode)
     if (!cacheIsValid(&scopingNode))
         return;
 
-    if (m_cache.scopedResolver && &m_cache.scopedResolver->scopingNode() == &scopingNode)
+    if (m_cache.scopedResolver && m_cache.scopedResolver->scopingNode() == scopingNode)
         m_cache.scopedResolver = m_cache.scopedResolver->parent();
     m_cache.nodeForScopedStyles = scopingNode.parentOrShadowHostNode();
 }

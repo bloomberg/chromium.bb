@@ -264,7 +264,7 @@ VisiblePosition firstEditablePositionAfterPositionInRoot(const Position& positio
 
     Position p = position;
 
-    if (&position.deprecatedNode()->treeScope() != &highestRoot->treeScope()) {
+    if (position.deprecatedNode()->treeScope() != highestRoot->treeScope()) {
         Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(p.deprecatedNode());
         if (!shadowAncestor)
             return VisiblePosition();
@@ -289,7 +289,7 @@ VisiblePosition lastEditablePositionBeforePositionInRoot(const Position& positio
 
     Position p = position;
 
-    if (&position.deprecatedNode()->treeScope() != &highestRoot->treeScope()) {
+    if (position.deprecatedNode()->treeScope() != highestRoot->treeScope()) {
         Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(p.deprecatedNode());
         if (!shadowAncestor)
             return VisiblePosition();

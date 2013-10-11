@@ -85,7 +85,7 @@ PassRefPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)
 
 void ProcessingInstruction::checkStyleSheet()
 {
-    if (m_target == "xml-stylesheet" && document().frame() && parentNode() == &document()) {
+    if (m_target == "xml-stylesheet" && document().frame() && parentNode() == document()) {
         // see http://www.w3.org/TR/xml-stylesheet/
         // ### support stylesheet included in a fragment of this (or another) document
         // ### make sure this gets called when adding from javascript

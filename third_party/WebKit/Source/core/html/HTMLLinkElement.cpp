@@ -125,7 +125,7 @@ bool HTMLLinkElement::shouldLoadLink()
         continueLoad = false;
 
     // A beforeload handler might have removed us from the document or changed the document.
-    if (continueLoad && (!inDocument() || &document() != originalDocument))
+    if (continueLoad && (!inDocument() || document() != originalDocument))
         continueLoad = false;
 
     // If the beforeload handler recurses into the link element by mutating it, we should only

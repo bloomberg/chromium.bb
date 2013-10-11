@@ -231,7 +231,7 @@ void EventRetargeter::buildRelatedNodeMap(const Node* relatedNode, RelatedNodeMa
 {
     TreeScope* lastTreeScope = 0;
     for (EventPathWalker walker(relatedNode); walker.node(); walker.moveToParent()) {
-        if (&walker.node()->treeScope() != lastTreeScope)
+        if (walker.node()->treeScope() != lastTreeScope)
             relatedNodeMap.add(&walker.node()->treeScope(), walker.adjustedTarget());
         lastTreeScope = &walker.node()->treeScope();
     }

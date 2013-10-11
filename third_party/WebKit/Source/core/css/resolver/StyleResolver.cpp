@@ -425,7 +425,7 @@ void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleC
     for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
         resolversInShadowTree.at(j)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope, cascadeOrder++);
 
-    if (resolvers.isEmpty() || &resolvers.first()->treeScope() != &element->treeScope())
+    if (resolvers.isEmpty() || resolvers.first()->treeScope() != element->treeScope())
         ++cascadeScope;
     cascadeOrder += resolvers.size();
     for (unsigned i = 0; i < resolvers.size(); ++i)
@@ -467,7 +467,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
         ScopedStyleResolver* resolver = resolvers.at(i);
         // FIXME: Need to clarify how to treat style scoped.
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, &resolver->treeScope() == &element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
+        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
     }
 
     collectShadowDistributedRules(collector, includeEmptyRules);

@@ -1988,7 +1988,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
         RenderLayer* layerForNodeUnderMouse = layerForNode(m_nodeUnderMouse.get());
         Page* page = m_frame->page();
 
-        if (m_lastNodeUnderMouse && (!m_nodeUnderMouse || &m_nodeUnderMouse->document() != m_frame->document())) {
+        if (m_lastNodeUnderMouse && (!m_nodeUnderMouse || m_nodeUnderMouse->document() != m_frame->document())) {
             // The mouse has moved between frames.
             if (Frame* frame = m_lastNodeUnderMouse->document().frame()) {
                 if (FrameView* frameView = frame->view())
@@ -2000,7 +2000,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
                 scrollableAreaForLastNode->mouseExitedContentArea();
         }
 
-        if (m_nodeUnderMouse && (!m_lastNodeUnderMouse || &m_lastNodeUnderMouse->document() != m_frame->document())) {
+        if (m_nodeUnderMouse && (!m_lastNodeUnderMouse || m_lastNodeUnderMouse->document() != m_frame->document())) {
             // The mouse has moved between frames.
             if (Frame* frame = m_nodeUnderMouse->document().frame()) {
                 if (FrameView* frameView = frame->view())
@@ -2012,7 +2012,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
                 scrollableAreaForNodeUnderMouse->mouseEnteredContentArea();
         }
 
-        if (m_lastNodeUnderMouse && &m_lastNodeUnderMouse->document() != m_frame->document()) {
+        if (m_lastNodeUnderMouse && m_lastNodeUnderMouse->document() != m_frame->document()) {
             m_lastNodeUnderMouse = 0;
             m_lastScrollbarUnderMouse = 0;
             m_lastInstanceUnderMouse = 0;

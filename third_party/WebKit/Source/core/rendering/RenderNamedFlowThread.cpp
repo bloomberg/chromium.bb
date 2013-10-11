@@ -82,7 +82,7 @@ void RenderNamedFlowThread::clearContentNodes()
 
         ASSERT(contentNode && contentNode->isElementNode());
         ASSERT(contentNode->inNamedFlow());
-        ASSERT(&contentNode->document() == &document());
+        ASSERT(contentNode->document() == document());
 
         contentNode->clearInNamedFlow();
     }
@@ -442,7 +442,7 @@ void RenderNamedFlowThread::pushDependencies(RenderNamedFlowThreadList& list)
 void RenderNamedFlowThread::registerNamedFlowContentNode(Node* contentNode)
 {
     ASSERT(contentNode && contentNode->isElementNode());
-    ASSERT(&contentNode->document() == &document());
+    ASSERT(contentNode->document() == document());
 
     contentNode->setInNamedFlow();
 
@@ -465,7 +465,7 @@ void RenderNamedFlowThread::unregisterNamedFlowContentNode(Node* contentNode)
     ASSERT(contentNode && contentNode->isElementNode());
     ASSERT(m_contentNodes.contains(contentNode));
     ASSERT(contentNode->inNamedFlow());
-    ASSERT(&contentNode->document() == &document());
+    ASSERT(contentNode->document() == document());
 
     contentNode->clearInNamedFlow();
     m_contentNodes.remove(contentNode);

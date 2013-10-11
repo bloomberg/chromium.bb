@@ -72,7 +72,7 @@ void ContextMenuController::documentDetached(Document* document)
 {
     if (Node* innerNode = m_hitTestResult.innerNode()) {
         // Invalidate the context menu info if its target document is detached.
-        if (&innerNode->document() == document)
+        if (innerNode->document() == document)
             clearContextMenu();
     }
 }

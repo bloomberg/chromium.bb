@@ -262,7 +262,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
     case CSSSelector::ShadowPseudo:
         {
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
-            if (context.scope && &context.scope->treeScope() == &context.element->treeScope() && (context.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)
+            if (context.scope && context.scope->treeScope() == context.element->treeScope() && (context.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)
                 return SelectorFailsCompletely;
             Element* shadowHostNode = context.element->shadowHost();
             if (!shadowHostNode)

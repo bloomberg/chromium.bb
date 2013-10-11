@@ -524,7 +524,7 @@ int InspectorDOMAgent::pushNodeToFrontend(ErrorString* errorString, int document
     Document* document = assertDocument(errorString, documentNodeId);
     if (!document)
         return 0;
-    if (&nodeToPush->document() != document) {
+    if (nodeToPush->document() != document) {
         *errorString = "Node is not part of the document with given id";
         return 0;
     }

@@ -1304,7 +1304,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
         CustomElement::didEnterDocument(this, document());
 
     TreeScope& scope = insertionPoint->treeScope();
-    if (&scope != &treeScope())
+    if (scope != treeScope())
         return InsertionDone;
 
     const AtomicString& idValue = getIdAttribute();
@@ -1348,7 +1348,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
     setSavedLayerScrollOffset(IntSize());
 
-    if (insertionPoint->isInTreeScope() && &treeScope() == &document()) {
+    if (insertionPoint->isInTreeScope() && treeScope() == document()) {
         const AtomicString& idValue = getIdAttribute();
         if (!idValue.isNull())
             updateId(insertionPoint->treeScope(), idValue, nullAtom);
@@ -1960,7 +1960,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& es)
         return 0;
     }
 
-    ASSERT(&document() == &attr->document());
+    ASSERT(document() == attr->document());
 
     synchronizeAttribute(attr->qualifiedName());
 
