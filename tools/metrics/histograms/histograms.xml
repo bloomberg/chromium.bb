@@ -11190,6 +11190,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PerformanceMonitor.HighCPU.BrowserProcess" enum="BooleanHit">
+  <summary>
+    The number of times a browser process has continuously stayed above a
+    certain threshold of CPU utilization over a certain time period (currently
+    set to two minutes).
+  </summary>
+</histogram>
+
 <histogram name="Platform.AsvGroup">
   <summary>
     Chrome OS (ARM Chromebooks using Exynos 5250 only) Adaptive Support Voltage

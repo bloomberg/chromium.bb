@@ -5,6 +5,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
 
 #include "chrome/browser/performance_monitor/constants.h"
@@ -12,7 +13,6 @@
 #if defined(OS_MACOSX)
 #include "content/public/browser/browser_child_process_host.h"
 #endif
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/process_type.h"
 
 namespace performance_monitor {
@@ -79,10 +79,8 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
 
   // If CPU usage has consistently been above our threshold,
   // we *may* have an issue.
-  if (min_cpu_usage_ > kHighCPUUtilizationThreshold) {
-    content::RecordAction(
-        content::UserMetricsAction("PerformanceMonitor.HighCPU.Browser"));
-  }
+  if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
+    UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.BrowserProcess", true);
 }
 
 }  // namespace performance_monitor
