@@ -17,17 +17,15 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 
-if sys.platform == 'win32':
-  print '@@@BUILD_STEP install mingw@@@'
-  sys.stdout.flush()
-  subprocess.check_call([
-      sys.executable,
-      os.path.join(NACL_DIR, 'buildbot', 'buildbot_mingw_install.py')])
-
 print '@@@BUILD_STEP run_build_tests.py@@@'
 sys.stdout.flush()
 subprocess.check_call([
     sys.executable, os.path.join(NACL_DIR, 'build', 'run_build_tests.py')])
+
+print '@@@BUILD_STEP toolchain_tests.py@@@'
+sys.stdout.flush()
+subprocess.check_call([
+   sys.executable, os.path.join(NACL_DIR, 'build', 'run_build_tests.py')])
 
 # Toolchain build emits its own annotator stages.
 sys.stdout.flush()
