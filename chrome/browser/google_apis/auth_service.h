@@ -65,7 +65,7 @@ class AuthService : public AuthServiceInterface,
 
   OAuth2TokenService* oauth2_token_service_;
   std::string account_id_;
-  net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   bool has_refresh_token_;
   std::string access_token_;
   std::vector<std::string> scopes_;

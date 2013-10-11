@@ -19,6 +19,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 using google_apis::AboutResource;
@@ -160,9 +161,9 @@ void GDataWapiService::Initialize(const std::string& account_id) {
   sender_.reset(new RequestSender(
       new AuthService(oauth2_token_service_,
                       account_id,
-                      url_request_context_getter_,
+                      url_request_context_getter_.get(),
                       scopes),
-      url_request_context_getter_,
+      url_request_context_getter_.get(),
       blocking_task_runner_.get(),
       custom_user_agent_));
 

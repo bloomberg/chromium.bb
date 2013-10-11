@@ -92,7 +92,7 @@ class RequestSender {
       const base::WeakPtr<AuthenticatedRequestInterface>& request);
 
   scoped_ptr<AuthServiceInterface> auth_service_;
-  net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
   std::set<AuthenticatedRequestInterface*> in_flight_requests_;

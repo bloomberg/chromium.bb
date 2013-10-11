@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/base_requests.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace google_apis {
 

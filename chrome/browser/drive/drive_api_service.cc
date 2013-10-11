@@ -20,6 +20,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_requests.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 using google_apis::AppList;
@@ -310,9 +311,9 @@ void DriveAPIService::Initialize(const std::string& account_id) {
   sender_.reset(new RequestSender(
       new google_apis::AuthService(oauth2_token_service_,
                                    account_id,
-                                   url_request_context_getter_,
+                                   url_request_context_getter_.get(),
                                    scopes),
-      url_request_context_getter_,
+      url_request_context_getter_.get(),
       blocking_task_runner_.get(),
       custom_user_agent_));
   sender_->auth_service()->AddObserver(this);

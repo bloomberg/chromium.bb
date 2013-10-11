@@ -194,7 +194,7 @@ class DriveAPIService : public DriveServiceInterface,
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   OAuth2TokenService* oauth2_token_service_;
-  net::URLRequestContextGetter* url_request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;
