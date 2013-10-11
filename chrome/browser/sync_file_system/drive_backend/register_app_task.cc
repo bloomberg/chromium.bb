@@ -47,15 +47,14 @@ void RegisterAppTask::Run(const SyncStatusCallback& callback) {
     return;
   }
 
-  MetadataDatabase* metadata_database = sync_context_->GetMetadataDatabase();
-  if (!metadata_database || !sync_context_->GetDriveService()) {
+  if (!metadata_database() || !drive_service()) {
     callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 
-  int64 sync_root = metadata_database->GetSyncRootTrackerID();
+  int64 sync_root = metadata_database()->GetSyncRootTrackerID();
   TrackerSet trackers;
-  if (!metadata_database->FindTrackersByParentAndTitle(
+  if (!metadata_database()->FindTrackersByParentAndTitle(
           sync_root, app_id_, &trackers)) {
     CreateAppRootFolder(callback);
     return;
@@ -76,21 +75,20 @@ void RegisterAppTask::Run(const SyncStatusCallback& callback) {
 }
 
 void RegisterAppTask::CreateAppRootFolder(const SyncStatusCallback& callback) {
-  MetadataDatabase* metadata_database = sync_context_->GetMetadataDatabase();
-  int64 sync_root_tracker_id = metadata_database->GetSyncRootTrackerID();
+  int64 sync_root_tracker_id = metadata_database()->GetSyncRootTrackerID();
   FileTracker sync_root_tracker;
-  bool should_success = metadata_database->FindTrackerByTrackerID(
+  bool should_success = metadata_database()->FindTrackerByTrackerID(
       sync_root_tracker_id,
       &sync_root_tracker);
   DCHECK(should_success);
 
-  sync_context_->GetDriveService()->AddNewDirectory(
+  drive_service()->AddNewDirectory(
       sync_root_tracker.file_id(),
       app_id_,
       base::Bind(&RegisterAppTask::DidCreateAppRootFolder,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 metadata_database->GetLargestChangeID()));
+                 metadata_database()->GetLargestChangeID()));
 }
 
 void RegisterAppTask::DidCreateAppRootFolder(
@@ -124,24 +122,22 @@ void RegisterAppTask::DidUpdateDatabase(const SyncStatusCallback& callback,
     return;
   }
 
-  MetadataDatabase* metadata_database = sync_context_->GetMetadataDatabase();
-
   FileMetadata file;
-  bool should_success = metadata_database->FindFileByFileID(
+  bool should_success = metadata_database()->FindFileByFileID(
       file_id, &file);
   DCHECK(should_success);
 
   TrackerSet trackers;
-  should_success = metadata_database->FindTrackersByFileID(
+  should_success = metadata_database()->FindTrackersByFileID(
       file_id, &trackers);
   DCHECK(should_success);
 
   DCHECK_EQ(1u, trackers.tracker_set().size());
   FileTracker tracker = **trackers.begin();
-  DCHECK_EQ(metadata_database->GetSyncRootTrackerID(),
+  DCHECK_EQ(metadata_database()->GetSyncRootTrackerID(),
             tracker.parent_tracker_id());
 
-  metadata_database->UpdateTracker(
+  metadata_database()->UpdateTracker(
       tracker.tracker_id(),
       file.details(),
       base::Bind(&RegisterAppTask::DidPrepareForRegister,
@@ -200,6 +196,14 @@ void RegisterAppTask::RegisterAppIntoDatabase(
     const SyncStatusCallback& callback) {
   sync_context_->GetMetadataDatabase()->RegisterApp(
       app_id_, tracker.file_id(), callback);
+}
+
+MetadataDatabase* RegisterAppTask::metadata_database() {
+  return sync_context_->GetMetadataDatabase();
+}
+
+drive::DriveServiceInterface* RegisterAppTask::drive_service() {
+  return sync_context_->GetDriveService();
 }
 
 }  // namespace drive_backend

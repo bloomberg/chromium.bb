@@ -51,6 +51,9 @@ class RegisterAppTask : public SyncTask {
   void RegisterAppIntoDatabase(const FileTracker& tracker,
                                const SyncStatusCallback& callback);
 
+  MetadataDatabase* metadata_database();
+  drive::DriveServiceInterface* drive_service();
+
   SyncEngineContext* sync_context_;  // Not owned.
 
   int create_folder_retry_count_;

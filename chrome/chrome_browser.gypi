@@ -2317,6 +2317,8 @@
         'browser/sync_file_system/drive_backend/sync_engine_initializer.h',
         'browser/sync_file_system/drive_backend/tracker_set.cc',
         'browser/sync_file_system/drive_backend/tracker_set.h',
+        'browser/sync_file_system/drive_backend/uninstall_app_task.cc',
+        'browser/sync_file_system/drive_backend/uninstall_app_task.h',
         'browser/sync_file_system/drive_backend_v1/api_util.cc',
         'browser/sync_file_system/drive_backend_v1/api_util.h',
         'browser/sync_file_system/drive_backend_v1/api_util_interface.h',

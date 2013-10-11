@@ -111,9 +111,6 @@ class SyncEngine : public RemoteFileSyncService,
                     const SyncStatusCallback& callback);
   void DoEnableApp(const std::string& app_id,
                    const SyncStatusCallback& callback);
-  void DoUninstallApp(const std::string& app_id,
-                      UninstallFlag flag,
-                      const SyncStatusCallback& callback);
 
   void DidInitialize(SyncEngineInitializer* initializer,
                      SyncStatusCode status);

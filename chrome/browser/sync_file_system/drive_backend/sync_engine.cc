@@ -13,6 +13,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/register_app_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
+#include "chrome/browser/sync_file_system/drive_backend/uninstall_app_task.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
 
 namespace sync_file_system {
@@ -90,10 +91,8 @@ void SyncEngine::UninstallOrigin(
     const GURL& origin,
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
-  task_manager_.ScheduleTask(
-      base::Bind(&SyncEngine::DoUninstallApp,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 origin.host(), flag),
+  task_manager_.ScheduleSyncTask(
+      scoped_ptr<SyncTask>(new UninstallAppTask(this, origin.host(), flag)),
       callback);
 }
 
@@ -211,12 +210,6 @@ void SyncEngine::DoDisableApp(const std::string& app_id,
 
 void SyncEngine::DoEnableApp(const std::string& app_id,
                              const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
-}
-
-void SyncEngine::DoUninstallApp(const std::string& app_id,
-                                UninstallFlag flag,
-                                const SyncStatusCallback& callback) {
   NOTIMPLEMENTED();
 }
 
