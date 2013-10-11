@@ -200,9 +200,6 @@ enum MigratedPreferences {
 // MigrateUserPrefs.
 const char kBackupPref[] = "backup";
 
-// Chrome To Mobile has been removed; this pref will be cleared from user data.
-const char kChromeToMobilePref[] = "chrome_to_mobile.device_list";
-
 #if !defined(OS_ANDROID)
 // The sync promo error message preference has been removed; this pref will
 // be cleared from user data.
@@ -449,9 +446,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       kBackupPref,
       new DictionaryValue(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(
-      kChromeToMobilePref,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if !defined(OS_ANDROID)
   registry->RegisterStringPref(
       kSyncPromoErrorMessage,
@@ -485,9 +479,6 @@ void MigrateUserPrefs(Profile* profile) {
 
   // Cleanup prefs from now-removed protector feature.
   prefs->ClearPref(kBackupPref);
-
-  // Cleanup prefs from now-removed Chrome To Mobile feature.
-  prefs->ClearPref(kChromeToMobilePref);
 
 #if !defined(OS_ANDROID)
   // Cleanup now-removed sync promo error message preference.
