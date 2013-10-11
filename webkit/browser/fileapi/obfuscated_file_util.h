@@ -197,11 +197,15 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
                            MigrationBackFromIsolated);
 
+  base::FilePath GetDirectoryForURL(
+      const FileSystemURL& url,
+      bool create,
+      base::PlatformFileError* error_code);
+
   base::PlatformFileError GetFileInfoInternal(
       SandboxDirectoryDatabase* db,
       FileSystemOperationContext* context,
-      const GURL& origin,
-      FileSystemType type,
+      const FileSystemURL& url,
       FileId file_id,
       FileInfo* local_info,
       base::PlatformFileInfo* file_info,
@@ -230,8 +234,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   // field] to an absolute platform path that can be given to the native
   // filesystem.
   base::FilePath DataPathToLocalPath(
-      const GURL& origin,
-      FileSystemType type,
+      const FileSystemURL& url,
       const base::FilePath& data_file_path);
 
   std::string GetDirectoryDatabaseKey(const GURL& origin, FileSystemType type);
@@ -259,8 +262,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   base::PlatformFileError GenerateNewLocalPath(
       SandboxDirectoryDatabase* db,
       FileSystemOperationContext* context,
-      const GURL& origin,
-      FileSystemType type,
+      const FileSystemURL& url,
       base::FilePath* local_path);
 
   base::PlatformFileError CreateOrOpenInternal(

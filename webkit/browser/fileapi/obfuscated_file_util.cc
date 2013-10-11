@@ -126,8 +126,7 @@ class ObfuscatedFileEnumerator
       : db_(db),
         context_(context),
         obfuscated_file_util_(obfuscated_file_util),
-        origin_(root_url.origin()),
-        type_(root_url.type()),
+        root_url_(root_url),
         recursive_(recursive),
         current_file_id_(0) {
     base::FilePath root_virtual_path = root_url.path();
@@ -154,7 +153,7 @@ class ObfuscatedFileEnumerator
     base::FilePath platform_file_path;
     base::PlatformFileError error =
         obfuscated_file_util_->GetFileInfoInternal(
-            db_, context_, origin_, type_, current_file_id_,
+            db_, context_, root_url_, current_file_id_,
             &file_info, &current_platform_file_info_, &platform_file_path);
     if (error != base::PLATFORM_FILE_OK)
       return Next();
@@ -204,8 +203,7 @@ class ObfuscatedFileEnumerator
   SandboxDirectoryDatabase* db_;
   FileSystemOperationContext* context_;
   ObfuscatedFileUtil* obfuscated_file_util_;
-  GURL origin_;
-  FileSystemType type_;
+  FileSystemURL root_url_;
   bool recursive_;
 
   std::queue<FileRecord> recurse_queue_;
@@ -414,8 +412,7 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfo(
   if (!db->GetFileWithPath(url.path(), &file_id))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   FileInfo local_info;
-  return GetFileInfoInternal(db, context,
-                             url.origin(), url.type(),
+  return GetFileInfoInternal(db, context, url,
                              file_id, &local_info,
                              file_info, platform_file_path);
 }
@@ -443,8 +440,7 @@ PlatformFileError ObfuscatedFileUtil::GetLocalFilePath(
     // Directories have no local file path.
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }
-  *local_path = DataPathToLocalPath(
-      url.origin(), url.type(), file_info.data_path);
+  *local_path = DataPathToLocalPath(url, file_info.data_path);
 
   if (local_path->empty())
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -473,10 +469,9 @@ PlatformFileError ObfuscatedFileUtil::Touch(
       return base::PLATFORM_FILE_ERROR_FAILED;
     return base::PLATFORM_FILE_OK;
   }
-  base::FilePath local_path = DataPathToLocalPath(
-      url.origin(), url.type(), file_info.data_path);
   return NativeFileUtil::Touch(
-      local_path, last_access_time, last_modified_time);
+      DataPathToLocalPath(url, file_info.data_path),
+      last_access_time, last_modified_time);
 }
 
 PlatformFileError ObfuscatedFileUtil::Truncate(
@@ -528,7 +523,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
   base::PlatformFileInfo src_platform_file_info;
   base::FilePath src_local_path;
   base::PlatformFileError error = GetFileInfoInternal(
-      db, context, src_url.origin(), src_url.type(), src_file_id,
+      db, context, src_url, src_file_id,
       &src_file_info, &src_platform_file_info, &src_local_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
@@ -540,7 +535,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
   base::FilePath dest_local_path;  // overwrite case only
   if (overwrite) {
     base::PlatformFileError error = GetFileInfoInternal(
-        db, context, dest_url.origin(), dest_url.type(), dest_file_id,
+        db, context, dest_url, dest_file_id,
         &dest_file_info, &dest_platform_file_info, &dest_local_path);
     if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
       overwrite = false;  // fallback to non-overwrite case
@@ -664,7 +659,7 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
   if (overwrite) {
     base::FilePath dest_local_path;
     base::PlatformFileError error = GetFileInfoInternal(
-        db, context, dest_url.origin(), dest_url.type(), dest_file_id,
+        db, context, dest_url, dest_file_id,
         &dest_file_info, &dest_platform_file_info, &dest_local_path);
     if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
       overwrite = false;  // fallback to non-overwrite case
@@ -695,8 +690,8 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
 
   base::PlatformFileError error;
   if (overwrite) {
-    base::FilePath dest_local_path = DataPathToLocalPath(
-        dest_url.origin(), dest_url.type(), dest_file_info.data_path);
+    base::FilePath dest_local_path =
+        DataPathToLocalPath(dest_url, dest_file_info.data_path);
     error = NativeFileUtil::CopyOrMoveFile(
         src_file_path, dest_local_path,
         FileSystemOperation::OPTION_NONE, true);
@@ -735,8 +730,7 @@ PlatformFileError ObfuscatedFileUtil::DeleteFile(
   base::PlatformFileInfo platform_file_info;
   base::FilePath local_path;
   base::PlatformFileError error = GetFileInfoInternal(
-      db, context, url.origin(), url.type(), file_id,
-      &file_info, &platform_file_info, &local_path);
+      db, context, url, file_id, &file_info, &platform_file_info, &local_path);
   if (error != base::PLATFORM_FILE_ERROR_NOT_FOUND &&
       error != base::PLATFORM_FILE_OK)
     return error;
@@ -850,6 +844,9 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
     FileSystemType type,
     bool create,
     base::PlatformFileError* error_code) {
+  // TODO(nhiroki): Add special handling for plugin-private filesystem
+  // (http://crbug.com/286240).
+
   base::FilePath origin_dir = GetDirectoryForOrigin(origin, create, error_code);
   if (origin_dir.empty())
     return base::FilePath();
@@ -1014,11 +1011,20 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase() {
   }
 }
 
+base::FilePath ObfuscatedFileUtil::GetDirectoryForURL(
+    const FileSystemURL& url,
+    bool create,
+    base::PlatformFileError* error_code) {
+  // TODO(nhiroki): Add special handling for plugin-private filesystem
+  // (http://crbug.com/286240).
+  return GetDirectoryForOriginAndType(
+      url.origin(), url.type(), create, error_code);
+}
+
 PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
     SandboxDirectoryDatabase* db,
     FileSystemOperationContext* context,
-    const GURL& origin,
-    FileSystemType type,
+    const FileSystemURL& url,
     FileId file_id,
     FileInfo* local_info,
     base::PlatformFileInfo* file_info,
@@ -1044,8 +1050,7 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
   }
   if (local_info->data_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  base::FilePath local_path = DataPathToLocalPath(
-      origin, type, local_info->data_path);
+  base::FilePath local_path = DataPathToLocalPath(url, local_info->data_path);
   base::PlatformFileError error = NativeFileUtil::GetFileInfo(
       local_path, file_info);
   // We should not follow symbolic links in sandboxed file system.
@@ -1057,7 +1062,7 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
     *platform_file_path = local_path;
   } else if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
     LOG(WARNING) << "Lost a backing file.";
-    InvalidateUsageCache(context, origin, type);
+    InvalidateUsageCache(context, url.origin(), url.type());
     if (!db->RemoveFileInfo(file_id))
       return base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -1074,14 +1079,12 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
   SandboxDirectoryDatabase* db = GetDirectoryDatabase(dest_url, true);
 
   PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath root = GetDirectoryForOriginAndType(
-      dest_url.origin(), dest_url.type(), false, &error);
+  base::FilePath root = GetDirectoryForURL(dest_url, false, &error);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
   base::FilePath dest_local_path;
-  error = GenerateNewLocalPath(db, context, dest_url.origin(),
-                               dest_url.type(), &dest_local_path);
+  error = GenerateNewLocalPath(db, context, dest_url, &dest_local_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
@@ -1148,10 +1151,9 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
 }
 
 base::FilePath ObfuscatedFileUtil::DataPathToLocalPath(
-    const GURL& origin, FileSystemType type, const base::FilePath& data_path) {
+    const FileSystemURL& url, const base::FilePath& data_path) {
   PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath root = GetDirectoryForOriginAndType(
-      origin, type, false, &error);
+  base::FilePath root = GetDirectoryForURL(url, false, &error);
   if (error != base::PLATFORM_FILE_OK)
     return base::FilePath();
   return root.Append(data_path);
@@ -1179,6 +1181,9 @@ std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
 // Still doesn't answer the quota issue, though.
 SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     const FileSystemURL& url, bool create) {
+  // TODO(nhiroki): Add special handling for plugin-private filesystem
+  // (http://crbug.com/286240).
+
   std::string key = GetDirectoryDatabaseKey(url.origin(), url.type());
   if (key.empty())
     return NULL;
@@ -1190,8 +1195,7 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
   }
 
   PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath path = GetDirectoryForOriginAndType(
-      url.origin(), url.type(), create, &error);
+  base::FilePath path = GetDirectoryForURL(url, create, &error);
   if (error != base::PLATFORM_FILE_OK) {
     LOG(WARNING) << "Failed to get origin+type directory: " << path.value();
     return NULL;
@@ -1319,8 +1323,7 @@ bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
 PlatformFileError ObfuscatedFileUtil::GenerateNewLocalPath(
     SandboxDirectoryDatabase* db,
     FileSystemOperationContext* context,
-    const GURL& origin,
-    FileSystemType type,
+    const FileSystemURL& url,
     base::FilePath* local_path) {
   DCHECK(local_path);
   int64 number;
@@ -1328,8 +1331,7 @@ PlatformFileError ObfuscatedFileUtil::GenerateNewLocalPath(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath new_local_path = GetDirectoryForOriginAndType(
-      origin, type, false, &error);
+  base::FilePath new_local_path = GetDirectoryForURL(url, false, &error);
   if (error != base::PLATFORM_FILE_OK)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
@@ -1394,8 +1396,7 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpenInternal(
   base::FilePath local_path;
   FileInfo file_info;
   base::PlatformFileError error = GetFileInfoInternal(
-      db, context, url.origin(), url.type(), file_id,
-      &file_info, &platform_file_info, &local_path);
+      db, context, url, file_id, &file_info, &platform_file_info, &local_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
   if (file_info.is_directory())
