@@ -149,6 +149,7 @@ struct drm_output {
 
 	int vblank_pending;
 	int page_flip_pending;
+	int destroy_pending;
 
 	struct gbm_surface *surface;
 	struct gbm_bo *cursor_bo[2];
@@ -577,6 +578,9 @@ drm_output_repaint(struct weston_output *output_base,
 	struct drm_mode *mode;
 	int ret = 0;
 
+	if (output->destroy_pending)
+		return;
+
 	if (!output->next)
 		drm_output_render(output, damage);
 	if (!output->next)
@@ -664,6 +668,9 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 
 	struct timespec ts;
 
+	if (output->destroy_pending)
+		return;
+
 	if (!output->current) {
 		/* We can't page flip if there's no mode set */
 		uint32_t msec;
@@ -704,6 +711,9 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 }
 
 static void
+drm_output_destroy(struct weston_output *output_base);
+
+static void
 page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
@@ -721,7 +731,9 @@ page_flip_handler(int fd, unsigned int frame,
 
 	output->page_flip_pending = 0;
 
-	if (!output->vblank_pending) {
+	if (output->destroy_pending)
+		drm_output_destroy(&output->base);
+	else if (!output->vblank_pending) {
 		msecs = sec * 1000 + usec / 1000;
 		weston_output_finish_frame(&output->base, msecs);
 
@@ -1062,6 +1074,12 @@ drm_output_destroy(struct weston_output *output_base)
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
 	drmModeCrtcPtr origcrtc = output->original_crtc;
+
+	if (output->page_flip_pending) {
+		output->destroy_pending = 1;
+		weston_log("destroy output while page flip pending\n");
+		return;
+	}
 
 	if (output->backlight)
 		backlight_destroy(output->backlight);
