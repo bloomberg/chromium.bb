@@ -34,6 +34,8 @@ VideoDecoderJob* VideoDecoderJob::Create(const VideoCodec video_codec,
       VideoCodecBridge::Create(video_codec, is_secure));
   if (codec && codec->Start(video_codec, size, surface, media_crypto))
     return new VideoDecoderJob(codec.Pass(), request_data_cb);
+
+  LOG(ERROR) << "Failed to create VideoDecoderJob.";
   return NULL;
 }
 

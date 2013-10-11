@@ -248,7 +248,9 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
       }
 
       case media::MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
-        media_codec_->GetOutputBuffers();
+        RETURN_ON_FAILURE(media_codec_->GetOutputBuffers(),
+                          "Cannot get output buffer from MediaCodec.",
+                          PLATFORM_FAILURE);
         break;
 
       case media::MEDIA_CODEC_OK:
@@ -406,8 +408,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
            codec_, gfx::Size(320, 240), surface.j_surface().obj(), NULL)) {
     return false;
   }
-  media_codec_->GetOutputBuffers();
-  return true;
+  return media_codec_->GetOutputBuffers();
 }
 
 void AndroidVideoDecodeAccelerator::Reset() {

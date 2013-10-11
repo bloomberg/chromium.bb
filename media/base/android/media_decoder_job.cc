@@ -282,8 +282,10 @@ void MediaDecoderJob::DecodeInternal(
 
   if (status != MEDIA_CODEC_OK) {
     if (status == MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED) {
-        media_codec_bridge_->GetOutputBuffers();
-        status = MEDIA_CODEC_OK;
+        if (media_codec_bridge_->GetOutputBuffers())
+          status = MEDIA_CODEC_OK;
+        else
+          status = MEDIA_CODEC_ERROR;
     }
     callback.Run(status, start_presentation_timestamp, 0);
     return;

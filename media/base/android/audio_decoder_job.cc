@@ -37,6 +37,8 @@ AudioDecoderJob* AudioDecoderJob::Create(
                             extra_data_size, true, media_crypto)) {
     return new AudioDecoderJob(codec.Pass(), request_data_cb);
   }
+
+  LOG(ERROR) << "Failed to create AudioDecoderJob.";
   return NULL;
 }
 

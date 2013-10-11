@@ -146,7 +146,7 @@ TEST(MediaCodecBridgeTest, DoNormal) {
   scoped_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(AudioCodecBridge::Create(kCodecMP3));
 
-  media_codec->Start(kCodecMP3, 44100, 2, NULL, 0, false, NULL);
+  ASSERT_TRUE(media_codec->Start(kCodecMP3, 44100, 2, NULL, 0, false, NULL));
 
   int input_buf_index = -1;
   MediaCodecStatus status =
@@ -185,7 +185,7 @@ TEST(MediaCodecBridgeTest, DoNormal) {
         continue;
 
       case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
-        media_codec->GetOutputBuffers();
+        ASSERT_TRUE(media_codec->GetOutputBuffers());
         continue;
 
       default:

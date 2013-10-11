@@ -130,8 +130,9 @@ class MEDIA_EXPORT MediaCodecBridge {
   void ReleaseOutputBuffer(int index, bool render);
 
   // Gets output buffers from media codec and keeps them inside the java class.
-  // To access them, use DequeueOutputBuffer().
-  void GetOutputBuffers();
+  // To access them, use DequeueOutputBuffer(). Returns whether output buffers
+  // were successfully obtained.
+  bool GetOutputBuffers() WARN_UNUSED_RESULT;
 
   static bool RegisterMediaCodecBridge(JNIEnv* env);
 
@@ -139,8 +140,9 @@ class MEDIA_EXPORT MediaCodecBridge {
   MediaCodecBridge(const std::string& mime, bool is_secure);
 
   // Calls start() against the media codec instance. Used in StartXXX() after
-  // configuring media codec.
-  void StartInternal();
+  // configuring media codec. Returns whether media codec was successfully
+  // started.
+  bool StartInternal() WARN_UNUSED_RESULT;
 
   jobject media_codec() { return j_media_codec_.obj(); }
 
@@ -166,7 +168,7 @@ class AudioCodecBridge : public MediaCodecBridge {
   // Start the audio codec bridge.
   bool Start(const AudioCodec codec, int sample_rate, int channel_count,
              const uint8* extra_data, size_t extra_data_size,
-             bool play_audio, jobject media_crypto);
+             bool play_audio, jobject media_crypto) WARN_UNUSED_RESULT;
 
   // Play the output buffer. This call must be called after
   // DequeueOutputBuffer() and before ReleaseOutputBuffer.
