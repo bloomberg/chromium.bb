@@ -308,16 +308,16 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setOutlineWidth(animatableValueRoundClampTo<unsigned short>(value));
         return;
     case CSSPropertyPaddingBottom:
-        style->setPaddingBottom(animatableValueToLength(value, state));
+        style->setPaddingBottom(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyPaddingLeft:
-        style->setPaddingLeft(animatableValueToLength(value, state));
+        style->setPaddingLeft(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyPaddingRight:
-        style->setPaddingRight(animatableValueToLength(value, state));
+        style->setPaddingRight(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyPaddingTop:
-        style->setPaddingTop(animatableValueToLength(value, state));
+        style->setPaddingTop(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyRight:
         style->setRight(animatableValueToLength(value, state));
