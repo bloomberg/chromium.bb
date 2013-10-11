@@ -166,6 +166,10 @@ class UI_EXPORT InputMethodIBus
   // Indicates if the composition text is changed or deleted.
   bool composition_changed_;
 
+  // If it's true then all input method result received before the next key
+  // event will be discarded.
+  bool suppress_next_result_;
+
   // The latest id of key event.
   uint32 current_keyevent_id_;
 
