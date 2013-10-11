@@ -1248,6 +1248,7 @@
         'browser/media/media_browsertest.cc',
         'browser/media/media_browsertest.h',
         'browser/media/chrome_media_stream_infobar_browsertest.cc',
+        'browser/media/chrome_webrtc_apprtc_browsertest.cc',
         'browser/media/chrome_webrtc_browsertest.cc',
         'browser/media/chrome_webrtc_audio_quality_browsertest.cc',
         'browser/media/chrome_webrtc_video_quality_browsertest.cc',

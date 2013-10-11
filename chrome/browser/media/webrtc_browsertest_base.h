@@ -30,17 +30,19 @@ class WebRtcTestBase : public InProcessBrowserTest {
   WebRtcTestBase();
   virtual ~WebRtcTestBase();
 
-  void GetUserMediaAndAccept(content::WebContents* tab_contents);
+  void GetUserMediaAndAccept(content::WebContents* tab_contents) const;
   void GetUserMediaWithSpecificConstraintsAndAccept(
       content::WebContents* tab_contents,
-      const std::string& constraints);
+      const std::string& constraints) const;
   void GetUserMediaAndDeny(content::WebContents* tab_contents);
   void GetUserMediaWithSpecificConstraintsAndDeny(
       content::WebContents* tab_contents,
-      const std::string& constraints);
-  void GetUserMediaAndDismiss(content::WebContents* tab_contents);
+      const std::string& constraints) const;
+  void GetUserMediaAndDismiss(content::WebContents* tab_contents) const;
   void GetUserMedia(content::WebContents* tab_contents,
-                    const std::string& constraints);
+                    const std::string& constraints) const;
+
+  content::WebContents* OpenPageAndAcceptUserMedia(const GURL& url) const;
 
   void ConnectToPeerConnectionServer(const std::string& peer_name,
                                      content::WebContents* tab_contents) const;
@@ -48,11 +50,11 @@ class WebRtcTestBase : public InProcessBrowserTest {
                                 content::WebContents* tab_contents) const;
 
  private:
+  void CloseInfoBarInTab(content::WebContents* tab_contents,
+                         MediaStreamInfoBarDelegate* infobar) const;
   MediaStreamInfoBarDelegate* GetUserMediaAndWaitForInfoBar(
       content::WebContents* tab_contents,
-      const std::string& constraints);
-  void CloseInfoBarInTab(content::WebContents* tab_contents,
-                         MediaStreamInfoBarDelegate* infobar);
+      const std::string& constraints) const;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcTestBase);
 };

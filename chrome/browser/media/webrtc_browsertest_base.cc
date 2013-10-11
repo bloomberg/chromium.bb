@@ -11,6 +11,7 @@
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,14 +29,15 @@ WebRtcTestBase::WebRtcTestBase() {
 WebRtcTestBase::~WebRtcTestBase() {
 }
 
-void WebRtcTestBase::GetUserMediaAndAccept(content::WebContents* tab_contents) {
+void WebRtcTestBase::GetUserMediaAndAccept(
+    content::WebContents* tab_contents) const {
   GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
                                                kAudioVideoCallConstraints);
 }
 
 void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
     content::WebContents* tab_contents,
-    const std::string& constraints) {
+    const std::string& constraints) const {
   MediaStreamInfoBarDelegate* infobar =
       GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
   infobar->Accept();
@@ -54,7 +56,7 @@ void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
 
 void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
     content::WebContents* tab_contents,
-    const std::string& constraints) {
+    const std::string& constraints) const {
   MediaStreamInfoBarDelegate* infobar =
       GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
   infobar->Cancel();
@@ -66,7 +68,7 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
 }
 
 void WebRtcTestBase::GetUserMediaAndDismiss(
-    content::WebContents* tab_contents) {
+    content::WebContents* tab_contents) const {
   MediaStreamInfoBarDelegate* infobar =
       GetUserMediaAndWaitForInfoBar(tab_contents, kAudioVideoCallConstraints);
   infobar->InfoBarDismissed();
@@ -78,7 +80,7 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
 }
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
-                                  const std::string& constraints) {
+                                  const std::string& constraints) const {
   // Request user media: this will launch the media stream info bar.
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -88,7 +90,7 @@ void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
 
 MediaStreamInfoBarDelegate* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
     content::WebContents* tab_contents,
-    const std::string& constraints) {
+    const std::string& constraints) const {
   content::WindowedNotificationObserver infobar_added(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::NotificationService::AllSources());
@@ -104,8 +106,31 @@ MediaStreamInfoBarDelegate* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
   return infobar;
 }
 
-void WebRtcTestBase::CloseInfoBarInTab(content::WebContents* tab_contents,
-                                       MediaStreamInfoBarDelegate* infobar) {
+content::WebContents* WebRtcTestBase::OpenPageAndAcceptUserMedia(
+    const GURL& url) const {
+  content::WindowedNotificationObserver infobar_added(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+      content::NotificationService::AllSources());
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  infobar_added.Wait();
+
+  content::WebContents* tab_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::Details<InfoBarAddedDetails> details(infobar_added.details());
+  MediaStreamInfoBarDelegate* infobar =
+      details->AsMediaStreamInfoBarDelegate();
+  EXPECT_TRUE(infobar);
+  infobar->Accept();
+
+  CloseInfoBarInTab(tab_contents, infobar);
+  return tab_contents;
+}
+
+void WebRtcTestBase::CloseInfoBarInTab(
+    content::WebContents* tab_contents,
+    MediaStreamInfoBarDelegate* infobar) const {
   content::WindowedNotificationObserver infobar_removed(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::NotificationService::AllSources());
