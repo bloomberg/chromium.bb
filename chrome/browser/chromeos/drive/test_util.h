@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_TEST_UTIL_H_
 
 #include <string>
-#include <vector>
 
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -36,25 +35,6 @@ const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 // post a task to the blocking pool. This function processes these tasks
 // repeatedly.
 void RunBlockingPoolTask();
-
-// Test data type of file cache
-struct TestCacheResource {
-  TestCacheResource(const std::string& source_file,
-                    const std::string& resource_id,
-                    const std::string& md5,
-                    bool is_pinned,
-                    bool is_dirty);
-  ~TestCacheResource(){}
-
-  std::string source_file;
-  std::string resource_id;
-  std::string md5;
-  bool is_pinned;
-  bool is_dirty;
-};
-
-// Obtains default test data for FileCacheEntry.
-std::vector<TestCacheResource> GetDefaultTestCacheResources();
 
 // Helper to destroy objects which needs Destroy() to be called on destruction.
 // Note: When using this helper, you should destruct objects before
@@ -86,12 +66,6 @@ int ReadAllData(Reader* reader, std::string* content) {
     content->append(buffer->data(), result);
   }
 }
-
-// Adds test cache |resources| to |cache|. Returns whether the operation
-// succeeded or not.
-bool PrepareTestCacheResources(
-    internal::FileCache* cache,
-    const std::vector<TestCacheResource>& resources);
 
 // Registers Drive related preferences in |pref_registry|. Drive related
 // preferences should be registered as TestingPrefServiceSimple will crash if

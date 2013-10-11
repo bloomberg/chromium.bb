@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 
+#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/string_search.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -23,7 +23,6 @@ namespace internal {
 namespace {
 
 const int kDefaultAtMostNumMatches = 10;
-const int64 kCacheEntriesLastAccessedTimeBase = 100;
 
 // A simple wrapper for testing FindAndHighlightWrapper(). It just converts the
 // query text parameter to FixedPatternStringSearchIgnoringCaseAndAccents.
@@ -35,42 +34,6 @@ bool FindAndHighlightWrapper(
       base::UTF8ToUTF16(query_text));
   return FindAndHighlight(text, &query, highlighted_text);
 }
-
-// Generator of sequential fake data for ResourceEntry.
-class MetadataInfoGenerator {
- public:
-  // Constructor of EntryInfoGenerator. |prefix| is prefix of resource IDs and
-  // |last_accessed_base| is the first value to be generated as a last accessed
-  // time.
-  MetadataInfoGenerator(const std::string& prefix,
-                        int last_accessed_base) :
-      prefix_(prefix),
-      id_counter_(0),
-      last_accessed_counter_(last_accessed_base) {}
-
-  // Obtains resource ID that is consists of the prefix and a sequential
-  // number.
-  std::string GetId() const {
-    return base::StringPrintf("%s%d", prefix_.c_str(), id_counter_);
-  }
-
-  // Obtains the fake last accessed time that is sequential number following
-  // |last_accessed_base| specified at the constructor.
-  int64 GetLastAccessed() const {
-    return last_accessed_counter_;
-  }
-
-  // Advances counters to generate the next ID and last accessed time.
-  void Advance() {
-    ++id_counter_;
-    ++last_accessed_counter_;
-  }
-
- private:
-  std::string prefix_;
-  int id_counter_;
-  int64 last_accessed_counter_;
-};
 
 }  // namespace
 
@@ -99,91 +62,70 @@ class SearchMetadataTest : public testing::Test {
   }
 
   void AddEntriesToMetadata() {
+    base::FilePath temp_file;
+    EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
+                                                    &temp_file));
+    const std::string temp_file_md5 = "md5";
+
     ResourceEntry entry;
     std::string local_id;
 
+    // drive/root
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
         util::kDriveMyDriveRootDirName, "root", 100,
         util::kDriveGrandRootSpecialResourceId), &local_id));
+    const std::string root_local_id = local_id;
 
+    // drive/root/Directory 1
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
-        "Directory 1", "dir1", 1, "root"), &local_id));
-    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetFileEntry(
-        "SubDirectory File 1.txt", "file1a", 2, "dir1"), &local_id));
+        "Directory 1", "dir1", 1, root_local_id), &local_id));
+    const std::string dir1_local_id = local_id;
 
+    // drive/root/Directory 1/SubDirectory File 1.txt
+    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetFileEntry(
+        "SubDirectory File 1.txt", "file1a", 2, dir1_local_id), &local_id));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
+        local_id, temp_file_md5, temp_file, FileCache::FILE_OPERATION_COPY));
+
+    // drive/root/Directory 1/Shared To The Account Owner.txt
     entry = GetFileEntry(
-        "Shared To The Account Owner.txt", "file1b", 3, "dir1");
+        "Shared To The Account Owner.txt", "file1b", 3, dir1_local_id);
     entry.set_shared_with_me(true);
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry, &local_id));
 
+    // drive/root/Directory 2 excludeDir-test
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
-        "Directory 2 excludeDir-test", "dir2", 4, "root"), &local_id));
+        "Directory 2 excludeDir-test", "dir2", 4, root_local_id), &local_id));
 
-    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
-        "Slash \xE2\x88\x95 in directory", "dir3", 5, "root"), &local_id));
+    // drive/root/Slash \xE2\x88\x95 in directory
+    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+        GetDirectoryEntry("Slash \xE2\x88\x95 in directory", "dir3", 5,
+                          root_local_id), &local_id));
+    const std::string dir3_local_id = local_id;
+
+    // drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetFileEntry(
-        "Slash SubDir File.txt", "file3a", 6, "dir3"), &local_id));
+        "Slash SubDir File.txt", "file3a", 6, dir3_local_id), &local_id));
 
+    // drive/root/File 2.txt
+    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetFileEntry(
+        "File 2.txt", "file2", 7, root_local_id), &local_id));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
+        local_id, temp_file_md5, temp_file, FileCache::FILE_OPERATION_COPY));
+
+    // drive/root/Document 1 excludeDir-test
     entry = GetFileEntry(
-        "Document 1 excludeDir-test", "doc1", 7, "root");
+        "Document 1 excludeDir-test", "doc1", 8, root_local_id);
     entry.mutable_file_specific_info()->set_is_hosted_document(true);
     entry.mutable_file_specific_info()->set_document_extension(".gdoc");
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry, &local_id));
-  }
 
-  // Adds a directory at |path|. Parent directories are added if needed just
-  // like "mkdir -p" does.
-  std::string AddDirectoryToMetadataWithParents(
-      const base::FilePath& path,
-      MetadataInfoGenerator* generator) {
-    if (path == base::FilePath(base::FilePath::kCurrentDirectory))
-      return "root";
-
-    {
-      ResourceEntry entry;
-      FileError error = resource_metadata_->GetResourceEntryByPath(
-          util::GetDriveMyDriveRootPath().Append(path), &entry);
-      if (error == FILE_ERROR_OK)
-        return entry.resource_id();
-    }
-
-    const std::string parent_id =
-        AddDirectoryToMetadataWithParents(path.DirName(), generator);
-    const std::string id = generator->GetId();
-    std::string local_id;
-    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-        GetDirectoryEntry(path.BaseName().AsUTF8Unsafe(),
-                          id,
-                          generator->GetLastAccessed(),
-                          parent_id), &local_id));
-    generator->Advance();
-    return local_id;
-  }
-
-  // Adds entries for |cache_resources| to |resource_metadata_|.  The parent
-  // directories of |resources| is also added.
-  void AddEntriesToMetadataFromCache(
-      const std::vector<test_util::TestCacheResource>& cache_resources,
-      MetadataInfoGenerator* generator) {
-    for (size_t i = 0; i < cache_resources.size(); ++i) {
-      const test_util::TestCacheResource& resource = cache_resources[i];
-      const base::FilePath path(resource.source_file);
-      const std::string parent_id =
-          AddDirectoryToMetadataWithParents(path.DirName(), generator);
-      std::string local_id;
-      EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-          GetFileEntry(path.BaseName().AsUTF8Unsafe(),
-                       resource.resource_id,
-                       generator->GetLastAccessed(),
-                       parent_id), &local_id));
-      generator->Advance();
-    }
   }
 
   ResourceEntry GetFileEntry(const std::string& name,
-                               const std::string& resource_id,
-                               int64 last_accessed,
-                               const std::string& parent_local_id) {
+                             const std::string& resource_id,
+                             int64 last_accessed,
+                             const std::string& parent_local_id) {
     ResourceEntry entry;
     entry.set_title(name);
     entry.set_resource_id(resource_id);
@@ -193,9 +135,9 @@ class SearchMetadataTest : public testing::Test {
   }
 
   ResourceEntry GetDirectoryEntry(const std::string& name,
-                                    const std::string& resource_id,
-                                    int64 last_accessed,
-                                    const std::string& parent_local_id) {
+                                  const std::string& resource_id,
+                                  int64 last_accessed,
+                                  const std::string& parent_local_id) {
     ResourceEntry entry;
     entry.set_title(name);
     entry.set_resource_id(resource_id);
@@ -463,14 +405,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_Offline) {
-  const std::vector<test_util::TestCacheResource> cache_resources =
-      test_util::GetDefaultTestCacheResources();
-  ASSERT_TRUE(test_util::PrepareTestCacheResources(cache_.get(),
-                                                   cache_resources));
-  {
-    MetadataInfoGenerator generator("cache", kCacheEntriesLastAccessedTimeBase);
-    AddEntriesToMetadataFromCache(cache_resources, &generator);
-  }
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
@@ -483,23 +417,16 @@ TEST_F(SearchMetadataTest, SearchMetadata_Offline) {
                      &error, &result));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_EQ(6U, result->size());
+  ASSERT_EQ(3U, result->size());
 
-  // Newer entries are listed earlier. So, the results come in the reverse
-  // order of addition written in test_util::GetDefaultTestCacheResources.
-  EXPECT_EQ("drive/root/pinned/dirty/cache.pdf",
-            result->at(0).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/dirty/cache.avi",
-            result->at(1).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/pinned/cache.mp3",
-            result->at(2).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/cache2.png",
-            result->at(3).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/cache.txt",
-            result->at(4).path.AsUTF8Unsafe());
   // This is not included in the cache but is a hosted document.
   EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",
-            result->at(5).path.AsUTF8Unsafe());
+            result->at(0).path.AsUTF8Unsafe());
+
+  EXPECT_EQ("drive/root/File 2.txt",
+            result->at(1).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
+            result->at(2).path.AsUTF8Unsafe());
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_ZeroMatches) {
