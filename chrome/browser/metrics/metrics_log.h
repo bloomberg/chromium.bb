@@ -184,6 +184,13 @@ class MetricsLog : public MetricsLogBase {
   // This is a no-op if called on a non-Chrome OS platform.
   void WriteBluetoothProto(metrics::SystemProfileProto::Hardware* hardware);
 
+#if defined(OS_CHROMEOS)
+  // Update the number of users logged into a multi-profile session.
+  // If the number of users change while the log is open, the call invalidates
+  // the user count value.
+  void UpdateMultiProfileUserCount();
+#endif
+
   // Observes network state to provide values for SystemProfile::Network.
   MetricsNetworkObserver network_observer_;
 

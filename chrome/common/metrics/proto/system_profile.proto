@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 17
+// Next tag: 18
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -319,7 +319,7 @@ message SystemProfileProto {
     // If a client has multiple local Chrome user accounts, this is logged based
     // on the first user account launched during the current session.
     optional bool is_disabled = 4;
-    
+
     // True if the plugin is PPAPI.
     optional bool is_pepper = 5;
   }
@@ -437,4 +437,9 @@ message SystemProfileProto {
     optional fixed32 group_id = 2;
   }
   repeated FieldTrial field_trial = 9;
+
+  // Number of users currently signed into a multiprofile session.
+  // A zero value indicates that the user count changed while the log is open.
+  // Logged only on ChromeOS.
+  optional uint32 multi_profile_user_count = 17;
 }

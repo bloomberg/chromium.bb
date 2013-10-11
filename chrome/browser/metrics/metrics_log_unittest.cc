@@ -5,7 +5,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/port.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
@@ -18,11 +20,13 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/variations/entropy_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
@@ -32,6 +36,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #endif  // OS_CHROMEOS
 
@@ -174,6 +180,14 @@ class MetricsLogTest : public testing::Test {
         new chromeos::MockDBusThreadManagerWithoutGMock();
     chromeos::DBusThreadManager::InitializeForTesting(
         mock_dbus_thread_manager_);
+
+    // Enable multi-profiles.
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("42")));
+    base::FieldTrialList::CreateTrialsFromString(
+        "ChromeOSUseMultiProfiles/Enable/",
+        base::FieldTrialList::ACTIVATE_TRIALS);
 #endif  // OS_CHROMEOS
   }
 
@@ -195,6 +209,7 @@ class MetricsLogTest : public testing::Test {
 
 #if defined(OS_CHROMEOS)
   chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
 #endif  // OS_CHROMEOS
 };
 
@@ -335,3 +350,50 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
               tracked_object->process_type());
   }
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(MetricsLogTest, MultiProfileUserCount) {
+  std::string user1("user1@example.com");
+  std::string user2("user2@example.com");
+  std::string user3("user3@example.com");
+
+  // |scoped_enabler| takes over the lifetime of |user_manager|.
+  chromeos::FakeUserManager* user_manager = new chromeos::FakeUserManager();
+  chromeos::ScopedUserManagerEnabler scoped_enabler(user_manager);
+  user_manager->AddKioskAppUser(user1);
+  user_manager->AddKioskAppUser(user2);
+  user_manager->AddKioskAppUser(user3);
+
+  user_manager->LoginUser(user1);
+  user_manager->LoginUser(user3);
+
+  TestMetricsLog log(kClientId, kSessionId);
+  std::vector<content::WebPluginInfo> plugins;
+  GoogleUpdateMetrics google_update_metrics;
+  log.RecordEnvironmentProto(plugins, google_update_metrics);
+  EXPECT_EQ(2u, log.system_profile().multi_profile_user_count());
+}
+
+TEST_F(MetricsLogTest, MultiProfileCountInvalidated) {
+  std::string user1("user1@example.com");
+  std::string user2("user2@example.com");
+  std::string user3("user3@example.com");
+
+  // |scoped_enabler| takes over the lifetime of |user_manager|.
+  chromeos::FakeUserManager* user_manager = new chromeos::FakeUserManager();
+  chromeos::ScopedUserManagerEnabler scoped_enabler(user_manager);
+  user_manager->AddKioskAppUser(user1);
+  user_manager->AddKioskAppUser(user2);
+  user_manager->AddKioskAppUser(user3);
+
+  user_manager->LoginUser(user1);
+
+  TestMetricsLog log(kClientId, kSessionId);
+  EXPECT_EQ(1u, log.system_profile().multi_profile_user_count());
+
+  user_manager->LoginUser(user2);
+  log.RecordEnvironmentProto(std::vector<content::WebPluginInfo>(),
+                             GoogleUpdateMetrics());
+  EXPECT_EQ(0u, log.system_profile().multi_profile_user_count());
+}
+#endif  // OS_CHROMEOS

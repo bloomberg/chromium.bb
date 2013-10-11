@@ -62,6 +62,10 @@
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using content::GpuDataManager;
 using metrics::OmniboxEventProto;
 using metrics::PerfDataProto;
@@ -379,7 +383,11 @@ static base::LazyInstance<std::string>::Leaky
   g_version_extension = LAZY_INSTANCE_INITIALIZER;
 
 MetricsLog::MetricsLog(const std::string& client_id, int session_id)
-    : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()) {}
+    : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()) {
+#if defined(OS_CHROMEOS)
+  UpdateMultiProfileUserCount();
+#endif
+}
 
 MetricsLog::~MetricsLog() {}
 
@@ -788,6 +796,7 @@ void MetricsLog::RecordEnvironmentProto(
                  base::Unretained(this)));
   DCHECK(adapter_.get());
   WriteBluetoothProto(hardware);
+  UpdateMultiProfileUserCount();
 #endif
 }
 
@@ -943,3 +952,21 @@ void MetricsLog::WriteBluetoothProto(
   }
 #endif  // defined(OS_CHROMEOS)
 }
+
+#if defined(OS_CHROMEOS)
+void MetricsLog::UpdateMultiProfileUserCount() {
+  if (chromeos::UserManager::IsInitialized() &&
+      chromeos::UserManager::Get()->IsMultipleProfilesAllowed()) {
+    uint32 user_count = chromeos::UserManager::Get()
+        ->GetLoggedInUsers().size();
+    SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
+
+    // We invalidate the user count if it changed while the log was open.
+    if (system_profile->has_multi_profile_user_count() &&
+        user_count != system_profile->multi_profile_user_count())
+      user_count = 0;
+
+    system_profile->set_multi_profile_user_count(user_count);
+  }
+}
+#endif
