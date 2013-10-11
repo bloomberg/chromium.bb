@@ -39,6 +39,7 @@ public:
     static PassRefPtr<HTMLDialogElement> create(const QualifiedName&, Document&);
 
     void close(const String& returnValue, ExceptionState&);
+    void closeDialog(const String& returnValue = String());
     void show();
     void showModal(ExceptionState&);
 
@@ -53,7 +54,6 @@ private:
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const OVERRIDE;
 
-    void closeDialog(const String& returnValue = String());
     void reposition();
 
     bool m_topIsValid;

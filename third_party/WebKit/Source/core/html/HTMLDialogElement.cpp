@@ -89,6 +89,8 @@ void HTMLDialogElement::close(const String& returnValue, ExceptionState& es)
 
 void HTMLDialogElement::closeDialog(const String& returnValue)
 {
+    if (!fastHasAttribute(openAttr))
+        return;
     setBooleanAttribute(openAttr, false);
     document().removeFromTopLayer(this);
     m_topIsValid = false;

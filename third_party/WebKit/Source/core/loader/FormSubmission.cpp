@@ -32,6 +32,7 @@
 #include "core/loader/FormSubmission.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/html/DOMFormData.h"
@@ -103,12 +104,30 @@ void FormSubmission::Attributes::updateEncodingType(const String& type)
 
 FormSubmission::Method FormSubmission::Attributes::parseMethodType(const String& type)
 {
-    return equalIgnoringCase(type, "post") ? FormSubmission::PostMethod : FormSubmission::GetMethod;
+    if (equalIgnoringCase(type, "post"))
+        return FormSubmission::PostMethod;
+    if (RuntimeEnabledFeatures::dialogElementEnabled() && equalIgnoringCase(type, "dialog"))
+        return FormSubmission::DialogMethod;
+    return FormSubmission::GetMethod;
 }
 
 void FormSubmission::Attributes::updateMethodType(const String& type)
 {
     m_method = parseMethodType(type);
+}
+
+String FormSubmission::Attributes::methodString(Method method)
+{
+    switch (method) {
+    case GetMethod:
+        return "get";
+    case PostMethod:
+        return "post";
+    case DialogMethod:
+        return "dialog";
+    }
+    ASSERT_NOT_REACHED();
+    return emptyString();
 }
 
 void FormSubmission::Attributes::copyFrom(const Attributes& other)
@@ -134,6 +153,12 @@ inline FormSubmission::FormSubmission(Method method, const KURL& action, const S
 {
 }
 
+inline FormSubmission::FormSubmission(const String& result)
+    : m_method(DialogMethod)
+    , m_result(result)
+{
+}
+
 PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, PassRefPtr<Event> event, FormSubmissionTrigger trigger)
 {
     ASSERT(form);
@@ -152,15 +177,18 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     copiedAttributes.copyFrom(attributes);
     if (submitButton) {
         String attributeValue;
-        if (!(attributeValue = submitButton->getAttribute(formactionAttr)).isNull())
+        if (!(attributeValue = submitButton->fastGetAttribute(formactionAttr)).isNull())
             copiedAttributes.parseAction(attributeValue);
-        if (!(attributeValue = submitButton->getAttribute(formenctypeAttr)).isNull())
+        if (!(attributeValue = submitButton->fastGetAttribute(formenctypeAttr)).isNull())
             copiedAttributes.updateEncodingType(attributeValue);
-        if (!(attributeValue = submitButton->getAttribute(formmethodAttr)).isNull())
+        if (!(attributeValue = submitButton->fastGetAttribute(formmethodAttr)).isNull())
             copiedAttributes.updateMethodType(attributeValue);
-        if (!(attributeValue = submitButton->getAttribute(formtargetAttr)).isNull())
+        if (!(attributeValue = submitButton->fastGetAttribute(formtargetAttr)).isNull())
             copiedAttributes.setTarget(attributeValue);
     }
+
+    if (copiedAttributes.method() == DialogMethod)
+        return adoptRef(new FormSubmission(submitButton->fastGetAttribute(valueAttr)));
 
     Document& document = form->document();
     KURL actionURL = document.completeURL(copiedAttributes.action().isEmpty() ? document.url().string() : copiedAttributes.action());
@@ -175,7 +203,6 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
             isMultiPartForm = false;
         }
     }
-
     WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataBuilder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.inputEncoding());
     RefPtr<DOMFormData> domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
     Vector<pair<String, String> > formValues;

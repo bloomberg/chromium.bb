@@ -141,6 +141,7 @@ private:
 
     virtual void copyNonAttributePropertiesFromElement(const Element&) OVERRIDE;
 
+    void submitDialog(PassRefPtr<FormSubmission>);
     void submit(Event*, bool activateSubmitButton, bool processingUserGesture, FormSubmissionTrigger);
 
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);

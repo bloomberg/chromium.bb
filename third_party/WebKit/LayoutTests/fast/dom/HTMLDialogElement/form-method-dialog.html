@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<dialog id="outer">
+    <form method="dialog">
+        <input id="outer-submit-empty-string" type="submit" value="">
+    </form>
+    <dialog id="inner">
+        <form method="dialog">
+            <input id="inner-submit-yes" type="submit" value="Yes">
+            <input id="inner-submit-no" type="submit" value="No">
+        </form>
+    </dialog>
+    <form>
+        <input id="outer-submit-no-value" formmethod="dialog" type="submit">
+    </form>
+</dialog>
+<dialog id="host"></dialog>
+<form method="dialog">
+    <input id="no-dialog-ancestor-1" type="submit" value="Clicking me shouldn't submit">
+    <input id="no-dialog-ancestor-2" formmethod="dialog" type="submit" value="I also don't submit">
+</form>
+<script>
+function openDialogs()
+{
+    var dialogs = document.querySelectorAll('dialog');
+    for (var i = 0; i < dialogs.length; ++i) {
+        dialogs[i].returnValue = 'init';
+        dialogs[i].show();
+    }
+}
+
+function closeDialogs()
+{
+    var dialogs = document.querySelectorAll('dialog');
+    for (var i = 0; i < dialogs.length; ++i) {
+        if (dialogs[i].open)
+            dialogs[i].close();
+    }
+}
+
+function checkDialogs(button, targetDialog)
+{
+    expectedValue = null;
+    if (button.hasAttribute('value'))
+        expectedValue = button.value;
+    dialogs = document.querySelectorAll('dialog');
+    for (var i = 0; i < dialogs.length; ++i) {
+        dialog = dialogs[i];
+        if (dialog == targetDialog)
+            shouldBeFalse(dialog.id + '; dialog.open');
+        else
+            shouldBeTrue(dialog.id + '; dialog.open');
+
+        if (dialog == targetDialog && expectedValue !== null)
+            shouldBe(dialog.id + '; dialog.returnValue', 'expectedValue');
+        else
+            shouldBeEqualToString(dialog.id + '; dialog.returnValue', 'init');
+    }
+}
+
+function $(id)
+{
+    return document.getElementById(id);
+}
+
+function testClosedDialog()
+{
+    button = $('outer-submit-empty-string');
+    dialog = $('outer');
+    dialog.returnValue = 'init';
+    button.click();
+    shouldBeFalse('dialog.open');
+    shouldBeEqualToString('dialog.returnValue', 'init');
+}
+
+function test()
+{
+    description('Tests form submission with method=dialog');
+    var host = document.querySelector('#host');
+    var shadowRoot = host.createShadowRoot();
+    shadowRoot.innerHTML =
+       '<form method="dialog">' +
+       '    <input id="host-submit-yes" type=submit value=Yes>' +
+       '</form>';
+
+    var tests = [
+        { button: $('outer-submit-empty-string'), targetDialog: $('outer') },
+        { button: $('outer-submit-no-value'), targetDialog: $('outer') },
+        { button: $('inner-submit-yes'), targetDialog: $('inner') },
+        { button: $('inner-submit-no'), targetDialog: $('inner') },
+        { button: $('no-dialog-ancestor-1'), targetDialog: null },
+        { button: $('no-dialog-ancestor-2'), targetDialog: null },
+        { button: host.shadowRoot.querySelector('#host-submit-yes'), targetDialog: $('host') }
+    ];
+    for (var i = 0; i < tests.length; ++i) {
+        var button = tests[i].button;
+        var targetDialog = tests[i].targetDialog;
+        openDialogs();
+        debug('clicking ' + button.id);
+        button.click();
+        checkDialogs(button, targetDialog);
+        debug('');
+    }
+
+    closeDialogs();
+    debug('clicking a button in a closed dialog');
+    testClosedDialog();
+}
+
+test();
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

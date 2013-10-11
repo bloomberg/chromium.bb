@@ -48,7 +48,7 @@ class HTMLFormElement;
 
 class FormSubmission : public RefCounted<FormSubmission> {
 public:
-    enum Method { GetMethod, PostMethod };
+    enum Method { GetMethod, PostMethod, DialogMethod };
 
     class Attributes {
         WTF_MAKE_NONCOPYABLE(Attributes);
@@ -63,7 +63,7 @@ public:
         Method method() const { return m_method; }
         static Method parseMethodType(const String&);
         void updateMethodType(const String&);
-        static String methodString(Method method) { return method == PostMethod ? "post" : "get"; }
+        static String methodString(Method);
 
         const String& action() const { return m_action; }
         void parseAction(const String&);
@@ -112,8 +112,12 @@ public:
     const String& origin() const { return m_origin; }
     void setOrigin(const String& origin) { m_origin = origin; }
 
+    const String& result() const { return m_result; }
+
 private:
     FormSubmission(Method, const KURL& action, const String& target, const String& contentType, PassRefPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtr<Event>);
+    // FormSubmission for DialogMethod
+    FormSubmission(const String& result);
 
     // FIXME: Hold an instance of Attributes instead of individual members.
     Method m_method;
@@ -126,6 +130,7 @@ private:
     RefPtr<Event> m_event;
     String m_referrer;
     String m_origin;
+    String m_result;
 };
 
 }

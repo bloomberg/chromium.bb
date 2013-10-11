@@ -37,6 +37,7 @@
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLCollection.h"
+#include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
@@ -319,6 +320,16 @@ void HTMLFormElement::getTextFieldValues(StringPairVector& fieldNamesAndValues) 
     }
 }
 
+void HTMLFormElement::submitDialog(PassRefPtr<FormSubmission> formSubmission)
+{
+    for (Node* node = this; node; node = node->parentOrShadowHostNode()) {
+        if (node->hasTagName(dialogTag)) {
+            toHTMLDialogElement(node)->closeDialog(formSubmission->result());
+            return;
+        }
+    }
+}
+
 void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool processingUserGesture, FormSubmissionTrigger formSubmissionTrigger)
 {
     FrameView* view = document().view();
@@ -353,7 +364,12 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(true);
 
-    scheduleFormSubmission(FormSubmission::create(this, m_attributes, event, formSubmissionTrigger));
+
+    RefPtr<FormSubmission> formSubmission = FormSubmission::create(this, m_attributes, event, formSubmissionTrigger);
+    if (formSubmission->method() == FormSubmission::DialogMethod)
+        submitDialog(formSubmission.release());
+    else
+        scheduleFormSubmission(formSubmission.release());
 
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(false);
