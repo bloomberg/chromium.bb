@@ -4860,6 +4860,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Geolocation.GeolocationDispatcherHostImpl.EnableHighAccuracy"
+    enum="BooleanEnabled">
+  <summary>
+    Whether high accuracy geolocation information was requested.
+  </summary>
+</histogram>
+
 <histogram name="Geolocation.NetworkLocationRequest.Event"
     enum="NetworkLocationRequestEvent">
   <summary>Events in NetworkLocationRequest.</summary>

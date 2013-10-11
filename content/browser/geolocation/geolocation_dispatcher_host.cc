@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -184,6 +185,9 @@ void GeolocationDispatcherHostImpl::OnStartUpdating(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << __FUNCTION__ << " " << render_process_id_ << ":"
            << render_view_id;
+  UMA_HISTOGRAM_BOOLEAN(
+      "Geolocation.GeolocationDispatcherHostImpl.EnableHighAccuracy",
+      enable_high_accuracy);
   if (!geolocation_renderer_ids_.count(render_view_id))
     geolocation_renderer_ids_.insert(render_view_id);
 
