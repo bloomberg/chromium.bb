@@ -171,15 +171,21 @@ Gallery.prototype.initDom_ = function() {
   util.createChild(backButton);
   backButton.addEventListener('click', this.onBack_.bind(this));
 
+  var preventDefault = function(event) { event.preventDefault(); };
+
   var maximizeButton = util.createChild(this.header_,
                                         'maximize-button tool dimmable',
                                         'button');
+  maximizeButton.tabIndex = -1;
   maximizeButton.addEventListener('click', this.onMaximize_.bind(this));
+  maximizeButton.addEventListener('mousedown', preventDefault);
 
   var closeButton = util.createChild(this.header_,
                                      'close-button tool dimmable',
                                      'button');
+  closeButton.tabIndex = -1;
   closeButton.addEventListener('click', this.onClose_.bind(this));
+  closeButton.addEventListener('mousedown', preventDefault);
 
   this.filenameSpacer_ = util.createChild(this.toolbar_, 'filename-spacer');
   this.filenameEdit_ = util.createChild(this.filenameSpacer_,
