@@ -9,7 +9,7 @@
 :: Sadly, we can't use SETLOCAL here otherwise it ERRORLEVEL is not correctly
 :: returned.
 
-set WIN_TOOLS_ROOT_URL=http://src.chromium.org/svn/trunk/tools
+set WIN_TOOLS_ROOT_URL=https://src.chromium.org/svn/trunk/tools
 set GIT_BIN_DIR=git-1.8.0_bin
 
 :: Get absolute root directory (.js scripts don't handle relative paths well).
@@ -113,21 +113,22 @@ goto :END
 
 
 :PYTHON_CHECK
-:: If the batch file exists, skip the python check.
-set ERRORLEVEL=0
-if exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :END
-if "%WIN_TOOLS_FORCE%" == "1" goto :PYTHON_INSTALL
-call python --version 2>nul 1>nul
-if errorlevel 1 goto :PYTHON_INSTALL
+if "%DEPOT_TOOLS_PYTHON_275%" == "1" goto :PY275_CHECK
+goto :PY26_CHECK
 
-:: We are done.
+
+:PY26_CHECK
+if not exist "%WIN_TOOLS_ROOT_DIR%\python_bin" goto :PY26_INSTALL
+if not exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :PY26_INSTALL
 set ERRORLEVEL=0
 goto :END
 
 
-:PYTHON_INSTALL
-if "%DEPOT_TOOLS_PYTHON_275%" == "1" goto :PY275_INSTALL
-goto :PY26_INSTALL
+:PY275_CHECK
+if not exist "%WIN_TOOLS_ROOT_DIR%\python275_bin" goto :PY275_INSTALL
+if not exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :PY275_INSTALL
+set ERRORLEVEL=0
+goto :END
 
 
 :PY275_INSTALL
