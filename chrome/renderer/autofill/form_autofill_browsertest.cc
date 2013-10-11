@@ -237,7 +237,6 @@ class FormAutofillTest : public ChromeRenderViewTest {
       ASSERT_EQ("text", element.formControlType());
       WebInputElement input_element = GetMainFrame()->document().getElementById(
           ASCIIToUTF16(field_case.name)).to<WebInputElement>();
-      EXPECT_EQ(field_case.should_be_autofilled, input_element.isAutofilled());
       value = (input_element.*get_value_function)();
     }
 
@@ -246,6 +245,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
       EXPECT_TRUE(value.isEmpty());
     else
       EXPECT_EQ(expected_value, value);
+
+    EXPECT_EQ(field_case.should_be_autofilled, element.isAutofilled());
   }
 
   static void FillFormForAllFieldsWrapper(const FormData& form,

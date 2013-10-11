@@ -193,10 +193,11 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
     if (!control_element.isEnabled())
       continue;
 
+    control_element.setAutofilled(false);
+
     WebInputElement* input_element = toWebInputElement(&control_element);
     if (IsTextInput(input_element)) {
       input_element->setValue(base::string16(), true);
-      input_element->setAutofilled(false);
 
       // Clearing the value in the focused node (above) can cause selection
       // to be lost. We force selection range to restore the text cursor.

@@ -530,13 +530,14 @@ void FillFormField(const FormFieldData& data,
   if (data.value.empty())
     return;
 
+  field->setAutofilled(true);
+
   WebInputElement* input_element = toWebInputElement(field);
   if (IsTextInput(input_element)) {
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
     input_element->setValue(
         data.value.substr(0, input_element->maxLength()), true);
-    input_element->setAutofilled(true);
     if (is_initiating_node) {
       int length = input_element->value().length();
       input_element->setSelectionRange(length, length);
