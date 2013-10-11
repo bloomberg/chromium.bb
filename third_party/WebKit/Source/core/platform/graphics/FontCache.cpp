@@ -126,7 +126,7 @@ struct FontPlatformDataCacheKeyHash {
 
 struct FontPlatformDataCacheKeyTraits : WTF::SimpleClassHashTraits<FontPlatformDataCacheKey> { };
 
-typedef HashMap<FontPlatformDataCacheKey, FontPlatformData*, FontPlatformDataCacheKeyHash, FontPlatformDataCacheKeyTraits> FontPlatformDataCache;
+typedef HashMap<FontPlatformDataCacheKey, OwnPtr<FontPlatformData>, FontPlatformDataCacheKeyHash, FontPlatformDataCacheKeyTraits> FontPlatformDataCache;
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
@@ -230,10 +230,10 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
     FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
     if (it == gFontPlatformDataCache->end()) {
         result = createFontPlatformData(fontDescription, familyName);
-        gFontPlatformDataCache->set(key, result);
+        gFontPlatformDataCache->set(key, adoptPtr(result));
         foundResult = result;
     } else {
-        result = it->value;
+        result = it->value.get();
         foundResult = true;
     }
 
@@ -244,7 +244,7 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
         if (!alternateName.isEmpty())
             result = getFontResourcePlatformData(fontDescription, alternateName, true);
         if (result)
-            gFontPlatformDataCache->set(key, new FontPlatformData(*result)); // Cache the result under the old name.
+            gFontPlatformDataCache->set(key, adoptPtr(new FontPlatformData(*result))); // Cache the result under the old name.
     }
 
     return result;
@@ -442,13 +442,13 @@ void FontCache::purgeInactiveFontData(int count)
         keysToRemove.reserveInitialCapacity(gFontPlatformDataCache->size());
         FontPlatformDataCache::iterator platformDataEnd = gFontPlatformDataCache->end();
         for (FontPlatformDataCache::iterator platformData = gFontPlatformDataCache->begin(); platformData != platformDataEnd; ++platformData) {
-            if (platformData->value && !gFontDataCache->contains(*platformData->value))
+            if (platformData->value && !gFontDataCache->contains(*platformData->value.get()))
                 keysToRemove.append(platformData->key);
         }
 
         size_t keysToRemoveCount = keysToRemove.size();
         for (size_t i = 0; i < keysToRemoveCount; ++i)
-            delete gFontPlatformDataCache->take(keysToRemove[i]);
+            gFontPlatformDataCache->remove(keysToRemove[i]);
     }
 
 #if ENABLE(OPENTYPE_VERTICAL)
@@ -574,7 +574,6 @@ void FontCache::invalidate()
     }
 
     if (gFontPlatformDataCache) {
-        deleteAllValues(*gFontPlatformDataCache);
         delete gFontPlatformDataCache;
         gFontPlatformDataCache = new FontPlatformDataCache;
     }
