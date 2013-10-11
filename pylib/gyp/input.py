@@ -552,12 +552,13 @@ class ParallelState(object):
     self.condition.release()
 
 
-def LoadTargetBuildFileParallel(build_file_path, data, aux_data,
-                                variables, includes, depth, check):
+def LoadTargetBuildFilesParallel(build_files, data, aux_data,
+                                 variables, includes, depth, check):
   parallel_state = ParallelState()
   parallel_state.condition = threading.Condition()
-  parallel_state.dependencies = [build_file_path]
-  parallel_state.scheduled = set([build_file_path])
+  # Make copies of the build_files argument that we can modify while working.
+  parallel_state.dependencies = list(build_files)
+  parallel_state.scheduled = set(build_files)
   parallel_state.pending = 0
   parallel_state.data = data
   parallel_state.aux_data = aux_data
@@ -2626,20 +2627,20 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   # track of the keys corresponding to "target" files.
   data = {'target_build_files': set()}
   aux_data = {}
-  for build_file in build_files:
-    # Normalize paths everywhere.  This is important because paths will be
-    # used as keys to the data dict and for references between input files.
-    build_file = os.path.normpath(build_file)
-    try:
-      if parallel:
-        LoadTargetBuildFileParallel(build_file, data, aux_data,
-                                    variables, includes, depth, check)
-      else:
+  # Normalize paths everywhere.  This is important because paths will be
+  # used as keys to the data dict and for references between input files.
+  build_files = set(map(os.path.normpath, build_files))
+  if parallel:
+    LoadTargetBuildFilesParallel(build_files, data, aux_data,
+                                 variables, includes, depth, check)
+  else:
+    for build_file in build_files:
+      try:
         LoadTargetBuildFile(build_file, data, aux_data,
                             variables, includes, depth, check, True)
-    except Exception, e:
-      gyp.common.ExceptionAppend(e, 'while trying to load %s' % build_file)
-      raise
+      except Exception, e:
+        gyp.common.ExceptionAppend(e, 'while trying to load %s' % build_file)
+        raise
 
   # Build a dict to access each target's subdict by qualified name.
   targets = BuildTargetsDict(data)
