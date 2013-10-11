@@ -689,7 +689,7 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
     var snapshot = generator();
     var profileType = WebInspector.panels.profiles.getProfileType(WebInspector.HeapSnapshotProfileType.TypeId);
     var profile = profileType.createProfile({
-        title: WebInspector.ProfilesPanelDescriptor.UserInitiatedProfileName + "." + uid,
+        title: "Mock snapshot #" + uid,
         uid: uid,
         maxJSObjectId: snapshot.maxJSObjectId
     });

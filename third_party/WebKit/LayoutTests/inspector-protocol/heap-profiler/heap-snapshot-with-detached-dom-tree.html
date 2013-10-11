@@ -49,6 +49,7 @@ function test()
                     return InspectorTest.fail("unexpected detached DOM tree: " + node.name());
             }
         }
+        InspectorTest.sendCommand("HeapProfiler.clearProfiles", {});
     }
 
     function checkDetachedDOMTreeNodes(treeNode)

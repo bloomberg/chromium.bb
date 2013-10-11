@@ -31,8 +31,14 @@ InspectorTest.takeHeapSnapshot = function(callback)
         function didGetHeapSnapshot(messageObject)
         {
             InspectorTest.log("SUCCESS: didGetHeapSnapshot");
+            InspectorTest.sendCommand("HeapProfiler.removeProfile", { "uid": profileId }, didRemoveSnapshot);
+        }
+
+        function didRemoveSnapshot(messageObject)
+        {
             InspectorTest.completeTest();
         }
+
     }
 
     var chunks = [];
