@@ -303,9 +303,9 @@ String CSSValue::cssText() const
     case VariableClass:
         return toCSSVariableValue(this)->value();
     case SVGColorClass:
-        return static_cast<const SVGColor*>(this)->customCssText();
+        return toSVGColor(this)->customCssText();
     case SVGPaintClass:
-        return static_cast<const SVGPaint*>(this)->customCssText();
+        return toSVGPaint(this)->customCssText();
     case CSSSVGDocumentClass:
         return toCSSSVGDocumentValue(this)->customCssText();
     }
@@ -433,10 +433,10 @@ void CSSValue::destroy()
         delete toCSSVariableValue(this);
         return;
     case SVGColorClass:
-        delete static_cast<SVGColor*>(this);
+        delete toSVGColor(this);
         return;
     case SVGPaintClass:
-        delete static_cast<SVGPaint*>(this);
+        delete toSVGPaint(this);
         return;
     case CSSSVGDocumentClass:
         delete toCSSSVGDocumentValue(this);
@@ -466,9 +466,9 @@ PassRefPtr<CSSValue> CSSValue::cloneForCSSOM() const
     case ImageSetClass:
         return toCSSImageSetValue(this)->cloneForCSSOM();
     case SVGColorClass:
-        return static_cast<const SVGColor*>(this)->cloneForCSSOM();
+        return toSVGColor(this)->cloneForCSSOM();
     case SVGPaintClass:
-        return static_cast<const SVGPaint*>(this)->cloneForCSSOM();
+        return toSVGPaint(this)->cloneForCSSOM();
     default:
         ASSERT(!isSubtypeExposedToCSSOM());
         return TextCloneCSSValue::create(classType(), cssText());

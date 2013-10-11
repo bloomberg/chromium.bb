@@ -2216,7 +2216,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             return;
         }
         if (value->isSVGPaint()) {
-            SVGPaint* svgPaint = static_cast<SVGPaint*>(value);
+            SVGPaint* svgPaint = toSVGPaint(value);
             svgStyle->setFillPaint(svgPaint->paintType(), colorFromSVGColorCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
         }
         break;
@@ -2234,7 +2234,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             return;
         }
         if (value->isSVGPaint()) {
-            SVGPaint* svgPaint = static_cast<SVGPaint*>(value);
+            SVGPaint* svgPaint = toSVGPaint(value);
             svgStyle->setStrokePaint(svgPaint->paintType(), colorFromSVGColorCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
         }
         break;
@@ -2355,14 +2355,14 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(stopColor, StopColor);
         if (value->isSVGColor())
-            state.style()->accessSVGStyle()->setStopColor(colorFromSVGColorCSSValue(static_cast<SVGColor*>(value), state.style()->color()));
+            state.style()->accessSVGStyle()->setStopColor(colorFromSVGColorCSSValue(toSVGColor(value), state.style()->color()));
         break;
     }
     case CSSPropertyLightingColor:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(lightingColor, LightingColor);
         if (value->isSVGColor())
-            state.style()->accessSVGStyle()->setLightingColor(colorFromSVGColorCSSValue(static_cast<SVGColor*>(value), state.style()->color()));
+            state.style()->accessSVGStyle()->setLightingColor(colorFromSVGColorCSSValue(toSVGColor(value), state.style()->color()));
         break;
     }
     case CSSPropertyFloodOpacity:
@@ -2377,7 +2377,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(floodColor, FloodColor);
         if (value->isSVGColor())
-            state.style()->accessSVGStyle()->setFloodColor(colorFromSVGColorCSSValue(static_cast<SVGColor*>(value), state.style()->color()));
+            state.style()->accessSVGStyle()->setFloodColor(colorFromSVGColorCSSValue(toSVGColor(value), state.style()->color()));
         break;
     }
     case CSSPropertyGlyphOrientationHorizontal:
