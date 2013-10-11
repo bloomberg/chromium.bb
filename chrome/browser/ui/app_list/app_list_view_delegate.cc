@@ -81,6 +81,7 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller,
     : controller_(controller),
       profile_(profile),
       model_(NULL) {
+  CHECK(controller_);
   RegisterForNotifications();
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
 }
@@ -103,14 +104,14 @@ void AppListViewDelegate::RegisterForNotifications() {
 }
 
 void AppListViewDelegate::OnProfileChanged() {
+  CHECK(controller_);
   search_controller_.reset(new app_list::SearchController(
       profile_, model_->search_box(), model_->results(), controller_.get()));
 
   signin_delegate_.SetProfile(profile_);
 
 #if defined(USE_ASH)
-  app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_,
-                                                             model_));
+  app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));
 #endif
 
   model_->SetSignedIn(!GetSigninDelegate()->NeedSignin());
