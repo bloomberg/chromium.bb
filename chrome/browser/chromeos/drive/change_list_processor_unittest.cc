@@ -179,7 +179,11 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
     scoped_ptr<ResourceEntry> entry = GetResourceEntry(kExpected[i].path);
     ASSERT_TRUE(entry) << "for path: " << kExpected[i].path;
     EXPECT_EQ(kExpected[i].id, entry->resource_id());
-    EXPECT_EQ(kExpected[i].parent_id, entry->parent_local_id());
+
+    ResourceEntry parent_entry;
+    EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryById(
+        entry->parent_local_id(), &parent_entry));
+    EXPECT_EQ(kExpected[i].parent_id, parent_entry.resource_id());
     EXPECT_EQ(kExpected[i].type,
               entry->file_info().is_directory() ? DIRECTORY : FILE);
   }
