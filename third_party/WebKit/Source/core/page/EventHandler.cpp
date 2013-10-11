@@ -1773,7 +1773,7 @@ static bool findDropZone(Node* target, Clipboard* clipboard)
         if (dropZoneStr.isEmpty())
             continue;
 
-        dropZoneStr.makeLower();
+        dropZoneStr = dropZoneStr.lower();
 
         SpaceSplitString keywords(dropZoneStr, false);
         if (keywords.isNull())

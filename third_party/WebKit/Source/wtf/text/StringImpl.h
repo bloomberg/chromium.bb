@@ -357,6 +357,8 @@ public:
 
     PassRefPtr<StringImpl> lower();
     PassRefPtr<StringImpl> upper();
+    PassRefPtr<StringImpl> lower(const AtomicString& localeIdentifier);
+    PassRefPtr<StringImpl> upper(const AtomicString& localeIdentifier);
 
     PassRefPtr<StringImpl> fill(UChar);
     // FIXME: Do we need fill(char) or can we just do the right thing if UChar is ASCII?
@@ -410,6 +412,7 @@ public:
     PassRefPtr<StringImpl> replace(UChar, const UChar*, unsigned replacementLength);
     PassRefPtr<StringImpl> replace(StringImpl*, StringImpl*);
     PassRefPtr<StringImpl> replace(unsigned index, unsigned len, StringImpl*);
+    PassRefPtr<StringImpl> upconvertedString();
 
 #if USE(CF)
     RetainPtr<CFStringRef> createCFString();

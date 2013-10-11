@@ -138,8 +138,7 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
         oldList.append(createDigest(child, 0));
 
     // Compose the new list.
-    String markupCopy = markup;
-    markupCopy.makeLower();
+    String markupCopy = markup.lower();
     Vector<OwnPtr<Digest> > newList;
     for (Node* child = parentNode->firstChild(); child != node; child = child->nextSibling())
         newList.append(createDigest(child, 0));

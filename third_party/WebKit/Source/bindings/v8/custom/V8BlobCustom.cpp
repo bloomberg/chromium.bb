@@ -80,7 +80,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
             throwError(v8SyntaxError, "type must consist of ASCII characters", args.GetIsolate());
             return;
         }
-        type.makeLower();
+        type = type.lower();
     }
 
     ASSERT(endings == "transparent" || endings == "native");

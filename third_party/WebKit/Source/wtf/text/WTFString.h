@@ -309,8 +309,6 @@ public:
         return *this;
     }
 
-    void makeLower() { if (m_impl) m_impl = m_impl->lower(); }
-    void makeUpper() { if (m_impl) m_impl = m_impl->upper(); }
     void fill(UChar c) { if (m_impl) m_impl = m_impl->fill(c); }
 
     void ensure16Bit();
@@ -328,6 +326,9 @@ public:
     // Returns a lowercase/uppercase version of the string
     String lower() const;
     String upper() const;
+
+    String lower(const AtomicString& localeIdentifier) const;
+    String upper(const AtomicString& localeIdentifier) const;
 
     String stripWhiteSpace() const;
     String stripWhiteSpace(IsWhiteSpaceFunctionPtr) const;
