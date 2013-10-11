@@ -87,7 +87,7 @@ class MemoryMetric(Metric):
       results.Add(h['name'], h['units'], self._histogram_delta[h['name']],
                   data_type='unimportant-histogram')
 
-  def AddSummaryResults(self, results):
+  def AddSummaryResults(self, results, trace_name=None):
     """Add summary (overall) results to the results object."""
     self._memory_stats = self._browser.memory_stats
     if not self._memory_stats['Browser']:
@@ -119,16 +119,21 @@ class MemoryMetric(Metric):
           if value_name_memory in stats:
             values.append(stats[value_name_memory])
         if values:
-          results.AddSummary(value_name_trace + process_type_trace,
-                             'bytes', sum(values), data_type='unimportant')
+          if trace_name:
+            current_trace = '%s_%s' % (trace_name, process_type_trace)
+            chart_name = value_name_trace
+          else:
+            current_trace = '%s_%s' % (value_name_trace, process_type_trace)
+            chart_name = current_trace
+          results.AddSummary(current_trace, 'bytes', sum(values),
+                             chart_name=chart_name, data_type='unimportant')
 
-      AddSummary('VM', 'vm_final_size_')
-      AddSummary('WorkingSetSize', 'vm_%s_final_size_' % metric)
-      AddSummary('PrivateDirty', 'vm_private_dirty_final_')
-      AddSummary('SharedDirty', 'vm_shared_dirty_final_')
-      AddSummary('ProportionalSetSize', 'vm_proportional_set_size_final_')
-      AddSummary('VMPeak', 'vm_peak_size_')
-      AddSummary('WorkingSetSizePeak', '%s_peak_size_' % metric)
+      AddSummary('VM', 'vm_final_size')
+      AddSummary('WorkingSetSize', 'vm_%s_final_size' % metric)
+      AddSummary('PrivateDirty', 'vm_private_dirty_final')
+      AddSummary('ProportionalSetSize', 'vm_proportional_set_size_final')
+      AddSummary('VMPeak', 'vm_peak_size')
+      AddSummary('WorkingSetSizePeak', '%s_peak_size' % metric)
 
     AddSummariesForProcessTypes(['Browser'], 'browser')
     AddSummariesForProcessTypes(['Renderer'], 'renderer')
@@ -137,8 +142,12 @@ class MemoryMetric(Metric):
 
     end_commit_charge = self._memory_stats['SystemCommitCharge']
     commit_charge_difference = end_commit_charge - self._start_commit_charge
-    results.AddSummary('commit_charge', 'kb', commit_charge_difference,
+    results.AddSummary(trace_name or 'commit_charge', 'kb',
+                       commit_charge_difference,
+                       chart_name='commit_charge',
                        data_type='unimportant')
-    results.AddSummary('processes', 'count', self._memory_stats['ProcessCount'],
+    results.AddSummary(trace_name or 'processes', 'count',
+                       self._memory_stats['ProcessCount'],
+                       chart_name='processes',
                        data_type='unimportant')
 
