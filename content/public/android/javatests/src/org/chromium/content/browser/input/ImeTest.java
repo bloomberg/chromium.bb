@@ -36,7 +36,7 @@ public class ImeTest extends ContentShellTestBase {
             "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
             "<body><form action=\"about:blank\">" +
             "<input id=\"input_text\" type=\"text\" />" +
-            "<input id=\"input_radio\" type=\"radio\" />" +
+            "<input id=\"input_radio\" type=\"radio\" style=\"width:50px;height:50px\" />" +
             "<br/><textarea id=\"textarea\" rows=\"4\" cols=\"20\"></textarea>" +
             "</form></body></html>");
 
