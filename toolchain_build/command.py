@@ -93,13 +93,19 @@ class Command(object):
 
     # Use mingw on windows.
     if sys.platform == 'win32':
-      mingw = os.environ.get('MINGW', r'c:\mingw')
+      # Use hermetic copy if possible.
+      mingw = os.path.join(NACL_DIR, 'mingw')
+      if not os.path.exists(mingw):
+        mingw = os.environ.get('MINGW', r'c:\mingw')
+      msys = os.path.join(mingw, 'msys', '1.0')
+      if not os.path.exists(msys):
+        msys = os.path.join(mingw, 'msys')
       # We need both msys (posix like build environment) and MinGW (windows
-      # build of tools like gcc). We add <MINGW>/msys/1.0/bin to the path to
+      # build of tools like gcc). We add <MINGW>/msys/[1.0/]bin to the path to
       # get sh.exe. We also add an msys style path (/mingw/bin) to get things
       # like gcc from inside msys.
       kwargs['path_dirs'] = (
-          ['/mingw/bin', os.path.join(mingw, 'msys', '1.0', 'bin')] +
+          ['/mingw/bin', os.path.join(msys, 'bin')] +
           kwargs.get('path_dirs', []))
 
     if 'path_dirs' in kwargs:
