@@ -600,8 +600,10 @@ void RenderWidgetHostImpl::WasShown() {
 }
 
 void RenderWidgetHostImpl::WasResized() {
+  // Skip if the |delegate_| has already been detached because
+  // it's web contents is being deleted.
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
-      !renderer_initialized_ || should_auto_resize_) {
+      !renderer_initialized_ || should_auto_resize_ || !delegate_) {
     return;
   }
 
