@@ -19,7 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "components/webdata/encryptor/ie7_password.h"
+#include "components/webdata/encryptor/ie7_password_win.h"
 #endif
 
 #include <iterator>

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/webdata/encryptor/ie7_password.h"
+#include "components/webdata/encryptor/ie7_password_win.h"
 #include "sql/statement.h"
 
 bool LoginsTable::AddIE7Login(const IE7PasswordInfo& info) {

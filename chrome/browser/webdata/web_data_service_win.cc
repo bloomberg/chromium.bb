@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/webdata/logins_table.h"
 #include "components/webdata/common/web_database_service.h"
-#include "components/webdata/encryptor/ie7_password.h"
+#include "components/webdata/encryptor/ie7_password_win.h"
 
 using base::Bind;
 

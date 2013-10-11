@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webdata/encryptor/ie7_password.h"
+#include "components/webdata/encryptor/ie7_password_win.h"
 
 #include <wincrypt.h>
 #include <string>
@@ -28,8 +28,7 @@ struct Header {
   char wick[4];             // The string "WICK". I don't know what it means.
   DWORD fixed_header_size;  // The size of this structure without the entries:
                             // sizeof(Header).
-  DWORD item_count;         // Number of entries. It should always be 2. One for
-                            // the username, and one for the password.
+  DWORD item_count;         // Number of entries. Should be even.
   wchar_t two_letters[2];   // Two unknown bytes.
   DWORD unknown[2];         // Two unknown DWORDs.
 };
@@ -45,17 +44,16 @@ struct Entry {
 struct PasswordEntry {
   PreHeader pre_header;  // Contains the size of the different sections.
   Header header;         // Contains the number of items.
-  Entry entry[1];        // List of entries containing a string. The first one
-                         // is the username, the second one if the password.
+  Entry entry[1];        // List of entries containing a string. Even-indexed
+                         // are usernames, odd are passwords. There may be
+                         // several sets saved for a single url hash.
 };
-
 }  // namespace
 
 namespace ie7_password {
 
 bool GetUserPassFromData(const std::vector<unsigned char>& data,
-                         std::wstring* username,
-                         std::wstring* password) {
+                         std::vector<DecryptedCredentials>* credentials) {
   const PasswordEntry* information =
       reinterpret_cast<const PasswordEntry*>(&data.front());
 
@@ -64,23 +62,29 @@ bool GetUserPassFromData(const std::vector<unsigned char>& data,
   if (information->pre_header.pre_header_size != sizeof(PreHeader))
     return false;
 
-  if (information->header.item_count != 2)  // Username and Password
+  const int entry_count = information->header.item_count;
+  if (entry_count % 2)  // Usernames and Passwords
     return false;
 
   if (information->header.fixed_header_size != sizeof(Header))
     return false;
 
-  const uint8* ptr = &data.front();
-  const uint8* offset_to_data = ptr + information->pre_header.header_size +
+  const uint8* offset_to_data = &data[0] +
+                                information->pre_header.header_size +
                                 information->pre_header.pre_header_size;
 
-  const Entry* user_entry = information->entry;
-  const Entry* pass_entry = user_entry+1;
+  for (int i = 0; i < entry_count / 2; ++i) {
 
-  *username = reinterpret_cast<const wchar_t*>(offset_to_data +
-                                               user_entry->offset);
-  *password = reinterpret_cast<const wchar_t*>(offset_to_data +
-                                               pass_entry->offset);
+    const Entry* user_entry = &information->entry[2*i];
+    const Entry* pass_entry = user_entry+1;
+
+    DecryptedCredentials c;
+    c.username = reinterpret_cast<const wchar_t*>(offset_to_data +
+                                                  user_entry->offset);
+    c.password = reinterpret_cast<const wchar_t*>(offset_to_data +
+                                                  pass_entry->offset);
+    credentials->push_back(c);
+  }
   return true;
 }
 
@@ -108,9 +112,9 @@ std::wstring GetUrlHash(const std::wstring& url) {
   return url_hash;
 }
 
-bool DecryptPassword(const std::wstring& url,
-                     const std::vector<unsigned char>& data,
-                     std::wstring* username, std::wstring* password) {
+bool DecryptPasswords(const std::wstring& url,
+                      const std::vector<unsigned char>& data,
+                      std::vector<DecryptedCredentials>* credentials) {
   std::wstring lower_case_url = StringToLowerASCII(url);
   DATA_BLOB input = {0};
   DATA_BLOB output = {0};
@@ -132,7 +136,7 @@ bool DecryptPassword(const std::wstring& url,
     decrypted_data.resize(output.cbData);
     memcpy(&decrypted_data.front(), output.pbData, output.cbData);
 
-    GetUserPassFromData(decrypted_data, username, password);
+    GetUserPassFromData(decrypted_data, credentials);
 
     LocalFree(output.pbData);
     return true;

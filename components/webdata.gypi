@@ -21,15 +21,10 @@
         'webdata/encryptor/encryptor_password_mac.mm',
         'webdata/encryptor/encryptor_posix.cc',
         'webdata/encryptor/encryptor_win.cc',
-        'webdata/encryptor/ie7_password.cc',
-        'webdata/encryptor/ie7_password.h',
+        'webdata/encryptor/ie7_password_win.cc',
+        'webdata/encryptor/ie7_password_win.h',
       ],
       'conditions': [
-        ['OS!="win"', {
-          'sources!': [
-            'webdata/encryptor/ie7_password.cc'
-          ],
-        }],
         ['OS=="mac"', {
           'sources!': [
             'webdata/encryptor/encryptor_posix.cc',

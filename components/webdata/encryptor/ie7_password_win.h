@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,16 +27,24 @@ struct IE7PasswordInfo {
 
 namespace ie7_password {
 
-// Parses a data structure to find the password and the username.
-bool GetUserPassFromData(const std::vector<unsigned char>& data,
-                         std::wstring* username,
-                         std::wstring* password);
+struct DecryptedCredentials {
+  std::wstring username;
+  std::wstring password;
+};
 
-// Decrypts the username and password for a given data vector using the url as
+// Parses a data structure to find passwords and usernames.
+// The collection of bytes in |data| is interpreted as a special PasswordEntry
+// structure. IE saves the login information as a binary dump of this structure.
+// Credentials extracted from |data| end up in |credentials|.
+bool GetUserPassFromData(const std::vector<unsigned char>& data,
+                         std::vector<DecryptedCredentials>* credentials);
+
+// Decrypts usernames and passwords for a given data vector using the url as
 // the key.
-bool DecryptPassword(const std::wstring& url,
-                     const std::vector<unsigned char>& data,
-                     std::wstring* username, std::wstring* password);
+// Output ends up in |credentials|.
+bool DecryptPasswords(const std::wstring& url,
+                      const std::vector<unsigned char>& data,
+                      std::vector<DecryptedCredentials>* credentials);
 
 // Returns the hash of a url.
 std::wstring GetUrlHash(const std::wstring& url);
