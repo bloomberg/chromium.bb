@@ -74,12 +74,6 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   virtual bool HandleInputEvent(const ui::Event* event) OVERRIDE {
     LOG(INFO) << "TestTouchEditableImplAura::HandleInputEvent("
               << event->type() << ")";
-    // In tests we should only receive touch or gesture events. In rare cases
-    // we receive events that are not touch or gesture that make tests flaky.
-    // The following CHECK will generate the stack trace which might be helpful
-    // in identifying source of those unexpected events.
-    // TODO(mohsen): Remove CHECK after resolving the flakiness.
-    CHECK(event->IsTouchEvent() || event->IsGestureEvent());
     return TouchEditableImplAura::HandleInputEvent(event);
   }
 
