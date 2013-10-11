@@ -1238,9 +1238,6 @@ internal_paladin.add_config('bayleybay-paladin',
 internal_paladin.add_config('beltino-paladin',
   boards=['beltino'],
   paladin_builder_name='beltino paladin',
-  important=False,
-  hw_tests=[],
-  vm_tests=None,
 )
 
 # x86 full compile
