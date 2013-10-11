@@ -60,9 +60,9 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
     FileSystemContext* file_system_context)
     : URLRequestJob(request, network_delegate),
       file_system_context_(file_system_context),
-      weak_factory_(this),
       is_directory_(false),
-      remaining_bytes_(0) {
+      remaining_bytes_(0),
+      weak_factory_(this) {
 }
 
 FileSystemURLRequestJob::~FileSystemURLRequestJob() {}

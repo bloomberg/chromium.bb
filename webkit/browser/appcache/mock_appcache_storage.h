@@ -177,7 +177,6 @@ class MockAppCacheStorage : public AppCacheStorage {
   DoomedResponseIds doomed_response_ids_;
   scoped_ptr<AppCacheDiskCache> disk_cache_;
   std::deque<base::Closure> pending_tasks_;
-  base::WeakPtrFactory<MockAppCacheStorage> weak_factory_;
 
   bool simulate_make_group_obsolete_failure_;
   bool simulate_store_group_and_newest_cache_failure_;
@@ -193,6 +192,8 @@ class MockAppCacheStorage : public AppCacheStorage {
   bool simulated_found_network_namespace_;
   scoped_refptr<AppCacheInfoCollection> simulated_appcache_info_;
   scoped_ptr<AppCacheResponseReader> simulated_reader_;
+
+  base::WeakPtrFactory<MockAppCacheStorage> weak_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, BasicFindMainResponse);
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,

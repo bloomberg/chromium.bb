@@ -51,7 +51,6 @@ BlobURLRequestJob::BlobURLRequestJob(
     fileapi::FileSystemContext* file_system_context,
     base::MessageLoopProxy* file_thread_proxy)
     : net::URLRequestJob(request, network_delegate),
-      weak_factory_(this),
       blob_data_(blob_data),
       file_system_context_(file_system_context),
       file_thread_proxy_(file_thread_proxy),
@@ -61,7 +60,8 @@ BlobURLRequestJob::BlobURLRequestJob(
       current_item_index_(0),
       current_item_offset_(0),
       error_(false),
-      byte_range_set_(false) {
+      byte_range_set_(false),
+      weak_factory_(this) {
   DCHECK(file_thread_proxy_.get());
 }
 

@@ -381,8 +381,8 @@ class MainPageJob : public BaseInternalsJob {
     StartAsync();
   }
 
-  base::WeakPtrFactory<MainPageJob> weak_factory_;
   scoped_refptr<AppCacheInfoCollection> info_collection_;
+  base::WeakPtrFactory<MainPageJob> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MainPageJob);
 };
 

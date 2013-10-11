@@ -131,8 +131,8 @@ class MockQuotaManager : public QuotaManager {
 
   // The list of stored origins that have been added via AddOrigin.
   std::vector<OriginInfo> origins_;
-  base::WeakPtrFactory<MockQuotaManager> weak_factory_;
   UsageAndQuotaMap usage_and_quota_map_;
+  base::WeakPtrFactory<MockQuotaManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManager);
 };

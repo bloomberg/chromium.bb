@@ -513,8 +513,8 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
 
   GetUsageInfoCallback callback_;
   UsageInfoEntries entries_;
-  base::WeakPtrFactory<GetUsageInfoTask> weak_factory_;
   int remaining_trackers_;
+  base::WeakPtrFactory<GetUsageInfoTask> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GetUsageInfoTask);
 };

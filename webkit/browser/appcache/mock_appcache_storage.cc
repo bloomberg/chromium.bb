@@ -29,14 +29,14 @@ namespace appcache {
 
 MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
     : AppCacheStorage(service),
-      weak_factory_(this),
       simulate_make_group_obsolete_failure_(false),
       simulate_store_group_and_newest_cache_failure_(false),
       simulate_find_main_resource_(false),
       simulate_find_sub_resource_(false),
       simulated_found_cache_id_(kNoCacheId),
       simulated_found_group_id_(0),
-      simulated_found_network_namespace_(false) {
+      simulated_found_network_namespace_(false),
+      weak_factory_(this) {
   last_cache_id_ = 0;
   last_group_id_ = 0;
   last_response_id_ = 0;

@@ -93,9 +93,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemUsageCache {
 
   scoped_ptr<TimedTaskHelper> timer_;
   std::map<base::FilePath, base::PlatformFile> cache_files_;
-  base::WeakPtrFactory<FileSystemUsageCache> weak_factory_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  base::WeakPtrFactory<FileSystemUsageCache> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemUsageCache);
 };

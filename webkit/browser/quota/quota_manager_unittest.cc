@@ -56,8 +56,8 @@ class QuotaManagerTest : public testing::Test {
 
  public:
   QuotaManagerTest()
-      : weak_factory_(this),
-        mock_time_counter_(0) {
+      : mock_time_counter_(0),
+        weak_factory_(this) {
   }
 
   virtual void SetUp() {
@@ -411,7 +411,6 @@ class QuotaManagerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
-  base::WeakPtrFactory<QuotaManagerTest> weak_factory_;
 
   scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<MockSpecialStoragePolicy> mock_special_storage_policy_;
@@ -433,6 +432,8 @@ class QuotaManagerTest : public testing::Test {
   int additional_callback_count_;
 
   int mock_time_counter_;
+
+  base::WeakPtrFactory<QuotaManagerTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManagerTest);
 };

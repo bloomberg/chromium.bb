@@ -67,13 +67,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemURLRequestJob
   void NotifyFailed(int rv);
 
   FileSystemContext* file_system_context_;
-  base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
   scoped_ptr<webkit_blob::FileStreamReader> reader_;
   FileSystemURL url_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
   int64 remaining_bytes_;
   net::HttpByteRange byte_range_;
+  base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemURLRequestJob);
 };

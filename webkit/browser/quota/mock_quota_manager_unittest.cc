@@ -34,8 +34,8 @@ const QuotaClient::ID kClientDB = QuotaClient::kIndexedDatabase;
 class MockQuotaManagerTest : public testing::Test {
  public:
   MockQuotaManagerTest()
-    : weak_factory_(this),
-      deletion_callback_count_(0) {
+    : deletion_callback_count_(0),
+      weak_factory_(this) {
   }
 
   virtual void SetUp() {
@@ -98,7 +98,6 @@ class MockQuotaManagerTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
-  base::WeakPtrFactory<MockQuotaManagerTest> weak_factory_;
   scoped_refptr<MockQuotaManager> manager_;
   scoped_refptr<MockSpecialStoragePolicy> policy_;
 
@@ -106,6 +105,8 @@ class MockQuotaManagerTest : public testing::Test {
 
   std::set<GURL> origins_;
   StorageType type_;
+
+  base::WeakPtrFactory<MockQuotaManagerTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManagerTest);
 };
