@@ -56,58 +56,6 @@ static String query(WebLocalizedString::Name name, const WebString& parameter1, 
     return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-String AXAMPMFieldText()
-{
-    return query(WebLocalizedString::AXAMPMFieldText);
-}
-
-String AXDayOfMonthFieldText()
-{
-    return query(WebLocalizedString::AXDayOfMonthFieldText);
-}
-
-String AXDateTimeFieldEmptyValueText()
-{
-    return query(WebLocalizedString::AXDateTimeFieldEmptyValueText);
-}
-
-String AXHourFieldText()
-{
-    return query(WebLocalizedString::AXHourFieldText);
-}
-
-String AXMillisecondFieldText()
-{
-    return query(WebLocalizedString::AXMillisecondFieldText);
-}
-
-String AXMinuteFieldText()
-{
-    return query(WebLocalizedString::AXMinuteFieldText);
-}
-
-String AXMonthFieldText()
-{
-    return query(WebLocalizedString::AXMonthFieldText);
-}
-
-String AXSecondFieldText()
-{
-    return query(WebLocalizedString::AXSecondFieldText);
-}
-
-String AXWeekOfYearFieldText()
-{
-    return query(WebLocalizedString::AXWeekOfYearFieldText);
-}
-
-String AXYearFieldText()
-{
-    return query(WebLocalizedString::AXYearFieldText);
-}
-#endif
-
 String missingPluginText()
 {
     return query(WebLocalizedString::MissingPluginText);

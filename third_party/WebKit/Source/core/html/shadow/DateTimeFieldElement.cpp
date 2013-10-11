@@ -30,13 +30,17 @@
 #include "HTMLNames.h"
 #include "core/dom/Text.h"
 #include "core/events/KeyboardEvent.h"
-#include "platform/LocalizedStrings.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 using namespace HTMLNames;
+
+static String emptyValueAXText()
+{
+    return Locale::defaultLocale()->queryString(WebKit::WebLocalizedString::AXDateTimeFieldEmptyValueText);
+}
 
 DateTimeFieldElement::FieldOwner::~FieldOwner()
 {
@@ -148,7 +152,7 @@ void DateTimeFieldElement::initialize(const AtomicString& pseudo, const String& 
 {
     // On accessibility, DateTimeFieldElement acts like spin button.
     setAttribute(roleAttr, AtomicString("spinbutton", AtomicString::ConstructFromLiteral));
-    setAttribute(aria_valuetextAttr, AXDateTimeFieldEmptyValueText());
+    setAttribute(aria_valuetextAttr, emptyValueAXText());
     setAttribute(aria_valueminAttr, String::number(axMinimum));
     setAttribute(aria_valuemaxAttr, String::number(axMaximum));
 
@@ -219,7 +223,7 @@ void DateTimeFieldElement::updateVisibleValue(EventBehavior eventBehavior)
         setAttribute(aria_valuetextAttr, newVisibleValue);
         setAttribute(aria_valuenowAttr, String::number(valueForARIAValueNow()));
     } else {
-        setAttribute(aria_valuetextAttr, AXDateTimeFieldEmptyValueText());
+        setAttribute(aria_valuetextAttr, emptyValueAXText());
         removeAttribute(aria_valuenowAttr);
     }
 

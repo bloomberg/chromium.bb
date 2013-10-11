@@ -35,19 +35,6 @@ namespace WebCore {
 
 // FIXME: Use Locale::queryString instead of the following functions.
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-PLATFORM_EXPORT String AXAMPMFieldText();
-PLATFORM_EXPORT String AXDayOfMonthFieldText();
-PLATFORM_EXPORT String AXDateTimeFieldEmptyValueText();
-PLATFORM_EXPORT String AXHourFieldText();
-PLATFORM_EXPORT String AXMillisecondFieldText();
-PLATFORM_EXPORT String AXMinuteFieldText();
-PLATFORM_EXPORT String AXMonthFieldText();
-PLATFORM_EXPORT String AXSecondFieldText();
-PLATFORM_EXPORT String AXWeekOfYearFieldText();
-PLATFORM_EXPORT String AXYearFieldText();
-#endif
-
 PLATFORM_EXPORT String missingPluginText();
 PLATFORM_EXPORT String blockedPluginByContentSecurityPolicyText();
 

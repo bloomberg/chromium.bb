@@ -29,11 +29,18 @@
 
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "platform/DateComponents.h"
-#include "platform/LocalizedStrings.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 
 namespace WebCore {
+
+using WebKit::WebLocalizedString;
+
+static String queryString(WebLocalizedString::Name name)
+{
+    return Locale::defaultLocale()->queryString(name);
+}
 
 DateTimeAMPMFieldElement::DateTimeAMPMFieldElement(Document& document, FieldOwner& fieldOwner, const Vector<String>& ampmLabels)
     : DateTimeSymbolicFieldElement(document, fieldOwner, ampmLabels, 0, 1)
@@ -44,7 +51,7 @@ PassRefPtr<DateTimeAMPMFieldElement> DateTimeAMPMFieldElement::create(Document& 
 {
     DEFINE_STATIC_LOCAL(AtomicString, ampmPsuedoId, ("-webkit-datetime-edit-ampm-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeAMPMFieldElement> field = adoptRef(new DateTimeAMPMFieldElement(document, fieldOwner, ampmLabels));
-    field->initialize(ampmPsuedoId, AXAMPMFieldText());
+    field->initialize(ampmPsuedoId, queryString(WebLocalizedString::AXAMPMFieldText));
     return field.release();
 }
 
@@ -80,7 +87,7 @@ PassRefPtr<DateTimeDayFieldElement> DateTimeDayFieldElement::create(Document& do
 {
     DEFINE_STATIC_LOCAL(AtomicString, dayPsuedoId, ("-webkit-datetime-edit-day-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeDayFieldElement> field = adoptRef(new DateTimeDayFieldElement(document, fieldOwner, placeholder.isEmpty() ? "--" : placeholder, range));
-    field->initialize(dayPsuedoId, AXDayOfMonthFieldText());
+    field->initialize(dayPsuedoId, queryString(WebLocalizedString::AXDayOfMonthFieldText));
     return field.release();
 }
 
@@ -120,7 +127,7 @@ DateTimeHourFieldElementBase::DateTimeHourFieldElementBase(Document& document, F
 void DateTimeHourFieldElementBase::initialize()
 {
     DEFINE_STATIC_LOCAL(AtomicString, hourPsuedoId, ("-webkit-datetime-edit-hour-field", AtomicString::ConstructFromLiteral));
-    DateTimeNumericFieldElement::initialize(hourPsuedoId, AXHourFieldText());
+    DateTimeNumericFieldElement::initialize(hourPsuedoId, queryString(WebLocalizedString::AXHourFieldText));
 }
 
 void DateTimeHourFieldElementBase::setValueAsDate(const DateComponents& date)
@@ -323,7 +330,7 @@ PassRefPtr<DateTimeMillisecondFieldElement> DateTimeMillisecondFieldElement::cre
 {
     DEFINE_STATIC_LOCAL(AtomicString, millisecondPsuedoId, ("-webkit-datetime-edit-millisecond-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeMillisecondFieldElement> field = adoptRef(new DateTimeMillisecondFieldElement(document, fieldOwner, range, step));
-    field->initialize(millisecondPsuedoId, AXMillisecondFieldText());
+    field->initialize(millisecondPsuedoId, queryString(WebLocalizedString::AXMillisecondFieldText));
     return field.release();
 }
 
@@ -364,7 +371,7 @@ PassRefPtr<DateTimeMinuteFieldElement> DateTimeMinuteFieldElement::create(Docume
 {
     DEFINE_STATIC_LOCAL(AtomicString, minutePsuedoId, ("-webkit-datetime-edit-minute-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeMinuteFieldElement> field = adoptRef(new DateTimeMinuteFieldElement(document, fieldOwner, range, step));
-    field->initialize(minutePsuedoId, AXMinuteFieldText());
+    field->initialize(minutePsuedoId, queryString(WebLocalizedString::AXMinuteFieldText));
     return field.release();
 }
 
@@ -405,7 +412,7 @@ PassRefPtr<DateTimeMonthFieldElement> DateTimeMonthFieldElement::create(Document
 {
     DEFINE_STATIC_LOCAL(AtomicString, monthPsuedoId, ("-webkit-datetime-edit-month-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeMonthFieldElement> field = adoptRef(new DateTimeMonthFieldElement(document, fieldOwner, placeholder.isEmpty() ? "--" : placeholder, range));
-    field->initialize(monthPsuedoId, AXMonthFieldText());
+    field->initialize(monthPsuedoId, queryString(WebLocalizedString::AXMonthFieldText));
     return field.release();
 }
 
@@ -446,7 +453,7 @@ PassRefPtr<DateTimeSecondFieldElement> DateTimeSecondFieldElement::create(Docume
 {
     DEFINE_STATIC_LOCAL(AtomicString, secondPsuedoId, ("-webkit-datetime-edit-second-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeSecondFieldElement> field = adoptRef(new DateTimeSecondFieldElement(document, fieldOwner, range, step));
-    field->initialize(secondPsuedoId, AXSecondFieldText());
+    field->initialize(secondPsuedoId, queryString(WebLocalizedString::AXSecondFieldText));
     return field.release();
 }
 
@@ -487,7 +494,7 @@ PassRefPtr<DateTimeSymbolicMonthFieldElement> DateTimeSymbolicMonthFieldElement:
 {
     DEFINE_STATIC_LOCAL(AtomicString, monthPsuedoId, ("-webkit-datetime-edit-month-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeSymbolicMonthFieldElement> field = adoptRef(new DateTimeSymbolicMonthFieldElement(document, fieldOwner, labels, minimum, maximum));
-    field->initialize(monthPsuedoId, AXMonthFieldText());
+    field->initialize(monthPsuedoId, queryString(WebLocalizedString::AXMonthFieldText));
     return field.release();
 }
 
@@ -531,7 +538,7 @@ PassRefPtr<DateTimeWeekFieldElement> DateTimeWeekFieldElement::create(Document& 
 {
     DEFINE_STATIC_LOCAL(AtomicString, weekPsuedoId, ("-webkit-datetime-edit-week-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeWeekFieldElement> field = adoptRef(new DateTimeWeekFieldElement(document, fieldOwner, range));
-    field->initialize(weekPsuedoId, AXWeekOfYearFieldText());
+    field->initialize(weekPsuedoId, queryString(WebLocalizedString::AXWeekOfYearFieldText));
     return field.release();
 }
 
@@ -576,7 +583,7 @@ PassRefPtr<DateTimeYearFieldElement> DateTimeYearFieldElement::create(Document& 
 {
     DEFINE_STATIC_LOCAL(AtomicString, yearPsuedoId, ("-webkit-datetime-edit-year-field", AtomicString::ConstructFromLiteral));
     RefPtr<DateTimeYearFieldElement> field = adoptRef(new DateTimeYearFieldElement(document, fieldOwner, parameters));
-    field->initialize(yearPsuedoId, AXYearFieldText());
+    field->initialize(yearPsuedoId, queryString(WebLocalizedString::AXYearFieldText));
     return field.release();
 }
 
