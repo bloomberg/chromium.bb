@@ -11,6 +11,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -97,7 +99,17 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
                                         &consumer_);
   }
 
+  virtual void SetUp() OVERRIDE {
+    // TODO(xiyuan): Remove this when cleaning up the system salt load temp fix.
+    scoped_ptr<MockDBusThreadManagerWithoutGMock> mock_dbus_thread_manager(
+        new MockDBusThreadManagerWithoutGMock);
+    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager.release());
+    CryptohomeLibrary::Initialize();
+  }
+
   virtual void TearDown() OVERRIDE {
+    CryptohomeLibrary::Shutdown();
+    DBusThreadManager::Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
