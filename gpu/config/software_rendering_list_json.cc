@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.12",
+  "version": "6.11",
   "entries": [
     {
       "id": 1,
@@ -1133,17 +1133,6 @@ LONG_STRING_CONST(
       },
       "features": [
         "accelerated_video_decode"
-      ]
-    },
-    {
-      "id": 79,
-      "description": "Texture sharing should be disabled on all Windows machines",
-      "cr_bugs": [304369],
-      "os": {
-        "type": "win"
-      },
-      "features": [
-        "texture_sharing"
       ]
     }
   ]
