@@ -226,7 +226,7 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
 void RunTests(TestLauncherDelegate* launcher_delegate,
               int total_shards,
               int shard_index,
-              const ResultsPrinter::TestsResultCallback& callback) {
+              TestResultsTracker* results_tracker) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   DCHECK(!command_line->HasSwitch(kGTestListTestsFlag));
@@ -246,9 +246,6 @@ void RunTests(TestLauncherDelegate* launcher_delegate,
   }
 
   int num_runnable_tests = 0;
-
-  // ResultsPrinter detects when all tests are done and deletes itself.
-  ResultsPrinter* printer = new ResultsPrinter(*command_line, callback);
 
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
     const testing::TestCase* test_case = unit_test->GetTestCase(i);
@@ -283,14 +280,15 @@ void RunTests(TestLauncherDelegate* launcher_delegate,
       if (!should_run)
         continue;
 
-      printer->OnTestStarted(test_name);
+      results_tracker->OnTestStarted(test_name);
       MessageLoop::current()->PostTask(
           FROM_HERE,
           Bind(&TestLauncherDelegate::RunTest,
                Unretained(launcher_delegate),
                test_case,
                test_info,
-               Bind(&ResultsPrinter::AddTestResult, Unretained(printer))));
+               Bind(&TestResultsTracker::AddTestResult,
+                    Unretained(results_tracker))));
     }
   }
 
@@ -301,13 +299,15 @@ void RunTests(TestLauncherDelegate* launcher_delegate,
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      Bind(&ResultsPrinter::OnAllTestsStarted, printer->GetWeakPtr()));
+      Bind(&TestResultsTracker::OnAllTestsStarted,
+           Unretained(results_tracker)));
 }
 
 void RunTestIteration(TestLauncherDelegate* launcher_delegate,
                       int32 total_shards,
                       int32 shard_index,
                       int cycles,
+                      TestResultsTracker* results_tracker,
                       int* exit_code,
                       bool run_tests_success) {
   if (!run_tests_success) {
@@ -326,15 +326,21 @@ void RunTestIteration(TestLauncherDelegate* launcher_delegate,
 
   launcher_delegate->OnTestIterationStarting();
 
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      Bind(&RunTests, launcher_delegate, total_shards, shard_index,
-           Bind(&RunTestIteration,
-                launcher_delegate,
-                total_shards,
-                shard_index,
-                new_cycles,
-                exit_code)));
+  results_tracker->OnTestIterationStarting(
+      Bind(&RunTestIteration,
+           launcher_delegate,
+           total_shards,
+           shard_index,
+           new_cycles,
+           results_tracker,
+           exit_code));
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   Bind(&RunTests,
+                                        launcher_delegate,
+                                        total_shards,
+                                        shard_index,
+                                        results_tracker));
 }
 
 
@@ -525,6 +531,12 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   if (command_line->HasSwitch(kGTestRepeatFlag))
     StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag), &cycles);
 
+  TestResultsTracker results_tracker;
+  if (!results_tracker.Init(*command_line)) {
+    LOG(ERROR) << "Failed to initialize test results tracker.";
+    return 1;
+  }
+
   int exit_code = 0;
 
 #if defined(OS_POSIX)
@@ -557,6 +569,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
            total_shards,
            shard_index,
            cycles,
+           &results_tracker,
            &exit_code,
            true));
 

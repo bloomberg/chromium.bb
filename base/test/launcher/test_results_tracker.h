@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/threading/thread_checker.h"
 
@@ -27,13 +26,20 @@ namespace base {
 // Only each test (testcase element in the XML) will have the correct
 // failed/disabled/elapsed_time information. Each test won't include
 // detailed failure messages either.
-// TODO(phajdan.jr): Rename to TestResultsTracker.
-class ResultsPrinter {
+class TestResultsTracker {
  public:
   typedef Callback<void(bool)> TestsResultCallback;
 
-  ResultsPrinter(const CommandLine& command_line,
-                 const TestsResultCallback& callback);
+  TestResultsTracker();
+  ~TestResultsTracker();
+
+  // Initialize the result tracker. Must be called exactly once before
+  // calling any other methods. Returns true on success.
+  bool Init(const CommandLine& command_line) WARN_UNUSED_RESULT;
+
+  // Called when a test iteration is starting. |callback| will be called
+  // be the result tracker at the end of that iteration.
+  void OnTestIterationStarting(const TestsResultCallback& callback);
 
   // Called when test named |name| is scheduled to be started.
   void OnTestStarted(const std::string& name);
@@ -45,10 +51,26 @@ class ResultsPrinter {
   // Adds |result| to the stored test results.
   void AddTestResult(const TestResult& result);
 
-  WeakPtr<ResultsPrinter> GetWeakPtr();
-
  private:
-  ~ResultsPrinter();
+  struct PerIterationData {
+    PerIterationData();
+    ~PerIterationData();
+
+    // Test results grouped by test case name.
+    typedef std::map<std::string, std::vector<TestResult> > ResultsMap;
+    ResultsMap results;
+
+    // List of full names of failed tests.
+    typedef std::map<TestResult::Status, std::vector<std::string> > StatusMap;
+    StatusMap tests_by_status;
+
+    size_t test_started_count;
+
+    // Total number of tests run.
+    size_t test_run_count;
+
+    TestsResultCallback callback;
+  };
 
   // Prints a list of tests that finished with |status|.
   void PrintTestsByStatus(TestResult::Status status,
@@ -56,27 +78,13 @@ class ResultsPrinter {
 
   ThreadChecker thread_checker_;
 
-  // Test results grouped by test case name.
-  typedef std::map<std::string, std::vector<TestResult> > ResultsMap;
-  ResultsMap results_;
-
-  // List of full names of failed tests.
-  typedef std::map<TestResult::Status, std::vector<std::string> > StatusMap;
-  StatusMap tests_by_status_;
-
-  size_t test_started_count_;
-
-  // Total number of tests run.
-  size_t test_run_count_;
+  // TODO(phajdan.jr): Also store data for past iterations for a JSON summary.
+  PerIterationData per_iteration_data_;
 
   // File handle of output file (can be NULL if no file).
   FILE* out_;
 
-  TestsResultCallback callback_;
-
-  WeakPtrFactory<ResultsPrinter> weak_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResultsPrinter);
+  DISALLOW_COPY_AND_ASSIGN(TestResultsTracker);
 };
 
 }  // namespace base
