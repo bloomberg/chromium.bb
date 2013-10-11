@@ -52,6 +52,8 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
+// Disable everything due to issue 306144
+#if 0
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
@@ -3610,3 +3612,4 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
             warnings.begin()->warning_type());
   EXPECT_EQ("incumbent", warnings.begin()->extension_id());
 }
+#endif // Issue 306144
