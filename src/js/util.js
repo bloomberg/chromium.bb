@@ -346,3 +346,89 @@ camera.util.Queue.prototype.continue_ = function() {
   closure(this.continue_.bind(this));
 };
 
+/**
+ * Tracks the mouse for click and move, and the touch screen for touches. If
+ * any of these are detected, then the callback is called.
+ *
+ * @type {HTMLElement} element Element to be monitored.
+ * @type {function()} callback Callback triggered on events detected.
+ * @constructor
+ */
+camera.util.PointerTracker = function(element, callback) {
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.element_ = element;
+
+  /**
+   * @type {function()}
+   * @private
+   */
+  this.callback_ = callback;
+
+  /**
+   * @type {Array.<number>}
+   * @private
+   */
+  this.lastMousePosition_ = null;
+
+  // End of properties. Seal the object.
+  Object.seal(this);
+
+  // Add the event listeners.
+  this.element_.addEventListener('mousedown', this.onMouseDown_.bind(this));
+  this.element_.addEventListener('mousemove', this.onMouseMove_.bind(this));
+  this.element_.addEventListener('touchstart', this.onTouchStart_.bind(this));
+  this.element_.addEventListener('touchmove', this.onTouchMove_.bind(this));
+};
+
+/**
+ * Handles the mouse down event.
+ *
+ * @type {Event} event Mouse down event.
+ * @private
+ */
+camera.util.PointerTracker.prototype.onMouseDown_ = function(event) {
+  this.callback_();
+  this.lastMousePosition_ = [event.screenX, event.screenY];
+};
+
+/**
+ * Handles the mouse move event.
+ *
+ * @type {Event} event Mouse move event.
+ * @private
+ */
+camera.util.PointerTracker.prototype.onMouseMove_ = function(event) {
+  // Ignore mouse events, which are invoked on the same position, but with
+  // changed client coordinates. This will happen eg. when scrolling. We should
+  // ignore them, since they are not invoked by an actual mouse move.
+  if (this.lastMousePosition_ && this.lastMousePosition_[0] == event.screenX &&
+      this.lastMousePosition_[1] == event.screenY) {
+    return;
+  }
+
+  this.callback_();
+  this.lastMousePosition_ = [event.screenX, event.screenY];
+};
+
+/**
+ * Handles the touch start event.
+ *
+ * @type {Event} event Touch start event.
+ * @private
+ */
+camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
+  this.callback_();
+};
+
+/**
+ * Handles the touch move event.
+ *
+ * @type {Event} event Touch move event.
+ * @private
+ */
+camera.util.PointerTracker.prototype.onTouchMove_ = function(event) {
+  this.callback_();
+};
