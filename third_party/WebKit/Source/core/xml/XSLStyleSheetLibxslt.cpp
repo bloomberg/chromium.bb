@@ -25,7 +25,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/dom/TransformSource.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/xml/XSLImportRule.h"
 #include "core/xml/XSLTProcessor.h"

@@ -29,7 +29,7 @@
 #include "core/editing/markup.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "platform/SharedBuffer.h"

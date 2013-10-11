@@ -48,7 +48,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"

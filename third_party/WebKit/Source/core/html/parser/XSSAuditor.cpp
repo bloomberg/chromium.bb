@@ -38,7 +38,7 @@
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/network/FormData.h"
 #include "platform/JSONValues.h"

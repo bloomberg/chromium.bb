@@ -41,7 +41,7 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "platform/TraceEvent.h"
 #include "wtf/Functional.h"
 

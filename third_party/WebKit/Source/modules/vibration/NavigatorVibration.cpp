@@ -21,7 +21,7 @@
 #include "modules/vibration/NavigatorVibration.h"
 
 #include "core/frame/Navigator.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageVisibilityState.h"
 #include "public/platform/Platform.h"

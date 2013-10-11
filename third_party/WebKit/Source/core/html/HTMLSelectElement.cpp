@@ -44,7 +44,7 @@
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/forms/FormController.h"
 #include "core/page/EventHandler.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/platform/network/FormDataList.h"

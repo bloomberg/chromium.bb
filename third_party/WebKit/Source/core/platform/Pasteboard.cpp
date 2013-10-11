@@ -41,7 +41,7 @@
 #include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"

@@ -71,7 +71,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/KeyframeList.h"

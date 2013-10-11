@@ -31,7 +31,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/ColorChooser.h"
 #include "core/platform/DateTimeChooser.h"
 #include "platform/FileChooser.h"

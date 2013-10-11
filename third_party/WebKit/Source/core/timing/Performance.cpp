@@ -44,7 +44,7 @@
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 namespace WebCore {
 

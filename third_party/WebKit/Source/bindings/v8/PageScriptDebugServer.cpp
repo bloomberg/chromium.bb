@@ -40,7 +40,7 @@
 #include "bindings/v8/V8WindowShell.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptDebugListener.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

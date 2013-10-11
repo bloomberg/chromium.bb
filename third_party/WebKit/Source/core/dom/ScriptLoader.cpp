@@ -42,7 +42,7 @@
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/svg/SVGScriptElement.h"
 #include "weborigin/SecurityOrigin.h"

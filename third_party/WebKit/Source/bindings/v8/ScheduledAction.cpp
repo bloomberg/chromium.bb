@@ -38,7 +38,7 @@
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/TraceEvent.h"

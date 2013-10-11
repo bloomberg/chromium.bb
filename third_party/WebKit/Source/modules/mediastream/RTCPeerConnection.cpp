@@ -41,7 +41,7 @@
 #include "core/html/VoidCallback.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/mediastream/RTCConfiguration.h"
 #include "core/platform/mediastream/RTCDataChannelHandler.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"

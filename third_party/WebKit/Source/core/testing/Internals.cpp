@@ -93,7 +93,7 @@
 #include "core/page/DOMPoint.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/EventHandler.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupController.h"

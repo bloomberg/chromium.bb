@@ -36,7 +36,7 @@
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/network/ResourceLoadTiming.h"
 #include "core/platform/network/ResourceResponse.h"
 

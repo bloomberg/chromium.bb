@@ -4905,7 +4905,7 @@ END
 END
 
     if (InheritsInterface($interface, "Document")) {
-        AddToImplIncludes("core/page/Frame.h");
+        AddToImplIncludes("core/frame/Frame.h");
         $code .= <<END;
     if (Frame* frame = impl->frame()) {
         if (frame->script()->initializeMainWorld()) {

@@ -33,7 +33,7 @@
 
 #include "WebSettingsImpl.h"
 #include "WebViewImpl.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/Scrollbar.h"

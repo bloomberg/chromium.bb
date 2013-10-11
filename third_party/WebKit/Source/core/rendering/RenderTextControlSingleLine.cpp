@@ -28,7 +28,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"

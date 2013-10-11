@@ -34,7 +34,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/InputMethodController.h"
 #include "core/html/ime/Composition.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 namespace WebCore {
 

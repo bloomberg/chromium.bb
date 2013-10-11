@@ -40,7 +40,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/text/WTFString.h"

@@ -38,7 +38,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/PingLoader.h"
 #include "core/page/ContentSecurityPolicyResponseHeaders.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/ParsingUtilities.h"
 #include "core/platform/network/FormData.h"

@@ -50,7 +50,7 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/TextRunIterator.h"
 #include "core/rendering/RenderWordBreak.h"

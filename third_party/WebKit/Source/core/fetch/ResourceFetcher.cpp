@@ -56,7 +56,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/timing/Performance.h"
 #include "core/page/ResourceTimingInfo.h"
 #include "core/page/Settings.h"

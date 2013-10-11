@@ -42,7 +42,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "public/platform/WebFloatQuad.h"
 #include "public/platform/WebString.h"

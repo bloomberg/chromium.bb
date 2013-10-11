@@ -35,7 +35,7 @@
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderBox.h"

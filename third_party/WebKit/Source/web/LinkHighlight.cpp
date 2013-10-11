@@ -32,7 +32,7 @@
 #include "WebKit.h"
 #include "WebViewImpl.h"
 #include "core/dom/Node.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/CompositedLayerMapping.h"

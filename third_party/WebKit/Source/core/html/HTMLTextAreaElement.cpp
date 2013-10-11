@@ -43,7 +43,7 @@
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/network/FormDataList.h"
 #include "core/rendering/RenderTextControlMultiLine.h"
 #include "platform/LocalizedStrings.h"

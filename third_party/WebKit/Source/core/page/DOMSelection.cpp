@@ -42,7 +42,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

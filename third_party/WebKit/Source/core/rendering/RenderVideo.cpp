@@ -30,7 +30,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/MediaPlayer.h"

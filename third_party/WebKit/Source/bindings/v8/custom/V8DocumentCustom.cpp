@@ -49,7 +49,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/TouchList.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathResult.h"

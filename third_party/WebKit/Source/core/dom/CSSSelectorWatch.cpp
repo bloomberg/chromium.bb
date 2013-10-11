@@ -37,7 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
 namespace WebCore {

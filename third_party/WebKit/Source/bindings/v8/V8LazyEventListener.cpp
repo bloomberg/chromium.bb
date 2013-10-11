@@ -46,7 +46,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 #include "wtf/StdLibExtras.h"
 

@@ -32,7 +32,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/WheelController.h"
 #include "core/html/HTMLElement.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"

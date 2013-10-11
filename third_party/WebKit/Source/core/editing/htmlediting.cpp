@@ -49,7 +49,7 @@
 #include "core/html/HTMLParagraphElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLUListElement.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/rendering/RenderObject.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"

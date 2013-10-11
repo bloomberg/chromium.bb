@@ -54,7 +54,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/EventHandler.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/chromium/KeyboardCodes.h"

@@ -33,7 +33,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/Clipboard.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"

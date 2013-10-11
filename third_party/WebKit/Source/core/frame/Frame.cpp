@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"

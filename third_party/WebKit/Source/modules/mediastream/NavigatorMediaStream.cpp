@@ -27,7 +27,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"

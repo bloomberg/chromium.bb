@@ -35,7 +35,7 @@
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/rendering/RenderFrameSet.h"
 
 namespace WebCore {

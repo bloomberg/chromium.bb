@@ -34,7 +34,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/events/EventListener.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/UseCounter.h"

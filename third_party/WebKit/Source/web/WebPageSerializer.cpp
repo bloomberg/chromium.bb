@@ -46,7 +46,7 @@
 #include "core/html/HTMLTableElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/archive/MHTMLArchive.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/PageSerializer.h"
 #include "core/platform/SerializedResource.h"
 #include "public/platform/WebCString.h"

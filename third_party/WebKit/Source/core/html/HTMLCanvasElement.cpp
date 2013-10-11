@@ -41,7 +41,7 @@
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/MIMETypeRegistry.h"

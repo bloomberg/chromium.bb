@@ -28,7 +28,7 @@
 #include "core/frame/NavigatorID.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/plugins/DOMMimeTypeArray.h"

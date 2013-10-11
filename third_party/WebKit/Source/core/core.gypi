@@ -1210,7 +1210,7 @@
             'page/EventSource.cpp',
             'page/EventSource.h',
             'page/FocusController.cpp',
-            'page/Frame.cpp',
+            'frame/Frame.cpp',
             'page/FrameDestructionObserver.cpp',
             'page/FrameDestructionObserver.h',
             'page/FrameTree.cpp',

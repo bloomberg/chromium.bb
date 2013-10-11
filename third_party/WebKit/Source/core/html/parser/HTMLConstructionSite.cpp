@@ -46,7 +46,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "platform/NotImplemented.h"
 #include "platform/text/TextBreakIterator.h"
 #include <limits>

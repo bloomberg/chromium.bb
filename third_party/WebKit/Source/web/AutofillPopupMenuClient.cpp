@@ -40,7 +40,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/Chrome.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"

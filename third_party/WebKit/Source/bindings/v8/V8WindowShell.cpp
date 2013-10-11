@@ -52,7 +52,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/HistogramSupport.h"
 #include "platform/TraceEvent.h"

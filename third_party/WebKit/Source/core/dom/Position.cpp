@@ -37,7 +37,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableElement.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "platform/Logging.h"
 #include "core/rendering/InlineIterator.h"

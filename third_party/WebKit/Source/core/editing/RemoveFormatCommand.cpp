@@ -34,7 +34,7 @@
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/FrameSelection.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 namespace WebCore {
 

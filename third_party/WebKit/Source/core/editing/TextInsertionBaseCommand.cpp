@@ -31,7 +31,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/editing/FrameSelection.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 namespace WebCore {
 

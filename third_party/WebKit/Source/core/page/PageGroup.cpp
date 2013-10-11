@@ -28,7 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 
 namespace WebCore {

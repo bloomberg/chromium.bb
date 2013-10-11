@@ -38,7 +38,7 @@
 #include "core/events/EventContext.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ConsoleAPITypes.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/network/FormData.h"
 #include "core/rendering/HitTestResult.h"

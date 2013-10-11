@@ -37,7 +37,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceRequest.h"

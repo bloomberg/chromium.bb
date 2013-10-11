@@ -25,7 +25,7 @@
 #include "core/dom/Element.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"

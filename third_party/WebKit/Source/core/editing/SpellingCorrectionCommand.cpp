@@ -30,7 +30,7 @@
 #include "core/editing/InsertTextCommand.h"
 #include "core/editing/SetSelectionCommand.h"
 #include "core/editing/TextIterator.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 namespace WebCore {
 

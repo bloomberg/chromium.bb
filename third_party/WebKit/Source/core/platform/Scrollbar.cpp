@@ -35,7 +35,7 @@
 // FIXME: The following #includes are a layering violation and should be removed.
 #include "core/accessibility/AXObjectCache.h"
 #include "core/page/EventHandler.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 
 #include "platform/PlatformGestureEvent.h"

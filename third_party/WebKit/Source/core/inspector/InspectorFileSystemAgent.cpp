@@ -42,7 +42,7 @@
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"

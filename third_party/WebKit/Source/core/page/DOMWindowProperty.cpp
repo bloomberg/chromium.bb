@@ -29,7 +29,7 @@
 
 #include "core/dom/Document.h"
 #include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 namespace WebCore {
 

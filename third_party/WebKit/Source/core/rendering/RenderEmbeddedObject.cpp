@@ -27,7 +27,7 @@
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/Font.h"

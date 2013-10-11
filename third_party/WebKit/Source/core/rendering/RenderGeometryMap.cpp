@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderGeometryMap.h"
 
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/RenderLayer.h"

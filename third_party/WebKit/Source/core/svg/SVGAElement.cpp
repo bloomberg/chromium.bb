@@ -40,7 +40,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/svg/RenderSVGInline.h"

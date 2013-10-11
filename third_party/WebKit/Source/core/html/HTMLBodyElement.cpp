@@ -34,7 +34,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 
 namespace WebCore {

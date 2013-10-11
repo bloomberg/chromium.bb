@@ -38,7 +38,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "platform/SharedBuffer.h"

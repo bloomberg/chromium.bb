@@ -21,7 +21,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/style/RenderStyle.h"

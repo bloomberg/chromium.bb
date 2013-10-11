@@ -45,7 +45,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/Document.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/FontTraitsMask.h"
 #include "core/svg/SVGFontFaceElement.h"

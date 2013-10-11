@@ -41,7 +41,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 
 namespace WebCore {

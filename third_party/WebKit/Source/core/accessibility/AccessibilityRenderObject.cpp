@@ -49,7 +49,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/loader/ProgressTracker.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderFileUploadControl.h"

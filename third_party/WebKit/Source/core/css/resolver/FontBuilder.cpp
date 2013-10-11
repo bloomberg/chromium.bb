@@ -26,7 +26,7 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/FontSize.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"

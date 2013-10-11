@@ -36,7 +36,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/WorkerScriptController.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include <v8.h>
 #include "wtf/Assertions.h"

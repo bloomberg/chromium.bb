@@ -38,7 +38,7 @@
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/SimpleFontData.h"

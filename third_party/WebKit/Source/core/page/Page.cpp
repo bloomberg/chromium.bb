@@ -40,7 +40,7 @@
 #include "core/page/DOMTimer.h"
 #include "core/page/DragController.h"
 #include "core/page/FocusController.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/PageConsole.h"

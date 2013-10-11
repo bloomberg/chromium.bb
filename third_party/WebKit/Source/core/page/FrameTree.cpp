@@ -22,7 +22,7 @@
 #include "core/page/FrameTree.h"
 
 #include "core/dom/Document.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"

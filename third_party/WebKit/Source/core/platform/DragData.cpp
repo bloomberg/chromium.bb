@@ -31,7 +31,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Range.h"
 #include "core/editing/markup.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "platform/FileMetadata.h"

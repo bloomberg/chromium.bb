@@ -28,7 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/editing/htmlediting.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderView.h"

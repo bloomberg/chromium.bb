@@ -31,7 +31,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
 #include "core/editing/SpellChecker.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "platform/text/TextCheckerClient.h"

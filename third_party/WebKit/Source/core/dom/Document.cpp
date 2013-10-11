@@ -147,7 +147,7 @@
 #include "core/page/DOMSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/EventHandler.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/frame/History.h"

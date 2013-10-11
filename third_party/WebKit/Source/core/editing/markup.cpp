@@ -55,7 +55,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 #include "core/rendering/RenderObject.h"
 #include "weborigin/KURL.h"
 #include "wtf/StdLibExtras.h"

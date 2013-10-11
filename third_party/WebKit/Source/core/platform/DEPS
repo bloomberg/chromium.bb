@@ -19,6 +19,7 @@ include_rules = [
     "!core/html",
     "!core/inspector",
     "!core/fetch",
+    "!core/frame",
     "!core/page",
     "!core/plugins",
     "!core/rendering",

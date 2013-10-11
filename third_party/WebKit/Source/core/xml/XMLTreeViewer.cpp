@@ -37,7 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
-#include "core/page/Frame.h"
+#include "core/frame/Frame.h"
 
 using namespace std;
 
