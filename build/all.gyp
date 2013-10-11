@@ -296,6 +296,29 @@
                 '../remoting/remoting.gyp:remoting_host_installation',
               ],
             }],
+            ['asan==1', {
+              'variables': {
+                # Disable incremental linking for all modules.
+                # 0: inherit, 1: disabled, 2: enabled.
+                'msvs_debug_link_incremental': '1',
+                'msvs_large_module_debug_link_mode': '1',
+                # Disable RTC. Syzygy explicitly doesn't support RTC
+                # instrumented binaries for now.
+                'win_debug_RuntimeChecks': '0',
+              },
+              'defines': [
+                # Disable iterator debugging (huge speed boost).
+                '_HAS_ITERATOR_DEBUGGING=0',
+              ],
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  # Enable profile information (necessary for asan
+                  # instrumentation). This is incompatible with incremental
+                  # linking.
+                  'Profile': 'true',
+                },
+              }
+            }],
           ],
         }],
         ['OS=="linux"', {
