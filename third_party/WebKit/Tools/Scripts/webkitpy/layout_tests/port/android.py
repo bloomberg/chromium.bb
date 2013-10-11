@@ -852,7 +852,7 @@ class ChromiumAndroidDriver(driver.Driver):
             _log.debug('[%s] %s' % (self._android_commands.get_serial(), message))
 
     def _abort(self, message):
-        raise AssertionError('[%s] %s' % (self._android_commands.get_serial(), message))
+        raise driver.DeviceOffline('[%s] %s' % (self._android_commands.get_serial(), message))
 
     @staticmethod
     def _extract_hashes_from_md5sum_output(md5sum_output):

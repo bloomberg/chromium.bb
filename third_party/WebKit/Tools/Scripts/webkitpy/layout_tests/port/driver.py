@@ -82,6 +82,10 @@ class DriverOutput(object):
         return bool(self.error)
 
 
+class DeviceOffline(Exception):
+    pass
+
+
 class Driver(object):
     """object for running test(s) using content_shell or other driver."""
 
