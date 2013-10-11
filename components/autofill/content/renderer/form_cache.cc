@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
+#include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using WebKit::WebDocument;
@@ -29,6 +30,7 @@ using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
 using WebKit::WebSelectElement;
+using WebKit::WebTextAreaElement;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -109,6 +111,8 @@ bool FormCache::ExtractFormsAndFormElements(
         initial_select_values_.insert(std::make_pair(select_element,
                                                      select_element.value()));
         ++num_editable_elements;
+      } else if (IsTextAreaElement(element)) {
+        ++num_editable_elements;
       } else {
         const WebInputElement input_element =
             element.toConst<WebInputElement>();
@@ -185,12 +189,12 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
                               &control_elements);
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebFormControlElement control_element = control_elements[i];
+    // Don't modify the value of disabled fields.
+    if (!control_element.isEnabled())
+      continue;
+
     WebInputElement* input_element = toWebInputElement(&control_element);
     if (IsTextInput(input_element)) {
-      // We don't modify the value of disabled fields.
-      if (!input_element->isEnabled())
-        continue;
-
       input_element->setValue(base::string16(), true);
       input_element->setAutofilled(false);
 
@@ -200,6 +204,12 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
         int length = input_element->value().length();
         input_element->setSelectionRange(length, length);
       }
+    } else if (IsTextAreaElement(control_element)) {
+      WebTextAreaElement text_area = control_element.to<WebTextAreaElement>();
+      text_area.setValue(base::string16());
+      text_area.dispatchFormControlChangeEvent();
+
+      // TODO(isherman): Call setAutofilled(false) once that's implemented.
     } else if (IsSelectElement(control_element)) {
       WebSelectElement select_element = control_element.to<WebSelectElement>();
 

@@ -210,8 +210,11 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
   base::string16 pattern = UTF8ToUTF16(autofill::kAddressLine1Re);
   base::string16 label_pattern = UTF8ToUTF16(autofill::kAddressLine1LabelRe);
 
-  if (!ParseField(scanner, pattern, &address_field->address1_) &&
-      !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
+  // TODO(isherman): Fill full address into textarea field...
+  if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_TEXT_AREA,
+                           &address_field->address1_) &&
+      !ParseFieldSpecifics(scanner, label_pattern,
+                           MATCH_LABEL | MATCH_TEXT | MATCH_TEXT_AREA,
                            &address_field->address1_)) {
     return false;
   }

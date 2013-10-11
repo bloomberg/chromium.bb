@@ -4,3 +4,4 @@ PHONE_HOME_WHOLE_NUMBER | DayPhone | Daytime Phone |
 UNKNOWN_TYPE | Subject | Subject | 
 PHONE_HOME_WHOLE_NUMBER | EvePhone | Evening Phone | 
 UNKNOWN_TYPE | AccountList | Account | NO_SELECTION
+UNKNOWN_TYPE | BodyText |  | 

@@ -5,3 +5,4 @@ CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR | cc_exp | Expiration date (MM/YY) |
 CREDIT_CARD_VERIFICATION_CODE | cc_cvv2 | CVV2 / Security Code: | 
 UNKNOWN_TYPE | field_17 |  | Select an option...
 UNKNOWN_TYPE | age |  | 
+UNKNOWN_TYPE | comments |  | 

@@ -27,22 +27,6 @@
 namespace autofill {
 namespace {
 
-bool IsTextField(const std::string& type) {
-  return type == "text";
-}
-
-bool IsEmailField(const std::string& type) {
-  return type == "email";
-}
-
-bool IsTelephoneField(const std::string& type) {
-  return type == "tel";
-}
-
-bool IsSelectField(const std::string& type) {
-  return type == "select-one";
-}
-
 bool IsCheckable(const AutofillField* field) {
   return field->is_checkable;
 }
@@ -97,21 +81,10 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
 
   const AutofillField* field = scanner->Cursor();
 
-  if ((match_type & MATCH_TEXT) && IsTextField(field->form_control_type))
-    return MatchAndAdvance(scanner, pattern, match_type, match);
+  if (!MatchesFormControlType(field->form_control_type, match_type))
+    return false;
 
-  if ((match_type & MATCH_EMAIL) && IsEmailField(field->form_control_type))
-    return MatchAndAdvance(scanner, pattern, match_type, match);
-
-  if ((match_type & MATCH_TELEPHONE) &&
-      IsTelephoneField(field->form_control_type)) {
-    return MatchAndAdvance(scanner, pattern, match_type, match);
-  }
-
-  if ((match_type & MATCH_SELECT) && IsSelectField(field->form_control_type))
-    return MatchAndAdvance(scanner, pattern, match_type, match);
-
-  return false;
+  return MatchAndAdvance(scanner, pattern, match_type, match);
 }
 
 // static
@@ -194,6 +167,26 @@ void FormField::ParseFormFieldsPass(ParseFunction parse,
   }
 
   std::swap(*fields, remaining_fields);
+}
+
+bool FormField::MatchesFormControlType(const std::string& type,
+                                       int match_type) {
+  if ((match_type & MATCH_TEXT) && type == "text")
+    return true;
+
+  if ((match_type & MATCH_EMAIL) && type == "email")
+    return true;
+
+  if ((match_type & MATCH_TELEPHONE) && type == "tel")
+    return true;
+
+  if ((match_type & MATCH_SELECT) && type == "select-one")
+    return true;
+
+  if ((match_type & MATCH_TEXT_AREA) && type == "textarea")
+    return true;
+
+  return false;
 }
 
 }  // namespace autofill

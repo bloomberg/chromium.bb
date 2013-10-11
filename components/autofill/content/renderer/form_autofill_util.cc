@@ -30,6 +30,7 @@
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebOptionElement.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
+#include "third_party/WebKit/public/web/WebTextAreaElement.h"
 
 using WebKit::WebDocument;
 using WebKit::WebElement;
@@ -43,6 +44,7 @@ using WebKit::WebNode;
 using WebKit::WebNodeList;
 using WebKit::WebOptionElement;
 using WebKit::WebSelectElement;
+using WebKit::WebTextAreaElement;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -84,7 +86,9 @@ bool HasTagName(const WebNode& node, const WebKit::WebString& tag) {
 
 bool IsAutofillableElement(const WebFormControlElement& element) {
   const WebInputElement* input_element = toWebInputElement(&element);
-  return IsAutofillableInputElement(input_element) || IsSelectElement(element);
+  return IsAutofillableInputElement(input_element) ||
+         IsSelectElement(element) ||
+         IsTextAreaElement(element);
 }
 
 // Check whether the given field satisfies the REQUIRE_AUTOCOMPLETE requirement.
@@ -502,8 +506,10 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
     // Only autofill empty fields and the field that initiated the filling,
     // i.e. the field the user is currently editing and interacting with.
     const WebInputElement* input_element = toWebInputElement(element);
-    if (!force_override && IsTextInput(input_element) &&
-        !is_initiating_element && !input_element->value().isEmpty())
+    if (!force_override && !is_initiating_element &&
+        ((IsTextInput(input_element) && !input_element->value().isEmpty()) ||
+         (IsTextAreaElement(*element) &&
+          !element->toConst<WebTextAreaElement>().value().isEmpty())))
       continue;
 
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element->isEnabled()) ||
@@ -536,6 +542,13 @@ void FillFormField(const FormFieldData& data,
       input_element->setSelectionRange(length, length);
       // Clear the current IME composition (the underline), if there is one.
       input_element->document().frame()->unmarkText();
+    }
+  } else if (IsTextAreaElement(*field)) {
+    WebTextAreaElement text_area = field->to<WebTextAreaElement>();
+    // TODO(isherman): Call setAutofilled(true) once that is implemented.
+    if (text_area.value() != data.value) {
+      text_area.setValue(data.value);
+      text_area.dispatchFormControlChangeEvent();
     }
   } else if (IsSelectElement(*field)) {
     WebSelectElement select_element = field->to<WebSelectElement>();
@@ -621,9 +634,15 @@ bool IsTextInput(const WebInputElement* element) {
 }
 
 bool IsSelectElement(const WebFormControlElement& element) {
-  // Is static for improving performance.
+  // Static for improved performance.
   CR_DEFINE_STATIC_LOCAL(WebString, kSelectOne, ("select-one"));
   return element.formControlType() == kSelectOne;
+}
+
+bool IsTextAreaElement(const WebFormControlElement& element) {
+  // Static for improved performance.
+  CR_DEFINE_STATIC_LOCAL(WebString, kTextArea, ("textarea"));
+  return element.formControlType() == kTextArea;
 }
 
 bool IsCheckableElement(const WebInputElement* element) {
@@ -703,8 +722,8 @@ void ExtractAutofillableElements(
       continue;
 
     if (requirements & REQUIRE_AUTOCOMPLETE) {
-      // TODO(jhawkins): WebKit currently doesn't handle the autocomplete
-      // attribute for select control elements, but it probably should.
+      // TODO(isherman): WebKit currently doesn't handle the autocomplete
+      // attribute for select or textarea elements, but it probably should.
       WebInputElement* input_element = toWebInputElement(&control_elements[i]);
       if (IsAutofillableInputElement(input_element) &&
           !SatisfiesRequireAutocomplete(*input_element))
@@ -751,6 +770,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     field->should_autocomplete = input_element->autoComplete();
     field->text_direction = input_element->directionForFormData() == "rtl" ?
         base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
+  } else if (IsTextAreaElement(element)) {
+    // Nothing more to do in this case.
   } else if (extract_mask & EXTRACT_OPTIONS) {
     // Set option strings on the field if available.
     DCHECK(IsSelectElement(element));
@@ -766,6 +787,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   base::string16 value;
   if (IsAutofillableInputElement(input_element)) {
     value = input_element->value();
+  } else if (IsTextAreaElement(element)) {
+    value = element.toConst<WebTextAreaElement>().value();
   } else {
     DCHECK(IsSelectElement(element));
     const WebSelectElement select_element = element.toConst<WebSelectElement>();

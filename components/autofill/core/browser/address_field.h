@@ -39,6 +39,7 @@ class AddressField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddressShipping);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseTwoLineAddress);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseThreeLineAddress);
+  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseStreetAddressFromTextArea);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCity);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseState);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseZip);

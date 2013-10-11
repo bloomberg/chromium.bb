@@ -43,8 +43,10 @@ class FormField {
     MATCH_EMAIL      = 1 << 4,
     MATCH_TELEPHONE  = 1 << 5,
     MATCH_SELECT     = 1 << 6,
+    MATCH_TEXT_AREA  = 1 << 7,
     MATCH_ALL_INPUTS =
-        MATCH_TEXT | MATCH_EMAIL | MATCH_TELEPHONE | MATCH_SELECT,
+        MATCH_TEXT | MATCH_EMAIL | MATCH_TELEPHONE | MATCH_SELECT |
+        MATCH_TEXT_AREA,
 
     // By default match label and name for input/text types.
     MATCH_DEFAULT    = MATCH_LABEL | MATCH_NAME | MATCH_VALUE | MATCH_TEXT,
@@ -115,6 +117,9 @@ class FormField {
   static void ParseFormFieldsPass(ParseFunction parse,
                                   std::vector<const AutofillField*>* fields,
                                   ServerFieldTypeMap* map);
+
+  // Returns true iff |type| matches |match_type|.
+  static bool MatchesFormControlType(const std::string& type, int match_type);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);
 };
