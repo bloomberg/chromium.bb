@@ -164,7 +164,7 @@ static inline int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator
                 if (i || priorContextLength) {
                     TextBreakIterator* breakIterator = lazyBreakIterator.get(priorContextLength);
                     if (breakIterator) {
-                        nextBreak = breakIterator->following(i - 1 + priorContextLength);
+                        nextBreak = textBreakFollowing(breakIterator, i - 1 + priorContextLength);
                         if (nextBreak >= 0) {
                             nextBreak -= priorContextLength;
                         }

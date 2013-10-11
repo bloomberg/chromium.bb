@@ -206,10 +206,10 @@ int ComplexTextController::offsetForPosition(float h, bool includePartialGlyphs)
                 int stringLength = complexTextRun.stringLength();
                 TextBreakIterator* cursorPositionIterator = cursorMovementIterator(complexTextRun.characters(), stringLength);
                 int clusterStart;
-                if (cursorPositionIterator->isBoundary(hitIndex))
+                if (isTextBreak(cursorPositionIterator, hitIndex))
                     clusterStart = hitIndex;
                 else {
-                    clusterStart = cursorPositionIterator->preceding(hitIndex);
+                    clusterStart = textBreakPreceding(cursorPositionIterator, hitIndex);
                     if (clusterStart == TextBreakDone)
                         clusterStart = 0;
                 }
@@ -217,7 +217,7 @@ int ComplexTextController::offsetForPosition(float h, bool includePartialGlyphs)
                 if (!includePartialGlyphs)
                     return complexTextRun.stringLocation() + clusterStart;
 
-                int clusterEnd = cursorPositionIterator->following(hitIndex);
+                int clusterEnd = textBreakFollowing(cursorPositionIterator, hitIndex);
                 if (clusterEnd == TextBreakDone)
                     clusterEnd = stringLength;
 

@@ -120,8 +120,8 @@ static void makeCapitalized(String* string, UChar previous)
     result.reserveCapacity(length);
 
     int32_t endOfWord;
-    int32_t startOfWord = boundary->first();
-    for (endOfWord = boundary->next(); endOfWord != TextBreakDone; startOfWord = endOfWord, endOfWord = boundary->next()) {
+    int32_t startOfWord = textBreakFirst(boundary);
+    for (endOfWord = textBreakNext(boundary); endOfWord != TextBreakDone; startOfWord = endOfWord, endOfWord = textBreakNext(boundary)) {
         if (startOfWord) // Ignore first char of previous string
             result.append(input[startOfWord - 1] == noBreakSpace ? noBreakSpace : toTitleCase(stringWithPrevious[startOfWord]));
         for (int i = startOfWord + 1; i < endOfWord; i++)
@@ -1664,7 +1664,7 @@ int RenderText::previousOffset(int current) const
     if (!iterator)
         return current - 1;
 
-    long result = iterator->preceding(current);
+    long result = textBreakPreceding(iterator, current);
     if (result == TextBreakDone)
         result = current - 1;
 
@@ -1820,7 +1820,7 @@ int RenderText::nextOffset(int current) const
     if (!iterator)
         return current + 1;
 
-    long result = iterator->following(current);
+    long result = textBreakFollowing(iterator, current);
     if (result == TextBreakDone)
         result = current + 1;
 

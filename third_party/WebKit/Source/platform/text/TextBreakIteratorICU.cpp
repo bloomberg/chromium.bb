@@ -49,9 +49,9 @@ public:
 
     static PassOwnPtr<LineBreakIteratorPool> create() { return adoptPtr(new LineBreakIteratorPool); }
 
-    icu::BreakIterator* take(const AtomicString& locale)
+    UBreakIterator* take(const AtomicString& locale)
     {
-        icu::BreakIterator* iterator = 0;
+        UBreakIterator* iterator = 0;
         for (size_t i = 0; i < m_pool.size(); ++i) {
             if (m_pool[i].first == locale) {
                 iterator = m_pool[i].second;
@@ -63,16 +63,16 @@ public:
         if (!iterator) {
             UErrorCode openStatus = U_ZERO_ERROR;
             bool localeIsEmpty = locale.isEmpty();
-            iterator = icu::BreakIterator::createLineInstance(localeIsEmpty ? icu::Locale(currentTextBreakLocaleID()) : icu::Locale(locale.string().utf8().data()), openStatus);
+            iterator = ubrk_open(UBRK_LINE, localeIsEmpty ? currentTextBreakLocaleID() : locale.string().utf8().data(), 0, 0, &openStatus);
             // locale comes from a web page and it can be invalid, leading ICU
             // to fail, in which case we fall back to the default locale.
             if (!localeIsEmpty && U_FAILURE(openStatus)) {
                 openStatus = U_ZERO_ERROR;
-                iterator = icu::BreakIterator::createLineInstance(icu::Locale(currentTextBreakLocaleID()), openStatus);
+                iterator = ubrk_open(UBRK_LINE, currentTextBreakLocaleID(), 0, 0, &openStatus);
             }
 
             if (U_FAILURE(openStatus)) {
-                LOG_ERROR("icu::BreakIterator construction failed with status %d", openStatus);
+                LOG_ERROR("ubrk_open failed with status %d", openStatus);
                 return 0;
             }
         }
@@ -82,12 +82,12 @@ public:
         return iterator;
     }
 
-    void put(icu::BreakIterator* iterator)
+    void put(UBreakIterator* iterator)
     {
         ASSERT_ARG(iterator, m_vendedIterators.contains(iterator));
 
         if (m_pool.size() == capacity) {
-            delete(m_pool[0].second);
+            ubrk_close(m_pool[0].second);
             m_pool.remove(0);
         }
 
@@ -99,10 +99,10 @@ private:
 
     static const size_t capacity = 4;
 
-    typedef pair<AtomicString, icu::BreakIterator*> Entry;
+    typedef pair<AtomicString, UBreakIterator*> Entry;
     typedef Vector<Entry, capacity> Pool;
     Pool m_pool;
-    HashMap<icu::BreakIterator*, AtomicString> m_vendedIterators;
+    HashMap<UBreakIterator*, AtomicString> m_vendedIterators;
 
     friend WTF::ThreadSpecific<LineBreakIteratorPool>::operator LineBreakIteratorPool*();
 };
@@ -486,16 +486,31 @@ static UText* textOpenUTF16(UText* text, const UChar* string, unsigned length, c
 
 static UText emptyText = UTEXT_INITIALIZER;
 
-static TextBreakIterator* wordBreakIterator(const LChar* string, int length)
+static TextBreakIterator* setUpIterator(bool& createdIterator, TextBreakIterator*& iterator, UBreakIteratorType type, const UChar* string, int length)
 {
-    UErrorCode errorCode = U_ZERO_ERROR;
-    static TextBreakIterator* breakIter = 0;
-    if (!breakIter) {
-        breakIter = icu::BreakIterator::createWordInstance(icu::Locale(currentTextBreakLocaleID()), errorCode);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(errorCode), "ICU could not open a break iterator: %s (%d)", u_errorName(errorCode), errorCode);
-        if (!breakIter)
-            return 0;
-    }
+    if (!string)
+        return 0;
+
+    iterator = ensureIterator(createdIterator, iterator, type);
+    if (!iterator)
+        return 0;
+
+    UErrorCode setTextStatus = U_ZERO_ERROR;
+    ubrk_setText(reinterpret_cast<UBreakIterator*>(iterator), string, length, &setTextStatus);
+    if (U_FAILURE(setTextStatus))
+        return 0;
+
+    return iterator;
+}
+
+static TextBreakIterator* setUpIterator(bool& createdIterator, TextBreakIterator*& iterator, UBreakIteratorType type, const LChar* string, int length)
+{
+    if (!string)
+        return 0;
+
+    iterator = ensureIterator(createdIterator, iterator, type);
+    if (!iterator)
+        return 0;
 
     UTextWithBuffer textLocal;
     textLocal.text = emptyText;
@@ -510,37 +525,32 @@ static TextBreakIterator* wordBreakIterator(const LChar* string, int length)
     }
 
     UErrorCode setTextStatus = U_ZERO_ERROR;
-    breakIter->setText(text, setTextStatus);
-    if (U_FAILURE(setTextStatus))
-        LOG_ERROR("BreakIterator::seText failed with status %d", setTextStatus);
+    ubrk_setUText(reinterpret_cast<UBreakIterator*>(iterator), text, &setTextStatus);
+    if (U_FAILURE(setTextStatus)) {
+        LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
+        // FIXME: Do we need to call utext_close(text) here?
+        return 0;
+    }
 
     utext_close(text);
 
-    return breakIter;
+    return iterator;
 }
 
-static void setText16(TextBreakIterator* iter, const UChar* string, int length)
+static TextBreakIterator* wordBreakIterator(const LChar* string, int length)
 {
-    UErrorCode errorCode = U_ZERO_ERROR;
-    UText uText = UTEXT_INITIALIZER;
-    utext_openUChars(&uText, string, length, &errorCode);
-    if (U_FAILURE(errorCode))
-        return;
-    iter->setText(&uText, errorCode);
+    static bool createdWordBreakIterator8 = false;
+    static TextBreakIterator* staticWordBreakIterator8;
+    return setUpIterator(createdWordBreakIterator8,
+        staticWordBreakIterator8, UBRK_WORD, string, length);
 }
 
 TextBreakIterator* wordBreakIterator(const UChar* string, int length)
 {
-    UErrorCode errorCode = U_ZERO_ERROR;
-    static TextBreakIterator* breakIter = 0;
-    if (!breakIter) {
-        breakIter = icu::BreakIterator::createWordInstance(icu::Locale(currentTextBreakLocaleID()), errorCode);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(errorCode), "ICU could not open a break iterator: %s (%d)", u_errorName(errorCode), errorCode);
-        if (!breakIter)
-            return 0;
-    }
-    setText16(breakIter, string, length);
-    return breakIter;
+    static bool createdWordBreakIterator16 = false;
+    static TextBreakIterator* staticWordBreakIterator16;
+    return setUpIterator(createdWordBreakIterator16,
+        staticWordBreakIterator16, UBRK_WORD, string, length);
 }
 
 TextBreakIterator* wordBreakIterator(const String& string, int start, int length)
@@ -554,7 +564,7 @@ TextBreakIterator* wordBreakIterator(const String& string, int start, int length
 
 TextBreakIterator* acquireLineBreakIterator(const LChar* string, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength)
 {
-    TextBreakIterator* iterator = LineBreakIteratorPool::sharedPool().take(locale);
+    UBreakIterator* iterator = LineBreakIteratorPool::sharedPool().take(locale);
     if (!iterator)
         return 0;
 
@@ -571,20 +581,21 @@ TextBreakIterator* acquireLineBreakIterator(const LChar* string, int length, con
     }
 
     UErrorCode setTextStatus = U_ZERO_ERROR;
-    iterator->setText(text, setTextStatus);
+    ubrk_setUText(iterator, text, &setTextStatus);
     if (U_FAILURE(setTextStatus)) {
+        // FIXME: Do we need to call utext_close(text) here?
         LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
         return 0;
     }
 
     utext_close(text);
 
-    return iterator;
+    return reinterpret_cast<TextBreakIterator*>(iterator);
 }
 
 TextBreakIterator* acquireLineBreakIterator(const UChar* string, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength)
 {
-    TextBreakIterator* iterator = LineBreakIteratorPool::sharedPool().take(locale);
+    UBreakIterator* iterator = LineBreakIteratorPool::sharedPool().take(locale);
     if (!iterator)
         return 0;
 
@@ -598,22 +609,23 @@ TextBreakIterator* acquireLineBreakIterator(const UChar* string, int length, con
     }
 
     UErrorCode setTextStatus = U_ZERO_ERROR;
-    iterator->setText(text, setTextStatus);
+    ubrk_setUText(iterator, text, &setTextStatus);
     if (U_FAILURE(setTextStatus)) {
+        // FIXME: Do we need to call utext_close(text) here?
         LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
         return 0;
     }
 
     utext_close(text);
 
-    return iterator;
+    return reinterpret_cast<TextBreakIterator*>(iterator);
 }
 
 void releaseLineBreakIterator(TextBreakIterator* iterator)
 {
     ASSERT_ARG(iterator, iterator);
 
-    LineBreakIteratorPool::sharedPool().put(iterator);
+    LineBreakIteratorPool::sharedPool().put(reinterpret_cast<UBreakIterator*>(iterator));
 }
 
 static TextBreakIterator* nonSharedCharacterBreakIterator;
@@ -664,13 +676,7 @@ void NonSharedCharacterBreakIterator::createIteratorForBuffer(const UChar* buffe
 {
     m_iterator = nonSharedCharacterBreakIterator;
     bool createdIterator = m_iterator && compareAndSwapNonSharedCharacterBreakIterator(m_iterator, 0);
-    if (!createdIterator) {
-        UErrorCode errorCode = U_ZERO_ERROR;
-        m_iterator = icu::BreakIterator::createCharacterInstance(icu::Locale(currentTextBreakLocaleID()), errorCode);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(errorCode), "ICU could not open a break iterator: %s (%d)", u_errorName(errorCode), errorCode);
-    }
-
-    setText16(m_iterator, buffer, length);
+    m_iterator = setUpIterator(createdIterator, m_iterator, UBRK_CHARACTER, buffer, length);
 }
 
 NonSharedCharacterBreakIterator::~NonSharedCharacterBreakIterator()
@@ -678,13 +684,13 @@ NonSharedCharacterBreakIterator::~NonSharedCharacterBreakIterator()
     if (m_is8Bit)
         return;
     if (!compareAndSwapNonSharedCharacterBreakIterator(0, m_iterator))
-        delete m_iterator;
+        ubrk_close(reinterpret_cast<UBreakIterator*>(m_iterator));
 }
 
 int NonSharedCharacterBreakIterator::next()
 {
     if (!m_is8Bit)
-        return m_iterator->next();
+        return textBreakNext(m_iterator);
 
     if (m_offset >= m_length)
         return TextBreakDone;
@@ -696,21 +702,21 @@ int NonSharedCharacterBreakIterator::next()
 int NonSharedCharacterBreakIterator::current()
 {
     if (!m_is8Bit)
-        return m_iterator->current();
+        return textBreakCurrent(m_iterator);
     return m_offset;
 }
 
 bool NonSharedCharacterBreakIterator::isBreak(int offset) const
 {
     if (!m_is8Bit)
-        return m_iterator->isBoundary(offset);
+        return isTextBreak(m_iterator, offset);
     return !isLFAfterCR(offset);
 }
 
 int NonSharedCharacterBreakIterator::preceding(int offset) const
 {
     if (!m_is8Bit)
-        return m_iterator->preceding(offset);
+        return textBreakPreceding(m_iterator, offset);
     if (offset <= 0)
         return TextBreakDone;
     if (isLFAfterCR(offset))
@@ -721,7 +727,7 @@ int NonSharedCharacterBreakIterator::preceding(int offset) const
 int NonSharedCharacterBreakIterator::following(int offset) const
 {
     if (!m_is8Bit)
-        return m_iterator->following(offset);
+        return textBreakFollowing(m_iterator, offset);
     if (static_cast<unsigned>(offset) >= m_length)
         return TextBreakDone;
     return offset + clusterLengthStartingAt(offset);
@@ -729,44 +735,81 @@ int NonSharedCharacterBreakIterator::following(int offset) const
 
 TextBreakIterator* sentenceBreakIterator(const UChar* string, int length)
 {
-    UErrorCode openStatus = U_ZERO_ERROR;
-    static TextBreakIterator* iterator = 0;
-    if (!iterator) {
-        iterator =  icu::BreakIterator::createSentenceInstance(icu::Locale(currentTextBreakLocaleID()), openStatus);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(openStatus), "ICU could not open a break iterator: %s (%d)", u_errorName(openStatus), openStatus);
-        if (!iterator)
-            return 0;
-    }
+    static bool createdSentenceBreakIterator = false;
+    static TextBreakIterator* staticSentenceBreakIterator;
+    return setUpIterator(createdSentenceBreakIterator,
+        staticSentenceBreakIterator, UBRK_SENTENCE, string, length);
+}
 
-    setText16(iterator, string, length);
-    return iterator;
+int textBreakFirst(TextBreakIterator* iterator)
+{
+    return ubrk_first(reinterpret_cast<UBreakIterator*>(iterator));
+}
+
+int textBreakLast(TextBreakIterator* iterator)
+{
+    return ubrk_last(reinterpret_cast<UBreakIterator*>(iterator));
+}
+
+int textBreakNext(TextBreakIterator* iterator)
+{
+    return ubrk_next(reinterpret_cast<UBreakIterator*>(iterator));
+}
+
+int textBreakPrevious(TextBreakIterator* iterator)
+{
+    return ubrk_previous(reinterpret_cast<UBreakIterator*>(iterator));
+}
+
+int textBreakPreceding(TextBreakIterator* iterator, int pos)
+{
+    return ubrk_preceding(reinterpret_cast<UBreakIterator*>(iterator), pos);
+}
+
+int textBreakFollowing(TextBreakIterator* iterator, int pos)
+{
+    return ubrk_following(reinterpret_cast<UBreakIterator*>(iterator), pos);
+}
+
+int textBreakCurrent(TextBreakIterator* iterator)
+{
+    return ubrk_current(reinterpret_cast<UBreakIterator*>(iterator));
+}
+
+bool isTextBreak(TextBreakIterator* iterator, int position)
+{
+    return ubrk_isBoundary(reinterpret_cast<UBreakIterator*>(iterator), position);
 }
 
 bool isWordTextBreak(TextBreakIterator* iterator)
 {
-    int ruleStatus = iterator->getRuleStatus();
+    int ruleStatus = ubrk_getRuleStatus(reinterpret_cast<UBreakIterator*>(iterator));
     return ruleStatus != UBRK_WORD_NONE;
 }
 
-static TextBreakIterator* setUpIteratorWithRules(const char* breakRules, const UChar* string, int length)
+static TextBreakIterator* setUpIteratorWithRules(bool& createdIterator, TextBreakIterator*& iterator,
+    const char* breakRules, const UChar* string, int length)
 {
     if (!string)
         return 0;
 
-    static TextBreakIterator* iterator = 0;
-    if (!iterator) {
+    if (!createdIterator) {
         UParseError parseStatus;
         UErrorCode openStatus = U_ZERO_ERROR;
         Vector<UChar> rules;
         String(breakRules).appendTo(rules);
-
-        iterator = new icu::RuleBasedBreakIterator(icu::UnicodeString(rules.data(), rules.size()), parseStatus, openStatus);
+        iterator = reinterpret_cast<TextBreakIterator*>(ubrk_openRules(rules.data(), rules.size(), 0, 0, &parseStatus, &openStatus));
+        createdIterator = true;
         ASSERT_WITH_MESSAGE(U_SUCCESS(openStatus), "ICU could not open a break iterator: %s (%d)", u_errorName(openStatus), openStatus);
-        if (!iterator)
-            return 0;
     }
+    if (!iterator)
+        return 0;
 
-    setText16(iterator, string, length);
+    UErrorCode setTextStatus = U_ZERO_ERROR;
+    ubrk_setText(reinterpret_cast<UBreakIterator*>(iterator), string, length, &setTextStatus);
+    if (U_FAILURE(setTextStatus))
+        return 0;
+
     return iterator;
 }
 
@@ -854,8 +897,9 @@ TextBreakIterator* cursorMovementIterator(const UChar* string, int length)
         "$Mal1 $MalV $Mal0;"               // Malayalam Virama (backward)
         "!!safe_reverse;"
         "!!safe_forward;";
-
-    return setUpIteratorWithRules(kRules, string, length);
+    static bool createdCursorMovementIterator = false;
+    static TextBreakIterator* staticCursorMovementIterator;
+    return setUpIteratorWithRules(createdCursorMovementIterator, staticCursorMovementIterator, kRules, string, length);
 }
 
 }

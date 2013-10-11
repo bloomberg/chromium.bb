@@ -73,9 +73,9 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
     TextBreakIterator* iterator = wordBreakIterator(text + start, length);
     if (!iterator)
         return;
-    int wordStart = iterator->current();
+    int wordStart = textBreakCurrent(iterator);
     while (0 <= wordStart) {
-        int wordEnd = iterator->next();
+        int wordEnd = textBreakNext(iterator);
         if (wordEnd < 0)
             break;
         int wordLength = wordEnd - wordStart;

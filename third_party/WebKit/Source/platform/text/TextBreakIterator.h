@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-typedef icu::BreakIterator TextBreakIterator;
+class TextBreakIterator;
 
 // Note: The returned iterator is good only until you get another iterator, with the exception of acquireLineBreakIterator.
 
@@ -45,6 +45,14 @@ PLATFORM_EXPORT TextBreakIterator* acquireLineBreakIterator(const UChar*, int le
 PLATFORM_EXPORT void releaseLineBreakIterator(TextBreakIterator*);
 PLATFORM_EXPORT TextBreakIterator* sentenceBreakIterator(const UChar*, int length);
 
+PLATFORM_EXPORT int textBreakFirst(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakLast(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakNext(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakPrevious(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakCurrent(TextBreakIterator*);
+PLATFORM_EXPORT int textBreakPreceding(TextBreakIterator*, int);
+PLATFORM_EXPORT int textBreakFollowing(TextBreakIterator*, int);
+PLATFORM_EXPORT bool isTextBreak(TextBreakIterator*, int);
 PLATFORM_EXPORT bool isWordTextBreak(TextBreakIterator*);
 
 const int TextBreakDone = -1;

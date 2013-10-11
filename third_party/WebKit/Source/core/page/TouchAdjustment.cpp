@@ -158,11 +158,11 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
         // Make subtargets out of every word.
         String textValue = textNode->data();
         TextBreakIterator* wordIterator = wordBreakIterator(textValue, 0, textValue.length());
-        int lastOffset = wordIterator->first();
+        int lastOffset = textBreakFirst(wordIterator);
         if (lastOffset == -1)
             return;
         int offset;
-        while ((offset = wordIterator->next()) != -1) {
+        while ((offset = textBreakNext(wordIterator)) != -1) {
             if (isWordTextBreak(wordIterator)) {
                 Vector<FloatQuad> quads;
                 textRenderer->absoluteQuadsForRange(quads, lastOffset, offset);

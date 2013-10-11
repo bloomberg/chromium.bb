@@ -326,18 +326,18 @@ static TextBreakIterator* wordBreakIteratorForMaxOffsetBoundary(const VisiblePos
 
 static bool isLogicalStartOfWord(TextBreakIterator* iter, int position, bool hardLineBreak)
 {
-    bool boundary = hardLineBreak ? true : iter->isBoundary(position);
+    bool boundary = hardLineBreak ? true : isTextBreak(iter, position);
     if (!boundary)
         return false;
 
-    iter->following(position);
+    textBreakFollowing(iter, position);
     // isWordTextBreak returns true after moving across a word and false after moving across a punctuation/space.
     return isWordTextBreak(iter);
 }
 
 static bool islogicalEndOfWord(TextBreakIterator* iter, int position, bool hardLineBreak)
 {
-    bool boundary = iter->isBoundary(position);
+    bool boundary = isTextBreak(iter, position);
     return (hardLineBreak || boundary) && isWordTextBreak(iter);
 }
 
@@ -391,7 +391,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         if (!iter)
             break;
 
-        iter->first();
+        textBreakFirst(iter);
         int offsetInIterator = offsetInBox - textBox->start() + previousBoxLength;
 
         bool isWordBreak;
@@ -1043,7 +1043,7 @@ static unsigned startSentenceBoundary(const UChar* characters, unsigned length, 
 {
     TextBreakIterator* iterator = sentenceBreakIterator(characters, length);
     // FIXME: The following function can return -1; we don't handle that.
-    return iterator->preceding(length);
+    return textBreakPreceding(iterator, length);
 }
 
 VisiblePosition startOfSentence(const VisiblePosition &c)
@@ -1054,7 +1054,7 @@ VisiblePosition startOfSentence(const VisiblePosition &c)
 static unsigned endSentenceBoundary(const UChar* characters, unsigned length, unsigned, BoundarySearchContextAvailability, bool&)
 {
     TextBreakIterator* iterator = sentenceBreakIterator(characters, length);
-    return iterator->next();
+    return textBreakNext(iterator);
 }
 
 // FIXME: This includes the space after the punctuation that marks the end of the sentence.
@@ -1068,7 +1068,7 @@ static unsigned previousSentencePositionBoundary(const UChar* characters, unsign
     // FIXME: This is identical to startSentenceBoundary. I'm pretty sure that's not right.
     TextBreakIterator* iterator = sentenceBreakIterator(characters, length);
     // FIXME: The following function can return -1; we don't handle that.
-    return iterator->preceding(length);
+    return textBreakPreceding(iterator, length);
 }
 
 VisiblePosition previousSentencePosition(const VisiblePosition &c)
@@ -1082,7 +1082,7 @@ static unsigned nextSentencePositionBoundary(const UChar* characters, unsigned l
     // FIXME: This is identical to endSentenceBoundary. This isn't right, it needs to
     // move to the equivlant position in the following sentence.
     TextBreakIterator* iterator = sentenceBreakIterator(characters, length);
-    return iterator->following(0);
+    return textBreakFollowing(iterator, 0);
 }
 
 VisiblePosition nextSentencePosition(const VisiblePosition &c)
