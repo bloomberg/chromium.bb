@@ -29,7 +29,7 @@
 ] interface URLUtilsReadOnly {
     readonly attribute DOMString href;
 
-    [NotEnumerable, ImplementedAs=href] DOMString toString();
+    [NotEnumerable] DOMString toString();
 
     readonly attribute DOMString protocol;
     readonly attribute DOMString host;

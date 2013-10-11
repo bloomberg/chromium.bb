@@ -40,6 +40,11 @@ String DOMURLUtilsReadOnly::href(DOMURLUtilsReadOnly* impl)
     return url.string();
 }
 
+String DOMURLUtilsReadOnly::toString(DOMURLUtilsReadOnly* impl)
+{
+    return href(impl);
+}
+
 String DOMURLUtilsReadOnly::protocol(DOMURLUtilsReadOnly* impl)
 {
     return impl->url().protocol() + ":";
