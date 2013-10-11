@@ -65,46 +65,81 @@ var attributes = [
     "onvolumechange",
     "onwaiting"
 ];
-function testSet(object, attribute, name) {
-    function nop() {}
+function getObject(interface) {
+    switch(interface) {
+        case "Element":
+            var e = document.createElementNS("http://example.com/", "example");
+            assert_true(e instanceof Element);
+            assert_false(e instanceof HTMLElement);
+            assert_false(e instanceof SVGElement);
+            return e;
+        case "HTMLElement":
+            var e = document.createElement("html");
+            assert_true(e instanceof HTMLElement);
+            return e;
+        case "SVGElement":
+            var e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            assert_true(e instanceof SVGElement);
+            return e;
+        case "Document":
+            assert_true(document instanceof Document);
+            return document;
+        case "Window":
+            assert_true(window instanceof Window);
+            return window;
+    }
+    assert_unreached();
+}
+function testSet(interface, attribute) {
     test(function() {
+        var object = getObject(interface);
+        function nop() {}
         assert_equals(object[attribute], null, "Initially null");
         object[attribute] = nop;
         assert_equals(object[attribute], nop, "Return same function");
         document[attribute] = "";
         assert_equals(document[attribute], null, "Return null after setting string");
-    }, "Set " + name + "." + attribute);
+    }, "Set " + interface + "." + attribute);
 }
-function testEnumerate(object, name) {
-    // Object.propertyIsEnumerable cannot be used because it doesn't
-    // work with properties inherited through the prototype chain.
-    test(function() {
-        var seen = {};
-        attributes.forEach(function(attribute) {
-            seen[attribute] = false;
-        });
-        for (var attribute in object) {
-            seen[attribute] = true;
-        }
-        attributes.forEach(function(attribute) {
-            assert_true(seen[attribute], "Found " + attribute);
-        });
-    }, "Enumerate " + name + ".on*");
-}
-attributes.forEach(function(attribute) {
-    testSet(document.createElement('div'), attribute, "element");
-    test(function() {
-        var element = document.createElement('div');
+function testReflect(interface, attribute) {
+   test(function() {
+        var element = getObject(interface);
         assert_equals(element.getAttribute(attribute), null, "Initially null");
         element.setAttribute(attribute, "return");
         assert_equals(element.getAttribute(attribute), "return", "Return same string");
         assert_equals(typeof element[attribute], "function", "Convert to function");
-    }, "Reflect element." + attribute);
-    testSet(document, attribute, "document");
-    testSet(window, attribute, "window");
+    }, "Reflect " + interface + "." + attribute);
+}
+// Object.propertyIsEnumerable cannot be used because it doesn't
+// work with properties inherited through the prototype chain.
+var enumerable = {
+    "Element": {},
+    "HTMLElement": {},
+    "SVGElement": {},
+    "Document": {},
+    "Window": {}
+};
+Object.keys(enumerable).forEach(function(interface) {
+    for (var attribute in getObject(interface)) {
+        enumerable[interface][attribute] = true;
+    }
 });
-testEnumerate(document.createElement('div'), "element");
-testEnumerate(document, "document");
-testEnumerate(window, "window");
+function testEnumerate(interface, attribute) {
+    test(function() {
+        assert_true(enumerable[interface][attribute]);
+    }, "Enumerate " + interface + "." + attribute);
+}
+attributes.forEach(function(attribute) {
+    test(function() {
+        assert_false(attribute in getObject("Element"));
+    }, "No Element." + attribute);
+    testSet("HTMLElement", attribute);
+    testEnumerate("HTMLElement", attribute);
+    testReflect("HTMLElement", attribute);
+    testSet("Document", attribute);
+    testEnumerate("Document", attribute);
+    testSet("Window", attribute);
+    testEnumerate("Window", attribute);
+});
 </script>
 <div id="log"></div>
