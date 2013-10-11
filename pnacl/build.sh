@@ -2430,6 +2430,8 @@ libs-support() {
   for arch in arm x86-32 x86-64 mips32; do
     libs-support-native ${arch}
   done
+
+  libs-support-unsandboxed
 }
 
 libs-support-newlib-crt1() {
@@ -2525,6 +2527,17 @@ libs-support-native() {
   spopd
 
   ${PNACL_AR} rc "${destdir}"/libcrt_platform.a "${tmpdir}"/*.o
+}
+
+libs-support-unsandboxed() {
+  if ${BUILD_PLATFORM_LINUX}; then
+    local arch=linux-x86-32
+    StepBanner "LIBS-SUPPORT (${arch})" "Install unsandboxed_irt.o"
+    local destdir="${INSTALL_LIB_NATIVE}"${arch}
+    mkdir -p ${destdir}
+    gcc -m32 -O2 -Wall -Werror -I${NACL_ROOT}/.. -DNACL_LINUX=1 -c \
+        ${PNACL_SUPPORT}/unsandboxed_irt.c -o ${destdir}/unsandboxed_irt.o
+  fi
 }
 
 
