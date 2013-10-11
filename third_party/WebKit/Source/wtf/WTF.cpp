@@ -60,9 +60,13 @@ void shutdown()
 
 void Partitions::initialize()
 {
+    static int lock = 0;
+    // Guard against two threads hitting here in parallel.
+    spinLockLock(&lock);
     if (s_initialized)
         return;
     s_initialized = true;
+    spinLockUnlock(&lock);
     QuantizedAllocation::init();
     m_bufferAllocator.init();
 }
