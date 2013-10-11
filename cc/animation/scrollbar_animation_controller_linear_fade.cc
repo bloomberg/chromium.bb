@@ -78,11 +78,11 @@ bool ScrollbarAnimationControllerLinearFade::DidScrollUpdate(
   if (scroll_gesture_in_progress_) {
     last_awaken_time_ = base::TimeTicks();
     scroll_gesture_has_scrolled_ = true;
-    return true;
+    return false;
   }
 
   last_awaken_time_ = now;
-  return false;
+  return true;
 }
 
 bool ScrollbarAnimationControllerLinearFade::DidMouseMoveNear(

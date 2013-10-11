@@ -71,7 +71,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByScrollingGesture) {
   EXPECT_FALSE(scrollbar_controller_->IsAnimating());
   EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
 
-  scrollbar_controller_->DidScrollUpdate(time);
+  EXPECT_FALSE(scrollbar_controller_->DidScrollUpdate(time));
   EXPECT_FALSE(scrollbar_controller_->IsAnimating());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
 
@@ -103,7 +103,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByScrollingGesture) {
   time += base::TimeDelta::FromSeconds(1);
 
   scrollbar_controller_->DidScrollGestureBegin();
-  scrollbar_controller_->DidScrollUpdate(time);
+  EXPECT_FALSE(scrollbar_controller_->DidScrollUpdate(time));
   scrollbar_controller_->DidScrollGestureEnd(time);
 
   time += base::TimeDelta::FromSeconds(1);
@@ -130,7 +130,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByScrollingGesture) {
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByProgrammaticScroll) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
-  scrollbar_controller_->DidScrollUpdate(time);
+  EXPECT_TRUE(scrollbar_controller_->DidScrollUpdate(time));
   EXPECT_TRUE(scrollbar_controller_->IsAnimating());
   EXPECT_EQ(2, scrollbar_controller_->DelayBeforeStart(time).InSeconds());
   scrollbar_controller_->Animate(time);
@@ -139,7 +139,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByProgrammaticScroll) {
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
-  scrollbar_controller_->DidScrollUpdate(time);
+  EXPECT_TRUE(scrollbar_controller_->DidScrollUpdate(time));
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
@@ -158,7 +158,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByProgrammaticScroll) {
   EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
 
   time += base::TimeDelta::FromSeconds(1);
-  scrollbar_controller_->DidScrollUpdate(time);
+  EXPECT_TRUE(scrollbar_controller_->DidScrollUpdate(time));
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
@@ -184,7 +184,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
        AnimationPreservedByNonScrollingGesture) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
-  scrollbar_controller_->DidScrollUpdate(time);
+  EXPECT_TRUE(scrollbar_controller_->DidScrollUpdate(time));
   EXPECT_TRUE(scrollbar_controller_->IsAnimating());
   scrollbar_controller_->Animate(time);
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
@@ -214,7 +214,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
        AnimationOverriddenByScrollingGesture) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
-  scrollbar_controller_->DidScrollUpdate(time);
+  EXPECT_TRUE(scrollbar_controller_->DidScrollUpdate(time));
   EXPECT_TRUE(scrollbar_controller_->IsAnimating());
   scrollbar_controller_->Animate(time);
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
@@ -232,7 +232,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
   EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
 
   time += base::TimeDelta::FromSeconds(1);
-  scrollbar_controller_->DidScrollUpdate(time);
+  EXPECT_FALSE(scrollbar_controller_->DidScrollUpdate(time));
   EXPECT_FALSE(scrollbar_controller_->IsAnimating());
   EXPECT_FLOAT_EQ(1, scrollbar_layer_->opacity());
 
