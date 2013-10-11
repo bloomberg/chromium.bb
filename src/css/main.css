@@ -133,7 +133,7 @@ body:not(.gallery) #corner-buttons {
 
 body.gallery #side-buttons .gallery-button,
 body.gallery #corner-buttons .gallery-button {
-  background-color: #4d90fe;
+  background-color: rgb(66, 129, 244);
 }
 
 #header #maximize-button {
@@ -236,7 +236,7 @@ canvas {
 }
 
 #effects li[selected] div.preview-canvas-wrapper {
-  border: 2px solid #4d90fe;
+  border: 2px solid rgb(66, 129, 244);
 }
 
 #effects li div.preview-canvas-padder {
@@ -381,7 +381,7 @@ body.gallery #picture-preview {
 
 #gallery img.selected {
   -webkit-transform: scale(1.2);
-  border-color: #4d90fe;
+  border-color: rgb(66, 129, 244);
 }
 
 body:not(.gallery) #gallery {
