@@ -1157,6 +1157,23 @@ crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidt
 
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirLTR-anchorEnd.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorStart.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirRTL-anchorStart.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorStart.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirRTL-anchorMiddle.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorEnd.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorEnd.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorMiddle.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirNone-anchorEnd.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirLTR-anchorStart.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirLTR-anchorMiddle.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-no-markup.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirNone-anchorStart.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirRTL-anchorEnd.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-dirNone-anchorMiddle.svg [ Pass Failure ]
+crbug.com/306691 [ Win ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorMiddle.svg [ Pass Failure ]
+
 crbug.com/306645 plugins/destroy-plugin-from-callback.html [ Pass Crash ]
 
 crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
