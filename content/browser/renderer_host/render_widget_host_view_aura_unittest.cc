@@ -36,6 +36,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
@@ -670,46 +671,6 @@ TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
   cursor_client.RemoveObserver(view_);
 }
 
-// Resizing in fullscreen mode should send the up-to-date screen info.
-TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
-  aura::RootWindow* root_window = aura_test_helper_->root_window();
-  root_window->SetLayoutManager(new FullscreenLayoutManager(root_window));
-  view_->InitAsFullscreen(parent_view_);
-  view_->WasShown();
-  widget_host_->ResetSizeAndRepaintPendingFlags();
-  sink_->ClearMessages();
-
-  // Call WasResized to flush the old screen info.
-  view_->GetRenderWidgetHost()->WasResized();
-  {
-    // 0 is CreatingNew message.
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ("0,0 800x600",
-              gfx::Rect(params.a.screen_info.availableRect).ToString());
-    EXPECT_EQ("800x600", params.a.new_size.ToString());
-  }
-
-  widget_host_->ResetSizeAndRepaintPendingFlags();
-  sink_->ClearMessages();
-
-  // Make sure the corrent screen size is set along in the resize
-  // request when the screen size has changed.
-  aura_test_helper_->test_screen()->SetUIScale(0.5);
-  EXPECT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ("0,0 1600x1200",
-              gfx::Rect(params.a.screen_info.availableRect).ToString());
-    EXPECT_EQ("1600x1200", params.a.new_size.ToString());
-  }
-}
-
 scoped_ptr<cc::CompositorFrame> MakeGLFrame(float scale_factor,
                                             gfx::Size size,
                                             gfx::Rect damage) {
@@ -753,6 +714,54 @@ scoped_ptr<cc::CompositorFrame> MakeDelegatedFrame(float scale_factor,
                gfx::Transform());
   frame->delegated_frame_data->render_pass_list.push_back(pass.Pass());
   return frame.Pass();
+}
+
+// Resizing in fullscreen mode should send the up-to-date screen info.
+TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
+  aura::RootWindow* root_window = aura_test_helper_->root_window();
+  root_window->SetLayoutManager(new FullscreenLayoutManager(root_window));
+  view_->InitAsFullscreen(parent_view_);
+  view_->WasShown();
+  widget_host_->ResetSizeAndRepaintPendingFlags();
+  sink_->ClearMessages();
+
+  // Call WasResized to flush the old screen info.
+  view_->GetRenderWidgetHost()->WasResized();
+  {
+    // 0 is CreatingNew message.
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ("0,0 800x600",
+              gfx::Rect(params.a.screen_info.availableRect).ToString());
+    EXPECT_EQ("800x600", params.a.new_size.ToString());
+    // Resizes are blocked until we swapped a frame of the correct size, and
+    // we've committed it.
+    view_->OnSwapCompositorFrame(
+        0, MakeGLFrame(1.f, params.a.new_size, gfx::Rect(params.a.new_size)));
+    ui::DrawWaiterForTest::WaitForCommit(root_window->compositor());
+  }
+
+  widget_host_->ResetSizeAndRepaintPendingFlags();
+  sink_->ClearMessages();
+
+  // Make sure the corrent screen size is set along in the resize
+  // request when the screen size has changed.
+  aura_test_helper_->test_screen()->SetUIScale(0.5);
+  EXPECT_EQ(1u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ("0,0 1600x1200",
+              gfx::Rect(params.a.screen_info.availableRect).ToString());
+    EXPECT_EQ("1600x1200", params.a.new_size.ToString());
+    view_->OnSwapCompositorFrame(
+        0, MakeGLFrame(1.f, params.a.new_size, gfx::Rect(params.a.new_size)));
+    ui::DrawWaiterForTest::WaitForCommit(root_window->compositor());
+  }
 }
 
 // Swapping a frame should notify the window.
