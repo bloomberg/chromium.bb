@@ -23,11 +23,9 @@ _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s as stable.'
 
 # Dictionary of valid commands with usage information.
 COMMAND_DICTIONARY = {
-                        'commit':
-                          'Marks given ebuilds as stable locally',
-                        'push':
-                          'Pushes previous marking of ebuilds to remote repo',
-                      }
+    'commit': 'Marks given ebuilds as stable locally',
+    'push': 'Pushes previous marking of ebuilds to remote repo',
+}
 
 
 # ======================= Global Helper Functions ========================
@@ -35,6 +33,7 @@ COMMAND_DICTIONARY = {
 
 def CleanStalePackages(boards, package_atoms):
   """Cleans up stale package info from a previous build.
+
   Args:
     boards: Boards to clean the packages from.
     package_atoms: A list of package atoms to unmerge.
@@ -129,7 +128,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
     dryrun: Use git push --dryrun to emulate a push.
     cwd: The directory to run commands in.
   Raises:
-      OSError: Error occurred while pushing.
+    OSError: Error occurred while pushing.
   """
   if not _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
     cros_build_lib.Info('No work found to push in %s.  Exiting', cwd)
@@ -164,7 +163,7 @@ class GitBranch(object):
   def __init__(self, branch_name, tracking_branch, cwd):
     """Sets up variables but does not create the branch.
 
-    Arguments:
+    Args:
       branch_name: The name of the branch.
       tracking_branch: The associated tracking branch.
       cwd: The git repository to work in.
@@ -273,7 +272,7 @@ def main(_argv):
     for overlay in keys:
       ebuilds = overlays[overlay]
       if not os.path.isdir(overlay):
-        cros_build_lib.Warning("Skipping %s" % overlay)
+        cros_build_lib.Warning('Skipping %s' % overlay)
         continue
 
       # Note we intentionally work from the non push tracking branch;
@@ -311,9 +310,10 @@ def main(_argv):
               new_package_atoms.append('=%s' % new_package)
               messages.append(_GIT_COMMIT_MESSAGE % ebuild.package)
           except (OSError, IOError):
-            cros_build_lib.Warning('Cannot rev %s\n' % ebuild.package +
-                    'Note you will have to go into %s '
-                    'and reset the git repo yourself.' % overlay)
+            cros_build_lib.Warning(
+                'Cannot rev %s\n'
+                'Note you will have to go into %s '
+                'and reset the git repo yourself.' % (ebuild.package, overlay))
             raise
 
         if messages:
