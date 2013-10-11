@@ -51,24 +51,26 @@ void BookmarkBarBridge::BookmarkNodeMoved(BookmarkModel* model,
                                           int old_index,
                                           const BookmarkNode* new_parent,
                                           int new_index) {
-  [controller_ nodeMoved:model
-               oldParent:old_parent oldIndex:old_index
-               newParent:new_parent newIndex:new_index];
+  if (!batch_mode_) {
+    [controller_ nodeMoved:model
+                 oldParent:old_parent oldIndex:old_index
+                 newParent:new_parent newIndex:new_index];
+  }
 }
 
 void BookmarkBarBridge::BookmarkNodeAdded(BookmarkModel* model,
                                           const BookmarkNode* parent,
                                           int index) {
-  if (!batch_mode_) {
+  if (!batch_mode_)
     [controller_ nodeAdded:model parent:parent index:index];
-  }
 }
 
 void BookmarkBarBridge::BookmarkNodeRemoved(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             int old_index,
                                             const BookmarkNode* node) {
-  [controller_ nodeRemoved:model parent:parent index:old_index];
+  if (!batch_mode_)
+    [controller_ nodeRemoved:model parent:parent index:old_index];
 }
 
 void BookmarkBarBridge::BookmarkAllNodesRemoved(BookmarkModel* model) {
@@ -77,17 +79,20 @@ void BookmarkBarBridge::BookmarkAllNodesRemoved(BookmarkModel* model) {
 
 void BookmarkBarBridge::BookmarkNodeChanged(BookmarkModel* model,
                                             const BookmarkNode* node) {
-  [controller_ nodeChanged:model node:node];
+  if (!batch_mode_)
+    [controller_ nodeChanged:model node:node];
 }
 
 void BookmarkBarBridge::BookmarkNodeFaviconChanged(BookmarkModel* model,
                                                    const BookmarkNode* node) {
-  [controller_ nodeFaviconLoaded:model node:node];
+  if (!batch_mode_)
+    [controller_ nodeFaviconLoaded:model node:node];
 }
 
 void BookmarkBarBridge::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
-  [controller_ nodeChildrenReordered:model node:node];
+  if (!batch_mode_)
+    [controller_ nodeChildrenReordered:model node:node];
 }
 
 void BookmarkBarBridge::ExtensiveBookmarkChangesBeginning(
