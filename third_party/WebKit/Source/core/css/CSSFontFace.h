@@ -90,10 +90,6 @@ public:
         Vector<UnicodeRange> m_ranges;
     };
 
-#if ENABLE(SVG_FONTS)
-    bool hasSVGFontFaceSource() const;
-#endif
-
     FontFace::LoadStatus loadStatus() const { return m_fontFace ? m_fontFace->loadStatus() : FontFace::Loaded; }
     void willUseFontData(const FontDescription&);
 

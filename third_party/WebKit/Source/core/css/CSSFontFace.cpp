@@ -177,18 +177,6 @@ void CSSFontFace::setLoadStatus(FontFace::LoadStatus newStatus)
     }
 }
 
-#if ENABLE(SVG_FONTS)
-bool CSSFontFace::hasSVGFontFaceSource() const
-{
-    size_t size = m_sources.size();
-    for (size_t i = 0; i < size; i++) {
-        if (m_sources[i]->isSVGFontFaceSource())
-            return true;
-    }
-    return false;
-}
-#endif
-
 bool CSSFontFace::UnicodeRangeSet::intersectsWith(const String& text) const
 {
     if (text.isEmpty())

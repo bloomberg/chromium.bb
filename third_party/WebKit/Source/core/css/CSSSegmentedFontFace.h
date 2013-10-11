@@ -57,10 +57,6 @@ public:
 
     PassRefPtr<FontData> getFontData(const FontDescription&);
 
-#if ENABLE(SVG_FONTS)
-    bool hasSVGFontFaceSource() const;
-#endif
-
     class LoadFontCallback : public RefCounted<LoadFontCallback> {
     public:
         virtual ~LoadFontCallback() { }

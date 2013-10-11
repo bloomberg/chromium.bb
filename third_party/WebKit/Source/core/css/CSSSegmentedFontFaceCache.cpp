@@ -262,12 +262,6 @@ CSSSegmentedFontFace* CSSSegmentedFontFaceCache::getFontFace(const FontDescripti
                 continue;
             if ((traitsMask & FontVariantNormalMask) && !(candidateTraitsMask & FontVariantNormalMask))
                 continue;
-#if ENABLE(SVG_FONTS)
-            // For SVG Fonts that specify that they only support the "normal" variant, we will assume they are incapable
-            // of small-caps synthesis and just ignore the font face as a candidate.
-            if (candidate->hasSVGFontFaceSource() && (traitsMask & FontVariantSmallCapsMask) && !(candidateTraitsMask & FontVariantSmallCapsMask))
-                continue;
-#endif
             if (!face || compareFontFaces(candidate, face.get(), traitsMask))
                 face = candidate;
         }

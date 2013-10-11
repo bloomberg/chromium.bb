@@ -138,6 +138,12 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
             continue;
         if (RefPtr<SimpleFontData> faceFontData = m_fontFaces[i]->getFontData(fontDescription, syntheticBold, syntheticItalic)) {
             ASSERT(!faceFontData->isSegmented());
+#if ENABLE(SVG_FONTS)
+            // For SVG Fonts that specify that they only support the "normal" variant, we will assume they are incapable
+            // of small-caps synthesis and just ignore the font face.
+            if (faceFontData->isSVGFont() && (desiredTraitsMask & FontVariantSmallCapsMask) && !(m_traitsMask & FontVariantSmallCapsMask))
+                continue;
+#endif
             appendFontData(fontData.get(), faceFontData.release(), m_fontFaces[i]->ranges());
         }
     }
@@ -145,16 +151,6 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
         return fontData; // No release, we have a reference to an object in the cache which should retain the ref count it has.
 
     return 0;
-}
-
-bool CSSSegmentedFontFace::hasSVGFontFaceSource() const
-{
-    unsigned size = m_fontFaces.size();
-    for (unsigned i = 0; i < size; i++) {
-        if (m_fontFaces[i]->hasSVGFontFaceSource())
-            return true;
-    }
-    return false;
 }
 
 bool CSSSegmentedFontFace::isLoading() const
