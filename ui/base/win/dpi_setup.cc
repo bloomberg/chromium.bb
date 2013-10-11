@@ -14,7 +14,7 @@ namespace win {
 void InitDeviceScaleFactor() {
   float scale = 1.0f;
   if (gfx::IsHighDPIEnabled()) {
-    float scale = gfx::Display::HasForceDeviceScaleFactor() ?
+    scale = gfx::Display::HasForceDeviceScaleFactor() ?
         gfx::Display::GetForcedDeviceScaleFactor() : gfx::GetDPIScale();
     // Quantize to nearest supported scale factor.
     scale = ui::GetImageScale(ui::GetSupportedScaleFactor(scale));
