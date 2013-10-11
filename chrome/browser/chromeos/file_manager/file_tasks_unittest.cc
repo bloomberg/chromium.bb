@@ -253,6 +253,41 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   ASSERT_TRUE(tasks.empty());
 }
 
+TEST(FileManagerFileTasksTest, FindDriveAppTasks_GoogleDocument) {
+  // For DriveAppRegistry, which checks CurrentlyOn(BrowserThread::UI).
+  content::TestBrowserThreadBundle thread_bundle;
+
+  // Foo.app can handle ".gdoc" files.
+  scoped_ptr<google_apis::AppResource> foo_app(new google_apis::AppResource);
+  foo_app->set_product_url(
+      GURL("https://chrome.google.com/webstore/detail/foo_app_id"));
+  foo_app->set_application_id("foo_app_id");
+  foo_app->set_name("Foo");
+  foo_app->set_object_type("foo_object_type");
+  ScopedVector<std::string> foo_extensions;
+  foo_extensions.push_back(new std::string("gdoc"));  // Not ".gdoc"
+  foo_app->set_primary_file_extensions(foo_extensions.Pass());
+
+  // Prepare DriveAppRegistry from Foo.app.
+  ScopedVector<google_apis::AppResource> app_resources;
+  app_resources.push_back(foo_app.release());
+  google_apis::AppList app_list;
+  app_list.set_items(app_resources.Pass());
+  drive::DriveAppRegistry drive_app_registry(NULL);
+  drive_app_registry.UpdateFromAppList(app_list);
+
+  // Find apps for a ".gdoc file". Foo.app can handle it but should not be
+  // found, as it should be rejected.
+  PathAndMimeTypeSet path_mime_set;
+  path_mime_set.insert(
+      std::make_pair(
+          drive::util::GetDriveMountPointPath().AppendASCII("foo.gdoc"),
+          "application/vnd.google-apps.document"));
+  std::vector<FullTaskDescriptor> tasks;
+  FindDriveAppTasks(drive_app_registry, path_mime_set, &tasks);
+  EXPECT_TRUE(tasks.empty());
+}
+
 // Test that the right task is chosen from multiple choices per mime types
 // and file extensions.
 TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {

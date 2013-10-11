@@ -298,6 +298,17 @@ void FindDriveAppTasks(
     std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(result_list);
 
+  // Check if path_mime_set contains a google document. Return immediately if
+  // it's found.
+  for (PathAndMimeTypeSet::const_iterator iter = path_mime_set.begin();
+       iter != path_mime_set.end(); ++iter) {
+    if (google_apis::ResourceEntry::ClassifyEntryKindByFileExtension(
+            iter->first) &
+        google_apis::ResourceEntry::KIND_OF_GOOGLE_DOCUMENT) {
+      return;
+    }
+  }
+
   bool is_first = true;
   typedef std::map<std::string, drive::DriveAppInfo> DriveAppInfoMap;
   DriveAppInfoMap drive_app_map;
@@ -462,25 +473,9 @@ void FindAllTypesOfTasks(
   DCHECK(profile);
   DCHECK(result_list);
 
-  // Check if file_paths contain a google document.
-  // TODO(satorux): Move this stuff into FindDriveAppTasks() and add a unit
-  // test for it.
-  bool has_google_document = false;
-  for (PathAndMimeTypeSet::const_iterator iter = path_mime_set.begin();
-       iter != path_mime_set.end(); ++iter) {
-    if (google_apis::ResourceEntry::ClassifyEntryKindByFileExtension(
-            iter->first) &
-        google_apis::ResourceEntry::KIND_OF_GOOGLE_DOCUMENT) {
-      has_google_document = true;
-      break;
-    }
-  }
-
-  // List Drive apps only for non Google document files. This is to avoid dups
-  // since Files.app already provides an internal handler for Google documents.
-  if (!has_google_document && drive_app_registry) {
+  // Find Drive app tasks, if the drive app registry is present.
+  if (drive_app_registry)
     FindDriveAppTasks(*drive_app_registry, path_mime_set, result_list);
-  }
 
   // Find and append file handler tasks. We know there aren't duplicates
   // because Drive apps and platform apps are entirely different kinds of

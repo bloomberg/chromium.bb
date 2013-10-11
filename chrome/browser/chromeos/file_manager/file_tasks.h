@@ -258,6 +258,10 @@ typedef extensions::app_file_handler_util::PathAndMimeTypeSet
 // Finds the Drive app tasks that can be used with the given |path_mime_set|
 // from |drive_app_registry|, and append them to the |result_list|.
 // Drive app tasks will be found only if all of the files are on Drive.
+//
+// If |path_mime_set| contains a Google document, no Drive app tasks are
+// returned. This is to avoid dups since Files.app already provides an
+// internal handler for Google documents.
 void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
                        const PathAndMimeTypeSet& path_mime_set,
                        std::vector<FullTaskDescriptor>* result_list);
