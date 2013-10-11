@@ -180,8 +180,8 @@ def BuildRootGitCleanup(buildroot):
       else:
         # Delete all branches created by cbuildbot.
         if os.path.isdir(repo_git_store):
-          git.RunGit(cwd, ['--git-dir', repo_git_store, 'branch', '-D'] +
-                          list(constants.CREATED_BRANCHES), error_code_ok=True)
+          cmd = ['branch', '-D'] + list(constants.CREATED_BRANCHES)
+          git.RunGit(repo_git_store, cmd, error_code_ok=True)
 
   # Cleanup all of the directories.
   dirs = [[attrs['name'], os.path.join(buildroot, attrs['path'])] for attrs in
