@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class SyncTestUtil {
@@ -297,6 +298,33 @@ public final class SyncTestUtil {
         }
         accountManager.addAccountHolderExplicitly(accountHolder.build());
         return account;
+    }
+
+    /**
+     * Returns whether the sync engine has keep everything synced set to true.
+     */
+    public static boolean isSyncEverythingEnabled(final Context context) {
+        final AtomicBoolean result = new AtomicBoolean();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                result.set(ProfileSyncService.get(context).hasKeepEverythingSynced());
+            }
+        });
+        return result.get();
+    }
+
+    /**
+     * Verifies that the sync status is "Syncing not enabled" and that sync is signed in with the
+     * account.
+     */
+    public static void verifySyncIsDisabled(Context context, Account account) {
+        Map<Pair<String, String>, String> expectedStats =
+                new HashMap<Pair<String, String>, String>();
+        expectedStats.put(SYNC_SUMMARY_STATUS, UNINITIALIZED);
+        Assert.assertTrue(
+                "Expected sync to be disabled.", pollAboutSyncStats(context, expectedStats));
+        verifySignedInWithAccount(context, account);
     }
 
     public static class AboutSyncInfoGetter implements Runnable {

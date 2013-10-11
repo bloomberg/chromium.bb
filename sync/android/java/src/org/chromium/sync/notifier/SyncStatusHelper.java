@@ -195,15 +195,33 @@ public class SyncStatusHelper {
      * Wrapper method for the ContentResolver.addStatusChangeListener(...) when we are only
      * interested in the settings type.
      */
-    public void registerContentResolverObserver(SyncSettingsChangedObserver observer) {
+    public void registerSyncSettingsChangedObserver(SyncSettingsChangedObserver observer) {
         mObservers.addObserver(observer);
+    }
+
+    /**
+     * This method is deprecated. Use
+     * {@link #registerSyncSettingsChangedObserver(SyncSettingsChangedObserver)}.
+     */
+    @Deprecated
+    public void registerContentResolverObserver(SyncSettingsChangedObserver observer) {
+        registerSyncSettingsChangedObserver(observer);
     }
 
     /**
      * Wrapper method for the ContentResolver.removeStatusChangeListener(...).
      */
-    public void unregisterContentResolverObserver(SyncSettingsChangedObserver observer) {
+    public void unregisterSyncSettingsChangedObserver(SyncSettingsChangedObserver observer) {
         mObservers.removeObserver(observer);
+    }
+
+    /**
+     * This method is deprecated. Use
+     * {@link #registerSyncSettingsChangedObserver(SyncSettingsChangedObserver)}.
+     */
+    @Deprecated
+    public void unregisterContentResolverObserver(SyncSettingsChangedObserver observer) {
+        unregisterSyncSettingsChangedObserver(observer);
     }
 
     /**
