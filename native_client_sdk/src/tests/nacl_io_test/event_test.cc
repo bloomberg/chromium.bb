@@ -156,6 +156,22 @@ TEST_F(EmitterTest, MultiThread) {
   }
 }
 
+TEST(EventListenerPollTest, WaitForAny) {
+  ScopedEventEmitter emitter1(new EventEmitter());
+  ScopedEventEmitter emitter2(new EventEmitter());
+  ScopedEventEmitter emitter3(new EventEmitter());
+  EventListenerPoll listener;
+  EventRequest requests[3] = {
+    { emitter1, 0, 0 },
+    { emitter2, 0, 0 },
+    { emitter3, 0, 0 },
+  };
+  Error error = listener.WaitOnAny(requests,
+                                   sizeof(requests)/sizeof(requests[0]),
+                                   1);
+  ASSERT_EQ(ETIMEDOUT, error);
+}
+
 TEST(PipeTest, Listener) {
   const char hello[] = "Hello World.";
   char tmp[64] = "Goodbye";

@@ -53,7 +53,7 @@ EventListenerLock::~EventListenerLock() {
 }
 
 void EventListenerLock::ReceiveEvents(EventEmitter* emitter,
-                                        uint32_t events) {
+                                      uint32_t events) {
   // We are using the emitter's mutex, which is already locked.
   pthread_cond_signal(&signal_cond_);
 }
@@ -89,7 +89,7 @@ Error EventListenerLock::WaitOnEvent(uint32_t events, int ms_timeout) {
 }
 
 void EventListenerPoll::ReceiveEvents(EventEmitter* emitter,
-                                        uint32_t events) {
+                                      uint32_t events) {
   AUTO_LOCK(signal_lock_);
   emitters_[emitter]->events |= events;
   signaled_++;
@@ -97,8 +97,8 @@ void EventListenerPoll::ReceiveEvents(EventEmitter* emitter,
 }
 
 Error EventListenerPoll::WaitOnAny(EventRequest* requests,
-                                     size_t cnt,
-                                     int ms_timeout) {
+                                   size_t cnt,
+                                   int ms_timeout) {
 
   signaled_ = 0;
 
@@ -114,8 +114,8 @@ Error EventListenerPoll::WaitOnAny(EventRequest* requests,
   // responsible for it's own request.
   for (size_t index = 0; index < cnt; index++) {
     EventRequest* request = requests + index;
-    requests->emitter->RegisterListener(this, request->filter);
-    uint32_t events = requests->emitter->GetEventStatus() & request->filter;
+    request->emitter->RegisterListener(this, request->filter);
+    uint32_t events = request->emitter->GetEventStatus() & request->filter;
 
     if (events) {
       AUTO_LOCK(signal_lock_);
