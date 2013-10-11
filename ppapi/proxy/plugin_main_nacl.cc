@@ -215,6 +215,13 @@ void PpapiDispatcher::OnMsgCreateNaClChannel(
   ppapi::proxy::InterfaceList::SetProcessGlobalPermissions(
       args.permissions);
 
+  int32_t error = ::PPP_InitializeModule(
+      0 /* module */,
+      &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
+  if (error)
+    ::exit(error);
+
+
   PluginDispatcher* dispatcher =
       new PluginDispatcher(::PPP_GetInterface, args.permissions,
                            args.off_the_record);
@@ -279,13 +286,6 @@ int PpapiPluginMain() {
   if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
     return 1;
   }
-
-  int32_t error = ::PPP_InitializeModule(
-      0 /* module */,
-      &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
-  // TODO(dmichael): Handle other error conditions, like failure to connect?
-  if (error)
-    return error;
 
   PpapiDispatcher ppapi_dispatcher(io_thread.message_loop_proxy());
   plugin_globals.set_plugin_proxy_delegate(&ppapi_dispatcher);
