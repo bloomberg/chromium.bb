@@ -286,16 +286,16 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setMarginTop(animatableValueToLength(value, state));
         return;
     case CSSPropertyMaxHeight:
-        style->setMaxHeight(animatableValueToLength(value, state));
+        style->setMaxHeight(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyMaxWidth:
-        style->setMaxWidth(animatableValueToLength(value, state));
+        style->setMaxWidth(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyMinHeight:
-        style->setMinHeight(animatableValueToLength(value, state));
+        style->setMinHeight(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyMinWidth:
-        style->setMinWidth(animatableValueToLength(value, state));
+        style->setMinWidth(animatableValueToLength(value, state, NonNegativeValues));
         return;
     case CSSPropertyOpacity:
         style->setOpacity(toAnimatableDouble(value)->toDouble());
