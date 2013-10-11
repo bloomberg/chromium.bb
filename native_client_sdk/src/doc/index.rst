@@ -11,9 +11,10 @@ Contents:
    quick-start.rst
    nacl-and-pnacl.rst
    glossary.rst
+   sdk/index.rst
    sdk/download.rst
    sdk/examples.rst
-   sdk/index.rst
+   sdk/release-notes.rst
    sdk/release-notes.rst
    devguide/index.rst
    devguide/tutorial.rst

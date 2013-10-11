@@ -6,3 +6,4 @@ File I/O
 
 foo
 
+.. _enabling_file_access:
