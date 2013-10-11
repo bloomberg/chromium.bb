@@ -651,6 +651,11 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           "os": {
             "type": "win"
           }
+        },
+        {
+          "os": {
+            "type": "android"
+          }
         }
       ],
       "features": [

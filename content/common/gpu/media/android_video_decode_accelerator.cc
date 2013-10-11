@@ -125,8 +125,8 @@ void AndroidVideoDecodeAccelerator::DoIOTask() {
     return;
   }
 
-  DequeueOutput();
   QueueInput();
+  DequeueOutput();
 
   if (!pending_bitstream_buffers_.empty() ||
       !free_picture_ids_.empty()) {
