@@ -63,6 +63,13 @@ void ExtensionAppModelBuilder::OnBeginExtensionInstall(
     bool is_platform_app) {
   if (!is_app)
     return;
+
+  ExtensionAppItem* existing_item = GetExtensionAppItem(extension_id);
+  if (existing_item) {
+    existing_item->SetIsInstalling(true);
+    return;
+  }
+
   InsertApp(new ExtensionAppItem(profile_,
                                  extension_id,
                                  controller_,

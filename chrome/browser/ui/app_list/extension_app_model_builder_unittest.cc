@@ -14,6 +14,8 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/extension_sorting.h"
+#include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -180,6 +182,21 @@ TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
             GetModelContent(model_.get()));
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ExtensionAppModelBuilderTest, Reinstall) {
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
+  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
+            GetModelContent(model_.get()));
+
+  // Install kPackagedApp1Id again should not create a new entry.
+  extensions::InstallTracker* tracker =
+      extensions::InstallTrackerFactory::GetForProfile(profile_.get());
+  tracker->OnBeginExtensionInstall(
+      kPackagedApp1Id, "", gfx::ImageSkia(), true, true);
+
+  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
+            GetModelContent(model_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
