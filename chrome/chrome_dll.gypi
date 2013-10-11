@@ -283,8 +283,6 @@
                     'app/policy/cloud_policy_codegen.gyp:policy',
                   ],
                   'sources': [
-                    'app/breakpad_mac.mm',
-                    'app/breakpad_mac.h',
                     'app/chrome_breakpad_client.cc',
                     'app/chrome_breakpad_client.h',
                     'app/chrome_breakpad_client_mac.mm',
@@ -293,10 +291,6 @@
                   # No Breakpad, put in the stubs.
                   'dependencies': [
                     '../components/components.gyp:breakpad_stubs',
-                  ],
-                  'sources': [
-                    'app/breakpad_mac_stubs.mm',
-                    'app/breakpad_mac.h',
                   ],
                 }],  # mac_breakpad_compiled_in
                 ['internal_pdf', {

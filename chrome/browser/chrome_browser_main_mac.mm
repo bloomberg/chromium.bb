@@ -14,7 +14,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/breakpad/breakpad_mac.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -269,7 +269,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 void ChromeBrowserMainPartsMac::PostProfileInit() {
   ChromeBrowserMainPartsPosix::PostProfileInit();
   g_browser_process->metrics_service()->RecordBreakpadRegistration(
-      IsCrashReporterEnabled());
+      breakpad::IsCrashReporterEnabled());
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {

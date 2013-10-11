@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/app/breakpad_mac.h"
+#import "components/breakpad/breakpad_mac.h"
 
 #import <Foundation/Foundation.h>
 
 // Stubbed out versions of breakpad integration functions so we can compile
 // without linking in Breakpad.
+
+namespace breakpad {
 
 bool IsCrashReporterEnabled() {
   return false;
@@ -18,3 +20,5 @@ void InitCrashProcessInfo() {
 
 void InitCrashReporter() {
 }
+
+}  // namespace breakpad

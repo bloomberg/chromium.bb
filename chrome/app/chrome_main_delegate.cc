@@ -41,9 +41,9 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
-#include <algorithm>
 #include <atlbase.h>
 #include <malloc.h>
+#include <algorithm>
 #include "base/strings/string_util.h"
 #include "chrome/common/child_process_logging.h"
 #include "sandbox/win/src/sandbox.h"
@@ -54,12 +54,12 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/os_crash_dumps.h"
-#include "chrome/app/breakpad_mac.h"
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
 #include "chrome/common/mac/objc_zombie.h"
+#include "components/breakpad/breakpad_mac.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
@@ -504,7 +504,7 @@ void ChromeMainDelegate::InitMacCrashReporter(const CommandLine& command_line,
   // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally,
   // Breakpad initialization could occur sooner, preferably even before the
   // framework dylib is even loaded, to catch potential early crashes.
-  InitCrashReporter();
+  breakpad::InitCrashReporter();
 
 #if defined(NDEBUG)
   bool is_debug_build = false;
@@ -529,7 +529,7 @@ void ChromeMainDelegate::InitMacCrashReporter(const CommandLine& command_line,
   if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
     bool disable_apple_crash_reporter = is_debug_build ||
         base::mac::IsBackgroundOnlyProcess();
-    if (!IsCrashReporterEnabled() && disable_apple_crash_reporter) {
+    if (!breakpad::IsCrashReporterEnabled() && disable_apple_crash_reporter) {
       base::mac::DisableOSCrashDumps();
     }
   }
@@ -580,8 +580,8 @@ void ChromeMainDelegate::InitMacCrashReporter(const CommandLine& command_line,
         << "Main application forbids --type, saw " << process_type;
   }
 
-  if (IsCrashReporterEnabled())
-    InitCrashProcessInfo();
+  if (breakpad::IsCrashReporterEnabled())
+    breakpad::InitCrashProcessInfo();
 }
 #endif  // defined(OS_MACOSX)
 

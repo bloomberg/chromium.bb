@@ -12,6 +12,8 @@
         'sources': [
           'breakpad/breakpad_client.cc',
           'breakpad/breakpad_client.h',
+          'breakpad/breakpad_mac.h',
+          'breakpad/breakpad_mac.mm',
         ],
       }],
     ],
@@ -25,6 +27,14 @@
       },
       'dependencies': [
         '../base/base.gyp:base',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'dependencies': [
+            '../breakpad/breakpad.gyp:breakpad',
+            '../content/content.gyp:content_common',
+          ],
+        }],
       ],
     },
   ],
@@ -51,15 +61,16 @@
     ['OS=="mac"', {
       'targets': [
         {
-          # TODO(jochen): for now, this target is a copy of breakpad, however,
-          # in the future, it should provide a dummy implementation for Mac.
           'target_name': 'breakpad_stubs',
           'type': 'static_library',
-          'variables': {
-            'breakpad_component_target': 1,
-          },
           'dependencies': [
             '../base/base.gyp:base',
+          ],
+          'sources': [
+            'breakpad/breakpad_client.cc',
+            'breakpad/breakpad_client.h',
+            'breakpad/breakpad_mac.h',
+            'breakpad/breakpad_mac_stubs.mm',
           ],
         },
       ],

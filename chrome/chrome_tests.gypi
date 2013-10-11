@@ -940,7 +940,6 @@
         '../remoting/test/remote_desktop_browsertest.h',
         '../remoting/test/waiter.cc',
         '../remoting/test/waiter.h',
-        'app/breakpad_mac_stubs.mm',
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',
@@ -1961,7 +1960,6 @@
       'sources': [
         '../components/autofill/content/renderer/test_password_autofill_agent.cc',
         '../components/autofill/content/renderer/test_password_autofill_agent.h',
-        'app/breakpad_mac_stubs.mm',
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',

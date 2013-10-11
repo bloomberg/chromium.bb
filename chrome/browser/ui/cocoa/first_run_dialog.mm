@@ -26,10 +26,10 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/prefs/pref_service.h"
-#import "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
+#import "components/breakpad/breakpad_mac.h"
 #endif
 
 @interface FirstRunDialogController (PrivateMethods)
@@ -105,9 +105,9 @@ bool ShowFirstRun(Profile* profile) {
     // Breakpad is normally enabled very early in the startup process.  However,
     // on the first run it may not have been enabled due to the missing opt-in
     // from the user.  If the user agreed now, enable breakpad if necessary.
-    if (!IsCrashReporterEnabled() && stats_enabled) {
-      InitCrashReporter();
-      InitCrashProcessInfo();
+    if (!breakpad::IsCrashReporterEnabled() && stats_enabled) {
+      breakpad::InitCrashReporter();
+      breakpad::InitCrashProcessInfo();
     }
 
     // If selected set as default browser.

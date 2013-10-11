@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APP_BREAKPAD_MAC_H_
-#define CHROME_APP_BREAKPAD_MAC_H_
+#ifndef COMPONENTS_BREAKPAD_BREAKPAD_MAC_H_
+#define COMPONENTS_BREAKPAD_BREAKPAD_MAC_H_
 
-// This header defines the Chrome entry points for Breakpad integration.
+// This header defines the entry points for Breakpad integration.
+
+namespace breakpad {
 
 // Initializes Breakpad.
 void InitCrashReporter();
@@ -18,4 +20,6 @@ void InitCrashProcessInfo();
 // Is Breakpad enabled?
 bool IsCrashReporterEnabled();
 
-#endif  // CHROME_APP_BREAKPAD_MAC_H_
+}  // namespace breakpad
+
+#endif  // COMPONENTS_BREAKPAD_BREAKPAD_MAC_H_

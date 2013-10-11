@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
@@ -150,6 +149,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
+#include "components/breakpad/breakpad_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/drive/file_system_backend_delegate.h"
@@ -172,6 +172,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/linux_util.h"
+#include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
@@ -248,6 +249,10 @@ using extensions::APIPermission;
 using extensions::Extension;
 using extensions::Manifest;
 using message_center::NotifierId;
+
+#if defined(OS_MACOSX)
+using breakpad::IsCrashReporterEnabled;
+#endif
 
 namespace {
 

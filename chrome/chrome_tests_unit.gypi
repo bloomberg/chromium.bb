@@ -39,7 +39,6 @@
         '..',
       ],
       'sources': [
-        'app/breakpad_mac_stubs.mm',
         'app/chrome_main_delegate.cc',
         'app/chrome_main_delegate.h',
         'browser/android/mock_google_location_settings_helper.cc',
