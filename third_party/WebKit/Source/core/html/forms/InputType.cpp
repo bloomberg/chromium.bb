@@ -992,7 +992,7 @@ void InputType::observeFeatureIfVisible(UseCounter::Feature feature) const
 {
     if (RenderStyle* style = element()->renderStyle()) {
         if (style->visibility() != HIDDEN)
-            UseCounter::count(&element()->document(), feature);
+            UseCounter::count(element()->document(), feature);
     }
 }
 

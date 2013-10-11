@@ -5123,7 +5123,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     else if (hasReflection()) {
         if (!m_reflection)
             createReflection();
-        UseCounter::count(&renderer()->document(), UseCounter::Reflection);
+        UseCounter::count(renderer()->document(), UseCounter::Reflection);
         updateReflectionStyle();
     }
 

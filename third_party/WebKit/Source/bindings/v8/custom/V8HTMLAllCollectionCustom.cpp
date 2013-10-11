@@ -105,7 +105,7 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
     Node* ownerNode = imp->ownerNode();
     ASSERT(ownerNode);
 
-    UseCounter::count(&ownerNode->document(), UseCounter::DocumentAllLegacyCall);
+    UseCounter::count(ownerNode->document(), UseCounter::DocumentAllLegacyCall);
 
     if (args.Length() == 1) {
         v8SetReturnValue(args, getItem(imp, args[0], args));

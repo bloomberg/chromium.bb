@@ -1218,7 +1218,7 @@ PassRefPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const 
 
 PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const String& pseudoElement, bool authorOnly) const
 {
-    UseCounter::count(document(), UseCounter::GetMatchedCSSRules);
+    UseCounter::count(this, UseCounter::GetMatchedCSSRules);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
 

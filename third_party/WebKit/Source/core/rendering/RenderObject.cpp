@@ -172,9 +172,9 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return new RenderRegion(element, 0);
 
     if (style->display() == RUN_IN)
-        UseCounter::count(&doc, UseCounter::CSSDisplayRunIn);
+        UseCounter::count(doc, UseCounter::CSSDisplayRunIn);
     else if (style->display() == COMPACT)
-        UseCounter::count(&doc, UseCounter::CSSDisplayCompact);
+        UseCounter::count(doc, UseCounter::CSSDisplayCompact);
 
     switch (style->display()) {
     case NONE:

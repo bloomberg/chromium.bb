@@ -1435,9 +1435,9 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Heade
     if (m_executionContext->isDocument()) {
         Document* document = toDocument(m_executionContext);
         if (type == PrefixedReport || type == PrefixedEnforce)
-            UseCounter::countDeprecation(document, getUseCounterType(type));
+            UseCounter::countDeprecation(*document, getUseCounterType(type));
         else
-            UseCounter::count(document, getUseCounterType(type));
+            UseCounter::count(*document, getUseCounterType(type));
     }
 
     Vector<UChar> characters;

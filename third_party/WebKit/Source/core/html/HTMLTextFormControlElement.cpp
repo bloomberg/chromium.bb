@@ -490,7 +490,7 @@ void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const
 {
     if (name == placeholderAttr) {
         updatePlaceholderVisibility(true);
-        UseCounter::count(&document(), UseCounter::PlaceholderAttribute);
+        UseCounter::count(document(), UseCounter::PlaceholderAttribute);
     } else
         HTMLFormControlElementWithState::parseAttribute(name, value);
 }

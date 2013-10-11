@@ -98,7 +98,7 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
         if (source->ensureFontData()) {
             setLoadStatus(FontFace::Loaded);
             if (source->isSVGFontFaceSource())
-                UseCounter::count(fontSelector->document(), UseCounter::SVGFontInCSS);
+                UseCounter::count(*fontSelector->document(), UseCounter::SVGFontInCSS);
         }
         else if (!isValid())
             setLoadStatus(FontFace::Error);
