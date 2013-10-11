@@ -43,6 +43,7 @@ class AutofillDriverImpl : public AutofillDriver,
 
   // AutofillDriver:
   virtual content::WebContents* GetWebContents() OVERRIDE;
+  virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
   virtual bool RendererIsAvailable() OVERRIDE;
   virtual void SetRendererActionOnFormDataReception(
       RendererFormDataAction action) OVERRIDE;

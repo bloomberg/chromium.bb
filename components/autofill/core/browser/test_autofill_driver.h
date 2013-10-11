@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace autofill {
 
-// This class is only for easier writing of tests. All pure virtual functions
-// have been given empty methods.
+// This class is only for easier writing of tests.
 // TODO(blundell): Eliminate this class being a WebContentsObserver once
 // autofill shared code no longer needs knowledge of WebContents.
 class TestAutofillDriver : public AutofillDriver,
@@ -24,6 +24,7 @@ class TestAutofillDriver : public AutofillDriver,
 
   // AutofillDriver implementation.
   virtual content::WebContents* GetWebContents() OVERRIDE;
+  virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
   virtual bool RendererIsAvailable() OVERRIDE;
   virtual void SetRendererActionOnFormDataReception(
       RendererFormDataAction action) OVERRIDE;
@@ -35,6 +36,8 @@ class TestAutofillDriver : public AutofillDriver,
   virtual void RendererShouldClearPreviewedForm() OVERRIDE;
 
  private:
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
+
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDriver);
 };
 

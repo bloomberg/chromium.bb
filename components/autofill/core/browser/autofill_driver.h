@@ -9,6 +9,10 @@
 
 #include "components/autofill/core/common/form_data.h"
 
+namespace base {
+class SequencedWorkerPool;
+}
+
 namespace content {
 class WebContents;
 }
@@ -35,6 +39,10 @@ class AutofillDriver {
   // TODO(blundell): Remove this method once shared code no longer needs to
   // know about WebContents.
   virtual content::WebContents* GetWebContents() = 0;
+
+  // Returns the SequencedWorkerPool on which core Autofill code should run
+  // tasks that may block. This pool must live at least as long as the driver.
+  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;

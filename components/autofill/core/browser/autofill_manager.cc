@@ -44,7 +44,6 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -59,7 +58,6 @@ namespace autofill {
 typedef PersonalDataManager::GUIDPair GUIDPair;
 
 using base::TimeTicks;
-using content::BrowserThread;
 using content::RenderViewHost;
 using WebKit::WebFormElement;
 
@@ -139,8 +137,6 @@ void DeterminePossibleFieldTypesForUpload(
     const std::vector<CreditCard>& credit_cards,
     const std::string& app_locale,
     FormStructure* submitted_form) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   // For each field in the |submitted_form|, extract the value.  Then for each
   // profile or credit card, identify any stored types that match the value.
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
@@ -297,7 +293,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
     // Note that ownership of |submitted_form| is passed to the second task,
     // using |base::Owned|.
     FormStructure* raw_submitted_form = submitted_form.get();
-    BrowserThread::GetBlockingPool()->PostTaskAndReply(
+    driver_->GetBlockingPool()->PostTaskAndReply(
         FROM_HERE,
         base::Bind(&DeterminePossibleFieldTypesForUpload,
                    copied_profiles,

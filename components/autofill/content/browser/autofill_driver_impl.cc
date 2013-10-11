@@ -5,12 +5,14 @@
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 
 #include "base/command_line.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_view_host.h"
@@ -67,6 +69,10 @@ AutofillDriverImpl::~AutofillDriverImpl() {}
 
 content::WebContents* AutofillDriverImpl::GetWebContents() {
   return web_contents();
+}
+
+base::SequencedWorkerPool* AutofillDriverImpl::GetBlockingPool() {
+  return content::BrowserThread::GetBlockingPool();
 }
 
 bool AutofillDriverImpl::RendererIsAvailable() {
