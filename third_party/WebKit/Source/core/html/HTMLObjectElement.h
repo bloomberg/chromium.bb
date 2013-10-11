@@ -50,6 +50,7 @@ public:
     virtual bool isFormControlElement() const { return false; }
 
     virtual bool isEnumeratable() const { return true; }
+    virtual bool isInteractiveContent() const OVERRIDE;
     virtual bool appendFormData(FormDataList&, bool);
 
     virtual bool isObjectElement() const OVERRIDE { return true; }

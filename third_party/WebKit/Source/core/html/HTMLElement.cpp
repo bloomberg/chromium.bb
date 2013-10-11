@@ -1080,6 +1080,11 @@ void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropert
     style->setProperty(propertyID, cssValuePool().createColorValue(parsedColor.rgb()));
 }
 
+bool HTMLElement::isInteractiveContent() const
+{
+    return false;
+}
+
 void HTMLElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::keypress && event->isKeyboardEvent()) {

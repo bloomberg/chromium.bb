@@ -108,4 +108,9 @@ HTMLSelectElement* HTMLKeygenElement::shadowSelect() const
     return root ? toHTMLSelectElement(root->firstChild()) : 0;
 }
 
+bool HTMLKeygenElement::isInteractiveContent() const
+{
+    return true;
+}
+
 } // namespace

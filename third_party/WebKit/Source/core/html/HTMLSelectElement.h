@@ -128,6 +128,7 @@ private:
     virtual bool canStartSelection() const { return false; }
 
     virtual bool isEnumeratable() const { return true; }
+    virtual bool isInteractiveContent() const OVERRIDE;
     virtual bool supportLabels() const OVERRIDE { return true; }
 
     virtual FormControlState saveFormControlState() const OVERRIDE;
