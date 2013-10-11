@@ -221,6 +221,21 @@ camera.views.Camera = function(context, router) {
   this.pointerTracker_ = new camera.util.PointerTracker(
       document.body, this.setExpanded_.bind(this, true));
 
+  /**
+   * Enables scrolling the ribbon by dragging the mouse.
+   * @type {camera.util.MouseScroller}
+   * @private
+   */
+  this.mouseScroller_ = new camera.util.MouseScroller(this.scroller_);
+
+  /**
+   * Detects whether scrolling is being performed or not.
+   * @type {camera.util.ScrollTracker}
+   * @private
+   */
+  this.scrollTracker_ = new camera.util.ScrollTracker(
+      this.scroller_, function() {}, function() {});  // No callbacks.
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -229,8 +244,6 @@ camera.views.Camera = function(context, router) {
   this.video_.addEventListener('loadedmetadata',
       this.synchronizeBounds_.bind(this));
   this.synchronizeBounds_();
-
-  // TODO(mtomasz): Make the ribbon scrollable by dragging.
 
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
@@ -367,7 +380,6 @@ camera.views.Camera.prototype.onEnter = function() {
 camera.views.Camera.prototype.onLeave = function() {
 };
 
-
 /**
  * Adds an effect to the user interface.
  * @param {camera.Effect} effect Effect to be added.
@@ -461,18 +473,6 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
   }
-};
-
-/**
- * Handles scrolling via mouse on the effects ribbon.
- * @param {Event} event Mouse move event.
- * @private
- */
-camera.views.Camera.prototype.onRibbonMouseMove_ = function(event) {
-  if (event.which != 1)
-    return;
-  var ribbon = document.querySelector('#effects');
-  ribbon.scrollLeft = ribbon.scrollLeft - event.webkitMovementX;
 };
 
 /**
@@ -828,7 +828,7 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   // while performing animations.
   if (this.taking_ || this.toolsEffect_.isActive() ||
       this.mainProcessor_.effect.isSlow() ||
-      (this.scroller_.animating && this.expanded_)) {
+      (this.scrollTracker_.scrolling && this.expanded_)) {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.OPTIMIZED);
   } else {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.FULL);
@@ -839,7 +839,7 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   // ribbon is expanded for the first time. This trick is used to fill the
   // ribbon with images as soon as possible.
    if (this.expanded_ && !this.taking_ &&
-      !this.scroller_.animating || this.ribbonInitialization_) {
+      !this.scrollTracker_.scrolling || this.ribbonInitialization_) {
 
      // Every third frame draw only the visible effects. Every 30-th frame, draw
      // all of them, to avoid displaying old effects when scrolling.
@@ -850,7 +850,7 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
          camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.OPTIMIZED);
      }
-  }
+   }
 
   this.frame_++;
 };

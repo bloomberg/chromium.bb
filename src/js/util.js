@@ -564,6 +564,12 @@ camera.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
   window.addEventListener('touchend', this.onTouchEnd_.bind(this));
 };
 
+camera.util.ScrollTracker.prototype = {
+  get scrolling() {
+    return this.scrolling_;
+  }
+};
+
 /**
  * Handles pressing the mouse button.
  * @param {Event} event Mouse down event.
@@ -642,3 +648,91 @@ camera.util.ScrollTracker.prototype.probe_ = function() {
 
   this.lastScrollPosition_ = [scrollLeft, scrollTop];
 };
+
+/**
+ * Makes an element scrollable by dragging with a mouse.
+ *
+ * @param {camera.util.Scroller} scroller Scroller for the element.
+ * @constructor
+ */
+camera.util.MouseScroller = function(scroller) {
+  /**
+   * @type {camera.util.Scroller}
+   * @private
+   */
+  this.scroller_ = scroller;
+
+  /**
+   * @type {Array.<number>}
+   * @private
+   */
+  this.startPosition_ = null;
+
+  /**
+   * @type {Array.<number>}
+   * @private
+   */
+  this.startScrollPosition_ = null;
+
+  // End of properties. Seal the object.
+  Object.seal(this);
+
+  // Register mouse handlers.
+  this.scroller_.element.addEventListener(
+      'mousedown', this.onMouseDown_.bind(this));
+  window.addEventListener('mousemove', this.onMouseMove_.bind(this));
+  window.addEventListener('mouseup', this.onMouseUp_.bind(this));
+};
+
+/**
+ * Handles the mouse down event on the tracked element.
+ * @param {Event} event Mouse down event.
+ * @private
+ */
+camera.util.MouseScroller.prototype.onMouseDown_ = function(event) {
+  if (event.which != 1)
+    return;
+
+  this.startPosition_ = [event.screenX, event.screenY];
+  this.startScrollPosition_ = [
+    this.scroller_.scrollLeft,
+    this.scroller_.scrollTop
+  ];
+};
+
+/**
+ * Handles moving a mouse over the tracker element.
+ * @param {Event} event Mouse move event.
+ * @private
+ */
+camera.util.MouseScroller.prototype.onMouseMove_ = function(event) {
+  if (!this.startPosition_)
+    return;
+
+  // It may happen that we won't receive the mouseup event, when clicking on
+  // the -webkit-app-region: drag area.
+  if (event.which != 1) {
+    this.startPosition_ = null;
+    this.startScrollPosition_ = null;
+    return;
+  }
+
+  var scrollLeft =
+      this.startScrollPosition_[0] - (event.screenX - this.startPosition_[0]);
+  var scrollTop =
+      this.startScrollPosition_[1] - (event.screenY - this.startPosition_[1]);
+
+  this.scroller_.scrollTo(
+      scrollLeft, scrollTop, camera.util.SmoothScroller.Mode.INSTANT);
+};
+
+/**
+ * Handles the mouse up event on the tracked element.
+ * @param {Event} event Mouse down event.
+ * @private
+ */
+camera.util.MouseScroller.prototype.onMouseUp_ = function(event) {
+  this.startPosition_ = null;
+  this.startScrollPosition_ = null;
+};
+
