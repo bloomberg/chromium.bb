@@ -118,6 +118,43 @@ class TabsAddedNotificationObserver
   DISALLOW_COPY_AND_ASSIGN(TabsAddedNotificationObserver);
 };
 
+class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
+ public:
+  ScopedPreviewTestingDelegate(bool auto_cancel)
+      : auto_cancel_(auto_cancel),
+        waiting_for_ready_(false),
+        waiting_runner_(new content::MessageLoopRunner) {
+    PrintPreviewUI::SetTestingDelegate(this);
+  }
+
+  ~ScopedPreviewTestingDelegate() {
+    PrintPreviewUI::SetTestingDelegate(NULL);
+  }
+
+  // PrintPreviewUI::TestingDelegate implementation.
+  virtual bool IsAutoCancelEnabled() OVERRIDE {
+    return auto_cancel_;
+  }
+
+  // PrintPreviewUI::TestingDelegate implementation.
+  virtual void PreviewIsReady() OVERRIDE {
+    waiting_runner_->Quit();
+    waiting_for_ready_ = false;
+  }
+
+  void WaitUntilPreviewIsReady() {
+    if (!waiting_for_ready_) {
+      waiting_for_ready_ = true;
+      waiting_runner_->Run();
+    }
+  }
+
+ private:
+  bool auto_cancel_;
+  bool waiting_for_ready_;
+  scoped_refptr<content::MessageLoopRunner> waiting_runner_;
+};
+
 bool CopyTestDataAndSetCommandLineArg(
     const base::FilePath& test_data_file,
     const base::FilePath& temp_dir,
@@ -408,9 +445,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
   LoadAndLaunchPlatformApp("minimal");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_EQ(1U, GetShellWindowCount());
-  ShellWindowRegistry::ShellWindowList shell_windows =
-      ShellWindowRegistry::Get(browser()->profile())->shell_windows();
-  int shell_window_id = (*shell_windows.begin())->session_id().id();
+  int shell_window_id = GetFirstShellWindow()->session_id().id();
 
   // But it's not visible to the extensions API, it still thinks there's just
   // one browser window.
@@ -1038,9 +1073,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   EXPECT_EQ(1LU, GetShellWindowCount());
-  ShellWindowRegistry::ShellWindowList shell_windows = ShellWindowRegistry::Get(
-      browser()->profile())->shell_windows();
-  EXPECT_TRUE((*shell_windows.begin())->web_contents()->
+  EXPECT_TRUE(GetFirstShellWindow()->web_contents()->
       GetRenderWidgetHostView()->HasFocus());
 }
 
@@ -1069,13 +1102,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_WindowDotPrintShouldBringUpPrintPreview) {
-  PrintPreviewUI::ScopedAutoCancelForTesting auto_cancel;
+  ScopedPreviewTestingDelegate preview_delegate(true);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
-  EXPECT_EQ(1, auto_cancel.GetCountForTesting());
+  preview_delegate.WaitUntilPreviewIsReady();
 }
 
-// Currently fails on OS X.
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_MACOSX)
+#if !defined(GOOGLE_CHROME_BUILD)
 #define MAYBE_ClosingWindowWhilePrintingShouldNotCrash \
     DISABLED_ClosingWindowWhilePrintingShouldNotCrash
 #else
@@ -1083,12 +1115,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
     ClosingWindowWhilePrintingShouldNotCrash
 #endif
 
+// This test verifies that http://crbug.com/297179 is fixed.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_ClosingWindowWhilePrintingShouldNotCrash) {
-  PrintPreviewUI::ScopedAutoCancelForTesting auto_cancel;
-  ASSERT_TRUE(RunPlatformAppTestWithArg("platform_apps/print_api",
-                                        "close")) << message_;
-  EXPECT_EQ(0, auto_cancel.GetCountForTesting());
+  ScopedPreviewTestingDelegate preview_delegate(false);
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
+  preview_delegate.WaitUntilPreviewIsReady();
+  GetFirstShellWindow()->GetBaseWindow()->Close();
 }
 
 
