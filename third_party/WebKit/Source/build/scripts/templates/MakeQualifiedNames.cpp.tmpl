@@ -1,0 +1,84 @@
+{% from "macros.tmpl" import license -%}
+{{ license() }}
+
+#include "config.h"
+
+#ifdef SKIP_STATIC_CONSTRUCTORS_ON_GCC
+#define {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS 1
+#else
+#define QNAME_DEFAULT_CONSTRUCTOR 1
+#endif
+
+#include "{{namespace}}Names.h"
+
+#include "wtf/StaticConstructors.h"
+
+namespace WebCore {
+namespace {{namespace}}Names {
+
+using namespace WebCore;
+
+DEFINE_GLOBAL(AtomicString, {{namespace|lower}}NamespaceURI)
+
+// Tags
+{%- for tag in tags|sort %}
+DEFINE_GLOBAL(QualifiedName, {{tag|symbol}}Tag)
+{%- endfor %}
+
+
+WebCore::QualifiedName** get{{namespace}}Tags()
+{
+    static WebCore::QualifiedName* {{namespace}}Tags[] = {
+{%- for tag in tags|sort %}
+        (WebCore::QualifiedName*)&{{tag|symbol}}Tag,
+{%- endfor %}
+    };
+    return {{namespace}}Tags;
+}
+
+// Attributes
+{%- for attr in attrs|sort %}
+DEFINE_GLOBAL(QualifiedName, {{attr|symbol}}Attr)
+{%- endfor %}
+
+WebCore::QualifiedName** get{{namespace}}Attrs()
+{
+    static WebCore::QualifiedName* {{namespace}}Attrs[] = {
+{%- for attr in attrs|sort %}
+        (WebCore::QualifiedName*)&{{attr|symbol}}Attr,
+{%- endfor %}
+    };
+    return {{namespace}}Attrs;
+}
+
+void init()
+{
+    // Use placement new to initialize the globals.
+    AtomicString {{namespace|lower}}NS("{{namespace_uri}}", AtomicString::ConstructFromLiteral);
+
+    // Namespace
+    new ((void*)&{{namespace|lower}}NamespaceURI) AtomicString({{namespace|lower}}NS);
+
+    // Tags
+{%- for tag in tags|sort %}
+    StringImpl* {{tag|symbol}}Impl = StringImpl::createStatic("{{tag.name}}", {{tag.name|length}}, {{tag.name|hash}});
+{%- endfor %}
+
+    // Attrs
+{%- for attr in attrs|sort %}
+    StringImpl* {{attr|symbol}}Impl = StringImpl::createStatic("{{attr.name}}", {{attr.name|length}}, {{attr.name|hash}});
+{%- endfor %}
+
+    // Tags
+{%- for tag in tags|sort %}
+    createQualifiedName((void*)&{{tag|symbol}}Tag, {{tag|symbol}}Impl, {{namespace|lower}}NS);
+{%- endfor %}
+
+    // Attrs
+{%- for attr in attrs|sort %}
+    createQualifiedName((void*)&{{attr|symbol}}Attr, {{attr|symbol}}Impl);
+{%- endfor %}
+}
+
+} // {{namespace}}
+} // WebCore

@@ -3651,6 +3651,12 @@
             '../build/scripts/templates/MakeNames.cpp.tmpl',
             '../build/scripts/templates/MakeNames.h.tmpl',
         ],
+        'make_qualified_names_files': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_qualified_names.py',
+            '../build/scripts/templates/MakeQualifiedNames.cpp.tmpl',
+            '../build/scripts/templates/MakeQualifiedNames.h.tmpl',
+        ],
         'conditions': [
             ['OS=="win"', {
                 # Using native perl rather than cygwin perl cuts execution time

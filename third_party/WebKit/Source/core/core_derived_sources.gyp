@@ -393,7 +393,6 @@
           'action_name': 'EventNames',
           'inputs': [
             '<@(make_names_files)',
-            '../build/scripts/make_names.py',
             '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
           ],
           'outputs': [
@@ -431,7 +430,6 @@
           'action_name': 'EventTargetNames',
           'inputs': [
             '<@(make_names_files)',
-            '../build/scripts/make_names.py',
             'events/EventTargetFactory.in',
           ],
           'outputs': [
@@ -449,9 +447,7 @@
         {
           'action_name': 'MathMLNames',
           'inputs': [
-            '../build/scripts/Hasher.pm',
-            '../build/scripts/StaticString.pm',
-            '../build/scripts/make_names.pl',
+            '<@(make_qualified_names_files)',
             'html/parser/MathMLTagNames.in',
             'html/parser/MathMLAttributeNames.in',
           ],
@@ -461,14 +457,13 @@
           ],
           'action': [
             'python',
-            '../build/scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--extraDefines', '<(feature_defines)'
+            '../build/scripts/make_qualified_names.py',
+            'html/parser/MathMLTagNames.in',
+            'html/parser/MathMLAttributeNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--defines', '<(feature_defines)'
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'UserAgentStyleSheets',
