@@ -25,7 +25,7 @@ ALGO = hashlib.sha1
 FILE_NAME = u'test.isolated'
 FILE_HASH = u'1' * 40
 TEST_NAME = u'unit_tests'
-STDOUT_FOR_TRIGGER_LEN = 188
+STDOUT_FOR_TRIGGER_LEN = 180
 
 
 TEST_CASE_SUCCESS = (
@@ -444,20 +444,15 @@ def generate_expected_json(
   return expected
 
 
-def MockUrlOpen(url, _data, has_return_value):
-  if '/content/contains' in url:
-    return StringIO.StringIO(has_return_value)
-  return StringIO.StringIO('{}')
+class MockedStorage(object):
+  def __init__(self, warm_cache):
+    self._warm_cache = warm_cache
 
+  def upload_items(self, items):
+    return [] if self._warm_cache else items
 
-def MockUrlOpenHasZip(url, data=None, content_type=None):
-  assert content_type in (None, 'application/json', 'application/octet-stream')
-  return MockUrlOpen(url, data, has_return_value=chr(1))
-
-
-def MockUrlOpenNoZip(url, data=None, content_type=None):
-  assert content_type in (None, 'application/json', 'application/octet-stream')
-  return MockUrlOpen(url, data, has_return_value=chr(0))
+  def get_fetch_url(self, _digest):  # pylint: disable=R0201
+    return 'http://localhost:8081/fetch_url'
 
 
 class ManifestTest(auto_stub.TestCase):
@@ -558,7 +553,9 @@ class ManifestTest(auto_stub.TestCase):
     self.assertEqual(expected, manifest_json)
 
   def test_process_manifest_success(self):
-    self.mock(swarming.net, 'url_open', MockUrlOpenNoZip)
+    self.mock(swarming.net, 'url_read', lambda url, data=None: '{}')
+    self.mock(swarming.isolateserver, 'get_storage',
+        lambda *_: MockedStorage(warm_cache=False))
 
     result = swarming.process_manifest(
         file_hash_or_isolated=FILE_HASH,
@@ -580,11 +577,13 @@ class ManifestTest(auto_stub.TestCase):
     self.assertTrue(
         len(out) > STDOUT_FOR_TRIGGER_LEN,
         (out, sys.stderr.getvalue()))
-    self.assertTrue('Zip file not on server, starting uploading.' in out)
+    self.assertTrue('Upload complete' in out)
     self.mock(sys, 'stdout', StringIO.StringIO())
 
   def test_process_manifest_success_zip_already_uploaded(self):
-    self.mock(swarming.net, 'url_open', MockUrlOpenHasZip)
+    self.mock(swarming.net, 'url_read', lambda url, data=None: '{}')
+    self.mock(swarming.isolateserver, 'get_storage',
+        lambda *_: MockedStorage(warm_cache=True))
 
     result = swarming.process_manifest(
         file_hash_or_isolated=FILE_HASH,
@@ -604,7 +603,7 @@ class ManifestTest(auto_stub.TestCase):
     # Just assert it printed enough, since it contains variable output.
     out = sys.stdout.getvalue()
     self.assertTrue(len(out) > STDOUT_FOR_TRIGGER_LEN)
-    self.assertTrue('Zip file already on server, no need to reupload.' in out)
+    self.assertTrue('Zip file already on server' in out)
     self.mock(sys, 'stdout', StringIO.StringIO())
 
   def test_no_request(self):

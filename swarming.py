@@ -7,7 +7,6 @@
 
 __version__ = '0.1'
 
-import binascii
 import hashlib
 import json
 import logging
@@ -97,29 +96,14 @@ class Manifest(object):
     self._working_dir = working_dir
 
     self.isolate_server = isolate_server
-    self._data_server_retrieval = isolate_server + '/content/retrieve/default/'
-    self._data_server_storage = isolate_server + '/content/store/default/'
-    self._data_server_has = isolate_server + '/content/contains/default'
-    self._data_server_get_token = isolate_server + '/content/get_token'
-
+    self.storage = isolateserver.get_storage(isolate_server, 'default')
     self.verbose = bool(verbose)
     self.profile = bool(profile)
     self.priority = priority
     self._algo = algo
 
-    self._zip_file_hash = ''
+    self._isolate_item = None
     self._tasks = []
-    self._token_cache = None
-
-  def _token(self):
-    if not self._token_cache:
-      result = net.url_open(self._data_server_get_token)
-      if not result:
-        # TODO(maruel): Implement authentication.
-        raise Failure('Failed to get token, need authentication')
-      # Quote it right away, so creating the urls is simpler.
-      self._token_cache = urllib.quote(result.read())
-    return self._token_cache
 
   def add_task(self, task_name, actions, time_out=600):
     """Appends a new task to the swarm manifest file."""
@@ -137,35 +121,25 @@ class Manifest(object):
     """Zips up all the files necessary to run a shard and uploads to Swarming
     master.
     """
-    assert not self._zip_file_hash
+    assert not self._isolate_item
 
     start_time = time.time()
-    zip_contents = self.bundle.zip_into_buffer()
-    self._zip_file_hash = self._algo(zip_contents).hexdigest()
+    self._isolate_item = isolateserver.BufferItem(
+        self.bundle.zip_into_buffer(), self._algo, is_isolated=True)
     print 'Zipping completed, time elapsed: %f' % (time.time() - start_time)
 
-    response = net.url_open(
-        self._data_server_has + '?token=%s' % self._token(),
-        data=binascii.unhexlify(self._zip_file_hash),
-        content_type='application/octet-stream')
-    if response is None:
-      print >> sys.stderr, (
-          'Unable to query server for zip file presence, aborting.')
+    try:
+      start_time = time.time()
+      uploaded = self.storage.upload_items([self._isolate_item])
+      elapsed = time.time() - start_time
+    except (IOError, OSError) as exc:
+      print >> sys.stderr, 'Failed to upload the zip file: %s' % exc
       return False
 
-    if response.read(1) == chr(1):
-      print 'Zip file already on server, no need to reupload.'
-      return True
-
-    print 'Zip file not on server, starting uploading.'
-
-    url = '%s%s?priority=0&token=%s' % (
-        self._data_server_storage, self._zip_file_hash, self._token())
-    response = net.url_open(
-        url, data=zip_contents, content_type='application/octet-stream')
-    if response is None:
-      print >> sys.stderr, 'Failed to upload the zip file: %s' % url
-      return False
+    if self._isolate_item in uploaded:
+      print 'Upload complete, time elapsed: %f' % elapsed
+    else:
+      print 'Zip file already on server, time elapsed: %f' % elapsed
 
     return True
 
@@ -193,10 +167,10 @@ class Manifest(object):
       'cleanup': 'root',
       'priority': self.priority,
     }
-    if self._zip_file_hash:
+    if self._isolate_item:
       test_case['data'].append(
           [
-            self._data_server_retrieval + urllib.quote(self._zip_file_hash),
+            self.storage.get_fetch_url(self._isolate_item.digest),
             'swarm_data.zip',
           ])
     # These flags are googletest specific.
@@ -411,16 +385,17 @@ def process_manifest(
   print('Job name: %s' % test_name)
   test_url = swarming + '/test'
   manifest_text = manifest.to_json()
-  result = net.url_open(test_url, data={'request': manifest_text})
+  result = net.url_read(test_url, data={'request': manifest_text})
   if not result:
     print >> sys.stderr, 'Failed to send test for %s\n%s' % (
         test_name, test_url)
     return 1
   try:
-    json.load(result)
+    json.loads(result)
   except (ValueError, TypeError) as e:
     print >> sys.stderr, 'Failed to send test for %s' % test_name
     print >> sys.stderr, 'Manifest: %s' % manifest_text
+    print >> sys.stderr, 'Bad response: %s' % result
     print >> sys.stderr, str(e)
     return 1
   return 0

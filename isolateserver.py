@@ -304,7 +304,11 @@ class Item(object):
     self.push_state = None
 
   def content(self, chunk_size):
-    """Iterable with content of this item in chunks of given size."""
+    """Iterable with content of this item in chunks of given size.
+
+    Arguments:
+      chunk_size: preferred size of the chunk to produce, may be ignored.
+    """
     raise NotImplementedError()
 
 
@@ -318,6 +322,18 @@ class FileItem(Item):
 
   def content(self, chunk_size):
     return file_read(self.path, chunk_size)
+
+
+class BufferItem(Item):
+  """A byte buffer to push to Storage."""
+
+  def __init__(self, buf, algo, is_isolated=False):
+    super(BufferItem, self).__init__(
+        algo(buf).hexdigest(), len(buf), is_isolated)
+    self.buffer = buf
+
+  def content(self, _chunk_size):
+    return [self.buffer]
 
 
 class Storage(object):
@@ -370,10 +386,11 @@ class Storage(object):
     Arguments:
       indir: root directory the infiles are based in.
       infiles: dict of files to upload from |indir|.
+
+    Returns:
+      List of items that were uploaded. All other items are already there.
     """
     logging.info('upload tree(indir=%s, files=%d)', indir, len(infiles))
-
-    # TODO(vadimsh): Introduce Item as a part of the public interface?
 
     # Convert |indir| + |infiles| into a list of FileItem objects.
     # Filter out symlinks, since they are not represented by items on isolate
@@ -387,6 +404,24 @@ class Storage(object):
         for filepath, metadata in infiles.iteritems()
         if 'l' not in metadata
     ]
+
+    return self.upload_items(items)
+
+  def upload_items(self, items):
+    """Uploads bunch of items to the isolate server.
+
+    Will upload only items that are missing.
+
+    Arguments:
+      items: list of Item instances that represents data to upload.
+
+    Returns:
+      List of items that were uploaded. All other items are already there.
+    """
+    # TODO(vadimsh): Optimize special case of len(items) == 1 that is frequently
+    # used by swarming.py. There's no need to spawn multiple threads and try to
+    # do stuff in parallel: there's nothing to parallelize. 'contains' check and
+    # 'push' should be performed sequentially in the context of current thread.
 
     # For each digest keep only first Item that matches it. All other items
     # are just indistinguishable copies from the point of view of isolate
@@ -410,17 +445,17 @@ class Storage(object):
           WorkerPool.HIGH if missing_item.is_isolated else WorkerPool.MED,
           missing_item)
 
+    uploaded = []
     # No need to spawn deadlock detector thread if there's nothing to upload.
     if missing:
       with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
         # Wait for all started uploads to finish.
-        uploaded = 0
-        while uploaded != len(missing):
+        while len(uploaded) != len(missing):
           detector.ping()
           item = channel.pull()
-          uploaded += 1
+          uploaded.append(item)
           logging.debug(
-              'Uploaded %d / %d: %s', uploaded, len(missing), item.digest)
+              'Uploaded %d / %d: %s', len(uploaded), len(missing), item.digest)
     logging.info('All files are uploaded')
 
     # Print stats.
@@ -446,6 +481,19 @@ class Storage(object):
         cache_miss_size / 1024.,
         len(cache_miss) * 100. / total,
         cache_miss_size * 100. / total_size if total_size else 0)
+
+    return uploaded
+
+  def get_fetch_url(self, digest):
+    """Returns an URL that can be used to fetch an item with given digest.
+
+    Arguments:
+      digest: hex digest of item to fetch.
+
+    Returns:
+      An URL or None if underlying protocol doesn't support this.
+    """
+    return self._storage_api.get_fetch_url(digest)
 
   def async_push(self, channel, priority, item):
     """Starts asynchronous push to the server in a parallel thread.
@@ -704,6 +752,17 @@ class FetchStreamVerifier(object):
 class StorageApi(object):
   """Interface for classes that implement low-level storage operations."""
 
+  def get_fetch_url(self, digest):
+    """Returns an URL that can be used to fetch an item with given digest.
+
+    Arguments:
+      digest: hex digest of item to fetch.
+
+    Returns:
+      An URL or None if the protocol doesn't support this.
+    """
+    raise NotImplementedError()
+
   def fetch(self, digest):
     """Fetches an object and yields its content.
 
@@ -822,11 +881,13 @@ class IsolateServer(StorageApi):
               exc.__class__.__name__, exc))
       return self._server_caps
 
-  def fetch(self, digest):
+  def get_fetch_url(self, digest):
     assert isinstance(digest, basestring)
-
-    source_url = '%s/content-gs/retrieve/%s/%s' % (
+    return '%s/content-gs/retrieve/%s/%s' % (
         self.base_url, self.namespace, digest)
+
+  def fetch(self, digest):
+    source_url = self.get_fetch_url(digest)
     logging.debug('download_file(%s)', source_url)
 
     # Because the app engine DB is only eventually consistent, retry 404 errors
@@ -949,6 +1010,9 @@ class FileSystem(StorageApi):
   def __init__(self, base_path):
     super(FileSystem, self).__init__()
     self.base_path = base_path
+
+  def get_fetch_url(self, digest):
+    return None
 
   def fetch(self, digest):
     assert isinstance(digest, basestring)
