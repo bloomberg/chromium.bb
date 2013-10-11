@@ -468,6 +468,7 @@ const char kNetworksProperty[] = "Networks";
 const char kScanIntervalProperty[] = "ScanInterval";
 const char kBgscanMethodProperty[] = "BgscanMethod";
 const char kBgscanShortIntervalProperty[] = "BgscanShortInterval";
+const char kRoamThresholdProperty[] = "RoamThreshold";
 // DEPRECATED
 // remove after references are gone from chrome, libcros, and flimflam/shill.
 const char kDBusConnectionProperty[] = "DBus.Connection";
