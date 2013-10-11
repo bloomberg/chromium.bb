@@ -223,9 +223,9 @@ class OAuth2TokenService : public base::NonThreadSafe {
   void CancelRequestsForAccount(const std::string& account_id);
 
   // Called by subclasses to notify observers.
-  void FireRefreshTokenAvailable(const std::string& account_id);
-  void FireRefreshTokenRevoked(const std::string& account_id);
-  void FireRefreshTokensLoaded();
+  virtual void FireRefreshTokenAvailable(const std::string& account_id);
+  virtual void FireRefreshTokenRevoked(const std::string& account_id);
+  virtual void FireRefreshTokensLoaded();
 
   // Creates a request implementation. Can be overriden by derived classes to
   // provide additional control of token consumption. |consumer| will outlive

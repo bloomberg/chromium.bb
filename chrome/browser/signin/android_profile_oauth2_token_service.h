@@ -28,15 +28,42 @@ class TokenService;
 // request from other thread, please use ProfileOAuth2TokenServiceRequest.
 class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
-  virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) OVERRIDE;
-
   // Registers the AndroidProfileOAuth2TokenService's native methods through
   // JNI.
   static bool Register(JNIEnv* env);
 
+  // Creates a new instance of the AndroidProfileOAuth2TokenService.
+  static AndroidProfileOAuth2TokenService* Create();
+
+  // Returns a reference to the Java instance of this service.
+  static jobject GetForProfile(
+      JNIEnv* env, jclass clazz, jobject j_profile_android);
+
+  virtual bool RefreshTokenIsAvailable(
+      const std::string& account_id) OVERRIDE;
+
   // Lists account IDs of all accounts with a refresh token.
   virtual std::vector<std::string> GetAccounts() OVERRIDE;
+
+  void ValidateAccounts(JNIEnv* env,
+                        jobject obj,
+                        jobjectArray accounts,
+                        jstring current_account);
+
+  // Triggers a notification to all observers of the OAuth2TokenService that a
+  // refresh token is now available. This may cause observers to retry
+  // operations that require authentication.
+  virtual void FireRefreshTokenAvailableFromJava(JNIEnv* env,
+                                                 jobject obj,
+                                                 const jstring account_name);
+  // Triggers a notification to all observers of the OAuth2TokenService that a
+  // refresh token is now available.
+  virtual void FireRefreshTokenRevokedFromJava(JNIEnv* env,
+                                               jobject obj,
+                                               const jstring account_name);
+  // Triggers a notification to all observers of the OAuth2TokenService that all
+  // refresh tokens have now been loaded.
+  virtual void FireRefreshTokensLoadedFromJava(JNIEnv* env, jobject obj);
 
  protected:
   friend class ProfileOAuth2TokenServiceFactory;
@@ -59,7 +86,17 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
                                      const ScopeSet& scopes,
                                      const std::string& access_token) OVERRIDE;
 
+  // Called to notify observers when a refresh token is available.
+  virtual void FireRefreshTokenAvailable(
+      const std::string& account_id) OVERRIDE;
+  // Called to notify observers when a refresh token has been revoked.
+  virtual void FireRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
+  // Called to notify observers when refresh tokans have been loaded.
+  virtual void FireRefreshTokensLoaded() OVERRIDE;
+
  private:
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+
   DISALLOW_COPY_AND_ASSIGN(AndroidProfileOAuth2TokenService);
 };
 

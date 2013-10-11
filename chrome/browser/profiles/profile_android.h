@@ -21,6 +21,8 @@ class ProfileAndroid : public base::SupportsUserData::Data {
   static Profile* FromProfileAndroid(jobject obj);
   static bool RegisterProfileAndroid(JNIEnv* env);
 
+  static jobject GetLastUsedProfile(JNIEnv* env, jclass clazz);
+
   explicit ProfileAndroid(Profile* profile);
   virtual ~ProfileAndroid();
 

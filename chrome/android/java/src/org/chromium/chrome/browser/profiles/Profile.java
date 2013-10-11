@@ -17,6 +17,10 @@ public class Profile {
         mNativeProfileAndroid = nativeProfileAndroid;
     }
 
+    public static Profile getLastUsedProfile() {
+        return (Profile) nativeGetLastUsedProfile();
+    }
+
     @CalledByNative
     private static Profile create(int nativeProfileAndroid) {
         return new Profile(nativeProfileAndroid);
@@ -31,4 +35,6 @@ public class Profile {
     private int getNativePointer() {
         return mNativeProfileAndroid;
     }
+
+    private static native Object nativeGetLastUsedProfile();
 }

@@ -12,6 +12,7 @@ include_rules = [
   "!chrome/browser/policy/cloud/user_policy_signin_service.h",
   "!chrome/browser/policy/cloud/user_policy_signin_service_factory.h",
   "!chrome/browser/profiles/profile.h",
+  "!chrome/browser/profiles/profile_android.h",
   "!chrome/browser/profiles/profile_info_cache.h",
   "!chrome/browser/profiles/profile_io_data.h",
   "!chrome/browser/profiles/profile_manager.h",

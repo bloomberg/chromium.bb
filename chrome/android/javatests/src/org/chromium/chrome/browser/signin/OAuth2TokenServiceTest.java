@@ -14,9 +14,10 @@ import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.test.util.AccountHolder;
 import org.chromium.sync.test.util.MockAccountManager;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-public class AndroidProfileOAuth2TokenServiceHelperTest extends InstrumentationTestCase {
+public class OAuth2TokenServiceTest extends InstrumentationTestCase {
 
     private AdvancedMockContext mContext;
     private MockAccountManager mAccountManager;
@@ -29,6 +30,43 @@ public class AndroidProfileOAuth2TokenServiceHelperTest extends InstrumentationT
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
         mAccountManager = new MockAccountManager(mContext, getInstrumentation().getContext());
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testGetAccountsNoAccountsRegistered() {
+        String[] accounts = OAuth2TokenService.getAccounts(mContext);
+        assertEquals("There should be no accounts registered", 0, accounts.length);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testGetAccountsOneAccountRegistered() {
+        Account account1 = AccountManagerHelper.createAccountFromName("foo@gmail.com");
+        AccountHolder accountHolder1 = AccountHolder.create().account(account1).build();
+        mAccountManager.addAccountHolderExplicitly(accountHolder1);
+
+        String[] accounts = OAuth2TokenService.getAccounts(mContext);
+        assertEquals("There should be one registered account", 1, accounts.length);
+        assertEquals("The account should be " + account1, account1.name, accounts[0]);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testGetAccountsTwoAccountsRegistered() {
+        Account account1 = AccountManagerHelper.createAccountFromName("foo@gmail.com");
+        AccountHolder accountHolder1 = AccountHolder.create().account(account1).build();
+        mAccountManager.addAccountHolderExplicitly(accountHolder1);
+        Account account2 = AccountManagerHelper.createAccountFromName("bar@gmail.com");
+        AccountHolder accountHolder2 = AccountHolder.create().account(account2).build();
+        mAccountManager.addAccountHolderExplicitly(accountHolder2);
+
+        String[] accounts = OAuth2TokenService.getAccounts(mContext);
+        assertEquals("There should be one registered account", 2, accounts.length);
+        assertTrue("The list should contain " + account1,
+                Arrays.asList(accounts).contains(account1.name));
+        assertTrue("The list should contain " + account2,
+                Arrays.asList(accounts).contains(account2.name));
     }
 
     @SmallTest
@@ -61,7 +99,7 @@ public class AndroidProfileOAuth2TokenServiceHelperTest extends InstrumentationT
         mAccountManager.addAccountHolderExplicitly(accountHolder);
 
         String accessToken =
-                AndroidProfileOAuth2TokenServiceHelper.getOAuth2AccessTokenWithTimeout(
+                OAuth2TokenService.getOAuth2AccessTokenWithTimeout(
                         mContext, null, account, scope, 5, TimeUnit.SECONDS);
         assertEquals(expectedToken, accessToken);
     }

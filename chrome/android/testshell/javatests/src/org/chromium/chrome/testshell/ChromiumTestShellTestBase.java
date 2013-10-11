@@ -5,14 +5,18 @@
 package org.chromium.chrome.testshell;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.common.CommandLine;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,6 +30,17 @@ public class ChromiumTestShellTestBase extends
 
     public ChromiumTestShellTestBase() {
         super(ChromiumTestShellActivity.class);
+    }
+
+    protected static void startChromeBrowserProcessSync(final Context targetContext) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                CommandLine.initFromFile("/data/local/tmp/chromium-testshell-command-line");
+                BrowserStartupController.get(targetContext).startBrowserProcessesSync(
+                        BrowserStartupController.MAX_RENDERERS_LIMIT);
+            }
+        });
     }
 
     /**
