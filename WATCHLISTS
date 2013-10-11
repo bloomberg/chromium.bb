@@ -670,7 +670,6 @@
     'chromeos_attestation' : ['dkrahn+watch@chromium.org'],
     'chromeos_calculator' : ['dharcourt@chromium.org'],
     'chromeos_net' : ['gauravsh+watch@chromium.org',
-                      'gspencer+watch@chromium.org',
                       'stevenjb+watch@chromium.org'],
     'chromeos_power' : ['derat+watch@chromium.org'],
     'chromeos_webui': ['nkostylev+watch@chromium.org'],
