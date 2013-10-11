@@ -47,7 +47,7 @@ echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
 make -j8 clean buildbot-build-with-newlib
 if [[ ${PLATFORM} == win ]]; then
-../MinGW/msys/1.0/bin/sh.exe -c "export PATH=/mingw/bin:/bin:\$PATH &&
+../mingw/msys/bin/sh.exe -c "export PATH=/mingw/bin:/bin:\$PATH &&
   export TOOLCHAINLOC &&
   export TOOLCHAINNAME &&
   make -j8 gdb 2>&1"
