@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/quota/NavigatorStorageQuota.h"
 
-#include "core/page/Navigator.h"
+#include "core/frame/Navigator.h"
 #include "modules/quota/StorageQuota.h"
 
 namespace WebCore {

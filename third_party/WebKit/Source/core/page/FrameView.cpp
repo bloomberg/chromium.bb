@@ -517,7 +517,7 @@ PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientatio
     if (docElement && docElement->renderer() && docElement->renderer()->style()->hasPseudoStyle(SCROLLBAR))
         return RenderScrollbar::createCustomScrollbar(this, orientation, docElement);
 
-    // If we have an owning iframe/frame element, then it can set the custom scrollbar also.
+    // If we have an owning ipage/Frame element, then it can set the custom scrollbar also.
     RenderPart* frameRenderer = m_frame->ownerRenderer();
     if (frameRenderer && frameRenderer->style()->hasPseudoStyle(SCROLLBAR))
         return RenderScrollbar::createCustomScrollbar(this, orientation, 0, m_frame.get());
@@ -2747,7 +2747,7 @@ void FrameView::updateScrollCorner()
         }
 
         if (!cornerStyle) {
-            // If we have an owning iframe/frame element, then it can set the custom scrollbar also.
+            // If we have an owning ipage/Frame element, then it can set the custom scrollbar also.
             if (RenderPart* renderer = m_frame->ownerRenderer())
                 cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
         }

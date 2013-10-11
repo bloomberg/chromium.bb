@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
-#include "core/page/Navigator.h"
+#include "core/frame/Navigator.h"
 #include "core/page/Page.h"
 #include "wtf/HashSet.h"
 

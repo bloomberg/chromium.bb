@@ -32,7 +32,7 @@
 #define NavigatorServiceWorker_h
 
 #include "bindings/v8/ScriptPromise.h"
-#include "core/page/Navigator.h"
+#include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {

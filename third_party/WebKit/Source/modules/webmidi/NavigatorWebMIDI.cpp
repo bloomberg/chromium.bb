@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Frame.h"
-#include "core/page/Navigator.h"
+#include "core/frame/Navigator.h"
 #include "modules/webmidi/MIDIAccessPromise.h"
 
 namespace WebCore {

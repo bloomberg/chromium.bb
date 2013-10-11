@@ -28,7 +28,7 @@
 
 
 #include "config.h"
-#include "core/page/Screen.h"
+#include "core/frame/Screen.h"
 
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"

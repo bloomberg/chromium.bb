@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/page/History.h"
+#include "core/frame/History.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"

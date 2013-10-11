@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "core/page/PerformanceUserTiming.h"
+#include "core/timing/PerformanceUserTiming.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Performance.h"
-#include "core/page/PerformanceMark.h"
-#include "core/page/PerformanceMeasure.h"
+#include "core/timing/Performance.h"
+#include "core/timing/PerformanceMark.h"
+#include "core/timing/PerformanceMeasure.h"
 #include "core/platform/HistogramSupport.h"
 #include "wtf/text/WTFString.h"
 

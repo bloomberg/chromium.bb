@@ -37,7 +37,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptDebugListener.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"

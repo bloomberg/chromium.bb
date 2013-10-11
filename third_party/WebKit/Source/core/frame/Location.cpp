@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/page/Location.h"
+#include "core/frame/Location.h"
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"

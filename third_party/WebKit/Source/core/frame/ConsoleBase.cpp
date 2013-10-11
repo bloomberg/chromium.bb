@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/page/Console.h"
+#include "core/frame/Console.h"
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
@@ -37,7 +37,7 @@
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "platform/TraceEvent.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"

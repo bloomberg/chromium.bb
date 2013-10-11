@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// See: http://dev.w3.org/2006/webapi/WebTiming/
+// See: http://www.w3.org/TR/navigation-timing/
 interface Performance : EventTarget {
     readonly attribute PerformanceNavigation navigation;
     readonly attribute PerformanceTiming timing;

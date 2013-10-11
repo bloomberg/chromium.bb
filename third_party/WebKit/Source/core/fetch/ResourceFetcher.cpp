@@ -57,7 +57,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/page/Performance.h"
+#include "core/timing/Performance.h"
 #include "core/page/ResourceTimingInfo.h"
 #include "core/page/Settings.h"
 #include "platform/Logging.h"

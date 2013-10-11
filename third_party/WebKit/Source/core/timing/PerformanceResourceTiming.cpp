@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "core/page/PerformanceResourceTiming.h"
+#include "core/timing/PerformanceResourceTiming.h"
 
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoadTiming.h"

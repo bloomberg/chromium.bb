@@ -129,6 +129,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
+#include "core/frame/Console.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLCollection.h"
@@ -148,14 +149,12 @@
 #include "core/loader/IconController.h"
 #include "core/loader/SubstituteData.h"
 #include "core/page/Chrome.h"
-#include "core/page/Console.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/Performance.h"
 #include "core/page/PrintContext.h"
 #include "core/page/Settings.h"
 #include "core/platform/ScrollbarTheme.h"
@@ -172,6 +171,7 @@
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "core/timing/Performance.h"
 #include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathResult.h"
 #include "modules/filesystem/DOMFileSystem.h"
@@ -2162,7 +2162,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
         webframe = webframeLifetimeHack.get();
     }
 
-    // Add an extra ref on behalf of the Frame/FrameLoader, which references the
+    // Add an extra ref on behalf of the page/FrameLoader, which references the
     // WebFrame via the FrameLoaderClient interface. See the comment at the top
     // of this file for more info.
     webframe->ref();

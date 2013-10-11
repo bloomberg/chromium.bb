@@ -30,17 +30,17 @@
  */
 
 #include "config.h"
-#include "core/page/Performance.h"
+#include "core/timing/Performance.h"
 
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/MemoryInfo.h"
-#include "core/page/PerformanceEntry.h"
-#include "core/page/PerformanceNavigation.h"
-#include "core/page/PerformanceResourceTiming.h"
-#include "core/page/PerformanceTiming.h"
-#include "core/page/PerformanceUserTiming.h"
 #include "core/page/ResourceTimingInfo.h"
+#include "core/timing/MemoryInfo.h"
+#include "core/timing/PerformanceEntry.h"
+#include "core/timing/PerformanceNavigation.h"
+#include "core/timing/PerformanceResourceTiming.h"
+#include "core/timing/PerformanceTiming.h"
+#include "core/timing/PerformanceUserTiming.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 

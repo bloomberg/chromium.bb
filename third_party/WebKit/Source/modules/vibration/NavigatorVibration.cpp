@@ -20,8 +20,8 @@
 #include "config.h"
 #include "modules/vibration/NavigatorVibration.h"
 
+#include "core/frame/Navigator.h"
 #include "core/page/Frame.h"
-#include "core/page/Navigator.h"
 #include "core/page/Page.h"
 #include "core/page/PageVisibilityState.h"
 #include "public/platform/Platform.h"

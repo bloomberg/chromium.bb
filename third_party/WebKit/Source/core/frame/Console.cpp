@@ -27,10 +27,12 @@
  */
 
 #include "config.h"
-#include "core/page/Console.h"
+#include "core/frame/Console.h"
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
+#include "core/frame/ConsoleBase.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptArguments.h"
@@ -38,12 +40,10 @@
 #include "core/inspector/ScriptProfile.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/ConsoleBase.h"
-#include "core/page/ConsoleTypes.h"
 #include "core/page/Frame.h"
-#include "core/page/MemoryInfo.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
+#include "core/timing/MemoryInfo.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 

@@ -40,7 +40,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringConcatenate.h"
 

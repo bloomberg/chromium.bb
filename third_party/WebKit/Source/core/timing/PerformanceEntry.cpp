@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
- * Copyright (C) 2013 Samsung Electronics. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,63 +29,41 @@
  */
 
 #include "config.h"
-#include "NavigatorID.h"
-
-#include "core/page/NavigatorBase.h"
-
-#if !defined(WEBCORE_NAVIGATOR_PLATFORM) && OS(POSIX) && !OS(MACOSX)
-#include "wtf/StdLibExtras.h"
-#include <sys/utsname.h>
-#endif
-
-#ifndef WEBCORE_NAVIGATOR_PRODUCT
-#define WEBCORE_NAVIGATOR_PRODUCT "Gecko"
-#endif // ifndef WEBCORE_NAVIGATOR_PRODUCT
+#include "core/timing/PerformanceEntry.h"
 
 namespace WebCore {
 
-String NavigatorID::appName(const NavigatorBase*)
+PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime)
+    : m_name(name)
+    , m_entryType(entryType)
+    , m_startTime(startTime)
+    , m_duration(finishTime - startTime)
 {
-    return "Netscape";
+    ScriptWrappable::init(this);
 }
 
-String NavigatorID::appVersion(const NavigatorBase* navigator)
+PerformanceEntry::~PerformanceEntry()
 {
-    // Version is everything in the user agent string past the "Mozilla/" prefix.
-    const String& agent = navigator->userAgent();
-    return agent.substring(agent.find('/') + 1);
 }
 
-String NavigatorID::userAgent(const NavigatorBase* navigator)
+String PerformanceEntry::name() const
 {
-    return navigator->userAgent();
+    return m_name;
 }
 
-String NavigatorID::platform(const NavigatorBase*)
+String PerformanceEntry::entryType() const
 {
-#if defined(WEBCORE_NAVIGATOR_PLATFORM)
-    return WEBCORE_NAVIGATOR_PLATFORM;
-#elif OS(MACOSX)
-    // Match Safari and Mozilla on Mac x86.
-    return "MacIntel";
-#elif OS(WIN)
-    // Match Safari and Mozilla on Windows.
-    return "Win32";
-#else // Unix-like systems
-    struct utsname osname;
-    DEFINE_STATIC_LOCAL(String, platformName, (uname(&osname) >= 0 ? String(osname.sysname) + String(" ") + String(osname.machine) : emptyString()));
-    return platformName;
-#endif
+    return m_entryType;
 }
 
-String NavigatorID::appCodeName(const NavigatorBase*)
+double PerformanceEntry::startTime() const
 {
-    return "Mozilla";
+    return m_startTime;
 }
 
-String NavigatorID::product(const NavigatorBase*)
+double PerformanceEntry::duration() const
 {
-    return WEBCORE_NAVIGATOR_PRODUCT;
+    return m_duration;
 }
 
 } // namespace WebCore

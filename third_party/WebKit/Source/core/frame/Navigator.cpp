@@ -21,19 +21,19 @@
  */
 
 #include "config.h"
-#include "core/page/Navigator.h"
+#include "core/frame/Navigator.h"
 
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
+#include "core/frame/NavigatorID.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
-#include "core/page/NavigatorID.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "platform/Language.h"
 #include "core/plugins/DOMMimeTypeArray.h"
 #include "core/plugins/DOMPluginArray.h"
+#include "platform/Language.h"
 
 #ifndef WEBCORE_NAVIGATOR_PRODUCT_SUB
 #define WEBCORE_NAVIGATOR_PRODUCT_SUB "20030107"

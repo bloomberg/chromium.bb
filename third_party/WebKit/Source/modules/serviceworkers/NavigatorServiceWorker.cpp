@@ -37,7 +37,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
-#include "core/page/Navigator.h"
+#include "core/frame/Navigator.h"
 #include "core/workers/SharedWorker.h"
 #include "modules/serviceworkers/CallbackPromiseAdapter.h"
 #include "modules/serviceworkers/ServiceWorker.h"

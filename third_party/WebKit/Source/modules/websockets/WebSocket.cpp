@@ -44,7 +44,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fileapi/Blob.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"

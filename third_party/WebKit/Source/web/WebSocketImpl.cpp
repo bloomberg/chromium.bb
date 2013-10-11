@@ -34,7 +34,7 @@
 #include "WebDocument.h"
 #include "WebSocketClient.h"
 #include "core/dom/Document.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/page/Settings.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannel.h"

@@ -27,7 +27,7 @@
 #define WorkerNavigator_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/page/NavigatorBase.h"
+#include "core/frame/NavigatorBase.h"
 #include "platform/Supplementable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

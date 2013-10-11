@@ -75,7 +75,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/page/Console.h"
+#include "core/frame/Console.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupDriver.h"

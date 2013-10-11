@@ -30,7 +30,7 @@
 #include "bindings/v8/ScriptString.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

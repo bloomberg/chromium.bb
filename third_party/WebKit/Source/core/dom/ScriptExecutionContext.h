@@ -32,7 +32,7 @@
 #include "core/events/ErrorEvent.h"
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/CrossOriginAccessControl.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/page/DOMTimer.h"
 #include "core/platform/LifecycleContext.h"
 #include "weborigin/KURL.h"

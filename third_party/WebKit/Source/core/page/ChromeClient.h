@@ -26,7 +26,7 @@
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationPolicy.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/PopupMenu.h"

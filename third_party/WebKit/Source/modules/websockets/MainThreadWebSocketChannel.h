@@ -33,7 +33,7 @@
 
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketDeflateFramer.h"
 #include "modules/websockets/WebSocketFrame.h"

@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in http://www.whatwg.org/specs/web-apps/current-work/multipage/history.html#event-hashchange
+// Introduced in http://www.whatwg.org/specs/web-apps/current-work/multiframe/History.html#event-hashchange
 [
     ConstructorTemplate=Event
 ] interface HashChangeEvent : Event {

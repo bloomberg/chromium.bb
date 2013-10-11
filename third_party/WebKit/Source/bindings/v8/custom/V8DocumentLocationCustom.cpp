@@ -27,7 +27,7 @@
 #include "V8Location.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/page/DOMWindow.h"
-#include "core/page/Location.h"
+#include "core/frame/Location.h"
 
 namespace WebCore {
 

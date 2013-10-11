@@ -34,10 +34,10 @@
 #include "V8PerformanceMark.h"
 #include "V8PerformanceMeasure.h"
 #include "V8PerformanceResourceTiming.h"
-#include "core/page/Performance.h"
-#include "core/page/PerformanceMark.h"
-#include "core/page/PerformanceMeasure.h"
-#include "core/page/PerformanceResourceTiming.h"
+#include "core/timing/Performance.h"
+#include "core/timing/PerformanceMark.h"
+#include "core/timing/PerformanceMeasure.h"
+#include "core/timing/PerformanceResourceTiming.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

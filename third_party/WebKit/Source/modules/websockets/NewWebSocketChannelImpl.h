@@ -34,7 +34,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "public/platform/WebSocketHandle.h"
 #include "public/platform/WebSocketHandleClient.h"

@@ -31,7 +31,7 @@
 
 #include "bindings/v8/ScriptState.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 

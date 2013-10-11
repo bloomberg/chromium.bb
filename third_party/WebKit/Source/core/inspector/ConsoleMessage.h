@@ -34,7 +34,7 @@
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/inspector/ConsoleAPITypes.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

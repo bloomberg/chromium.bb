@@ -35,7 +35,7 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/events/PopStateEvent.h"
-#include "core/page/History.h"
+#include "core/frame/History.h"
 
 namespace WebCore {
 

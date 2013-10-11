@@ -3211,7 +3211,7 @@ static bool exactlyOneBitSet(DragSourceAction n)
 bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDragHysteresis checkDragHysteresis)
 {
     // Callers must protect the reference to FrameView, since this function may dispatch DOM
-    // events, causing Frame/FrameView to go away.
+    // events, causing page/FrameView to go away.
     ASSERT(m_frame);
     ASSERT(m_frame->view());
     if (!m_frame->page())

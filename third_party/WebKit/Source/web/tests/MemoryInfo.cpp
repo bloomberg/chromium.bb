@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "core/page/MemoryInfo.h"
+#include "core/timing/MemoryInfo.h"
 
 #include <gtest/gtest.h>
 

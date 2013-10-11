@@ -31,7 +31,7 @@
 
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/page/ConsoleBase.h"
+#include "core/frame/ConsoleBase.h"
 #include "core/page/DOMWindowProperty.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/page/PerformanceTiming.h"
+#include "core/timing/PerformanceTiming.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentTiming.h"

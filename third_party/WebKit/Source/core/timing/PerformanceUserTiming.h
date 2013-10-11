@@ -23,29 +23,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PerformanceMeasure_h
-#define PerformanceMeasure_h
+#ifndef PerformanceUserTiming_h
+#define PerformanceUserTiming_h
 
-#include "core/page/PerformanceEntry.h"
+#include "core/timing/PerformanceTiming.h"
+#include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PerformanceMeasure : public PerformanceEntry {
-public:
-    static PassRefPtr<PerformanceMeasure> create(const String& name, double startTime, double endTime) { return adoptRef(new PerformanceMeasure(name, startTime, endTime)); }
+class ExceptionState;
+class Performance;
+class PerformanceEntry;
 
-    virtual bool isMeasure() { return true; }
+typedef unsigned long long (PerformanceTiming::*NavigationTimingFunction)() const;
+typedef HashMap<String, Vector<RefPtr<PerformanceEntry> > > PerformanceEntryMap;
+
+class UserTiming : public RefCounted<UserTiming> {
+public:
+    static PassRefPtr<UserTiming> create(Performance* performance) { return adoptRef(new UserTiming(performance)); }
+
+    void mark(const String& markName, ExceptionState&);
+    void clearMarks(const String& markName);
+
+    void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState&);
+    void clearMeasures(const String& measureName);
+
+    Vector<RefPtr<PerformanceEntry> > getMarks() const;
+    Vector<RefPtr<PerformanceEntry> > getMeasures() const;
+
+    Vector<RefPtr<PerformanceEntry> > getMarks(const String& name) const;
+    Vector<RefPtr<PerformanceEntry> > getMeasures(const String& name) const;
 
 private:
-    PerformanceMeasure(const String& name, double startTime, double endTime) : PerformanceEntry(name, "measure", startTime, endTime)
-    {
-        ScriptWrappable::init(this);
-    }
-    ~PerformanceMeasure() { }
+    explicit UserTiming(Performance*);
+
+    double findExistingMarkStartTime(const String& markName, ExceptionState&);
+    Performance* m_performance;
+    PerformanceEntryMap m_marksMap;
+    PerformanceEntryMap m_measuresMap;
 };
 
 }
 
-#endif // !defined(PerformanceMeasure_h)
+#endif // !defined(PerformanceUserTiming_h)

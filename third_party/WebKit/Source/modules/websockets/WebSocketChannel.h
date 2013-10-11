@@ -31,7 +31,7 @@
 #ifndef WebSocketChannel_h
 #define WebSocketChannel_h
 
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"

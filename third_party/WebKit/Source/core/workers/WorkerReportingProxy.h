@@ -31,7 +31,7 @@
 #ifndef WorkerReportingProxy_h
 #define WorkerReportingProxy_h
 
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

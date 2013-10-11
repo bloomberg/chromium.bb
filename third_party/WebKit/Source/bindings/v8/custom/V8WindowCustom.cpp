@@ -59,7 +59,7 @@
 #include "core/page/DOMWindowTimers.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/page/Location.h"
+#include "core/frame/Location.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"

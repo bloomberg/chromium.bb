@@ -34,7 +34,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/page/DOMWindowProperty.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/page/MemoryInfo.h"
+#include "core/timing/MemoryInfo.h"
 
 #include <limits>
 #include "bindings/v8/ScriptGCEvent.h"
@@ -110,9 +110,9 @@ size_t quantizeMemorySize(size_t size)
 
             sizeOfNextBucket *= scalingFactor;
             if (sizeOfNextBucket >= nextPowerOfTen) {
-                if (std::numeric_limits<size_t>::max() / 10 <= nextPowerOfTen)
+                if (std::numeric_limits<size_t>::max() / 10 <= nextPowerOfTen) {
                     nextPowerOfTen = std::numeric_limits<size_t>::max();
-                else {
+                } else {
                     nextPowerOfTen *= 10;
                     granularity *= 10;
                 }
@@ -139,9 +139,9 @@ MemoryInfo::MemoryInfo(Frame* frame)
     if (!frame || !frame->settings())
         return;
 
-    if (frame->settings()->memoryInfoEnabled())
+    if (frame->settings()->memoryInfoEnabled()) {
         ScriptGCEvent::getHeapSize(m_info);
-    else {
+    } else {
         DEFINE_STATIC_LOCAL(HeapSizeCache, heapSizeCache, ());
         heapSizeCache.getCachedHeapSize(m_info);
     }

@@ -23,30 +23,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PerformanceMark_h
-#define PerformanceMark_h
+#ifndef PerformanceMeasure_h
+#define PerformanceMeasure_h
 
-#include "core/page/PerformanceEntry.h"
+#include "core/timing/PerformanceEntry.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PerformanceMark : public PerformanceEntry {
+class PerformanceMeasure : public PerformanceEntry {
 public:
-    static PassRefPtr<PerformanceMark> create(const String& name, double startTime) { return adoptRef(new PerformanceMark(name, startTime)); }
+    static PassRefPtr<PerformanceMeasure> create(const String& name, double startTime, double endTime) { return adoptRef(new PerformanceMeasure(name, startTime, endTime)); }
 
-    virtual bool isMark() { return true; }
+    virtual bool isMeasure() { return true; }
 
 private:
-    PerformanceMark(const String& name, double startTime) : PerformanceEntry(name, "mark", startTime, startTime)
+    PerformanceMeasure(const String& name, double startTime, double endTime) : PerformanceEntry(name, "measure", startTime, endTime)
     {
         ScriptWrappable::init(this);
     }
-
-    ~PerformanceMark() { }
+    ~PerformanceMeasure() { }
 };
 
 }
 
-#endif // !defined(PerformanceMark_h)
+#endif // !defined(PerformanceMeasure_h)

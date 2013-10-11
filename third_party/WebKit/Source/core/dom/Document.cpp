@@ -150,7 +150,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
-#include "core/page/History.h"
+#include "core/frame/History.h"
 #include "core/page/MouseEventWithHitTestResults.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"

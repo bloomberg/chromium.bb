@@ -32,7 +32,7 @@
 #ifndef PerformanceResourceTiming_h
 #define PerformanceResourceTiming_h
 
-#include "core/page/PerformanceEntry.h"
+#include "core/timing/PerformanceEntry.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

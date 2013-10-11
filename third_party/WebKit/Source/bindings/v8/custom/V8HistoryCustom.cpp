@@ -37,7 +37,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/History.h"
+#include "core/frame/History.h"
 
 namespace WebCore {
 

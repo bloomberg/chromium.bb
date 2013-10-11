@@ -31,7 +31,7 @@
 #ifndef WorkerThreadableWebSocketChannel_h
 #define WorkerThreadableWebSocketChannel_h
 
-#include "core/page/ConsoleTypes.h"
+#include "core/frame/ConsoleTypes.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"

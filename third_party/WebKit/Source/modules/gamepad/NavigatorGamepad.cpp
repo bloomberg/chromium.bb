@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/gamepad/NavigatorGamepad.h"
 
-#include "core/page/Navigator.h"
+#include "core/frame/Navigator.h"
 #include "modules/gamepad/GamepadList.h"
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"

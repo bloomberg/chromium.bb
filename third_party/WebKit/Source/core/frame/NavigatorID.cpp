@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,54 +30,63 @@
  */
 
 #include "config.h"
-#include "core/page/PerformanceNavigation.h"
+#include "NavigatorID.h"
 
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/page/Frame.h"
+#include "core/frame/NavigatorBase.h"
+
+#if !defined(WEBCORE_NAVIGATOR_PLATFORM) && OS(POSIX) && !OS(MACOSX)
+#include "wtf/StdLibExtras.h"
+#include <sys/utsname.h>
+#endif
+
+#ifndef WEBCORE_NAVIGATOR_PRODUCT
+#define WEBCORE_NAVIGATOR_PRODUCT "Gecko"
+#endif // ifndef WEBCORE_NAVIGATOR_PRODUCT
 
 namespace WebCore {
 
-PerformanceNavigation::PerformanceNavigation(Frame* frame)
-    : DOMWindowProperty(frame)
+String NavigatorID::appName(const NavigatorBase*)
 {
-    ScriptWrappable::init(this);
+    return "Netscape";
 }
 
-unsigned short PerformanceNavigation::type() const
+String NavigatorID::appVersion(const NavigatorBase* navigator)
 {
-    if (!m_frame)
-        return TYPE_NAVIGATE;
-
-    DocumentLoader* documentLoader = m_frame->loader()->documentLoader();
-    if (!documentLoader)
-        return TYPE_NAVIGATE;
-
-    WebCore::NavigationType navigationType = documentLoader->triggeringAction().type();
-    switch (navigationType) {
-    case NavigationTypeReload:
-        return TYPE_RELOAD;
-    case NavigationTypeBackForward:
-        return TYPE_BACK_FORWARD;
-    default:
-        return TYPE_NAVIGATE;
-    }
+    // Version is everything in the user agent string past the "Mozilla/" prefix.
+    const String& agent = navigator->userAgent();
+    return agent.substring(agent.find('/') + 1);
 }
 
-unsigned short PerformanceNavigation::redirectCount() const
+String NavigatorID::userAgent(const NavigatorBase* navigator)
 {
-    if (!m_frame)
-        return 0;
+    return navigator->userAgent();
+}
 
-    DocumentLoader* loader = m_frame->loader()->documentLoader();
-    if (!loader)
-        return 0;
+String NavigatorID::platform(const NavigatorBase*)
+{
+#if defined(WEBCORE_NAVIGATOR_PLATFORM)
+    return WEBCORE_NAVIGATOR_PLATFORM;
+#elif OS(MACOSX)
+    // Match Safari and Mozilla on Mac x86.
+    return "MacIntel";
+#elif OS(WIN)
+    // Match Safari and Mozilla on Windows.
+    return "Win32";
+#else // Unix-like systems
+    struct utsname osname;
+    DEFINE_STATIC_LOCAL(String, platformName, (uname(&osname) >= 0 ? String(osname.sysname) + String(" ") + String(osname.machine) : emptyString()));
+    return platformName;
+#endif
+}
 
-    DocumentLoadTiming* timing = loader->timing();
-    if (timing->hasCrossOriginRedirect())
-        return 0;
+String NavigatorID::appCodeName(const NavigatorBase*)
+{
+    return "Mozilla";
+}
 
-    return timing->redirectCount();
+String NavigatorID::product(const NavigatorBase*)
+{
+    return WEBCORE_NAVIGATOR_PRODUCT;
 }
 
 } // namespace WebCore

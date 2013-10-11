@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,41 +29,54 @@
  */
 
 #include "config.h"
-#include "core/page/PerformanceEntry.h"
+#include "core/timing/PerformanceNavigation.h"
+
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoaderTypes.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 
-PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime)
-    : m_name(name)
-    , m_entryType(entryType)
-    , m_startTime(startTime)
-    , m_duration(finishTime - startTime)
+PerformanceNavigation::PerformanceNavigation(Frame* frame)
+    : DOMWindowProperty(frame)
 {
     ScriptWrappable::init(this);
 }
 
-PerformanceEntry::~PerformanceEntry()
+unsigned short PerformanceNavigation::type() const
 {
+    if (!m_frame)
+        return TYPE_NAVIGATE;
+
+    DocumentLoader* documentLoader = m_frame->loader()->documentLoader();
+    if (!documentLoader)
+        return TYPE_NAVIGATE;
+
+    WebCore::NavigationType navigationType = documentLoader->triggeringAction().type();
+    switch (navigationType) {
+    case NavigationTypeReload:
+        return TYPE_RELOAD;
+    case NavigationTypeBackForward:
+        return TYPE_BACK_FORWARD;
+    default:
+        return TYPE_NAVIGATE;
+    }
 }
 
-String PerformanceEntry::name() const
+unsigned short PerformanceNavigation::redirectCount() const
 {
-    return m_name;
-}
+    if (!m_frame)
+        return 0;
 
-String PerformanceEntry::entryType() const
-{
-    return m_entryType;
-}
+    DocumentLoader* loader = m_frame->loader()->documentLoader();
+    if (!loader)
+        return 0;
 
-double PerformanceEntry::startTime() const
-{
-    return m_startTime;
-}
+    DocumentLoadTiming* timing = loader->timing();
+    if (timing->hasCrossOriginRedirect())
+        return 0;
 
-double PerformanceEntry::duration() const
-{
-    return m_duration;
+    return timing->redirectCount();
 }
 
 } // namespace WebCore

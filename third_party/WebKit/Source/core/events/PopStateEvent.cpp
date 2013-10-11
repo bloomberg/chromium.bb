@@ -29,7 +29,7 @@
 
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/page/History.h"
+#include "core/frame/History.h"
 
 namespace WebCore {
 
