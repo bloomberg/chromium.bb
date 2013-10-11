@@ -20,6 +20,7 @@
 #include "crypto/encryptor.h"
 #include "crypto/random.h"
 #include "crypto/sha2.h"
+#include "ppapi/c/pp_errors.h"
 #if defined(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
 #endif
@@ -55,7 +56,7 @@ void GetMachineIDAsync(const DeviceIDFetcher::IDCallback& callback) {
   // Not implemented for other platforms.
   NOTREACHED();
 #endif
-  callback.Run(result);
+  callback.Run(result, result.empty() ? PP_ERROR_FAILED : PP_OK);
 }
 
 }  // namespace
@@ -116,7 +117,7 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
   if (!profile ||
       profile->IsOffTheRecord() ||
       !profile->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
-    RunCallbackOnIOThread(std::string());
+    RunCallbackOnIOThread(std::string(), PP_ERROR_NOACCESS);
     return;
   }
 
@@ -146,12 +147,13 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
 }
 
 void DeviceIDFetcher::ComputeOnUIThread(const std::string& salt,
-                                        const std::string& machine_id) {
+                                        const std::string& machine_id,
+                                        int32_t result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (machine_id.empty()) {
+  if (result != PP_OK) {
     LOG(ERROR) << "Empty machine id";
-    RunCallbackOnIOThread(std::string());
+    RunCallbackOnIOThread(std::string(), result);
     return;
   }
 
@@ -162,7 +164,7 @@ void DeviceIDFetcher::ComputeOnUIThread(const std::string& salt,
     salt_bytes.clear();
   if (salt_bytes.size() != kSaltLength) {
     LOG(ERROR) << "Unexpected salt bytes length: " << salt_bytes.size();
-    RunCallbackOnIOThread(std::string());
+    RunCallbackOnIOThread(std::string(), PP_ERROR_FAILED);
     return;
   }
 
@@ -181,7 +183,7 @@ void DeviceIDFetcher::ComputeOnUIThread(const std::string& salt,
         reinterpret_cast<const void*>(id_buf),
         sizeof(id_buf)));
 
-  RunCallbackOnIOThread(id);
+  RunCallbackOnIOThread(id, PP_OK);
 }
 
 // TODO(raymes): This is temporary code to migrate ChromeOS devices to the new
@@ -196,7 +198,7 @@ void DeviceIDFetcher::LegacyComputeOnBlockingPool(
   base::FilePath id_path = GetLegacyDeviceIDPath(profile_path);
   if (base::PathExists(id_path)) {
     if (base::ReadFileToString(id_path, &id) && !id.empty()) {
-      RunCallbackOnIOThread(id);
+      RunCallbackOnIOThread(id, PP_OK);
       return;
     }
   }
@@ -209,15 +211,16 @@ void DeviceIDFetcher::LegacyComputeOnBlockingPool(
                             this, salt)));
 }
 
-void DeviceIDFetcher::RunCallbackOnIOThread(const std::string& id) {
+void DeviceIDFetcher::RunCallbackOnIOThread(const std::string& id,
+                                            int32_t result) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DeviceIDFetcher::RunCallbackOnIOThread, this, id));
+        base::Bind(&DeviceIDFetcher::RunCallbackOnIOThread, this, id, result));
     return;
   }
   in_progress_ = false;
-  callback_.Run(id);
+  callback_.Run(id, result);
 }
 
 }  // namespace chrome

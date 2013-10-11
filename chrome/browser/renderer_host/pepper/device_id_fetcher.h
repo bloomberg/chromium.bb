@@ -31,7 +31,7 @@ namespace chrome {
 // or on error.
 class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
  public:
-  typedef base::Callback<void(const std::string&)> IDCallback;
+  typedef base::Callback<void(const std::string&, int32_t)> IDCallback;
 
   explicit DeviceIDFetcher(int render_process_id);
 
@@ -55,7 +55,8 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
 
   // Compute the device ID on the UI thread with the given salt and machine ID.
   void ComputeOnUIThread(const std::string& salt,
-                         const std::string& machine_id);
+                         const std::string& machine_id,
+                         int32_t result);
 
   // Legacy method used to get the device ID for ChromeOS.
   void LegacyComputeOnBlockingPool(const base::FilePath& profile_path,
@@ -63,7 +64,8 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
 
   // Runs the callback passed into Start() on the IO thread with the device ID
   // or the empty string on failure.
-  void RunCallbackOnIOThread(const std::string& id);
+  void RunCallbackOnIOThread(const std::string& id,
+                             int32_t result);
 
   friend class base::RefCountedThreadSafe<DeviceIDFetcher>;
 

@@ -43,7 +43,8 @@ class PepperFlashDRMHost : public ppapi::host::ResourceHost {
   // Called by the fetcher when the device ID was retrieved, or the empty string
   // on error.
   void GotDeviceID(ppapi::host::ReplyMessageContext reply_context,
-                   const std::string& id);
+                   const std::string& id,
+                   int32_t result);
 
   scoped_refptr<DeviceIDFetcher> fetcher_;
   scoped_refptr<MonitorFinder> monitor_finder_;

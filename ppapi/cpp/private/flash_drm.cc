@@ -71,7 +71,7 @@ int32_t DRM::GetVoucherFile(
         callback.output(),
         callback.pp_completion_callback());
   }
-  return PP_ERROR_FAILED;
+  return PP_ERROR_NOINTERFACE;
 }
 
 }  // namespace flash

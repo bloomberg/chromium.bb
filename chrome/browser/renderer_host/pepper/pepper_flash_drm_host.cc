@@ -171,9 +171,13 @@ int32_t PepperFlashDRMHost::OnHostMsgGetHmonitor(
 
 void PepperFlashDRMHost::GotDeviceID(
     ppapi::host::ReplyMessageContext reply_context,
-    const std::string& id) {
-  reply_context.params.set_result(
-      id.empty() ? PP_ERROR_FAILED : PP_OK);
+    const std::string& id,
+    int32_t result) {
+  if (id.empty() && result == PP_OK) {
+    NOTREACHED();
+    result = PP_ERROR_FAILED;
+  }
+  reply_context.params.set_result(result);
   host()->SendReply(reply_context,
                     PpapiPluginMsg_FlashDRM_GetDeviceIDReply(id));
 }
