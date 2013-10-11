@@ -59,7 +59,7 @@ public:
     ~Performance();
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     PassRefPtr<MemoryInfo> memory() const;
     PerformanceNavigation* navigation() const;

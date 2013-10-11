@@ -214,7 +214,7 @@ Internals::Internals(Document* document)
 
 Document* Internals::contextDocument() const
 {
-    return toDocument(scriptExecutionContext());
+    return toDocument(executionContext());
 }
 
 Frame* Internals::frame() const
@@ -1611,7 +1611,7 @@ void Internals::closeDummyInspectorFrontend()
 
     m_frontendChannel.release();
 
-    m_frontendWindow->close(m_frontendWindow->scriptExecutionContext());
+    m_frontendWindow->close(m_frontendWindow->executionContext());
     m_frontendWindow.release();
 }
 

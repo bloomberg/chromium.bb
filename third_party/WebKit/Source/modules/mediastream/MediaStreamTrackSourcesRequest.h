@@ -41,7 +41,7 @@ class WebSourceInfo;
 namespace WebCore {
 
 class MediaStreamTrackSourcesCallback;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class MediaStreamTrackSourcesRequest : public RefCounted<MediaStreamTrackSourcesRequest> {
 public:
@@ -50,7 +50,7 @@ public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<MediaStreamTrackSourcesRequest> create(ScriptExecutionContext*, PassRefPtr<MediaStreamTrackSourcesCallback>);
+    static PassRefPtr<MediaStreamTrackSourcesRequest> create(ExecutionContext*, PassRefPtr<MediaStreamTrackSourcesCallback>);
     virtual ~MediaStreamTrackSourcesRequest();
 
     String origin() { return m_origin; }
@@ -61,7 +61,7 @@ public:
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 private:
-    MediaStreamTrackSourcesRequest(ScriptExecutionContext*, PassRefPtr<MediaStreamTrackSourcesCallback>);
+    MediaStreamTrackSourcesRequest(ExecutionContext*, PassRefPtr<MediaStreamTrackSourcesCallback>);
 
     void scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequest>*);
 

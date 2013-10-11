@@ -53,12 +53,12 @@ public:
     virtual void cancel(WebCore::Notification* object);
     virtual void notificationObjectDestroyed(WebCore::Notification* object);
     virtual void notificationControllerDestroyed();
-    virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ScriptExecutionContext*);
+    virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ExecutionContext*);
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    virtual void requestPermission(WebCore::ScriptExecutionContext*, WTF::PassRefPtr<WebCore::VoidCallback> callback);
+    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassRefPtr<WebCore::VoidCallback>);
 #endif
-    virtual void requestPermission(WebCore::ScriptExecutionContext*, WTF::PassRefPtr<WebCore::NotificationPermissionCallback>);
-    virtual void cancelRequestsForPermission(WebCore::ScriptExecutionContext*) {}
+    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassRefPtr<WebCore::NotificationPermissionCallback>);
+    virtual void cancelRequestsForPermission(WebCore::ExecutionContext*) { }
 
 private:
     // WebNotificationPresenter that this object delegates to.

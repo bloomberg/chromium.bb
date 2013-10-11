@@ -42,7 +42,7 @@ class Document;
 class KURL;
 class Notification;
 class Page;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class NotificationClient {
 
@@ -61,7 +61,7 @@ public:
 
     // When the user closes a page, or quits the client application, all of the page's
     // associated notifications are cleared.
-    virtual void clearNotifications(ScriptExecutionContext*) { }
+    virtual void clearNotifications(ExecutionContext*) { }
 
     // Informs the presenter that a Notification object has been destroyed
     // (such as by a page transition). The presenter may continue showing
@@ -75,15 +75,15 @@ public:
     // Requests user permission to show desktop notifications from a particular
     // script context. The callback parameter should be run when the user has
     // made a decision.
-    virtual void requestPermission(ScriptExecutionContext*, PassRefPtr<VoidCallback>) = 0;
+    virtual void requestPermission(ExecutionContext*, PassRefPtr<VoidCallback>) = 0;
 #endif
-    virtual void requestPermission(ScriptExecutionContext*, PassRefPtr<NotificationPermissionCallback>) = 0;
+    virtual void requestPermission(ExecutionContext*, PassRefPtr<NotificationPermissionCallback>) = 0;
 
-    // Cancel all outstanding requests for the ScriptExecutionContext
-    virtual void cancelRequestsForPermission(ScriptExecutionContext*) = 0;
+    // Cancel all outstanding requests for the ExecutionContext
+    virtual void cancelRequestsForPermission(ExecutionContext*) = 0;
 
     // Checks the current level of permission.
-    virtual Permission checkPermission(ScriptExecutionContext*) = 0;
+    virtual Permission checkPermission(ExecutionContext*) = 0;
 
 protected:
     virtual ~NotificationClient() { }

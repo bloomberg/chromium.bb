@@ -52,7 +52,7 @@ void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
 
-    ScriptExecutionContext* context = getScriptExecutionContext();
+    ExecutionContext* context = getExecutionContext();
     v8::Handle<v8::Object> wrapper = args.Holder();
 
     RefPtr<MutationCallback> callback = V8MutationCallback::create(v8::Handle<v8::Function>::Cast(arg), context, wrapper, args.GetIsolate());

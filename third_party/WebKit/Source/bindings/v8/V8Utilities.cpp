@@ -38,8 +38,8 @@
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "wtf/ArrayBuffer.h"
@@ -153,7 +153,7 @@ void transferHiddenDependency(v8::Handle<v8::Object> object, EventListener* oldV
         createHiddenDependency(object, newValue, cacheIndex, isolate);
 }
 
-ScriptExecutionContext* getScriptExecutionContext()
+ExecutionContext* getExecutionContext()
 {
     if (WorkerScriptController* controller = WorkerScriptController::controllerForContext())
         return controller->workerGlobalScope();

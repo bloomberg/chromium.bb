@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class Blob : public ScriptWrappable, public URLRegistrable, public RefCounted<Blob> {
 public:

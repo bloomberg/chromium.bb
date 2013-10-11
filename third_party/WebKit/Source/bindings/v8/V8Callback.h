@@ -38,10 +38,10 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
-bool invokeCallback(v8::Handle<v8::Object> callback, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ScriptExecutionContext*, v8::Isolate*);
-bool invokeCallback(v8::Handle<v8::Object> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ScriptExecutionContext*, v8::Isolate*);
+bool invokeCallback(v8::Handle<v8::Object> callback, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ExecutionContext*, v8::Isolate*);
+bool invokeCallback(v8::Handle<v8::Object> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ExecutionContext*, v8::Isolate*);
 
 enum CallbackAllowedValueFlag {
     CallbackAllowUndefined = 1,
@@ -68,7 +68,7 @@ PassRefPtr<V8CallbackType> createFunctionOnlyCallback(v8::Local<v8::Value> value
         return 0;
     }
 
-    return V8CallbackType::create(value, getScriptExecutionContext());
+    return V8CallbackType::create(value, getExecutionContext());
 }
 
 } // namespace WebCore

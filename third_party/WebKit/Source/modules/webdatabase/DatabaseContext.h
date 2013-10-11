@@ -39,7 +39,7 @@ class Database;
 class DatabaseBackendContext;
 class DatabaseTaskSynchronizer;
 class DatabaseThread;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class DatabaseContext : public ThreadSafeRefCounted<DatabaseContext>, public ActiveDOMObject {
 public:
@@ -61,7 +61,7 @@ public:
     bool allowDatabaseAccess() const;
 
 protected:
-    explicit DatabaseContext(ScriptExecutionContext*);
+    explicit DatabaseContext(ExecutionContext*);
 
 private:
     void stopDatabases() { stopDatabases(0); }

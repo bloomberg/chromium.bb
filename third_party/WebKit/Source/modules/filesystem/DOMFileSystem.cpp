@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/DOMFileSystem.h"
 
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
@@ -55,14 +55,14 @@
 namespace WebCore {
 
 // static
-PassRefPtr<DOMFileSystem> DOMFileSystem::create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+PassRefPtr<DOMFileSystem> DOMFileSystem::create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
 {
     RefPtr<DOMFileSystem> fileSystem(adoptRef(new DOMFileSystem(context, name, type, rootURL)));
     fileSystem->suspendIfNeeded();
     return fileSystem.release();
 }
 
-PassRefPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ScriptExecutionContext* context, const String& filesystemId)
+PassRefPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context, const String& filesystemId)
 {
     if (filesystemId.isEmpty())
         return 0;
@@ -86,7 +86,7 @@ PassRefPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ScriptExecutio
     return DOMFileSystem::create(context, filesystemName.toString(), FileSystemTypeIsolated, KURL(ParsedURLString, rootURL.toString()));
 }
 
-DOMFileSystem::DOMFileSystem(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+DOMFileSystem::DOMFileSystem(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     : DOMFileSystemBase(context, name, type, rootURL)
     , ActiveDOMObject(context)
 {
@@ -135,7 +135,7 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassRefPtr<FileWrit
 {
     ASSERT(fileEntry);
 
-    RefPtr<FileWriter> fileWriter = FileWriter::create(scriptExecutionContext());
+    RefPtr<FileWriter> fileWriter = FileWriter::create(executionContext());
     RefPtr<FileWriterBaseCallback> conversionCallback = ConvertToFileWriterCallback::create(successCallback);
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback);
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter.get(), callbacks.release());

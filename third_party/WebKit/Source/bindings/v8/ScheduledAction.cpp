@@ -37,7 +37,7 @@
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -69,7 +69,7 @@ ScheduledAction::~ScheduledAction()
         m_args[i].dispose();
 }
 
-void ScheduledAction::execute(ScriptExecutionContext* context)
+void ScheduledAction::execute(ExecutionContext* context)
 {
     if (context->isDocument()) {
         Frame* frame = toDocument(context)->frame();

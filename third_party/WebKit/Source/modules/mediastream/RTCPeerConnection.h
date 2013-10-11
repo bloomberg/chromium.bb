@@ -58,7 +58,7 @@ class VoidCallback;
 
 class RTCPeerConnection : public RefCounted<RTCPeerConnection>, public ScriptWrappable, public RTCPeerConnectionHandlerClient, public EventTargetWithInlineData, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCPeerConnection> create(ScriptExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
+    static PassRefPtr<RTCPeerConnection> create(ExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
     ~RTCPeerConnection();
 
     void createOffer(PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
@@ -122,7 +122,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
@@ -132,7 +132,7 @@ public:
     using RefCounted<RTCPeerConnection>::deref;
 
 private:
-    RTCPeerConnection(ScriptExecutionContext*, PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>, ExceptionState&);
+    RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>, ExceptionState&);
 
     static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary& configuration, ExceptionState&);
     void scheduleDispatchEvent(PassRefPtr<Event>);

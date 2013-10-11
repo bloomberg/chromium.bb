@@ -28,12 +28,12 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 
 class V8TestCallback : public TestCallback, public ActiveDOMCallback {
 public:
-    static PassRefPtr<V8TestCallback> create(v8::Handle<v8::Value> value, ScriptExecutionContext* context)
+    static PassRefPtr<V8TestCallback> create(v8::Handle<v8::Value> value, ExecutionContext* context)
     {
         ASSERT(value->IsObject());
         ASSERT(context);
@@ -53,10 +53,10 @@ public:
     virtual bool callbackWithFloat(float floatParam);
     virtual bool callbackWithThisArg(ScriptValue thisValue, int param);
 
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextLifecycleObserver::scriptExecutionContext(); }
+    virtual ExecutionContext* executionContext() const { return ContextLifecycleObserver::executionContext(); }
 
 private:
-    V8TestCallback(v8::Handle<v8::Object>, ScriptExecutionContext*);
+    V8TestCallback(v8::Handle<v8::Object>, ExecutionContext*);
 
     ScopedPersistent<v8::Object> m_callback;
     RefPtr<DOMWrapperWorld> m_world;

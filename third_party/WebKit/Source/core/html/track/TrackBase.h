@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class TrackBase : public RefCounted<TrackBase>, public EventTargetWithInlineData {
 public:
@@ -41,13 +41,13 @@ public:
     Type type() const { return m_type; }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     using RefCounted<TrackBase>::ref;
     using RefCounted<TrackBase>::deref;
 
 protected:
-    TrackBase(ScriptExecutionContext*, Type);
+    TrackBase(ExecutionContext*, Type);
 
 private:
     Type m_type;
@@ -55,7 +55,7 @@ private:
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
-    ScriptExecutionContext* m_scriptExecutionContext;
+    ExecutionContext* m_executionContext;
 };
 
 } // namespace WebCore

@@ -127,7 +127,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ScriptExecutionContext*, Event*);
+    virtual void handleEvent(ExecutionContext*, Event*);
 
     SVGSMILElement* m_animation;
     SVGSMILElement::Condition* m_condition;
@@ -140,7 +140,7 @@ bool ConditionEventListener::operator==(const EventListener& listener)
     return false;
 }
 
-void ConditionEventListener::handleEvent(ScriptExecutionContext*, Event* event)
+void ConditionEventListener::handleEvent(ExecutionContext*, Event* event)
 {
     if (!m_animation)
         return;

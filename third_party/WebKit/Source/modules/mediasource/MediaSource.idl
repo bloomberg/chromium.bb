@@ -32,7 +32,7 @@
     RuntimeEnabled=MediaSource,
     ActiveDOMObject,
     Constructor,
-    ConstructorCallWith=ScriptExecutionContext
+    ConstructorCallWith=ExecutionContext
 ] interface MediaSource : EventTarget {
     // All the source buffers created by this object.
     readonly attribute SourceBufferList sourceBuffers;

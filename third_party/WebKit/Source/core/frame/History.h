@@ -38,7 +38,7 @@ namespace WebCore {
 
 class Frame;
 class KURL;
-class ScriptExecutionContext;
+class ExecutionContext;
 class ExceptionState;
 
 class History : public ScriptWrappable, public RefCounted<History>, public DOMWindowProperty {
@@ -51,9 +51,9 @@ public:
     void forward();
     void go(int distance);
 
-    void back(ScriptExecutionContext*);
-    void forward(ScriptExecutionContext*);
-    void go(ScriptExecutionContext*, int distance);
+    void back(ExecutionContext*);
+    void forward(ExecutionContext*);
+    void go(ExecutionContext*, int distance);
 
     bool stateChanged() const;
     bool isSameAsCurrentState(SerializedScriptValue*) const;

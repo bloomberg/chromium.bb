@@ -39,7 +39,7 @@ namespace WebCore {
 // FIXME: this class can be generalized
 class CallbackPromiseAdapter : public WebKit::WebCallbacks<WebKit::WebServiceWorker, WebKit::WebServiceWorker> {
 public:
-    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver, ScriptExecutionContext* context)
+    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
         : m_resolver(resolver)
         , m_requestState(context)
     {

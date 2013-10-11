@@ -189,7 +189,7 @@ HashSet<Node*> MutationObserver::getObservedNodes() const
 
 bool MutationObserver::canDeliver()
 {
-    return !m_callback->scriptExecutionContext()->activeDOMObjectsAreSuspended();
+    return !m_callback->executionContext()->activeDOMObjectsAreSuspended();
 }
 
 void MutationObserver::deliver()

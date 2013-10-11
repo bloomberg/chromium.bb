@@ -37,11 +37,11 @@
 namespace WebCore {
 
 class MIDIAccess;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class MIDIInput : public MIDIPort {
 public:
-    static PassRefPtr<MIDIInput> create(MIDIAccess*, ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+    static PassRefPtr<MIDIInput> create(MIDIAccess*, ExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
     virtual ~MIDIInput() { }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
@@ -55,7 +55,7 @@ public:
     MIDIAccess* midiAccess() const { return m_access; }
 
 private:
-    MIDIInput(MIDIAccess*, ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+    MIDIInput(MIDIAccess*, ExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
 
     MIDIAccess* m_access;
 };

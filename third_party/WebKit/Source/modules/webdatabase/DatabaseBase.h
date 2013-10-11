@@ -30,17 +30,17 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class DatabaseBase {
 public:
-    ScriptExecutionContext* scriptExecutionContext() const;
+    ExecutionContext* executionContext() const;
     void logErrorMessage(const String& message);
 
 protected:
-    DatabaseBase(ScriptExecutionContext*);
+    DatabaseBase(ExecutionContext*);
 
-    RefPtr<ScriptExecutionContext> m_scriptExecutionContext;
+    RefPtr<ExecutionContext> m_executionContext;
 };
 
 } // namespace WebCore

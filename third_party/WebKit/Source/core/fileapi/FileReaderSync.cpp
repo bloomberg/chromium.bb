@@ -46,7 +46,7 @@ FileReaderSync::FileReaderSync()
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionState& es)
+PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* executionContext, Blob* blob, ExceptionState& es)
 {
     if (!blob) {
         es.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
@@ -54,12 +54,12 @@ PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ScriptExecutionContext
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsArrayBuffer, 0);
-    startLoading(scriptExecutionContext, loader, *blob, es);
+    startLoading(executionContext, loader, *blob, es);
 
     return loader.arrayBufferResult();
 }
 
-String FileReaderSync::readAsBinaryString(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionState& es)
+String FileReaderSync::readAsBinaryString(ExecutionContext* executionContext, Blob* blob, ExceptionState& es)
 {
     if (!blob) {
         es.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
@@ -67,11 +67,11 @@ String FileReaderSync::readAsBinaryString(ScriptExecutionContext* scriptExecutio
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsBinaryString, 0);
-    startLoading(scriptExecutionContext, loader, *blob, es);
+    startLoading(executionContext, loader, *blob, es);
     return loader.stringResult();
 }
 
-String FileReaderSync::readAsText(ScriptExecutionContext* scriptExecutionContext, Blob* blob, const String& encoding, ExceptionState& es)
+String FileReaderSync::readAsText(ExecutionContext* executionContext, Blob* blob, const String& encoding, ExceptionState& es)
 {
     if (!blob) {
         es.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
@@ -80,11 +80,11 @@ String FileReaderSync::readAsText(ScriptExecutionContext* scriptExecutionContext
 
     FileReaderLoader loader(FileReaderLoader::ReadAsText, 0);
     loader.setEncoding(encoding);
-    startLoading(scriptExecutionContext, loader, *blob, es);
+    startLoading(executionContext, loader, *blob, es);
     return loader.stringResult();
 }
 
-String FileReaderSync::readAsDataURL(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionState& es)
+String FileReaderSync::readAsDataURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& es)
 {
     if (!blob) {
         es.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
@@ -93,13 +93,13 @@ String FileReaderSync::readAsDataURL(ScriptExecutionContext* scriptExecutionCont
 
     FileReaderLoader loader(FileReaderLoader::ReadAsDataURL, 0);
     loader.setDataType(blob->type());
-    startLoading(scriptExecutionContext, loader, *blob, es);
+    startLoading(executionContext, loader, *blob, es);
     return loader.stringResult();
 }
 
-void FileReaderSync::startLoading(ScriptExecutionContext* scriptExecutionContext, FileReaderLoader& loader, const Blob& blob, ExceptionState& es)
+void FileReaderSync::startLoading(ExecutionContext* executionContext, FileReaderLoader& loader, const Blob& blob, ExceptionState& es)
 {
-    loader.start(scriptExecutionContext, blob);
+    loader.start(executionContext, blob);
     if (loader.errorCode())
         FileError::throwDOMException(es, loader.errorCode());
 }

@@ -64,7 +64,7 @@ String DataTransferItem::type() const
     return m_item->type();
 }
 
-void DataTransferItem::getAsString(ScriptExecutionContext* context, PassRefPtr<StringCallback> callback) const
+void DataTransferItem::getAsString(ExecutionContext* context, PassRefPtr<StringCallback> callback) const
 {
     if (!m_clipboard->canReadData())
         return;

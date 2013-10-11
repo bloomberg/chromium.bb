@@ -40,7 +40,7 @@ public:
         return adoptPtr(new TaskForwarder(task));
     }
 
-    virtual void performTask(ScriptExecutionContext*)
+    virtual void performTask(ExecutionContext*)
     {
         m_task->Run();
     }

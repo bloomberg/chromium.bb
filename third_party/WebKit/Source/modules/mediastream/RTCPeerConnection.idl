@@ -33,7 +33,7 @@
     ActiveDOMObject,
     Constructor(Dictionary rtcIceServers, optional Dictionary mediaConstraints),
     ConstructorRaisesException,
-    ConstructorCallWith=ScriptExecutionContext
+    ConstructorCallWith=ExecutionContext
 ] interface RTCPeerConnection : EventTarget {
     [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
 

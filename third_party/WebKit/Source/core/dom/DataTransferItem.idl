@@ -34,7 +34,7 @@
     readonly attribute DOMString kind;
     readonly attribute DOMString type;
 
-    [CallWith=ScriptExecutionContext] void getAsString(StringCallback? callback);
+    [CallWith=ExecutionContext] void getAsString(StringCallback? callback);
     Blob getAsFile();
 };
 

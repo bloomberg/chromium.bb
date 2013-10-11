@@ -90,7 +90,7 @@ interface TestObjectPython {
     [ActivityLogging=Access] readonly attribute long activityLogAccessReadonlyLongAttribute;
     [ActivityLogging=Getter] readonly attribute long activityLogGetterReadonlyLongAttribute;
     [CachedAttribute=isValueDirty] readonly attribute any cachedAttributeReadonlyAnyAttribute;
-    [CallWith=ScriptExecutionContext] readonly attribute any callWithScriptExecutionContextReadonlyAnyAttribute;
+    [CallWith=ExecutionContext] readonly attribute any callWithExecutionContextReadonlyAnyAttribute;
     [CheckSecurityForNode] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;
     [Conditional=Condition] readonly attribute long conditionalReadonlyLongAttribute;
     [Conditional=Condition1&Condition2] readonly attribute long conditionalAndReadonlyLongAttribute;

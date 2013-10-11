@@ -38,7 +38,7 @@ namespace WebCore {
 class DocumentEventQueueTimer : public SuspendableTimer {
     WTF_MAKE_NONCOPYABLE(DocumentEventQueueTimer);
 public:
-    DocumentEventQueueTimer(DocumentEventQueue* eventQueue, ScriptExecutionContext* context)
+    DocumentEventQueueTimer(DocumentEventQueue* eventQueue, ExecutionContext* context)
         : SuspendableTimer(context)
         , m_eventQueue(eventQueue) { }
 
@@ -47,12 +47,12 @@ private:
     DocumentEventQueue* m_eventQueue;
 };
 
-PassRefPtr<DocumentEventQueue> DocumentEventQueue::create(ScriptExecutionContext* context)
+PassRefPtr<DocumentEventQueue> DocumentEventQueue::create(ExecutionContext* context)
 {
     return adoptRef(new DocumentEventQueue(context));
 }
 
-DocumentEventQueue::DocumentEventQueue(ScriptExecutionContext* context)
+DocumentEventQueue::DocumentEventQueue(ExecutionContext* context)
     : m_pendingEventTimer(adoptPtr(new DocumentEventQueueTimer(this, context)))
     , m_isClosed(false)
 {

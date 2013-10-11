@@ -32,12 +32,12 @@
 #include "bindings/v8/ActiveDOMCallback.h"
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {
 
-ActiveDOMCallback::ActiveDOMCallback(ScriptExecutionContext* context)
+ActiveDOMCallback::ActiveDOMCallback(ExecutionContext* context)
     : ContextLifecycleObserver(context)
 {
 }
@@ -48,13 +48,13 @@ ActiveDOMCallback::~ActiveDOMCallback()
 
 bool ActiveDOMCallback::canInvokeCallback() const
 {
-    ScriptExecutionContext* context = scriptExecutionContext();
+    ExecutionContext* context = executionContext();
     return context && !context->activeDOMObjectsAreSuspended() && !context->activeDOMObjectsAreStopped();
 }
 
 bool ActiveDOMCallback::isScriptControllerTerminating() const
 {
-    ScriptExecutionContext* context = scriptExecutionContext();
+    ExecutionContext* context = executionContext();
     if (context && context->isWorkerGlobalScope()) {
         WorkerScriptController* scriptController = toWorkerGlobalScope(context)->script();
         if (!scriptController || scriptController->isExecutionForbidden() || scriptController->isExecutionTerminating())

@@ -37,11 +37,11 @@ namespace WebCore {
 
 class DataTransferItem;
 class Entry;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class DataTransferItemFileSystem {
 public:
-    static PassRefPtr<Entry> webkitGetAsEntry(ScriptExecutionContext*, DataTransferItem*);
+    static PassRefPtr<Entry> webkitGetAsEntry(ExecutionContext*, DataTransferItem*);
 
 private:
     DataTransferItemFileSystem();

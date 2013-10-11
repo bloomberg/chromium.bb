@@ -278,12 +278,12 @@ void AudioContext::stopDispatch(void* userData)
 
 void AudioContext::stop()
 {
-    // Usually ScriptExecutionContext calls stop twice.
+    // Usually ExecutionContext calls stop twice.
     if (m_isStopScheduled)
         return;
     m_isStopScheduled = true;
 
-    // Don't call uninitialize() immediately here because the ScriptExecutionContext is in the middle
+    // Don't call uninitialize() immediately here because the ExecutionContext is in the middle
     // of dealing with all of its ActiveDOMObjects at this point. uninitialize() can de-reference other
     // ActiveDOMObjects so let's schedule uninitialize() to be called later.
     // FIXME: see if there's a more direct way to handle this issue.
@@ -1060,9 +1060,9 @@ const AtomicString& AudioContext::interfaceName() const
     return eventNames().interfaceForAudioContext;
 }
 
-ScriptExecutionContext* AudioContext::scriptExecutionContext() const
+ExecutionContext* AudioContext::executionContext() const
 {
-    return m_isStopScheduled ? 0 : ActiveDOMObject::scriptExecutionContext();
+    return m_isStopScheduled ? 0 : ActiveDOMObject::executionContext();
 }
 
 void AudioContext::startRendering()
@@ -1083,7 +1083,7 @@ void AudioContext::fireCompletionEvent()
         return;
 
     // Avoid firing the event if the document has already gone away.
-    if (scriptExecutionContext()) {
+    if (executionContext()) {
         // Call the offline rendering completion event listener.
         dispatchEvent(OfflineAudioCompletionEvent::create(renderedBuffer));
     }

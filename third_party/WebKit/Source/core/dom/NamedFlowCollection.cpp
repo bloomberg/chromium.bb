@@ -103,7 +103,7 @@ void NamedFlowCollection::discardNamedFlow(NamedFlow* namedFlow)
 
 Document* NamedFlowCollection::document() const
 {
-    ScriptExecutionContext* context = ContextLifecycleObserver::scriptExecutionContext();
+    ExecutionContext* context = ContextLifecycleObserver::executionContext();
     return toDocument(context);
 }
 

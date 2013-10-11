@@ -113,7 +113,7 @@ FullscreenElementStack::~FullscreenElementStack()
 
 inline Document* FullscreenElementStack::document()
 {
-    return toDocument(scriptExecutionContext());
+    return toDocument(executionContext());
 }
 
 void FullscreenElementStack::documentWasDetached()

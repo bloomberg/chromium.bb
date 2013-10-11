@@ -42,11 +42,11 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class {{v8_class_name}} : public {{cpp_class_name}}, public ActiveDOMCallback {
 public:
-    static PassRefPtr<{{v8_class_name}}> create(v8::Handle<v8::Value> value, ScriptExecutionContext* context)
+    static PassRefPtr<{{v8_class_name}}> create(v8::Handle<v8::Value> value, ExecutionContext* context)
     {
         ASSERT(value->IsObject());
         ASSERT(context);
@@ -59,10 +59,10 @@ public:
     virtual {{method.return_cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}});
 {% endfor %}
 
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextLifecycleObserver::scriptExecutionContext(); }
+    virtual ExecutionContext* executionContext() const { return ContextLifecycleObserver::executionContext(); }
 
 private:
-    {{v8_class_name}}(v8::Handle<v8::Object>, ScriptExecutionContext*);
+    {{v8_class_name}}(v8::Handle<v8::Object>, ExecutionContext*);
 
     ScopedPersistent<v8::Object> m_callback;
     RefPtr<DOMWrapperWorld> m_world;

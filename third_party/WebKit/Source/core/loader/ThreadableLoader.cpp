@@ -32,7 +32,7 @@
 #include "core/loader/ThreadableLoader.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-PassRefPtr<ThreadableLoader> ThreadableLoader::create(ScriptExecutionContext* context, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options)
+PassRefPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext* context, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options)
 {
     ASSERT(client);
     ASSERT(context);
@@ -51,7 +51,7 @@ PassRefPtr<ThreadableLoader> ThreadableLoader::create(ScriptExecutionContext* co
     return DocumentThreadableLoader::create(toDocument(context), client, request, options);
 }
 
-void ThreadableLoader::loadResourceSynchronously(ScriptExecutionContext* context, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options)
+void ThreadableLoader::loadResourceSynchronously(ExecutionContext* context, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options)
 {
     ASSERT(context);
 

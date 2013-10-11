@@ -42,7 +42,7 @@ class RTCPeerConnectionHandler;
 
 class RTCDTMFSender : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCDTMFSender> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
+    static PassRefPtr<RTCDTMFSender> create(ExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
     ~RTCDTMFSender();
 
     bool canInsertDTMF() const;
@@ -59,7 +59,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
@@ -68,7 +68,7 @@ public:
     using RefCounted<RTCDTMFSender>::deref;
 
 private:
-    RTCDTMFSender(ScriptExecutionContext*, PassRefPtr<MediaStreamTrack>, PassOwnPtr<RTCDTMFSenderHandler>);
+    RTCDTMFSender(ExecutionContext*, PassRefPtr<MediaStreamTrack>, PassOwnPtr<RTCDTMFSenderHandler>);
 
     void scheduleDispatchEvent(PassRefPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);

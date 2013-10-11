@@ -118,7 +118,7 @@ void ConsoleBase::markTimeline(const String& title)
 
 void ConsoleBase::profile(ScriptState* state, const String& title)
 {
-    ScriptExecutionContext* context = this->context();
+    ExecutionContext* context = this->context();
     if (!context)
         return;
 
@@ -136,7 +136,7 @@ void ConsoleBase::profile(ScriptState* state, const String& title)
 
 void ConsoleBase::profileEnd(ScriptState* state, const String& title)
 {
-    ScriptExecutionContext* context = this->context();
+    ExecutionContext* context = this->context();
     if (!context)
         return;
 

@@ -52,7 +52,7 @@ public:
     {
     }
 
-    ScriptExecutionContext* scriptExecutionContext()
+    ExecutionContext* executionContext()
     {
         return m_document.get();
     }
@@ -106,16 +106,16 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 {
     RefPtr<FakeIDBDatabaseBackendProxy> proxy = FakeIDBDatabaseBackendProxy::create();
     RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
-    RefPtr<IDBDatabase> db = IDBDatabase::create(scriptExecutionContext(), proxy, connection);
+    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), proxy, connection);
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
-    RefPtr<IDBTransaction> transaction = IDBTransaction::create(scriptExecutionContext(), transactionId, transactionScope, IndexedDB::TransactionReadOnly, db.get());
+    RefPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, IndexedDB::TransactionReadOnly, db.get());
 
     // Local reference, IDBDatabase's reference and IDBPendingTransactionMonitor's reference:
     EXPECT_EQ(3, transaction->refCount());
 
-    RefPtr<IDBRequest> request = IDBRequest::create(scriptExecutionContext(), IDBAny::createInvalid(), transaction.get());
+    RefPtr<IDBRequest> request = IDBRequest::create(executionContext(), IDBAny::createInvalid(), transaction.get());
     IDBPendingTransactionMonitor::deactivateNewTransactions();
 
     // Local reference, IDBDatabase's reference, and the IDBRequest's reference
@@ -123,7 +123,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 
     // This will generate an abort() call to the back end which is dropped by the fake proxy,
     // so an explicit onAbort call is made.
-    scriptExecutionContext()->stopActiveDOMObjects();
+    executionContext()->stopActiveDOMObjects();
     transaction->onAbort(DOMError::create(AbortError, "Aborted"));
 
     EXPECT_EQ(1, transaction->refCount());
@@ -133,11 +133,11 @@ TEST_F(IDBTransactionTest, TransactionFinish)
 {
     RefPtr<FakeIDBDatabaseBackendProxy> proxy = FakeIDBDatabaseBackendProxy::create();
     RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
-    RefPtr<IDBDatabase> db = IDBDatabase::create(scriptExecutionContext(), proxy, connection);
+    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), proxy, connection);
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
-    RefPtr<IDBTransaction> transaction = IDBTransaction::create(scriptExecutionContext(), transactionId, transactionScope, IndexedDB::TransactionReadOnly, db.get());
+    RefPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, IndexedDB::TransactionReadOnly, db.get());
 
     // Local reference, IDBDatabase's reference and IDBPendingTransactionMonitor's reference:
     EXPECT_EQ(3, transaction->refCount());
@@ -154,7 +154,7 @@ TEST_F(IDBTransactionTest, TransactionFinish)
     EXPECT_EQ(1, transactionPtr->refCount());
 
     // Stop the context, so events don't get queued (which would keep the transaction alive).
-    scriptExecutionContext()->stopActiveDOMObjects();
+    executionContext()->stopActiveDOMObjects();
 
     // Fire an abort to make sure this doesn't free the transaction during use. The test
     // will not fail if it is, but ASAN would notice the error.

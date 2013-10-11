@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class DocumentFragment : public ContainerNode {
 public:

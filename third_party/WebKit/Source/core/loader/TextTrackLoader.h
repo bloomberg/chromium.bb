@@ -37,7 +37,7 @@ namespace WebCore {
 
 class Document;
 class TextTrackLoader;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class TextTrackLoaderClient {
 public:
@@ -56,7 +56,7 @@ class TextTrackLoader : public ResourceClient, private WebVTTParserClient {
     WTF_MAKE_NONCOPYABLE(TextTrackLoader);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<TextTrackLoader> create(TextTrackLoaderClient* client, ScriptExecutionContext* context)
+    static PassOwnPtr<TextTrackLoader> create(TextTrackLoaderClient* client, ExecutionContext* context)
     {
         return adoptPtr(new TextTrackLoader(client, context));
     }
@@ -85,7 +85,7 @@ private:
 #endif
     virtual void fileFailedToParse();
 
-    TextTrackLoader(TextTrackLoaderClient*, ScriptExecutionContext*);
+    TextTrackLoader(TextTrackLoaderClient*, ExecutionContext*);
 
     void processNewCueData(Resource*);
     void cueLoadTimerFired(Timer<TextTrackLoader>*);
@@ -94,7 +94,7 @@ private:
     TextTrackLoaderClient* m_client;
     OwnPtr<WebVTTParser> m_cueParser;
     ResourcePtr<TextTrackResource> m_cachedCueData;
-    ScriptExecutionContext* m_scriptExecutionContext;
+    ExecutionContext* m_executionContext;
     Timer<TextTrackLoader> m_cueLoadTimer;
     String m_crossOriginMode;
     State m_state;

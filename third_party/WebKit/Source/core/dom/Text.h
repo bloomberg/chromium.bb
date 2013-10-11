@@ -29,7 +29,7 @@ namespace WebCore {
 
 class ExceptionState;
 class RenderText;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class Text : public CharacterData {
 public:

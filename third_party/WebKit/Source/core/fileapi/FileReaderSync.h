@@ -41,7 +41,7 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 class FileReaderLoader;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class FileReaderSync : public RefCounted<FileReaderSync>, public ScriptWrappable {
 public:
@@ -52,19 +52,19 @@ public:
 
     virtual ~FileReaderSync() { }
 
-    PassRefPtr<ArrayBuffer> readAsArrayBuffer(ScriptExecutionContext*, Blob*, ExceptionState&);
-    String readAsBinaryString(ScriptExecutionContext*, Blob*, ExceptionState&);
-    String readAsText(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionState& ec)
+    PassRefPtr<ArrayBuffer> readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
+    String readAsBinaryString(ExecutionContext*, Blob*, ExceptionState&);
+    String readAsText(ExecutionContext* executionContext, Blob* blob, ExceptionState& ec)
     {
-        return readAsText(scriptExecutionContext, blob, "", ec);
+        return readAsText(executionContext, blob, "", ec);
     }
-    String readAsText(ScriptExecutionContext*, Blob*, const String& encoding, ExceptionState&);
-    String readAsDataURL(ScriptExecutionContext*, Blob*, ExceptionState&);
+    String readAsText(ExecutionContext*, Blob*, const String& encoding, ExceptionState&);
+    String readAsDataURL(ExecutionContext*, Blob*, ExceptionState&);
 
 private:
     FileReaderSync();
 
-    void startLoading(ScriptExecutionContext*, FileReaderLoader&, const Blob&, ExceptionState&);
+    void startLoading(ExecutionContext*, FileReaderLoader&, const Blob&, ExceptionState&);
 };
 
 } // namespace WebCore

@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/workers/WorkerScriptLoader.h"
 
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/platform/network/ResourceResponse.h"
@@ -54,7 +54,7 @@ WorkerScriptLoader::~WorkerScriptLoader()
 {
 }
 
-void WorkerScriptLoader::loadSynchronously(ScriptExecutionContext* scriptExecutionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy)
+void WorkerScriptLoader::loadSynchronously(ExecutionContext* executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy)
 {
     m_url = url;
 
@@ -62,7 +62,7 @@ void WorkerScriptLoader::loadSynchronously(ScriptExecutionContext* scriptExecuti
     if (!request)
         return;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(scriptExecutionContext->isWorkerGlobalScope());
+    ASSERT_WITH_SECURITY_IMPLICATION(executionContext->isWorkerGlobalScope());
 
     ThreadableLoaderOptions options;
     options.allowCredentials = AllowStoredCredentials;
@@ -71,10 +71,10 @@ void WorkerScriptLoader::loadSynchronously(ScriptExecutionContext* scriptExecuti
     // FIXME: Should we add EnforceScriptSrcDirective here?
     options.contentSecurityPolicyEnforcement = DoNotEnforceContentSecurityPolicy;
 
-    WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(scriptExecutionContext), *request, *this, options);
+    WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), *request, *this, options);
 }
 
-void WorkerScriptLoader::loadAsynchronously(ScriptExecutionContext* scriptExecutionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WorkerScriptLoaderClient* client)
+void WorkerScriptLoader::loadAsynchronously(ExecutionContext* executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WorkerScriptLoaderClient* client)
 {
     ASSERT(client);
     m_client = client;
@@ -91,7 +91,7 @@ void WorkerScriptLoader::loadAsynchronously(ScriptExecutionContext* scriptExecut
 
     // During create, callbacks may happen which remove the last reference to this object.
     RefPtr<WorkerScriptLoader> protect(this);
-    m_threadableLoader = ThreadableLoader::create(scriptExecutionContext, this, *request, options);
+    m_threadableLoader = ThreadableLoader::create(executionContext, this, *request, options);
 }
 
 const KURL& WorkerScriptLoader::responseURL() const

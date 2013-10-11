@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef ScriptExecutionContext_h
-#define ScriptExecutionContext_h
+#ifndef ExecutionContext_h
+#define ExecutionContext_h
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContextClient.h"
@@ -59,10 +59,10 @@ class PublicURLManager;
 class ScriptCallStack;
 class ScriptState;
 
-class ScriptExecutionContext : public LifecycleContext, public SecurityContext {
+class ExecutionContext : public LifecycleContext, public SecurityContext {
 public:
-    ScriptExecutionContext();
-    virtual ~ScriptExecutionContext();
+    ExecutionContext();
+    virtual ~ExecutionContext();
 
     void setClient(ExecutionContextClient* client) { m_client = client; }
     ExecutionContextClient* client() const { return m_client; }
@@ -106,8 +106,8 @@ public:
     void destroyedMessagePort(MessagePort*);
     const HashSet<MessagePort*>& messagePorts() const { return m_messagePorts; }
 
-    void ref() { refScriptExecutionContext(); }
-    void deref() { derefScriptExecutionContext(); }
+    void ref() { refExecutionContext(); }
+    void deref() { derefExecutionContext(); }
 
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
@@ -126,8 +126,8 @@ private:
 
     void closeMessagePorts();
 
-    virtual void refScriptExecutionContext() = 0;
-    virtual void derefScriptExecutionContext() = 0;
+    virtual void refExecutionContext() = 0;
+    virtual void derefExecutionContext() = 0;
     virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
     // Implementation details for DOMTimer. No other classes should call these functions.
@@ -154,11 +154,11 @@ private:
     RefPtr<DatabaseContext> m_databaseContext;
 
     // The location of this member is important; to make sure contextDestroyed() notification on
-    // ScriptExecutionContext's members (notably m_timeouts) is called before they are destructed,
+    // ExecutionContext's members (notably m_timeouts) is called before they are destructed,
     // m_lifecycleNotifer should be placed *after* such members.
     OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
 };
 
 } // namespace WebCore
 
-#endif // ScriptExecutionContext_h
+#endif // ExecutionContext_h

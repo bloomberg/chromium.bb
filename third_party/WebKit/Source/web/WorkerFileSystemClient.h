@@ -41,7 +41,7 @@ public:
     static PassOwnPtr<FileSystemClient> create();
     virtual ~WorkerFileSystemClient();
 
-    virtual bool allowFileSystem(WebCore::ScriptExecutionContext*) OVERRIDE;
+    virtual bool allowFileSystem(WebCore::ExecutionContext*) OVERRIDE;
 
 private:
     WorkerFileSystemClient();

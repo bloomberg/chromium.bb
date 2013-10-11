@@ -39,7 +39,7 @@
     attribute Node implementsNode;
 
     void implementsMethod1();
-    [CallWith=ScriptExecutionContext, RaisesException] TestObject implementsMethod2(DOMString strArg, TestObject objArg);
+    [CallWith=ExecutionContext, RaisesException] TestObject implementsMethod2(DOMString strArg, TestObject objArg);
     [Custom] void implementsMethod3();
     static void implementsMethod4();
 

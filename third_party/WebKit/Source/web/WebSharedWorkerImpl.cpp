@@ -46,9 +46,9 @@
 #include "WorkerFileSystemClient.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
-#include "core/events/MessageEvent.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePortChannel.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/events/MessageEvent.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -167,7 +167,7 @@ void WebSharedWorkerImpl::postMessageToWorkerObject(PassRefPtr<SerializedScriptV
                                                 message->toWireString(), channels));
 }
 
-void WebSharedWorkerImpl::postMessageTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::postMessageTask(ExecutionContext* context,
                                           WebSharedWorkerImpl* thisPtr,
                                           String message,
                                           PassOwnPtr<MessagePortChannelArray> channels)
@@ -193,7 +193,7 @@ void WebSharedWorkerImpl::postExceptionToWorkerObject(const String& errorMessage
                            sourceURL));
 }
 
-void WebSharedWorkerImpl::postExceptionTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::postExceptionTask(ExecutionContext* context,
                                             WebSharedWorkerImpl* thisPtr,
                                             const String& errorMessage,
                                             int lineNumber, const String& sourceURL)
@@ -215,7 +215,7 @@ void WebSharedWorkerImpl::postConsoleMessageToWorkerObject(MessageSource source,
     WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&postConsoleMessageTask, AllowCrossThreadAccess(this), source, level, message, lineNumber, sourceURL));
 }
 
-void WebSharedWorkerImpl::postConsoleMessageTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::postConsoleMessageTask(ExecutionContext* context,
                                                  WebSharedWorkerImpl* thisPtr,
                                                  int source,
                                                  int level,
@@ -233,7 +233,7 @@ void WebSharedWorkerImpl::postMessageToPageInspector(const String& message)
     WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&postMessageToPageInspectorTask, AllowCrossThreadAccess(this), message));
 }
 
-void WebSharedWorkerImpl::postMessageToPageInspectorTask(ScriptExecutionContext*, WebSharedWorkerImpl* thisPtr, const String& message)
+void WebSharedWorkerImpl::postMessageToPageInspectorTask(ExecutionContext*, WebSharedWorkerImpl* thisPtr, const String& message)
 {
     if (!thisPtr->client())
         return;
@@ -245,7 +245,7 @@ void WebSharedWorkerImpl::updateInspectorStateCookie(const WTF::String& cookie)
     WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&updateInspectorStateCookieTask, AllowCrossThreadAccess(this), cookie));
 }
 
-void WebSharedWorkerImpl::updateInspectorStateCookieTask(ScriptExecutionContext*, WebSharedWorkerImpl* thisPtr, const String& cookie)
+void WebSharedWorkerImpl::updateInspectorStateCookieTask(ExecutionContext*, WebSharedWorkerImpl* thisPtr, const String& cookie)
 {
     if (!thisPtr->client())
         return;
@@ -258,7 +258,7 @@ void WebSharedWorkerImpl::confirmMessageFromWorkerObject(bool hasPendingActivity
                                             hasPendingActivity));
 }
 
-void WebSharedWorkerImpl::confirmMessageTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::confirmMessageTask(ExecutionContext* context,
                                              WebSharedWorkerImpl* thisPtr,
                                              bool hasPendingActivity)
 {
@@ -274,7 +274,7 @@ void WebSharedWorkerImpl::reportPendingActivity(bool hasPendingActivity)
                                             hasPendingActivity));
 }
 
-void WebSharedWorkerImpl::reportPendingActivityTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::reportPendingActivityTask(ExecutionContext* context,
                                                     WebSharedWorkerImpl* thisPtr,
                                                     bool hasPendingActivity)
 {
@@ -289,7 +289,7 @@ void WebSharedWorkerImpl::workerGlobalScopeClosed()
                                             AllowCrossThreadAccess(this)));
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeClosedTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::workerGlobalScopeClosedTask(ExecutionContext* context,
                                                   WebSharedWorkerImpl* thisPtr)
 {
     if (thisPtr->client())
@@ -304,7 +304,7 @@ void WebSharedWorkerImpl::workerGlobalScopeDestroyed()
                                                                AllowCrossThreadAccess(this)));
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeDestroyedTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::workerGlobalScopeDestroyedTask(ExecutionContext* context,
                                                      WebSharedWorkerImpl* thisPtr)
 {
     if (thisPtr->client())
@@ -350,7 +350,7 @@ void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel, ConnectList
         listener->connected();
 }
 
-void WebSharedWorkerImpl::connectTask(ScriptExecutionContext* context, PassRefPtr<MessagePortChannel> channel)
+void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassRefPtr<MessagePortChannel> channel)
 {
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     RefPtr<MessagePort> port = MessagePort::create(*context);
@@ -388,7 +388,7 @@ void WebSharedWorkerImpl::pauseWorkerContextOnStart()
     m_pauseWorkerContextOnStart = true;
 }
 
-static void resumeWorkerContextTask(ScriptExecutionContext* context, bool)
+static void resumeWorkerContextTask(ExecutionContext* context, bool)
 {
     toWorkerGlobalScope(context)->workerInspectorController()->resume();
 }
@@ -400,7 +400,7 @@ void WebSharedWorkerImpl::resumeWorkerContext()
         workerThread()->runLoop().postTaskForMode(createCallbackTask(resumeWorkerContextTask, true), WorkerDebuggerAgent::debuggerTaskMode);
 }
 
-static void connectToWorkerContextInspectorTask(ScriptExecutionContext* context, bool)
+static void connectToWorkerContextInspectorTask(ExecutionContext* context, bool)
 {
     toWorkerGlobalScope(context)->workerInspectorController()->connectFrontend();
 }
@@ -410,7 +410,7 @@ void WebSharedWorkerImpl::attachDevTools()
     workerThread()->runLoop().postTaskForMode(createCallbackTask(connectToWorkerContextInspectorTask, true), WorkerDebuggerAgent::debuggerTaskMode);
 }
 
-static void reconnectToWorkerContextInspectorTask(ScriptExecutionContext* context, const String& savedState)
+static void reconnectToWorkerContextInspectorTask(ExecutionContext* context, const String& savedState)
 {
     WorkerInspectorController* ic = toWorkerGlobalScope(context)->workerInspectorController();
     ic->restoreInspectorStateFromCookie(savedState);
@@ -422,7 +422,7 @@ void WebSharedWorkerImpl::reattachDevTools(const WebString& savedState)
     workerThread()->runLoop().postTaskForMode(createCallbackTask(reconnectToWorkerContextInspectorTask, String(savedState)), WorkerDebuggerAgent::debuggerTaskMode);
 }
 
-static void disconnectFromWorkerContextInspectorTask(ScriptExecutionContext* context, bool)
+static void disconnectFromWorkerContextInspectorTask(ExecutionContext* context, bool)
 {
     toWorkerGlobalScope(context)->workerInspectorController()->disconnectFrontend();
 }
@@ -432,7 +432,7 @@ void WebSharedWorkerImpl::detachDevTools()
     workerThread()->runLoop().postTaskForMode(createCallbackTask(disconnectFromWorkerContextInspectorTask, true), WorkerDebuggerAgent::debuggerTaskMode);
 }
 
-static void dispatchOnInspectorBackendTask(ScriptExecutionContext* context, const String& message)
+static void dispatchOnInspectorBackendTask(ExecutionContext* context, const String& message)
 {
     toWorkerGlobalScope(context)->workerInspectorController()->dispatchMessageFromFrontend(message);
 }

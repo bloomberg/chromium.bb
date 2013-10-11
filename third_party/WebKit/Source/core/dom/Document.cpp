@@ -359,7 +359,7 @@ public:
 
 private:
     CheckFocusedElementTask() { }
-    virtual void performTask(ScriptExecutionContext* context) OVERRIDE
+    virtual void performTask(ExecutionContext* context) OVERRIDE
     {
         ASSERT(context->isDocument());
         Document* document = toDocument(context);
@@ -5300,7 +5300,7 @@ PassOwnPtr<LifecycleNotifier> Document::createLifecycleNotifier()
 
 DocumentLifecycleNotifier* Document::lifecycleNotifier()
 {
-    return static_cast<DocumentLifecycleNotifier*>(ScriptExecutionContext::lifecycleNotifier());
+    return static_cast<DocumentLifecycleNotifier*>(ExecutionContext::lifecycleNotifier());
 }
 
 } // namespace WebCore

@@ -46,20 +46,20 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaSource> MediaSource::create(ScriptExecutionContext* context)
+PassRefPtr<MediaSource> MediaSource::create(ExecutionContext* context)
 {
     RefPtr<MediaSource> mediaSource(adoptRef(new MediaSource(context)));
     mediaSource->suspendIfNeeded();
     return mediaSource.release();
 }
 
-MediaSource::MediaSource(ScriptExecutionContext* context)
+MediaSource::MediaSource(ExecutionContext* context)
     : MediaSourceBase(context)
 {
     LOG(Media, "MediaSource::MediaSource %p", this);
     ScriptWrappable::init(this);
-    m_sourceBuffers = SourceBufferList::create(scriptExecutionContext(), asyncEventQueue());
-    m_activeSourceBuffers = SourceBufferList::create(scriptExecutionContext(), asyncEventQueue());
+    m_sourceBuffers = SourceBufferList::create(executionContext(), asyncEventQueue());
+    m_activeSourceBuffers = SourceBufferList::create(executionContext(), asyncEventQueue());
 }
 
 MediaSource::~MediaSource()

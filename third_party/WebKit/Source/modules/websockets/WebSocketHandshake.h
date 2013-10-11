@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class WebSocketHandshake {
     WTF_MAKE_NONCOPYABLE(WebSocketHandshake); WTF_MAKE_FAST_ALLOCATED;
@@ -52,7 +52,7 @@ public:
     enum Mode {
         Incomplete, Normal, Failed, Connected, ModeMax
     };
-    WebSocketHandshake(const KURL&, const String& protocol, ScriptExecutionContext*);
+    WebSocketHandshake(const KURL&, const String& protocol, ExecutionContext*);
     ~WebSocketHandshake();
 
     const KURL& url() const;
@@ -73,7 +73,7 @@ public:
     // We're collecting data for histogram in the destructor. Note that calling
     // this method affects that.
     void reset();
-    void clearScriptExecutionContext();
+    void clearExecutionContext();
 
     int readServerHandshake(const char* header, size_t len);
     Mode mode() const;
@@ -106,7 +106,7 @@ private:
     KURL m_url;
     String m_clientProtocol;
     bool m_secure;
-    ScriptExecutionContext* m_context;
+    ExecutionContext* m_context;
 
     Mode m_mode;
 

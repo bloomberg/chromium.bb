@@ -41,11 +41,11 @@ class Clock;
 class Event;
 class ExceptionState;
 class HTMLMediaElement;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class MediaController : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTargetWithInlineData {
 public:
-    static PassRefPtr<MediaController> create(ScriptExecutionContext*);
+    static PassRefPtr<MediaController> create(ExecutionContext*);
     virtual ~MediaController();
 
     void addMediaElement(HTMLMediaElement*);
@@ -103,14 +103,14 @@ public:
 
     bool isBlocked() const;
 
-    void clearScriptExecutionContext() { m_scriptExecutionContext = 0; }
+    void clearExecutionContext() { m_executionContext = 0; }
 
     // EventTarget
     using RefCounted<MediaController>::ref;
     using RefCounted<MediaController>::deref;
 
 private:
-    MediaController(ScriptExecutionContext*);
+    MediaController(ExecutionContext*);
     void reportControllerState();
     void updateReadyState();
     void updatePlaybackState();
@@ -128,7 +128,7 @@ private:
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return m_scriptExecutionContext; }
+    virtual ExecutionContext* executionContext() const OVERRIDE { return m_executionContext; }
 
     friend class HTMLMediaElement;
     friend class MediaControllerEventListener;
@@ -146,7 +146,7 @@ private:
     String m_mediaGroup;
     bool m_closedCaptionsVisible;
     OwnPtr<Clock> m_clock;
-    ScriptExecutionContext* m_scriptExecutionContext;
+    ExecutionContext* m_executionContext;
     Timer<MediaController> m_timeupdateTimer;
     double m_previousTimeupdateTime;
 };

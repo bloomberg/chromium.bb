@@ -61,7 +61,7 @@ namespace WebCore {
     class Node;
     class Notification;
     class SVGElementInstance;
-    class ScriptExecutionContext;
+    class ExecutionContext;
     class ScriptProcessorNode;
     class SharedWorker;
     class SharedWorkerGlobalScope;
@@ -102,7 +102,7 @@ namespace WebCore {
         void deref() { derefEventTarget(); }
 
         virtual const AtomicString& interfaceName() const = 0;
-        virtual ScriptExecutionContext* scriptExecutionContext() const = 0;
+        virtual ExecutionContext* executionContext() const = 0;
 
         virtual Node* toNode();
         virtual DOMWindow* toDOMWindow();

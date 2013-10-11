@@ -78,7 +78,7 @@ private:
     Database(PassRefPtr<DatabaseBackendContext>, const String& name,
         const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
     PassRefPtr<DatabaseBackend> backend();
-    static PassRefPtr<Database> create(ScriptExecutionContext*, PassRefPtr<DatabaseBackendBase>);
+    static PassRefPtr<Database> create(ExecutionContext*, PassRefPtr<DatabaseBackendBase>);
 
     void runTransaction(PassRefPtr<SQLTransactionCallback>, PassRefPtr<SQLTransactionErrorCallback>,
         PassRefPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* = 0);

@@ -35,7 +35,7 @@
 #include "modules/websockets/WebSocketHandshake.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CookieJar.h"
 #include "core/platform/Cookie.h"
@@ -118,7 +118,7 @@ String WebSocketHandshake::getExpectedWebSocketAccept(const String& secWebSocket
     return base64Encode(reinterpret_cast<const char*>(hash.data()), sha1HashSize);
 }
 
-WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, ScriptExecutionContext* context)
+WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, ExecutionContext* context)
     : m_url(url)
     , m_clientProtocol(protocol)
     , m_secure(m_url.protocolIs("wss"))
@@ -278,7 +278,7 @@ void WebSocketHandshake::reset()
     m_extensionDispatcher.reset();
 }
 
-void WebSocketHandshake::clearScriptExecutionContext()
+void WebSocketHandshake::clearExecutionContext()
 {
     m_context = 0;
 }

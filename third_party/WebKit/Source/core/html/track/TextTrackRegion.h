@@ -48,7 +48,7 @@ class TextTrackCueBox;
 
 class TextTrackRegion : public RefCounted<TextTrackRegion>, public ContextLifecycleObserver {
 public:
-    static PassRefPtr<TextTrackRegion> create(ScriptExecutionContext* context)
+    static PassRefPtr<TextTrackRegion> create(ExecutionContext* context)
     {
         return adoptRef(new TextTrackRegion(context));
     }
@@ -96,8 +96,8 @@ public:
     void willRemoveTextTrackCueBox(TextTrackCueBox*);
 
 private:
-    TextTrackRegion(ScriptExecutionContext*);
-    Document* ownerDocument() { return toDocument(m_scriptExecutionContext); }
+    TextTrackRegion(ExecutionContext*);
+    Document* ownerDocument() { return toDocument(m_executionContext); }
 
     void prepareRegionDisplayTree();
 

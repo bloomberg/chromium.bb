@@ -348,9 +348,9 @@ const AtomicString& AudioNode::interfaceName() const
     return eventNames().interfaceForAudioNode;
 }
 
-ScriptExecutionContext* AudioNode::scriptExecutionContext() const
+ExecutionContext* AudioNode::executionContext() const
 {
-    return const_cast<AudioNode*>(this)->context()->scriptExecutionContext();
+    return const_cast<AudioNode*>(this)->context()->executionContext();
 }
 
 void AudioNode::processIfNecessary(size_t framesToProcess)

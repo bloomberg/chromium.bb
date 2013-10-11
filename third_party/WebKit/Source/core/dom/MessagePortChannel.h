@@ -47,7 +47,7 @@ namespace WebCore {
 
 class MessagePort;
 class MessagePortChannel;
-class ScriptExecutionContext;
+class ExecutionContext;
 class SerializedScriptValue;
 
 // The overwhelmingly common case is sending a single port, so handle that efficiently with an inline buffer of size 1.

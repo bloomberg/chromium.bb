@@ -27,33 +27,33 @@
 #include "config.h"
 #include "core/dom/ActiveDOMObject.h"
 
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 
 namespace WebCore {
 
-ActiveDOMObject::ActiveDOMObject(ScriptExecutionContext* scriptExecutionContext)
-    : ContextLifecycleObserver(scriptExecutionContext, ActiveDOMObjectType)
+ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
+    : ContextLifecycleObserver(executionContext, ActiveDOMObjectType)
     , m_pendingActivityCount(0)
 #if !ASSERT_DISABLED
     , m_suspendIfNeededCalled(false)
 #endif
 {
-    ASSERT(!scriptExecutionContext || scriptExecutionContext->isContextThread());
+    ASSERT(!executionContext || executionContext->isContextThread());
 }
 
 ActiveDOMObject::~ActiveDOMObject()
 {
     // ActiveDOMObject may be inherited by a sub-class whose life-cycle
-    // exceeds that of the associated ScriptExecutionContext. In those cases,
-    // m_scriptExecutionContext would/should have been nullified by
+    // exceeds that of the associated ExecutionContext. In those cases,
+    // m_executionContext would/should have been nullified by
     // ContextLifecycleObserver::contextDestroyed() (which we implement /
     // inherit). Hence, we should ensure that this is not 0 before use it
     // here.
-    if (!scriptExecutionContext())
+    if (!executionContext())
         return;
 
     ASSERT(m_suspendIfNeededCalled);
-    ASSERT(scriptExecutionContext()->isContextThread());
+    ASSERT(executionContext()->isContextThread());
 }
 
 void ActiveDOMObject::suspendIfNeeded()
@@ -62,8 +62,8 @@ void ActiveDOMObject::suspendIfNeeded()
     ASSERT(!m_suspendIfNeededCalled);
     m_suspendIfNeededCalled = true;
 #endif
-    if (ScriptExecutionContext* context = scriptExecutionContext())
-        scriptExecutionContext()->suspendActiveDOMObjectIfNeeded(this);
+    if (ExecutionContext* context = executionContext())
+        executionContext()->suspendActiveDOMObjectIfNeeded(this);
 }
 
 bool ActiveDOMObject::hasPendingActivity() const

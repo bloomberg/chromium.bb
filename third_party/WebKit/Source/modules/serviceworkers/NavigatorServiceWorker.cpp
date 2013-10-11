@@ -71,42 +71,42 @@ NavigatorServiceWorker* NavigatorServiceWorker::from(Navigator* navigator)
     return supplement;
 }
 
-ScriptPromise NavigatorServiceWorker::registerServiceWorker(ScriptExecutionContext* context, Navigator* navigator, const String& pattern, const String& url, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, const String& url, ExceptionState& es)
 {
     return from(navigator)->registerServiceWorker(context, pattern, url, es);
 }
 
 
-ScriptPromise NavigatorServiceWorker::registerServiceWorker(ScriptExecutionContext* scriptExecutionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* executionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     FrameLoaderClient* client = m_navigator->frame()->loader()->client();
     // WTF? Surely there's a better way to resolve a url?
     KURL scriptUrl = m_navigator->frame()->document()->completeURL(scriptSrc);
     WebKit::WebServiceWorkerRegistry* peer = client->serviceWorkerRegistry();
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptExecutionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
 
     if (peer)
-        peer->registerServiceWorker(pattern, scriptUrl, new CallbackPromiseAdapter(resolver, scriptExecutionContext));
+        peer->registerServiceWorker(pattern, scriptUrl, new CallbackPromiseAdapter(resolver, executionContext));
     else
         resolver->reject(PassRefPtr<ServiceWorker>(0));
     // call here?
     return resolver->promise();
 }
 
-ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ScriptExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
 {
     return from(navigator)->unregisterServiceWorker(context, pattern, es);
 }
 
-ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ScriptExecutionContext* scriptExecutionContext, const String& pattern, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     FrameLoaderClient* client = m_navigator->frame()->loader()->client();
     WebKit::WebServiceWorkerRegistry* peer = client->serviceWorkerRegistry();
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptExecutionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
     if (peer)
-        peer->unregisterServiceWorker(pattern, new CallbackPromiseAdapter(resolver, scriptExecutionContext));
+        peer->unregisterServiceWorker(pattern, new CallbackPromiseAdapter(resolver, executionContext));
     else
         resolver->reject(PassRefPtr<ServiceWorker>(0));
     return resolver->promise();

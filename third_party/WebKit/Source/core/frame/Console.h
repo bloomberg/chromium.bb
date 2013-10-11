@@ -55,7 +55,7 @@ public:
     PassRefPtr<MemoryInfo> memory() const;
 
 protected:
-    virtual ScriptExecutionContext* context();
+    virtual ExecutionContext* context();
     virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) OVERRIDE;
     virtual bool profilerEnabled();
 

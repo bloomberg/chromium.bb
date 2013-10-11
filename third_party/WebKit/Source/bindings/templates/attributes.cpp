@@ -17,7 +17,7 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.is_call_with_script_execution_context %}
-    ScriptExecutionContext* scriptContext = getScriptExecutionContext();
+    ExecutionContext* scriptContext = getExecutionContext();
     {% endif %}
     {# Special cases #}
     {% if attribute.is_check_security_for_node %}

@@ -36,21 +36,21 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class V8MutationCallback : public MutationCallback, public ActiveDOMCallback {
 public:
-    static PassRefPtr<V8MutationCallback> create(v8::Handle<v8::Function> callback, ScriptExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
+    static PassRefPtr<V8MutationCallback> create(v8::Handle<v8::Function> callback, ExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     {
         ASSERT(context);
         return adoptRef(new V8MutationCallback(callback, context, owner, isolate));
     }
 
     virtual void call(const Vector<RefPtr<MutationRecord> >&, MutationObserver*) OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ContextLifecycleObserver::scriptExecutionContext(); }
+    virtual ExecutionContext* executionContext() const OVERRIDE { return ContextLifecycleObserver::executionContext(); }
 
 private:
-    V8MutationCallback(v8::Handle<v8::Function>, ScriptExecutionContext*, v8::Handle<v8::Object>, v8::Isolate*);
+    V8MutationCallback(v8::Handle<v8::Function>, ExecutionContext*, v8::Handle<v8::Object>, v8::Isolate*);
 
     static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, V8MutationCallback*);
 

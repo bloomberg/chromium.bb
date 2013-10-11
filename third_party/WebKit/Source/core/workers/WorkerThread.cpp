@@ -155,7 +155,7 @@ public:
         return adoptPtr(new WorkerThreadShutdownFinishTask());
     }
 
-    virtual void performTask(ScriptExecutionContext *context)
+    virtual void performTask(ExecutionContext *context)
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
         workerGlobalScope->clearInspector();
@@ -173,7 +173,7 @@ public:
         return adoptPtr(new WorkerThreadShutdownStartTask());
     }
 
-    virtual void performTask(ScriptExecutionContext *context)
+    virtual void performTask(ExecutionContext *context)
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
 
@@ -223,7 +223,7 @@ bool WorkerThread::isCurrentThread() const
 }
 
 class ReleaseFastMallocFreeMemoryTask : public ExecutionContextTask {
-    virtual void performTask(ScriptExecutionContext*) OVERRIDE { WTF::releaseFastMallocFreeMemory(); }
+    virtual void performTask(ExecutionContext*) OVERRIDE { WTF::releaseFastMallocFreeMemory(); }
 };
 
 void WorkerThread::releaseFastMallocFreeMemoryInAllThreads()

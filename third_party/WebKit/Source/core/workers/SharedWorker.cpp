@@ -34,9 +34,9 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/MessageChannel.h"
 #include "core/dom/MessagePort.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/UseCounter.h"
 #include "core/workers/SharedWorkerRepository.h"
@@ -45,13 +45,13 @@
 
 namespace WebCore {
 
-inline SharedWorker::SharedWorker(ScriptExecutionContext* context)
+inline SharedWorker::SharedWorker(ExecutionContext* context)
     : AbstractWorker(context)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, const String& url, const String& name, ExceptionState& es)
+PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& es)
 {
     ASSERT(isMainThread());
     UseCounter::count(toDocument(context)->domWindow(), UseCounter::SharedWorkerStart);

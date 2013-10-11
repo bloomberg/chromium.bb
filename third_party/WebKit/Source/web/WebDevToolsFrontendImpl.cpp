@@ -125,7 +125,7 @@ void WebDevToolsFrontendImpl::dispatchOnInspectorFrontend(const WebString& messa
 void WebDevToolsFrontendImpl::resume()
 {
     // We should call maybeDispatch asynchronously here because we are not allowed to update activeDOMObjects list in
-    // resume (See ScriptExecutionContext::resumeActiveDOMObjects).
+    // resume (See ExecutionContext::resumeActiveDOMObjects).
     if (!m_inspectorFrontendDispatchTimer.isActive())
         m_inspectorFrontendDispatchTimer.startOneShot(0);
 }

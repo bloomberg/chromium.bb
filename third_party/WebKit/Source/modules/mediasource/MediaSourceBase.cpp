@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-MediaSourceBase::MediaSourceBase(ScriptExecutionContext* context)
+MediaSourceBase::MediaSourceBase(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_readyState(closedKeyword())
     , m_asyncEventQueue(GenericEventQueue::create(this))
@@ -298,9 +298,9 @@ void MediaSourceBase::scheduleEvent(const AtomicString& eventName)
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-ScriptExecutionContext* MediaSourceBase::scriptExecutionContext() const
+ExecutionContext* MediaSourceBase::executionContext() const
 {
-    return ActiveDOMObject::scriptExecutionContext();
+    return ActiveDOMObject::executionContext();
 }
 
 URLRegistry& MediaSourceBase::registry() const

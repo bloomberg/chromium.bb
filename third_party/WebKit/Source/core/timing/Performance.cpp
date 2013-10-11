@@ -69,7 +69,7 @@ const AtomicString& Performance::interfaceName() const
     return eventNames().interfaceForPerformance;
 }
 
-ScriptExecutionContext* Performance::scriptExecutionContext() const
+ExecutionContext* Performance::executionContext() const
 {
     if (!frame())
         return 0;

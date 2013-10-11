@@ -34,7 +34,7 @@
 #include "core/events/EventListener.h"
 
 namespace WebCore {
-class ScriptExecutionContext;
+class ExecutionContext;
 }
 
 namespace WebKit {
@@ -49,7 +49,7 @@ public:
     ~EventListenerWrapper();
 
     virtual bool operator==(const WebCore::EventListener&);
-    virtual void handleEvent(WebCore::ScriptExecutionContext*, WebCore::Event*);
+    virtual void handleEvent(WebCore::ExecutionContext*, WebCore::Event*);
 
     void webDOMEventListenerDeleted();
 

@@ -28,7 +28,7 @@
 #include "core/frame/DOMTimer.h"
 
 #include "bindings/v8/ScheduledAction.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/CurrentTime.h"
 
@@ -68,20 +68,20 @@ double DOMTimer::visiblePageAlignmentInterval()
     return 0;
 }
 
-int DOMTimer::install(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
+int DOMTimer::install(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
 {
     int timeoutID = context->installNewTimeout(action, timeout, singleShot);
     InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, singleShot);
     return timeoutID;
 }
 
-void DOMTimer::removeByID(ScriptExecutionContext* context, int timeoutID)
+void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
 {
     context->removeTimeoutByID(timeoutID);
     InspectorInstrumentation::didRemoveTimer(context, timeoutID);
 }
 
-DOMTimer::DOMTimer(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int interval, bool singleShot, int timeoutID)
+DOMTimer::DOMTimer(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int interval, bool singleShot, int timeoutID)
     : SuspendableTimer(context)
     , m_timeoutID(timeoutID)
     , m_nestingLevel(timerNestingLevel + 1)
@@ -111,7 +111,7 @@ int DOMTimer::timeoutID() const
 
 void DOMTimer::fired()
 {
-    ScriptExecutionContext* context = scriptExecutionContext();
+    ExecutionContext* context = executionContext();
     timerNestingLevel = m_nestingLevel;
     ASSERT(!context->activeDOMObjectsAreSuspended());
     // Only the first execution of a multi-shot timer should get an affirmative user gesture indicator.
@@ -157,14 +157,14 @@ void DOMTimer::stop()
 {
     SuspendableTimer::stop();
     // Need to release JS objects potentially protected by ScheduledAction
-    // because they can form circular references back to the ScriptExecutionContext
+    // because they can form circular references back to the ExecutionContext
     // which will cause a memory leak.
     m_action.clear();
 }
 
 double DOMTimer::alignedFireTime(double fireTime) const
 {
-    double alignmentInterval = scriptExecutionContext()->client()->timerAlignmentInterval();
+    double alignmentInterval = executionContext()->client()->timerAlignmentInterval();
     if (alignmentInterval) {
         double currentTime = monotonicallyIncreasingTime();
         if (fireTime <= currentTime)

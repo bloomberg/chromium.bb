@@ -61,7 +61,7 @@ Console::~Console()
 {
 }
 
-ScriptExecutionContext* Console::context()
+ExecutionContext* Console::context()
 {
     if (!m_frame)
         return 0;

@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 
 #include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/ContextLifecycleNotifier.h"
@@ -34,10 +34,10 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/DOMTimer.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/frame/DOMTimer.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/webdatabase/DatabaseContext.h"
@@ -52,13 +52,13 @@ public:
         return adoptPtr(new ProcessMessagesSoonTask);
     }
 
-    virtual void performTask(ScriptExecutionContext* context)
+    virtual void performTask(ExecutionContext* context)
     {
         context->dispatchMessagePortEvents();
     }
 };
 
-class ScriptExecutionContext::PendingException {
+class ExecutionContext::PendingException {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:
     PendingException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtr<ScriptCallStack> callStack)
@@ -76,7 +76,7 @@ public:
     RefPtr<ScriptCallStack> m_callStack;
 };
 
-ScriptExecutionContext::ScriptExecutionContext()
+ExecutionContext::ExecutionContext()
     : m_circularSequentialID(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
@@ -85,28 +85,28 @@ ScriptExecutionContext::ScriptExecutionContext()
 {
 }
 
-ScriptExecutionContext::~ScriptExecutionContext()
+ExecutionContext::~ExecutionContext()
 {
     HashSet<MessagePort*>::iterator messagePortsEnd = m_messagePorts.end();
     for (HashSet<MessagePort*>::iterator iter = m_messagePorts.begin(); iter != messagePortsEnd; ++iter) {
-        ASSERT((*iter)->scriptExecutionContext() == this);
+        ASSERT((*iter)->executionContext() == this);
         (*iter)->contextDestroyed();
     }
 }
 
-void ScriptExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
+void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
     m_client->postTask(task);
 }
 
-void ScriptExecutionContext::processMessagePortMessagesSoon()
+void ExecutionContext::processMessagePortMessagesSoon()
 {
     postTask(ProcessMessagesSoonTask::create());
 }
 
-void ScriptExecutionContext::dispatchMessagePortEvents()
+void ExecutionContext::dispatchMessagePortEvents()
 {
-    RefPtr<ScriptExecutionContext> protect(this);
+    RefPtr<ExecutionContext> protect(this);
 
     // Make a frozen copy.
     Vector<MessagePort*> ports;
@@ -122,7 +122,7 @@ void ScriptExecutionContext::dispatchMessagePortEvents()
     }
 }
 
-void ScriptExecutionContext::createdMessagePort(MessagePort* port)
+void ExecutionContext::createdMessagePort(MessagePort* port)
 {
     ASSERT(port);
     ASSERT((m_client->isDocument() && isMainThread())
@@ -131,7 +131,7 @@ void ScriptExecutionContext::createdMessagePort(MessagePort* port)
     m_messagePorts.add(port);
 }
 
-void ScriptExecutionContext::destroyedMessagePort(MessagePort* port)
+void ExecutionContext::destroyedMessagePort(MessagePort* port)
 {
     ASSERT(port);
     ASSERT((m_client->isDocument() && isMainThread())
@@ -140,12 +140,12 @@ void ScriptExecutionContext::destroyedMessagePort(MessagePort* port)
     m_messagePorts.remove(port);
 }
 
-bool ScriptExecutionContext::canSuspendActiveDOMObjects()
+bool ExecutionContext::canSuspendActiveDOMObjects()
 {
     return lifecycleNotifier()->canSuspendActiveDOMObjects();
 }
 
-bool ScriptExecutionContext::hasPendingActivity()
+bool ExecutionContext::hasPendingActivity()
 {
     if (lifecycleNotifier()->hasPendingActivity())
         return true;
@@ -159,20 +159,20 @@ bool ScriptExecutionContext::hasPendingActivity()
     return false;
 }
 
-void ScriptExecutionContext::suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension why)
+void ExecutionContext::suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension why)
 {
     lifecycleNotifier()->notifySuspendingActiveDOMObjects(why);
     m_activeDOMObjectsAreSuspended = true;
     m_reasonForSuspendingActiveDOMObjects = why;
 }
 
-void ScriptExecutionContext::resumeActiveDOMObjects()
+void ExecutionContext::resumeActiveDOMObjects()
 {
     m_activeDOMObjectsAreSuspended = false;
     lifecycleNotifier()->notifyResumingActiveDOMObjects();
 }
 
-void ScriptExecutionContext::stopActiveDOMObjects()
+void ExecutionContext::stopActiveDOMObjects()
 {
     m_activeDOMObjectsAreStopped = true;
     lifecycleNotifier()->notifyStoppingActiveDOMObjects();
@@ -180,7 +180,7 @@ void ScriptExecutionContext::stopActiveDOMObjects()
     closeMessagePorts();
 }
 
-void ScriptExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
+void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
 {
     ASSERT(lifecycleNotifier()->contains(object));
     // Ensure all ActiveDOMObjects are suspended also newly created ones.
@@ -188,20 +188,21 @@ void ScriptExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* obj
         object->suspend(m_reasonForSuspendingActiveDOMObjects);
 }
 
-void ScriptExecutionContext::closeMessagePorts() {
+void ExecutionContext::closeMessagePorts()
+{
     HashSet<MessagePort*>::iterator messagePortsEnd = m_messagePorts.end();
     for (HashSet<MessagePort*>::iterator iter = m_messagePorts.begin(); iter != messagePortsEnd; ++iter) {
-        ASSERT((*iter)->scriptExecutionContext() == this);
+        ASSERT((*iter)->executionContext() == this);
         (*iter)->close();
     }
 }
 
-bool ScriptExecutionContext::shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus corsStatus)
+bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus corsStatus)
 {
     return !(securityOrigin()->canRequest(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void ExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
     RefPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
@@ -225,17 +226,17 @@ void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassR
     m_pendingExceptions.clear();
 }
 
-void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber)
+void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber)
 {
     m_client->addMessage(source, level, message, sourceURL, lineNumber, 0);
 }
 
-void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state)
+void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state)
 {
     m_client->addMessage(source, level, message, String(), 0, state);
 }
 
-bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessControlStatus corsStatus)
+bool ExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessControlStatus corsStatus)
 {
     EventTarget* target = m_client->errorEventTarget();
     if (!target)
@@ -252,7 +253,7 @@ bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, Ac
     return errorEvent->defaultPrevented();
 }
 
-int ScriptExecutionContext::circularSequentialID()
+int ExecutionContext::circularSequentialID()
 {
     ++m_circularSequentialID;
     if (m_circularSequentialID <= 0)
@@ -260,7 +261,7 @@ int ScriptExecutionContext::circularSequentialID()
     return m_circularSequentialID;
 }
 
-int ScriptExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
+int ExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
 {
     int timeoutID;
     while (true) {
@@ -277,42 +278,42 @@ int ScriptExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action
     return timer->timeoutID();
 }
 
-void ScriptExecutionContext::removeTimeoutByID(int timeoutID)
+void ExecutionContext::removeTimeoutByID(int timeoutID)
 {
     if (timeoutID <= 0)
         return;
     m_timeouts.remove(timeoutID);
 }
 
-PublicURLManager& ScriptExecutionContext::publicURLManager()
+PublicURLManager& ExecutionContext::publicURLManager()
 {
     if (!m_publicURLManager)
         m_publicURLManager = PublicURLManager::create(this);
     return *m_publicURLManager;
 }
 
-void ScriptExecutionContext::didChangeTimerAlignmentInterval()
+void ExecutionContext::didChangeTimerAlignmentInterval()
 {
     for (TimeoutMap::iterator iter = m_timeouts.begin(); iter != m_timeouts.end(); ++iter)
         iter->value->didChangeAlignmentInterval();
 }
 
-ContextLifecycleNotifier* ScriptExecutionContext::lifecycleNotifier()
+ContextLifecycleNotifier* ExecutionContext::lifecycleNotifier()
 {
     return static_cast<ContextLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
 }
 
-PassOwnPtr<LifecycleNotifier> ScriptExecutionContext::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier> ExecutionContext::createLifecycleNotifier()
 {
     return ContextLifecycleNotifier::create(this);
 }
 
-bool ScriptExecutionContext::isIteratingOverObservers() const
+bool ExecutionContext::isIteratingOverObservers() const
 {
     return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
 }
 
-void ScriptExecutionContext::setDatabaseContext(DatabaseContext* databaseContext)
+void ExecutionContext::setDatabaseContext(DatabaseContext* databaseContext)
 {
     m_databaseContext = databaseContext;
 }

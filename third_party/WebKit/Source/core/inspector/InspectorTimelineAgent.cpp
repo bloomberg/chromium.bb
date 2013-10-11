@@ -132,7 +132,7 @@ const char BackendNodeIdGroup[] = "timeline";
 const char InternalEventCategory[] = "instrumentation";
 }
 
-static Frame* frameForScriptExecutionContext(ScriptExecutionContext* context)
+static Frame* frameForExecutionContext(ExecutionContext* context)
 {
     Frame* frame = 0;
     if (context->isDocument())
@@ -318,9 +318,9 @@ void InspectorTimelineAgent::didCancelFrame()
     m_pendingFrameRecord.clear();
 }
 
-bool InspectorTimelineAgent::willCallFunction(ScriptExecutionContext* context, const String& scriptName, int scriptLine)
+bool InspectorTimelineAgent::willCallFunction(ExecutionContext* context, const String& scriptName, int scriptLine)
 {
-    pushCurrentRecord(TimelineRecordFactory::createFunctionCallData(scriptName, scriptLine), TimelineRecordType::FunctionCall, true, frameForScriptExecutionContext(context));
+    pushCurrentRecord(TimelineRecordFactory::createFunctionCallData(scriptName, scriptLine), TimelineRecordType::FunctionCall, true, frameForExecutionContext(context));
     return true;
 }
 
@@ -515,19 +515,19 @@ void InspectorTimelineAgent::didWriteHTML(unsigned endLine)
     }
 }
 
-void InspectorTimelineAgent::didInstallTimer(ScriptExecutionContext* context, int timerId, int timeout, bool singleShot)
+void InspectorTimelineAgent::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
-    appendRecord(TimelineRecordFactory::createTimerInstallData(timerId, timeout, singleShot), TimelineRecordType::TimerInstall, true, frameForScriptExecutionContext(context));
+    appendRecord(TimelineRecordFactory::createTimerInstallData(timerId, timeout, singleShot), TimelineRecordType::TimerInstall, true, frameForExecutionContext(context));
 }
 
-void InspectorTimelineAgent::didRemoveTimer(ScriptExecutionContext* context, int timerId)
+void InspectorTimelineAgent::didRemoveTimer(ExecutionContext* context, int timerId)
 {
-    appendRecord(TimelineRecordFactory::createGenericTimerData(timerId), TimelineRecordType::TimerRemove, true, frameForScriptExecutionContext(context));
+    appendRecord(TimelineRecordFactory::createGenericTimerData(timerId), TimelineRecordType::TimerRemove, true, frameForExecutionContext(context));
 }
 
-bool InspectorTimelineAgent::willFireTimer(ScriptExecutionContext* context, int timerId)
+bool InspectorTimelineAgent::willFireTimer(ExecutionContext* context, int timerId)
 {
-    pushCurrentRecord(TimelineRecordFactory::createGenericTimerData(timerId), TimelineRecordType::TimerFire, false, frameForScriptExecutionContext(context));
+    pushCurrentRecord(TimelineRecordFactory::createGenericTimerData(timerId), TimelineRecordType::TimerFire, false, frameForExecutionContext(context));
     return true;
 }
 
@@ -536,11 +536,11 @@ void InspectorTimelineAgent::didFireTimer()
     didCompleteCurrentRecord(TimelineRecordType::TimerFire);
 }
 
-bool InspectorTimelineAgent::willDispatchXHRReadyStateChangeEvent(ScriptExecutionContext* context, XMLHttpRequest* request)
+bool InspectorTimelineAgent::willDispatchXHRReadyStateChangeEvent(ExecutionContext* context, XMLHttpRequest* request)
 {
     if (!request->hasEventListeners(EventTypeNames::readystatechange))
         return false;
-    pushCurrentRecord(TimelineRecordFactory::createXHRReadyStateChangeData(request->url().string(), request->readyState()), TimelineRecordType::XHRReadyStateChange, false, frameForScriptExecutionContext(context));
+    pushCurrentRecord(TimelineRecordFactory::createXHRReadyStateChangeData(request->url().string(), request->readyState()), TimelineRecordType::XHRReadyStateChange, false, frameForExecutionContext(context));
     return true;
 }
 
@@ -549,11 +549,11 @@ void InspectorTimelineAgent::didDispatchXHRReadyStateChangeEvent()
     didCompleteCurrentRecord(TimelineRecordType::XHRReadyStateChange);
 }
 
-bool InspectorTimelineAgent::willDispatchXHRLoadEvent(ScriptExecutionContext* context, XMLHttpRequest* request)
+bool InspectorTimelineAgent::willDispatchXHRLoadEvent(ExecutionContext* context, XMLHttpRequest* request)
 {
     if (!request->hasEventListeners(EventTypeNames::load))
         return false;
-    pushCurrentRecord(TimelineRecordFactory::createXHRLoadData(request->url().string()), TimelineRecordType::XHRLoad, true, frameForScriptExecutionContext(context));
+    pushCurrentRecord(TimelineRecordFactory::createXHRLoadData(request->url().string()), TimelineRecordType::XHRLoad, true, frameForExecutionContext(context));
     return true;
 }
 
@@ -628,22 +628,22 @@ void InspectorTimelineAgent::didFailLoading(unsigned long identifier, DocumentLo
     didFinishLoadingResource(identifier, true, 0, loader->frame());
 }
 
-void InspectorTimelineAgent::consoleTimeStamp(ScriptExecutionContext* context, const String& title)
+void InspectorTimelineAgent::consoleTimeStamp(ExecutionContext* context, const String& title)
 {
-    appendRecord(TimelineRecordFactory::createTimeStampData(title), TimelineRecordType::TimeStamp, true, frameForScriptExecutionContext(context));
+    appendRecord(TimelineRecordFactory::createTimeStampData(title), TimelineRecordType::TimeStamp, true, frameForExecutionContext(context));
 }
 
-void InspectorTimelineAgent::consoleTime(ScriptExecutionContext* context, const String& message)
+void InspectorTimelineAgent::consoleTime(ExecutionContext* context, const String& message)
 {
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::Time, true, frameForScriptExecutionContext(context));
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::Time, true, frameForExecutionContext(context));
 }
 
-void InspectorTimelineAgent::consoleTimeEnd(ScriptExecutionContext* context, const String& message, ScriptState*)
+void InspectorTimelineAgent::consoleTimeEnd(ExecutionContext* context, const String& message, ScriptState*)
 {
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeEnd, true, frameForScriptExecutionContext(context));
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeEnd, true, frameForExecutionContext(context));
 }
 
-void InspectorTimelineAgent::consoleTimeline(ScriptExecutionContext* context, const String& title, ScriptState* state)
+void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* state)
 {
     if (!m_state->getBoolean(TimelineAgentState::enabled))
         return;
@@ -656,10 +656,10 @@ void InspectorTimelineAgent::consoleTimeline(ScriptExecutionContext* context, co
         bool fromConsole = true;
         m_frontend->started(&fromConsole);
     }
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForScriptExecutionContext(context));
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForExecutionContext(context));
 }
 
-void InspectorTimelineAgent::consoleTimelineEnd(ScriptExecutionContext* context, const String& title, ScriptState* state)
+void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* state)
 {
     if (!m_state->getBoolean(TimelineAgentState::enabled))
         return;
@@ -672,7 +672,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ScriptExecutionContext* context,
     }
 
     String message = String::format("Timeline '%s' finished.", title.utf8().data());
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForScriptExecutionContext(context));
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForExecutionContext(context));
     m_consoleTimelines.remove(index);
     if (!m_consoleTimelines.size() && isStarted() && !m_state->getBoolean(TimelineAgentState::startedFromProtocol))
         innerStop(true);

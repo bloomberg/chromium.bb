@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class SpeechGrammarList : public ScriptWrappable, public RefCounted<SpeechGrammarList> {
 public:
@@ -42,7 +42,7 @@ public:
     unsigned long length() const { return m_grammars.size(); }
     SpeechGrammar* item(unsigned long) const;
 
-    void addFromUri(ScriptExecutionContext*, const String& src, double weight = 1.0);
+    void addFromUri(ExecutionContext*, const String& src, double weight = 1.0);
     void addFromString(const String&, double weight = 1.0);
 
 private:

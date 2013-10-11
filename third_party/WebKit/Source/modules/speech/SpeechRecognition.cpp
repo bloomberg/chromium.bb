@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechRecognition> SpeechRecognition::create(ScriptExecutionContext* context)
+PassRefPtr<SpeechRecognition> SpeechRecognition::create(ExecutionContext* context)
 {
     RefPtr<SpeechRecognition> speechRecognition(adoptRef(new SpeechRecognition(context)));
     speechRecognition->suspendIfNeeded();
@@ -151,9 +151,9 @@ const AtomicString& SpeechRecognition::interfaceName() const
     return eventNames().interfaceForSpeechRecognition;
 }
 
-ScriptExecutionContext* SpeechRecognition::scriptExecutionContext() const
+ExecutionContext* SpeechRecognition::executionContext() const
 {
-    return ActiveDOMObject::scriptExecutionContext();
+    return ActiveDOMObject::executionContext();
 }
 
 void SpeechRecognition::stop()
@@ -163,7 +163,7 @@ void SpeechRecognition::stop()
         abort();
 }
 
-SpeechRecognition::SpeechRecognition(ScriptExecutionContext* context)
+SpeechRecognition::SpeechRecognition(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_grammars(SpeechGrammarList::create()) // FIXME: The spec is not clear on the default value for the grammars attribute.
     , m_continuous(false)
@@ -175,7 +175,7 @@ SpeechRecognition::SpeechRecognition(ScriptExecutionContext* context)
     , m_stopping(false)
 {
     ScriptWrappable::init(this);
-    Document* document = toDocument(scriptExecutionContext());
+    Document* document = toDocument(executionContext());
 
     Page* page = document->page();
     ASSERT(page);

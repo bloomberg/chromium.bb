@@ -41,7 +41,7 @@ namespace WebCore {
 
     class ResourceRequest;
     class ResourceResponse;
-    class ScriptExecutionContext;
+    class ExecutionContext;
     class TextResourceDecoder;
     class WorkerScriptLoaderClient;
 
@@ -53,8 +53,8 @@ namespace WebCore {
             return adoptRef(new WorkerScriptLoader());
         }
 
-        void loadSynchronously(ScriptExecutionContext*, const KURL&, CrossOriginRequestPolicy);
-        void loadAsynchronously(ScriptExecutionContext*, const KURL&, CrossOriginRequestPolicy, WorkerScriptLoaderClient*);
+        void loadSynchronously(ExecutionContext*, const KURL&, CrossOriginRequestPolicy);
+        void loadAsynchronously(ExecutionContext*, const KURL&, CrossOriginRequestPolicy, WorkerScriptLoaderClient*);
 
         void notifyError();
 

@@ -178,7 +178,7 @@ static String resourceString(const v8::Handle<v8::Function> function)
     return builder.toString();
 }
 
-v8::Local<v8::Value> ScriptController::callFunction(ScriptExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
+v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {

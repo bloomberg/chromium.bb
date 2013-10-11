@@ -53,9 +53,9 @@ class ExceptionState;
 class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
 public:
     static const char* subProtocolSeperator();
-    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, ExceptionState&);
-    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, const String& protocol, ExceptionState&);
-    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
+    static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, ExceptionState&);
+    static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, const String& protocol, ExceptionState&);
+    static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
     virtual ~WebSocket();
 
     enum State {
@@ -100,7 +100,7 @@ public:
 
     // EventTarget functions.
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     // ActiveDOMObject functions.
     virtual void contextDestroyed() OVERRIDE;
@@ -122,7 +122,7 @@ public:
     virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
 private:
-    explicit WebSocket(ScriptExecutionContext*);
+    explicit WebSocket(ExecutionContext*);
 
     // Handle the JavaScript close method call. close() methods on this class
     // are just for determining if the optional code argument is supplied or

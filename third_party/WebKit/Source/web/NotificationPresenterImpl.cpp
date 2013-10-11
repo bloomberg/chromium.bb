@@ -34,7 +34,7 @@
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/PassRefPtr.h"
@@ -118,20 +118,20 @@ void NotificationPresenterImpl::notificationControllerDestroyed()
 {
 }
 
-NotificationClient::Permission NotificationPresenterImpl::checkPermission(ScriptExecutionContext* context)
+NotificationClient::Permission NotificationPresenterImpl::checkPermission(ExecutionContext* context)
 {
     int result = m_presenter->checkPermission(WebSecurityOrigin(context->securityOrigin()));
     return static_cast<NotificationClient::Permission>(result);
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-void NotificationPresenterImpl::requestPermission(ScriptExecutionContext* context, PassRefPtr<VoidCallback> callback)
+void NotificationPresenterImpl::requestPermission(ExecutionContext* context, PassRefPtr<VoidCallback> callback)
 {
     m_presenter->requestPermission(WebSecurityOrigin(context->securityOrigin()), new VoidCallbackClient(callback));
 }
 #endif // ENABLE(LEGACY_NOTIFICATIONS)
 
-void NotificationPresenterImpl::requestPermission(ScriptExecutionContext* context, WTF::PassRefPtr<NotificationPermissionCallback> callback)
+void NotificationPresenterImpl::requestPermission(ExecutionContext* context, WTF::PassRefPtr<NotificationPermissionCallback> callback)
 {
     m_presenter->requestPermission(WebSecurityOrigin(context->securityOrigin()), new NotificationPermissionCallbackClient(m_presenter, context->securityOrigin(), callback));
 }

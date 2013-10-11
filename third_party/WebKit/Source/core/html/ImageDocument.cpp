@@ -72,7 +72,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ScriptExecutionContext*, Event*);
+    virtual void handleEvent(ExecutionContext*, Event*);
 
     ImageDocument* m_doc;
 };
@@ -374,7 +374,7 @@ void ImageDocument::dispose()
 
 // --------
 
-void ImageEventListener::handleEvent(ScriptExecutionContext*, Event* event)
+void ImageEventListener::handleEvent(ExecutionContext*, Event* event)
 {
     if (event->type() == EventTypeNames::resize)
         m_doc->windowSizeChanged();

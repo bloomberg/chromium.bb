@@ -498,7 +498,7 @@ void MemoryCache::adjustSize(bool live, int delta)
     }
 }
 
-void MemoryCache::removeURLFromCache(ScriptExecutionContext* context, const KURL& url)
+void MemoryCache::removeURLFromCache(ExecutionContext* context, const KURL& url)
 {
     if (context->isWorkerGlobalScope()) {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
@@ -508,7 +508,7 @@ void MemoryCache::removeURLFromCache(ScriptExecutionContext* context, const KURL
     removeURLFromCacheInternal(context, url);
 }
 
-void MemoryCache::removeURLFromCacheInternal(ScriptExecutionContext*, const KURL& url)
+void MemoryCache::removeURLFromCacheInternal(ExecutionContext*, const KURL& url)
 {
     if (Resource* resource = memoryCache()->resourceForURL(url))
         memoryCache()->remove(resource);

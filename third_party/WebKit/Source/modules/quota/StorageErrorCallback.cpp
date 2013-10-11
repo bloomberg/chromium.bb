@@ -42,7 +42,7 @@ StorageErrorCallback::CallbackTask::CallbackTask(PassRefPtr<StorageErrorCallback
 {
 }
 
-void StorageErrorCallback::CallbackTask::performTask(ScriptExecutionContext*)
+void StorageErrorCallback::CallbackTask::performTask(ExecutionContext*)
 {
     if (!m_callback)
         return;

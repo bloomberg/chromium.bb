@@ -92,8 +92,8 @@ WebMediaConstraints WebUserMediaRequest::videoConstraints() const
 
 WebSecurityOrigin WebUserMediaRequest::securityOrigin() const
 {
-    ASSERT(!isNull() && m_private->scriptExecutionContext());
-    return WebSecurityOrigin(m_private->scriptExecutionContext()->securityOrigin());
+    ASSERT(!isNull() && m_private->executionContext());
+    return WebSecurityOrigin(m_private->executionContext()->securityOrigin());
 }
 
 WebDocument WebUserMediaRequest::ownerDocument() const

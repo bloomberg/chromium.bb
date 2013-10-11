@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class StringCallback : public RefCounted<StringCallback> {
 public:
@@ -44,7 +44,7 @@ public:
     virtual bool handleEvent(const String& data) = 0;
 
     // Helper to post callback task.
-    void scheduleCallback(ScriptExecutionContext*, const String& data);
+    void scheduleCallback(ExecutionContext*, const String& data);
 };
 
 } // namespace WebCore

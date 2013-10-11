@@ -43,7 +43,7 @@
 namespace WebCore {
 
 // static
-EntryVector HTMLInputElementFileSystem::webkitEntries(ScriptExecutionContext* scriptExecutionContext, HTMLInputElement* input)
+EntryVector HTMLInputElementFileSystem::webkitEntries(ExecutionContext* executionContext, HTMLInputElement* input)
 {
     EntryVector entries;
     FileList* files = input->files();
@@ -51,7 +51,7 @@ EntryVector HTMLInputElementFileSystem::webkitEntries(ScriptExecutionContext* sc
     if (!files)
         return entries;
 
-    RefPtr<DOMFileSystem> filesystem = DOMFileSystem::createIsolatedFileSystem(scriptExecutionContext, input->droppedFileSystemId());
+    RefPtr<DOMFileSystem> filesystem = DOMFileSystem::createIsolatedFileSystem(executionContext, input->droppedFileSystemId());
     if (!filesystem) {
         // Drag-drop isolated filesystem is not available.
         return entries;

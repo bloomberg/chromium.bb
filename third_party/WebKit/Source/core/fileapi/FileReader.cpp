@@ -34,8 +34,8 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/ProgressEvent.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "platform/Logging.h"
 #include "wtf/ArrayBuffer.h"
@@ -60,14 +60,14 @@ const CString utf8FilePath(Blob* blob)
 
 static const double progressNotificationIntervalMS = 50;
 
-PassRefPtr<FileReader> FileReader::create(ScriptExecutionContext* context)
+PassRefPtr<FileReader> FileReader::create(ExecutionContext* context)
 {
     RefPtr<FileReader> fileReader(adoptRef(new FileReader(context)));
     fileReader->suspendIfNeeded();
     return fileReader.release();
 }
 
-FileReader::FileReader(ScriptExecutionContext* context)
+FileReader::FileReader(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_state(EMPTY)
     , m_loadingState(LoadingStateNone)
@@ -163,10 +163,10 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
     m_loader = adoptPtr(new FileReaderLoader(m_readType, this));
     m_loader->setEncoding(m_encoding);
     m_loader->setDataType(m_blob->type());
-    m_loader->start(scriptExecutionContext(), *m_blob);
+    m_loader->start(executionContext(), *m_blob);
 }
 
-static void delayedAbort(ScriptExecutionContext*, FileReader* reader)
+static void delayedAbort(ExecutionContext*, FileReader* reader)
 {
     reader->doAbort();
 }
@@ -180,7 +180,7 @@ void FileReader::abort()
     m_loadingState = LoadingStateAborted;
 
     // Schedule to have the abort done later since abort() might be called from the event handler and we do not want the resource loading code to be in the stack.
-    scriptExecutionContext()->postTask(
+    executionContext()->postTask(
         createCallbackTask(&delayedAbort, AllowAccessLater(this)));
 }
 

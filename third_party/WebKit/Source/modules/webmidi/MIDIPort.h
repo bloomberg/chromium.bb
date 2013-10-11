@@ -47,7 +47,7 @@ public:
         MIDIPortTypeOutput
     };
 
-    static PassRefPtr<MIDIPort> create(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
+    static PassRefPtr<MIDIPort> create(ExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
     virtual ~MIDIPort();
 
     String id() const { return m_id; }
@@ -63,13 +63,13 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIPort; }
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
+    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
 
     // ActiveDOMObject
     virtual bool canSuspend() const OVERRIDE { return true; }
 
 protected:
-    MIDIPort(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
+    MIDIPort(ExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
 
 private:
     // EventTarget

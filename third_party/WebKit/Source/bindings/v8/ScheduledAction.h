@@ -41,7 +41,7 @@
 namespace WebCore {
 
 class Frame;
-class ScriptExecutionContext;
+class ExecutionContext;
 class WorkerGlobalScope;
 
 class ScheduledAction {
@@ -51,7 +51,7 @@ public:
     ScheduledAction(v8::Handle<v8::Context>, const String&, const KURL&, v8::Isolate*);
     ~ScheduledAction();
 
-    void execute(ScriptExecutionContext*);
+    void execute(ExecutionContext*);
 
 private:
     void execute(Frame*);

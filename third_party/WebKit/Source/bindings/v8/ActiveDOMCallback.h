@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 // A base class that prevents binding callbacks from executing when
 // active dom objects are stopped or suspended, and is used by the
@@ -47,7 +47,7 @@ class ScriptExecutionContext;
 // context thread.
 class ActiveDOMCallback : public ContextLifecycleObserver {
 public:
-    ActiveDOMCallback(ScriptExecutionContext* context);
+    ActiveDOMCallback(ExecutionContext*);
     virtual ~ActiveDOMCallback();
 
     bool canInvokeCallback() const;

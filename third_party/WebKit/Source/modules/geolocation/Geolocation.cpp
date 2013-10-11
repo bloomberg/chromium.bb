@@ -229,14 +229,14 @@ void Geolocation::Watchers::getNotifiersVector(GeoNotifierVector& copy) const
     copyValuesToVector(m_idToNotifierMap, copy);
 }
 
-PassRefPtr<Geolocation> Geolocation::create(ScriptExecutionContext* context)
+PassRefPtr<Geolocation> Geolocation::create(ExecutionContext* context)
 {
     RefPtr<Geolocation> geolocation = adoptRef(new Geolocation(context));
     geolocation->suspendIfNeeded();
     return geolocation.release();
 }
 
-Geolocation::Geolocation(ScriptExecutionContext* context)
+Geolocation::Geolocation(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_allowGeolocation(Unknown)
 {
@@ -250,7 +250,7 @@ Geolocation::~Geolocation()
 
 Document* Geolocation::document() const
 {
-    return toDocument(scriptExecutionContext());
+    return toDocument(executionContext());
 }
 
 Frame* Geolocation::frame() const
@@ -308,7 +308,7 @@ int Geolocation::watchPosition(PassRefPtr<PositionCallback> successCallback, Pas
     int watchID;
     // Keep asking for the next id until we're given one that we don't already have.
     do {
-        watchID = scriptExecutionContext()->circularSequentialID();
+        watchID = executionContext()->circularSequentialID();
     } while (!m_watchers.add(watchID, notifier));
     return watchID;
 }

@@ -27,7 +27,7 @@
 
 [
     Constructor(DOMString scriptUrl),
-    ConstructorCallWith=ScriptExecutionContext,
+    ConstructorCallWith=ExecutionContext,
     ConstructorRaisesException,
     ActiveDOMObject
 ] interface Worker : EventTarget {

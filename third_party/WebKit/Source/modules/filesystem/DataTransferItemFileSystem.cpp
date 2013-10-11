@@ -33,7 +33,7 @@
 
 #include "core/dom/Clipboard.h"
 #include "core/dom/DataTransferItem.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
@@ -48,7 +48,7 @@
 namespace WebCore {
 
 // static
-PassRefPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ScriptExecutionContext* scriptExecutionContext, DataTransferItem* item)
+PassRefPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionContext, DataTransferItem* item)
 {
     if (!item->dataObjectItem()->isFilename())
         return adoptRef(static_cast<Entry*>(0));
@@ -61,7 +61,7 @@ PassRefPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ScriptExecutionCo
     ASSERT(file->isFile());
 
     DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(item->clipboard()->dataObject().get());
-    DOMFileSystem* domFileSystem = filesystem ? filesystem->getDOMFileSystem(scriptExecutionContext) : 0;
+    DOMFileSystem* domFileSystem = filesystem ? filesystem->getDOMFileSystem(executionContext) : 0;
     if (!filesystem) {
         // IsolatedFileSystem may not be enabled.
         return adoptRef(static_cast<Entry*>(0));

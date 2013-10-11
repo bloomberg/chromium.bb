@@ -32,7 +32,7 @@
 #include "modules/websockets/NewWebSocketChannelImpl.h"
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -159,7 +159,7 @@ NewWebSocketChannelImpl::BlobLoader::BlobLoader(const Blob& blob, NewWebSocketCh
     : m_channel(channel)
     , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
 {
-    m_loader.start(channel->scriptExecutionContext(), blob);
+    m_loader.start(channel->executionContext(), blob);
 }
 
 void NewWebSocketChannelImpl::BlobLoader::cancel()
@@ -255,7 +255,7 @@ void NewWebSocketChannelImpl::Resumer::resumeNow(Timer<Resumer>*)
     // |this| can be deleted here.
 }
 
-NewWebSocketChannelImpl::NewWebSocketChannelImpl(ScriptExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
+NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     : ContextLifecycleObserver(context)
     , m_handle(adoptPtr(WebKit::Platform::current()->createWebSocketHandle()))
     , m_client(client)
@@ -286,7 +286,7 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     for (size_t i = 0; i < protocols.size(); ++i) {
         webProtocols[i] = protocols[i];
     }
-    String origin = scriptExecutionContext()->securityOrigin()->toString();
+    String origin = executionContext()->securityOrigin()->toString();
     m_handle->connect(url, webProtocols, origin, this);
     flowControlIfNecessary();
 }

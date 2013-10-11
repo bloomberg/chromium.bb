@@ -38,11 +38,11 @@ namespace WebCore {
 
 class Entry;
 class HTMLInputElement;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class HTMLInputElementFileSystem {
 public:
-    static EntryVector webkitEntries(ScriptExecutionContext*, HTMLInputElement*);
+    static EntryVector webkitEntries(ExecutionContext*, HTMLInputElement*);
 
 private:
     HTMLInputElementFileSystem();

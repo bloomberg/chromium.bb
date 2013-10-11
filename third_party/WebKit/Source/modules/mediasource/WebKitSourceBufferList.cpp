@@ -37,8 +37,8 @@
 
 namespace WebCore {
 
-WebKitSourceBufferList::WebKitSourceBufferList(ScriptExecutionContext* context, GenericEventQueue* asyncEventQueue)
-    : m_scriptExecutionContext(context)
+WebKitSourceBufferList::WebKitSourceBufferList(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
+    : m_executionContext(context)
     , m_asyncEventQueue(asyncEventQueue)
 {
     ScriptWrappable::init(this);
@@ -97,9 +97,9 @@ const AtomicString& WebKitSourceBufferList::interfaceName() const
     return eventNames().interfaceForWebKitSourceBufferList;
 }
 
-ScriptExecutionContext* WebKitSourceBufferList::scriptExecutionContext() const
+ExecutionContext* WebKitSourceBufferList::executionContext() const
 {
-    return m_scriptExecutionContext;
+    return m_executionContext;
 }
 
 } // namespace WebCore

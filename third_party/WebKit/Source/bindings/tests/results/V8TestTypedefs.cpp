@@ -476,7 +476,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
         throwTypeError(args.GetIsolate());
         return;
     }
-    RefPtr<TestCallback> testCallback = V8TestCallback::create(args[1], getScriptExecutionContext());
+    RefPtr<TestCallback> testCallback = V8TestCallback::create(args[1], getExecutionContext());
 
     RefPtr<TestTypedefs> impl = TestTypedefs::create(hello, testCallback);
     v8::Handle<v8::Object> wrapper = args.Holder();

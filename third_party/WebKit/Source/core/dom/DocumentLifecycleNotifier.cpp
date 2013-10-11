@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-DocumentLifecycleNotifier::DocumentLifecycleNotifier(ScriptExecutionContext* context)
+DocumentLifecycleNotifier::DocumentLifecycleNotifier(ExecutionContext* context)
     : ContextLifecycleNotifier(context)
 {
 }

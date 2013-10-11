@@ -68,7 +68,7 @@ public:
         return adoptPtr(new CloseWorkerGlobalScopeTask);
     }
 
-    virtual void performTask(ScriptExecutionContext *context)
+    virtual void performTask(ExecutionContext *context)
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
         // Notify parent that this context is closed. Parent is responsible for calling WorkerThread::stop().
@@ -113,7 +113,7 @@ void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& polic
     contentSecurityPolicy()->didReceiveHeader(policy, contentSecurityPolicyType);
 }
 
-ScriptExecutionContext* WorkerGlobalScope::scriptExecutionContext() const
+ExecutionContext* WorkerGlobalScope::executionContext() const
 {
     return const_cast<WorkerGlobalScope*>(this);
 }
@@ -197,7 +197,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
     Vector<String>::const_iterator urlsEnd = urls.end();
     Vector<KURL> completedURLs;
     for (Vector<String>::const_iterator it = urls.begin(); it != urlsEnd; ++it) {
-        const KURL& url = scriptExecutionContext()->completeURL(*it);
+        const KURL& url = executionContext()->completeURL(*it);
         if (!url.isValid()) {
             es.throwDOMException(SyntaxError, "Failed to execute 'importScripts': the URL '" + *it + "' is invalid.");
             return;
@@ -209,7 +209,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
     for (Vector<KURL>::const_iterator it = completedURLs.begin(); it != end; ++it) {
         RefPtr<WorkerScriptLoader> scriptLoader(WorkerScriptLoader::create());
         scriptLoader->setTargetType(ResourceRequest::TargetIsScript);
-        scriptLoader->loadSynchronously(scriptExecutionContext(), *it, AllowCrossOriginRequests);
+        scriptLoader->loadSynchronously(executionContext(), *it, AllowCrossOriginRequests);
 
         // If the fetching attempt failed, throw a NetworkError exception and abort all these steps.
         if (scriptLoader->failed()) {
@@ -217,7 +217,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
             return;
         }
 
-        InspectorInstrumentation::scriptImported(scriptExecutionContext(), scriptLoader->identifier(), scriptLoader->script());
+        InspectorInstrumentation::scriptImported(executionContext(), scriptLoader->identifier(), scriptLoader->script());
 
         RefPtr<ErrorEvent> errorEvent;
         m_script->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent);

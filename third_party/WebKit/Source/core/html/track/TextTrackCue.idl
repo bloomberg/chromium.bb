@@ -26,7 +26,7 @@
 [
     RuntimeEnabled=VideoTrack,
     Constructor(double startTime, double endTime, DOMString text),
-    ConstructorCallWith=ScriptExecutionContext
+    ConstructorCallWith=ExecutionContext
 ] interface TextTrackCue : EventTarget {
     readonly attribute TextTrack track;
 

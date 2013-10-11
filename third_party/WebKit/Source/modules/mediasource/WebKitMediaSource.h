@@ -43,7 +43,7 @@ class ExceptionState;
 
 class WebKitMediaSource : public MediaSourceBase, public ScriptWrappable {
 public:
-    static PassRefPtr<WebKitMediaSource> create(ScriptExecutionContext*);
+    static PassRefPtr<WebKitMediaSource> create(ExecutionContext*);
     virtual ~WebKitMediaSource() { }
 
     // WebKitMediaSource.idl methods
@@ -60,7 +60,7 @@ public:
     using RefCounted<MediaSourceBase>::deref;
 
 private:
-    explicit WebKitMediaSource(ScriptExecutionContext*);
+    explicit WebKitMediaSource(ExecutionContext*);
 
     // MediaSourceBase interface
     virtual void onReadyStateChange(const AtomicString&, const AtomicString&) OVERRIDE;

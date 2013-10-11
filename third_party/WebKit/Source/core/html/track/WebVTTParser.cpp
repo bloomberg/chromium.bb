@@ -112,8 +112,8 @@ FloatPoint WebVTTParser::parseFloatPercentageValuePair(const String& value, char
 }
 #endif
 
-WebVTTParser::WebVTTParser(WebVTTParserClient* client, ScriptExecutionContext* context)
-    : m_scriptExecutionContext(context)
+WebVTTParser::WebVTTParser(WebVTTParserClient* client, ExecutionContext* context)
+    : m_executionContext(context)
     , m_state(Initial)
     , m_currentStartTime(0)
     , m_currentEndTime(0)
@@ -328,8 +328,8 @@ PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(co
     // 4.8.10.13.4 WebVTT cue text parsing rules and
     // 4.8.10.13.5 WebVTT cue text DOM construction rules.
 
-    ASSERT(m_scriptExecutionContext->isDocument());
-    Document* document = toDocument(m_scriptExecutionContext);
+    ASSERT(m_executionContext->isDocument());
+    Document* document = toDocument(m_executionContext);
     ASSERT(document);
 
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(*document);
@@ -356,7 +356,7 @@ void WebVTTParser::createNewCue()
     if (!m_currentContent.length())
         return;
 
-    RefPtr<TextTrackCue> cue = TextTrackCue::create(m_scriptExecutionContext, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
+    RefPtr<TextTrackCue> cue = TextTrackCue::create(m_executionContext, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
     cue->setId(m_currentId);
     cue->setCueSettings(m_currentSettings);
 
@@ -380,7 +380,7 @@ void WebVTTParser::createNewRegion()
     if (!m_currentHeaderValue.length())
         return;
 
-    RefPtr<TextTrackRegion> region = TextTrackRegion::create(m_scriptExecutionContext);
+    RefPtr<TextTrackRegion> region = TextTrackRegion::create(m_executionContext);
     region->setRegionSettings(m_currentHeaderValue);
 
     // 15.5.10 If the text track list of regions regions contains a region

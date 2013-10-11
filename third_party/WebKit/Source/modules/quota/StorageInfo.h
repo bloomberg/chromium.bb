@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 class StorageErrorCallback;
 class StorageQuota;
 class StorageQuotaCallback;
@@ -56,9 +56,9 @@ public:
         return adoptRef(new StorageInfo());
     }
 
-    void queryUsageAndQuota(ScriptExecutionContext*, int storageType, PassRefPtr<StorageUsageCallback>, PassRefPtr<StorageErrorCallback>);
+    void queryUsageAndQuota(ExecutionContext*, int storageType, PassRefPtr<StorageUsageCallback>, PassRefPtr<StorageErrorCallback>);
 
-    void requestQuota(ScriptExecutionContext*, int storageType, unsigned long long newQuotaInBytes, PassRefPtr<StorageQuotaCallback>, PassRefPtr<StorageErrorCallback>);
+    void requestQuota(ExecutionContext*, int storageType, unsigned long long newQuotaInBytes, PassRefPtr<StorageQuotaCallback>, PassRefPtr<StorageErrorCallback>);
 
     ~StorageInfo();
 
