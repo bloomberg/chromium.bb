@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "core/page/SpeechInput.h"
+#include "core/speech/SpeechInput.h"
 
 #if ENABLE(INPUT_SPEECH)
 
-#include "core/page/SpeechInputClient.h"
-#include "core/page/SpeechInputListener.h"
+#include "core/speech/SpeechInputClient.h"
+#include "core/speech/SpeechInputListener.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -61,7 +61,7 @@ int SpeechInput::registerListener(SpeechInputListener* listener)
 #if defined(DEBUG)
     // Check if already present.
     for (HashMap<int, SpeechInputListener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
-      ASSERT(it->value != listener);
+        ASSERT(it->value != listener);
 #endif
 
     m_listeners.add(m_nextListenerId, listener);

@@ -29,44 +29,26 @@
  */
 
 #include "config.h"
+#include "core/speech/SpeechInputResultList.h"
 
 #if ENABLE(INPUT_SPEECH)
 
-#include "core/page/SpeechInputEvent.h"
-
-#include "core/events/ThreadLocalEventNames.h"
-
 namespace WebCore {
 
-PassRefPtr<SpeechInputEvent> SpeechInputEvent::create()
+PassRefPtr<SpeechInputResultList> SpeechInputResultList::create(const SpeechInputResultArray& results)
 {
-    return adoptRef(new SpeechInputEvent);
+    return adoptRef(new SpeechInputResultList(results));
 }
 
-PassRefPtr<SpeechInputEvent> SpeechInputEvent::create(const AtomicString& eventType, const SpeechInputResultArray& results)
+SpeechInputResult* SpeechInputResultList::item(unsigned index)
 {
-    return adoptRef(new SpeechInputEvent(eventType, results));
+    return index >= m_results.size() ? 0 : m_results[index].get();
 }
 
-SpeechInputEvent::SpeechInputEvent()
+SpeechInputResultList::SpeechInputResultList(const SpeechInputResultArray& results)
+    : m_results(results) // Takes a copy of the array of RefPtrs.
 {
     ScriptWrappable::init(this);
-}
-
-SpeechInputEvent::SpeechInputEvent(const AtomicString& eventType, const SpeechInputResultArray& results)
-    : Event(eventType, true, false) // Can bubble, not cancelable
-    , m_results(SpeechInputResultList::create(results))
-{
-    ScriptWrappable::init(this);
-}
-
-SpeechInputEvent::~SpeechInputEvent()
-{
-}
-
-const AtomicString& SpeechInputEvent::interfaceName() const
-{
-    return eventNames().interfaceForSpeechInputEvent;
 }
 
 } // namespace WebCore

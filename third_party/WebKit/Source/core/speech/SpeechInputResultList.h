@@ -29,7 +29,7 @@
 #if ENABLE(INPUT_SPEECH)
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/page/SpeechInputResult.h"
+#include "core/speech/SpeechInputResult.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

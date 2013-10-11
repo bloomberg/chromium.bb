@@ -34,7 +34,7 @@
 #if ENABLE(INPUT_SPEECH)
 
 #include "WebSpeechInputListener.h"
-#include "core/page/SpeechInputClient.h"
+#include "core/speech/SpeechInputClient.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

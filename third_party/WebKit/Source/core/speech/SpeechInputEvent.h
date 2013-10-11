@@ -23,40 +23,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/page/SpeechInputResult.h"
+#ifndef SpeechInputEvent_h
+#define SpeechInputEvent_h
 
 #if ENABLE(INPUT_SPEECH)
 
+#include "core/events/Event.h"
+#include "core/speech/SpeechInputResultList.h"
+
+#include "wtf/PassRefPtr.h"
+
 namespace WebCore {
 
-PassRefPtr<SpeechInputResult> SpeechInputResult::create(const String& utterance, double confidence)
-{
-    return adoptRef(new SpeechInputResult(utterance, confidence));
-}
+class SpeechInputEvent : public Event {
+public:
+    static PassRefPtr<SpeechInputEvent> create();
+    static PassRefPtr<SpeechInputEvent> create(const AtomicString& eventType, const SpeechInputResultArray& results);
+    ~SpeechInputEvent();
 
-PassRefPtr<SpeechInputResult> SpeechInputResult::create(const SpeechInputResult& source)
-{
-    return adoptRef(new SpeechInputResult(source.m_utterance, source.m_confidence));
-}
+    SpeechInputResultList* results() const { return m_results.get(); }
 
-SpeechInputResult::SpeechInputResult(const String& utterance, double confidence)
-    : m_utterance(utterance)
-    , m_confidence(confidence)
-{
-    ScriptWrappable::init(this);
-}
+    virtual const AtomicString& interfaceName() const;
 
-double SpeechInputResult::confidence() const
-{
-    return m_confidence;
-}
+private:
+    SpeechInputEvent();
+    SpeechInputEvent(const AtomicString& eventType, const SpeechInputResultArray& results);
 
-const String& SpeechInputResult::utterance() const
-{
-    return m_utterance;
-}
+    RefPtr<SpeechInputResultList> m_results;
+};
 
 } // namespace WebCore
 
 #endif // ENABLE(INPUT_SPEECH)
+
+#endif // SpeechInputEvent_h

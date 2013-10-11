@@ -33,7 +33,7 @@
 
 #if ENABLE(INPUT_SPEECH)
 
-#include "core/page/SpeechInputResult.h"
+#include "core/speech/SpeechInputResult.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

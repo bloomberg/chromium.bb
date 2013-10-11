@@ -38,10 +38,10 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
-#include "core/page/SpeechInput.h"
-#include "core/page/SpeechInputEvent.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
+#include "core/speech/SpeechInput.h"
+#include "core/speech/SpeechInputEvent.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace WebCore {

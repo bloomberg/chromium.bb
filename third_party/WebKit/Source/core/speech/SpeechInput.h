@@ -34,7 +34,7 @@
 #if ENABLE(INPUT_SPEECH)
 
 #include "core/page/Page.h"
-#include "core/page/SpeechInputListener.h"
+#include "core/speech/SpeechInputListener.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 
@@ -48,8 +48,7 @@ class SpeechInputListener;
 // This class connects the input elements requiring speech input with the platform specific
 // speech recognition engine. It provides methods for the input elements to activate speech
 // recognition and methods for the speech recognition engine to return back the results.
-class SpeechInput : public SpeechInputListener,
-                    public Supplement<Page> {
+class SpeechInput : public SpeechInputListener, public Supplement<Page> {
     WTF_MAKE_NONCOPYABLE(SpeechInput);
 public:
     virtual ~SpeechInput();
