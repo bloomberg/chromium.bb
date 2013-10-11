@@ -43,6 +43,7 @@ class TextCheckingParagraph;
 struct TextCheckingResult;
 
 class SpellChecker {
+    WTF_MAKE_NONCOPYABLE(SpellChecker);
 public:
     static PassOwnPtr<SpellChecker> create(Frame&);
 
@@ -50,8 +51,6 @@ public:
 
     EditorClient& editorClient() const;
     TextCheckerClient& textChecker() const;
-
-    Frame& frame() const { return *m_frame; }
 
     bool isContinuousSpellCheckingEnabled() const;
     void toggleContinuousSpellChecking();
@@ -86,7 +85,7 @@ public:
     SpellCheckRequester& spellCheckRequester() const { return *m_spellCheckRequester; }
 
 private:
-    Frame* m_frame;
+    Frame& m_frame;
     const OwnPtr<SpellCheckRequester> m_spellCheckRequester;
 
     explicit SpellChecker(Frame&);
