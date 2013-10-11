@@ -23,6 +23,7 @@
 #include <wayland-server.h>
 #include <xcb/xcb.h>
 #include <xcb/xfixes.h>
+#include <xcb/composite.h>
 #include <cairo/cairo-xcb.h>
 
 #include "../compositor.h"

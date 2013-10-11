@@ -1720,6 +1720,7 @@ weston_wm_get_resources(struct weston_wm *wm)
 	uint32_t i;
 
 	xcb_prefetch_extension_data (wm->conn, &xcb_xfixes_id);
+	xcb_prefetch_extension_data (wm->conn, &xcb_composite_id);
 
 	formats_cookie = xcb_render_query_pict_formats(wm->conn);
 
@@ -1887,6 +1888,10 @@ weston_wm_create(struct weston_xserver *wxs)
 		XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, wm->screen->root,
 				     XCB_CW_EVENT_MASK, values);
+
+	xcb_composite_redirect_subwindows(wm->conn, wm->screen->root,
+					  XCB_COMPOSITE_REDIRECT_MANUAL);
+
 	wm->theme = theme_create();
 
 	weston_wm_create_wm_window(wm);
