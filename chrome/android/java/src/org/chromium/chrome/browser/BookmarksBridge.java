@@ -20,9 +20,9 @@ public class BookmarksBridge {
     private final Profile mProfile;
     private int mNativeBookmarksBridge;
     private boolean mIsNativeBookmarkModelLoaded;
-    private List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks
+    private final List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks
             = new ArrayList<DelayedBookmarkCallback>();
-    private ObserverList<BookmarkModelObserver> mObservers
+    private final ObserverList<BookmarkModelObserver> mObservers
             = new ObserverList<BookmarkModelObserver>();
 
     /**
@@ -183,6 +183,10 @@ public class BookmarksBridge {
         nativeDeleteBookmark(mNativeBookmarksBridge, bookmarkId);
     }
 
+    public static boolean isEditBookmarksEnabled() {
+        return nativeIsEditBookmarksEnabled();
+    }
+
     @CalledByNative
     private void bookmarkModelLoaded() {
         mIsNativeBookmarkModelLoaded = true;
@@ -269,6 +273,7 @@ public class BookmarksBridge {
     private native void nativeDeleteBookmark(int nativeBookmarksBridge, long bookmarkId);
     private native int nativeInit(Profile profile);
     private native void nativeDestroy(int nativeBookmarksBridge);
+    private static native boolean nativeIsEditBookmarksEnabled();
 
     /**
      * Simple object representing the bookmark item.

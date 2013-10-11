@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/BookmarksBridge_jni.h"
@@ -28,7 +29,6 @@ BookmarksBridge::BookmarksBridge(JNIEnv* env,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
-  pref_service_ = profile->GetPrefs();
 
   // Registers the notifications we are interested.
   bookmark_model_->AddObserver(this);
@@ -52,6 +52,15 @@ bool BookmarksBridge::RegisterBookmarksBridge(JNIEnv* env) {
 static jint Init(JNIEnv* env, jobject obj, jobject j_profile) {
   BookmarksBridge* delegate = new BookmarksBridge(env, obj, j_profile);
   return reinterpret_cast<jint>(delegate);
+}
+
+static bool IsEditBookmarksEnabled() {
+  return ProfileManager::GetLastUsedProfile()->GetPrefs()->GetBoolean(
+      prefs::kEditBookmarksEnabled);
+}
+
+static jboolean IsEditBookmarksEnabled(JNIEnv* env, jclass clazz) {
+  return IsEditBookmarksEnabled();
 }
 
 void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
@@ -153,7 +162,7 @@ bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
   return node &&
          (node->type() == BookmarkNode::FOLDER ||
           node->type() == BookmarkNode::URL) &&
-         pref_service_->GetBoolean(prefs::kEditBookmarksEnabled);
+          IsEditBookmarksEnabled();
 }
 
 // ------------- Observer-related methods ------------- //

@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 
-class PrefService;
 class Profile;
 
 // The delegate to fetch bookmarks information for the Android native
@@ -79,7 +78,6 @@ class BookmarksBridge : public BaseBookmarkModelObserver {
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   BookmarkModel* bookmark_model_;  // weak
-  PrefService* pref_service_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksBridge);
 };
