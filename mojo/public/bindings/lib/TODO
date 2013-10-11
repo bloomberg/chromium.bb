@@ -1,0 +1,12 @@
+TODOs:
+ - Ensure validation checks are solid
+ - Add tests of validation logic
+ - Add tests of Buffer classes
+ - Optimize Buffer classes?
+ - Make "Clone" method public?
+ - Specify object packing and padding.
+ - Add compile-time asserts to verify object packing and padding.
+ - Pack boolean arrays?
+ - Get rid of gratuitous use of Align() function in favor of adding padding.
+ - Investigate making arrays of objects not be arrays of pointers.
+ - Consider getting rid of Data structs (i.e., d_ member).

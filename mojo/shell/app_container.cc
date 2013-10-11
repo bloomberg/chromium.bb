@@ -71,7 +71,8 @@ void AppContainer::LaunchApp(const base::FilePath& app_path) {
       base::Bind(&AppContainer::AppCompleted, weak_factory_.GetWeakPtr()));
 
   const char* hello_msg = "Hello";
-  result = WriteMessage(shell_handle_, hello_msg, strlen(hello_msg)+1,
+  result = WriteMessage(shell_handle_, hello_msg,
+                        static_cast<uint32_t>(strlen(hello_msg)+1),
                         NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
   if (result < MOJO_RESULT_OK) {
     // Failure..
