@@ -577,6 +577,9 @@
                   'ui/views/view.cc|'\
                   'ui/views/widget/',
     },
+    'views_corewm': {
+      'filepath': 'ui/views/corewm/',
+    }
     'webkit': {
       'filepath': 'webkit/',
     },
@@ -631,7 +634,7 @@
     'app_shortcuts': ['chrome-apps-syd-reviews@chromium.org'],
     'appcache': ['michaeln@chromium.org'],
     'apps': ['tfarina@chromium.org', 'chromium-apps-reviews@chromium.org'],
-    'aura': ['ben+watch@chromium.org',
+    'aura': ['ben+aura@chromium.org',
              'sadrul@chromium.org',
              'kalyan.kondapally@intel.com'],
     'aura_compositor': ['danakj+watch@chromium.org',
@@ -731,7 +734,7 @@
                 'isherman@chromium.org',
                 'asvitkine+watch@chromium.org'],
     'mojo': ['aa@chromium.org',
-             'ben+watch@chromium.org',
+             'ben+mojo@chromium.org',
              'darin@chromium.org',
              'viettrungluu+watch@chromium.org'],
     'mouse_lock': ['scheib+watch@chromium.org'],
@@ -809,7 +812,8 @@
                  'glider+watch@chromium.org',
                  'timurrrr+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
-    'views_core': ['ben+watch@chromium.org'],
+    'views_core': ['ben+views@chromium.org'],l
+    'views_corewm': ['ben+corewm@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'webrtc_media': ['wjia+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org'],
