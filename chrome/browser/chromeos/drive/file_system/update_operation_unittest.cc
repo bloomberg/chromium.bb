@@ -37,10 +37,13 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_PersistentFile) {
   const std::string kTestFileContent = "I'm being uploaded! Yay!";
   google_apis::test_util::WriteStringToFile(kTestFile, kTestFileContent);
 
+  const std::string local_id = GetLocalId(kFilePath);
+  EXPECT_FALSE(local_id.empty());
+
   // Pin the file so it'll be store in "persistent" directory.
   FileError error = FILE_ERROR_FAILED;
   cache()->PinOnUIThread(
-      kResourceId,
+      local_id,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -48,7 +51,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_PersistentFile) {
   // First store a file to cache.
   error = FILE_ERROR_FAILED;
   cache()->StoreOnUIThread(
-      kResourceId, kMd5, kTestFile,
+      local_id, kMd5, kTestFile,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
@@ -57,7 +60,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_PersistentFile) {
   // Add the dirty bit.
   error = FILE_ERROR_FAILED;
   cache()->MarkDirtyOnUIThread(
-      kResourceId,
+      local_id,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -67,7 +70,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_PersistentFile) {
   // The callback will be called upon completion of UpdateFileByLocalId().
   error = FILE_ERROR_FAILED;
   operation_->UpdateFileByLocalId(
-      kResourceId,
+      local_id,
       ClientContext(USER_INITIATED),
       UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -93,7 +96,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_PersistentFile) {
   bool success = false;
   FileCacheEntry cache_entry;
   cache()->GetCacheEntryOnUIThread(
-      server_entry->resource_id(),
+      local_id,
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
@@ -103,7 +106,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_PersistentFile) {
 TEST_F(UpdateOperationTest, UpdateFileByLocalId_NonexistentFile) {
   FileError error = FILE_ERROR_OK;
   operation_->UpdateFileByLocalId(
-      "file:nonexistent_resource_id",
+      "nonexistent_local_id",
       ClientContext(USER_INITIATED),
       UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -120,10 +123,13 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   const std::string kTestFileContent = "I'm being uploaded! Yay!";
   google_apis::test_util::WriteStringToFile(kTestFile, kTestFileContent);
 
+  const std::string local_id = GetLocalId(kFilePath);
+  EXPECT_FALSE(local_id.empty());
+
   // First store a file to cache.
   FileError error = FILE_ERROR_FAILED;
   cache()->StoreOnUIThread(
-      kResourceId, kMd5, kTestFile,
+      local_id, kMd5, kTestFile,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
@@ -132,7 +138,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   // Add the dirty bit.
   error = FILE_ERROR_FAILED;
   cache()->MarkDirtyOnUIThread(
-      kResourceId,
+      local_id,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -142,7 +148,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   // The callback will be called upon completion of UpdateFileByLocalId().
   error = FILE_ERROR_FAILED;
   operation_->UpdateFileByLocalId(
-      kResourceId,
+      local_id,
       ClientContext(USER_INITIATED),
       UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -168,7 +174,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   bool success = false;
   FileCacheEntry cache_entry;
   cache()->GetCacheEntryOnUIThread(
-      server_entry->resource_id(),
+      local_id,
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
@@ -177,7 +183,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   // Again mark the cache file dirty.
   error = FILE_ERROR_FAILED;
   cache()->MarkDirtyOnUIThread(
-      kResourceId,
+      local_id,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -188,7 +194,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   original_changestamp = fake_service()->largest_changestamp();
   error = FILE_ERROR_FAILED;
   operation_->UpdateFileByLocalId(
-      kResourceId,
+      local_id,
       ClientContext(USER_INITIATED),
       UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -200,7 +206,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   // Make sure that the cache is no longer dirty.
   success = false;
   cache()->GetCacheEntryOnUIThread(
-      server_entry->resource_id(),
+      local_id,
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
@@ -209,7 +215,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   // Once again mark the cache file dirty.
   error = FILE_ERROR_FAILED;
   cache()->MarkDirtyOnUIThread(
-      kResourceId,
+      local_id,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -220,7 +226,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   original_changestamp = fake_service()->largest_changestamp();
   error = FILE_ERROR_FAILED;
   operation_->UpdateFileByLocalId(
-      kResourceId,
+      local_id,
       ClientContext(USER_INITIATED),
       UpdateOperation::NO_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
