@@ -387,6 +387,7 @@ void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
   db_status_ = contents->status;
   if (db_status_ != SYNC_STATUS_OK) {
     callback.Run(db_status_, false);
+    file_task_runner_->DeleteSoon(FROM_HERE, contents.release());
     return;
   }
 
