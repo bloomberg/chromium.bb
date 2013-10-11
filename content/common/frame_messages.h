@@ -35,3 +35,10 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_Detach,
                     int64 /* parent_frame_id */,
                     int64 /* frame_id */)
 
+// Sent when the renderer starts a provisional load for a frame.
+IPC_MESSAGE_ROUTED4(FrameHostMsg_DidStartProvisionalLoadForFrame,
+                    int64 /* frame_id */,
+                    int64 /* parent_frame_id */,
+                    bool /* true if it is the main frame */,
+                    GURL /* url */)
+

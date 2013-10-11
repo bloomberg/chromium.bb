@@ -1166,6 +1166,28 @@ class CONTENT_EXPORT RenderViewImpl
 
   gfx::RectF ClientRectToPhysicalWindowRect(const gfx::RectF& rect) const;
 
+  // RenderFrameImpl accessible state ------------------------------------------
+  // The following section is the set of methods that RenderFrameImpl needs
+  // to access RenderViewImpl state. The set of state variables are page-level
+  // specific, so they don't belong in RenderFrameImpl and should remain in
+  // this object.
+  ObserverList<RenderViewObserver>& observers() {
+    return observers_;
+  }
+
+  // TODO(nasko): Remove this method when we move to frame proxy objects, since
+  // the concept of swapped out will be eliminated.
+  void set_is_swapped_out(bool swapped_out) {
+    is_swapped_out_ = swapped_out;
+  }
+
+  NavigationGesture navigation_gesture() {
+    return navigation_gesture_;
+  }
+  void set_navigation_gesture(NavigationGesture gesture) {
+    navigation_gesture_ = gesture;
+  }
+
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.

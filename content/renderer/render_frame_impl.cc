@@ -120,7 +120,7 @@ int RenderFrameImpl::GetRoutingID() const {
 
 bool RenderFrameImpl::Send(IPC::Message* message) {
   if (is_detaching_ ||
-      (is_swapped_out_ &&
+      ((is_swapped_out_ || render_view_->is_swapped_out()) &&
        !SwappedOutMessages::CanSendWhileSwappedOut(message))) {
     delete message;
     return false;
@@ -402,11 +402,51 @@ void RenderFrameImpl::didCreateDataSource(WebKit::WebFrame* frame,
 }
 
 void RenderFrameImpl::didStartProvisionalLoad(WebKit::WebFrame* frame) {
-  // TODO(nasko): Move implementation here. Needed state:
-  // * is_swapped_out_
-  // * navigation_gesture_
-  // * completed_client_redirect_src_
-  render_view_->didStartProvisionalLoad(frame);
+  WebDataSource* ds = frame->provisionalDataSource();
+
+  // In fast/loader/stop-provisional-loads.html, we abort the load before this
+  // callback is invoked.
+  if (!ds)
+    return;
+
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+
+  // We should only navigate to swappedout:// when is_swapped_out_ is true.
+  CHECK((ds->request().url() != GURL(kSwappedOutURL)) ||
+        render_view_->is_swapped_out()) <<
+        "Heard swappedout:// when not swapped out.";
+
+  // Update the request time if WebKit has better knowledge of it.
+  if (document_state->request_time().is_null()) {
+    double event_time = ds->triggeringEventTime();
+    if (event_time != 0.0)
+      document_state->set_request_time(Time::FromDoubleT(event_time));
+  }
+
+  // Start time is only set after request time.
+  document_state->set_start_load_time(Time::Now());
+
+  bool is_top_most = !frame->parent();
+  if (is_top_most) {
+    render_view_->set_navigation_gesture(
+        WebUserGestureIndicator::isProcessingUserGesture() ?
+            NavigationGestureUser : NavigationGestureAuto);
+  } else if (ds->replacesCurrentHistoryItem()) {
+    // Subframe navigations that don't add session history items must be
+    // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
+    // handle loading of error pages.
+    document_state->navigation_state()->set_transition_type(
+        PAGE_TRANSITION_AUTO_SUBFRAME);
+  }
+
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, render_view_->observers(),
+      DidStartProvisionalLoad(frame));
+
+  Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
+       routing_id_, frame->identifier(),
+       frame->parent() ? frame->parent()->identifier() : -1,
+       is_top_most, ds->request().url()));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(

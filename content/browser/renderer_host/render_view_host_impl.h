@@ -464,6 +464,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderFrameHost.
   void AttachToFrameTree();
 
+  // The following IPC handlers are public so RenderFrameHost can call them,
+  // while we transition the code to not use RenderViewHost.
+  //
+  // TODO(nasko): Remove those methods once we are done moving navigation
+  // into RenderFrameHost.
+  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
+                                         int64 parent_frame_id,
+                                         bool main_frame,
+                                         const GURL& url);
+
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
   // the caller places are in different platforms, in which case it's better
@@ -498,10 +508,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnRunModal(int opener_id, IPC::Message* reply_msg);
   void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
-  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                         int64 parent_frame_id,
-                                         bool main_frame,
-                                         const GURL& url);
   void OnDidRedirectProvisionalLoad(int32 page_id,
                                     const GURL& source_url,
                                     const GURL& target_url);
