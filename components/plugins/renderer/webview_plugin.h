@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PLUGINS_WEBVIEW_PLUGIN_H_
-#define CHROME_RENDERER_PLUGINS_WEBVIEW_PLUGIN_H_
+#ifndef COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_
+#define COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_
 
 #include <list>
 
@@ -53,11 +53,10 @@ class WebViewPlugin : public WebKit::WebPlugin,
   // Convenience method to set up a new WebViewPlugin using |preferences|
   // and displaying |html_data|. |url| should be a (fake) chrome:// URL; it is
   // only used for navigation and never actually resolved.
-  static WebViewPlugin* Create(
-      Delegate* delegate,
-      const WebPreferences& preferences,
-      const std::string& html_data,
-      const GURL& url);
+  static WebViewPlugin* Create(Delegate* delegate,
+                               const WebPreferences& preferences,
+                               const std::string& html_data,
+                               const GURL& url);
 
   WebKit::WebView* web_view() { return web_view_; }
 
@@ -82,8 +81,10 @@ class WebViewPlugin : public WebKit::WebPlugin,
 
   // Coordinates are relative to the containing window.
   virtual void updateGeometry(
-      const WebKit::WebRect& frame_rect, const WebKit::WebRect& clip_rect,
-      const WebKit::WebVector<WebKit::WebRect>& cut_out_rects, bool is_visible);
+      const WebKit::WebRect& frame_rect,
+      const WebKit::WebRect& clip_rect,
+      const WebKit::WebVector<WebKit::WebRect>& cut_out_rects,
+      bool is_visible);
 
   virtual void updateFocus(bool) {}
   virtual void updateVisibility(bool) {}
@@ -98,8 +99,8 @@ class WebViewPlugin : public WebKit::WebPlugin,
   virtual void didFailLoading(const WebKit::WebURLError& error);
 
   // Called in response to WebPluginContainer::loadFrameRequest
-  virtual void didFinishLoadingFrameRequest(
-      const WebKit::WebURL& url, void* notifyData) {}
+  virtual void didFinishLoadingFrameRequest(const WebKit::WebURL& url,
+                                            void* notifyData) {}
   virtual void didFailLoadingFrameRequest(const WebKit::WebURL& url,
                                           void* notify_data,
                                           const WebKit::WebURLError& error) {}
@@ -151,4 +152,4 @@ class WebViewPlugin : public WebKit::WebPlugin,
   WebKit::WebString old_title_;
 };
 
-#endif  // CHROME_RENDERER_PLUGINS_WEBVIEW_PLUGIN_H_
+#endif  // COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_

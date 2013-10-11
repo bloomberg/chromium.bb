@@ -15,6 +15,7 @@
         'chrome_resources.gyp:chrome_strings',
         '../components/components.gyp:autofill_content_renderer',
         '../components/components.gyp:startup_metric_utils',
+        '../components/components.gyp:plugins_renderer',
         '../components/components.gyp:translate_common',
         '../components/components.gyp:translate_language_detection',
         '../components/components.gyp:visitedlink_renderer',
@@ -265,12 +266,10 @@
         'renderer/pepper/ppb_nacl_private_impl.h',
         'renderer/pepper/ppb_pdf_impl.cc',
         'renderer/pepper/ppb_pdf_impl.h',
-        'renderer/plugins/plugin_placeholder.cc',
-        'renderer/plugins/plugin_placeholder.h',
+        'renderer/plugins/chrome_plugin_placeholder.cc',
+        'renderer/plugins/chrome_plugin_placeholder.h',
         'renderer/plugins/plugin_uma.cc',
         'renderer/plugins/plugin_uma.h',
-        'renderer/plugins/webview_plugin.cc',
-        'renderer/plugins/webview_plugin.h',
         'renderer/prerender/prerender_dispatcher.cc',
         'renderer/prerender/prerender_dispatcher.h',
         'renderer/prerender/prerender_extra_data.cc',
@@ -432,9 +431,6 @@
             'renderer/extensions/send_request_natives.cc',
             'renderer/extensions/tabs_custom_bindings.cc',
             'renderer/extensions/tts_custom_bindings.cc',
-          ],
-          'defines': [
-            'ENABLE_MOBILE_YOUTUBE_PLUGIN',
           ],
           'conditions' : [
             ['google_tv==1', {

@@ -1,0 +1,247 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/plugins/renderer/plugin_placeholder.h"
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/json/string_escape.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
+#include "content/public/common/content_constants.h"
+#include "content/public/common/context_menu_params.h"
+#include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebScriptSource.h"
+#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/re2/re2/re2.h"
+
+using content::RenderThread;
+using WebKit::WebElement;
+using WebKit::WebFrame;
+using WebKit::WebMouseEvent;
+using WebKit::WebNode;
+using WebKit::WebPlugin;
+using WebKit::WebPluginContainer;
+using WebKit::WebPluginParams;
+using WebKit::WebScriptSource;
+using WebKit::WebURLRequest;
+using webkit_glue::CppArgumentList;
+using webkit_glue::CppVariant;
+
+namespace plugins {
+
+PluginPlaceholder::PluginPlaceholder(content::RenderView* render_view,
+                                     WebFrame* frame,
+                                     const WebPluginParams& params,
+                                     const std::string& html_data,
+                                     GURL placeholderDataUrl)
+    : content::RenderViewObserver(render_view),
+      frame_(frame),
+      plugin_params_(params),
+      plugin_(WebViewPlugin::Create(this,
+                                    render_view->GetWebkitPreferences(),
+                                    html_data,
+                                    placeholderDataUrl)),
+      is_blocked_for_prerendering_(false),
+      allow_loading_(false),
+      hidden_(false),
+      finished_loading_(false) {}
+
+PluginPlaceholder::~PluginPlaceholder() {}
+
+void PluginPlaceholder::BindWebFrame(WebFrame* frame) {
+  BindToJavascript(frame, "plugin");
+  BindCallback(
+      "load",
+      base::Bind(&PluginPlaceholder::LoadCallback, base::Unretained(this)));
+  BindCallback(
+      "hide",
+      base::Bind(&PluginPlaceholder::HideCallback, base::Unretained(this)));
+  BindCallback("didFinishLoading",
+               base::Bind(&PluginPlaceholder::DidFinishLoadingCallback,
+                          base::Unretained(this)));
+}
+
+void PluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
+  CHECK(plugin_);
+  if (!new_plugin) return;
+  WebPluginContainer* container = plugin_->container();
+  // Set the new plug-in on the container before initializing it.
+  container->setPlugin(new_plugin);
+  // Save the element in case the plug-in is removed from the page during
+  // initialization.
+  WebElement element = container->element();
+  if (!new_plugin->initialize(container)) {
+    // We couldn't initialize the new plug-in. Restore the old one and abort.
+    container->setPlugin(plugin_);
+    return;
+  }
+
+  // The plug-in has been removed from the page. Destroy the old plug-in
+  // (which will destroy us).
+  if (!element.pluginContainer()) {
+    plugin_->destroy();
+    return;
+  }
+
+  // During initialization, the new plug-in might have replaced itself in turn
+  // with another plug-in. Make sure not to use the passed in |new_plugin| after
+  // this point.
+  new_plugin = container->plugin();
+
+  plugin_->RestoreTitleText();
+  container->invalidate();
+  container->reportGeometry();
+  plugin_->ReplayReceivedData(new_plugin);
+  plugin_->destroy();
+}
+
+void PluginPlaceholder::HidePlugin() {
+  hidden_ = true;
+  WebPluginContainer* container = plugin_->container();
+  WebElement element = container->element();
+  element.setAttribute("style", "display: none;");
+  // If we have a width and height, search for a parent (often <div>) with the
+  // same dimensions. If we find such a parent, hide that as well.
+  // This makes much more uncovered page content usable (including clickable)
+  // as opposed to merely visible.
+  // TODO(cevans) -- it's a foul heurisitc but we're going to tolerate it for
+  // now for these reasons:
+  // 1) Makes the user experience better.
+  // 2) Foulness is encapsulated within this single function.
+  // 3) Confidence in no fasle positives.
+  // 4) Seems to have a good / low false negative rate at this time.
+  if (element.hasAttribute("width") && element.hasAttribute("height")) {
+    std::string width_str("width:[\\s]*");
+    width_str += element.getAttribute("width").utf8().data();
+    if (EndsWith(width_str, "px", false)) {
+      width_str = width_str.substr(0, width_str.length() - 2);
+    }
+    TrimWhitespace(width_str, TRIM_TRAILING, &width_str);
+    width_str += "[\\s]*px";
+    std::string height_str("height:[\\s]*");
+    height_str += element.getAttribute("height").utf8().data();
+    if (EndsWith(height_str, "px", false)) {
+      height_str = height_str.substr(0, height_str.length() - 2);
+    }
+    TrimWhitespace(height_str, TRIM_TRAILING, &height_str);
+    height_str += "[\\s]*px";
+    WebNode parent = element;
+    while (!parent.parentNode().isNull()) {
+      parent = parent.parentNode();
+      if (!parent.isElementNode())
+        continue;
+      element = parent.toConst<WebElement>();
+      if (element.hasAttribute("style")) {
+        std::string style_str = element.getAttribute("style").utf8();
+        if (RE2::PartialMatch(style_str, width_str) &&
+            RE2::PartialMatch(style_str, height_str))
+          element.setAttribute("style", "display: none;");
+      }
+    }
+  }
+}
+
+void PluginPlaceholder::WillDestroyPlugin() { delete this; }
+
+void PluginPlaceholder::SetMessage(const string16& message) {
+  message_ = message;
+  if (finished_loading_)
+    UpdateMessage();
+}
+
+void PluginPlaceholder::UpdateMessage() {
+  std::string script =
+      "window.setMessage(" + base::GetDoubleQuotedJson(message_) + ")";
+  plugin_->web_view()->mainFrame()->executeScript(
+      WebScriptSource(ASCIIToUTF16(script)));
+}
+
+void PluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
+  // Does nothing by default. Will be overridden if a specific browser wants
+  // a context menu.
+  return;
+}
+
+void PluginPlaceholder::OnLoadBlockedPlugins(const std::string& identifier) {
+  if (!identifier.empty() && identifier != identifier_)
+    return;
+
+  RenderThread::Get()->RecordUserMetrics("Plugin_Load_UI");
+  LoadPlugin();
+}
+
+void PluginPlaceholder::OnSetIsPrerendering(bool is_prerendering) {
+  // Prerendering can only be enabled prior to a RenderView's first navigation,
+  // so no BlockedPlugin should see the notification that enables prerendering.
+  DCHECK(!is_prerendering);
+  if (is_blocked_for_prerendering_ && !is_prerendering)
+    LoadPlugin();
+}
+
+void PluginPlaceholder::LoadPlugin() {
+  // This is not strictly necessary but is an important defense in case the
+  // event propagation changes between "close" vs. "click-to-play".
+  if (hidden_)
+    return;
+  if (!allow_loading_) {
+    NOTREACHED();
+    return;
+  }
+
+  // TODO(mmenke):  In the case of prerendering, feed into
+  //                ChromeContentRendererClient::CreatePlugin instead, to
+  //                reduce the chance of future regressions.
+  WebPlugin* plugin =
+      render_view()->CreatePlugin(frame_, plugin_info_, plugin_params_);
+  ReplacePlugin(plugin);
+}
+
+void PluginPlaceholder::LoadCallback(const CppArgumentList& args,
+                                     CppVariant* result) {
+  RenderThread::Get()->RecordUserMetrics("Plugin_Load_Click");
+  LoadPlugin();
+}
+
+void PluginPlaceholder::HideCallback(const CppArgumentList& args,
+                                     CppVariant* result) {
+  RenderThread::Get()->RecordUserMetrics("Plugin_Hide_Click");
+  HidePlugin();
+}
+
+void PluginPlaceholder::DidFinishLoadingCallback(const CppArgumentList& args,
+                                                 CppVariant* result) {
+  finished_loading_ = true;
+  if (message_.length() > 0)
+    UpdateMessage();
+}
+
+void PluginPlaceholder::SetPluginInfo(
+    const content::WebPluginInfo& plugin_info) {
+  plugin_info_ = plugin_info;
+}
+
+const content::WebPluginInfo& PluginPlaceholder::GetPluginInfo() const {
+  return plugin_info_;
+}
+
+void PluginPlaceholder::SetIdentifier(const std::string& identifier) {
+  identifier_ = identifier;
+}
+
+WebKit::WebFrame* PluginPlaceholder::GetFrame() { return frame_; }
+
+const WebKit::WebPluginParams& PluginPlaceholder::GetPluginParams() const {
+  return plugin_params_;
+}
+
+}  // namespace plugins
