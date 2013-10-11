@@ -484,6 +484,8 @@ ResourceMetadataStorage::GetIterator() {
 std::string ResourceMetadataStorage::GetChild(const std::string& parent_id,
                                               const std::string& child_name) {
   base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!parent_id.empty());
+  DCHECK(!child_name.empty());
 
   std::string child_id;
   resource_map_->Get(leveldb::ReadOptions(),
@@ -495,6 +497,7 @@ std::string ResourceMetadataStorage::GetChild(const std::string& parent_id,
 void ResourceMetadataStorage::GetChildren(const std::string& parent_id,
                                           std::vector<std::string>* children) {
   base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!parent_id.empty());
 
   // Iterate over all entries with keys starting with |parent_id|.
   scoped_ptr<leveldb::Iterator> it(
@@ -570,6 +573,9 @@ void ResourceMetadataStorage::DestroyOnBlockingPool() {
 std::string ResourceMetadataStorage::GetChildEntryKey(
     const std::string& parent_id,
     const std::string& child_name) {
+  DCHECK(!parent_id.empty());
+  DCHECK(!child_name.empty());
+
   std::string key = parent_id;
   key.push_back(kDBKeyDelimeter);
   key.append(child_name);
