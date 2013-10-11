@@ -5,12 +5,13 @@
 #ifndef APPS_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 #define APPS_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 
+#include "apps/shell/app_shell_content_client.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/app/content_main_delegate.h"
-#include "content/shell/common/shell_content_client.h"
 
 namespace apps {
+
 class AppShellContentBrowserClient;
 
 class AppShellMainDelegate : public content::ContentMainDelegate {
@@ -27,7 +28,7 @@ class AppShellMainDelegate : public content::ContentMainDelegate {
 
  private:
   scoped_ptr<AppShellContentBrowserClient> browser_client_;
-  content::ShellContentClient content_client_;
+  AppShellContentClient content_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShellMainDelegate);
 };

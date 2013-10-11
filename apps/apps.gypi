@@ -118,6 +118,8 @@
             'shell/app_shell_browser_main_parts.h',
             'shell/app_shell_content_browser_client.cc',
             'shell/app_shell_content_browser_client.h',
+            'shell/app_shell_content_client.cc',
+            'shell/app_shell_content_client.h',
             'shell/app_shell_main_delegate.cc',
             'shell/app_shell_main_delegate.h',
             'shell/app_shell_main.cc',
