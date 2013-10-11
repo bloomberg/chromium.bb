@@ -182,18 +182,13 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
         picasa_database_path, fake_folder_1, fake_folder_2);
     picasa::WriteTestAlbumsImagesIndex(fake_folder_1, fake_folder_2);
 
-    base::FilePath test_data_path =
-        test_data_dir_.AppendASCII("api_test").AppendASCII("media_galleries")
-                      .AppendASCII("common");
+    base::FilePath test_jpg_path = GetCommonDataDir().AppendASCII("test.jpg");
     ASSERT_TRUE(base::CopyFile(
-        test_data_path.AppendASCII("test.jpg"),
-        fake_folder_1.AppendASCII("InBoth.jpg")));
+        test_jpg_path, fake_folder_1.AppendASCII("InBoth.jpg")));
     ASSERT_TRUE(base::CopyFile(
-        test_data_path.AppendASCII("test.jpg"),
-        fake_folder_1.AppendASCII("InSecondAlbumOnly.jpg")));
+        test_jpg_path, fake_folder_1.AppendASCII("InSecondAlbumOnly.jpg")));
     ASSERT_TRUE(base::CopyFile(
-        test_data_path.AppendASCII("test.jpg"),
-        fake_folder_2.AppendASCII("InFirstAlbumOnly.jpg")));
+        test_jpg_path, fake_folder_2.AppendASCII("InFirstAlbumOnly.jpg")));
   }
 #endif
 
@@ -289,8 +284,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
       GetFakeAppDataPath().AppendASCII("Google").AppendASCII("Picasa3");
 #endif
   PopulatePicasaTestData(metadata_root);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/picasa"))
-      << message_;
+  ASSERT_TRUE(RunMediaGalleriesTest("picasa")) << message_;
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
@@ -304,7 +298,6 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   base::FilePath metadata_root = fake_alternate_app_data_dir.path()
       .AppendASCII("Google").AppendASCII("Picasa2");
   PopulatePicasaTestData(metadata_root);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/picasa"))
-      << message_;
+  ASSERT_TRUE(RunMediaGalleriesTest("picasa")) << message_;
 }
 #endif  // defined(OS_WIN)
