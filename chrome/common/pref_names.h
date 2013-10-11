@@ -327,6 +327,7 @@ extern const char kExtensionsUIDeveloperMode[];
 extern const char kExtensionToolbarSize[];
 extern const char kExtensionToolbar[];
 extern const char kExtensionCommands[];
+extern const char kExtensionKnownDisabled[];
 extern const char kPluginsLastInternalDirectory[];
 extern const char kPluginsPluginsList[];
 extern const char kPluginsDisabledPlugins[];

@@ -563,6 +563,8 @@ void ExtensionService::Init() {
     component_loader_->LoadAll();
     extensions::InstalledLoader(this).LoadAllExtensions();
 
+    ReconcileKnownDisabled();
+
     // Attempt to re-enable extensions whose only disable reason is reloading.
     std::vector<std::string> extensions_to_enable;
     for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
@@ -977,7 +979,8 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 
   // Move it over to the enabled list.
   extensions_.Insert(make_scoped_refptr(extension));
-  disabled_extensions_.Remove(extension->id());
+  if (disabled_extensions_.Remove(extension->id()))
+    extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
 
   NotifyExtensionLoaded(extension);
 
@@ -1029,7 +1032,8 @@ void ExtensionService::DisableExtension(
 
   // Move it over to the disabled list. Don't send a second unload notification
   // for terminated extensions being disabled.
-  disabled_extensions_.Insert(make_scoped_refptr(extension));
+  if (disabled_extensions_.Insert(make_scoped_refptr(extension)))
+    extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
   if (extensions_.Contains(extension->id())) {
     extensions_.Remove(extension->id());
     NotifyExtensionUnloaded(extension, extension_misc::UNLOAD_REASON_DISABLE);
@@ -1867,6 +1871,43 @@ bool ExtensionService::IsUnacknowledgedExternalExtension(
                 Extension::DISABLE_SIDELOAD_WIPEOUT));
 }
 
+void ExtensionService::ReconcileKnownDisabled() {
+  ExtensionIdSet known_disabled_ids = extension_prefs_->GetKnownDisabled();
+  if (known_disabled_ids.empty()) {
+    if (!disabled_extensions_.is_empty()) {
+      extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
+      UMA_HISTOGRAM_BOOLEAN("Extensions.KnownDisabledInitialized", true);
+    }
+  } else {
+    // Both |known_disabled_ids| and |extensions_| are ordered (by definition
+    // of std::map and std::set). Iterate forward over both sets in parallel
+    // to find matching IDs and disable the corresponding extensions.
+    ExtensionSet::const_iterator extensions_it = extensions_.begin();
+    ExtensionIdSet::const_iterator known_disabled_ids_it =
+        known_disabled_ids.begin();
+    int known_disabled_count = 0;
+    while (extensions_it != extensions_.end() &&
+           known_disabled_ids_it != known_disabled_ids.end()) {
+      const std::string& extension_id = extensions_it->get()->id();
+      const int comparison = extension_id.compare(*known_disabled_ids_it);
+      if (comparison < 0) {
+        ++extensions_it;
+      } else if (comparison > 0) {
+        ++known_disabled_ids_it;
+      } else {
+        ++known_disabled_count;
+        // Advance |extensions_it| immediately as it will be invalidated upon
+        // disabling the extension it points to.
+        ++extensions_it;
+        ++known_disabled_ids_it;
+        DisableExtension(extension_id, Extension::DISABLE_KNOWN_DISABLED);
+      }
+    }
+    UMA_HISTOGRAM_COUNTS_100("Extensions.KnownDisabledReDisabled",
+                             known_disabled_count);
+  }
+}
+
 void ExtensionService::HandleExtensionAlertDetails() {
   extension_error_ui_->ShowExtensions();
   // ShowExtensions may cause the error UI to close synchronously, e.g. if it
@@ -2312,7 +2353,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
       RecordPermissionMessagesHistogram(
           extension, "Extensions.Permissions_AutoDisable");
     }
-    extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
+    DisableExtension(extension->id(),
+                     static_cast<Extension::DisableReason>(disable_reasons));
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
   }
   if (disable_reasons != Extension::DISABLE_NONE) {

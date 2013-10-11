@@ -948,6 +948,9 @@ const char kExtensionToolbar[] = "extensions.toolbar";
 // extension + named command pair.
 const char kExtensionCommands[] = "extensions.commands";
 
+// A list of known disabled extensions IDs.
+const char kExtensionKnownDisabled[] = "extensions.known_disabled";
+
 // Pref containing the directory for internal plugins as written to the plugins
 // list (below).
 const char kPluginsLastInternalDirectory[] = "plugins.last_internal_directory";
